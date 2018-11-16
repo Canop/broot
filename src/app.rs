@@ -33,7 +33,7 @@ impl App {
             termion::cursor::Hide
         )?;
         self.write_status("Hello")?;
-        let root = Node::read()?;
+        let root = Node::read(self.h-2)?;
         self.write_tree(&root)?;
         self.stdout.flush()?;
         let stdin = stdin();
