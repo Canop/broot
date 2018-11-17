@@ -17,8 +17,6 @@ pub struct TreeLine {
     pub content: LineType,
 }
 
-// FIXME Copy ?
-
 impl TreeLine {
     fn create(path: PathBuf, depth: u16) -> io::Result<TreeLine> {
         let name = match path.file_name() {
@@ -86,7 +84,6 @@ impl TreeBuilder {
     }
     pub fn build(mut self, nb_lines_max: u16) -> io::Result<Tree> {
         let nb_lines_max = nb_lines_max as usize;
-        println!(" nb_lines_max={:?}", nb_lines_max);
         let mut current_depth = 0;
         let mut max_depth = 0;
         loop {
@@ -113,6 +110,7 @@ impl TreeBuilder {
                 }
             }
         }
+        self.lines.sort_by(|a,b| a.path.cmp(&b.path));
         Ok(Tree{
             lines: self.lines
         })
