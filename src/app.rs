@@ -2,11 +2,12 @@
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
 
+use std::env;
 use std::io::{self, Write, stdout, stdin};
 
 use status::{Status};
 use input::{Input};
-use nodes::Node;
+use flat_tree::{TreeBuilder, Tree};
 use tree_views::TreeView;
 
 pub struct App {
@@ -26,6 +27,8 @@ impl App {
     }
 
     pub fn run(mut self) -> io::Result<()> {
+        let tree = TreeBuilder::from(env::current_dir()?)?.build(self.h-2)?;
+        println!("{:?}", tree);
         write!(
             self.stdout,
             "{}{}",
@@ -33,8 +36,7 @@ impl App {
             termion::cursor::Hide
         )?;
         self.write_status("Hello")?;
-        let root = Node::read(self.h-2)?;
-        self.write_tree(&root)?;
+        self.write_tree(&tree)?;
         self.stdout.flush()?;
         let stdin = stdin();
         let keys = stdin.keys();
