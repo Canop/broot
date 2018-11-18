@@ -13,7 +13,7 @@ use flat_tree::{TreeBuilder, Tree};
 
 
 fn run() -> io::Result<()> {
-    let tree = TreeBuilder::from(env::current_dir()?)?.build(10)?;
+    let tree = TreeBuilder::from(env::current_dir()?)?.build(30)?;
     println!("{:?}", tree);
     Ok(())
 }

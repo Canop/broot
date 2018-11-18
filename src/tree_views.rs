@@ -32,11 +32,13 @@ impl TreeView for App {
     fn write_line(&mut self, line: &TreeLine, y: u16) -> io::Result<()> {
         write!(
             self.stdout,
+            //"{}{}{}{}  |  {:?}",
             "{}{}{}{}",
             termion::cursor::Goto(1, y),
             termion::clear::CurrentLine,
             "  ".repeat(line.depth as usize),
-            line.name
+            line.name,
+            //&line.path
         )?;
         Ok(())
     }
