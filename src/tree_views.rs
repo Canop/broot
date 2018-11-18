@@ -27,11 +27,16 @@ impl TreeView for App {
                 continue;
             }
             let line = &tree.lines[(y-1) as usize];
-            write!(
-                self.stdout,
-                "{}",
-                "  ".repeat(line.depth as usize),
-            )?;
+            for b in &line.left_branchs {
+                write!(
+                    self.stdout,
+                    "{}",
+                    match b {
+                        true    => "| ",
+                        false   => "  ",
+                    }
+                )?;
+            }
             self.write_line(line)?;
         }
         Ok(())

@@ -13,14 +13,21 @@ pub enum LineType {
 
 #[derive(Debug)]
 pub struct TreeLine {
+    pub left_branchs: Vec<bool>, // len: depth (possible to use an array ? boxed ?)
     pub name: String,
     pub depth: u16,
     pub path: PathBuf,
     pub content: LineType,
 }
 
+#[derive(Debug)]
+pub struct Tree {
+    pub lines: Vec<TreeLine>,
+}
+
 impl TreeLine {
     fn create(path: PathBuf, depth: u16) -> io::Result<TreeLine> {
+        let left_branchs = vec![false; depth as usize];
         let name = match path.file_name() {
             Some(s) => s.to_string_lossy().into_owned(),
             None => String::from("???"),
@@ -30,7 +37,7 @@ impl TreeLine {
             true    => LineType::Dir,
             false   => LineType::File,
         };
-        Ok(TreeLine { name, path, depth, content })
+        Ok(TreeLine { left_branchs, name, path, depth, content })
     }
     pub fn is_dir(&self) -> bool {
         match &self.content {
@@ -40,9 +47,16 @@ impl TreeLine {
     }
 }
 
-#[derive(Debug)]
-pub struct Tree {
-    pub lines: Vec<TreeLine>,
+
+impl Tree {
+    pub fn index_of(&self, path: &PathBuf) -> Option<usize> {
+        for i in 0..self.lines.len() {
+            if path == &self.lines[i].path {
+                return Some(i);
+            }
+        }
+        None
+    }
 }
 
 // a child iterator makes it possible to iter over sorted childs
@@ -135,19 +149,17 @@ impl TreeBuilder {
             }
             if !has_open_dirs {
                 if max_depth > current_depth {
-                    // we replace the last items of
-                    current_depth = current_depth + 1;
+                    current_depth += 1;
                 } else {
                     break;
                 }
             }
         }
 
-        println!("closing all CI");
+        // we replace the last childs by Pruning marks if there are
+        //  some unlisted files behind
         for i in 0..self.lines.len() {
-            println!("finishing CI of {:?}", self.lines[i].path);
             let index = self.child_iterators[i].index_last_line;
-            println!("index_last_line: {}", index);
             if index == 0 {
                 continue;
             }
@@ -162,9 +174,37 @@ impl TreeBuilder {
         // second step: we sort the lines
         self.lines.sort_by(|a,b| a.path.cmp(&b.path));
 
-        Ok(Tree{
-            lines: self.lines
-        })
+        // then we discover the branches
+        for end_index in 1..self.lines.len() {
+            let depth = (self.lines[end_index].depth - 1) as usize;
+            let start_index = {
+                let parent_path = &self.lines[end_index].path.parent();
+                let start_index = match parent_path {
+                    Some(parent_path)   => {
+                        let parent_path = parent_path.to_path_buf();
+                        let mut index = end_index;
+                        while index >= 0 {
+                            if self.lines[index].path == parent_path {
+                                break;
+                            }
+                            index -= 1;
+                        }
+                        index
+                    },
+                    None    => end_index, // Should not happen
+                };
+                start_index + 1
+            };
+            for i in start_index..end_index+1 {
+                self.lines[i].left_branchs[depth] = true;
+            }
+        }
+
+        let tree = Tree{
+            lines: self.lines,
+        };
+
+        Ok(tree)
     }
 }
 
