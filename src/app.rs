@@ -35,13 +35,18 @@ impl App {
             termion::clear::All,
             termion::cursor::Hide
         )?;
-        self.write_status("Hello")?;
+        self.write_status("Hit enter to quit")?;
         self.write_tree(&tree)?;
         self.stdout.flush()?;
         let stdin = stdin();
         let keys = stdin.keys();
         self.read(keys)?;
-        write!(self.stdout, "{}", termion::cursor::Show)?;
+        write!(
+            self.stdout,
+            "{}\r\n",
+            //termion::clear::All,
+            termion::cursor::Show
+        )?;
         Ok(())
     }
 }

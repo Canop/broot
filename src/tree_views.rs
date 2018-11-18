@@ -1,8 +1,9 @@
 
 
+use termion::{style, color};
 use std::io::{self, Write};
 use app::App;
-use flat_tree::{TreeLine, Tree};
+use flat_tree::{TreeLine, Tree, LineType};
 
 pub trait TreeView {
     fn tree_height(&self) -> u16;
@@ -32,14 +33,38 @@ impl TreeView for App {
     fn write_line(&mut self, line: &TreeLine, y: u16) -> io::Result<()> {
         write!(
             self.stdout,
-            //"{}{}{}{}  |  {:?}",
-            "{}{}{}{}",
+            "{}{}{}",
             termion::cursor::Goto(1, y),
             termion::clear::CurrentLine,
             "  ".repeat(line.depth as usize),
-            line.name,
-            //&line.path
         )?;
+        match line.content {
+            LineType::Dir         => {
+                write!(
+                    self.stdout,
+                    "{}{}{}",
+                    style::Bold,
+                    line.name,
+                    style::Reset,
+                )?;
+            },
+            LineType::File        => {
+                write!(
+                    self.stdout,
+                    "{}",
+                    line.name,
+                )?;
+            },
+            LineType::Pruning(n)  => {
+                write!(
+                    self.stdout,
+                    "{}... {} other files…{}",
+                    style::Italic,
+                    n,
+                    style::Reset,
+                )?;
+            }
+        }
         Ok(())
     }
 
