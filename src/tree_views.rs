@@ -53,21 +53,21 @@ impl TreeView for App {
         Ok(())
     }
     fn write_line(&mut self, line: &TreeLine) -> io::Result<()> {
-        match line.content {
-            LineType::Dir         => {
+        match &line.content {
+            LineType::Dir(name)        => {
                 write!(
                     self.stdout,
                     "{}{}{}",
                     style::Bold,
-                    line.name,
+                    &name,
                     style::Reset,
                 )?;
             },
-            LineType::File        => {
+            LineType::File(name)        => {
                 write!(
                     self.stdout,
                     "{}",
-                    line.name,
+                    &name,
                 )?;
             },
             LineType::Pruning(n)  => {

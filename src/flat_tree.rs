@@ -6,15 +6,14 @@ use std::path::{Path, PathBuf};
 
 #[derive(Debug)]
 pub enum LineType {
-    File,
-    Dir,
+    File(String), // name
+    Dir(String), // name
     Pruning(usize), // unlisted files
 }
 
 #[derive(Debug)]
 pub struct TreeLine {
     pub left_branchs: Vec<bool>, // len: depth (possible to use an array ? boxed ?)
-    pub name: String,
     pub depth: u16,
     pub path: PathBuf,
     pub content: LineType,
@@ -34,15 +33,15 @@ impl TreeLine {
         };
         let metadata = fs::metadata(&path)?;
         let content = match metadata.is_dir() {
-            true    => LineType::Dir,
-            false   => LineType::File,
+            true    => LineType::Dir(name),
+            false   => LineType::File(name),
         };
-        Ok(TreeLine { left_branchs, name, path, depth, content })
+        Ok(TreeLine { left_branchs, path, depth, content })
     }
     pub fn is_dir(&self) -> bool {
         match &self.content {
-            LineType::Dir   => true,
-            _               => false,
+            LineType::Dir(_)    => true,
+            _                   => false,
         }
     }
 }
@@ -181,7 +180,6 @@ impl TreeBuilder {
                 continue;
             }
             self.lines[index].content = LineType::Pruning(count+1);
-            self.lines[index].name = format!("... {} other files...", count+1).to_owned();
         }
 
         // second step: we sort the lines
