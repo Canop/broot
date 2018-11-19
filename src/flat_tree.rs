@@ -156,6 +156,9 @@ impl TreeBuilder {
                     self.child_iterators[i].index_last_line = self.lines.len();
                     self.push(child, max_depth)?;
                 }
+                if self.lines.len() >= nb_lines_max {
+                    break;
+                }
             }
             if !has_open_dirs {
                 if max_depth > current_depth {
@@ -184,7 +187,7 @@ impl TreeBuilder {
         // second step: we sort the lines
         self.lines.sort_by(|a,b| a.path.cmp(&b.path));
 
-        // then we discover the branches
+        // then we discover the branches (for the drawing)
         for end_index in 1..self.lines.len() {
             let depth = (self.lines[end_index].depth - 1) as usize;
             let start_index = {
