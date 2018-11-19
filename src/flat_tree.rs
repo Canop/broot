@@ -57,6 +57,16 @@ impl Tree {
         }
         None
     }
+    pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {
+        if line_index >= self.lines.len() {
+            return false;
+        }
+        let line = &self.lines[line_index];
+        if depth >= line.depth as usize {
+            return false;
+        }
+        return line.left_branchs[depth];
+    }
 }
 
 // a child iterator makes it possible to iter over sorted childs

@@ -16,24 +16,33 @@ impl TreeView for App {
         self.h - 2
     }
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
-        for y in 1..self.h-2 {
+        for y in 1..self.h-1 {
             write!(
                 self.stdout,
                 "{}{}",
                 termion::cursor::Goto(1, y),
                 termion::clear::CurrentLine,
             )?;
-            if y >= tree.lines.len() as u16 {
+            let line_index = (y -1) as usize;
+            if line_index >= tree.lines.len() {
                 continue;
             }
-            let line = &tree.lines[(y-1) as usize];
-            for b in &line.left_branchs {
+            let line = &tree.lines[line_index];
+            for depth in 0..line.depth {
                 write!(
                     self.stdout,
                     "{}",
-                    match b {
-                        true    => "| ",
-                        false   => "  ",
+                    match line.left_branchs[depth as usize] {
+                        true    => {
+                            match tree.has_branch(line_index+1, depth as usize) {
+                                true    => match depth == line.depth-1 {
+                                        true    => "├─ ",
+                                        false   => "│  ",
+                                },
+                                false   => "└─ ",
+                            }
+                        },
+                        false   => "   ",
                     }
                 )?;
             }
