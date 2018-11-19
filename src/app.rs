@@ -1,6 +1,7 @@
 
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
+use termion::screen::AlternateScreen;
 
 use std::env;
 use std::io::{self, Write, stdout, stdin};
@@ -13,13 +14,13 @@ use tree_views::TreeView;
 pub struct App {
     pub w: u16,
     pub h: u16,
-    pub stdout: RawTerminal<io::Stdout>,
+    pub stdout: AlternateScreen<RawTerminal<io::Stdout>>,
 }
 
 impl App {
 
     pub fn new() -> io::Result<App> {
-        let stdout = stdout().into_raw_mode()?;
+        let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
         let (w, h) = termion::terminal_size()?;
         Ok(App {
             w, h, stdout
@@ -41,12 +42,7 @@ impl App {
         let stdin = stdin();
         let keys = stdin.keys();
         self.read(keys)?;
-        write!(
-            self.stdout,
-            "{}\r\n",
-            //termion::clear::All,
-            termion::cursor::Show
-        )?;
         Ok(())
     }
+
 }
