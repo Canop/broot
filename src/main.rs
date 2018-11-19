@@ -8,18 +8,24 @@ mod tree_views;
 
 use app::App;
 use std::env;
-use std::io::{self, Write, stdout, stdin};
-use flat_tree::{TreeBuilder, Tree};
+use std::path::{PathBuf};
+use std::io;
+use flat_tree::{TreeBuilder};
 
+const SHOW_APP: bool = true;
 
-fn run() -> io::Result<()> {
-    let tree = TreeBuilder::from(env::current_dir()?)?.build(30)?;
-    println!("{:?}", tree);
+fn main() -> io::Result<()> {
+    let args: Vec<String> = env::args().collect();
+    let path = match args.len() >= 2 {
+        true    => PathBuf::from(&args[1]),
+        false   => env::current_dir()?,
+    };
+    if SHOW_APP {
+        let app = App::new()?;
+        app.run(path)?;
+    } else {
+        let tree = TreeBuilder::from(path)?.build(80)?;
+        println!("{:?}", tree);
+    }
     Ok(())
-}
-
-fn main() {
-    //run().unwrap();
-    let app = App::new().unwrap();
-    app.run().unwrap();
 }

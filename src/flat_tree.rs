@@ -1,6 +1,5 @@
 
 use std::{io};
-use std::iter::Iterator;
 use std::fs::{self};
 use std::path::{PathBuf};
 
