@@ -31,7 +31,8 @@ impl TreeView for App {
             for depth in 0..line.depth {
                 write!(
                     self.stdout,
-                    "{}",
+                    "{}{}{}",
+                    color::Fg(color::AnsiValue::grayscale(5)),
                     match line.left_branchs[depth as usize] {
                         true    => {
                             match tree.has_branch(line_index+1, depth as usize) {
@@ -43,7 +44,8 @@ impl TreeView for App {
                             }
                         },
                         false   => "   ",
-                    }
+                    },
+                    color::Fg(color::Reset),
                 )?;
             }
             self.write_line(line)?;
