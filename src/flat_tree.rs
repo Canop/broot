@@ -1,8 +1,8 @@
 
-use std::{io, env};
+use std::{io};
 use std::iter::Iterator;
-use std::fs::{self, ReadDir};
-use std::path::{Path, PathBuf};
+use std::fs::{self};
+use std::path::{PathBuf};
 
 #[derive(Debug)]
 pub enum LineType {
@@ -80,8 +80,30 @@ impl ChildIterator {
     fn from(line: &TreeLine) -> io::Result<ChildIterator> {
         let sorted_childs = match line.is_dir() {
             true    => {
-                //let paths = fs::read_dir(&line.path)?.map(|e| e?.path()).collect();
-                let mut paths: Vec<PathBuf> = fs::read_dir(&line.path)?.map(|e| e.unwrap().path()).collect();
+                println!("before readdir {:?}", &line.path);
+                //let mut paths: Vec<PathBuf> = fs::read_dir(&line.path)?.map(|e| e.unwrap().path()).collect();
+                let mut paths: Vec<PathBuf> = Vec::new();
+                match fs::read_dir(&line.path) {
+                    Ok(entries) => {
+                        for e in entries {
+                            match e {
+                                Ok(e)       => {
+                                    paths.push(e.path());
+                                },
+                                Err(err)    => {
+                                    println!("Error while listing {:?} : {:?}", &line.path, err);
+                                    // TODO store the error and display it next to the dir
+                                }
+                            }
+                        }
+                    },
+                    Err(err)    => {
+                        println!("Error while listing {:?} : {:?}", &line.path, err);
+                        // TODO store the error and display it next to the dir
+                    },
+                }
+                //fs::read_dir(&line.path)?.map(|e| e.unwrap().path()).collect();
+                println!("after readdir {:?}", &line.path);
                 paths.sort();
                 Some(paths)
             },
@@ -120,11 +142,12 @@ pub struct TreeBuilder {
 }
 impl TreeBuilder {
     pub fn from(path: PathBuf) -> io::Result<TreeBuilder> {
+        let path = path.canonicalize()?;
         let mut builder = TreeBuilder {
             lines: Vec::new(),
             child_iterators: Vec::new(),
         };
-        builder.push(path, 0);
+        builder.push(path, 0)?;
         Ok(builder)
     }
     fn push(&mut self, path: PathBuf, depth: u16) -> io::Result<()> {
@@ -194,8 +217,11 @@ impl TreeBuilder {
                     Some(parent_path)   => {
                         let parent_path = parent_path.to_path_buf();
                         let mut index = end_index;
-                        while index >= 0 {
+                        loop {
                             if self.lines[index].path == parent_path {
+                                break;
+                            }
+                            if index == 0 {
                                 break;
                             }
                             index -= 1;
