@@ -14,6 +14,7 @@ pub enum LineType {
 pub struct TreeLine {
     pub left_branchs: Vec<bool>, // len: depth (possible to use an array ? boxed ?)
     pub depth: u16,
+    pub key: String,
     pub path: PathBuf,
     pub content: LineType,
 }
@@ -23,6 +24,14 @@ pub struct Tree {
     pub lines: Vec<TreeLine>,
 }
 
+fn index_to_char(i: usize) -> char {
+    match i {
+        1...26  => (96 + i as u8) as char,
+        27...35 => (48 - 26 + i as u8) as char,
+        _       => ' ', // we'll avoid this case
+    }
+}
+
 impl TreeLine {
     fn create(path: PathBuf, depth: u16) -> io::Result<TreeLine> {
         let left_branchs = vec![false; depth as usize];
@@ -30,17 +39,23 @@ impl TreeLine {
             Some(s) => s.to_string_lossy().into_owned(),
             None => String::from("???"),
         };
+        let key = String::from("");
         let metadata = fs::metadata(&path)?;
         let content = match metadata.is_dir() {
             true    => LineType::Dir(name),
             false   => LineType::File(name),
         };
-        Ok(TreeLine { left_branchs, path, depth, content })
+        Ok(TreeLine { left_branchs, key, path, depth, content })
     }
     pub fn is_dir(&self) -> bool {
         match &self.content {
             LineType::Dir(_)    => true,
             _                   => false,
+        }
+    }
+    pub fn fill_key(&mut self, v: &Vec<usize>, depth: usize) {
+        for i in 0..depth {
+            self.key.push(index_to_char(v[i+1]));
         }
     }
 }
@@ -79,7 +94,6 @@ impl ChildIterator {
     fn from(line: &TreeLine) -> io::Result<ChildIterator> {
         let sorted_childs = match line.is_dir() {
             true    => {
-                println!("before readdir {:?}", &line.path);
                 //let mut paths: Vec<PathBuf> = fs::read_dir(&line.path)?.map(|e| e.unwrap().path()).collect();
                 let mut paths: Vec<PathBuf> = Vec::new();
                 match fs::read_dir(&line.path) {
@@ -102,7 +116,6 @@ impl ChildIterator {
                     },
                 }
                 //fs::read_dir(&line.path)?.map(|e| e.unwrap().path()).collect();
-                println!("after readdir {:?}", &line.path);
                 paths.sort();
                 Some(paths)
             },
@@ -206,6 +219,23 @@ impl TreeBuilder {
 
         // second step: we sort the lines
         self.lines.sort_by(|a,b| a.path.cmp(&b.path));
+
+        // we can now give every file and directory a key
+        let mut d:usize = 0;
+        let mut counts: Vec<usize> = vec![0; 1]; // first cell not used
+        for i in 1..self.lines.len() {
+            let line_depth = self.lines[i].depth as usize;
+            if line_depth > d {
+                if counts.len() <= line_depth {
+                    counts.push(0);
+                } else {
+                    counts[line_depth] = 0;
+                }
+            }
+            d = line_depth;
+            counts[d] += 1;
+            self.lines[i].fill_key(&counts, d);
+        }
 
         // then we discover the branches (for the drawing)
         for end_index in 1..self.lines.len() {

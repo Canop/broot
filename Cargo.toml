@@ -5,3 +5,5 @@ authors = ["Canop <cano.petrole@gmail.com>"]
 
 [dependencies]
 termion = "1.5.1"
+regex = "1"
+lazy_static = "1.2"

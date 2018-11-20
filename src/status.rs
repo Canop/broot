@@ -21,6 +21,7 @@ impl Status for App {
             text,
             color::Bg(color::Reset),
         )?;
+        self.stdout.flush()?;
         Ok(())
     }
 }

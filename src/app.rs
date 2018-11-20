@@ -1,14 +1,14 @@
+use std::io::{self, Write, stdout, stdin};
+use std::path::{PathBuf};
 
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 
-use std::io::{self, Write, stdout, stdin};
-use std::path::{PathBuf};
-
-use status::{Status};
-use input::{Input};
+use commands::Command;
 use flat_tree::{TreeBuilder};
+use input::{Input};
+use status::{Status};
 use tree_views::TreeView;
 
 pub struct App {
@@ -44,10 +44,21 @@ impl App {
         )?;
         self.write_status("Hit enter to quit")?;
         self.write_tree(&tree)?;
-        self.stdout.flush()?;
         let stdin = stdin();
         let keys = stdin.keys();
-        self.read(keys)?;
+        let mut cmd = Command::new();
+        for c in keys {
+            self.read(c?, &mut cmd)?;
+            cmd.parse();
+            self.write_status(&format!(
+                "raw: '{:?}'  |  key: '{:?}'",
+                &cmd.raw,
+                &cmd.key
+            ))?;
+            if cmd.finished {
+                break;
+            }
+        }
         Ok(())
     }
 

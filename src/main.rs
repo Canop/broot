@@ -1,9 +1,14 @@
+
+#[macro_use]
+extern crate lazy_static;
+extern crate regex;
 extern crate termion;
 
 mod app;
-mod status;
-mod input;
+mod commands;
 mod flat_tree;
+mod input;
+mod status;
 mod tree_views;
 
 use app::App;

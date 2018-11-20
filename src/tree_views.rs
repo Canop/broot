@@ -37,19 +37,20 @@ impl TreeView for App {
                         true    => {
                             match tree.has_branch(line_index+1, depth as usize) {
                                 true    => match depth == line.depth-1 {
-                                        true    => "├─ ",
-                                        false   => "│  ",
+                                        true    => "├─",
+                                        false   => "│ ",
                                 },
-                                false   => "└─ ",
+                                false   => "└─",
                             }
                         },
-                        false   => "   ",
+                        false   => "  ",
                     },
                     color::Fg(color::Reset),
                 )?;
             }
             self.write_line(line)?;
         }
+        self.stdout.flush()?;
         Ok(())
     }
     fn write_line(&mut self, line: &TreeLine) -> io::Result<()> {
@@ -57,7 +58,10 @@ impl TreeView for App {
             LineType::Dir(name)        => {
                 write!(
                     self.stdout,
-                    "{}{}{}",
+                    "{} {} {} {}{}{}",
+                    color::Bg(color::AnsiValue::grayscale(2)),
+                    &line.key,
+                    color::Bg(color::Reset),
                     style::Bold,
                     &name,
                     style::Reset,
@@ -66,7 +70,10 @@ impl TreeView for App {
             LineType::File(name)        => {
                 write!(
                     self.stdout,
-                    "{}",
+                    "{} {} {} {}",
+                    color::Bg(color::AnsiValue::grayscale(2)),
+                    &line.key,
+                    color::Bg(color::Reset),
                     &name,
                 )?;
             },
