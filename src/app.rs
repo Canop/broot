@@ -6,7 +6,7 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 
 use commands::Command;
-use flat_tree::{TreeBuilder};
+use tree_build::TreeBuilder;
 use input::{Input};
 use status::{Status};
 use tree_views::TreeView;
@@ -34,7 +34,7 @@ impl App {
     }
 
     pub fn run(mut self, path: PathBuf) -> io::Result<()> {
-        let tree = TreeBuilder::from(path)?.build(self.h-2)?;
+        let mut tree = TreeBuilder::from(path)?.build(self.h-2)?;
         println!("{:?}", tree);
         write!(
             self.stdout,
@@ -42,22 +42,22 @@ impl App {
             termion::clear::All,
             termion::cursor::Hide
         )?;
-        self.write_status("Hit enter to quit")?;
         self.write_tree(&tree)?;
+        self.write_status(&tree)?;
         let stdin = stdin();
         let keys = stdin.keys();
         let mut cmd = Command::new();
         for c in keys {
             self.read(c?, &mut cmd)?;
             cmd.parse();
-            self.write_status(&format!(
-                "raw: '{:?}'  |  key: '{:?}'",
-                &cmd.raw,
-                &cmd.key
-            ))?;
             if cmd.finished {
                 break;
             }
+            if !tree.try_select(&cmd.key) {
+                tree.selection = 0;
+            }
+            self.write_tree(&tree)?;
+            self.write_status(&tree)?;
         }
         Ok(())
     }

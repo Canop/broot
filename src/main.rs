@@ -7,6 +7,7 @@ extern crate termion;
 mod app;
 mod commands;
 mod flat_tree;
+mod tree_build;
 mod input;
 mod status;
 mod tree_views;
@@ -15,7 +16,7 @@ use app::App;
 use std::env;
 use std::path::{PathBuf};
 use std::io;
-use flat_tree::{TreeBuilder};
+use tree_build::{TreeBuilder};
 
 const SHOW_APP: bool = true;
 

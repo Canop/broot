@@ -8,7 +8,8 @@ use flat_tree::{TreeLine, Tree, LineType};
 pub trait TreeView {
     fn tree_height(&self) -> u16;
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
-    fn write_line(&mut self, line: &TreeLine) -> io::Result<()>;
+    fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()>;
+    fn write_line_name(&mut self, line: &TreeLine) -> io::Result<()>;
 }
 
 impl TreeView for App {
@@ -28,6 +29,7 @@ impl TreeView for App {
                 continue;
             }
             let line = &tree.lines[line_index];
+            let selected = line_index == tree.selection;
             for depth in 0..line.depth {
                 write!(
                     self.stdout,
@@ -48,44 +50,76 @@ impl TreeView for App {
                     color::Fg(color::Reset),
                 )?;
             }
-            self.write_line(line)?;
+            self.write_line_key(line, selected)?;
+            self.write_line_name(line)?;
+            write!(
+                self.stdout,
+                "{}{}{}",
+                style::Reset,
+                color::Fg(color::Reset),
+                color::Bg(color::Reset),
+            )?;
         }
         self.stdout.flush()?;
         Ok(())
     }
-    fn write_line(&mut self, line: &TreeLine) -> io::Result<()> {
+
+    fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()>{
+        match &line.content {
+            LineType::Pruning(n)    => {
+            },
+            _                       => {
+                if selected {
+                    write!(
+                        self.stdout,
+                        "{} {} {}{}",
+                        color::Bg(color::AnsiValue::grayscale(5)),
+                        &line.key,
+                        color::Bg(color::AnsiValue::grayscale(2)),
+                        termion::clear::UntilNewline,
+                    )?;
+
+                } else {
+                    write!(
+                        self.stdout,
+                        "{}{} {} {}{}",
+                        color::Bg(color::AnsiValue::grayscale(2)),
+                        color::Fg(color::AnsiValue::grayscale(18)),
+                        &line.key,
+                        color::Fg(color::Reset),
+                        color::Bg(color::Reset),
+                    )?;
+                }
+            },
+        }
+        Ok(())
+    }
+
+    fn write_line_name(&mut self, line: &TreeLine) -> io::Result<()> {
         match &line.content {
             LineType::Dir(name)        => {
                 write!(
                     self.stdout,
-                    "{} {} {} {}{}{}",
-                    color::Bg(color::AnsiValue::grayscale(2)),
-                    &line.key,
-                    color::Bg(color::Reset),
+                    " {}{}",
                     style::Bold,
                     &name,
-                    style::Reset,
                 )?;
             },
             LineType::File(name)        => {
                 write!(
                     self.stdout,
-                    "{} {} {} {}",
-                    color::Bg(color::AnsiValue::grayscale(2)),
-                    &line.key,
-                    color::Bg(color::Reset),
+                    " {}",
                     &name,
                 )?;
             },
             LineType::Pruning(n)  => {
                 write!(
                     self.stdout,
-                    "{}... {} other files…{}",
+                    "{} ... {} other files…",
                     style::Italic,
                     n,
-                    style::Reset,
                 )?;
-            }
+            },
         }
         Ok(())
     }
