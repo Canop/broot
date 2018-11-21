@@ -92,5 +92,18 @@ impl Tree {
         }
         return false;
     }
+    pub fn move_selection(&mut self, dy: i16) {
+        loop {
+            let l = self.lines.len();
+            self.selection = (self.selection + (l as i16 + dy) as usize) % l;
+            match &self.lines[self.selection].content {
+                LineType::Dir(_) | LineType::File(_) => { break; },
+                _                => {}
+            }
+        }
+    }
+    pub fn key(&self) -> String {
+        self.lines[self.selection].key.to_owned()
+    }
 }
 
