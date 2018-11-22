@@ -129,14 +129,14 @@ impl TreeBuilder {
         //  some unlisted files behind
         for i in 0..self.lines.len() {
             let index = self.child_iterators[i].index_last_line;
-            if index == 0 {
-                continue;
-            }
             let count = self.child_iterators[i].nb_unlisted();
-            if count == 0 {
-                continue;
+            if index == 0 {
+                if let LineType::Dir{ref name, ref mut unlisted} = self.lines[i].content {
+                    *unlisted = count;
+                }
+            } else if count > 0 {
+                self.lines[index].content = LineType::Pruning{unlisted:count+1};
             }
-            self.lines[index].content = LineType::Pruning(count+1);
         }
 
         // second step: we sort the lines

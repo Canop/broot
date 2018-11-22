@@ -5,9 +5,16 @@ use std::path::{PathBuf};
 
 #[derive(Debug)]
 pub enum LineType {
-    File(String), // name
-    Dir(String), // name
-    Pruning(usize), // unlisted files
+    File {
+        name: String,
+    },
+    Dir {
+        name: String,
+        unlisted: usize,
+    },
+    Pruning {
+        unlisted: usize,
+    }
 }
 
 #[derive(Debug)]
@@ -43,15 +50,15 @@ impl TreeLine {
         let key = String::from("");
         let metadata = fs::metadata(&path)?;
         let content = match metadata.is_dir() {
-            true    => LineType::Dir(name),
-            false   => LineType::File(name),
+            true    => LineType::Dir{name, unlisted:0},
+            false   => LineType::File{name},
         };
         Ok(TreeLine { left_branchs, key, path, depth, content })
     }
     pub fn is_dir(&self) -> bool {
         match &self.content {
-            LineType::Dir(_)    => true,
-            _                   => false,
+            LineType::Dir{name, unlisted}   => true,
+            _                               => false,
         }
     }
     pub fn fill_key(&mut self, v: &Vec<usize>, depth: usize) {
@@ -97,7 +104,8 @@ impl Tree {
             let l = self.lines.len();
             self.selection = (self.selection + (l as i16 + dy) as usize) % l;
             match &self.lines[self.selection].content {
-                LineType::Dir(_) | LineType::File(_) => { break; },
+                LineType::Dir{name, unlisted} => { break; },
+                LineType::File{name} => { break; },
                 _                => {}
             }
         }

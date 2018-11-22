@@ -62,16 +62,16 @@ impl TreeView for Screen {
 
     fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()>{
         match &line.content {
-            LineType::Pruning(n)    => {
+            LineType::Pruning{unlisted} => {
             },
-            _                       => {
+            _                           => {
                 if selected {
                     write!(
                         self.stdout,
                         "{} {} {}{}",
-                        color::Bg(color::AnsiValue::grayscale(5)),
+                        color::Bg(color::AnsiValue::grayscale(4)),
                         &line.key,
-                        color::Bg(color::AnsiValue::grayscale(2)),
+                        color::Bg(color::AnsiValue::grayscale(1)),
                         termion::clear::UntilNewline,
                     )?;
 
@@ -93,27 +93,49 @@ impl TreeView for Screen {
 
     fn write_line_name(&mut self, line: &TreeLine) -> io::Result<()> {
         match &line.content {
-            LineType::Dir(name)        => {
-                write!(
-                    self.stdout,
-                    " {}{}",
-                    style::Bold,
-                    &name,
-                )?;
+            LineType::Dir{name, unlisted} => {
+                match line.key=="" {
+                    true    => {
+                        // special display for the first line
+                        write!(
+                            self.stdout,
+                            " {}{}{}",
+                            color::Fg(color::Rgb(84, 142, 188)),
+                            style::Bold,
+                            &line.path.to_string_lossy(),
+                        )?;
+                    },
+                    false   => {
+                        write!(
+                            self.stdout,
+                            " {}{}{}",
+                            color::Fg(color::Rgb(84, 142, 188)),
+                            style::Bold,
+                            &name,
+                        )?;
+                        if *unlisted>0 {
+                            write!(
+                                self.stdout,
+                                " …",
+                            )?;
+                        }
+
+                    }
+                };
             },
-            LineType::File(name)        => {
+            LineType::File{name}          => {
                 write!(
                     self.stdout,
                     " {}",
                     &name,
                 )?;
             },
-            LineType::Pruning(n)  => {
+            LineType::Pruning{unlisted}   => {
                 write!(
                     self.stdout,
                     "{} ... {} other files…",
                     style::Italic,
-                    n,
+                    unlisted,
                 )?;
             },
         }
