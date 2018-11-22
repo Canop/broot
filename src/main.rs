@@ -27,8 +27,9 @@ fn main() -> io::Result<()> {
         false   => env::current_dir()?,
     };
     if SHOW_APP {
-        let app = App::new()?;
-        app.run(path)?;
+        let mut app = App::new()?;
+        app.push(path)?;
+        app.run()?;
     } else {
         let tree = TreeBuilder::from(path)?.build(80)?;
         println!("{:?}", tree);

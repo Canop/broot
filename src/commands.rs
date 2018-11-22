@@ -1,18 +1,21 @@
 
 use regex::Regex;
+use std::io::{self, Write};
+use termion::event::Key;
 
 #[derive(Debug)]
 pub enum Action {
-    Select(String),
-    MoveSelection(i16),
+    MoveSelection(i16), // up (neg) or down (positive) in the list
+    Select(String),     // select by key
+    OpenSelection,      // open the selected line (which can't be the root by construct)
+    Back,               // back to last app state
     Quit,
-    Unparsed, // or unparsable
+    Unparsed,           // or unparsable
 }
 
 impl Action {
-    // analyzes the raw command to fill key, verb.
     // Only makes sense when there was no special key
-    pub fn from(raw: &str) -> Action {
+    pub fn from(raw: &str, finished: bool) -> Action {
         lazy_static! {
             static ref RE: Regex = Regex::new(r"(?x)
                 ^
@@ -28,7 +31,10 @@ impl Action {
                     None        => String::from(""), // should not happen
                 };
                 // TODO handle verb
-                Action::Select(key)
+                match finished {
+                    true    => Action::OpenSelection,
+                    false   => Action::Select(key),
+                }
             },
             None    => {
                 Action::Unparsed
@@ -41,7 +47,6 @@ impl Action {
 #[derive(Debug)]
 pub struct Command {
     pub raw: String,
-    pub finished: bool, // user hit <enter>
     pub action: Action,
 }
 
@@ -49,8 +54,53 @@ impl Command {
     pub fn new() -> Command {
         Command {
             raw: String::new(),
-            finished: false,
             action: Action::Unparsed,
         }
+    }
+    pub fn from(raw: &str) -> Command {
+        Command {
+            raw: String::from(raw),
+            action: Action::from(raw, false),
+        }
+    }
+    pub fn add_key(&mut self, key: Key) -> io::Result<()> {
+        match key {
+            Key::Char('\n') => { // enter
+                if self.raw == "" {
+                    self.action = Action::Quit;
+                } else {
+                    self.action = Action::from(&self.raw, true);
+                }
+            },
+            Key::Up         => {
+                self.action = Action::MoveSelection(-1);
+            },
+            Key::Down       => {
+                self.action = Action::MoveSelection(1);
+            },
+            Key::Char(c)    => {
+                self.raw.push(c);
+                self.action = Action::from(&self.raw, false);
+            },
+            Key::Esc        => {
+                if self.raw == "" {
+                    self.action = Action::Back;
+                } else {
+                    self.raw.clear();
+                    self.action = Action::Select(String::from(""));
+                }
+            },
+            Key::Backspace  => {
+                if self.raw == "" {
+                    self.action = Action::Back;
+                } else {
+                    self.raw.pop();
+                    self.action = Action::from(&self.raw, false);
+                }
+            },
+            _               => {
+            },
+        }
+        Ok(())
     }
 }

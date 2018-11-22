@@ -2,20 +2,16 @@
 
 use termion::{style, color};
 use std::io::{self, Write};
-use app::App;
+use app::Screen;
 use flat_tree::{TreeLine, Tree, LineType};
 
 pub trait TreeView {
-    fn tree_height(&self) -> u16;
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
     fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()>;
     fn write_line_name(&mut self, line: &TreeLine) -> io::Result<()>;
 }
 
-impl TreeView for App {
-    fn tree_height(&self) -> u16 {
-        self.h - 2
-    }
+impl TreeView for Screen {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
         for y in 1..self.h-1 {
             write!(

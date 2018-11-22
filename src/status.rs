@@ -4,19 +4,19 @@ use termion::{color, style};
 use std::io::{self, Write};
 
 use flat_tree::Tree;
-use app::App;
+use app::{AppState, Screen};
 
 pub trait Status {
-    fn write_status(&mut self, tree: &Tree) -> io::Result<()>;
+    fn write_status(&mut self, state: &AppState) -> io::Result<()>;
     fn write_status_text(&mut self, text: &str) -> io::Result<()>;
 }
 
-impl Status for App {
-    fn write_status(&mut self, tree: &Tree) -> io::Result<()> {
-        if tree.selection==0 {
+impl Status for Screen {
+    fn write_status(&mut self, state: &AppState) -> io::Result<()> {
+        if state.tree.selection==0 {
             return self.write_status_text("Hit <enter> to quit, or type a file's key to navigate");
         }
-        let line = &tree.lines[tree.selection];
+        let line = &state.tree.lines[state.tree.selection];
         return self.write_status_text(&line.path.to_string_lossy());
     }
     fn write_status_text(&mut self, text: &str) -> io::Result<()> {
