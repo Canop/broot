@@ -7,3 +7,4 @@ authors = ["Canop <cano.petrole@gmail.com>"]
 termion = "1.5.1"
 regex = "1"
 lazy_static = "1.2"
+directories = "1.0"

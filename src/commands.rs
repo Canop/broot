@@ -5,16 +5,19 @@ use termion::event::Key;
 
 #[derive(Debug)]
 pub enum Action {
-    MoveSelection(i16), // up (neg) or down (positive) in the list
-    Select(String),     // select by key
-    OpenSelection,      // open the selected line (which can't be the root by construct)
-    Back,               // back to last app state
+    MoveSelection(i16),          // up (neg) or down (positive) in the list
+    Select(String),              // select by key
+    OpenSelection,               // open the selected line (which can't be the root by construct)
+    NudeVerb(String),            // verb without selection
+    NudeVerbEdit(String),        // verb without selection, unfinished
+    VerbSelection(String),       // verb without selection
+    VerbSelectionEdit(String),   // verb without selection, unfinished
+    Back,                        // back to last app state
     Quit,
-    Unparsed,           // or unparsable
+    Unparsed,                    // or unparsable
 }
 
 impl Action {
-    // Only makes sense when there was no special key
     pub fn from(raw: &str, finished: bool) -> Action {
         lazy_static! {
             static ref RE: Regex = Regex::new(r"(?x)
@@ -26,21 +29,20 @@ impl Action {
         }
         match RE.captures(raw) {
             Some(c) => {
-                let key = match c.name("key") {
-                    Some(key)   => String::from(key.as_str()),
-                    None        => String::from(""), // should not happen
-                };
-                // TODO handle verb
-                match finished {
-                    true    => Action::OpenSelection,
-                    false   => Action::Select(key),
+                match (c.name("key"), c.name("verb"), finished) {
+                    (Some(key), Some(verb), false) => Action::VerbSelectionEdit(String::from(verb.as_str())),
+                    (Some(key), Some(verb), true)  => Action::VerbSelection(String::from(verb.as_str())),
+                    (Some(key), None, false)       => Action::Select(String::from(key.as_str())),
+                    (Some(key), None, true)        => Action::OpenSelection,
+                    (None, Some(verb), false)      => Action::NudeVerbEdit(String::from(verb.as_str())),
+                    (None, Some(verb), true)       => Action::NudeVerb(String::from(verb.as_str())),
+                    _                              => Action::Unparsed, // exemple: finishes with a space
                 }
             },
             None    => {
                 Action::Unparsed
             }
         }
-
     }
 }
 

@@ -11,6 +11,8 @@ use tree_build::TreeBuilder;
 use input::{Input};
 use status::{Status};
 use tree_views::TreeView;
+use external;
+use verbs::VerbStore;
 
 enum AppStateCmdResult {
     Quit,
@@ -23,8 +25,21 @@ pub struct AppState {
     pub tree: Tree,
 }
 
+pub struct App {
+    pub w: u16,
+    pub h: u16,
+    pub states: Vec<AppState>, // stack: the last one is current
+    verb_store: VerbStore,
+}
+
+pub struct Screen {
+    pub w: u16,
+    pub h: u16,
+    pub stdout: AlternateScreen<RawTerminal<io::Stdout>>,
+}
+
 impl AppState {
-    fn apply(&mut self, cmd: &mut Command) -> AppStateCmdResult {
+    fn apply(&mut self, cmd: &mut Command, app: &App) -> AppStateCmdResult {
         match &cmd.action {
             Action::Back                => {
                 AppStateCmdResult::PopState
@@ -50,8 +65,19 @@ impl AppState {
                     },
                     false     => {
                         println!("opening file");
+                        external::open_file(&self.tree.lines[self.tree.selection].path);
                         AppStateCmdResult::Keep
                     },
+                }
+            },
+            Action::VerbSelection(verb_key) => {
+                match app.verb_store.file_verb(&verb_key) {
+                    Some(verb)  => {
+                        // TODO
+                    },
+                    None    => {
+                        // TODO
+                    }
                 }
             },
             Action::Quit                => {
@@ -62,18 +88,6 @@ impl AppState {
             }
         }
     }
-}
-
-pub struct App {
-    pub w: u16,
-    pub h: u16,
-    pub states: Vec<AppState>, // stack: the last one is current
-}
-
-pub struct Screen {
-    pub w: u16,
-    pub h: u16,
-    pub stdout: AlternateScreen<RawTerminal<io::Stdout>>,
 }
 
 impl Screen {
@@ -97,8 +111,9 @@ impl App {
     pub fn new() -> io::Result<App> {
         let (w, h) = termion::terminal_size()?;
         let states = Vec::new();
+        let verb_store = VerbStore::new();
         Ok(App {
-            w, h, states
+            w, h, states, verb_store,
         })
     }
 
@@ -140,6 +155,7 @@ impl App {
         let mut cmd = Command::new();
         for c in keys {
             cmd.add_key(c?)?;
+            screen.write_status_text(&format!("{:?}", &cmd.action))?;
             match self.mut_state().apply(&mut cmd) {
                 AppStateCmdResult::Quit           => {
                     break;
@@ -157,7 +173,7 @@ impl App {
             }
             let state = self.state();
             screen.write_tree(&state.tree)?;
-            screen.write_status(&state)?;
+            //screen.write_status(&state)?; // TODO pass cmd too
             screen.writeInput(&cmd)?;
         }
         Ok(())
