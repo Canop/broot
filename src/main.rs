@@ -19,8 +19,10 @@ use app::App;
 use std::env;
 use std::path::{PathBuf};
 use std::io;
-use tree_build::{TreeBuilder};
 use directories::{ProjectDirs};
+
+use tree_build::{TreeBuilder};
+use verbs::VerbStore;
 
 const SHOW_APP: bool = true;
 
@@ -36,8 +38,10 @@ fn main() -> io::Result<()> {
     };
     if SHOW_APP {
         let mut app = App::new()?;
+        let mut verb_store = VerbStore::new();
+        verb_store.set_defaults();
         app.push(path)?;
-        app.run()?;
+        app.run(&verb_store)?;
     } else {
         let tree = TreeBuilder::from(path)?.build(80)?;
         println!("{:?}", tree);

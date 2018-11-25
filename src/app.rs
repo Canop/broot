@@ -14,11 +14,20 @@ use tree_views::TreeView;
 use external;
 use verbs::VerbStore;
 
-enum AppStateCmdResult {
+pub enum AppStateCmdResult {
     Quit,
     Keep,
+    DisplayError(String),
     NewState(PathBuf),
     PopState,
+}
+
+impl AppStateCmdResult {
+    fn verbNotFound(text: &str) -> AppStateCmdResult {
+        AppStateCmdResult::DisplayError(
+            format!("verb not found: {:?}", &text)
+        )
+    }
 }
 
 pub struct AppState {
@@ -29,7 +38,6 @@ pub struct App {
     pub w: u16,
     pub h: u16,
     pub states: Vec<AppState>, // stack: the last one is current
-    verb_store: VerbStore,
 }
 
 pub struct Screen {
@@ -39,7 +47,7 @@ pub struct Screen {
 }
 
 impl AppState {
-    fn apply(&mut self, cmd: &mut Command, app: &App) -> AppStateCmdResult {
+    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore) -> AppStateCmdResult {
         match &cmd.action {
             Action::Back                => {
                 AppStateCmdResult::PopState
@@ -70,14 +78,16 @@ impl AppState {
                     },
                 }
             },
-            Action::VerbSelection(verb_key) => {
-                match app.verb_store.file_verb(&verb_key) {
+            Action::NudeVerb(verb_key) | Action::VerbSelection(verb_key)  => {
+                match verb_store.file_verb(&verb_key) {
                     Some(verb)  => {
-                        // TODO
+                        verb.execute(
+                            &self.tree.lines[self.tree.selection].path
+                        )
                     },
-                    None    => {
-                        // TODO
-                    }
+                    None        => {
+                        AppStateCmdResult::verbNotFound(&verb_key)
+                    },
                 }
             },
             Action::Quit                => {
@@ -111,9 +121,8 @@ impl App {
     pub fn new() -> io::Result<App> {
         let (w, h) = termion::terminal_size()?;
         let states = Vec::new();
-        let verb_store = VerbStore::new();
         Ok(App {
-            w, h, states, verb_store,
+            w, h, states,
         })
     }
 
@@ -140,7 +149,7 @@ impl App {
         }
     }
 
-    pub fn run(mut self) -> io::Result<()> {
+    pub fn run(mut self, verb_store: &VerbStore) -> io::Result<()> {
         let mut screen = Screen::new(self.w, self.h)?;
         write!(
             screen.stdout,
@@ -156,24 +165,27 @@ impl App {
         for c in keys {
             cmd.add_key(c?)?;
             screen.write_status_text(&format!("{:?}", &cmd.action))?;
-            match self.mut_state().apply(&mut cmd) {
-                AppStateCmdResult::Quit           => {
+            match self.mut_state().apply(&mut cmd, &verb_store) {
+                AppStateCmdResult::Quit                 => {
                     break;
                 },
-                AppStateCmdResult::NewState(path) => {
+                AppStateCmdResult::NewState(path)       => {
                     self.push(path)?;
                     cmd = Command::new();
                 },
-                AppStateCmdResult::PopState       => {
+                AppStateCmdResult::PopState             => {
                     self.states.pop();
                     cmd = Command::from(&self.state().tree.key());
                 },
-                AppStateCmdResult::Keep           => {
+                AppStateCmdResult::DisplayError(txt)    => {
+                    screen.write_status_text(&txt)?; // we need an error format
+                },
+                AppStateCmdResult::Keep                 => {
                 },
             }
             let state = self.state();
             screen.write_tree(&state.tree)?;
-            //screen.write_status(&state)?; // TODO pass cmd too
+            //screen.write_status(&state)?; // TODO pass more
             screen.writeInput(&cmd)?;
         }
         Ok(())

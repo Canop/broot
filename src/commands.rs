@@ -3,15 +3,18 @@ use regex::Regex;
 use std::io::{self, Write};
 use termion::event::Key;
 
+use verbs::{Verb, VerbStore};
+
 #[derive(Debug)]
 pub enum Action {
     MoveSelection(i16),          // up (neg) or down (positive) in the list
     Select(String),              // select by key
     OpenSelection,               // open the selected line (which can't be the root by construct)
-    NudeVerb(String),            // verb without selection
+    NudeVerb(String),             // verb without selection
     NudeVerbEdit(String),        // verb without selection, unfinished
-    VerbSelection(String),       // verb without selection
+    VerbSelection(String),        // verb without selection
     VerbSelectionEdit(String),   // verb without selection, unfinished
+    //VerbNotFound(String),
     Back,                        // back to last app state
     Quit,
     Unparsed,                    // or unparsable
@@ -22,7 +25,7 @@ impl Action {
         lazy_static! {
             static ref RE: Regex = Regex::new(r"(?x)
                 ^
-                (?P<key>[0-1a-z]*)
+                (?P<key>[0-1a-zA-Z]*)
                 (?:\s+(?P<verb>\w+))?
                 $
             ").unwrap();
