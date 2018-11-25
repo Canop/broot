@@ -35,7 +35,8 @@ pub struct Tree {
 fn index_to_char(i: usize) -> char {
     match i {
         1...26  => (96 + i as u8) as char,
-        27...35 => (48 - 26 + i as u8) as char,
+        27...36 => (47 - 26 + i as u8) as char,
+        37...60 => (64 - 36 + i as u8) as char,
         _       => ' ', // we'll avoid this case
     }
 }
