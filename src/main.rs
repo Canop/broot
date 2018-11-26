@@ -4,9 +4,12 @@ extern crate lazy_static;
 extern crate regex;
 extern crate termion;
 extern crate directories;
+extern crate toml;
+extern crate custom_error;
 
 mod app;
 mod commands;
+mod conf;
 mod external;
 mod flat_tree;
 mod tree_build;
@@ -20,16 +23,18 @@ use std::path::{PathBuf};
 use std::io;
 use directories::{ProjectDirs};
 use std::{thread, time};
+use conf::Conf;
 
 use app::App;
 use tree_build::{TreeBuilder};
 use verbs::VerbStore;
 
-const SHOW_APP: bool = true;
+const SHOW_APP: bool = false;
 
 fn main() -> io::Result<()> {
     if let Some(proj_dirs) = ProjectDirs::from("org", "dystroy",  "btree") {
-        println!("conf dir: {:?}", proj_dirs.config_dir());
+        let conf_filename = format!("{}/conf.toml", proj_dirs.config_dir().to_string_lossy());
+        let _ = Conf::from_file(&conf_filename).unwrap();
     }
 
     let args: Vec<String> = env::args().collect();
@@ -51,7 +56,7 @@ fn main() -> io::Result<()> {
         }
     } else {
         let tree = TreeBuilder::from(path)?.build(80)?;
-        println!("{:?}", tree);
+        //println!("{:?}", tree);
     }
     Ok(())
 }
