@@ -1,23 +1,47 @@
+use std::io;
 use std::process::Command;
 use std::path::{PathBuf};
 
+use std::thread;
+use std::time;
 
-pub fn execute(exec: &str) {
-    let mut tokens = exec.split_whitespace();
-    match tokens.next() {
-        Some(exe)   => {
-            Command::new(exe).args(tokens).spawn().expect("failed to start external exectutable");
-        },
-        None        => {
-            // FIXME panic?
-        },
-    }
+// description of a possible launch of an external program
+// (might be more complex, and a sequence of things to try, in the future)
+#[derive(Debug)]
+pub struct Launchable {
+    exe: String,
+    args: Vec<String>,
 }
 
-pub fn open_file(path: &PathBuf) {
-    Command::new("xdg-open")
-        .arg(String::from(path.to_string_lossy()))
-        .spawn()
-        .expect("xdg-open failed to start");
+impl Launchable {
+    pub fn opener(path: &PathBuf) -> io::Result<Launchable> {
+        Launchable::from(&format!("xdg-open {}", &path.to_string_lossy()))
+    }
+    pub fn from(launch_string: &str) -> io::Result<Launchable> {
+        let mut tokens = launch_string
+            .split_whitespace()
+            .map(|t| t.to_string());
+        match tokens.next() {
+            Some(exe)   => {
+                Ok(Launchable{
+                    exe: exe,
+                    args: tokens.collect()
+                })
+            },
+            None        => {
+                Err(io::Error::new(io::ErrorKind::Other, "Invalid launch string")) // can this really happen?
+            },
+        }
+    }
+    // execute the external program
+    // WARNING: this may kill the current program. Caller must
+    // ensure everything's clean before
+    pub fn execute(&self) -> io::Result<()> {
+        Command::new(&self.exe)
+            .args(self.args.iter())
+            .spawn()?
+            .wait()?;
+        Ok(())
+    }
 }
 

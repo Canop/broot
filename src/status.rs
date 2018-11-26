@@ -1,9 +1,8 @@
 
 
-use termion::{color, style};
+use termion::{color};
 use std::io::{self, Write};
 
-use flat_tree::Tree;
 use app::{AppState, Screen};
 
 pub trait Status {

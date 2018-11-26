@@ -3,14 +3,14 @@
 use std::io::{self, Write};
 
 use app::Screen;
-use commands::{Action, Command};
+use commands::{Command};
 
 pub trait Input {
-    fn writeInput(&mut self, cmd: &Command) -> io::Result<()>;
+    fn write_input(&mut self, cmd: &Command) -> io::Result<()>;
 }
 
 impl Input for Screen {
-    fn writeInput(&mut self, cmd: &Command) -> io::Result<()> {
+    fn write_input(&mut self, cmd: &Command) -> io::Result<()> {
         write!(
             self.stdout,
             "{}{}{}",

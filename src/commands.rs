@@ -1,9 +1,7 @@
 
 use regex::Regex;
-use std::io::{self, Write};
+use std::io::{self};
 use termion::event::Key;
-
-use verbs::{Verb, VerbStore};
 
 #[derive(Debug)]
 pub enum Action {
@@ -14,7 +12,6 @@ pub enum Action {
     NudeVerbEdit(String),        // verb without selection, unfinished
     VerbSelection(String),        // verb without selection
     VerbSelectionEdit(String),   // verb without selection, unfinished
-    //VerbNotFound(String),
     Back,                        // back to last app state
     Quit,
     Unparsed,                    // or unparsable
@@ -33,10 +30,10 @@ impl Action {
         match RE.captures(raw) {
             Some(c) => {
                 match (c.name("key"), c.name("verb"), finished) {
-                    (Some(key), Some(verb), false) => Action::VerbSelectionEdit(String::from(verb.as_str())),
-                    (Some(key), Some(verb), true)  => Action::VerbSelection(String::from(verb.as_str())),
+                    (Some(_key), Some(verb), false) => Action::VerbSelectionEdit(String::from(verb.as_str())),
+                    (Some(_key), Some(verb), true)  => Action::VerbSelection(String::from(verb.as_str())),
                     (Some(key), None, false)       => Action::Select(String::from(key.as_str())),
-                    (Some(key), None, true)        => Action::OpenSelection,
+                    (Some(_key), None, true)        => Action::OpenSelection,
                     (None, Some(verb), false)      => Action::NudeVerbEdit(String::from(verb.as_str())),
                     (None, Some(verb), true)       => Action::NudeVerb(String::from(verb.as_str())),
                     _                              => Action::Unparsed, // exemple: finishes with a space

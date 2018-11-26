@@ -131,7 +131,7 @@ impl TreeBuilder {
             let index = self.child_iterators[i].index_last_line;
             let count = self.child_iterators[i].nb_unlisted();
             if index == 0 {
-                if let LineType::Dir{ref name, ref mut unlisted} = self.lines[i].content {
+                if let LineType::Dir{name: _, ref mut unlisted} = self.lines[i].content {
                     *unlisted = count;
                 }
             } else if count > 0 {

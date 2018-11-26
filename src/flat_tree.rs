@@ -58,8 +58,8 @@ impl TreeLine {
     }
     pub fn is_dir(&self) -> bool {
         match &self.content {
-            LineType::Dir{name, unlisted}   => true,
-            _                               => false,
+            LineType::Dir{name: _, unlisted: _} => true,
+            _                                   => false,
         }
     }
     pub fn fill_key(&mut self, v: &Vec<usize>, depth: usize) {
@@ -69,16 +69,7 @@ impl TreeLine {
     }
 }
 
-
 impl Tree {
-    pub fn index_of(&self, path: &PathBuf) -> Option<usize> {
-        for i in 0..self.lines.len() {
-            if path == &self.lines[i].path {
-                return Some(i);
-            }
-        }
-        None
-    }
     pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {
         if line_index >= self.lines.len() {
             return false;
@@ -105,8 +96,8 @@ impl Tree {
             let l = self.lines.len();
             self.selection = (self.selection + (l as i16 + dy) as usize) % l;
             match &self.lines[self.selection].content {
-                LineType::Dir{name, unlisted} => { break; },
-                LineType::File{name} => { break; },
+                LineType::Dir{name: _, unlisted: _} => { break; },
+                LineType::File{name: _} => { break; },
                 _                => {}
             }
         }

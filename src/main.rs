@@ -15,12 +15,13 @@ mod status;
 mod tree_views;
 mod verbs;
 
-use app::App;
 use std::env;
 use std::path::{PathBuf};
 use std::io;
 use directories::{ProjectDirs};
+use std::{thread, time};
 
+use app::App;
 use tree_build::{TreeBuilder};
 use verbs::VerbStore;
 
@@ -41,7 +42,13 @@ fn main() -> io::Result<()> {
         let mut verb_store = VerbStore::new();
         verb_store.set_defaults();
         app.push(path)?;
-        app.run(&verb_store)?;
+        match app.run(&verb_store)? {
+            Some(launchable)    => {
+                launchable.execute()?;
+            },
+            None                => {
+            },
+        }
     } else {
         let tree = TreeBuilder::from(path)?.build(80)?;
         println!("{:?}", tree);

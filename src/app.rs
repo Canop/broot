@@ -6,24 +6,25 @@ use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 
 use commands::{Action, Command};
-use flat_tree::{LineType, Tree};
+use flat_tree::{Tree};
 use tree_build::TreeBuilder;
 use input::{Input};
 use status::{Status};
 use tree_views::TreeView;
-use external;
+use external::Launchable;
 use verbs::VerbStore;
 
 pub enum AppStateCmdResult {
     Quit,
     Keep,
+    Launch(Launchable),
     DisplayError(String),
     NewState(PathBuf),
     PopState,
 }
 
 impl AppStateCmdResult {
-    fn verbNotFound(text: &str) -> AppStateCmdResult {
+    fn verb_not_found(text: &str) -> AppStateCmdResult {
         AppStateCmdResult::DisplayError(
             format!("verb not found: {:?}", &text)
         )
@@ -47,8 +48,8 @@ pub struct Screen {
 }
 
 impl AppState {
-    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore) -> AppStateCmdResult {
-        match &cmd.action {
+    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore) -> io::Result<AppStateCmdResult> {
+        Ok(match &cmd.action {
             Action::Back                => {
                 AppStateCmdResult::PopState
             },
@@ -66,27 +67,26 @@ impl AppState {
             Action::OpenSelection       => {
                 match self.tree.lines[self.tree.selection].is_dir() {
                     true      => {
-                        println!("opening dir");
                         AppStateCmdResult::NewState(
                             self.tree.lines[self.tree.selection].path.clone()
                         )
                     },
                     false     => {
-                        println!("opening file");
-                        external::open_file(&self.tree.lines[self.tree.selection].path);
-                        AppStateCmdResult::Keep
+                        AppStateCmdResult::Launch(Launchable::opener(
+                            &self.tree.lines[self.tree.selection].path
+                        )?)
                     },
                 }
             },
             Action::NudeVerb(verb_key) | Action::VerbSelection(verb_key)  => {
-                match verb_store.file_verb(&verb_key) {
+                match verb_store.get(&verb_key) {
                     Some(verb)  => {
                         verb.execute(
                             &self.tree.lines[self.tree.selection].path
-                        )
+                        )?
                     },
                     None        => {
-                        AppStateCmdResult::verbNotFound(&verb_key)
+                        AppStateCmdResult::verb_not_found(&verb_key)
                     },
                 }
             },
@@ -96,7 +96,7 @@ impl AppState {
             _                           => {
                 AppStateCmdResult::Keep
             }
-        }
+        })
     }
 }
 
@@ -149,7 +149,7 @@ impl App {
         }
     }
 
-    pub fn run(mut self, verb_store: &VerbStore) -> io::Result<()> {
+    pub fn run(mut self, verb_store: &VerbStore) -> io::Result<Option<Launchable>> {
         let mut screen = Screen::new(self.w, self.h)?;
         write!(
             screen.stdout,
@@ -163,11 +163,15 @@ impl App {
         let keys = stdin.keys();
         let mut cmd = Command::new();
         for c in keys {
+            //screen.write_status_text(&format!("{:?}", &c))?;
             cmd.add_key(c?)?;
-            screen.write_status_text(&format!("{:?}", &cmd.action))?;
-            match self.mut_state().apply(&mut cmd, &verb_store) {
+            screen.write_status_text(&format!("{:?}", &cmd.action));
+            match self.mut_state().apply(&mut cmd, &verb_store)? {
                 AppStateCmdResult::Quit                 => {
                     break;
+                },
+                AppStateCmdResult::Launch(launchable)   => {
+                    return Ok(Some(launchable));
                 },
                 AppStateCmdResult::NewState(path)       => {
                     self.push(path)?;
@@ -186,9 +190,9 @@ impl App {
             let state = self.state();
             screen.write_tree(&state.tree)?;
             //screen.write_status(&state)?; // TODO pass more
-            screen.writeInput(&cmd)?;
+            screen.write_input(&cmd)?;
         }
-        Ok(())
+        Ok(None)
     }
 
 }

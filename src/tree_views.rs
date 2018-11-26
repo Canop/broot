@@ -62,7 +62,7 @@ impl TreeView for Screen {
 
     fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()>{
         match &line.content {
-            LineType::Pruning{unlisted} => {
+            LineType::Pruning{unlisted: _} => {
             },
             _                           => {
                 if selected {
