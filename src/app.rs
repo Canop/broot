@@ -158,14 +158,14 @@ impl App {
             termion::cursor::Hide
         )?;
         screen.write_tree(&self.state().tree)?;
-        screen.write_status(&self.state())?;
+        screen.write_status_initial()?;
         let stdin = stdin();
         let keys = stdin.keys();
         let mut cmd = Command::new();
         for c in keys {
             //screen.write_status_text(&format!("{:?}", &c))?;
             cmd.add_key(c?)?;
-            screen.write_status_text(&format!("{:?}", &cmd.action));
+            //screen.write_status_text(&format!("{:?}", &cmd.action))?;
             match self.mut_state().apply(&mut cmd, &verb_store)? {
                 AppStateCmdResult::Quit                 => {
                     break;
@@ -176,20 +176,21 @@ impl App {
                 AppStateCmdResult::NewState(path)       => {
                     self.push(path)?;
                     cmd = Command::new();
+                    screen.write_status(&self.state())?;
                 },
                 AppStateCmdResult::PopState             => {
                     self.states.pop();
                     cmd = Command::from(&self.state().tree.key());
+                    screen.write_status(&self.state())?;
                 },
                 AppStateCmdResult::DisplayError(txt)    => {
-                    screen.write_status_text(&txt)?; // we need an error format
+                    screen.write_status_err(&txt)?;
                 },
                 AppStateCmdResult::Keep                 => {
+                    screen.write_status(&self.state())?;
                 },
             }
-            let state = self.state();
-            screen.write_tree(&state.tree)?;
-            //screen.write_status(&state)?; // TODO pass more
+            screen.write_tree(&self.state().tree)?;
             screen.write_input(&cmd)?;
         }
         Ok(None)

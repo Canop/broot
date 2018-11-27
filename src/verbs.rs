@@ -5,6 +5,7 @@ use lazy_static::lazy_static;
 use std::path::{PathBuf};
 use std::io;
 
+use conf::Conf;
 use app::AppStateCmdResult;
 use external::Launchable;
 
@@ -15,17 +16,30 @@ pub struct Verb {
 }
 
 pub struct VerbStore {
-    verbs: HashMap<&'static str, Verb>,
+    verbs: HashMap<String, Verb>,
 }
 
 impl Verb {
     pub fn execute(&self, path: &PathBuf) -> io::Result<AppStateCmdResult> {
         Ok(match self.exec_pattern.as_ref() {
-            ":quit"     => {
-                AppStateCmdResult::Quit
+            ":back"     => {
+                AppStateCmdResult::PopState
+            },
+            ":focus"     => {
+                AppStateCmdResult::NewState(
+                    path.clone()
+                )
             },
             ":open"     => {
                 AppStateCmdResult::Launch(Launchable::opener(path)?)
+            },
+            ":parent"     => {
+                AppStateCmdResult::NewState(
+                    path.parent().unwrap().to_path_buf()
+                )
+            },
+            ":quit"     => {
+                AppStateCmdResult::Quit
             },
             _           => {
                 lazy_static! {
@@ -51,17 +65,13 @@ impl VerbStore {
             verbs: HashMap::new(),
         }
     }
-    fn add(&mut self, verb_key: &'static str, name: &str, exec_pattern: &str) {
-        self.verbs.insert(verb_key, Verb {
-            name: name.to_owned(),
-            exec_pattern: exec_pattern.to_owned(),
-        });
-    }
-    pub fn set_defaults(&mut self) {
-        self.add("c", "cd", "cd {file}");
-        self.add("e", "edit", "nvim {file}");
-        self.add("o", "quit", ":open");
-        self.add("q", "quit", ":quit");
+    pub fn fill_from_conf(&mut self, conf: &Conf) {
+        for verb_conf in &conf.verbs {
+            self.verbs.insert(verb_conf.invocation.to_owned(), Verb {
+                name: verb_conf.name.to_owned(),
+                exec_pattern: verb_conf.execution.to_owned(),
+            });
+        }
     }
     pub fn get(&self, verb_key: &str) -> Option<&Verb> {
         self.verbs.get(verb_key)

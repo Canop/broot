@@ -1,3 +1,4 @@
+
 use std::{io};
 use std::fs::{self};
 use std::path::{PathBuf};
@@ -16,7 +17,6 @@ impl ChildIterator {
     fn from(line: &TreeLine) -> io::Result<ChildIterator> {
         let sorted_childs = match line.is_dir() {
             true    => {
-                //let mut paths: Vec<PathBuf> = fs::read_dir(&line.path)?.map(|e| e.unwrap().path()).collect();
                 let mut paths: Vec<PathBuf> = Vec::new();
                 match fs::read_dir(&line.path) {
                     Ok(entries) => {
@@ -37,7 +37,6 @@ impl ChildIterator {
                         // TODO store the error and display it next to the dir
                     },
                 }
-                //fs::read_dir(&line.path)?.map(|e| e.unwrap().path()).collect();
                 paths.sort();
                 Some(paths)
             },

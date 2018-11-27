@@ -1,6 +1,6 @@
 [package]
-name = "btree"
-version = "0.1.0"
+name = "broot"
+version = "0.1.1"
 authors = ["Canop <cano.petrole@gmail.com>"]
 
 [dependencies]

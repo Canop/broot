@@ -1,4 +1,6 @@
 
+#![allow(dead_code)]
+
 #[macro_use]
 extern crate lazy_static;
 extern crate regex;
@@ -18,45 +20,52 @@ mod status;
 mod tree_views;
 mod verbs;
 
+use custom_error::custom_error;
 use std::env;
 use std::path::{PathBuf};
 use std::io;
-use directories::{ProjectDirs};
-use std::{thread, time};
-use conf::Conf;
+use std::result::Result;
 
 use app::App;
-use tree_build::{TreeBuilder};
+use conf::{Conf};
+use external::Launchable;
 use verbs::VerbStore;
 
-const SHOW_APP: bool = false;
+const SHOW_APP: bool = true;
 
-fn main() -> io::Result<()> {
-    if let Some(proj_dirs) = ProjectDirs::from("org", "dystroy",  "btree") {
-        let conf_filename = format!("{}/conf.toml", proj_dirs.config_dir().to_string_lossy());
-        let _ = Conf::from_file(&conf_filename).unwrap();
-    }
+custom_error! {ProgramError
+    Io{source: io::Error}           = "IO Error",
+    Conf{source: conf::ConfError}   = "Bad configuration",
+}
+
+fn run(with_gui: bool) -> Result<Option<Launchable>, ProgramError> {
+    let config = Conf::from_default_location()?;
+
+    let mut verb_store = VerbStore::new();
+    verb_store.fill_from_conf(&config);
 
     let args: Vec<String> = env::args().collect();
     let path = match args.len() >= 2 {
         true    => PathBuf::from(&args[1]),
         false   => env::current_dir()?,
     };
-    if SHOW_APP {
-        let mut app = App::new()?;
-        let mut verb_store = VerbStore::new();
-        verb_store.set_defaults();
-        app.push(path)?;
-        match app.run(&verb_store)? {
-            Some(launchable)    => {
-                launchable.execute()?;
-            },
-            None                => {
-            },
-        }
-    } else {
-        let tree = TreeBuilder::from(path)?.build(80)?;
-        //println!("{:?}", tree);
+    Ok(match with_gui {
+        true    => {
+            let mut app = App::new()?;
+            app.push(path)?;
+            app.run(&verb_store)?
+        },
+        false   => {
+            None
+        },
+    })
+}
+
+fn main() {
+    match run(SHOW_APP).unwrap() {
+        Some(launchable)    => {
+            launchable.execute().unwrap();
+        },
+        None                => {},
     }
-    Ok(())
 }

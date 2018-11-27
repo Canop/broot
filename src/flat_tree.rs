@@ -1,3 +1,10 @@
+//! in the flat_tree structure, every "node" is just a line, there's
+//!  no link from a child to its parent or from a parent to its childs.
+//! It looks stupid and probably is but makes it easier to deal
+//!  with the borrow checker.
+//! Tree lines can be designated either by their index (from 0 to the
+//!  tree's root to the number of lines of the screen) or by their "key",
+//!  a string reproducing the hierarchy of the tree.
 
 use std::{io};
 use std::fs::{self};

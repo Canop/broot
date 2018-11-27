@@ -2,9 +2,6 @@ use std::io;
 use std::process::Command;
 use std::path::{PathBuf};
 
-use std::thread;
-use std::time;
-
 // description of a possible launch of an external program
 // (might be more complex, and a sequence of things to try, in the future)
 #[derive(Debug)]
