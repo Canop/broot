@@ -4,6 +4,7 @@ use std::fs::{self};
 use std::path::{PathBuf};
 
 use flat_tree::{LineType, TreeLine, Tree};
+use tree_options::TreeOptions;
 
 // a child iterator makes it possible to iter over sorted childs
 //  (a standard ReadDir is unsorted). It also keeps a "pointer" over
@@ -14,7 +15,7 @@ struct ChildIterator {
     index_last_line: usize, // 0 if none, index of line in tree if any
 }
 impl ChildIterator {
-    fn from(line: &TreeLine) -> io::Result<ChildIterator> {
+    fn from(line: &TreeLine, options: &TreeOptions) -> io::Result<ChildIterator> {
         let sorted_childs = match line.is_dir() {
             true    => {
                 let mut paths: Vec<PathBuf> = Vec::new();
@@ -23,7 +24,10 @@ impl ChildIterator {
                         for e in entries {
                             match e {
                                 Ok(e)       => {
-                                    paths.push(e.path());
+                                    let path = e.path();
+                                    if options.accepts(&path) {
+                                        paths.push(e.path());
+                                    }
                                 },
                                 Err(err)    => {
                                     println!("Error while listing {:?} : {:?}", &line.path, err);
@@ -72,20 +76,22 @@ impl ChildIterator {
 pub struct TreeBuilder {
     lines: Vec<TreeLine>,
     child_iterators: Vec<ChildIterator>,
+    options: TreeOptions,
 }
 impl TreeBuilder {
-    pub fn from(path: PathBuf) -> io::Result<TreeBuilder> {
+    pub fn from(path: PathBuf, options: TreeOptions) -> io::Result<TreeBuilder> {
         let path = path.canonicalize()?;
         let mut builder = TreeBuilder {
             lines: Vec::new(),
             child_iterators: Vec::new(),
+            options,
         };
         builder.push(path, 0)?;
         Ok(builder)
     }
     fn push(&mut self, path: PathBuf, depth: u16) -> io::Result<()> {
         let line = TreeLine::create(path, depth)?;
-        let iterator = ChildIterator::from(&line)?;
+        let iterator = ChildIterator::from(&line, &self.options)?;
         self.lines.push(line);
         self.child_iterators.push(iterator);
         Ok(())

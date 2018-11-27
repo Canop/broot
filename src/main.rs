@@ -17,6 +17,7 @@ mod flat_tree;
 mod tree_build;
 mod input;
 mod status;
+mod tree_options;
 mod tree_views;
 mod verbs;
 
@@ -29,6 +30,7 @@ use std::result::Result;
 use app::App;
 use conf::{Conf};
 use external::Launchable;
+use tree_options::TreeOptions;
 use verbs::VerbStore;
 
 const SHOW_APP: bool = true;
@@ -52,7 +54,7 @@ fn run(with_gui: bool) -> Result<Option<Launchable>, ProgramError> {
     Ok(match with_gui {
         true    => {
             let mut app = App::new()?;
-            app.push(path)?;
+            app.push(path, TreeOptions::new())?;
             app.run(&verb_store)?
         },
         false   => {

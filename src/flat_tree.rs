@@ -112,5 +112,8 @@ impl Tree {
     pub fn key(&self) -> String {
         self.lines[self.selection].key.to_owned()
     }
+    pub fn root(&self) -> &PathBuf {
+        &self.lines[0].path
+    }
 }
 

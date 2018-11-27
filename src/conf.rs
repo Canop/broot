@@ -38,7 +38,7 @@ impl Conf {
     // read the configuration file from the default OS specific location.
     // Create it if it doesn't exist
     pub fn from_default_location() -> Result<Conf, ConfError> {
-        let dirs = match ProjectDirs::from("org", "dystroy",  "btree") {
+        let dirs = match ProjectDirs::from("org", "dystroy",  "broot") {
             Some(dirs)  => dirs,
             None        => { panic!("Unable to find configuration directories"); }
         };
@@ -84,12 +84,13 @@ const DEFAULT_CONF_FILE: &str = r#"
 # 'invocation' can be a letter or a word
 # 'execution' is either a command, where {file} will be replaced by the selected line,
 # 	or one of the predefined commands:
-#   ":back"  : reverts to the previous state, or quit the application if it's the first one (mapped to <esc>)
-#   ":cd"    : cd to that directory DOESN'T WORK YET
-#   ":focus" : displays the tree of that directory (mapped to <enter> on directories)
-#   ":open"  : tries to open the file according to OS settings (e.g. using xdg-open) (mapped to <enter> on files)
-#   ":parent": moves to the parent directory
-#   ":quit"  : quits the application
+#   ":back"          : reverts to the previous state, or quit the application if it's the first one (mapped to <esc>)
+#   ":cd"            : cd to that directory DOESN'T WORK YET
+#   ":focus"         : displays the tree of that directory (mapped to <enter> on directories)
+#   ":open"          : tries to open the file according to OS settings (e.g. using xdg-open) (mapped to <enter> on files)
+#   ":parent"        : moves to the parent directory
+#   ":quit"          : quits the application
+#   ":toggle_hidden" : toggles showing hidden files
 
 [[verbs]]
 name = "cd"
@@ -105,6 +106,11 @@ execution = ":focus"
 name = "edit"
 invocation = "e"
 execution = "/usr/bin/nvim {file}"
+
+[[verbs]]
+name = "toggle hidden files"
+invocation = "h"
+execution = ":toggle_hidden"
 
 [[verbs]]
 name = "open"

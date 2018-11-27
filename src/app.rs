@@ -10,6 +10,7 @@ use flat_tree::{Tree};
 use tree_build::TreeBuilder;
 use input::{Input};
 use status::{Status};
+use tree_options::TreeOptions;
 use tree_views::TreeView;
 use external::Launchable;
 use verbs::VerbStore;
@@ -19,7 +20,8 @@ pub enum AppStateCmdResult {
     Keep,
     Launch(Launchable),
     DisplayError(String),
-    NewState(PathBuf),
+    NewRoot(PathBuf),
+    NewOptions(TreeOptions),
     PopState,
 }
 
@@ -33,6 +35,7 @@ impl AppStateCmdResult {
 
 pub struct AppState {
     pub tree: Tree,
+    pub options: TreeOptions,
 }
 
 pub struct App {
@@ -67,7 +70,7 @@ impl AppState {
             Action::OpenSelection       => {
                 match self.tree.lines[self.tree.selection].is_dir() {
                     true      => {
-                        AppStateCmdResult::NewState(
+                        AppStateCmdResult::NewRoot(
                             self.tree.lines[self.tree.selection].path.clone()
                         )
                     },
@@ -82,7 +85,8 @@ impl AppState {
                 match verb_store.get(&verb_key) {
                     Some(verb)  => {
                         verb.execute(
-                            &self.tree.lines[self.tree.selection].path
+                            &self
+                            //&self.tree.lines[self.tree.selection].path
                         )?
                     },
                     None        => {
@@ -126,9 +130,12 @@ impl App {
         })
     }
 
-    pub fn push(&mut self, path:PathBuf) -> io::Result<()> {
-        let tree = TreeBuilder::from(path)?.build(self.h-2)?;
-        self.states.push(AppState{ tree });
+    pub fn push(&mut self, path: PathBuf, options: TreeOptions) -> io::Result<()> {
+        let tree = TreeBuilder::from(path, options.clone())?.build(self.h-2)?;
+        self.states.push(AppState{
+            tree,
+            options
+        });
         Ok(())
     }
 
@@ -173,8 +180,15 @@ impl App {
                 AppStateCmdResult::Launch(launchable)   => {
                     return Ok(Some(launchable));
                 },
-                AppStateCmdResult::NewState(path)       => {
-                    self.push(path)?;
+                AppStateCmdResult::NewRoot(path)        => {
+                    let options = self.state().options.clone();
+                    self.push(path, options)?;
+                    cmd = Command::new();
+                    screen.write_status(&self.state())?;
+                },
+                AppStateCmdResult::NewOptions(options)  => {
+                    let path = self.state().tree.root().clone();
+                    self.push(path, options)?;
                     cmd = Command::new();
                     screen.write_status(&self.state())?;
                 },

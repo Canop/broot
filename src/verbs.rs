@@ -6,7 +6,7 @@ use std::path::{PathBuf};
 use std::io;
 
 use conf::Conf;
-use app::AppStateCmdResult;
+use app::{AppState, AppStateCmdResult};
 use external::Launchable;
 
 #[derive(Debug, Clone)]
@@ -20,28 +20,37 @@ pub struct VerbStore {
 }
 
 impl Verb {
-    pub fn execute(&self, path: &PathBuf) -> io::Result<AppStateCmdResult> {
+    pub fn execute(&self, state: &AppState) -> io::Result<AppStateCmdResult> {
+    //pub fn execute(&self, path: &PathBuf) -> io::Result<AppStateCmdResult> {
+        let path = &state.tree.lines[state.tree.selection].path;
         Ok(match self.exec_pattern.as_ref() {
-            ":back"     => {
+            ":back"              => {
                 AppStateCmdResult::PopState
             },
-            ":focus"     => {
-                AppStateCmdResult::NewState(
+            ":focus"            => {
+                AppStateCmdResult::NewRoot(
                     path.clone()
                 )
             },
-            ":open"     => {
+            ":toggle_hidden"    => {
+                let mut options = state.options.clone();
+                options.show_hidden = !options.show_hidden;
+                AppStateCmdResult::NewOptions(
+                    options
+                )
+            },
+            ":open"             => {
                 AppStateCmdResult::Launch(Launchable::opener(path)?)
             },
-            ":parent"     => {
-                AppStateCmdResult::NewState(
+            ":parent"           => {
+                AppStateCmdResult::NewRoot(
                     path.parent().unwrap().to_path_buf()
                 )
             },
-            ":quit"     => {
+            ":quit"             => {
                 AppStateCmdResult::Quit
             },
-            _           => {
+            _                   => {
                 lazy_static! {
                     static ref regex: Regex = Regex::new(r"\{([\w.]+)\}").unwrap();
                 }
