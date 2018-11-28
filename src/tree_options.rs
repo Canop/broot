@@ -1,5 +1,4 @@
-
-use std::path::{PathBuf};
+use std::path::PathBuf;
 
 #[derive(Debug, Clone)]
 pub struct TreeOptions {
@@ -8,9 +7,7 @@ pub struct TreeOptions {
 
 impl TreeOptions {
     pub fn new() -> TreeOptions {
-        TreeOptions{
-            show_hidden: false,
-        }
+        TreeOptions { show_hidden: false }
     }
     pub fn accepts(&self, path: &PathBuf) -> bool {
         if !self.show_hidden {

@@ -1,12 +1,11 @@
-
-use std::io;
 use std::fs;
-use toml::{self, Value};
-use std::result::Result;
+use std::io;
 use std::path::Path;
+use std::result::Result;
+use toml::{self, Value};
 
 use custom_error::custom_error;
-use directories::{ProjectDirs};
+use directories::ProjectDirs;
 
 custom_error! {pub ConfError
     Io{source: io::Error}           = "unable to read from the file",
@@ -29,8 +28,12 @@ pub struct Conf {
 
 fn string_field(value: &Value, field_name: &str) -> Result<String, ConfError> {
     match &value[field_name] {
-        Value::String(s)    => Ok(s.to_owned()),
-        _                   => return Err(ConfError::MissingField{txt: field_name.to_owned()}),
+        Value::String(s) => Ok(s.to_owned()),
+        _ => {
+            return Err(ConfError::MissingField {
+                txt: field_name.to_owned(),
+            })
+        }
     }
 }
 
@@ -38,15 +41,22 @@ impl Conf {
     // read the configuration file from the default OS specific location.
     // Create it if it doesn't exist
     pub fn from_default_location() -> Result<Conf, ConfError> {
-        let dirs = match ProjectDirs::from("org", "dystroy",  "broot") {
-            Some(dirs)  => dirs,
-            None        => { panic!("Unable to find configuration directories"); }
+        let dirs = match ProjectDirs::from("org", "dystroy", "broot") {
+            Some(dirs) => dirs,
+            None => {
+                panic!("Unable to find configuration directories");
+            }
         };
         let conf_filepath = dirs.config_dir().join("conf.toml");
         if !conf_filepath.exists() {
             Conf::write_sample(&conf_filepath)?;
-            println!("New Configuration file written at {:?}", &conf_filepath);
-            println!("You should probably have a look at it.");
+            println!(
+                "{}New Configuration file written in {:?}.{}",
+                termion::style::Bold,
+                &conf_filepath,
+                termion::style::Reset
+            );
+            println!("You should have a look at it.");
         }
         Ok(Conf::from_file(&conf_filepath)?)
     }
@@ -60,22 +70,20 @@ impl Conf {
     pub fn from_file(filepath: &Path) -> Result<Conf, ConfError> {
         let data = fs::read_to_string(filepath)?;
         let root: Value = data.parse::<Value>()?;
-        let mut verbs: Vec<VerbConf> = vec!();
+        let mut verbs: Vec<VerbConf> = vec![];
         if let Value::Array(verbs_value) = &root["verbs"] {
             for verb_value in verbs_value.iter() {
                 let name = string_field(verb_value, "name")?;
                 let invocation = string_field(verb_value, "invocation")?;
                 let execution = string_field(verb_value, "execution")?;
-                verbs.push(VerbConf{
+                verbs.push(VerbConf {
                     name,
                     invocation,
                     execution,
                 });
             }
         }
-        Ok(Conf{
-            verbs
-        })
+        Ok(Conf { verbs })
     }
 }
 

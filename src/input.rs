@@ -1,9 +1,7 @@
-
-
 use std::io::{self, Write};
 
 use app::Screen;
-use commands::{Command};
+use commands::Command;
 
 pub trait Input {
     fn write_input(&mut self, cmd: &Command) -> io::Result<()>;
@@ -24,4 +22,3 @@ impl Input for Screen {
         Ok(())
     }
 }
-

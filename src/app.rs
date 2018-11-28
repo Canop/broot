@@ -1,18 +1,18 @@
-use std::io::{self, Write, stdout, stdin};
-use std::path::{PathBuf};
+use std::io::{self, stdin, stdout, Write};
+use std::path::PathBuf;
 
 use termion::input::TermRead;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 
 use commands::{Action, Command};
-use flat_tree::{Tree};
+use external::Launchable;
+use flat_tree::Tree;
+use input::Input;
+use status::Status;
 use tree_build::TreeBuilder;
-use input::{Input};
-use status::{Status};
 use tree_options::TreeOptions;
 use tree_views::TreeView;
-use external::Launchable;
 use verbs::VerbStore;
 
 pub enum AppStateCmdResult {
@@ -27,9 +27,7 @@ pub enum AppStateCmdResult {
 
 impl AppStateCmdResult {
     fn verb_not_found(text: &str) -> AppStateCmdResult {
-        AppStateCmdResult::DisplayError(
-            format!("verb not found: {:?}", &text)
-        )
+        AppStateCmdResult::DisplayError(format!("verb not found: {:?}", &text))
     }
 }
 
@@ -51,67 +49,49 @@ pub struct Screen {
 }
 
 impl AppState {
-    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore) -> io::Result<AppStateCmdResult> {
+    fn apply(
+        &mut self,
+        cmd: &mut Command,
+        verb_store: &VerbStore,
+    ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
-            Action::Back                => {
-                AppStateCmdResult::PopState
-            },
-            Action::MoveSelection(dy)   => {
+            Action::Back => AppStateCmdResult::PopState,
+            Action::MoveSelection(dy) => {
                 self.tree.move_selection(*dy);
                 cmd.raw = self.tree.key();
                 AppStateCmdResult::Keep
-            },
-            Action::Select(key)         => {
+            }
+            Action::Select(key) => {
                 if !self.tree.try_select(key) {
                     self.tree.selection = 0;
                 }
                 AppStateCmdResult::Keep
-            },
-            Action::OpenSelection       => {
-                match self.tree.lines[self.tree.selection].is_dir() {
-                    true      => {
-                        AppStateCmdResult::NewRoot(
-                            self.tree.lines[self.tree.selection].path.clone()
-                        )
-                    },
-                    false     => {
-                        AppStateCmdResult::Launch(Launchable::opener(
-                            &self.tree.lines[self.tree.selection].path
-                        )?)
-                    },
-                }
-            },
-            Action::NudeVerb(verb_key) | Action::VerbSelection(verb_key)  => {
-                match verb_store.get(&verb_key) {
-                    Some(verb)  => {
-                        verb.execute(
-                            &self
-                            //&self.tree.lines[self.tree.selection].path
-                        )?
-                    },
-                    None        => {
-                        AppStateCmdResult::verb_not_found(&verb_key)
-                    },
-                }
-            },
-            Action::Quit                => {
-                AppStateCmdResult::Quit
-            },
-            _                           => {
-                AppStateCmdResult::Keep
             }
+            Action::OpenSelection => match self.tree.lines[self.tree.selection].is_dir() {
+                true => {
+                    AppStateCmdResult::NewRoot(self.tree.lines[self.tree.selection].path.clone())
+                }
+                false => AppStateCmdResult::Launch(Launchable::opener(
+                    &self.tree.lines[self.tree.selection].path,
+                )?),
+            },
+            Action::NudeVerb(verb_key) | Action::VerbSelection(verb_key) => {
+                match verb_store.get(&verb_key) {
+                    Some(verb) => verb.execute(&self)?,
+                    None => AppStateCmdResult::verb_not_found(&verb_key),
+                }
+            }
+            Action::Quit => AppStateCmdResult::Quit,
+            _ => AppStateCmdResult::Keep,
         })
     }
 }
 
 impl Screen {
-    pub fn new(w: u16, h:u16) -> io::Result<Screen> {
+    pub fn new(w: u16, h: u16) -> io::Result<Screen> {
         let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
-        Ok(Screen {
-            w, h, stdout
-        })
+        Ok(Screen { w, h, stdout })
     }
-
 }
 
 impl Drop for Screen {
@@ -121,38 +101,32 @@ impl Drop for Screen {
 }
 
 impl App {
-
     pub fn new() -> io::Result<App> {
         let (w, h) = termion::terminal_size()?;
         let states = Vec::new();
-        Ok(App {
-            w, h, states,
-        })
+        Ok(App { w, h, states })
     }
 
     pub fn push(&mut self, path: PathBuf, options: TreeOptions) -> io::Result<()> {
-        let tree = TreeBuilder::from(path, options.clone())?.build(self.h-2)?;
-        self.states.push(AppState{
-            tree,
-            options
-        });
+        let tree = TreeBuilder::from(path, options.clone())?.build(self.h - 2)?;
+        self.states.push(AppState { tree, options });
         Ok(())
     }
 
     pub fn mut_state(&mut self) -> &mut AppState {
         match self.states.last_mut() {
             Some(s) => s,
-            None    => {
+            None => {
                 panic!("No path has been pushed");
-            },
+            }
         }
     }
     pub fn state(&self) -> &AppState {
         match self.states.last() {
             Some(s) => s,
-            None    => {
+            None => {
                 panic!("No path has been pushed");
-            },
+            }
         }
     }
 
@@ -174,40 +148,39 @@ impl App {
             cmd.add_key(c?)?;
             //screen.write_status_text(&format!("{:?}", &cmd.action))?;
             match self.mut_state().apply(&mut cmd, &verb_store)? {
-                AppStateCmdResult::Quit                 => {
+                AppStateCmdResult::Quit => {
                     break;
-                },
-                AppStateCmdResult::Launch(launchable)   => {
+                }
+                AppStateCmdResult::Launch(launchable) => {
                     return Ok(Some(launchable));
-                },
-                AppStateCmdResult::NewRoot(path)        => {
+                }
+                AppStateCmdResult::NewRoot(path) => {
                     let options = self.state().options.clone();
                     self.push(path, options)?;
                     cmd = Command::new();
                     screen.write_status(&self.state())?;
-                },
-                AppStateCmdResult::NewOptions(options)  => {
+                }
+                AppStateCmdResult::NewOptions(options) => {
                     let path = self.state().tree.root().clone();
                     self.push(path, options)?;
                     cmd = Command::new();
                     screen.write_status(&self.state())?;
-                },
-                AppStateCmdResult::PopState             => {
+                }
+                AppStateCmdResult::PopState => {
                     self.states.pop();
                     cmd = Command::from(&self.state().tree.key());
                     screen.write_status(&self.state())?;
-                },
-                AppStateCmdResult::DisplayError(txt)    => {
+                }
+                AppStateCmdResult::DisplayError(txt) => {
                     screen.write_status_err(&txt)?;
-                },
-                AppStateCmdResult::Keep                 => {
+                }
+                AppStateCmdResult::Keep => {
                     screen.write_status(&self.state())?;
-                },
+                }
             }
             screen.write_tree(&self.state().tree)?;
             screen.write_input(&cmd)?;
         }
         Ok(None)
     }
-
 }

@@ -6,27 +6,20 @@
 //!  tree's root to the number of lines of the screen) or by their "key",
 //!  a string reproducing the hierarchy of the tree.
 
-use std::{io};
-use std::fs::{self};
-use std::path::{PathBuf};
+use std::fs;
+use std::io;
+use std::path::PathBuf;
 
 #[derive(Debug)]
 pub enum LineType {
-    File {
-        name: String,
-    },
-    Dir {
-        name: String,
-        unlisted: usize,
-    },
-    Pruning {
-        unlisted: usize,
-    }
+    File { name: String },
+    Dir { name: String, unlisted: usize },
+    Pruning { unlisted: usize },
 }
 
 #[derive(Debug)]
 pub struct TreeLine {
-    pub left_branchs: Vec<bool>, // len: depth (possible to use an array ? boxed ?)
+    pub left_branchs: Box<[bool]>,
     pub depth: u16,
     pub key: String,
     pub path: PathBuf,
@@ -35,16 +28,16 @@ pub struct TreeLine {
 
 #[derive(Debug)]
 pub struct Tree {
-    pub lines: Vec<TreeLine>,
+    pub lines: Box<[TreeLine]>,
     pub selection: usize, // there's always a selection (starts with root)
 }
 
 fn index_to_char(i: usize) -> char {
     match i {
-        1...26  => (96 + i as u8) as char,
+        1...26 => (96 + i as u8) as char,
         27...36 => (47 - 26 + i as u8) as char,
         37...60 => (64 - 36 + i as u8) as char,
-        _       => ' ', // we'll avoid this case
+        _ => ' ', // we'll avoid this case
     }
 }
 
@@ -58,20 +51,29 @@ impl TreeLine {
         let key = String::from("");
         let metadata = fs::metadata(&path)?;
         let content = match metadata.is_dir() {
-            true    => LineType::Dir{name, unlisted:0},
-            false   => LineType::File{name},
+            true => LineType::Dir { name, unlisted: 0 },
+            false => LineType::File { name },
         };
-        Ok(TreeLine { left_branchs, key, path, depth, content })
+        Ok(TreeLine {
+            left_branchs: left_branchs.into_boxed_slice(),
+            key,
+            path,
+            depth,
+            content,
+        })
     }
     pub fn is_dir(&self) -> bool {
         match &self.content {
-            LineType::Dir{name: _, unlisted: _} => true,
-            _                                   => false,
+            LineType::Dir {
+                name: _,
+                unlisted: _,
+            } => true,
+            _ => false,
         }
     }
     pub fn fill_key(&mut self, v: &Vec<usize>, depth: usize) {
         for i in 0..depth {
-            self.key.push(index_to_char(v[i+1]));
+            self.key.push(index_to_char(v[i + 1]));
         }
     }
 }
@@ -103,9 +105,16 @@ impl Tree {
             let l = self.lines.len();
             self.selection = (self.selection + (l as i16 + dy) as usize) % l;
             match &self.lines[self.selection].content {
-                LineType::Dir{name: _, unlisted: _} => { break; },
-                LineType::File{name: _} => { break; },
-                _                => {}
+                LineType::Dir {
+                    name: _,
+                    unlisted: _,
+                } => {
+                    break;
+                }
+                LineType::File { name: _ } => {
+                    break;
+                }
+                _ => {}
             }
         }
     }
@@ -116,4 +125,3 @@ impl Tree {
         &self.lines[0].path
     }
 }
-

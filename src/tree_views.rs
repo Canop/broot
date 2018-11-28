@@ -1,9 +1,7 @@
-
-
-use termion::{style, color};
-use std::io::{self, Write};
 use app::Screen;
-use flat_tree::{TreeLine, Tree, LineType};
+use flat_tree::{LineType, Tree, TreeLine};
+use std::io::{self, Write};
+use termion::{color, style};
 
 pub trait TreeView {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
@@ -13,14 +11,14 @@ pub trait TreeView {
 
 impl TreeView for Screen {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
-        for y in 1..self.h-1 {
+        for y in 1..self.h - 1 {
             write!(
                 self.stdout,
                 "{}{}",
                 termion::cursor::Goto(1, y),
                 termion::clear::CurrentLine,
             )?;
-            let line_index = (y -1) as usize;
+            let line_index = (y - 1) as usize;
             if line_index >= tree.lines.len() {
                 continue;
             }
@@ -32,16 +30,14 @@ impl TreeView for Screen {
                     "{}{}{}",
                     color::Fg(color::AnsiValue::grayscale(5)),
                     match line.left_branchs[depth as usize] {
-                        true    => {
-                            match tree.has_branch(line_index+1, depth as usize) {
-                                true    => match depth == line.depth-1 {
-                                        true    => "├─",
-                                        false   => "│ ",
-                                },
-                                false   => "└─",
-                            }
+                        true => match tree.has_branch(line_index + 1, depth as usize) {
+                            true => match depth == line.depth - 1 {
+                                true => "├─",
+                                false => "│ ",
+                            },
+                            false => "└─",
                         },
-                        false   => "  ",
+                        false => "  ",
                     },
                     color::Fg(color::Reset),
                 )?;
@@ -60,11 +56,10 @@ impl TreeView for Screen {
         Ok(())
     }
 
-    fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()>{
+    fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()> {
         match &line.content {
-            LineType::Pruning{unlisted: _} => {
-            },
-            _                           => {
+            LineType::Pruning { unlisted: _ } => {}
+            _ => {
                 if selected {
                     write!(
                         self.stdout,
@@ -74,28 +69,27 @@ impl TreeView for Screen {
                         color::Bg(color::AnsiValue::grayscale(1)),
                         termion::clear::UntilNewline,
                     )?;
-
                 } else {
                     write!(
                         self.stdout,
                         "{}{} {} {}{}",
                         color::Bg(color::AnsiValue::grayscale(2)),
-                        color::Fg(color::AnsiValue::grayscale(18)),
+                        color::Fg(color::AnsiValue::grayscale(14)),
                         &line.key,
                         color::Fg(color::Reset),
                         color::Bg(color::Reset),
                     )?;
                 }
-            },
+            }
         }
         Ok(())
     }
 
     fn write_line_name(&mut self, line: &TreeLine) -> io::Result<()> {
         match &line.content {
-            LineType::Dir{name, unlisted} => {
-                match line.key=="" {
-                    true    => {
+            LineType::Dir { name, unlisted } => {
+                match line.key == "" {
+                    true => {
                         // special display for the first line
                         write!(
                             self.stdout,
@@ -104,8 +98,8 @@ impl TreeView for Screen {
                             style::Bold,
                             &line.path.to_string_lossy(),
                         )?;
-                    },
-                    false   => {
+                    }
+                    false => {
                         write!(
                             self.stdout,
                             " {}{}{}",
@@ -113,33 +107,24 @@ impl TreeView for Screen {
                             style::Bold,
                             &name,
                         )?;
-                        if *unlisted>0 {
-                            write!(
-                                self.stdout,
-                                " …",
-                            )?;
+                        if *unlisted > 0 {
+                            write!(self.stdout, " …",)?;
                         }
-
                     }
                 };
-            },
-            LineType::File{name}          => {
-                write!(
-                    self.stdout,
-                    " {}",
-                    &name,
-                )?;
-            },
-            LineType::Pruning{unlisted}   => {
+            }
+            LineType::File { name } => {
+                write!(self.stdout, " {}", &name,)?;
+            }
+            LineType::Pruning { unlisted } => {
                 write!(
                     self.stdout,
                     "{} ... {} other files…",
                     style::Italic,
                     unlisted,
                 )?;
-            },
+            }
         }
         Ok(())
     }
-
 }

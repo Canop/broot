@@ -1,8 +1,8 @@
 //! the status module manages writing information on the grey line
 //!  near the bottom of the screen
 
-use termion::{color};
 use std::io::{self, Write};
+use termion::color;
 
 use app::{AppState, Screen};
 
@@ -15,17 +15,13 @@ pub trait Status {
 
 impl Status for Screen {
     fn write_status(&mut self, state: &AppState) -> io::Result<()> {
-        if state.tree.selection==0 {
+        if state.tree.selection == 0 {
             return self.write_status_text("Hit <enter> to quit, or type a file's key to navigate");
         }
         let line = &state.tree.lines[state.tree.selection];
-        self.write_status_text(match line.is_dir(){
-            true    => {
-                "Hit <enter> to focus, or type a space then a verb"
-            },
-            false   => {
-                "Hit <enter> to open the file, or type a space then a verb"
-            },
+        self.write_status_text(match line.is_dir() {
+            true => "Hit <enter> to focus, or type a space then a verb",
+            false => "Hit <enter> to open the file, or type a space then a verb",
         })
         //return self.write_status_text(&line.path.to_string_lossy());
     }
@@ -33,7 +29,7 @@ impl Status for Screen {
         self.write_status_text("Hit <esc> to quit, or type a file's key to navigate")
     }
     fn write_status_err(&mut self, text: &str) -> io::Result<()> {
-        let y = self.h-1;
+        let y = self.h - 1;
         write!(
             self.stdout,
             "{}{}{}{}{}{}{}",
@@ -49,7 +45,7 @@ impl Status for Screen {
         Ok(())
     }
     fn write_status_text(&mut self, text: &str) -> io::Result<()> {
-        let y = self.h-1;
+        let y = self.h - 1;
         write!(
             self.stdout,
             "{}{}{}{}{}",
@@ -63,4 +59,3 @@ impl Status for Screen {
         Ok(())
     }
 }
-

@@ -1,34 +1,33 @@
-
 #![allow(dead_code)]
 
 #[macro_use]
 extern crate lazy_static;
+extern crate custom_error;
+extern crate directories;
 extern crate regex;
 extern crate termion;
-extern crate directories;
 extern crate toml;
-extern crate custom_error;
 
 mod app;
 mod commands;
 mod conf;
 mod external;
 mod flat_tree;
-mod tree_build;
 mod input;
 mod status;
+mod tree_build;
 mod tree_options;
 mod tree_views;
 mod verbs;
 
 use custom_error::custom_error;
 use std::env;
-use std::path::{PathBuf};
 use std::io;
+use std::path::PathBuf;
 use std::result::Result;
 
 use app::App;
-use conf::{Conf};
+use conf::Conf;
 use external::Launchable;
 use tree_options::TreeOptions;
 use verbs::VerbStore;
@@ -48,26 +47,24 @@ fn run(with_gui: bool) -> Result<Option<Launchable>, ProgramError> {
 
     let args: Vec<String> = env::args().collect();
     let path = match args.len() >= 2 {
-        true    => PathBuf::from(&args[1]),
-        false   => env::current_dir()?,
+        true => PathBuf::from(&args[1]),
+        false => env::current_dir()?,
     };
     Ok(match with_gui {
-        true    => {
+        true => {
             let mut app = App::new()?;
             app.push(path, TreeOptions::new())?;
             app.run(&verb_store)?
-        },
-        false   => {
-            None
-        },
+        }
+        false => None,
     })
 }
 
 fn main() {
     match run(SHOW_APP).unwrap() {
-        Some(launchable)    => {
+        Some(launchable) => {
             launchable.execute().unwrap();
-        },
-        None                => {},
+        }
+        None => {}
     }
 }
