@@ -10,6 +10,8 @@ use std::fs;
 use std::io;
 use std::path::PathBuf;
 
+use patterns::Pattern;
+
 #[derive(Debug)]
 pub enum LineType {
     File { name: String },
@@ -29,7 +31,7 @@ pub struct TreeLine {
 #[derive(Debug)]
 pub struct Tree {
     pub lines: Box<[TreeLine]>,
-    pub selection: usize, // there's always a selection (starts with root)
+    pub selection: usize, // there's always a selection (starts with root, which is 0)
 }
 
 fn index_to_char(i: usize) -> char {
@@ -74,6 +76,13 @@ impl TreeLine {
     pub fn fill_key(&mut self, v: &Vec<usize>, depth: usize) {
         for i in 0..depth {
             self.key.push(index_to_char(v[i + 1]));
+        }
+    }
+    pub fn name(&self) -> Option<&str> {
+        match &self.content {
+            LineType::Dir { name, unlisted: _ } => Some(name),
+            LineType::File { name } => Some(name),
+            _ => None,
         }
     }
 }
@@ -123,5 +132,21 @@ impl Tree {
     }
     pub fn root(&self) -> &PathBuf {
         &self.lines[0].path
+    }
+    // select the line with the best matching score. Does nothing
+    //  and returns false if no line matches
+    pub fn try_select_best_match(&mut self, pattern: &Pattern) -> bool {
+        let mut best_score = 0;
+        for (idx, line) in self.lines.iter().enumerate() {
+            if let Some(name) = line.name() {
+                if let Some(m) = pattern.test(&name) {
+                    if m.score > best_score {
+                        best_score = m.score;
+                        self.selection = idx;
+                    }
+                }
+            }
+        }
+        best_score > 0
     }
 }

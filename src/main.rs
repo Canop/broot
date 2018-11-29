@@ -17,6 +17,8 @@ mod conf;
 mod external;
 mod flat_tree;
 mod input;
+mod patterns;
+mod screens;
 mod status;
 mod tree_build;
 mod tree_options;
@@ -76,6 +78,14 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         true => PathBuf::from(&args[1]),
         false => env::current_dir()?,
     };
+
+    let p = patterns::Pattern::from("rA");
+    debug!("pattern: {:?}", p);
+    debug!("{:?} -> {:?}", "train", p.test("train"));
+    debug!("{:?} -> {:?}", "toto", p.test("toto"));
+    debug!("{:?} -> {:?}", "rapide", p.test("rapide"));
+    debug!("{:?} -> {:?}", "ar", p.test("ar"));
+    debug!("{:?} -> {:?}", "ruA", p.test("ruA"));
 
     let mut app = App::new()?;
     app.push(path, TreeOptions::new())?;

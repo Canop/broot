@@ -1,14 +1,13 @@
-use std::io::{self, stdin, stdout, Write};
+use std::io::{self, stdin, Write};
 use std::path::PathBuf;
-
 use termion::input::TermRead;
-use termion::raw::{IntoRawMode, RawTerminal};
-use termion::screen::AlternateScreen;
 
 use commands::{Action, Command};
 use external::Launchable;
 use flat_tree::Tree;
 use input::Input;
+use patterns::Pattern;
+use screens::Screen;
 use status::Status;
 use tree_build::TreeBuilder;
 use tree_options::TreeOptions;
@@ -34,6 +33,8 @@ impl AppStateCmdResult {
 pub struct AppState {
     pub tree: Tree,
     pub options: TreeOptions,
+    pub pattern: Option<Pattern>,
+    pub filtered_tree: Option<Tree>,
 }
 
 pub struct App {
@@ -42,20 +43,38 @@ pub struct App {
     pub states: Vec<AppState>, // stack: the last one is current
 }
 
-pub struct Screen {
-    pub w: u16,
-    pub h: u16,
-    pub stdout: AlternateScreen<RawTerminal<io::Stdout>>,
-}
-
 impl AppState {
+    pub fn new(tree: Tree, options: TreeOptions) -> AppState {
+        AppState {
+            tree,
+            options,
+            pattern: None,
+            filtered_tree: None,
+        }
+    }
     fn apply(
         &mut self,
         cmd: &mut Command,
         verb_store: &VerbStore,
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
-            Action::Back => AppStateCmdResult::PopState,
+            Action::Back => {
+                if let Some(_) = self.pattern {
+                    self.pattern = None;
+                    cmd.raw.clear();
+                    AppStateCmdResult::Keep
+                } else if self.tree.selection > 0 {
+                    self.tree.selection = 0;
+                    cmd.raw.clear();
+                    AppStateCmdResult::Keep
+                } else {
+                    AppStateCmdResult::PopState
+                }
+            }
+            Action::ClearPattern => {
+                self.pattern = None;
+                AppStateCmdResult::Keep
+            }
             Action::MoveSelection(dy) => {
                 self.tree.move_selection(*dy);
                 cmd.raw = self.tree.key();
@@ -75,28 +94,24 @@ impl AppState {
                     &self.tree.lines[self.tree.selection].path,
                 )?),
             },
-            Action::Verb(verb_key) => {
-                match verb_store.get(&verb_key) {
-                    Some(verb) => verb.execute(&self)?,
-                    None => AppStateCmdResult::verb_not_found(&verb_key),
-                }
-            }
+            Action::Verb(verb_key) => match verb_store.get(&verb_key) {
+                Some(verb) => verb.execute(&self)?,
+                None => AppStateCmdResult::verb_not_found(&verb_key),
+            },
             Action::Quit => AppStateCmdResult::Quit,
+            Action::PatternEdit(pat) => {
+                self.pattern = match pat.len() {
+                    0 => None,
+                    _ => {
+                        let pat = Pattern::from(pat);
+                        self.tree.try_select_best_match(&pat);
+                        Some(pat)
+                    }
+                };
+                AppStateCmdResult::Keep
+            }
             _ => AppStateCmdResult::Keep,
         })
-    }
-}
-
-impl Screen {
-    pub fn new(w: u16, h: u16) -> io::Result<Screen> {
-        let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
-        Ok(Screen { w, h, stdout })
-    }
-}
-
-impl Drop for Screen {
-    fn drop(&mut self) {
-        write!(self.stdout, "{}", termion::cursor::Show).unwrap();
     }
 }
 
@@ -109,7 +124,7 @@ impl App {
 
     pub fn push(&mut self, path: PathBuf, options: TreeOptions) -> io::Result<()> {
         let tree = TreeBuilder::from(path, options.clone())?.build(self.h - 2)?;
-        self.states.push(AppState { tree, options });
+        self.states.push(AppState::new(tree, options));
         Ok(())
     }
 
@@ -138,14 +153,14 @@ impl App {
             termion::clear::All,
             termion::cursor::Hide
         )?;
-        screen.write_tree(&self.state().tree)?;
+        screen.write_tree(&self.state().tree, &self.state().pattern)?;
         screen.write_status_initial()?;
         let stdin = stdin();
         let keys = stdin.keys();
         let mut cmd = Command::new();
         for c in keys {
             cmd.add_key(c?)?;
-            info!("{:?}", &cmd);
+            info!("{:?}", &cmd.action);
             match self.mut_state().apply(&mut cmd, &verb_store)? {
                 AppStateCmdResult::Quit => {
                     break;
@@ -178,7 +193,7 @@ impl App {
                     screen.write_status(&self.state())?;
                 }
             }
-            screen.write_tree(&self.state().tree)?;
+            screen.write_tree(&self.state().tree, &self.state().pattern)?;
             screen.write_input(&cmd)?;
         }
         Ok(None)

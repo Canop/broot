@@ -1,16 +1,19 @@
-use app::Screen;
+use std::borrow::Cow;
+
 use flat_tree::{LineType, Tree, TreeLine};
+use patterns::Pattern;
+use screens::Screen;
 use std::io::{self, Write};
 use termion::{color, style};
 
 pub trait TreeView {
-    fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
+    fn write_tree(&mut self, tree: &Tree, pattern: &Option<Pattern>) -> io::Result<()>;
     fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()>;
-    fn write_line_name(&mut self, line: &TreeLine) -> io::Result<()>;
+    fn write_line_name(&mut self, line: &TreeLine, pattern: &Option<Pattern>) -> io::Result<()>;
 }
 
 impl TreeView for Screen {
-    fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
+    fn write_tree(&mut self, tree: &Tree, pattern: &Option<Pattern>) -> io::Result<()> {
         for y in 1..self.h - 1 {
             write!(
                 self.stdout,
@@ -43,7 +46,7 @@ impl TreeView for Screen {
                 )?;
             }
             self.write_line_key(line, selected)?;
-            self.write_line_name(line)?;
+            self.write_line_name(line, pattern)?;
             write!(
                 self.stdout,
                 "{}{}{}",
@@ -85,7 +88,12 @@ impl TreeView for Screen {
         Ok(())
     }
 
-    fn write_line_name(&mut self, line: &TreeLine) -> io::Result<()> {
+    fn write_line_name(&mut self, line: &TreeLine, pattern: &Option<Pattern>) -> io::Result<()> {
+        // FIXME find a way to use lazy_static here
+        let fg_reset: String = format!("{}", color::Fg(color::Reset));
+        let fg_dir: String = format!("{}", color::Fg(color::Rgb(84, 142, 188)));
+        let fg_match: String = format!("{}", color::Fg(color::Green));
+        let fg_reset_dir: String = format!("{}{}", fg_reset, fg_dir);
         match &line.content {
             LineType::Dir { name, unlisted } => {
                 match line.key == "" {
@@ -94,8 +102,8 @@ impl TreeView for Screen {
                         write!(
                             self.stdout,
                             " {}{}{}",
-                            color::Fg(color::Rgb(84, 142, 188)),
                             style::Bold,
+                            fg_dir,
                             &line.path.to_string_lossy(),
                         )?;
                     }
@@ -103,9 +111,9 @@ impl TreeView for Screen {
                         write!(
                             self.stdout,
                             " {}{}{}",
-                            color::Fg(color::Rgb(84, 142, 188)),
                             style::Bold,
-                            &name,
+                            fg_dir,
+                            decorated_name(&name, pattern, &fg_match, &fg_reset_dir),
                         )?;
                         if *unlisted > 0 {
                             write!(self.stdout, " …",)?;
@@ -114,7 +122,11 @@ impl TreeView for Screen {
                 };
             }
             LineType::File { name } => {
-                write!(self.stdout, " {}", &name,)?;
+                write!(
+                    self.stdout,
+                    " {}",
+                    decorated_name(&name, pattern, &fg_match, &fg_reset),
+                )?;
             }
             LineType::Pruning { unlisted } => {
                 write!(
@@ -127,4 +139,17 @@ impl TreeView for Screen {
         }
         Ok(())
     }
+}
+
+fn decorated_name<'a>(name: &'a str, pattern: &Option<Pattern>, prefix: &str, postfix: &str) -> Cow<'a, str> {
+    if let Some(p) = pattern {
+        if let Some(m) = p.test(name) {
+            return Cow::Owned(m.wrap_matching_chars(
+                name,
+                prefix,
+                postfix,
+            ));
+        }
+    }
+    Cow::Borrowed(name)
 }

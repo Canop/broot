@@ -4,14 +4,16 @@ use termion::event::Key;
 
 #[derive(Debug)]
 pub enum Action {
-    MoveSelection(i16),        // up (neg) or down (positive) in the list
-    Select(String),            // select by key
-    OpenSelection,             // open the selected line (which can't be the root by construct)
-    Verb(String),              // verb
-    VerbEdit(String),          // verb, unfinished
-    Back,                      // back to last app state
+    MoveSelection(i16), // up (neg) or down (positive) in the list
+    Select(String),     // select by key
+    OpenSelection,      // open the selected line (which can't be the root by construct)
+    VerbEdit(String),   // verb, unfinished
+    Verb(String),       // verb
+    PatternEdit(String),
+    ClearPattern,
+    Back, // back to last app state, or clear pattern
     Quit,
-    Unparsed,                  // or unparsable
+    Unparsed, // or unparsable
 }
 
 impl Action {
@@ -20,27 +22,40 @@ impl Action {
             static ref RE: Regex = Regex::new(
                 r"(?x)
                 ^
+                (?:/(?P<pattern>[\w.]*))?
                 (?P<key>[0-1a-zA-Z]*)
                 (?:[\s:]+(?P<verb>\w+))?
                 $
-            "
+                "
             ).unwrap();
         }
-        match RE.captures(raw) {
-            Some(c) => {
-                let key = match c.name("key") {
-                    Some(key) => key.as_str(),
-                    None => "-should not happen-",
+        if let Some(c) = RE.captures(raw) {
+            if let Some(verb) = c.name("verb") {
+                return match finished {
+                    false => Action::VerbEdit(String::from(verb.as_str())),
+                    true => Action::Verb(String::from(verb.as_str())),
                 };
-                match (c.name("verb"), finished) {
-                    (Some(verb), false) => Action::VerbEdit(String::from(verb.as_str())),
-                    (Some(verb), true) => Action::Verb(String::from(verb.as_str())),
-                    (None, false) => Action::Select(key.to_string()),
-                    (None, true) => Action::OpenSelection,
-                }
             }
-            None => Action::Unparsed,
+            if let Some(pattern) = c.name("pattern") {
+                let pattern = pattern.as_str();
+                if pattern.len() == 0 {
+                    return Action::ClearPattern;
+                }
+                return match finished {
+                    false => Action::PatternEdit(String::from(pattern)),
+                    true => Action::OpenSelection,
+                };
+            }
+            if let Some(key) = c.name("key") {
+                return match finished {
+                    false => Action::Select(String::from(key.as_str())),
+                    true => Action::OpenSelection,
+                };
+            }
+        } else {
+            warn!("unexpected lack of capture");
         }
+        Action::Unparsed
     }
 }
 
@@ -84,12 +99,7 @@ impl Command {
                 self.action = Action::from(&self.raw, false);
             }
             Key::Esc => {
-                if self.raw == "" {
-                    self.action = Action::Back;
-                } else {
-                    self.raw.clear();
-                    self.action = Action::Select(String::from(""));
-                }
+                self.action = Action::Back;
             }
             Key::Backspace => {
                 if self.raw == "" {

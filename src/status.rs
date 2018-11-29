@@ -4,7 +4,8 @@
 use std::io::{self, Write};
 use termion::color;
 
-use app::{AppState, Screen};
+use app::AppState;
+use screens::Screen;
 
 pub trait Status {
     fn write_status(&mut self, state: &AppState) -> io::Result<()>;
