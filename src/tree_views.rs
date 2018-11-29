@@ -141,14 +141,15 @@ impl TreeView for Screen {
     }
 }
 
-fn decorated_name<'a>(name: &'a str, pattern: &Option<Pattern>, prefix: &str, postfix: &str) -> Cow<'a, str> {
+fn decorated_name<'a>(
+    name: &'a str,
+    pattern: &Option<Pattern>,
+    prefix: &str,
+    postfix: &str,
+) -> Cow<'a, str> {
     if let Some(p) = pattern {
         if let Some(m) = p.test(name) {
-            return Cow::Owned(m.wrap_matching_chars(
-                name,
-                prefix,
-                postfix,
-            ));
+            return Cow::Owned(m.wrap_matching_chars(name, prefix, postfix));
         }
     }
     Cow::Borrowed(name)

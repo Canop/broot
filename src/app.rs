@@ -110,6 +110,12 @@ impl AppState {
                 };
                 AppStateCmdResult::Keep
             }
+            Action::Next => {
+                if let Some(pattern) = &self.pattern {
+                    self.tree.try_select_next_match(&pattern);
+                }
+                AppStateCmdResult::Keep
+            }
             _ => AppStateCmdResult::Keep,
         })
     }
@@ -159,6 +165,7 @@ impl App {
         let keys = stdin.keys();
         let mut cmd = Command::new();
         for c in keys {
+            //debug!("key: {:?}", &c);
             cmd.add_key(c?)?;
             info!("{:?}", &cmd.action);
             match self.mut_state().apply(&mut cmd, &verb_store)? {

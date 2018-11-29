@@ -149,4 +149,16 @@ impl Tree {
         }
         best_score > 0
     }
+    pub fn try_select_next_match(&mut self, pattern: &Pattern) -> bool {
+        for di in 0..self.lines.len() {
+            let idx = (self.selection + di +1) % self.lines.len();
+            if let Some(name) = self.lines[idx].name() {
+                if let Some(_) = pattern.test(&name) {
+                    self.selection = idx;
+                    return true;
+                }
+            }
+        }
+        false
+    }
 }

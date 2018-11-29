@@ -9,9 +9,10 @@ pub enum Action {
     OpenSelection,      // open the selected line (which can't be the root by construct)
     VerbEdit(String),   // verb, unfinished
     Verb(String),       // verb
-    PatternEdit(String),
+    PatternEdit(String),// a pattern being edited
     ClearPattern,
     Back, // back to last app state, or clear pattern
+    Next,
     Quit,
     Unparsed, // or unparsable
 }
@@ -80,6 +81,9 @@ impl Command {
     }
     pub fn add_key(&mut self, key: Key) -> io::Result<()> {
         match key {
+            Key::Char('\t') => {
+               self.action = Action::Next;
+            }
             Key::Char('\n') => {
                 // enter
                 if self.raw == "" {
