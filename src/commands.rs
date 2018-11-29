@@ -24,7 +24,7 @@ impl Action {
                 r"(?x)
                 ^
                 (?:/(?P<pattern>[\w.]*))?
-                (?P<key>[0-1a-zA-Z]*)
+                (?P<key>[0-9a-zA-Z]*)
                 (?:[\s:]+(?P<verb>\w+))?
                 $
                 "
