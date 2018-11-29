@@ -23,7 +23,7 @@ impl Action {
                 r"(?x)
                 ^
                 (?P<key>[0-1a-zA-Z]*)
-                (?:\s+(?P<verb>\w+))?
+                (?:[\s:]+(?P<verb>\w+))?
                 $
             "
             ).unwrap();
