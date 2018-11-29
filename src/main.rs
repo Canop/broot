@@ -59,12 +59,12 @@ fn configure_log() {
             simplelog::Config::default(),
             File::create("dev.log").unwrap(),
         ).unwrap();
+        info!("Starting B-Root with log level {}", level);
     }
 }
 
 fn run() -> Result<Option<Launchable>, ProgramError> {
     configure_log();
-    info!("Starting B-Root");
 
     let config = Conf::from_default_location()?;
 

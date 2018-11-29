@@ -75,7 +75,7 @@ impl AppState {
                     &self.tree.lines[self.tree.selection].path,
                 )?),
             },
-            Action::NudeVerb(verb_key) | Action::VerbSelection(verb_key) => {
+            Action::Verb(verb_key) => {
                 match verb_store.get(&verb_key) {
                     Some(verb) => verb.execute(&self)?,
                     None => AppStateCmdResult::verb_not_found(&verb_key),

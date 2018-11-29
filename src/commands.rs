@@ -7,13 +7,11 @@ pub enum Action {
     MoveSelection(i16),        // up (neg) or down (positive) in the list
     Select(String),            // select by key
     OpenSelection,             // open the selected line (which can't be the root by construct)
-    NudeVerb(String),          // verb without selection
-    NudeVerbEdit(String),      // verb without selection, unfinished
-    VerbSelection(String),     // verb without selection
-    VerbSelectionEdit(String), // verb without selection, unfinished
+    Verb(String),              // verb
+    VerbEdit(String),          // verb, unfinished
     Back,                      // back to last app state
     Quit,
-    Unparsed, // or unparsable
+    Unparsed,                  // or unparsable
 }
 
 impl Action {
@@ -30,18 +28,15 @@ impl Action {
         }
         match RE.captures(raw) {
             Some(c) => {
-                match (c.name("key"), c.name("verb"), finished) {
-                    (Some(_key), Some(verb), false) => {
-                        Action::VerbSelectionEdit(String::from(verb.as_str()))
-                    }
-                    (Some(_key), Some(verb), true) => {
-                        Action::VerbSelection(String::from(verb.as_str()))
-                    }
-                    (Some(key), None, false) => Action::Select(String::from(key.as_str())),
-                    (Some(_key), None, true) => Action::OpenSelection,
-                    (None, Some(verb), false) => Action::NudeVerbEdit(String::from(verb.as_str())),
-                    (None, Some(verb), true) => Action::NudeVerb(String::from(verb.as_str())),
-                    _ => Action::Unparsed, // exemple: finishes with a space
+                let key = match c.name("key") {
+                    Some(key) => key.as_str(),
+                    None => "-should not happen-",
+                };
+                match (c.name("verb"), finished) {
+                    (Some(verb), false) => Action::VerbEdit(String::from(verb.as_str())),
+                    (Some(verb), true) => Action::Verb(String::from(verb.as_str())),
+                    (None, false) => Action::Select(key.to_string()),
+                    (None, true) => Action::OpenSelection,
                 }
             }
             None => Action::Unparsed,
