@@ -7,6 +7,9 @@ extern crate directories;
 extern crate regex;
 extern crate termion;
 extern crate toml;
+#[macro_use]
+extern crate log;
+extern crate simplelog;
 
 mod app;
 mod commands;
@@ -21,10 +24,13 @@ mod tree_views;
 mod verbs;
 
 use custom_error::custom_error;
+use log::LevelFilter;
 use std::env;
+use std::fs::File;
 use std::io;
 use std::path::PathBuf;
 use std::result::Result;
+use std::str::FromStr;
 
 use app::App;
 use conf::Conf;
@@ -32,14 +38,34 @@ use external::Launchable;
 use tree_options::TreeOptions;
 use verbs::VerbStore;
 
-const SHOW_APP: bool = true;
-
 custom_error! {ProgramError
     Io{source: io::Error}           = "IO Error",
     Conf{source: conf::ConfError}   = "Bad configuration",
 }
 
-fn run(with_gui: bool) -> Result<Option<Launchable>, ProgramError> {
+// There's no log unless the BROOT_LOG environment variable is set to
+//  a valid log level (trace, debug, info, warn, error, off)
+// Example:
+//      BROOT_LOG=info broot
+// As broot is a terminal application, we only log to a file (dev.log)
+fn configure_log() {
+    let level = env::var("BROOT_LOG").unwrap_or("off".to_string());
+    if level == "none" {
+        return;
+    }
+    if let Ok(level) = LevelFilter::from_str(&level) {
+        simplelog::WriteLogger::init(
+            level,
+            simplelog::Config::default(),
+            File::create("dev.log").unwrap(),
+        ).unwrap();
+    }
+}
+
+fn run() -> Result<Option<Launchable>, ProgramError> {
+    configure_log();
+    info!("Starting B-Root");
+
     let config = Conf::from_default_location()?;
 
     let mut verb_store = VerbStore::new();
@@ -50,21 +76,19 @@ fn run(with_gui: bool) -> Result<Option<Launchable>, ProgramError> {
         true => PathBuf::from(&args[1]),
         false => env::current_dir()?,
     };
-    Ok(match with_gui {
-        true => {
-            let mut app = App::new()?;
-            app.push(path, TreeOptions::new())?;
-            app.run(&verb_store)?
-        }
-        false => None,
-    })
+
+    let mut app = App::new()?;
+    app.push(path, TreeOptions::new())?;
+    Ok(app.run(&verb_store)?)
 }
 
 fn main() {
-    match run(SHOW_APP).unwrap() {
+    match run().unwrap() {
         Some(launchable) => {
+            info!("launching {:?}", &launchable);
             launchable.execute().unwrap();
         }
         None => {}
     }
+    info!("bye");
 }

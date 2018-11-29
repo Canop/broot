@@ -144,9 +144,8 @@ impl App {
         let keys = stdin.keys();
         let mut cmd = Command::new();
         for c in keys {
-            //screen.write_status_text(&format!("{:?}", &c))?;
             cmd.add_key(c?)?;
-            //screen.write_status_text(&format!("{:?}", &cmd.action))?;
+            info!("{:?}", &cmd);
             match self.mut_state().apply(&mut cmd, &verb_store)? {
                 AppStateCmdResult::Quit => {
                     break;

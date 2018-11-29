@@ -1,2 +1,6 @@
+dev.log
+deploy.sh
+install.sh
+notes.md
 /target
 **/*.rs.bk
