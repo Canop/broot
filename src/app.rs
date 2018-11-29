@@ -168,7 +168,8 @@ impl App {
                 }
                 AppStateCmdResult::PopState => {
                     self.states.pop();
-                    cmd = Command::from(&self.state().tree.key());
+                    //cmd = Command::from(&self.state().tree.key()); // doesn't really seem convenient
+                    cmd = Command::new();
                     screen.write_status(&self.state())?;
                 }
                 AppStateCmdResult::DisplayError(txt) => {
