@@ -23,7 +23,7 @@ impl Action {
             static ref RE: Regex = Regex::new(
                 r"(?x)
                 ^
-                (?:/(?P<pattern>[\w.]*))?
+                (?:/(?P<pattern>[^\s/:]*))?
                 (?P<key>[0-9a-zA-Z]*)
                 (?:[\s:]+(?P<verb>\w+))?
                 $
