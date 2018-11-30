@@ -252,7 +252,7 @@ impl App {
                     screen.write_status_err(&txt)?;
                 }
                 AppStateCmdResult::Keep => {
-                    screen.write_status(&self.state())?;
+                    screen.write_status_cmd(&self.state(), &cmd)?;
                 }
             }
             screen.write_tree(self.state().displayed_tree(), &self.state().pattern)?;
