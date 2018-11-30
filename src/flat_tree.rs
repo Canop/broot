@@ -26,6 +26,7 @@ pub struct TreeLine {
     pub key: String,
     pub path: PathBuf,
     pub content: LineType,
+    pub has_error: bool,
 }
 
 #[derive(Debug)]
@@ -50,11 +51,19 @@ impl TreeLine {
             Some(s) => s.to_string_lossy().into_owned(),
             None => String::from("???"),
         };
+        let mut has_error = false;
         let key = String::from("");
-        let metadata = fs::metadata(&path)?;
-        let content = match metadata.is_dir() {
-            true => LineType::Dir { name, unlisted: 0 },
-            false => LineType::File { name },
+        let content = match fs::metadata(&path) {
+            Ok(metadata) => {
+                match metadata.is_dir() {
+                    true => LineType::Dir { name, unlisted: 0 },
+                    false => LineType::File { name },
+                }
+            }
+            Err(_) => {
+                has_error = true;
+                LineType::File { name }
+            }
         };
         Ok(TreeLine {
             left_branchs: left_branchs.into_boxed_slice(),
@@ -62,6 +71,7 @@ impl TreeLine {
             path,
             depth,
             content,
+            has_error,
         })
     }
     pub fn is_dir(&self) -> bool {
@@ -130,6 +140,9 @@ impl Tree {
     pub fn key(&self) -> String {
         self.lines[self.selection].key.to_owned()
     }
+    pub fn selected_line(&self) -> &TreeLine {
+        &self.lines[self.selection]
+    }
     pub fn root(&self) -> &PathBuf {
         &self.lines[0].path
     }
@@ -161,4 +174,7 @@ impl Tree {
         }
         false
     }
+    //pub fn filtered_tree(&self, pattern: &Pattern, dir_filtering_depth: usize) -> Tree {
+    //    let lines: Vec<TreeLine>
+    //}
 }

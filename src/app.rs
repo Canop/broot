@@ -33,6 +33,10 @@ impl AppStateCmdResult {
 pub struct AppState {
     pub tree: Tree,
     pub options: TreeOptions,
+    // TODO pattern and filtered_tree are now always defined
+    //         at the same time. So we need only one option.
+    //         Either put the pattern in the tree, or both in
+    //         a sub structure.
     pub pattern: Option<Pattern>,
     pub filtered_tree: Option<Tree>,
 }
@@ -52,6 +56,18 @@ impl AppState {
             filtered_tree: None,
         }
     }
+    pub fn own_displayed_tree(self) -> Tree {
+        match self.filtered_tree {
+            Some(tree) => tree,
+            None => self.tree,
+        }
+    }
+    pub fn displayed_tree(&self) -> &Tree {
+        match &self.filtered_tree {
+            Some(tree) => &tree,
+            None => &self.tree,
+        }
+    }
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -61,6 +77,8 @@ impl AppState {
             Action::Back => {
                 if let Some(_) = self.pattern {
                     self.pattern = None;
+                    self.filtered_tree = None;
+                    // TODO try to keep selection ?
                     cmd.raw.clear();
                     AppStateCmdResult::Keep
                 } else if self.tree.selection > 0 {
@@ -71,28 +89,52 @@ impl AppState {
                     AppStateCmdResult::PopState
                 }
             }
-            Action::ClearPattern => {
-                self.pattern = None;
+            Action::FixPattern => {
+                // stop pattern editing, either making it non existing, of fixing
+                // the tree on the pattern (until back)
+                cmd.raw = match self.filtered_tree {
+                    Some(ref mut tree) => tree.key(),
+                    None => self.tree.key(),
+                };
                 AppStateCmdResult::Keep
             }
             Action::MoveSelection(dy) => {
-                self.tree.move_selection(*dy);
-                cmd.raw = self.tree.key();
+                match self.filtered_tree {
+                    Some(ref mut tree) => {
+                        tree.move_selection(*dy);
+                        cmd.raw = tree.key();
+                    }
+                    None => {
+                        self.tree.move_selection(*dy);
+                        cmd.raw = self.tree.key();
+                    }
+                };
                 AppStateCmdResult::Keep
             }
             Action::Select(key) => {
-                if !self.tree.try_select(key) {
-                    self.tree.selection = 0;
-                }
+                match self.filtered_tree {
+                    Some(ref mut tree) => {
+                        if !tree.try_select(key) {
+                            tree.selection = 0;
+                        }
+                    }
+                    None => {
+                        if !self.tree.try_select(key) {
+                            self.tree.selection = 0;
+                        }
+                    }
+                };
                 AppStateCmdResult::Keep
             }
-            Action::OpenSelection => match self.tree.lines[self.tree.selection].is_dir() {
-                true => {
-                    AppStateCmdResult::NewRoot(self.tree.lines[self.tree.selection].path.clone())
+            Action::OpenSelection => {
+                let line = match &self.filtered_tree {
+                    Some(tree) => tree.selected_line(),
+                    None => self.tree.selected_line(),
+                };
+                match line.is_dir() {
+                    true => AppStateCmdResult::NewRoot(line.path.clone()),
+                    false => AppStateCmdResult::Launch(Launchable::opener(&line.path)?),
                 }
-                false => AppStateCmdResult::Launch(Launchable::opener(
-                    &self.tree.lines[self.tree.selection].path,
-                )?),
             },
             Action::Verb(verb_key) => match verb_store.get(&verb_key) {
                 Some(verb) => verb.execute(&self)?,
@@ -101,18 +143,31 @@ impl AppState {
             Action::Quit => AppStateCmdResult::Quit,
             Action::PatternEdit(pat) => {
                 self.pattern = match pat.len() {
-                    0 => None,
+                    0 => {
+                        self.filtered_tree = None;
+                        None
+                    }
                     _ => {
+                        // TODO do the filtering in a separate thread as an interruptible task
                         let pat = Pattern::from(pat);
-                        self.tree.try_select_best_match(&pat);
+                        let mut options = self.options.clone();
+                        options.pattern = Some(pat.clone());
+                        let mut filtered_tree = TreeBuilder::from(
+                            self.tree.root().clone(),
+                            options
+                        )?.build(self.tree.lines.len() as u16)?;
+                        filtered_tree.try_select_best_match(&pat);
+                        self.filtered_tree = Some(filtered_tree);
                         Some(pat)
                     }
                 };
                 AppStateCmdResult::Keep
             }
             Action::Next => {
-                if let Some(pattern) = &self.pattern {
-                    self.tree.try_select_next_match(&pattern);
+                if let Some(ref mut tree) = self.filtered_tree {
+                    if let Some(pattern) = &self.pattern {
+                        tree.try_select_next_match(&pattern);
+                    }
                 }
                 AppStateCmdResult::Keep
             }
@@ -200,7 +255,7 @@ impl App {
                     screen.write_status(&self.state())?;
                 }
             }
-            screen.write_tree(&self.state().tree, &self.state().pattern)?;
+            screen.write_tree(self.state().displayed_tree(), &self.state().pattern)?;
             screen.write_input(&cmd)?;
         }
         Ok(None)

@@ -79,14 +79,6 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         false => env::current_dir()?,
     };
 
-    let p = patterns::Pattern::from("rA");
-    debug!("pattern: {:?}", p);
-    debug!("{:?} -> {:?}", "train", p.test("train"));
-    debug!("{:?} -> {:?}", "toto", p.test("toto"));
-    debug!("{:?} -> {:?}", "rapide", p.test("rapide"));
-    debug!("{:?} -> {:?}", "ar", p.test("ar"));
-    debug!("{:?} -> {:?}", "ruA", p.test("ruA"));
-
     let mut app = App::new()?;
     app.push(path, TreeOptions::new())?;
     Ok(app.run(&verb_store)?)

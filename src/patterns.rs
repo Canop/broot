@@ -8,7 +8,7 @@ const BONUS_SAME_CASE: i32 = 10;
 const BONUS_START: i32 = 25;
 const BONUS_LENGTH: i32 = -1; // per char of length
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Pattern {
     chars: Box<[char]>,
 }

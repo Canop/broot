@@ -10,7 +10,7 @@ pub enum Action {
     VerbEdit(String),   // verb, unfinished
     Verb(String),       // verb
     PatternEdit(String),// a pattern being edited
-    ClearPattern,
+    FixPattern,
     Back, // back to last app state, or clear pattern
     Next,
     Quit,
@@ -39,12 +39,9 @@ impl Action {
             }
             if let Some(pattern) = c.name("pattern") {
                 let pattern = pattern.as_str();
-                if pattern.len() == 0 {
-                    return Action::ClearPattern;
-                }
                 return match finished {
                     false => Action::PatternEdit(String::from(pattern)),
-                    true => Action::OpenSelection,
+                    true => Action::FixPattern,
                 };
             }
             if let Some(key) = c.name("key") {
@@ -85,7 +82,6 @@ impl Command {
                self.action = Action::Next;
             }
             Key::Char('\n') => {
-                // enter
                 if self.raw == "" {
                     self.action = Action::Quit;
                 } else {

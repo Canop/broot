@@ -24,19 +24,19 @@ impl ChildIterator {
                             match e {
                                 Ok(e) => {
                                     let path = e.path();
-                                    if options.accepts(&path) {
+                                    if options.accepts(&path, 2) {
                                         paths.push(e.path());
                                     }
                                 }
                                 Err(err) => {
-                                    println!("Error while listing {:?} : {:?}", &line.path, err);
+                                    debug!("Error while listing {:?} : {:?}", &line.path, err);
                                     // TODO store the error and display it next to the dir
                                 }
                             }
                         }
                     }
                     Err(err) => {
-                        println!("Error while listing {:?} : {:?}", &line.path, err);
+                        debug!("Error while listing {:?} : {:?}", &line.path, err);
                         // TODO store the error and display it next to the dir
                     }
                 }
@@ -129,6 +129,7 @@ impl TreeBuilder {
             }
         }
 
+
         // we replace the last childs by Pruning marks if there are
         //  some unlisted files behind
         for i in 0..self.lines.len() {
@@ -198,11 +199,10 @@ impl TreeBuilder {
             }
         }
 
-        let tree = Tree {
+
+        Ok(Tree {
             lines: self.lines.into_boxed_slice(),
             selection: 0,
-        };
-
-        Ok(tree)
+        })
     }
 }

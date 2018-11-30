@@ -20,7 +20,11 @@ pub struct VerbStore {
 
 impl Verb {
     pub fn execute(&self, state: &AppState) -> io::Result<AppStateCmdResult> {
-        let path = &state.tree.lines[state.tree.selection].path;
+        let line = match &state.filtered_tree {
+            Some(tree) => tree.selected_line(),
+            None => state.tree.selected_line(),
+        };
+        let path = &line.path;
         Ok(match self.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
             ":focus" => AppStateCmdResult::NewRoot(path.clone()),
