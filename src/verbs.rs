@@ -4,7 +4,8 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::io;
 
-use app::{AppState, AppStateCmdResult};
+use app::{AppStateCmdResult};
+use browser_states::BrowserState;
 use conf::Conf;
 use external::Launchable;
 
@@ -19,7 +20,7 @@ pub struct VerbStore {
 }
 
 impl Verb {
-    pub fn execute(&self, state: &AppState) -> io::Result<AppStateCmdResult> {
+    pub fn execute(&self, state: &BrowserState) -> io::Result<AppStateCmdResult> {
         let line = match &state.filtered_tree {
             Some(tree) => tree.selected_line(),
             None => state.tree.selected_line(),
@@ -27,14 +28,27 @@ impl Verb {
         let path = &line.path;
         Ok(match self.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
-            ":focus" => AppStateCmdResult::NewRoot(path.clone()),
+            ":focus" => {
+                let path = state.tree.selected_line().path.clone();
+                let options = state.options.clone();
+                AppStateCmdResult::NewState(Box::new(BrowserState::new(path, options)?))
+            }
             ":toggle_hidden" => {
                 let mut options = state.options.clone();
                 options.show_hidden = !options.show_hidden;
-                AppStateCmdResult::NewOptions(options)
+                AppStateCmdResult::NewState(Box::new(BrowserState::new(state.tree.root().clone(), options)?))
             }
             ":open" => AppStateCmdResult::Launch(Launchable::opener(path)?),
-            ":parent" => AppStateCmdResult::NewRoot(path.parent().unwrap().to_path_buf()),
+            ":parent" => {
+                match &state.tree.selected_line().path.parent() {
+                    Some(path) => {
+                        let path = path.to_path_buf();
+                        let options = state.options.clone();
+                        AppStateCmdResult::NewState(Box::new(BrowserState::new(path, options)?))
+                    }
+                    None => AppStateCmdResult::DisplayError("no parent found".to_string()),
+                }
+            }
             ":quit" => AppStateCmdResult::Quit,
             _ => {
                 lazy_static! {

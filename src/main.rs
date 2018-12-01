@@ -1,4 +1,4 @@
-#![allow(dead_code)]
+//#![allow(dead_code)]
 
 #[macro_use]
 extern crate lazy_static;
@@ -12,6 +12,7 @@ extern crate log;
 extern crate simplelog;
 
 mod app;
+mod browser_states;
 mod commands;
 mod conf;
 mod external;
@@ -35,6 +36,7 @@ use std::result::Result;
 use std::str::FromStr;
 
 use app::App;
+use browser_states::BrowserState;
 use conf::Conf;
 use external::Launchable;
 use tree_options::TreeOptions;
@@ -80,7 +82,7 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     };
 
     let mut app = App::new()?;
-    app.push(path, TreeOptions::new())?;
+    app.push(Box::new(BrowserState::new(path, TreeOptions::new())?));
     Ok(app.run(&verb_store)?)
 }
 

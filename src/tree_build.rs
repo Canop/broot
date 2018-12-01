@@ -129,7 +129,6 @@ impl TreeBuilder {
             }
         }
 
-
         // we replace the last childs by Pruning marks if there are
         //  some unlisted files behind
         for i in 0..self.lines.len() {

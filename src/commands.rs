@@ -70,12 +70,6 @@ impl Command {
             action: Action::Unparsed,
         }
     }
-    pub fn from(raw: &str) -> Command {
-        Command {
-            raw: String::from(raw),
-            action: Action::from(raw, false),
-        }
-    }
     pub fn add_key(&mut self, key: Key) -> io::Result<()> {
         match key {
             Key::Char('\t') => {

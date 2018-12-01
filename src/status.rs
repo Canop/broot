@@ -4,46 +4,14 @@
 use std::io::{self, Write};
 use termion::color;
 
-use app::AppState;
-use commands::{Action, Command};
 use screens::Screen;
 
 pub trait Status {
-    fn write_status(&mut self, state: &AppState) -> io::Result<()>;
-    fn write_status_cmd(&mut self, state: &AppState, cmd: &Command) -> io::Result<()>;
-    fn write_status_initial(&mut self) -> io::Result<()>;
     fn write_status_text(&mut self, text: &str) -> io::Result<()>;
     fn write_status_err(&mut self, text: &str) -> io::Result<()>;
 }
 
 impl Status for Screen {
-    fn write_status(&mut self, state: &AppState) -> io::Result<()> {
-        if state.tree.selection == 0 {
-            return self.write_status_text("Hit <enter> to quit, or type a file's key to navigate");
-        }
-        let line = &state.tree.lines[state.tree.selection];
-        self.write_status_text(match line.is_dir() {
-            true => "Hit <enter> to focus, or type a space then a verb",
-            false => "Hit <enter> to open the file, or type a space then a verb",
-        })
-        //return self.write_status_text(&line.path.to_string_lossy());
-    }
-    fn write_status_cmd(&mut self, state: &AppState, cmd: &Command) -> io::Result<()> {
-        match &cmd.action {
-            Action::FixPattern => {
-                self.write_status_text("Hit <esc> to remove the filter")
-            }
-            Action::PatternEdit(_) => {
-                self.write_status_text("Hit <enter> to freeze the fiter, <esc> to remove it")
-            }
-            _ => {
-                self.write_status(state)
-            }
-        }
-    }
-    fn write_status_initial(&mut self) -> io::Result<()> {
-        self.write_status_text("Hit <esc> to quit, or type a file's key to navigate")
-    }
     fn write_status_err(&mut self, text: &str) -> io::Result<()> {
         let y = self.h - 1;
         write!(

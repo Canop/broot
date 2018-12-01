@@ -21,3 +21,9 @@ impl Drop for Screen {
         write!(self.stdout, "{}", termion::cursor::Show).unwrap();
     }
 }
+
+pub fn max_tree_height() -> u16 {
+    let (_, h) = termion::terminal_size().unwrap();
+    h - 2
+}
+
