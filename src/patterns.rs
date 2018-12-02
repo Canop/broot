@@ -3,6 +3,8 @@
 // weights used in match score computing
 // TODO use ML to set those weights
 //  (just kidding, nobody cares)
+// Most possible bonus would only make sense when
+//  we try all possible matches
 const BONUS_MATCH: i32 = 5000;
 const BONUS_SAME_CASE: i32 = 10;
 const BONUS_START: i32 = 25;

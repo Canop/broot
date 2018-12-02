@@ -96,6 +96,7 @@ impl TreeView for Screen {
             static ref fg_match: String = format!("{}", color::Fg(color::Green)).to_string();
             static ref fg_reset_dir: String = format!("{}{}", &*fg_reset, &*fg_dir).to_string();
         }
+        // TODO draw in red lines wiht has_error
         match &line.content {
             LineType::Dir { name, unlisted } => {
                 match line.key == "" {
