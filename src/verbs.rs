@@ -4,7 +4,7 @@ use std::borrow::Cow;
 use std::collections::HashMap;
 use std::io;
 
-use app::{AppStateCmdResult};
+use app::AppStateCmdResult;
 use browser_states::BrowserState;
 use conf::Conf;
 use external::Launchable;
@@ -22,12 +22,12 @@ pub struct VerbStore {
 impl Verb {
     pub fn description(&self) -> String {
         match self.exec_pattern.as_ref() {
-            ":back"          => "reverts to the previous state (mapped to `<esc>`)".to_string(),
-            ":cd"            => "cd to that directory DOESN'T WORK YET".to_string(),
-            ":focus"         => "displays a directory (mapped to `<enter>`)".to_string(),
-            ":open"          => "opens a file according to OS settings (mapped to `<enter>`)".to_string(),
-            ":parent"        => "moves to the parent directory".to_string(),
-            ":quit"          => "quits the application".to_string(),
+            ":back" => "reverts to the previous state (mapped to `<esc>`)".to_string(),
+            ":cd" => "cd to that directory DOESN'T WORK YET".to_string(),
+            ":focus" => "displays a directory (mapped to `<enter>`)".to_string(),
+            ":open" => "opens a file according to OS settings (mapped to `<enter>`)".to_string(),
+            ":parent" => "moves to the parent directory".to_string(),
+            ":quit" => "quits the application".to_string(),
             ":toggle_hidden" => "toggles showing hidden files".to_string(),
             _ => format!("`{}`", self.exec_pattern),
         }
@@ -48,19 +48,20 @@ impl Verb {
             ":toggle_hidden" => {
                 let mut options = state.options.clone();
                 options.show_hidden = !options.show_hidden;
-                AppStateCmdResult::NewState(Box::new(BrowserState::new(state.tree.root().clone(), options)?))
+                AppStateCmdResult::NewState(Box::new(BrowserState::new(
+                    state.tree.root().clone(),
+                    options,
+                )?))
             }
             ":open" => AppStateCmdResult::Launch(Launchable::opener(path)?),
-            ":parent" => {
-                match &state.tree.selected_line().path.parent() {
-                    Some(path) => {
-                        let path = path.to_path_buf();
-                        let options = state.options.clone();
-                        AppStateCmdResult::NewState(Box::new(BrowserState::new(path, options)?))
-                    }
-                    None => AppStateCmdResult::DisplayError("no parent found".to_string()),
+            ":parent" => match &state.tree.selected_line().path.parent() {
+                Some(path) => {
+                    let path = path.to_path_buf();
+                    let options = state.options.clone();
+                    AppStateCmdResult::NewState(Box::new(BrowserState::new(path, options)?))
                 }
-            }
+                None => AppStateCmdResult::DisplayError("no parent found".to_string()),
+            },
             ":quit" => AppStateCmdResult::Quit,
             _ => {
                 lazy_static! {

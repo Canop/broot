@@ -62,7 +62,7 @@ fn configure_log() {
         simplelog::WriteLogger::init(
             level,
             simplelog::Config::default(),
-            File::create("dev.log").expect("Log file can't be created")
+            File::create("dev.log").expect("Log file can't be created"),
         ).expect("log initialization failed");
         info!("Starting B-Root with log level {}", level);
     }

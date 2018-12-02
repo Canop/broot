@@ -7,7 +7,6 @@
 //!  a string reproducing the hierarchy of the tree.
 
 use std::fs;
-use std::io;
 use std::path::PathBuf;
 
 use patterns::Pattern;
@@ -45,7 +44,7 @@ fn index_to_char(i: usize) -> char {
 }
 
 impl TreeLine {
-    pub fn create(path: PathBuf, depth: u16) -> io::Result<TreeLine> {
+    pub fn create(path: PathBuf, depth: u16) -> TreeLine {
         let left_branchs = vec![false; depth as usize];
         let name = match path.file_name() {
             Some(s) => s.to_string_lossy().into_owned(),
@@ -54,25 +53,23 @@ impl TreeLine {
         let mut has_error = false;
         let key = String::from("");
         let content = match fs::metadata(&path) {
-            Ok(metadata) => {
-                match metadata.is_dir() {
-                    true => LineType::Dir { name, unlisted: 0 },
-                    false => LineType::File { name },
-                }
-            }
+            Ok(metadata) => match metadata.is_dir() {
+                true => LineType::Dir { name, unlisted: 0 },
+                false => LineType::File { name },
+            },
             Err(_) => {
                 has_error = true;
                 LineType::File { name }
             }
         };
-        Ok(TreeLine {
+        TreeLine {
             left_branchs: left_branchs.into_boxed_slice(),
             key,
             path,
             depth,
             content,
             has_error,
-        })
+        }
     }
     pub fn is_dir(&self) -> bool {
         match &self.content {
@@ -164,7 +161,7 @@ impl Tree {
     }
     pub fn try_select_next_match(&mut self, pattern: &Pattern) -> bool {
         for di in 0..self.lines.len() {
-            let idx = (self.selection + di +1) % self.lines.len();
+            let idx = (self.selection + di + 1) % self.lines.len();
             if let Some(name) = self.lines[idx].name() {
                 if let Some(_) = pattern.test(&name) {
                     self.selection = idx;

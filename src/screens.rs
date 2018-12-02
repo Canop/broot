@@ -13,7 +13,7 @@ pub struct Screen {
 pub struct ScreenArea {
     pub top: u16,    // first line
     pub bottom: u16, // last line, included
-    pub scroll: i32,  // 0 for no scroll, positive if scrolled
+    pub scroll: i32, // 0 for no scroll, positive if scrolled
     pub content_length: i32,
 }
 impl ScreenArea {
@@ -30,11 +30,10 @@ impl ScreenArea {
         if self.scroll < 0 {
             self.scroll = 0;
         } else if self.scroll >= self.content_length {
-            self.scroll = self.content_length-1;
+            self.scroll = self.content_length - 1;
         }
     }
 }
-
 
 impl Screen {
     pub fn new(w: u16, h: u16) -> io::Result<Screen> {
@@ -50,13 +49,9 @@ impl Screen {
                 termion::cursor::Goto(1, y),
                 termion::clear::CurrentLine,
             )?;
-            if i<lines.len() {
+            if i < lines.len() {
                 debug!("{}", &lines[i]);
-                write!(
-                    self.stdout,
-                    "{}",
-                    &lines[i],
-                )?;
+                write!(self.stdout, "{}", &lines[i],)?;
                 i += 1;
             }
         }
@@ -74,4 +69,3 @@ pub fn max_tree_height() -> u16 {
     let (_, h) = termion::terminal_size().unwrap();
     h - 2
 }
-

@@ -7,9 +7,9 @@ use app::{AppState, AppStateCmdResult};
 use commands::{Action, Command};
 use external::Launchable;
 use flat_tree::Tree;
+use help_states::HelpState;
 use patterns::Pattern;
 use screens::{self, Screen};
-use help_states::HelpState;
 use status::Status;
 use tree_build::TreeBuilder;
 use tree_options::TreeOptions;
@@ -28,7 +28,7 @@ pub struct BrowserState {
 
 impl BrowserState {
     pub fn new(path: PathBuf, options: TreeOptions) -> io::Result<BrowserState> {
-        let tree = TreeBuilder::from(path, options.clone())?.build(screens::max_tree_height())?;
+        let tree = TreeBuilder::from(path, options.clone())?.build(screens::max_tree_height());
         Ok(BrowserState {
             tree,
             options,
@@ -109,12 +109,13 @@ impl AppState for BrowserState {
                     None => self.tree.selected_line(),
                 };
                 match line.is_dir() {
-                    true => AppStateCmdResult::NewState(Box::new(
-                        BrowserState::new(line.path.clone(), self.options.clone())?
-                    )),
+                    true => AppStateCmdResult::NewState(Box::new(BrowserState::new(
+                        line.path.clone(),
+                        self.options.clone(),
+                    )?)),
                     false => AppStateCmdResult::Launch(Launchable::opener(&line.path)?),
                 }
-            },
+            }
             Action::Verb(verb_key) => match verb_store.get(&verb_key) {
                 Some(verb) => verb.execute(&self)?,
                 None => AppStateCmdResult::verb_not_found(&verb_key),
@@ -131,10 +132,9 @@ impl AppState for BrowserState {
                         let pat = Pattern::from(pat);
                         let mut options = self.options.clone();
                         options.pattern = Some(pat.clone());
-                        let mut filtered_tree = TreeBuilder::from(
-                            self.tree.root().clone(),
-                            options
-                        )?.build(self.tree.lines.len() as u16)?;
+                        let mut filtered_tree =
+                            TreeBuilder::from(self.tree.root().clone(), options)?
+                                .build(self.tree.lines.len() as u16);
                         filtered_tree.try_select_best_match(&pat);
                         self.filtered_tree = Some(filtered_tree);
                         Some(pat)
@@ -142,9 +142,7 @@ impl AppState for BrowserState {
                 };
                 AppStateCmdResult::Keep
             }
-            Action::Help(about) => AppStateCmdResult::NewState(Box::new(
-                HelpState::new(&about)
-            )),
+            Action::Help(about) => AppStateCmdResult::NewState(Box::new(HelpState::new(&about))),
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
                     if let Some(pattern) = &self.pattern {
@@ -163,16 +161,16 @@ impl AppState for BrowserState {
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()> {
         match &cmd.action {
-            Action::FixPattern => {
-                screen.write_status_text("Hit <esc> to remove the filter")
-            }
+            Action::FixPattern => screen.write_status_text("Hit <esc> to remove the filter"),
             Action::PatternEdit(_) => {
                 screen.write_status_text("Hit <enter> to freeze the fiter, <esc> to remove it")
             }
             _ => {
                 let tree = self.displayed_tree();
                 if tree.selection == 0 {
-                    screen.write_status_text("Hit <enter> to quit, '?' for help, or type a file's key to navigate")
+                    screen.write_status_text(
+                        "Hit <enter> to quit, '?' for help, or type a file's key to navigate",
+                    )
                 } else {
                     let line = &tree.lines[tree.selection];
                     screen.write_status_text(match line.is_dir() {
@@ -184,4 +182,3 @@ impl AppState for BrowserState {
         }
     }
 }
-

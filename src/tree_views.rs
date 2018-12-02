@@ -91,7 +91,8 @@ impl TreeView for Screen {
     fn write_line_name(&mut self, line: &TreeLine, pattern: &Option<Pattern>) -> io::Result<()> {
         lazy_static! {
             static ref fg_reset: String = format!("{}", color::Fg(color::Reset)).to_string();
-            static ref fg_dir: String = format!("{}", color::Fg(color::Rgb(84, 142, 188))).to_string();
+            static ref fg_dir: String =
+                format!("{}", color::Fg(color::Rgb(84, 142, 188))).to_string();
             static ref fg_match: String = format!("{}", color::Fg(color::Green)).to_string();
             static ref fg_reset_dir: String = format!("{}{}", &*fg_reset, &*fg_dir).to_string();
         }

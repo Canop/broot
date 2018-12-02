@@ -14,7 +14,7 @@ struct ChildIterator {
     index_last_line: usize,  // 0 if none, index of line in tree if any
 }
 impl ChildIterator {
-    fn from(line: &TreeLine, options: &TreeOptions) -> io::Result<ChildIterator> {
+    fn from(line: &TreeLine, options: &TreeOptions) -> ChildIterator {
         let sorted_childs = match line.is_dir() {
             true => {
                 let mut paths: Vec<PathBuf> = Vec::new();
@@ -45,11 +45,11 @@ impl ChildIterator {
             }
             false => None,
         };
-        Ok(ChildIterator {
+        ChildIterator {
             sorted_childs,
             index_next_child: 0,
             index_last_line: 0,
-        })
+        }
     }
     fn next_child(&mut self) -> Option<PathBuf> {
         match &self.sorted_childs {
@@ -85,17 +85,16 @@ impl TreeBuilder {
             child_iterators: Vec::new(),
             options,
         };
-        builder.push(path, 0)?;
+        builder.push(path, 0);
         Ok(builder)
     }
-    fn push(&mut self, path: PathBuf, depth: u16) -> io::Result<()> {
-        let line = TreeLine::create(path, depth)?;
-        let iterator = ChildIterator::from(&line, &self.options)?;
+    fn push(&mut self, path: PathBuf, depth: u16) {
+        let line = TreeLine::create(path, depth);
+        let iterator = ChildIterator::from(&line, &self.options);
         self.lines.push(line);
         self.child_iterators.push(iterator);
-        Ok(())
     }
-    pub fn build(mut self, nb_lines_max: u16) -> io::Result<Tree> {
+    pub fn build(mut self, nb_lines_max: u16) -> Tree {
         // first step: we grow the lines, not exceding nb_lines_max
         let nb_lines_max = nb_lines_max as usize;
         let mut current_depth = 0;
@@ -114,7 +113,7 @@ impl TreeBuilder {
                     has_open_dirs = true;
                     max_depth = current_depth + 1;
                     self.child_iterators[i].index_last_line = self.lines.len();
-                    self.push(child, max_depth)?;
+                    self.push(child, max_depth);
                 }
                 if self.lines.len() >= nb_lines_max {
                     break;
@@ -198,10 +197,9 @@ impl TreeBuilder {
             }
         }
 
-
-        Ok(Tree {
+        Tree {
             lines: self.lines.into_boxed_slice(),
             selection: 0,
-        })
+        }
     }
 }
