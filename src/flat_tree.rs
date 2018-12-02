@@ -119,10 +119,10 @@ impl Tree {
         }
         return false;
     }
-    pub fn move_selection(&mut self, dy: i16) {
+    pub fn move_selection(&mut self, dy: i32) {
         loop {
             let l = self.lines.len();
-            self.selection = (self.selection + (l as i16 + dy) as usize) % l;
+            self.selection = (self.selection + (l as i32 + dy) as usize) % l;
             match &self.lines[self.selection].content {
                 LineType::Dir {
                     name: _,

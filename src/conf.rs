@@ -1,6 +1,6 @@
 use std::fs;
 use std::io;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
 
@@ -38,16 +38,19 @@ fn string_field(value: &Value, field_name: &str) -> Result<String, ConfError> {
 }
 
 impl Conf {
-    // read the configuration file from the default OS specific location.
-    // Create it if it doesn't exist
-    pub fn from_default_location() -> Result<Conf, ConfError> {
+    pub fn default_location() -> PathBuf {
         let dirs = match ProjectDirs::from("org", "dystroy", "broot") {
             Some(dirs) => dirs,
             None => {
                 panic!("Unable to find configuration directories");
             }
         };
-        let conf_filepath = dirs.config_dir().join("conf.toml");
+        dirs.config_dir().join("conf.toml")
+    }
+    // read the configuration file from the default OS specific location.
+    // Create it if it doesn't exist
+    pub fn from_default_location() -> Result<Conf, ConfError> {
+        let conf_filepath = Conf::default_location();
         if !conf_filepath.exists() {
             Conf::write_sample(&conf_filepath)?;
             println!(
@@ -116,7 +119,7 @@ invocation = "e"
 execution = "/usr/bin/nvim {file}"
 
 [[verbs]]
-name = "toggle hidden files"
+name = "toggle hidden"
 invocation = "h"
 execution = ":toggle_hidden"
 

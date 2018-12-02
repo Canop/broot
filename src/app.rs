@@ -29,7 +29,7 @@ pub trait AppState {
         cmd: &mut Command,
         verb_store: &VerbStore,
     ) -> io::Result<AppStateCmdResult>;
-    fn display(&self, screen: &mut Screen) -> io::Result<()>;
+    fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>; // TODO find a way to cleany pass the VS around (singleton?)
     fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()>;
 }
 
@@ -73,8 +73,8 @@ impl App {
             termion::clear::All,
             termion::cursor::Hide
         )?;
-        self.state().display(&mut screen)?;
-        screen.write_status_text("Hit <esc> to quit, or type a file's key to navigate")?;
+        self.mut_state().display(&mut screen, &verb_store)?;
+        screen.write_status_text("Hit <esc> to quit, '?' for help, or type a file's key to navigate")?;
         let stdin = stdin();
         let keys = stdin.keys();
         let mut cmd = Command::new();
@@ -107,7 +107,7 @@ impl App {
                     self.state().write_status(&mut screen, &cmd)?;
                 }
             }
-            self.state().display(&mut screen)?;
+            self.mut_state().display(&mut screen, &verb_store)?;
             screen.write_input(&cmd)?;
         }
         Ok(None)

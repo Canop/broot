@@ -16,10 +16,22 @@ pub struct Verb {
 }
 
 pub struct VerbStore {
-    verbs: HashMap<String, Verb>,
+    pub verbs: HashMap<String, Verb>,
 }
 
 impl Verb {
+    pub fn description(&self) -> String {
+        match self.exec_pattern.as_ref() {
+            ":back"          => "reverts to the previous state (mapped to `<esc>`)".to_string(),
+            ":cd"            => "cd to that directory DOESN'T WORK YET".to_string(),
+            ":focus"         => "displays a directory (mapped to `<enter>`)".to_string(),
+            ":open"          => "opens a file according to OS settings (mapped to `<enter>`)".to_string(),
+            ":parent"        => "moves to the parent directory".to_string(),
+            ":quit"          => "quits the application".to_string(),
+            ":toggle_hidden" => "toggles showing hidden files".to_string(),
+            _ => format!("`{}`", self.exec_pattern),
+        }
+    }
     pub fn execute(&self, state: &BrowserState) -> io::Result<AppStateCmdResult> {
         let line = match &state.filtered_tree {
             Some(tree) => tree.selected_line(),

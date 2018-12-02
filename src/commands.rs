@@ -4,7 +4,7 @@ use termion::event::Key;
 
 #[derive(Debug)]
 pub enum Action {
-    MoveSelection(i16), // up (neg) or down (positive) in the list
+    MoveSelection(i32), // up (neg) or down (positive) in the list
     Select(String),     // select by key
     OpenSelection,      // open the selected line (which can't be the root by construct)
     VerbEdit(String),   // verb, unfinished
@@ -14,6 +14,7 @@ pub enum Action {
     Back, // back to last app state, or clear pattern
     Next,
     Quit,
+    Help(String),
     Unparsed, // or unparsable
 }
 
@@ -74,6 +75,9 @@ impl Command {
         match key {
             Key::Char('\t') => {
                self.action = Action::Next;
+            }
+            Key::Char('?') => { // we might be a little more subtle in the future
+                self.action = Action::Help(self.raw.to_owned());
             }
             Key::Char('\n') => {
                 if self.raw == "" {

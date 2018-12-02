@@ -17,6 +17,7 @@ mod commands;
 mod conf;
 mod external;
 mod flat_tree;
+mod help_states;
 mod input;
 mod patterns;
 mod screens;

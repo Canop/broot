@@ -9,6 +9,7 @@ use external::Launchable;
 use flat_tree::Tree;
 use patterns::Pattern;
 use screens::{self, Screen};
+use help_states::HelpState;
 use status::Status;
 use tree_build::TreeBuilder;
 use tree_options::TreeOptions;
@@ -141,6 +142,9 @@ impl AppState for BrowserState {
                 };
                 AppStateCmdResult::Keep
             }
+            Action::Help(about) => AppStateCmdResult::NewState(Box::new(
+                HelpState::new(&about)
+            )),
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
                     if let Some(pattern) = &self.pattern {
@@ -153,7 +157,7 @@ impl AppState for BrowserState {
         })
     }
 
-    fn display(&self, screen: &mut Screen) -> io::Result<()> {
+    fn display(&mut self, screen: &mut Screen, _verb_store: &VerbStore) -> io::Result<()> {
         screen.write_tree(&self.displayed_tree(), &self.pattern)
     }
 
@@ -168,7 +172,7 @@ impl AppState for BrowserState {
             _ => {
                 let tree = self.displayed_tree();
                 if tree.selection == 0 {
-                    screen.write_status_text("Hit <enter> to quit, or type a file's key to navigate")
+                    screen.write_status_text("Hit <enter> to quit, '?' for help, or type a file's key to navigate")
                 } else {
                     let line = &tree.lines[tree.selection];
                     screen.write_status_text(match line.is_dir() {
