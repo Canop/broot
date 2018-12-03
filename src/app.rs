@@ -24,9 +24,8 @@ impl AppStateCmdResult {
 }
 
 pub trait AppState {
-    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore)
-        -> io::Result<AppStateCmdResult>;
-    fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>; // TODO find a way to cleany pass the VS around (singleton?)
+    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore) -> io::Result<AppStateCmdResult>;
+    fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>;
     fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()>;
 }
 
@@ -35,9 +34,9 @@ pub struct App {
 }
 
 impl App {
-    pub fn new() -> io::Result<App> {
+    pub fn new() -> App {
         let states = Vec::new();
-        Ok(App { states })
+        App { states }
     }
 
     pub fn push(&mut self, new_state: Box<AppState>) {

@@ -96,7 +96,7 @@ const DEFAULT_CONF_FILE: &str = r#"
 # 'execution' is either a command, where {file} will be replaced by the selected line,
 # 	or one of the predefined commands:
 #   ":back"          : reverts to the previous state, or quit the application if it's the first one (mapped to <esc>)
-#   ":cd"            : cd to that directory DOESN'T WORK YET
+#   ":print_path"    : outputs the path to stdout
 #   ":focus"         : displays the tree of that directory (mapped to <enter> on directories)
 #   ":open"          : tries to open the file according to OS settings (e.g. using xdg-open) (mapped to <enter> on files)
 #   ":parent"        : moves to the parent directory

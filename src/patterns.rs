@@ -27,7 +27,7 @@ impl Pattern {
         let chars = chars.into_boxed_slice();
         Pattern { chars }
     }
-    // this very matching function only looks for the first possible match
+    // this very simple matching function only looks for the first possible match
     //  which is usually the best one, but not always
     pub fn test(&self, candidate: &str) -> Option<Match> {
         if candidate.is_empty() || self.chars.is_empty() {

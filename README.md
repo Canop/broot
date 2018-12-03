@@ -18,10 +18,17 @@ Fetch the Canop/broot repository, move to the broot directory, then run
 
 The executable is written in the `target/release` directory.
 
-If you want to discuss the code or features of broot, please come to [our chat](https://miaou.dystroy.org/3?Code_et_Croissants).
 
 ### From precompiled binaries
 
 * [x86_64 / linux](https://dystroy.org/pub/broot)
 
+## Development
 
+To ease tests during development, a log file can be generated (and followed using tail -f) by using the BROOT_LOG env variable.
+
+For example:
+
+    BROOT_LOG=debug cargo run
+
+If you want to discuss the code or features of broot, please come to [our chat](https://miaou.dystroy.org/3?Code_et_Croissants).

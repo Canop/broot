@@ -77,21 +77,36 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     verb_store.fill_from_conf(&config);
 
     let args: Vec<String> = env::args().collect();
+    debug!("args: {:?}", args);
     let path = match args.len() >= 2 {
         true => PathBuf::from(&args[1]),
         false => env::current_dir()?,
     };
 
-    let mut app = App::new()?;
-    app.push(Box::new(BrowserState::new(path, TreeOptions::new())?));
-    Ok(app.run(&verb_store)?)
+    Ok(match BrowserState::new(path.clone(), TreeOptions::new()) {
+        Ok(bs) => {
+            let mut app = App::new();
+            app.push(Box::new(bs));
+            app.run(&verb_store)?
+        }
+        Err(err) => {
+            println!("Error while exploring {:?}:", path);
+            println!("{:?}", err);
+            None
+        }
+    })
 }
 
 fn main() {
     match run().unwrap() {
         Some(launchable) => {
             info!("launching {:?}", &launchable);
-            launchable.execute().unwrap();
+            if let Err(e) = launchable.execute() {
+                println!("Failed to launch {:?}", &launchable);
+                println!("Error: {:?}", e);
+                warn!("Failed to launch {:?}", &launchable);
+                warn!("Error: {:?}", e);
+            }
         }
         None => {}
     }

@@ -23,7 +23,7 @@ impl Verb {
     pub fn description(&self) -> String {
         match self.exec_pattern.as_ref() {
             ":back" => "reverts to the previous state (mapped to `<esc>`)".to_string(),
-            ":cd" => "cd to that directory DOESN'T WORK YET".to_string(),
+            ":print_path" => "prints path to stdout".to_string(),
             ":focus" => "displays a directory (mapped to `<enter>`)".to_string(),
             ":open" => "opens a file according to OS settings (mapped to `<enter>`)".to_string(),
             ":parent" => "moves to the parent directory".to_string(),
@@ -52,6 +52,11 @@ impl Verb {
                     state.tree.root().clone(),
                     options,
                 )?))
+            }
+            ":print_path" => {
+                let mut launchable = Launchable::from(&path.to_string_lossy())?;
+                launchable.just_print = true;
+                AppStateCmdResult::Launch(launchable)
             }
             ":open" => AppStateCmdResult::Launch(Launchable::opener(path)?),
             ":parent" => match &state.tree.selected_line().path.parent() {

@@ -8,6 +8,7 @@ use std::process::Command;
 pub struct Launchable {
     exe: String,
     args: Vec<String>,
+    pub just_print: bool, // this part of the API will change
 }
 
 impl Launchable {
@@ -20,6 +21,7 @@ impl Launchable {
             Some(exe) => Ok(Launchable {
                 exe: exe,
                 args: tokens.collect(),
+                just_print: false,
             }),
             None => {
                 Err(io::Error::new(
@@ -29,14 +31,19 @@ impl Launchable {
             }
         }
     }
-    // execute the external program
-    // WARNING: this may kill the current program. Caller must
-    // ensure everything's clean before
     pub fn execute(&self) -> io::Result<()> {
-        Command::new(&self.exe)
-            .args(self.args.iter())
-            .spawn()?
-            .wait()?;
+        if self.just_print {
+            print!("{}", &self.exe);
+            for arg in &self.args {
+                print!(" {}", &arg);
+            }
+            println!();
+        } else {
+            Command::new(&self.exe)
+                .args(self.args.iter())
+                .spawn()?
+                .wait()?;
+        }
         Ok(())
     }
 }

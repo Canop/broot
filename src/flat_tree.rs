@@ -2,7 +2,7 @@
 //!  no link from a child to its parent or from a parent to its childs.
 //! It looks stupid and probably is but makes it easier to deal
 //!  with the borrow checker.
-//! Tree lines can be designated either by their index (from 0 to the
+//! Tree lines can be designated either by their index (from 0 for the
 //!  tree's root to the number of lines of the screen) or by their "key",
 //!  a string reproducing the hierarchy of the tree.
 
@@ -171,7 +171,4 @@ impl Tree {
         }
         false
     }
-    //pub fn filtered_tree(&self, pattern: &Pattern, dir_filtering_depth: usize) -> Tree {
-    //    let lines: Vec<TreeLine>
-    //}
 }

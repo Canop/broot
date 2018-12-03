@@ -2,6 +2,10 @@ use regex::Regex;
 use std::io;
 use termion::event::Key;
 
+
+/// A command is the parsed representation of what the user types
+///  in the input. It's independant of the state of the application
+///  (verbs, keys, etc. arent checked at this point)
 #[derive(Debug)]
 pub enum Action {
     MoveSelection(i32),  // up (neg) or down (positive) in the list
