@@ -3,6 +3,7 @@ use std::io;
 use std::path::PathBuf;
 
 use flat_tree::{LineType, Tree, TreeLine};
+use task_sync::TaskLifetime;
 use tree_options::TreeOptions;
 
 // a child iterator makes it possible to iter over sorted childs
@@ -14,17 +15,25 @@ struct ChildIterator {
     index_last_line: usize,  // 0 if none, index of line in tree if any
 }
 impl ChildIterator {
-    fn from(line: &TreeLine, options: &TreeOptions) -> ChildIterator {
+    fn from(line: &TreeLine, options: &TreeOptions, task_lifetime: &TaskLifetime) -> ChildIterator {
         let sorted_childs = match line.is_dir() {
             true => {
                 let mut paths: Vec<PathBuf> = Vec::new();
                 match fs::read_dir(&line.path) {
                     Ok(entries) => {
                         for e in entries {
+                            if task_lifetime.is_expired() {
+                                info!("task expired (child iterator)");
+                                return ChildIterator {
+                                    sorted_childs: None,
+                                    index_next_child: 0,
+                                    index_last_line: 0,
+                                };
+                            }
                             match e {
                                 Ok(e) => {
                                     let path = e.path();
-                                    if options.accepts(&path, 2) {
+                                    if options.accepts(&path, 3, task_lifetime) {
                                         paths.push(e.path());
                                     }
                                 }
@@ -76,25 +85,31 @@ pub struct TreeBuilder {
     lines: Vec<TreeLine>,
     child_iterators: Vec<ChildIterator>,
     options: TreeOptions,
+    task_lifetime: TaskLifetime,
 }
 impl TreeBuilder {
-    pub fn from(path: PathBuf, options: TreeOptions) -> io::Result<TreeBuilder> {
+    pub fn from(path: PathBuf, options: TreeOptions, task_lifetime: TaskLifetime) -> io::Result<TreeBuilder> {
         let path = path.canonicalize()?;
         let mut builder = TreeBuilder {
             lines: Vec::new(),
             child_iterators: Vec::new(),
             options,
+            task_lifetime,
         };
         builder.push(path, 0);
         Ok(builder)
     }
     fn push(&mut self, path: PathBuf, depth: u16) {
         let line = TreeLine::create(path, depth);
-        let iterator = ChildIterator::from(&line, &self.options);
+        let iterator = ChildIterator::from(&line, &self.options, &self.task_lifetime);
         self.lines.push(line);
         self.child_iterators.push(iterator);
     }
-    pub fn build(mut self, nb_lines_max: u16) -> Tree {
+    pub fn build(mut self, nb_lines_max: u16) -> Option<Tree> {
+        if self.task_lifetime.is_expired() {
+            info!("task expired (core build)");
+            return None;
+        }
         // first step: we grow the lines, not exceding nb_lines_max
         let nb_lines_max = nb_lines_max as usize;
         let mut current_depth = 0;
@@ -108,6 +123,10 @@ impl TreeBuilder {
             for i in 0..n {
                 if self.lines[i].depth != current_depth {
                     continue;
+                }
+                if self.task_lifetime.is_expired() {
+                    info!("task expired (core build)");
+                    return None;
                 }
                 if let Some(child) = self.child_iterators[i].next_child() {
                     has_open_dirs = true;
@@ -197,9 +216,9 @@ impl TreeBuilder {
             }
         }
 
-        Tree {
+        Some(Tree {
             lines: self.lines.into_boxed_slice(),
             selection: 0,
-        }
+        })
     }
 }

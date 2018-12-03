@@ -2,6 +2,8 @@
 
 use std::io;
 use std::path::PathBuf;
+use std::sync::{Arc, mpsc};
+use std::sync::atomic::{AtomicUsize};
 
 use app::{AppState, AppStateCmdResult};
 use commands::{Action, Command};
@@ -11,6 +13,7 @@ use help_states::HelpState;
 use patterns::Pattern;
 use screens::{self, Screen};
 use status::Status;
+use task_sync::TaskLifetime;
 use tree_build::TreeBuilder;
 use tree_options::TreeOptions;
 use tree_views::TreeView;
@@ -27,13 +30,15 @@ pub struct BrowserState {
 }
 
 impl BrowserState {
-    pub fn new(path: PathBuf, options: TreeOptions) -> io::Result<BrowserState> {
-        let tree = TreeBuilder::from(path, options.clone())?.build(screens::max_tree_height());
-        Ok(BrowserState {
-            tree,
-            options,
-            pattern: None,
-            filtered_tree: None,
+    pub fn new(path: PathBuf, options: TreeOptions, tl: TaskLifetime) -> io::Result<Option<BrowserState>> {
+        Ok(match TreeBuilder::from(path, options.clone(), tl)?.build(screens::max_tree_height()) {
+            Some(tree) => Some(BrowserState {
+                tree,
+                options,
+                pattern: None,
+                filtered_tree: None,
+            }),
+            None => None, // interrupted
         })
     }
     pub fn displayed_tree(&self) -> &Tree {
@@ -49,6 +54,7 @@ impl AppState for BrowserState {
         &mut self,
         cmd: &mut Command,
         verb_store: &VerbStore,
+        tl: TaskLifetime,
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => {
@@ -109,10 +115,9 @@ impl AppState for BrowserState {
                     None => self.tree.selected_line(),
                 };
                 match line.is_dir() {
-                    true => AppStateCmdResult::NewState(Box::new(BrowserState::new(
-                        line.path.clone(),
-                        self.options.clone(),
-                    )?)),
+                    true => AppStateCmdResult::from_optional_state(
+                        BrowserState::new(line.path.clone(), self.options.clone(), tl)?
+                    ),
                     false => AppStateCmdResult::Launch(Launchable::opener(&line.path)?),
                 }
             }
@@ -128,15 +133,15 @@ impl AppState for BrowserState {
                         None
                     }
                     _ => {
-                        // TODO do the filtering in a separate thread as an interruptible task
                         let pat = Pattern::from(pat);
                         let mut options = self.options.clone();
                         options.pattern = Some(pat.clone());
-                        let mut filtered_tree =
-                            TreeBuilder::from(self.tree.root().clone(), options)?
-                                .build(self.tree.lines.len() as u16);
-                        filtered_tree.try_select_best_match(&pat);
-                        self.filtered_tree = Some(filtered_tree);
+                        let root = self.tree.root().clone();
+                        let len = self.tree.lines.len() as u16;
+                        if let Some(mut filtered_tree) = TreeBuilder::from(root, options, tl).unwrap().build(len) {
+                            filtered_tree.try_select_best_match(&pat);
+                            self.filtered_tree = Some(filtered_tree);
+                        } // if none: task was cancelled from elsewhere
                         Some(pat)
                     }
                 };

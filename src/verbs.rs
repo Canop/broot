@@ -8,6 +8,7 @@ use app::AppStateCmdResult;
 use browser_states::BrowserState;
 use conf::Conf;
 use external::Launchable;
+use task_sync::TaskLifetime;
 
 #[derive(Debug, Clone)]
 pub struct Verb {
@@ -43,15 +44,18 @@ impl Verb {
             ":focus" => {
                 let path = state.tree.selected_line().path.clone();
                 let options = state.options.clone();
-                AppStateCmdResult::NewState(Box::new(BrowserState::new(path, options)?))
+                AppStateCmdResult::from_optional_state(
+                    BrowserState::new(path, options, TaskLifetime::unlimited())?
+                )
             }
             ":toggle_hidden" => {
                 let mut options = state.options.clone();
                 options.show_hidden = !options.show_hidden;
-                AppStateCmdResult::NewState(Box::new(BrowserState::new(
+                AppStateCmdResult::from_optional_state(BrowserState::new(
                     state.tree.root().clone(),
                     options,
-                )?))
+                    TaskLifetime::unlimited(),
+                )?)
             }
             ":print_path" => {
                 let mut launchable = Launchable::from(&path.to_string_lossy())?;
@@ -63,7 +67,9 @@ impl Verb {
                 Some(path) => {
                     let path = path.to_path_buf();
                     let options = state.options.clone();
-                    AppStateCmdResult::NewState(Box::new(BrowserState::new(path, options)?))
+                    AppStateCmdResult::from_optional_state(
+                        BrowserState::new(path, options, TaskLifetime::unlimited())?
+                    )
                 }
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },

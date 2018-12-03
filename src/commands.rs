@@ -75,7 +75,10 @@ impl Command {
             action: Action::Unparsed,
         }
     }
-    pub fn add_key(&mut self, key: Key) -> io::Result<()> {
+    //pub fn set_count(&mut self, cmd_count: usize) {
+    //    self.cmd_count = cmd_count;
+    //}
+    pub fn add_key(&mut self, key: Key) {
         match key {
             Key::Char('\t') => {
                 self.action = Action::Next;
@@ -114,6 +117,5 @@ impl Command {
             }
             _ => {}
         }
-        Ok(())
     }
 }

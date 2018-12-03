@@ -2,13 +2,16 @@
 
 use regex::Regex;
 use std::io;
+use std::sync::{Arc, mpsc};
+use std::sync::atomic::{AtomicUsize};
+use termion::{color, style};
 
 use app::{AppState, AppStateCmdResult};
 use commands::{Action, Command};
 use conf::Conf;
 use screens::{Screen, ScreenArea};
 use status::Status;
-use termion::{color, style};
+use task_sync::TaskLifetime;
 use verbs::VerbStore;
 
 pub struct HelpState {
@@ -28,6 +31,7 @@ impl AppState for HelpState {
         &mut self,
         cmd: &mut Command,
         _verb_store: &VerbStore,
+        tl: TaskLifetime,
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,

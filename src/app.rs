@@ -1,11 +1,16 @@
 use std::io::{self, stdin, Write};
 use termion::input::TermRead;
+use std::sync::{Arc, mpsc};
+use std::sync::atomic::{AtomicUsize, Ordering};
+use std::thread;
 
+use browser_states::BrowserState;
 use commands::Command;
 use external::Launchable;
 use input::Input;
 use screens::Screen;
 use status::Status;
+use task_sync::TaskLifetime;
 use verbs::VerbStore;
 
 pub enum AppStateCmdResult {
@@ -21,10 +26,16 @@ impl AppStateCmdResult {
     pub fn verb_not_found(text: &str) -> AppStateCmdResult {
         AppStateCmdResult::DisplayError(format!("verb not found: {:?}", &text))
     }
+    pub fn from_optional_state(os: Option<BrowserState>) -> AppStateCmdResult {
+        match os {
+            Some(os) => AppStateCmdResult::NewState(Box::new(os)),
+            None => AppStateCmdResult::Keep,
+        }
+    }
 }
 
 pub trait AppState {
-    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore) -> io::Result<AppStateCmdResult>;
+    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore, tl: TaskLifetime) -> io::Result<AppStateCmdResult>;
     fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>;
     fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()>;
 }
@@ -75,12 +86,23 @@ impl App {
         )?;
         let stdin = stdin();
         let keys = stdin.keys();
+        let (tx, rx) = mpsc::channel();
+        let cmd_count = Arc::new(AtomicUsize::new(0));
+        let key_count = Arc::clone(&cmd_count);
+        let th = thread::spawn(move|| {
+            for c in keys {
+                key_count.fetch_add(1, Ordering::SeqCst);
+                tx.send(c);
+            }
+        });
         let mut cmd = Command::new();
-        for c in keys {
+        loop {
+            let c = rx.recv().unwrap();
             //debug!("key: {:?}", &c);
-            cmd.add_key(c?)?;
+            cmd.add_key(c?);
+            let tl = TaskLifetime::new(&cmd_count);
             info!("{:?}", &cmd.action);
-            match self.mut_state().apply(&mut cmd, &verb_store)? {
+            match self.mut_state().apply(&mut cmd, &verb_store, tl)? {
                 AppStateCmdResult::Quit => {
                     break;
                 }

@@ -22,6 +22,7 @@ mod input;
 mod patterns;
 mod screens;
 mod status;
+mod task_sync;
 mod tree_build;
 mod tree_options;
 mod tree_views;
@@ -40,6 +41,7 @@ use app::App;
 use browser_states::BrowserState;
 use conf::Conf;
 use external::Launchable;
+use task_sync::TaskLifetime;
 use tree_options::TreeOptions;
 use verbs::VerbStore;
 
@@ -83,8 +85,8 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         false => env::current_dir()?,
     };
 
-    Ok(match BrowserState::new(path.clone(), TreeOptions::new()) {
-        Ok(bs) => {
+    Ok(match BrowserState::new(path.clone(), TreeOptions::new(), TaskLifetime::unlimited()) {
+        Ok(Some(bs)) => {
             let mut app = App::new();
             app.push(Box::new(bs));
             app.run(&verb_store)?
@@ -94,6 +96,7 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
             println!("{:?}", err);
             None
         }
+        _ => None, // should not happen
     })
 }
 
