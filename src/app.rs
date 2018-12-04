@@ -102,6 +102,7 @@ impl App {
             cmd.add_key(c?);
             let tl = TaskLifetime::new(&cmd_count);
             info!("{:?}", &cmd.action);
+            screen.write_input(&cmd)?;
             match self.mut_state().apply(&mut cmd, &verb_store, tl)? {
                 AppStateCmdResult::Quit => {
                     break;
@@ -127,8 +128,8 @@ impl App {
                     self.state().write_status(&mut screen, &cmd)?;
                 }
             }
-            self.mut_state().display(&mut screen, &verb_store)?;
             screen.write_input(&cmd)?;
+            self.mut_state().display(&mut screen, &verb_store)?;
         }
         Ok(None)
     }

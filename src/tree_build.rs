@@ -6,6 +6,8 @@ use flat_tree::{LineType, Tree, TreeLine};
 use task_sync::TaskLifetime;
 use tree_options::TreeOptions;
 
+const SEARCH_DEPTH: usize = 2;
+
 // a child iterator makes it possible to iter over sorted childs
 //  (a standard ReadDir is unsorted). It also keeps a "pointer" over
 //  the last generated line in the parent tree builder
@@ -33,7 +35,7 @@ impl ChildIterator {
                             match e {
                                 Ok(e) => {
                                     let path = e.path();
-                                    if options.accepts(&path, 3, task_lifetime) {
+                                    if options.accepts(&path, SEARCH_DEPTH, task_lifetime) {
                                         paths.push(e.path());
                                     }
                                 }
