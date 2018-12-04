@@ -44,9 +44,11 @@ impl Verb {
             ":focus" => {
                 let path = state.tree.selected_line().path.clone();
                 let options = state.options.clone();
-                AppStateCmdResult::from_optional_state(
-                    BrowserState::new(path, options, TaskLifetime::unlimited())?
-                )
+                AppStateCmdResult::from_optional_state(BrowserState::new(
+                    path,
+                    options,
+                    TaskLifetime::unlimited(),
+                )?)
             }
             ":toggle_hidden" => {
                 let mut options = state.options.clone();
@@ -67,9 +69,11 @@ impl Verb {
                 Some(path) => {
                     let path = path.to_path_buf();
                     let options = state.options.clone();
-                    AppStateCmdResult::from_optional_state(
-                        BrowserState::new(path, options, TaskLifetime::unlimited())?
-                    )
+                    AppStateCmdResult::from_optional_state(BrowserState::new(
+                        path,
+                        options,
+                        TaskLifetime::unlimited(),
+                    )?)
                 }
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },

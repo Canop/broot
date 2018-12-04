@@ -2,8 +2,6 @@
 
 use std::io;
 use std::path::PathBuf;
-use std::sync::{Arc, mpsc};
-use std::sync::atomic::{AtomicUsize};
 
 use app::{AppState, AppStateCmdResult};
 use commands::{Action, Command};
@@ -30,16 +28,22 @@ pub struct BrowserState {
 }
 
 impl BrowserState {
-    pub fn new(path: PathBuf, options: TreeOptions, tl: TaskLifetime) -> io::Result<Option<BrowserState>> {
-        Ok(match TreeBuilder::from(path, options.clone(), tl)?.build(screens::max_tree_height()) {
-            Some(tree) => Some(BrowserState {
-                tree,
-                options,
-                pattern: None,
-                filtered_tree: None,
-            }),
-            None => None, // interrupted
-        })
+    pub fn new(
+        path: PathBuf,
+        options: TreeOptions,
+        tl: TaskLifetime,
+    ) -> io::Result<Option<BrowserState>> {
+        Ok(
+            match TreeBuilder::from(path, options.clone(), tl)?.build(screens::max_tree_height()) {
+                Some(tree) => Some(BrowserState {
+                    tree,
+                    options,
+                    pattern: None,
+                    filtered_tree: None,
+                }),
+                None => None, // interrupted
+            },
+        )
     }
     pub fn displayed_tree(&self) -> &Tree {
         match &self.filtered_tree {
@@ -115,9 +119,11 @@ impl AppState for BrowserState {
                     None => self.tree.selected_line(),
                 };
                 match line.is_dir() {
-                    true => AppStateCmdResult::from_optional_state(
-                        BrowserState::new(line.path.clone(), self.options.clone(), tl)?
-                    ),
+                    true => AppStateCmdResult::from_optional_state(BrowserState::new(
+                        line.path.clone(),
+                        self.options.clone(),
+                        tl,
+                    )?),
                     false => AppStateCmdResult::Launch(Launchable::opener(&line.path)?),
                 }
             }
@@ -138,7 +144,9 @@ impl AppState for BrowserState {
                         options.pattern = Some(pat.clone());
                         let root = self.tree.root().clone();
                         let len = self.tree.lines.len() as u16;
-                        if let Some(mut filtered_tree) = TreeBuilder::from(root, options, tl).unwrap().build(len) {
+                        if let Some(mut filtered_tree) =
+                            TreeBuilder::from(root, options, tl).unwrap().build(len)
+                        {
                             filtered_tree.try_select_best_match(&pat);
                             self.filtered_tree = Some(filtered_tree);
                         } // if none: task was cancelled from elsewhere

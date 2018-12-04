@@ -1,7 +1,5 @@
 use regex::Regex;
-use std::io;
 use termion::event::Key;
-
 
 /// A command is the parsed representation of what the user types
 ///  in the input. It's independant of the state of the application

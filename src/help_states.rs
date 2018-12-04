@@ -2,8 +2,6 @@
 
 use regex::Regex;
 use std::io;
-use std::sync::{Arc, mpsc};
-use std::sync::atomic::{AtomicUsize};
 use termion::{color, style};
 
 use app::{AppState, AppStateCmdResult};
@@ -31,7 +29,7 @@ impl AppState for HelpState {
         &mut self,
         cmd: &mut Command,
         _verb_store: &VerbStore,
-        tl: TaskLifetime,
+        _tl: TaskLifetime,
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,

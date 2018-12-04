@@ -85,19 +85,21 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         false => env::current_dir()?,
     };
 
-    Ok(match BrowserState::new(path.clone(), TreeOptions::new(), TaskLifetime::unlimited()) {
-        Ok(Some(bs)) => {
-            let mut app = App::new();
-            app.push(Box::new(bs));
-            app.run(&verb_store)?
-        }
-        Err(err) => {
-            println!("Error while exploring {:?}:", path);
-            println!("{:?}", err);
-            None
-        }
-        _ => None, // should not happen
-    })
+    Ok(
+        match BrowserState::new(path.clone(), TreeOptions::new(), TaskLifetime::unlimited()) {
+            Ok(Some(bs)) => {
+                let mut app = App::new();
+                app.push(Box::new(bs));
+                app.run(&verb_store)?
+            }
+            Err(err) => {
+                println!("Error while exploring {:?}:", path);
+                println!("{:?}", err);
+                None
+            }
+            _ => None, // should not happen
+        },
+    )
 }
 
 fn main() {

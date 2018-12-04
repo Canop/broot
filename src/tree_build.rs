@@ -90,7 +90,11 @@ pub struct TreeBuilder {
     task_lifetime: TaskLifetime,
 }
 impl TreeBuilder {
-    pub fn from(path: PathBuf, options: TreeOptions, task_lifetime: TaskLifetime) -> io::Result<TreeBuilder> {
+    pub fn from(
+        path: PathBuf,
+        options: TreeOptions,
+        task_lifetime: TaskLifetime,
+    ) -> io::Result<TreeBuilder> {
         let path = path.canonicalize()?;
         let mut builder = TreeBuilder {
             lines: Vec::new(),

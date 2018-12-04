@@ -1,18 +1,16 @@
 //! a trivial fuzzy pattern matcher for filename filtering / sorting
 
 // weights used in match score computing
-// TODO use ML to set those weights
-//  (just kidding, nobody cares)
-// Most possible bonus would only make sense when
-//  we try all possible matches
 const BONUS_MATCH: i32 = 5000;
-const BONUS_SAME_CASE: i32 = 10;
-const BONUS_START: i32 = 25;
+const BONUS_EXACT: i32 = 100;
+const BONUS_START: i32 = 0; // disabled
 const BONUS_LENGTH: i32 = -1; // per char of length
+const MAX_LENGTH_BASE: usize = 6;
+const MAX_LENGTH_PER_CHAR: usize = 2;
 
 #[derive(Debug, Clone)]
 pub struct Pattern {
-    chars: Box<[char]>,
+    lc_chars: Box<[char]>,
 }
 
 #[derive(Debug)]
@@ -23,42 +21,66 @@ pub struct Match {
 
 impl Pattern {
     pub fn from(pat: &str) -> Pattern {
-        let chars: Vec<char> = pat.chars().collect();
-        let chars = chars.into_boxed_slice();
-        Pattern { chars }
+        let lc_chars: Vec<char> = pat.chars().map(|c| c.to_ascii_lowercase()).collect();
+        let lc_chars = lc_chars.into_boxed_slice();
+        Pattern { lc_chars }
     }
-    // this very simple matching function only looks for the first possible match
-    //  which is usually the best one, but not always
-    pub fn test(&self, candidate: &str) -> Option<Match> {
-        if candidate.is_empty() || self.chars.is_empty() {
+    fn match_starting_at_index(
+        &self,
+        cand_chars: &Vec<char>,
+        start_idx: usize, // start index in candidate
+        max_match_len: usize,
+    ) -> Option<Match> {
+        if cand_chars[start_idx] != self.lc_chars[0] {
             return None;
         }
-        let mut score: i32 = BONUS_MATCH;
-        let mut cand_iter = candidate.chars().enumerate();
         let mut pos: Vec<usize> = vec![]; // positions of matching chars in candidate
-        for &pat_char in self.chars.iter() {
+        pos.push(start_idx);
+        let mut d = 1;
+        for pat_idx in 1..self.lc_chars.len() {
             loop {
-                if let Some((cand_idx, cand_char)) = cand_iter.next() {
-                    // TODO give bonus for uppercases
-                    // TODO bonus for adjacency
-                    if pat_char == cand_char {
-                        score += BONUS_SAME_CASE;
-                        pos.push(cand_idx);
-                        break;
-                    } else if pat_char.to_ascii_lowercase() == cand_char.to_ascii_lowercase() {
-                        pos.push(cand_idx);
-                        break;
-                    }
-                } else {
+                let cand_idx = start_idx + d;
+                if cand_idx == cand_chars.len() || d > max_match_len {
                     return None;
+                }
+                if cand_chars[cand_idx] == self.lc_chars[pat_idx] {
+                    pos.push(cand_idx);
+                    break;
+                }
+                d += 1;
+            }
+        }
+        Some(Match { score: 0, pos })
+    }
+    pub fn test(&self, candidate: &str) -> Option<Match> {
+        let cand_chars: Vec<char> = candidate.chars().map(|c| c.to_ascii_lowercase()).collect();
+        if cand_chars.len() < self.lc_chars.len() {
+            return None;
+        }
+        //debug!("start test / pattern={:?} | candidate: {}", &self, candidate);
+        let mut best_score = 0;
+        let max_match_len = MAX_LENGTH_BASE + MAX_LENGTH_PER_CHAR * self.lc_chars.len();
+        let mut best_match: Option<Match> = None;
+        for start_idx in 0..=cand_chars.len() - self.lc_chars.len() {
+            let mut sm = self.match_starting_at_index(&cand_chars, start_idx, max_match_len);
+            if let Some(mut m) = sm {
+                let match_len = m.pos[m.pos.len() - 1] - m.pos[0];
+                let mut score = BONUS_MATCH;
+                if m.pos[0] == 0 {
+                    score += BONUS_START;
+                    if cand_chars.len() == self.lc_chars.len() {
+                        score += BONUS_EXACT;
+                    }
+                }
+                score += (match_len as i32) * BONUS_LENGTH;
+                if score > best_score {
+                    best_score = score;
+                    m.score = score;
+                    best_match = Some(m);
                 }
             }
         }
-        if pos[0] == 0 {
-            score += BONUS_START;
-        }
-        score += ((pos[pos.len() - 1] - pos[0]) as i32) * BONUS_LENGTH;
-        Some(Match { score, pos })
+        best_match
     }
 }
 

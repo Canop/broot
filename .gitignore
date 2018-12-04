@@ -4,3 +4,5 @@ install.sh
 notes.md
 /target
 **/*.rs.bk
+perf.data*
+*.pl

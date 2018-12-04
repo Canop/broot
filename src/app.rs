@@ -1,8 +1,8 @@
 use std::io::{self, stdin, Write};
-use termion::input::TermRead;
-use std::sync::{Arc, mpsc};
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::{mpsc, Arc};
 use std::thread;
+use termion::input::TermRead;
 
 use browser_states::BrowserState;
 use commands::Command;
@@ -35,7 +35,12 @@ impl AppStateCmdResult {
 }
 
 pub trait AppState {
-    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore, tl: TaskLifetime) -> io::Result<AppStateCmdResult>;
+    fn apply(
+        &mut self,
+        cmd: &mut Command,
+        verb_store: &VerbStore,
+        tl: TaskLifetime,
+    ) -> io::Result<AppStateCmdResult>;
     fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>;
     fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()>;
 }
@@ -89,10 +94,10 @@ impl App {
         let (tx, rx) = mpsc::channel();
         let cmd_count = Arc::new(AtomicUsize::new(0));
         let key_count = Arc::clone(&cmd_count);
-        let th = thread::spawn(move|| {
+        thread::spawn(move || {
             for c in keys {
                 key_count.fetch_add(1, Ordering::SeqCst);
-                tx.send(c);
+                tx.send(c).unwrap();
             }
         });
         let mut cmd = Command::new();
@@ -117,7 +122,9 @@ impl App {
                 }
                 AppStateCmdResult::PopState => {
                     self.states.pop();
-                    //cmd = Command::from(&self.state().tree.key()); // doesn't really seem convenient
+                    if self.states.len() == 0 {
+                        break;
+                    }
                     cmd = Command::new();
                     self.state().write_status(&mut screen, &cmd)?;
                 }
