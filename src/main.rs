@@ -84,18 +84,14 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         true => PathBuf::from(&args[1]),
         false => env::current_dir()?,
     };
+    let path = path.canonicalize()?;
 
     Ok(
         match BrowserState::new(path.clone(), TreeOptions::new(), TaskLifetime::unlimited()) {
-            Ok(Some(bs)) => {
+            Some(bs) => {
                 let mut app = App::new();
                 app.push(Box::new(bs));
                 app.run(&verb_store)?
-            }
-            Err(err) => {
-                println!("Error while exploring {:?}:", path);
-                println!("{:?}", err);
-                None
             }
             _ => None, // should not happen
         },

@@ -26,8 +26,8 @@ impl Launchable {
             None => {
                 Err(io::Error::new(
                     io::ErrorKind::Other,
-                    "Invalid launch string",
-                )) // can this really happen?
+                    "Empty launch string",
+                ))
             }
         }
     }

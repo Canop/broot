@@ -7,13 +7,13 @@ use std::io::{self, Write};
 use termion::{color, style};
 
 pub trait TreeView {
-    fn write_tree(&mut self, tree: &Tree, pattern: &Option<Pattern>) -> io::Result<()>;
+    fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
     fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()>;
     fn write_line_name(&mut self, line: &TreeLine, pattern: &Option<Pattern>) -> io::Result<()>;
 }
 
 impl TreeView for Screen {
-    fn write_tree(&mut self, tree: &Tree, pattern: &Option<Pattern>) -> io::Result<()> {
+    fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
         for y in 1..self.h - 1 {
             write!(
                 self.stdout,
@@ -45,8 +45,10 @@ impl TreeView for Screen {
                     color::Fg(color::Reset),
                 )?;
             }
-            self.write_line_key(line, selected)?;
-            self.write_line_name(line, pattern)?;
+            if line.is_selectable() {
+                self.write_line_key(line, selected)?;
+            }
+            self.write_line_name(line, &tree.pattern)?;
             write!(
                 self.stdout,
                 "{}{}{}",
@@ -60,82 +62,83 @@ impl TreeView for Screen {
     }
 
     fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()> {
-        match &line.content {
-            LineType::Pruning { unlisted: _ } => {}
-            _ => {
-                if selected {
-                    write!(
-                        self.stdout,
-                        "{} {} {}{}",
-                        color::Bg(color::AnsiValue::grayscale(4)),
-                        &line.key,
-                        color::Bg(color::AnsiValue::grayscale(1)),
-                        termion::clear::UntilNewline,
-                    )?;
-                } else {
-                    write!(
-                        self.stdout,
-                        "{}{} {} {}{}",
-                        color::Bg(color::AnsiValue::grayscale(2)),
-                        color::Fg(color::AnsiValue::grayscale(14)),
-                        &line.key,
-                        color::Fg(color::Reset),
-                        color::Bg(color::Reset),
-                    )?;
-                }
-            }
+        match selected {
+            true => write!(
+                self.stdout,
+                "{} {} {}{}",
+                color::Bg(color::AnsiValue::grayscale(4)),
+                &line.key,
+                color::Bg(color::AnsiValue::grayscale(1)),
+                termion::clear::UntilNewline,
+            ),
+            false => write!(
+                self.stdout,
+                "{}{} {} {}{}",
+                color::Bg(color::AnsiValue::grayscale(2)),
+                color::Fg(color::AnsiValue::grayscale(14)),
+                &line.key,
+                color::Fg(color::Reset),
+                color::Bg(color::Reset),
+            ),
         }
-        Ok(())
     }
 
     fn write_line_name(&mut self, line: &TreeLine, pattern: &Option<Pattern>) -> io::Result<()> {
         lazy_static! {
             static ref fg_reset: String = format!("{}", color::Fg(color::Reset)).to_string();
-            static ref fg_dir: String =
-                format!("{}", color::Fg(color::Rgb(84, 142, 188))).to_string();
+            static ref fg_dir: String = format!("{}", color::Fg(color::Rgb(84, 142, 188))).to_string();
+            static ref fg_link: String = format!("{}", color::Fg(color::Rgb(45, 192, 193))).to_string();
             static ref fg_match: String = format!("{}", color::Fg(color::Green)).to_string();
             static ref fg_reset_dir: String = format!("{}{}", &*fg_reset, &*fg_dir).to_string();
+            static ref fg_reset_link: String = format!("{}{}", &*fg_reset, &*fg_link).to_string();
         }
-        // TODO draw in red lines wiht has_error
+        // TODO draw in red lines with has_error
         match &line.content {
-            LineType::Dir { name, unlisted } => {
-                match line.key == "" {
-                    true => {
-                        write!(
-                            self.stdout,
-                            " {}{}{}",
-                            style::Bold,
-                            &*fg_dir,
-                            &line.path.to_string_lossy(),
-                        )?;
+            LineType::Dir => {
+                if line.key == "" {
+                    write!(
+                        self.stdout,
+                        " {}{}{}",
+                        style::Bold,
+                        &*fg_dir,
+                        &line.path.to_string_lossy(),
+                    )?;
+                } else {
+                    write!(
+                        self.stdout,
+                        " {}{}{}",
+                        style::Bold,
+                        &*fg_dir,
+                        decorated_name(&line.name, pattern, &*fg_match, &*fg_reset_dir),
+                    )?;
+                    if line.unlisted > 0 {
+                        write!(self.stdout, " …",)?;
                     }
-                    false => {
-                        write!(
-                            self.stdout,
-                            " {}{}{}",
-                            style::Bold,
-                            &*fg_dir,
-                            decorated_name(&name, pattern, &*fg_match, &*fg_reset_dir),
-                        )?;
-                        if *unlisted > 0 {
-                            write!(self.stdout, " …",)?;
-                        }
-                    }
-                };
+                }
             }
-            LineType::File { name } => {
+            LineType::File => {
                 write!(
                     self.stdout,
                     " {}",
-                    decorated_name(&name, pattern, &*fg_match, &*fg_reset),
+                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
                 )?;
             }
-            LineType::Pruning { unlisted } => {
+            LineType::SymLink(target) => {
+                write!(
+                    self.stdout,
+                    " {} {}->{} {}",
+                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
+                    &*fg_link,
+                    &*fg_reset,
+                    decorated_name(&target, pattern, &*fg_match, &*fg_reset),
+                )?;
+            }
+            LineType::Pruning => {
                 write!(
                     self.stdout,
                     "{} ... {} other files…",
                     style::Italic,
-                    unlisted,
+                    &line.unlisted,
                 )?;
             }
         }

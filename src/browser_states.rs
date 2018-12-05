@@ -2,6 +2,7 @@
 
 use std::io;
 use std::path::PathBuf;
+use std::time::Instant;
 
 use app::{AppState, AppStateCmdResult};
 use commands::{Action, Command};
@@ -20,10 +21,6 @@ use verbs::VerbStore;
 pub struct BrowserState {
     pub tree: Tree,
     pub options: TreeOptions,
-    // TODO pattern and filtered_tree are now always defined
-    //         at the same time. So we need only one option.
-    //         Put the pattern in the tree will simplify many calls
-    pub pattern: Option<Pattern>,
     pub filtered_tree: Option<Tree>,
 }
 
@@ -32,18 +29,15 @@ impl BrowserState {
         path: PathBuf,
         options: TreeOptions,
         tl: TaskLifetime,
-    ) -> io::Result<Option<BrowserState>> {
-        Ok(
-            match TreeBuilder::from(path, options.clone(), tl)?.build(screens::max_tree_height()) {
-                Some(tree) => Some(BrowserState {
-                    tree,
-                    options,
-                    pattern: None,
-                    filtered_tree: None,
-                }),
-                None => None, // interrupted
-            },
-        )
+    ) -> Option<BrowserState> {
+        match TreeBuilder::from(path, options.clone(), tl).build(screens::max_tree_height()) {
+            Some(tree) => Some(BrowserState {
+                tree,
+                options,
+                filtered_tree: None,
+            }),
+            None => None, // interrupted
+        }
     }
     pub fn displayed_tree(&self) -> &Tree {
         match &self.filtered_tree {
@@ -62,10 +56,8 @@ impl AppState for BrowserState {
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => {
-                if let Some(_) = self.pattern {
-                    self.pattern = None;
+                if let Some(_) = self.filtered_tree {
                     self.filtered_tree = None;
-                    // TODO try to keep selection ?
                     cmd.raw.clear();
                     AppStateCmdResult::Keep
                 } else if self.tree.selection > 0 {
@@ -123,7 +115,7 @@ impl AppState for BrowserState {
                         line.path.clone(),
                         self.options.clone(),
                         tl,
-                    )?),
+                    )),
                     false => AppStateCmdResult::Launch(Launchable::opener(&line.path)?),
                 }
             }
@@ -133,24 +125,21 @@ impl AppState for BrowserState {
             },
             Action::Quit => AppStateCmdResult::Quit,
             Action::PatternEdit(pat) => {
-                self.pattern = match pat.len() {
-                    0 => {
-                        self.filtered_tree = None;
-                        None
-                    }
+                self.filtered_tree = match pat.len() {
+                    0 => None,
                     _ => {
+                        let start = Instant::now();
                         let pat = Pattern::from(pat);
                         let mut options = self.options.clone();
                         options.pattern = Some(pat.clone());
                         let root = self.tree.root().clone();
                         let len = self.tree.lines.len() as u16;
-                        if let Some(mut filtered_tree) =
-                            TreeBuilder::from(root, options, tl).unwrap().build(len)
-                        {
-                            filtered_tree.try_select_best_match(&pat);
-                            self.filtered_tree = Some(filtered_tree);
+                        let mut filtered_tree = TreeBuilder::from(root, options, tl).build(len);
+                        if let Some(ref mut filtered_tree) = filtered_tree {
+                            debug!("Tree search took {:?}", start.elapsed());
+                            filtered_tree.try_select_best_match(); // TODO make part of build ?
                         } // if none: task was cancelled from elsewhere
-                        Some(pat)
+                        filtered_tree
                     }
                 };
                 AppStateCmdResult::Keep
@@ -158,9 +147,7 @@ impl AppState for BrowserState {
             Action::Help(about) => AppStateCmdResult::NewState(Box::new(HelpState::new(&about))),
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
-                    if let Some(pattern) = &self.pattern {
-                        tree.try_select_next_match(&pattern);
-                    }
+                    tree.try_select_next_match();
                 }
                 AppStateCmdResult::Keep
             }
@@ -169,7 +156,7 @@ impl AppState for BrowserState {
     }
 
     fn display(&mut self, screen: &mut Screen, _verb_store: &VerbStore) -> io::Result<()> {
-        screen.write_tree(&self.displayed_tree(), &self.pattern)
+        screen.write_tree(&self.displayed_tree())
     }
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()> {

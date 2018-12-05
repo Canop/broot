@@ -13,25 +13,29 @@ use patterns::Pattern;
 
 #[derive(Debug)]
 pub enum LineType {
-    File { name: String },
-    Dir { name: String, unlisted: usize },
-    Pruning { unlisted: usize },
+    File,
+    Dir,
+    SymLink(String), // store the lineType of destination ?
+    Pruning,
 }
 
 #[derive(Debug)]
 pub struct TreeLine {
     pub left_branchs: Box<[bool]>,
     pub depth: u16,
+    pub name: String, // name of the first unlisted, in case of Pruning
     pub key: String,
     pub path: PathBuf,
     pub content: LineType,
     pub has_error: bool,
+    pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
 }
 
 #[derive(Debug)]
 pub struct Tree {
     pub lines: Box<[TreeLine]>,
     pub selection: usize, // there's always a selection (starts with root, which is 0)
+    pub pattern: Option<Pattern>, // the pattern which filtered the tree, if any
 }
 
 fn index_to_char(i: usize) -> char {
@@ -52,31 +56,47 @@ impl TreeLine {
         };
         let mut has_error = false;
         let key = String::from("");
-        let content = match fs::metadata(&path) {
-            Ok(metadata) => match metadata.is_dir() {
-                true => LineType::Dir { name, unlisted: 0 },
-                false => LineType::File { name },
+        let content = match fs::symlink_metadata(&path) {
+            Ok(metadata) => {
+                let ft = metadata.file_type();
+                if ft.is_dir() {
+                    LineType::Dir
+                } else if ft.is_symlink() {
+                    LineType::SymLink(
+                        match fs::read_link(&path) {
+                            Ok(target) => target.to_string_lossy().into_owned(),
+                            Err(_) => String::from("???"),
+                        }
+                    )
+                } else {
+                    LineType::File
+                }
             },
             Err(_) => {
                 has_error = true;
-                LineType::File { name }
+                LineType::File
             }
         };
         TreeLine {
             left_branchs: left_branchs.into_boxed_slice(),
             key,
+            name,
             path,
             depth,
             content,
             has_error,
+            unlisted: 0,
+        }
+    }
+    pub fn is_selectable(&self) -> bool {
+        match &self.content {
+            LineType::Pruning => false,
+            _ => true,
         }
     }
     pub fn is_dir(&self) -> bool {
         match &self.content {
-            LineType::Dir {
-                name: _,
-                unlisted: _,
-            } => true,
+            LineType::Dir => true,
             _ => false,
         }
     }
@@ -85,16 +105,68 @@ impl TreeLine {
             self.key.push(index_to_char(v[i + 1]));
         }
     }
-    pub fn name(&self) -> Option<&str> {
-        match &self.content {
-            LineType::Dir { name, unlisted: _ } => Some(name),
-            LineType::File { name } => Some(name),
-            _ => None,
-        }
-    }
 }
 
 impl Tree {
+    // do what must be done after line additions or removals:
+    // - sort the lines
+    // - allow keys
+    // - compute left branchs
+    pub fn after_lines_changed(&mut self) {
+        // we sort the lines
+        self.lines.sort_by(|a, b| a.path.cmp(&b.path));
+
+        // we can now give every file and directory a key
+        let mut d: usize = 0;
+        let mut counts: Vec<usize> = vec![0; 1]; // first cell not used
+        for i in 1..self.lines.len() {
+            let line_depth = self.lines[i].depth as usize;
+            if line_depth > d {
+                if counts.len() <= line_depth {
+                    counts.push(0);
+                } else {
+                    counts[line_depth] = 0;
+                }
+            }
+            d = line_depth;
+            counts[d] += 1;
+            self.lines[i].fill_key(&counts, d);
+        }
+
+        // then we discover the branches (for the drawing)
+        for i in 1..self.lines.len() {
+            for d in 0..self.lines[i].left_branchs.len() {
+                self.lines[i].left_branchs[d] = false;
+            }
+        }
+        for end_index in 1..self.lines.len() {
+            let depth = (self.lines[end_index].depth - 1) as usize;
+            let start_index = {
+                let parent_path = &self.lines[end_index].path.parent();
+                let start_index = match parent_path {
+                    Some(parent_path) => {
+                        let parent_path = parent_path.to_path_buf();
+                        let mut index = end_index;
+                        loop {
+                            if self.lines[index].path == parent_path {
+                                break;
+                            }
+                            if index == 0 {
+                                break;
+                            }
+                            index -= 1;
+                        }
+                        index
+                    }
+                    None => end_index, // Should not happen
+                };
+                start_index + 1
+            };
+            for i in start_index..end_index + 1 {
+                self.lines[i].left_branchs[depth] = true;
+            }
+        }
+    }
     pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {
         if line_index >= self.lines.len() {
             return false;
@@ -116,21 +188,12 @@ impl Tree {
         }
         return false;
     }
-    pub fn move_selection(&mut self, dy: i32) {
+    pub fn move_selection(&mut self, dy: i32) { // only work for +1 or -1
+        let l = self.lines.len();
         loop {
-            let l = self.lines.len();
-            self.selection = (self.selection + (l as i32 + dy) as usize) % l;
-            match &self.lines[self.selection].content {
-                LineType::Dir {
-                    name: _,
-                    unlisted: _,
-                } => {
-                    break;
-                }
-                LineType::File { name: _ } => {
-                    break;
-                }
-                _ => {}
+            self.selection = (self.selection + ((l as i32) + dy) as usize) % l;
+            if self.lines[self.selection].is_selectable() {
+                break;
             }
         }
     }
@@ -143,13 +206,15 @@ impl Tree {
     pub fn root(&self) -> &PathBuf {
         &self.lines[0].path
     }
-    // select the line with the best matching score. Does nothing
-    //  and returns false if no line matches
-    pub fn try_select_best_match(&mut self, pattern: &Pattern) -> bool {
-        let mut best_score = 0;
-        for (idx, line) in self.lines.iter().enumerate() {
-            if let Some(name) = line.name() {
-                if let Some(m) = pattern.test(&name) {
+    // select the line with the best matching score
+    pub fn try_select_best_match(&mut self) {
+        if let Some(pattern) = &self.pattern {
+            let mut best_score = 0;
+            for (idx, line) in self.lines.iter().enumerate() {
+                if !line.is_selectable() {
+                    continue;
+                }
+                if let Some(m) = pattern.test(&line.name) {
                     if best_score > m.score {
                         continue;
                     }
@@ -164,18 +229,23 @@ impl Tree {
                 }
             }
         }
-        best_score > 0
     }
-    pub fn try_select_next_match(&mut self, pattern: &Pattern) -> bool {
-        for di in 0..self.lines.len() {
-            let idx = (self.selection + di + 1) % self.lines.len();
-            if let Some(name) = self.lines[idx].name() {
-                if let Some(_) = pattern.test(&name) {
+    pub fn try_select_next_match(&mut self) -> bool {
+        if let Some(pattern) = &self.pattern {
+            for di in 0..self.lines.len() {
+                let idx = (self.selection + di + 1) % self.lines.len();
+                let line = &self.lines[idx];
+                if !line.is_selectable() {
+                    continue;
+                }
+                if let Some(_) = pattern.test(&line.name) {
                     self.selection = idx;
                     return true;
                 }
             }
+            return false;
         }
-        false
+        self.move_selection(1);
+        true
     }
 }

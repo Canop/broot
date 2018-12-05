@@ -50,11 +50,11 @@ impl Screen {
                 termion::clear::CurrentLine,
             )?;
             if i < lines.len() {
-                debug!("{}", &lines[i]);
                 write!(self.stdout, "{}", &lines[i],)?;
                 i += 1;
             }
         }
+        self.stdout.flush()?;
         Ok(())
     }
 }

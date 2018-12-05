@@ -48,7 +48,7 @@ impl Verb {
                     path,
                     options,
                     TaskLifetime::unlimited(),
-                )?)
+                ))
             }
             ":toggle_hidden" => {
                 let mut options = state.options.clone();
@@ -57,7 +57,7 @@ impl Verb {
                     state.tree.root().clone(),
                     options,
                     TaskLifetime::unlimited(),
-                )?)
+                ))
             }
             ":print_path" => {
                 let mut launchable = Launchable::from(&path.to_string_lossy())?;
@@ -73,7 +73,7 @@ impl Verb {
                         path,
                         options,
                         TaskLifetime::unlimited(),
-                    )?)
+                    ))
                 }
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
