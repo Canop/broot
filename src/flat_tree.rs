@@ -150,10 +150,17 @@ impl Tree {
         for (idx, line) in self.lines.iter().enumerate() {
             if let Some(name) = line.name() {
                 if let Some(m) = pattern.test(&name) {
-                    if m.score > best_score {
-                        best_score = m.score;
-                        self.selection = idx;
+                    if best_score > m.score {
+                        continue;
                     }
+                    if m.score == best_score {
+                        // in case of equal scores, we prefer the shortest path
+                        if self.lines[idx].depth >= self.lines[self.selection].depth {
+                            continue;
+                        }
+                    }
+                    best_score = m.score;
+                    self.selection = idx;
                 }
             }
         }

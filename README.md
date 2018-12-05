@@ -21,7 +21,7 @@ The executable is written in the `target/release` directory.
 
 ### From precompiled binaries
 
-* [x86_64 / linux](https://dystroy.org/pub/broot)
+* [x86_64-linux](https://dystroy.org/broot/x86_64-linux/broot)
 
 ## Development
 
