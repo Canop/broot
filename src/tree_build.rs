@@ -249,7 +249,6 @@ impl TreeBuilder {
                 }
                 debug!("tree builder will go deeper");
                 for next_level_dir_idx in &next_level_dirs {
-                    let state_before = self.blines[*next_level_dir_idx].filtering_state;
                     let has_child_match = self.load_childs(*next_level_dir_idx);
                     if has_child_match {
                         // we must ensure the ancestors are made Ok
@@ -261,17 +260,14 @@ impl TreeBuilder {
                             }
                             bline.filtering_state = FilteringState::Ok;
                             idx = bline.parent_idx;
+                            nb_lines_ok += 1;
                             if idx == 0 {
                                 break;
                             }
                         }
-                    }
-                    if self.blines[*next_level_dir_idx].filtering_state == FilteringState::Ok
-                        && state_before == FilteringState::Unsure
-                    {
-                        // next_level_dir and its ancestors are now matching
-                        // we must propagate
-                        nb_lines_ok += 1;
+                        if nb_lines_ok >= nb_lines_max {
+                            break;
+                        }
                     }
                     open_dirs.push_back(*next_level_dir_idx);
                 }
