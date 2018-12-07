@@ -1,10 +1,11 @@
 //! a trivial fuzzy pattern matcher for filename filtering / sorting
 
 // weights used in match score computing
-const BONUS_MATCH: i32 = 5000;
-const BONUS_EXACT: i32 = 100;
+const BONUS_MATCH: i32 = 10000;
+const BONUS_EXACT: i32 = 1000;
 const BONUS_START: i32 = 0; // disabled
-const BONUS_LENGTH: i32 = -1; // per char of length
+const BONUX_CANDIDATE_LENGTH: i32 = -1; // per char
+const BONUS_LENGTH: i32 = -10; // per char of length
 const MAX_LENGTH_BASE: usize = 2;
 const MAX_LENGTH_PER_CHAR: usize = 2;
 
@@ -66,6 +67,7 @@ impl Pattern {
             if let Some(mut m) = sm {
                 let match_len = m.pos[m.pos.len() - 1] - m.pos[0];
                 let mut score = BONUS_MATCH;
+                score += BONUX_CANDIDATE_LENGTH * (cand_chars.len() as i32);
                 if m.pos[0] == 0 {
                     score += BONUS_START;
                     if cand_chars.len() == self.lc_chars.len() {
