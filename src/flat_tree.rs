@@ -28,6 +28,7 @@ pub struct TreeLine {
     pub content: LineType, // FIXME rename
     pub has_error: bool,
     pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
+    pub score: i32, // 0 if there's no pattern
 }
 
 #[derive(Debug)]
@@ -181,26 +182,22 @@ impl Tree {
     }
     // select the line with the best matching score
     pub fn try_select_best_match(&mut self) {
-        if let Some(pattern) = &self.pattern {
-            let mut best_score = 0;
-            for (idx, line) in self.lines.iter().enumerate() {
-                if !line.is_selectable() {
+        let mut best_score = 0;
+        for (idx, line) in self.lines.iter().enumerate() {
+            if !line.is_selectable() {
+                continue;
+            }
+            if best_score > line.score {
+                continue;
+            }
+            if line.score == best_score {
+                // in case of equal scores, we prefer the shortest path
+                if self.lines[idx].depth >= self.lines[self.selection].depth {
                     continue;
                 }
-                if let Some(m) = pattern.test(&line.name) {
-                    if best_score > m.score {
-                        continue;
-                    }
-                    if m.score == best_score {
-                        // in case of equal scores, we prefer the shortest path
-                        if self.lines[idx].depth >= self.lines[self.selection].depth {
-                            continue;
-                        }
-                    }
-                    best_score = m.score;
-                    self.selection = idx;
-                }
             }
+            best_score = line.score;
+            self.selection = idx;
         }
     }
     pub fn try_select_next_match(&mut self) -> bool {

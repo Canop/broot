@@ -27,6 +27,7 @@ struct BLine {
     line_type: LineType,
     has_error: bool,
     nb_matches: usize,
+    score: i32,
 }
 impl BLine {
     // a special constructor, checking nothing
@@ -46,6 +47,7 @@ impl BLine {
             line_type: LineType::Dir, // it should have been checked before
             has_error: false,         // well... let's hope
             nb_matches: 1,
+            score: 0,
         }
     }
     // return a bline if the path directly matches the pattern and no_hidden conditions
@@ -57,6 +59,7 @@ impl BLine {
         pattern: &Option<Pattern>,
     ) -> Option<BLine> {
         let mut nb_matches = 1;
+        let mut score = 0;
         let name = {
             let name = match &path.file_name() {
                 Some(name) => name.to_string_lossy(),
@@ -69,7 +72,9 @@ impl BLine {
                 return None;
             }
             if let Some(pattern) = pattern {
-                if pattern.test(&name).is_none() {
+                if let Some(m) = pattern.test(&name) {
+                    score = m.score;
+                } else {
                     nb_matches = 0;
                 }
             }
@@ -119,6 +124,7 @@ impl BLine {
             line_type,
             has_error,
             nb_matches,
+            score,
         })
     }
     fn to_tree_line(&self) -> TreeLine {
@@ -131,6 +137,7 @@ impl BLine {
             content: self.line_type.clone(),
             has_error: self.has_error,
             unlisted: self.childs.len() - self.next_child_idx,
+            score: self.score,
         }
     }
 }
