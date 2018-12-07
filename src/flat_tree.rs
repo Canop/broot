@@ -201,21 +201,17 @@ impl Tree {
         }
     }
     pub fn try_select_next_match(&mut self) -> bool {
-        if let Some(pattern) = &self.pattern {
-            for di in 0..self.lines.len() {
-                let idx = (self.selection + di + 1) % self.lines.len();
-                let line = &self.lines[idx];
-                if !line.is_selectable() {
-                    continue;
-                }
-                if let Some(_) = pattern.test(&line.name) {
-                    self.selection = idx;
-                    return true;
-                }
+        for di in 0..self.lines.len() {
+            let idx = (self.selection + di + 1) % self.lines.len();
+            let line = &self.lines[idx];
+            if !line.is_selectable() {
+                continue;
             }
-            return false;
+            if line.score > 0 {
+                self.selection = idx;
+                return true;
+            }
         }
-        self.move_selection(1);
-        true
+        false
     }
 }
