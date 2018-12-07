@@ -25,12 +25,10 @@ pub struct BrowserState {
 }
 
 impl BrowserState {
-    pub fn new(
-        path: PathBuf,
-        options: TreeOptions,
-        tl: TaskLifetime,
-    ) -> Option<BrowserState> {
-        match TreeBuilder::from(path, options.clone(), tl).build(screens::max_tree_height()) {
+    pub fn new(path: PathBuf, options: TreeOptions, tl: TaskLifetime) -> Option<BrowserState> {
+        match TreeBuilder::from(path, options.clone(), tl)
+            .build(screens::max_tree_height() as usize)
+        {
             Some(tree) => Some(BrowserState {
                 tree,
                 options,
@@ -134,10 +132,11 @@ impl AppState for BrowserState {
                         options.pattern = Some(pat.clone());
                         let root = self.tree.root().clone();
                         let len = self.tree.lines.len() as u16;
-                        let mut filtered_tree = TreeBuilder::from(root, options, tl).build(len);
+                        let mut filtered_tree =
+                            TreeBuilder::from(root, options, tl).build(len as usize);
                         if let Some(ref mut filtered_tree) = filtered_tree {
-                            debug!("Tree search took {:?}", start.elapsed());
-                            filtered_tree.try_select_best_match(); // TODO make part of build ?
+                            info!("Tree search took {:?}", start.elapsed());
+                            filtered_tree.try_select_best_match();
                         } // if none: task was cancelled from elsewhere
                         filtered_tree
                     }

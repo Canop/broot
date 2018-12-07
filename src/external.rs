@@ -23,12 +23,7 @@ impl Launchable {
                 args: tokens.collect(),
                 just_print: false,
             }),
-            None => {
-                Err(io::Error::new(
-                    io::ErrorKind::Other,
-                    "Empty launch string",
-                ))
-            }
+            None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
         }
     }
     pub fn execute(&self) -> io::Result<()> {

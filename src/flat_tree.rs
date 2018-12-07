@@ -6,12 +6,11 @@
 //!  tree's root to the number of lines of the screen) or by their "key",
 //!  a string reproducing the hierarchy of the tree.
 
-use std::fs;
 use std::path::PathBuf;
 
 use patterns::Pattern;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum LineType {
     File,
     Dir,
@@ -26,7 +25,7 @@ pub struct TreeLine {
     pub name: String, // name of the first unlisted, in case of Pruning
     pub key: String,
     pub path: PathBuf,
-    pub content: LineType,
+    pub content: LineType, // FIXME rename
     pub has_error: bool,
     pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
 }
@@ -48,46 +47,6 @@ fn index_to_char(i: usize) -> char {
 }
 
 impl TreeLine {
-    pub fn create(path: PathBuf, depth: u16) -> TreeLine {
-        let left_branchs = vec![false; depth as usize];
-        let name = match path.file_name() {
-            Some(s) => s.to_string_lossy().into_owned(),
-            None => String::from("???"),
-        };
-        let mut has_error = false;
-        let key = String::from("");
-        let content = match fs::symlink_metadata(&path) {
-            Ok(metadata) => {
-                let ft = metadata.file_type();
-                if ft.is_dir() {
-                    LineType::Dir
-                } else if ft.is_symlink() {
-                    LineType::SymLink(
-                        match fs::read_link(&path) {
-                            Ok(target) => target.to_string_lossy().into_owned(),
-                            Err(_) => String::from("???"),
-                        }
-                    )
-                } else {
-                    LineType::File
-                }
-            },
-            Err(_) => {
-                has_error = true;
-                LineType::File
-            }
-        };
-        TreeLine {
-            left_branchs: left_branchs.into_boxed_slice(),
-            key,
-            name,
-            path,
-            depth,
-            content,
-            has_error,
-            unlisted: 0,
-        }
-    }
     pub fn is_selectable(&self) -> bool {
         match &self.content {
             LineType::Pruning => false,
@@ -133,34 +92,47 @@ impl Tree {
             self.lines[i].fill_key(&counts, d);
         }
 
-        // then we discover the branches (for the drawing)
         for i in 1..self.lines.len() {
             for d in 0..self.lines[i].left_branchs.len() {
                 self.lines[i].left_branchs[d] = false;
             }
         }
-        for end_index in 1..self.lines.len() {
+        // then we discover the branches (for the drawing)
+        // and we mark the last childs as pruning, if they have unlisted brothers
+        let mut last_parent_index: usize = self.lines.len() + 1;
+        for end_index in (1..self.lines.len()).rev() {
             let depth = (self.lines[end_index].depth - 1) as usize;
             let start_index = {
-                let parent_path = &self.lines[end_index].path.parent();
-                let start_index = match parent_path {
-                    Some(parent_path) => {
-                        let parent_path = parent_path.to_path_buf();
-                        let mut index = end_index;
-                        loop {
-                            if self.lines[index].path == parent_path {
-                                break;
+                let parent_index = {
+                    let parent_path = &self.lines[end_index].path.parent();
+                    match parent_path {
+                        Some(parent_path) => {
+                            let mut index = end_index;
+                            loop {
+                                index -= 1;
+                                if self.lines[index].path == *parent_path {
+                                    break;
+                                }
+                                if index == 0 {
+                                    break;
+                                }
                             }
-                            if index == 0 {
-                                break;
-                            }
-                            index -= 1;
+                            index
                         }
-                        index
+                        None => end_index, // Should not happen
                     }
-                    None => end_index, // Should not happen
                 };
-                start_index + 1
+                if parent_index != last_parent_index {
+                    // the line at end_index is the last listed child of the line at parent_index
+                    let unlisted = self.lines[parent_index].unlisted;
+                    if unlisted > 0 {
+                        self.lines[end_index].content = LineType::Pruning;
+                        self.lines[end_index].unlisted = unlisted + 1;
+                        self.lines[parent_index].unlisted = 0;
+                    }
+                    last_parent_index = parent_index;
+                }
+                parent_index + 1
             };
             for i in start_index..end_index + 1 {
                 self.lines[i].left_branchs[depth] = true;
@@ -188,7 +160,8 @@ impl Tree {
         }
         return false;
     }
-    pub fn move_selection(&mut self, dy: i32) { // only work for +1 or -1
+    pub fn move_selection(&mut self, dy: i32) {
+        // only work for +1 or -1
         let l = self.lines.len();
         loop {
             self.selection = (self.selection + ((l as i32) + dy) as usize) % l;

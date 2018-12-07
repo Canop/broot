@@ -5,7 +5,7 @@ const BONUS_MATCH: i32 = 5000;
 const BONUS_EXACT: i32 = 100;
 const BONUS_START: i32 = 0; // disabled
 const BONUS_LENGTH: i32 = -1; // per char of length
-const MAX_LENGTH_BASE: usize = 6;
+const MAX_LENGTH_BASE: usize = 2;
 const MAX_LENGTH_PER_CHAR: usize = 2;
 
 #[derive(Debug, Clone)]
