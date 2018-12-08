@@ -19,6 +19,7 @@ pub enum AppStateCmdResult {
     Launch(Launchable),
     DisplayError(String),
     NewState(Box<AppState>),
+    MustReapplyInterruptible,
     PopState,
 }
 
@@ -39,8 +40,13 @@ pub trait AppState {
         &mut self,
         cmd: &mut Command,
         verb_store: &VerbStore,
-        tl: TaskLifetime,
     ) -> io::Result<AppStateCmdResult>;
+    fn reapply_interruptible(
+        &mut self,
+        cmd: &mut Command,
+        verb_store: &VerbStore,
+        tl: TaskLifetime,
+    ); // will always be keep, and never throw
     fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>;
     fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()>;
 }
@@ -91,26 +97,33 @@ impl App {
         )?;
         let stdin = stdin();
         let keys = stdin.keys();
-        let (tx, rx) = mpsc::channel();
+        let (tx_keys, rx_keys) = mpsc::channel();
+        let (tx_quit, rx_quit) = mpsc::channel();
         let cmd_count = Arc::new(AtomicUsize::new(0));
         let key_count = Arc::clone(&cmd_count);
         thread::spawn(move || {
             for c in keys {
                 key_count.fetch_add(1, Ordering::SeqCst);
-                tx.send(c).unwrap();
+                tx_keys.send(c).unwrap();
+                let quit = rx_quit.recv().unwrap();
+                if quit {
+                    return;
+                }
             }
         });
         let mut cmd = Command::new();
-        loop {
-            let c = rx.recv().unwrap();
+        for c in rx_keys {
             //debug!("key: {:?}", &c);
             cmd.add_key(c?);
             let tl = TaskLifetime::new(&cmd_count);
             info!("{:?}", &cmd.action);
             screen.write_input(&cmd)?;
-            match self.mut_state().apply(&mut cmd, &verb_store, tl)? {
+            let mut quit = false;
+            let mut must_reapply_interruptible = false;
+            match self.mut_state().apply(&mut cmd, &verb_store)? {
                 AppStateCmdResult::Quit => {
-                    break;
+                    debug!("cdm result quit");
+                    quit = true;
                 }
                 AppStateCmdResult::Launch(launchable) => {
                     return Ok(Some(launchable));
@@ -120,13 +133,17 @@ impl App {
                     cmd = Command::new();
                     self.state().write_status(&mut screen, &cmd)?;
                 }
+                AppStateCmdResult::MustReapplyInterruptible => {
+                    must_reapply_interruptible = true;
+                }
                 AppStateCmdResult::PopState => {
                     self.states.pop();
                     if self.states.len() == 0 {
-                        break;
+                        quit = true;
+                    } else {
+                        cmd = Command::new();
+                        self.state().write_status(&mut screen, &cmd)?;
                     }
-                    cmd = Command::new();
-                    self.state().write_status(&mut screen, &cmd)?;
                 }
                 AppStateCmdResult::DisplayError(txt) => {
                     screen.write_status_err(&txt)?;
@@ -134,6 +151,11 @@ impl App {
                 AppStateCmdResult::Keep => {
                     self.state().write_status(&mut screen, &cmd)?;
                 }
+            }
+            tx_quit.send(quit).unwrap();
+            if !quit && must_reapply_interruptible {
+                self.mut_state().reapply_interruptible(&mut cmd, &verb_store, tl);
+                self.state().write_status(&mut screen, &cmd)?;
             }
             screen.write_input(&cmd)?;
             self.mut_state().display(&mut screen, &verb_store)?;

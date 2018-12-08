@@ -50,7 +50,6 @@ impl AppState for BrowserState {
         &mut self,
         cmd: &mut Command,
         verb_store: &VerbStore,
-        tl: TaskLifetime,
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => {
@@ -86,7 +85,7 @@ impl AppState for BrowserState {
                     true => AppStateCmdResult::from_optional_state(BrowserState::new(
                         line.path.clone(),
                         self.options.clone(),
-                        tl,
+                        TaskLifetime::unlimited(),
                     )),
                     false => AppStateCmdResult::Launch(Launchable::opener(&line.path)?),
                 }
@@ -97,25 +96,15 @@ impl AppState for BrowserState {
             },
             Action::Quit => AppStateCmdResult::Quit,
             Action::PatternEdit(pat) => {
-                self.filtered_tree = match pat.len() {
-                    0 => None,
-                    _ => {
-                        let start = Instant::now();
-                        let pat = Pattern::from(pat);
-                        let mut options = self.options.clone();
-                        options.pattern = Some(pat.clone());
-                        let root = self.tree.root().clone();
-                        let len = self.tree.lines.len() as u16;
-                        let mut filtered_tree =
-                            TreeBuilder::from(root, options, tl).build(len as usize);
-                        if let Some(ref mut filtered_tree) = filtered_tree {
-                            info!("Tree search took {:?}", start.elapsed());
-                            filtered_tree.try_select_best_match();
-                        } // if none: task was cancelled from elsewhere
-                        filtered_tree
+                match pat.len() {
+                    0 => {
+                        self.filtered_tree = None;
+                        AppStateCmdResult::Keep
                     }
-                };
-                AppStateCmdResult::Keep
+                    _ => {
+                        AppStateCmdResult::MustReapplyInterruptible
+                    }
+                }
             }
             Action::Help(about) => AppStateCmdResult::NewState(Box::new(HelpState::new(&about))),
             Action::Next => {
@@ -126,6 +115,34 @@ impl AppState for BrowserState {
             }
             _ => AppStateCmdResult::Keep,
         })
+    }
+
+    fn reapply_interruptible(
+        &mut self,
+        cmd: &mut Command,
+        _verb_store: &VerbStore,
+        tl: TaskLifetime,
+    ) {
+        match &cmd.action {
+            Action::PatternEdit(pat) => {
+                let start = Instant::now();
+                let pat = Pattern::from(pat);
+                let mut options = self.options.clone();
+                options.pattern = Some(pat.clone());
+                let root = self.tree.root().clone();
+                let len = self.tree.lines.len() as u16;
+                let mut filtered_tree =
+                    TreeBuilder::from(root, options, tl).build(len as usize);
+                if let Some(ref mut filtered_tree) = filtered_tree {
+                    info!("Tree search took {:?}", start.elapsed());
+                    filtered_tree.try_select_best_match();
+                } // if none: task was cancelled from elsewhere
+                self.filtered_tree = filtered_tree;
+            }
+            _ => {
+                warn!("unexpected command in reapply");
+            }
+        }
     }
 
     fn display(&mut self, screen: &mut Screen, _verb_store: &VerbStore) -> io::Result<()> {

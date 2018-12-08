@@ -29,7 +29,6 @@ impl AppState for HelpState {
         &mut self,
         cmd: &mut Command,
         _verb_store: &VerbStore,
-        _tl: TaskLifetime,
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
@@ -40,6 +39,15 @@ impl AppState for HelpState {
             Action::Quit => AppStateCmdResult::Quit,
             _ => AppStateCmdResult::Keep,
         })
+    }
+
+    fn reapply_interruptible(
+        &mut self,
+        _cmd: &mut Command,
+        _verb_store: &VerbStore,
+        _tl: TaskLifetime,
+    ) {
+        warn!("unexpected call of reapply in help state");
     }
 
     fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()> {
