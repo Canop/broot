@@ -2,9 +2,6 @@
 //!  no link from a child to its parent or from a parent to its childs.
 //! It looks stupid and probably is but makes it easier to deal
 //!  with the borrow checker.
-//! Tree lines can be designated either by their index (from 0 for the
-//!  tree's root to the number of lines of the screen) or by their "key",
-//!  a string reproducing the hierarchy of the tree.
 
 use std::path::PathBuf;
 
@@ -23,7 +20,6 @@ pub struct TreeLine {
     pub left_branchs: Box<[bool]>,
     pub depth: u16,
     pub name: String, // name of the first unlisted, in case of Pruning
-    pub key: String,
     pub path: PathBuf,
     pub content: LineType, // FIXME rename
     pub has_error: bool,
@@ -36,15 +32,6 @@ pub struct Tree {
     pub lines: Box<[TreeLine]>,
     pub selection: usize, // there's always a selection (starts with root, which is 0)
     pub pattern: Option<Pattern>, // the pattern which filtered the tree, if any
-}
-
-fn index_to_char(i: usize) -> char {
-    match i {
-        1...26 => (96 + i as u8) as char,
-        27...36 => (47 - 26 + i as u8) as char,
-        37...60 => (64 - 36 + i as u8) as char,
-        _ => ' ', // we'll avoid this case
-    }
 }
 
 impl TreeLine {
@@ -60,38 +47,15 @@ impl TreeLine {
             _ => false,
         }
     }
-    pub fn fill_key(&mut self, v: &Vec<usize>, depth: usize) {
-        for i in 0..depth {
-            self.key.push(index_to_char(v[i + 1]));
-        }
-    }
 }
 
 impl Tree {
     // do what must be done after line additions or removals:
     // - sort the lines
-    // - allow keys
     // - compute left branchs
     pub fn after_lines_changed(&mut self) {
         // we sort the lines
         self.lines.sort_by(|a, b| a.path.cmp(&b.path));
-
-        // we can now give every file and directory a key
-        let mut d: usize = 0;
-        let mut counts: Vec<usize> = vec![0; 1]; // first cell not used
-        for i in 1..self.lines.len() {
-            let line_depth = self.lines[i].depth as usize;
-            if line_depth > d {
-                if counts.len() <= line_depth {
-                    counts.push(0);
-                } else {
-                    counts[line_depth] = 0;
-                }
-            }
-            d = line_depth;
-            counts[d] += 1;
-            self.lines[i].fill_key(&counts, d);
-        }
 
         for i in 1..self.lines.len() {
             for d in 0..self.lines[i].left_branchs.len() {
@@ -150,17 +114,6 @@ impl Tree {
         }
         return line.left_branchs[depth];
     }
-    // if a line matches the key, it is selected and true is returned
-    // if none matches, return false and changes nothing
-    pub fn try_select(&mut self, key: &str) -> bool {
-        for i in 0..self.lines.len() {
-            if key == self.lines[i].key {
-                self.selection = i;
-                return true;
-            }
-        }
-        return false;
-    }
     pub fn move_selection(&mut self, dy: i32) {
         // only work for +1 or -1
         let l = self.lines.len();
@@ -170,9 +123,6 @@ impl Tree {
                 break;
             }
         }
-    }
-    pub fn key(&self) -> String {
-        self.lines[self.selection].key.to_owned()
     }
     pub fn selected_line(&self) -> &TreeLine {
         &self.lines[self.selection]
@@ -199,6 +149,7 @@ impl Tree {
             best_score = line.score;
             self.selection = idx;
         }
+        debug!("try_select_best_mach -> {}", self.selection);
     }
     pub fn try_select_next_match(&mut self) -> bool {
         for di in 0..self.lines.len() {

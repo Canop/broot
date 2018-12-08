@@ -87,7 +87,7 @@ impl App {
         )?;
         self.mut_state().display(&mut screen, &verb_store)?;
         screen.write_status_text(
-            "Hit <esc> to quit, '?' for help, or type a file's key to navigate",
+            "Hit <esc> to quit, '?' for help, or type some letters to search",
         )?;
         let stdin = stdin();
         let keys = stdin.keys();

@@ -8,8 +8,7 @@ use termion::{color, style};
 
 pub trait TreeView {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
-    fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()>;
-    fn write_line_name(&mut self, line: &TreeLine, pattern: &Option<Pattern>) -> io::Result<()>;
+    fn write_line_name(&mut self, line: &TreeLine, idx: usize, pattern: &Option<Pattern>) -> io::Result<()>;
 }
 
 impl TreeView for Screen {
@@ -45,10 +44,17 @@ impl TreeView for Screen {
                     color::Fg(color::Reset),
                 )?;
             }
-            if line.is_selectable() {
-                self.write_line_key(line, selected)?;
+            if selected {
+                write!(
+                    self.stdout,
+                    "{}{}",
+                    color::Bg(color::AnsiValue::grayscale(2)),
+                    termion::clear::UntilNewline,
+                );
+            //} else {
+            //    write!(self.stdout, " ");
             }
-            self.write_line_name(line, &tree.pattern)?;
+            self.write_line_name(line, line_index, &tree.pattern)?;
             write!(
                 self.stdout,
                 "{}{}{}",
@@ -61,29 +67,12 @@ impl TreeView for Screen {
         Ok(())
     }
 
-    fn write_line_key(&mut self, line: &TreeLine, selected: bool) -> io::Result<()> {
-        match selected {
-            true => write!(
-                self.stdout,
-                "{} {} {}{}",
-                color::Bg(color::AnsiValue::grayscale(4)),
-                &line.key,
-                color::Bg(color::AnsiValue::grayscale(1)),
-                termion::clear::UntilNewline,
-            ),
-            false => write!(
-                self.stdout,
-                "{}{} {} {}{}",
-                color::Bg(color::AnsiValue::grayscale(2)),
-                color::Fg(color::AnsiValue::grayscale(14)),
-                &line.key,
-                color::Fg(color::Reset),
-                color::Bg(color::Reset),
-            ),
-        }
-    }
-
-    fn write_line_name(&mut self, line: &TreeLine, pattern: &Option<Pattern>) -> io::Result<()> {
+    fn write_line_name(
+        &mut self,
+        line: &TreeLine,
+        idx: usize,
+        pattern: &Option<Pattern>
+    ) -> io::Result<()> {
         lazy_static! {
             static ref fg_reset: String = format!("{}", color::Fg(color::Reset)).to_string();
             static ref fg_dir: String =
@@ -97,10 +86,10 @@ impl TreeView for Screen {
         // TODO draw in red lines with has_error
         match &line.content {
             LineType::Dir => {
-                if line.key == "" {
+                if idx==0 {
                     write!(
                         self.stdout,
-                        " {}{}{}",
+                        "{}{}{}",
                         style::Bold,
                         &*fg_dir,
                         &line.path.to_string_lossy(),
@@ -108,7 +97,7 @@ impl TreeView for Screen {
                 } else {
                     write!(
                         self.stdout,
-                        " {}{}{}",
+                        "{}{}{}",
                         style::Bold,
                         &*fg_dir,
                         decorated_name(&line.name, pattern, &*fg_match, &*fg_reset_dir),
@@ -121,14 +110,14 @@ impl TreeView for Screen {
             LineType::File => {
                 write!(
                     self.stdout,
-                    " {}",
+                    "{}",
                     decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
                 )?;
             }
             LineType::SymLink(target) => {
                 write!(
                     self.stdout,
-                    " {} {}->{} {}",
+                    "{} {}->{} {}",
                     decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
                     &*fg_link,
                     &*fg_reset,

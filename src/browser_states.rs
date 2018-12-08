@@ -66,39 +66,13 @@ impl AppState for BrowserState {
                     AppStateCmdResult::PopState
                 }
             }
-            Action::FixPattern => {
-                // stop pattern editing, either making it non existing, of fixing
-                // the tree on the pattern (until back)
-                cmd.raw = match self.filtered_tree {
-                    Some(ref mut tree) => tree.key(),
-                    None => self.tree.key(),
-                };
-                AppStateCmdResult::Keep
-            }
             Action::MoveSelection(dy) => {
                 match self.filtered_tree {
                     Some(ref mut tree) => {
                         tree.move_selection(*dy);
-                        cmd.raw = tree.key();
                     }
                     None => {
                         self.tree.move_selection(*dy);
-                        cmd.raw = self.tree.key();
-                    }
-                };
-                AppStateCmdResult::Keep
-            }
-            Action::Select(key) => {
-                match self.filtered_tree {
-                    Some(ref mut tree) => {
-                        if !tree.try_select(key) {
-                            tree.selection = 0;
-                        }
-                    }
-                    None => {
-                        if !self.tree.try_select(key) {
-                            self.tree.selection = 0;
-                        }
                     }
                 };
                 AppStateCmdResult::Keep
@@ -160,7 +134,7 @@ impl AppState for BrowserState {
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()> {
         match &cmd.action {
-            Action::FixPattern => screen.write_status_text("Hit <esc> to remove the filter"),
+            //Action::FixPattern => screen.write_status_text("Hit <esc> to remove the filter"),
             Action::PatternEdit(_) => {
                 screen.write_status_text("Hit <enter> to freeze the fiter, <esc> to remove it")
             }
@@ -168,7 +142,7 @@ impl AppState for BrowserState {
                 let tree = self.displayed_tree();
                 if tree.selection == 0 {
                     screen.write_status_text(
-                        "Hit <enter> to quit, '?' for help, or type a file's key to navigate",
+                        "Hit <enter> to quit, '?' for help, or type a few file's letters to navigate",
                     )
                 } else {
                     let line = &tree.lines[tree.selection];

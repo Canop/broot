@@ -33,17 +33,11 @@ impl AppState for HelpState {
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
-            Action::FixPattern => AppStateCmdResult::Keep,
             Action::MoveSelection(dy) => {
                 self.area.try_scroll(*dy);
                 AppStateCmdResult::Keep
             }
-            Action::Select(_) => AppStateCmdResult::Keep,
-            Action::OpenSelection => AppStateCmdResult::Keep,
-            Action::Verb(_) => AppStateCmdResult::Keep,
             Action::Quit => AppStateCmdResult::Quit,
-            Action::PatternEdit(_) => AppStateCmdResult::Keep,
-            Action::Next => AppStateCmdResult::Keep,
             _ => AppStateCmdResult::Keep,
         })
     }
@@ -55,10 +49,9 @@ impl AppState for HelpState {
         text.md(r#"    and launch various commands on files."#);
         text.md("");
         text.md(r#" `<esc>` gets you back to the previous state."#);
-        text.md(r#" `/pattern` filters the tree by file names."#);
+        text.md(r#" Typing some letters searches the tree and selects the most relevant file."#);
         text.md(r#"    Use `<enter>` to freeze the filtering."#);
-        text.md(r#" Typing a file key selects the relevant file."#);
-        text.md(r#" Typing a file key, space, then a verb executes the verb on the file."#);
+        text.md(r#" Typing a search, space, then a verb executes the verb on the file."#);
         text.md("");
         text.md(" Current Verbs:");
         for (key, verb) in verb_store.verbs.iter() {

@@ -111,5 +111,5 @@ fn main() {
         }
         None => {}
     }
-    info!("bye");
+    //info!("bye");
 }

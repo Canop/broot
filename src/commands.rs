@@ -3,19 +3,17 @@ use termion::event::Key;
 
 /// A command is the parsed representation of what the user types
 ///  in the input. It's independant of the state of the application
-///  (verbs, keys, etc. arent checked at this point)
+///  (verbs arent checked at this point)
 #[derive(Debug)]
 pub enum Action {
     MoveSelection(i32),  // up (neg) or down (positive) in the list
-    Select(String),      // select by key
     OpenSelection,       // open the selected line (which can't be the root by construct)
     VerbEdit(String),    // verb, unfinished
     Verb(String),        // verb
     PatternEdit(String), // a pattern being edited
-    FixPattern,
     Back, // back to last app state, or clear pattern
     Next,
-    Quit,
+    Quit, // currently not produced
     Help(String),
     Unparsed, // or unparsable
 }
@@ -26,8 +24,7 @@ impl Action {
             static ref RE: Regex = Regex::new(
                 r"(?x)
                 ^
-                (?:/(?P<pattern>[^\s/:]*))?
-                (?P<key>[0-9a-zA-Z]*)
+                (?P<pattern>[^\s/:]*)
                 (?:[\s:]+(?P<verb>\w+))?
                 $
                 "
@@ -44,12 +41,6 @@ impl Action {
                 let pattern = pattern.as_str();
                 return match finished {
                     false => Action::PatternEdit(String::from(pattern)),
-                    true => Action::FixPattern,
-                };
-            }
-            if let Some(key) = c.name("key") {
-                return match finished {
-                    false => Action::Select(String::from(key.as_str())),
                     true => Action::OpenSelection,
                 };
             }
@@ -73,9 +64,6 @@ impl Command {
             action: Action::Unparsed,
         }
     }
-    //pub fn set_count(&mut self, cmd_count: usize) {
-    //    self.cmd_count = cmd_count;
-    //}
     pub fn add_key(&mut self, key: Key) {
         match key {
             Key::Char('\t') => {
@@ -86,11 +74,7 @@ impl Command {
                 self.action = Action::Help(self.raw.to_owned());
             }
             Key::Char('\n') => {
-                if self.raw == "" {
-                    self.action = Action::Quit;
-                } else {
-                    self.action = Action::from(&self.raw, true);
-                }
+                self.action = Action::from(&self.raw, true);
             }
             Key::Up => {
                 self.action = Action::MoveSelection(-1);

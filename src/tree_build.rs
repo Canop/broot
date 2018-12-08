@@ -132,7 +132,6 @@ impl BLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
             name: self.name.to_string(),
-            key: String::from(""), // will be filled later
             path: self.path.clone(),
             content: self.line_type.clone(),
             has_error: self.has_error,
