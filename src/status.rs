@@ -16,8 +16,8 @@ impl Status for Screen {
         let y = self.h - 1;
         write!(
             self.stdout,
-            "{}{}{}{}{}{}{}",
-            termion::cursor::Goto(1, y),
+            "{}{}{}{} {}{}{}",
+            termion::cursor::Goto(2, y),
             color::Bg(color::AnsiValue::grayscale(2)),
             color::Fg(color::Red),
             termion::clear::CurrentLine,
@@ -32,8 +32,8 @@ impl Status for Screen {
         let y = self.h - 1;
         write!(
             self.stdout,
-            "{}{}{}{}{}",
-            termion::cursor::Goto(1, y),
+            "{}{}{} {}{}",
+            termion::cursor::Goto(2, y),
             color::Bg(color::AnsiValue::grayscale(2)),
             termion::clear::CurrentLine,
             text,

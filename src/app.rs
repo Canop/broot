@@ -10,6 +10,7 @@ use external::Launchable;
 use input::Input;
 use screens::Screen;
 use status::Status;
+use spinner::Spinner;
 use task_sync::TaskLifetime;
 use verbs::VerbStore;
 
@@ -102,11 +103,19 @@ impl App {
         let cmd_count = Arc::new(AtomicUsize::new(0));
         let key_count = Arc::clone(&cmd_count);
         thread::spawn(move || {
+            // we listen for keys in a separate thread so that we can go on listening
+            // when a long search is running, and interrupt it if needed
             for c in keys {
                 key_count.fetch_add(1, Ordering::SeqCst);
+                // we send the command to the receiver in the
+                //  main event loop
                 tx_keys.send(c).unwrap();
                 let quit = rx_quit.recv().unwrap();
                 if quit {
+                    // cleanly quitting this thread is necessary
+                    //  to ensure stdin is properly closed when
+                    //  we launch an external application in the same
+                    //  terminal
                     return;
                 }
             }
@@ -115,7 +124,6 @@ impl App {
         for c in rx_keys {
             //debug!("key: {:?}", &c);
             cmd.add_key(c?);
-            let tl = TaskLifetime::new(&cmd_count);
             info!("{:?}", &cmd.action);
             screen.write_input(&cmd)?;
             let mut quit = false;
@@ -152,9 +160,12 @@ impl App {
                     self.state().write_status(&mut screen, &cmd)?;
                 }
             }
+            let tl = TaskLifetime::new(&cmd_count);
             tx_quit.send(quit).unwrap();
             if !quit && must_reapply_interruptible {
+                screen.write_spinner(true)?;
                 self.mut_state().reapply_interruptible(&mut cmd, &verb_store, tl);
+                screen.write_spinner(false)?;
                 self.state().write_status(&mut screen, &cmd)?;
             }
             screen.write_input(&cmd)?;

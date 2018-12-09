@@ -21,6 +21,7 @@ mod help_states;
 mod input;
 mod patterns;
 mod screens;
+mod spinner;
 mod status;
 mod task_sync;
 mod tree_build;

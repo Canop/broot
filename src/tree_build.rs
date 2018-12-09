@@ -250,10 +250,8 @@ impl TreeBuilder {
             } else {
                 // this depth is finished, we must go deeper
                 if next_level_dirs.len() == 0 {
-                    debug!("nowhere to go deeper");
                     break;
                 }
-                debug!("tree builder will go deeper");
                 for next_level_dir_idx in &next_level_dirs {
                     let has_child_match = self.load_childs(*next_level_dir_idx);
                     if has_child_match {
@@ -277,7 +275,6 @@ impl TreeBuilder {
                     }
                     open_dirs.push_back(*next_level_dir_idx);
                 }
-                debug!("tree builder starts handling a new level");
                 next_level_dirs.clear();
             }
         }
