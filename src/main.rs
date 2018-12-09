@@ -10,6 +10,7 @@ extern crate toml;
 #[macro_use]
 extern crate log;
 extern crate simplelog;
+extern crate clap;
 
 mod app;
 mod browser_states;
@@ -51,6 +52,24 @@ custom_error! {ProgramError
     Conf{source: conf::ConfError}   = "Bad configuration",
 }
 
+fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
+    clap::App::new("broot")
+        .version("0.2.0")
+        .author("dystroy <denys.seguret@gmail.com>")
+        .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
+        .arg(
+            clap::Arg::with_name("root")
+            .help("sets the root directory")
+        )
+        .arg(
+            clap::Arg::with_name("hidden")
+            .short("h")
+            .long("hidden")
+            .help("show hidden files")
+        )
+        .get_matches()
+}
+
 // There's no log unless the BROOT_LOG environment variable is set to
 //  a valid log level (trace, debug, info, warn, error, off)
 // Example:
@@ -79,16 +98,20 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     let mut verb_store = VerbStore::new();
     verb_store.fill_from_conf(&config);
 
-    let args: Vec<String> = env::args().collect();
-    debug!("args: {:?}", args);
-    let path = match args.len() >= 2 {
-        true => PathBuf::from(&args[1]),
-        false => env::current_dir()?,
+    let cli_args = get_cli_args();
+    let path = match cli_args.value_of("root") {
+        Some(path) => PathBuf::from(path),
+        None => env::current_dir()?,
     };
     let path = path.canonicalize()?;
+    let mut tree_options = TreeOptions::new();
+    if cli_args.is_present("hidden") {
+        debug!("show hidden files arg set");
+        tree_options.show_hidden = true;
+    }
 
     Ok(
-        match BrowserState::new(path.clone(), TreeOptions::new(), TaskLifetime::unlimited()) {
+        match BrowserState::new(path.clone(), tree_options, TaskLifetime::unlimited()) {
             Some(bs) => {
                 let mut app = App::new();
                 app.push(Box::new(bs));
