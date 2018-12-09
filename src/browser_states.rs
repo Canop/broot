@@ -148,12 +148,26 @@ impl AppState for BrowserState {
         screen.write_tree(&self.displayed_tree())
     }
 
-    fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()> {
+    fn write_status(
+        &self,
+        screen: &mut Screen,
+        cmd: &Command,
+        verb_store: &VerbStore,
+    ) -> io::Result<()> {
         match &cmd.action {
             //Action::FixPattern => screen.write_status_text("Hit <esc> to remove the filter"),
             Action::PatternEdit(_) => {
-                screen.write_status_text("Hit <enter> to freeze the fiter, <esc> to remove it")
+                screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
             }
+            Action::VerbEdit(verb_key) => match verb_store.get(&verb_key) {
+                Some(verb) => screen.write_status_text(
+                    &format!("Hit <enter> to {} : {}", &verb.name, verb.description_for(&self)).to_string()
+                ),
+                None => screen.write_status_text(
+                    // show what verbs start with the currently edited verb key
+                    "Type a verb then <enter> to execute it (hit '?' for the list of verbs)",
+                ),
+            },
             _ => {
                 let tree = self.displayed_tree();
                 if tree.selection == 0 {

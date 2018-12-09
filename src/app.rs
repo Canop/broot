@@ -49,7 +49,12 @@ pub trait AppState {
         tl: TaskLifetime,
     ); // will always be keep, and never throw
     fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>;
-    fn write_status(&self, screen: &mut Screen, cmd: &Command) -> io::Result<()>;
+    fn write_status(
+        &self,
+        screen: &mut Screen,
+        cmd: &Command,
+        verb_store: &VerbStore,
+    ) -> io::Result<()>;
 }
 
 pub struct App {
@@ -139,7 +144,7 @@ impl App {
                 AppStateCmdResult::NewState(boxed_state) => {
                     self.push(boxed_state);
                     cmd = Command::new();
-                    self.state().write_status(&mut screen, &cmd)?;
+                    self.state().write_status(&mut screen, &cmd, &verb_store)?;
                 }
                 AppStateCmdResult::MustReapplyInterruptible => {
                     must_reapply_interruptible = true;
@@ -150,14 +155,14 @@ impl App {
                         quit = true;
                     } else {
                         cmd = Command::new();
-                        self.state().write_status(&mut screen, &cmd)?;
+                        self.state().write_status(&mut screen, &cmd, &verb_store)?;
                     }
                 }
                 AppStateCmdResult::DisplayError(txt) => {
                     screen.write_status_err(&txt)?;
                 }
                 AppStateCmdResult::Keep => {
-                    self.state().write_status(&mut screen, &cmd)?;
+                    self.state().write_status(&mut screen, &cmd, &verb_store)?;
                 }
             }
             let tl = TaskLifetime::new(&cmd_count);
@@ -166,7 +171,7 @@ impl App {
                 screen.write_spinner(true)?;
                 self.mut_state().reapply_interruptible(&mut cmd, &verb_store, tl);
                 screen.write_spinner(false)?;
-                self.state().write_status(&mut screen, &cmd)?;
+                self.state().write_status(&mut screen, &cmd, &verb_store)?;
             }
             screen.write_input(&cmd)?;
             self.mut_state().display(&mut screen, &verb_store)?;

@@ -3,6 +3,7 @@ use regex::{Captures, Regex};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::io;
+use std::path::Path;
 
 use app::AppStateCmdResult;
 use browser_states::BrowserState;
@@ -21,6 +22,30 @@ pub struct VerbStore {
 }
 
 impl Verb {
+    fn exec_string(&self, path: &Path) -> String {
+        lazy_static! {
+            static ref regex: Regex = Regex::new(r"\{([\w.]+)\}").unwrap();
+        }
+        regex.replace_all(&*self.exec_pattern, |caps: &Captures| {
+            match caps.get(1).unwrap().as_str() {
+                "file" => path.to_string_lossy(),
+                _ => Cow::from("-hu?-"),
+            }
+        }).to_string()
+    }
+    pub fn description_for(&self, state: &BrowserState) -> String {
+        match self.exec_pattern.starts_with(":") {
+            true => self.description(),
+            false => {
+                let line = match &state.filtered_tree {
+                    Some(tree) => tree.selected_line(),
+                    None => state.tree.selected_line(),
+                };
+                let path = &line.path;
+                self.exec_string(path)
+            }
+        }
+    }
     pub fn description(&self) -> String {
         match self.exec_pattern.as_ref() {
             ":back" => "reverts to the previous state (mapped to `<esc>`)".to_string(),
@@ -88,20 +113,9 @@ impl Verb {
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
             ":quit" => AppStateCmdResult::Quit,
-            _ => {
-                lazy_static! {
-                    static ref regex: Regex = Regex::new(r"\{([\w.]+)\}").unwrap();
-                }
-                // TODO replace token by token and pass an array of string arguments
-                let exec = regex
-                    .replace_all(&*self.exec_pattern, |caps: &Captures| {
-                        match caps.get(1).unwrap().as_str() {
-                            "file" => path.to_string_lossy(),
-                            _ => Cow::from("-hu?-"),
-                        }
-                    }).to_string();
-                AppStateCmdResult::Launch(Launchable::from(&exec)?)
-            }
+            _ => AppStateCmdResult::Launch(Launchable::from(
+                &self.exec_string(path)
+            )?),
         })
     }
 }
