@@ -2,9 +2,13 @@
 
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
 
-Like linux's tree command, but balanced, interactive, and customizable.
+A interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands for:
 
-[![asciicast](https://asciinema.org/a/L9BERj8FBr1Gndambvoj1aZth.svg)](https://asciinema.org/a/L9BERj8FBr1Gndambvoj1aZth)
+* a clear overview of a directory tree
+* a very fast access to any file, without being lost or disoriented
+* a personal launcher
+
+[![asciicast](https://asciinema.org/a/vxzgahNhoYfDVpEfp7OmZhLDQ.svg)](https://asciinema.org/a/vxzgahNhoYfDVpEfp7OmZhLDQ)
 
 ## Installation
 
@@ -19,7 +23,7 @@ Fetch the Canop/broot repository, move to the broot directory, then run
 The executable is written in the `target/release` directory.
 
 
-### From precompiled binaries
+### From up to date precompiled binaries
 
 * [x86_64-linux](https://dystroy.org/broot/x86_64-linux/broot)
 
