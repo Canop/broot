@@ -36,7 +36,6 @@ impl AppState for HelpState {
                 self.area.try_scroll(*dy);
                 AppStateCmdResult::Keep
             }
-            Action::Quit => AppStateCmdResult::Quit,
             _ => AppStateCmdResult::Keep,
         })
     }

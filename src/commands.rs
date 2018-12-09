@@ -13,7 +13,6 @@ pub enum Action {
     PatternEdit(String), // a pattern being edited
     Back, // back to last app state, or clear pattern
     Next,
-    Quit, // currently not produced
     Help(String),
     Unparsed, // or unparsable
 }

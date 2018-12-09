@@ -94,7 +94,6 @@ impl AppState for BrowserState {
                 Some(verb) => verb.execute(&self)?,
                 None => AppStateCmdResult::verb_not_found(&verb_key),
             },
-            Action::Quit => AppStateCmdResult::Quit,
             Action::PatternEdit(pat) => {
                 match pat.len() {
                     0 => {
