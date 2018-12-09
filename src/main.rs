@@ -54,12 +54,18 @@ custom_error! {ProgramError
 
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
-        .version("0.2.0")
+        .version("0.2.1")
         .author("dystroy <denys.seguret@gmail.com>")
         .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
         .arg(
             clap::Arg::with_name("root")
             .help("sets the root directory")
+        )
+        .arg(
+            clap::Arg::with_name("only-folders")
+            .short("f")
+            .long("only-folders")
+            .help("only show folders")
         )
         .arg(
             clap::Arg::with_name("hidden")
@@ -105,6 +111,10 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     };
     let path = path.canonicalize()?;
     let mut tree_options = TreeOptions::new();
+    if cli_args.is_present("only-folders") {
+        debug!("show only folders arg set");
+        tree_options.only_folders = true;
+    }
     if cli_args.is_present("hidden") {
         debug!("show hidden files arg set");
         tree_options.show_hidden = true;

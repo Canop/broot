@@ -56,6 +56,7 @@ impl BLine {
         path: PathBuf,
         depth: u16,
         no_hidden: bool,
+        only_folders: bool,
         pattern: &Option<Pattern>,
     ) -> Option<BLine> {
         let mut nb_matches = 1;
@@ -91,7 +92,7 @@ impl BLine {
                     }
                     LineType::Dir
                 } else if ft.is_symlink() {
-                    if nb_matches == 0 {
+                    if nb_matches == 0 || only_folders {
                         return None;
                     }
                     LineType::SymLink(match fs::read_link(&path) {
@@ -99,7 +100,7 @@ impl BLine {
                         Err(_) => String::from("???"),
                     })
                 } else {
-                    if nb_matches == 0 {
+                    if nb_matches == 0 || only_folders {
                         return None;
                     }
                     LineType::File
@@ -144,6 +145,7 @@ impl BLine {
 pub struct TreeBuilder {
     blines: Vec<BLine>, // all blines, even the ones not yet "seen" by BFS
     no_hidden: bool,
+    only_folders: bool,
     pattern: Option<Pattern>,
     task_lifetime: TaskLifetime,
 }
@@ -154,6 +156,7 @@ impl TreeBuilder {
         TreeBuilder {
             blines,
             no_hidden: !options.show_hidden,
+            only_folders: options.only_folders,
             pattern: options.pattern,
             task_lifetime,
         }
@@ -177,6 +180,7 @@ impl TreeBuilder {
                             e.path(),
                             self.blines[bline_idx].depth + 1,
                             self.no_hidden,
+                            self.only_folders,
                             &self.pattern,
                         );
                         if let Some(bl) = bl {

@@ -74,6 +74,10 @@ impl AppState for HelpState {
             " Verbs are configured in {:?}.",
             Conf::default_location()
         ));
+        text.md("");
+        text.md(" Some options can be set on launch:");
+        text.md("  `-h` or `--hidden` : show hidden files");
+        text.md("  `-f` or `--only-folders` : only show folders");
         self.area.content_length = text.lines.len() as i32;
         screen.write_lines(&self.area, &text.lines)?;
         Ok(())

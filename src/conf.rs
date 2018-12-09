@@ -124,6 +124,11 @@ invocation = "h"
 execution = ":toggle_hidden"
 
 [[verbs]]
+name = "toggle files"
+invocation = "f"
+execution = ":toggle_files"
+
+[[verbs]]
 name = "open"
 invocation = "o"
 execution = ":open"

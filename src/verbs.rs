@@ -30,6 +30,7 @@ impl Verb {
             ":parent" => "moves to the parent directory".to_string(),
             ":quit" => "quits the application".to_string(),
             ":toggle_hidden" => "toggles showing hidden files".to_string(),
+            ":toggle_files" => "toggles showing files (or just folders)".to_string(),
             _ => format!("`{}`", self.exec_pattern),
         }
     }
@@ -53,6 +54,15 @@ impl Verb {
             ":toggle_hidden" => {
                 let mut options = state.options.clone();
                 options.show_hidden = !options.show_hidden;
+                AppStateCmdResult::from_optional_state(BrowserState::new(
+                    state.tree.root().clone(),
+                    options,
+                    TaskLifetime::unlimited(),
+                ))
+            }
+            ":toggle_files" => {
+                let mut options = state.options.clone();
+                options.only_folders = !options.only_folders;
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     state.tree.root().clone(),
                     options,
