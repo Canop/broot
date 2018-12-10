@@ -44,11 +44,11 @@ impl Pattern {
                 if cand_idx == cand_chars.len() || d > max_match_len {
                     return None;
                 }
+                d += 1;
                 if cand_chars[cand_idx] == self.lc_chars[pat_idx] {
                     pos.push(cand_idx);
                     break;
                 }
-                d += 1;
             }
         }
         Some(Match { score: 0, pos })
