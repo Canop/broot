@@ -4,7 +4,7 @@
 use std::io::{self, Write};
 use termion::color;
 
-use screens::Screen;
+use crate::screens::Screen;
 
 pub trait Status {
     fn write_status_text(&mut self, text: &str) -> io::Result<()>;

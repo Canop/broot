@@ -65,7 +65,7 @@ impl Pattern {
         let max_match_len = MAX_LENGTH_BASE + MAX_LENGTH_PER_CHAR * self.lc_chars.len();
         let mut best_match: Option<Match> = None;
         for start_idx in 0..=cand_chars.len() - self.lc_chars.len() {
-            let mut sm = self.match_starting_at_index(&cand_chars, start_idx, max_match_len);
+            let sm = self.match_starting_at_index(&cand_chars, start_idx, max_match_len);
             if let Some(mut m) = sm {
                 let match_len = m.pos[m.pos.len() - 1] - m.pos[0];
                 let mut score = BONUS_MATCH;

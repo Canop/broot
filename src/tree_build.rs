@@ -2,10 +2,10 @@ use std::collections::VecDeque;
 use std::fs;
 use std::path::PathBuf;
 
-use flat_tree::{LineType, Tree, TreeLine};
-use patterns::Pattern;
-use task_sync::TaskLifetime;
-use tree_options::TreeOptions;
+use crate::flat_tree::{LineType, Tree, TreeLine};
+use crate::patterns::Pattern;
+use crate::task_sync::TaskLifetime;
+use crate::tree_options::TreeOptions;
 
 // like a tree line, but with the info needed during the build
 // This structure isn't usable independantly from the tree builder

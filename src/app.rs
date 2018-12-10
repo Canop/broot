@@ -4,22 +4,22 @@ use std::sync::{mpsc, Arc};
 use std::thread;
 use termion::input::TermRead;
 
-use browser_states::BrowserState;
-use commands::Command;
-use external::Launchable;
-use input::Input;
-use screens::Screen;
-use spinner::Spinner;
-use status::Status;
-use task_sync::TaskLifetime;
-use verbs::VerbStore;
+use crate::browser_states::BrowserState;
+use crate::commands::Command;
+use crate::external::Launchable;
+use crate::input::Input;
+use crate::screens::Screen;
+use crate::spinner::Spinner;
+use crate::status::Status;
+use crate::task_sync::TaskLifetime;
+use crate::verbs::VerbStore;
 
 pub enum AppStateCmdResult {
     Quit,
     Keep,
     Launch(Launchable),
     DisplayError(String),
-    NewState(Box<AppState>),
+    NewState(Box<dyn AppState>),
     MustReapplyInterruptible,
     PopState,
 }
@@ -55,7 +55,7 @@ pub trait AppState {
 }
 
 pub struct App {
-    pub states: Vec<Box<AppState>>, // stack: the last one is current
+    pub states: Vec<Box<dyn AppState>>, // stack: the last one is current
 }
 
 impl App {
@@ -64,11 +64,11 @@ impl App {
         App { states }
     }
 
-    pub fn push(&mut self, new_state: Box<AppState>) {
+    pub fn push(&mut self, new_state: Box<dyn AppState>) {
         self.states.push(new_state);
     }
 
-    pub fn mut_state(&mut self) -> &mut Box<AppState> {
+    pub fn mut_state(&mut self) -> &mut Box<dyn AppState> {
         match self.states.last_mut() {
             Some(s) => s,
             None => {
@@ -76,7 +76,7 @@ impl App {
             }
         }
     }
-    pub fn state(&self) -> &Box<AppState> {
+    pub fn state(&self) -> &Box<dyn AppState> {
         match self.states.last() {
             Some(s) => s,
             None => {

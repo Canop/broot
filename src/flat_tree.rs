@@ -5,7 +5,7 @@
 
 use std::path::PathBuf;
 
-use patterns::Pattern;
+use crate::patterns::Pattern;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LineType {

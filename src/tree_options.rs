@@ -1,4 +1,4 @@
-use patterns::Pattern;
+use crate::patterns::Pattern;
 
 #[derive(Debug, Clone)]
 pub struct TreeOptions {

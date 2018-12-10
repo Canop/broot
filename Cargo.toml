@@ -2,7 +2,7 @@
 name = "broot"
 version = "0.2.3"
 authors = ["Canop <cano.petrole@gmail.com>"]
-#edition = "2018"
+edition = "2018"
 
 [dependencies]
 termion = "1.5.1"

@@ -3,7 +3,7 @@
 use std::io::{self, Write};
 use termion::color;
 
-use screens::Screen;
+use crate::screens::Screen;
 
 pub trait Spinner {
     fn write_spinner(&mut self, spinning: bool) -> io::Result<()>;

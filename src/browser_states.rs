@@ -4,19 +4,19 @@ use std::io;
 use std::path::PathBuf;
 use std::time::Instant;
 
-use app::{AppState, AppStateCmdResult};
-use commands::{Action, Command};
-use external::Launchable;
-use flat_tree::Tree;
-use help_states::HelpState;
-use patterns::Pattern;
-use screens::{self, Screen};
-use status::Status;
-use task_sync::TaskLifetime;
-use tree_build::TreeBuilder;
-use tree_options::TreeOptions;
-use tree_views::TreeView;
-use verbs::VerbStore;
+use crate::app::{AppState, AppStateCmdResult};
+use crate::commands::{Action, Command};
+use crate::external::Launchable;
+use crate::flat_tree::Tree;
+use crate::help_states::HelpState;
+use crate::patterns::Pattern;
+use crate::screens::{self, Screen};
+use crate::status::Status;
+use crate::task_sync::TaskLifetime;
+use crate::tree_build::TreeBuilder;
+use crate::tree_options::TreeOptions;
+use crate::tree_views::TreeView;
+use crate::verbs::VerbStore;
 
 pub struct BrowserState {
     pub tree: Tree,
@@ -26,9 +26,8 @@ pub struct BrowserState {
 
 impl BrowserState {
     pub fn new(path: PathBuf, options: TreeOptions, tl: TaskLifetime) -> Option<BrowserState> {
-        match TreeBuilder::from(path, options.clone(), tl)
-            .build(screens::max_tree_height() as usize)
-        {
+        let builder = TreeBuilder::from(path, options.clone(), tl);
+        match builder.build(screens::max_tree_height() as usize) {
             Some(tree) => Some(BrowserState {
                 tree,
                 options,

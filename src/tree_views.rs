@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 
-use flat_tree::{LineType, Tree, TreeLine};
-use patterns::Pattern;
-use screens::Screen;
+use crate::flat_tree::{LineType, Tree, TreeLine};
+use crate::patterns::Pattern;
+use crate::screens::Screen;
 use std::io::{self, Write};
 use termion::{color, style};
 

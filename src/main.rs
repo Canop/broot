@@ -2,15 +2,15 @@
 
 #[macro_use]
 extern crate lazy_static;
-extern crate custom_error;
-extern crate directories;
-extern crate regex;
-extern crate termion;
-extern crate toml;
+
+
+
+
+use toml;
 #[macro_use]
 extern crate log;
-extern crate clap;
-extern crate simplelog;
+use clap;
+use simplelog;
 
 mod app;
 mod browser_states;
@@ -39,13 +39,13 @@ use std::path::PathBuf;
 use std::result::Result;
 use std::str::FromStr;
 
-use app::App;
-use browser_states::BrowserState;
-use conf::Conf;
-use external::Launchable;
-use task_sync::TaskLifetime;
-use tree_options::TreeOptions;
-use verbs::VerbStore;
+use crate::app::App;
+use crate::browser_states::BrowserState;
+use crate::conf::Conf;
+use crate::external::Launchable;
+use crate::task_sync::TaskLifetime;
+use crate::tree_options::TreeOptions;
+use crate::verbs::VerbStore;
 
 custom_error! {ProgramError
     Io{source: io::Error}           = "IO Error",

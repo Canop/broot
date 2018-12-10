@@ -4,13 +4,13 @@ use regex::Regex;
 use std::io;
 use termion::{color, style};
 
-use app::{AppState, AppStateCmdResult};
-use commands::{Action, Command};
-use conf::Conf;
-use screens::{Screen, ScreenArea};
-use status::Status;
-use task_sync::TaskLifetime;
-use verbs::VerbStore;
+use crate::app::{AppState, AppStateCmdResult};
+use crate::commands::{Action, Command};
+use crate::conf::Conf;
+use crate::screens::{Screen, ScreenArea};
+use crate::status::Status;
+use crate::task_sync::TaskLifetime;
+use crate::verbs::VerbStore;
 
 pub struct HelpState {
     area: ScreenArea, // where the help is drawn

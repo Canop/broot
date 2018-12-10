@@ -1,7 +1,7 @@
 use std::io::{self, Write};
 
-use commands::Command;
-use screens::Screen;
+use crate::commands::Command;
+use crate::screens::Screen;
 
 pub trait Input {
     fn write_input(&mut self, cmd: &Command) -> io::Result<()>;

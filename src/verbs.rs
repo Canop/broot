@@ -5,11 +5,11 @@ use std::collections::HashMap;
 use std::io;
 use std::path::Path;
 
-use app::AppStateCmdResult;
-use browser_states::BrowserState;
-use conf::Conf;
-use external::Launchable;
-use task_sync::TaskLifetime;
+use crate::app::AppStateCmdResult;
+use crate::browser_states::BrowserState;
+use crate::conf::Conf;
+use crate::external::Launchable;
+use crate::task_sync::TaskLifetime;
 
 #[derive(Debug, Clone)]
 pub struct Verb {
@@ -27,7 +27,7 @@ impl Verb {
             static ref regex: Regex = Regex::new(r"\{([\w.]+)\}").unwrap();
         }
         regex
-            .replace_all(&*self.exec_pattern, |caps: &Captures| {
+            .replace_all(&*self.exec_pattern, |caps: &Captures<'_>| {
                 match caps.get(1).unwrap().as_str() {
                     "file" => path.to_string_lossy(),
                     _ => Cow::from("-hu?-"),
