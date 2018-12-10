@@ -75,10 +75,8 @@ impl TreeView for Screen {
     ) -> io::Result<()> {
         lazy_static! {
             static ref fg_reset: String = format!("{}", color::Fg(color::Reset)).to_string();
-            static ref fg_dir: String =
-                format!("{}", color::Fg(color::Rgb(84, 142, 188))).to_string();
-            static ref fg_link: String =
-                format!("{}", color::Fg(color::Rgb(45, 192, 193))).to_string();
+            static ref fg_dir: String = format!("{}", color::Fg(color::LightBlue)).to_string();
+            static ref fg_link: String = format!("{}", color::Fg(color::LightMagenta)).to_string();
             static ref fg_match: String = format!("{}", color::Fg(color::Green)).to_string();
             static ref fg_reset_dir: String = format!("{}{}", &*fg_reset, &*fg_dir).to_string();
             static ref fg_reset_link: String = format!("{}{}", &*fg_reset, &*fg_link).to_string();

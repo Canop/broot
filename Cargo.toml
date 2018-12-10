@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "0.2.1"
+version = "0.2.2"
 authors = ["Canop <cano.petrole@gmail.com>"]
 
 [dependencies]
