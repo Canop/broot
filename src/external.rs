@@ -19,7 +19,7 @@ impl Launchable {
         let mut tokens = launch_string.split_whitespace().map(|t| t.to_string());
         match tokens.next() {
             Some(exe) => Ok(Launchable {
-                exe: exe,
+                exe,
                 args: tokens.collect(),
                 just_print: false,
             }),

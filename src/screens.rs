@@ -40,7 +40,7 @@ impl Screen {
         let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
         Ok(Screen { w, h, stdout })
     }
-    pub fn write_lines(&mut self, area: &ScreenArea, lines: &Vec<String>) -> io::Result<()> {
+    pub fn write_lines(&mut self, area: &ScreenArea, lines: &[String]) -> io::Result<()> {
         let mut i = area.scroll as usize;
         for y in area.top..=area.bottom {
             write!(

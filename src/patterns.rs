@@ -1,8 +1,10 @@
 //! a trivial fuzzy pattern matcher for filename filtering / sorting
+//! It's not meant for file contents but for small strings (less than 1000 chars)
+//!  such as file names.
 
 // weights used in match score computing
-const BONUS_MATCH: i32 = 10000;
-const BONUS_EXACT: i32 = 1000;
+const BONUS_MATCH: i32 = 10_000;
+const BONUS_EXACT: i32 = 1_000;
 const BONUS_START: i32 = 0; // disabled
 const BONUX_CANDIDATE_LENGTH: i32 = -1; // per char
 const BONUS_LENGTH: i32 = -10; // per char of length
@@ -11,7 +13,7 @@ const MAX_LENGTH_PER_CHAR: usize = 2;
 
 #[derive(Debug, Clone)]
 pub struct Pattern {
-    lc_chars: Box<[char]>,
+    lc_chars: Box<[char]>, // lowercase characters
 }
 
 #[derive(Debug)]
@@ -28,7 +30,7 @@ impl Pattern {
     }
     fn match_starting_at_index(
         &self,
-        cand_chars: &Vec<char>,
+        cand_chars: &[char],
         start_idx: usize, // start index in candidate
         max_match_len: usize,
     ) -> Option<Match> {

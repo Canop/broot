@@ -8,7 +8,12 @@ use termion::{color, style};
 
 pub trait TreeView {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
-    fn write_line_name(&mut self, line: &TreeLine, idx: usize, pattern: &Option<Pattern>) -> io::Result<()>;
+    fn write_line_name(
+        &mut self,
+        line: &TreeLine,
+        idx: usize,
+        pattern: &Option<Pattern>,
+    ) -> io::Result<()>;
 }
 
 impl TreeView for Screen {
@@ -50,9 +55,9 @@ impl TreeView for Screen {
                     "{}{}",
                     color::Bg(color::AnsiValue::grayscale(2)),
                     termion::clear::UntilNewline,
-                );
-            //} else {
-            //    write!(self.stdout, " ");
+                )?;
+                //} else {
+                //    write!(self.stdout, " ");
             }
             self.write_line_name(line, line_index, &tree.pattern)?;
             write!(
@@ -71,7 +76,7 @@ impl TreeView for Screen {
         &mut self,
         line: &TreeLine,
         idx: usize,
-        pattern: &Option<Pattern>
+        pattern: &Option<Pattern>,
     ) -> io::Result<()> {
         lazy_static! {
             static ref fg_reset: String = format!("{}", color::Fg(color::Reset)).to_string();
@@ -84,7 +89,7 @@ impl TreeView for Screen {
         // TODO draw in red lines with has_error
         match &line.content {
             LineType::Dir => {
-                if idx==0 {
+                if idx == 0 {
                     write!(
                         self.stdout,
                         "{}{}{}",
@@ -125,7 +130,7 @@ impl TreeView for Screen {
             LineType::Pruning => {
                 write!(
                     self.stdout,
-                    "{} ... {} other files…",
+                    "{} ... {} unlisted…",
                     style::Italic,
                     &line.unlisted,
                 )?;

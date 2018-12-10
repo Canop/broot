@@ -26,15 +26,17 @@ impl Verb {
         lazy_static! {
             static ref regex: Regex = Regex::new(r"\{([\w.]+)\}").unwrap();
         }
-        regex.replace_all(&*self.exec_pattern, |caps: &Captures| {
-            match caps.get(1).unwrap().as_str() {
-                "file" => path.to_string_lossy(),
-                _ => Cow::from("-hu?-"),
-            }
-        }).to_string()
+        regex
+            .replace_all(&*self.exec_pattern, |caps: &Captures| {
+                match caps.get(1).unwrap().as_str() {
+                    "file" => path.to_string_lossy(),
+                    _ => Cow::from("-hu?-"),
+                }
+            })
+            .to_string()
     }
     pub fn description_for(&self, state: &BrowserState) -> String {
-        match self.exec_pattern.starts_with(":") {
+        match self.exec_pattern.starts_with(':') {
             true => self.description(),
             false => {
                 let line = match &state.filtered_tree {
@@ -113,9 +115,7 @@ impl Verb {
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
             ":quit" => AppStateCmdResult::Quit,
-            _ => AppStateCmdResult::Launch(Launchable::from(
-                &self.exec_string(path)
-            )?),
+            _ => AppStateCmdResult::Launch(Launchable::from(&self.exec_string(path))?),
         })
     }
 }

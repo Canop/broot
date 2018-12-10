@@ -11,7 +11,7 @@ pub enum Action {
     VerbEdit(String),    // verb, unfinished
     Verb(String),        // verb
     PatternEdit(String), // a pattern being edited
-    Back, // back to last app state, or clear pattern
+    Back,                // back to last app state, or clear pattern
     Next,
     Help(String),
     Unparsed, // or unparsable
@@ -27,7 +27,8 @@ impl Action {
                 (?:[\s:]+(?P<verb>\w*))?
                 $
                 "
-            ).unwrap();
+            )
+            .unwrap();
         }
         if let Some(c) = RE.captures(raw) {
             if let Some(verb) = c.name("verb") {

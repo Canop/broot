@@ -53,7 +53,7 @@ impl AppState for BrowserState {
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => {
-                if let Some(_) = self.filtered_tree {
+                if self.filtered_tree.is_some() {
                     self.filtered_tree = None;
                     cmd.raw.clear();
                     AppStateCmdResult::Keep
@@ -81,30 +81,27 @@ impl AppState for BrowserState {
                     Some(tree) => tree.selected_line(),
                     None => self.tree.selected_line(),
                 };
-                match line.is_dir() {
-                    true => AppStateCmdResult::from_optional_state(BrowserState::new(
+                if line.is_dir() {
+                    AppStateCmdResult::from_optional_state(BrowserState::new(
                         line.path.clone(),
                         self.options.clone(),
                         TaskLifetime::unlimited(),
-                    )),
-                    false => AppStateCmdResult::Launch(Launchable::opener(&line.path)?),
+                    ))
+                } else {
+                    AppStateCmdResult::Launch(Launchable::opener(&line.path)?)
                 }
             }
             Action::Verb(verb_key) => match verb_store.get(&verb_key) {
                 Some(verb) => verb.execute(&self)?,
                 None => AppStateCmdResult::verb_not_found(&verb_key),
             },
-            Action::PatternEdit(pat) => {
-                match pat.len() {
-                    0 => {
-                        self.filtered_tree = None;
-                        AppStateCmdResult::Keep
-                    }
-                    _ => {
-                        AppStateCmdResult::MustReapplyInterruptible
-                    }
+            Action::PatternEdit(pat) => match pat.len() {
+                0 => {
+                    self.filtered_tree = None;
+                    AppStateCmdResult::Keep
                 }
-            }
+                _ => AppStateCmdResult::MustReapplyInterruptible,
+            },
             Action::Help(about) => AppStateCmdResult::NewState(Box::new(HelpState::new(&about))),
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
@@ -130,8 +127,7 @@ impl AppState for BrowserState {
                 options.pattern = Some(pat.clone());
                 let root = self.tree.root().clone();
                 let len = self.tree.lines.len() as u16;
-                let mut filtered_tree =
-                    TreeBuilder::from(root, options, tl).build(len as usize);
+                let mut filtered_tree = TreeBuilder::from(root, options, tl).build(len as usize);
                 if let Some(ref mut filtered_tree) = filtered_tree {
                     info!("Tree search took {:?}", start.elapsed());
                     filtered_tree.try_select_best_match();
@@ -161,7 +157,12 @@ impl AppState for BrowserState {
             }
             Action::VerbEdit(verb_key) => match verb_store.get(&verb_key) {
                 Some(verb) => screen.write_status_text(
-                    &format!("Hit <enter> to {} : {}", &verb.name, verb.description_for(&self)).to_string()
+                    &format!(
+                        "Hit <enter> to {} : {}",
+                        &verb.name,
+                        verb.description_for(&self)
+                    )
+                    .to_string(),
                 ),
                 None => screen.write_status_text(
                     // show what verbs start with the currently edited verb key

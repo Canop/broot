@@ -24,7 +24,7 @@ pub struct TreeLine {
     pub content: LineType, // FIXME rename
     pub has_error: bool,
     pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
-    pub score: i32, // 0 if there's no pattern
+    pub score: i32,      // 0 if there's no pattern
 }
 
 #[derive(Debug)]
@@ -99,7 +99,7 @@ impl Tree {
                 }
                 parent_index + 1
             };
-            for i in start_index..end_index + 1 {
+            for i in start_index..=end_index {
                 self.lines[i].left_branchs[depth] = true;
             }
         }
@@ -109,10 +109,10 @@ impl Tree {
             return false;
         }
         let line = &self.lines[line_index];
-        if depth >= line.depth as usize {
-            return false;
+        match depth >= line.depth as usize {
+            true => false,
+            false => line.left_branchs[depth],
         }
-        return line.left_branchs[depth];
     }
     pub fn move_selection(&mut self, dy: i32) {
         // only work for +1 or -1
@@ -149,7 +149,6 @@ impl Tree {
             best_score = line.score;
             self.selection = idx;
         }
-        debug!("try_select_best_mach -> {}", self.selection);
     }
     pub fn try_select_next_match(&mut self) -> bool {
         for di in 0..self.lines.len() {

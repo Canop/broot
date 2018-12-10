@@ -9,8 +9,8 @@ extern crate termion;
 extern crate toml;
 #[macro_use]
 extern crate log;
-extern crate simplelog;
 extern crate clap;
+extern crate simplelog;
 
 mod app;
 mod browser_states;
@@ -54,24 +54,21 @@ custom_error! {ProgramError
 
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
-        .version("0.2.2")
+        .version("0.2.3")
         .author("dystroy <denys.seguret@gmail.com>")
         .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
-        .arg(
-            clap::Arg::with_name("root")
-            .help("sets the root directory")
-        )
+        .arg(clap::Arg::with_name("root").help("sets the root directory"))
         .arg(
             clap::Arg::with_name("only-folders")
-            .short("f")
-            .long("only-folders")
-            .help("only show folders")
+                .short("f")
+                .long("only-folders")
+                .help("only show folders"),
         )
         .arg(
             clap::Arg::with_name("hidden")
-            .short("h")
-            .long("hidden")
-            .help("show hidden files")
+                .short("h")
+                .long("hidden")
+                .help("show hidden files"),
         )
         .get_matches()
 }
@@ -82,7 +79,7 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
 //      BROOT_LOG=info broot
 // As broot is a terminal application, we only log to a file (dev.log)
 fn configure_log() {
-    let level = env::var("BROOT_LOG").unwrap_or("off".to_string());
+    let level = env::var("BROOT_LOG").unwrap_or_else(|_| "off".to_string());
     if level == "off" {
         return;
     }
@@ -91,7 +88,8 @@ fn configure_log() {
             level,
             simplelog::Config::default(),
             File::create("dev.log").expect("Log file can't be created"),
-        ).expect("log initialization failed");
+        )
+        .expect("log initialization failed");
         info!("Starting B-Root with log level {}", level);
     }
 }
@@ -133,17 +131,14 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
 }
 
 fn main() {
-    match run().unwrap() {
-        Some(launchable) => {
-            info!("launching {:?}", &launchable);
-            if let Err(e) = launchable.execute() {
-                println!("Failed to launch {:?}", &launchable);
-                println!("Error: {:?}", e);
-                warn!("Failed to launch {:?}", &launchable);
-                warn!("Error: {:?}", e);
-            }
+    if let Some(launchable) = run().unwrap() {
+        info!("launching {:?}", &launchable);
+        if let Err(e) = launchable.execute() {
+            println!("Failed to launch {:?}", &launchable);
+            println!("Error: {:?}", e);
+            warn!("Failed to launch {:?}", &launchable);
+            warn!("Error: {:?}", e);
         }
-        None => {}
     }
-    //info!("bye");
+    info!("bye");
 }

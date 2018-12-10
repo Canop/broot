@@ -83,7 +83,12 @@ impl AppState for HelpState {
         Ok(())
     }
 
-    fn write_status(&self, screen: &mut Screen, _cmd: &Command, _verb_store: &VerbStore) -> io::Result<()> {
+    fn write_status(
+        &self,
+        screen: &mut Screen,
+        _cmd: &Command,
+        _verb_store: &VerbStore,
+    ) -> io::Result<()> {
         screen.write_status_text("Hit <esc> to get back to the tree")
     }
 }
@@ -98,14 +103,13 @@ impl HelpText {
     pub fn md(&mut self, line: &str) {
         lazy_static! {
             static ref bold_regex: Regex = Regex::new(r"\*\*([^*]+)\*\*").unwrap();
-            static ref bold_repl: String =
-                String::from(format!("{}$1{}", style::Bold, style::Reset));
+            static ref bold_repl: String = format!("{}$1{}", style::Bold, style::Reset);
             static ref code_regex: Regex = Regex::new(r"`([^`]+)`").unwrap();
-            static ref code_repl: String = String::from(format!(
+            static ref code_repl: String = format!(
                 "{} $1 {}",
                 color::Bg(color::AnsiValue::grayscale(2)),
                 color::Bg(color::Reset)
-            ));
+            );
         }
         let line = bold_regex.replace_all(line, &*bold_repl as &str); // TODO how to avoid this complex casting ?
         let line = code_regex.replace_all(&line, &*code_repl as &str);

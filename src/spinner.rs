@@ -18,10 +18,7 @@ impl Spinner for Screen {
             termion::cursor::Goto(1, y),
             color::Bg(color::AnsiValue::grayscale(2)),
             color::Fg(color::AnsiValue::grayscale(10)),
-            match spinning {
-                true => "⌛",
-                false => " ",
-            },
+            if spinning { "⌛" } else { " " },
             color::Bg(color::Reset),
             color::Fg(color::Reset),
         )?;
@@ -29,4 +26,3 @@ impl Spinner for Screen {
         Ok(())
     }
 }
-

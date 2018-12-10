@@ -9,8 +9,8 @@ use commands::Command;
 use external::Launchable;
 use input::Input;
 use screens::Screen;
-use status::Status;
 use spinner::Spinner;
+use status::Status;
 use task_sync::TaskLifetime;
 use verbs::VerbStore;
 
@@ -37,11 +37,8 @@ impl AppStateCmdResult {
 }
 
 pub trait AppState {
-    fn apply(
-        &mut self,
-        cmd: &mut Command,
-        verb_store: &VerbStore,
-    ) -> io::Result<AppStateCmdResult>;
+    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore)
+        -> io::Result<AppStateCmdResult>;
     fn reapply_interruptible(
         &mut self,
         cmd: &mut Command,
@@ -98,9 +95,8 @@ impl App {
             termion::cursor::Hide
         )?;
         self.mut_state().display(&mut screen, &verb_store)?;
-        screen.write_status_text(
-            "Hit <esc> to quit, '?' for help, or type some letters to search",
-        )?;
+        screen
+            .write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
         let stdin = stdin();
         let keys = stdin.keys();
         let (tx_keys, rx_keys) = mpsc::channel();
@@ -151,7 +147,7 @@ impl App {
                 }
                 AppStateCmdResult::PopState => {
                     self.states.pop();
-                    if self.states.len() == 0 {
+                    if self.states.is_empty() {
                         quit = true;
                     } else {
                         cmd = Command::new();
@@ -169,7 +165,8 @@ impl App {
             tx_quit.send(quit).unwrap();
             if !quit && must_reapply_interruptible {
                 screen.write_spinner(true)?;
-                self.mut_state().reapply_interruptible(&mut cmd, &verb_store, tl);
+                self.mut_state()
+                    .reapply_interruptible(&mut cmd, &verb_store, tl);
                 screen.write_spinner(false)?;
                 self.state().write_status(&mut screen, &cmd, &verb_store)?;
             }

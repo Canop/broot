@@ -29,11 +29,9 @@ pub struct Conf {
 fn string_field(value: &Value, field_name: &str) -> Result<String, ConfError> {
     match &value[field_name] {
         Value::String(s) => Ok(s.to_owned()),
-        _ => {
-            return Err(ConfError::MissingField {
-                txt: field_name.to_owned(),
-            })
-        }
+        _ => Err(ConfError::MissingField {
+            txt: field_name.to_owned(),
+        }),
     }
 }
 

@@ -7,12 +7,6 @@ use patterns::Pattern;
 use task_sync::TaskLifetime;
 use tree_options::TreeOptions;
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-enum FilteringState {
-    Ok,
-    Unsure,
-}
-
 // like a tree line, but with the info needed during the build
 // This structure isn't usable independantly from the tree builder
 #[derive(Debug, Clone)]
@@ -21,12 +15,12 @@ struct BLine {
     path: PathBuf,
     depth: u16,
     name: String,
+    childs_loaded: bool,
     childs: Vec<usize>, // sorted and filtered (indexes of the childs in tree.blines)
     next_child_idx: usize, // index for iteration, among the childs
-    filtering_state: FilteringState,
     line_type: LineType,
     has_error: bool,
-    nb_matches: usize,
+    nb_matches: usize, // can be temporarly 0 for a folder until we check the content
     score: i32,
 }
 impl BLine {
@@ -41,9 +35,9 @@ impl BLine {
             path,
             depth: 0,
             name,
+            childs_loaded: false,
             childs: Vec::new(),
             next_child_idx: 0,
-            filtering_state: FilteringState::Ok,
             line_type: LineType::Dir, // it should have been checked before
             has_error: false,         // well... let's hope
             nb_matches: 1,
@@ -69,7 +63,7 @@ impl BLine {
                 }
             };
             // TODO could I directly check the first byte with as_ptr ?
-            if no_hidden && name.starts_with(".") {
+            if no_hidden && name.starts_with('.') {
                 return None;
             }
             if let Some(pattern) = pattern {
@@ -82,14 +76,10 @@ impl BLine {
             name.to_string()
         };
         let mut has_error = false;
-        let mut filtering_state = FilteringState::Ok;
         let line_type = match fs::symlink_metadata(&path) {
             Ok(metadata) => {
                 let ft = metadata.file_type();
                 if ft.is_dir() {
-                    if nb_matches == 0 {
-                        filtering_state = FilteringState::Unsure;
-                    }
                     LineType::Dir
                 } else if ft.is_symlink() {
                     if nb_matches == 0 || only_folders {
@@ -119,9 +109,9 @@ impl BLine {
             path,
             depth,
             name: name.to_string(),
+            childs_loaded: false,
             childs: Vec::new(),
             next_child_idx: 0,
-            filtering_state,
             line_type,
             has_error,
             nb_matches,
@@ -170,6 +160,7 @@ impl TreeBuilder {
     // returns true when there are direct matches among childs
     fn load_childs(&mut self, bline_idx: usize) -> bool {
         let mut has_child_match = false;
+        self.blines[bline_idx].childs_loaded = true;
         match fs::read_dir(&self.blines[bline_idx].path) {
             Ok(entries) => {
                 let mut childs: Vec<usize> = Vec::new();
@@ -243,7 +234,7 @@ impl TreeBuilder {
                 if let Some(child_idx) = self.next_child(open_dir_idx) {
                     open_dirs.push_back(open_dir_idx);
                     let child = &self.blines[child_idx];
-                    if child.filtering_state == FilteringState::Ok {
+                    if child.nb_matches > 0 {
                         nb_lines_ok += 1;
                     }
                     if child.line_type == LineType::Dir {
@@ -253,7 +244,7 @@ impl TreeBuilder {
                 }
             } else {
                 // this depth is finished, we must go deeper
-                if next_level_dirs.len() == 0 {
+                if next_level_dirs.is_empty() {
                     break;
                 }
                 for next_level_dir_idx in &next_level_dirs {
@@ -263,12 +254,11 @@ impl TreeBuilder {
                         let mut idx = *next_level_dir_idx;
                         loop {
                             let mut bline = &mut self.blines[idx];
-                            if bline.filtering_state == FilteringState::Ok {
-                                break;
+                            if bline.nb_matches == 0 {
+                                bline.nb_matches = 1; // TODO care about the exact count ?
+                                nb_lines_ok += 1;
                             }
-                            bline.filtering_state = FilteringState::Ok;
                             idx = bline.parent_idx;
-                            nb_lines_ok += 1;
                             if idx == 0 {
                                 break;
                             }
@@ -285,9 +275,13 @@ impl TreeBuilder {
 
         let mut lines: Vec<TreeLine> = Vec::new();
         for idx in out_blines.iter() {
-            let bline = &self.blines[*idx];
-            if let FilteringState::Ok = bline.filtering_state {
-                lines.push(bline.to_tree_line());
+            if self.blines[*idx].nb_matches > 0 {
+                if !self.blines[*idx].childs_loaded {
+                    if let LineType::Dir = self.blines[*idx].line_type {
+                        self.load_childs(*idx);
+                    }
+                }
+                lines.push(self.blines[*idx].to_tree_line());
                 if lines.len() >= nb_lines_max {
                     break; // we can have a little too many lines due to ancestor additions
                 }
