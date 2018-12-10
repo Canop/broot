@@ -16,6 +16,7 @@ pub struct Pattern {
     lc_chars: Box<[char]>, // lowercase characters
 }
 
+/// A Match is a positive result of pattern matching
 #[derive(Debug)]
 pub struct Match {
     pub score: i32,  // score of the match, guaranteed strictly positive, bigger is better
@@ -55,6 +56,7 @@ impl Pattern {
         }
         Some(Match { score: 0, pos })
     }
+    // return a match if the pattern can be found in the candidate string
     pub fn test(&self, candidate: &str) -> Option<Match> {
         let cand_chars: Vec<char> = candidate.chars().map(|c| c.to_ascii_lowercase()).collect();
         if cand_chars.len() < self.lc_chars.len() {

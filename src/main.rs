@@ -2,15 +2,8 @@
 
 #[macro_use]
 extern crate lazy_static;
-
-
-
-
-use toml;
 #[macro_use]
 extern crate log;
-use clap;
-use simplelog;
 
 mod app;
 mod browser_states;
@@ -30,7 +23,10 @@ mod tree_options;
 mod tree_views;
 mod verbs;
 
+use toml;
 use custom_error::custom_error;
+use clap;
+use simplelog;
 use log::LevelFilter;
 use std::env;
 use std::fs::File;
@@ -48,8 +44,8 @@ use crate::tree_options::TreeOptions;
 use crate::verbs::VerbStore;
 
 custom_error! {ProgramError
-    Io{source: io::Error}           = "IO Error",
-    Conf{source: conf::ConfError}   = "Bad configuration",
+    Io {source: io::Error}           = "IO Error",
+    Conf {source: conf::ConfError}   = "Bad configuration",
 }
 
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {

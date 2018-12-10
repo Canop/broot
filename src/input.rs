@@ -1,3 +1,5 @@
+/// displays the "input" at the bottom of the screen
+/// (reading is managed in the app module)
 use std::io::{self, Write};
 
 use crate::commands::Command;

@@ -62,7 +62,6 @@ impl BLine {
                     return None;
                 }
             };
-            // TODO could I directly check the first byte with as_ptr ?
             if no_hidden && name.starts_with('.') {
                 return None;
             }

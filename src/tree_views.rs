@@ -130,7 +130,8 @@ impl TreeView for Screen {
             LineType::Pruning => {
                 write!(
                     self.stdout,
-                    "{} ... {} unlisted…",
+                    "{}{} ... {} unlisted",
+                    color::Fg(color::AnsiValue::grayscale(10)),
                     style::Italic,
                     &line.unlisted,
                 )?;
