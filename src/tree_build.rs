@@ -15,7 +15,7 @@ struct BLine {
     path: PathBuf,
     depth: u16,
     name: String,
-    childs_loaded: bool,
+    childs_loaded: bool, // true when load_childs has been called already
     childs: Vec<usize>, // sorted and filtered (indexes of the childs in tree.blines)
     next_child_idx: usize, // index for iteration, among the childs
     line_type: LineType,
