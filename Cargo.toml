@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "0.2.3"
+version = "0.3.0"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 edition = "2018"
@@ -16,3 +16,4 @@ custom_error = "1.3.0"
 log = "0.4"
 simplelog = "0.5"
 clap = "2.32"
+walkdir = "2"

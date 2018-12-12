@@ -30,7 +30,6 @@ impl TreeView for Screen {
                 continue;
             }
             let line = &tree.lines[line_index];
-            let selected = line_index == tree.selection;
             for depth in 0..line.depth {
                 write!(
                     self.stdout,
@@ -49,6 +48,36 @@ impl TreeView for Screen {
                     color::Fg(color::Reset),
                 )?;
             }
+            if tree.options.show_sizes && line_index>0 {
+                let total_size = tree.total_size();
+                // colors: Cyan, LightMagenta, Magenta
+                if let Some(s) = line.size {
+                    //write!(
+                    //    self.stdout,
+                    //    "{}{: <8}{}",
+                    //    color::Bg(color::Magenta),
+                    //    s.to_string(),
+                    //    color::Bg(color::Reset),
+                    //)?;
+                    write!(
+                        self.stdout,
+                        "{}{}{: <8}{}{} ",
+                        color::Bg(color::AnsiValue::grayscale(1)),
+                        color::Fg(color::AnsiValue::grayscale(14)),
+                        s.to_string(),
+                        color::Bg(color::Reset),
+                        color::Fg(color::Reset),
+                    )?;
+                } else {
+                    write!(
+                        self.stdout,
+                        "{}────────{} ",
+                        color::Fg(color::AnsiValue::grayscale(5)),
+                        color::Fg(color::Reset),
+                    )?;
+                }
+            }
+            let selected = line_index == tree.selection;
             if selected {
                 write!(
                     self.stdout,
@@ -59,7 +88,7 @@ impl TreeView for Screen {
                 //} else {
                 //    write!(self.stdout, " ");
             }
-            self.write_line_name(line, line_index, &tree.pattern)?;
+            self.write_line_name(line, line_index, &tree.options.pattern)?;
             write!(
                 self.stdout,
                 "{}{}{}",
@@ -130,7 +159,7 @@ impl TreeView for Screen {
             LineType::Pruning => {
                 write!(
                     self.stdout,
-                    "{}{} ... {} unlisted",
+                    "{}{}{} unlisted",
                     color::Fg(color::AnsiValue::grayscale(10)),
                     style::Italic,
                     &line.unlisted,

@@ -40,13 +40,15 @@ impl AppState for HelpState {
         })
     }
 
-    fn reapply_interruptible(
+    fn has_pending_tasks(&self) -> bool {
+        false
+    }
+
+    fn do_pending_task(
         &mut self,
-        _cmd: &mut Command,
-        _verb_store: &VerbStore,
-        _tl: TaskLifetime,
+        _tl: &TaskLifetime,
     ) {
-        warn!("unexpected call of reapply in help state");
+        // can't happen
     }
 
     fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()> {

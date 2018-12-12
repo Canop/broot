@@ -127,27 +127,22 @@ impl BLine {
             has_error: self.has_error,
             unlisted: self.childs.len() - self.next_child_idx,
             score: self.score,
+            size: None,
         }
     }
 }
 
 pub struct TreeBuilder {
     blines: Vec<BLine>, // all blines, even the ones not yet "seen" by BFS
-    no_hidden: bool,
-    only_folders: bool,
-    pattern: Option<Pattern>,
-    task_lifetime: TaskLifetime,
+    options: TreeOptions,
 }
 impl TreeBuilder {
-    pub fn from(path: PathBuf, options: TreeOptions, task_lifetime: TaskLifetime) -> TreeBuilder {
+    pub fn from(path: PathBuf, options: TreeOptions) -> TreeBuilder {
         let mut blines = Vec::new();
         blines.push(BLine::from_root(path));
         TreeBuilder {
             blines,
-            no_hidden: !options.show_hidden,
-            only_folders: options.only_folders,
-            pattern: options.pattern,
-            task_lifetime,
+            options,
         }
     }
     // stores (move) the bline in the global vec. Returns its index
@@ -169,9 +164,9 @@ impl TreeBuilder {
                             bline_idx,
                             e.path(),
                             self.blines[bline_idx].depth + 1,
-                            self.no_hidden,
-                            self.only_folders,
-                            &self.pattern,
+                            !self.options.show_hidden,
+                            self.options.only_folders,
+                            &self.options.pattern,
                         );
                         if let Some(bl) = bl {
                             if bl.nb_matches > 0 {
@@ -211,11 +206,11 @@ impl TreeBuilder {
             false => Option::None,
         }
     }
-    // build can be called only once per iterator
-    pub fn build(mut self, nb_lines_max: usize) -> Option<Tree> {
+    // build can be called only once per builder
+    pub fn build(mut self, nb_lines_max: usize, task_lifetime: &TaskLifetime) -> Option<Tree> {
         let mut out_blines: Vec<usize> = Vec::new(); // the blines we want to display
         out_blines.push(0);
-        debug!("start building with pattern {:?}", self.pattern);
+        debug!("start building with pattern {:?}", self.options.pattern);
         let mut nb_lines_ok = 1; // in out_blines
         let mut open_dirs: VecDeque<usize> = VecDeque::new();
         let mut next_level_dirs: Vec<usize> = Vec::new();
@@ -225,7 +220,7 @@ impl TreeBuilder {
             if nb_lines_ok >= nb_lines_max {
                 break;
             }
-            if self.task_lifetime.is_expired() {
+            if task_lifetime.is_expired() {
                 info!("task expired (core build)");
                 return None;
             }
@@ -290,9 +285,14 @@ impl TreeBuilder {
         let mut tree = Tree {
             lines: lines.into_boxed_slice(),
             selection: 0,
-            pattern: self.pattern.clone(),
+            options: self.options.clone(),
         };
         tree.after_lines_changed();
+
+        if self.options.show_sizes {
+            tree.fetch_file_sizes();
+        }
+
         Some(tree)
     }
 }

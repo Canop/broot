@@ -20,18 +20,18 @@ use crate::verbs::VerbStore;
 
 pub struct BrowserState {
     pub tree: Tree,
-    pub options: TreeOptions,
     pub filtered_tree: Option<Tree>,
+    pending_pattern: Option<Pattern>,
 }
 
 impl BrowserState {
-    pub fn new(path: PathBuf, options: TreeOptions, tl: TaskLifetime) -> Option<BrowserState> {
-        let builder = TreeBuilder::from(path, options.clone(), tl);
-        match builder.build(screens::max_tree_height() as usize) {
+    pub fn new(path: PathBuf, options: TreeOptions, tl: &TaskLifetime) -> Option<BrowserState> {
+        let builder = TreeBuilder::from(path, options.clone());
+        match builder.build(screens::max_tree_height() as usize, tl) {
             Some(tree) => Some(BrowserState {
                 tree,
-                options,
                 filtered_tree: None,
+                pending_pattern: None,
             }),
             None => None, // interrupted
         }
@@ -50,6 +50,7 @@ impl AppState for BrowserState {
         cmd: &mut Command,
         verb_store: &VerbStore,
     ) -> io::Result<AppStateCmdResult> {
+        self.pending_pattern = None;
         Ok(match &cmd.action {
             Action::Back => {
                 if self.filtered_tree.is_some() {
@@ -76,18 +77,19 @@ impl AppState for BrowserState {
                 AppStateCmdResult::Keep
             }
             Action::OpenSelection => {
-                let line = match &self.filtered_tree {
-                    Some(tree) => tree.selected_line(),
-                    None => self.tree.selected_line(),
+                let tree = match &self.filtered_tree {
+                    Some(tree) => tree,
+                    None => &self.tree,
                 };
-                if line.is_dir() {
+                if tree.selected_line().is_dir() {
+                    let tl = TaskLifetime::unlimited();
                     AppStateCmdResult::from_optional_state(BrowserState::new(
-                        line.path.clone(),
-                        self.options.clone(),
-                        TaskLifetime::unlimited(),
+                        tree.selected_line().path.clone(),
+                        tree.options.without_pattern(),
+                        &tl,
                     ))
                 } else {
-                    AppStateCmdResult::Launch(Launchable::opener(&line.path)?)
+                    AppStateCmdResult::Launch(Launchable::opener(&tree.selected_line().path)?)
                 }
             }
             Action::Verb(verb_key) => match verb_store.get(&verb_key) {
@@ -99,7 +101,10 @@ impl AppState for BrowserState {
                     self.filtered_tree = None;
                     AppStateCmdResult::Keep
                 }
-                _ => AppStateCmdResult::MustReapplyInterruptible,
+                _ => {
+                    self.pending_pattern = Some(Pattern::from(pat));
+                    AppStateCmdResult::Keep
+                }
             },
             Action::Help(about) => AppStateCmdResult::NewState(Box::new(HelpState::new(&about))),
             Action::Next => {
@@ -112,30 +117,39 @@ impl AppState for BrowserState {
         })
     }
 
-    fn reapply_interruptible(
+    fn has_pending_tasks(&self) -> bool {
+        if self.pending_pattern.is_some() {
+            return true;
+        }
+        if self.displayed_tree().has_dir_missing_size() {
+            return true;
+        }
+        return false;
+    }
+
+    fn do_pending_task(
         &mut self,
-        cmd: &mut Command,
-        _verb_store: &VerbStore,
-        tl: TaskLifetime,
+        tl: &TaskLifetime,
     ) {
-        match &cmd.action {
-            Action::PatternEdit(pat) => {
-                let start = Instant::now();
-                let pat = Pattern::from(pat);
-                let mut options = self.options.clone();
-                options.pattern = Some(pat.clone());
-                let root = self.tree.root().clone();
-                let len = self.tree.lines.len() as u16;
-                let mut filtered_tree = TreeBuilder::from(root, options, tl).build(len as usize);
-                if let Some(ref mut filtered_tree) = filtered_tree {
-                    info!("Tree search took {:?}", start.elapsed());
-                    filtered_tree.try_select_best_match();
-                } // if none: task was cancelled from elsewhere
-                self.filtered_tree = filtered_tree;
-            }
-            _ => {
-                warn!("unexpected command in reapply");
-            }
+        if let Some(pat) = &mut self.pending_pattern {
+            let start = Instant::now();
+            let mut options = self.tree.options.clone();
+            options.pattern = Some(pat.clone());
+            let root = self.tree.root().clone();
+            let len = self.tree.lines.len() as u16;
+            let mut filtered_tree = TreeBuilder::from(root, options).build(len as usize, tl);
+            if let Some(ref mut filtered_tree) = filtered_tree {
+                info!("Tree search took {:?}", start.elapsed());
+                filtered_tree.try_select_best_match();
+            } // if none: task was cancelled from elsewhere
+            self.filtered_tree = filtered_tree;
+            self.pending_pattern = None;
+            return;
+        }
+        if let Some(ref mut tree) = self.filtered_tree {
+            tree.fetch_some_missing_dir_size();
+        } else {
+            self.tree.fetch_some_missing_dir_size();
         }
     }
 
@@ -150,7 +164,6 @@ impl AppState for BrowserState {
         verb_store: &VerbStore,
     ) -> io::Result<()> {
         match &cmd.action {
-            //Action::FixPattern => screen.write_status_text("Hit <esc> to remove the filter"),
             Action::PatternEdit(_) => {
                 screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
             }
@@ -164,7 +177,7 @@ impl AppState for BrowserState {
                     .to_string(),
                 ),
                 None => screen.write_status_text(
-                    // show what verbs start with the currently edited verb key
+                    // TODO show what verbs start with the currently edited verb key
                     "Type a verb then <enter> to execute it (hit '?' for the list of verbs)",
                 ),
             },

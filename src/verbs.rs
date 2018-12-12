@@ -58,6 +58,7 @@ impl Verb {
             ":quit" => "quits the application".to_string(),
             ":toggle_hidden" => "toggles showing hidden files".to_string(),
             ":toggle_files" => "toggles showing files (or just folders)".to_string(),
+            ":toggle_sizes" => "toggles showing sizes".to_string(),
             _ => format!("`{}`", self.exec_pattern),
         }
     }
@@ -71,29 +72,38 @@ impl Verb {
             ":back" => AppStateCmdResult::PopState,
             ":focus" => {
                 let path = state.tree.selected_line().path.clone();
-                let options = state.options.clone();
+                let options = state.tree.options.clone();
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     path,
                     options,
-                    TaskLifetime::unlimited(),
+                    &TaskLifetime::unlimited(),
                 ))
             }
             ":toggle_hidden" => {
-                let mut options = state.options.clone();
+                let mut options = state.tree.options.clone();
                 options.show_hidden = !options.show_hidden;
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     state.tree.root().clone(),
                     options,
-                    TaskLifetime::unlimited(),
+                    &TaskLifetime::unlimited(),
                 ))
             }
             ":toggle_files" => {
-                let mut options = state.options.clone();
+                let mut options = state.tree.options.clone();
                 options.only_folders = !options.only_folders;
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     state.tree.root().clone(),
                     options,
-                    TaskLifetime::unlimited(),
+                    &TaskLifetime::unlimited(),
+                ))
+            }
+            ":toggle_sizes" => {
+                let mut options = state.tree.options.clone();
+                options.show_sizes = !options.show_sizes;
+                AppStateCmdResult::from_optional_state(BrowserState::new(
+                    state.tree.root().clone(),
+                    options,
+                    &TaskLifetime::unlimited(),
                 ))
             }
             ":print_path" => {
@@ -105,11 +115,11 @@ impl Verb {
             ":parent" => match &state.tree.selected_line().path.parent() {
                 Some(path) => {
                     let path = path.to_path_buf();
-                    let options = state.options.clone();
+                    let options = state.tree.options.clone();
                     AppStateCmdResult::from_optional_state(BrowserState::new(
                         path,
                         options,
-                        TaskLifetime::unlimited(),
+                        &TaskLifetime::unlimited(),
                     ))
                 }
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),

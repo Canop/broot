@@ -100,6 +100,8 @@ const DEFAULT_CONF_FILE: &str = r#"
 #   ":parent"        : moves to the parent directory
 #   ":quit"          : quits the application
 #   ":toggle_hidden" : toggles showing hidden files
+#   ":toggle_sizes"  : toggles displaying file and folder sizes
+#   ":toggle_files"  : toggles showing files or just directories
 
 [[verbs]]
 name = "cd"
@@ -136,6 +138,11 @@ execution = ":open"
 name = "geany"
 invocation = "g"
 execution = "/usr/bin/geany {file}"
+
+[[verbs]]
+name = "toggle sizes"
+invocation = "s"
+execution = ":toggle_sizes"
 
 [[verbs]]
 name = "parent"

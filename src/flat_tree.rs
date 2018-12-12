@@ -5,7 +5,8 @@
 
 use std::path::PathBuf;
 
-use crate::patterns::Pattern;
+use crate::file_sizes::Size;
+use crate::tree_options::TreeOptions;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LineType {
@@ -19,19 +20,20 @@ pub enum LineType {
 pub struct TreeLine {
     pub left_branchs: Box<[bool]>,
     pub depth: u16,
-    pub name: String, // name of the first unlisted, in case of Pruning
+    pub name: String,      // name of the first unlisted, in case of Pruning
     pub path: PathBuf,
     pub content: LineType, // FIXME rename
     pub has_error: bool,
-    pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
-    pub score: i32,      // 0 if there's no pattern
+    pub unlisted: usize,   // number of not listed childs (Dir) or brothers (Pruning)
+    pub score: i32,        // 0 if there's no pattern
+    pub size: Option<Size>,// None when not measured
 }
 
 #[derive(Debug)]
 pub struct Tree {
     pub lines: Box<[TreeLine]>,
     pub selection: usize, // there's always a selection (starts with root, which is 0)
-    pub pattern: Option<Pattern>, // the pattern which filtered the tree, if any
+    pub options: TreeOptions,
 }
 
 impl TreeLine {
@@ -47,6 +49,12 @@ impl TreeLine {
             _ => false,
         }
     }
+    pub fn is_file(&self) -> bool {
+        match &self.content {
+            LineType::File => true,
+            _ => false,
+        }
+    }
 }
 
 impl Tree {
@@ -58,6 +66,7 @@ impl Tree {
         self.lines.sort_by(|a, b| a.path.cmp(&b.path));
 
         for i in 1..self.lines.len() {
+            //debug!("{:?} => {}", &self.lines[i].path, &sizes::size(&self.lines[i].path).to_string());
             for d in 0..self.lines[i].left_branchs.len() {
                 self.lines[i].left_branchs[d] = false;
             }
@@ -164,4 +173,49 @@ impl Tree {
         }
         false
     }
+    pub fn has_dir_missing_size(& self) -> bool {
+        if !self.options.show_sizes {
+            return false;
+        }
+        for i in 1..self.lines.len() {
+            if self.lines[i].size.is_none() && self.lines[i].is_dir() {
+                return true;
+            }
+        }
+        false
+    }
+    pub fn fetch_file_sizes(&mut self) {
+        for i in 1..self.lines.len() {
+            if self.lines[i].is_file() {
+                self.lines[i].size = Some(Size::from_file(&self.lines[i].path));
+            }
+        }
+    }
+    pub fn fetch_some_missing_dir_size(& mut self) {
+        for i in 1..self.lines.len() {
+            if self.lines[i].size.is_none() && self.lines[i].is_dir() {
+                self.lines[i].size = Some(Size::from_dir(&self.lines[i].path));
+                return;
+            }
+        }
+    }
+    pub fn total_size(&self) -> Size {
+        if let Some(size) = self.lines[0].size {
+            // if the real total size is computed, it's in the root line
+            size
+        } else {
+            // if we don't have the size in root, the nearest estimate is
+            // the sum of sizes of lines at depth 1
+            let mut sum = Size::from(0);
+            for i in 1..self.lines.len() {
+                if self.lines[i].depth == 1 {
+                    if let Some(size) = self.lines[i].size {
+                        sum += size;
+                    }
+                }
+            }
+            sum
+        }
+    }
 }
+

@@ -1,5 +1,3 @@
-//#![allow(dead_code)]
-
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
@@ -15,6 +13,7 @@ mod help_states;
 mod input;
 mod patterns;
 mod screens;
+mod file_sizes;
 mod spinner;
 mod status;
 mod task_sync;
@@ -50,7 +49,7 @@ custom_error! {ProgramError
 
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
-        .version("0.2.3")
+        .version("0.3.0")
         .author("dystroy <denys.seguret@gmail.com>")
         .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
         .arg(clap::Arg::with_name("root").help("sets the root directory"))
@@ -65,6 +64,12 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
                 .short("h")
                 .long("hidden")
                 .help("show hidden files"),
+        )
+        .arg(
+            clap::Arg::with_name("sizes")
+                .short("s")
+                .long("sizes")
+                .help("show the size of files and directories"),
         )
         .get_matches()
 }
@@ -113,9 +118,13 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         debug!("show hidden files arg set");
         tree_options.show_hidden = true;
     }
+    if cli_args.is_present("sizes") {
+        debug!("show sizes arg set");
+        tree_options.show_sizes = true;
+    }
 
     Ok(
-        match BrowserState::new(path.clone(), tree_options, TaskLifetime::unlimited()) {
+        match BrowserState::new(path.clone(), tree_options, &TaskLifetime::unlimited()) {
             Some(bs) => {
                 let mut app = App::new();
                 app.push(Box::new(bs));

@@ -20,7 +20,6 @@ pub enum AppStateCmdResult {
     Launch(Launchable),
     DisplayError(String),
     NewState(Box<dyn AppState>),
-    MustReapplyInterruptible,
     PopState,
 }
 
@@ -37,14 +36,9 @@ impl AppStateCmdResult {
 }
 
 pub trait AppState {
-    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore)
-        -> io::Result<AppStateCmdResult>;
-    fn reapply_interruptible(
-        &mut self,
-        cmd: &mut Command,
-        verb_store: &VerbStore,
-        tl: TaskLifetime,
-    ); // will always be keep, and never throw
+    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore) -> io::Result<AppStateCmdResult>;
+    fn has_pending_tasks(&self) -> bool;
+    fn do_pending_task(&mut self, tl: &TaskLifetime);
     fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>;
     fn write_status(
         &self,
@@ -94,9 +88,7 @@ impl App {
             termion::clear::All,
             termion::cursor::Hide
         )?;
-        self.mut_state().display(&mut screen, &verb_store)?;
-        screen
-            .write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
+        //self.mut_state().display(&mut screen, &verb_store)?;
         let stdin = stdin();
         let keys = stdin.keys();
         let (tx_keys, rx_keys) = mpsc::channel();
@@ -122,13 +114,32 @@ impl App {
             }
         });
         let mut cmd = Command::new();
-        for c in rx_keys {
+        screen.write_input(&cmd)?;
+        screen.write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
+        loop {
+            let tl = TaskLifetime::new(&cmd_count);
+            let has_task = self.state().has_pending_tasks();
+            if has_task {
+                screen.write_spinner(true)?;
+                loop {
+                    self.state().write_status(&mut screen, &cmd, &verb_store)?;
+                    self.mut_state().display(&mut screen, &verb_store)?;
+                    if tl.is_expired() { break; }
+                    self.mut_state().do_pending_task(&tl);
+                    if !self.state().has_pending_tasks() { break; }
+                }
+                screen.write_spinner(false)?;
+            }
+            self.mut_state().display(&mut screen, &verb_store)?;
+            let c = match rx_keys.recv() {
+                Ok(c) => c,
+                Err(_) => { break; }
+            };
             //debug!("key: {:?}", &c);
             cmd.add_key(c?);
             info!("{:?}", &cmd.action);
             screen.write_input(&cmd)?;
             let mut quit = false;
-            let mut must_reapply_interruptible = false;
             match self.mut_state().apply(&mut cmd, &verb_store)? {
                 AppStateCmdResult::Quit => {
                     debug!("cdm result quit");
@@ -141,9 +152,6 @@ impl App {
                     self.push(boxed_state);
                     cmd = Command::new();
                     self.state().write_status(&mut screen, &cmd, &verb_store)?;
-                }
-                AppStateCmdResult::MustReapplyInterruptible => {
-                    must_reapply_interruptible = true;
                 }
                 AppStateCmdResult::PopState => {
                     self.states.pop();
@@ -161,17 +169,8 @@ impl App {
                     self.state().write_status(&mut screen, &cmd, &verb_store)?;
                 }
             }
-            let tl = TaskLifetime::new(&cmd_count);
             tx_quit.send(quit).unwrap();
-            if !quit && must_reapply_interruptible {
-                screen.write_spinner(true)?;
-                self.mut_state()
-                    .reapply_interruptible(&mut cmd, &verb_store, tl);
-                screen.write_spinner(false)?;
-                self.state().write_status(&mut screen, &cmd, &verb_store)?;
-            }
             screen.write_input(&cmd)?;
-            self.mut_state().display(&mut screen, &verb_store)?;
         }
         Ok(None)
     }
