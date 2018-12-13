@@ -57,21 +57,21 @@ impl TreeView for Screen {
                         self.stdout, "{}{}",
                         color::Bg(color::Magenta),
                         color::Fg(color::AnsiValue::grayscale(15)),
-                    );
+                    )?;
                     for i in 0..dr {
-                        write!(self.stdout, "{}", if i<s.len() { s[i] } else { ' ' });
+                        write!(self.stdout, "{}", if i<s.len() { s[i] } else { ' ' })?;
                     }
-                    write!(self.stdout, "{}", color::Bg(color::Reset));
-                    write!(self.stdout, "{}", color::Bg(color::AnsiValue::grayscale(2)));
+                    write!(self.stdout, "{}", color::Bg(color::Reset))?;
+                    write!(self.stdout, "{}", color::Bg(color::AnsiValue::grayscale(2)))?;
                     for i in dr..8 {
-                        write!(self.stdout, "{}", if i<s.len() { s[i] } else { ' ' });
+                        write!(self.stdout, "{}", if i<s.len() { s[i] } else { ' ' })?;
                     }
                     write!(
                         self.stdout,
                         "{}{} ",
                         color::Bg(color::Reset),
                         color::Fg(color::Reset),
-                    );
+                    )?;
                 } else {
                     write!(
                         self.stdout,
