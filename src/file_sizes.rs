@@ -1,8 +1,8 @@
-use std::path::Path;
+use std::collections::VecDeque;
+use std::path::{Path, PathBuf};
 use std::ops::AddAssign;
-use walkdir::WalkDir;
 use std::fs;
-
+use std::time::Instant;
 
 const SIZE_NAMES: &[&str] = &["", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]; // YB: for when your disk is bigger than 1024 ZB
 
@@ -18,19 +18,32 @@ impl Size {
             }
         )
     }
-    // TODO : make interruptible (writing my own walker will probably
-    //  be necessary)
+
     pub fn from_dir(path: &Path) -> Size {
-        Size(
-             WalkDir::new(path)
-                .into_iter()
-                .filter_map(|e| e.ok()
-                            .and_then(|f| {
-                                    f.metadata().map(|m| m.len()).ok()
-                            }))
-                .sum()
-        )
+        let mut s:u64 = 0;
+        let start = Instant::now();
+        // todo try to use &Path instead of PathBuf
+        let mut dirs: VecDeque<PathBuf> = VecDeque::new();
+        dirs.push_back(PathBuf::from(path));
+        while let Some(open_dir) = dirs.pop_front() {
+            if let Ok(entries) = fs::read_dir(&open_dir) {
+                for e in entries {
+                    if let Ok(e) = e {
+                        let p = e.path();
+                        if let Ok(md) = fs::symlink_metadata(&p) {
+                            s += md.len();
+                            if md.is_dir() {
+                                dirs.push_back(PathBuf::from(p));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        debug!("size computation for {:?} took {:?}", path, start.elapsed());
+        Size(s)
     }
+
     /// format a number of bytes as a string
     /// (probably fast enough but not benchmarked)
     pub fn to_string(&self) -> String {
@@ -41,6 +54,16 @@ impl Size {
             i += 1;
         }
         format!("{}{}", v, &SIZE_NAMES[i])
+    }
+    pub fn discreet_ratio(&self, max: Size, r: u64) -> u64 {
+        if max.0 == 0 || self.0 == 0{
+            0
+        } else {
+            (
+                (r as f64) *
+                (self.0 as f64).cbrt() / (max.0 as f64).cbrt()
+            ) as u64
+        }
     }
 }
 
@@ -56,9 +79,8 @@ impl AddAssign for Size {
     }
 }
 
-
-//impl Into<u64> for Size {
-//    fn into(self) -> u64 {
-//        self.0
-//    }
-//}
+impl Into<u64> for Size {
+    fn into(self) -> u64 {
+        self.0
+    }
+}

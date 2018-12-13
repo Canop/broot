@@ -18,6 +18,7 @@ pub trait TreeView {
 
 impl TreeView for Screen {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
+        let total_size = tree.total_size();
         for y in 1..self.h - 1 {
             write!(
                 self.stdout,
@@ -49,25 +50,28 @@ impl TreeView for Screen {
                 )?;
             }
             if tree.options.show_sizes && line_index>0 {
-                let total_size = tree.total_size();
-                // colors: Cyan, LightMagenta, Magenta
                 if let Some(s) = line.size {
-                    //write!(
-                    //    self.stdout,
-                    //    "{}{: <8}{}",
-                    //    color::Bg(color::Magenta),
-                    //    s.to_string(),
-                    //    color::Bg(color::Reset),
-                    //)?;
+                    let dr:usize = s.discreet_ratio(total_size, 8) as usize;
+                    let s: Vec<char> = s.to_string().chars().collect();
+                    write!(
+                        self.stdout, "{}{}",
+                        color::Bg(color::Magenta),
+                        color::Fg(color::AnsiValue::grayscale(15)),
+                    );
+                    for i in 0..dr {
+                        write!(self.stdout, "{}", if i<s.len() { s[i] } else { ' ' });
+                    }
+                    write!(self.stdout, "{}", color::Bg(color::Reset));
+                    write!(self.stdout, "{}", color::Bg(color::AnsiValue::grayscale(2)));
+                    for i in dr..8 {
+                        write!(self.stdout, "{}", if i<s.len() { s[i] } else { ' ' });
+                    }
                     write!(
                         self.stdout,
-                        "{}{}{: <8}{}{} ",
-                        color::Bg(color::AnsiValue::grayscale(1)),
-                        color::Fg(color::AnsiValue::grayscale(14)),
-                        s.to_string(),
+                        "{}{} ",
                         color::Bg(color::Reset),
                         color::Fg(color::Reset),
-                    )?;
+                    );
                 } else {
                     write!(
                         self.stdout,
@@ -85,8 +89,6 @@ impl TreeView for Screen {
                     color::Bg(color::AnsiValue::grayscale(2)),
                     termion::clear::UntilNewline,
                 )?;
-                //} else {
-                //    write!(self.stdout, " ");
             }
             self.write_line_name(line, line_index, &tree.options.pattern)?;
             write!(
