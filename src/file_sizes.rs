@@ -3,6 +3,7 @@ use std::path::{Path, PathBuf};
 use std::ops::AddAssign;
 use std::fs;
 use std::time::Instant;
+use crate::task_sync::TaskLifetime;
 
 const SIZE_NAMES: &[&str] = &["", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]; // YB: for when your disk is bigger than 1024 ZB
 
@@ -19,8 +20,8 @@ impl Size {
         )
     }
 
-    pub fn from_dir(path: &Path) -> Size {
-        let mut s:u64 = 0;
+    pub fn from_dir(path: &Path, tl: &TaskLifetime) -> Option<Size> {
+        let mut s = Size::from(0);
         let start = Instant::now();
         // todo try to use &Path instead of PathBuf
         let mut dirs: VecDeque<PathBuf> = VecDeque::new();
@@ -31,7 +32,7 @@ impl Size {
                     if let Ok(e) = e {
                         let p = e.path();
                         if let Ok(md) = fs::symlink_metadata(&p) {
-                            s += md.len();
+                            s += Size::from(md.len());
                             if md.is_dir() {
                                 dirs.push_back(PathBuf::from(p));
                             }
@@ -39,9 +40,12 @@ impl Size {
                     }
                 }
             }
+            if tl.is_expired() {
+                return None;
+            }
         }
         debug!("size computation for {:?} took {:?}", path, start.elapsed());
-        Size(s)
+        Some(s)
     }
 
     /// format a number of bytes as a string

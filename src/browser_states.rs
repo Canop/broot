@@ -147,9 +147,9 @@ impl AppState for BrowserState {
             return;
         }
         if let Some(ref mut tree) = self.filtered_tree {
-            tree.fetch_some_missing_dir_size();
+            tree.fetch_some_missing_dir_size(tl);
         } else {
-            self.tree.fetch_some_missing_dir_size();
+            self.tree.fetch_some_missing_dir_size(tl);
         }
     }
 

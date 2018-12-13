@@ -7,6 +7,7 @@ use std::path::PathBuf;
 
 use crate::file_sizes::Size;
 use crate::tree_options::TreeOptions;
+use crate::task_sync::TaskLifetime;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LineType {
@@ -191,10 +192,10 @@ impl Tree {
             }
         }
     }
-    pub fn fetch_some_missing_dir_size(& mut self) {
+    pub fn fetch_some_missing_dir_size(& mut self, tl: &TaskLifetime) {
         for i in 1..self.lines.len() {
             if self.lines[i].size.is_none() && self.lines[i].is_dir() {
-                self.lines[i].size = Some(Size::from_dir(&self.lines[i].path));
+                self.lines[i].size = Size::from_dir(&self.lines[i].path, tl);
                 return;
             }
         }
