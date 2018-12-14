@@ -8,12 +8,12 @@ mod browser_states;
 mod commands;
 mod conf;
 mod external;
+mod file_sizes;
 mod flat_tree;
 mod help_states;
 mod input;
 mod patterns;
 mod screens;
-mod file_sizes;
 mod spinner;
 mod status;
 mod task_sync;
@@ -22,17 +22,17 @@ mod tree_options;
 mod tree_views;
 mod verbs;
 
-use toml;
-use custom_error::custom_error;
 use clap;
-use simplelog;
+use custom_error::custom_error;
 use log::LevelFilter;
+use simplelog;
 use std::env;
 use std::fs::File;
 use std::io;
 use std::path::PathBuf;
 use std::result::Result;
 use std::str::FromStr;
+use toml;
 
 use crate::app::App;
 use crate::browser_states::BrowserState;
@@ -49,7 +49,7 @@ custom_error! {ProgramError
 
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
-        .version("0.3.0")
+        .version("0.3.1")
         .author("dystroy <denys.seguret@gmail.com>")
         .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
         .arg(clap::Arg::with_name("root").help("sets the root directory"))

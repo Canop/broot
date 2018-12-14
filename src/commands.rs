@@ -7,6 +7,7 @@ use termion::event::Key;
 #[derive(Debug)]
 pub enum Action {
     MoveSelection(i32),  // up (neg) or down (positive) in the list
+    ScrollPage(i32),     // in number of pages, not lines
     OpenSelection,       // open the selected line (which can't be the root by construct)
     VerbEdit(String),    // verb, unfinished
     Verb(String),        // verb
@@ -81,6 +82,12 @@ impl Command {
             }
             Key::Down => {
                 self.action = Action::MoveSelection(1);
+            }
+            Key::PageUp => {
+                self.action = Action::ScrollPage(-1);
+            }
+            Key::PageDown => {
+                self.action = Action::ScrollPage(1);
             }
             Key::Char(c) => {
                 self.raw.push(c);

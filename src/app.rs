@@ -36,7 +36,8 @@ impl AppStateCmdResult {
 }
 
 pub trait AppState {
-    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore) -> io::Result<AppStateCmdResult>;
+    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore)
+        -> io::Result<AppStateCmdResult>;
     fn has_pending_tasks(&self) -> bool;
     fn do_pending_task(&mut self, tl: &TaskLifetime);
     fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>;
@@ -115,7 +116,8 @@ impl App {
         });
         let mut cmd = Command::new();
         screen.write_input(&cmd)?;
-        screen.write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
+        screen
+            .write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
         loop {
             let tl = TaskLifetime::new(&cmd_count);
             let has_task = self.state().has_pending_tasks();
@@ -124,16 +126,22 @@ impl App {
                 loop {
                     self.state().write_status(&mut screen, &cmd, &verb_store)?;
                     self.mut_state().display(&mut screen, &verb_store)?;
-                    if tl.is_expired() { break; }
+                    if tl.is_expired() {
+                        break;
+                    }
                     self.mut_state().do_pending_task(&tl);
-                    if !self.state().has_pending_tasks() { break; }
+                    if !self.state().has_pending_tasks() {
+                        break;
+                    }
                 }
                 screen.write_spinner(false)?;
             }
             self.mut_state().display(&mut screen, &verb_store)?;
             let c = match rx_keys.recv() {
                 Ok(c) => c,
-                Err(_) => { break; }
+                Err(_) => {
+                    break;
+                }
             };
             //debug!("key: {:?}", &c);
             cmd.add_key(c?);

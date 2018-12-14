@@ -15,8 +15,8 @@ struct BLine {
     path: PathBuf,
     depth: u16,
     name: String,
-    childs_loaded: bool, // true when load_childs has been called already
-    childs: Vec<usize>, // sorted and filtered (indexes of the childs in tree.blines)
+    childs_loaded: bool,   // true when load_childs has been called already
+    childs: Vec<usize>,    // sorted and filtered (indexes of the childs in tree.blines)
     next_child_idx: usize, // index for iteration, among the childs
     line_type: LineType,
     has_error: bool,
@@ -140,10 +140,7 @@ impl TreeBuilder {
     pub fn from(path: PathBuf, options: TreeOptions) -> TreeBuilder {
         let mut blines = Vec::new();
         blines.push(BLine::from_root(path));
-        TreeBuilder {
-            blines,
-            options,
-        }
+        TreeBuilder { blines, options }
     }
     // stores (move) the bline in the global vec. Returns its index
     fn store(&mut self, bline: BLine) -> usize {
@@ -267,6 +264,18 @@ impl TreeBuilder {
             }
         }
 
+        if self.options.show_sizes {
+            // if the root directory isn't totally read, we finished it even
+            // it it goes past the bottom of the screen
+            while let Some(child_idx) = self.next_child(0) {
+                let child = &self.blines[child_idx];
+                if child.nb_matches > 0 {
+                    nb_lines_ok += 1;
+                }
+                out_blines.push(child_idx);
+            }
+        }
+
         let mut lines: Vec<TreeLine> = Vec::new();
         for idx in out_blines.iter() {
             if self.blines[*idx].nb_matches > 0 {
@@ -275,10 +284,10 @@ impl TreeBuilder {
                         self.load_childs(*idx);
                     }
                 }
-                lines.push(self.blines[*idx].to_tree_line());
-                if lines.len() >= nb_lines_max {
+                if !self.options.show_sizes && lines.len() >= nb_lines_max {
                     break; // we can have a little too many lines due to ancestor additions
                 }
+                lines.push(self.blines[*idx].to_tree_line());
             }
         }
 
@@ -286,12 +295,18 @@ impl TreeBuilder {
             lines: lines.into_boxed_slice(),
             selection: 0,
             options: self.options.clone(),
+            scroll: 0,
         };
         tree.after_lines_changed();
 
         if self.options.show_sizes {
             tree.fetch_file_sizes();
         }
+        debug!(
+            "new tree: {} lines, nb_lines_max={}",
+            tree.lines.len(),
+            nb_lines_max
+        );
 
         Some(tree)
     }

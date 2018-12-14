@@ -51,6 +51,9 @@ impl AppState for BrowserState {
         verb_store: &VerbStore,
     ) -> io::Result<AppStateCmdResult> {
         self.pending_pattern = None;
+        let (_, page_height) = termion::terminal_size().unwrap();
+        let mut page_height = page_height as i32;
+        page_height -= 2;
         Ok(match &cmd.action {
             Action::Back => {
                 if self.filtered_tree.is_some() {
@@ -68,12 +71,27 @@ impl AppState for BrowserState {
             Action::MoveSelection(dy) => {
                 match self.filtered_tree {
                     Some(ref mut tree) => {
-                        tree.move_selection(*dy);
+                        tree.move_selection(*dy, page_height);
                     }
                     None => {
-                        self.tree.move_selection(*dy);
+                        self.tree.move_selection(*dy, page_height);
                     }
                 };
+                AppStateCmdResult::Keep
+            }
+            Action::ScrollPage(dp) => {
+                // this should not be computed here
+                if page_height < self.displayed_tree().lines.len() as i32 {
+                    let dy = dp * page_height;
+                    match self.filtered_tree {
+                        Some(ref mut tree) => {
+                            tree.try_scroll(dy, page_height);
+                        }
+                        None => {
+                            self.tree.try_scroll(dy, page_height);
+                        }
+                    };
+                }
                 AppStateCmdResult::Keep
             }
             Action::OpenSelection => {
@@ -110,6 +128,7 @@ impl AppState for BrowserState {
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
                     tree.try_select_next_match();
+                    tree.make_selection_visible(page_height);
                 }
                 AppStateCmdResult::Keep
             }
@@ -127,10 +146,7 @@ impl AppState for BrowserState {
         return false;
     }
 
-    fn do_pending_task(
-        &mut self,
-        tl: &TaskLifetime,
-    ) {
+    fn do_pending_task(&mut self, tl: &TaskLifetime) {
         if let Some(pat) = &mut self.pending_pattern {
             let start = Instant::now();
             let mut options = self.tree.options.clone();
@@ -141,6 +157,10 @@ impl AppState for BrowserState {
             if let Some(ref mut filtered_tree) = filtered_tree {
                 info!("Tree search took {:?}", start.elapsed());
                 filtered_tree.try_select_best_match();
+                let (_, page_height) = termion::terminal_size().unwrap();
+                let mut page_height = page_height as i32;
+                page_height -= 2;
+                filtered_tree.make_selection_visible(page_height);
             } // if none: task was cancelled from elsewhere
             self.filtered_tree = filtered_tree;
             self.pending_pattern = None;

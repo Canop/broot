@@ -6,8 +6,8 @@
 use std::path::PathBuf;
 
 use crate::file_sizes::Size;
-use crate::tree_options::TreeOptions;
 use crate::task_sync::TaskLifetime;
+use crate::tree_options::TreeOptions;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LineType {
@@ -21,13 +21,13 @@ pub enum LineType {
 pub struct TreeLine {
     pub left_branchs: Box<[bool]>,
     pub depth: u16,
-    pub name: String,      // name of the first unlisted, in case of Pruning
+    pub name: String, // name of the first unlisted, in case of Pruning
     pub path: PathBuf,
     pub content: LineType, // FIXME rename
     pub has_error: bool,
-    pub unlisted: usize,   // number of not listed childs (Dir) or brothers (Pruning)
-    pub score: i32,        // 0 if there's no pattern
-    pub size: Option<Size>,// None when not measured
+    pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
+    pub score: i32,      // 0 if there's no pattern
+    pub size: Option<Size>, // None when not measured
 }
 
 #[derive(Debug)]
@@ -35,6 +35,7 @@ pub struct Tree {
     pub lines: Box<[TreeLine]>,
     pub selection: usize, // there's always a selection (starts with root, which is 0)
     pub options: TreeOptions,
+    pub scroll: i32, // FIXME usize
 }
 
 impl TreeLine {
@@ -64,7 +65,7 @@ impl Tree {
     // - compute left branchs
     pub fn after_lines_changed(&mut self) {
         // we sort the lines
-        self.lines.sort_by(|a, b| a.path.cmp(&b.path));
+        self.lines.sort_by(|a, b| a.path.cmp(&b.path)); //FIXME case insensitive sort
 
         for i in 1..self.lines.len() {
             //debug!("{:?} => {}", &self.lines[i].path, &sizes::size(&self.lines[i].path).to_string());
@@ -124,7 +125,7 @@ impl Tree {
             false => line.left_branchs[depth],
         }
     }
-    pub fn move_selection(&mut self, dy: i32) {
+    pub fn move_selection(&mut self, dy: i32, page_height: i32) {
         // only work for +1 or -1
         let l = self.lines.len();
         loop {
@@ -132,6 +133,40 @@ impl Tree {
             if self.lines[self.selection].is_selectable() {
                 break;
             }
+        }
+        // we adjust the scroll
+        let l = l as i32;
+        let sel = self.selection as i32;
+        if dy < 0 && sel < self.scroll + 5 {
+            self.scroll = (self.scroll + 2 * dy).max(0);
+        } else if dy > 0 && l > page_height && sel > self.scroll + page_height - 5 {
+            self.scroll = self.scroll + 2 * dy;
+        }
+    }
+    pub fn try_scroll(&mut self, dy: i32, page_height: i32) {
+        self.scroll = (self.scroll + dy).max(0).min(self.lines.len() as i32 - 5);
+        self.select_visible_line(page_height);
+    }
+    pub fn select_visible_line(&mut self, page_height: i32) {
+        let sel = self.selection as i32;
+        if sel < self.scroll || sel >= self.scroll + page_height {
+            self.selection = self.scroll as usize;
+            let l = self.lines.len();
+            loop {
+                self.selection = (self.selection + ((l as i32) + 1) as usize) % l;
+                if self.lines[self.selection].is_selectable() {
+                    break;
+                }
+            }
+        }
+    }
+    pub fn make_selection_visible(&mut self, page_height: i32) {
+        let sel = self.selection as i32;
+        let l = self.lines.len() as i32;
+        if sel < self.scroll {
+            self.scroll = (self.selection as i32 - 2).max(0);
+        } else if l > page_height && sel >= self.scroll + page_height {
+            self.scroll = (self.selection as i32 - page_height + 2) as i32;
         }
     }
     pub fn selected_line(&self) -> &TreeLine {
@@ -174,7 +209,7 @@ impl Tree {
         }
         false
     }
-    pub fn has_dir_missing_size(& self) -> bool {
+    pub fn has_dir_missing_size(&self) -> bool {
         if !self.options.show_sizes {
             return false;
         }
@@ -192,7 +227,7 @@ impl Tree {
             }
         }
     }
-    pub fn fetch_some_missing_dir_size(& mut self, tl: &TaskLifetime) {
+    pub fn fetch_some_missing_dir_size(&mut self, tl: &TaskLifetime) {
         for i in 1..self.lines.len() {
             if self.lines[i].size.is_none() && self.lines[i].is_dir() {
                 self.lines[i].size = Size::from_dir(&self.lines[i].path, tl);
@@ -219,4 +254,3 @@ impl Tree {
         }
     }
 }
-

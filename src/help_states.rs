@@ -44,10 +44,7 @@ impl AppState for HelpState {
         false
     }
 
-    fn do_pending_task(
-        &mut self,
-        _tl: &TaskLifetime,
-    ) {
+    fn do_pending_task(&mut self, _tl: &TaskLifetime) {
         // can't happen
     }
 
