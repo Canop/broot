@@ -175,7 +175,7 @@ impl TreeBuilder {
                         }
                     }
                 }
-                childs.sort_by(|a, b| self.blines[*a].path.cmp(&self.blines[*b].path));
+                childs.sort_by(|&a, &b| self.blines[a].name.to_lowercase().cmp(&self.blines[b].name.to_lowercase()));
                 self.blines[bline_idx].childs.append(&mut childs);
             }
             Err(err) => {

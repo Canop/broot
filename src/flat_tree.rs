@@ -1,9 +1,8 @@
 //! in the flat_tree structure, every "node" is just a line, there's
 //!  no link from a child to its parent or from a parent to its childs.
-//! It looks stupid and probably is but makes it easier to deal
-//!  with the borrow checker.
 
 use std::path::PathBuf;
+use std::cmp;
 
 use crate::file_sizes::Size;
 use crate::task_sync::TaskLifetime;
@@ -58,6 +57,27 @@ impl TreeLine {
         }
     }
 }
+impl PartialEq for TreeLine {
+    fn eq(&self, other: &TreeLine) -> bool {
+        self.path == other.path
+    }
+}
+
+impl Eq for TreeLine {}
+
+impl Ord for TreeLine {
+    // paths are sorted based on the lowercased components
+    fn cmp(&self, other: &TreeLine) -> cmp::Ordering {
+        self.path.components().map(|c| c.as_os_str().to_string_lossy().to_lowercase())
+            .cmp(other.path.components().map(|c| c.as_os_str().to_string_lossy().to_lowercase()))
+    }
+}
+
+impl PartialOrd for TreeLine {
+    fn partial_cmp(&self, other: &TreeLine) -> Option<cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
 
 impl Tree {
     // do what must be done after line additions or removals:
@@ -65,10 +85,9 @@ impl Tree {
     // - compute left branchs
     pub fn after_lines_changed(&mut self) {
         // we sort the lines
-        self.lines.sort_by(|a, b| a.path.cmp(&b.path)); //FIXME case insensitive sort
+        self.lines.sort();
 
         for i in 1..self.lines.len() {
-            //debug!("{:?} => {}", &self.lines[i].path, &sizes::size(&self.lines[i].path).to_string());
             for d in 0..self.lines[i].left_branchs.len() {
                 self.lines[i].left_branchs[d] = false;
             }
