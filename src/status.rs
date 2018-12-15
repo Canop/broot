@@ -14,6 +14,8 @@ pub trait Status {
 impl Status for Screen {
     fn write_status_err(&mut self, text: &str) -> io::Result<()> {
         let y = self.h - 1;
+        let mut text = String::from(text);
+        text.truncate(self.w as usize - 2);
         write!(
             self.stdout,
             "{}{}{}{} {}{}{}",
@@ -30,6 +32,8 @@ impl Status for Screen {
     }
     fn write_status_text(&mut self, text: &str) -> io::Result<()> {
         let y = self.h - 1;
+        let mut text = String::from(text);
+        text.truncate(self.w as usize - 2);
         write!(
             self.stdout,
             "{}{}{} {}{}",
