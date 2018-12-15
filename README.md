@@ -2,7 +2,7 @@
 
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
 
-A interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands.
+An interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands.
 
 Get an overview of a directory, even a big one:
 
@@ -32,7 +32,7 @@ Type a few letters to fuzzy search files or directories.
 
 Enter brings you to a directory or opens a file.
 
-A command starts with a space or `:` (as you like) and is usually only one letter (for example `:s` to toggle sizes, `:q` to quit, ` p` to go up the tree, etc.).
+A command starts with a space or `:` (as you like) and is usually only one letter (for example `:s` to toggle sizes, `:q` to quit, `:p` to go up the tree, etc.).
 
 Type `?` to see the list of commands and the path to their configuration.
 
