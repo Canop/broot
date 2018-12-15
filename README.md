@@ -2,13 +2,27 @@
 
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
 
-A interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands for:
+A interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands.
 
-* a clear overview of a directory tree
-* a very fast access to any file, without being lost or disoriented
-* a personal launcher
+Get an overview of a directory, even a big one:
 
-[![asciicast](https://asciinema.org/a/vxzgahNhoYfDVpEfp7OmZhLDQ.svg)](https://asciinema.org/a/vxzgahNhoYfDVpEfp7OmZhLDQ)
+![overview](doc/20181215-overview.png)
+
+See what takes space:
+
+![size](doc/20181215-only-folders-with-size.png)
+
+Never lose track of file hierarchy while you fuzzy search:
+
+![size](doc/20181215-search.png)
+
+Apply a personal shorcut to a file:
+
+![size](doc/20181215-edit.png)
+
+And everything's blazingly fast and nothing never blocks:
+
+[![asciicast](https://asciinema.org/a/IfA8tMykpeQbKIFGe9J3ljeSu.svg)](https://asciinema.org/a/IfA8tMykpeQbKIFGe9J3ljeSu?theme=tango)
 
 ## Installation
 
