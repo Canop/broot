@@ -24,6 +24,18 @@ And everything's blazingly fast and nothing never blocks:
 
 [![asciicast](https://asciinema.org/a/IfA8tMykpeQbKIFGe9J3ljeSu.svg)](https://asciinema.org/a/IfA8tMykpeQbKIFGe9J3ljeSu?theme=tango)
 
+## Usage
+
+Launch it (see `broot --help` for launch options).
+
+Type a few letters to fuzzy search files or directories.
+
+Enter brings you to a directory or opens a file.
+
+A command starts with a space or `:` (as you like) and is usually only one letter (for example `:s` to toggle sizes, `:q` to quit, ` p` to go up the tree, etc.).
+
+Type `?` to see the list of commands and the path to their configuration.
+
 ## Installation
 
 ### From Source
