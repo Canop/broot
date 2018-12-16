@@ -21,10 +21,9 @@ impl Size {
     pub fn from_dir(path: &Path, tl: &TaskLifetime) -> Option<Size> {
         let mut s = Size::from(0);
         //let start = Instant::now();
-        // todo try to use &Path instead of PathBuf
-        let mut dirs: VecDeque<PathBuf> = VecDeque::new();
-        dirs.push_back(PathBuf::from(path));
-        while let Some(open_dir) = dirs.pop_front() {
+        let mut dirs: Vec<PathBuf> = Vec::new();
+        dirs.push(PathBuf::from(path));
+        while let Some(open_dir) = dirs.pop() {
             if let Ok(entries) = fs::read_dir(&open_dir) {
                 for e in entries {
                     if let Ok(e) = e {
@@ -32,7 +31,7 @@ impl Size {
                         if let Ok(md) = fs::symlink_metadata(&p) {
                             s += Size::from(md.len());
                             if md.is_dir() {
-                                dirs.push_back(p);
+                                dirs.push(p);
                             }
                         }
                     }

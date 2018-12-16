@@ -20,9 +20,7 @@ Apply a personal shorcut to a file:
 
 ![size](doc/20181215-edit.png)
 
-And everything's blazingly fast and nothing never blocks:
-
-[![asciicast](https://asciinema.org/a/IfA8tMykpeQbKIFGe9J3ljeSu.svg)](https://asciinema.org/a/IfA8tMykpeQbKIFGe9J3ljeSu?theme=tango)
+broot is fast and never blocks, even when you make it search a big slow disk.
 
 ## Usage
 
@@ -35,6 +33,8 @@ Enter brings you to a directory or opens a file.
 A command starts with a space or `:` (as you like) and is usually only one letter (for example `:s` to toggle sizes, `:q` to quit, `:p` to go up the tree, etc.).
 
 Type `?` to see the list of commands and the path to their configuration.
+
+At any time the `esc` key brings you to the previous state.
 
 ## Installation
 
