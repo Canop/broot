@@ -1,14 +1,17 @@
-use std::collections::VecDeque;
+use std::collections::HashMap;
 use std::fs;
 use std::ops::AddAssign;
 use std::path::{Path, PathBuf};
-//use std::time::Instant;
+use std::time::Instant;
 use crate::task_sync::TaskLifetime;
+use std::sync::Mutex;
 
 const SIZE_NAMES: &[&str] = &["", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]; // YB: for when your disk is bigger than 1024 ZB
 
 #[derive(Debug, Copy, Clone)]
 pub struct Size(u64);
+
+
 
 impl Size {
     pub fn from_file(path: &Path) -> Size {
@@ -19,8 +22,15 @@ impl Size {
     }
 
     pub fn from_dir(path: &Path, tl: &TaskLifetime) -> Option<Size> {
+        lazy_static! {
+            static ref size_cache_mutex: Mutex<HashMap<PathBuf, Size>> = Mutex::new(HashMap::new());
+        }
+        let mut size_cache = size_cache_mutex.lock().unwrap();
+        if let Some(s) = size_cache.get(path) {
+            return Some(*s);
+        }
+        let start = Instant::now();
         let mut s = Size::from(0);
-        //let start = Instant::now();
         let mut dirs: Vec<PathBuf> = Vec::new();
         dirs.push(PathBuf::from(path));
         while let Some(open_dir) = dirs.pop() {
@@ -41,7 +51,8 @@ impl Size {
                 return None;
             }
         }
-        //debug!("size computation for {:?} took {:?}", path, start.elapsed());
+        size_cache.insert(PathBuf::from(path), s);
+        debug!("size computation for {:?} took {:?}", path, start.elapsed());
         Some(s)
     }
 
