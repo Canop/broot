@@ -68,10 +68,7 @@ impl ScreenArea {
         }
         let sbh = h * h / self.content_length;
         let sc = self.top as i32 + self.scroll * h / self.content_length;
-        Some((
-            sc as u16,
-            (sc+sbh).min(self.bottom as i32 - 1) as u16
-        ))
+        Some((sc as u16, (sc + sbh).min(self.bottom as i32 - 1) as u16))
     }
 }
 

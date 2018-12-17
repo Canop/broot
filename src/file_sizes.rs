@@ -1,18 +1,16 @@
-use std::collections::{HashSet, HashMap};
+use crate::task_sync::TaskLifetime;
+use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::ops::AddAssign;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
-use std::time::Instant;
-use crate::task_sync::TaskLifetime;
 use std::sync::Mutex;
+use std::time::Instant;
 
 const SIZE_NAMES: &[&str] = &["", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]; // YB: for when your disk is bigger than 1024 ZB
 
 #[derive(Debug, Copy, Clone)]
 pub struct Size(u64);
-
-
 
 impl Size {
     pub fn from_file(path: &Path) -> Size {
@@ -67,7 +65,10 @@ impl Size {
         size_cache.insert(PathBuf::from(path), s);
         debug!("size computation for {:?} took {:?}", path, start.elapsed());
         if nb_duplicate_inodes > 0 {
-            debug!(" (found {} inodes used more than once)", nb_duplicate_inodes);
+            debug!(
+                " (found {} inodes used more than once)",
+                nb_duplicate_inodes
+            );
         }
         Some(s)
     }

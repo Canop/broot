@@ -56,7 +56,6 @@ impl AppState for HelpState {
         text.md("");
         text.md(r#" `<esc>` gets you back to the previous state."#);
         text.md(r#" Typing some letters searches the tree and selects the most relevant file."#);
-        text.md(r#"    Use `<enter>` to freeze the filtering."#);
         text.md(r#" Typing a search, space, then a verb executes the verb on the file."#);
         text.md("");
         text.md(" Current Verbs:");

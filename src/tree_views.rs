@@ -27,11 +27,7 @@ impl TreeView for Screen {
         };
         let scrollbar = area.scrollbar();
         for y in 1..self.h - 1 {
-            write!(
-                self.stdout,
-                "{}",
-                termion::cursor::Goto(1, y),
-            )?;
+            write!(self.stdout, "{}", termion::cursor::Goto(1, y),)?;
             let mut line_index = (y - 1) as usize;
             if line_index > 0 {
                 line_index += tree.scroll as usize;
@@ -91,11 +87,7 @@ impl TreeView for Screen {
                 }
                 let selected = line_index == tree.selection;
                 if selected {
-                    write!(
-                        self.stdout,
-                        "{}",
-                        color::Bg(color::AnsiValue::grayscale(2)),
-                    )?;
+                    write!(self.stdout, "{}", color::Bg(color::AnsiValue::grayscale(2)),)?;
                 }
                 self.write_line_name(line, line_index, &tree.options.pattern)?;
             }
@@ -108,18 +100,10 @@ impl TreeView for Screen {
             )?;
             if let Some((sctop, scbottom)) = scrollbar {
                 if sctop <= y && y <= scbottom {
-                    write!(
-                        self.stdout,
-                        "{}▐",
-                        termion::cursor::Goto(self.w, y),
-                    )?;
+                    write!(self.stdout, "{}▐", termion::cursor::Goto(self.w, y),)?;
                 }
             }
-            write!(
-                self.stdout,
-                "{}",
-                color::Fg(color::Reset),
-            )?;
+            write!(self.stdout, "{}", color::Fg(color::Reset),)?;
         }
         self.stdout.flush()?;
         Ok(())

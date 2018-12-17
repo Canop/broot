@@ -1,8 +1,8 @@
 //! in the flat_tree structure, every "node" is just a line, there's
 //!  no link from a child to its parent or from a parent to its childs.
 
-use std::path::PathBuf;
 use std::cmp::{self, Ordering};
+use std::path::PathBuf;
 
 use crate::file_sizes::Size;
 use crate::task_sync::TaskLifetime;
@@ -86,19 +86,19 @@ impl Ord for TreeLine {
                             if ordering != Ordering::Equal {
                                 return ordering;
                             }
-                        },
+                        }
                         None => {
                             return Ordering::Greater;
-                        },
+                        }
                     };
-                },
+                }
                 None => {
                     if oci.next().is_some() {
-                        return Ordering::Less
+                        return Ordering::Less;
                     } else {
-                        return Ordering::Equal
+                        return Ordering::Equal;
                     }
-                },
+                }
             };
         }
     }
