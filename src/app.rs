@@ -122,9 +122,9 @@ impl App {
             let tl = TaskLifetime::new(&cmd_count);
             let has_task = self.state().has_pending_tasks();
             if has_task {
-                screen.write_spinner(true)?;
                 loop {
                     self.state().write_status(&mut screen, &cmd, &verb_store)?;
+                    screen.write_spinner(true)?;
                     self.mut_state().display(&mut screen, &verb_store)?;
                     if tl.is_expired() {
                         break;
