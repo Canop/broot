@@ -2,7 +2,7 @@
 //!  no link from a child to its parent or from a parent to its childs.
 
 use std::path::PathBuf;
-use std::cmp;
+use std::cmp::{self, Ordering};
 
 use crate::file_sizes::Size;
 use crate::task_sync::TaskLifetime;
@@ -66,10 +66,41 @@ impl PartialEq for TreeLine {
 impl Eq for TreeLine {}
 
 impl Ord for TreeLine {
-    // paths are sorted based on the lowercased components
-    fn cmp(&self, other: &TreeLine) -> cmp::Ordering {
-        self.path.components().map(|c| c.as_os_str().to_string_lossy().to_lowercase())
-            .cmp(other.path.components().map(|c| c.as_os_str().to_string_lossy().to_lowercase()))
+    // paths are sorted in a complete ignore case way
+    // (A<a<B<b)
+    fn cmp(&self, other: &TreeLine) -> Ordering {
+        let mut sci = self.path.components();
+        let mut oci = other.path.components();
+        loop {
+            match sci.next() {
+                Some(sc) => {
+                    match oci.next() {
+                        Some(oc) => {
+                            let scs = sc.as_os_str().to_string_lossy();
+                            let ocs = oc.as_os_str().to_string_lossy();
+                            let lower_ordering = scs.to_lowercase().cmp(&ocs.to_lowercase());
+                            if lower_ordering != Ordering::Equal {
+                                return lower_ordering;
+                            }
+                            let ordering = scs.cmp(&ocs);
+                            if ordering != Ordering::Equal {
+                                return ordering;
+                            }
+                        },
+                        None => {
+                            return Ordering::Greater;
+                        },
+                    };
+                },
+                None => {
+                    if oci.next().is_some() {
+                        return Ordering::Less
+                    } else {
+                        return Ordering::Equal
+                    }
+                },
+            };
+        }
     }
 }
 
