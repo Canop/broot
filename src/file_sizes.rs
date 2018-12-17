@@ -1,6 +1,7 @@
-use std::collections::HashMap;
+use std::collections::{HashSet, HashMap};
 use std::fs;
 use std::ops::AddAssign;
+use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
 use crate::task_sync::TaskLifetime;
@@ -33,16 +34,28 @@ impl Size {
         let mut s = Size::from(0);
         let mut dirs: Vec<PathBuf> = Vec::new();
         dirs.push(PathBuf::from(path));
+        let mut inodes: HashSet<u64> = HashSet::new(); // to avoid counting twice an inode
+        let mut nb_duplicate_inodes = 0;
         while let Some(open_dir) = dirs.pop() {
             if let Ok(entries) = fs::read_dir(&open_dir) {
                 for e in entries {
                     if let Ok(e) = e {
                         let p = e.path();
                         if let Ok(md) = fs::symlink_metadata(&p) {
-                            s += Size::from(md.len());
                             if md.is_dir() {
                                 dirs.push(p);
+                            } else {
+                                if md.nlink() > 1 {
+                                    if inodes.contains(&md.ino()) {
+                                        nb_duplicate_inodes += 1;
+                                        //debug!("duplicate inode for {:?}", &p);
+                                        continue; // let's not add the size
+                                    } else {
+                                        inodes.insert(md.ino());
+                                    }
+                                }
                             }
+                            s += Size::from(md.len());
                         }
                     }
                 }
@@ -53,6 +66,9 @@ impl Size {
         }
         size_cache.insert(PathBuf::from(path), s);
         debug!("size computation for {:?} took {:?}", path, start.elapsed());
+        if nb_duplicate_inodes > 0 {
+            debug!(" (found {} inodes used more than once)", nb_duplicate_inodes);
+        }
         Some(s)
     }
 
@@ -62,7 +78,7 @@ impl Size {
         let mut v = self.0;
         let mut i = 0;
         while v >= 1024 && i < SIZE_NAMES.len() - 1 {
-            v /= 1024;
+            v >>= 10;
             i += 1;
         }
         format!("{}{}", v, &SIZE_NAMES[i])
