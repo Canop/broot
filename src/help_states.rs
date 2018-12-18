@@ -4,13 +4,14 @@ use regex::Regex;
 use std::io;
 use termion::{color, style};
 
+use crate::app_context::AppContext;
 use crate::app::{AppState, AppStateCmdResult};
 use crate::commands::{Action, Command};
 use crate::conf::Conf;
 use crate::screens::{Screen, ScreenArea};
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
-use crate::verbs::VerbStore;
+use crate::verbs::VerbExecutor;
 
 pub struct HelpState {
     area: ScreenArea, // where the help is drawn
@@ -28,10 +29,14 @@ impl AppState for HelpState {
     fn apply(
         &mut self,
         cmd: &mut Command,
-        _verb_store: &VerbStore,
+        con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
+            Action::Verb(verb_key) => match con.verb_store.get(&verb_key) {
+                Some(verb) => self.execute_verb(verb, con)?,
+                None => AppStateCmdResult::verb_not_found(&verb_key),
+            },
             Action::MoveSelection(dy) => {
                 self.area.try_scroll(*dy);
                 AppStateCmdResult::Keep
@@ -48,7 +53,7 @@ impl AppState for HelpState {
         // can't happen
     }
 
-    fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()> {
+    fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
         let mut text = HelpText::new();
         text.md("");
         text.md(r#" **broot** (pronounce "b-root") lets you explore directory trees"#);
@@ -56,10 +61,10 @@ impl AppState for HelpState {
         text.md("");
         text.md(r#" `<esc>` gets you back to the previous state."#);
         text.md(r#" Typing some letters searches the tree and selects the most relevant file."#);
-        text.md(r#" Typing a search, space, then a verb executes the verb on the file."#);
+        text.md(r#" Typing a search, a space or `:`, then a verb executes the verb on the file."#);
         text.md("");
         text.md(" Current Verbs:");
-        for (key, verb) in verb_store.verbs.iter() {
+        for (key, verb) in con.verb_store.verbs.iter() {
             text.md(&format!(
                 "{: >14} : `{}` => {}",
                 &verb.name,
@@ -76,6 +81,7 @@ impl AppState for HelpState {
         text.md(" Some options can be set on launch:");
         text.md("  `-h` or `--hidden` : show hidden files");
         text.md("  `-f` or `--only-folders` : only show folders");
+        text.md("  `-s` or `--sizes` : display sizes");
         self.area.content_length = text.lines.len() as i32;
         screen.write_lines(&self.area, &text.lines)?;
         Ok(())
@@ -85,7 +91,7 @@ impl AppState for HelpState {
         &self,
         screen: &mut Screen,
         _cmd: &Command,
-        _verb_store: &VerbStore,
+        _con: &AppContext,
     ) -> io::Result<()> {
         screen.write_status_text("Hit <esc> to get back to the tree")
     }

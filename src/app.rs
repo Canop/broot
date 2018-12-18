@@ -4,6 +4,7 @@ use std::sync::{mpsc, Arc};
 use std::thread;
 use termion::input::TermRead;
 
+use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::commands::Command;
 use crate::external::Launchable;
@@ -12,7 +13,6 @@ use crate::screens::Screen;
 use crate::spinner::Spinner;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
-use crate::verbs::VerbStore;
 
 pub enum AppStateCmdResult {
     Quit,
@@ -36,16 +36,15 @@ impl AppStateCmdResult {
 }
 
 pub trait AppState {
-    fn apply(&mut self, cmd: &mut Command, verb_store: &VerbStore)
-        -> io::Result<AppStateCmdResult>;
+    fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult>;
     fn has_pending_tasks(&self) -> bool;
     fn do_pending_task(&mut self, tl: &TaskLifetime);
-    fn display(&mut self, screen: &mut Screen, verb_store: &VerbStore) -> io::Result<()>;
+    fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
     fn write_status(
         &self,
         screen: &mut Screen,
         cmd: &Command,
-        verb_store: &VerbStore,
+        con: &AppContext,
     ) -> io::Result<()>;
 }
 
@@ -55,8 +54,9 @@ pub struct App {
 
 impl App {
     pub fn new() -> App {
-        let states = Vec::new();
-        App { states }
+        App {
+            states: Vec::new(),
+        }
     }
 
     pub fn push(&mut self, new_state: Box<dyn AppState>) {
@@ -80,7 +80,7 @@ impl App {
         }
     }
 
-    pub fn run(mut self, verb_store: &VerbStore) -> io::Result<Option<Launchable>> {
+    pub fn run(mut self, con: &AppContext) -> io::Result<Option<Launchable>> {
         let (w, h) = termion::terminal_size()?;
         let mut screen = Screen::new(w, h)?;
         write!(
@@ -89,7 +89,6 @@ impl App {
             termion::clear::All,
             termion::cursor::Hide
         )?;
-        //self.mut_state().display(&mut screen, &verb_store)?;
         let stdin = stdin();
         let keys = stdin.keys();
         let (tx_keys, rx_keys) = mpsc::channel();
@@ -123,9 +122,9 @@ impl App {
             let has_task = self.state().has_pending_tasks();
             if has_task {
                 loop {
-                    self.state().write_status(&mut screen, &cmd, &verb_store)?;
+                    self.state().write_status(&mut screen, &cmd, con)?;
                     screen.write_spinner(true)?;
-                    self.mut_state().display(&mut screen, &verb_store)?;
+                    self.mut_state().display(&mut screen, con)?;
                     if tl.is_expired() {
                         break;
                     }
@@ -136,7 +135,7 @@ impl App {
                 }
                 screen.write_spinner(false)?;
             }
-            self.mut_state().display(&mut screen, &verb_store)?;
+            self.mut_state().display(&mut screen, con)?;
             let c = match rx_keys.recv() {
                 Ok(c) => c,
                 Err(_) => {
@@ -148,9 +147,9 @@ impl App {
             info!("{:?}", &cmd.action);
             screen.write_input(&cmd)?;
             let mut quit = false;
-            match self.mut_state().apply(&mut cmd, &verb_store)? {
+            match self.mut_state().apply(&mut cmd, con)? {
                 AppStateCmdResult::Quit => {
-                    debug!("cdm result quit");
+                    debug!("cmd result quit");
                     quit = true;
                 }
                 AppStateCmdResult::Launch(launchable) => {
@@ -159,26 +158,27 @@ impl App {
                 AppStateCmdResult::NewState(boxed_state) => {
                     self.push(boxed_state);
                     cmd = Command::new();
-                    self.state().write_status(&mut screen, &cmd, &verb_store)?;
+                    self.state().write_status(&mut screen, &cmd, con)?;
                 }
                 AppStateCmdResult::PopState => {
-                    self.states.pop();
-                    if self.states.is_empty() {
+                    if self.states.len()==1 {
+                        debug!("quitting on last pop state");
                         quit = true;
                     } else {
+                        self.states.pop();
                         cmd = Command::new();
-                        self.state().write_status(&mut screen, &cmd, &verb_store)?;
+                        self.state().write_status(&mut screen, &cmd, con)?;
                     }
                 }
                 AppStateCmdResult::DisplayError(txt) => {
                     screen.write_status_err(&txt)?;
                 }
                 AppStateCmdResult::Keep => {
-                    self.state().write_status(&mut screen, &cmd, &verb_store)?;
+                    self.state().write_status(&mut screen, &cmd, con)?;
                 }
             }
-            tx_quit.send(quit).unwrap();
             screen.write_input(&cmd)?;
+            tx_quit.send(quit).unwrap();
         }
         Ok(None)
     }

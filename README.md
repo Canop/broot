@@ -8,6 +8,10 @@ Get an overview of a directory, even a big one:
 
 ![overview](doc/20181215-overview.png)
 
+Find a directory then `cd` to it:
+
+![cd](doc/20181218-cd.png)
+
 See what takes space:
 
 ![size](doc/20181215-only-folders-with-size.png)
@@ -24,6 +28,8 @@ broot is fast and never blocks, even when you make it search a big slow disk.
 
 ## Usage
 
+### General Usage
+
 Launch it (see `broot --help` for launch options).
 
 Type a few letters to fuzzy search files or directories.
@@ -35,6 +41,52 @@ A command starts with a space or `:` (as you like) and is usually only one lette
 Type `?` to see the list of commands and the path to their configuration.
 
 At any time the `esc` key brings you to the previous state.
+
+### Use broot to see directory sizes
+
+You can either start broot normally then type `:s` which toggles size display, or start broot with
+
+    broot --sizes
+
+You might prefer to hide non directory files while looking at sizes. Use `:f` to show only folders.
+
+### Use broot for navigation
+
+broot is convenient to find a directory then `cd` to it. The `c` command of the default configuration is here for this purpose.
+
+But broot needs a companion function in the shell in order to be able to change directory. To enable this feature, add this to your `.bashrc` (or the relevant file for another shell):
+
+	# start broot and let it change directory
+	function br {
+	    f=$(mktemp)
+
+	    (
+		set +e
+		broot --out "$f"
+		code=$?
+		if [ "$code" != 0 ]; then
+		    rm -f "$f"
+		    exit "$code"
+		fi
+	    )
+	    code=$?
+	    if [ "$code" != 0 ]; then
+		return "$code"
+	    fi
+
+	    d=$(cat "$f")
+	    rm -f "$f"
+
+	    if [ "$(wc -c <(echo -n "$d") | head -c1)" != 0 ]; then
+		cd "$d"
+	    fi
+	}
+
+(you'll have to source the file or open a new terminal)
+
+With this addition, you can do just `br` to lauch broot, and typing `:c` then *enter* will cd for you. You can search and change directory in one command: `mylosthing:c`.
+
+You can still use broot normally, you won't change directory if you don't hit `:c`.
 
 ## Installation
 

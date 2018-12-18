@@ -4,6 +4,7 @@ extern crate lazy_static;
 extern crate log;
 
 mod app;
+mod app_context;
 mod browser_states;
 mod commands;
 mod conf;
@@ -37,6 +38,7 @@ use toml;
 use crate::app::App;
 use crate::browser_states::BrowserState;
 use crate::conf::Conf;
+use crate::app_context::AppContext;
 use crate::external::Launchable;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
@@ -49,7 +51,7 @@ custom_error! {ProgramError
 
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
-        .version("0.3.4")
+        .version("0.3.5")
         .author("dystroy <denys.seguret@gmail.com>")
         .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
         .arg(clap::Arg::with_name("root").help("sets the root directory"))
@@ -70,6 +72,13 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
                 .short("s")
                 .long("sizes")
                 .help("show the size of files and directories"),
+        )
+        .arg(
+            clap::Arg::with_name("output_path")
+                .short("o")
+                .long("out")
+                .takes_value(true)
+                .help("where to write the outputted path (if any)"),
         )
         .get_matches()
 }
@@ -123,12 +132,19 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         tree_options.show_sizes = true;
     }
 
+    let con = AppContext {
+        verb_store,
+        output_path: cli_args.value_of("output_path").and_then(|s| Some(s.to_owned())),
+    };
+
+    debug!("output path: {:?}", &con.output_path);
+
     Ok(
         match BrowserState::new(path.clone(), tree_options, &TaskLifetime::unlimited()) {
             Some(bs) => {
                 let mut app = App::new();
                 app.push(Box::new(bs));
-                app.run(&verb_store)?
+                app.run(&con)?
             }
             _ => None, // should not happen
         },

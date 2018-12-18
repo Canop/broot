@@ -4,6 +4,7 @@ use std::io;
 use std::path::PathBuf;
 use std::time::Instant;
 
+use crate::app_context::AppContext;
 use crate::app::{AppState, AppStateCmdResult};
 use crate::commands::{Action, Command};
 use crate::external::Launchable;
@@ -16,7 +17,7 @@ use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
 use crate::tree_options::TreeOptions;
 use crate::tree_views::TreeView;
-use crate::verbs::VerbStore;
+use crate::verbs::VerbExecutor;
 
 pub struct BrowserState {
     pub tree: Tree,
@@ -48,7 +49,7 @@ impl AppState for BrowserState {
     fn apply(
         &mut self,
         cmd: &mut Command,
-        verb_store: &VerbStore,
+        con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
         self.pending_pattern = None;
         let (_, page_height) = termion::terminal_size().unwrap();
@@ -110,8 +111,8 @@ impl AppState for BrowserState {
                     AppStateCmdResult::Launch(Launchable::opener(&tree.selected_line().path)?)
                 }
             }
-            Action::Verb(verb_key) => match verb_store.get(&verb_key) {
-                Some(verb) => verb.execute(&self)?,
+            Action::Verb(verb_key) => match con.verb_store.get(&verb_key) {
+                Some(verb) => self.execute_verb(verb, con)?,
                 None => AppStateCmdResult::verb_not_found(&verb_key),
             },
             Action::PatternEdit(pat) => match pat.len() {
@@ -173,7 +174,7 @@ impl AppState for BrowserState {
         }
     }
 
-    fn display(&mut self, screen: &mut Screen, _verb_store: &VerbStore) -> io::Result<()> {
+    fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
         screen.write_tree(&self.displayed_tree())
     }
 
@@ -181,13 +182,13 @@ impl AppState for BrowserState {
         &self,
         screen: &mut Screen,
         cmd: &Command,
-        verb_store: &VerbStore,
+        con: &AppContext,
     ) -> io::Result<()> {
         match &cmd.action {
             Action::PatternEdit(_) => {
                 screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
             }
-            Action::VerbEdit(verb_key) => match verb_store.get(&verb_key) {
+            Action::VerbEdit(verb_key) => match con.verb_store.get(&verb_key) {
                 Some(verb) => screen.write_status_text(
                     &format!(
                         "Hit <enter> to {} : {}",

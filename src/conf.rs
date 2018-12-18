@@ -94,7 +94,8 @@ const DEFAULT_CONF_FILE: &str = r#"
 # 'execution' is either a command, where {file} will be replaced by the selected line,
 # 	or one of the predefined commands:
 #   ":back"          : reverts to the previous state, or quit the application if it's the first one (mapped to <esc>)
-#   ":print_path"    : outputs the path to stdout
+#   ":cd"            : changes directory (see https://github.com/Canop/broot)
+#   ":print_path"    : outputs the path to stdout or to a file provided with --out
 #   ":focus"         : displays the tree of that directory (mapped to <enter> on directories)
 #   ":open"          : tries to open the file according to OS settings (e.g. using xdg-open) (mapped to <enter> on files)
 #   ":parent"        : moves to the parent directory
@@ -106,7 +107,7 @@ const DEFAULT_CONF_FILE: &str = r#"
 [[verbs]]
 name = "cd"
 invocation = "c"
-execution = ":cd" # doesn't work yet
+execution = ":cd"
 
 [[verbs]]
 name = "focus"
