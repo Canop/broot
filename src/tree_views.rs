@@ -42,12 +42,12 @@ impl TreeView for Screen {
                         match line.left_branchs[depth as usize] {
                             true => match tree.has_branch(line_index + 1, depth as usize) {
                                 true => match depth == line.depth - 1 {
-                                    true => "├─",
-                                    false => "│ ",
+                                    true => "├──",
+                                    false => "│  ",
                                 },
-                                false => "└─",
+                                false => "└──",
                             },
-                            false => "  ",
+                            false => "   ",
                         },
                         color::Fg(color::Reset),
                     )?;
@@ -167,7 +167,7 @@ impl TreeView for Screen {
             LineType::Pruning => {
                 write!(
                     self.stdout,
-                    "{}{}{} unlisted",
+                    "{}{}… {} unlisted",
                     color::Fg(color::AnsiValue::grayscale(13)),
                     style::Italic,
                     &line.unlisted,
