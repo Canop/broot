@@ -62,7 +62,7 @@ But broot needs a companion function in the shell in order to be able to change 
 
 	    (
 		set +e
-		broot --out "$f"
+		broot --out "$f" "$@"
 		code=$?
 		if [ "$code" != 0 ]; then
 		    rm -f "$f"
