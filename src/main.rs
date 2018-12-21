@@ -36,9 +36,9 @@ use std::str::FromStr;
 use toml;
 
 use crate::app::App;
+use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::conf::Conf;
-use crate::app_context::AppContext;
 use crate::external::Launchable;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
@@ -134,7 +134,9 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
 
     let con = AppContext {
         verb_store,
-        output_path: cli_args.value_of("output_path").and_then(|s| Some(s.to_owned())),
+        output_path: cli_args
+            .value_of("output_path")
+            .and_then(|s| Some(s.to_owned())),
     };
 
     debug!("output path: {:?}", &con.output_path);

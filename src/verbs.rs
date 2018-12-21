@@ -2,16 +2,16 @@ use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::Path;
-use std::fs::{OpenOptions};
 
-use crate::app_context::AppContext;
 use crate::app::AppStateCmdResult;
+use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
-use crate::help_states::HelpState;
 use crate::conf::Conf;
 use crate::external::Launchable;
+use crate::help_states::HelpState;
 use crate::task_sync::TaskLifetime;
 
 #[derive(Debug, Clone)]
@@ -82,12 +82,10 @@ impl VerbExecutor for BrowserState {
                     &TaskLifetime::unlimited(),
                 ))
             }
-            ":print_path"|":cd" => {
+            ":print_path" | ":cd" => {
                 if let Some(ref output_path) = con.output_path {
                     // an output path was provided, we write to it
-                    let f = OpenOptions::new()
-                        .append(true)
-                        .open(output_path)?;
+                    let f = OpenOptions::new().append(true).open(output_path)?;
                     writeln!(&f, "{}", path.to_string_lossy())?;
                     AppStateCmdResult::Quit
                 } else {
@@ -142,9 +140,7 @@ impl Verb {
         }
         match self.exec_pattern.starts_with(':') {
             true => self.description(),
-            false => {
-                self.exec_string(path)
-            }
+            false => self.exec_string(path),
         }
     }
     pub fn description(&self) -> String {
@@ -162,7 +158,6 @@ impl Verb {
             _ => format!("`{}`", self.exec_pattern),
         }
     }
-
 }
 
 impl VerbStore {

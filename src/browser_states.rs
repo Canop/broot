@@ -4,8 +4,8 @@ use std::io;
 use std::path::PathBuf;
 use std::time::Instant;
 
-use crate::app_context::AppContext;
 use crate::app::{AppState, AppStateCmdResult};
+use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
 use crate::external::Launchable;
 use crate::flat_tree::Tree;
@@ -22,7 +22,7 @@ use crate::verbs::VerbExecutor;
 pub struct BrowserState {
     pub tree: Tree,
     pub filtered_tree: Option<Tree>,
-    pending_pattern: Option<Pattern>,
+    pending_pattern: Option<Pattern>, // a pattern which has not yet be applied
 }
 
 impl BrowserState {
@@ -46,11 +46,7 @@ impl BrowserState {
 }
 
 impl AppState for BrowserState {
-    fn apply(
-        &mut self,
-        cmd: &mut Command,
-        con: &AppContext,
-    ) -> io::Result<AppStateCmdResult> {
+    fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult> {
         self.pending_pattern = None;
         let (_, page_height) = termion::terminal_size().unwrap();
         let mut page_height = page_height as i32;
@@ -144,7 +140,7 @@ impl AppState for BrowserState {
         if self.displayed_tree().has_dir_missing_size() {
             return true;
         }
-        return false;
+        false
     }
 
     fn do_pending_task(&mut self, tl: &TaskLifetime) {
@@ -178,12 +174,7 @@ impl AppState for BrowserState {
         screen.write_tree(&self.displayed_tree())
     }
 
-    fn write_status(
-        &self,
-        screen: &mut Screen,
-        cmd: &Command,
-        con: &AppContext,
-    ) -> io::Result<()> {
+    fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
         match &cmd.action {
             Action::PatternEdit(_) => {
                 screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")

@@ -40,12 +40,7 @@ pub trait AppState {
     fn has_pending_tasks(&self) -> bool;
     fn do_pending_task(&mut self, tl: &TaskLifetime);
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
-    fn write_status(
-        &self,
-        screen: &mut Screen,
-        cmd: &Command,
-        con: &AppContext,
-    ) -> io::Result<()>;
+    fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()>;
 }
 
 pub struct App {
@@ -54,9 +49,7 @@ pub struct App {
 
 impl App {
     pub fn new() -> App {
-        App {
-            states: Vec::new(),
-        }
+        App { states: Vec::new() }
     }
 
     pub fn push(&mut self, new_state: Box<dyn AppState>) {
@@ -161,7 +154,7 @@ impl App {
                     self.state().write_status(&mut screen, &cmd, con)?;
                 }
                 AppStateCmdResult::PopState => {
-                    if self.states.len()==1 {
+                    if self.states.len() == 1 {
                         debug!("quitting on last pop state");
                         quit = true;
                     } else {

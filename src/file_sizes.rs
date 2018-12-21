@@ -42,15 +42,12 @@ impl Size {
                         if let Ok(md) = fs::symlink_metadata(&p) {
                             if md.is_dir() {
                                 dirs.push(p);
-                            } else {
-                                if md.nlink() > 1 {
-                                    if inodes.contains(&md.ino()) {
-                                        nb_duplicate_inodes += 1;
-                                        //debug!("duplicate inode for {:?}", &p);
-                                        continue; // let's not add the size
-                                    } else {
-                                        inodes.insert(md.ino());
-                                    }
+                            } else if md.nlink() > 1 {
+                                if inodes.contains(&md.ino()) {
+                                    nb_duplicate_inodes += 1;
+                                    continue; // let's not add the size
+                                } else {
+                                    inodes.insert(md.ino());
                                 }
                             }
                             s += Size::from(md.len());

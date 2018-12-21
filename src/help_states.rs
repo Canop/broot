@@ -4,8 +4,8 @@ use regex::Regex;
 use std::io;
 use termion::{color, style};
 
-use crate::app_context::AppContext;
 use crate::app::{AppState, AppStateCmdResult};
+use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
 use crate::conf::Conf;
 use crate::screens::{Screen, ScreenArea};
@@ -26,11 +26,7 @@ impl HelpState {
 }
 
 impl AppState for HelpState {
-    fn apply(
-        &mut self,
-        cmd: &mut Command,
-        con: &AppContext,
-    ) -> io::Result<AppStateCmdResult> {
+    fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
             Action::Verb(verb_key) => match con.verb_store.get(&verb_key) {
