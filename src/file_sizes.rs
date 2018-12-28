@@ -43,11 +43,10 @@ impl Size {
                             if md.is_dir() {
                                 dirs.push(p);
                             } else if md.nlink() > 1 {
-                                if inodes.contains(&md.ino()) {
+                                if !inodes.insert(md.ino()) {
+                                    // it was already in the set
                                     nb_duplicate_inodes += 1;
                                     continue; // let's not add the size
-                                } else {
-                                    inodes.insert(md.ino());
                                 }
                             }
                             s += Size::from(md.len());
