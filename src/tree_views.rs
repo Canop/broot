@@ -124,7 +124,7 @@ impl TreeView for Screen {
             static ref fg_reset_link: String = format!("{}{}", &*fg_reset, &*fg_link).to_string();
         }
         // TODO draw in red lines with has_error
-        match &line.content {
+        match &line.line_type {
             LineType::Dir => {
                 if idx == 0 {
                     write!(

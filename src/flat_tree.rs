@@ -22,7 +22,7 @@ pub struct TreeLine {
     pub depth: u16,
     pub name: String, // name of the first unlisted, in case of Pruning
     pub path: PathBuf,
-    pub content: LineType, // FIXME rename
+    pub line_type: LineType,
     pub has_error: bool,
     pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
     pub score: i32,      // 0 if there's no pattern
@@ -39,19 +39,19 @@ pub struct Tree {
 
 impl TreeLine {
     pub fn is_selectable(&self) -> bool {
-        match &self.content {
+        match &self.line_type {
             LineType::Pruning => false,
             _ => true,
         }
     }
     pub fn is_dir(&self) -> bool {
-        match &self.content {
+        match &self.line_type {
             LineType::Dir => true,
             _ => false,
         }
     }
     pub fn is_file(&self) -> bool {
-        match &self.content {
+        match &self.line_type {
             LineType::File => true,
             _ => false,
         }
@@ -152,7 +152,7 @@ impl Tree {
                     // the line at end_index is the last listed child of the line at parent_index
                     let unlisted = self.lines[parent_index].unlisted;
                     if unlisted > 0 {
-                        self.lines[end_index].content = LineType::Pruning;
+                        self.lines[end_index].line_type = LineType::Pruning;
                         self.lines[end_index].unlisted = unlisted + 1;
                         self.lines[parent_index].unlisted = 0;
                     }

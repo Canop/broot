@@ -3,13 +3,14 @@ use std::fs;
 use std::path::PathBuf;
 
 use crate::flat_tree::{LineType, Tree, TreeLine};
+use crate::git_ignore::GitIgnoreFilter;
 use crate::patterns::Pattern;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
 
 // like a tree line, but with the info needed during the build
 // This structure isn't usable independantly from the tree builder
-#[derive(Debug, Clone)]
+//#[derive(Clone)]
 struct BLine {
     parent_idx: usize,
     path: PathBuf,
@@ -20,15 +21,21 @@ struct BLine {
     next_child_idx: usize, // index for iteration, among the childs
     line_type: LineType,
     has_error: bool,
-    nb_matches: usize, // can be temporarly 0 for a folder until we check the content
+    nb_matches: usize, // can be temporarly 0 for a folder until we check the line_type
     score: i32,
+    ignore_filter: Option<GitIgnoreFilter>, // defined for dirs when options.respect_ignore is true
 }
 impl BLine {
     // a special constructor, checking nothing
-    fn from_root(path: PathBuf) -> BLine {
+    fn from_root(path: PathBuf, respect_ignore: bool) -> BLine {
         let name = match path.file_name() {
             Some(name) => name.to_string_lossy().to_string(),
             None => String::from("???"), // should not happen
+        };
+        let ignore_filter = if respect_ignore {
+            Some(GitIgnoreFilter::applicable_to(&path))
+        } else {
+            None
         };
         BLine {
             parent_idx: 0,
@@ -42,9 +49,11 @@ impl BLine {
             has_error: false,         // well... let's hope
             nb_matches: 1,
             score: 0,
+            ignore_filter,
         }
     }
-    // return a bline if the path directly matches the pattern and no_hidden conditions
+    // return a bline if the path directly matches the conditions
+    // (pattern, no_hidden, only_folders)
     fn from(
         parent_idx: usize,
         path: PathBuf,
@@ -52,6 +61,7 @@ impl BLine {
         no_hidden: bool,
         only_folders: bool,
         pattern: &Option<Pattern>,
+        parent_ignore_filter: &Option<GitIgnoreFilter>,
     ) -> Option<BLine> {
         let mut nb_matches = 1;
         let mut score = 0;
@@ -75,10 +85,12 @@ impl BLine {
             name.to_string()
         };
         let mut has_error = false;
+        let mut is_dir = false;
         let line_type = match fs::symlink_metadata(&path) {
             Ok(metadata) => {
                 let ft = metadata.file_type();
                 if ft.is_dir() {
+                    is_dir = true;
                     LineType::Dir
                 } else if ft.is_symlink() {
                     if nb_matches == 0 || only_folders {
@@ -95,14 +107,21 @@ impl BLine {
                     LineType::File
                 }
             }
-            Err(_) => {
-                if nb_matches == 0 {
-                    return None;
-                }
-                has_error = true;
-                LineType::File
+            Err(err) => {
+                debug!("Error while fetching metadata: {:?}", err);
+                return None;
             }
         };
+        let mut ignore_filter = None;
+        if let Some(gif) = parent_ignore_filter {
+            if !gif.accepts(&path, &name, is_dir) {
+                debug!("Excluded path: {:?}", &path);
+                return None;
+            }
+            if is_dir {
+                ignore_filter = Some(gif.extended_to(&path));
+            }
+        }
         Some(BLine {
             parent_idx,
             path,
@@ -115,6 +134,7 @@ impl BLine {
             has_error,
             nb_matches,
             score,
+            ignore_filter,
         })
     }
     fn to_tree_line(&self) -> TreeLine {
@@ -123,7 +143,7 @@ impl BLine {
             depth: self.depth,
             name: self.name.to_string(),
             path: self.path.clone(),
-            content: self.line_type.clone(),
+            line_type: self.line_type.clone(),
             has_error: self.has_error,
             unlisted: self.childs.len() - self.next_child_idx,
             score: self.score,
@@ -139,7 +159,7 @@ pub struct TreeBuilder {
 impl TreeBuilder {
     pub fn from(path: PathBuf, options: TreeOptions) -> TreeBuilder {
         let mut blines = Vec::new();
-        blines.push(BLine::from_root(path));
+        blines.push(BLine::from_root(path, options.respect_git_ignore));
         TreeBuilder { blines, options }
     }
     // stores (move) the bline in the global vec. Returns its index
@@ -164,6 +184,7 @@ impl TreeBuilder {
                             !self.options.show_hidden,
                             self.options.only_folders,
                             &self.options.pattern,
+                            &self.blines[bline_idx].ignore_filter,
                         );
                         if let Some(bl) = bl {
                             if bl.nb_matches > 0 {

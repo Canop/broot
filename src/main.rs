@@ -11,6 +11,7 @@ mod conf;
 mod external;
 mod file_sizes;
 mod flat_tree;
+mod git_ignore;
 mod help_states;
 mod input;
 mod patterns;
