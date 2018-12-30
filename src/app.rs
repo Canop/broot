@@ -135,7 +135,6 @@ impl App {
                     break;
                 }
             };
-            //debug!("key: {:?}", &c);
             cmd.add_key(c?);
             info!("{:?}", &cmd.action);
             screen.write_input(&cmd)?;

@@ -6,7 +6,7 @@ use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::git_ignore::GitIgnoreFilter;
 use crate::patterns::Pattern;
 use crate::task_sync::TaskLifetime;
-use crate::tree_options::TreeOptions;
+use crate::tree_options::{OptionBool, TreeOptions};
 
 // like a tree line, but with the info needed during the build
 // This structure isn't usable independantly from the tree builder
@@ -25,17 +25,34 @@ struct BLine {
     score: i32,
     ignore_filter: Option<GitIgnoreFilter>, // defined for dirs when options.respect_ignore is true
 }
+
+// the result of trying to build a bline
+enum BLineResult {
+    Some(BLine), // the only positive result
+    FilteredOutAsHidden,
+    FilteredOutByPattern,
+    FilteredOutAsNonFolder,
+    GitIgnored,
+    Invalid,
+}
+
 impl BLine {
     // a special constructor, checking nothing
-    fn from_root(path: PathBuf, respect_ignore: bool) -> BLine {
+    fn from_root(path: PathBuf, respect_ignore: OptionBool) -> BLine {
         let name = match path.file_name() {
             Some(name) => name.to_string_lossy().to_string(),
             None => String::from("???"), // should not happen
         };
-        let ignore_filter = if respect_ignore {
-            Some(GitIgnoreFilter::applicable_to(&path))
-        } else {
+        let ignore_filter = if respect_ignore == OptionBool::No {
             None
+        } else {
+            let gif = GitIgnoreFilter::applicable_to(&path);
+            // if auto, we don't look for other gif if we're not in a git dir
+            if respect_ignore == OptionBool::Auto && gif.files.len() > 0 {
+                None
+            } else {
+                Some(gif)
+            }
         };
         BLine {
             parent_idx: 0,
@@ -62,18 +79,18 @@ impl BLine {
         only_folders: bool,
         pattern: &Option<Pattern>,
         parent_ignore_filter: &Option<GitIgnoreFilter>,
-    ) -> Option<BLine> {
+    ) -> BLineResult {
         let mut nb_matches = 1;
         let mut score = 0;
         let name = {
             let name = match &path.file_name() {
                 Some(name) => name.to_string_lossy(),
                 None => {
-                    return None;
+                    return BLineResult::Invalid;
                 }
             };
             if no_hidden && name.starts_with('.') {
-                return None;
+                return BLineResult::FilteredOutAsHidden;
             }
             if let Some(pattern) = pattern {
                 if let Some(m) = pattern.test(&name) {
@@ -93,36 +110,45 @@ impl BLine {
                     is_dir = true;
                     LineType::Dir
                 } else if ft.is_symlink() {
-                    if nb_matches == 0 || only_folders {
-                        return None;
+                    if nb_matches == 0 {
+                        return BLineResult::FilteredOutByPattern;
+                    }
+                    if only_folders {
+                        return BLineResult::FilteredOutAsNonFolder;
                     }
                     LineType::SymLink(match fs::read_link(&path) {
                         Ok(target) => target.to_string_lossy().into_owned(),
                         Err(_) => String::from("???"),
                     })
                 } else {
-                    if nb_matches == 0 || only_folders {
-                        return None;
+                    if nb_matches == 0 {
+                        return BLineResult::FilteredOutByPattern;
+                    }
+                    if only_folders {
+                        return BLineResult::FilteredOutAsNonFolder;
                     }
                     LineType::File
                 }
             }
             Err(err) => {
                 debug!("Error while fetching metadata: {:?}", err);
-                return None;
+                has_error = true;
+                if nb_matches == 0 {
+                    return BLineResult::FilteredOutByPattern;
+                }
+                LineType::File
             }
         };
         let mut ignore_filter = None;
         if let Some(gif) = parent_ignore_filter {
             if !gif.accepts(&path, &name, is_dir) {
-                debug!("Excluded path: {:?}", &path);
-                return None;
+                return BLineResult::GitIgnored;
             }
             if is_dir {
                 ignore_filter = Some(gif.extended_to(&path));
             }
         }
-        Some(BLine {
+        BLineResult::Some(BLine {
             parent_idx,
             path,
             depth,
@@ -155,12 +181,17 @@ impl BLine {
 pub struct TreeBuilder {
     blines: Vec<BLine>, // all blines, even the ones not yet "seen" by BFS
     options: TreeOptions,
+    nb_gitignored: u32, // number of times a gitignore pattern excluded a file
 }
 impl TreeBuilder {
     pub fn from(path: PathBuf, options: TreeOptions) -> TreeBuilder {
         let mut blines = Vec::new();
         blines.push(BLine::from_root(path, options.respect_git_ignore));
-        TreeBuilder { blines, options }
+        TreeBuilder {
+            blines,
+            options,
+            nb_gitignored: 0,
+        }
     }
     // stores (move) the bline in the global vec. Returns its index
     fn store(&mut self, bline: BLine) -> usize {
@@ -186,13 +217,21 @@ impl TreeBuilder {
                             &self.options.pattern,
                             &self.blines[bline_idx].ignore_filter,
                         );
-                        if let Some(bl) = bl {
-                            if bl.nb_matches > 0 {
-                                // direct match
-                                self.blines[bline_idx].nb_matches += bl.nb_matches;
-                                has_child_match = true;
+                        match bl {
+                            BLineResult::Some(bl) => {
+                                if bl.nb_matches > 0 {
+                                    // direct match
+                                    self.blines[bline_idx].nb_matches += bl.nb_matches;
+                                    has_child_match = true;
+                                }
+                                childs.push(self.store(bl));
                             }
-                            childs.push(self.store(bl));
+                            BLineResult::GitIgnored => {
+                                self.nb_gitignored += 1;
+                            }
+                            _ => {
+                                // other reason, we don't care
+                            }
                         }
                     }
                 }
@@ -317,11 +356,13 @@ impl TreeBuilder {
             }
         }
 
+        info!("nb gitignored files: {}", self.nb_gitignored);
         let mut tree = Tree {
             lines: lines.into_boxed_slice(),
             selection: 0,
             options: self.options.clone(),
             scroll: 0,
+            nb_gitignored: self.nb_gitignored,
         };
         tree.after_lines_changed();
 

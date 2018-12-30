@@ -8,6 +8,7 @@ mod app_context;
 mod browser_states;
 mod commands;
 mod conf;
+mod errors;
 mod external;
 mod file_sizes;
 mod flat_tree;
@@ -25,12 +26,10 @@ mod tree_views;
 mod verbs;
 
 use clap;
-use custom_error::custom_error;
 use log::LevelFilter;
 use simplelog;
 use std::env;
 use std::fs::File;
-use std::io;
 use std::path::PathBuf;
 use std::result::Result;
 use std::str::FromStr;
@@ -40,15 +39,11 @@ use crate::app::App;
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::conf::Conf;
+use crate::errors::ProgramError;
 use crate::external::Launchable;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
 use crate::verbs::VerbStore;
-
-custom_error! {ProgramError
-    Io {source: io::Error}           = "IO Error",
-    Conf {source: conf::ConfError}   = "Bad configuration",
-}
 
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
@@ -80,6 +75,13 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
                 .long("out")
                 .takes_value(true)
                 .help("where to write the outputted path (if any)"),
+        )
+        .arg(
+            clap::Arg::with_name("gitignore")
+                .short("g")
+                .long("gitignore")
+                .takes_value(true)
+                .help("respect .gitignore rules (yes, no, auto)"),
         )
         .get_matches()
 }
@@ -131,6 +133,10 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     if cli_args.is_present("sizes") {
         debug!("show sizes arg set");
         tree_options.show_sizes = true;
+    }
+    if let Some(respect_ignore) = cli_args.value_of("gitignore") {
+        tree_options.respect_git_ignore = respect_ignore.parse()?;
+        debug!("respect_git_itnore = {:?}", tree_options.respect_git_ignore);
     }
 
     let con = AppContext {

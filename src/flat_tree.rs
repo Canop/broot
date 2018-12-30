@@ -34,7 +34,8 @@ pub struct Tree {
     pub lines: Box<[TreeLine]>,
     pub selection: usize, // there's always a selection (starts with root, which is 0)
     pub options: TreeOptions,
-    pub scroll: i32, // FIXME usize
+    pub scroll: i32,        // FIXME usize
+    pub nb_gitignored: u32, // number of times a gitignore pattern excluded a file
 }
 
 impl TreeLine {

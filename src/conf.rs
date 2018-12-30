@@ -93,16 +93,17 @@ const DEFAULT_CONF_FILE: &str = r#"
 # 'invocation' can be a letter or a word
 # 'execution' is either a command, where {file} will be replaced by the selected line,
 # 	or one of the predefined commands:
-#   ":back"          : reverts to the previous state, or quit the application if it's the first one (mapped to <esc>)
-#   ":cd"            : changes directory (see https://github.com/Canop/broot)
-#   ":print_path"    : outputs the path to stdout or to a file provided with --out
-#   ":focus"         : displays the tree of that directory (mapped to <enter> on directories)
-#   ":open"          : tries to open the file according to OS settings (e.g. using xdg-open) (mapped to <enter> on files)
-#   ":parent"        : moves to the parent directory
-#   ":quit"          : quits the application
-#   ":toggle_hidden" : toggles showing hidden files
-#   ":toggle_sizes"  : toggles displaying file and folder sizes
-#   ":toggle_files"  : toggles showing files or just directories
+#   ":back"              : reverts to the previous state, or quit the application if it's the first one (mapped to <esc>)
+#   ":cd"                : changes directory (see https://github.com/Canop/broot)
+#   ":print_path"        : outputs the path to stdout or to a file provided with --out
+#   ":focus"             : displays the tree of that directory (mapped to <enter> on directories)
+#   ":open"              : tries to open the file according to OS settings (e.g. using xdg-open) (mapped to <enter> on files)
+#   ":parent"            : moves to the parent directory
+#   ":quit"              : quits the application
+#   ":toggle_hidden"     : toggles showing hidden files
+#   ":toggle_git_ignore" : toggles hiding files matching .gitignore exclusions
+#   ":toggle_sizes"      : toggles displaying file and folder sizes
+#   ":toggle_files"      : toggles showing files or just directories
 
 [[verbs]]
 name = "cd"
@@ -128,6 +129,11 @@ execution = ":toggle_hidden"
 name = "toggle files"
 invocation = "f"
 execution = ":toggle_files"
+
+[[verbs]]
+name = "toggle git ignore"
+invocation = "gi"
+execution = ":toggle_git_ignore"
 
 [[verbs]]
 name = "open"

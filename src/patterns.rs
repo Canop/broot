@@ -62,7 +62,6 @@ impl Pattern {
         if cand_chars.len() < self.lc_chars.len() {
             return None;
         }
-        //debug!("start test / pattern={:?} | candidate: {}", &self, candidate);
         let mut best_score = 0;
         let max_match_len = MAX_LENGTH_BASE + MAX_LENGTH_PER_CHAR * self.lc_chars.len();
         let mut best_match: Option<Match> = None;

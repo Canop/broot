@@ -13,6 +13,7 @@ use crate::conf::Conf;
 use crate::external::Launchable;
 use crate::help_states::HelpState;
 use crate::task_sync::TaskLifetime;
+use crate::tree_options::OptionBool;
 
 #[derive(Debug, Clone)]
 pub struct Verb {
@@ -39,11 +40,11 @@ impl VerbExecutor for HelpState {
 
 impl VerbExecutor for BrowserState {
     fn execute_verb(&self, verb: &Verb, con: &AppContext) -> io::Result<AppStateCmdResult> {
-        let line = match &self.filtered_tree {
-            Some(tree) => tree.selected_line(),
-            None => self.tree.selected_line(),
+        let tree = match &self.filtered_tree {
+            Some(tree) => &tree,
+            None => &self.tree,
         };
-        let path = &line.path;
+        let path = &tree.selected_line().path;
         Ok(match verb.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
             ":focus" => {
@@ -58,6 +59,26 @@ impl VerbExecutor for BrowserState {
             ":toggle_hidden" => {
                 let mut options = self.tree.options.clone();
                 options.show_hidden = !options.show_hidden;
+                AppStateCmdResult::from_optional_state(BrowserState::new(
+                    self.tree.root().clone(),
+                    options,
+                    &TaskLifetime::unlimited(),
+                ))
+            }
+            ":toggle_git_ignore" => {
+                let mut options = self.tree.options.clone();
+                options.respect_git_ignore = match options.respect_git_ignore {
+                    OptionBool::Auto => {
+                        if tree.nb_gitignored > 0 {
+                            OptionBool::No
+                        } else {
+                            OptionBool::Yes
+                        }
+                    }
+                    OptionBool::Yes => OptionBool::No,
+                    OptionBool::No => OptionBool::Yes,
+                };
+                debug!("respect_git_ignore = {:?}", options.respect_git_ignore);
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     self.tree.root().clone(),
                     options,
