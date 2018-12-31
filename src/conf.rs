@@ -131,7 +131,7 @@ invocation = "f"
 execution = ":toggle_files"
 
 [[verbs]]
-name = "toggle git ignore"
+name = "toggle gitignore"
 invocation = "gi"
 execution = ":toggle_git_ignore"
 

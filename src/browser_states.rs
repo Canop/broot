@@ -1,8 +1,9 @@
 //! an application state dedicated to displaying a tree
 
-use std::io;
+use std::io::{self, Write};
 use std::path::PathBuf;
 use std::time::Instant;
+use termion::{color, style};
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
@@ -15,7 +16,7 @@ use crate::screens::{self, Screen};
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
-use crate::tree_options::TreeOptions;
+use crate::tree_options::{OptionBool, TreeOptions};
 use crate::tree_views::TreeView;
 use crate::verbs::VerbExecutor;
 
@@ -208,5 +209,33 @@ impl AppState for BrowserState {
                 }
             }
         }
+    }
+    fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
+        let tree = match &self.filtered_tree {
+            Some(tree) => &tree,
+            None => &self.tree,
+        };
+        let total_char_size = 9;
+        debug!("respect_git_ignore: {:?}", tree.options.respect_git_ignore);
+        write!(
+            screen.stdout,
+            "{}{}{}{} h:{}  gi:{}{}{}",
+            termion::cursor::Goto(screen.w - total_char_size, screen.h),
+            color::Bg(color::AnsiValue::grayscale(1)),
+            termion::clear::UntilNewline,
+            color::Fg(color::AnsiValue::grayscale(15)),
+            match tree.options.show_hidden {
+                true => 'y',
+                false => 'n',
+            },
+            match tree.options.respect_git_ignore {
+                OptionBool::Auto => 'a',
+                OptionBool::Yes => 'y',
+                OptionBool::No => 'n',
+            },
+            color::Bg(color::Reset),
+            color::Fg(color::Reset),
+        )?;
+        Ok(())
     }
 }

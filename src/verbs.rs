@@ -174,6 +174,7 @@ impl Verb {
             ":parent" => "moves to the parent directory".to_string(),
             ":quit" => "quits the application".to_string(),
             ":toggle_hidden" => "toggles showing hidden files".to_string(),
+            ":toggle_git_ignore" => "toggles use of .gitignore".to_string(),
             ":toggle_files" => "toggles showing files (or just folders)".to_string(),
             ":toggle_sizes" => "toggles showing sizes".to_string(),
             _ => format!("`{}`", self.exec_pattern),

@@ -62,7 +62,7 @@ impl AppState for HelpState {
         text.md(" Current Verbs:");
         for (key, verb) in con.verb_store.verbs.iter() {
             text.md(&format!(
-                "{: >14} : `{}` => {}",
+                "{: >17} : `{}` => {}",
                 &verb.name,
                 key,
                 verb.description()
@@ -78,6 +78,13 @@ impl AppState for HelpState {
         text.md("  `-h` or `--hidden` : show hidden files");
         text.md("  `-f` or `--only-folders` : only show folders");
         text.md("  `-s` or `--sizes` : display sizes");
+        text.md("");
+        text.md(" Flags are displayed at bottom right:");
+        text.md("  `h:y` or `h:n` : whether hidden files are shown");
+        text.md("  `gi:a`, `gi:y`, `gi:n` : gitignore on auto, yes or no");
+        text.md("  When gitignore is auto, .gitignore rules are respected if");
+        text.md("   the displayed root is a git repository or in one.");
+
         self.area.content_length = text.lines.len() as i32;
         screen.write_lines(&self.area, &text.lines)?;
         Ok(())
@@ -90,6 +97,9 @@ impl AppState for HelpState {
         _con: &AppContext,
     ) -> io::Result<()> {
         screen.write_status_text("Hit <esc> to get back to the tree")
+    }
+    fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
+        Ok(())
     }
 }
 

@@ -41,6 +41,7 @@ pub trait AppState {
     fn do_pending_task(&mut self, tl: &TaskLifetime);
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()>;
+    fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
 }
 
 pub struct App {
@@ -110,6 +111,7 @@ impl App {
         screen.write_input(&cmd)?;
         screen
             .write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
+        self.state().write_flags(&mut screen, con)?;
         loop {
             let tl = TaskLifetime::new(&cmd_count);
             let has_task = self.state().has_pending_tasks();
@@ -138,6 +140,7 @@ impl App {
             cmd.add_key(c?);
             info!("{:?}", &cmd.action);
             screen.write_input(&cmd)?;
+            self.state().write_flags(&mut screen, con)?;
             let mut quit = false;
             match self.mut_state().apply(&mut cmd, con)? {
                 AppStateCmdResult::Quit => {
@@ -170,6 +173,7 @@ impl App {
                 }
             }
             screen.write_input(&cmd)?;
+            self.state().write_flags(&mut screen, con)?;
             tx_quit.send(quit).unwrap();
         }
         Ok(None)

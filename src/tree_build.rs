@@ -48,7 +48,7 @@ impl BLine {
         } else {
             let gif = GitIgnoreFilter::applicable_to(&path);
             // if auto, we don't look for other gif if we're not in a git dir
-            if respect_ignore == OptionBool::Auto && gif.files.len() > 0 {
+            if respect_ignore == OptionBool::Auto && gif.files.len() == 0 {
                 None
             } else {
                 Some(gif)
