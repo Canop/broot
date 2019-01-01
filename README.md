@@ -88,6 +88,20 @@ With this addition, you can do just `br` to lauch broot, and typing `:c` then *e
 
 You can still use broot normally, you won't change directory if you don't hit `:c`.
 
+## Flags
+
+Flags are displayed at the bottom right, showing the settings regarding hidden files and .gitignore rules.
+
+![flags](doc/20190101-flags.png)
+
+### Git Repositories
+
+.gitignore files are parsed and used depending on the current "gitignore" setting:
+
+* when "no", .gitignore files are ignored
+* when "yes", each directory is filtered according to the applied gitignore files (several git repositories may be simultaneously shown)
+* when "auto" (default value), gitignore rules are ignored unless the root directory is a git repository or inside one
+
 ## Installation
 
 ### From Source
