@@ -3,7 +3,7 @@
 use std::io::{self, Write};
 use std::path::PathBuf;
 use std::time::Instant;
-use termion::{color, style};
+use termion::color;
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
@@ -210,7 +210,7 @@ impl AppState for BrowserState {
             }
         }
     }
-    fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
+    fn write_flags(&self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
         let tree = match &self.filtered_tree {
             Some(tree) => &tree,
             None => &self.tree,

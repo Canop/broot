@@ -98,7 +98,8 @@ impl AppState for HelpState {
     ) -> io::Result<()> {
         screen.write_status_text("Hit <esc> to get back to the tree")
     }
-    fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
+
+    fn write_flags(&self, _screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
         Ok(())
     }
 }

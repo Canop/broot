@@ -21,7 +21,7 @@ struct BLine {
     next_child_idx: usize, // index for iteration, among the childs
     line_type: LineType,
     has_error: bool,
-    nb_matches: usize, // can be temporarly 0 for a folder until we check the line_type
+    has_match: bool,
     score: i32,
     ignore_filter: Option<GitIgnoreFilter>, // defined for dirs when options.respect_ignore is true
 }
@@ -64,7 +64,7 @@ impl BLine {
             next_child_idx: 0,
             line_type: LineType::Dir, // it should have been checked before
             has_error: false,         // well... let's hope
-            nb_matches: 1,
+            has_match: true,
             score: 0,
             ignore_filter,
         }
@@ -80,7 +80,7 @@ impl BLine {
         pattern: &Option<Pattern>,
         parent_ignore_filter: &Option<GitIgnoreFilter>,
     ) -> BLineResult {
-        let mut nb_matches = 1;
+        let mut has_match = true;
         let mut score = 0;
         let name = {
             let name = match &path.file_name() {
@@ -96,7 +96,7 @@ impl BLine {
                 if let Some(m) = pattern.test(&name) {
                     score = m.score;
                 } else {
-                    nb_matches = 0;
+                    has_match = false;
                 }
             }
             name.to_string()
@@ -110,7 +110,7 @@ impl BLine {
                     is_dir = true;
                     LineType::Dir
                 } else if ft.is_symlink() {
-                    if nb_matches == 0 {
+                    if !has_match {
                         return BLineResult::FilteredOutByPattern;
                     }
                     if only_folders {
@@ -121,7 +121,7 @@ impl BLine {
                         Err(_) => String::from("???"),
                     })
                 } else {
-                    if nb_matches == 0 {
+                    if !has_match {
                         return BLineResult::FilteredOutByPattern;
                     }
                     if only_folders {
@@ -133,7 +133,7 @@ impl BLine {
             Err(err) => {
                 debug!("Error while fetching metadata: {:?}", err);
                 has_error = true;
-                if nb_matches == 0 {
+                if !has_match {
                     return BLineResult::FilteredOutByPattern;
                 }
                 LineType::File
@@ -158,7 +158,7 @@ impl BLine {
             next_child_idx: 0,
             line_type,
             has_error,
-            nb_matches,
+            has_match,
             score,
             ignore_filter,
         })
@@ -219,9 +219,9 @@ impl TreeBuilder {
                         );
                         match bl {
                             BLineResult::Some(bl) => {
-                                if bl.nb_matches > 0 {
+                                if bl.has_match {
                                     // direct match
-                                    self.blines[bline_idx].nb_matches += bl.nb_matches;
+                                    self.blines[bline_idx].has_match = true;
                                     has_child_match = true;
                                 }
                                 childs.push(self.store(bl));
@@ -290,7 +290,7 @@ impl TreeBuilder {
                 if let Some(child_idx) = self.next_child(open_dir_idx) {
                     open_dirs.push_back(open_dir_idx);
                     let child = &self.blines[child_idx];
-                    if child.nb_matches > 0 {
+                    if child.has_match {
                         nb_lines_ok += 1;
                     }
                     if child.line_type == LineType::Dir {
@@ -310,8 +310,8 @@ impl TreeBuilder {
                         let mut idx = *next_level_dir_idx;
                         loop {
                             let mut bline = &mut self.blines[idx];
-                            if bline.nb_matches == 0 {
-                                bline.nb_matches = 1; // TODO care about the exact count ?
+                            if !bline.has_match {
+                                bline.has_match = true;
                                 nb_lines_ok += 1;
                             }
                             idx = bline.parent_idx;
@@ -319,11 +319,11 @@ impl TreeBuilder {
                                 break;
                             }
                         }
-                        if nb_lines_ok >= nb_lines_max {
-                            break;
-                        }
                     }
                     open_dirs.push_back(*next_level_dir_idx);
+                }
+                if nb_lines_ok >= nb_lines_max {
+                    break;
                 }
                 next_level_dirs.clear();
             }
@@ -334,16 +334,57 @@ impl TreeBuilder {
             // it it goes past the bottom of the screen
             while let Some(child_idx) = self.next_child(0) {
                 let child = &self.blines[child_idx];
-                if child.nb_matches > 0 {
+                if child.has_match {
                     nb_lines_ok += 1;
                 }
                 out_blines.push(child_idx);
+            }
+        } else if self.options.pattern.is_some() {
+            // At this point we usually have more lines than really needed.
+            // We'll select the best ones
+            // To start with, we get a better count of what we have:
+            let mut count = 0;
+            for idx in out_blines.iter() {
+                if self.blines[*idx].has_match {
+                    count += 1;
+                }
+            }
+            while count > nb_lines_max {
+                // we'll try to remove the less interesting line:
+                //  the one with the worst score at the greatest depth
+                let mut worst_index: usize = 0;
+                let mut depth: u16 = 0;
+                let mut score: i32 = 0;
+                for i in 1..out_blines.len() {
+                    let out_index = out_blines[i];
+                    let bline = &self.blines[out_index];
+                    if !bline.has_match {
+                        continue;
+                    }
+                    if bline.depth > depth {
+                        score = bline.score;
+                        depth = bline.depth;
+                        worst_index = out_index;
+                    } else if bline.depth == depth && bline.score < score {
+                        score = bline.score;
+                        worst_index = out_index;
+                    }
+                }
+                if worst_index > 0 {
+                    // we set the has_match to 0 so the line won't be kept
+                    //debug!("removing {:?}", self.blines[worst_index].path);
+                    self.blines[worst_index].has_match = false;
+                    count -= 1;
+                } else {
+                    break;
+                }
             }
         }
 
         let mut lines: Vec<TreeLine> = Vec::new();
         for idx in out_blines.iter() {
-            if self.blines[*idx].nb_matches > 0 {
+            if self.blines[*idx].has_match {
+                // we need to count the childs, so we load them
                 if !self.blines[*idx].childs_loaded {
                     if let LineType::Dir = self.blines[*idx].line_type {
                         self.load_childs(*idx);
@@ -356,7 +397,7 @@ impl TreeBuilder {
             }
         }
 
-        info!("nb gitignored files: {}", self.nb_gitignored);
+        debug!("nb gitignored files: {}", self.nb_gitignored);
         let mut tree = Tree {
             lines: lines.into_boxed_slice(),
             selection: 0,
