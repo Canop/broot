@@ -1,6 +1,7 @@
 use std::collections::VecDeque;
 use std::fs;
 use std::path::PathBuf;
+use std::os::unix::fs::MetadataExt;
 
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::git_ignore::GitIgnoreFilter;
@@ -10,7 +11,6 @@ use crate::tree_options::{OptionBool, TreeOptions};
 
 // like a tree line, but with the info needed during the build
 // This structure isn't usable independantly from the tree builder
-//#[derive(Clone)]
 struct BLine {
     parent_idx: usize,
     path: PathBuf,
@@ -23,7 +23,8 @@ struct BLine {
     has_error: bool,
     has_match: bool,
     score: i32,
-    ignore_filter: Option<GitIgnoreFilter>, // defined for dirs when options.respect_ignore is true
+    pub mode: u32, // unix file mode
+    ignore_filter: Option<GitIgnoreFilter>,
 }
 
 // the result of trying to build a bline
@@ -66,6 +67,7 @@ impl BLine {
             has_error: false,         // well... let's hope
             has_match: true,
             score: 0,
+            mode: 0, // not computed for root
             ignore_filter,
         }
     }
@@ -103,9 +105,11 @@ impl BLine {
         };
         let mut has_error = false;
         let mut is_dir = false;
+        let mut mode: u32 = 0;
         let line_type = match fs::symlink_metadata(&path) {
             Ok(metadata) => {
                 let ft = metadata.file_type();
+                mode = metadata.mode();
                 if ft.is_dir() {
                     is_dir = true;
                     LineType::Dir
@@ -160,6 +164,7 @@ impl BLine {
             has_error,
             has_match,
             score,
+            mode,
             ignore_filter,
         })
     }
@@ -173,6 +178,7 @@ impl BLine {
             has_error: self.has_error,
             unlisted: self.childs.len() - self.next_child_idx,
             score: self.score,
+            mode: self.mode,
             size: None,
         }
     }

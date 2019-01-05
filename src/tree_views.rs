@@ -85,6 +85,23 @@ impl TreeView for Screen {
                         )?;
                     }
                 }
+                if tree.options.show_permissions && line_index > 0 {
+                    write!(
+                        self.stdout,
+                        "{} {}{}{}{}{}{}{}{}{} {}",
+                        color::Fg(color::AnsiValue::grayscale(15)),
+                        if (line.mode & (1<<8))!=0 { 'r' } else { '-' },
+                        if (line.mode & (1<<7))!=0 { 'w' } else { '-' },
+                        if (line.mode & (1<<6))!=0 { 'x' } else { '-' },
+                        if (line.mode & (1<<5))!=0 { 'r' } else { '-' },
+                        if (line.mode & (1<<4))!=0 { 'w' } else { '-' },
+                        if (line.mode & (1<<3))!=0 { 'x' } else { '-' },
+                        if (line.mode & (1<<2))!=0 { 'r' } else { '-' },
+                        if (line.mode & (1<<1))!=0 { 'w' } else { '-' },
+                        if (line.mode & (1<<0))!=0 { 'x' } else { '-' },
+                        color::Fg(color::Reset),
+                    )?;
+                }
                 let selected = line_index == tree.selection;
                 if selected {
                     write!(self.stdout, "{}", color::Bg(color::AnsiValue::grayscale(2)),)?;
@@ -116,7 +133,7 @@ impl TreeView for Screen {
         pattern: &Option<Pattern>,
     ) -> io::Result<()> {
         lazy_static! {
-            static ref fg_reset: String = format!("{}", color::Fg(color::Reset)).to_string();
+            static ref fg_reset: String = format!("{}", color::Fg(color::White)).to_string();
             static ref fg_dir: String = format!("{}", color::Fg(color::LightBlue)).to_string();
             static ref fg_link: String = format!("{}", color::Fg(color::LightMagenta)).to_string();
             static ref fg_match: String = format!("{}", color::Fg(color::Green)).to_string();

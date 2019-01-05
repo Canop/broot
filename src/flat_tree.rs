@@ -27,6 +27,7 @@ pub struct TreeLine {
     pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
     pub score: i32,      // 0 if there's no pattern
     pub size: Option<Size>, // None when not measured
+    pub mode: u32, // unix file mode
 }
 
 #[derive(Debug)]

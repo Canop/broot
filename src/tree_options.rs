@@ -29,6 +29,7 @@ pub struct TreeOptions {
     pub show_hidden: bool,
     pub only_folders: bool,
     pub show_sizes: bool,
+    pub show_permissions: bool,
     pub respect_git_ignore: OptionBool,
     pub pattern: Option<Pattern>,
 }
@@ -39,6 +40,7 @@ impl TreeOptions {
             show_hidden: false,
             only_folders: false,
             show_sizes: false,
+            show_permissions: false,
             respect_git_ignore: OptionBool::Auto,
             pattern: None,
         }
@@ -48,6 +50,7 @@ impl TreeOptions {
             show_hidden: self.show_hidden,
             only_folders: self.only_folders,
             show_sizes: self.show_sizes,
+            show_permissions: self.show_permissions,
             respect_git_ignore: self.respect_git_ignore,
             pattern: None,
         }

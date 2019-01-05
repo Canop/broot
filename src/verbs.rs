@@ -94,6 +94,15 @@ impl VerbExecutor for BrowserState {
                     &TaskLifetime::unlimited(),
                 ))
             }
+            ":toggle_mode" => {
+                let mut options = self.tree.options.clone();
+                options.show_permissions = !options.show_permissions;
+                AppStateCmdResult::from_optional_state(BrowserState::new(
+                    self.tree.root().clone(),
+                    options,
+                    &TaskLifetime::unlimited(),
+                ))
+            }
             ":toggle_sizes" => {
                 let mut options = self.tree.options.clone();
                 options.show_sizes = !options.show_sizes;
