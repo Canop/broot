@@ -103,7 +103,7 @@ const DEFAULT_CONF_FILE: &str = r#"
 #   ":toggle_hidden"     : toggles showing hidden files
 #   ":toggle_git_ignore" : toggles hiding files matching .gitignore exclusions
 #   ":toggle_sizes"      : toggles displaying file and folder sizes
-#   ":toggle_mode"       : toggles displaying file and folder sizes
+#   ":toggle_perm"       : toggles displaying file and folder sizes
 #   ":toggle_files"      : toggles showing files or just directories
 
 [[verbs]]
@@ -154,8 +154,8 @@ execution = ":toggle_sizes"
 
 [[verbs]]
 name = "toggle permissions"
-invocation = "mode"
-execution = ":toggle_mode"
+invocation = "perm"
+execution = ":toggle_perm"
 
 [[verbs]]
 name = "parent"

@@ -1,10 +1,12 @@
 use std::borrow::Cow;
+use std::io::{self, Write};
+use termion::{color, style};
+use users::{Users, Groups, UsersCache};
+use std::sync::Mutex;
 
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
 use crate::screens::{Screen, ScreenArea};
-use std::io::{self, Write};
-use termion::{color, style};
 
 pub trait TreeView {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
@@ -18,6 +20,24 @@ pub trait TreeView {
 
 impl TreeView for Screen {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
+        lazy_static! {
+            static ref users_cache_mutex: Mutex<UsersCache> = Mutex::new(UsersCache::new());
+        }
+        let users_cache = users_cache_mutex.lock().unwrap();
+        let mut max_user_name_len = 0;
+        let mut max_group_name_len = 0;
+        if tree.options.show_permissions {
+            // we compute the max size of user/group names to reserve width for the columns
+            for i in 1..tree.lines.len() {
+                let line = &tree.lines[i];
+                if let Some(user) = users_cache.get_user_by_uid(line.uid) {
+                    max_user_name_len = max_user_name_len.max(user.name().to_string_lossy().len());
+                }
+                if let Some(group) = users_cache.get_group_by_gid(line.uid) {
+                    max_group_name_len = max_group_name_len.max(group.name().to_string_lossy().len());
+                }
+            }
+        }
         let total_size = tree.total_size();
         let area = ScreenArea {
             top: 1,
@@ -86,21 +106,46 @@ impl TreeView for Screen {
                     }
                 }
                 if tree.options.show_permissions && line_index > 0 {
-                    write!(
-                        self.stdout,
-                        "{} {}{}{}{}{}{}{}{}{} {}",
-                        color::Fg(color::AnsiValue::grayscale(15)),
-                        if (line.mode & (1<<8))!=0 { 'r' } else { '-' },
-                        if (line.mode & (1<<7))!=0 { 'w' } else { '-' },
-                        if (line.mode & (1<<6))!=0 { 'x' } else { '-' },
-                        if (line.mode & (1<<5))!=0 { 'r' } else { '-' },
-                        if (line.mode & (1<<4))!=0 { 'w' } else { '-' },
-                        if (line.mode & (1<<3))!=0 { 'x' } else { '-' },
-                        if (line.mode & (1<<2))!=0 { 'r' } else { '-' },
-                        if (line.mode & (1<<1))!=0 { 'w' } else { '-' },
-                        if (line.mode & (1<<0))!=0 { 'x' } else { '-' },
-                        color::Fg(color::Reset),
-                    )?;
+                    if line.is_selectable() {
+                        write!(
+                            self.stdout,
+                            "{} {}{}{}{}{}{}{}{}{}",
+                            color::Fg(color::AnsiValue::grayscale(15)),
+                            if (line.mode & (1<<8))!=0 { 'r' } else { '-' },
+                            if (line.mode & (1<<7))!=0 { 'w' } else { '-' },
+                            if (line.mode & (1<<6))!=0 { 'x' } else { '-' },
+                            if (line.mode & (1<<5))!=0 { 'r' } else { '-' },
+                            if (line.mode & (1<<4))!=0 { 'w' } else { '-' },
+                            if (line.mode & (1<<3))!=0 { 'x' } else { '-' },
+                            if (line.mode & (1<<2))!=0 { 'r' } else { '-' },
+                            if (line.mode & (1<<1))!=0 { 'w' } else { '-' },
+                            if (line.mode & (1<<0))!=0 { 'x' } else { '-' },
+                        )?;
+                        if let Some(user) = users_cache.get_user_by_uid(line.uid) {
+                            write!(
+                                self.stdout,
+                                " {:w$}",
+                                user.name().to_string_lossy(),
+                                w=max_user_name_len,
+                            )?;
+                        }
+                        if let Some(group) = users_cache.get_group_by_gid(line.uid) {
+                            write!(
+                                self.stdout,
+                                " {:w$} ",
+                                group.name().to_string_lossy(),
+                                w=max_group_name_len,
+                            )?;
+                        }
+                    } else {
+                        write!(
+                            self.stdout,
+                            "{}──────────────{}",
+                            color::Fg(color::AnsiValue::grayscale(5)),
+                            color::Fg(color::Reset),
+                        )?;
+
+                    }
                 }
                 let selected = line_index == tree.selection;
                 if selected {
@@ -167,14 +212,16 @@ impl TreeView for Screen {
             LineType::File => {
                 write!(
                     self.stdout,
-                    "{}",
+                    "{}{}",
+                    &*fg_reset,
                     decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
                 )?;
             }
             LineType::SymLink(target) => {
                 write!(
                     self.stdout,
-                    "{} {}->{} {}",
+                    "{}{} {}->{} {}",
+                    &*fg_reset,
                     decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
                     &*fg_link,
                     &*fg_reset,

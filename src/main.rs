@@ -70,6 +70,12 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
                 .help("show the size of files and directories"),
         )
         .arg(
+            clap::Arg::with_name("permissions")
+                .short("p")
+                .long("permissions")
+                .help("show permissions, with owner and group"),
+        )
+        .arg(
             clap::Arg::with_name("output_path")
                 .short("o")
                 .long("out")
@@ -133,6 +139,10 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     if cli_args.is_present("sizes") {
         debug!("show sizes arg set");
         tree_options.show_sizes = true;
+    }
+    if cli_args.is_present("permissions") {
+        debug!("show permissions arg set");
+        tree_options.show_permissions = true;
     }
     if let Some(respect_ignore) = cli_args.value_of("gitignore") {
         tree_options.respect_git_ignore = respect_ignore.parse()?;

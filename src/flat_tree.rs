@@ -28,6 +28,8 @@ pub struct TreeLine {
     pub score: i32,      // 0 if there's no pattern
     pub size: Option<Size>, // None when not measured
     pub mode: u32, // unix file mode
+    pub uid: u32, // unix user id
+    pub gid: u32, // unix group id
 }
 
 #[derive(Debug)]

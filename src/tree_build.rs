@@ -23,7 +23,6 @@ struct BLine {
     has_error: bool,
     has_match: bool,
     score: i32,
-    pub mode: u32, // unix file mode
     ignore_filter: Option<GitIgnoreFilter>,
 }
 
@@ -67,7 +66,6 @@ impl BLine {
             has_error: false,         // well... let's hope
             has_match: true,
             score: 0,
-            mode: 0, // not computed for root
             ignore_filter,
         }
     }
@@ -105,11 +103,9 @@ impl BLine {
         };
         let mut has_error = false;
         let mut is_dir = false;
-        let mut mode: u32 = 0;
         let line_type = match fs::symlink_metadata(&path) {
             Ok(metadata) => {
                 let ft = metadata.file_type();
-                mode = metadata.mode();
                 if ft.is_dir() {
                     is_dir = true;
                     LineType::Dir
@@ -164,11 +160,18 @@ impl BLine {
             has_error,
             has_match,
             score,
-            mode,
             ignore_filter,
         })
     }
     fn to_tree_line(&self) -> TreeLine {
+        let mut mode = 0;
+        let mut uid = 0;
+        let mut gid = 0;
+        if let Ok(metadata) = fs::symlink_metadata(&self.path) {
+            mode = metadata.mode();
+            uid = metadata.uid();
+            gid = metadata.gid();
+        }
         TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
@@ -178,7 +181,9 @@ impl BLine {
             has_error: self.has_error,
             unlisted: self.childs.len() - self.next_child_idx,
             score: self.score,
-            mode: self.mode,
+            mode: mode,
+            uid: uid,
+            gid: gid,
             size: None,
         }
     }
