@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 //! the status module manages writing information on the grey line
 //!  near the bottom of the screen
 
