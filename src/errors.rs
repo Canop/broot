@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 use custom_error::custom_error;
 use std::io;
 
