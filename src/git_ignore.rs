@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 // implements parsing and applying .gitignore files
 // Also manages a stack of such files, because more than one
 // can apply for a dir (i.e when entering a directory we
@@ -127,11 +129,9 @@ impl GitIgnoreFilter {
                         //debug!("rule matches filename {:?} -> ok={}", path, rule.ok);
                         return rule.ok;
                     }
-                } else {
-                    if rule.pattern.matches_path_with(path, &rule.pattern_options) {
-                        //debug!("rule matches path {:?} -> ok={}", path, rule.ok);
-                        return rule.ok;
-                    }
+                } else if rule.pattern.matches_path_with(path, &rule.pattern_options) {
+                    //debug!("rule matches path {:?} -> ok={}", path, rule.ok);
+                    return rule.ok;
                 }
             }
         }
