@@ -189,9 +189,9 @@ impl BLine {
             has_error: self.has_error,
             unlisted: self.childs.len() - self.next_child_idx,
             score: self.score,
-            mode: mode,
-            uid: uid,
-            gid: gid,
+            mode,
+            uid,
+            gid,
             size: None,
         }
     }
@@ -373,16 +373,14 @@ impl TreeBuilder {
                 //  the one with the worst score at the greatest depth
                 let mut worst_index: usize = 0;
                 let mut depth: u16 = 0;
-                for i in 1..out_blines.len() {
-                    let out_index = out_blines[i];
+                for &out_index in out_blines.iter().skip(1) {
                     let bline = &self.blines[out_index];
                     if bline.has_match && bline.depth > depth {
                         depth = bline.depth;
                     }
                 }
                 let mut score: i32 = std::i32::MAX;
-                for i in 1..out_blines.len() {
-                    let out_index = out_blines[i];
+                for &out_index in out_blines.iter().skip(1) {
                     let bline = &self.blines[out_index];
                     if !bline.has_match {
                         continue;
