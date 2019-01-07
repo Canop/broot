@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 //! an application state dedicated to displaying a tree
 
 use std::io::{self, Write};
@@ -50,7 +52,7 @@ impl AppState for BrowserState {
     fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult> {
         self.pending_pattern = None;
         let (_, page_height) = termion::terminal_size().unwrap();
-        let mut page_height = page_height as i32;
+        let mut page_height = i32::from(page_height);
         page_height -= 2;
         Ok(match &cmd.action {
             Action::Back => {
@@ -156,7 +158,7 @@ impl AppState for BrowserState {
                 info!("Tree search took {:?}", start.elapsed());
                 filtered_tree.try_select_best_match();
                 let (_, page_height) = termion::terminal_size().unwrap();
-                let mut page_height = page_height as i32;
+                let mut page_height = i32::from(page_height);
                 page_height -= 2;
                 filtered_tree.make_selection_visible(page_height);
             } // if none: task was cancelled from elsewhere
@@ -202,9 +204,10 @@ impl AppState for BrowserState {
                     )
                 } else {
                     let line = &tree.lines[tree.selection];
-                    screen.write_status_text(match line.is_dir() {
-                        true => "Hit <enter> to focus, or type a space then a verb",
-                        false => "Hit <enter> to open the file, or type a space then a verb",
+                    screen.write_status_text(if line.is_dir() {
+                        "Hit <enter> to focus, or type a space then a verb"
+                    } else {
+                        "Hit <enter> to open the file, or type a space then a verb"
                     })
                 }
             }
@@ -224,10 +227,7 @@ impl AppState for BrowserState {
             color::Bg(color::AnsiValue::grayscale(1)),
             termion::clear::UntilNewline,
             color::Fg(color::AnsiValue::grayscale(15)),
-            match tree.options.show_hidden {
-                true => 'y',
-                false => 'n',
-            },
+            if tree.options.show_hidden { 'y' } else { 'n' },
             match tree.options.respect_git_ignore {
                 OptionBool::Auto => 'a',
                 OptionBool::Yes => 'y',
