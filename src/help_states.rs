@@ -54,6 +54,7 @@ impl AppState for HelpState {
         text.md("");
         text.md(r#" **broot** (pronounce "b-root") lets you explore directory trees"#);
         text.md(r#"    and launch various commands on files."#);
+        text.md(r#" broot is best used with its companion shell function (see  https://github.com/Canop/broot)."#);
         text.md("");
         text.md(r#" `<esc>` gets you back to the previous state."#);
         text.md(r#" Typing some letters searches the tree and selects the most relevant file."#);

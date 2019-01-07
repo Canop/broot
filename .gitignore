@@ -2,6 +2,7 @@ dev.log
 deploy.sh
 install.sh
 notes.md
+/releases
 /target
 **/*.rs.bk
 perf.data*

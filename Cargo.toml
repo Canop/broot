@@ -3,8 +3,12 @@ name = "broot"
 version = "0.4.2"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
+description = "Fuzzy Search + tree + cd"
 edition = "2018"
+keywords = ["cli", "fuzzy", "tree", "search", "linux"]
 license = "MIT"
+categories = ["command-line-utilities"]
+readme = "README.md"
 
 [dependencies]
 termion = "1.5.1"
