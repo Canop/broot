@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 use std::borrow::Cow;
@@ -164,13 +166,17 @@ impl Verb {
             Some(tree) => tree.selected_line(),
             None => state.tree.selected_line(),
         };
+
         let path = &line.path;
+
         if self.exec_pattern == ":cd" {
             return format!("cd {}", path.to_string_lossy());
         }
-        match self.exec_pattern.starts_with(':') {
-            true => self.description(),
-            false => self.exec_string(path),
+
+        if self.exec_pattern.starts_with(':') {
+            self.description()
+        } else {
+            self.exec_string(path)
         }
     }
     pub fn description(&self) -> String {
