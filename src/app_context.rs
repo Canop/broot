@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 use crate::verbs::VerbStore;
 
 /// The immutable container that can be passed around to provide
