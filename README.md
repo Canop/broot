@@ -4,29 +4,39 @@
 
 An interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands.
 
-Get an overview of a directory, even a big one:
+### Get an overview of a directory, even a big one:
 
 ![overview](doc/20181215-overview.png)
 
 Notice the "unlisted" ? That's what makes it usable where the old `tree` command would produce pages of output.
 
-Find a directory then `cd` to it:
+### Find a directory then `cd` to it:
 
 ![cd](doc/20181218-cd.png)
 
 You can this way navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
-See what takes space:
+Most useful keys for this:
+
+* the letters of what you're looking for
+* `<enter>` to select a directory (staying in broot)
+* `<esc>` to get back to the previous state or clear your search
+* `:c` to get back to the shell having cd to the selected directory ([see below](#use-broot-for-navigation))
+* `:q` if you just want to quit (`<esc>` works too)
+
+### See what takes space:
 
 ![size](doc/20181215-only-folders-with-size.png)
 
-Never lose track of file hierarchy while you fuzzy search:
+To toggle size display, you usually hit `:s`.
+
+### Never lose track of file hierarchy while you fuzzy search:
 
 ![size](doc/20181215-search.png)
 
-broot tries to select the most relevant file. You can still go from one match to another one using <tab> or arrow keys.
+broot tries to select the most relevant file. You can still go from one match to another one using `<tab>` or arrow keys.
 
-Apply a personal shorcut to a file:
+### Apply a personal shorcut to a file:
 
 ![size](doc/20181215-edit.png)
 
