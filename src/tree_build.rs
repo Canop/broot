@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 use std::collections::VecDeque;
 use std::fs;
 use std::path::PathBuf;
@@ -48,7 +50,7 @@ impl BLine {
         } else {
             let gif = GitIgnoreFilter::applicable_to(&path);
             // if auto, we don't look for other gif if we're not in a git dir
-            if respect_ignore == OptionBool::Auto && gif.files.len() == 0 {
+            if respect_ignore == OptionBool::Auto && gif.files.is_empty() {
                 None
             } else {
                 Some(gif)
@@ -276,13 +278,12 @@ impl TreeBuilder {
         bline_idx: usize, // the parent
     ) -> Option<usize> {
         let bline = &mut self.blines[bline_idx];
-        match bline.next_child_idx < bline.childs.len() {
-            true => {
-                let next_child = bline.childs[bline.next_child_idx];
-                bline.next_child_idx += 1;
-                Some(next_child)
-            }
-            false => Option::None,
+        if bline.next_child_idx < bline.childs.len() {
+            let next_child = bline.childs[bline.next_child_idx];
+            bline.next_child_idx += 1;
+            Some(next_child)
+        } else {
+            None
         }
     }
     // build can be called only once per builder
