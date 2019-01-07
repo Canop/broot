@@ -163,6 +163,12 @@ impl BLine {
             ignore_filter,
         })
     }
+    fn is_file(&self) -> bool {
+        match &self.line_type {
+            LineType::File => true,
+            _ => false,
+        }
+    }
     fn to_tree_line(&self) -> TreeLine {
         let mut mode = 0;
         let mut uid = 0;
@@ -357,6 +363,7 @@ impl TreeBuilder {
             let mut count = 0;
             for idx in out_blines.iter() {
                 if self.blines[*idx].has_match {
+                    //debug!(" {} {:?}", self.blines[*idx].score, self.blines[*idx].path);
                     count += 1;
                 }
             }
@@ -365,25 +372,28 @@ impl TreeBuilder {
                 //  the one with the worst score at the greatest depth
                 let mut worst_index: usize = 0;
                 let mut depth: u16 = 0;
-                let mut score: i32 = 0;
+                for i in 1..out_blines.len() {
+                    let out_index = out_blines[i];
+                    let bline = &self.blines[out_index];
+                    if bline.has_match && bline.depth > depth {
+                        depth = bline.depth;
+                    }
+                }
+                let mut score: i32 = std::i32::MAX;
                 for i in 1..out_blines.len() {
                     let out_index = out_blines[i];
                     let bline = &self.blines[out_index];
                     if !bline.has_match {
                         continue;
                     }
-                    if bline.depth > depth {
-                        score = bline.score;
-                        depth = bline.depth;
-                        worst_index = out_index;
-                    } else if bline.depth == depth && bline.score < score {
+                    if (bline.depth == depth || bline.is_file()) && bline.score < score {
                         score = bline.score;
                         worst_index = out_index;
                     }
                 }
                 if worst_index > 0 {
                     // we set the has_match to 0 so the line won't be kept
-                    //debug!("removing {:?}", self.blines[worst_index].path);
+                    //debug!("removing {} {:?}", self.blines[worst_index].score, self.blines[worst_index].path);
                     self.blines[worst_index].has_match = false;
                     count -= 1;
                 } else {

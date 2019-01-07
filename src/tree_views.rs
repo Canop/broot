@@ -231,7 +231,8 @@ impl TreeView for Screen {
             LineType::Pruning => {
                 write!(
                     self.stdout,
-                    "{}{}… {} unlisted",
+                    //"{}{}… {} unlisted", still not sure whether I want this '…'
+                    "{}{} {} unlisted",
                     color::Fg(color::AnsiValue::grayscale(13)),
                     style::Italic,
                     &line.unlisted,
