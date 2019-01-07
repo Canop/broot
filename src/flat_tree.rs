@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 //! in the flat_tree structure, every "node" is just a line, there's
 //!  no link from a child to its parent or from a parent to its childs.
 
@@ -173,10 +175,13 @@ impl Tree {
         if line_index >= self.lines.len() {
             return false;
         }
+
         let line = &self.lines[line_index];
-        match depth >= line.depth as usize {
-            true => false,
-            false => line.left_branchs[depth],
+
+        if depth >= line.depth as usize {
+            false
+        } else {
+            line.left_branchs[depth]
         }
     }
     pub fn move_selection(&mut self, dy: i32, page_height: i32) {
@@ -194,7 +199,7 @@ impl Tree {
         if dy < 0 && sel < self.scroll + 5 {
             self.scroll = (self.scroll + 2 * dy).max(0);
         } else if dy > 0 && l > page_height && sel > self.scroll + page_height - 5 {
-            self.scroll = self.scroll + 2 * dy;
+            self.scroll += 2 * dy;
         }
     }
     pub fn try_scroll(&mut self, dy: i32, page_height: i32) {
