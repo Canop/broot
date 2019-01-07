@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 use regex::Regex;
 use termion::event::Key;
 
@@ -33,16 +35,19 @@ impl Action {
         }
         if let Some(c) = RE.captures(raw) {
             if let Some(verb) = c.name("verb") {
-                return match finished {
-                    false => Action::VerbEdit(String::from(verb.as_str())),
-                    true => Action::Verb(String::from(verb.as_str())),
+                return if finished {
+                    Action::Verb(String::from(verb.as_str()))
+                } else {
+                    Action::VerbEdit(String::from(verb.as_str()))
                 };
             }
             if let Some(pattern) = c.name("pattern") {
                 let pattern = pattern.as_str();
-                return match finished {
-                    false => Action::PatternEdit(String::from(pattern)),
-                    true => Action::OpenSelection,
+
+                return if finished {
+                    Action::OpenSelection
+                } else {
+                    Action::PatternEdit(String::from(pattern))
                 };
             }
         } else {
