@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 //! the thing which shows we're waiting for a long task
 
 use std::io::{self, Write};
