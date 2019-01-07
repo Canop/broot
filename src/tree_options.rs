@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 use crate::errors::ProgramError;
 use crate::patterns::Pattern;
 use std::str::FromStr;
@@ -12,7 +14,7 @@ pub enum OptionBool {
 impl FromStr for OptionBool {
     type Err = ProgramError;
     fn from_str(s: &str) -> Result<OptionBool, ProgramError> {
-        match s.as_ref() {
+        match s {
             "auto" => Ok(OptionBool::Auto),
             "yes" => Ok(OptionBool::Yes),
             "no" => Ok(OptionBool::No),
