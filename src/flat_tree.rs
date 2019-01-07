@@ -27,9 +27,9 @@ pub struct TreeLine {
     pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
     pub score: i32,      // 0 if there's no pattern
     pub size: Option<Size>, // None when not measured
-    pub mode: u32, // unix file mode
-    pub uid: u32, // unix user id
-    pub gid: u32, // unix group id
+    pub mode: u32,       // unix file mode
+    pub uid: u32,        // unix user id
+    pub gid: u32,        // unix group id
 }
 
 #[derive(Debug)]
@@ -194,7 +194,7 @@ impl Tree {
         if dy < 0 && sel < self.scroll + 5 {
             self.scroll = (self.scroll + 2 * dy).max(0);
         } else if dy > 0 && l > page_height && sel > self.scroll + page_height - 5 {
-            self.scroll = self.scroll + 2 * dy;
+            self.scroll += 2 * dy;
         }
     }
     pub fn try_scroll(&mut self, dy: i32, page_height: i32) {

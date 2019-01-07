@@ -4,6 +4,8 @@ use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
 
+/// manage reading the verb shortcuts from the configuration file,
+/// initializing if if it doesn't yet exist
 use custom_error::custom_error;
 use directories::ProjectDirs;
 
@@ -96,7 +98,7 @@ const DEFAULT_CONF_FILE: &str = r#"
 #   ":back"              : reverts to the previous state, or quit the application if it's the first one (mapped to <esc>)
 #   ":cd"                : changes directory (see https://github.com/Canop/broot)
 #   ":print_path"        : outputs the path to stdout or to a file provided with --out
-#   ":focus"             : displays the tree of that directory (mapped to <enter> on directories)
+#   ":focus"             : displays the tree of that directory, keeps the current search pattern
 #   ":open"              : tries to open the file according to OS settings (e.g. using xdg-open) (mapped to <enter> on files)
 #   ":parent"            : moves to the parent directory
 #   ":quit"              : quits the application
@@ -113,7 +115,7 @@ execution = ":cd"
 
 [[verbs]]
 name = "focus"
-invocation = "f"
+invocation = "g"
 execution = ":focus"
 
 [[verbs]]
@@ -140,12 +142,6 @@ execution = ":toggle_git_ignore"
 name = "open"
 invocation = "o"
 execution = ":open"
-
-[[verbs]]
-# this is an example of a very specific verb
-name = "geany"
-invocation = "g"
-execution = "/usr/bin/geany {file}"
 
 [[verbs]]
 name = "toggle sizes"

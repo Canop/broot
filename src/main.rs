@@ -47,7 +47,7 @@ use crate::verbs::VerbStore;
 
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
-        .version("0.4.1")
+        .version("0.4.2")
         .author("dystroy <denys.seguret@gmail.com>")
         .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
         .arg(clap::Arg::with_name("root").help("sets the root directory"))

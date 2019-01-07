@@ -48,8 +48,8 @@ impl VerbExecutor for BrowserState {
         Ok(match verb.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
             ":focus" => {
-                let path = self.tree.selected_line().path.clone();
-                let options = self.tree.options.clone();
+                let path = tree.selected_line().path.clone();
+                let options = tree.options.clone();
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     path,
                     options,
@@ -57,7 +57,7 @@ impl VerbExecutor for BrowserState {
                 ))
             }
             ":toggle_hidden" => {
-                let mut options = self.tree.options.clone();
+                let mut options = tree.options.clone();
                 options.show_hidden = !options.show_hidden;
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     self.tree.root().clone(),
@@ -66,7 +66,7 @@ impl VerbExecutor for BrowserState {
                 ))
             }
             ":toggle_git_ignore" => {
-                let mut options = self.tree.options.clone();
+                let mut options = tree.options.clone();
                 options.respect_git_ignore = match options.respect_git_ignore {
                     OptionBool::Auto => {
                         if tree.nb_gitignored > 0 {
@@ -86,7 +86,7 @@ impl VerbExecutor for BrowserState {
                 ))
             }
             ":toggle_files" => {
-                let mut options = self.tree.options.clone();
+                let mut options = tree.options.clone();
                 options.only_folders = !options.only_folders;
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     self.tree.root().clone(),
@@ -95,7 +95,7 @@ impl VerbExecutor for BrowserState {
                 ))
             }
             ":toggle_perm" => {
-                let mut options = self.tree.options.clone();
+                let mut options = tree.options.clone();
                 options.show_permissions = !options.show_permissions;
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     self.tree.root().clone(),
@@ -104,7 +104,7 @@ impl VerbExecutor for BrowserState {
                 ))
             }
             ":toggle_sizes" => {
-                let mut options = self.tree.options.clone();
+                let mut options = tree.options.clone();
                 options.show_sizes = !options.show_sizes;
                 AppStateCmdResult::from_optional_state(BrowserState::new(
                     self.tree.root().clone(),

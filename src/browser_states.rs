@@ -27,13 +27,15 @@ pub struct BrowserState {
 }
 
 impl BrowserState {
-    pub fn new(path: PathBuf, options: TreeOptions, tl: &TaskLifetime) -> Option<BrowserState> {
-        let builder = TreeBuilder::from(path, options.clone());
+    pub fn new(path: PathBuf, mut options: TreeOptions, tl: &TaskLifetime) -> Option<BrowserState> {
+        let pending_pattern = options.pattern;
+        options.pattern = None;
+        let builder = TreeBuilder::from(path, options);
         match builder.build(screens::max_tree_height() as usize, tl) {
             Some(tree) => Some(BrowserState {
                 tree,
                 filtered_tree: None,
-                pending_pattern: None,
+                pending_pattern,
             }),
             None => None, // interrupted
         }
@@ -101,6 +103,7 @@ impl AppState for BrowserState {
                     let tl = TaskLifetime::unlimited();
                     AppStateCmdResult::from_optional_state(BrowserState::new(
                         tree.selected_line().path.clone(),
+                        // tree.options.clone(),
                         tree.options.without_pattern(),
                         &tl,
                     ))

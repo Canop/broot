@@ -152,7 +152,7 @@ impl App {
                 }
                 AppStateCmdResult::NewState(boxed_state) => {
                     self.push(boxed_state);
-                    cmd = Command::new();
+                    cmd = cmd.pop_verb();
                     self.state().write_status(&mut screen, &cmd, con)?;
                 }
                 AppStateCmdResult::PopState => {

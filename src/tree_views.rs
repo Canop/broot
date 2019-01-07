@@ -1,8 +1,8 @@
 use std::borrow::Cow;
 use std::io::{self, Write};
-use termion::{color, style};
-use users::{Users, Groups, UsersCache};
 use std::sync::Mutex;
+use termion::{color, style};
+use users::{Groups, Users, UsersCache};
 
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
@@ -34,7 +34,8 @@ impl TreeView for Screen {
                     max_user_name_len = max_user_name_len.max(user.name().to_string_lossy().len());
                 }
                 if let Some(group) = users_cache.get_group_by_gid(line.uid) {
-                    max_group_name_len = max_group_name_len.max(group.name().to_string_lossy().len());
+                    max_group_name_len =
+                        max_group_name_len.max(group.name().to_string_lossy().len());
                 }
             }
         }
@@ -111,22 +112,58 @@ impl TreeView for Screen {
                             self.stdout,
                             "{} {}{}{}{}{}{}{}{}{}",
                             color::Fg(color::AnsiValue::grayscale(15)),
-                            if (line.mode & (1<<8))!=0 { 'r' } else { '-' },
-                            if (line.mode & (1<<7))!=0 { 'w' } else { '-' },
-                            if (line.mode & (1<<6))!=0 { 'x' } else { '-' },
-                            if (line.mode & (1<<5))!=0 { 'r' } else { '-' },
-                            if (line.mode & (1<<4))!=0 { 'w' } else { '-' },
-                            if (line.mode & (1<<3))!=0 { 'x' } else { '-' },
-                            if (line.mode & (1<<2))!=0 { 'r' } else { '-' },
-                            if (line.mode & (1<<1))!=0 { 'w' } else { '-' },
-                            if (line.mode & (1<<0))!=0 { 'x' } else { '-' },
+                            if (line.mode & (1 << 8)) != 0 {
+                                'r'
+                            } else {
+                                '-'
+                            },
+                            if (line.mode & (1 << 7)) != 0 {
+                                'w'
+                            } else {
+                                '-'
+                            },
+                            if (line.mode & (1 << 6)) != 0 {
+                                'x'
+                            } else {
+                                '-'
+                            },
+                            if (line.mode & (1 << 5)) != 0 {
+                                'r'
+                            } else {
+                                '-'
+                            },
+                            if (line.mode & (1 << 4)) != 0 {
+                                'w'
+                            } else {
+                                '-'
+                            },
+                            if (line.mode & (1 << 3)) != 0 {
+                                'x'
+                            } else {
+                                '-'
+                            },
+                            if (line.mode & (1 << 2)) != 0 {
+                                'r'
+                            } else {
+                                '-'
+                            },
+                            if (line.mode & (1 << 1)) != 0 {
+                                'w'
+                            } else {
+                                '-'
+                            },
+                            if (line.mode & (1 << 0)) != 0 {
+                                'x'
+                            } else {
+                                '-'
+                            },
                         )?;
                         if let Some(user) = users_cache.get_user_by_uid(line.uid) {
                             write!(
                                 self.stdout,
                                 " {:w$}",
                                 user.name().to_string_lossy(),
-                                w=max_user_name_len,
+                                w = max_user_name_len,
                             )?;
                         }
                         if let Some(group) = users_cache.get_group_by_gid(line.uid) {
@@ -134,7 +171,7 @@ impl TreeView for Screen {
                                 self.stdout,
                                 " {:w$} ",
                                 group.name().to_string_lossy(),
-                                w=max_group_name_len,
+                                w = max_group_name_len,
                             )?;
                         }
                     } else {
@@ -144,7 +181,6 @@ impl TreeView for Screen {
                             color::Fg(color::AnsiValue::grayscale(5)),
                             color::Fg(color::Reset),
                         )?;
-
                     }
                 }
                 let selected = line_index == tree.selection;
