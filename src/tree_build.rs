@@ -1,7 +1,8 @@
 use std::collections::VecDeque;
 use std::fs;
-use std::path::PathBuf;
 use std::os::unix::fs::MetadataExt;
+use std::path::PathBuf;
+use std::time::{Duration, Instant};
 
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::git_ignore::GitIgnoreFilter;
@@ -187,9 +188,9 @@ impl BLine {
             has_error: self.has_error,
             unlisted: self.childs.len() - self.next_child_idx,
             score: self.score,
-            mode: mode,
-            uid: uid,
-            gid: gid,
+            mode,
+            uid,
+            gid,
             size: None,
         }
     }
@@ -287,6 +288,8 @@ impl TreeBuilder {
     }
     // build can be called only once per builder
     pub fn build(mut self, nb_lines_max: usize, task_lifetime: &TaskLifetime) -> Option<Tree> {
+        let start = Instant::now();
+        let not_long = Duration::from_millis(300);
         let mut out_blines: Vec<usize> = Vec::new(); // the blines we want to display
         out_blines.push(0);
         debug!("start building with pattern {:?}", self.options.pattern);
@@ -296,12 +299,21 @@ impl TreeBuilder {
         self.load_childs(0);
         open_dirs.push_back(0);
         loop {
-            if nb_lines_ok >= nb_lines_max {
-                break;
-            }
-            if task_lifetime.is_expired() {
-                info!("task expired (core build)");
-                return None;
+            if self.options.pattern.is_some() {
+                if (nb_lines_ok > 20 * nb_lines_max)
+                    || (nb_lines_ok >= nb_lines_max && start.elapsed() > not_long)
+                {
+                    //debug!("break {} {}", nb_lines_ok, 10 * nb_lines_max);
+                    break;
+                }
+                if task_lifetime.is_expired() {
+                    info!("task expired (core build)");
+                    return None;
+                }
+            } else {
+                if nb_lines_ok >= nb_lines_max {
+                    break;
+                }
             }
             if let Some(open_dir_idx) = open_dirs.pop_front() {
                 if let Some(child_idx) = self.next_child(open_dir_idx) {
@@ -318,6 +330,7 @@ impl TreeBuilder {
             } else {
                 // this depth is finished, we must go deeper
                 if next_level_dirs.is_empty() {
+                    // except there's nothing deeper
                     break;
                 }
                 for next_level_dir_idx in &next_level_dirs {
@@ -338,9 +351,6 @@ impl TreeBuilder {
                         }
                     }
                     open_dirs.push_back(*next_level_dir_idx);
-                }
-                if nb_lines_ok >= nb_lines_max {
-                    break;
                 }
                 next_level_dirs.clear();
             }
@@ -368,8 +378,7 @@ impl TreeBuilder {
                 }
             }
             while count > nb_lines_max {
-                // we'll try to remove the less interesting line:
-                //  the one with the worst score at the greatest depth
+                // we'll try to remove the least interesting line
                 let mut worst_index: usize = 0;
                 let mut depth: u16 = 0;
                 for i in 1..out_blines.len() {
