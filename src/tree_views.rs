@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 use std::borrow::Cow;
 use std::io::{self, Write};
 use termion::{color, style};
@@ -59,15 +61,18 @@ impl TreeView for Screen {
                         self.stdout,
                         "{}{}{}",
                         color::Fg(color::AnsiValue::grayscale(5)),
-                        match line.left_branchs[depth as usize] {
-                            true => match tree.has_branch(line_index + 1, depth as usize) {
-                                true => match depth == line.depth - 1 {
-                                    true => "├──",
-                                    false => "│  ",
-                                },
-                                false => "└──",
-                            },
-                            false => "   ",
+                        if line.left_branchs[depth as usize] {
+                            if tree.has_branch(line_index + 1, depth as usize) {
+                                if depth == line.depth - 1 {
+                                    "├──"
+                                } else {
+                                    "│  "
+                                }
+                            } else {
+                                "└──"
+                            }
+                        } else {
+                            "   "
                         },
                         color::Fg(color::Reset),
                     )?;
@@ -119,7 +124,7 @@ impl TreeView for Screen {
                             if (line.mode & (1<<3))!=0 { 'x' } else { '-' },
                             if (line.mode & (1<<2))!=0 { 'r' } else { '-' },
                             if (line.mode & (1<<1))!=0 { 'w' } else { '-' },
-                            if (line.mode & (1<<0))!=0 { 'x' } else { '-' },
+                            if (line.mode & 1)     !=0 { 'x' } else { '-' },
                         )?;
                         if let Some(user) = users_cache.get_user_by_uid(line.uid) {
                             write!(
