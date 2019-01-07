@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 use crate::task_sync::TaskLifetime;
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -42,12 +44,10 @@ impl Size {
                         if let Ok(md) = fs::symlink_metadata(&p) {
                             if md.is_dir() {
                                 dirs.push(p);
-                            } else if md.nlink() > 1 {
-                                if !inodes.insert(md.ino()) {
-                                    // it was already in the set
-                                    nb_duplicate_inodes += 1;
-                                    continue; // let's not add the size
-                                }
+                            } else if md.nlink() > 1 && !inodes.insert(md.ino()) {
+                                // it was already in the set
+                                nb_duplicate_inodes += 1;
+                                continue; // let's not add the size
                             }
                             s += Size::from(md.len());
                         }
@@ -71,7 +71,7 @@ impl Size {
 
     /// format a number of bytes as a string
     /// (probably fast enough but not benchmarked)
-    pub fn to_string(&self) -> String {
+    pub fn to_string(self) -> String {
         let mut v = self.0;
         let mut i = 0;
         while v >= 1024 && i < SIZE_NAMES.len() - 1 {
@@ -80,7 +80,7 @@ impl Size {
         }
         format!("{}{}", v, &SIZE_NAMES[i])
     }
-    pub fn discreet_ratio(&self, max: Size, r: u64) -> u64 {
+    pub fn discreet_ratio(self, max: Size, r: u64) -> u64 {
         if max.0 == 0 || self.0 == 0 {
             0
         } else {
