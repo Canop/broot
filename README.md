@@ -8,9 +8,13 @@ Get an overview of a directory, even a big one:
 
 ![overview](doc/20181215-overview.png)
 
+Notice the "unlisted" ? That's what makes it usable where the old `tree` command would produce pages of output.
+
 Find a directory then `cd` to it:
 
 ![cd](doc/20181218-cd.png)
+
+You can this way navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
 See what takes space:
 
@@ -20,11 +24,13 @@ Never lose track of file hierarchy while you fuzzy search:
 
 ![size](doc/20181215-search.png)
 
+broot tries to select the most relevant file. You can still go from one match to another one using <tab> or arrow keys.
+
 Apply a personal shorcut to a file:
 
 ![size](doc/20181215-edit.png)
 
-broot is fast and never blocks, even when you make it search a big slow disk.
+broot is fast and never blocks, even when you make it search a big slow disk (any keystroke interrupts the current search to start the following one).
 
 ## Usage
 
