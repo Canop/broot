@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 /// displays the "input" at the bottom of the screen
 /// (reading is managed in the app module)
 use std::io::{self, Write};
