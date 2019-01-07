@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 use std::io::{self, stdout, Write};
 
 use termion::color;
@@ -39,10 +41,10 @@ impl ScreenArea {
     // (note that this may lead to flickering)
     #[allow(dead_code)]
     pub fn draw_scrollbar(&self, screen: &mut Screen) -> io::Result<()> {
-        let h = (self.bottom as i32) - (self.top as i32) + 1;
+        let h = i32::from(self.bottom) - i32::from(self.top) + 1;
         if self.content_length > h {
             let sbh = h * h / self.content_length;
-            let sc = self.top as i32 + self.scroll * h / self.content_length;
+            let sc = i32::from(self.top) + self.scroll * h / self.content_length;
             let (w, _) = termion::terminal_size().unwrap();
             write!(
                 screen.stdout,
@@ -62,13 +64,13 @@ impl ScreenArea {
     }
     // returns the top and bottom of the scrollbar, if any
     pub fn scrollbar(&self) -> Option<(u16, u16)> {
-        let h = (self.bottom as i32) - (self.top as i32) + 1;
+        let h = i32::from(self.bottom) - i32::from(self.top) + 1;
         if self.content_length <= h {
             return None;
         }
         let sbh = h * h / self.content_length;
-        let sc = self.top as i32 + self.scroll * h / self.content_length;
-        Some((sc as u16, (sc + sbh).min(self.bottom as i32 - 1) as u16))
+        let sc = i32::from(self.top) + self.scroll * h / self.content_length;
+        Some((sc as u16, (sc + sbh).min(i32::from(self.bottom) - 1) as u16))
     }
 }
 
