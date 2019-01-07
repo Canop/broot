@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 //! an application state dedicated to help
 
 use regex::Regex;
