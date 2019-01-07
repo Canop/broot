@@ -1,7 +1,10 @@
+#![warn(clippy::all)]
+
 use std::io::{self, stdin, Write};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread;
+use std::borrow::{Borrow, BorrowMut};
 use termion::input::TermRead;
 
 use crate::app_context::AppContext;
@@ -57,20 +60,19 @@ impl App {
         self.states.push(new_state);
     }
 
-    pub fn mut_state(&mut self) -> &mut Box<dyn AppState> {
-        match self.states.last_mut() {
-            Some(s) => s,
-            None => {
-                panic!("No path has been pushed");
-            }
+    pub fn mut_state(&mut self) -> &mut (dyn AppState + 'static) {
+        if let Some(s) = self.states.last_mut() {
+            s.borrow_mut()
+        } else {
+            panic!("No path has been pushed");
         }
     }
-    pub fn state(&self) -> &Box<dyn AppState> {
-        match self.states.last() {
-            Some(s) => s,
-            None => {
-                panic!("No path has been pushed");
-            }
+
+    pub fn state(&self) -> &dyn AppState {
+        if let Some(s) = self.states.last() {
+            s.borrow()
+        } else {
+            panic!("No path has been pushed");
         }
     }
 
