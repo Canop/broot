@@ -1,3 +1,5 @@
+#![warn(clippy::all)]
+
 //! a trivial fuzzy pattern matcher for filename filtering / sorting
 //! It's not meant for file contents but for small strings (less than 1000 chars)
 //!  such as file names.
