@@ -1,3 +1,8 @@
+// compute the summed size of directories
+// A cache is used to avoid recomputing the
+//  same directories again and again.
+// Hard links are checked to avoid counting
+//  twice an inode.
 use crate::task_sync::TaskLifetime;
 use std::collections::{HashMap, HashSet};
 use std::fs;
