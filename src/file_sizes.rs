@@ -43,8 +43,8 @@ impl Size {
             if let Ok(entries) = fs::read_dir(&open_dir) {
                 for e in entries {
                     if let Ok(e) = e {
-                        let p = e.path();
-                        if let Ok(md) = fs::symlink_metadata(&p) {
+                        if let Ok(md) = e.metadata() {
+                            let p = e.path();
                             if md.is_dir() {
                                 dirs.push(p);
                             } else if md.nlink() > 1 {
