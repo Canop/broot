@@ -1,5 +1,6 @@
 use std::collections::VecDeque;
-use std::fs;
+use std::fs::{self, Metadata};
+use std::ffi::OsString;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
@@ -34,7 +35,6 @@ enum BLineResult {
     FilteredOutByPattern,
     FilteredOutAsNonFolder,
     GitIgnored,
-    Invalid,
 }
 
 impl BLine {
@@ -74,6 +74,8 @@ impl BLine {
     // (pattern, no_hidden, only_folders)
     fn from(
         parent_idx: usize,
+        metadata: Metadata,
+        name: OsString,
         path: PathBuf,
         depth: u16,
         no_hidden: bool,
@@ -83,59 +85,40 @@ impl BLine {
     ) -> BLineResult {
         let mut has_match = true;
         let mut score = 0;
-        let name = {
-            let name = match &path.file_name() {
-                Some(name) => name.to_string_lossy(),
-                None => {
-                    return BLineResult::Invalid;
-                }
-            };
-            if no_hidden && name.starts_with('.') {
-                return BLineResult::FilteredOutAsHidden;
+        let name = name.to_string_lossy();
+        if no_hidden && name.starts_with('.') {
+            return BLineResult::FilteredOutAsHidden;
+        }
+        if let Some(pattern) = pattern {
+            if let Some(m) = pattern.test(&name) {
+                score = m.score;
+            } else {
+                has_match = false;
             }
-            if let Some(pattern) = pattern {
-                if let Some(m) = pattern.test(&name) {
-                    score = m.score;
-                } else {
-                    has_match = false;
-                }
-            }
-            name.to_string()
-        };
-        let mut has_error = false;
+        }
         let mut is_dir = false;
-        let line_type = match fs::symlink_metadata(&path) {
-            Ok(metadata) => {
-                let ft = metadata.file_type();
-                if ft.is_dir() {
-                    is_dir = true;
-                    LineType::Dir
-                } else if ft.is_symlink() {
-                    if !has_match {
-                        return BLineResult::FilteredOutByPattern;
-                    }
-                    if only_folders {
-                        return BLineResult::FilteredOutAsNonFolder;
-                    }
-                    LineType::SymLink(match fs::read_link(&path) {
-                        Ok(target) => target.to_string_lossy().into_owned(),
-                        Err(_) => String::from("???"),
-                    })
-                } else {
-                    if !has_match {
-                        return BLineResult::FilteredOutByPattern;
-                    }
-                    if only_folders {
-                        return BLineResult::FilteredOutAsNonFolder;
-                    }
-                    LineType::File
-                }
-            }
-            Err(err) => {
-                debug!("Error while fetching metadata: {:?}", err);
-                has_error = true;
+        let line_type = {
+            let ft = metadata.file_type();
+            if ft.is_dir() {
+                is_dir = true;
+                LineType::Dir
+            } else if ft.is_symlink() {
                 if !has_match {
                     return BLineResult::FilteredOutByPattern;
+                }
+                if only_folders {
+                    return BLineResult::FilteredOutAsNonFolder;
+                }
+                LineType::SymLink(match fs::read_link(&path) {
+                    Ok(target) => target.to_string_lossy().into_owned(),
+                    Err(_) => String::from("???"),
+                })
+            } else {
+                if !has_match {
+                    return BLineResult::FilteredOutByPattern;
+                }
+                if only_folders {
+                    return BLineResult::FilteredOutAsNonFolder;
                 }
                 LineType::File
             }
@@ -158,7 +141,7 @@ impl BLine {
             childs: Vec::new(),
             next_child_idx: 0,
             line_type,
-            has_error,
+            has_error: false,
             has_match,
             score,
             ignore_filter,
@@ -226,29 +209,33 @@ impl TreeBuilder {
                 let mut childs: Vec<usize> = Vec::new();
                 for e in entries {
                     if let Ok(e) = e {
-                        let bl = BLine::from(
-                            bline_idx,
-                            e.path(),
-                            self.blines[bline_idx].depth + 1,
-                            !self.options.show_hidden,
-                            self.options.only_folders,
-                            &self.options.pattern,
-                            &self.blines[bline_idx].ignore_filter,
-                        );
-                        match bl {
-                            BLineResult::Some(bl) => {
-                                if bl.has_match {
-                                    // direct match
-                                    self.blines[bline_idx].has_match = true;
-                                    has_child_match = true;
+                        if let Ok(metadata) = e.metadata() {
+                            let bl = BLine::from(
+                                bline_idx,
+                                metadata,
+                                e.file_name(),
+                                e.path(),
+                                self.blines[bline_idx].depth + 1,
+                                !self.options.show_hidden,
+                                self.options.only_folders,
+                                &self.options.pattern,
+                                &self.blines[bline_idx].ignore_filter,
+                            );
+                            match bl {
+                                BLineResult::Some(bl) => {
+                                    if bl.has_match {
+                                        // direct match
+                                        self.blines[bline_idx].has_match = true;
+                                        has_child_match = true;
+                                    }
+                                    childs.push(self.store(bl));
                                 }
-                                childs.push(self.store(bl));
-                            }
-                            BLineResult::GitIgnored => {
-                                self.nb_gitignored += 1;
-                            }
-                            _ => {
-                                // other reason, we don't care
+                                BLineResult::GitIgnored => {
+                                    self.nb_gitignored += 1;
+                                }
+                                _ => {
+                                    // other reason, we don't care
+                                }
                             }
                         }
                     }
