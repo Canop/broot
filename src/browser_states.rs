@@ -30,8 +30,8 @@ impl BrowserState {
     pub fn new(path: PathBuf, mut options: TreeOptions, tl: &TaskLifetime) -> Option<BrowserState> {
         let pending_pattern = options.pattern;
         options.pattern = None;
-        let builder = TreeBuilder::from(path, options);
-        match builder.build(screens::max_tree_height() as usize, tl) {
+        let builder = TreeBuilder::from(path, options, screens::max_tree_height() as usize);
+        match builder.build(tl) {
             Some(tree) => Some(BrowserState {
                 tree,
                 filtered_tree: None,
@@ -154,7 +154,7 @@ impl AppState for BrowserState {
             options.pattern = Some(pat.clone());
             let root = self.tree.root().clone();
             let len = self.tree.lines.len() as u16;
-            let mut filtered_tree = TreeBuilder::from(root, options).build(len as usize, tl);
+            let mut filtered_tree = TreeBuilder::from(root, options, len as usize).build(tl);
             if let Some(ref mut filtered_tree) = filtered_tree {
                 info!("Tree search took {:?}", start.elapsed());
                 filtered_tree.try_select_best_match();
@@ -219,7 +219,6 @@ impl AppState for BrowserState {
             None => &self.tree,
         };
         let total_char_size = 9;
-        debug!("respect_git_ignore: {:?}", tree.options.respect_git_ignore);
         write!(
             screen.stdout,
             "{}{}{}{} h:{}  gi:{}{}{}",

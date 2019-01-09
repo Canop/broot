@@ -1,4 +1,5 @@
-use std::collections::VecDeque;
+use std::collections::{VecDeque, BinaryHeap};
+use std::cmp::{self, Ordering};
 use std::fs::{self, Metadata};
 use std::ffi::OsString;
 use std::os::unix::fs::MetadataExt;
@@ -10,6 +11,7 @@ use crate::git_ignore::GitIgnoreFilter;
 use crate::patterns::Pattern;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::{OptionBool, TreeOptions};
+
 
 // like a tree line, but with the info needed during the build
 // This structure isn't usable independantly from the tree builder
@@ -26,6 +28,7 @@ struct BLine {
     has_match: bool,
     score: i32,
     ignore_filter: Option<GitIgnoreFilter>,
+    nb_kept_childs: i32, // used during the trimming step
 }
 
 // the result of trying to build a bline
@@ -68,6 +71,7 @@ impl BLine {
             has_match: true,
             score: 0,
             ignore_filter,
+            nb_kept_childs: 0,
         }
     }
     // return a bline if the path directly matches the conditions
@@ -145,13 +149,8 @@ impl BLine {
             has_match,
             score,
             ignore_filter,
+            nb_kept_childs: 0,
         })
-    }
-    fn is_file(&self) -> bool {
-        match &self.line_type {
-            LineType::File => true,
-            _ => false,
-        }
     }
     fn to_tree_line(&self) -> TreeLine {
         let mut mode = 0;
@@ -179,18 +178,50 @@ impl BLine {
     }
 }
 
+// a structure making it possible to keep bline references
+//  sorted in a binary tree with the line with the smallest
+//  score at the top
+struct SortableBLineIdx {
+    idx: usize,
+    score: i32,
+}
+impl Eq for SortableBLineIdx {}
+impl PartialEq for SortableBLineIdx {
+    fn eq(&self, other: &SortableBLineIdx) -> bool {
+        self.idx==other.idx
+    }
+}
+impl Ord for SortableBLineIdx {
+    fn cmp(&self, other: &SortableBLineIdx) -> Ordering {
+        if self.score == other.score {
+            Ordering::Equal
+        } else if self.score < other.score {
+            Ordering::Greater
+        } else {
+            Ordering::Less
+        }
+    }
+}
+impl PartialOrd for SortableBLineIdx {
+    fn partial_cmp(&self, other: &SortableBLineIdx) -> Option<cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
 pub struct TreeBuilder {
     blines: Vec<BLine>, // all blines, even the ones not yet "seen" by BFS
     options: TreeOptions,
+    targeted_size: usize, // the number of lines we should fill (height of the screen)
     nb_gitignored: u32, // number of times a gitignore pattern excluded a file
 }
 impl TreeBuilder {
-    pub fn from(path: PathBuf, options: TreeOptions) -> TreeBuilder {
+    pub fn from(path: PathBuf, options: TreeOptions, targeted_size: usize) -> TreeBuilder {
         let mut blines = Vec::new();
         blines.push(BLine::from_root(path, options.respect_git_ignore));
         TreeBuilder {
             blines,
             options,
+            targeted_size,
             nb_gitignored: 0,
         }
     }
@@ -248,11 +279,11 @@ impl TreeBuilder {
                 });
                 self.blines[bline_idx].childs.append(&mut childs);
             }
-            Err(err) => {
-                debug!(
-                    "Error while listing {:?} : {:?}",
-                    self.blines[bline_idx].path, err
-                );
+            Err(_err) => {
+                //debug!(
+                //    "Error while listing {:?} : {:?}",
+                //    self.blines[bline_idx].path, err
+                //);
                 self.blines[bline_idx].has_error = true;
             }
         }
@@ -273,13 +304,15 @@ impl TreeBuilder {
             false => Option::None,
         }
     }
-    // build can be called only once per builder
-    pub fn build(mut self, nb_lines_max: usize, task_lifetime: &TaskLifetime) -> Option<Tree> {
+
+    // first step of the build: we explore the directories and gather lines.
+    // If there's no pattern we stop when we have enough lines to fill the screen.
+    // If there's a pattern, we try to gather more lines that will be sorted afterwards.
+    fn gather_lines(&mut self, task_lifetime: &TaskLifetime) -> Option<Vec<usize>> {
         let start = Instant::now();
-        let not_long = Duration::from_millis(300);
-        let mut out_blines: Vec<usize> = Vec::new(); // the blines we want to display
+        let mut out_blines: Vec<usize> = Vec::new(); // the blines we want to display (indexes into blines)
+        let not_long = Duration::from_millis(400);
         out_blines.push(0);
-        debug!("start building with pattern {:?}", self.options.pattern);
         let mut nb_lines_ok = 1; // in out_blines
         let mut open_dirs: VecDeque<usize> = VecDeque::new();
         let mut next_level_dirs: Vec<usize> = Vec::new();
@@ -287,10 +320,10 @@ impl TreeBuilder {
         open_dirs.push_back(0);
         loop {
             if self.options.pattern.is_some() {
-                if (nb_lines_ok > 20 * nb_lines_max)
-                    || (nb_lines_ok >= nb_lines_max && start.elapsed() > not_long)
+                if (nb_lines_ok > 20 * self.targeted_size)
+                    || (nb_lines_ok >= self.targeted_size && start.elapsed() > not_long)
                 {
-                    //debug!("break {} {}", nb_lines_ok, 10 * nb_lines_max);
+                    //debug!("break {} {}", nb_lines_ok, 10 * self.targeted_size);
                     break;
                 }
                 if task_lifetime.is_expired() {
@@ -298,7 +331,7 @@ impl TreeBuilder {
                     return None;
                 }
             } else {
-                if nb_lines_ok >= nb_lines_max {
+                if nb_lines_ok >= self.targeted_size {
                     break;
                 }
             }
@@ -342,62 +375,67 @@ impl TreeBuilder {
                 next_level_dirs.clear();
             }
         }
-
         if self.options.show_sizes {
             // if the root directory isn't totally read, we finished it even
             // it it goes past the bottom of the screen
             while let Some(child_idx) = self.next_child(0) {
-                let child = &self.blines[child_idx];
-                if child.has_match {
-                    nb_lines_ok += 1;
-                }
                 out_blines.push(child_idx);
             }
-        } else if self.options.pattern.is_some() {
-            // At this point we usually have more lines than really needed.
-            // We'll select the best ones
-            // To start with, we get a better count of what we have:
-            let mut count = 0;
-            for idx in out_blines.iter() {
-                if self.blines[*idx].has_match {
-                    //debug!(" {} {:?}", self.blines[*idx].score, self.blines[*idx].path);
-                    count += 1;
-                }
-            }
-            while count > nb_lines_max {
-                // we'll try to remove the least interesting line
-                let mut worst_index: usize = 0;
-                let mut depth: u16 = 0;
-                for i in 1..out_blines.len() {
-                    let out_index = out_blines[i];
-                    let bline = &self.blines[out_index];
-                    if bline.has_match && bline.depth > depth {
-                        depth = bline.depth;
-                    }
-                }
-                let mut score: i32 = std::i32::MAX;
-                for i in 1..out_blines.len() {
-                    let out_index = out_blines[i];
-                    let bline = &self.blines[out_index];
-                    if !bline.has_match {
-                        continue;
-                    }
-                    if (bline.depth == depth || bline.is_file()) && bline.score < score {
-                        score = bline.score;
-                        worst_index = out_index;
-                    }
-                }
-                if worst_index > 0 {
-                    // we set the has_match to 0 so the line won't be kept
-                    //debug!("removing {} {:?}", self.blines[worst_index].score, self.blines[worst_index].path);
-                    self.blines[worst_index].has_match = false;
-                    count -= 1;
-                } else {
-                    break;
-                }
+        }
+        Some(out_blines)
+    }
+
+    // Post search trimming
+    // When there's a pattern, gathering normally brings many more lines than
+    //  strictly necessary to fill the screen.
+    // This function keeps only the best ones while taking care of not
+    //  removing a parent before its childs.
+    fn trim_excess(&mut self, out_blines: &[usize]) {
+        let trimming_start = Instant::now();
+        let mut count = 1;
+        // To start with, we get a better count of what we have:
+        for idx in out_blines[1..].iter() {
+            if self.blines[*idx].has_match {
+                count += 1;
+                let parent_idx = self.blines[*idx].parent_idx;
+                self.blines[parent_idx].nb_kept_childs += 1;
             }
         }
+        let mut remove_queue: BinaryHeap<SortableBLineIdx> = BinaryHeap::new();
+        for idx in out_blines[1..].iter() {
+            let bline = &self.blines[*idx];
+            if bline.has_match && bline.nb_kept_childs == 0 {
+                remove_queue.push(SortableBLineIdx{
+                    idx: *idx,
+                    score: bline.score,
+                });
+            }
+        }
+        debug!("we have {} lines for a goal of {}", count, self.targeted_size);
+        while count > self.targeted_size {
+            if let Some(sli) = remove_queue.pop() {
+                //debug!("removing {:?} with a score of {}", &self.blines[sli.idx].path, self.blines[sli.idx].score);
+                self.blines[sli.idx].has_match = false;
+                let parent_idx = self.blines[sli.idx].parent_idx;
+                let mut parent = &mut self.blines[parent_idx];
+                parent.nb_kept_childs -= 1;
+                if parent.nb_kept_childs == 0 {
+                    remove_queue.push(SortableBLineIdx{
+                        idx: parent_idx,
+                        score: parent.score,
+                    });
+                }
+                count -= 1;
+            } else {
+                debug!("trimming prematurely interrupted");
+                break;
+            }
+        }
+        debug!("trimming took {:?}", trimming_start.elapsed());
+    }
 
+    // makes a tree from the builder's specific structure
+    fn into_tree(&mut self, out_blines: &[usize]) -> Tree {
         let mut lines: Vec<TreeLine> = Vec::new();
         for idx in out_blines.iter() {
             if self.blines[*idx].has_match {
@@ -407,14 +445,10 @@ impl TreeBuilder {
                         self.load_childs(*idx);
                     }
                 }
-                if !self.options.show_sizes && lines.len() >= nb_lines_max {
-                    break; // we can have a little too many lines due to ancestor additions
-                }
                 lines.push(self.blines[*idx].to_tree_line());
             }
         }
 
-        debug!("nb gitignored files: {}", self.nb_gitignored);
         let mut tree = Tree {
             lines: lines.into_boxed_slice(),
             selection: 0,
@@ -427,12 +461,18 @@ impl TreeBuilder {
         if self.options.show_sizes {
             tree.fetch_file_sizes();
         }
-        debug!(
-            "new tree: {} lines, nb_lines_max={}",
-            tree.lines.len(),
-            nb_lines_max
-        );
+        tree
+    }
 
-        Some(tree)
+    // build a tree. Can be called only once per builder
+    pub fn build(mut self, task_lifetime: &TaskLifetime) -> Option<Tree> {
+        debug!("start building with pattern {:?}", self.options.pattern);
+        match self.gather_lines(task_lifetime) {
+            Some(out_blines) => {
+                self.trim_excess(&out_blines);
+                Some(self.into_tree(&out_blines))
+            }
+            None => None, // interrupted
+        }
     }
 }
