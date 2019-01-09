@@ -45,9 +45,11 @@ use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
 use crate::verbs::VerbStore;
 
+const VERSION: &'static str = "0.4.3";
+
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
-        .version("0.4.3")
+        .version(VERSION)
         .author("dystroy <denys.seguret@gmail.com>")
         .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
         .arg(clap::Arg::with_name("root").help("sets the root directory"))
@@ -109,7 +111,7 @@ fn configure_log() {
             File::create("dev.log").expect("Log file can't be created"),
         )
         .expect("log initialization failed");
-        info!("Starting B-Root with log level {}", level);
+        info!("Starting B-Root v{} with log level {}", VERSION, level);
     }
 }
 
