@@ -1,5 +1,5 @@
 //! in the flat_tree structure, every "node" is just a line, there's
-//!  no link from a child to its parent or from a parent to its childs.
+//!  no link from a child to its parent or from a parent to its children.
 
 use std::cmp::{self, Ordering};
 use std::path::PathBuf;
@@ -24,7 +24,7 @@ pub struct TreeLine {
     pub path: PathBuf,
     pub line_type: LineType,
     pub has_error: bool,
-    pub unlisted: usize, // number of not listed childs (Dir) or brothers (Pruning)
+    pub unlisted: usize, // number of not listed children (Dir) or brothers (Pruning)
     pub score: i32,      // 0 if there's no pattern
     pub size: Option<Size>, // None when not measured
     pub mode: u32,       // unix file mode
@@ -128,7 +128,7 @@ impl Tree {
             }
         }
         // then we discover the branches (for the drawing)
-        // and we mark the last childs as pruning, if they have unlisted brothers
+        // and we mark the last children as pruning, if they have unlisted brothers
         let mut last_parent_index: usize = self.lines.len() + 1;
         for end_index in (1..self.lines.len()).rev() {
             let depth = (self.lines[end_index].depth - 1) as usize;

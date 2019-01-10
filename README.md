@@ -1,8 +1,11 @@
 # Broot (pronounce "b-root")
 
+[![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-en.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
 
 An interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands.
+
+[Documentation](documentation.md)
 
 ### Get an overview of a directory, even a big one:
 
@@ -10,11 +13,16 @@ An interactive tree view, a fuzzy search, a balanced BFS descent and customizabl
 
 Notice the "unlisted" ? That's what makes it usable where the old `tree` command would produce pages of output.
 
+.gitignore files are properly dealt with to put unwanted files out of your way (you can ignore them, though, see documentation).
+
 ### Find a directory then `cd` to it:
 
 ![cd](doc/20181218-cd.png)
 
 You can this way navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
+
+broot is fast and never blocks, even when you make it search a big slow disk (any keystroke interrupts the current search to start the following one).
+
 
 Most useful keys for this:
 
@@ -28,7 +36,7 @@ Most useful keys for this:
 
 ![size](doc/20181215-only-folders-with-size.png)
 
-To toggle size display, you usually hit `:s`.
+To toggle size display, you usually hit `:s`. Sizes are computed in the background, you don't have to wait for them when you navigate.
 
 ### Never lose track of file hierarchy while you fuzzy search:
 
@@ -40,33 +48,25 @@ broot tries to select the most relevant file. You can still go from one match to
 
 ![size](doc/20181215-edit.png)
 
-broot is fast and never blocks, even when you make it search a big slow disk (any keystroke interrupts the current search to start the following one).
+Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your prefered editor, see [documentation](documentation.md#verbs)).
 
-## Usage
+## Installation
 
-### General Usage
+### From Source
 
-Launch it (see `broot --help` for launch options).
+You'll need to have the Rust development environment installed.
 
-Type a few letters to fuzzy search files or directories.
+Fetch the Canop/broot repository, move to the broot directory, then run
 
-Enter brings you to a directory or opens a file.
+    cargo build --release
 
-A command starts with a space or `:` (as you like) and is usually only one letter (for example `:s` to toggle sizes, `:q` to quit, `:p` to go up the tree, etc.).
+The executable is written in the `target/release` directory.
 
-Type `?` to see the list of commands and the path to their configuration.
+### From up to date precompiled binaries
 
-At any time the `esc` key brings you to the previous state.
+* [x86_64-linux](https://dystroy.org/broot/x86_64-linux/broot)
 
-### Use broot to see directory sizes
-
-You can either start broot normally then type `:s` which toggles size display, or start broot with
-
-    broot --sizes
-
-You might prefer to hide non directory files while looking at sizes. Use `:f` to show only folders.
-
-### Use broot for navigation
+## Configure broot for navigation
 
 broot is convenient to find a directory then `cd` to it. The `c` command of the default configuration is here for this purpose.
 
@@ -102,38 +102,6 @@ But broot needs a companion function in the shell in order to be able to change 
 
 With this addition, you can do just `br` to lauch broot, and typing `:c` then *enter* will cd for you. You can search and change directory in one command: `mylosthing:c`.
 
-You can still use broot normally, you won't change directory if you don't hit `:c`.
-
-## Flags
-
-Flags are displayed at the bottom right, showing the settings regarding hidden files and .gitignore rules.
-
-![flags](doc/20190101-flags.png)
-
-### Git Repositories
-
-.gitignore files are parsed and used depending on the current "gitignore" setting:
-
-* when "no", .gitignore files are ignored
-* when "yes", each directory is filtered according to the applied gitignore files (several git repositories may be simultaneously shown)
-* when "auto" (default value), gitignore rules are ignored unless the root directory is a git repository or inside one
-
-## Installation
-
-### From Source
-
-You'll need to have the Rust development environment installed.
-
-Fetch the Canop/broot repository, move to the broot directory, then run
-
-    cargo build --release
-
-The executable is written in the `target/release` directory.
-
-
-### From up to date precompiled binaries
-
-* [x86_64-linux](https://dystroy.org/broot/x86_64-linux/broot)
 
 ## Development
 
@@ -143,4 +111,10 @@ For example:
 
     BROOT_LOG=debug cargo run
 
-If you want to discuss the code or features of broot, please come to [our chat](https://miaou.dystroy.org/3?Code_et_Croissants). If you'd like a new feature, don't hesitate to ask for it.
+or
+
+    BROOT_LOG=info cargo run
+
+If you want to discuss the code or features of broot, please come to [our chat](https://miaou.dystroy.org/3?Code_et_Croissants). Before to start coding for a PR, it would really be a good idea to come and speak about it.
+
+If you'd like a new feature, don't hesitate to ask for it.

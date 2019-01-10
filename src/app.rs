@@ -2,12 +2,11 @@
 /// Commands parsed from the input are submitted to the current
 /// appstate, which replies with a stateCmdResult which may
 /// be
-/// - a transition to a new statei
+/// - a transition to a new state
 /// - a pop to get back to the previous one
 /// - an operation which keeps the state
 /// - a request to quit broot
 /// - a request to launch an executable (thus leaving broot)
-
 use std::io::{self, stdin, Write};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc};
@@ -148,7 +147,7 @@ impl App {
                 }
             };
             cmd.add_key(c?);
-            info!("{:?}", &cmd.action);
+            debug!("{:?}", &cmd.action);
             screen.write_input(&cmd)?;
             self.state().write_flags(&mut screen, con)?;
             let mut quit = false;
