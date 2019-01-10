@@ -32,6 +32,7 @@ pub trait VerbExecutor {
 impl VerbExecutor for HelpState {
     fn execute_verb(&self, verb: &Verb, _con: &AppContext) -> io::Result<AppStateCmdResult> {
         Ok(match verb.exec_pattern.as_ref() {
+            ":open" => AppStateCmdResult::Launch(Launchable::opener(&Conf::default_location())?),
             ":quit" => AppStateCmdResult::Quit,
             _ => AppStateCmdResult::Keep,
         })
