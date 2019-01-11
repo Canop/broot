@@ -1,14 +1,12 @@
 use std::cmp::{self, Ordering};
 use std::collections::{BinaryHeap, VecDeque};
-use std::ffi::OsString;
-use std::fs::{self, Metadata};
+use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
 
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::git_ignore::GitIgnoreFilter;
-use crate::patterns::Pattern;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::{OptionBool, TreeOptions};
 
@@ -19,8 +17,8 @@ struct BLine {
     path: PathBuf,
     depth: u16,
     name: String,
-    children_loaded: bool,   // true when load_children has been called already
-    children: Vec<usize>,    // sorted and filtered (indexes of the children in tree.blines)
+    children_loaded: bool, // true when load_children has been called already
+    children: Vec<usize>,  // sorted and filtered (indexes of the children in tree.blines)
     next_child_idx: usize, // index for iteration, among the children
     line_type: LineType,
     has_error: bool,
@@ -37,6 +35,7 @@ enum BLineResult {
     FilteredOutByPattern,
     FilteredOutAsNonFolder,
     GitIgnored,
+    Invalid,
 }
 
 impl BLine {
@@ -51,7 +50,7 @@ impl BLine {
         } else {
             let gif = GitIgnoreFilter::applicable_to(&path);
             // if auto, we don't look for other gif if we're not in a git dir
-            if respect_ignore == OptionBool::Auto && gif.files.len() == 0 {
+            if respect_ignore == OptionBool::Auto && gif.files.is_empty() {
                 None
             } else {
                 Some(gif)
@@ -73,35 +72,41 @@ impl BLine {
             nb_kept_children: 0,
         }
     }
-    // return a bline if the path directly matches the conditions
-    // (pattern, no_hidden, only_folders)
+    // return a bline if the direntry directly matches the options and there's no error
     fn from(
         parent_idx: usize,
-        metadata: Metadata,
-        name: OsString,
-        path: PathBuf,
+        e: fs::DirEntry,
         depth: u16,
-        no_hidden: bool,
-        only_folders: bool,
-        pattern: &Option<Pattern>,
+        options: &TreeOptions,
         parent_ignore_filter: &Option<GitIgnoreFilter>,
     ) -> BLineResult {
-        let mut has_match = true;
-        let mut score = 0;
-        let name = name.to_string_lossy();
-        if no_hidden && name.starts_with('.') {
+        let name = e.file_name();
+        let name = match name.to_str() {
+            Some(name) => name,
+            None => {
+                return BLineResult::Invalid;
+            }
+        };
+        if !options.show_hidden && name.starts_with('.') {
             return BLineResult::FilteredOutAsHidden;
         }
-        if let Some(pattern) = pattern {
+        let mut has_match = true;
+        let mut score = 0;
+        if let Some(pattern) = &options.pattern {
             if let Some(m) = pattern.test(&name) {
                 score = m.score;
             } else {
                 has_match = false;
             }
         }
+        let ft = match e.file_type() {
+            Ok(ft) => ft,
+            Err(_) => {
+                return BLineResult::Invalid;
+            }
+        };
         let mut is_dir = false;
         let line_type = {
-            let ft = metadata.file_type();
             if ft.is_dir() {
                 is_dir = true;
                 LineType::Dir
@@ -109,10 +114,10 @@ impl BLine {
                 if !has_match {
                     return BLineResult::FilteredOutByPattern;
                 }
-                if only_folders {
+                if options.only_folders {
                     return BLineResult::FilteredOutAsNonFolder;
                 }
-                LineType::SymLink(match fs::read_link(&path) {
+                LineType::SymLink(match fs::read_link(&e.path()) {
                     Ok(target) => target.to_string_lossy().into_owned(),
                     Err(_) => String::from("???"),
                 })
@@ -120,12 +125,13 @@ impl BLine {
                 if !has_match {
                     return BLineResult::FilteredOutByPattern;
                 }
-                if only_folders {
+                if options.only_folders {
                     return BLineResult::FilteredOutAsNonFolder;
                 }
                 LineType::File
             }
         };
+        let path = e.path();
         let mut ignore_filter = None;
         if let Some(gif) = parent_ignore_filter {
             if !gif.accepts(&path, &name, is_dir) {
@@ -244,33 +250,27 @@ impl TreeBuilder {
                 let mut children: Vec<usize> = Vec::new();
                 for e in entries {
                     if let Ok(e) = e {
-                        if let Ok(metadata) = e.metadata() {
-                            let bl = BLine::from(
-                                bline_idx,
-                                metadata,
-                                e.file_name(),
-                                e.path(),
-                                self.blines[bline_idx].depth + 1,
-                                !self.options.show_hidden,
-                                self.options.only_folders,
-                                &self.options.pattern,
-                                &self.blines[bline_idx].ignore_filter,
-                            );
-                            match bl {
-                                BLineResult::Some(bl) => {
-                                    if bl.has_match {
-                                        // direct match
-                                        self.blines[bline_idx].has_match = true;
-                                        has_child_match = true;
-                                    }
-                                    children.push(self.store(bl));
+                        let bl = BLine::from(
+                            bline_idx,
+                            e,
+                            self.blines[bline_idx].depth + 1,
+                            &self.options,
+                            &self.blines[bline_idx].ignore_filter,
+                        );
+                        match bl {
+                            BLineResult::Some(bl) => {
+                                if bl.has_match {
+                                    // direct match
+                                    self.blines[bline_idx].has_match = true;
+                                    has_child_match = true;
                                 }
-                                BLineResult::GitIgnored => {
-                                    self.nb_gitignored += 1;
-                                }
-                                _ => {
-                                    // other reason, we don't care
-                                }
+                                children.push(self.store(bl));
+                            }
+                            BLineResult::GitIgnored => {
+                                self.nb_gitignored += 1;
+                            }
+                            _ => {
+                                // other reason, we don't care
                             }
                         }
                     }
@@ -324,7 +324,8 @@ impl TreeBuilder {
         open_dirs.push_back(0);
         loop {
             if self.options.pattern.is_some() {
-                if (nb_lines_ok > 20 * self.targeted_size)
+                if
+                    (nb_lines_ok > 20 * self.targeted_size)
                     || (nb_lines_ok >= self.targeted_size && start.elapsed() > not_long)
                 {
                     //debug!("break {} {}", nb_lines_ok, 10 * self.targeted_size);
@@ -334,10 +335,8 @@ impl TreeBuilder {
                     info!("task expired (core build)");
                     return None;
                 }
-            } else {
-                if nb_lines_ok >= self.targeted_size {
-                    break;
-                }
+            } else if nb_lines_ok >= self.targeted_size {
+                break;
             }
             if let Some(open_dir_idx) = open_dirs.pop_front() {
                 if let Some(child_idx) = self.next_child(open_dir_idx) {
@@ -396,7 +395,6 @@ impl TreeBuilder {
     //  removing a parent before its children.
     fn trim_excess(&mut self, out_blines: &[usize]) {
         let mut count = 1;
-        // To start with, we get a better count of what we have:
         for idx in out_blines[1..].iter() {
             if self.blines[*idx].has_match {
                 count += 1;
@@ -410,7 +408,7 @@ impl TreeBuilder {
             if
                 bline.has_match
                 && bline.nb_kept_children == 0
-                && (bline.depth>1 || !self.options.show_sizes) // we keep the complete first level when showing sizes
+                && (bline.depth > 1 || !self.options.show_sizes) // we keep the complete first level when showing sizes
             {
                 remove_queue.push(SortableBLineIdx {
                     idx: *idx,
@@ -468,7 +466,7 @@ impl TreeBuilder {
         tree.after_lines_changed();
 
         if self.options.show_sizes {
-            tree.fetch_file_sizes();
+            tree.fetch_file_sizes(); // not the dirs, only simple files
         }
         tree
     }

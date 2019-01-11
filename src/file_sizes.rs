@@ -46,12 +46,10 @@ impl Size {
                         if let Ok(md) = e.metadata() {
                             if md.is_dir() {
                                 dirs.push(e.path());
-                            } else if md.nlink() > 1 {
-                                if !inodes.insert(md.ino()) {
-                                    // it was already in the set
-                                    nb_duplicate_inodes += 1;
-                                    continue; // let's not add the size
-                                }
+                            } else if md.nlink() > 1 && !inodes.insert(md.ino()) {
+                                // it was already in the set
+                                nb_duplicate_inodes += 1;
+                                continue; // let's not add the size
                             }
                             s += Size::from(md.len());
                         }
@@ -84,7 +82,7 @@ impl Size {
         }
         format!("{}{}", v, &SIZE_NAMES[i])
     }
-    pub fn discreet_ratio(&self, max: Size, r: u64) -> u64 {
+    pub fn discreet_ratio(self, max: Size, r: u64) -> u64 {
         if max.0 == 0 || self.0 == 0 {
             0
         } else {
