@@ -179,37 +179,36 @@ impl AppState for BrowserState {
     }
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
-        match &cmd.action {
-            Action::PatternEdit(_) => {
-                screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
-            }
-            Action::VerbEdit(verb_key) => match con.verb_store.get(&verb_key) {
-                Some(verb) => screen.write_status_text(
+        if let Some(verb_key) = &cmd.parts.verb {
+            if let Some(verb) = con.verb_store.get(&verb_key) {
+                screen.write_status_text(
                     &format!(
                         "Hit <enter> to {} : {}",
                         &verb.name,
                         verb.description_for(&self)
                     )
                     .to_string(),
-                ),
-                None => screen.write_status_text(
+                )
+            } else {
+                screen.write_status_text(
                     // TODO show what verbs start with the currently edited verb key
                     "Type a verb then <enter> to execute it (hit '?' for the list of verbs)",
-                ),
-            },
-            _ => {
-                let tree = self.displayed_tree();
-                if tree.selection == 0 {
-                    screen.write_status_text(
-                        "Hit <enter> to quit, '?' for help, or type a few file's letters to navigate",
-                    )
-                } else {
-                    let line = &tree.lines[tree.selection];
-                    screen.write_status_text(match line.is_dir() {
-                        true => "Hit <enter> to focus, or type a space then a verb",
-                        false => "Hit <enter> to open the file, or type a space then a verb",
-                    })
-                }
+                )
+            }
+        } else if let Some(_) = &cmd.parts.pattern {
+            screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
+        } else {
+            let tree = self.displayed_tree();
+            if tree.selection == 0 {
+                screen.write_status_text(
+                    "Hit <enter> to quit, '?' for help, or type a few file's letters to navigate",
+                )
+            } else {
+                let line = &tree.lines[tree.selection];
+                screen.write_status_text(match line.is_dir() {
+                    true => "Hit <enter> to focus, or type a space then a verb",
+                    false => "Hit <enter> to open the file, or type a space then a verb",
+                })
             }
         }
     }

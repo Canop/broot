@@ -5,40 +5,17 @@ use termion::event::Key;
 ///  in the input. It's independant of the state of the application
 ///  (verbs arent checked at this point)
 
-struct CommandParts {
-    pattern: Option<String>,
-    verb: Option<String>,
+#[derive(Debug)]
+pub struct Command {
+    pub raw: String,         // what's visible in the input
+    pub parts: CommandParts, // the parsed parts of the visible input
+    pub action: Action,      // what's required, based on the last key (which may be not visible, like esc)
 }
 
-impl CommandParts {
-    fn from(raw: &str) -> CommandParts {
-        let mut cp = CommandParts {
-            pattern: None,
-            verb: None,
-        };
-        lazy_static! {
-            static ref RE: Regex = Regex::new(
-                r"(?x)
-                ^
-                (?P<pattern>[^\s/:]*)
-                (?:[\s:]+(?P<verb>\S*))?
-                $
-                "
-            )
-            .unwrap();
-        }
-        if let Some(c) = RE.captures(raw) {
-            if let Some(pattern) = c.name("pattern") {
-                cp.pattern = Some(String::from(pattern.as_str()));
-            }
-            if let Some(verb) = c.name("verb") {
-                cp.verb = Some(String::from(verb.as_str()));
-            }
-        } else {
-            warn!("unexpected lack of capture");
-        }
-        cp
-    }
+#[derive(Debug, Clone)]
+pub struct CommandParts {
+    pub pattern: Option<String>,
+    pub verb: Option<String>, // may be Some("") if the user already typed the separator
 }
 
 #[derive(Debug)]
@@ -55,36 +32,62 @@ pub enum Action {
     Unparsed, // or unparsable
 }
 
+impl CommandParts {
+    fn new() -> CommandParts {
+        CommandParts {
+            pattern: None,
+            verb: None,
+        }
+    }
+    fn from(raw: &str) -> CommandParts {
+        let mut cp = CommandParts::new();
+        lazy_static! {
+            static ref RE: Regex = Regex::new(
+                r"(?x)
+                ^
+                (?P<pattern>[^\s/:]+)?
+                (?:[\s:]+(?P<verb>\S*))?
+                $
+                "
+            )
+            .unwrap();
+        }
+        if let Some(c) = RE.captures(raw) {
+            if let Some(pattern) = c.name("pattern") {
+                cp.pattern = Some(String::from(pattern.as_str()));
+            }
+            if let Some(verb) = c.name("verb") {
+                cp.verb = Some(String::from(verb.as_str()));
+            }
+        }
+        cp
+    }
+}
+
 impl Action {
-    pub fn from(raw: &str, finished: bool) -> Action {
-        let cp = CommandParts::from(raw);
-        if let Some(verb) = cp.verb {
+    pub fn from(cp: &CommandParts, finished: bool) -> Action {
+        if let Some(verb) = &cp.verb {
             return match finished {
                 false => Action::VerbEdit(String::from(verb.as_str())),
                 true => Action::Verb(String::from(verb.as_str())),
             };
         }
-        if let Some(pattern) = cp.pattern {
+        if finished {
+            return Action::OpenSelection;
+        }
+        if let Some(pattern) = &cp.pattern {
             let pattern = pattern.as_str();
-            return match finished {
-                false => Action::PatternEdit(String::from(pattern)),
-                true => Action::OpenSelection,
-            };
+            return Action::PatternEdit(String::from(pattern));
         }
         Action::Unparsed
     }
-}
-
-#[derive(Debug)]
-pub struct Command {
-    pub raw: String,
-    pub action: Action,
 }
 
 impl Command {
     pub fn new() -> Command {
         Command {
             raw: String::new(),
+            parts: CommandParts::new(),
             action: Action::Unparsed,
         }
     }
@@ -93,10 +96,9 @@ impl Command {
     //  which would be cleaner)
     pub fn pop_verb(&self) -> Command {
         let mut c = Command::new();
-        let cp = CommandParts::from(&self.raw);
-        if cp.verb.is_some() {
-            if let Some(pat) = cp.pattern {
-                c.raw = pat;
+        if self.parts.verb.is_some() {
+            if let Some(pat) = &self.parts.pattern {
+                c.raw = pat.to_owned();
             }
         }
         c
@@ -111,7 +113,7 @@ impl Command {
                 self.action = Action::Help(self.raw.to_owned());
             }
             Key::Char('\n') => {
-                self.action = Action::from(&self.raw, true);
+                self.action = Action::from(&self.parts, true);
             }
             Key::Up => {
                 self.action = Action::MoveSelection(-1);
@@ -127,7 +129,8 @@ impl Command {
             }
             Key::Char(c) => {
                 self.raw.push(c);
-                self.action = Action::from(&self.raw, false);
+                self.parts = CommandParts::from(&self.raw);
+                self.action = Action::from(&self.parts, false);
             }
             Key::Esc => {
                 self.action = Action::Back;
@@ -137,7 +140,8 @@ impl Command {
                     self.action = Action::Back;
                 } else {
                     self.raw.pop();
-                    self.action = Action::from(&self.raw, false);
+                    self.parts = CommandParts::from(&self.raw);
+                    self.action = Action::from(&self.parts, false);
                 }
             }
             _ => {}
