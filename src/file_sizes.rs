@@ -44,9 +44,8 @@ impl Size {
                 for e in entries {
                     if let Ok(e) = e {
                         if let Ok(md) = e.metadata() {
-                            let p = e.path();
                             if md.is_dir() {
-                                dirs.push(p);
+                                dirs.push(e.path());
                             } else if md.nlink() > 1 {
                                 if !inodes.insert(md.ino()) {
                                     // it was already in the set

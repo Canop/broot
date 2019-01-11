@@ -407,7 +407,11 @@ impl TreeBuilder {
         let mut remove_queue: BinaryHeap<SortableBLineIdx> = BinaryHeap::new();
         for idx in out_blines[1..].iter() {
             let bline = &self.blines[*idx];
-            if bline.has_match && bline.nb_kept_children == 0 {
+            if
+                bline.has_match
+                && bline.nb_kept_children == 0
+                && (bline.depth>1 || !self.options.show_sizes) // we keep the complete first level when showing sizes
+            {
                 remove_queue.push(SortableBLineIdx {
                     idx: *idx,
                     score: bline.score,

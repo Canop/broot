@@ -115,6 +115,6 @@ or
 
     BROOT_LOG=info cargo run
 
-If you want to discuss the code or features of broot, please come to [our chat](https://miaou.dystroy.org/3?Code_et_Croissants). Before to start coding for a PR, it would really be a good idea to come and speak about it.
+If you want to discuss the code or features of broot, please come to [our chat](https://miaou.dystroy.org/3?Code_et_Croissants). Before to start coding for a PR, it would really be a good idea to come and talk about it.
 
 If you'd like a new feature, don't hesitate to ask for it.
