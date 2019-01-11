@@ -99,6 +99,9 @@ impl Screen {
 impl Drop for Screen {
     fn drop(&mut self) {
         write!(self.stdout, "{}", termion::cursor::Show).unwrap();
+        // if we don't flush now, the standard screen may receive some
+        // unflushed data which was meant for the alternate screen.
+        self.stdout.flush().unwrap();
     }
 }
 
