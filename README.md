@@ -54,13 +54,13 @@ Just find the file you want to edit with a few keystrokes, type `:e`, then `<ent
 
 ### From Source
 
-You'll need to have the Rust development environment installed.
+You'll need to have the Rust development environment installed. Please read [this](https://www.rust-lang.org/tools/install) to install Rust on your environment.
 
 Fetch the Canop/broot repository, move to the broot directory, then run
 
     cargo build --release
 
-The executable is written in the `target/release` directory.
+The executable is written in the `target/release` directory. Addendum: to have it executed from everywhere on your linux, you can add the broot executable's path to your path (`export PATH=$PATH:</path/`) in `.bashrc` (Don't forget to source your bashrc once modified ;) )
 
 ### From up to date precompiled binaries
 
