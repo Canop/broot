@@ -121,10 +121,11 @@ impl App {
         screen
             .write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
         self.state().write_flags(&mut screen, con)?;
+        let mut quit = false;
         loop {
             let tl = TaskLifetime::new(&cmd_count);
             let has_task = self.state().has_pending_tasks();
-            if has_task {
+            if !quit && has_task {
                 loop {
                     self.state().write_status(&mut screen, &cmd, con)?;
                     screen.write_spinner(true)?;
@@ -147,10 +148,9 @@ impl App {
                 }
             };
             cmd.add_key(c?);
-            debug!("{:?}", &cmd.action);
+            debug!("action: {:?}", &cmd.action);
             screen.write_input(&cmd)?;
             self.state().write_flags(&mut screen, con)?;
-            let mut quit = false;
             match self.mut_state().apply(&mut cmd, con)? {
                 AppStateCmdResult::Quit => {
                     debug!("cmd result quit");
