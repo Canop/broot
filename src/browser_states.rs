@@ -99,7 +99,9 @@ impl AppState for BrowserState {
                     Some(tree) => tree,
                     None => &self.tree,
                 };
-                if tree.selected_line().is_dir() {
+                if tree.selection == 0 {
+                    AppStateCmdResult::Quit
+                } else if tree.selected_line().is_dir() {
                     let tl = TaskLifetime::unlimited();
                     AppStateCmdResult::from_optional_state(BrowserState::new(
                         tree.selected_line().path.clone(),
