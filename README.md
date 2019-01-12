@@ -54,7 +54,7 @@ Just find the file you want to edit with a few keystrokes, type `:e`, then `<ent
 
 ### From Source
 
-You'll need to have the Rust development environment installed.
+You'll need to have the Rust development environment installed. Please read this [doc](https://dev.to/jonasbn/til-setting-up-a-rust-development-environment-2f95) to setup a rust environment.
 
 Fetch the Canop/broot repository, move to the broot directory, then run
 
