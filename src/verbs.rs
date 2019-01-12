@@ -1,6 +1,3 @@
-use lazy_static::lazy_static;
-use regex::{Captures, Regex};
-use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
@@ -122,7 +119,7 @@ impl VerbExecutor for BrowserState {
                 } else {
                     // no output path provided. We write on stdout, but we must
                     // do it after app closing to have the normal terminal
-                    let mut launchable = Launchable::from(&path.to_string_lossy())?;
+                    let mut launchable = Launchable::from(vec![path.to_string_lossy().to_string()])?;
                     launchable.just_print = true;
                     AppStateCmdResult::Launch(launchable)
                 }
@@ -141,24 +138,20 @@ impl VerbExecutor for BrowserState {
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
             ":quit" => AppStateCmdResult::Quit,
-            _ => AppStateCmdResult::Launch(Launchable::from(&verb.exec_string(path))?),
+            _ => AppStateCmdResult::Launch(Launchable::from(verb.exec_token(path))?),
         })
     }
 }
 
 impl Verb {
     fn exec_string(&self, path: &Path) -> String {
-        lazy_static! {
-            static ref regex: Regex = Regex::new(r"\{([\w.]+)\}").unwrap();
-        }
-        regex
-            .replace_all(&*self.exec_pattern, |caps: &Captures<'_>| {
-                match caps.get(1).unwrap().as_str() {
-                    "file" => path.to_string_lossy(),
-                    _ => Cow::from("-hu?-"),
-                }
-            })
-            .to_string()
+        self.exec_token(path).join(" ")
+    }
+    fn exec_token(&self, path: &Path) -> Vec<String> {
+        self.exec_pattern
+            .split_whitespace()
+            .map(|t| if t=="{file}" { path.to_string_lossy().to_string() } else { t.to_string() })
+            .collect()
     }
     pub fn description_for(&self, state: &BrowserState) -> String {
         let line = match &state.filtered_tree {

@@ -45,7 +45,7 @@ use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
 use crate::verbs::VerbStore;
 
-const VERSION: &str = "0.4.5";
+const VERSION: &str = "0.4.6";
 
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")

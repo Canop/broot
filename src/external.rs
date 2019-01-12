@@ -13,14 +13,14 @@ pub struct Launchable {
 
 impl Launchable {
     pub fn opener(path: &PathBuf) -> io::Result<Launchable> {
-        Launchable::from(&format!("xdg-open {}", &path.to_string_lossy()))
+        Launchable::from(vec!["xdg-open".to_string(), path.to_string_lossy().to_string()])
     }
-    pub fn from(launch_string: &str) -> io::Result<Launchable> {
-        let mut tokens = launch_string.split_whitespace().map(|t| t.to_string());
-        match tokens.next() {
+    pub fn from(mut parts: Vec<String>) -> io::Result<Launchable> {
+        let mut parts = parts.drain(0..);
+        match parts.next() {
             Some(exe) => Ok(Launchable {
                 exe,
-                args: tokens.collect(),
+                args: parts.collect(),
                 just_print: false,
             }),
             None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
