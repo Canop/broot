@@ -42,7 +42,7 @@ impl VerbExecutor for BrowserState {
             Some(tree) => &tree,
             None => &self.tree,
         };
-        let path = &tree.selected_line().path;
+        let line = &tree.selected_line();
         Ok(match verb.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
             ":focus" => {
@@ -114,18 +114,18 @@ impl VerbExecutor for BrowserState {
                 if let Some(ref output_path) = con.output_path {
                     // an output path was provided, we write to it
                     let f = OpenOptions::new().append(true).open(output_path)?;
-                    writeln!(&f, "{}", path.to_string_lossy())?;
+                    writeln!(&f, "{}", line.target().to_string_lossy())?;
                     AppStateCmdResult::Quit
                 } else {
                     // no output path provided. We write on stdout, but we must
                     // do it after app closing to have the normal terminal
-                    let mut launchable = Launchable::from(vec![path.to_string_lossy().to_string()])?;
+                    let mut launchable = Launchable::from(vec![line.target().to_string_lossy().to_string()])?;
                     launchable.just_print = true;
                     AppStateCmdResult::Launch(launchable)
                 }
             }
-            ":open" => AppStateCmdResult::Launch(Launchable::opener(path)?),
-            ":parent" => match &self.tree.selected_line().path.parent() {
+            ":open" => AppStateCmdResult::Launch(Launchable::opener(&line.target())?),
+            ":parent" => match &line.target().parent() {
                 Some(path) => {
                     let path = path.to_path_buf();
                     let options = self.tree.options.clone();
@@ -138,7 +138,7 @@ impl VerbExecutor for BrowserState {
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
             ":quit" => AppStateCmdResult::Quit,
-            _ => AppStateCmdResult::Launch(Launchable::from(verb.exec_token(path))?),
+            _ => AppStateCmdResult::Launch(Launchable::from(verb.exec_token(&line.target()))?),
         })
     }
 }

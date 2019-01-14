@@ -9,7 +9,7 @@ use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
 use crate::external::Launchable;
-use crate::flat_tree::Tree;
+use crate::flat_tree::{Tree, LineType};
 use crate::help_states::HelpState;
 use crate::patterns::Pattern;
 use crate::screens::{self, Screen};
@@ -101,16 +101,27 @@ impl AppState for BrowserState {
                 };
                 if tree.selection == 0 {
                     AppStateCmdResult::Quit
-                } else if tree.selected_line().is_dir() {
-                    let tl = TaskLifetime::unlimited();
-                    AppStateCmdResult::from_optional_state(BrowserState::new(
-                        tree.selected_line().path.clone(),
-                        // tree.options.clone(),
-                        tree.options.without_pattern(),
-                        &tl,
-                    ))
                 } else {
-                    AppStateCmdResult::Launch(Launchable::opener(&tree.selected_line().path)?)
+                    let line = tree.selected_line();
+                    let tl = TaskLifetime::unlimited();
+                    match &line.line_type {
+                        LineType::File => {
+                            AppStateCmdResult::Launch(Launchable::opener(&line.path)?)
+                        }
+                        LineType::Dir | LineType::SymLinkToDir(_)  => {
+                            AppStateCmdResult::from_optional_state(BrowserState::new(
+                                line.target(),
+                                tree.options.without_pattern(),
+                                &tl,
+                            ))
+                        }
+                        LineType::SymLinkToFile(target) => {
+                            AppStateCmdResult::Launch(Launchable::opener(&PathBuf::from(target))?)
+                        }
+                        _ => {
+                            unreachable!();
+                        }
+                    }
                 }
             }
             Action::Verb(verb_key) => match con.verb_store.get(&verb_key) {

@@ -55,11 +55,11 @@ impl TreeView for Screen {
             }
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
+                write!(self.stdout, "{}", color::Fg(color::AnsiValue::grayscale(5)))?;
                 for depth in 0..line.depth {
                     write!(
                         self.stdout,
-                        "{}{}{}",
-                        color::Fg(color::AnsiValue::grayscale(5)),
+                        "{}",
                         match line.left_branchs[depth as usize] {
                             true => match tree.has_branch(line_index + 1, depth as usize) {
                                 true => match depth == line.depth - 1 {
@@ -70,7 +70,6 @@ impl TreeView for Screen {
                             },
                             false => "   ",
                         },
-                        color::Fg(color::Reset),
                     )?;
                 }
                 if tree.options.show_sizes && line_index > 0 {
@@ -216,6 +215,7 @@ impl TreeView for Screen {
         lazy_static! {
             static ref fg_reset: String = format!("{}", color::Fg(color::White)).to_string();
             static ref fg_dir: String = format!("{}", color::Fg(color::LightBlue)).to_string();
+            static ref fg_err: String = format!("{}", color::Fg(color::Red)).to_string();
             static ref fg_link: String = format!("{}", color::Fg(color::LightMagenta)).to_string();
             static ref fg_match: String = format!("{}", color::Fg(color::Green)).to_string();
             static ref fg_reset_dir: String = format!("{}{}", &*fg_reset, &*fg_dir).to_string();
@@ -253,15 +253,27 @@ impl TreeView for Screen {
                     decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
                 )?;
             }
-            LineType::SymLink(target) => {
+            LineType::SymLinkToFile(target) => {
                 write!(
                     self.stdout,
                     "{}{} {}->{} {}",
                     &*fg_reset,
                     decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
-                    &*fg_link,
+                    if line.has_error { &*fg_err } else { &*fg_link },
                     &*fg_reset,
-                    decorated_name(&target, pattern, &*fg_match, &*fg_reset),
+                    &target,
+                )?;
+            }
+            LineType::SymLinkToDir(target) => {
+                write!(
+                    self.stdout,
+                    "{}{}{} {}->{} {}",
+                    style::Bold,
+                    &*fg_reset_dir,
+                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset_dir),
+                    if line.has_error { &*fg_err } else { &*fg_link },
+                    &*fg_reset_dir,
+                    &target,
                 )?;
             }
             LineType::Pruning => {

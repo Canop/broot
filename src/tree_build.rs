@@ -10,6 +10,7 @@ use crate::git_ignore::GitIgnoreFilter;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::{OptionBool, TreeOptions};
 
+
 // like a tree line, but with the info needed during the build
 // This structure isn't usable independantly from the tree builder
 struct BLine {
@@ -17,10 +18,10 @@ struct BLine {
     path: PathBuf,
     depth: u16,
     name: String,
+    file_type: fs::FileType,
     children_loaded: bool, // true when load_children has been called already
     children: Vec<usize>,  // sorted and filtered (indexes of the children in tree.blines)
     next_child_idx: usize, // index for iteration, among the children
-    line_type: LineType,
     has_error: bool,
     has_match: bool,
     score: i32,
@@ -56,6 +57,9 @@ impl BLine {
                 Some(gif)
             }
         };
+        let file_type = fs::metadata(&path)
+            .unwrap() // TODO handle errors (e.g. dir removed between display and open)
+            .file_type();
         BLine {
             parent_idx: 0,
             path,
@@ -64,8 +68,8 @@ impl BLine {
             children_loaded: false,
             children: Vec::new(),
             next_child_idx: 0,
-            line_type: LineType::Dir, // it should have been checked before
-            has_error: false,         // well... let's hope
+            file_type,
+            has_error: false,
             has_match: true,
             score: 0,
             ignore_filter,
@@ -99,45 +103,34 @@ impl BLine {
                 has_match = false;
             }
         }
-        let ft = match e.file_type() {
+        let file_type = match e.file_type() {
             Ok(ft) => ft,
             Err(_) => {
                 return BLineResult::Invalid;
             }
         };
-        let mut is_dir = false;
-        let line_type = {
-            if ft.is_dir() {
-                is_dir = true;
-                LineType::Dir
-            } else if ft.is_symlink() {
-                if !has_match {
-                    return BLineResult::FilteredOutByPattern;
-                }
-                if options.only_folders {
-                    return BLineResult::FilteredOutAsNonFolder;
-                }
-                LineType::SymLink(match fs::read_link(&e.path()) {
-                    Ok(target) => target.to_string_lossy().into_owned(),
-                    Err(_) => String::from("???"),
-                })
-            } else {
-                if !has_match {
-                    return BLineResult::FilteredOutByPattern;
-                }
-                if options.only_folders {
-                    return BLineResult::FilteredOutAsNonFolder;
-                }
-                LineType::File
+        if file_type.is_file() {
+            if !has_match {
+                return BLineResult::FilteredOutByPattern;
             }
-        };
+            if options.only_folders {
+                return BLineResult::FilteredOutAsNonFolder;
+            }
+        } else if file_type.is_symlink() {
+            if !has_match {
+                return BLineResult::FilteredOutByPattern;
+            }
+            if options.only_folders {
+                return BLineResult::FilteredOutAsNonFolder;
+            }
+        }
         let path = e.path();
         let mut ignore_filter = None;
         if let Some(gif) = parent_ignore_filter {
-            if !gif.accepts(&path, &name, is_dir) {
+            if !gif.accepts(&path, &name, file_type.is_dir()) {
                 return BLineResult::GitIgnored;
             }
-            if is_dir {
+            if file_type.is_dir() {
                 ignore_filter = Some(gif.extended_to(&path));
             }
         }
@@ -146,10 +139,10 @@ impl BLine {
             path,
             depth,
             name: name.to_string(),
+            file_type,
             children_loaded: false,
             children: Vec::new(),
             next_child_idx: 0,
-            line_type,
             has_error: false,
             has_match,
             score,
@@ -161,18 +154,45 @@ impl BLine {
         let mut mode = 0;
         let mut uid = 0;
         let mut gid = 0;
+        let mut has_error = self.has_error;
         if let Ok(metadata) = fs::symlink_metadata(&self.path) {
             mode = metadata.mode();
             uid = metadata.uid();
             gid = metadata.gid();
         }
+        let line_type = if self.file_type.is_dir() {
+            LineType::Dir
+        } else if self.file_type.is_symlink() {
+            if let Ok(target) = fs::read_link(&self.path) {
+                let target = target.to_string_lossy().into_owned();
+                let mut target_path = PathBuf::from(&target);
+                if target_path.is_relative() {
+                    target_path = self.path.parent().unwrap().join(target_path)
+                }
+                if let Ok(target_metadata) = fs::symlink_metadata(&target_path) {
+                    if target_metadata.file_type().is_dir() {
+                        LineType::SymLinkToDir(target)
+                    } else {
+                        LineType::SymLinkToFile(target)
+                    }
+                } else {
+                    has_error = true;
+                    LineType::SymLinkToFile(target)
+                }
+            } else {
+                has_error = true;
+                LineType::SymLinkToFile(String::from("????"))
+            }
+        } else {
+            LineType::File
+        };
         TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
             name: self.name.to_string(),
             path: self.path.clone(),
-            line_type: self.line_type.clone(),
-            has_error: self.has_error,
+            line_type,
+            has_error,
             unlisted: self.children.len() - self.next_child_idx,
             score: self.score,
             mode,
@@ -345,7 +365,7 @@ impl TreeBuilder {
                     if child.has_match {
                         nb_lines_ok += 1;
                     }
-                    if child.line_type == LineType::Dir {
+                    if child.file_type.is_dir() {
                         next_level_dirs.push(child_idx);
                     }
                     out_blines.push(child_idx);
@@ -408,7 +428,7 @@ impl TreeBuilder {
             if
                 bline.has_match
                 && bline.nb_kept_children == 0
-                && (bline.depth > 1 || !self.options.show_sizes) // we keep the complete first level when showing sizes
+                && (bline.depth > 1 || !self.options.show_sizes) // keep the complete first level when showing sizes
             {
                 remove_queue.push(SortableBLineIdx {
                     idx: *idx,
@@ -422,7 +442,6 @@ impl TreeBuilder {
         );
         while count > self.targeted_size {
             if let Some(sli) = remove_queue.pop() {
-                //debug!("removing {:?} with a score of {}", &self.blines[sli.idx].path, self.blines[sli.idx].score);
                 self.blines[sli.idx].has_match = false;
                 let parent_idx = self.blines[sli.idx].parent_idx;
                 let mut parent = &mut self.blines[parent_idx];
@@ -448,7 +467,7 @@ impl TreeBuilder {
             if self.blines[*idx].has_match {
                 // we need to count the children, so we load them
                 if !self.blines[*idx].children_loaded {
-                    if let LineType::Dir = self.blines[*idx].line_type {
+                    if self.blines[*idx].file_type.is_dir() {
                         self.load_children(*idx);
                     }
                 }

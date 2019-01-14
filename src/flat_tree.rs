@@ -3,6 +3,7 @@
 
 use std::cmp::{self, Ordering};
 use std::path::PathBuf;
+use std::fs;
 
 use crate::file_sizes::Size;
 use crate::task_sync::TaskLifetime;
@@ -12,7 +13,8 @@ use crate::tree_options::TreeOptions;
 pub enum LineType {
     File,
     Dir,
-    SymLink(String), // store the lineType of destination ?
+    SymLinkToDir(String),  //
+    SymLinkToFile(String), // (to file or to symlink)
     Pruning,
 }
 
@@ -58,6 +60,24 @@ impl TreeLine {
         match &self.line_type {
             LineType::File => true,
             _ => false,
+        }
+    }
+    // build and return the absolute targeted path: either self.path or the
+    //  solved canonicalized symlink
+    // (the path may be invalid if the symlink is)
+    pub fn target(&self) -> PathBuf {
+        match &self.line_type {
+            LineType::SymLinkToFile(target) | LineType::SymLinkToDir(target) => {
+                let mut target_path = PathBuf::from(target);
+                if target_path.is_relative() {
+                    target_path = self.path.parent().unwrap().join(target_path);
+                }
+                if let Ok(canonic) = fs::canonicalize(&target_path) {
+                    target_path = canonic;
+                }
+                target_path
+            }
+            _ => self.path.clone()
         }
     }
 }
