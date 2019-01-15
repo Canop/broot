@@ -67,19 +67,17 @@ impl CommandParts {
 impl Action {
     pub fn from(cp: &CommandParts, finished: bool) -> Action {
         if let Some(verb) = &cp.verb {
-            return match finished {
+            match finished {
                 false => Action::VerbEdit(String::from(verb.as_str())),
                 true => Action::Verb(String::from(verb.as_str())),
-            };
+            }
+        } else if finished {
+            Action::OpenSelection
+        } else if let Some(pattern) = &cp.pattern {
+            Action::PatternEdit(String::from(pattern.as_str()))
+        } else {
+            Action::PatternEdit(String::from(""))
         }
-        if finished {
-            return Action::OpenSelection;
-        }
-        if let Some(pattern) = &cp.pattern {
-            let pattern = pattern.as_str();
-            return Action::PatternEdit(String::from(pattern));
-        }
-        Action::Unparsed
     }
 }
 
