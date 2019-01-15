@@ -257,8 +257,8 @@ impl TreeView for Screen {
                 write!(
                     self.stdout,
                     "{}{} {}->{} {}",
-                    &*fg_reset,
-                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
+                    &*fg_link,
+                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset_link),
                     if line.has_error { &*fg_err } else { &*fg_link },
                     &*fg_reset,
                     &target,
@@ -267,11 +267,11 @@ impl TreeView for Screen {
             LineType::SymLinkToDir(target) => {
                 write!(
                     self.stdout,
-                    "{}{}{} {}->{} {}",
-                    style::Bold,
-                    &*fg_reset_dir,
-                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset_dir),
+                    "{}{} {}->{}{} {}",
+                    &*fg_link,
+                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset_link),
                     if line.has_error { &*fg_err } else { &*fg_link },
+                    style::Bold,
                     &*fg_reset_dir,
                     &target,
                 )?;
