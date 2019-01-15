@@ -1,14 +1,14 @@
-// implements parsing and applying .gitignore files
-// Also manages a stack of such files, because more than one
-// can apply for a dir (i.e when entering a directory we
-// may add a gitignore file to the stack
+//! Implements parsing and applying .gitignore files.
+//! Also manages a stack of such files, because more than one
+//!  can apply for a dir (i.e when entering a directory we
+//!  may add a gitignore file to the stack)
 use glob;
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Result};
 use std::path::{Path, PathBuf};
 
-// a simple rule of a gitignore file
+/// a simple rule of a gitignore file
 #[derive(Clone)]
 struct GitIgnoreRule {
     ok: bool,        // does this rule when matched means the file is good? (usually false)
@@ -62,7 +62,7 @@ impl GitIgnoreRule {
     }
 }
 
-// the rules of a gitignore file
+/// The rules of a gitignore file
 #[derive(Clone)]
 pub struct GitIgnoreFile {
     rules: Vec<GitIgnoreRule>,
@@ -89,9 +89,9 @@ impl GitIgnoreFile {
     }
 }
 
-// a stack of the gitignore files applying to a directory
+/// A stack of the gitignore files applying to a directory.
 pub struct GitIgnoreFilter {
-    pub files: Vec<GitIgnoreFile>,
+    pub files: Vec<GitIgnoreFile>, // the last one is the deepest one
 }
 impl GitIgnoreFilter {
     pub fn applicable_to(path: &Path) -> GitIgnoreFilter {
@@ -139,7 +139,7 @@ impl GitIgnoreFilter {
     }
 }
 
-// an iterator to find all applicable git_ignore files
+/// an iterator to find all applicable git_ignore files
 pub struct GitIgnoreFilesFinder<'a> {
     dir: &'a Path,
 }

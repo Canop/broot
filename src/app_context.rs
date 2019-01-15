@@ -4,5 +4,5 @@ use crate::verbs::VerbStore;
 /// the configuration things
 pub struct AppContext {
     pub verb_store: VerbStore,
-    pub output_path: Option<String>,
+    pub output_path: Option<String>, // where to write the outputted path (if required with --out)
 }

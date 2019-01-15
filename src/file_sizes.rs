@@ -1,8 +1,8 @@
-// compute the summed size of directories
-// A cache is used to avoid recomputing the
-//  same directories again and again.
-// Hard links are checked to avoid counting
-//  twice an inode.
+/// compute the summed size of directories.
+/// A cache is used to avoid recomputing the
+///  same directories again and again.
+/// Hard links are checked to avoid counting
+///  twice an inode.
 use crate::task_sync::TaskLifetime;
 use std::collections::{HashMap, HashSet};
 use std::fs;
@@ -25,6 +25,9 @@ impl Size {
         })
     }
 
+    /// Return the size of the directory, either by computing it of by
+    ///  fetching it from cache.
+    /// If the lifetime expires before complete computation, None is returned.
     pub fn from_dir(path: &Path, tl: &TaskLifetime) -> Option<Size> {
         lazy_static! {
             static ref size_cache_mutex: Mutex<HashMap<PathBuf, Size>> = Mutex::new(HashMap::new());

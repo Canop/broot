@@ -47,6 +47,7 @@ use crate::verbs::VerbStore;
 
 const VERSION: &str = "0.4.6";
 
+// declare the possible CLI arguments, and gets the values
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
         .version(VERSION)
@@ -115,6 +116,8 @@ fn configure_log() {
     }
 }
 
+// run the application, and maybe return a launchable
+// which must be run after broot
 fn run() -> Result<Option<Launchable>, ProgramError> {
     configure_log();
 
@@ -167,7 +170,7 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
                 app.push(Box::new(bs));
                 app.run(&con)?
             }
-            _ => None, // should not happen
+            _ => None, // should not happen, as the lifetime is "unlimited"
         },
     )
 }
@@ -176,8 +179,6 @@ fn main() {
     if let Some(launchable) = run().unwrap() {
         info!("launching {:?}", &launchable);
         if let Err(e) = launchable.execute() {
-            println!("Failed to launch {:?}", &launchable);
-            println!("Error: {:?}", e);
             warn!("Failed to launch {:?}", &launchable);
             warn!("Error: {:?}", e);
         }

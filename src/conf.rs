@@ -1,11 +1,12 @@
+//! manage reading the verb shortcuts from the configuration file,
+//! initializing if if it doesn't yet exist
+
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
 
-/// manage reading the verb shortcuts from the configuration file,
-/// initializing if if it doesn't yet exist
 use custom_error::custom_error;
 use directories::ProjectDirs;
 
@@ -15,13 +16,14 @@ custom_error! {pub ConfError
     MissingField{txt: String}       = "missing field in conf",
 }
 
-// what's needed to handle a verb
+/// what's needed to handle a verb
 #[derive(Debug)]
 pub struct VerbConf {
     pub name: String,
     pub invocation: String,
     pub execution: String,
 }
+
 
 #[derive(Debug)]
 pub struct Conf {

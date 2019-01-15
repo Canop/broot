@@ -1,12 +1,12 @@
-/// broot's app is mainly a stack of AppState.
-/// Commands parsed from the input are submitted to the current
-/// appstate, which replies with a stateCmdResult which may
-/// be
-/// - a transition to a new state
-/// - a pop to get back to the previous one
-/// - an operation which keeps the state
-/// - a request to quit broot
-/// - a request to launch an executable (thus leaving broot)
+//! broot's app is mainly a stack of AppState.
+//! Commands parsed from the input are submitted to the current
+//! appstate, which replies with a stateCmdResult which may
+//! be
+//! - a transition to a new state
+//! - a pop to get back to the previous one
+//! - an operation which keeps the state
+//! - a request to quit broot
+//! - a request to launch an executable (thus leaving broot)
 use std::io::{self, stdin, Write};
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc};
@@ -23,6 +23,7 @@ use crate::spinner::Spinner;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
 
+/// Result of applying a command to a state
 pub enum AppStateCmdResult {
     Quit,
     Keep,
@@ -83,6 +84,7 @@ impl App {
         }
     }
 
+    /// This is the main loop of the application
     pub fn run(mut self, con: &AppContext) -> io::Result<Option<Launchable>> {
         let (w, h) = termion::terminal_size()?;
         let mut screen = Screen::new(w, h)?;
@@ -118,8 +120,7 @@ impl App {
         });
         let mut cmd = Command::new();
         screen.write_input(&cmd)?;
-        screen
-            .write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
+        screen.write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
         self.state().write_flags(&mut screen, con)?;
         let mut quit = false;
         loop {

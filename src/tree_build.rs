@@ -474,7 +474,6 @@ impl TreeBuilder {
                 lines.push(self.blines[*idx].to_tree_line());
             }
         }
-
         let mut tree = Tree {
             lines: lines.into_boxed_slice(),
             selection: 0,

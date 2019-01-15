@@ -9,7 +9,7 @@ An interactive tree view, a fuzzy search, a balanced BFS descent and customizabl
 
 ### Get an overview of a directory, even a big one:
 
-![overview](doc/20181215-overview.png)
+![overview](img/20181215-overview.png)
 
 Notice the "unlisted" ? That's what makes it usable where the old `tree` command would produce pages of output.
 
@@ -17,7 +17,7 @@ Notice the "unlisted" ? That's what makes it usable where the old `tree` command
 
 ### Find a directory then `cd` to it:
 
-![cd](doc/20181218-cd.png)
+![cd](img/20181218-cd.png)
 
 You can this way navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
@@ -34,19 +34,19 @@ Most useful keys for this:
 
 ### See what takes space:
 
-![size](doc/20181215-only-folders-with-size.png)
+![size](img/20181215-only-folders-with-size.png)
 
 To toggle size display, you usually hit `:s`. Sizes are computed in the background, you don't have to wait for them when you navigate.
 
 ### Never lose track of file hierarchy while you fuzzy search:
 
-![size](doc/20181215-search.png)
+![size](img/20181215-search.png)
 
 broot tries to select the most relevant file. You can still go from one match to another one using `<tab>` or arrow keys.
 
 ### Apply a personal shorcut to a file:
 
-![size](doc/20181215-edit.png)
+![size](img/20181215-edit.png)
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your prefered editor, see [documentation](documentation.md#verbs)).
 

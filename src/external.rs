@@ -2,8 +2,9 @@ use std::io;
 use std::path::PathBuf;
 use std::process::Command;
 
-// description of a possible launch of an external program
-// (might be more complex, and a sequence of things to try, in the future)
+/// description of a possible launch of an external program
+/// (might be more complex, and a sequence of things to try, in the future).
+/// A launchable can only be executed on end of life of broot.
 #[derive(Debug)]
 pub struct Launchable {
     exe: String,

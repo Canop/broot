@@ -7,7 +7,7 @@ A broot command is typed in the input at the bottom and is made of two parts, a 
 
 Example:
 
-![command](doc/20190110-pattern_verb.png)
+![command](img/20190110-pattern_verb.png)
 
 There the pattern is `car` and the verb shortcut is `e`.
 
@@ -29,7 +29,7 @@ Hitting `?` brings you to the help screen.
 
 Flags are displayed at the bottom right, showing the settings regarding hidden files and .gitignore rules.
 
-![flags](doc/20190101-flags.png)
+![flags](img/20190101-flags.png)
 
 ## Verbs
 
@@ -102,7 +102,7 @@ In the default configuration, it's mapped to `f`.
 
 This setting is displayed at the top right of the screen:
 
-![flags](doc/20190110-flags.png)
+![flags](img/20190110-flags.png)
 
 In the default configuration, it's mapped to `gi`.
 

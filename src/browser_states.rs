@@ -1,4 +1,5 @@
-//! an application state dedicated to displaying a tree
+//! An application state dedicated to displaying a tree.
+//! It's the first and main screen of broot.
 
 use std::io::{self, Write};
 use std::path::PathBuf;
@@ -160,6 +161,8 @@ impl AppState for BrowserState {
         false
     }
 
+    /// do some work, totally or partially, if there's some to do.
+    /// Stop as soon as the lifetime is expired.
     fn do_pending_task(&mut self, tl: &TaskLifetime) {
         if let Some(pat) = &mut self.pending_pattern {
             let start = Instant::now();

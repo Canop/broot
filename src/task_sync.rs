@@ -1,9 +1,9 @@
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::Arc;
 
-// a TL initialized from an Arc<AtomicUsize> stays
-//  alive as long as the passed arc doesn't change.
-// When it changes, is_expired returns true
+/// a TL initialized from an Arc<AtomicUsize> stays
+///  alive as long as the passed arc doesn't change.
+/// When it changes, is_expired returns true
 pub struct TaskLifetime {
     initial_value: usize,
     external_value: Arc<AtomicUsize>,

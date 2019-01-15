@@ -46,7 +46,7 @@ impl AppState for HelpState {
     }
 
     fn do_pending_task(&mut self, _tl: &TaskLifetime) {
-        // can't happen
+        unreachable!();
     }
 
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
