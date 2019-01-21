@@ -135,3 +135,30 @@ In the default configuration, it's mapped to `s` and can be activated at launch 
 When broot starts, it checks for a configuration file in the standard location defined by your OS and creates one if there's none.
 
 You can see this location by opening the help with ̀`?`. You can also open it directly from the help screen by typing `:o`.
+
+## Passing commands as program argument
+
+*Note: this feature is experimental and will probably change.*
+
+Commands to be executed can be passed using the `--cmd` argument, separated with a space.
+
+### Direcly search
+
+    broot --cmd miaou /
+
+This opens broot and immediately search for "miaou" in `/` as if it were typed in broot's input.
+
+### Go to the most relevant directory
+
+    broot --cmd ":p miaou :g"
+
+This opens broot, goes to the parent directory, searches for "miaou", then opens the selected directory (staying in broot).
+
+### cd to a directory
+
+    br --cmd "roulette :c" ~
+
+This launches broot using the `br` shell function in your home directory, searches for "roulette", then cd to the relevant directory (leaving broot).
+
+
+

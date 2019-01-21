@@ -101,6 +101,24 @@ impl Command {
         }
         c
     }
+    // build a command from a string
+    // Note that this isn't used (or usable) for interpretation
+    //  of the in-app user input. It's meant for interpretation
+    //  of a file or from a sequence of commands passed as argument
+    //  of the program.
+    // A ':', even if at the end, is assumed to mean that the
+    //  command must be executed (it's equivalent to the user
+    //  typing `enter` in the app
+    // This specific syntax isn't definitive
+    pub fn from(raw: String) -> Command {
+        let parts = CommandParts::from(&raw);
+        let action = Action::from(&parts, raw.contains(":"));
+        Command {
+            raw,
+            parts,
+            action,
+        }
+    }
     pub fn add_key(&mut self, key: Key) {
         match key {
             Key::Char('\t') => {

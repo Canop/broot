@@ -5,7 +5,6 @@
 
 An interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands.
 
-[Documentation](documentation.md)
 
 ### Get an overview of a directory, even a big one:
 
@@ -49,6 +48,10 @@ broot tries to select the most relevant file. You can still go from one match to
 ![size](img/20181215-edit.png)
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your prefered editor, see [documentation](documentation.md#verbs)).
+
+### More...
+
+See the complete [Documentation](documentation.md).
 
 ## Installation
 

@@ -38,6 +38,7 @@ use toml;
 use crate::app::App;
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
+use crate::commands::Command;
 use crate::conf::Conf;
 use crate::errors::ProgramError;
 use crate::external::Launchable;
@@ -45,7 +46,7 @@ use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
 use crate::verbs::VerbStore;
 
-const VERSION: &str = "0.4.6";
+const VERSION: &str = "0.4.7";
 
 // declare the possible CLI arguments, and gets the values
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
@@ -53,7 +54,17 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
         .version(VERSION)
         .author("dystroy <denys.seguret@gmail.com>")
         .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
-        .arg(clap::Arg::with_name("root").help("sets the root directory"))
+        .arg(
+            clap::Arg::with_name("root")
+            .help("sets the root directory")
+        )
+        .arg(
+            clap::Arg::with_name("commands")
+                .short("c")
+                .long("cmd")
+                .takes_value(true)
+                .help("commands to execute (space separated, experimental)"),
+        )
         .arg(
             clap::Arg::with_name("only-folders")
                 .short("f")
@@ -160,15 +171,19 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
             .value_of("output_path")
             .and_then(|s| Some(s.to_owned())),
     };
-
     debug!("output path: {:?}", &con.output_path);
+
+    let input_commands: Vec<Command> = match cli_args.value_of("commands") {
+        Some(str) => str.split(' ').map(|s| Command::from(s.to_string())).collect(),
+        None => Vec::new(),
+    };
 
     Ok(
         match BrowserState::new(path.clone(), tree_options, &TaskLifetime::unlimited()) {
             Some(bs) => {
                 let mut app = App::new();
                 app.push(Box::new(bs));
-                app.run(&con)?
+                app.run(&con, input_commands)?
             }
             _ => None, // should not happen, as the lifetime is "unlimited"
         },
