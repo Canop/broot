@@ -33,7 +33,6 @@ use std::fs::File;
 use std::path::PathBuf;
 use std::result::Result;
 use std::str::FromStr;
-use toml;
 
 use crate::app::App;
 use crate::app_context::AppContext;
