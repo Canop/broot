@@ -84,6 +84,27 @@ impl App {
         }
     }
 
+    fn do_pending_tasks(&mut self, cmd: &Command, screen: &mut Screen, con: &AppContext, tl: TaskLifetime) -> io::Result<()> {
+        let has_task = self.state().has_pending_tasks();
+        if has_task {
+            loop {
+                self.state().write_status(screen, &cmd, con)?;
+                screen.write_spinner(true)?;
+                self.mut_state().display(screen, con)?;
+                if tl.is_expired() {
+                    break;
+                }
+                self.mut_state().do_pending_task(&tl);
+                if !self.state().has_pending_tasks() {
+                    break;
+                }
+            }
+            screen.write_spinner(false)?;
+        }
+        self.mut_state().display(screen, con)?;
+        Ok(())
+    }
+
     /// This is the main loop of the application
     pub fn run(mut self, con: &AppContext) -> io::Result<Option<Launchable>> {
         let (w, h) = termion::terminal_size()?;
@@ -123,28 +144,21 @@ impl App {
         screen.write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
         self.state().write_flags(&mut screen, con)?;
         let mut quit = false;
+        let mut to_launch: Option<Launchable> = None;
         loop {
-            let tl = TaskLifetime::new(&cmd_count);
-            let has_task = self.state().has_pending_tasks();
-            if !quit && has_task {
-                loop {
-                    self.state().write_status(&mut screen, &cmd, con)?;
-                    screen.write_spinner(true)?;
-                    self.mut_state().display(&mut screen, con)?;
-                    if tl.is_expired() {
-                        break;
-                    }
-                    self.mut_state().do_pending_task(&tl);
-                    if !self.state().has_pending_tasks() {
-                        break;
-                    }
-                }
-                screen.write_spinner(false)?;
+            if !quit {
+                self.do_pending_tasks(
+                    &cmd,
+                    &mut screen,
+                    con,
+                    TaskLifetime::new(&cmd_count),
+                )?;
             }
-            self.mut_state().display(&mut screen, con)?;
             let c = match rx_keys.recv() {
                 Ok(c) => c,
                 Err(_) => {
+                    // this is how we quit the application,
+                    // when the input thread is properly closed
                     break;
                 }
             };
@@ -158,7 +172,8 @@ impl App {
                     quit = true;
                 }
                 AppStateCmdResult::Launch(launchable) => {
-                    return Ok(Some(launchable));
+                    to_launch = Some(launchable);
+                    quit = true;
                 }
                 AppStateCmdResult::NewState(boxed_state) => {
                     self.push(boxed_state);
@@ -186,6 +201,6 @@ impl App {
             self.state().write_flags(&mut screen, con)?;
             tx_quit.send(quit).unwrap();
         }
-        Ok(None)
+        Ok(to_launch)
     }
 }
