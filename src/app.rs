@@ -212,6 +212,14 @@ impl App {
         screen.write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
         self.state().write_flags(&mut screen, con)?;
         loop {
+            if !self.quitting {
+                self.do_pending_tasks(
+                    &cmd,
+                    &mut screen,
+                    con,
+                    TaskLifetime::new(&cmd_count),
+                )?;
+            }
             let c = match rx_keys.recv() {
                 Ok(c) => c,
                 Err(_) => {
@@ -223,14 +231,6 @@ impl App {
             cmd.add_key(c?);
             cmd = self.apply_command(cmd, &mut screen, con)?;
             tx_quit.send(self.quitting).unwrap();
-            if !self.quitting {
-                self.do_pending_tasks(
-                    &cmd,
-                    &mut screen,
-                    con,
-                    TaskLifetime::new(&cmd_count),
-                )?;
-            }
         }
         Ok(self.launch_at_end)
     }
