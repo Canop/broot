@@ -54,6 +54,7 @@ impl TreeLine {
     pub fn is_dir(&self) -> bool {
         match &self.line_type {
             LineType::Dir => true,
+            LineType::SymLinkToDir(_) => true,
             _ => false,
         }
     }
@@ -289,7 +290,7 @@ impl Tree {
             return false;
         }
         for i in 1..self.lines.len() {
-            if self.lines[i].size.is_none() && self.lines[i].is_dir() {
+            if self.lines[i].size.is_none() && self.lines[i].line_type==LineType::Dir {
                 return true;
             }
         }
@@ -304,7 +305,7 @@ impl Tree {
     }
     pub fn fetch_some_missing_dir_size(&mut self, tl: &TaskLifetime) {
         for i in 1..self.lines.len() {
-            if self.lines[i].size.is_none() && self.lines[i].is_dir() {
+            if self.lines[i].size.is_none() && self.lines[i].line_type==LineType::Dir {
                 self.lines[i].size = Size::from_dir(&self.lines[i].path, tl);
                 return;
             }

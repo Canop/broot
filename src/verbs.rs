@@ -110,7 +110,7 @@ impl VerbExecutor for BrowserState {
                     &TaskLifetime::unlimited(),
                 ))
             }
-            ":print_path" | ":cd" => {
+            ":print_path" => {
                 if let Some(ref output_path) = con.output_path {
                     // an output path was provided, we write to it
                     let f = OpenOptions::new().append(true).open(output_path)?;
@@ -122,6 +122,24 @@ impl VerbExecutor for BrowserState {
                     let mut launchable = Launchable::from(vec![line.target().to_string_lossy().to_string()])?;
                     launchable.just_print = true;
                     AppStateCmdResult::Launch(launchable)
+                }
+            }
+            ":cd" => {
+                if let Some(ref output_path) = con.output_path {
+                    // an output path was provided, we write to it
+                    let f = OpenOptions::new().append(true).open(output_path)?;
+                    let mut path = line.target();
+                    if !line.is_dir() {
+                        path = path.parent().unwrap().to_path_buf();
+                    }
+                    writeln!(&f, "{}", path.to_string_lossy())?;
+                    AppStateCmdResult::Quit
+                } else {
+                    // This is a usage problem. :cd is meant to change directory
+                    // and it currently can't be done without the shell companion function
+                    AppStateCmdResult::DisplayError(
+                        "broot not properly called. See https://github.com/Canop/broot#cd".to_string()
+                    )
                 }
             }
             ":open" => AppStateCmdResult::Launch(Launchable::opener(&line.target())?),

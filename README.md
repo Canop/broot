@@ -69,7 +69,7 @@ The executable is written in the `target/release` directory (you might want to m
 
 * [x86_64-linux](https://dystroy.org/broot/x86_64-linux/broot)
 
-## Configure broot for navigation
+## cd
 
 broot is convenient to find a directory then `cd` to it. The `c` command of the default configuration is here for this purpose.
 
