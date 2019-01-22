@@ -12,7 +12,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
 
-const SIZE_NAMES: &[&str] = &["", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"]; // YB: for when your disk is bigger than 1024 ZB
+const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"]; // Y: for when your disk is bigger than 1024 ZB
 
 #[derive(Debug, Copy, Clone)]
 pub struct Size(u64);
@@ -79,7 +79,7 @@ impl Size {
     pub fn to_string(&self) -> String {
         let mut v = self.0;
         let mut i = 0;
-        while v >= 1024 && i < SIZE_NAMES.len() - 1 {
+        while v >= 9000 && i < SIZE_NAMES.len() - 1 {
             v >>= 10;
             i += 1;
         }
