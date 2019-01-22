@@ -150,15 +150,25 @@ This opens broot and immediately search for "miaou" in `/` as if it were typed i
 
 ### Go to the most relevant directory
 
-    broot --cmd ":p miaou :g"
+    broot -c ":p miaou :g"
 
 This opens broot, goes to the parent directory, searches for "miaou", then opens the selected directory (staying in broot).
 
-### cd to a directory
+A variant searching from your home directory:
 
-    br --cmd "roulette :c" ~
+    br -f -c "miaou :g" ~
 
-This launches broot using the `br` shell function in your home directory, searches for "roulette", then cd to the relevant directory (leaving broot).
+### define a function for deep fuzzy cd
+
+In my .bashrc, I have this:
+
+	# deep fuzzy cd
+	function dcd {
+		br --only-folders --cmd "$1 :c"
+	}
+
+This is the *"I'm feeling lucky"* of broot, I use it to directly jump to directories I know, when I don't need the interactive search of br.
+
 
 
 
