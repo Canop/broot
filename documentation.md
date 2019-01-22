@@ -158,7 +158,7 @@ A variant searching from your home directory:
 
     br -f -c "miaou :g" ~
 
-### define a function for deep fuzzy cd
+### Define a function for deep fuzzy cd
 
 In my .bashrc, I have this:
 
@@ -169,6 +169,7 @@ In my .bashrc, I have this:
 
 This is the *"I'm feeling lucky"* of broot, I use it to directly jump to directories I know, when I don't need the interactive search of br.
 
+Example:
 
-
+![dcd ruleset](img/20190122-dcd_rulset.png)
 
