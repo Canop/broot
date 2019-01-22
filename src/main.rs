@@ -1,3 +1,6 @@
+#[global_allocator]
+static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
+
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
@@ -122,7 +125,7 @@ fn configure_log() {
             File::create("dev.log").expect("Log file can't be created"),
         )
         .expect("log initialization failed");
-        info!("Starting B-Root v{} with log level {}", VERSION, level);
+        info!("Starting B-Root v{} / jemalloc with log level {}", VERSION, level);
     }
 }
 
