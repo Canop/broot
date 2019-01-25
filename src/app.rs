@@ -190,7 +190,7 @@ impl App {
                 TaskLifetime::unlimited(),
             )?;
             if self.quitting {
-                return Ok(self.launch_at_end);
+                return Ok(self.launch_at_end.take());
             }
         }
 
@@ -243,6 +243,12 @@ impl App {
             cmd = self.apply_command(cmd, &mut screen, con)?;
             tx_quit.send(self.quitting).unwrap();
         }
-        Ok(self.launch_at_end)
+        Ok(self.launch_at_end.take())
+    }
+}
+
+impl Drop for App {
+    fn drop(&mut self) {
+        io::stdout().flush().unwrap();
     }
 }
