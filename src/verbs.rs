@@ -78,7 +78,13 @@ impl VerbExecutor for HelpState {
         Ok(match verb.exec_pattern.as_ref() {
             ":open" => AppStateCmdResult::Launch(Launchable::opener(&Conf::default_location())?),
             ":quit" => AppStateCmdResult::Quit,
-            _ => AppStateCmdResult::Keep,
+            _ => {
+                if verb.exec_pattern.starts_with(':') {
+                    AppStateCmdResult::Keep
+                } else {
+                    AppStateCmdResult::Launch(Launchable::from(verb.exec_token(&Conf::default_location()))?)
+                }
+            }
         })
     }
 }
