@@ -32,6 +32,7 @@ mod verbs;
 use clap;
 use log::LevelFilter;
 use simplelog;
+use std::io::{self, Write};
 use std::env;
 use std::fs::File;
 use std::path::PathBuf;
@@ -194,7 +195,9 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
 }
 
 fn main() {
-    if let Some(launchable) = run().unwrap() {
+    let res = run().unwrap();
+    io::stdout().flush().unwrap();
+    if let Some(launchable) = res {
         info!("launching {:?}", &launchable);
         if let Err(e) = launchable.execute() {
             warn!("Failed to launch {:?}", &launchable);
