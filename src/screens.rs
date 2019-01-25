@@ -15,14 +15,16 @@ pub struct ScreenArea {
     pub bottom: u16, // last line, included
     pub scroll: i32, // 0 for no scroll, positive if scrolled
     pub content_length: i32,
+    pub width: u16,
 }
 impl ScreenArea {
-    pub fn new(top: u16, bottom: u16) -> ScreenArea {
+    pub fn new(top: u16, bottom: u16, width: u16) -> ScreenArea {
         ScreenArea {
             top,
             bottom,
             scroll: 0,
             content_length: 0,
+            width,
         }
     }
     pub fn try_scroll(&mut self, dy: i32) {

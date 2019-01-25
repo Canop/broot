@@ -1,7 +1,7 @@
-use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::Path;
+use regex::Regex;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
@@ -15,11 +15,58 @@ use crate::tree_options::OptionBool;
 #[derive(Debug, Clone)]
 pub struct Verb {
     pub name: String,
+    pub short_key: Option<String>,
+    pub long_key: String,
     pub exec_pattern: String,
+    pub description: String,
+}
+
+impl Verb {
+    fn create(
+        name: String,
+        invocation: Option<String>,
+        exec_pattern: String,
+        description: String,
+    ) -> Verb {
+        // we build the long key such as
+        // ":goto" -> "goto"
+        lazy_static! {
+            static ref RE: Regex = Regex::new(r"\w+").unwrap();
+        }
+        Verb {
+            name,
+            short_key: invocation,
+            long_key: RE.find(&exec_pattern).map_or("", |m| m.as_str()).to_string(),
+            exec_pattern,
+            description,
+        }
+    }
+    fn create_built_in(
+        name: &str,
+        short_key: Option<String>,
+        description: &str,
+    ) -> Verb {
+        Verb {
+            name: name.to_string(),
+            short_key: short_key,
+            long_key: name.to_string(),
+            exec_pattern: (format!(":{}", name)).to_string(),
+            description: description.to_string(),
+        }
+    }
+    fn matches(&self, prefix: &str) -> bool {
+        if let Some(s) = &self.short_key {
+            if s.starts_with(prefix) {
+                return true;
+            }
+        }
+        self.long_key.starts_with(prefix)
+    }
 }
 
 pub struct VerbStore {
-    pub verbs: HashMap<String, Verb>,
+    //pub map: BTreeMap<String, Verb>,
+    pub verbs: Vec<Verb>,
 }
 
 pub trait VerbExecutor {
@@ -162,9 +209,6 @@ impl VerbExecutor for BrowserState {
 }
 
 impl Verb {
-    fn exec_string(&self, path: &Path) -> String {
-        self.exec_token(path).join(" ")
-    }
     fn exec_token(&self, path: &Path) -> Vec<String> {
         self.exec_pattern
             .split_whitespace()
@@ -172,55 +216,104 @@ impl Verb {
             .collect()
     }
     pub fn description_for(&self, state: &BrowserState) -> String {
-        let line = match &state.filtered_tree {
-            Some(tree) => tree.selected_line(),
-            None => state.tree.selected_line(),
-        };
-        let path = &line.path;
         if self.exec_pattern == ":cd" {
-            return format!("cd {}", path.to_string_lossy());
-        }
-        match self.exec_pattern.starts_with(':') {
-            true => self.description(),
-            false => self.exec_string(path),
-        }
-    }
-    pub fn description(&self) -> String {
-        match self.exec_pattern.as_ref() {
-            ":back" => "reverts to the previous state (mapped to `<esc>`)".to_string(),
-            ":cd" => "changes directory - see https://github.com/Canop/broot".to_string(),
-            ":print_path" => "prints path (e.g. to change directory)".to_string(),
-            ":focus" => "displays a directory (mapped to `<enter>`)".to_string(),
-            ":open" => "opens a file according to OS settings (mapped to `<enter>`)".to_string(),
-            ":parent" => "moves to the parent directory".to_string(),
-            ":quit" => "quits the application".to_string(),
-            ":toggle_hidden" => "toggles showing hidden files".to_string(),
-            ":toggle_git_ignore" => "toggles use of .gitignore".to_string(),
-            ":toggle_files" => "toggles showing files (or just folders)".to_string(),
-            ":toggle_sizes" => "toggles showing sizes".to_string(),
-            _ => format!("`{}`", self.exec_pattern),
+            let line = match &state.filtered_tree {
+                Some(tree) => tree.selected_line(),
+                None => state.tree.selected_line(),
+            };
+            let mut path = line.target();
+            if !line.is_dir() {
+                path = path.parent().unwrap().to_path_buf();
+            }
+            format!("cd {}", path.to_string_lossy())
+        } else {
+            self.description.to_string()
         }
     }
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum PrefixSearchResult<T> {
+    NoMatch,
+    Match(T),
+    TooManyMatches,
 }
 
 impl VerbStore {
     pub fn new() -> VerbStore {
         VerbStore {
-            verbs: HashMap::new(),
+            //map: BTreeMap::new(),
+            verbs: Vec::new(),
         }
     }
-    pub fn fill_from_conf(&mut self, conf: &Conf) {
+    pub fn init(&mut self, conf: &Conf) {
+        // we first add the built-in verbs
+        self.verbs.push(Verb::create_built_in(
+            "back", None, "reverts to the previous state (mapped to `<esc>`)"
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "cd", None, "changes directory - see https://github.com/Canop/broot",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "focus", Some("goto".to_string()), "displays a directory (mapped to `<enter>`)",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "open", None, "opens a file according to OS settings (mapped to `<enter>`)",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "parent", None, "moves to the parent directory",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "print_path", Some("pp".to_string()), "prints path and leaves broot",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "quit", None, "quits the application",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "toggle_files", Some("files".to_string()), "toggles showing files (or just folders)",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "toggle_git_ignore", Some("gi".to_string()), "toggles use of .gitignore",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "toggle_hidden", Some("hidden".to_string()), "toggles showing hidden files",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "toggle_perm", Some("perm".to_string()), "toggles showing file permissions",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "toggle_sizes", Some("sizes".to_string()), "toggles showing sizes",
+        ));
+        // then we add the verbs from conf
+        // which may in fact be just changing the shortcut of
+        // already present verbs
         for verb_conf in &conf.verbs {
-            self.verbs.insert(
-                verb_conf.invocation.to_owned(),
-                Verb {
-                    name: verb_conf.name.to_owned(),
-                    exec_pattern: verb_conf.execution.to_owned(),
-                },
-            );
+            if let Some(mut v) = self.verbs.iter_mut().find(|v| v.exec_pattern==verb_conf.execution) {
+                v.short_key = Some(verb_conf.invocation.to_string());
+            } else {
+                self.verbs.push(Verb::create(
+                        verb_conf.name.to_owned(),
+                        Some(verb_conf.invocation.to_string()),
+                        verb_conf.execution.to_owned(),
+                        verb_conf.execution.to_owned(),
+                ));
+            }
         }
     }
-    pub fn get(&self, verb_key: &str) -> Option<&Verb> {
-        self.verbs.get(verb_key)
+    pub fn matching_verbs(&self, prefix: &str) -> Vec<&Verb> {
+        self.verbs.iter().filter(|v| v.matches(prefix)).collect()
+    }
+    // TODO remove ? The intermediate PrefixSearchResult is about useless
+    pub fn search(&self, prefix: &str) -> PrefixSearchResult<&Verb> {
+        if prefix.len() == 0 {
+            return PrefixSearchResult::TooManyMatches;
+        }
+        let matching_verbs = self.matching_verbs(prefix);
+        debug!("matching verbs: {:?}", &matching_verbs);
+        match matching_verbs.len() {
+            0 => PrefixSearchResult::NoMatch,
+            1 => PrefixSearchResult::Match(matching_verbs[0]),
+            _ => PrefixSearchResult::TooManyMatches,
+        }
     }
 }

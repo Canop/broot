@@ -93,75 +93,24 @@ impl Conf {
 }
 
 const DEFAULT_CONF_FILE: &str = r#"
-# verbs define the commands you can call on files
+# This configuration file lets you define new commands
+# or change the shortcut of built-in verbs.
+#
 # 'invocation' can be a letter or a word
 # 'execution' is either a command, where {file} will be replaced by the selected line,
-# 	or one of the predefined commands:
-#   ":back"              : reverts to the previous state, or quit the application if it's the first one (mapped to <esc>)
-#   ":cd"                : changes directory (see https://github.com/Canop/broot)
-#   ":print_path"        : outputs the path to stdout or to a file provided with --out
-#   ":focus"             : displays the tree of that directory, keeps the current search pattern
-#   ":open"              : tries to open the file according to OS settings (e.g. using xdg-open) (mapped to <enter> on files)
-#   ":parent"            : moves to the parent directory
-#   ":quit"              : quits the application
-#   ":toggle_hidden"     : toggles showing hidden files
-#   ":toggle_git_ignore" : toggles hiding files matching .gitignore exclusions
-#   ":toggle_sizes"      : toggles displaying file and folder sizes
-#   ":toggle_perm"       : toggles displaying file and folder sizes
-#   ":toggle_files"      : toggles showing files or just directories
-
-[[verbs]]
-name = "cd"
-invocation = "c"
-execution = ":cd"
-
-[[verbs]]
-name = "focus"
-invocation = "g"
-execution = ":focus"
+# 	or one of the built-in commands.
+#
+# The configuration documentation and complete list of built-in verbs
+# can be found in https://github.com/Canop/broot/documentation.md
 
 [[verbs]]
 name = "edit"
-invocation = "e"
+invocation = "ed"
 execution = "/usr/bin/nvim {file}"
 
 [[verbs]]
-name = "toggle hidden"
-invocation = "h"
-execution = ":toggle_hidden"
+name = "view"
+invocation = "view"
+execution = "less {file}"
 
-[[verbs]]
-name = "toggle files"
-invocation = "f"
-execution = ":toggle_files"
-
-[[verbs]]
-name = "toggle gitignore"
-invocation = "gi"
-execution = ":toggle_git_ignore"
-
-[[verbs]]
-name = "open"
-invocation = "o"
-execution = ":open"
-
-[[verbs]]
-name = "toggle sizes"
-invocation = "s"
-execution = ":toggle_sizes"
-
-[[verbs]]
-name = "toggle permissions"
-invocation = "perm"
-execution = ":toggle_perm"
-
-[[verbs]]
-name = "parent"
-invocation = "p"
-execution = ":parent"
-
-[[verbs]]
-name = "quit"
-invocation = "q"
-execution = ":quit"
 "#;

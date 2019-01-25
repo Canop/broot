@@ -45,6 +45,7 @@ impl TreeView for Screen {
             bottom: self.h - 1,
             scroll: tree.scroll,
             content_length: tree.lines.len() as i32,
+            width: self.w,
         };
         let scrollbar = area.scrollbar();
         for y in 1..self.h - 1 {

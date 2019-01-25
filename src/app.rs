@@ -92,7 +92,13 @@ impl App {
 
     /// execute all the pending tasks until there's none remaining or
     ///  the allowed lifetime is expired (usually when the user typed a new key)
-    fn do_pending_tasks(&mut self, cmd: &Command, screen: &mut Screen, con: &AppContext, tl: TaskLifetime) -> io::Result<()> {
+    fn do_pending_tasks(
+        &mut self,
+        cmd: &Command,
+        screen: &mut Screen,
+        con: &AppContext,
+        tl: TaskLifetime,
+    ) -> io::Result<()> {
         let has_task = self.state().has_pending_tasks();
         if has_task {
             loop {
@@ -116,7 +122,12 @@ impl App {
     /// apply a command, and returns a command, which may be the same (modified or not)
     ///  or a new one.
     /// This normally mutates self
-    fn apply_command(&mut self, cmd: Command, screen: &mut Screen, con: &AppContext) -> io::Result<Command> {
+    fn apply_command(
+        &mut self,
+        cmd: Command,
+        screen: &mut Screen,
+        con: &AppContext,
+    ) -> io::Result<Command> {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
         screen.write_input(&cmd)?;

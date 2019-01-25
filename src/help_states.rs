@@ -1,37 +1,45 @@
 //! an application state dedicated to help
 
-use regex::Regex;
 use std::io;
-use termion::{color, style};
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
 use crate::conf::Conf;
 use crate::screens::{Screen, ScreenArea};
+use crate::screen_text::{Text, TextTable};
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
-use crate::verbs::VerbExecutor;
+use crate::verbs::{PrefixSearchResult, VerbExecutor, Verb};
 
 pub struct HelpState {
     area: ScreenArea, // where the help is drawn
 }
 
+
 impl HelpState {
     pub fn new(_about: &str) -> HelpState {
-        let (_, h) = termion::terminal_size().unwrap();
-        let area = ScreenArea::new(1, h - 2);
+        let (w, h) = termion::terminal_size().unwrap();
+        let area = ScreenArea::new(1, h - 2, w);
         HelpState { area }
+    }
+    fn build_verbs_table(&self, text: &mut Text, con: &AppContext) {
+        let mut tbl: TextTable<Verb> = TextTable::new();
+        tbl.add_col("name", &|verb| &verb.name);
+        tbl.add_col("shortcut", &|verb| if let Some(sk) = &verb.short_key { &sk } else { "" });
+        tbl.add_col("description", &|verb: &Verb| &verb.description);
+        tbl.write(&con.verb_store.verbs, text);
     }
 }
 
 impl AppState for HelpState {
+
     fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
-            Action::Verb(verb_key) => match con.verb_store.get(&verb_key) {
-                Some(verb) => self.execute_verb(verb, con)?,
-                None => AppStateCmdResult::verb_not_found(&verb_key),
+            Action::Verb(verb_key) => match con.verb_store.search(&verb_key) {
+                PrefixSearchResult::Match(verb) => self.execute_verb(verb, con)?,
+                _ => AppStateCmdResult::verb_not_found(&verb_key),
             },
             Action::MoveSelection(dy) => {
                 self.area.try_scroll(*dy);
@@ -50,28 +58,22 @@ impl AppState for HelpState {
     }
 
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
-        let mut text = HelpText::new();
+        let mut text = Text::new();
         text.md("");
         text.md(r#" **broot** (pronounce "b-root") lets you explore directory trees"#);
         text.md(r#"    and launch various commands on files."#);
-        text.md(r#" broot is best used with its companion shell function (see  https://github.com/Canop/broot)."#);
+        text.md(r#" broot is best used with its companion shell function"#);
+        text.md(r#"    (see  https://github.com/Canop/broot)."#);
         text.md("");
         text.md(r#" `<esc>` gets you back to the previous state."#);
         text.md(r#" Typing some letters searches the tree and selects the most relevant file."#);
-        text.md(r#" Typing a search, a space or `:`, then a verb executes the verb on the file."#);
+        text.md(r#" To execute a verb, type a space or `:` then the start of its name or shortcut."#);
         text.md("");
-        text.md(" Current Verbs:");
-        for (key, verb) in con.verb_store.verbs.iter() {
-            text.md(&format!(
-                "{: >17} : `{}` => {}",
-                &verb.name,
-                key,
-                verb.description()
-            ));
-        }
+        text.md(" Verbs:");
+        self.build_verbs_table(&mut text, con);
         text.md("");
         text.md(&format!(
-            " Verbs are configured in {:?}.",
+            " Verb can be configured in {:?}.",
             Conf::default_location()
         ));
         text.md("");
@@ -85,9 +87,8 @@ impl AppState for HelpState {
         text.md("  `gi:a`, `gi:y`, `gi:n` : gitignore on auto, yes or no");
         text.md("  When gitignore is auto, .gitignore rules are respected if");
         text.md("   the displayed root is a git repository or in one.");
-
-        self.area.content_length = text.lines.len() as i32;
-        screen.write_lines(&self.area, &text.lines)?;
+        self.area.content_length = text.height() as i32;
+        text.write(screen,&self.area)?;
         Ok(())
     }
 
@@ -105,26 +106,3 @@ impl AppState for HelpState {
     }
 }
 
-struct HelpText {
-    lines: Vec<String>,
-}
-impl HelpText {
-    pub fn new() -> HelpText {
-        HelpText { lines: Vec::new() }
-    }
-    pub fn md(&mut self, line: &str) {
-        lazy_static! {
-            static ref bold_regex: Regex = Regex::new(r"\*\*([^*]+)\*\*").unwrap();
-            static ref bold_repl: String = format!("{}$1{}", style::Bold, style::Reset);
-            static ref code_regex: Regex = Regex::new(r"`([^`]+)`").unwrap();
-            static ref code_repl: String = format!(
-                "{} $1 {}",
-                color::Bg(color::AnsiValue::grayscale(2)),
-                color::Bg(color::Reset)
-            );
-        }
-        let line = bold_regex.replace_all(line, &*bold_repl as &str); // TODO how to avoid this complex casting ?
-        let line = code_regex.replace_all(&line, &*code_repl as &str);
-        self.lines.push(line.to_string());
-    }
-}

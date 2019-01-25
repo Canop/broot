@@ -19,7 +19,7 @@ use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
 use crate::tree_options::{OptionBool, TreeOptions};
 use crate::tree_views::TreeView;
-use crate::verbs::VerbExecutor;
+use crate::verbs::{PrefixSearchResult, VerbExecutor};
 
 pub struct BrowserState {
     pub tree: Tree,
@@ -125,9 +125,9 @@ impl AppState for BrowserState {
                     }
                 }
             }
-            Action::Verb(verb_key) => match con.verb_store.get(&verb_key) {
-                Some(verb) => self.execute_verb(verb, con)?,
-                None => AppStateCmdResult::verb_not_found(&verb_key),
+            Action::Verb(verb_key) => match con.verb_store.search(&verb_key) {
+                PrefixSearchResult::Match(verb) => self.execute_verb(verb, con)?,
+                _ => AppStateCmdResult::verb_not_found(&verb_key),
             },
             Action::PatternEdit(pat) => match pat.len() {
                 0 => {
@@ -196,20 +196,22 @@ impl AppState for BrowserState {
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
         if let Some(verb_key) = &cmd.parts.verb {
-            if let Some(verb) = con.verb_store.get(&verb_key) {
-                screen.write_status_text(
+            match con.verb_store.search(&verb_key) {
+                PrefixSearchResult::NoMatch => screen.write_status_err(
+                    "No matching verb (hit '?' for the list of verbs)",
+                ),
+                PrefixSearchResult::Match(verb) => screen.write_status_text(
                     &format!(
                         "Hit <enter> to {} : {}",
                         &verb.name,
                         verb.description_for(&self)
                     )
                     .to_string(),
-                )
-            } else {
-                screen.write_status_text(
+                ),
+                PrefixSearchResult::TooManyMatches => screen.write_status_text(
                     // TODO show what verbs start with the currently edited verb key
                     "Type a verb then <enter> to execute it (hit '?' for the list of verbs)",
-                )
+                ),
             }
         } else if let Some(_) = &cmd.parts.pattern {
             screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")

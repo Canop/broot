@@ -20,6 +20,7 @@ mod help_states;
 mod input;
 mod patterns;
 mod screens;
+mod screen_text;
 mod spinner;
 mod status;
 mod task_sync;
@@ -137,7 +138,7 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     let config = Conf::from_default_location()?;
 
     let mut verb_store = VerbStore::new();
-    verb_store.fill_from_conf(&config);
+    verb_store.init(&config);
 
     let cli_args = get_cli_args();
     let path = match cli_args.value_of("root") {
