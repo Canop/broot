@@ -24,7 +24,6 @@ pub struct VerbConf {
     pub execution: String,
 }
 
-
 #[derive(Debug)]
 pub struct Conf {
     pub verbs: Vec<VerbConf>,

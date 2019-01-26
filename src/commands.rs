@@ -9,7 +9,7 @@ use termion::event::Key;
 pub struct Command {
     pub raw: String,         // what's visible in the input
     pub parts: CommandParts, // the parsed parts of the visible input
-    pub action: Action,      // what's required, based on the last key (which may be not visible, like esc)
+    pub action: Action, // what's required, based on the last key (which may be not visible, like esc)
 }
 
 #[derive(Debug, Clone)]
@@ -113,11 +113,7 @@ impl Command {
     pub fn from(raw: String) -> Command {
         let parts = CommandParts::from(&raw);
         let action = Action::from(&parts, raw.contains(":"));
-        Command {
-            raw,
-            parts,
-            action,
-        }
+        Command { raw, parts, action }
     }
     pub fn add_key(&mut self, key: Key) {
         match key {

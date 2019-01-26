@@ -6,16 +6,15 @@ use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
 use crate::conf::Conf;
-use crate::screens::{Screen, ScreenArea};
 use crate::screen_text::{Text, TextTable};
+use crate::screens::{Screen, ScreenArea};
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
-use crate::verbs::{PrefixSearchResult, VerbExecutor, Verb};
+use crate::verbs::{PrefixSearchResult, Verb, VerbExecutor};
 
 pub struct HelpState {
     area: ScreenArea, // where the help is drawn
 }
-
 
 impl HelpState {
     pub fn new(_about: &str) -> HelpState {
@@ -26,14 +25,19 @@ impl HelpState {
     fn build_verbs_table(&self, text: &mut Text, con: &AppContext) {
         let mut tbl: TextTable<Verb> = TextTable::new();
         tbl.add_col("name", &|verb| &verb.name);
-        tbl.add_col("shortcut", &|verb| if let Some(sk) = &verb.short_key { &sk } else { "" });
+        tbl.add_col("shortcut", &|verb| {
+            if let Some(sk) = &verb.short_key {
+                &sk
+            } else {
+                ""
+            }
+        });
         tbl.add_col("description", &|verb: &Verb| &verb.description);
         tbl.write(&con.verb_store.verbs, text);
     }
 }
 
 impl AppState for HelpState {
-
     fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult> {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
@@ -81,6 +85,7 @@ impl AppState for HelpState {
         text.md("  `-h` or `--hidden` : show hidden files");
         text.md("  `-f` or `--only-folders` : only show folders");
         text.md("  `-s` or `--sizes` : display sizes");
+        text.md("  (for the complete list, run `broot --help`)");
         text.md("");
         text.md(" Flags are displayed at bottom right:");
         text.md("  `h:y` or `h:n` : whether hidden files are shown");
@@ -88,7 +93,7 @@ impl AppState for HelpState {
         text.md("  When gitignore is auto, .gitignore rules are respected if");
         text.md("   the displayed root is a git repository or in one.");
         self.area.content_length = text.height() as i32;
-        text.write(screen,&self.area)?;
+        text.write(screen, &self.area)?;
         Ok(())
     }
 
@@ -105,4 +110,3 @@ impl AppState for HelpState {
         Ok(())
     }
 }
-

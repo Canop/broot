@@ -14,7 +14,10 @@ pub struct Launchable {
 
 impl Launchable {
     pub fn opener(path: &PathBuf) -> io::Result<Launchable> {
-        Launchable::from(vec!["xdg-open".to_string(), path.to_string_lossy().to_string()])
+        Launchable::from(vec![
+            "xdg-open".to_string(),
+            path.to_string_lossy().to_string(),
+        ])
     }
     pub fn from(mut parts: Vec<String>) -> io::Result<Launchable> {
         let mut parts = parts.drain(0..);

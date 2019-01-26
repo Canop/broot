@@ -19,8 +19,8 @@ mod git_ignore;
 mod help_states;
 mod input;
 mod patterns;
-mod screens;
 mod screen_text;
+mod screens;
 mod spinner;
 mod status;
 mod task_sync;
@@ -66,45 +66,45 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
                 .short("c")
                 .long("cmd")
                 .takes_value(true)
-                .help("commands to execute (space separated, experimental)"),
+                .help("commands to execute (space separated, experimental)")
         )
         .arg(
             clap::Arg::with_name("only-folders")
                 .short("f")
                 .long("only-folders")
-                .help("only show folders"),
+                .help("only show folders")
         )
         .arg(
             clap::Arg::with_name("hidden")
                 .short("h")
                 .long("hidden")
-                .help("show hidden files"),
+                .help("show hidden files")
         )
         .arg(
             clap::Arg::with_name("sizes")
                 .short("s")
                 .long("sizes")
-                .help("show the size of files and directories"),
+                .help("show the size of files and directories")
         )
         .arg(
             clap::Arg::with_name("permissions")
                 .short("p")
                 .long("permissions")
-                .help("show permissions, with owner and group"),
+                .help("show permissions, with owner and group")
         )
         .arg(
             clap::Arg::with_name("output_path")
                 .short("o")
                 .long("out")
                 .takes_value(true)
-                .help("where to write the outputted path (if any)"),
+                .help("where to write the outputted path (if any)")
         )
         .arg(
             clap::Arg::with_name("gitignore")
                 .short("g")
                 .long("gitignore")
                 .takes_value(true)
-                .help("respect .gitignore rules (yes, no, auto)"),
+                .help("respect .gitignore rules (yes, no, auto)")
         )
         .get_matches()
 }
@@ -126,7 +126,7 @@ fn configure_log() {
             File::create("dev.log").expect("Log file can't be created"),
         )
         .expect("log initialization failed");
-        info!("Starting B-Root v{} / jemalloc with log level {}", VERSION, level);
+        info!("Starting B-Root v{} with log level {}", VERSION, level);
     }
 }
 
@@ -177,7 +177,10 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     debug!("output path: {:?}", &con.output_path);
 
     let input_commands: Vec<Command> = match cli_args.value_of("commands") {
-        Some(str) => str.split(' ').map(|s| Command::from(s.to_string())).collect(),
+        Some(str) => str
+            .split(' ')
+            .map(|s| Command::from(s.to_string()))
+            .collect(),
         None => Vec::new(),
     };
 

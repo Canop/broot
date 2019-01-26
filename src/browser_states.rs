@@ -10,7 +10,7 @@ use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
 use crate::external::Launchable;
-use crate::flat_tree::{Tree, LineType};
+use crate::flat_tree::{LineType, Tree};
 use crate::help_states::HelpState;
 use crate::patterns::Pattern;
 use crate::screens::{self, Screen};
@@ -109,7 +109,7 @@ impl AppState for BrowserState {
                         LineType::File => {
                             AppStateCmdResult::Launch(Launchable::opener(&line.path)?)
                         }
-                        LineType::Dir | LineType::SymLinkToDir(_)  => {
+                        LineType::Dir | LineType::SymLinkToDir(_) => {
                             AppStateCmdResult::from_optional_state(BrowserState::new(
                                 line.target(),
                                 tree.options.without_pattern(),
@@ -197,9 +197,9 @@ impl AppState for BrowserState {
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
         if let Some(verb_key) = &cmd.parts.verb {
             match con.verb_store.search(&verb_key) {
-                PrefixSearchResult::NoMatch => screen.write_status_err(
-                    "No matching verb (hit '?' for the list of verbs)",
-                ),
+                PrefixSearchResult::NoMatch => {
+                    screen.write_status_err("No matching verb (hit '?' for the list of verbs)")
+                }
                 PrefixSearchResult::Match(verb) => screen.write_status_text(
                     &format!(
                         "Hit <enter> to {} : {}",

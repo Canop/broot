@@ -1,9 +1,8 @@
 /// In the flat_tree structure, every "node" is just a line, there's
 ///  no link from a child to its parent or from a parent to its children.
-
 use std::cmp::{self, Ordering};
-use std::path::PathBuf;
 use std::fs;
+use std::path::PathBuf;
 
 use crate::file_sizes::Size;
 use crate::task_sync::TaskLifetime;
@@ -23,7 +22,7 @@ pub enum LineType {
 pub struct TreeLine {
     pub left_branchs: Box<[bool]>, // a depth-sized array telling whether a branch pass
     pub depth: u16,
-    pub name: String,    // name of the first unlisted, in case of Pruning
+    pub name: String, // name of the first unlisted, in case of Pruning
     pub path: PathBuf,
     pub line_type: LineType,
     pub has_error: bool,
@@ -40,7 +39,7 @@ pub struct Tree {
     pub lines: Box<[TreeLine]>,
     pub selection: usize, // there's always a selection (starts with root, which is 0)
     pub options: TreeOptions,
-    pub scroll: i32,        // the number of lines at the top hidden because of scrolling
+    pub scroll: i32, // the number of lines at the top hidden because of scrolling
     pub nb_gitignored: u32, // number of times a gitignore pattern excluded a file
 }
 
@@ -79,7 +78,7 @@ impl TreeLine {
                 }
                 target_path
             }
-            _ => self.path.clone()
+            _ => self.path.clone(),
         }
     }
 }
@@ -290,7 +289,7 @@ impl Tree {
             return false;
         }
         for i in 1..self.lines.len() {
-            if self.lines[i].size.is_none() && self.lines[i].line_type==LineType::Dir {
+            if self.lines[i].size.is_none() && self.lines[i].line_type == LineType::Dir {
                 return true;
             }
         }
@@ -305,7 +304,7 @@ impl Tree {
     }
     pub fn fetch_some_missing_dir_size(&mut self, tl: &TaskLifetime) {
         for i in 1..self.lines.len() {
-            if self.lines[i].size.is_none() && self.lines[i].line_type==LineType::Dir {
+            if self.lines[i].size.is_none() && self.lines[i].line_type == LineType::Dir {
                 self.lines[i].size = Size::from_dir(&self.lines[i].path, tl);
                 return;
             }

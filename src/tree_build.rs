@@ -10,7 +10,6 @@ use crate::git_ignore::GitIgnoreFilter;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::{OptionBool, TreeOptions};
 
-
 // like a tree line, but with the info needed during the build
 // This structure isn't usable independantly from the tree builder
 struct BLine {
@@ -344,8 +343,7 @@ impl TreeBuilder {
         open_dirs.push_back(0);
         loop {
             if self.options.pattern.is_some() {
-                if
-                    (nb_lines_ok > 20 * self.targeted_size)
+                if (nb_lines_ok > 20 * self.targeted_size)
                     || (nb_lines_ok >= self.targeted_size && start.elapsed() > not_long)
                 {
                     //debug!("break {} {}", nb_lines_ok, 10 * self.targeted_size);
@@ -425,10 +423,10 @@ impl TreeBuilder {
         let mut remove_queue: BinaryHeap<SortableBLineIdx> = BinaryHeap::new();
         for idx in out_blines[1..].iter() {
             let bline = &self.blines[*idx];
-            if
-                bline.has_match
+            if bline.has_match
                 && bline.nb_kept_children == 0
-                && (bline.depth > 1 || !self.options.show_sizes) // keep the complete first level when showing sizes
+                && (bline.depth > 1 || !self.options.show_sizes)
+            // keep the complete first level when showing sizes
             {
                 remove_queue.push(SortableBLineIdx {
                     idx: *idx,

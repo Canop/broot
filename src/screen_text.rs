@@ -3,8 +3,8 @@
 //! This isn't a generic library. Only features used in
 //! broot are implemented.
 
-use std::io;
 use regex::Regex;
+use std::io;
 use termion::{color, style};
 
 use crate::screens::{Screen, ScreenArea};
@@ -14,7 +14,7 @@ use crate::screens::{Screen, ScreenArea};
 fn append_pad(dest: &mut String, s: &str, w: usize) {
     let s: Vec<char> = s.chars().collect();
     for i in 0..w {
-        dest.push(if i<s.len() { s[i] } else { ' ' });
+        dest.push(if i < s.len() { s[i] } else { ' ' });
     }
 }
 
@@ -66,8 +66,7 @@ struct TextCol<'a, R> {
     width: usize, // padding and border not included
 }
 
-impl<'a, R> TextCol<'a, R> {
-}
+impl<'a, R> TextCol<'a, R> {}
 
 /// A small utility to format some data in a tabular way on screen
 pub struct TextTable<'a, R> {
@@ -76,14 +75,12 @@ pub struct TextTable<'a, R> {
 
 impl<'a, R> TextTable<'a, R> {
     pub fn new() -> TextTable<'a, R> {
-        TextTable {
-            cols: Vec::new(),
-        }
+        TextTable { cols: Vec::new() }
     }
     pub fn add_col(&mut self, title: &str, extract: &'a Fn(&'a R) -> &str) {
         let width = title.len(); // initial value, will change
         let title = title.to_string();
-        self.cols.push(TextCol{
+        self.cols.push(TextCol {
             title,
             extract,
             width,
@@ -105,7 +102,8 @@ impl<'a, R> TextTable<'a, R> {
                 " {}│{} ",
                 color::Fg(color::AnsiValue::grayscale(8)),
                 color::Fg(color::Reset),
-            ).to_string();
+            )
+            .to_string();
         }
         self.compute_col_widths(&rows);
         let mut header = String::new();
@@ -114,7 +112,7 @@ impl<'a, R> TextTable<'a, R> {
             // we're lazy here:
             // we add some bold, and add 4 for the width because we know the * won't
             // show up on screen.
-            append_pad(&mut header, &format!("**{}**", col.title), col.width+4);
+            append_pad(&mut header, &format!("**{}**", col.title), col.width + 4);
         }
         text.md(&header);
         for row in rows {
@@ -122,7 +120,7 @@ impl<'a, R> TextTable<'a, R> {
             for (i, col) in self.cols.iter().enumerate() {
                 line.push_str(&*bar);
                 let s = (col.extract)(row);
-                if i==self.cols.len()-1 {
+                if i == self.cols.len() - 1 {
                     line.push_str(&md(s));
                 } else {
                     append_pad(&mut line, s, col.width);
@@ -130,8 +128,5 @@ impl<'a, R> TextTable<'a, R> {
             }
             text.push(line);
         }
-
     }
-
 }
-
