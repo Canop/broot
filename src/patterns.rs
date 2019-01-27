@@ -18,9 +18,11 @@ pub enum Pattern {
 }
 
 impl Pattern {
+    /// create a new fuzzy pattern
     pub fn fuzzy(pat: &str) -> Pattern {
         Pattern::Fuzzy(FuzzyPattern::from(pat))
     }
+    /// try to create a regex pattern
     pub fn regex(pat: &str) -> result::Result<Pattern, regex::Error> {
         Ok(Pattern::Regex(RegexPattern::from(pat)?))
     }
@@ -40,6 +42,8 @@ impl Pattern {
             _ => true,
         }
     }
+    /// empties the pattern and return it
+    /// Similar to Option::take
     pub fn take(&mut self) -> Pattern {
         mem::replace(self, Pattern::None)
     }

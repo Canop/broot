@@ -1,4 +1,5 @@
 //! the thing which shows we're waiting for a long task
+//! Executed during the do_pending_tasks of the states
 
 use std::io::{self, Write};
 use termion::color;

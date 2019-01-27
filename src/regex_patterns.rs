@@ -1,3 +1,4 @@
+//! a filename filtering pattern using a regular expression
 
 use core::result;
 use regex;
