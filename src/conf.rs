@@ -102,6 +102,12 @@ const DEFAULT_CONF_FILE: &str = r#"
 # The configuration documentation and complete list of built-in verbs
 # can be found in https://github.com/Canop/broot/documentation.md
 
+
+[[verbs]]
+name = "parent"
+invocation = "p"
+execution = ":parent"
+
 [[verbs]]
 name = "edit"
 invocation = "ed"

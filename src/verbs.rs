@@ -309,16 +309,31 @@ impl VerbStore {
     pub fn matching_verbs(&self, prefix: &str) -> Vec<&Verb> {
         self.verbs.iter().filter(|v| v.matches(prefix)).collect()
     }
-    // TODO remove ? The intermediate PrefixSearchResult is about useless
     pub fn search(&self, prefix: &str) -> PrefixSearchResult<&Verb> {
-        if prefix.len() == 0 {
-            return PrefixSearchResult::TooManyMatches;
+        let mut found_index = 0;
+        let mut nb_found = 0;
+        for (index, verb) in self.verbs.iter().enumerate() {
+            if let Some(short_key) = &verb.short_key {
+                if short_key.starts_with(prefix) {
+                    if short_key == prefix {
+                        return PrefixSearchResult::Match(&verb);
+                    }
+                    found_index = index;
+                    nb_found += 1;
+                    continue;
+                }
+            }
+            if verb.long_key.starts_with(prefix) {
+                if verb.long_key == prefix {
+                    return PrefixSearchResult::Match(&verb);
+                }
+                found_index = index;
+                nb_found += 1;
+            }
         }
-        let matching_verbs = self.matching_verbs(prefix);
-        debug!("matching verbs: {:?}", &matching_verbs);
-        match matching_verbs.len() {
+        match nb_found {
             0 => PrefixSearchResult::NoMatch,
-            1 => PrefixSearchResult::Match(matching_verbs[0]),
+            1 => PrefixSearchResult::Match(&self.verbs[found_index]),
             _ => PrefixSearchResult::TooManyMatches,
         }
     }
