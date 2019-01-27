@@ -15,6 +15,8 @@ mod errors;
 mod external;
 mod file_sizes;
 mod flat_tree;
+mod fuzzy_patterns;
+mod regex_patterns;
 mod git_ignore;
 mod help_states;
 mod input;

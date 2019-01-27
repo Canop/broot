@@ -54,6 +54,7 @@ impl Verb {
             description: description.to_string(),
         }
     }
+    #[allow(dead_code)]
     fn matches(&self, prefix: &str) -> bool {
         if let Some(s) = &self.short_key {
             if s.starts_with(prefix) {
@@ -306,6 +307,7 @@ impl VerbStore {
             }
         }
     }
+    #[allow(dead_code)]
     pub fn matching_verbs(&self, prefix: &str) -> Vec<&Verb> {
         self.verbs.iter().filter(|v| v.matches(prefix)).collect()
     }

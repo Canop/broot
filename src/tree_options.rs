@@ -31,7 +31,7 @@ pub struct TreeOptions {
     pub show_sizes: bool,
     pub show_permissions: bool,
     pub respect_git_ignore: OptionBool,
-    pub pattern: Option<Pattern>,
+    pub pattern: Pattern,
 }
 
 impl TreeOptions {
@@ -42,7 +42,7 @@ impl TreeOptions {
             show_sizes: false,
             show_permissions: false,
             respect_git_ignore: OptionBool::Auto,
-            pattern: None,
+            pattern: Pattern::None,
         }
     }
     pub fn without_pattern(&self) -> TreeOptions {
@@ -52,7 +52,7 @@ impl TreeOptions {
             show_sizes: self.show_sizes,
             show_permissions: self.show_permissions,
             respect_git_ignore: self.respect_git_ignore,
-            pattern: None,
+            pattern: Pattern::None,
         }
     }
 }

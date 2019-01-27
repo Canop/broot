@@ -24,13 +24,13 @@ use crate::verbs::{PrefixSearchResult, VerbExecutor};
 pub struct BrowserState {
     pub tree: Tree,
     pub filtered_tree: Option<Tree>,
-    pending_pattern: Option<Pattern>, // a pattern which has not yet be applied
+    pending_pattern: Pattern, // a pattern (or not) which has not yet be applied
 }
 
 impl BrowserState {
     pub fn new(path: PathBuf, mut options: TreeOptions, tl: &TaskLifetime) -> Option<BrowserState> {
         let pending_pattern = options.pattern;
-        options.pattern = None;
+        options.pattern = Pattern::None;
         let builder = TreeBuilder::from(path, options, screens::max_tree_height() as usize);
         match builder.build(tl) {
             Some(tree) => Some(BrowserState {
@@ -51,7 +51,7 @@ impl BrowserState {
 
 impl AppState for BrowserState {
     fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult> {
-        self.pending_pattern = None;
+        self.pending_pattern = Pattern::None;
         let (_, page_height) = termion::terminal_size().unwrap();
         let mut page_height = page_height as i32;
         page_height -= 2;
@@ -135,8 +135,20 @@ impl AppState for BrowserState {
                     AppStateCmdResult::Keep
                 }
                 _ => {
-                    self.pending_pattern = Some(Pattern::from(pat));
-                    AppStateCmdResult::Keep
+                    if cmd.parts.has_regex {
+                        match Pattern::regex(pat) {
+                            Ok(regex_pattern) => {
+                                self.pending_pattern = regex_pattern;
+                                AppStateCmdResult::Keep
+                            }
+                            Err(_) => {
+                                AppStateCmdResult::DisplayError("Invalid Regular Expression".to_string())
+                            }
+                        }
+                    } else {
+                        self.pending_pattern = Pattern::fuzzy(pat);
+                        AppStateCmdResult::Keep
+                    }
                 }
             },
             Action::Help(about) => AppStateCmdResult::NewState(Box::new(HelpState::new(&about))),
@@ -164,10 +176,10 @@ impl AppState for BrowserState {
     /// do some work, totally or partially, if there's some to do.
     /// Stop as soon as the lifetime is expired.
     fn do_pending_task(&mut self, tl: &TaskLifetime) {
-        if let Some(pat) = &mut self.pending_pattern {
+        if self.pending_pattern.is_some() {
             let start = Instant::now();
             let mut options = self.tree.options.clone();
-            options.pattern = Some(pat.clone());
+            options.pattern = self.pending_pattern.take();
             let root = self.tree.root().clone();
             let len = self.tree.lines.len() as u16;
             let mut filtered_tree = TreeBuilder::from(root, options, len as usize).build(tl);
@@ -180,7 +192,6 @@ impl AppState for BrowserState {
                 filtered_tree.make_selection_visible(page_height);
             } // if none: task was cancelled from elsewhere
             self.filtered_tree = filtered_tree;
-            self.pending_pattern = None;
             return;
         }
         if let Some(ref mut tree) = self.filtered_tree {

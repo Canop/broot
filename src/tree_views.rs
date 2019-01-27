@@ -14,7 +14,7 @@ pub trait TreeView {
         &mut self,
         line: &TreeLine,
         idx: usize,
-        pattern: &Option<Pattern>,
+        pattern: &Pattern,
     ) -> io::Result<()>;
 }
 
@@ -211,7 +211,7 @@ impl TreeView for Screen {
         &mut self,
         line: &TreeLine,
         idx: usize,
-        pattern: &Option<Pattern>,
+        pattern: &Pattern,
     ) -> io::Result<()> {
         lazy_static! {
             static ref fg_reset: String = format!("{}", color::Fg(color::White)).to_string();
@@ -294,12 +294,12 @@ impl TreeView for Screen {
 
 fn decorated_name<'a>(
     name: &'a str,
-    pattern: &Option<Pattern>,
+    pattern: &Pattern,
     prefix: &str,
     postfix: &str,
 ) -> Cow<'a, str> {
-    if let Some(p) = pattern {
-        if let Some(m) = p.test(name) {
+    if pattern.is_some() {
+        if let Some(m) = pattern.test(name) {
             return Cow::Owned(m.wrap_matching_chars(name, prefix, postfix));
         }
     }

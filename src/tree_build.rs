@@ -95,8 +95,8 @@ impl BLine {
         }
         let mut has_match = true;
         let mut score = 0;
-        if let Some(pattern) = &options.pattern {
-            if let Some(m) = pattern.test(&name) {
+        if options.pattern.is_some() {
+            if let Some(m) = options.pattern.test(&name) {
                 score = m.score;
             } else {
                 has_match = false;

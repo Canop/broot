@@ -14,6 +14,7 @@ pub struct Command {
 
 #[derive(Debug, Clone)]
 pub struct CommandParts {
+    pub has_regex: bool,
     pub pattern: Option<String>,
     pub verb: Option<String>, // may be Some("") if the user already typed the separator
 }
@@ -35,6 +36,7 @@ pub enum Action {
 impl CommandParts {
     fn new() -> CommandParts {
         CommandParts {
+            has_regex: false,
             pattern: None,
             verb: None,
         }
@@ -45,6 +47,7 @@ impl CommandParts {
             static ref RE: Regex = Regex::new(
                 r"(?x)
                 ^
+                (?P<slash>/)?
                 (?P<pattern>[^\s/:]+)?
                 (?:[\s:]+(?P<verb>\S*))?
                 $
@@ -53,6 +56,7 @@ impl CommandParts {
             .unwrap();
         }
         if let Some(c) = RE.captures(raw) {
+            cp.has_regex = c.name("slash").is_some();
             if let Some(pattern) = c.name("pattern") {
                 cp.pattern = Some(String::from(pattern.as_str()));
             }
