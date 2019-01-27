@@ -151,7 +151,7 @@ impl AppState for BrowserState {
                     }
                 }
             },
-            Action::Help(about) => AppStateCmdResult::NewState(Box::new(HelpState::new(&about))),
+            Action::Help() => AppStateCmdResult::NewState(Box::new(HelpState::new())),
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
                     tree.try_select_next_match();

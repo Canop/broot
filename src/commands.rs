@@ -29,7 +29,7 @@ pub enum Action {
     PatternEdit(String), // a pattern being edited
     Back,                // back to last app state, or clear pattern
     Next,
-    Help(String),
+    Help(),
     Unparsed, // or unparsable
 }
 
@@ -124,10 +124,6 @@ impl Command {
             Key::Char('\t') => {
                 self.action = Action::Next;
             }
-            Key::Char('?') => {
-                // we might be a little more subtle in the future
-                self.action = Action::Help(self.raw.to_owned());
-            }
             Key::Char('\n') => {
                 self.action = Action::from(&self.parts, true);
             }
@@ -144,9 +140,14 @@ impl Command {
                 self.action = Action::ScrollPage(1);
             }
             Key::Char(c) => {
-                self.raw.push(c);
-                self.parts = CommandParts::from(&self.raw);
-                self.action = Action::from(&self.parts, false);
+                if c=='?' && self.raw.is_empty() {
+                    // as first character, a '?' is a request for help
+                    self.action = Action::Help();
+                } else {
+                    self.raw.push(c);
+                    self.parts = CommandParts::from(&self.raw);
+                    self.action = Action::from(&self.parts, false);
+                }
             }
             Key::Esc => {
                 self.action = Action::Back;

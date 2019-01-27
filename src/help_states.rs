@@ -17,7 +17,7 @@ pub struct HelpState {
 }
 
 impl HelpState {
-    pub fn new(_about: &str) -> HelpState {
+    pub fn new() -> HelpState {
         let (w, h) = termion::terminal_size().unwrap();
         let area = ScreenArea::new(1, h - 2, w);
         HelpState { area }

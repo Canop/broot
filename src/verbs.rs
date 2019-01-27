@@ -99,6 +99,7 @@ impl VerbExecutor for BrowserState {
         let line = &tree.selected_line();
         Ok(match verb.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
+            ":help" => AppStateCmdResult::NewState(Box::new(HelpState::new())),
             ":focus" => {
                 let path = tree.selected_line().path.clone();
                 let options = tree.options.clone();
@@ -263,6 +264,9 @@ impl VerbStore {
         ));
         self.verbs.push(Verb::create_built_in(
             "focus", Some("goto".to_string()), "displays a directory (mapped to `<enter>`)",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "help", Some("?".to_string()), "displays broot's help",
         ));
         self.verbs.push(Verb::create_built_in(
             "open", None, "opens a file according to OS settings (mapped to `<enter>`)",
