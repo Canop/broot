@@ -299,7 +299,7 @@ fn decorated_name<'a>(
     postfix: &str,
 ) -> Cow<'a, str> {
     if pattern.is_some() {
-        if let Some(m) = pattern.test(name) {
+        if let Some(m) = pattern.find(name) {
             return Cow::Owned(m.wrap_matching_chars(name, prefix, postfix));
         }
     }

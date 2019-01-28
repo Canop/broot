@@ -1,8 +1,9 @@
-//! a simple and fast fuzzy pattern matcher for filename filtering / sorting
+//! a simple and fast fuzzy pattern matcher for filename filtering / sorting.
 //! It's not meant for file contents but for small strings (less than 1000 chars)
 //!  such as file names.
 //! Speed is prefered over score precision.
 
+use std::fmt;
 use crate::patterns::{Match};
 
 // weights used in match score computing
@@ -17,6 +18,13 @@ const MAX_LENGTH_PER_CHAR: usize = 2;
 #[derive(Debug, Clone)]
 pub struct FuzzyPattern {
     lc_chars: Box<[char]>, // lowercase characters
+}
+
+impl fmt::Display for FuzzyPattern {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // TODO is there a clean and efficient way to display a [char] ?
+        write!(f, "{}", self.lc_chars.iter().collect::<String>())
+    }
 }
 
 impl FuzzyPattern {
@@ -53,7 +61,7 @@ impl FuzzyPattern {
         Some(Match { score: 0, pos })
     }
     // return a match if the pattern can be found in the candidate string
-    pub fn test(&self, candidate: &str) -> Option<Match> {
+    pub fn find(&self, candidate: &str) -> Option<Match> {
         let cand_chars: Vec<char> = candidate.chars().map(|c| c.to_ascii_lowercase()).collect();
         if cand_chars.len() < self.lc_chars.len() {
             return None;

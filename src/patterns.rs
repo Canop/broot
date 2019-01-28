@@ -4,7 +4,7 @@
 //!  score)
 
 use core::result;
-use std::mem;
+use std::{fmt, mem};
 use regex;
 
 use crate::fuzzy_patterns::{FuzzyPattern};
@@ -17,6 +17,16 @@ pub enum Pattern {
     Regex(RegexPattern),
 }
 
+impl fmt::Display for Pattern {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Pattern::Fuzzy(fp) => write!(f, "Fuzzy({})", fp),
+            Pattern::Regex(rp) => write!(f, "Regex({})", rp),
+            Pattern::None => write!(f, "None"),
+        }
+    }
+}
+
 impl Pattern {
     /// create a new fuzzy pattern
     pub fn fuzzy(pat: &str) -> Pattern {
@@ -26,10 +36,10 @@ impl Pattern {
     pub fn regex(pat: &str) -> result::Result<Pattern, regex::Error> {
         Ok(Pattern::Regex(RegexPattern::from(pat)?))
     }
-    pub fn test(&self, candidate: &str) -> Option<Match> {
+    pub fn find(&self, candidate: &str) -> Option<Match> {
         match self {
-            Pattern::Fuzzy(fp) => fp.test(candidate),
-            Pattern::Regex(rp) => rp.test(candidate),
+            Pattern::Fuzzy(fp) => fp.find(candidate),
+            Pattern::Regex(rp) => rp.find(candidate),
             Pattern::None => Some(Match { // this isn't really supposed to be used
                 score: 1,
                 pos: Vec::with_capacity(0),

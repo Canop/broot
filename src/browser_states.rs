@@ -184,7 +184,7 @@ impl AppState for BrowserState {
             let len = self.tree.lines.len() as u16;
             let mut filtered_tree = TreeBuilder::from(root, options, len as usize).build(tl);
             if let Some(ref mut filtered_tree) = filtered_tree {
-                info!("Tree search took {:?}", start.elapsed());
+                info!("Tree search with pattern {} took {:?}", &filtered_tree.options.pattern, start.elapsed());
                 filtered_tree.try_select_best_match();
                 let (_, page_height) = termion::terminal_size().unwrap();
                 let mut page_height = page_height as i32;
@@ -209,7 +209,7 @@ impl AppState for BrowserState {
         if let Some(verb_key) = &cmd.parts.verb {
             match con.verb_store.search(&verb_key) {
                 PrefixSearchResult::NoMatch => {
-                    screen.write_status_err("No matching verb (hit '?' for the list of verbs)")
+                    screen.write_status_err("No matching verb (':?' for the list of verbs)")
                 }
                 PrefixSearchResult::Match(verb) => screen.write_status_text(
                     &format!(
@@ -221,7 +221,7 @@ impl AppState for BrowserState {
                 ),
                 PrefixSearchResult::TooManyMatches => screen.write_status_text(
                     // TODO show what verbs start with the currently edited verb key
-                    "Type a verb then <enter> to execute it (hit '?' for the list of verbs)",
+                    "Type a verb then <enter> to execute it (':?' for the list of verbs)",
                 ),
             }
         } else if let Some(_) = &cmd.parts.pattern {
@@ -230,7 +230,7 @@ impl AppState for BrowserState {
             let tree = self.displayed_tree();
             if tree.selection == 0 {
                 screen.write_status_text(
-                    "Hit <enter> to quit, '?' for help, or type a few file's letters to navigate",
+                    "Hit <enter> to quit, '?' for help, or a few letters to search",
                 )
             } else {
                 let line = &tree.lines[tree.selection];
