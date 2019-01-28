@@ -46,7 +46,7 @@ For example this one:
 	invocation = "e"
 	execution = "/usr/bin/nvim {file}"
 
-This means that typing `:e` then `<enter>` opens the selected file in neovim.
+This means that typing `:e` then `<enter>` opens the selected file in neovim (when you're in the help screen, the selected file is broot's configuration file).
 
 (this is a part of the default configuration, and probably the first verb you should change for your personal setup)
 

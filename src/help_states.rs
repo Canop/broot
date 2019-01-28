@@ -72,7 +72,7 @@ impl AppState for HelpState {
         text.md(r#" `<esc>` gets you back to the previous state."#);
         text.md(r#" Typing some letters searches the tree and selects the most relevant file."#);
         text.md(r#" To use a regular expression, use a slash eg `/j(ava|s)$`."#);
-        text.md(r#" To execute a verb, type a space or `:` then the start of its name or shortcut."#);
+        text.md(r#" To execute a verb, type a space or `:` then start of its name or shortcut."#);
         text.md("");
         text.md(" Verbs:");
         self.build_verbs_table(&mut text, con);

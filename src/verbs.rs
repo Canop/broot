@@ -224,18 +224,20 @@ impl Verb {
             .collect()
     }
     pub fn description_for(&self, state: &BrowserState) -> String {
+        let line = match &state.filtered_tree {
+            Some(tree) => tree.selected_line(),
+            None => state.tree.selected_line(),
+        };
+        let mut path = line.target();
         if self.exec_pattern == ":cd" {
-            let line = match &state.filtered_tree {
-                Some(tree) => tree.selected_line(),
-                None => state.tree.selected_line(),
-            };
-            let mut path = line.target();
             if !line.is_dir() {
                 path = path.parent().unwrap().to_path_buf();
             }
             format!("cd {}", path.to_string_lossy())
-        } else {
+        } else if self.exec_pattern.starts_with(':') {
             self.description.to_string()
+        } else {
+            self.exec_token(&path).join(" ")
         }
     }
 }
@@ -287,7 +289,7 @@ impl VerbStore {
             "toggle_git_ignore", Some("gi".to_string()), "toggles use of .gitignore",
         ));
         self.verbs.push(Verb::create_built_in(
-            "toggle_hidden", Some("hidden".to_string()), "toggles showing hidden files",
+            "toggle_hidden", Some("h".to_string()), "toggles showing hidden files",
         ));
         self.verbs.push(Verb::create_built_in(
             "toggle_perm", Some("perm".to_string()), "toggles showing file permissions",
