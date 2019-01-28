@@ -29,13 +29,15 @@ pub struct Conf {
     pub verbs: Vec<VerbConf>,
 }
 
-fn string_field(value: &Value, field_name: &str) -> Result<String, ConfError> {
-    match &value[field_name] {
-        Value::String(s) => Ok(s.to_owned()),
-        _ => Err(ConfError::MissingField {
-            txt: field_name.to_owned(),
-        }),
+fn string_field(value: &Value, field_name: &str) -> Option<String> {
+    if let Value::Table(tbl) = value {
+        if let Some(fv) = tbl.get(field_name) {
+            if let Some(s) = fv.as_str() {
+                return Some(s.to_string());
+            }
+        }
     }
+    None
 }
 
 impl Conf {
@@ -70,16 +72,42 @@ impl Conf {
         fs::write(filepath, DEFAULT_CONF_FILE)?;
         Ok(())
     }
-    // read the configuration from a given path. Assume it exists
+    // read the configuration from a given path. Assume it exists.
+    // stderr is supposed to be a valid solution for displaying errors
+    // (i.e. this function is called before or after the terminal alternation)
     pub fn from_file(filepath: &Path) -> Result<Conf, ConfError> {
         let data = fs::read_to_string(filepath)?;
         let root: Value = data.parse::<Value>()?;
         let mut verbs: Vec<VerbConf> = vec![];
         if let Value::Array(verbs_value) = &root["verbs"] {
             for verb_value in verbs_value.iter() {
-                let name = string_field(verb_value, "name")?;
-                let invocation = string_field(verb_value, "invocation")?;
-                let execution = string_field(verb_value, "execution")?;
+                let invocation = match string_field(verb_value, "invocation") {
+                    Some(s) => s,
+                    None => {
+                        eprintln!("Missing invocation in [[verbs]] entry in configuration");
+                        continue;
+                    }
+                };
+                let execution = match string_field(verb_value, "execution") {
+                    Some(s) => s,
+                    None => {
+                        eprintln!("Missing execution in [[verbs]] entry in configuration");
+                        continue;
+                    }
+                };
+                let name = match string_field(verb_value, "name") {
+                    Some(s) => s,
+                    None => {
+                        if execution.starts_with(":") {
+                            // we'll assume that this entry isn't a new verb definition
+                            // but just the addition of a shortcut for a built-in verb
+                            "unnamed".to_string()
+                        } else {
+                            eprintln!("Missing name in [[verbs]] entry in configuration");
+                            continue;
+                        }
+                    }
+                };
                 verbs.push(VerbConf {
                     name,
                     invocation,
@@ -103,10 +131,15 @@ const DEFAULT_CONF_FILE: &str = r#"
 # can be found in https://github.com/Canop/broot/documentation.md
 
 
+###############################
+# shortcuts for built-in verbs:
+
 [[verbs]]
-name = "parent"
 invocation = "p"
 execution = ":parent"
+
+#####################
+# user defined verbs:
 
 [[verbs]]
 name = "edit"
