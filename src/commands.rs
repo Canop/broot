@@ -47,8 +47,9 @@ impl CommandParts {
             static ref RE: Regex = Regex::new(
                 r"(?x)
                 ^
-                (?P<slash>/)?
+                (?P<slash_before>/)?
                 (?P<pattern>[^\s/:]+)?
+                (?P<slash_after>/)?
                 (?:[\s:]+(?P<verb>\S*))?
                 $
                 "
@@ -56,7 +57,7 @@ impl CommandParts {
             .unwrap();
         }
         if let Some(c) = RE.captures(raw) {
-            cp.has_regex = c.name("slash").is_some();
+            cp.has_regex = c.name("slash_before").is_some() || c.name("slash_after").is_some();
             if let Some(pattern) = c.name("pattern") {
                 cp.pattern = Some(String::from(pattern.as_str()));
             }
@@ -101,6 +102,12 @@ impl Command {
         if self.parts.verb.is_some() {
             if let Some(pat) = &self.parts.pattern {
                 c.raw = pat.to_owned();
+                if self.parts.has_regex {
+                    // we prefer the slash as postfix because it
+                    // makes it easier to switch between regex
+                    // and fuzzy pattern
+                    c.raw.push('/');
+                }
             }
         }
         c
