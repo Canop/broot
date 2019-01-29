@@ -17,10 +17,12 @@ pub struct HelpState {
 }
 
 impl HelpState {
-    pub fn new() -> HelpState {
-        let (w, h) = termion::terminal_size().unwrap();
-        let area = ScreenArea::new(1, h - 2, w);
-        HelpState { area }
+    pub fn new(screen: &Screen) -> HelpState {
+        let mut state = HelpState {
+            area: ScreenArea::new(1, 1, 1),
+        };
+        state.resize_area(screen);
+        state
     }
     fn build_verbs_table(&self, text: &mut Text, con: &AppContext) {
         let mut tbl: TextTable<Verb> = TextTable::new();
@@ -35,14 +37,19 @@ impl HelpState {
         tbl.add_col("description", &|verb: &Verb| &verb.description);
         tbl.write(&con.verb_store.verbs, text);
     }
+    fn resize_area(&mut self, screen: &Screen) {
+        self.area.bottom = screen.h - 2;
+        self.area.width = screen.w;
+    }
 }
 
 impl AppState for HelpState {
-    fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    fn apply(&mut self, cmd: &mut Command, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
+        self.resize_area(screen);
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
             Action::Verb(verb_key) => match con.verb_store.search(&verb_key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, con)?,
+                PrefixSearchResult::Match(verb) => self.execute_verb(verb, screen, con)?,
                 _ => AppStateCmdResult::verb_not_found(&verb_key),
             },
             Action::MoveSelection(dy) => {
@@ -57,7 +64,7 @@ impl AppState for HelpState {
         false
     }
 
-    fn do_pending_task(&mut self, _tl: &TaskLifetime) {
+    fn do_pending_task(&mut self, _screen: &Screen, _tl: &TaskLifetime) {
         unreachable!();
     }
 

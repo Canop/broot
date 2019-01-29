@@ -42,12 +42,10 @@ use std::str::FromStr;
 
 use crate::app::App;
 use crate::app_context::AppContext;
-use crate::browser_states::BrowserState;
 use crate::commands::Command;
 use crate::conf::Conf;
 use crate::errors::ProgramError;
 use crate::external::Launchable;
-use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
 use crate::verbs::VerbStore;
 
@@ -186,15 +184,11 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         None => Vec::new(),
     };
 
-    Ok(
-        match BrowserState::new(path.clone(), tree_options, &TaskLifetime::unlimited()) {
-            Some(bs) => {
-                let mut app = App::new();
-                app.push(Box::new(bs));
-                app.run(&con, input_commands)?
-            }
-            _ => None, // should not happen, as the lifetime is "unlimited"
-        },
+    App::new().run(
+        &con,
+        path,
+        tree_options,
+        input_commands,
     )
 }
 

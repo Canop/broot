@@ -8,6 +8,7 @@
 //! - a request to quit broot
 //! - a request to launch an executable (thus leaving broot)
 use std::io::{self, stdin, Write};
+use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread;
@@ -17,11 +18,13 @@ use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::commands::Command;
 use crate::external::Launchable;
+use crate::errors::ProgramError;
 use crate::input::Input;
 use crate::screens::Screen;
 use crate::spinner::Spinner;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
+use crate::tree_options::TreeOptions;
 
 /// Result of applying a command to a state
 pub enum AppStateCmdResult {
@@ -46,9 +49,9 @@ impl AppStateCmdResult {
 }
 
 pub trait AppState {
-    fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult>;
+    fn apply(&mut self, cmd: &mut Command, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult>;
     fn has_pending_tasks(&self) -> bool;
-    fn do_pending_task(&mut self, tl: &TaskLifetime);
+    fn do_pending_task(&mut self, screen: &Screen, tl: &TaskLifetime);
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()>;
     fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
@@ -108,7 +111,7 @@ impl App {
                 if tl.is_expired() {
                     break;
                 }
-                self.mut_state().do_pending_task(&tl);
+                self.mut_state().do_pending_task(screen, &tl);
                 if !self.state().has_pending_tasks() {
                     break;
                 }
@@ -130,9 +133,10 @@ impl App {
     ) -> io::Result<Command> {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
+        screen.read_size()?;
         screen.write_input(&cmd)?;
         self.state().write_flags(screen, con)?;
-        match self.mut_state().apply(&mut cmd, con)? {
+        match self.mut_state().apply(&mut cmd, screen, con)? {
             AppStateCmdResult::Quit => {
                 debug!("cmd result quit");
                 self.quitting = true;
@@ -169,15 +173,33 @@ impl App {
     }
 
     /// This is the main loop of the application
-    pub fn run(mut self, con: &AppContext, input_commands: Vec<Command>) -> io::Result<Option<Launchable>> {
-        let (w, h) = termion::terminal_size()?;
-        let mut screen = Screen::new(w, h)?;
+    pub fn run(
+        mut self,
+        con: &AppContext,
+        initial_path: PathBuf,
+        initial_options: TreeOptions,
+        input_commands: Vec<Command>, // commands passed as cli argument
+    ) -> Result<Option<Launchable>, ProgramError> {
+
+        let mut screen = Screen::new()?;
         write!(
             screen.stdout,
             "{}{}",
             termion::clear::All,
             termion::cursor::Hide
         )?;
+
+        // create the initial state
+        if let Some(bs) = BrowserState::new(
+            initial_path,
+            initial_options,
+            &screen,
+            &TaskLifetime::unlimited(),
+        ) {
+            self.push(Box::new(bs));
+        } else {
+            unreachable!();
+        }
 
         // if some commands were passed to the application
         //  we execute them before even starting listening for keys

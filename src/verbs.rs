@@ -9,8 +9,9 @@ use crate::browser_states::BrowserState;
 use crate::conf::Conf;
 use crate::external::Launchable;
 use crate::help_states::HelpState;
+use crate::screens::Screen;
 use crate::task_sync::TaskLifetime;
-use crate::tree_options::OptionBool;
+use crate::tree_options::{OptionBool, TreeOptions};
 
 #[derive(Debug, Clone)]
 pub struct Verb {
@@ -71,11 +72,11 @@ pub struct VerbStore {
 }
 
 pub trait VerbExecutor {
-    fn execute_verb(&self, verb: &Verb, con: &AppContext) -> io::Result<AppStateCmdResult>;
+    fn execute_verb(&self, verb: &Verb, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult>;
 }
 
 impl VerbExecutor for HelpState {
-    fn execute_verb(&self, verb: &Verb, _con: &AppContext) -> io::Result<AppStateCmdResult> {
+    fn execute_verb(&self, verb: &Verb, _screen: &Screen, _con: &AppContext) -> io::Result<AppStateCmdResult> {
         Ok(match verb.exec_pattern.as_ref() {
             ":open" => AppStateCmdResult::Launch(Launchable::opener(&Conf::default_location())?),
             ":quit" => AppStateCmdResult::Quit,
@@ -91,7 +92,7 @@ impl VerbExecutor for HelpState {
 }
 
 impl VerbExecutor for BrowserState {
-    fn execute_verb(&self, verb: &Verb, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    fn execute_verb(&self, verb: &Verb, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
         let tree = match &self.filtered_tree {
             Some(tree) => &tree,
             None => &self.tree,
@@ -99,86 +100,6 @@ impl VerbExecutor for BrowserState {
         let line = &tree.selected_line();
         Ok(match verb.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
-            ":help" => AppStateCmdResult::NewState(Box::new(HelpState::new())),
-            ":focus" => {
-                let path = tree.selected_line().path.clone();
-                let options = tree.options.clone();
-                AppStateCmdResult::from_optional_state(BrowserState::new(
-                    path,
-                    options,
-                    &TaskLifetime::unlimited(),
-                ))
-            }
-            ":toggle_hidden" => {
-                let mut options = tree.options.clone();
-                options.show_hidden = !options.show_hidden;
-                AppStateCmdResult::from_optional_state(BrowserState::new(
-                    self.tree.root().clone(),
-                    options,
-                    &TaskLifetime::unlimited(),
-                ))
-            }
-            ":toggle_git_ignore" => {
-                let mut options = tree.options.clone();
-                options.respect_git_ignore = match options.respect_git_ignore {
-                    OptionBool::Auto => {
-                        if tree.nb_gitignored > 0 {
-                            OptionBool::No
-                        } else {
-                            OptionBool::Yes
-                        }
-                    }
-                    OptionBool::Yes => OptionBool::No,
-                    OptionBool::No => OptionBool::Yes,
-                };
-                debug!("respect_git_ignore = {:?}", options.respect_git_ignore);
-                AppStateCmdResult::from_optional_state(BrowserState::new(
-                    self.tree.root().clone(),
-                    options,
-                    &TaskLifetime::unlimited(),
-                ))
-            }
-            ":toggle_files" => {
-                let mut options = tree.options.clone();
-                options.only_folders = !options.only_folders;
-                AppStateCmdResult::from_optional_state(BrowserState::new(
-                    self.tree.root().clone(),
-                    options,
-                    &TaskLifetime::unlimited(),
-                ))
-            }
-            ":toggle_perm" => {
-                let mut options = tree.options.clone();
-                options.show_permissions = !options.show_permissions;
-                AppStateCmdResult::from_optional_state(BrowserState::new(
-                    self.tree.root().clone(),
-                    options,
-                    &TaskLifetime::unlimited(),
-                ))
-            }
-            ":toggle_sizes" => {
-                let mut options = tree.options.clone();
-                options.show_sizes = !options.show_sizes;
-                AppStateCmdResult::from_optional_state(BrowserState::new(
-                    self.tree.root().clone(),
-                    options,
-                    &TaskLifetime::unlimited(),
-                ))
-            }
-            ":print_path" => {
-                if let Some(ref output_path) = con.output_path {
-                    // an output path was provided, we write to it
-                    let f = OpenOptions::new().append(true).open(output_path)?;
-                    writeln!(&f, "{}", line.target().to_string_lossy())?;
-                    AppStateCmdResult::Quit
-                } else {
-                    // no output path provided. We write on stdout, but we must
-                    // do it after app closing to have the normal terminal
-                    let mut launchable = Launchable::from(vec![line.target().to_string_lossy().to_string()])?;
-                    launchable.just_print = true;
-                    AppStateCmdResult::Launch(launchable)
-                }
-            }
             ":cd" => {
                 if let Some(ref output_path) = con.output_path {
                     // an output path was provided, we write to it
@@ -197,6 +118,17 @@ impl VerbExecutor for BrowserState {
                     )
                 }
             }
+            ":focus" => {
+                let path = tree.selected_line().path.clone();
+                let options = tree.options.clone();
+                AppStateCmdResult::from_optional_state(BrowserState::new(
+                    path,
+                    options,
+                    screen,
+                    &TaskLifetime::unlimited(),
+                ))
+            }
+            ":help" => AppStateCmdResult::NewState(Box::new(HelpState::new(screen))),
             ":open" => AppStateCmdResult::Launch(Launchable::opener(&line.target())?),
             ":parent" => match &line.target().parent() {
                 Some(path) => {
@@ -205,11 +137,43 @@ impl VerbExecutor for BrowserState {
                     AppStateCmdResult::from_optional_state(BrowserState::new(
                         path,
                         options,
+                        screen,
                         &TaskLifetime::unlimited(),
                     ))
                 }
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
+            ":print_path" => {
+                if let Some(ref output_path) = con.output_path {
+                    // an output path was provided, we write to it
+                    let f = OpenOptions::new().append(true).open(output_path)?;
+                    writeln!(&f, "{}", line.target().to_string_lossy())?;
+                    AppStateCmdResult::Quit
+                } else {
+                    // no output path provided. We write on stdout, but we must
+                    // do it after app closing to have the normal terminal
+                    let mut launchable = Launchable::from(vec![line.target().to_string_lossy().to_string()])?;
+                    launchable.just_print = true;
+                    AppStateCmdResult::Launch(launchable)
+                }
+            }
+            ":toggle_files" => self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true),
+            ":toggle_hidden" => self.with_new_options(screen, &|o| o.show_hidden ^= true),
+            ":toggle_git_ignore" => self.with_new_options(screen, &|options| {
+                options.respect_git_ignore = match options.respect_git_ignore {
+                    OptionBool::Auto => {
+                        if tree.nb_gitignored > 0 {
+                            OptionBool::No
+                        } else {
+                            OptionBool::Yes
+                        }
+                    }
+                    OptionBool::Yes => OptionBool::No,
+                    OptionBool::No => OptionBool::Yes,
+                };
+            }),
+            ":toggle_perm" => self.with_new_options(screen, &|o| o.show_permissions ^= true),
+            ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":quit" => AppStateCmdResult::Quit,
             _ => AppStateCmdResult::Launch(Launchable::from(verb.exec_token(&line.target()))?),
         })

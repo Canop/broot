@@ -17,66 +17,19 @@ pub struct ScreenArea {
     pub content_length: i32,
     pub width: u16,
 }
-impl ScreenArea {
-    pub fn new(top: u16, bottom: u16, width: u16) -> ScreenArea {
-        ScreenArea {
-            top,
-            bottom,
-            scroll: 0,
-            content_length: 0,
-            width,
-        }
-    }
-    pub fn try_scroll(&mut self, dy: i32) {
-        self.scroll += dy;
-        if self.scroll < 0 {
-            self.scroll = 0;
-        } else if self.scroll >= self.content_length {
-            self.scroll = self.content_length - 1;
-        }
-    }
-    // draw a scrollbar at the righ, above content.
-    // clears nothing before.
-    // (note that this may lead to flickering)
-    #[allow(dead_code)]
-    pub fn draw_scrollbar(&self, screen: &mut Screen) -> io::Result<()> {
-        let h = (self.bottom as i32) - (self.top as i32) + 1;
-        if self.content_length > h {
-            let sbh = h * h / self.content_length;
-            let sc = self.top as i32 + self.scroll * h / self.content_length;
-            let (w, _) = termion::terminal_size().unwrap();
-            write!(
-                screen.stdout,
-                "{}",
-                color::Fg(color::AnsiValue::grayscale(9)),
-            )?;
-            for y in 0..sbh {
-                write!(
-                    screen.stdout,
-                    "{}▐",
-                    termion::cursor::Goto(w, ((y + sc) as u16).min(self.bottom - 1)),
-                )?;
-            }
-            write!(screen.stdout, "{}", color::Fg(color::Reset),)?;
-        }
-        Ok(())
-    }
-    // returns the top and bottom of the scrollbar, if any
-    pub fn scrollbar(&self) -> Option<(u16, u16)> {
-        let h = (self.bottom as i32) - (self.top as i32) + 1;
-        if self.content_length <= h {
-            return None;
-        }
-        let sbh = h * h / self.content_length;
-        let sc = self.top as i32 + self.scroll * h / self.content_length;
-        Some((sc as u16, (sc + sbh).min(self.bottom as i32 - 1) as u16))
-    }
-}
 
 impl Screen {
-    pub fn new(w: u16, h: u16) -> io::Result<Screen> {
+    pub fn new() -> io::Result<Screen> {
         let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
-        Ok(Screen { w, h, stdout })
+        let mut screen = Screen { w:0, h:0, stdout };
+        screen.read_size()?;
+        Ok(screen)
+    }
+    pub fn read_size(&mut self) -> io::Result<()> {
+        let (w, h) = termion::terminal_size()?;
+        self.w = w;
+        self.h = h;
+        Ok(())
     }
     pub fn write_lines(&mut self, area: &ScreenArea, lines: &[String]) -> io::Result<()> {
         let mut i = area.scroll as usize;
@@ -106,7 +59,57 @@ impl Drop for Screen {
     }
 }
 
-pub fn max_tree_height() -> u16 {
-    let (_, h) = termion::terminal_size().unwrap();
-    h - 2
+impl ScreenArea {
+    pub fn new(top: u16, bottom: u16, width: u16) -> ScreenArea {
+        ScreenArea {
+            top,
+            bottom,
+            scroll: 0,
+            content_length: 0,
+            width,
+        }
+    }
+    pub fn try_scroll(&mut self, dy: i32) {
+        self.scroll += dy;
+        if self.scroll < 0 {
+            self.scroll = 0;
+        } else if self.scroll >= self.content_length {
+            self.scroll = self.content_length - 1;
+        }
+    }
+    // draw a scrollbar at the righ, above content.
+    // clears nothing before.
+    // (note that this may lead to flickering)
+    #[allow(dead_code)]
+    pub fn draw_scrollbar(&self, screen: &mut Screen) -> io::Result<()> {
+        let h = (self.bottom as i32) - (self.top as i32) + 1;
+        if self.content_length > h {
+            let sbh = h * h / self.content_length;
+            let sc = self.top as i32 + self.scroll * h / self.content_length;
+            write!(
+                screen.stdout,
+                "{}",
+                color::Fg(color::AnsiValue::grayscale(9)),
+            )?;
+            for y in 0..sbh {
+                write!(
+                    screen.stdout,
+                    "{}▐",
+                    termion::cursor::Goto(screen.w, ((y + sc) as u16).min(self.bottom - 1)),
+                )?;
+            }
+            write!(screen.stdout, "{}", color::Fg(color::Reset),)?;
+        }
+        Ok(())
+    }
+    // returns the top and bottom of the scrollbar, if any
+    pub fn scrollbar(&self) -> Option<(u16, u16)> {
+        let h = (self.bottom as i32) - (self.top as i32) + 1;
+        if self.content_length <= h {
+            return None;
+        }
+        let sbh = h * h / self.content_length;
+        let sc = self.top as i32 + self.scroll * h / self.content_length;
+        Some((sc as u16, (sc + sbh).min(self.bottom as i32 - 1) as u16))
+    }
 }

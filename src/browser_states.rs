@@ -13,7 +13,7 @@ use crate::external::Launchable;
 use crate::flat_tree::{LineType, Tree};
 use crate::help_states::HelpState;
 use crate::patterns::Pattern;
-use crate::screens::{self, Screen};
+use crate::screens::Screen;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
@@ -27,11 +27,12 @@ pub struct BrowserState {
     pending_pattern: Pattern, // a pattern (or not) which has not yet be applied
 }
 
+
 impl BrowserState {
-    pub fn new(path: PathBuf, mut options: TreeOptions, tl: &TaskLifetime) -> Option<BrowserState> {
+    pub fn new(path: PathBuf, mut options: TreeOptions, screen: &Screen, tl: &TaskLifetime) -> Option<BrowserState> {
         let pending_pattern = options.pattern;
         options.pattern = Pattern::None;
-        let builder = TreeBuilder::from(path, options, screens::max_tree_height() as usize);
+        let builder = TreeBuilder::from(path, options, BrowserState::page_height(screen) as usize);
         match builder.build(tl) {
             Some(tree) => Some(BrowserState {
                 tree,
@@ -41,6 +42,23 @@ impl BrowserState {
             None => None, // interrupted
         }
     }
+    pub fn with_new_options(&self, screen: &Screen, change_options: &Fn(&mut TreeOptions)) -> AppStateCmdResult {
+        let tree = match &self.filtered_tree {
+            Some(tree) => &tree,
+            None => &self.tree,
+        };
+        let mut options = tree.options.clone();
+        change_options(&mut options);
+        AppStateCmdResult::from_optional_state(BrowserState::new(
+            tree.root().clone(),
+            options,
+            screen,
+            &TaskLifetime::unlimited(),
+        ))
+    }
+    fn page_height(screen: &Screen) -> i32 {
+        (screen.h as i32) - 2
+    }
     pub fn displayed_tree(&self) -> &Tree {
         match &self.filtered_tree {
             Some(tree) => &tree,
@@ -49,12 +67,11 @@ impl BrowserState {
     }
 }
 
+
 impl AppState for BrowserState {
-    fn apply(&mut self, cmd: &mut Command, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    fn apply(&mut self, cmd: &mut Command, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
         self.pending_pattern = Pattern::None;
-        let (_, page_height) = termion::terminal_size().unwrap();
-        let mut page_height = page_height as i32;
-        page_height -= 2;
+        let page_height = BrowserState::page_height(screen);
         Ok(match &cmd.action {
             Action::Back => {
                 if self.filtered_tree.is_some() {
@@ -113,6 +130,7 @@ impl AppState for BrowserState {
                             AppStateCmdResult::from_optional_state(BrowserState::new(
                                 line.target(),
                                 tree.options.without_pattern(),
+                                screen,
                                 &tl,
                             ))
                         }
@@ -126,7 +144,7 @@ impl AppState for BrowserState {
                 }
             }
             Action::Verb(verb_key) => match con.verb_store.search(&verb_key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, con)?,
+                PrefixSearchResult::Match(verb) => self.execute_verb(verb, screen, con)?,
                 _ => AppStateCmdResult::verb_not_found(&verb_key),
             },
             Action::PatternEdit(pat) => match pat.len() {
@@ -151,7 +169,7 @@ impl AppState for BrowserState {
                     }
                 }
             },
-            Action::Help() => AppStateCmdResult::NewState(Box::new(HelpState::new())),
+            Action::Help() => AppStateCmdResult::NewState(Box::new(HelpState::new(screen))),
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
                     tree.try_select_next_match();
@@ -175,7 +193,7 @@ impl AppState for BrowserState {
 
     /// do some work, totally or partially, if there's some to do.
     /// Stop as soon as the lifetime is expired.
-    fn do_pending_task(&mut self, tl: &TaskLifetime) {
+    fn do_pending_task(&mut self, screen: &Screen, tl: &TaskLifetime) {
         if self.pending_pattern.is_some() {
             let start = Instant::now();
             let mut options = self.tree.options.clone();
@@ -186,10 +204,7 @@ impl AppState for BrowserState {
             if let Some(ref mut filtered_tree) = filtered_tree {
                 info!("Tree search with pattern {} took {:?}", &filtered_tree.options.pattern, start.elapsed());
                 filtered_tree.try_select_best_match();
-                let (_, page_height) = termion::terminal_size().unwrap();
-                let mut page_height = page_height as i32;
-                page_height -= 2;
-                filtered_tree.make_selection_visible(page_height);
+                filtered_tree.make_selection_visible(BrowserState::page_height(screen));
             } // if none: task was cancelled from elsewhere
             self.filtered_tree = filtered_tree;
             return;
