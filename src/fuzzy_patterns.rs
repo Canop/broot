@@ -1,7 +1,6 @@
-//! a simple and fast fuzzy pattern matcher for filename filtering / sorting.
+//! a simple fuzzy pattern matcher for filename filtering / sorting.
 //! It's not meant for file contents but for small strings (less than 1000 chars)
 //!  such as file names.
-//! Speed is prefered over score precision.
 
 use std::fmt;
 use crate::patterns::{Match};

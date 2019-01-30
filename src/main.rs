@@ -49,7 +49,7 @@ use crate::external::Launchable;
 use crate::tree_options::TreeOptions;
 use crate::verbs::VerbStore;
 
-const VERSION: &str = "0.4.7";
+const VERSION: &str = "0.5.0";
 
 // declare the possible CLI arguments, and gets the values
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {

@@ -48,6 +48,8 @@ impl AppStateCmdResult {
     }
 }
 
+// a whole application state, stackable to allow reverting
+//  to a previous one
 pub trait AppState {
     fn apply(&mut self, cmd: &mut Command, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult>;
     fn has_pending_tasks(&self) -> bool;

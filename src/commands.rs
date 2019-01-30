@@ -7,15 +7,15 @@ use termion::event::Key;
 
 #[derive(Debug)]
 pub struct Command {
-    pub raw: String,         // what's visible in the input
-    parts: CommandParts, // the parsed parts of the visible input
-    pub action: Action, // what's required, based on the last key (which may be not visible, like esc)
+    pub raw: String,        // what's visible in the input
+    parts: CommandParts,    // the parsed parts of the visible input
+    pub action: Action,     // what's required, based on the last key (which may be not visible, like esc)
 }
 
 /// An intermediate parsed representation of the raw string
 #[derive(Debug, Clone)]
 struct CommandParts {
-    pattern: Option<String>,
+    pattern: Option<String>,     // either a fuzzy pattern or the core of a regex
     regex_flags: Option<String>, // may be Some("") if user asked for a regex but specified no flag
     verb: Option<String>,        // may be Some("") if user already typed the separator
 }
@@ -24,7 +24,7 @@ struct CommandParts {
 pub enum Action {
     MoveSelection(i32),             // up (neg) or down (positive) in the list
     ScrollPage(i32),                // in number of pages, not lines
-    OpenSelection,                  // open the selected line (which can't be the root by construct)
+    OpenSelection,                  // open the selected line
     VerbEdit(String),               // verb, unfinished
     Verb(String),                   // verb, after the user hit enter
     FuzzyPatternEdit(String),       // a pattern being edited
