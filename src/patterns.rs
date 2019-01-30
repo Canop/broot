@@ -5,8 +5,8 @@
 
 use core::result;
 use std::{fmt, mem};
-use regex;
 
+use crate::errors::RegexError;
 use crate::fuzzy_patterns::{FuzzyPattern};
 use crate::regex_patterns::{RegexPattern};
 
@@ -33,8 +33,8 @@ impl Pattern {
         Pattern::Fuzzy(FuzzyPattern::from(pat))
     }
     /// try to create a regex pattern
-    pub fn regex(pat: &str) -> result::Result<Pattern, regex::Error> {
-        Ok(Pattern::Regex(RegexPattern::from(pat)?))
+    pub fn regex(pat: &str, flags: &str) -> result::Result<Pattern, RegexError> {
+        Ok(Pattern::Regex(RegexPattern::from(pat, flags)?))
     }
     pub fn find(&self, candidate: &str) -> Option<Match> {
         match self {

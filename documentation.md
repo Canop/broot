@@ -13,6 +13,8 @@ There the pattern is `car` and the verb shortcut is `e`.
 
 The pattern filters the tree while you type. It's interpreted in a fuzzy way so that you don't have to type all the letters or even consecutive letters. The best match is automatically selected.
 
+If there's a `/` before or after the patten, it's interpreted as a regular expression. For example `/pat+ern` would match `"patern.zip"` or `"some_patttern.rar"` but not `"pATTern"`. If you want the regex to be case insensitive, add the `i` flag: `pat+ern/i`.
+
 At any moment you can use the arrow keys to move the selection. You can also use the tab key.
 
 When you hit `<enter>`:

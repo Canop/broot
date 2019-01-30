@@ -147,29 +147,31 @@ impl AppState for BrowserState {
                 PrefixSearchResult::Match(verb) => self.execute_verb(verb, screen, con)?,
                 _ => AppStateCmdResult::verb_not_found(&verb_key),
             },
-            Action::PatternEdit(pat) => match pat.len() {
+            Action::FuzzyPatternEdit(pat) => match pat.len() {
                 0 => {
                     self.filtered_tree = None;
                     AppStateCmdResult::Keep
                 }
                 _ => {
-                    if cmd.parts.has_regex {
-                        match Pattern::regex(pat) {
-                            Ok(regex_pattern) => {
-                                self.pending_pattern = regex_pattern;
-                                AppStateCmdResult::Keep
-                            }
-                            Err(_) => {
-                                AppStateCmdResult::DisplayError("Invalid Regular Expression".to_string())
-                            }
-                        }
-                    } else {
-                        self.pending_pattern = Pattern::fuzzy(pat);
+                    self.pending_pattern = Pattern::fuzzy(pat);
+                    AppStateCmdResult::Keep
+                }
+            },
+            Action::RegexEdit(pat, flags) => {
+                match Pattern::regex(pat, flags) {
+                    Ok(regex_pattern) => {
+                        self.pending_pattern = regex_pattern;
                         AppStateCmdResult::Keep
+                    }
+                    Err(e) => {
+                        // FIXME details
+                        AppStateCmdResult::DisplayError(
+                            format!("{}", e)
+                        )
                     }
                 }
             },
-            Action::Help() => AppStateCmdResult::NewState(Box::new(HelpState::new(screen))),
+            Action::Help => AppStateCmdResult::NewState(Box::new(HelpState::new(screen))),
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
                     tree.try_select_next_match();
@@ -221,41 +223,49 @@ impl AppState for BrowserState {
     }
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
-        if let Some(verb_key) = &cmd.parts.verb {
-            match con.verb_store.search(&verb_key) {
-                PrefixSearchResult::NoMatch => {
-                    screen.write_status_err("No matching verb (':?' for the list of verbs)")
+        match &cmd.action {
+            Action::FuzzyPatternEdit(_) => {
+                screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
+            },
+            Action::RegexEdit(_, _) => {
+                screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
+            },
+            Action::VerbEdit(verb_key) => {
+                match con.verb_store.search(&verb_key) {
+                    PrefixSearchResult::NoMatch => {
+                        screen.write_status_err("No matching verb (':?' for the list of verbs)")
+                    }
+                    PrefixSearchResult::Match(verb) => screen.write_status_text(
+                        &format!(
+                            "Hit <enter> to {} : {}",
+                            &verb.name,
+                            verb.description_for(&self)
+                        )
+                        .to_string(),
+                    ),
+                    PrefixSearchResult::TooManyMatches => screen.write_status_text(
+                        // TODO show what verbs start with the currently edited verb key
+                        "Type a verb then <enter> to execute it (':?' for the list of verbs)",
+                    ),
                 }
-                PrefixSearchResult::Match(verb) => screen.write_status_text(
-                    &format!(
-                        "Hit <enter> to {} : {}",
-                        &verb.name,
-                        verb.description_for(&self)
+            },
+            _ => {
+                let tree = self.displayed_tree();
+                if tree.selection == 0 {
+                    screen.write_status_text(
+                        "Hit <enter> to quit, '?' for help, or a few letters to search",
                     )
-                    .to_string(),
-                ),
-                PrefixSearchResult::TooManyMatches => screen.write_status_text(
-                    // TODO show what verbs start with the currently edited verb key
-                    "Type a verb then <enter> to execute it (':?' for the list of verbs)",
-                ),
-            }
-        } else if let Some(_) = &cmd.parts.pattern {
-            screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
-        } else {
-            let tree = self.displayed_tree();
-            if tree.selection == 0 {
-                screen.write_status_text(
-                    "Hit <enter> to quit, '?' for help, or a few letters to search",
-                )
-            } else {
-                let line = &tree.lines[tree.selection];
-                screen.write_status_text(match line.is_dir() {
-                    true => "Hit <enter> to focus, or type a space then a verb",
-                    false => "Hit <enter> to open the file, or type a space then a verb",
-                })
+                } else {
+                    let line = &tree.lines[tree.selection];
+                    screen.write_status_text(match line.is_dir() {
+                        true => "Hit <enter> to focus, or type a space then a verb",
+                        false => "Hit <enter> to open the file, or type a space then a verb",
+                    })
+                }
             }
         }
     }
+
     fn write_flags(&self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
         let tree = match &self.filtered_tree {
             Some(tree) => &tree,

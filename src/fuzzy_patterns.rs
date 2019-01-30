@@ -11,7 +11,7 @@ const BONUS_MATCH: i32 = 10_000;
 const BONUS_EXACT: i32 = 1_000;
 const BONUS_START: i32 = 0; // disabled
 const BONUX_CANDIDATE_LENGTH: i32 = -1; // per char
-const BONUS_LENGTH: i32 = -10; // per char of length
+const BONUS_LENGTH: i32 = -10; // per char of length of the match
 const MAX_LENGTH_BASE: usize = 2;
 const MAX_LENGTH_PER_CHAR: usize = 2;
 

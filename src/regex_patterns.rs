@@ -1,26 +1,42 @@
 //! a filename filtering pattern using a regular expression
 
 use core::result;
-use std::fmt;
 use regex;
-use crate::patterns;
+use std::fmt;
 
+use crate::errors::RegexError;
+use crate::patterns;
 
 #[derive(Debug, Clone)]
 pub struct RegexPattern {
     rex: regex::Regex,
 }
 
+
 impl fmt::Display for RegexPattern {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.rex)
+        write!(f, "{}", self.rex) // problem: doesn't write the flags
     }
 }
 
 impl RegexPattern {
-    pub fn from(s: &str) -> result::Result<RegexPattern, regex::Error> {
+    pub fn from(pat: &str, flags: &str) -> result::Result<RegexPattern, RegexError> {
+        let mut builder = regex::RegexBuilder::new(pat);
+        for c in flags.chars() {
+            match c {
+                'i' => {
+                    builder.case_insensitive(true);
+                }
+                'U' => {
+                    builder.swap_greed(true);
+                }
+                _ => {
+                    return Err(RegexError::UnknownFlag{bad:c});
+                }
+            }
+        }
         Ok(RegexPattern {
-            rex: regex::Regex::new(s)?,
+            rex: builder.build()?
         })
     }
     // return a match if the pattern can be found in the candidate string
