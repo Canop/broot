@@ -18,9 +18,8 @@ struct BLine {
     depth: u16,
     name: String,
     file_type: fs::FileType,
-    children_loaded: bool, // true when load_children has been called already
-    children: Vec<usize>,  // sorted and filtered (indexes of the children in tree.blines)
-    next_child_idx: usize, // index for iteration, among the children
+    children: Option<Vec<usize>>,   // sorted and filtered (indexes of the children in tree.blines)
+    next_child_idx: usize,          // index for iteration, among the children
     has_error: bool,
     has_match: bool,
     score: i32,
@@ -64,8 +63,7 @@ impl BLine {
             path,
             depth: 0,
             name,
-            children_loaded: false,
-            children: Vec::new(),
+            children: None,
             next_child_idx: 0,
             file_type,
             has_error: false,
@@ -140,8 +138,7 @@ impl BLine {
             depth,
             name: name.to_string(),
             file_type,
-            children_loaded: false,
-            children: Vec::new(),
+            children: None,
             next_child_idx: 0,
             has_error: false,
             has_match,
@@ -186,6 +183,11 @@ impl BLine {
         } else {
             LineType::File
         };
+        let unlisted = if let Some(children) = &self.children {
+            children.len() - self.next_child_idx
+        } else {
+            0
+        };
         TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
@@ -193,7 +195,7 @@ impl BLine {
             path: self.path.clone(),
             line_type,
             has_error,
-            unlisted: self.children.len() - self.next_child_idx,
+            unlisted,
             score: self.score,
             mode,
             uid,
@@ -264,7 +266,6 @@ impl TreeBuilder {
     // returns true when there are direct matches among children
     fn load_children(&mut self, bline_idx: usize) -> bool {
         let mut has_child_match = false;
-        self.blines[bline_idx].children_loaded = true;
         match fs::read_dir(&self.blines[bline_idx].path) {
             Ok(entries) => {
                 let mut children: Vec<usize> = Vec::new();
@@ -301,7 +302,7 @@ impl TreeBuilder {
                         .to_lowercase()
                         .cmp(&self.blines[b].name.to_lowercase())
                 });
-                self.blines[bline_idx].children.append(&mut children);
+                self.blines[bline_idx].children = Some(children);
             }
             Err(_err) => {
                 //debug!(
@@ -309,6 +310,7 @@ impl TreeBuilder {
                 //    self.blines[bline_idx].path, err
                 //);
                 self.blines[bline_idx].has_error = true;
+                self.blines[bline_idx].children = Some(Vec::new());
             }
         }
         has_child_match
@@ -319,13 +321,17 @@ impl TreeBuilder {
         bline_idx: usize, // the parent
     ) -> Option<usize> {
         let bline = &mut self.blines[bline_idx];
-        match bline.next_child_idx < bline.children.len() {
-            true => {
-                let next_child = bline.children[bline.next_child_idx];
-                bline.next_child_idx += 1;
-                Some(next_child)
+        if let Some(children) = &bline.children {
+            match bline.next_child_idx < children.len() {
+                true => {
+                    let next_child = children[bline.next_child_idx];
+                    bline.next_child_idx += 1;
+                    Some(next_child)
+                }
+                false => Option::None,
             }
-            false => Option::None,
+        } else {
+            unreachable!();
         }
     }
 
@@ -465,8 +471,8 @@ impl TreeBuilder {
         for idx in out_blines.iter() {
             if self.blines[*idx].has_match {
                 // we need to count the children, so we load them
-                if !self.blines[*idx].children_loaded {
-                    if self.blines[*idx].file_type.is_dir() {
+                if self.blines[*idx].file_type.is_dir() {
+                    if self.blines[*idx].children.is_none() {
                         self.load_children(*idx);
                     }
                 }

@@ -66,7 +66,6 @@ pub struct Match {
     pub pos: Vec<usize>, // positions of the matching chars
 }
 
-
 impl Match {
     // returns a new string made from candidate (which should be at the origin of the match)
     //  where the characters at positions pos (matching chars) are wrapped between

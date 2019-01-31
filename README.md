@@ -3,8 +3,7 @@
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-en.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
 
-An interactive tree view, a fuzzy search, a balanced BFS descent and customizable commands.
-
+A better way to navigate directories.
 
 ### Get an overview of a directory, even a big one:
 
