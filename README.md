@@ -1,5 +1,6 @@
 # Broot (pronounce "b-root")
 
+[![Build Status](https://travis-ci.org/Canop/broot.svg?branch=master)](https://travis-ci.org/Canop/broot)
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-en.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
 

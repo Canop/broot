@@ -96,7 +96,7 @@ impl BLine {
         if options.pattern.is_some() {
             if let Some(m) = options.pattern.find(&name) {
                 // we dope less deep entries
-                score = m.score + 200 - (depth as i32);
+                score = m.score + 10000 - (depth as i32);
             } else {
                 has_match = false;
             }

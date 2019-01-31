@@ -12,7 +12,6 @@ pub struct RegexPattern {
     rex: regex::Regex,
 }
 
-
 impl fmt::Display for RegexPattern {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{}", self.rex) // problem: doesn't write the flags
