@@ -57,7 +57,7 @@ impl BrowserState {
         ))
     }
     fn page_height(screen: &Screen) -> i32 {
-        (screen.h as i32) - 2
+        i32::from(screen.h) - 2
     }
     pub fn displayed_tree(&self) -> &Tree {
         match &self.filtered_tree {
@@ -257,10 +257,13 @@ impl AppState for BrowserState {
                     )
                 } else {
                     let line = &tree.lines[tree.selection];
-                    screen.write_status_text(match line.is_dir() {
-                        true => "Hit <enter> to focus, or type a space then a verb",
-                        false => "Hit <enter> to open the file, or type a space then a verb",
-                    })
+                    screen.write_status_text(
+                        if line.is_dir() {
+                            "Hit <enter> to focus, or type a space then a verb"
+                        } else {
+                            "Hit <enter> to open the file, or type a space then a verb"
+                        }
+                    )
                 }
             }
         }
@@ -279,10 +282,7 @@ impl AppState for BrowserState {
             color::Bg(color::AnsiValue::grayscale(1)),
             termion::clear::UntilNewline,
             color::Fg(color::AnsiValue::grayscale(15)),
-            match tree.options.show_hidden {
-                true => 'y',
-                false => 'n',
-            },
+            if tree.options.show_hidden { 'y' } else { 'n' },
             match tree.options.respect_git_ignore {
                 OptionBool::Auto => 'a',
                 OptionBool::Yes => 'y',

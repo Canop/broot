@@ -78,9 +78,11 @@ impl CommandParts {
 impl Action {
     fn from(cp: &CommandParts, finished: bool) -> Action {
         if let Some(verb) = &cp.verb {
-            match finished {
-                false => Action::VerbEdit(String::from(verb.as_str())),
-                true => Action::Verb(String::from(verb.as_str())),
+            let verb = String::from(verb.as_str());
+            if finished {
+                Action::Verb(verb)
+            } else {
+                Action::VerbEdit(verb)
             }
         } else if finished {
             Action::OpenSelection
@@ -135,7 +137,7 @@ impl Command {
     // This specific syntax isn't definitive
     pub fn from(raw: String) -> Command {
         let parts = CommandParts::from(&raw);
-        let action = Action::from(&parts, raw.contains(":"));
+        let action = Action::from(&parts, raw.contains(':'));
         Command { raw, parts, action }
     }
     pub fn add_key(&mut self, key: Key) {

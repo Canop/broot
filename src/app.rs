@@ -184,12 +184,6 @@ impl App {
     ) -> Result<Option<Launchable>, ProgramError> {
 
         let mut screen = Screen::new()?;
-        write!(
-            screen.stdout,
-            "{}{}",
-            termion::clear::All,
-            termion::cursor::Hide
-        )?;
 
         // create the initial state
         if let Some(bs) = BrowserState::new(

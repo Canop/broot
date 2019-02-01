@@ -49,7 +49,7 @@ impl Verb {
     ) -> Verb {
         Verb {
             name: name.to_string(),
-            short_key: short_key,
+            short_key,
             long_key: name.to_string(),
             exec_pattern: (format!(":{}", name)).to_string(),
             description: description.to_string(),

@@ -76,7 +76,7 @@ impl Size {
 
     /// format a number of bytes as a string
     /// (probably fast enough but not benchmarked)
-    pub fn to_string(&self) -> String {
+    pub fn to_string(self) -> String {
         let mut v = self.0;
         let mut i = 0;
         while v >= 9000 && i < SIZE_NAMES.len() - 1 {

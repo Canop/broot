@@ -23,6 +23,7 @@ impl Screen {
         let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
         let mut screen = Screen { w:0, h:0, stdout };
         screen.read_size()?;
+        write!(screen.stdout, "{}", termion::cursor::Hide)?;
         Ok(screen)
     }
     pub fn read_size(&mut self) -> io::Result<()> {
@@ -82,10 +83,10 @@ impl ScreenArea {
     // (note that this may lead to flickering)
     #[allow(dead_code)]
     pub fn draw_scrollbar(&self, screen: &mut Screen) -> io::Result<()> {
-        let h = (self.bottom as i32) - (self.top as i32) + 1;
+        let h = i32::from(self.bottom) - i32::from(self.top) + 1;
         if self.content_length > h {
             let sbh = h * h / self.content_length;
-            let sc = self.top as i32 + self.scroll * h / self.content_length;
+            let sc = i32::from(self.top) + self.scroll * h / self.content_length;
             write!(
                 screen.stdout,
                 "{}",
@@ -109,7 +110,10 @@ impl ScreenArea {
             return None;
         }
         let sbh = h * h / self.content_length;
-        let sc = self.top as i32 + self.scroll * h / self.content_length;
-        Some((sc as u16, (sc + sbh).min(self.bottom as i32 - 1) as u16))
+        let sc = i32::from(self.top) + self.scroll * h / self.content_length;
+        Some((
+                sc as u16,
+                (sc + sbh).min(i32::from(self.bottom) - 1) as u16,
+        ))
     }
 }

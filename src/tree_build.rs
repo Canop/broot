@@ -96,7 +96,7 @@ impl BLine {
         if options.pattern.is_some() {
             if let Some(m) = options.pattern.find(&name) {
                 // we dope less deep entries
-                score = m.score + 10000 - (depth as i32);
+                score = m.score + 10000 - i32::from(depth);
             } else {
                 has_match = false;
             }
@@ -107,14 +107,7 @@ impl BLine {
                 return BLineResult::Invalid;
             }
         };
-        if file_type.is_file() {
-            if !has_match {
-                return BLineResult::FilteredOutByPattern;
-            }
-            if options.only_folders {
-                return BLineResult::FilteredOutAsNonFolder;
-            }
-        } else if file_type.is_symlink() {
+        if file_type.is_file() || file_type.is_symlink() {
             if !has_match {
                 return BLineResult::FilteredOutByPattern;
             }
@@ -322,13 +315,12 @@ impl TreeBuilder {
     ) -> Option<usize> {
         let bline = &mut self.blines[bline_idx];
         if let Some(children) = &bline.children {
-            match bline.next_child_idx < children.len() {
-                true => {
-                    let next_child = children[bline.next_child_idx];
-                    bline.next_child_idx += 1;
-                    Some(next_child)
-                }
-                false => Option::None,
+            if bline.next_child_idx < children.len() {
+                let next_child = children[bline.next_child_idx];
+                bline.next_child_idx += 1;
+                Some(next_child)
+            } else {
+                Option::None
             }
         } else {
             unreachable!();
@@ -466,15 +458,13 @@ impl TreeBuilder {
     }
 
     // makes a tree from the builder's specific structure
-    fn into_tree(&mut self, out_blines: &[usize]) -> Tree {
+    fn take(&mut self, out_blines: &[usize]) -> Tree {
         let mut lines: Vec<TreeLine> = Vec::new();
         for idx in out_blines.iter() {
             if self.blines[*idx].has_match {
                 // we need to count the children, so we load them
-                if self.blines[*idx].file_type.is_dir() {
-                    if self.blines[*idx].children.is_none() {
-                        self.load_children(*idx);
-                    }
+                if self.blines[*idx].file_type.is_dir() && self.blines[*idx].children.is_none() {
+                    self.load_children(*idx);
                 }
                 lines.push(self.blines[*idx].to_tree_line());
             }
@@ -500,7 +490,7 @@ impl TreeBuilder {
         match self.gather_lines(task_lifetime) {
             Some(out_blines) => {
                 self.trim_excess(&out_blines);
-                Some(self.into_tree(&out_blines))
+                Some(self.take(&out_blines))
             }
             None => None, // interrupted
         }

@@ -7,9 +7,19 @@ use users::{Groups, Users, UsersCache};
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
 use crate::screens::{Screen, ScreenArea};
+use crate::file_sizes::Size;
 
 pub trait TreeView {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
+    fn write_line_size(
+        &mut self,
+        line: &TreeLine,
+        total_size: Size,
+    ) -> io::Result<()>;
+    fn write_mode(
+        &mut self,
+        mode: u32,
+    ) -> io::Result<()>;
     fn write_line_name(
         &mut self,
         line: &TreeLine,
@@ -34,8 +44,7 @@ impl TreeView for Screen {
                     max_user_name_len = max_user_name_len.max(user.name().to_string_lossy().len());
                 }
                 if let Some(group) = users_cache.get_group_by_gid(line.uid) {
-                    max_group_name_len =
-                        max_group_name_len.max(group.name().to_string_lossy().len());
+                    max_group_name_len = max_group_name_len.max(group.name().to_string_lossy().len());
                 }
             }
         }
@@ -61,103 +70,27 @@ impl TreeView for Screen {
                     write!(
                         self.stdout,
                         "{}",
-                        match line.left_branchs[depth as usize] {
-                            true => match tree.has_branch(line_index + 1, depth as usize) {
-                                true => match depth == line.depth - 1 {
-                                    true => "├──",
-                                    false => "│  ",
-                                },
-                                false => "└──",
-                            },
-                            false => "   ",
+                        if line.left_branchs[depth as usize] {
+                            if tree.has_branch(line_index + 1, depth as usize) {
+                                 if depth == line.depth - 1 {
+                                    "├──"
+                                 } else {
+                                    "│  "
+                                 }
+                            } else {
+                                "└──"
+                            }
+                        } else {
+                            "   "
                         },
                     )?;
                 }
                 if tree.options.show_sizes && line_index > 0 {
-                    if let Some(s) = line.size {
-                        let dr: usize = s.discreet_ratio(total_size, 8) as usize;
-                        let s: Vec<char> = s.to_string().chars().collect();
-                        write!(
-                            self.stdout,
-                            "{}{}",
-                            color::Bg(color::Magenta),
-                            color::Fg(color::AnsiValue::grayscale(15)),
-                        )?;
-                        for i in 0..dr {
-                            write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
-                        }
-                        write!(self.stdout, "{}", color::Bg(color::Reset))?;
-                        write!(self.stdout, "{}", color::Bg(color::AnsiValue::grayscale(2)))?;
-                        for i in dr..8 {
-                            write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
-                        }
-                        write!(
-                            self.stdout,
-                            "{}{} ",
-                            color::Bg(color::Reset),
-                            color::Fg(color::Reset),
-                        )?;
-                    } else {
-                        write!(
-                            self.stdout,
-                            "{}────────{} ",
-                            color::Fg(color::AnsiValue::grayscale(5)),
-                            color::Fg(color::Reset),
-                        )?;
-                    }
+                    self.write_line_size(line, total_size)?;
                 }
                 if tree.options.show_permissions && line_index > 0 {
                     if line.is_selectable() {
-                        write!(
-                            self.stdout,
-                            "{} {}{}{}{}{}{}{}{}{}",
-                            color::Fg(color::AnsiValue::grayscale(15)),
-                            if (line.mode & (1 << 8)) != 0 {
-                                'r'
-                            } else {
-                                '-'
-                            },
-                            if (line.mode & (1 << 7)) != 0 {
-                                'w'
-                            } else {
-                                '-'
-                            },
-                            if (line.mode & (1 << 6)) != 0 {
-                                'x'
-                            } else {
-                                '-'
-                            },
-                            if (line.mode & (1 << 5)) != 0 {
-                                'r'
-                            } else {
-                                '-'
-                            },
-                            if (line.mode & (1 << 4)) != 0 {
-                                'w'
-                            } else {
-                                '-'
-                            },
-                            if (line.mode & (1 << 3)) != 0 {
-                                'x'
-                            } else {
-                                '-'
-                            },
-                            if (line.mode & (1 << 2)) != 0 {
-                                'r'
-                            } else {
-                                '-'
-                            },
-                            if (line.mode & (1 << 1)) != 0 {
-                                'w'
-                            } else {
-                                '-'
-                            },
-                            if (line.mode & (1 << 0)) != 0 {
-                                'x'
-                            } else {
-                                '-'
-                            },
-                        )?;
+                        self.write_mode(line.mode)?;
                         if let Some(user) = users_cache.get_user_by_uid(line.uid) {
                             write!(
                                 self.stdout,
@@ -205,6 +138,93 @@ impl TreeView for Screen {
         }
         self.stdout.flush()?;
         Ok(())
+    }
+
+    fn write_mode(&mut self, mode: u32) -> io::Result<()> {
+        write!(
+            self.stdout,
+            "{} {}{}{}{}{}{}{}{}{}",
+            color::Fg(color::AnsiValue::grayscale(15)),
+            if (mode & (1 << 8)) != 0 {
+                'r'
+            } else {
+                '-'
+            },
+            if (mode & (1 << 7)) != 0 {
+                'w'
+            } else {
+                '-'
+            },
+            if (mode & (1 << 6)) != 0 {
+                'x'
+            } else {
+                '-'
+            },
+            if (mode & (1 << 5)) != 0 {
+                'r'
+            } else {
+                '-'
+            },
+            if (mode & (1 << 4)) != 0 {
+                'w'
+            } else {
+                '-'
+            },
+            if (mode & (1 << 3)) != 0 {
+                'x'
+            } else {
+                '-'
+            },
+            if (mode & (1 << 2)) != 0 {
+                'r'
+            } else {
+                '-'
+            },
+            if (mode & (1 << 1)) != 0 {
+                'w'
+            } else {
+                '-'
+            },
+            if (mode & 1) != 0 {
+                'x'
+            } else {
+                '-'
+            },
+        )
+    }
+
+    fn write_line_size(&mut self, line: &TreeLine, total_size: Size) -> io::Result<()> {
+        if let Some(s) = line.size {
+            let dr: usize = s.discreet_ratio(total_size, 8) as usize;
+            let s: Vec<char> = s.to_string().chars().collect();
+            write!(
+                self.stdout,
+                "{}{}",
+                color::Bg(color::Magenta),
+                color::Fg(color::AnsiValue::grayscale(15)),
+            )?;
+            for i in 0..dr {
+                write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
+            }
+            write!(self.stdout, "{}", color::Bg(color::Reset))?;
+            write!(self.stdout, "{}", color::Bg(color::AnsiValue::grayscale(2)))?;
+            for i in dr..8 {
+                write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
+            }
+            write!(
+                self.stdout,
+                "{}{} ",
+                color::Bg(color::Reset),
+                color::Fg(color::Reset),
+            )
+        } else {
+            write!(
+                self.stdout,
+                "{}────────{} ",
+                color::Fg(color::AnsiValue::grayscale(5)),
+                color::Fg(color::Reset),
+            )
+        }
     }
 
     fn write_line_name(

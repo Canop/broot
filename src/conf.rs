@@ -98,7 +98,7 @@ impl Conf {
                 let name = match string_field(verb_value, "name") {
                     Some(s) => s,
                     None => {
-                        if execution.starts_with(":") {
+                        if execution.starts_with(':') {
                             // we'll assume that this entry isn't a new verb definition
                             // but just the addition of a shortcut for a built-in verb
                             "unnamed".to_string()

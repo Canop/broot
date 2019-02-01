@@ -195,10 +195,7 @@ impl Tree {
             return false;
         }
         let line = &self.lines[line_index];
-        match depth >= line.depth as usize {
-            true => false,
-            false => line.left_branchs[depth],
-        }
+        depth < usize::from(line.depth) && line.left_branchs[depth]
     }
     pub fn move_selection(&mut self, dy: i32, page_height: i32) {
         // only work for +1 or -1
