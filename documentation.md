@@ -23,7 +23,7 @@ When you hit `<enter>`:
 * if there's none, and a directory is selected, this directory becomes the new root and the pattern is cleared
 * if there's no verb and a file is selected, `xdg-open` is called on the file
 
-Hitting ̀ <esc>` clears the current pattern, or brings you back to the previous root. If there was none, it quits broot.
+Hitting `<esc>` clears the current pattern, or brings you back to the previous root. If there was none, it quits broot.
 
 Hitting `?` brings you to the help screen.
 
@@ -56,7 +56,7 @@ Most verbs aren't based on an external application but calls internal functions:
 
 ### `:back` : get back to the previous state of the tree
 
-This is normally achieved with the ̀ esc` key but you might want to remap it.
+This is normally achieved with the `esc` key but you might want to remap it.
 
 ### `:cd` : cd to a directory
 
@@ -68,7 +68,7 @@ In the default configuration it's mapped to `c`.
 
 `:focus` makes the selected directory become the new displayed root.
 
-The difference with ̀just using `<enter>` is that the current filtering pattern is kept.
+The difference with just using `<enter>` is that the current filtering pattern is kept.
 
 In the default configuration, it's mapped to `g`.
 
@@ -136,7 +136,7 @@ In the default configuration, it's mapped to `s` and can be activated at launch 
 
 When broot starts, it checks for a configuration file in the standard location defined by your OS and creates one if there's none.
 
-You can see this location by opening the help with ̀`?`. You can also open it directly from the help screen by typing `:o`.
+You can see this location by opening the help with `?`. You can also open it directly from the help screen by typing `:o`.
 
 ## Passing commands as program argument
 
