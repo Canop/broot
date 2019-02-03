@@ -8,3 +8,5 @@ notes.md
 **/*.rs.bk
 perf.data*
 *.pl
+off
+

@@ -27,7 +27,7 @@ Most useful keys for this:
 * the letters of what you're looking for
 * `<enter>` to select a directory (staying in broot)
 * `<esc>` to get back to the previous state or clear your search
-* `:c` to get back to the shell having `cd` to the selected directory ([see below](#use-broot-for-navigation))
+* `<alt><enter>` to get back to the shell having `cd` to the selected directory ([see below](#use-broot-for-navigation))
 * `:q` if you just want to quit (`<esc>` works too)
 
 ### Never lose track of file hierarchy while you fuzzy search:
@@ -81,7 +81,7 @@ The executable is written in the `target/release` directory (you might want to m
 
 ## cd
 
-broot is convenient to find a directory then `cd` to it. The `c` command of the default configuration is here for this purpose.
+broot is convenient to find a directory then `cd` to it, which is done using `<alt><enter>` or `:cd`.
 
 But broot needs a companion function in the shell in order to be able to change directory. To enable this feature, add this to your `.bashrc` (or the relevant file for another shell):
 
@@ -113,7 +113,7 @@ But broot needs a companion function in the shell in order to be able to change 
 
 (you'll have to source the file or open a new terminal)
 
-With this addition, you can do just `br` to launch broot, and typing `:c` then *enter* will cd for you. You can search and change directory in one command: `mylosthing:c`.
+With this addition, you can do just `br` to launch broot, and typing `<alt><enter>` will cd for you.
 
 
 ## Development

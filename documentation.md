@@ -62,7 +62,9 @@ This is normally achieved with the `esc` key but you might want to remap it.
 
 `:cd` is the most useful verb but only works if you're using the [shell integration](README.md#use-broot-for-navigation).
 
-In the default configuration it's mapped to `c`.
+If you call it on a simple file, instead of a directory, the shell will be directed to the parent direcory.
+
+It's mapped to `<alt><enter>`.
 
 ### `:focus` : change the tree's root
 
