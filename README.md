@@ -1,4 +1,4 @@
-# Broot (pronounce "b-root")
+# Broot (pronounced "b-root")
 
 [![Build Status](https://travis-ci.org/Canop/broot.svg?branch=master)](https://travis-ci.org/Canop/broot)
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-en.svg?v=1)](https://miaou.dystroy.org/3?Code_et_Croissants)
@@ -27,7 +27,7 @@ Most useful keys for this:
 * the letters of what you're looking for
 * `<enter>` to select a directory (staying in broot)
 * `<esc>` to get back to the previous state or clear your search
-* `:c` to get back to the shell having cd to the selected directory ([see below](#use-broot-for-navigation))
+* `:c` to get back to the shell having `cd` to the selected directory ([see below](#use-broot-for-navigation))
 * `:q` if you just want to quit (`<esc>` works too)
 
 ### Never lose track of file hierarchy while you fuzzy search:
@@ -50,11 +50,11 @@ And if you look for a filename *ending* in `"abc"` then you may anchor the regex
 
 To toggle size display, you usually hit `:s`. Sizes are computed in the background, you don't have to wait for them when you navigate.
 
-### Apply a personal shorcut to a file:
+### Apply a personal shortcut to a file:
 
 ![size](img/20190128-edit.png)
 
-Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your prefered editor, see [documentation](documentation.md#verbs)).
+Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your preferred editor, see [documentation](documentation.md#verbs)).
 
 ### More...
 
@@ -110,7 +110,7 @@ But broot needs a companion function in the shell in order to be able to change 
 
 (you'll have to source the file or open a new terminal)
 
-With this addition, you can do just `br` to lauch broot, and typing `:c` then *enter* will cd for you. You can search and change directory in one command: `mylosthing:c`.
+With this addition, you can do just `br` to launch broot, and typing `:c` then *enter* will cd for you. You can search and change directory in one command: `mylosthing:c`.
 
 
 ## Development
