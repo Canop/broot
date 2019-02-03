@@ -71,7 +71,7 @@ impl AppState for HelpState {
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
         let mut text = Text::new();
         text.md("");
-        text.md(r#" **broot** (pronounce "b-root") lets you explore directory trees"#);
+        text.md(r#" **broot** lets you explore directory trees"#);
         text.md(r#"    and launch various commands on files."#);
         text.md(r#" broot is best used with its companion shell function"#);
         text.md(r#"    (see  https://github.com/Canop/broot)."#);
