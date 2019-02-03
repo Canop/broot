@@ -59,7 +59,9 @@ impl FuzzyPattern {
         }
         Some(Match { score: 0, pos })
     }
-    // return a match if the pattern can be found in the candidate string
+    // return a match if the pattern can be found in the candidate string.
+    // The algorithm tries to return the best one. For example if you search
+    // "abc" in "ababaca-abc", the returned match would be at the end.
     pub fn find(&self, candidate: &str) -> Option<Match> {
         let cand_chars: Vec<char> = candidate.chars().map(|c| c.to_ascii_lowercase()).collect();
         if cand_chars.len() < self.lc_chars.len() {

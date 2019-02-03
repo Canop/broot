@@ -1,3 +1,4 @@
+//! Definitions of custom errors used in broot
 use custom_error::custom_error;
 use std::io;
 

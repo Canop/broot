@@ -1,3 +1,6 @@
+//! Verbs are the engines of broot commands, and apply
+//! - to the selected file (if user-defined, then must contain {file})
+//! - to the current app state
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::Path;
@@ -213,6 +216,12 @@ pub enum PrefixSearchResult<T> {
     TooManyMatches,
 }
 
+//! Provide access to the verbs:
+//! - the built-in ones
+//! - the user defined ones
+//! When the user types some keys, we select a verb
+//! - if the input exactly matches a shortcut or the name
+//! - if only one verb starts with the input
 impl VerbStore {
     pub fn new() -> VerbStore {
         VerbStore {
