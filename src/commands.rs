@@ -25,6 +25,7 @@ pub enum Action {
     MoveSelection(i32),             // up (neg) or down (positive) in the list
     ScrollPage(i32),                // in number of pages, not lines
     OpenSelection,                  // open the selected line
+    AltOpenSelection,               // alternate open the selected line
     VerbEdit(String),               // verb, unfinished
     Verb(String),                   // verb, after the user hit enter
     FuzzyPatternEdit(String),       // a pattern being edited
@@ -147,6 +148,9 @@ impl Command {
             }
             Key::Char('\n') => {
                 self.action = Action::from(&self.parts, true);
+            }
+            Key::Alt('\r')|Key::Alt('\n') => {
+                self.action = Action::AltOpenSelection;
             }
             Key::Up => {
                 self.action = Action::MoveSelection(-1);

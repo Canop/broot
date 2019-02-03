@@ -10,6 +10,7 @@ use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::conf::Conf;
+use crate::flat_tree::TreeLine;
 use crate::external::Launchable;
 use crate::help_states::HelpState;
 use crate::screens::Screen;
@@ -94,6 +95,27 @@ impl VerbExecutor for HelpState {
     }
 }
 
+pub fn change_directory(line: &TreeLine, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    Ok(
+        if let Some(ref output_path) = con.output_path {
+            // an output path was provided, we write to it
+            let f = OpenOptions::new().append(true).open(output_path)?;
+            let mut path = line.target();
+            if !line.is_dir() {
+                path = path.parent().unwrap().to_path_buf();
+            }
+            writeln!(&f, "{}", path.to_string_lossy())?;
+            AppStateCmdResult::Quit
+        } else {
+            // This is a usage problem. :cd is meant to change directory
+            // and it currently can't be done without the shell companion function
+            AppStateCmdResult::DisplayError(
+                "broot not properly called. See https://github.com/Canop/broot#cd".to_string()
+            )
+        }
+    )
+}
+
 impl VerbExecutor for BrowserState {
     fn execute_verb(&self, verb: &Verb, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
         let tree = match &self.filtered_tree {
@@ -103,24 +125,7 @@ impl VerbExecutor for BrowserState {
         let line = &tree.selected_line();
         Ok(match verb.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
-            ":cd" => {
-                if let Some(ref output_path) = con.output_path {
-                    // an output path was provided, we write to it
-                    let f = OpenOptions::new().append(true).open(output_path)?;
-                    let mut path = line.target();
-                    if !line.is_dir() {
-                        path = path.parent().unwrap().to_path_buf();
-                    }
-                    writeln!(&f, "{}", path.to_string_lossy())?;
-                    AppStateCmdResult::Quit
-                } else {
-                    // This is a usage problem. :cd is meant to change directory
-                    // and it currently can't be done without the shell companion function
-                    AppStateCmdResult::DisplayError(
-                        "broot not properly called. See https://github.com/Canop/broot#cd".to_string()
-                    )
-                }
-            }
+            ":cd" => change_directory(line, con)?,
             ":focus" => {
                 let path = tree.selected_line().path.clone();
                 let options = tree.options.clone();
