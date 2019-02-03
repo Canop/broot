@@ -62,9 +62,12 @@ See the complete [Documentation](documentation.md).
 
 ## Installation
 
-### From Source
-
+### Compile
 You'll need to have the [Rust development environment](https://www.rust-lang.org/tools/install) installed.
+#### From crates.io
+    cargo install broot
+
+#### From Source
 
 Fetch the Canop/broot repository, move to the broot directory, then run
 
