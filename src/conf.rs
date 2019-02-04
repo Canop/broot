@@ -128,7 +128,7 @@ const DEFAULT_CONF_FILE: &str = r#"
 # 	or one of the built-in commands.
 #
 # The configuration documentation and complete list of built-in verbs
-# can be found in https://github.com/Canop/broot/documentation.md
+# can be found in https://bit.ly/broot-doc
 
 
 ###############################
