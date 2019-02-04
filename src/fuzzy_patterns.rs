@@ -2,7 +2,7 @@
 //! It's not meant for file contents but for small strings (less than 1000 chars)
 //!  such as file names.
 
-use std::fmt;
+use std::fmt::{self, Write};
 use crate::patterns::{Match};
 
 // weights used in match score computing
@@ -21,8 +21,10 @@ pub struct FuzzyPattern {
 
 impl fmt::Display for FuzzyPattern {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // TODO is there a clean and efficient way to display a [char] ?
-        write!(f, "{}", self.lc_chars.iter().collect::<String>())
+        for &c in self.lc_chars.iter() {
+            f.write_char(c)?
+        }
+        Ok(())
     }
 }
 

@@ -349,7 +349,7 @@ impl TreeBuilder {
                     break;
                 }
                 if task_lifetime.is_expired() {
-                    info!("task expired (core build)");
+                    info!("task expired (core build - outer loop)");
                     return None;
                 }
             } else if nb_lines_ok >= self.targeted_size {
@@ -374,6 +374,10 @@ impl TreeBuilder {
                     break;
                 }
                 for next_level_dir_idx in &next_level_dirs {
+                    if self.options.pattern.is_some() && task_lifetime.is_expired() {
+                        info!("task expired (core build - inner loop)");
+                        return None;
+                    }
                     let has_child_match = self.load_children(*next_level_dir_idx);
                     if has_child_match {
                         // we must ensure the ancestors are made Ok
@@ -486,7 +490,7 @@ impl TreeBuilder {
 
     // build a tree. Can be called only once per builder
     pub fn build(mut self, task_lifetime: &TaskLifetime) -> Option<Tree> {
-        debug!("start building with pattern {:?}", self.options.pattern);
+        debug!("start building with pattern {}", self.options.pattern);
         match self.gather_lines(task_lifetime) {
             Some(out_blines) => {
                 self.trim_excess(&out_blines);
