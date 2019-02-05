@@ -333,7 +333,7 @@ impl TreeBuilder {
     fn gather_lines(&mut self, task_lifetime: &TaskLifetime) -> Option<Vec<usize>> {
         let start = Instant::now();
         let mut out_blines: Vec<usize> = Vec::new(); // the blines we want to display (indexes into blines)
-        let not_long = Duration::from_millis(400);
+        let not_long = Duration::from_millis(600);
         out_blines.push(0);
         let mut nb_lines_ok = 1; // in out_blines
         let mut open_dirs: VecDeque<usize> = VecDeque::new();
@@ -342,10 +342,9 @@ impl TreeBuilder {
         open_dirs.push_back(0);
         loop {
             if self.options.pattern.is_some() {
-                if (nb_lines_ok > 20 * self.targeted_size)
+                if (nb_lines_ok > 30 * self.targeted_size)
                     || (nb_lines_ok >= self.targeted_size && start.elapsed() > not_long)
                 {
-                    //debug!("break {} {}", nb_lines_ok, 10 * self.targeted_size);
                     break;
                 }
                 if task_lifetime.is_expired() {
@@ -438,7 +437,7 @@ impl TreeBuilder {
             }
         }
         debug!(
-            "we have {} lines for a goal of {}",
+            "Trimming: we have {} lines for a goal of {}",
             count, self.targeted_size
         );
         while count > self.targeted_size {
