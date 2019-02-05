@@ -23,7 +23,7 @@ When you hit `<enter>`:
 * if there's none, and a directory is selected, this directory becomes the new root and the pattern is cleared
 * if there's no verb and a file is selected, `xdg-open` is called on the file
 
-Hitting `<esc>` clears the current pattern, or brings you back to the previous root. If there was none, it quits broot.
+Hitting `<esc>` clears the current pattern, or brings you back to the previous root. If there is none, it quits broot.
 
 Hitting `?` brings you to the help screen.
 
@@ -37,7 +37,7 @@ Flags are displayed at the bottom right, showing the settings regarding hidden f
 
 The definition of a verb (which you'll find in the configuration file, see below) is made of three parts:
 
-* an invocation string, which you should make short if you want to use it often
+* an invocation string, which you should make short if you want to use on
 * a name, which is used for inline help
 * the execution
 
@@ -52,7 +52,7 @@ This means that typing `:e` then `<enter>` opens the selected file in neovim (wh
 
 (this is a part of the default configuration, and probably the first verb you should change for your personal setup)
 
-Most verbs aren't based on an external application but calls internal functions:
+Most verbs aren't based on an external application but call internal functions:
 
 ### `:back` : get back to the previous state of the tree
 
@@ -62,7 +62,7 @@ This is normally achieved with the `esc` key but you might want to remap it.
 
 `:cd` is the most useful verb but only works if you're using the [shell integration](README.md#use-broot-for-navigation).
 
-If you call it on a simple file, instead of a directory, the shell will be directed to the parent direcory.
+If you call it on a simple file, instead of a directory, the shell will be directed to the parent directory.
 
 It's mapped to `<alt><enter>`.
 
@@ -70,7 +70,7 @@ It's mapped to `<alt><enter>`.
 
 `:focus` makes the selected directory become the new displayed root.
 
-The difference with just using `<enter>` is that the current filtering pattern is kept.
+The difference from just using `<enter>` is that the current filtering pattern is kept.
 
 In the default configuration, it's mapped to `g`.
 
@@ -92,7 +92,7 @@ In the default configuration, it's mapped to `q`.
 
 ### `:toggle_files`
 
-Swith between displaying only directories or showing everything.
+Switch between displaying only directories or showing everything.
 
 In the default configuration, it's mapped to `f`.
 
@@ -104,7 +104,7 @@ In the default configuration, it's mapped to `f`.
 * when "yes", each directory is filtered according to the applied gitignore files (several git repositories may be simultaneously shown and a git repository may define several .gitignore files)
 * when "auto" (default value), gitignore rules are ignored unless the root directory is a git repository or inside one
 
-This setting is displayed at the top right of the screen:
+This setting is displayed at the bottom right of the screen:
 
 ![flags](img/20190110-flags.png)
 
@@ -126,7 +126,7 @@ In the default configuration, it's mapped to `perm`. You might want to remap it 
 
 ### `:toggle_sizes`
 
-Swith between displaying file & directory sizes or not.
+Switch between displaying file & directory sizes or not.
 
 Sizes are computed in the background, so this doesn't slow your navigation.
 
@@ -146,11 +146,11 @@ You can see this location by opening the help with `?`. You can also open it dir
 
 Commands to be executed can be passed using the `--cmd` argument, separated with a space.
 
-### Direcly search
+### Directly search
 
     broot --cmd miaou /
 
-This opens broot and immediately search for "miaou" in `/` as if it were typed in broot's input.
+This opens broot and immediately searches for "miaou" in `/` as if it were typed in broot's input.
 
 ### Go to the most relevant directory
 
