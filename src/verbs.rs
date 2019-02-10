@@ -117,7 +117,7 @@ impl Verb {
                 AppStateCmdResult::Quit
             } else {
                 AppStateCmdResult::DisplayError(
-                    "broot not properly called. See https://github.com/Canop/broot#cd".to_string()
+                    "this verb needs broot to be launched as `br`. Try `broot --install` if necessary.".to_string()
                 )
             }
         } else {
@@ -247,47 +247,47 @@ impl VerbStore {
     pub fn init(&mut self, conf: &Conf) {
         // we first add the built-in verbs
         self.verbs.push(Verb::create_built_in(
-            "back", None, "reverts to the previous state (mapped to `<esc>`)"
+            "back", None, "revert to the previous state (mapped to `<esc>`)"
         ));
         self.verbs.push(Verb::create(
             "cd".to_string(),
             None, // no real need for a shortcut as it's mapped to alt-enter
             "cd {directory}".to_string(),
-            "changes directory".to_string(),
+            "change directory and quit (mapped to `<alt><enter>`)".to_string(),
             true, // needs to be launched from the parent shell
         ));
         self.verbs.push(Verb::create_built_in(
-            "focus", Some("goto".to_string()), "displays a directory (mapped to `<enter>`)",
+            "focus", Some("goto".to_string()), "display a directory (mapped to `<enter>`)",
         ));
         self.verbs.push(Verb::create_built_in(
-            "help", Some("?".to_string()), "displays broot's help",
+            "help", Some("?".to_string()), "display broot's help",
         ));
         self.verbs.push(Verb::create_built_in(
-            "open", None, "opens a file according to OS settings (mapped to `<enter>`)",
+            "open", None, "open a file according to OS settings (mapped to `<enter>`)",
         ));
         self.verbs.push(Verb::create_built_in(
-            "parent", None, "moves to the parent directory",
+            "parent", None, "move to the parent directory",
         ));
         self.verbs.push(Verb::create_built_in(
-            "print_path", Some("pp".to_string()), "prints path and leaves broot",
+            "print_path", Some("pp".to_string()), "print path and leaves broot",
         ));
         self.verbs.push(Verb::create_built_in(
-            "quit", None, "quits the application",
+            "quit", None, "quit the application",
         ));
         self.verbs.push(Verb::create_built_in(
-            "toggle_files", Some("files".to_string()), "toggles showing files (or just folders)",
+            "toggle_files", Some("files".to_string()), "toggle showing files (or just folders)",
         ));
         self.verbs.push(Verb::create_built_in(
-            "toggle_git_ignore", Some("gi".to_string()), "toggles use of .gitignore",
+            "toggle_git_ignore", Some("gi".to_string()), "toggle use of .gitignore",
         ));
         self.verbs.push(Verb::create_built_in(
-            "toggle_hidden", Some("h".to_string()), "toggles showing hidden files",
+            "toggle_hidden", Some("h".to_string()), "toggle showing hidden files",
         ));
         self.verbs.push(Verb::create_built_in(
-            "toggle_perm", Some("perm".to_string()), "toggles showing file permissions",
+            "toggle_perm", Some("perm".to_string()), "toggle showing file permissions",
         ));
         self.verbs.push(Verb::create_built_in(
-            "toggle_sizes", Some("sizes".to_string()), "toggles showing sizes",
+            "toggle_sizes", Some("sizes".to_string()), "toggle showing sizes",
         ));
         // then we add the verbs from conf
         // which may in fact be just changing the shortcut of

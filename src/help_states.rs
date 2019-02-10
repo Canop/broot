@@ -71,16 +71,15 @@ impl AppState for HelpState {
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
         let mut text = Text::new();
         text.md("");
-        text.md(r#" **broot** lets you explore directory trees"#);
-        text.md(r#"    and launch various commands on files."#);
-        text.md(r#" broot is best used with its companion shell function"#);
-        text.md(r#"    (see  https://github.com/Canop/broot)."#);
+        text.md(r#" **broot** lets you explore directory trees and launch commands."#);
+        text.md(r#" site: https://github.com/Canop/broot."#);
+        text.md(r#" broot is best used when launched as `br`."#);
         text.md("");
         text.md(r#" `<esc>` gets you back to the previous state."#);
         text.md(r#" Typing some letters searches the tree and selects the most relevant file."#);
         text.md(r#" To use a regular expression, use a slash eg `/j(ava|s)$`."#);
-        text.md(r#" To execute a verb, type a space or `:` then start of its name or shortcut."#);
         text.md("");
+        text.md(r#" To execute a verb, type a space or `:` then start of its name or shortcut."#);
         text.md(" Verbs:");
         self.build_verbs_table(&mut text, con);
         text.md("");
