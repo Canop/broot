@@ -21,6 +21,7 @@ pub struct VerbConf {
     pub name: String,
     pub invocation: String,
     pub execution: String,
+    pub from_shell: bool,
 }
 
 #[derive(Debug)]
@@ -110,10 +111,17 @@ impl Conf {
                         }
                     }
                 };
+                let mut from_shell = false;
+                if let Value::Table(tbl) = verb_value {
+                    if let Some(Value::Boolean(b)) = tbl.get("from_shell") {
+                        from_shell = *b;
+                    }
+                };
                 verbs.push(VerbConf {
                     name,
                     invocation,
                     execution,
+                    from_shell
                 });
             }
         }

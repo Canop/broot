@@ -301,7 +301,7 @@ impl VerbStore {
                         Some(verb_conf.invocation.to_string()),
                         verb_conf.execution.to_owned(),
                         verb_conf.execution.to_owned(),
-                        false,
+                        verb_conf.from_shell,
                 ));
             }
         }

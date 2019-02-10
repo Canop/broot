@@ -52,6 +52,10 @@ This means that typing `:e` then `<enter>` opens the selected file in neovim (wh
 
 (this is a part of the default configuration, and probably the first verb you should change for your personal setup)
 
+If you want your command to be executed from the parent shell, add this to the verb definition:
+
+	from_shell = true
+
 Most verbs aren't based on an external application but call internal functions:
 
 ### `:back` : get back to the previous state of the tree
