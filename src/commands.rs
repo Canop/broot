@@ -5,7 +5,7 @@
 use regex::Regex;
 use termion::event::Key;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Command {
     pub raw: String,        // what's visible in the input
     parts: CommandParts,    // the parsed parts of the visible input
@@ -20,7 +20,7 @@ struct CommandParts {
     verb: Option<String>,        // may be Some("") if user already typed the separator
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum Action {
     MoveSelection(i32),             // up (neg) or down (positive) in the list
     ScrollPage(i32),                // in number of pages, not lines

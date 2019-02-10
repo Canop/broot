@@ -1,5 +1,5 @@
 /// Verbs are the engines of broot commands, and apply
-/// - to the selected file (if user-defined, then must contain {file})
+/// - to the selected file (if user-defined, then must contain {file} or {directory})
 /// - to the current app state
 use std::fs::OpenOptions;
 use std::io::{self, Write};
@@ -10,7 +10,6 @@ use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::conf::Conf;
-use crate::flat_tree::TreeLine;
 use crate::external::Launchable;
 use crate::help_states::HelpState;
 use crate::screens::Screen;
@@ -19,11 +18,12 @@ use crate::tree_options::{OptionBool, TreeOptions};
 
 #[derive(Debug, Clone)]
 pub struct Verb {
-    pub name: String,
-    pub short_key: Option<String>,
-    pub long_key: String,
-    pub exec_pattern: String,
-    pub description: String,
+    pub name: String,               // a public name, eg "cd"
+    pub short_key: Option<String>,  // a shortcut, eg "c"
+    pub long_key: String,           // a long typable key, eg "cd"
+    pub exec_pattern: String,       // a pattern usable for execution, eg ":cd" or "less {file}"
+    pub description: String,        // a description for the user
+    pub from_shell: bool,           // whether it must be launched from the parent shell (eg because it's a shell function)
 }
 
 impl Verb {
@@ -32,6 +32,7 @@ impl Verb {
         invocation: Option<String>,
         exec_pattern: String,
         description: String,
+        from_shell: bool,
     ) -> Verb {
         // we build the long key such as
         // ":goto" -> "goto"
@@ -44,8 +45,11 @@ impl Verb {
             long_key: RE.find(&exec_pattern).map_or("", |m| m.as_str()).to_string(),
             exec_pattern,
             description,
+            from_shell,
         }
     }
+    // built-ins are verbs offering a logic other than the execution
+    //  based on exec_pattern. They mostly modify the appstate
     fn create_built_in(
         name: &str,
         short_key: Option<String>,
@@ -57,27 +61,80 @@ impl Verb {
             long_key: name.to_string(),
             exec_pattern: (format!(":{}", name)).to_string(),
             description: description.to_string(),
+            from_shell: false,
         }
     }
-    #[allow(dead_code)]
-    fn matches(&self, prefix: &str) -> bool {
-        if let Some(s) = &self.short_key {
-            if s.starts_with(prefix) {
-                return true;
+    pub fn description_for(&self, state: &BrowserState) -> String {
+        let line = match &state.filtered_tree {
+            Some(tree) => tree.selected_line(),
+            None => state.tree.selected_line(),
+        };
+        let mut path = line.target();
+        if self.exec_pattern == ":cd" {
+            if !line.is_dir() {
+                path = path.parent().unwrap().to_path_buf();
             }
+            format!("cd {}", path.to_string_lossy())
+        } else if self.exec_pattern.starts_with(':') {
+            self.description.to_string()
+        } else {
+            self.exec_token(&path).join(" ")
         }
-        self.long_key.starts_with(prefix)
+    }
+    fn exec_token(&self, path: &Path) -> Vec<String> {
+        self.exec_pattern
+            .split_whitespace()
+            .map(|t|
+                if t=="{file}" {
+                    path.to_string_lossy().to_string()
+                } else if t=="{directory}" {
+                    let mut path = path;
+                    if !path.is_dir() {
+                        path = path.parent().unwrap();
+                    }
+                    path.to_string_lossy().to_string()
+                } else {
+                    t.to_string()
+                }
+            )
+            .collect()
+    }
+    // build the cmd result for a verb defined with an exec pattern.
+    // Calling this function on a built-in doesn't make sense
+    pub fn to_cmd_result(&self, path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult> {
+        Ok(if self.from_shell {
+            if let Some(ref export_path) = con.launch_args.cmd_export_path {
+                // new version of the br function: the whole command is exported
+                // in the passed file
+                let f = OpenOptions::new().append(true).open(export_path)?;
+                writeln!(&f, "{}", self.exec_token(path).join(" "))?;
+                AppStateCmdResult::Quit
+            } else if let Some(ref export_path) = con.launch_args.file_export_path {
+                // old version of the br function: only the file is exported
+                // in the passed file
+                let f = OpenOptions::new().append(true).open(export_path)?;
+                writeln!(&f, "{}", path.to_string_lossy())?;
+                AppStateCmdResult::Quit
+            } else {
+                AppStateCmdResult::DisplayError(
+                    "broot not properly called. See https://github.com/Canop/broot#cd".to_string()
+                )
+            }
+        } else {
+            AppStateCmdResult::Launch(Launchable::from(self.exec_token(path))?)
+        })
     }
 }
 
+/// hold all the available verbs: built-in ones and those coming from configuration
 pub struct VerbStore {
-    //pub map: BTreeMap<String, Verb>,
     pub verbs: Vec<Verb>,
 }
 
 pub trait VerbExecutor {
     fn execute_verb(&self, verb: &Verb, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult>;
 }
+
 
 impl VerbExecutor for HelpState {
     fn execute_verb(&self, verb: &Verb, _screen: &Screen, _con: &AppContext) -> io::Result<AppStateCmdResult> {
@@ -95,27 +152,6 @@ impl VerbExecutor for HelpState {
     }
 }
 
-pub fn change_directory(line: &TreeLine, con: &AppContext) -> io::Result<AppStateCmdResult> {
-    Ok(
-        if let Some(ref output_path) = con.output_path {
-            // an output path was provided, we write to it
-            let f = OpenOptions::new().append(true).open(output_path)?;
-            let mut path = line.target();
-            if !line.is_dir() {
-                path = path.parent().unwrap().to_path_buf();
-            }
-            writeln!(&f, "{}", path.to_string_lossy())?;
-            AppStateCmdResult::Quit
-        } else {
-            // This is a usage problem. :cd is meant to change directory
-            // and it currently can't be done without the shell companion function
-            AppStateCmdResult::DisplayError(
-                "broot not properly called. See https://github.com/Canop/broot#cd".to_string()
-            )
-        }
-    )
-}
-
 impl VerbExecutor for BrowserState {
     fn execute_verb(&self, verb: &Verb, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
         let tree = match &self.filtered_tree {
@@ -125,7 +161,6 @@ impl VerbExecutor for BrowserState {
         let line = &tree.selected_line();
         Ok(match verb.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
-            ":cd" => change_directory(line, con)?,
             ":focus" => {
                 let path = tree.selected_line().path.clone();
                 let options = tree.options.clone();
@@ -152,7 +187,7 @@ impl VerbExecutor for BrowserState {
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
             ":print_path" => {
-                if let Some(ref output_path) = con.output_path {
+                if let Some(ref output_path) = con.launch_args.file_export_path {
                     // an output path was provided, we write to it
                     let f = OpenOptions::new().append(true).open(output_path)?;
                     writeln!(&f, "{}", line.target().to_string_lossy())?;
@@ -183,36 +218,11 @@ impl VerbExecutor for BrowserState {
             ":toggle_perm" => self.with_new_options(screen, &|o| o.show_permissions ^= true),
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":quit" => AppStateCmdResult::Quit,
-            _ => AppStateCmdResult::Launch(Launchable::from(verb.exec_token(&line.target()))?),
+            _ => verb.to_cmd_result(&line.target(), con)?,
         })
     }
 }
 
-impl Verb {
-    fn exec_token(&self, path: &Path) -> Vec<String> {
-        self.exec_pattern
-            .split_whitespace()
-            .map(|t| if t=="{file}" { path.to_string_lossy().to_string() } else { t.to_string() })
-            .collect()
-    }
-    pub fn description_for(&self, state: &BrowserState) -> String {
-        let line = match &state.filtered_tree {
-            Some(tree) => tree.selected_line(),
-            None => state.tree.selected_line(),
-        };
-        let mut path = line.target();
-        if self.exec_pattern == ":cd" {
-            if !line.is_dir() {
-                path = path.parent().unwrap().to_path_buf();
-            }
-            format!("cd {}", path.to_string_lossy())
-        } else if self.exec_pattern.starts_with(':') {
-            self.description.to_string()
-        } else {
-            self.exec_token(&path).join(" ")
-        }
-    }
-}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrefixSearchResult<T> {
@@ -239,8 +249,12 @@ impl VerbStore {
         self.verbs.push(Verb::create_built_in(
             "back", None, "reverts to the previous state (mapped to `<esc>`)"
         ));
-        self.verbs.push(Verb::create_built_in(
-            "cd", None, "changes directory - see https://github.com/Canop/broot",
+        self.verbs.push(Verb::create(
+            "cd".to_string(),
+            None, // no real need for a shortcut as it's mapped to alt-enter
+            "cd {directory}".to_string(),
+            "changes directory".to_string(),
+            true, // needs to be launched from the parent shell
         ));
         self.verbs.push(Verb::create_built_in(
             "focus", Some("goto".to_string()), "displays a directory (mapped to `<enter>`)",
@@ -287,13 +301,10 @@ impl VerbStore {
                         Some(verb_conf.invocation.to_string()),
                         verb_conf.execution.to_owned(),
                         verb_conf.execution.to_owned(),
+                        false,
                 ));
             }
         }
-    }
-    #[allow(dead_code)]
-    pub fn matching_verbs(&self, prefix: &str) -> Vec<&Verb> {
-        self.verbs.iter().filter(|v| v.matches(prefix)).collect()
     }
     pub fn search(&self, prefix: &str) -> PrefixSearchResult<&Verb> {
         let mut found_index = 0;
@@ -322,5 +333,17 @@ impl VerbStore {
             1 => PrefixSearchResult::Match(&self.verbs[found_index]),
             _ => PrefixSearchResult::TooManyMatches,
         }
+    }
+    // return the index of the verb having the long key. This function is meant
+    // for internal access when it's sure it can't failed (i.e. for a builtin)
+    // It looks for verbs by name, starting from the builtins, to
+    // ensure it hasn't been overriden.
+    pub fn index_of(&self, name: &str) -> usize {
+        for i in 0..self.verbs.len() {
+            if self.verbs[i].name == name {
+                return i;
+            }
+        }
+        panic!("invalid verb search");
     }
 }

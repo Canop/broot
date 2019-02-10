@@ -1,8 +1,10 @@
 use crate::verbs::VerbStore;
+use crate::cli::AppLaunchArgs;
 
 /// The immutable container that can be passed around to provide
 /// the configuration things
 pub struct AppContext {
+    pub launch_args: AppLaunchArgs,
     pub verb_store: VerbStore,
-    pub output_path: Option<String>, // where to write the outputted path (if required with --out)
 }
+

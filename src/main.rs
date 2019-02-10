@@ -9,6 +9,7 @@ extern crate log;
 mod app;
 mod app_context;
 mod browser_states;
+mod cli;
 mod commands;
 mod conf;
 mod errors;
@@ -23,6 +24,7 @@ mod input;
 mod patterns;
 mod screen_text;
 mod screens;
+mod shell_func;
 mod spinner;
 mod status;
 mod task_sync;
@@ -31,83 +33,20 @@ mod tree_options;
 mod tree_views;
 mod verbs;
 
-use clap;
 use log::LevelFilter;
 use simplelog;
 use std::env;
 use std::fs::File;
-use std::path::PathBuf;
 use std::result::Result;
 use std::str::FromStr;
 
 use crate::app::App;
-use crate::app_context::AppContext;
-use crate::commands::Command;
+use crate::app_context::{AppContext};
 use crate::conf::Conf;
 use crate::errors::ProgramError;
 use crate::external::Launchable;
-use crate::tree_options::TreeOptions;
 use crate::verbs::VerbStore;
 
-const VERSION: &str = "0.5.2";
-
-// declare the possible CLI arguments, and gets the values
-fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
-    clap::App::new("broot")
-        .version(VERSION)
-        .author("dystroy <denys.seguret@gmail.com>")
-        .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
-        .arg(
-            clap::Arg::with_name("root")
-            .help("sets the root directory")
-        )
-        .arg(
-            clap::Arg::with_name("commands")
-                .short("c")
-                .long("cmd")
-                .takes_value(true)
-                .help("commands to execute (space separated, experimental)")
-        )
-        .arg(
-            clap::Arg::with_name("only-folders")
-                .short("f")
-                .long("only-folders")
-                .help("only show folders")
-        )
-        .arg(
-            clap::Arg::with_name("hidden")
-                .short("h")
-                .long("hidden")
-                .help("show hidden files")
-        )
-        .arg(
-            clap::Arg::with_name("sizes")
-                .short("s")
-                .long("sizes")
-                .help("show the size of files and directories")
-        )
-        .arg(
-            clap::Arg::with_name("permissions")
-                .short("p")
-                .long("permissions")
-                .help("show permissions, with owner and group")
-        )
-        .arg(
-            clap::Arg::with_name("output_path")
-                .short("o")
-                .long("out")
-                .takes_value(true)
-                .help("where to write the outputted path (if any)")
-        )
-        .arg(
-            clap::Arg::with_name("gitignore")
-                .short("g")
-                .long("gitignore")
-                .takes_value(true)
-                .help("respect .gitignore rules (yes, no, auto)")
-        )
-        .get_matches()
-}
 
 // There's no log unless the BROOT_LOG environment variable is set to
 //  a valid log level (trace, debug, info, warn, error, off)
@@ -126,7 +65,7 @@ fn configure_log() {
             File::create("dev.log").expect("Log file can't be created"),
         )
         .expect("log initialization failed");
-        info!("Starting B-Root v{} with log level {}", VERSION, level);
+        info!("Starting B-Root v{} with log level {}", env!("CARGO_PKG_VERSION"), level);
     }
 }
 
@@ -134,62 +73,19 @@ fn configure_log() {
 // which must be run after broot
 fn run() -> Result<Option<Launchable>, ProgramError> {
     configure_log();
-
-    let config = Conf::from_default_location()?;
-
+    let launch_args = cli::read_lauch_args()?;
+    let should_quit = shell_func::init(&launch_args)?;
+    if should_quit {
+        return Ok(None);
+    }
     let mut verb_store = VerbStore::new();
+    let config = Conf::from_default_location()?;
     verb_store.init(&config);
-
-    let cli_args = get_cli_args();
-    let path = match cli_args.value_of("root") {
-        Some(path) => PathBuf::from(path),
-        None => env::current_dir()?,
-    };
-    let path = path.canonicalize()?;
-    let mut tree_options = TreeOptions::new();
-    if cli_args.is_present("only-folders") {
-        debug!("show only folders arg set");
-        tree_options.only_folders = true;
-    }
-    if cli_args.is_present("hidden") {
-        debug!("show hidden files arg set");
-        tree_options.show_hidden = true;
-    }
-    if cli_args.is_present("sizes") {
-        debug!("show sizes arg set");
-        tree_options.show_sizes = true;
-    }
-    if cli_args.is_present("permissions") {
-        debug!("show permissions arg set");
-        tree_options.show_permissions = true;
-    }
-    if let Some(respect_ignore) = cli_args.value_of("gitignore") {
-        tree_options.respect_git_ignore = respect_ignore.parse()?;
-        debug!("respect_git_itnore = {:?}", tree_options.respect_git_ignore);
-    }
-
-    let con = AppContext {
+    let context = AppContext {
+        launch_args,
         verb_store,
-        output_path: cli_args
-            .value_of("output_path")
-            .and_then(|s| Some(s.to_owned())),
     };
-    debug!("output path: {:?}", &con.output_path);
-
-    let input_commands: Vec<Command> = match cli_args.value_of("commands") {
-        Some(str) => str
-            .split(' ')
-            .map(|s| Command::from(s.to_string()))
-            .collect(),
-        None => Vec::new(),
-    };
-
-    App::new().run(
-        &con,
-        path,
-        tree_options,
-        input_commands,
-    )
+    App::new().run(&context)
 }
 
 fn main() {

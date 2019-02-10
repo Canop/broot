@@ -6,7 +6,6 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
-
 use custom_error::custom_error;
 use directories::ProjectDirs;
 
@@ -40,15 +39,18 @@ fn string_field(value: &Value, field_name: &str) -> Option<String> {
     None
 }
 
+// return the path to the config directory, based on XDG
+pub fn dir() -> PathBuf {
+    if let Some(dirs) = ProjectDirs::from("org", "dystroy", "broot") {
+        dirs.config_dir().to_path_buf()
+    } else {
+        panic!("Unable to find configuration directories");
+    }
+}
+
 impl Conf {
     pub fn default_location() -> PathBuf {
-        let dirs = match ProjectDirs::from("org", "dystroy", "broot") {
-            Some(dirs) => dirs,
-            None => {
-                panic!("Unable to find configuration directories");
-            }
-        };
-        dirs.config_dir().join("conf.toml")
+        dir().join("conf.toml")
     }
     // read the configuration file from the default OS specific location.
     // Create it if it doesn't exist

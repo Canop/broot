@@ -24,3 +24,5 @@ glob = "0.2"
 users = "0.8"
 jemallocator = "0.1"
 
+[profile.release]
+lto = true

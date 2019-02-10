@@ -8,7 +8,6 @@
 //! - a request to quit broot
 //! - a request to launch an executable (thus leaving broot)
 use std::io::{self, stdin, Write};
-use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread;
@@ -24,7 +23,6 @@ use crate::screens::Screen;
 use crate::spinner::Spinner;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
-use crate::tree_options::TreeOptions;
 
 /// Result of applying a command to a state
 pub enum AppStateCmdResult {
@@ -178,17 +176,14 @@ impl App {
     pub fn run(
         mut self,
         con: &AppContext,
-        initial_path: PathBuf,
-        initial_options: TreeOptions,
-        input_commands: Vec<Command>, // commands passed as cli argument
     ) -> Result<Option<Launchable>, ProgramError> {
 
         let mut screen = Screen::new()?;
 
         // create the initial state
         if let Some(bs) = BrowserState::new(
-            initial_path,
-            initial_options,
+            con.launch_args.root.clone(),
+            con.launch_args.tree_options.clone(),
             &screen,
             &TaskLifetime::unlimited(),
         ) {
@@ -199,7 +194,8 @@ impl App {
 
         // if some commands were passed to the application
         //  we execute them before even starting listening for keys
-        for cmd in input_commands {
+        for cmd in &con.launch_args.commands {
+            let cmd = (*cmd).clone();
             let cmd = self.apply_command(cmd, &mut screen, con)?;
             self.do_pending_tasks(
                 &cmd,

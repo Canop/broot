@@ -19,7 +19,7 @@ use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
 use crate::tree_options::{OptionBool, TreeOptions};
 use crate::tree_views::TreeView;
-use crate::verbs::{self, PrefixSearchResult, VerbExecutor};
+use crate::verbs::{PrefixSearchResult, VerbExecutor};
 
 pub struct BrowserState {
     pub tree: Tree,
@@ -149,7 +149,8 @@ impl AppState for BrowserState {
                     None => &self.tree,
                 };
                 let line = tree.selected_line();
-                verbs::change_directory(line, con)?
+                let cd_idx = con.verb_store.index_of("cd");
+                con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), con)?
             }
             Action::Verb(verb_key) => match con.verb_store.search(&verb_key) {
                 PrefixSearchResult::Match(verb) => self.execute_verb(verb, screen, con)?,

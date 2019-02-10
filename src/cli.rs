@@ -1,0 +1,142 @@
+/// this module manages reading and translating
+/// the arguments passed on launch of the application.
+
+use clap;
+use std::env;
+use std::io::{self, stdin};
+use std::path::PathBuf;
+use std::result::Result;
+use termion::input::TermRead;
+use crate::commands::Command;
+use crate::errors::ProgramError;
+use crate::tree_options::TreeOptions;
+
+pub struct AppLaunchArgs {
+    pub root: PathBuf,                      // what should be the initial root
+    pub file_export_path: Option<String>,   // where to write the produced path (if required with --out)
+    pub cmd_export_path: Option<String>,    // where to write the produced command (if required with --outcmd, or -oc)
+    pub tree_options: TreeOptions,          // initial tree options
+    pub commands: Vec<Command>,             // commands passed as cli argument
+    pub install: bool,                      // installation is required
+}
+
+// declare the possible CLI arguments, and gets the values
+fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
+    clap::App::new("broot")
+        .author("dystroy <denys.seguret@gmail.com>")
+        .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
+        .arg(
+            clap::Arg::with_name("root")
+            .help("sets the root directory")
+        )
+        .arg(
+            clap::Arg::with_name("cmd_export_path")
+                .long("outcmd")
+                .takes_value(true)
+                .help("where to write the produced cmd (if any)")
+        )
+        .arg(
+            clap::Arg::with_name("commands")
+                .short("c")
+                .long("cmd")
+                .takes_value(true)
+                .help("commands to execute (space separated, experimental)")
+        )
+        .arg(
+            clap::Arg::with_name("file_export_path")
+                .short("o")
+                .long("out")
+                .takes_value(true)
+                .help("where to write the produced path (if any)")
+        )
+        .arg(
+            clap::Arg::with_name("gitignore")
+                .short("g")
+                .long("gitignore")
+                .takes_value(true)
+                .help("respect .gitignore rules (yes, no, auto)")
+        )
+        .arg(
+            clap::Arg::with_name("hidden")
+                .short("h")
+                .long("hidden")
+                .help("show hidden files")
+        )
+        .arg(
+            clap::Arg::with_name("install")
+                .long("install")
+                .help("install the br shell function")
+        )
+        .arg(
+            clap::Arg::with_name("only-folders")
+                .short("f")
+                .long("only-folders")
+                .help("only show folders")
+        )
+        .arg(
+            clap::Arg::with_name("permissions")
+                .short("p")
+                .long("permissions")
+                .help("show permissions, with owner and group")
+        )
+        .arg(
+            clap::Arg::with_name("sizes")
+                .short("s")
+                .long("sizes")
+                .help("show the size of files and directories")
+        )
+        .get_matches()
+}
+
+// return the parsed launch arguments
+pub fn read_lauch_args() -> Result<AppLaunchArgs, ProgramError> {
+    let cli_args = get_cli_args();
+    let root = match cli_args.value_of("root") {
+        Some(path) => PathBuf::from(path),
+        None => env::current_dir()?,
+    };
+    let root = root.canonicalize()?;
+    let mut tree_options = TreeOptions::new();
+    tree_options.only_folders = cli_args.is_present("only-folders");
+    tree_options.show_hidden = cli_args.is_present("hidden");
+    tree_options.show_sizes = cli_args.is_present("sizes");
+    tree_options.show_permissions = cli_args.is_present("permissions");
+    if let Some(respect_ignore) = cli_args.value_of("gitignore") {
+        tree_options.respect_git_ignore = respect_ignore.parse()?;
+    }
+    let install = cli_args.is_present("install");
+    let file_export_path = cli_args
+        .value_of("file_export_path")
+        .and_then(|s| Some(s.to_owned()));
+    let cmd_export_path = cli_args
+        .value_of("cmd_export_path")
+        .and_then(|s| Some(s.to_owned()));
+    let commands: Vec<Command> = match cli_args.value_of("commands") {
+        Some(str) => str
+            .split(' ')
+            .map(|s| Command::from(s.to_string()))
+            .collect(),
+        None => Vec::new(),
+    };
+    Ok(AppLaunchArgs {
+        root,
+        file_export_path,
+        cmd_export_path,
+        tree_options,
+        commands,
+        install,
+    })
+}
+
+pub fn ask_authorization(question: &str) -> io::Result<bool> {
+    println!("{}", question);
+    let answer = stdin().lock().read_line()?;
+    debug!("answer: {:?}", answer);
+    Ok(match answer {
+        Some(ref s) => match &s[..] {
+            "n" => false,
+            _ => true,
+        },
+        _ => true,
+    })
+}
