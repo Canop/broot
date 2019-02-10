@@ -27,7 +27,7 @@ Most useful keys for this:
 * the letters of what you're looking for
 * `<enter>` to select a directory (staying in broot)
 * `<esc>` to get back to the previous state or clear your search
-* `<alt><enter>` to get back to the shell having `cd` to the selected directory ([see below](#use-broot-for-navigation))
+* `<alt><enter>` to get back to the shell having `cd` to the selected directory
 * `:q` if you just want to quit (`<esc>` works too)
 
 ### Never lose track of file hierarchy while you fuzzy search:
@@ -82,42 +82,15 @@ The executable is written in the `target/release` directory (you might want to m
 
 * [x86_64-linux](https://dystroy.org/broot/x86_64-linux/broot)
 
-## cd
+### Installation Completion : the `br` shell function
 
 broot is convenient to find a directory then `cd` to it, which is done using `<alt><enter>` or `:cd`.
 
-But broot needs a companion function in the shell in order to be able to change directory. To enable this feature, add this to your `.bashrc` (or the relevant file for another shell):
+But broot needs a companion function in the shell in order to be able to change directory.
 
-	# start broot and let it change directory
-	function br {
-	    f=$(mktemp)
+To enable this feature, broot asks the permission to register this shell function on first run.
 
-	    (
-		set +e
-		broot --out "$f" "$@"
-		code=$?
-		if [ "$code" != 0 ]; then
-		    rm -f "$f"
-		    exit "$code"
-		fi
-	    )
-	    code=$?
-	    if [ "$code" != 0 ]; then
-		return "$code"
-	    fi
-
-	    d=$(cat "$f")
-	    rm -f "$f"
-
-	    if [ "$(wc -c <(echo -n "$d") | head -c1)" != 0 ]; then
-		cd "$d"
-	    fi
-	}
-
-(You'll have to source the `.bashrc` file or open a new terminal for the function to take effect.)
-
-With this addition, you can do just `br` to launch broot, and typing `<alt><enter>` will cd for you.
-
+When it's done, you can do just `br` to launch broot, and typing `<alt><enter>` will cd for you.
 
 ## Development
 

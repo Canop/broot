@@ -60,7 +60,7 @@ This is normally achieved with the `esc` key but you might want to remap it.
 
 ### `:cd` : cd to a directory
 
-`:cd` is the most useful verb but only works if you're using the [shell integration](README.md#use-broot-for-navigation).
+`:cd` is the most useful verb but only works if you're using the `br` shell function to launch `broot`.
 
 If you call it on a simple file, instead of a directory, the shell will be directed to the parent directory.
 
