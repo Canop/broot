@@ -1,6 +1,7 @@
 bench.sh
 dev.log
 deploy.sh
+docs
 install.sh
 notes.md
 /releases
@@ -9,4 +10,5 @@ notes.md
 perf.data*
 *.pl
 off
-
+screens
+tests

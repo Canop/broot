@@ -7,8 +7,8 @@ use core::result;
 use std::{fmt, mem};
 
 use crate::errors::RegexError;
-use crate::fuzzy_patterns::{FuzzyPattern};
-use crate::regex_patterns::{RegexPattern};
+use crate::fuzzy_patterns::FuzzyPattern;
+use crate::regex_patterns::RegexPattern;
 
 #[derive(Debug, Clone)]
 pub enum Pattern {
@@ -40,7 +40,8 @@ impl Pattern {
         match self {
             Pattern::Fuzzy(fp) => fp.find(candidate),
             Pattern::Regex(rp) => rp.find(candidate),
-            Pattern::None => Some(Match { // this isn't really supposed to be used
+            Pattern::None => Some(Match {
+                // this isn't really supposed to be used
                 score: 1,
                 pos: Vec::with_capacity(0),
             }),
@@ -62,7 +63,7 @@ impl Pattern {
 /// A Match is a positive result of pattern matching
 #[derive(Debug)]
 pub struct Match {
-    pub score: i32,  // score of the match, guaranteed strictly positive, bigger is better
+    pub score: i32, // score of the match, guaranteed strictly positive, bigger is better
     pub pos: Vec<usize>, // positions of the matching chars
 }
 

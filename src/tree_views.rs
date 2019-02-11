@@ -4,28 +4,17 @@ use std::sync::Mutex;
 use termion::{color, style};
 use users::{Groups, Users, UsersCache};
 
+use crate::file_sizes::Size;
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
 use crate::screens::{Screen, ScreenArea};
-use crate::file_sizes::Size;
 
 pub trait TreeView {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
-    fn write_line_size(
-        &mut self,
-        line: &TreeLine,
-        total_size: Size,
-    ) -> io::Result<()>;
-    fn write_mode(
-        &mut self,
-        mode: u32,
-    ) -> io::Result<()>;
-    fn write_line_name(
-        &mut self,
-        line: &TreeLine,
-        idx: usize,
-        pattern: &Pattern,
-    ) -> io::Result<()>;
+    fn write_line_size(&mut self, line: &TreeLine, total_size: Size) -> io::Result<()>;
+    fn write_mode(&mut self, mode: u32) -> io::Result<()>;
+    fn write_line_name(&mut self, line: &TreeLine, idx: usize, pattern: &Pattern)
+        -> io::Result<()>;
 }
 
 impl TreeView for Screen {
@@ -44,7 +33,8 @@ impl TreeView for Screen {
                     max_user_name_len = max_user_name_len.max(user.name().to_string_lossy().len());
                 }
                 if let Some(group) = users_cache.get_group_by_gid(line.uid) {
-                    max_group_name_len = max_group_name_len.max(group.name().to_string_lossy().len());
+                    max_group_name_len =
+                        max_group_name_len.max(group.name().to_string_lossy().len());
                 }
             }
         }
@@ -72,11 +62,11 @@ impl TreeView for Screen {
                         "{}",
                         if line.left_branchs[depth as usize] {
                             if tree.has_branch(line_index + 1, depth as usize) {
-                                 if depth == line.depth - 1 {
+                                if depth == line.depth - 1 {
                                     "├──"
-                                 } else {
+                                } else {
                                     "│  "
-                                 }
+                                }
                             } else {
                                 "└──"
                             }
@@ -145,51 +135,15 @@ impl TreeView for Screen {
             self.stdout,
             "{} {}{}{}{}{}{}{}{}{}",
             color::Fg(color::AnsiValue::grayscale(15)),
-            if (mode & (1 << 8)) != 0 {
-                'r'
-            } else {
-                '-'
-            },
-            if (mode & (1 << 7)) != 0 {
-                'w'
-            } else {
-                '-'
-            },
-            if (mode & (1 << 6)) != 0 {
-                'x'
-            } else {
-                '-'
-            },
-            if (mode & (1 << 5)) != 0 {
-                'r'
-            } else {
-                '-'
-            },
-            if (mode & (1 << 4)) != 0 {
-                'w'
-            } else {
-                '-'
-            },
-            if (mode & (1 << 3)) != 0 {
-                'x'
-            } else {
-                '-'
-            },
-            if (mode & (1 << 2)) != 0 {
-                'r'
-            } else {
-                '-'
-            },
-            if (mode & (1 << 1)) != 0 {
-                'w'
-            } else {
-                '-'
-            },
-            if (mode & 1) != 0 {
-                'x'
-            } else {
-                '-'
-            },
+            if (mode & (1 << 8)) != 0 { 'r' } else { '-' },
+            if (mode & (1 << 7)) != 0 { 'w' } else { '-' },
+            if (mode & (1 << 6)) != 0 { 'x' } else { '-' },
+            if (mode & (1 << 5)) != 0 { 'r' } else { '-' },
+            if (mode & (1 << 4)) != 0 { 'w' } else { '-' },
+            if (mode & (1 << 3)) != 0 { 'x' } else { '-' },
+            if (mode & (1 << 2)) != 0 { 'r' } else { '-' },
+            if (mode & (1 << 1)) != 0 { 'w' } else { '-' },
+            if (mode & 1) != 0 { 'x' } else { '-' },
         )
     }
 

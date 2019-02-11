@@ -21,20 +21,19 @@
 //! If the user refused the installation, a "refused" file takes the
 //! place of the "installed" one.
 
-
 use std::env;
 use std::fs;
-use std::io::{self, Write, BufRead, BufReader};
+use std::fs::OpenOptions;
+use std::io::{self, BufRead, BufReader, Write};
 use std::os::unix::fs::symlink;
 use std::path::Path;
-use std::fs::OpenOptions;
 
 use directories::UserDirs;
 use regex::Regex;
 use termion::style;
 
-use crate::conf;
 use crate::cli::{self, AppLaunchArgs};
+use crate::conf;
 
 // if we start to handle several shell families, we'll make the appropriate
 // structure and versions will be by shell function. Right now it would be
@@ -95,7 +94,11 @@ fn ensure_shell_script_installed(launcher_dir: &Path, shellname: &str) -> io::Re
 }
 
 fn ask_authorization(shellrc_path: &Path) -> io::Result<bool> {
-    println!("{}Broot{} should be launched using a shell function", style::Bold, style::Reset);
+    println!(
+        "{}Broot{} should be launched using a shell function",
+        style::Bold,
+        style::Reset
+    );
     println!("(see https://github.com/Canop/broot for explanations).");
     println!("The function is either missing, old or badly installed.");
     cli::ask_authorization(&format!("Can we add a line to {:?} ? [Y n]", shellrc_path))
@@ -111,9 +114,13 @@ fn file_contains_line(path: &Path, searched_line: &str) -> io::Result<bool> {
 }
 
 /// return true if the application should quit
-fn maybe_patch_shellrc(launcher_dir: &Path, shellname: &str, installation_required: bool) -> io::Result<bool> {
+fn maybe_patch_shellrc(
+    launcher_dir: &Path,
+    shellname: &str,
+    installation_required: bool,
+) -> io::Result<bool> {
     let installed_path = launcher_dir.join("installed");
-    if installed_path.exists(){
+    if installed_path.exists() {
         debug!("*installed* file found");
         // everything seems OK
         if !installation_required {
@@ -121,7 +128,7 @@ fn maybe_patch_shellrc(launcher_dir: &Path, shellname: &str, installation_requir
         }
     }
     let refused_path = launcher_dir.join("refused");
-    if refused_path.exists(){
+    if refused_path.exists() {
         debug!("*refused* file found :(");
         if installation_required {
             fs::remove_file(&refused_path)?;
@@ -140,9 +147,15 @@ fn maybe_patch_shellrc(launcher_dir: &Path, shellname: &str, installation_requir
     };
     let shellrc_path = homedir_path.join(format!(".{}rc", shellname));
     if !shellrc_path.exists() {
-        warn!("no {:?} file found, we can't install the br function", &shellrc_path);
+        warn!(
+            "no {:?} file found, we can't install the br function",
+            &shellrc_path
+        );
         if installation_required {
-            println!("no {:?} file found, we can't install the br function", &shellrc_path);
+            println!(
+                "no {:?} file found, we can't install the br function",
+                &shellrc_path
+            );
         }
         return Ok(installation_required);
     }
@@ -151,21 +164,38 @@ fn maybe_patch_shellrc(launcher_dir: &Path, shellname: &str, installation_requir
         debug!("proceed: {:?}", proceed);
         if !proceed {
             // user doesn't want the shell function, let's remember it
-            fs::write(&refused_path, "to install the br function, run broot --install")?;
+            fs::write(
+                &refused_path,
+                "to install the br function, run broot --install\n",
+            )?;
             println!("Okey. If you change your mind, use ̀ broot --install`.");
             return Ok(false);
         }
     }
     // user is OK, let's try to patch his shellrc
-    let source_line = format!("\nsource {}/{}/br", launcher_dir.to_string_lossy(), &shellname);
+    let source_line = format!(
+        "\nsource {}/{}/br",
+        launcher_dir.to_string_lossy(),
+        &shellname
+    );
     if file_contains_line(&shellrc_path, &source_line)? {
         println!("{:?} already patched, no change made.", shellrc_path);
     } else {
-        let mut shellrc = OpenOptions::new().write(true).append(true).open(&shellrc_path)?;
+        let mut shellrc = OpenOptions::new()
+            .write(true)
+            .append(true)
+            .open(&shellrc_path)?;
         shellrc.write_all(source_line.as_bytes())?;
-        println!("{:?} successfully patched, you should now refresh it with.", shellrc_path);
+        println!(
+            "{:?} successfully patched, you should now refresh it with.",
+            shellrc_path
+        );
         println!("  source {}", shellrc_path.to_string_lossy());
-        println!("You should afterwards start broot with just {}br{}.", style::Bold, style::Reset);
+        println!(
+            "You should afterwards start broot with just {}br{}.",
+            style::Bold,
+            style::Reset
+        );
     }
     // signal if there's an old br function declared in the shellrc file
     // (which was the normal way to install before broot 0.6)
@@ -177,7 +207,10 @@ fn maybe_patch_shellrc(launcher_dir: &Path, shellname: &str, installation_requir
         println!("You should remove it.");
     }
     // and remember we did it
-    fs::write(&installed_path, "to reinstall the br function, run broot --install")?;
+    fs::write(
+        &installed_path,
+        "to reinstall the br function, run broot --install\n",
+    )?;
     Ok(true)
 }
 

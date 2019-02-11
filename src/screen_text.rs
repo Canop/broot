@@ -86,7 +86,7 @@ impl<'a, R> TextTable<'a, R> {
             width,
         });
     }
-    fn compute_col_widths(&mut self, rows: &'a[R]) {
+    fn compute_col_widths(&mut self, rows: &'a [R]) {
         for row in rows {
             for c in &mut self.cols {
                 c.width = c.width.max((c.extract)(row).len());
@@ -96,7 +96,7 @@ impl<'a, R> TextTable<'a, R> {
     // write the table into the text.
     // Right now, to ease width computations, md transformation is done
     // only in the last column
-    pub fn write(&mut self, rows: &'a[R], text: &mut Text) {
+    pub fn write(&mut self, rows: &'a [R], text: &mut Text) {
         lazy_static! {
             static ref bar: String = format!(
                 " {}│{} ",

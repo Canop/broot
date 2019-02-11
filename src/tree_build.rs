@@ -3,8 +3,10 @@ use std::collections::{BinaryHeap, VecDeque};
 use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::path::PathBuf;
+use std::result::Result;
 use std::time::{Duration, Instant};
 
+use crate::errors::TreeBuildError;
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::git_ignore::GitIgnoreFilter;
 use crate::task_sync::TaskLifetime;
@@ -18,8 +20,8 @@ struct BLine {
     depth: u16,
     name: String,
     file_type: fs::FileType,
-    children: Option<Vec<usize>>,   // sorted and filtered (indexes of the children in tree.blines)
-    next_child_idx: usize,          // index for iteration, among the children
+    children: Option<Vec<usize>>, // sorted and filtered (indexes of the children in tree.blines)
+    next_child_idx: usize,        // index for iteration, among the children
     has_error: bool,
     has_match: bool,
     score: i32,
@@ -39,7 +41,7 @@ enum BLineResult {
 
 impl BLine {
     // a special constructor, checking nothing
-    fn from_root(path: PathBuf, respect_ignore: OptionBool) -> BLine {
+    fn from_root(path: PathBuf, respect_ignore: OptionBool) -> Result<BLine, TreeBuildError> {
         let name = match path.file_name() {
             Some(name) => name.to_string_lossy().to_string(),
             None => String::from("???"), // should not happen
@@ -55,22 +57,26 @@ impl BLine {
                 Some(gif)
             }
         };
-        let file_type = fs::metadata(&path)
-            .unwrap() // TODO handle errors (e.g. dir removed between display and open)
-            .file_type();
-        BLine {
-            parent_idx: 0,
-            path,
-            depth: 0,
-            name,
-            children: None,
-            next_child_idx: 0,
-            file_type,
-            has_error: false,
-            has_match: true,
-            score: 0,
-            ignore_filter,
-            nb_kept_children: 0,
+        if let Ok(md) = fs::metadata(&path) {
+            let file_type = md.file_type();
+            Ok(BLine {
+                parent_idx: 0,
+                path,
+                depth: 0,
+                name,
+                children: None,
+                next_child_idx: 0,
+                file_type,
+                has_error: false,
+                has_match: true,
+                score: 0,
+                ignore_filter,
+                nb_kept_children: 0,
+            })
+        } else {
+            Err(TreeBuildError::FileNotFound {
+                path: format!("{:?}", path),
+            })
         }
     }
     // return a bline if the direntry directly matches the options and there's no error
@@ -240,15 +246,19 @@ pub struct TreeBuilder {
     nb_gitignored: u32,   // number of times a gitignore pattern excluded a file
 }
 impl TreeBuilder {
-    pub fn from(path: PathBuf, options: TreeOptions, targeted_size: usize) -> TreeBuilder {
+    pub fn from(
+        path: PathBuf,
+        options: TreeOptions,
+        targeted_size: usize,
+    ) -> Result<TreeBuilder, TreeBuildError> {
         let mut blines = Vec::new();
-        blines.push(BLine::from_root(path, options.respect_git_ignore));
-        TreeBuilder {
+        blines.push(BLine::from_root(path, options.respect_git_ignore)?);
+        Ok(TreeBuilder {
             blines,
             options,
             targeted_size,
             nb_gitignored: 0,
-        }
+        })
     }
     // stores (move) the bline in the global vec. Returns its index
     fn store(&mut self, bline: BLine) -> usize {

@@ -3,12 +3,14 @@
 
 use std::io::{self, Write};
 use std::path::PathBuf;
+use std::result::Result;
 use std::time::Instant;
 use termion::color;
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
+use crate::errors::TreeBuildError;
 use crate::external::Launchable;
 use crate::flat_tree::{LineType, Tree};
 use crate::help_states::HelpState;
@@ -27,22 +29,30 @@ pub struct BrowserState {
     pending_pattern: Pattern, // a pattern (or not) which has not yet be applied
 }
 
-
 impl BrowserState {
-    pub fn new(path: PathBuf, mut options: TreeOptions, screen: &Screen, tl: &TaskLifetime) -> Option<BrowserState> {
+    pub fn new(
+        path: PathBuf,
+        mut options: TreeOptions,
+        screen: &Screen,
+        tl: &TaskLifetime,
+    ) -> Result<Option<BrowserState>, TreeBuildError> {
         let pending_pattern = options.pattern;
         options.pattern = Pattern::None;
-        let builder = TreeBuilder::from(path, options, BrowserState::page_height(screen) as usize);
-        match builder.build(tl) {
+        let builder = TreeBuilder::from(path, options, BrowserState::page_height(screen) as usize)?;
+        Ok(match builder.build(tl) {
             Some(tree) => Some(BrowserState {
                 tree,
                 filtered_tree: None,
                 pending_pattern,
             }),
             None => None, // interrupted
-        }
+        })
     }
-    pub fn with_new_options(&self, screen: &Screen, change_options: &Fn(&mut TreeOptions)) -> AppStateCmdResult {
+    pub fn with_new_options(
+        &self,
+        screen: &Screen,
+        change_options: &Fn(&mut TreeOptions),
+    ) -> AppStateCmdResult {
         let tree = match &self.filtered_tree {
             Some(tree) => &tree,
             None => &self.tree,
@@ -67,9 +77,13 @@ impl BrowserState {
     }
 }
 
-
 impl AppState for BrowserState {
-    fn apply(&mut self, cmd: &mut Command, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    fn apply(
+        &mut self,
+        cmd: &mut Command,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> io::Result<AppStateCmdResult> {
         self.pending_pattern = Pattern::None;
         let page_height = BrowserState::page_height(screen);
         Ok(match &cmd.action {
@@ -174,12 +188,10 @@ impl AppState for BrowserState {
                     }
                     Err(e) => {
                         // FIXME details
-                        AppStateCmdResult::DisplayError(
-                            format!("{}", e)
-                        )
+                        AppStateCmdResult::DisplayError(format!("{}", e))
                     }
                 }
-            },
+            }
             Action::Help => AppStateCmdResult::NewState(Box::new(HelpState::new(screen))),
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
@@ -204,16 +216,27 @@ impl AppState for BrowserState {
 
     /// do some work, totally or partially, if there's some to do.
     /// Stop as soon as the lifetime is expired.
-    fn do_pending_task(&mut self, screen: &Screen, tl: &TaskLifetime) {
+    fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime) {
         if self.pending_pattern.is_some() {
             let start = Instant::now();
             let mut options = self.tree.options.clone();
             options.pattern = self.pending_pattern.take();
             let root = self.tree.root().clone();
             let len = self.tree.lines.len() as u16;
-            let mut filtered_tree = TreeBuilder::from(root, options, len as usize).build(tl);
+            let mut filtered_tree = match TreeBuilder::from(root, options, len as usize) {
+                Ok(builder) => builder.build(tl),
+                Err(e) => {
+                    let _ = screen.write_status_err(&e.to_string());
+                    warn!("Error while building tree: {:?}", e);
+                    return;
+                }
+            };
             if let Some(ref mut filtered_tree) = filtered_tree {
-                info!("Tree search with pattern {} took {:?}", &filtered_tree.options.pattern, start.elapsed());
+                info!(
+                    "Tree search with pattern {} took {:?}",
+                    &filtered_tree.options.pattern,
+                    start.elapsed()
+                );
                 filtered_tree.try_select_best_match();
                 filtered_tree.make_selection_visible(BrowserState::page_height(screen));
             } // if none: task was cancelled from elsewhere
@@ -235,10 +258,10 @@ impl AppState for BrowserState {
         match &cmd.action {
             Action::FuzzyPatternEdit(_) => {
                 screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
-            },
+            }
             Action::RegexEdit(_, _) => {
                 screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
-            },
+            }
             Action::VerbEdit(verb_key) => {
                 match con.verb_store.search(&verb_key) {
                     PrefixSearchResult::NoMatch => {
@@ -257,7 +280,7 @@ impl AppState for BrowserState {
                         "Type a verb then <enter> to execute it (':?' for the list of verbs)",
                     ),
                 }
-            },
+            }
             _ => {
                 let tree = self.displayed_tree();
                 if tree.selection == 0 {
@@ -266,13 +289,11 @@ impl AppState for BrowserState {
                     )
                 } else {
                     let line = &tree.lines[tree.selection];
-                    screen.write_status_text(
-                        if line.is_dir() {
-                            "Hit <enter> to focus, or type a space then a verb"
-                        } else {
-                            "Hit <enter> to open the file, or type a space then a verb"
-                        }
-                    )
+                    screen.write_status_text(if line.is_dir() {
+                        "Hit <enter> to focus, or type a space then a verb"
+                    } else {
+                        "Hit <enter> to open the file, or type a space then a verb"
+                    })
                 }
             }
         }

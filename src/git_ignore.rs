@@ -122,16 +122,13 @@ impl GitIgnoreFilter {
                 if rule.directory && !directory {
                     continue;
                 }
-                if rule.filename {
-                    if rule.pattern.matches_with(filename, &rule.pattern_options) {
-                        //debug!("rule matches filename {:?} -> ok={}", path, rule.ok);
-                        return rule.ok;
-                    }
+                let ok = if rule.filename {
+                    rule.pattern.matches_with(filename, &rule.pattern_options)
                 } else {
-                    if rule.pattern.matches_path_with(path, &rule.pattern_options) {
-                        //debug!("rule matches path {:?} -> ok={}", path, rule.ok);
-                        return rule.ok;
-                    }
+                    rule.pattern.matches_path_with(path, &rule.pattern_options)
+                };
+                if ok {
+                    return rule.ok;
                 }
             }
         }

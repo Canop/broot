@@ -44,7 +44,12 @@ impl HelpState {
 }
 
 impl AppState for HelpState {
-    fn apply(&mut self, cmd: &mut Command, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    fn apply(
+        &mut self,
+        cmd: &mut Command,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> io::Result<AppStateCmdResult> {
         self.resize_area(screen);
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
@@ -64,7 +69,7 @@ impl AppState for HelpState {
         false
     }
 
-    fn do_pending_task(&mut self, _screen: &Screen, _tl: &TaskLifetime) {
+    fn do_pending_task(&mut self, _screen: &mut Screen, _tl: &TaskLifetime) {
         unreachable!();
     }
 

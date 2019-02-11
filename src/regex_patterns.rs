@@ -30,12 +30,12 @@ impl RegexPattern {
                     builder.swap_greed(true);
                 }
                 _ => {
-                    return Err(RegexError::UnknownFlag{bad:c});
+                    return Err(RegexError::UnknownFlag { bad: c });
                 }
             }
         }
         Ok(RegexPattern {
-            rex: builder.build()?
+            rex: builder.build()?,
         })
     }
     // return a match if the pattern can be found in the candidate string
@@ -44,17 +44,13 @@ impl RegexPattern {
         //  find over is_match
         match self.rex.find(candidate) {
             Some(rm) => {
-                let mut pos = Vec::with_capacity(rm.end()-rm.start());
+                let mut pos = Vec::with_capacity(rm.end() - rm.start());
                 for i in rm.start()..rm.end() {
                     pos.push(i);
                 }
-                Some(patterns::Match {
-                    score: 1,
-                    pos,
-                })
+                Some(patterns::Match { score: 1, pos })
             }
             None => None,
         }
     }
 }
-

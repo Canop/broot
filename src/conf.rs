@@ -1,13 +1,13 @@
 //! manage reading the verb shortcuts from the configuration file,
 //! initializing if if it doesn't yet exist
 
+use custom_error::custom_error;
+use directories::ProjectDirs;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
-use custom_error::custom_error;
-use directories::ProjectDirs;
 
 custom_error! {pub ConfError
     Io{source: io::Error}           = "unable to read from the file",
@@ -121,7 +121,7 @@ impl Conf {
                     name,
                     invocation,
                     execution,
-                    from_shell
+                    from_shell,
                 });
             }
         }

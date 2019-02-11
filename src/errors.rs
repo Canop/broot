@@ -4,10 +4,16 @@ use std::io;
 
 use crate::conf;
 
+custom_error! {pub TreeBuildError
+    NotADirectory { path: String } = "Not a directory: {}",
+    FileNotFound { path: String } = "File not found: {}",
+}
+
 custom_error! {pub ProgramError
-    Io {source: io::Error} = "IO Error",
+    Io {source: io::Error} = "IO Error : {:?}",
     Conf {source: conf::ConfError} = "Bad configuration",
     ArgParse {bad: String, valid: String} = "{:?} can't be parsed (valid values: {:?})",
+    TreeBuild {source: TreeBuildError} = "{}",
 }
 
 custom_error! {pub RegexError

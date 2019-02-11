@@ -1,10 +1,10 @@
+use regex::Regex;
 /// Verbs are the engines of broot commands, and apply
 /// - to the selected file (if user-defined, then must contain {file} or {directory})
 /// - to the current app state
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::Path;
-use regex::Regex;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
@@ -18,12 +18,12 @@ use crate::tree_options::{OptionBool, TreeOptions};
 
 #[derive(Debug, Clone)]
 pub struct Verb {
-    pub name: String,               // a public name, eg "cd"
-    pub short_key: Option<String>,  // a shortcut, eg "c"
-    pub long_key: String,           // a long typable key, eg "cd"
-    pub exec_pattern: String,       // a pattern usable for execution, eg ":cd" or "less {file}"
-    pub description: String,        // a description for the user
-    pub from_shell: bool,           // whether it must be launched from the parent shell (eg because it's a shell function)
+    pub name: String,              // a public name, eg "cd"
+    pub short_key: Option<String>, // a shortcut, eg "c"
+    pub long_key: String,          // a long typable key, eg "cd"
+    pub exec_pattern: String,      // a pattern usable for execution, eg ":cd" or "less {file}"
+    pub description: String,       // a description for the user
+    pub from_shell: bool, // whether it must be launched from the parent shell (eg because it's a shell function)
 }
 
 impl Verb {
@@ -42,7 +42,10 @@ impl Verb {
         Verb {
             name,
             short_key: invocation,
-            long_key: RE.find(&exec_pattern).map_or("", |m| m.as_str()).to_string(),
+            long_key: RE
+                .find(&exec_pattern)
+                .map_or("", |m| m.as_str())
+                .to_string(),
             exec_pattern,
             description,
             from_shell,
@@ -50,11 +53,7 @@ impl Verb {
     }
     // built-ins are verbs offering a logic other than the execution
     //  based on exec_pattern. They mostly modify the appstate
-    fn create_built_in(
-        name: &str,
-        short_key: Option<String>,
-        description: &str,
-    ) -> Verb {
+    fn create_built_in(name: &str, short_key: Option<String>, description: &str) -> Verb {
         Verb {
             name: name.to_string(),
             short_key,
@@ -84,10 +83,10 @@ impl Verb {
     fn exec_token(&self, path: &Path) -> Vec<String> {
         self.exec_pattern
             .split_whitespace()
-            .map(|t|
-                if t=="{file}" {
+            .map(|t| {
+                if t == "{file}" {
                     path.to_string_lossy().to_string()
-                } else if t=="{directory}" {
+                } else if t == "{directory}" {
                     let mut path = path;
                     if !path.is_dir() {
                         path = path.parent().unwrap();
@@ -96,7 +95,7 @@ impl Verb {
                 } else {
                     t.to_string()
                 }
-            )
+            })
             .collect()
     }
     // build the cmd result for a verb defined with an exec pattern.
@@ -132,12 +131,21 @@ pub struct VerbStore {
 }
 
 pub trait VerbExecutor {
-    fn execute_verb(&self, verb: &Verb, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult>;
+    fn execute_verb(
+        &self,
+        verb: &Verb,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> io::Result<AppStateCmdResult>;
 }
 
-
 impl VerbExecutor for HelpState {
-    fn execute_verb(&self, verb: &Verb, _screen: &Screen, _con: &AppContext) -> io::Result<AppStateCmdResult> {
+    fn execute_verb(
+        &self,
+        verb: &Verb,
+        _screen: &Screen,
+        _con: &AppContext,
+    ) -> io::Result<AppStateCmdResult> {
         Ok(match verb.exec_pattern.as_ref() {
             ":open" => AppStateCmdResult::Launch(Launchable::opener(&Conf::default_location())?),
             ":quit" => AppStateCmdResult::Quit,
@@ -145,7 +153,9 @@ impl VerbExecutor for HelpState {
                 if verb.exec_pattern.starts_with(':') {
                     AppStateCmdResult::Keep
                 } else {
-                    AppStateCmdResult::Launch(Launchable::from(verb.exec_token(&Conf::default_location()))?)
+                    AppStateCmdResult::Launch(Launchable::from(
+                        verb.exec_token(&Conf::default_location()),
+                    )?)
                 }
             }
         })
@@ -153,7 +163,12 @@ impl VerbExecutor for HelpState {
 }
 
 impl VerbExecutor for BrowserState {
-    fn execute_verb(&self, verb: &Verb, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    fn execute_verb(
+        &self,
+        verb: &Verb,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> io::Result<AppStateCmdResult> {
         let tree = match &self.filtered_tree {
             Some(tree) => &tree,
             None => &self.tree,
@@ -195,12 +210,15 @@ impl VerbExecutor for BrowserState {
                 } else {
                     // no output path provided. We write on stdout, but we must
                     // do it after app closing to have the normal terminal
-                    let mut launchable = Launchable::from(vec![line.target().to_string_lossy().to_string()])?;
+                    let mut launchable =
+                        Launchable::from(vec![line.target().to_string_lossy().to_string()])?;
                     launchable.just_print = true;
                     AppStateCmdResult::Launch(launchable)
                 }
             }
-            ":toggle_files" => self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true),
+            ":toggle_files" => {
+                self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true)
+            }
             ":toggle_hidden" => self.with_new_options(screen, &|o| o.show_hidden ^= true),
             ":toggle_git_ignore" => self.with_new_options(screen, &|options| {
                 options.respect_git_ignore = match options.respect_git_ignore {
@@ -222,7 +240,6 @@ impl VerbExecutor for BrowserState {
         })
     }
 }
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrefixSearchResult<T> {
@@ -247,7 +264,9 @@ impl VerbStore {
     pub fn init(&mut self, conf: &Conf) {
         // we first add the built-in verbs
         self.verbs.push(Verb::create_built_in(
-            "back", None, "revert to the previous state (mapped to `<esc>`)"
+            "back",
+            None,
+            "revert to the previous state (mapped to `<esc>`)",
         ));
         self.verbs.push(Verb::create(
             "cd".to_string(),
@@ -257,51 +276,74 @@ impl VerbStore {
             true, // needs to be launched from the parent shell
         ));
         self.verbs.push(Verb::create_built_in(
-            "focus", Some("goto".to_string()), "display a directory (mapped to `<enter>`)",
+            "focus",
+            Some("goto".to_string()),
+            "display a directory (mapped to `<enter>`)",
         ));
         self.verbs.push(Verb::create_built_in(
-            "help", Some("?".to_string()), "display broot's help",
+            "help",
+            Some("?".to_string()),
+            "display broot's help",
         ));
         self.verbs.push(Verb::create_built_in(
-            "open", None, "open a file according to OS settings (mapped to `<enter>`)",
+            "open",
+            None,
+            "open a file according to OS settings (mapped to `<enter>`)",
         ));
         self.verbs.push(Verb::create_built_in(
-            "parent", None, "move to the parent directory",
+            "parent",
+            None,
+            "move to the parent directory",
         ));
         self.verbs.push(Verb::create_built_in(
-            "print_path", Some("pp".to_string()), "print path and leaves broot",
+            "print_path",
+            Some("pp".to_string()),
+            "print path and leaves broot",
+        ));
+        self.verbs
+            .push(Verb::create_built_in("quit", None, "quit the application"));
+        self.verbs.push(Verb::create_built_in(
+            "toggle_files",
+            Some("files".to_string()),
+            "toggle showing files (or just folders)",
         ));
         self.verbs.push(Verb::create_built_in(
-            "quit", None, "quit the application",
+            "toggle_git_ignore",
+            Some("gi".to_string()),
+            "toggle use of .gitignore",
         ));
         self.verbs.push(Verb::create_built_in(
-            "toggle_files", Some("files".to_string()), "toggle showing files (or just folders)",
+            "toggle_hidden",
+            Some("h".to_string()),
+            "toggle showing hidden files",
         ));
         self.verbs.push(Verb::create_built_in(
-            "toggle_git_ignore", Some("gi".to_string()), "toggle use of .gitignore",
+            "toggle_perm",
+            Some("perm".to_string()),
+            "toggle showing file permissions",
         ));
         self.verbs.push(Verb::create_built_in(
-            "toggle_hidden", Some("h".to_string()), "toggle showing hidden files",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "toggle_perm", Some("perm".to_string()), "toggle showing file permissions",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "toggle_sizes", Some("sizes".to_string()), "toggle showing sizes",
+            "toggle_sizes",
+            Some("sizes".to_string()),
+            "toggle showing sizes",
         ));
         // then we add the verbs from conf
         // which may in fact be just changing the shortcut of
         // already present verbs
         for verb_conf in &conf.verbs {
-            if let Some(mut v) = self.verbs.iter_mut().find(|v| v.exec_pattern==verb_conf.execution) {
+            if let Some(mut v) = self
+                .verbs
+                .iter_mut()
+                .find(|v| v.exec_pattern == verb_conf.execution)
+            {
                 v.short_key = Some(verb_conf.invocation.to_string());
             } else {
                 self.verbs.push(Verb::create(
-                        verb_conf.name.to_owned(),
-                        Some(verb_conf.invocation.to_string()),
-                        verb_conf.execution.to_owned(),
-                        verb_conf.execution.to_owned(),
-                        verb_conf.from_shell,
+                    verb_conf.name.to_owned(),
+                    Some(verb_conf.invocation.to_string()),
+                    verb_conf.execution.to_owned(),
+                    verb_conf.execution.to_owned(),
+                    verb_conf.from_shell,
                 ));
             }
         }

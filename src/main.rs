@@ -17,11 +17,11 @@ mod external;
 mod file_sizes;
 mod flat_tree;
 mod fuzzy_patterns;
-mod regex_patterns;
 mod git_ignore;
 mod help_states;
 mod input;
 mod patterns;
+mod regex_patterns;
 mod screen_text;
 mod screens;
 mod shell_func;
@@ -41,12 +41,11 @@ use std::result::Result;
 use std::str::FromStr;
 
 use crate::app::App;
-use crate::app_context::{AppContext};
+use crate::app_context::AppContext;
 use crate::conf::Conf;
 use crate::errors::ProgramError;
 use crate::external::Launchable;
 use crate::verbs::VerbStore;
-
 
 // There's no log unless the BROOT_LOG environment variable is set to
 //  a valid log level (trace, debug, info, warn, error, off)
@@ -65,7 +64,11 @@ fn configure_log() {
             File::create("dev.log").expect("Log file can't be created"),
         )
         .expect("log initialization failed");
-        info!("Starting B-Root v{} with log level {}", env!("CARGO_PKG_VERSION"), level);
+        info!(
+            "Starting B-Root v{} with log level {}",
+            env!("CARGO_PKG_VERSION"),
+            level
+        );
     }
 }
 
@@ -89,7 +92,15 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
 }
 
 fn main() {
-    let res = run().unwrap();
+    let res = match run() {
+        Ok(res) => res,
+        Err(e) => {
+            // this usually happens when the passed path isn't of a directory
+            warn!("Error: {}", e);
+            eprintln!("{}", e);
+            return;
+        }
+    };
     if let Some(launchable) = res {
         info!("launching {:?}", &launchable);
         if let Err(e) = launchable.execute() {

@@ -7,9 +7,9 @@ use termion::event::Key;
 
 #[derive(Debug, Clone)]
 pub struct Command {
-    pub raw: String,        // what's visible in the input
-    parts: CommandParts,    // the parsed parts of the visible input
-    pub action: Action,     // what's required, based on the last key (which may be not visible, like esc)
+    pub raw: String,     // what's visible in the input
+    parts: CommandParts, // the parsed parts of the visible input
+    pub action: Action,  // what's required, based on the last key (which may be not visible, like esc)
 }
 
 /// An intermediate parsed representation of the raw string
@@ -22,18 +22,18 @@ struct CommandParts {
 
 #[derive(Debug, Clone)]
 pub enum Action {
-    MoveSelection(i32),             // up (neg) or down (positive) in the list
-    ScrollPage(i32),                // in number of pages, not lines
-    OpenSelection,                  // open the selected line
-    AltOpenSelection,               // alternate open the selected line
-    VerbEdit(String),               // verb, unfinished
-    Verb(String),                   // verb, after the user hit enter
-    FuzzyPatternEdit(String),       // a pattern being edited
-    RegexEdit(String, String),      // a regex being edited (core & flags)
-    Back,                           // back to last app state, or clear pattern
-    Next,                           // goes to the next matching entry
-    Help,                           // goes to help state
-    Unparsed,                       // or unparsable
+    MoveSelection(i32),        // up (neg) or down (positive) in the list
+    ScrollPage(i32),           // in number of pages, not lines
+    OpenSelection,             // open the selected line
+    AltOpenSelection,          // alternate open the selected line
+    VerbEdit(String),          // verb, unfinished
+    Verb(String),              // verb, after the user hit enter
+    FuzzyPatternEdit(String),  // a pattern being edited
+    RegexEdit(String, String), // a regex being edited (core & flags)
+    Back,                      // back to last app state, or clear pattern
+    Next,                      // goes to the next matching entry
+    Help,                      // goes to help state
+    Unparsed,                  // or unparsable
 }
 
 impl CommandParts {
@@ -149,7 +149,7 @@ impl Command {
             Key::Char('\n') => {
                 self.action = Action::from(&self.parts, true);
             }
-            Key::Alt('\r')|Key::Alt('\n') => {
+            Key::Alt('\r') | Key::Alt('\n') => {
                 self.action = Action::AltOpenSelection;
             }
             Key::Up => {
@@ -165,7 +165,7 @@ impl Command {
                 self.action = Action::ScrollPage(1);
             }
             Key::Char(c) => {
-                if c=='?' && self.raw.is_empty() {
+                if c == '?' && self.raw.is_empty() {
                     // as first character, a '?' is a request for help
                     self.action = Action::Help;
                 } else {

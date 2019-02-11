@@ -8,6 +8,7 @@
 //! - a request to quit broot
 //! - a request to launch an executable (thus leaving broot)
 use std::io::{self, stdin, Write};
+use std::result::Result;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread;
@@ -16,8 +17,9 @@ use termion::input::TermRead;
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::commands::Command;
-use crate::external::Launchable;
 use crate::errors::ProgramError;
+use crate::errors::TreeBuildError;
+use crate::external::Launchable;
 use crate::input::Input;
 use crate::screens::Screen;
 use crate::spinner::Spinner;
@@ -38,10 +40,13 @@ impl AppStateCmdResult {
     pub fn verb_not_found(text: &str) -> AppStateCmdResult {
         AppStateCmdResult::DisplayError(format!("verb not found: {:?}", &text))
     }
-    pub fn from_optional_state(os: Option<BrowserState>) -> AppStateCmdResult {
+    pub fn from_optional_state(
+        os: Result<Option<BrowserState>, TreeBuildError>,
+    ) -> AppStateCmdResult {
         match os {
-            Some(os) => AppStateCmdResult::NewState(Box::new(os)),
-            None => AppStateCmdResult::Keep,
+            Ok(Some(os)) => AppStateCmdResult::NewState(Box::new(os)),
+            Ok(None) => AppStateCmdResult::Keep,
+            Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
         }
     }
 }
@@ -49,16 +54,21 @@ impl AppStateCmdResult {
 // a whole application state, stackable to allow reverting
 //  to a previous one
 pub trait AppState {
-    fn apply(&mut self, cmd: &mut Command, screen: &Screen, con: &AppContext) -> io::Result<AppStateCmdResult>;
+    fn apply(
+        &mut self,
+        cmd: &mut Command,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> io::Result<AppStateCmdResult>;
     fn has_pending_tasks(&self) -> bool;
-    fn do_pending_task(&mut self, screen: &Screen, tl: &TaskLifetime);
+    fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime);
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()>;
     fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
 }
 
 pub struct App {
-    states: Vec<Box<dyn AppState>>,    // stack: the last one is current
+    states: Vec<Box<dyn AppState>>, // stack: the last one is current
     quitting: bool,
     launch_at_end: Option<Launchable>, // what must be launched after end
 }
@@ -173,11 +183,7 @@ impl App {
     }
 
     /// This is the main loop of the application
-    pub fn run(
-        mut self,
-        con: &AppContext,
-    ) -> Result<Option<Launchable>, ProgramError> {
-
+    pub fn run(mut self, con: &AppContext) -> Result<Option<Launchable>, ProgramError> {
         let mut screen = Screen::new()?;
 
         // create the initial state
@@ -186,7 +192,7 @@ impl App {
             con.launch_args.tree_options.clone(),
             &screen,
             &TaskLifetime::unlimited(),
-        ) {
+        )? {
             self.push(Box::new(bs));
         } else {
             unreachable!();
@@ -197,12 +203,7 @@ impl App {
         for cmd in &con.launch_args.commands {
             let cmd = (*cmd).clone();
             let cmd = self.apply_command(cmd, &mut screen, con)?;
-            self.do_pending_tasks(
-                &cmd,
-                &mut screen,
-                con,
-                TaskLifetime::unlimited(),
-            )?;
+            self.do_pending_tasks(&cmd, &mut screen, con, TaskLifetime::unlimited())?;
             if self.quitting {
                 return Ok(self.launch_at_end.take());
             }
@@ -234,16 +235,12 @@ impl App {
 
         let mut cmd = Command::new();
         screen.write_input(&cmd)?;
-        screen.write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
+        screen
+            .write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
         self.state().write_flags(&mut screen, con)?;
         loop {
             if !self.quitting {
-                self.do_pending_tasks(
-                    &cmd,
-                    &mut screen,
-                    con,
-                    TaskLifetime::new(&cmd_count),
-                )?;
+                self.do_pending_tasks(&cmd, &mut screen, con, TaskLifetime::new(&cmd_count))?;
             }
             let c = match rx_keys.recv() {
                 Ok(c) => c,

@@ -2,8 +2,8 @@
 //! It's not meant for file contents but for small strings (less than 1000 chars)
 //!  such as file names.
 
+use crate::patterns::Match;
 use std::fmt::{self, Write};
-use crate::patterns::{Match};
 
 // weights used in match score computing
 const BONUS_MATCH: i32 = 50_000;
@@ -73,7 +73,7 @@ impl FuzzyPattern {
                     break;
                 }
             }
-            if hole_start+1 != d {
+            if hole_start + 1 != d {
                 // note that there's no absolute guarantee we found the minimal
                 // number of holes. The algorithm isn't perfect
                 if nb_holes >= self.max_nb_holes {
@@ -117,4 +117,3 @@ impl FuzzyPattern {
         best_match
     }
 }
-

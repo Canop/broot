@@ -21,7 +21,7 @@ pub struct ScreenArea {
 impl Screen {
     pub fn new() -> io::Result<Screen> {
         let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
-        let mut screen = Screen { w:0, h:0, stdout };
+        let mut screen = Screen { w: 0, h: 0, stdout };
         screen.read_size()?;
         write!(screen.stdout, "{}", termion::cursor::Hide)?;
         Ok(screen)
@@ -111,9 +111,6 @@ impl ScreenArea {
         }
         let sbh = h * h / self.content_length;
         let sc = i32::from(self.top) + self.scroll * h / self.content_length;
-        Some((
-                sc as u16,
-                (sc + sbh).min(i32::from(self.bottom) - 1) as u16,
-        ))
+        Some((sc as u16, (sc + sbh).min(i32::from(self.bottom) - 1) as u16))
     }
 }
