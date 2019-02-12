@@ -235,6 +235,7 @@ impl VerbExecutor for BrowserState {
             }),
             ":toggle_perm" => self.with_new_options(screen, &|o| o.show_permissions ^= true),
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
+            ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),
             ":quit" => AppStateCmdResult::Quit,
             _ => verb.to_cmd_result(&line.target(), con)?,
         })
@@ -326,6 +327,11 @@ impl VerbStore {
             "toggle_sizes",
             Some("sizes".to_string()),
             "toggle showing sizes",
+        ));
+        self.verbs.push(Verb::create_built_in(
+            "toggle_trim_root",
+            Some("t".to_string()),
+            "toggle removing nodes at first level too (default)",
         ));
         // then we add the verbs from conf
         // which may in fact be just changing the shortcut of

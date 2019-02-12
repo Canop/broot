@@ -112,7 +112,6 @@ impl AppState for BrowserState {
                 AppStateCmdResult::Keep
             }
             Action::ScrollPage(dp) => {
-                // this should not be computed here
                 if page_height < self.displayed_tree().lines.len() as i32 {
                     let dy = dp * page_height;
                     match self.filtered_tree {

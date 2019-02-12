@@ -408,7 +408,7 @@ impl TreeBuilder {
                 next_level_dirs.clear();
             }
         }
-        if self.options.show_sizes {
+        if self.options.show_sizes || !self.options.trim_root {
             // if the root directory isn't totally read, we finished it even
             // it it goes past the bottom of the screen
             while let Some(child_idx) = self.next_child(0) {
@@ -425,6 +425,7 @@ impl TreeBuilder {
     //  removing a parent before its children.
     fn trim_excess(&mut self, out_blines: &[usize]) {
         let mut count = 1;
+        let trim_root = self.options.trim_root && !self.options.show_sizes;
         for idx in out_blines[1..].iter() {
             if self.blines[*idx].has_match {
                 count += 1;
@@ -437,7 +438,7 @@ impl TreeBuilder {
             let bline = &self.blines[*idx];
             if bline.has_match
                 && bline.nb_kept_children == 0
-                && (bline.depth > 1 || !self.options.show_sizes)
+                && (bline.depth > 1 || trim_root)
             // keep the complete first level when showing sizes
             {
                 remove_queue.push(SortableBLineIdx {
