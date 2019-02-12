@@ -4,7 +4,7 @@
 //! broot are implemented.
 
 use regex::Regex;
-use std::io;
+use std::io::{self, Write};
 use termion::{color, style};
 
 use crate::screens::{Screen, ScreenArea};
@@ -54,8 +54,30 @@ impl Text {
     pub fn push(&mut self, line: String) {
         self.lines.push(line);
     }
+    // write the text in the area, taking into account the scrolled amount
+    // and drawing a vertical scrollbar at the right if needed
     pub fn write(&self, screen: &mut Screen, area: &ScreenArea) -> io::Result<()> {
-        screen.write_lines(area, &self.lines)
+        let scrollbar = area.scrollbar();
+        let mut i = area.scroll as usize;
+        for y in area.top..=area.bottom {
+            write!(
+                screen.stdout,
+                "{}{}",
+                termion::cursor::Goto(1, y),
+                termion::clear::CurrentLine,
+            )?;
+            if i < self.lines.len() {
+                write!(screen.stdout, "{}", &self.lines[i],)?;
+                i += 1;
+            }
+            if let Some((sctop, scbottom)) = scrollbar {
+                if sctop <= y && y <= scbottom {
+                    write!(screen.stdout, "{}▐", termion::cursor::Goto(screen.w, y),)?;
+                }
+            }
+        }
+        screen.stdout.flush()?;
+        Ok(())
     }
 }
 

@@ -1,5 +1,4 @@
 use std::io::{self, stdout, Write};
-use termion::color;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
 
@@ -32,23 +31,6 @@ impl Screen {
         self.h = h;
         Ok(())
     }
-    pub fn write_lines(&mut self, area: &ScreenArea, lines: &[String]) -> io::Result<()> {
-        let mut i = area.scroll as usize;
-        for y in area.top..=area.bottom {
-            write!(
-                self.stdout,
-                "{}{}",
-                termion::cursor::Goto(1, y),
-                termion::clear::CurrentLine,
-            )?;
-            if i < lines.len() {
-                write!(self.stdout, "{}", &lines[i],)?;
-                i += 1;
-            }
-        }
-        self.stdout.flush()?;
-        Ok(())
-    }
 }
 
 impl Drop for Screen {
@@ -78,32 +60,6 @@ impl ScreenArea {
             self.scroll = self.content_length - 1;
         }
     }
-    // draw a scrollbar at the righ, above content.
-    // clears nothing before.
-    // (note that this may lead to flickering)
-    #[allow(dead_code)]
-    pub fn draw_scrollbar(&self, screen: &mut Screen) -> io::Result<()> {
-        let h = i32::from(self.bottom) - i32::from(self.top) + 1;
-        if self.content_length > h {
-            let sbh = h * h / self.content_length;
-            let sc = i32::from(self.top) + self.scroll * h / self.content_length;
-            write!(
-                screen.stdout,
-                "{}",
-                color::Fg(color::AnsiValue::grayscale(9)),
-            )?;
-            for y in 0..sbh {
-                write!(
-                    screen.stdout,
-                    "{}▐",
-                    termion::cursor::Goto(screen.w, ((y + sc) as u16).min(self.bottom - 1)),
-                )?;
-            }
-            write!(screen.stdout, "{}", color::Fg(color::Reset),)?;
-        }
-        Ok(())
-    }
-    // returns the top and bottom of the scrollbar, if any
     pub fn scrollbar(&self) -> Option<(u16, u16)> {
         let h = (self.bottom as i32) - (self.top as i32) + 1;
         if self.content_length <= h {
@@ -111,6 +67,6 @@ impl ScreenArea {
         }
         let sbh = h * h / self.content_length;
         let sc = i32::from(self.top) + self.scroll * h / self.content_length;
-        Some((sc as u16, (sc + sbh).min(i32::from(self.bottom) - 1) as u16))
+        Some((sc as u16, (sc + sbh - 1).min(i32::from(self.bottom)) as u16))
     }
 }
