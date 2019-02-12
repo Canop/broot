@@ -22,7 +22,7 @@ simplelog = "0.5"
 clap = "2.32"
 glob = "0.2"
 users = "0.8"
-jemallocator = "*"
+jemallocator = "0.1.9"
 
 [profile.release]
 lto = true
