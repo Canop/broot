@@ -8,7 +8,8 @@ use std::fmt::{self, Write};
 // weights used in match score computing
 const BONUS_MATCH: i32 = 50_000;
 const BONUS_EXACT: i32 = 1_000;
-const BONUS_START: i32 = 0; // disabled
+const BONUS_START: i32 = 20;
+const BONUS_START_WORD: i32 = 5;
 const BONUS_CANDIDATE_LENGTH: i32 = -1; // per char
 const BONUS_LENGTH: i32 = -10; // per char of length of the match
 const BONUS_NB_HOLES: i32 = -30; // there's also a max on that number
@@ -91,6 +92,11 @@ impl FuzzyPattern {
             score += BONUS_START;
             if cand_chars.len() == self.lc_chars.len() {
                 score += BONUS_EXACT;
+            }
+        } else {
+            let previous = cand_chars[start_idx - 1];
+            if previous == '_' || previous == ' ' || previous == '-'  {
+                score += BONUS_START_WORD;
             }
         }
         Some(Match { score, pos })
