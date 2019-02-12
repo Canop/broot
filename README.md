@@ -32,7 +32,7 @@ Most useful keys for this:
 
 ### Never lose track of file hierarchy while you fuzzy search:
 
-![size](img/20190205-mycnf.png)
+![size](img/20190212-mycnf.png)
 
 broot tries to select the most relevant file. You can still go from one match to another one using `<tab>` or arrow keys.
 
