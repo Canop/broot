@@ -179,9 +179,10 @@ fn maybe_patch_all_rcfiles(
 
     let br_path = launcher_dir.join("bash").join("br");
     let source_line = format!("source {}", br_path.to_string_lossy());
+    let mut changes_made = false;
     for rc_file in rc_files {
         if file_contains_line(&rc_file.1, &source_line)? {
-            println!("{:?} already patched, no change made.", rc_file.0);
+            println!("{} already patched, no change made.", rc_file.0);
         } else {
             let mut shellrc = OpenOptions::new()
                 .write(true)
@@ -190,15 +191,11 @@ fn maybe_patch_all_rcfiles(
             shellrc.write_all(b"\n")?;
             shellrc.write_all(source_line.as_bytes())?;
             println!(
-                "{:?} successfully patched, you should now refresh it with.",
+                "{} successfully patched, you should now refresh it with.",
                 rc_file.0
             );
             println!("  source {}", rc_file.1.to_string_lossy());
-            println!(
-                "You should afterwards start broot with just {}br{}.",
-                style::Bold,
-                style::Reset
-            );
+            changes_made = true;
         }
         // signal if there's an old br function declared in the shellrc file
         // (which was the normal way to install before broot 0.6)
@@ -210,12 +207,19 @@ fn maybe_patch_all_rcfiles(
             println!("You should remove it.");
         }
     }
+    if changes_made {
+        println!(
+            "You should afterwards start broot with just {}br{}.",
+            style::Bold,
+            style::Reset
+        );
+    }
     // and remember we did it
     fs::write(
         &installed_path,
         "to reinstall the br function, run broot --install\n",
     )?;
-    Ok(true)
+    Ok(changes_made)
 }
 
 /// check whether the shell function is installed, install
