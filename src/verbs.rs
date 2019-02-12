@@ -301,8 +301,11 @@ impl VerbStore {
             Some("pp".to_string()),
             "print path and leaves broot",
         ));
-        self.verbs
-            .push(Verb::create_built_in("quit", None, "quit the application"));
+        self.verbs.push(Verb::create_built_in(
+            "quit",
+            Some("q".to_string()),
+            "quit the application"
+        ));
         self.verbs.push(Verb::create_built_in(
             "toggle_files",
             Some("files".to_string()),
