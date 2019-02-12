@@ -61,6 +61,10 @@ impl AppState for HelpState {
                 self.area.try_scroll(*dy);
                 AppStateCmdResult::Keep
             }
+            Action::ScrollPage(dp) => {
+                self.area.try_scroll(*dp * i32::from(self.area.bottom-self.area.top));
+                AppStateCmdResult::Keep
+            }
             _ => AppStateCmdResult::Keep,
         })
     }
