@@ -22,6 +22,7 @@ pub struct AppLaunchArgs {
 // declare the possible CLI arguments, and gets the values
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
+        .version(env!("CARGO_PKG_VERSION"))
         .author("dystroy <denys.seguret@gmail.com>")
         .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
         .arg(clap::Arg::with_name("root").help("sets the root directory"))
