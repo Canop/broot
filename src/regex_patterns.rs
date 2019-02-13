@@ -53,4 +53,11 @@ impl RegexPattern {
             None => None,
         }
     }
+    // return the number of results we should find before starting to
+    //  sort them (unless time is runing out).
+    // In the case of regexes, there's no need to find more results, as
+    //  their score is always 1
+    pub fn optimal_result_number(&self, targeted_size: usize) -> usize {
+        targeted_size
+    }
 }

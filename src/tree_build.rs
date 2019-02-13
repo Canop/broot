@@ -344,6 +344,7 @@ impl TreeBuilder {
         let start = Instant::now();
         let mut out_blines: Vec<usize> = Vec::new(); // the blines we want to display (indexes into blines)
         let not_long = Duration::from_millis(600);
+        let optimal_size = self.options.pattern.optimal_result_number(self.targeted_size);
         out_blines.push(0);
         let mut nb_lines_ok = 1; // in out_blines
         let mut open_dirs: VecDeque<usize> = VecDeque::new();
@@ -351,17 +352,9 @@ impl TreeBuilder {
         self.load_children(0);
         open_dirs.push_back(0);
         loop {
-            if self.options.pattern.is_some() {
-                if (nb_lines_ok > 30 * self.targeted_size)
-                    || (nb_lines_ok >= self.targeted_size && start.elapsed() > not_long)
-                {
-                    break;
-                }
-                if task_lifetime.is_expired() {
-                    info!("task expired (core build - outer loop)");
-                    return None;
-                }
-            } else if nb_lines_ok >= self.targeted_size {
+            if (nb_lines_ok > optimal_size)
+                || (nb_lines_ok >= self.targeted_size && start.elapsed() > not_long)
+            {
                 break;
             }
             if let Some(open_dir_idx) = open_dirs.pop_front() {
@@ -383,7 +376,7 @@ impl TreeBuilder {
                     break;
                 }
                 for next_level_dir_idx in &next_level_dirs {
-                    if self.options.pattern.is_some() && task_lifetime.is_expired() {
+                    if task_lifetime.is_expired() {
                         info!("task expired (core build - inner loop)");
                         return None;
                     }

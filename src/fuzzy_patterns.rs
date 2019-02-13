@@ -8,7 +8,7 @@ use std::fmt::{self, Write};
 // weights used in match score computing
 const BONUS_MATCH: i32 = 50_000;
 const BONUS_EXACT: i32 = 1_000;
-const BONUS_START: i32 = 20;
+const BONUS_START: i32 = 10;
 const BONUS_START_WORD: i32 = 5;
 const BONUS_CANDIDATE_LENGTH: i32 = -1; // per char
 const BONUS_LENGTH: i32 = -10; // per char of length of the match
@@ -121,5 +121,10 @@ impl FuzzyPattern {
             }
         }
         best_match
+    }
+    // return the number of results we should find before starting to
+    //  sort them (unless time is runing out).
+    pub fn optimal_result_number(&self, targeted_size: usize) -> usize {
+        20 * targeted_size
     }
 }

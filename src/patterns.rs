@@ -58,6 +58,15 @@ impl Pattern {
     pub fn take(&mut self) -> Pattern {
         mem::replace(self, Pattern::None)
     }
+    // return the number of results we should find before starting to
+    //  sort them (unless time is runing out).
+    pub fn optimal_result_number(&self, targeted_size: usize) -> usize {
+        match self {
+            Pattern::Fuzzy(fp) => fp.optimal_result_number(targeted_size),
+            Pattern::Regex(rp) => rp.optimal_result_number(targeted_size),
+            Pattern::None => targeted_size,
+        }
+    }
 }
 
 /// A Match is a positive result of pattern matching
