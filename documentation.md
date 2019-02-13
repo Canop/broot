@@ -56,6 +56,10 @@ If you want your command to be executed from the parent shell, add this to the v
 
 	from_shell = true
 
+You may also use `{directory}` in your execution pattern: it would refer to the closest directory: either the selected file if it's a directory, or else the parent directory.
+
+When you're on the help screen, some verbs can still be applied. `{file}` is then the configuration file and `{directory}` the configuration directory.
+
 Most verbs aren't based on an external application but call internal functions:
 
 ### `:back` : get back to the previous state of the tree
