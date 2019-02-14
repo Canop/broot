@@ -1,3 +1,8 @@
+<a name="v0.6.1"></a>
+## v0.6.1 - 2019-02-14
+- complete verbs handling in help screen
+- faster regex search
+- fix missing version in `broot -V`
 
 <a name="v0.6.0"></a>
 ## v0.6.0 - 2019-02-12
