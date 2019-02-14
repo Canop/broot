@@ -116,10 +116,32 @@ impl AppState for HelpState {
     fn write_status(
         &self,
         screen: &mut Screen,
-        _cmd: &Command,
-        _con: &AppContext,
+        cmd: &Command,
+        con: &AppContext,
     ) -> io::Result<()> {
-        screen.write_status_text("Hit <esc> to get back to the tree, or `:o` to open the conf file")
+        match &cmd.action {
+            Action::VerbEdit(verb_key) => {
+                match con.verb_store.search(&verb_key) {
+                    PrefixSearchResult::NoMatch => {
+                        screen.write_status_err("No matching verb)")
+                    }
+                    PrefixSearchResult::Match(verb) => screen.write_status_text(
+                        &format!(
+                            "Hit <enter> to {} : {}",
+                            &verb.name,
+                            &verb.description_for(Conf::default_location())
+                        )
+                        .to_string(),
+                    ),
+                    PrefixSearchResult::TooManyMatches => screen.write_status_text(
+                        "Type a verb then <enter> to execute it",
+                    ),
+                }
+            }
+            _ => {
+                screen.write_status_text("Hit <esc> to get back to the tree, or a space to start a verb")
+            }
+        }
     }
 
     fn write_flags(&self, _screen: &mut Screen, _con: &AppContext) -> io::Result<()> {

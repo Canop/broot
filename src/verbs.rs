@@ -1,20 +1,16 @@
-use regex::Regex;
 /// Verbs are the engines of broot commands, and apply
 /// - to the selected file (if user-defined, then must contain {file} or {directory})
 /// - to the current app state
 use std::fs::OpenOptions;
 use std::io::{self, Write};
-use std::path::Path;
+use std::path::{Path, PathBuf};
+use regex::Regex;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
-use crate::browser_states::BrowserState;
 use crate::conf::Conf;
 use crate::external::Launchable;
-use crate::help_states::HelpState;
 use crate::screens::Screen;
-use crate::task_sync::TaskLifetime;
-use crate::tree_options::{OptionBool, TreeOptions};
 
 #[derive(Debug, Clone)]
 pub struct Verb {
@@ -63,14 +59,10 @@ impl Verb {
             from_shell: false,
         }
     }
-    pub fn description_for(&self, state: &BrowserState) -> String {
-        let line = match &state.filtered_tree {
-            Some(tree) => tree.selected_line(),
-            None => state.tree.selected_line(),
-        };
-        let mut path = line.target();
+    pub fn description_for(&self, mut path: PathBuf) -> String {
+        //let mut path = path;
         if self.exec_pattern == ":cd" {
-            if !line.is_dir() {
+            if !path.is_dir() {
                 path = path.parent().unwrap().to_path_buf();
             }
             format!("cd {}", path.to_string_lossy())
@@ -80,7 +72,7 @@ impl Verb {
             self.exec_token(&path).join(" ")
         }
     }
-    fn exec_token(&self, path: &Path) -> Vec<String> {
+    pub fn exec_token(&self, path: &Path) -> Vec<String> {
         self.exec_pattern
             .split_whitespace()
             .map(|t| {
@@ -125,7 +117,12 @@ impl Verb {
     }
 }
 
-/// hold all the available verbs: built-in ones and those coming from configuration
+/// Provide access to the verbs:
+/// - the built-in ones
+/// - the user defined ones
+/// When the user types some keys, we select a verb
+/// - if the input exactly matches a shortcut or the name
+/// - if only one verb starts with the input
 pub struct VerbStore {
     pub verbs: Vec<Verb>,
 }
@@ -139,108 +136,6 @@ pub trait VerbExecutor {
     ) -> io::Result<AppStateCmdResult>;
 }
 
-impl VerbExecutor for HelpState {
-    fn execute_verb(
-        &self,
-        verb: &Verb,
-        _screen: &Screen,
-        _con: &AppContext,
-    ) -> io::Result<AppStateCmdResult> {
-        Ok(match verb.exec_pattern.as_ref() {
-            ":open" => AppStateCmdResult::Launch(Launchable::opener(&Conf::default_location())?),
-            ":quit" => AppStateCmdResult::Quit,
-            _ => {
-                if verb.exec_pattern.starts_with(':') {
-                    AppStateCmdResult::Keep
-                } else {
-                    AppStateCmdResult::Launch(Launchable::from(
-                        verb.exec_token(&Conf::default_location()),
-                    )?)
-                }
-            }
-        })
-    }
-}
-
-impl VerbExecutor for BrowserState {
-    fn execute_verb(
-        &self,
-        verb: &Verb,
-        screen: &Screen,
-        con: &AppContext,
-    ) -> io::Result<AppStateCmdResult> {
-        let tree = match &self.filtered_tree {
-            Some(tree) => &tree,
-            None => &self.tree,
-        };
-        let line = &tree.selected_line();
-        Ok(match verb.exec_pattern.as_ref() {
-            ":back" => AppStateCmdResult::PopState,
-            ":focus" => {
-                let path = tree.selected_line().path.clone();
-                let options = tree.options.clone();
-                AppStateCmdResult::from_optional_state(BrowserState::new(
-                    path,
-                    options,
-                    screen,
-                    &TaskLifetime::unlimited(),
-                ))
-            }
-            ":help" => AppStateCmdResult::NewState(Box::new(HelpState::new(screen))),
-            ":open" => AppStateCmdResult::Launch(Launchable::opener(&line.target())?),
-            ":parent" => match &line.target().parent() {
-                Some(path) => {
-                    let path = path.to_path_buf();
-                    let options = self.tree.options.clone();
-                    AppStateCmdResult::from_optional_state(BrowserState::new(
-                        path,
-                        options,
-                        screen,
-                        &TaskLifetime::unlimited(),
-                    ))
-                }
-                None => AppStateCmdResult::DisplayError("no parent found".to_string()),
-            },
-            ":print_path" => {
-                if let Some(ref output_path) = con.launch_args.file_export_path {
-                    // an output path was provided, we write to it
-                    let f = OpenOptions::new().append(true).open(output_path)?;
-                    writeln!(&f, "{}", line.target().to_string_lossy())?;
-                    AppStateCmdResult::Quit
-                } else {
-                    // no output path provided. We write on stdout, but we must
-                    // do it after app closing to have the normal terminal
-                    let mut launchable =
-                        Launchable::from(vec![line.target().to_string_lossy().to_string()])?;
-                    launchable.just_print = true;
-                    AppStateCmdResult::Launch(launchable)
-                }
-            }
-            ":toggle_files" => {
-                self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true)
-            }
-            ":toggle_hidden" => self.with_new_options(screen, &|o| o.show_hidden ^= true),
-            ":toggle_git_ignore" => self.with_new_options(screen, &|options| {
-                options.respect_git_ignore = match options.respect_git_ignore {
-                    OptionBool::Auto => {
-                        if tree.nb_gitignored > 0 {
-                            OptionBool::No
-                        } else {
-                            OptionBool::Yes
-                        }
-                    }
-                    OptionBool::Yes => OptionBool::No,
-                    OptionBool::No => OptionBool::Yes,
-                };
-            }),
-            ":toggle_perm" => self.with_new_options(screen, &|o| o.show_permissions ^= true),
-            ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
-            ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),
-            ":quit" => AppStateCmdResult::Quit,
-            _ => verb.to_cmd_result(&line.target(), con)?,
-        })
-    }
-}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrefixSearchResult<T> {
@@ -249,12 +144,6 @@ pub enum PrefixSearchResult<T> {
     TooManyMatches,
 }
 
-/// Provide access to the verbs:
-/// - the built-in ones
-/// - the user defined ones
-/// When the user types some keys, we select a verb
-/// - if the input exactly matches a shortcut or the name
-/// - if only one verb starts with the input
 impl VerbStore {
     pub fn new() -> VerbStore {
         VerbStore {
@@ -273,13 +162,13 @@ impl VerbStore {
             "cd".to_string(),
             None, // no real need for a shortcut as it's mapped to alt-enter
             "cd {directory}".to_string(),
-            "change directory and quit (mapped to `<alt><enter>`)".to_string(),
+            "change directory and quit (mapped to `<alt><enter>` in tree)".to_string(),
             true, // needs to be launched from the parent shell
         ));
         self.verbs.push(Verb::create_built_in(
             "focus",
             Some("goto".to_string()),
-            "display a directory (mapped to `<enter>`)",
+            "display {directory} (mapped to `<enter>` in tree)",
         ));
         self.verbs.push(Verb::create_built_in(
             "help",
@@ -289,7 +178,7 @@ impl VerbStore {
         self.verbs.push(Verb::create_built_in(
             "open",
             None,
-            "open a file according to OS settings (mapped to `<enter>`)",
+            "open a file according to OS settings (mapped to `<enter>` in tree)",
         ));
         self.verbs.push(Verb::create_built_in(
             "parent",

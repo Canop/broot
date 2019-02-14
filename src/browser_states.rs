@@ -266,14 +266,20 @@ impl AppState for BrowserState {
                     PrefixSearchResult::NoMatch => {
                         screen.write_status_err("No matching verb (':?' for the list of verbs)")
                     }
-                    PrefixSearchResult::Match(verb) => screen.write_status_text(
-                        &format!(
-                            "Hit <enter> to {} : {}",
-                            &verb.name,
-                            verb.description_for(&self)
+                    PrefixSearchResult::Match(verb) => {
+                        let line = match &self.filtered_tree {
+                            Some(tree) => tree.selected_line(),
+                            None => self.tree.selected_line(),
+                        };
+                        screen.write_status_text(
+                            &format!(
+                                "Hit <enter> to {} : {}",
+                                &verb.name,
+                                verb.description_for(line.target())
+                            )
+                            .to_string(),
                         )
-                        .to_string(),
-                    ),
+                    }
                     PrefixSearchResult::TooManyMatches => screen.write_status_text(
                         // TODO show what verbs start with the currently edited verb key
                         "Type a verb then <enter> to execute it (':?' for the list of verbs)",

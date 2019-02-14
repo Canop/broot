@@ -33,6 +33,7 @@ pub enum AppStateCmdResult {
     Launch(Launchable),
     DisplayError(String),
     NewState(Box<dyn AppState>),
+    PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
 }
 
@@ -168,6 +169,16 @@ impl App {
                     self.states.pop();
                     cmd = Command::new();
                     self.state().write_status(screen, &cmd, con)?;
+                }
+            }
+            AppStateCmdResult::PopStateAndReapply => {
+                if self.states.len() == 1 {
+                    debug!("quitting on last pop state");
+                    self.quitting = true;
+                } else {
+                    self.states.pop();
+                    debug!("about to reapply {:?}", &cmd);
+                    return self.apply_command(cmd, screen, con);
                 }
             }
             AppStateCmdResult::DisplayError(txt) => {
