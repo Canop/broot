@@ -1,5 +1,6 @@
 use crate::cli::AppLaunchArgs;
 use crate::verbs::VerbStore;
+use crate::skin::Skin;
 
 /// The immutable container that can be passed around to provide
 /// the configuration things

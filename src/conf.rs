@@ -1,19 +1,17 @@
 //! manage reading the verb shortcuts from the configuration file,
 //! initializing if if it doesn't yet exist
 
-use custom_error::custom_error;
 use directories::ProjectDirs;
+use std::collections::HashMap;
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
 
-custom_error! {pub ConfError
-    Io{source: io::Error}           = "unable to read from the file",
-    Toml{source: toml::de::Error}   = "unable to parse TOML",
-    MissingField{txt: String}       = "missing field in conf",
-}
+use crate::skin_conf;
+use crate::errors::ConfError;
+
 
 /// what's needed to handle a verb
 #[derive(Debug)]
@@ -27,6 +25,7 @@ pub struct VerbConf {
 #[derive(Debug)]
 pub struct Conf {
     pub verbs: Vec<VerbConf>,
+    pub skin_entries: HashMap<String, String>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -81,6 +80,7 @@ impl Conf {
     pub fn from_file(filepath: &Path) -> Result<Conf, ConfError> {
         let data = fs::read_to_string(filepath)?;
         let root: Value = data.parse::<Value>()?;
+        // reading verbs
         let mut verbs: Vec<VerbConf> = vec![];
         if let Value::Array(verbs_value) = &root["verbs"] {
             for verb_value in verbs_value.iter() {
@@ -125,7 +125,32 @@ impl Conf {
                 });
             }
         }
-        Ok(Conf { verbs })
+        // reading the skin
+        let mut skin_entries = HashMap::new();
+        if let Value::Table(entries_tbl) = &root["skin"] {
+            for (k, v) in entries_tbl.iter() {
+                if let Some(s) = v.as_str() {
+                    match skin_conf::parse_entry(s) {
+                        Ok(ske) => {
+                            debug!("{} => ske: {:?}", k, ske);
+                            skin_entries.insert(k.to_string(), ske);
+                        }
+                        Err(e) => {
+                            eprintln!(
+                                "Invalid skin entry for {} : {}",
+                                k,
+                                e.to_string()
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        Ok(Conf {
+            verbs,
+            skin_entries,
+        })
     }
 }
 

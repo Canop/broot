@@ -22,6 +22,7 @@ use crate::errors::TreeBuildError;
 use crate::external::Launchable;
 use crate::input::Input;
 use crate::screens::Screen;
+use crate::skin::Skin;
 use crate::spinner::Spinner;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
@@ -194,8 +195,8 @@ impl App {
     }
 
     /// This is the main loop of the application
-    pub fn run(mut self, con: &AppContext) -> Result<Option<Launchable>, ProgramError> {
-        let mut screen = Screen::new()?;
+    pub fn run(mut self, con: &AppContext, skin: Skin) -> Result<Option<Launchable>, ProgramError> {
+        let mut screen = Screen::new(skin)?;
 
         // create the initial state
         if let Some(bs) = BrowserState::new(

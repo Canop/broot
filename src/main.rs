@@ -27,6 +27,8 @@ mod regex_patterns;
 mod screen_text;
 mod screens;
 mod shell_func;
+mod skin;
+mod skin_conf;
 mod spinner;
 mod status;
 mod task_sync;
@@ -90,7 +92,8 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         launch_args,
         verb_store,
     };
-    App::new().run(&context)
+    let skin = skin::Skin::create(config.skin_entries);
+    App::new().run(&context, skin)
 }
 
 fn main() {
