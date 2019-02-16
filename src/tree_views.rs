@@ -55,7 +55,8 @@ impl TreeView for Screen {
             }
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
-                write!(self.stdout, "{}", color::Fg(color::AnsiValue::grayscale(5)))?;
+                //self.apply_skin_entry(&self.skin.tree)?;
+                write!(self.stdout, "{}", self.skin.tree.fgbg())?;
                 for depth in 0..line.depth {
                     write!(
                         self.stdout,
@@ -101,7 +102,7 @@ impl TreeView for Screen {
                         write!(
                             self.stdout,
                             "{}──────────────{}",
-                            color::Fg(color::AnsiValue::grayscale(5)),
+                            self.skin.tree.fg,
                             color::Fg(color::Reset),
                         )?;
                     }

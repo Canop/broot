@@ -1,7 +1,7 @@
 use std::io::{self, stdout, Write};
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
-use crate::skin::Skin;
+use crate::skin::{Skin, SkinEntry};
 
 pub struct Screen {
     pub w: u16,
@@ -37,6 +37,9 @@ impl Screen {
         self.w = w;
         self.h = h;
         Ok(())
+    }
+    pub fn apply_skin_entry(&mut self, ske: &SkinEntry) -> io::Result<()> {
+        write!(self.stdout, "{}{}", ske.fg, ske.bg)
     }
 }
 

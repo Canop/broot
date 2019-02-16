@@ -130,18 +130,34 @@ impl Conf {
         if let Value::Table(entries_tbl) = &root["skin"] {
             for (k, v) in entries_tbl.iter() {
                 if let Some(s) = v.as_str() {
-                    match skin_conf::parse_entry(s) {
-                        Ok(ske) => {
-                            debug!("{} => ske: {:?}", k, ske);
-                            skin_entries.insert(k.to_string(), ske);
+                    if k.ends_with("_fg") {
+                        match skin_conf::parse_fg(s) {
+                            Ok(ske) => {
+                                skin_entries.insert(k.to_string(), ske);
+                            }
+                            Err(e) => {
+                                eprintln!(
+                                    "Invalid skin entry for {} : {}",
+                                    k,
+                                    e.to_string()
+                                );
+                            }
                         }
-                        Err(e) => {
-                            eprintln!(
-                                "Invalid skin entry for {} : {}",
-                                k,
-                                e.to_string()
-                            );
+                    } else if k.ends_with("_bg") {
+                        match skin_conf::parse_bg(s) {
+                            Ok(ske) => {
+                                skin_entries.insert(k.to_string(), ske);
+                            }
+                            Err(e) => {
+                                eprintln!(
+                                    "Invalid skin entry for {} : {}",
+                                    k,
+                                    e.to_string()
+                                );
+                            }
                         }
+                    } else {
+                        eprintln!("Ignored skin entry: {}", k);
                     }
                 }
             }

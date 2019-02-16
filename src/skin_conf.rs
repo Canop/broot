@@ -1,3 +1,9 @@
+/// Manage conversion of a user provided string
+/// defining foreground and background colors into
+/// a string with TTY colors
+///
+/// The code is ugly. Really. I know.
+/// I found no clean way to deal with termion colors.
 use std::result::Result;
 use std::ascii::AsciiExt;
 use regex::Regex;
@@ -5,26 +11,26 @@ use termion::color::{self, *};
 use crate::errors::ConfError;
 
 fn parse_gray(raw: &str) -> Result<Option<u8>, ConfError> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(
-                r"^grayscale\((?P<level>\d+)\)$"
-            )
-            .unwrap();
-        }
-        if let Some(c) = RE.captures(raw) {
-            if let Some(level) = c.name("level") {
-                if let Ok(level) = level.as_str().parse() {
-                    return if level < 24 {
-                        Ok(Some(level))
-                    } else {
-                        Err(ConfError::InvalidSkinEntry{
-                            reason: "gray level must be between 0 and 23".to_string()
-                        })
-                    }
+    lazy_static! {
+        static ref RE: Regex = Regex::new(
+            r"^grayscale\((?P<level>\d+)\)$"
+        )
+        .unwrap();
+    }
+    if let Some(c) = RE.captures(raw) {
+        if let Some(level) = c.name("level") {
+            if let Ok(level) = level.as_str().parse() {
+                return if level < 24 {
+                    Ok(Some(level))
+                } else {
+                    Err(ConfError::InvalidSkinEntry{
+                        reason: "gray level must be between 0 and 23".to_string()
+                    })
                 }
             }
         }
-        Ok(None)
+    }
+    Ok(None)
 }
 
 macro_rules! make_parseurs {
@@ -32,6 +38,9 @@ macro_rules! make_parseurs {
         $($name:tt,)*
     ) => {
         pub fn parse_fg(raw: &str) -> Result<String, ConfError> {
+            if raw.eq_ignore_ascii_case("none") {
+                return Ok(format!("{}", Fg(Reset)));
+            }
             $(
                 debug!("comparing {} and {}", raw, stringify!($name));
                 if raw.eq_ignore_ascii_case(stringify!($name)) {
@@ -44,6 +53,9 @@ macro_rules! make_parseurs {
             return Err(ConfError::InvalidSkinEntry{reason:raw.to_string()});
         }
         pub fn parse_bg(raw: &str) -> Result<String, ConfError> {
+            if raw.eq_ignore_ascii_case("none") {
+                return Ok(format!("{}", Bg(Reset)));
+            }
             $(
                 debug!("comparing {} and {}", raw, stringify!($name));
                 if raw.eq_ignore_ascii_case(stringify!($name)) {
@@ -78,19 +90,19 @@ make_parseurs! {
     Yellow,
 }
 
-pub fn parse_entry(raw: &str) -> Result<String, ConfError> {
-    let mut tokens = raw.split_whitespace();
-    let fg = match tokens.next() {
-        Some(c) => parse_fg(c)?,
-        None => {
-            return Err(ConfError::InvalidSkinEntry{reason:"Missing foreground in skin".to_string()});
-        }
-    };
-    let bg = match tokens.next() {
-        Some(c) => parse_bg(c)?,
-        None => {
-            return Err(ConfError::InvalidSkinEntry{reason:"Missing background in skin".to_string()});
-        }
-    };
-    Ok(format!("{}{}", fg, bg))
-}
+//pub fn parse_entry(raw: &str) -> Result<String, ConfError> {
+//    let mut tokens = raw.split_whitespace();
+//    let fg = match tokens.next() {
+//        Some(c) => parse_fg(c)?,
+//        None => {
+//            return Err(ConfError::InvalidSkinEntry{reason:"Missing foreground in skin".to_string()});
+//        }
+//    };
+//    let bg = match tokens.next() {
+//        Some(c) => parse_bg(c)?,
+//        None => {
+//            return Err(ConfError::InvalidSkinEntry{reason:"Missing background in skin".to_string()});
+//        }
+//    };
+//    Ok(format!("{}{}", fg, bg))
+//}
