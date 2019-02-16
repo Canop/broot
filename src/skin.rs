@@ -28,18 +28,4 @@ Skin! {
     status_error: Red, AnsiValue::grayscale(2)
 }
 
-impl Skin {
-    pub fn make() -> Skin {
-        let mut map = HashMap::new();
-        map.insert(
-            "status_normal".to_string(),
-            format!(
-                "{}{}",
-                color::Fg(color::Yellow),
-                color::Bg(color::AnsiValue::grayscale(8))
-            )
-        );
-        Skin::create(map)
-    }
-}
 
