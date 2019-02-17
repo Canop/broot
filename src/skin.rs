@@ -8,7 +8,6 @@ use termion::color::{self, *};
 pub struct SkinEntry {
     pub fg: String,
     pub bg: String,
-    //pub fb String,
 }
 
 impl SkinEntry {
@@ -49,10 +48,21 @@ macro_rules! Skin {
     }
 }
 
+// TODO none instead of Reset
+// -> and alert when a none is used
+// TODO allow default in skin conf
+// TODO fonction pour générer un nouveau fichier de skin ?
+// TODO utiliser le même format exactement ici et dans toml ?
+// TODO autoriser plusieurs skins avec des noms ?
 Skin! {
     status_normal: White, AnsiValue::grayscale(2)
     status_error: Red, AnsiValue::grayscale(2)
     tree: AnsiValue::grayscale(5), Reset
+    selected_line: Reset, AnsiValue::grayscale(2)
+    permissions: AnsiValue::grayscale(15), Reset
+    size_text: AnsiValue::grayscale(15), Reset
+    size_bar_full: Reset, Magenta
+    size_bar_void: Reset, AnsiValue::grayscale(2)
 }
 
 

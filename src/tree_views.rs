@@ -103,29 +103,28 @@ impl TreeView for Screen {
                             self.stdout,
                             "{}──────────────{}",
                             self.skin.tree.fg,
-                            color::Fg(color::Reset),
+                            self.skin.reset.fg,
                         )?;
                     }
                 }
                 let selected = line_index == tree.selection;
                 if selected {
-                    write!(self.stdout, "{}", color::Bg(color::AnsiValue::grayscale(2)),)?;
+                    write!(self.stdout, "{}", self.skin.selected_line.bg)?;
                 }
                 self.write_line_name(line, line_index, &tree.options.pattern)?;
             }
             write!(
                 self.stdout,
-                "{}{}{}",
+                "{}{}",
                 termion::clear::UntilNewline,
                 style::Reset,
-                color::Fg(color::AnsiValue::grayscale(9)),
             )?;
             if let Some((sctop, scbottom)) = scrollbar {
                 if sctop <= y && y <= scbottom {
                     write!(self.stdout, "{}▐", termion::cursor::Goto(self.w, y),)?;
                 }
             }
-            write!(self.stdout, "{}", color::Fg(color::Reset),)?;
+            //write!(self.stdout, "{}", color::Fg(color::Reset),)?;
         }
         self.stdout.flush()?;
         Ok(())
@@ -135,7 +134,7 @@ impl TreeView for Screen {
         write!(
             self.stdout,
             "{} {}{}{}{}{}{}{}{}{}",
-            color::Fg(color::AnsiValue::grayscale(15)),
+            self.skin.permissions.fg,
             if (mode & (1 << 8)) != 0 { 'r' } else { '-' },
             if (mode & (1 << 7)) != 0 { 'w' } else { '-' },
             if (mode & (1 << 6)) != 0 { 'x' } else { '-' },
@@ -155,14 +154,13 @@ impl TreeView for Screen {
             write!(
                 self.stdout,
                 "{}{}",
-                color::Bg(color::Magenta),
-                color::Fg(color::AnsiValue::grayscale(15)),
+                self.skin.size_text.fg,
+                self.skin.size_bar_full.bg,
             )?;
             for i in 0..dr {
                 write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
             }
-            write!(self.stdout, "{}", color::Bg(color::Reset))?;
-            write!(self.stdout, "{}", color::Bg(color::AnsiValue::grayscale(2)))?;
+            write!(self.stdout, "{}", self.skin.size_bar_void.bg)?;
             for i in dr..8 {
                 write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
             }
