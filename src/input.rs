@@ -13,8 +13,10 @@ impl Input for Screen {
     fn write_input(&mut self, cmd: &Command) -> io::Result<()> {
         write!(
             self.stdout,
-            "{}{}{}{} {}",
+            "{}{}{}{}{}{} {}",
             termion::cursor::Goto(1, self.h),
+            self.skin.input.fg,
+            self.skin.input.bg,
             termion::clear::CurrentLine,
             cmd.raw,
             termion::style::Invert,

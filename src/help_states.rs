@@ -8,6 +8,7 @@ use crate::commands::{Action, Command};
 use crate::conf::Conf;
 use crate::screen_text::{Text, TextTable};
 use crate::screens::{Screen, ScreenArea};
+use crate::skin::Skin;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
 use crate::verbs::{PrefixSearchResult, Verb, VerbExecutor};
@@ -23,19 +24,6 @@ impl HelpState {
         };
         state.resize_area(screen);
         state
-    }
-    fn build_verbs_table(&self, text: &mut Text, con: &AppContext) {
-        let mut tbl: TextTable<Verb> = TextTable::new();
-        tbl.add_col("name", &|verb| &verb.name);
-        tbl.add_col("shortcut", &|verb| {
-            if let Some(sk) = &verb.short_key {
-                &sk
-            } else {
-                ""
-            }
-        });
-        tbl.add_col("description", &|verb: &Verb| &verb.description);
-        tbl.write(&con.verb_store.verbs, text);
     }
     fn resize_area(&mut self, screen: &Screen) {
         self.area.bottom = screen.h - 2;
@@ -78,7 +66,7 @@ impl AppState for HelpState {
     }
 
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
-        let mut text = Text::new();
+        let mut text = Text::new(&screen.skin);
         text.md("");
         text.md(r#" **broot** lets you explore directory trees and launch commands."#);
         text.md(r#" site: https://github.com/Canop/broot."#);
@@ -90,7 +78,16 @@ impl AppState for HelpState {
         text.md("");
         text.md(r#" To execute a verb, type a space or `:` then start of its name or shortcut."#);
         text.md(" Verbs:");
-        self.build_verbs_table(&mut text, con);
+        let mut tbl: TextTable<Verb> = TextTable::new(&screen.skin);
+        tbl.add_col("name", &|verb| &verb.name);
+        tbl.add_col("shortcut", &|verb| {
+            if let Some(sk) = &verb.short_key {
+                &sk
+            } else {
+                ""
+            }
+        });
+        tbl.write(&con.verb_store.verbs, &mut text);
         text.md("");
         text.md(&format!(
             " Verb can be configured in {:?}.",
@@ -109,6 +106,7 @@ impl AppState for HelpState {
         text.md("  When gitignore is auto, .gitignore rules are respected if");
         text.md("   the displayed root is a git repository or in one.");
         self.area.content_length = text.height() as i32;
+        screen.reset_colors()?;
         text.write(screen, &self.area)?;
         Ok(())
     }

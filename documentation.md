@@ -185,3 +185,55 @@ Example:
 
 ![dcd ruleset](img/20190122-dcd_rulset.png)
 
+## Custom Colors
+
+You can change all colors by adding a `[skin]` section in your `conf.toml` file.
+
+For example:
+
+    [skin]
+    status_normal_fg = "grayscale(18)"
+    status_normal_bg = "grayscale(3)"
+    status_error_fg = "red"
+    status_error_bg = "yellow"
+    tree_fg = "red"
+    selected_line_bg = "grayscale(7)"
+    permissions_fg = "grayscale(12)"
+    size_bar_full_bg = "red"
+    size_bar_void_bg = "black"
+    directory_fg = "lightyellow"
+    input_fg = "cyan"
+    flag_value_fg = "lightyellow"
+    table_border_fg = "red"
+    code_fg = "lightyellow"
+
+which would look like this:
+
+![custom colors tree](img/20190217-custom-colors-tree.png)
+
+![custom colors help](img/20190217-custom-colors-help.png)
+
+Complete list of keys (expected to change before the v1 of broot):
+
+    char_match
+    code
+    directory
+    file
+    file_error
+    flag_label
+    flag_value
+    input
+    link
+    permissions
+    selected_line
+    size_bar_full
+    size_bar_void
+    size_text
+    spinner
+    status_error
+    status_normal
+    table_border
+    tree
+    unlisted
+
+Add `_fg` for a foreground color while `_bg` is for background colors.

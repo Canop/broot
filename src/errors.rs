@@ -2,8 +2,6 @@
 use custom_error::custom_error;
 use std::io;
 
-use crate::conf;
-
 custom_error! {pub TreeBuildError
     NotADirectory { path: String } = "Not a directory: {}",
     FileNotFound { path: String } = "File not found: {}",

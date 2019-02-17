@@ -1,6 +1,6 @@
 use std::io::{self, Write};
 
-use crate::screens::{Screen, ScreenArea};
+use crate::screens::Screen;
 
 use std::collections::HashMap;
 use termion::color::{self, *};
@@ -11,9 +11,6 @@ pub struct SkinEntry {
 }
 
 impl SkinEntry {
-    pub fn apply(&self, screen: &mut Screen) -> io::Result<()> {
-        write!(screen.stdout, "{}{}", self.fg, self.bg)
-    }
     pub fn fgbg(&self) -> String {
         format!("{}{}", self.fg, self.bg)
     }
@@ -48,12 +45,6 @@ macro_rules! Skin {
     }
 }
 
-// TODO none instead of Reset
-// -> and alert when a none is used
-// TODO allow default in skin conf
-// TODO fonction pour générer un nouveau fichier de skin ?
-// TODO utiliser le même format exactement ici et dans toml ?
-// TODO autoriser plusieurs skins avec des noms ?
 Skin! {
     status_normal: White, AnsiValue::grayscale(2)
     status_error: Red, AnsiValue::grayscale(2)
@@ -63,6 +54,18 @@ Skin! {
     size_text: AnsiValue::grayscale(15), Reset
     size_bar_full: Reset, Magenta
     size_bar_void: Reset, AnsiValue::grayscale(2)
+    file: White, Reset
+    directory: LightBlue, Reset
+    char_match: Green, Reset
+    link: LightMagenta, Reset
+    file_error: Red, Reset
+    unlisted: AnsiValue::grayscale(13), Reset
+    input: White, Reset
+    flag_label: AnsiValue::grayscale(14), AnsiValue::grayscale(1)
+    flag_value: AnsiValue::grayscale(16), AnsiValue::grayscale(1)
+    code: Reset, AnsiValue::grayscale(2)
+    table_border: AnsiValue::grayscale(8), Reset
+    spinner: AnsiValue::grayscale(10), AnsiValue::grayscale(2)
 }
 
 

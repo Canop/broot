@@ -2,7 +2,6 @@
 //! Executed during the do_pending_tasks of the states
 
 use std::io::{self, Write};
-use termion::color;
 
 use crate::screens::Screen;
 
@@ -15,13 +14,11 @@ impl Spinner for Screen {
         let y = self.h - 1;
         write!(
             self.stdout,
-            "{}{}{}{}{}{}",
+            "{}{}{}{}",
             termion::cursor::Goto(1, y),
-            color::Bg(color::AnsiValue::grayscale(2)),
-            color::Fg(color::AnsiValue::grayscale(10)),
+            self.skin.spinner.fg,
+            self.skin.spinner.bg,
             if spinning { "⌛" } else { " " },
-            color::Bg(color::Reset),
-            color::Fg(color::Reset),
         )?;
         self.stdout.flush()?;
         Ok(())

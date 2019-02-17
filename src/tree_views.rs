@@ -1,7 +1,7 @@
 use std::borrow::Cow;
 use std::io::{self, Write};
 use std::sync::Mutex;
-use termion::{color, style};
+use termion::style;
 use users::{Groups, Users, UsersCache};
 
 use crate::file_sizes::Size;
@@ -124,7 +124,6 @@ impl TreeView for Screen {
                     write!(self.stdout, "{}▐", termion::cursor::Goto(self.w, y),)?;
                 }
             }
-            //write!(self.stdout, "{}", color::Fg(color::Reset),)?;
         }
         self.stdout.flush()?;
         Ok(())
@@ -167,15 +166,15 @@ impl TreeView for Screen {
             write!(
                 self.stdout,
                 "{}{} ",
-                color::Bg(color::Reset),
-                color::Fg(color::Reset),
+                self.skin.reset.fg,
+                self.skin.reset.bg,
             )
         } else {
             write!(
                 self.stdout,
                 "{}────────{} ",
-                color::Fg(color::AnsiValue::grayscale(5)),
-                color::Fg(color::Reset),
+                self.skin.tree.fg,
+                self.skin.reset.fg,
             )
         }
     }
@@ -186,15 +185,6 @@ impl TreeView for Screen {
         idx: usize,
         pattern: &Pattern,
     ) -> io::Result<()> {
-        lazy_static! {
-            static ref fg_reset: String = format!("{}", color::Fg(color::White)).to_string();
-            static ref fg_dir: String = format!("{}", color::Fg(color::LightBlue)).to_string();
-            static ref fg_err: String = format!("{}", color::Fg(color::Red)).to_string();
-            static ref fg_link: String = format!("{}", color::Fg(color::LightMagenta)).to_string();
-            static ref fg_match: String = format!("{}", color::Fg(color::Green)).to_string();
-            static ref fg_reset_dir: String = format!("{}{}", &*fg_reset, &*fg_dir).to_string();
-            static ref fg_reset_link: String = format!("{}{}", &*fg_reset, &*fg_link).to_string();
-        }
         // TODO draw in red lines with has_error
         match &line.line_type {
             LineType::Dir => {
@@ -203,7 +193,7 @@ impl TreeView for Screen {
                         self.stdout,
                         "{}{}{}",
                         style::Bold,
-                        &*fg_dir,
+                        &self.skin.directory.fg,
                         &line.path.to_string_lossy(),
                     )?;
                 } else {
@@ -211,8 +201,8 @@ impl TreeView for Screen {
                         self.stdout,
                         "{}{}{}",
                         style::Bold,
-                        &*fg_dir,
-                        decorated_name(&line.name, pattern, &*fg_match, &*fg_reset_dir),
+                        &self.skin.directory.fg,
+                        decorated_name(&line.name, pattern, &self.skin.char_match.fg, &self.skin.directory.fg),
                     )?;
                     if line.unlisted > 0 {
                         write!(self.stdout, " …",)?;
@@ -223,18 +213,18 @@ impl TreeView for Screen {
                 write!(
                     self.stdout,
                     "{}{}",
-                    &*fg_reset,
-                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset),
+                    &self.skin.file.fg,
+                    decorated_name(&line.name, pattern, &self.skin.char_match.fg, &self.skin.file.fg),
                 )?;
             }
             LineType::SymLinkToFile(target) => {
                 write!(
                     self.stdout,
                     "{}{} {}->{} {}",
-                    &*fg_link,
-                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset_link),
-                    if line.has_error { &*fg_err } else { &*fg_link },
-                    &*fg_reset,
+                    &self.skin.link.fg,
+                    decorated_name(&line.name, pattern, &self.skin.char_match.fg, &self.skin.link.fg),
+                    if line.has_error { &self.skin.file_error.fg } else { &self.skin.link.fg },
+                    &self.skin.file.fg,
                     &target,
                 )?;
             }
@@ -242,11 +232,11 @@ impl TreeView for Screen {
                 write!(
                     self.stdout,
                     "{}{} {}->{}{} {}",
-                    &*fg_link,
-                    decorated_name(&line.name, pattern, &*fg_match, &*fg_reset_link),
-                    if line.has_error { &*fg_err } else { &*fg_link },
+                    &self.skin.link.fg,
+                    decorated_name(&line.name, pattern, &self.skin.char_match.fg, &self.skin.link.fg),
+                    if line.has_error { &self.skin.file_error.fg } else { &self.skin.link.fg },
                     style::Bold,
-                    &*fg_reset_dir,
+                    &self.skin.directory.fg,
                     &target,
                 )?;
             }
@@ -254,8 +244,8 @@ impl TreeView for Screen {
                 write!(
                     self.stdout,
                     //"{}{}… {} unlisted", still not sure whether I want this '…'
-                    "{}{} {} unlisted",
-                    color::Fg(color::AnsiValue::grayscale(13)),
+                    "{}{}{} unlisted",
+                    self.skin.unlisted.fg,
                     style::Italic,
                     &line.unlisted,
                 )?;

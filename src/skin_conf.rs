@@ -5,9 +5,8 @@
 /// The code is ugly. Really. I know.
 /// I found no clean way to deal with termion colors.
 use std::result::Result;
-use std::ascii::AsciiExt;
 use regex::Regex;
-use termion::color::{self, *};
+use termion::color::*;
 use crate::errors::ConfError;
 
 fn parse_gray(raw: &str) -> Result<Option<u8>, ConfError> {
@@ -92,19 +91,3 @@ make_parseurs! {
     Yellow,
 }
 
-//pub fn parse_entry(raw: &str) -> Result<String, ConfError> {
-//    let mut tokens = raw.split_whitespace();
-//    let fg = match tokens.next() {
-//        Some(c) => parse_fg(c)?,
-//        None => {
-//            return Err(ConfError::InvalidSkinEntry{reason:"Missing foreground in skin".to_string()});
-//        }
-//    };
-//    let bg = match tokens.next() {
-//        Some(c) => parse_bg(c)?,
-//        None => {
-//            return Err(ConfError::InvalidSkinEntry{reason:"Missing background in skin".to_string()});
-//        }
-//    };
-//    Ok(format!("{}{}", fg, bg))
-//}

@@ -5,9 +5,10 @@
 
 use regex::Regex;
 use std::io::{self, Write};
-use termion::{color, style};
+use termion::style;
 
 use crate::screens::{Screen, ScreenArea};
+use crate::skin::Skin;
 
 // write a string, taking exactly w chars, either
 // by cutting or by padding
@@ -18,38 +19,46 @@ fn append_pad(dest: &mut String, s: &str, w: usize) {
     }
 }
 
-// do some simple markdown-like formatting to ease text generation:
-// - bold: **bold text**
-// - code: `some code`
-fn md(s: &str) -> String {
-    lazy_static! {
-        static ref bold_regex: Regex = Regex::new(r"\*\*([^*]+)\*\*").unwrap();
-        static ref bold_repl: String = format!("{}$1{}", style::Bold, style::Reset);
-        static ref code_regex: Regex = Regex::new(r"`([^`]+)`").unwrap();
-        static ref code_repl: String = format!(
-            "{} $1 {}",
-            color::Bg(color::AnsiValue::grayscale(2)),
-            color::Bg(color::Reset)
-        );
-    }
-    let s = bold_regex.replace_all(s, &*bold_repl as &str); // TODO how to avoid this complex casting ?
-    let s = code_regex.replace_all(&s, &*code_repl as &str);
-    s.to_string()
-}
-
 /// A Text is a vec of lines
 pub struct Text {
     lines: Vec<String>,
+    md_bold_repl: String,
+    md_code_repl: String,
 }
 impl Text {
-    pub fn new() -> Text {
-        Text { lines: Vec::new() }
+    pub fn new(skin: &Skin) -> Text {
+        let md_code_repl = format!(
+            "{}{} $1 {}{}",
+            skin.code.fg,
+            skin.code.bg,
+            skin.reset.fg,
+            skin.reset.bg,
+        );
+        let md_bold_repl = format!("{}$1{}", style::Bold, style::Reset);
+        Text {
+            lines: Vec::new(),
+            md_bold_repl,
+            md_code_repl,
+        }
     }
     pub fn height(&self) -> usize {
         self.lines.len()
     }
+    // do some simple markdown-like formatting to ease text generation:
+    // - bold: **bold text**
+    // - code: `some code`
+    pub fn md_to_tty(&self, raw: &str) -> String {
+        lazy_static! {
+            static ref bold_regex: Regex = Regex::new(r"\*\*([^*]+)\*\*").unwrap();
+            static ref code_regex: Regex = Regex::new(r"`([^`]+)`").unwrap();
+        }
+        let s = bold_regex.replace_all(raw, &*self.md_bold_repl);
+        let s = code_regex.replace_all(&s, &*self.md_code_repl);
+        s.to_string()
+    }
+    // add a line from the line interpreted as "markdown"
     pub fn md(&mut self, line: &str) {
-        self.lines.push(md(line));
+        self.lines.push(self.md_to_tty(line));
     }
     pub fn push(&mut self, line: String) {
         self.lines.push(line);
@@ -93,11 +102,20 @@ impl<'a, R> TextCol<'a, R> {}
 /// A small utility to format some data in a tabular way on screen
 pub struct TextTable<'a, R> {
     cols: Vec<TextCol<'a, R>>,
+    bar: String, // according to skin
 }
 
 impl<'a, R> TextTable<'a, R> {
-    pub fn new() -> TextTable<'a, R> {
-        TextTable { cols: Vec::new() }
+    pub fn new(skin: &Skin) -> TextTable<'a, R> {
+        let bar = format!(
+            " {}│{} ",
+            skin.table_border.fg,
+            skin.reset.fg,
+        );
+        TextTable {
+            cols: Vec::new(),
+            bar,
+        }
     }
     pub fn add_col(&mut self, title: &str, extract: &'a Fn(&'a R) -> &str) {
         let width = title.len(); // initial value, will change
@@ -119,18 +137,10 @@ impl<'a, R> TextTable<'a, R> {
     // Right now, to ease width computations, md transformation is done
     // only in the last column
     pub fn write(&mut self, rows: &'a [R], text: &mut Text) {
-        lazy_static! {
-            static ref bar: String = format!(
-                " {}│{} ",
-                color::Fg(color::AnsiValue::grayscale(8)),
-                color::Fg(color::Reset),
-            )
-            .to_string();
-        }
         self.compute_col_widths(&rows);
         let mut header = String::new();
         for col in &self.cols {
-            header.push_str(&*bar);
+            header.push_str(&self.bar);
             // we're lazy here:
             // we add some bold, and add 4 for the width because we know the * won't
             // show up on screen.
@@ -140,10 +150,10 @@ impl<'a, R> TextTable<'a, R> {
         for row in rows {
             let mut line = String::new();
             for (i, col) in self.cols.iter().enumerate() {
-                line.push_str(&*bar);
+                line.push_str(&self.bar);
                 let s = (col.extract)(row);
                 if i == self.cols.len() - 1 {
-                    line.push_str(&md(s));
+                    line.push_str(&text.md_to_tty(s));
                 } else {
                     append_pad(&mut line, s, col.width);
                 }

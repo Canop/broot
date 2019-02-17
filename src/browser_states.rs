@@ -5,7 +5,6 @@ use std::io::{self, Write};
 use std::path::PathBuf;
 use std::result::Result;
 use std::time::Instant;
-use termion::color;
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
@@ -312,19 +311,23 @@ impl AppState for BrowserState {
         let total_char_size = 9;
         write!(
             screen.stdout,
-            "{}{}{}{} h:{}  gi:{}{}{}",
+            "{}{}{}{} h:{}{}{}{}{}  gi:{}{}{}",
             termion::cursor::Goto(screen.w - total_char_size, screen.h),
-            color::Bg(color::AnsiValue::grayscale(1)),
+            screen.skin.flag_label.fg,
+            screen.skin.flag_label.bg,
             termion::clear::UntilNewline,
-            color::Fg(color::AnsiValue::grayscale(15)),
+            screen.skin.flag_value.fg,
+            screen.skin.flag_value.bg,
             if tree.options.show_hidden { 'y' } else { 'n' },
+            screen.skin.flag_label.fg,
+            screen.skin.flag_label.bg,
+            screen.skin.flag_value.fg,
+            screen.skin.flag_value.bg,
             match tree.options.respect_git_ignore {
                 OptionBool::Auto => 'a',
                 OptionBool::Yes => 'y',
                 OptionBool::No => 'n',
             },
-            color::Bg(color::Reset),
-            color::Fg(color::Reset),
         )?;
         Ok(())
     }

@@ -23,8 +23,6 @@ impl Status for Screen {
             termion::cursor::Goto(2, y),
             self.skin.status_error.fg,
             self.skin.status_error.bg,
-            //color::Bg(color::AnsiValue::grayscale(2)),
-            //color::Fg(color::Red),
             termion::clear::CurrentLine,
             text,
             self.skin.reset.bg,
@@ -42,11 +40,9 @@ impl Status for Screen {
             termion::cursor::Goto(2, y),
             self.skin.status_normal.fg,
             self.skin.status_normal.bg,
-            //color::Bg(color::AnsiValue::grayscale(2)),
             termion::clear::CurrentLine,
             text,
             self.skin.reset.bg,
-            //color::Bg(color::Reset),
         )?;
         self.stdout.flush()?;
         Ok(())
