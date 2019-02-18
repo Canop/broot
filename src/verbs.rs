@@ -168,7 +168,7 @@ impl VerbStore {
         self.verbs.push(Verb::create_built_in(
             "focus",
             Some("goto".to_string()),
-            "display {directory} (mapped to `<enter>` in tree)",
+            "display the directory (mapped to `<enter>` in tree)",
         ));
         self.verbs.push(Verb::create_built_in(
             "help",

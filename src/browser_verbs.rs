@@ -26,8 +26,12 @@ impl VerbExecutor for BrowserState {
         Ok(match verb.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
             ":focus" => {
+                let mut path = tree.selected_line().target();
+                if !path.is_dir() {
+                    path = path.parent().unwrap().to_path_buf();
+                }
                 AppStateCmdResult::from_optional_state(BrowserState::new(
-                    tree.selected_line().path.clone(),
+                    path,
                     tree.options.clone(),
                     screen,
                     &TaskLifetime::unlimited(),
