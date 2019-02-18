@@ -82,7 +82,7 @@ impl Conf {
         let root: Value = data.parse::<Value>()?;
         // reading verbs
         let mut verbs: Vec<VerbConf> = vec![];
-        if let Value::Array(verbs_value) = &root["verbs"] {
+        if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {
                 let invocation = match string_field(verb_value, "invocation") {
                     Some(s) => s,
@@ -127,7 +127,7 @@ impl Conf {
         }
         // reading the skin
         let mut skin_entries = HashMap::new();
-        if let Value::Table(entries_tbl) = &root["skin"] {
+        if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
             for (k, v) in entries_tbl.iter() {
                 if let Some(s) = v.as_str() {
                     if k.ends_with("_fg") {
