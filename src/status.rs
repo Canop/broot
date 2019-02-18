@@ -5,7 +5,6 @@ use std::io::{self, Write};
 use termion;
 
 use crate::screens::Screen;
-use crate::skin::Skin;
 
 pub trait Status {
     fn write_status_text(&mut self, text: &str) -> io::Result<()>;

@@ -1,10 +1,14 @@
-use std::io::{self, Write};
-
-use crate::screens::Screen;
-
+/// Defines the Skin structure with its defautl value.
+///
+/// A skin is a collection of skin entries and the
+/// store of all color changing TTY codes used by
+/// the application. It can be changed by configuration.
 use std::collections::HashMap;
 use termion::color::{self, *};
 
+/// a Skin entry is a couple of strings, one for the foreground
+/// and one for the background, each one made of TTY escape
+/// codes defining color changes.
 pub struct SkinEntry {
     pub fg: String,
     pub bg: String,
@@ -46,26 +50,26 @@ macro_rules! Skin {
 }
 
 Skin! {
-    status_normal: White, AnsiValue::grayscale(2)
-    status_error: Red, AnsiValue::grayscale(2)
-    tree: AnsiValue::grayscale(5), Reset
-    selected_line: Reset, AnsiValue::grayscale(2)
+    char_match: Green, Reset
+    code: Reset, AnsiValue::grayscale(2)
+    directory: LightBlue, Reset
+    file: White, Reset
+    file_error: Red, Reset
+    flag_label: AnsiValue::grayscale(12), AnsiValue::grayscale(1)
+    flag_value: AnsiValue::grayscale(16), AnsiValue::grayscale(1)
+    input: White, Reset
+    link: LightMagenta, Reset
     permissions: AnsiValue::grayscale(15), Reset
-    size_text: AnsiValue::grayscale(15), Reset
+    selected_line: Reset, AnsiValue::grayscale(3)
     size_bar_full: Reset, Magenta
     size_bar_void: Reset, AnsiValue::grayscale(2)
-    file: White, Reset
-    directory: LightBlue, Reset
-    char_match: Green, Reset
-    link: LightMagenta, Reset
-    file_error: Red, Reset
-    unlisted: AnsiValue::grayscale(13), Reset
-    input: White, Reset
-    flag_label: AnsiValue::grayscale(14), AnsiValue::grayscale(1)
-    flag_value: AnsiValue::grayscale(16), AnsiValue::grayscale(1)
-    code: Reset, AnsiValue::grayscale(2)
-    table_border: AnsiValue::grayscale(8), Reset
+    size_text: AnsiValue::grayscale(15), Reset
     spinner: AnsiValue::grayscale(10), AnsiValue::grayscale(2)
+    status_error: Red, AnsiValue::grayscale(2)
+    status_normal: White, AnsiValue::grayscale(2)
+    table_border: AnsiValue::grayscale(8), Reset
+    tree: AnsiValue::grayscale(5), Reset
+    unlisted: AnsiValue::grayscale(13), Reset
 }
 
 

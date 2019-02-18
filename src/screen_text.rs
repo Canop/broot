@@ -102,19 +102,19 @@ impl<'a, R> TextCol<'a, R> {}
 /// A small utility to format some data in a tabular way on screen
 pub struct TextTable<'a, R> {
     cols: Vec<TextCol<'a, R>>,
-    bar: String, // according to skin
+    md_bar: String, // according to skin
 }
 
 impl<'a, R> TextTable<'a, R> {
     pub fn new(skin: &Skin) -> TextTable<'a, R> {
-        let bar = format!(
+        let md_bar = format!(
             " {}│{} ",
             skin.table_border.fg,
             skin.reset.fg,
         );
         TextTable {
             cols: Vec::new(),
-            bar,
+            md_bar,
         }
     }
     pub fn add_col(&mut self, title: &str, extract: &'a Fn(&'a R) -> &str) {
@@ -140,7 +140,7 @@ impl<'a, R> TextTable<'a, R> {
         self.compute_col_widths(&rows);
         let mut header = String::new();
         for col in &self.cols {
-            header.push_str(&self.bar);
+            header.push_str(&self.md_bar);
             // we're lazy here:
             // we add some bold, and add 4 for the width because we know the * won't
             // show up on screen.
@@ -150,7 +150,7 @@ impl<'a, R> TextTable<'a, R> {
         for row in rows {
             let mut line = String::new();
             for (i, col) in self.cols.iter().enumerate() {
-                line.push_str(&self.bar);
+                line.push_str(&self.md_bar);
                 let s = (col.extract)(row);
                 if i == self.cols.len() - 1 {
                     line.push_str(&text.md_to_tty(s));

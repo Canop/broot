@@ -8,7 +8,6 @@ use crate::commands::{Action, Command};
 use crate::conf::Conf;
 use crate::screen_text::{Text, TextTable};
 use crate::screens::{Screen, ScreenArea};
-use crate::skin::Skin;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
 use crate::verbs::{PrefixSearchResult, Verb, VerbExecutor};
@@ -50,7 +49,7 @@ impl AppState for HelpState {
                 AppStateCmdResult::Keep
             }
             Action::ScrollPage(dp) => {
-                self.area.try_scroll(*dp * i32::from(self.area.bottom-self.area.top));
+                self.area.try_scroll(*dp * (self.area.height()-1));
                 AppStateCmdResult::Keep
             }
             _ => AppStateCmdResult::Keep,
