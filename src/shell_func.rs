@@ -107,10 +107,7 @@ fn file_contains_line(path: &Path, searched_line: &str) -> io::Result<bool> {
 }
 
 /// return true if the application should quit
-fn maybe_patch_all_rcfiles(
-    launcher_dir: &Path,
-    installation_required: bool,
-) -> io::Result<bool> {
+fn maybe_patch_all_rcfiles(launcher_dir: &Path, installation_required: bool) -> io::Result<bool> {
     let installed_path = launcher_dir.join("installed");
     if installed_path.exists() {
         debug!("*installed* file found");
@@ -149,7 +146,7 @@ fn maybe_patch_all_rcfiles(
     if rc_files.is_empty() {
         warn!("no bash compatible rc file found, no installation possible");
         if installation_required {
-            println!( "no rcfile found, we can't install the br function");
+            println!("no rcfile found, we can't install the br function");
         }
         return Ok(installation_required);
     }
@@ -163,7 +160,11 @@ fn maybe_patch_all_rcfiles(
         println!("The function is either missing, old or badly installed.");
         let proceed = cli::ask_authorization(&format!(
             "Can I add a line to {:?} ? [Y n]",
-            rc_files.iter().map(|f| *f.0).collect::<Vec<&str>>().join(" and "),
+            rc_files
+                .iter()
+                .map(|f| *f.0)
+                .collect::<Vec<&str>>()
+                .join(" and "),
         ))?;
         debug!("proceed: {:?}", proceed);
         if !proceed {

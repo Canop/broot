@@ -10,11 +10,12 @@ use crate::patterns;
 #[derive(Debug, Clone)]
 pub struct RegexPattern {
     rex: regex::Regex,
+    flags: String, // kept only because we may need to build the pattern using to_string()
 }
 
 impl fmt::Display for RegexPattern {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}", self.rex) // problem: doesn't write the flags
+        write!(f, "{}/{}", self.rex, self.flags)
     }
 }
 
@@ -36,6 +37,7 @@ impl RegexPattern {
         }
         Ok(RegexPattern {
             rex: builder.build()?,
+            flags: flags.to_string(),
         })
     }
     // return a match if the pattern can be found in the candidate string

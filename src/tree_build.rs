@@ -344,7 +344,10 @@ impl TreeBuilder {
         let start = Instant::now();
         let mut out_blines: Vec<usize> = Vec::new(); // the blines we want to display (indexes into blines)
         let not_long = Duration::from_millis(600);
-        let optimal_size = self.options.pattern.optimal_result_number(self.targeted_size);
+        let optimal_size = self
+            .options
+            .pattern
+            .optimal_result_number(self.targeted_size);
         out_blines.push(0);
         let mut nb_lines_ok = 1; // in out_blines
         let mut open_dirs: VecDeque<usize> = VecDeque::new();
@@ -429,9 +432,7 @@ impl TreeBuilder {
         let mut remove_queue: BinaryHeap<SortableBLineIdx> = BinaryHeap::new();
         for idx in out_blines[1..].iter() {
             let bline = &self.blines[*idx];
-            if bline.has_match
-                && bline.nb_kept_children == 0
-                && (bline.depth > 1 || trim_root)
+            if bline.has_match && bline.nb_kept_children == 0 && (bline.depth > 1 || trim_root)
             // keep the complete first level when showing sizes
             {
                 remove_queue.push(SortableBLineIdx {

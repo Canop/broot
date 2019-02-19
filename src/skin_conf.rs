@@ -1,3 +1,5 @@
+use crate::errors::ConfError;
+use regex::Regex;
 /// Manage conversion of a user provided string
 /// defining foreground and background colors into
 /// a string with TTY colors
@@ -5,16 +7,11 @@
 /// The code is ugly. Really. I know.
 /// I found no clean way to deal with termion colors.
 use std::result::Result;
-use regex::Regex;
 use termion::color::*;
-use crate::errors::ConfError;
 
 fn parse_gray(raw: &str) -> Result<Option<u8>, ConfError> {
     lazy_static! {
-        static ref RE: Regex = Regex::new(
-            r"^grayscale\((?P<level>\d+)\)$"
-        )
-        .unwrap();
+        static ref RE: Regex = Regex::new(r"^grayscale\((?P<level>\d+)\)$").unwrap();
     }
     if let Some(c) = RE.captures(raw) {
         if let Some(level) = c.name("level") {
@@ -22,10 +19,10 @@ fn parse_gray(raw: &str) -> Result<Option<u8>, ConfError> {
                 return if level < 24 {
                     Ok(Some(level))
                 } else {
-                    Err(ConfError::InvalidSkinEntry{
-                        reason: "gray level must be between 0 and 23".to_string()
+                    Err(ConfError::InvalidSkinEntry {
+                        reason: "gray level must be between 0 and 23".to_string(),
                     })
-                }
+                };
             }
         }
     }
@@ -90,4 +87,3 @@ make_parseurs! {
     White,
     Yellow,
 }
-

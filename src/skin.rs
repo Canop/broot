@@ -71,5 +71,3 @@ Skin! {
     tree: AnsiValue::grayscale(5), Reset
     unlisted: AnsiValue::grayscale(13), Reset
 }
-
-

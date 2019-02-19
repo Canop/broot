@@ -26,13 +26,13 @@ impl FromStr for OptionBool {
 
 #[derive(Debug, Clone)]
 pub struct TreeOptions {
-    pub show_hidden: bool,      // whether files whose name starts with a dot should be shown
-    pub only_folders: bool,     // whether to hide normal files and links
-    pub show_sizes: bool,       // whether to compute and show sizes of files and dirs
-    pub trim_root: bool,        // whether to cut out direct children of root
+    pub show_hidden: bool, // whether files whose name starts with a dot should be shown
+    pub only_folders: bool, // whether to hide normal files and links
+    pub show_sizes: bool,  // whether to compute and show sizes of files and dirs
+    pub trim_root: bool,   // whether to cut out direct children of root
     pub show_permissions: bool, // show classic rwx unix permissions
     pub respect_git_ignore: OptionBool, // hide files as requested by .gitignore ?
-    pub pattern: Pattern,       // an optional filtering/scoring pattern
+    pub pattern: Pattern,  // an optional filtering/scoring pattern
 }
 
 impl TreeOptions {

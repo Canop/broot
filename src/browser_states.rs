@@ -58,12 +58,15 @@ impl BrowserState {
         };
         let mut options = tree.options.clone();
         change_options(&mut options);
-        AppStateCmdResult::from_optional_state(BrowserState::new(
-            tree.root().clone(),
-            options,
-            screen,
-            &TaskLifetime::unlimited(),
-        ))
+        AppStateCmdResult::from_optional_state(
+            BrowserState::new(
+                tree.root().clone(),
+                options,
+                screen,
+                &TaskLifetime::unlimited(),
+            ),
+            tree.options.pattern.to_command(),
+        )
     }
     fn page_height(screen: &Screen) -> i32 {
         i32::from(screen.h) - 2
@@ -139,12 +142,15 @@ impl AppState for BrowserState {
                             AppStateCmdResult::Launch(Launchable::opener(&line.path)?)
                         }
                         LineType::Dir | LineType::SymLinkToDir(_) => {
-                            AppStateCmdResult::from_optional_state(BrowserState::new(
-                                line.target(),
-                                tree.options.without_pattern(),
-                                screen,
-                                &tl,
-                            ))
+                            AppStateCmdResult::from_optional_state(
+                                BrowserState::new(
+                                    line.target(),
+                                    tree.options.without_pattern(),
+                                    screen,
+                                    &tl,
+                                ),
+                                Command::new(),
+                            )
                         }
                         LineType::SymLinkToFile(target) => {
                             AppStateCmdResult::Launch(Launchable::opener(&PathBuf::from(target))?)
@@ -190,7 +196,9 @@ impl AppState for BrowserState {
                     }
                 }
             }
-            Action::Help => AppStateCmdResult::NewState(Box::new(HelpState::new(screen))),
+            Action::Help => {
+                AppStateCmdResult::NewState(Box::new(HelpState::new(screen)), Command::new())
+            }
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
                     tree.try_select_next_match();

@@ -1,10 +1,10 @@
+use regex::Regex;
 /// Verbs are the engines of broot commands, and apply
 /// - to the selected file (if user-defined, then must contain {file} or {directory})
 /// - to the current app state
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
-use regex::Regex;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
@@ -136,7 +136,6 @@ pub trait VerbExecutor {
     ) -> io::Result<AppStateCmdResult>;
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrefixSearchResult<T> {
     NoMatch,
@@ -193,7 +192,7 @@ impl VerbStore {
         self.verbs.push(Verb::create_built_in(
             "quit",
             Some("q".to_string()),
-            "quit the application"
+            "quit the application",
         ));
         self.verbs.push(Verb::create_built_in(
             "toggle_files",

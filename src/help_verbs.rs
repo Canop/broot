@@ -1,16 +1,17 @@
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 
-use crate::verbs::{Verb, VerbExecutor};
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
+use crate::commands::Command;
 use crate::conf::{self, Conf};
 use crate::external::Launchable;
 use crate::help_states::HelpState;
 use crate::screens::Screen;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
+use crate::verbs::{Verb, VerbExecutor};
 
 impl VerbExecutor for HelpState {
     fn execute_verb(
@@ -21,14 +22,15 @@ impl VerbExecutor for HelpState {
     ) -> io::Result<AppStateCmdResult> {
         Ok(match verb.exec_pattern.as_ref() {
             ":back" => AppStateCmdResult::PopState,
-            ":focus" | ":parent" => {
-                AppStateCmdResult::from_optional_state(BrowserState::new(
+            ":focus" | ":parent" => AppStateCmdResult::from_optional_state(
+                BrowserState::new(
                     conf::dir(),
                     TreeOptions::new(),
                     screen,
                     &TaskLifetime::unlimited(),
-                ))
-            }
+                ),
+                Command::new(),
+            ),
             ":help" => AppStateCmdResult::Keep,
             ":open" => AppStateCmdResult::Launch(Launchable::opener(&Conf::default_location())?),
             ":print_path" => {

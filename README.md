@@ -78,6 +78,8 @@ Fetch the Canop/broot repository, move to the broot directory, then run
 
 The executable is written in the `target/release` directory (you might want to move it to your `/usr/bin`, or to add the release directory to your path).
 
+Building from the repository, you'll get the most recent version... and the least tested one.
+
 ### From up to date precompiled binaries
 
 * [x86_64-linux](https://dystroy.org/broot/x86_64-linux/broot)

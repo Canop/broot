@@ -95,7 +95,7 @@ impl FuzzyPattern {
             }
         } else {
             let previous = cand_chars[start_idx - 1];
-            if previous == '_' || previous == ' ' || previous == '-'  {
+            if previous == '_' || previous == ' ' || previous == '-' {
                 score += BONUS_START_WORD;
             }
         }

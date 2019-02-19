@@ -9,9 +9,8 @@ use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
 
-use crate::skin_conf;
 use crate::errors::ConfError;
-
+use crate::skin_conf;
 
 /// what's needed to handle a verb
 #[derive(Debug)]
@@ -136,11 +135,7 @@ impl Conf {
                                 skin_entries.insert(k.to_string(), ske);
                             }
                             Err(e) => {
-                                eprintln!(
-                                    "Invalid skin entry for {} : {}",
-                                    k,
-                                    e.to_string()
-                                );
+                                eprintln!("Invalid skin entry for {} : {}", k, e.to_string());
                             }
                         }
                     } else if k.ends_with("_bg") {
@@ -149,11 +144,7 @@ impl Conf {
                                 skin_entries.insert(k.to_string(), ske);
                             }
                             Err(e) => {
-                                eprintln!(
-                                    "Invalid skin entry for {} : {}",
-                                    k,
-                                    e.to_string()
-                                );
+                                eprintln!("Invalid skin entry for {} : {}", k, e.to_string());
                             }
                         }
                     } else {

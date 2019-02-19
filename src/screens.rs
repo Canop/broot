@@ -1,8 +1,8 @@
+use crate::skin::Skin;
 use std::io::{self, stdout, Write};
+use termion::color;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
-use termion::color;
-use crate::skin::Skin;
 
 pub struct Screen {
     pub w: u16,
@@ -69,7 +69,9 @@ impl ScreenArea {
         }
     }
     pub fn try_scroll(&mut self, dy: i32) {
-        self.scroll = (self.scroll + dy).max(0).min(self.content_length - self.height() + 1);
+        self.scroll = (self.scroll + dy)
+            .max(0)
+            .min(self.content_length - self.height() + 1);
     }
     pub fn scrollbar(&self) -> Option<(u16, u16)> {
         let h = self.height();
@@ -81,6 +83,6 @@ impl ScreenArea {
         Some((sc as u16, (sc + sbh - 1).min(i32::from(self.bottom)) as u16))
     }
     pub fn height(&self) -> i32 {
-        i32::from(self.bottom-self.top) +1
+        i32::from(self.bottom - self.top) + 1
     }
 }

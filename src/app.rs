@@ -33,7 +33,7 @@ pub enum AppStateCmdResult {
     Keep,
     Launch(Launchable),
     DisplayError(String),
-    NewState(Box<dyn AppState>),
+    NewState(Box<dyn AppState>, Command),
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
 }
@@ -44,9 +44,10 @@ impl AppStateCmdResult {
     }
     pub fn from_optional_state(
         os: Result<Option<BrowserState>, TreeBuildError>,
+        cmd: Command,
     ) -> AppStateCmdResult {
         match os {
-            Ok(Some(os)) => AppStateCmdResult::NewState(Box::new(os)),
+            Ok(Some(os)) => AppStateCmdResult::NewState(Box::new(os), cmd),
             Ok(None) => AppStateCmdResult::Keep,
             Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
         }
@@ -157,9 +158,9 @@ impl App {
                 self.launch_at_end = Some(launchable);
                 self.quitting = true;
             }
-            AppStateCmdResult::NewState(boxed_state) => {
+            AppStateCmdResult::NewState(boxed_state, new_cmd) => {
                 self.push(boxed_state);
-                cmd = cmd.pop_verb();
+                cmd = new_cmd;
                 self.state().write_status(screen, &cmd, con)?;
             }
             AppStateCmdResult::PopState => {
@@ -210,11 +211,13 @@ impl App {
             unreachable!();
         }
 
+        let mut cmd = Command::new();
+
         // if some commands were passed to the application
         //  we execute them before even starting listening for keys
-        for cmd in &con.launch_args.commands {
-            let cmd = (*cmd).clone();
-            let cmd = self.apply_command(cmd, &mut screen, con)?;
+        for arg_cmd in &con.launch_args.commands {
+            cmd = (*arg_cmd).clone();
+            cmd = self.apply_command(cmd, &mut screen, con)?;
             self.do_pending_tasks(&cmd, &mut screen, con, TaskLifetime::unlimited())?;
             if self.quitting {
                 return Ok(self.launch_at_end.take());
@@ -245,10 +248,8 @@ impl App {
             }
         });
 
-        let mut cmd = Command::new();
         screen.write_input(&cmd)?;
-        screen
-            .write_status_text("Hit <esc> to quit, '?' for help, or type some letters to search")?;
+        screen.write_status_text("Hit <esc> to quit, '?' for help, or some letters to search")?;
         self.state().write_flags(&mut screen, con)?;
         loop {
             if !self.quitting {

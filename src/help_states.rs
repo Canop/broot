@@ -49,7 +49,7 @@ impl AppState for HelpState {
                 AppStateCmdResult::Keep
             }
             Action::ScrollPage(dp) => {
-                self.area.try_scroll(*dp * (self.area.height()-1));
+                self.area.try_scroll(*dp * (self.area.height() - 1));
                 AppStateCmdResult::Keep
             }
             _ => AppStateCmdResult::Keep,
@@ -110,34 +110,24 @@ impl AppState for HelpState {
         Ok(())
     }
 
-    fn write_status(
-        &self,
-        screen: &mut Screen,
-        cmd: &Command,
-        con: &AppContext,
-    ) -> io::Result<()> {
+    fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
         match &cmd.action {
-            Action::VerbEdit(verb_key) => {
-                match con.verb_store.search(&verb_key) {
-                    PrefixSearchResult::NoMatch => {
-                        screen.write_status_err("No matching verb)")
-                    }
-                    PrefixSearchResult::Match(verb) => screen.write_status_text(
-                        &format!(
-                            "Hit <enter> to {} : {}",
-                            &verb.name,
-                            &verb.description_for(Conf::default_location())
-                        )
-                        .to_string(),
-                    ),
-                    PrefixSearchResult::TooManyMatches => screen.write_status_text(
-                        "Type a verb then <enter> to execute it",
-                    ),
+            Action::VerbEdit(verb_key) => match con.verb_store.search(&verb_key) {
+                PrefixSearchResult::NoMatch => screen.write_status_err("No matching verb)"),
+                PrefixSearchResult::Match(verb) => screen.write_status_text(
+                    &format!(
+                        "Hit <enter> to {} : {}",
+                        &verb.name,
+                        &verb.description_for(Conf::default_location())
+                    )
+                    .to_string(),
+                ),
+                PrefixSearchResult::TooManyMatches => {
+                    screen.write_status_text("Type a verb then <enter> to execute it")
                 }
-            }
-            _ => {
-                screen.write_status_text("Hit <esc> to get back to the tree, or a space to start a verb")
-            }
+            },
+            _ => screen
+                .write_status_text("Hit <esc> to get back to the tree, or a space to start a verb"),
         }
     }
 

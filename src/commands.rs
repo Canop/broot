@@ -9,7 +9,7 @@ use termion::event::Key;
 pub struct Command {
     pub raw: String,     // what's visible in the input
     parts: CommandParts, // the parsed parts of the visible input
-    pub action: Action,  // what's required, based on the last key (which may be not visible, like esc)
+    pub action: Action, // what's required, based on the last key (which may be not visible, like esc)
 }
 
 /// An intermediate parsed representation of the raw string
@@ -107,25 +107,6 @@ impl Command {
             parts: CommandParts::new(),
             action: Action::Unparsed,
         }
-    }
-    // build a new command, after execution of a verb
-    // (in the future the new action might be built by the state
-    //  which would be cleaner)
-    pub fn pop_verb(&self) -> Command {
-        let mut c = Command::new();
-        if self.parts.verb.is_some() {
-            if let Some(pat) = &self.parts.pattern {
-                c.raw = pat.to_owned();
-                if let Some(regex_flags) = &self.parts.regex_flags {
-                    // we prefer the slash as postfix only because it
-                    // makes it easier to switch between regex
-                    // and fuzzy pattern
-                    c.raw.push('/');
-                    c.raw.push_str(regex_flags.as_str());
-                }
-            }
-        }
-        c
     }
     // build a command from a string
     // Note that this isn't used (or usable) for interpretation

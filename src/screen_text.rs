@@ -29,10 +29,7 @@ impl Text {
     pub fn new(skin: &Skin) -> Text {
         let md_code_repl = format!(
             "{}{} $1 {}{}",
-            skin.code.fg,
-            skin.code.bg,
-            skin.reset.fg,
-            skin.reset.bg,
+            skin.code.fg, skin.code.bg, skin.reset.fg, skin.reset.bg,
         );
         let md_bold_repl = format!("{}$1{}", style::Bold, style::Reset);
         Text {
@@ -107,11 +104,7 @@ pub struct TextTable<'a, R> {
 
 impl<'a, R> TextTable<'a, R> {
     pub fn new(skin: &Skin) -> TextTable<'a, R> {
-        let md_bar = format!(
-            " {}│{} ",
-            skin.table_border.fg,
-            skin.reset.fg,
-        );
+        let md_bar = format!(" {}│{} ", skin.table_border.fg, skin.reset.fg,);
         TextTable {
             cols: Vec::new(),
             md_bar,

@@ -102,8 +102,7 @@ impl TreeView for Screen {
                         write!(
                             self.stdout,
                             "{}──────────────{}",
-                            self.skin.tree.fg,
-                            self.skin.reset.fg,
+                            self.skin.tree.fg, self.skin.reset.fg,
                         )?;
                     }
                 }
@@ -153,8 +152,7 @@ impl TreeView for Screen {
             write!(
                 self.stdout,
                 "{}{}",
-                self.skin.size_text.fg,
-                self.skin.size_bar_full.bg,
+                self.skin.size_text.fg, self.skin.size_bar_full.bg,
             )?;
             for i in 0..dr {
                 write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
@@ -163,18 +161,12 @@ impl TreeView for Screen {
             for i in dr..8 {
                 write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
             }
-            write!(
-                self.stdout,
-                "{}{} ",
-                self.skin.reset.fg,
-                self.skin.reset.bg,
-            )
+            write!(self.stdout, "{}{} ", self.skin.reset.fg, self.skin.reset.bg,)
         } else {
             write!(
                 self.stdout,
                 "{}────────{} ",
-                self.skin.tree.fg,
-                self.skin.reset.fg,
+                self.skin.tree.fg, self.skin.reset.fg,
             )
         }
     }
@@ -202,7 +194,12 @@ impl TreeView for Screen {
                         "{}{}{}",
                         style::Bold,
                         &self.skin.directory.fg,
-                        decorated_name(&line.name, pattern, &self.skin.char_match.fg, &self.skin.directory.fg),
+                        decorated_name(
+                            &line.name,
+                            pattern,
+                            &self.skin.char_match.fg,
+                            &self.skin.directory.fg
+                        ),
                     )?;
                     if line.unlisted > 0 {
                         write!(self.stdout, " …",)?;
@@ -214,7 +211,12 @@ impl TreeView for Screen {
                     self.stdout,
                     "{}{}",
                     &self.skin.file.fg,
-                    decorated_name(&line.name, pattern, &self.skin.char_match.fg, &self.skin.file.fg),
+                    decorated_name(
+                        &line.name,
+                        pattern,
+                        &self.skin.char_match.fg,
+                        &self.skin.file.fg
+                    ),
                 )?;
             }
             LineType::SymLinkToFile(target) => {
@@ -222,8 +224,17 @@ impl TreeView for Screen {
                     self.stdout,
                     "{}{} {}->{} {}",
                     &self.skin.link.fg,
-                    decorated_name(&line.name, pattern, &self.skin.char_match.fg, &self.skin.link.fg),
-                    if line.has_error { &self.skin.file_error.fg } else { &self.skin.link.fg },
+                    decorated_name(
+                        &line.name,
+                        pattern,
+                        &self.skin.char_match.fg,
+                        &self.skin.link.fg
+                    ),
+                    if line.has_error {
+                        &self.skin.file_error.fg
+                    } else {
+                        &self.skin.link.fg
+                    },
                     &self.skin.file.fg,
                     &target,
                 )?;
@@ -233,8 +244,17 @@ impl TreeView for Screen {
                     self.stdout,
                     "{}{} {}->{}{} {}",
                     &self.skin.link.fg,
-                    decorated_name(&line.name, pattern, &self.skin.char_match.fg, &self.skin.link.fg),
-                    if line.has_error { &self.skin.file_error.fg } else { &self.skin.link.fg },
+                    decorated_name(
+                        &line.name,
+                        pattern,
+                        &self.skin.char_match.fg,
+                        &self.skin.link.fg
+                    ),
+                    if line.has_error {
+                        &self.skin.file_error.fg
+                    } else {
+                        &self.skin.link.fg
+                    },
                     style::Bold,
                     &self.skin.directory.fg,
                     &target,

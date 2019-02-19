@@ -6,6 +6,7 @@
 use core::result;
 use std::{fmt, mem};
 
+use crate::commands::Command;
 use crate::errors::RegexError;
 use crate::fuzzy_patterns::FuzzyPattern;
 use crate::regex_patterns::RegexPattern;
@@ -66,6 +67,13 @@ impl Pattern {
             Pattern::Regex(rp) => rp.optimal_result_number(targeted_size),
             Pattern::None => targeted_size,
         }
+    }
+    pub fn to_command(&self) -> Command {
+        Command::from(match self {
+            Pattern::Fuzzy(fp) => fp.to_string(),
+            Pattern::Regex(rp) => rp.to_string(),
+            Pattern::None => String::new(),
+        })
     }
 }
 
