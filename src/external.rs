@@ -1,6 +1,7 @@
 use std::io;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::Command;
+use regex::{Regex, NoExpand};
 
 /// description of a possible launch of an external program
 /// (might be more complex, and a sequence of things to try, in the future).
@@ -44,5 +45,22 @@ impl Launchable {
                 .wait()?;
         }
         Ok(())
+    }
+}
+
+// from a path, build a string usable in a shell command, wrapping
+//  it in quotes if necessary (and then escaping internal quotes).
+// Don't do unnecessary transformation, so that the produced string
+//  is prettier on screen.
+pub fn escape_for_shell(path: &Path) -> String {
+    lazy_static! {
+        static ref SIMPLE_PATH: Regex = Regex::new(r"^[\w/.]+$").unwrap();
+        static ref REPLACER: Regex = Regex::new(r"'").unwrap();
+    }
+    let path = path.to_string_lossy();
+    if SIMPLE_PATH.is_match(&path) {
+        path.to_string()
+    } else {
+        format!("'{}'", REPLACER.replace_all(&path, NoExpand(r"'\''")))
     }
 }

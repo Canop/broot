@@ -9,7 +9,7 @@ use std::path::{Path, PathBuf};
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
 use crate::conf::Conf;
-use crate::external::Launchable;
+use crate::external;
 use crate::screens::Screen;
 
 #[derive(Debug, Clone)]
@@ -77,13 +77,13 @@ impl Verb {
             .split_whitespace()
             .map(|t| {
                 if t == "{file}" {
-                    path.to_string_lossy().to_string()
+                    external::escape_for_shell(path)
                 } else if t == "{directory}" {
                     let mut path = path;
                     if !path.is_dir() {
                         path = path.parent().unwrap();
                     }
-                    path.to_string_lossy().to_string()
+                    external::escape_for_shell(path)
                 } else {
                     t.to_string()
                 }
@@ -112,7 +112,7 @@ impl Verb {
                 )
             }
         } else {
-            AppStateCmdResult::Launch(Launchable::from(self.exec_token(path))?)
+            AppStateCmdResult::Launch(external::Launchable::from(self.exec_token(path))?)
         })
     }
 }
