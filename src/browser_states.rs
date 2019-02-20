@@ -302,7 +302,7 @@ impl AppState for BrowserState {
                 } else {
                     let line = &tree.lines[tree.selection];
                     screen.write_status_text(if line.is_dir() {
-                        "Hit <enter> to focus, or type a space then a verb"
+                        "Hit <enter> to focus, <alt><enter> to cd, or a space then a verb"
                     } else {
                         "Hit <enter> to open the file, or type a space then a verb"
                     })
