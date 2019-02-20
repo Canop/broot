@@ -16,6 +16,12 @@ impl TaskLifetime {
             external_value: Arc::clone(external_value),
         }
     }
+    pub fn clone(&self) -> TaskLifetime {
+        TaskLifetime {
+            initial_value: self.initial_value,
+            external_value: Arc::clone(&self.external_value),
+        }
+    }
     pub fn unlimited() -> TaskLifetime {
         TaskLifetime {
             initial_value: 0,

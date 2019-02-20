@@ -52,12 +52,8 @@ macro_rules! make_parseurs {
                 return Ok(format!("{}", Bg(Reset)));
             }
             $(
-                debug!("comparing {} and {}", raw, stringify!($name));
                 if raw.eq_ignore_ascii_case(stringify!($name)) {
-                    debug!(" -> ok");
                     return Ok(format!("{}", Bg($name)));
-                } else {
-                    debug!(" -> not ok");
                 }
             )*
             if let Some(level) = parse_gray(raw)? {

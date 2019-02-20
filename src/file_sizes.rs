@@ -9,8 +9,14 @@ use std::fs;
 use std::ops::AddAssign;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
+use std::sync::{Mutex};
 use std::time::Instant;
+use std::thread;
+use crossbeam::channel::unbounded;
+use crossbeam::sync::WaitGroup;
+use std::sync::Arc;
+use std::sync::atomic::{AtomicIsize, AtomicUsize, Ordering};
+use std::time::Duration;
 
 const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"]; // Y: for when your disk is bigger than 1024 ZB
 
@@ -36,41 +42,75 @@ impl Size {
         if let Some(s) = size_cache.get(path) {
             return Some(*s);
         }
+
         let start = Instant::now();
-        let mut s = Size::from(0);
-        let mut dirs: Vec<PathBuf> = Vec::new();
-        dirs.push(PathBuf::from(path));
-        let mut inodes: HashSet<u64> = HashSet::new(); // to avoid counting twice an inode
-        let mut nb_duplicate_inodes = 0;
-        while let Some(open_dir) = dirs.pop() {
-            if let Ok(entries) = fs::read_dir(&open_dir) {
-                for e in entries {
-                    if let Ok(e) = e {
-                        if let Ok(md) = e.metadata() {
-                            if md.is_dir() {
-                                dirs.push(e.path());
-                            } else if md.nlink() > 1 && !inodes.insert(md.ino()) {
-                                // it was already in the set
-                                nb_duplicate_inodes += 1;
-                                continue; // let's not add the size
+        let inodes = Arc::new(Mutex::new(HashSet::<u64>::new())); // to avoid counting twice an inode
+        let size = Arc::new(AtomicUsize::new(0));
+
+        let (dirs_sender, dirs_receiver) = unbounded();
+        // busy is the number of directories which are either being processed or queued
+        // We use this count to determine when threads can stop waiting for tasks
+        let busy = Arc::new(AtomicIsize::new(0));
+        busy.fetch_add(1, Ordering::Relaxed);
+        dirs_sender.send(Some(PathBuf::from(path))).unwrap();
+        let wg = WaitGroup::new();
+        let period = Duration::from_micros(50);
+        for _ in 0..8 {
+            let size = Arc::clone(&size);
+            let busy = Arc::clone(&busy);
+            let wg = wg.clone();
+            let (dirs_sender, dirs_receiver) = (dirs_sender.clone(), dirs_receiver.clone());
+            let tl = tl.clone();
+            let inodes = inodes.clone();
+            thread::spawn(move || {
+                loop {
+                    let o = dirs_receiver.recv_timeout(period);
+                    if let Ok(Some(open_dir)) = o {
+                        if let Ok(entries) = fs::read_dir(&open_dir) {
+                            for e in entries {
+                                if let Ok(e) = e {
+                                    if let Ok(md) = e.metadata() {
+                                        if md.is_dir() {
+                                            busy.fetch_add(1, Ordering::Relaxed);
+                                            dirs_sender.send(Some(e.path())).unwrap();
+                                        } else if md.nlink() > 1 {
+                                            let mut inodes = inodes.lock().unwrap();
+                                            if !inodes.insert(md.ino()) {
+                                                // it was already in the set
+                                                continue; // let's not add the size
+                                            }
+                                        }
+                                        size.fetch_add(md.len() as usize, Ordering::Relaxed);
+                                    }
+                                }
                             }
-                            s += Size::from(md.len());
+                        }
+                        busy.fetch_sub(1, Ordering::Relaxed);
+                        dirs_sender.send(None).unwrap();
+                    } else {
+                        let busy_count = busy.load(Ordering::Relaxed);
+                        if busy_count < 1 {
+                            break;
                         }
                     }
+                    if tl.is_expired() {
+                        break;
+                    }
                 }
-            }
-            if tl.is_expired() {
-                return None;
-            }
+                drop(wg);
+            });
         }
+        wg.wait();
+
+        if tl.is_expired() {
+            return None;
+        }
+        let size: usize = size.load(Ordering::Relaxed);
+        let size: u64 = size as u64;
+        let s = Size::from(size);
+
         size_cache.insert(PathBuf::from(path), s);
         debug!("size computation for {:?} took {:?}", path, start.elapsed());
-        if nb_duplicate_inodes > 0 {
-            debug!(
-                " (found {} inodes used more than once)",
-                nb_duplicate_inodes
-            );
-        }
         Some(s)
     }
 

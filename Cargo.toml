@@ -23,6 +23,7 @@ clap = "2.32"
 glob = "0.2"
 users = "0.8"
 jemallocator = "0.1.9"
+crossbeam = "0.7"
 
 [profile.release]
 lto = true
