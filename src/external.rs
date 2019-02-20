@@ -1,7 +1,7 @@
 use std::io;
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use regex::{Regex, NoExpand};
+use regex::Regex;
 
 /// description of a possible launch of an external program
 /// (might be more complex, and a sequence of things to try, in the future).
@@ -54,13 +54,12 @@ impl Launchable {
 //  is prettier on screen.
 pub fn escape_for_shell(path: &Path) -> String {
     lazy_static! {
-        static ref SIMPLE_PATH: Regex = Regex::new(r"^[\w/.]+$").unwrap();
-        static ref REPLACER: Regex = Regex::new(r"'").unwrap();
+        static ref SIMPLE_PATH: Regex = Regex::new(r"^[\w/.]*$").unwrap();
     }
     let path = path.to_string_lossy();
     if SIMPLE_PATH.is_match(&path) {
         path.to_string()
     } else {
-        format!("'{}'", REPLACER.replace_all(&path, NoExpand(r"'\''")))
+        format!("'{}'", &path.replace('\'', r"'\''"))
     }
 }
