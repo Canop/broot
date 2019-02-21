@@ -36,9 +36,9 @@ impl Size {
     /// If the lifetime expires before complete computation, None is returned.
     pub fn from_dir(path: &Path, tl: &TaskLifetime) -> Option<Size> {
         lazy_static! {
-            static ref size_cache_mutex: Mutex<HashMap<PathBuf, Size>> = Mutex::new(HashMap::new());
+            static ref SIZE_CACHE_MUTEX: Mutex<HashMap<PathBuf, Size>> = Mutex::new(HashMap::new());
         }
-        let mut size_cache = size_cache_mutex.lock().unwrap();
+        let mut size_cache = SIZE_CACHE_MUTEX.lock().unwrap();
         if let Some(s) = size_cache.get(path) {
             return Some(*s);
         }
@@ -47,12 +47,15 @@ impl Size {
         let inodes = Arc::new(Mutex::new(HashSet::<u64>::new())); // to avoid counting twice an inode
         let size = Arc::new(AtomicUsize::new(0));
 
+        // this MPMC channel contains the directory paths which must be handled
         let (dirs_sender, dirs_receiver) = unbounded();
+
         // busy is the number of directories which are either being processed or queued
         // We use this count to determine when threads can stop waiting for tasks
         let busy = Arc::new(AtomicIsize::new(0));
         busy.fetch_add(1, Ordering::Relaxed);
         dirs_sender.send(Some(PathBuf::from(path))).unwrap();
+
         let wg = WaitGroup::new();
         let period = Duration::from_micros(50);
         for _ in 0..8 {
@@ -67,31 +70,26 @@ impl Size {
                     let o = dirs_receiver.recv_timeout(period);
                     if let Ok(Some(open_dir)) = o {
                         if let Ok(entries) = fs::read_dir(&open_dir) {
-                            for e in entries {
-                                if let Ok(e) = e {
-                                    if let Ok(md) = e.metadata() {
-                                        if md.is_dir() {
-                                            busy.fetch_add(1, Ordering::Relaxed);
-                                            dirs_sender.send(Some(e.path())).unwrap();
-                                        } else if md.nlink() > 1 {
-                                            let mut inodes = inodes.lock().unwrap();
-                                            if !inodes.insert(md.ino()) {
-                                                // it was already in the set
-                                                continue; // let's not add the size
-                                            }
+                            for e in entries.flatten() {
+                                if let Ok(md) = e.metadata() {
+                                    if md.is_dir() {
+                                        busy.fetch_add(1, Ordering::Relaxed);
+                                        dirs_sender.send(Some(e.path())).unwrap();
+                                    } else if md.nlink() > 1 {
+                                        let mut inodes = inodes.lock().unwrap();
+                                        if !inodes.insert(md.ino()) {
+                                            // it was already in the set
+                                            continue; // let's not add the size
                                         }
-                                        size.fetch_add(md.len() as usize, Ordering::Relaxed);
                                     }
+                                    size.fetch_add(md.len() as usize, Ordering::Relaxed);
                                 }
                             }
                         }
                         busy.fetch_sub(1, Ordering::Relaxed);
                         dirs_sender.send(None).unwrap();
-                    } else {
-                        let busy_count = busy.load(Ordering::Relaxed);
-                        if busy_count < 1 {
-                            break;
-                        }
+                    } else if busy.load(Ordering::Relaxed) < 1 {
+                        break;
                     }
                     if tl.is_expired() {
                         break;
@@ -124,7 +122,7 @@ impl Size {
         }
         format!("{}{}", v, &SIZE_NAMES[i])
     }
-    pub fn discreet_ratio(self, max: Size, r: u64) -> u64 {
+    pub fn discrete_ratio(self, max: Size, r: u64) -> u64 {
         if max.0 == 0 || self.0 == 0 {
             0
         } else {

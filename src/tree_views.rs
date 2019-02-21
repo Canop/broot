@@ -147,7 +147,7 @@ impl TreeView for Screen {
 
     fn write_line_size(&mut self, line: &TreeLine, total_size: Size) -> io::Result<()> {
         if let Some(s) = line.size {
-            let dr: usize = s.discreet_ratio(total_size, 8) as usize;
+            let dr: usize = s.discrete_ratio(total_size, 8) as usize;
             let s: Vec<char> = s.to_string().chars().collect();
             write!(
                 self.stdout,

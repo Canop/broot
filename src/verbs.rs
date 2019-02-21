@@ -69,10 +69,30 @@ impl Verb {
         } else if self.exec_pattern.starts_with(':') {
             self.description.to_string()
         } else {
-            self.exec_token(&path).join(" ")
+            self.shell_exec_string(&path)
         }
     }
+    // build the token which can be used to launch en executable
     pub fn exec_token(&self, path: &Path) -> Vec<String> {
+        self.exec_pattern
+            .split_whitespace()
+            .map(|t| {
+                if t == "{file}" {
+                    path.to_string_lossy().to_string()
+                } else if t == "{directory}" {
+                    let mut path = path;
+                    if !path.is_dir() {
+                        path = path.parent().unwrap();
+                    }
+                    path.to_string_lossy().to_string()
+                } else {
+                    t.to_string()
+                }
+            })
+            .collect()
+    }
+    // build a shell compatible command, with escapings
+    pub fn shell_exec_string(&self, path: &Path) -> String {
         self.exec_pattern
             .split_whitespace()
             .map(|t| {
@@ -88,7 +108,8 @@ impl Verb {
                     t.to_string()
                 }
             })
-            .collect()
+            .collect::<Vec<String>>()
+            .join(" ")
     }
     // build the cmd result for a verb defined with an exec pattern.
     // Calling this function on a built-in doesn't make sense
@@ -98,7 +119,7 @@ impl Verb {
                 // new version of the br function: the whole command is exported
                 // in the passed file
                 let f = OpenOptions::new().append(true).open(export_path)?;
-                writeln!(&f, "{}", self.exec_token(path).join(" "))?;
+                writeln!(&f, "{}", self.shell_exec_string(path))?;
                 AppStateCmdResult::Quit
             } else if let Some(ref export_path) = con.launch_args.file_export_path {
                 // old version of the br function: only the file is exported
