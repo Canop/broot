@@ -207,17 +207,31 @@ impl TreeView for Screen {
                 }
             }
             LineType::File => {
-                write!(
-                    self.stdout,
-                    "{}{}",
-                    &self.skin.file.fg,
-                    decorated_name(
-                        &line.name,
-                        pattern,
-                        &self.skin.char_match.fg,
-                        &self.skin.file.fg
-                    ),
-                )?;
+                if line.is_exe() {
+                    write!(
+                        self.stdout,
+                        "{}{}",
+                        &self.skin.exe.fg,
+                        decorated_name(
+                            &line.name,
+                            pattern,
+                            &self.skin.char_match.fg,
+                            &self.skin.exe.fg
+                        ),
+                    )?;
+                } else {
+                    write!(
+                        self.stdout,
+                        "{}{}",
+                        &self.skin.file.fg,
+                        decorated_name(
+                            &line.name,
+                            pattern,
+                            &self.skin.char_match.fg,
+                            &self.skin.file.fg
+                        ),
+                    )?;
+                }
             }
             LineType::SymLinkToFile(target) => {
                 write!(

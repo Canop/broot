@@ -63,6 +63,9 @@ impl TreeLine {
             _ => false,
         }
     }
+    pub fn is_exe(&self) -> bool {
+        (self.mode & 0o111) != 0
+    }
     // build and return the absolute targeted path: either self.path or the
     //  solved canonicalized symlink
     // (the path may be invalid if the symlink is)

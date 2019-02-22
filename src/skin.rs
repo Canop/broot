@@ -53,6 +53,7 @@ Skin! {
     char_match: Green, Reset
     code: Reset, AnsiValue::grayscale(2)
     directory: LightBlue, Reset
+    exe: Cyan, Reset
     file: White, Reset
     file_error: Red, Reset
     flag_label: AnsiValue::grayscale(12), AnsiValue::grayscale(1)

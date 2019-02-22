@@ -222,6 +222,7 @@ Complete list of keys (expected to change before the v1 of broot):
     file_error
     flag_label
     flag_value
+    exe
     input
     link
     permissions
