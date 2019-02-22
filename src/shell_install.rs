@@ -21,11 +21,10 @@
 //! place of the "installed" one.
 //!
 
-use std::fs;
-use std::fs::OpenOptions;
+use std::fs::{self, OpenOptions};
 use std::io::{self, BufRead, BufReader, Write};
 use std::os::unix::fs::symlink;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 use directories::UserDirs;
 use termion::style;
@@ -35,7 +34,7 @@ use crate::conf;
 use crate::shell_bash::BASH;
 use crate::shell_fish::FISH;
 
-const SHELL_FAMILIES: &'static[ShellFamily<'static>] = &[ BASH, FISH ];
+const SHELL_FAMILIES: &[ShellFamily<'static>] = &[ BASH, FISH ];
 
 pub struct ShellFamily<'a> {
     pub name: &'a str,
@@ -218,7 +217,7 @@ pub fn init(launch_args: &AppLaunchArgs) -> io::Result<bool> {
     for family in SHELL_FAMILIES {
         family.ensure_script_installed(&launcher_dir)?;
         let done = family.maybe_patch_all_sourcing_files(&launcher_dir, launch_args.install, should_quit)?;
-        should_quit = should_quit | done;
+        should_quit |= done;
     }
     Ok(should_quit)
 }

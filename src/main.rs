@@ -26,7 +26,9 @@ mod patterns;
 mod regex_patterns;
 mod screen_text;
 mod screens;
-mod shell_func;
+mod shell_bash;
+mod shell_fish;
+mod shell_install;
 mod skin;
 mod skin_conf;
 mod spinner;
@@ -81,7 +83,7 @@ fn configure_log() {
 fn run() -> Result<Option<Launchable>, ProgramError> {
     configure_log();
     let launch_args = cli::read_lauch_args()?;
-    let should_quit = shell_func::init(&launch_args)?;
+    let should_quit = shell_install::init(&launch_args)?;
     if should_quit {
         return Ok(None);
     }

@@ -62,7 +62,7 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
         .arg(
             clap::Arg::with_name("install")
                 .long("install")
-                .help("install the br shell function"),
+                .help("install or reinstall the br shell function"),
         )
         .arg(
             clap::Arg::with_name("only-folders")
