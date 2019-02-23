@@ -86,6 +86,7 @@ impl AppState for HelpState {
                 ""
             }
         });
+        tbl.add_col("description", &|verb: &Verb| &verb.description);
         tbl.write(&con.verb_store.verbs, &mut text);
         text.md("");
         text.md(&format!(

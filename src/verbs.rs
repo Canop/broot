@@ -182,7 +182,7 @@ impl VerbStore {
             "cd".to_string(),
             None, // no real need for a shortcut as it's mapped to alt-enter
             "cd {directory}".to_string(),
-            "change directory and quit (mapped to `<alt><enter>` in tree)".to_string(),
+            "change directory and quit (mapped to `<alt><enter>`)".to_string(),
             true, // needs to be launched from the parent shell
         ));
         self.verbs.push(Verb::create_built_in(
@@ -198,7 +198,7 @@ impl VerbStore {
         self.verbs.push(Verb::create_built_in(
             "open",
             None,
-            "open a file according to OS settings (mapped to `<enter>` in tree)",
+            "open file according to OS settings (mapped to `<enter>`)",
         ));
         self.verbs.push(Verb::create_built_in(
             "parent",
