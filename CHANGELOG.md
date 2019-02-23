@@ -1,3 +1,10 @@
+<a name="v0.6.3"></a>
+### v0.6.3 - 2019-02-23
+- `br` installer for the fish shell
+- faster directory size computation (using a pool of threads)
+- fix alt-enter failing to cd when the path had spaces
+- executable files rendered with a different color
+
 <a name="v0.6.2"></a>
 ### v0.6.2 - 2019-02-18
 - all colors can be configured in conf.toml
