@@ -1,11 +1,10 @@
-use std::fs::OpenOptions;
-use std::io::{self, Write};
+use std::io;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::commands::Command;
-use crate::external::Launchable;
+use crate::external::{self, Launchable};
 use crate::help_states::HelpState;
 use crate::screens::Screen;
 use crate::task_sync::TaskLifetime;
@@ -57,21 +56,7 @@ impl VerbExecutor for BrowserState {
                 ),
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
-            ":print_path" => {
-                if let Some(ref output_path) = con.launch_args.file_export_path {
-                    // an output path was provided, we write to it
-                    let f = OpenOptions::new().append(true).open(output_path)?;
-                    writeln!(&f, "{}", line.target().to_string_lossy())?;
-                    AppStateCmdResult::Quit
-                } else {
-                    // no output path provided. We write on stdout, but we must
-                    // do it after app closing to have the normal terminal
-                    let mut launchable =
-                        Launchable::from(vec![line.target().to_string_lossy().to_string()])?;
-                    launchable.just_print = true;
-                    AppStateCmdResult::Launch(launchable)
-                }
-            }
+            ":print_path" => external::print_path(&line.target(), con)?,
             ":toggle_files" => {
                 self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true)
             }
