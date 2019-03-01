@@ -20,7 +20,8 @@ use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
 use crate::tree_options::{OptionBool, TreeOptions};
 use crate::tree_views::TreeView;
-use crate::verbs::{PrefixSearchResult, VerbExecutor};
+use crate::verbs::{VerbExecutor};
+use crate::verb_store::{PrefixSearchResult};
 
 pub struct BrowserState {
     pub tree: Tree,
@@ -168,11 +169,11 @@ impl AppState for BrowserState {
                 };
                 let line = tree.selected_line();
                 let cd_idx = con.verb_store.index_of("cd");
-                con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), con)?
+                con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, con)?
             }
-            Action::Verb(verb_key) => match con.verb_store.search(&verb_key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, screen, con)?,
-                _ => AppStateCmdResult::verb_not_found(&verb_key),
+            Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
+                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation.args, screen, con)?,
+                _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::FuzzyPatternEdit(pat) => match pat.len() {
                 0 => {
@@ -268,8 +269,8 @@ impl AppState for BrowserState {
             Action::RegexEdit(_, _) => {
                 screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
             }
-            Action::VerbEdit(verb_key) => {
-                match con.verb_store.search(&verb_key) {
+            Action::VerbEdit(invocation) => {
+                match con.verb_store.search(&invocation.key) {
                     PrefixSearchResult::NoMatch => {
                         screen.write_status_err("No matching verb (':?' for the list of verbs)")
                     }
@@ -282,7 +283,7 @@ impl AppState for BrowserState {
                             &format!(
                                 "Hit <enter> to {} : {}",
                                 &verb.name,
-                                verb.description_for(line.target())
+                                verb.description_for(line.target(), &invocation.args)
                             )
                             .to_string(),
                         )

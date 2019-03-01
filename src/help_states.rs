@@ -10,7 +10,8 @@ use crate::screen_text::{Text, TextTable};
 use crate::screens::{Screen, ScreenArea};
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
-use crate::verbs::{PrefixSearchResult, Verb, VerbExecutor};
+use crate::verbs::{Verb, VerbExecutor};
+use crate::verb_store::{PrefixSearchResult};
 
 pub struct HelpState {
     area: ScreenArea, // where the help is drawn
@@ -40,9 +41,9 @@ impl AppState for HelpState {
         self.resize_area(screen);
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
-            Action::Verb(verb_key) => match con.verb_store.search(&verb_key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, screen, con)?,
-                _ => AppStateCmdResult::verb_not_found(&verb_key),
+            Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
+                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation.args, screen, con)?,
+                _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::MoveSelection(dy) => {
                 self.area.try_scroll(*dy);
@@ -80,13 +81,19 @@ impl AppState for HelpState {
         let mut tbl: TextTable<Verb> = TextTable::new(&screen.skin);
         tbl.add_col("name", &|verb| &verb.name);
         tbl.add_col("shortcut", &|verb| {
-            if let Some(sk) = &verb.short_key {
+            if let Some(sk) = &verb.shortcut {
                 &sk
             } else {
                 ""
             }
         });
-        tbl.add_col("description", &|verb: &Verb| &verb.description);
+        tbl.add_col("description", &|verb: &Verb| {
+            if let Some(s) = &verb.description {
+                &s
+            } else {
+                &verb.execution
+            }
+        });
         tbl.write(&con.verb_store.verbs, &mut text);
         text.md("");
         text.md(&format!(
@@ -113,13 +120,13 @@ impl AppState for HelpState {
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
         match &cmd.action {
-            Action::VerbEdit(verb_key) => match con.verb_store.search(&verb_key) {
+            Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::NoMatch => screen.write_status_err("No matching verb)"),
                 PrefixSearchResult::Match(verb) => screen.write_status_text(
                     &format!(
                         "Hit <enter> to {} : {}",
                         &verb.name,
-                        &verb.description_for(Conf::default_location())
+                        &verb.description_for(Conf::default_location(), &invocation.args)
                     )
                     .to_string(),
                 ),

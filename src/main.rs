@@ -38,6 +38,8 @@ mod tree_build;
 mod tree_options;
 mod tree_views;
 mod verbs;
+mod verb_invocation;
+mod verb_store;
 
 use log::LevelFilter;
 use simplelog;
@@ -51,7 +53,7 @@ use crate::app_context::AppContext;
 use crate::conf::Conf;
 use crate::errors::ProgramError;
 use crate::external::Launchable;
-use crate::verbs::VerbStore;
+use crate::verb_store::VerbStore;
 
 // There's no log unless the BROOT_LOG environment variable is set to
 //  a valid log level (trace, debug, info, warn, error, off)

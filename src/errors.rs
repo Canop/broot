@@ -1,5 +1,6 @@
 //! Definitions of custom errors used in broot
 use custom_error::custom_error;
+use regex;
 use std::io;
 
 custom_error! {pub TreeBuildError
@@ -20,8 +21,9 @@ custom_error! {pub RegexError
 }
 
 custom_error! {pub ConfError
-    Io{source: io::Error}               = "unable to read from the file",
-    Toml{source: toml::de::Error}       = "unable to parse TOML",
-    MissingField{txt: String}           = "missing field in conf",
-    InvalidSkinEntry{reason: String}    = "{}",
+    Io{source: io::Error}                       = "unable to read from the file",
+    Toml{source: toml::de::Error}               = "unable to parse TOML",
+    MissingField{txt: String}                   = "missing field in conf",
+    InvalidSkinEntry{reason: String}            = "{}",
+    InvalidVerbInvocation{invocation: String}   = "invalid verb invocation: {}",
 }

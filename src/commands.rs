@@ -4,6 +4,7 @@
 
 use regex::Regex;
 use termion::event::Key;
+use crate::verb_invocation::VerbInvocation;
 
 #[derive(Debug, Clone)]
 pub struct Command {
@@ -17,7 +18,7 @@ pub struct Command {
 struct CommandParts {
     pattern: Option<String>,     // either a fuzzy pattern or the core of a regex
     regex_flags: Option<String>, // may be Some("") if user asked for a regex but specified no flag
-    verb: Option<String>,        // may be Some("") if user already typed the separator
+    verb_invocation: Option<VerbInvocation>, // may be empty if user already typed the separator but no char after
 }
 
 #[derive(Debug, Clone)]
@@ -26,8 +27,8 @@ pub enum Action {
     ScrollPage(i32),           // in number of pages, not lines
     OpenSelection,             // open the selected line
     AltOpenSelection,          // alternate open the selected line
-    VerbEdit(String),          // verb, unfinished
-    Verb(String),              // verb, after the user hit enter
+    VerbEdit(VerbInvocation),          // verb invocation, unfinished
+    Verb(VerbInvocation),              // verb invocation, after the user hit enter
     FuzzyPatternEdit(String),  // a pattern being edited
     RegexEdit(String, String), // a regex being edited (core & flags)
     Back,                      // back to last app state, or clear pattern
@@ -41,7 +42,7 @@ impl CommandParts {
         CommandParts {
             pattern: None,
             regex_flags: None,
-            verb: None,
+            verb_invocation: None,
         }
     }
     fn from(raw: &str) -> CommandParts {
@@ -53,7 +54,7 @@ impl CommandParts {
                 (?P<slash_before>/)?
                 (?P<pattern>[^\s/:]+)?
                 (?:/(?P<regex_flags>\w*))?
-                (?:[\s:]+(?P<verb>\S*))?
+                (?:[\s:]+(?P<verb_invocation>.*))?
                 $
                 "
             )
@@ -68,8 +69,8 @@ impl CommandParts {
                     cp.regex_flags = Some("".into());
                 }
             }
-            if let Some(verb) = c.name("verb") {
-                cp.verb = Some(String::from(verb.as_str()));
+            if let Some(verb) = c.name("verb_invocation") {
+                cp.verb_invocation = Some(VerbInvocation::from(verb.as_str()));
             }
         }
         cp
@@ -78,12 +79,11 @@ impl CommandParts {
 
 impl Action {
     fn from(cp: &CommandParts, finished: bool) -> Action {
-        if let Some(verb) = &cp.verb {
-            let verb = String::from(verb.as_str());
+        if let Some(verb_invocation) = &cp.verb_invocation {
             if finished {
-                Action::Verb(verb)
+                Action::Verb(verb_invocation.clone())
             } else {
-                Action::VerbEdit(verb)
+                Action::VerbEdit(verb_invocation.clone())
             }
         } else if finished {
             Action::OpenSelection

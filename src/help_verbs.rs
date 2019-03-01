@@ -16,10 +16,11 @@ impl VerbExecutor for HelpState {
     fn execute_verb(
         &self,
         verb: &Verb,
+        args: &Option<String>,
         screen: &Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
-        Ok(match verb.exec_pattern.as_ref() {
+        Ok(match verb.execution.as_ref() {
             ":back" => AppStateCmdResult::PopState,
             ":focus" | ":parent" => AppStateCmdResult::from_optional_state(
                 BrowserState::new(
@@ -35,11 +36,11 @@ impl VerbExecutor for HelpState {
             ":print_path" => external::print_path(&Conf::default_location(), con)?,
             ":quit" => AppStateCmdResult::Quit,
             _ => {
-                if verb.exec_pattern.starts_with(":toggle") {
+                if verb.execution.starts_with(":toggle") {
                     AppStateCmdResult::PopStateAndReapply
                 } else {
                     AppStateCmdResult::Launch(Launchable::from(
-                        verb.exec_token(&Conf::default_location()),
+                        verb.exec_token(&Conf::default_location(), args),
                     )?)
                 }
             }

@@ -1,131 +1,194 @@
-use regex::Regex;
+use regex::{Captures, Regex};
 /// Verbs are the engines of broot commands, and apply
-/// - to the selected file (if user-defined, then must contain {file} or {directory})
+/// - to the selected file (if user-defined, then must contain {file}, {parent} or {directory})
 /// - to the current app state
+use std;
+use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
-use crate::conf::Conf;
+use crate::errors::ConfError;
 use crate::external;
 use crate::screens::Screen;
+use crate::verb_invocation::VerbInvocation;
 
+// what makes a verb.
+//
+// There are two types of verbs executions:
+// - external programs or commands (cd, mkdir, user defined commands, etc.)
+// - built in behaviors (focusing a path, going back, showing the help, etc.)
+//
 #[derive(Debug, Clone)]
 pub struct Verb {
-    pub name: String,              // a public name, eg "cd"
-    pub short_key: Option<String>, // a shortcut, eg "c"
-    pub long_key: String,          // a long typable key, eg "cd"
-    pub exec_pattern: String,      // a pattern usable for execution, eg ":cd" or "less {file}"
-    pub description: String,       // a description for the user
+    pub name: String,
+    pub args_parser: Option<Regex>,
+    pub shortcut: Option<String>,  // a shortcut, eg "c"
+    pub execution: String,         // a pattern usable for execution, eg ":quit" or "less {file}"
+    pub description: Option<String>,       // a description for the user
     pub from_shell: bool, // whether it must be launched from the parent shell (eg because it's a shell function)
+    pub leave_broot: bool, // only defined for external
+    pub confirm: bool,
+}
+
+lazy_static! {
+    static ref GROUP: Regex = Regex::new(r"\{([^{}]+)\}").unwrap();
+}
+
+pub trait VerbExecutor {
+    fn execute_verb(
+        &self,
+        verb: &Verb,
+        args: &Option<String>,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> io::Result<AppStateCmdResult>;
+}
+
+fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
+    debug!("raw spec: {:?}", spec);
+    let spec = GROUP.replace_all(spec, r"(?P<$1>.+)");
+    let spec = format!("^{}$", spec);
+    debug!("changed spec: {:?}", &spec);
+    Regex::new(&spec.to_string()).or_else(|_| Err(ConfError::InvalidVerbInvocation{invocation: spec}))
+}
+fn path_to_string(path: &Path, for_shell: bool) -> String {
+    if for_shell {
+        external::escape_for_shell(path)
+    } else {
+        path.to_string_lossy().to_string()
+    }
 }
 
 impl Verb {
-    fn create(
-        name: String,
-        invocation: Option<String>,
-        exec_pattern: String,
-        description: String,
+    pub fn create_external(
+        invocation_str: &str,
+        shortcut: Option<String>,
+        execution: String,
+        description: Option<String>,
         from_shell: bool,
-    ) -> Verb {
-        // we build the long key such as
-        // ":goto" -> "goto"
-        lazy_static! {
-            static ref RE: Regex = Regex::new(r"\w+").unwrap();
+        leave_broot: bool,
+        confirm: bool,
+    ) -> Result<Verb, ConfError> {
+        let invocation = VerbInvocation::from(invocation_str);
+        if invocation.is_empty() {
+            return Err(ConfError::InvalidVerbInvocation{invocation: invocation_str.to_string()});
         }
-        Verb {
-            name,
-            short_key: invocation,
-            long_key: RE
-                .find(&exec_pattern)
-                .map_or("", |m| m.as_str())
-                .to_string(),
-            exec_pattern,
+        let args_parser = match invocation.args {
+            Some(args) => Some(make_invocation_args_regex(&args)?),
+            None => None,
+        };
+        Ok(Verb {
+            name: invocation.key,
+            args_parser,
+            shortcut,
+            execution,
             description,
             from_shell,
-        }
+            leave_broot,
+            confirm,
+        })
     }
     // built-ins are verbs offering a logic other than the execution
     //  based on exec_pattern. They mostly modify the appstate
-    fn create_built_in(name: &str, short_key: Option<String>, description: &str) -> Verb {
+    pub fn create_builtin(
+        name: &str,
+        shortcut: Option<String>,
+        description: &str,
+    ) -> Verb {
         Verb {
             name: name.to_string(),
-            short_key,
-            long_key: name.to_string(),
-            exec_pattern: (format!(":{}", name)).to_string(),
-            description: description.to_string(),
+            args_parser: None,
+            shortcut,
+            execution: format!(":{}", name),
+            description: Some(description.to_string()),
             from_shell: false,
+            leave_broot: false, // ignored
+            confirm: false, // ignored
         }
     }
-    pub fn description_for(&self, mut path: PathBuf) -> String {
-        //let mut path = path;
-        if self.exec_pattern == ":cd" {
-            if !path.is_dir() {
-                path = path.parent().unwrap().to_path_buf();
-            }
-            format!("cd {}", path.to_string_lossy())
-        } else if self.exec_pattern.starts_with(':') {
-            self.description.to_string()
-        } else {
-            self.shell_exec_string(&path)
-        }
-    }
-    // build the token which can be used to launch en executable
-    pub fn exec_token(&self, path: &Path) -> Vec<String> {
-        self.exec_pattern
-            .split_whitespace()
-            .map(|t| {
-                if t == "{file}" {
-                    path.to_string_lossy().to_string()
-                } else if t == "{directory}" {
-                    let mut path = path;
-                    if !path.is_dir() {
-                        path = path.parent().unwrap();
+
+    fn replacement_map(&self, file: &Path, args: &Option<String>, for_shell: bool) -> HashMap<String, String> {
+        let mut map = HashMap::new();
+        // first we add the replacements computed from the given path
+        let parent = file.parent().unwrap();
+        let file_str = path_to_string(file, for_shell);
+        let parent_str = path_to_string(parent, for_shell);
+        map.insert("file".to_string(), file_str.to_string());
+        map.insert("parent".to_string(), parent_str.to_string());
+        let dir_str = if file.is_dir() { file_str } else { parent_str };
+        map.insert("directory".to_string(), dir_str.to_string());
+        // then the ones computed from the user input
+        if let Some(args) = args {
+            if let Some(r) = &self.args_parser {
+                if let Some(input_cap) = r.captures(&args) {
+                    for name in r.capture_names().flatten() {
+                        if let Some(c) = input_cap.name(name) {
+                            map.insert(name.to_string(), c.as_str().to_string());
+                        }
                     }
-                    path.to_string_lossy().to_string()
-                } else {
-                    t.to_string()
                 }
+            } else {
+                warn!("invocation args given but none expected");
+                // maybe tell the user?
+            }
+        }
+        map
+    }
+    pub fn description_for(&self, path: PathBuf, args: &Option<String>) -> String {
+        if let Some(s) = &self.description {
+            s.clone()
+        } else {
+            self.shell_exec_string(&path, args)
+        }
+    }
+    // build the token which can be used to launch en executable.
+    // This doesn't make sense for a built-in.
+    pub fn exec_token(&self, file: &Path, args: &Option<String>) -> Vec<String> {
+        let map = self.replacement_map(file, args, false);
+        self.execution
+            .split_whitespace()
+            .map(|token| {
+                GROUP.replace_all(token, |ec:&Captures| {
+                    let name = ec.get(1).unwrap().as_str();
+                    if let Some(cap) = map.get(name) {
+                        cap.as_str().to_string()
+                    } else {
+                        format!("{{{}}}", name)
+                    }
+                }).to_string()
             })
             .collect()
     }
     // build a shell compatible command, with escapings
-    pub fn shell_exec_string(&self, path: &Path) -> String {
-        self.exec_pattern
-            .split_whitespace()
-            .map(|t| {
-                if t == "{file}" {
-                    external::escape_for_shell(path)
-                } else if t == "{directory}" {
-                    let mut path = path;
-                    if !path.is_dir() {
-                        path = path.parent().unwrap();
-                    }
-                    external::escape_for_shell(path)
-                } else {
-                    t.to_string()
-                }
-            })
-            .collect::<Vec<String>>()
-            .join(" ")
+    pub fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
+        let map = self.replacement_map(file, args, true);
+        GROUP.replace_all(&self.execution, |ec:&Captures| {
+            let name = ec.get(1).unwrap().as_str();
+            if let Some(cap) = map.get(name) {
+                cap.as_str().to_string()
+            } else {
+                format!("{{{}}}", name)
+            }
+        }).to_string()
     }
     // build the cmd result for a verb defined with an exec pattern.
     // Calling this function on a built-in doesn't make sense
-    pub fn to_cmd_result(&self, path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    pub fn to_cmd_result(&self, file: &Path, args: &Option<String>, con: &AppContext) -> io::Result<AppStateCmdResult> {
         Ok(if self.from_shell {
             if let Some(ref export_path) = con.launch_args.cmd_export_path {
                 // new version of the br function: the whole command is exported
                 // in the passed file
                 let f = OpenOptions::new().append(true).open(export_path)?;
-                writeln!(&f, "{}", self.shell_exec_string(path))?;
+                writeln!(&f, "{}", self.shell_exec_string(file, args))?;
                 AppStateCmdResult::Quit
             } else if let Some(ref export_path) = con.launch_args.file_export_path {
                 // old version of the br function: only the file is exported
                 // in the passed file
                 let f = OpenOptions::new().append(true).open(export_path)?;
-                writeln!(&f, "{}", path.to_string_lossy())?;
+                writeln!(&f, "{}", file.to_string_lossy())?;
                 AppStateCmdResult::Quit
             } else {
                 AppStateCmdResult::DisplayError(
@@ -133,177 +196,8 @@ impl Verb {
                 )
             }
         } else {
-            AppStateCmdResult::Launch(external::Launchable::from(self.exec_token(path))?)
+            AppStateCmdResult::Launch(external::Launchable::from(self.exec_token(file, args))?)
         })
     }
 }
 
-/// Provide access to the verbs:
-/// - the built-in ones
-/// - the user defined ones
-/// When the user types some keys, we select a verb
-/// - if the input exactly matches a shortcut or the name
-/// - if only one verb starts with the input
-pub struct VerbStore {
-    pub verbs: Vec<Verb>,
-}
-
-pub trait VerbExecutor {
-    fn execute_verb(
-        &self,
-        verb: &Verb,
-        screen: &Screen,
-        con: &AppContext,
-    ) -> io::Result<AppStateCmdResult>;
-}
-
-#[derive(Debug, Clone, PartialEq)]
-pub enum PrefixSearchResult<T> {
-    NoMatch,
-    Match(T),
-    TooManyMatches,
-}
-
-impl VerbStore {
-    pub fn new() -> VerbStore {
-        VerbStore {
-            //map: BTreeMap::new(),
-            verbs: Vec::new(),
-        }
-    }
-    pub fn init(&mut self, conf: &Conf) {
-        // we first add the built-in verbs
-        self.verbs.push(Verb::create_built_in(
-            "back",
-            None,
-            "revert to the previous state (mapped to `<esc>`)",
-        ));
-        self.verbs.push(Verb::create(
-            "cd".to_string(),
-            None, // no real need for a shortcut as it's mapped to alt-enter
-            "cd {directory}".to_string(),
-            "change directory and quit (mapped to `<alt><enter>`)".to_string(),
-            true, // needs to be launched from the parent shell
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "focus",
-            Some("goto".to_string()),
-            "display the directory (mapped to `<enter>` in tree)",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "help",
-            Some("?".to_string()),
-            "display broot's help",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "open",
-            None,
-            "open file according to OS settings (mapped to `<enter>`)",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "parent",
-            None,
-            "move to the parent directory",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "print_path",
-            Some("pp".to_string()),
-            "print path and leaves broot",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "quit",
-            Some("q".to_string()),
-            "quit the application",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "toggle_files",
-            Some("files".to_string()),
-            "toggle showing files (or just folders)",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "toggle_git_ignore",
-            Some("gi".to_string()),
-            "toggle use of .gitignore",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "toggle_hidden",
-            Some("h".to_string()),
-            "toggle showing hidden files",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "toggle_perm",
-            Some("perm".to_string()),
-            "toggle showing file permissions",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "toggle_sizes",
-            Some("sizes".to_string()),
-            "toggle showing sizes",
-        ));
-        self.verbs.push(Verb::create_built_in(
-            "toggle_trim_root",
-            Some("t".to_string()),
-            "toggle removing nodes at first level too (default)",
-        ));
-        // then we add the verbs from conf
-        // which may in fact be just changing the shortcut of
-        // already present verbs
-        for verb_conf in &conf.verbs {
-            if let Some(mut v) = self
-                .verbs
-                .iter_mut()
-                .find(|v| v.exec_pattern == verb_conf.execution)
-            {
-                v.short_key = Some(verb_conf.invocation.to_string());
-            } else {
-                self.verbs.push(Verb::create(
-                    verb_conf.name.to_owned(),
-                    Some(verb_conf.invocation.to_string()),
-                    verb_conf.execution.to_owned(),
-                    verb_conf.execution.to_owned(),
-                    verb_conf.from_shell,
-                ));
-            }
-        }
-    }
-    pub fn search(&self, prefix: &str) -> PrefixSearchResult<&Verb> {
-        let mut found_index = 0;
-        let mut nb_found = 0;
-        for (index, verb) in self.verbs.iter().enumerate() {
-            if let Some(short_key) = &verb.short_key {
-                if short_key.starts_with(prefix) {
-                    if short_key == prefix {
-                        return PrefixSearchResult::Match(&verb);
-                    }
-                    found_index = index;
-                    nb_found += 1;
-                    continue;
-                }
-            }
-            if verb.long_key.starts_with(prefix) {
-                if verb.long_key == prefix {
-                    return PrefixSearchResult::Match(&verb);
-                }
-                found_index = index;
-                nb_found += 1;
-            }
-        }
-        match nb_found {
-            0 => PrefixSearchResult::NoMatch,
-            1 => PrefixSearchResult::Match(&self.verbs[found_index]),
-            _ => PrefixSearchResult::TooManyMatches,
-        }
-    }
-    // return the index of the verb having the long key. This function is meant
-    // for internal access when it's sure it can't failed (i.e. for a builtin)
-    // It looks for verbs by name, starting from the builtins, to
-    // ensure it hasn't been overriden.
-    pub fn index_of(&self, name: &str) -> usize {
-        for i in 0..self.verbs.len() {
-            if self.verbs[i].name == name {
-                return i;
-            }
-        }
-        panic!("invalid verb search");
-    }
-}

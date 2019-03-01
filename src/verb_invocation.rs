@@ -1,0 +1,28 @@
+use regex::Regex;
+
+#[derive(Clone, Debug)]
+pub struct VerbInvocation {
+    pub key: String,
+    pub args: Option<String>,
+}
+impl VerbInvocation {
+    pub fn from(invocation: &str) -> VerbInvocation {
+        lazy_static! {
+            static ref PARTS: Regex = Regex::new(r"^(\S*)\s*(.+?)?\s*$").unwrap();
+        }
+        debug!("parsing invocation {:?}", &invocation);
+        let caps = PARTS.captures(invocation).unwrap(); // this regex should always match
+        let key = caps.get(1).unwrap().as_str().to_string();
+        let args = caps.get(2).map(|c| c.as_str().to_string());
+        debug!("  key: {:?}", key);
+        debug!("  args: {:?}", args);
+        VerbInvocation {
+            key,
+            args,
+        }
+    }
+    pub fn is_empty(&self) -> bool {
+        self.key.is_empty()
+    }
+}
+

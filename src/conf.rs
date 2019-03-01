@@ -15,10 +15,13 @@ use crate::skin_conf;
 /// what's needed to handle a verb
 #[derive(Debug)]
 pub struct VerbConf {
-    pub name: String,
+    pub shortcut: Option<String>,
     pub invocation: String,
     pub execution: String,
-    pub from_shell: bool,
+    pub description: Option<String>,
+    pub from_shell: Option<bool>,
+    pub leave_broot: Option<bool>,
+    pub confirm: Option<bool>,
 }
 
 #[derive(Debug)]
@@ -33,6 +36,14 @@ fn string_field(value: &Value, field_name: &str) -> Option<String> {
             if let Some(s) = fv.as_str() {
                 return Some(s.to_string());
             }
+        }
+    }
+    None
+}
+fn bool_field(value: &Value, field_name: &str) -> Option<bool> {
+    if let Value::Table(tbl) = value {
+        if let Some(Value::Boolean(b)) = tbl.get(field_name) {
+            return Some(*b);
         }
     }
     None
@@ -97,30 +108,14 @@ impl Conf {
                         continue;
                     }
                 };
-                let name = match string_field(verb_value, "name") {
-                    Some(s) => s,
-                    None => {
-                        if execution.starts_with(':') {
-                            // we'll assume that this entry isn't a new verb definition
-                            // but just the addition of a shortcut for a built-in verb
-                            "unnamed".to_string()
-                        } else {
-                            eprintln!("Missing name in [[verbs]] entry in configuration");
-                            continue;
-                        }
-                    }
-                };
-                let mut from_shell = false;
-                if let Value::Table(tbl) = verb_value {
-                    if let Some(Value::Boolean(b)) = tbl.get("from_shell") {
-                        from_shell = *b;
-                    }
-                };
                 verbs.push(VerbConf {
-                    name,
                     invocation,
                     execution,
-                    from_shell,
+                    shortcut: string_field(verb_value, "shortcut"),
+                    description: string_field(verb_value, "description"),
+                    from_shell: bool_field(verb_value, "from_shell"),
+                    leave_broot: bool_field(verb_value, "leave_broot"),
+                    confirm: bool_field(verb_value, "confirm"),
                 });
             }
         }

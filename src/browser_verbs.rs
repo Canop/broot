@@ -15,6 +15,7 @@ impl VerbExecutor for BrowserState {
     fn execute_verb(
         &self,
         verb: &Verb,
+        args: &Option<String>,
         screen: &Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
@@ -23,7 +24,7 @@ impl VerbExecutor for BrowserState {
             None => &self.tree,
         };
         let line = &tree.selected_line();
-        Ok(match verb.exec_pattern.as_ref() {
+        Ok(match verb.execution.as_ref() {
             ":back" => AppStateCmdResult::PopState,
             ":focus" => {
                 let mut path = tree.selected_line().target();
@@ -78,7 +79,7 @@ impl VerbExecutor for BrowserState {
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),
             ":quit" => AppStateCmdResult::Quit,
-            _ => verb.to_cmd_result(&line.target(), con)?,
+            _ => verb.to_cmd_result(&line.target(), args, con)?,
         })
     }
 }
