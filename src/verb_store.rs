@@ -51,7 +51,7 @@ impl VerbStore {
             true, // needs to be launched from the parent shell
             true, // leaves broot
             false,
-        ).unwrap()); // this isn't supposed to fail
+        ).unwrap());
         self.add_builtin(
             "focus",
             Some("goto".to_string()),
@@ -62,6 +62,24 @@ impl VerbStore {
             Some("?".to_string()),
             "display broot's help",
         );
+        self.verbs.push(Verb::create_external(
+            "mkdir {subpath}",
+            Some("md".to_string()),
+            "/bin/mkdir -p {directory}/{subpath}".to_string(),
+            None,
+            false,
+            false, // doesn't leave broot
+            false,
+        ).unwrap());
+        self.verbs.push(Verb::create_external(
+            "mv {newpath}",
+            None,
+            "/bin/mv {file} {parent}/{newpath}".to_string(),
+            None,
+            false,
+            false, // doesn't leave broot
+            false,
+        ).unwrap());
         self.add_builtin(
             "open",
             None,
@@ -82,6 +100,15 @@ impl VerbStore {
             Some("q".to_string()),
             "quit the application",
         );
+        self.verbs.push(Verb::create_external(
+            "rm",
+            None,
+            "/bin/rm -rf {file}".to_string(),
+            None,
+            false,
+            false, // doesn't leave broot
+            false,
+        ).unwrap());
         self.add_builtin(
             "toggle_files",
             Some("files".to_string()),

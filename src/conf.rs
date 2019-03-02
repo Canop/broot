@@ -188,9 +188,13 @@ execution = ":parent"
 # user defined verbs:
 
 [[verbs]]
-name = "edit"
-invocation = "ed"
+invocation = "edit"
+shortcut = "e"
 execution = "/usr/bin/nvim {file}"
+
+[[verbs]]
+invocation = "create {subpath}"
+execution = "/usr/bin/nvim {directory}/{subpath}"
 
 [[verbs]]
 name = "view"
