@@ -2,10 +2,13 @@
 ///  no link from a child to its parent or from a parent to its children.
 use std::cmp::{self, Ordering};
 use std::fs;
-use std::path::PathBuf;
+use std::mem;
+use std::path::{Path, PathBuf};
 
+use crate::errors;
 use crate::file_sizes::Size;
 use crate::task_sync::TaskLifetime;
+use crate::tree_build::TreeBuilder;
 use crate::tree_options::TreeOptions;
 
 #[derive(Debug, Clone, PartialEq)]
@@ -139,6 +142,25 @@ impl PartialOrd for TreeLine {
 }
 
 impl Tree {
+
+    pub fn refresh(
+        &mut self,
+        page_height: usize,
+   ) -> Result<(), errors::TreeBuildError> {
+        let builder = TreeBuilder::from(
+            self.root().to_path_buf(),
+            self.options.clone(),
+            page_height,
+        )?;
+        let mut tree = builder.build(&TaskLifetime::unlimited()).unwrap(); // should not fail
+        // we save the old selection to try restore it
+        let selected_path = self.selected_line().path.to_path_buf();
+        mem::swap(&mut self.lines, &mut tree.lines);
+        self.try_select_path(&selected_path);
+        self.make_selection_visible(page_height as i32);
+        Ok(())
+    }
+
     // do what must be done after line additions or removals:
     // - sort the lines
     // - compute left branchs
@@ -268,6 +290,17 @@ impl Tree {
             }
             best_score = line.score;
             self.selection = idx;
+        }
+    }
+    pub fn try_select_path(&mut self, path: &Path) {
+        for (idx, line) in self.lines.iter().enumerate() {
+            if !line.is_selectable() {
+                continue;
+            }
+            if path == line.path {
+                self.selection = idx;
+                return;
+            }
         }
     }
     pub fn try_select_next_match(&mut self) -> bool {

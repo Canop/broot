@@ -35,7 +35,7 @@ impl AppState for HelpState {
     fn apply(
         &mut self,
         cmd: &mut Command,
-        screen: &Screen,
+        screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
         self.resize_area(screen);
@@ -55,6 +55,14 @@ impl AppState for HelpState {
             }
             _ => AppStateCmdResult::Keep,
         })
+    }
+
+    fn refresh(
+        &mut self,
+        _screen: &Screen,
+        _con: &AppContext,
+    ) -> Command {
+        Command::new()
     }
 
     fn has_pending_tasks(&self) -> bool {

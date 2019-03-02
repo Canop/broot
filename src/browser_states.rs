@@ -84,7 +84,7 @@ impl AppState for BrowserState {
     fn apply(
         &mut self,
         cmd: &mut Command,
-        screen: &Screen,
+        screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
         self.pending_pattern = Pattern::None;
@@ -169,7 +169,7 @@ impl AppState for BrowserState {
                 };
                 let line = tree.selected_line();
                 let cd_idx = con.verb_store.index_of("cd");
-                con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, con)?
+                con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, screen, con)?
             }
             Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation.args, screen, con)?,
@@ -309,6 +309,27 @@ impl AppState for BrowserState {
                     })
                 }
             }
+        }
+    }
+
+    fn refresh(
+        &mut self,
+        screen: &Screen,
+        _con: &AppContext,
+    ) -> Command {
+        let page_height = BrowserState::page_height(screen) as usize;
+        // refresh the base tree
+        if let Err(e) = self.tree.refresh(page_height) {
+            warn!("refreshing base tree failed : {:?}", e);
+        }
+        // refresh the filtered tree, if any
+        if let Some(ref mut tree) = self.filtered_tree {
+            if let Err(e) = tree.refresh(page_height) {
+                warn!("refreshing filtered tree failed : {:?}", e);
+            }
+            tree.options.pattern.to_command()
+        } else {
+            self.tree.options.pattern.to_command()
         }
     }
 

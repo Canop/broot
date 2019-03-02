@@ -36,6 +36,7 @@ pub enum AppStateCmdResult {
     NewState(Box<dyn AppState>, Command),
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
+    RefreshState,
 }
 
 impl AppStateCmdResult {
@@ -60,9 +61,14 @@ pub trait AppState {
     fn apply(
         &mut self,
         cmd: &mut Command,
-        screen: &Screen,
+        screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult>;
+    fn refresh(
+        &mut self,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> Command;
     fn has_pending_tasks(&self) -> bool;
     fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime);
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
@@ -163,13 +169,16 @@ impl App {
                 cmd = new_cmd;
                 self.state().write_status(screen, &cmd, con)?;
             }
+            AppStateCmdResult::RefreshState => {
+                cmd = self.mut_state().refresh(screen, con);
+            }
             AppStateCmdResult::PopState => {
                 if self.states.len() == 1 {
                     debug!("quitting on last pop state");
                     self.quitting = true;
                 } else {
                     self.states.pop();
-                    cmd = Command::new();
+                    cmd = self.mut_state().refresh(screen, con);
                     self.state().write_status(screen, &cmd, con)?;
                 }
             }

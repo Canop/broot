@@ -42,16 +42,14 @@ pub trait VerbExecutor {
         &self,
         verb: &Verb,
         args: &Option<String>,
-        screen: &Screen,
+        screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult>;
 }
 
 fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
-    debug!("raw spec: {:?}", spec);
     let spec = GROUP.replace_all(spec, r"(?P<$1>.+)");
     let spec = format!("^{}$", spec);
-    debug!("changed spec: {:?}", &spec);
     Regex::new(&spec.to_string()).or_else(|_| Err(ConfError::InvalidVerbInvocation{invocation: spec}))
 }
 fn path_to_string(path: &Path, for_shell: bool) -> String {
@@ -105,7 +103,7 @@ impl Verb {
             execution: format!(":{}", name),
             description: Some(description.to_string()),
             from_shell: false,
-            leave_broot: false, // ignored
+            leave_broot: true, // ignored
             confirm: false, // ignored
         }
     }
@@ -176,7 +174,13 @@ impl Verb {
     }
     // build the cmd result for a verb defined with an exec pattern.
     // Calling this function on a built-in doesn't make sense
-    pub fn to_cmd_result(&self, file: &Path, args: &Option<String>, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    pub fn to_cmd_result(
+        &self,
+        file: &Path,
+        args: &Option<String>,
+        screen: &mut Screen,
+        con: &AppContext
+    ) -> io::Result<AppStateCmdResult> {
         Ok(if self.from_shell {
             if let Some(ref export_path) = con.launch_args.cmd_export_path {
                 // new version of the br function: the whole command is exported
@@ -196,7 +200,23 @@ impl Verb {
                 )
             }
         } else {
-            AppStateCmdResult::Launch(external::Launchable::from(self.exec_token(file, args))?)
+            let launchable = external::Launchable::from(self.exec_token(file, args))?;
+            if self.leave_broot {
+                AppStateCmdResult::Launch(launchable)
+            } else {
+                info!("Executing not leaving, launchable {:?}", launchable);
+                let execution = launchable.execute();
+                match execution {
+                    Ok(()) => {
+                        info!("ok");
+                        AppStateCmdResult::RefreshState
+                    },
+                    Err(e) => {
+                        warn!("launchable failed : {:?}", e);
+                        AppStateCmdResult::DisplayError(e.to_string())
+                    }
+                }
+            }
         })
     }
 }

@@ -97,24 +97,33 @@ impl Conf {
                 let invocation = match string_field(verb_value, "invocation") {
                     Some(s) => s,
                     None => {
-                        eprintln!("Missing invocation in [[verbs]] entry in configuration");
+                        eprintln!("Invalid [[verbs]] entry in configuration");
+                        eprintln!("Missing invocation");
                         continue;
                     }
                 };
                 let execution = match string_field(verb_value, "execution") {
                     Some(s) => s,
                     None => {
-                        eprintln!("Missing execution in [[verbs]] entry in configuration");
+                        eprintln!("Invalid [[verbs]] entry in configuration");
+                        eprintln!("Missing execution");
                         continue;
                     }
                 };
+                let from_shell = bool_field(verb_value, "from_shell");
+                let leave_broot = bool_field(verb_value, "leave_broot");
+                if leave_broot == Some(false) && from_shell == Some(true) {
+                        eprintln!("Invalid [[verbs]] entry in configuration");
+                        eprintln!("You can't simultaneously have leave_broot=false and from_shell=true");
+                        continue;
+                }
                 verbs.push(VerbConf {
                     invocation,
                     execution,
                     shortcut: string_field(verb_value, "shortcut"),
                     description: string_field(verb_value, "description"),
-                    from_shell: bool_field(verb_value, "from_shell"),
-                    leave_broot: bool_field(verb_value, "leave_broot"),
+                    from_shell,
+                    leave_broot,
                     confirm: bool_field(verb_value, "confirm"),
                 });
             }

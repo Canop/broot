@@ -17,7 +17,7 @@ impl VerbExecutor for HelpState {
         &self,
         verb: &Verb,
         args: &Option<String>,
-        screen: &Screen,
+        screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
         Ok(match verb.execution.as_ref() {

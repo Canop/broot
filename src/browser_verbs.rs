@@ -16,7 +16,7 @@ impl VerbExecutor for BrowserState {
         &self,
         verb: &Verb,
         args: &Option<String>,
-        screen: &Screen,
+        screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
         let tree = match &self.filtered_tree {
@@ -79,7 +79,7 @@ impl VerbExecutor for BrowserState {
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),
             ":quit" => AppStateCmdResult::Quit,
-            _ => verb.to_cmd_result(&line.target(), args, con)?,
+            _ => verb.to_cmd_result(&line.target(), args, screen, con)?,
         })
     }
 }
