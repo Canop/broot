@@ -35,22 +35,30 @@ Flags are displayed at the bottom right, showing the settings regarding hidden f
 
 ## Verbs
 
-The definition of a verb (which you'll find in the configuration file, see below) is made of three parts:
+The definition of a verb (which you'll find in the configuration file, see below) contains several parts.
 
-* an invocation string, which you should make short if you want to use on
-* a name, which is used for inline help
-* the execution
+Two of them aren't optional:
+
+* an invocation string, defining what you type to call the function
+* the execution, defining what it does
 
 For example this one:
 
 	[[verbs]]
-	name = "edit"
-	invocation = "e"
-	execution = "/usr/bin/nvim {file}"
+	invocation = "p"
+	execution = ":parent"
 
-This means that typing `:e` then `<enter>` opens the selected file in neovim (when you're in the help screen, the selected file is broot's configuration file).
+Or this one:
 
-(this is a part of the default configuration, and probably the first verb you should change for your personal setup)
+	[[verbs]]
+	invocation = "create {subpath}"
+	execution = "/usr/bin/nvim {directory}/{subpath}"
+
+We see here two types of execution:
+* the first one, starting with `:`, calls a builtin function
+* the second one calls an external program (nvim)
+
+This means that typing `:create` then a name, then `<enter>` opens the selected new file in neovim (when you're in the help screen, the selected file is broot's configuration file).
 
 If you want your command to be executed from the parent shell, add this to the verb definition:
 
