@@ -172,7 +172,7 @@ impl AppState for BrowserState {
                 con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, screen, con)?
             }
             Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation.args, screen, con)?,
+                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation, screen, con)?,
                 _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::FuzzyPatternEdit(pat) => match pat.len() {
@@ -275,18 +275,22 @@ impl AppState for BrowserState {
                         screen.write_status_err("No matching verb (':?' for the list of verbs)")
                     }
                     PrefixSearchResult::Match(verb) => {
-                        let line = match &self.filtered_tree {
-                            Some(tree) => tree.selected_line(),
-                            None => self.tree.selected_line(),
-                        };
-                        screen.write_status_text(
-                            &format!(
-                                "Hit <enter> to {} : {}",
-                                &verb.name,
-                                verb.description_for(line.target(), &invocation.args)
+                        if let Some(err) = verb.match_error(invocation) {
+                            screen.write_status_err(&err)
+                        } else {
+                            let line = match &self.filtered_tree {
+                                Some(tree) => tree.selected_line(),
+                                None => self.tree.selected_line(),
+                            };
+                            screen.write_status_text(
+                                &format!(
+                                    "Hit <enter> to {} : {}",
+                                    &verb.invocation.key,
+                                    verb.description_for(line.target(), &invocation.args)
+                                )
+                                .to_string(),
                             )
-                            .to_string(),
-                        )
+                        }
                     }
                     PrefixSearchResult::TooManyMatches => screen.write_status_text(
                         // TODO show what verbs start with the currently edited verb key

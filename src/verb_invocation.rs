@@ -21,5 +21,11 @@ impl VerbInvocation {
     pub fn is_empty(&self) -> bool {
         self.key.is_empty()
     }
+    pub fn to_string_for_key(&self, key: &str) -> String {
+        match self.args {
+            Some(ref args) => format!("{} {}", key, args),
+            None => key.to_owned(),
+        }
+    }
 }
 

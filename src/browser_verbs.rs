@@ -9,16 +9,20 @@ use crate::help_states::HelpState;
 use crate::screens::Screen;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::{OptionBool, TreeOptions};
+use crate::verb_invocation::VerbInvocation;
 use crate::verbs::{Verb, VerbExecutor};
 
 impl VerbExecutor for BrowserState {
     fn execute_verb(
         &self,
         verb: &Verb,
-        args: &Option<String>,
+        invocation: &VerbInvocation,
         screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
+        if let Some(err) = verb.match_error(invocation) {
+            return Ok(AppStateCmdResult::DisplayError(err));
+        }
         let tree = match &self.filtered_tree {
             Some(tree) => &tree,
             None => &self.tree,
@@ -79,7 +83,7 @@ impl VerbExecutor for BrowserState {
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),
             ":quit" => AppStateCmdResult::Quit,
-            _ => verb.to_cmd_result(&line.target(), args, screen, con)?,
+            _ => verb.to_cmd_result(&line.target(), &invocation.args, screen, con)?,
         })
     }
 }

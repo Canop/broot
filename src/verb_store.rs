@@ -5,8 +5,8 @@ use crate::verbs::Verb;
 /// - the built-in ones
 /// - the user defined ones
 /// When the user types some keys, we select a verb
-/// - if the input exactly matches a shortcut or the name
-/// - if only one verb name starts with the input
+/// - if the input exactly matches a shortcut or the key
+/// - if only one verb key starts with the input
 pub struct VerbStore {
     pub verbs: Vec<Verb>,
 }
@@ -26,12 +26,12 @@ impl VerbStore {
     }
     fn add_builtin(
         &mut self,
-        name: &str,
+        key: &str,
         shortcut: Option<String>,
         description: &str,
     ) {
         self.verbs.push(Verb::create_builtin(
-            name,
+            key,
             shortcut,
             description,
         ));
@@ -172,8 +172,8 @@ impl VerbStore {
                     continue;
                 }
             }
-            if verb.name.starts_with(prefix) {
-                if verb.name == prefix {
+            if verb.invocation.key.starts_with(prefix) {
+                if verb.invocation.key == prefix {
                     return PrefixSearchResult::Match(&verb);
                 }
                 found_index = index;
@@ -188,11 +188,11 @@ impl VerbStore {
     }
     // return the index of the verb having the long key. This function is meant
     // for internal access when it's sure it can't failed (i.e. for a builtin)
-    // It looks for verbs by name, starting from the builtins, to
+    // It looks for verbs by key, starting from the builtins, to
     // ensure it hasn't been overriden.
-    pub fn index_of(&self, name: &str) -> usize {
+    pub fn index_of(&self, key: &str) -> usize {
         for i in 0..self.verbs.len() {
-            if self.verbs[i].name == name {
+            if self.verbs[i].invocation.key == key {
                 return i;
             }
         }

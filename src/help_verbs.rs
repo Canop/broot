@@ -10,16 +10,20 @@ use crate::help_states::HelpState;
 use crate::screens::Screen;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::TreeOptions;
+use crate::verb_invocation::VerbInvocation;
 use crate::verbs::{Verb, VerbExecutor};
 
 impl VerbExecutor for HelpState {
     fn execute_verb(
         &self,
         verb: &Verb,
-        args: &Option<String>,
+        invocation: &VerbInvocation,
         screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
+        if let Some(err) = verb.match_error(invocation) {
+            return Ok(AppStateCmdResult::DisplayError(err));
+        }
         Ok(match verb.execution.as_ref() {
             ":back" => AppStateCmdResult::PopState,
             ":focus" | ":parent" => AppStateCmdResult::from_optional_state(
@@ -40,7 +44,7 @@ impl VerbExecutor for HelpState {
                     AppStateCmdResult::PopStateAndReapply
                 } else {
                     AppStateCmdResult::Launch(Launchable::from(
-                        verb.exec_token(&Conf::default_location(), args),
+                        verb.exec_token(&Conf::default_location(), &invocation.args),
                     )?)
                 }
             }

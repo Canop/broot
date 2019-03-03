@@ -23,11 +23,11 @@ use crate::verb_invocation::VerbInvocation;
 //
 #[derive(Debug, Clone)]
 pub struct Verb {
-    pub name: String,
+    pub invocation: VerbInvocation,// how the verb is supposed to be called (key may be replaced by shortcut)
     pub args_parser: Option<Regex>,
     pub shortcut: Option<String>,  // a shortcut, eg "c"
     pub execution: String,         // a pattern usable for execution, eg ":quit" or "less {file}"
-    pub description: Option<String>,       // a description for the user
+    pub description: Option<String>, // a description for the user
     pub from_shell: bool, // whether it must be launched from the parent shell (eg because it's a shell function)
     pub leave_broot: bool, // only defined for external
     pub confirm: bool,
@@ -41,7 +41,7 @@ pub trait VerbExecutor {
     fn execute_verb(
         &self,
         verb: &Verb,
-        args: &Option<String>,
+        invocation: &VerbInvocation,
         screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult>;
@@ -72,14 +72,16 @@ impl Verb {
     ) -> Result<Verb, ConfError> {
         let invocation = VerbInvocation::from(invocation_str);
         if invocation.is_empty() {
-            return Err(ConfError::InvalidVerbInvocation{invocation: invocation_str.to_string()});
+            return Err(ConfError::InvalidVerbInvocation{
+                invocation: invocation_str.to_string()
+            });
         }
-        let args_parser = match invocation.args {
-            Some(args) => Some(make_invocation_args_regex(&args)?),
+        let args_parser = match &invocation.args {
+            Some(ref args) => Some(make_invocation_args_regex(&args)?),
             None => None,
         };
         Ok(Verb {
-            name: invocation.key,
+            invocation,
             args_parser,
             shortcut,
             execution,
@@ -92,19 +94,41 @@ impl Verb {
     // built-ins are verbs offering a logic other than the execution
     //  based on exec_pattern. They mostly modify the appstate
     pub fn create_builtin(
-        name: &str,
+        key: &str,
         shortcut: Option<String>,
         description: &str,
     ) -> Verb {
         Verb {
-            name: name.to_string(),
+            invocation: VerbInvocation{
+                key:key.to_string(),
+                args:None,
+            },
             args_parser: None,
             shortcut,
-            execution: format!(":{}", name),
+            execution: format!(":{}", key),
             description: Some(description.to_string()),
             from_shell: false,
             leave_broot: true, // ignored
             confirm: false, // ignored
+        }
+    }
+
+    // the key is assumed to have been already checked
+    // (we can't check it here as it depends on the whole set of available verbs)
+    pub fn match_error(&self, invocation: &VerbInvocation) -> Option<String> {
+        match (&invocation.args, &self.args_parser) {
+            (None, None) => None,
+            (None, Some(ref regex)) => if regex.is_match("") {
+                None
+            } else {
+                Some(self.invocation.to_string_for_key(&invocation.key))
+            }
+            (Some(ref s), Some(ref regex)) => if regex.is_match(&s) {
+                None
+            } else {
+                Some(self.invocation.to_string_for_key(&invocation.key))
+            }
+            (Some(_), None) => Some(format!("{} doesn't take arguments", invocation.key)),
         }
     }
 

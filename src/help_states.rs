@@ -42,7 +42,7 @@ impl AppState for HelpState {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
             Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation.args, screen, con)?,
+                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation, screen, con)?,
                 _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::MoveSelection(dy) => {
@@ -87,7 +87,7 @@ impl AppState for HelpState {
         text.md(r#" To execute a verb, type a space or `:` then start of its name or shortcut."#);
         text.md(" Verbs:");
         let mut tbl: TextTable<Verb> = TextTable::new(&screen.skin);
-        tbl.add_col("name", &|verb| &verb.name);
+        tbl.add_col("name", &|verb| &verb.invocation.key);
         tbl.add_col("shortcut", &|verb| {
             if let Some(sk) = &verb.shortcut {
                 &sk
@@ -130,14 +130,20 @@ impl AppState for HelpState {
         match &cmd.action {
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::NoMatch => screen.write_status_err("No matching verb)"),
-                PrefixSearchResult::Match(verb) => screen.write_status_text(
-                    &format!(
-                        "Hit <enter> to {} : {}",
-                        &verb.name,
-                        &verb.description_for(Conf::default_location(), &invocation.args)
-                    )
-                    .to_string(),
-                ),
+                PrefixSearchResult::Match(verb) => {
+                    if let Some(err) = verb.match_error(invocation) {
+                        screen.write_status_err(&err)
+                    } else {
+                        screen.write_status_text(
+                            &format!(
+                                "Hit <enter> to {} : {}",
+                                &verb.invocation.key,
+                                &verb.description_for(Conf::default_location(), &invocation.args)
+                            )
+                            .to_string()
+                        )
+                    }
+                }
                 PrefixSearchResult::TooManyMatches => {
                     screen.write_status_text("Type a verb then <enter> to execute it")
                 }
