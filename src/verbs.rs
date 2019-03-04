@@ -194,7 +194,22 @@ impl Verb {
             } else {
                 format!("{{{}}}", name)
             }
-        }).to_string()
+        })
+        .to_string()
+        .split_whitespace()
+        .map(|token| {
+            let path = Path::new(token);
+            if path.exists() {
+                if let Ok(path) = path.canonicalize() {
+                    if let Some(path) = path.to_str() {
+                        return path.to_string();
+                    }
+                }
+            }
+            token.to_string()
+        })
+        .collect()
+
     }
     // build the cmd result for a verb defined with an exec pattern.
     // Calling this function on a built-in doesn't make sense

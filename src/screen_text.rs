@@ -46,11 +46,11 @@ impl Text {
     // - code: `some code`
     pub fn md_to_tty(&self, raw: &str) -> String {
         lazy_static! {
-            static ref bold_regex: Regex = Regex::new(r"\*\*([^*]+)\*\*").unwrap();
-            static ref code_regex: Regex = Regex::new(r"`([^`]+)`").unwrap();
+            static ref BOLD_REGEX: Regex = Regex::new(r"\*\*([^*]+)\*\*").unwrap();
+            static ref CODE_REGEX: Regex = Regex::new(r"`([^`]+)`").unwrap();
         }
-        let s = bold_regex.replace_all(raw, &*self.md_bold_repl);
-        let s = code_regex.replace_all(&s, &*self.md_code_repl);
+        let s = BOLD_REGEX.replace_all(raw, &*self.md_bold_repl);
+        let s = CODE_REGEX.replace_all(&s, &*self.md_code_repl);
         s.to_string()
     }
     // add a line from the line interpreted as "markdown"

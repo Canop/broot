@@ -20,9 +20,9 @@ pub trait TreeView {
 impl TreeView for Screen {
     fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
         lazy_static! {
-            static ref users_cache_mutex: Mutex<UsersCache> = Mutex::new(UsersCache::new());
+            static ref USERS_CACHE_MUTEX: Mutex<UsersCache> = Mutex::new(UsersCache::new());
         }
-        let users_cache = users_cache_mutex.lock().unwrap();
+        let users_cache = USERS_CACHE_MUTEX.lock().unwrap();
         let mut max_user_name_len = 0;
         let mut max_group_name_len = 0;
         if tree.options.show_permissions {
