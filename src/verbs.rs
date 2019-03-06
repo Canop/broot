@@ -208,8 +208,8 @@ impl Verb {
             }
             token.to_string()
         })
-        .collect()
-
+        .collect::<Vec<String>>()
+        .join(" ")
     }
     // build the cmd result for a verb defined with an exec pattern.
     // Calling this function on a built-in doesn't make sense
@@ -217,7 +217,7 @@ impl Verb {
         &self,
         file: &Path,
         args: &Option<String>,
-        screen: &mut Screen,
+        _screen: &mut Screen,
         con: &AppContext
     ) -> io::Result<AppStateCmdResult> {
         Ok(if self.from_shell {
