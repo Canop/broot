@@ -14,6 +14,8 @@ Currently, you can configure
 
 # Verbs
 
+## Verb Definition Attributes
+
 You can define a new verb in the TOML configuration file with a `[[verbs]]` section similar to this one:
 
 	[[verbs]]
@@ -21,7 +23,7 @@ You can define a new verb in the TOML configuration file with a `[[verbs]]` sect
 	shortcut = "e"
 	execution = "/usr/bin/nvim {file}"
 
-## Verb Definition Attributes
+The possible attributes are:
 
 name | mandatory | role
 -|-|-
@@ -52,8 +54,15 @@ Its interest is that if you do `:p`, then `enter`, it is executed even while the
 
 Use shortcuts for verbs you frequently use.
 
+### Verbs not leaving broot
 
-### Arguments
+If you set `leave_broot = false`, broot won't quit when executing your command, but it will update the tree.
+
+This is useful for commands modifying the tree (like creating or moving files).
+
+There's currently a  limitation: terminal based programs don't properly run if broot isn't closed before. It means you can't for example set `leave_broot = false` in verbs launching `vi` or `emacs`.
+
+## Verb Arguments
 
 The execution of a verb can take one or several arguments.
 
