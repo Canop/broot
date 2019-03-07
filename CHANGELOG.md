@@ -1,3 +1,12 @@
+<a name="v0.7.0"></a>
+### v0.7.0 - 2019-03-07
+##### Major changes
+- verbs can now accept complex arguments. This allows functions like mkdir, mv, cp, etc. and your own rich commands
+- custom verbs can be executed without leaving broot (if defined with `leave_broot=false`)
+##### Minor changes
+- Ctrl-Q shortcut to leave broot
+- fix a case of incorrect count of "unlisted" files
+
 <a name="v0.6.3"></a>
 ### v0.6.3 - 2019-02-23
 - `br` installer for the fish shell
