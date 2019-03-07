@@ -34,6 +34,7 @@ pub enum Action {
     Back,                      // back to last app state, or clear pattern
     Next,                      // goes to the next matching entry
     Help,                      // goes to help state
+    Quit,                      // quit broot
     Unparsed,                  // or unparsable
 }
 
@@ -132,6 +133,9 @@ impl Command {
             }
             Key::Alt('\r') | Key::Alt('\n') => {
                 self.action = Action::AltOpenSelection;
+            }
+            Key::Ctrl('q') => {
+                self.action = Action::Quit;
             }
             Key::Up => {
                 self.action = Action::MoveSelection(-1);
