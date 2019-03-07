@@ -1,0 +1,77 @@
+/********************/
+/* standard classes */
+
+body::before {
+	background: 0;
+}
+
+h1 {
+	font-size: 30px;
+}
+h2 {
+	font-size: 24px;
+}
+h3 {
+	font-size: 18px;
+}
+
+.navbar {
+	background-image: linear-gradient(#184965,#02121b);
+}
+
+pre {
+	padding: 0;
+	border-radius: 0;
+}
+
+kbd {
+	padding: 2px 4px;
+	color: #fff;
+	background-color: #333;
+	border-radius: 2px;
+	box-shadow: none;
+}
+
+kbd.b {
+	font-size: 18px;
+	padding: 0 5px;
+}
+
+.col-md-9 img {
+	max-width: 100%;
+	display: inline-block;
+	padding: 0;
+	line-height: 1.428571429;
+	background-color: #fff;
+	border: none;
+	border-radius: 0;
+	margin: 10px auto 20px auto;
+}
+
+.navbar-brand {
+	background: url(../img/vache-blanche.svg) no-repeat;
+	background-position: left center;
+	background-size: 40px 40px;
+	padding-left: 50px;
+}
+
+/******************/
+/* custom classes */
+
+.toc-header {
+	font-weight: bold;
+	font-size: 18px;
+	margin-left: 20px;
+	padding-bottom: 8px;
+	border-bottom: thin solid #335;
+}
+
+.logo-wrap {
+	display: flex;
+	height: 90px;
+	align-items: center;
+	justify-content: center;
+}
+.logo-wrap img {
+	width: 70px;
+}

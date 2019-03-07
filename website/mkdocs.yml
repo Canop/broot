@@ -1,0 +1,30 @@
+site_name: Broot
+site_description: 'Broot, a new way to navigate directory trees on linux, made in rust'
+site_url: https://dystroy.org/broot
+repo_url: https://github.com/Canop/broot
+edit_uri: ''
+
+nav:
+        - Why: index.md
+        - Documentation:
+                - Installation: documentation/installation.md
+                - Usage: documentation/usage.md
+                - Configuration: documentation/configuration.md
+                - Tips & Tricks: documentation/tricks.md
+        # - Screens: screens/screenshots.md
+        - Community: community.md
+
+extra_css:
+    - css/extra.css
+
+theme:
+        name: mkdocs
+        custom_dir: custom_theme
+        highlightjs: true
+        hljs_languages:
+                - yaml
+                - rust
+
+markdown_extensions:
+        - admonition
+        - def_list

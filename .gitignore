@@ -1,7 +1,6 @@
 bench.sh
 dev.log
 deploy.sh
-docs
 install.sh
 notes.md
 /releases
@@ -12,3 +11,5 @@ perf.data*
 off
 screens
 tests
+/website/site
+graphics

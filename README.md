@@ -2,9 +2,11 @@
 
 [![Build Status](https://travis-ci.org/Canop/broot.svg?branch=master)](https://travis-ci.org/Canop/broot)
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-en.svg?v=1)](https://miaou.dystroy.org/3490?broot)
-[![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3490?broot)
+[![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3)
 
-A better way to navigate directories.
+A better way to navigate directories
+
+[**Broot's Web Site**](https://dystroy.org/broot)
 
 ### Get an overview of a directory, even a big one:
 
@@ -58,54 +60,5 @@ Just find the file you want to edit with a few keystrokes, type `:e`, then `<ent
 
 ### More...
 
-See the complete [Documentation](documentation.md).
+See [Broot's web site](https://dystroy.org/broot) for instructions regarding installation and usage.
 
-## Installation
-
-### Compile
-
-You'll need to have the [Rust development environment](https://www.rust-lang.org/tools/install) installed.
-
-#### From crates.io
-
-    cargo install broot
-
-#### From Source
-
-Fetch the Canop/broot repository, move to the broot directory, then run
-
-    cargo build --release
-
-The executable is written in the `target/release` directory (you might want to move it to your `/usr/bin`, or to add the release directory to your path).
-
-Building from the repository, you'll get the most recent version... and the least tested one.
-
-### From up to date precompiled binaries
-
-* [x86_64-linux](https://dystroy.org/broot/x86_64-linux/broot)
-
-### Installation Completion : the `br` shell function
-
-broot is convenient to find a directory then `cd` to it, which is done using `<alt><enter>` or `:cd`.
-
-But broot needs a companion function in the shell in order to be able to change directory.
-
-To enable this feature, broot asks the permission to register this shell function on first run.
-
-When it's done, you can do just `br` to launch broot, and typing `<alt><enter>` will cd for you.
-
-## Development
-
-To make tests easier during development, a log file can be generated (and followed using `tail -f`) by using the BROOT_LOG environment variable.
-
-For example:
-
-    BROOT_LOG=debug cargo run
-
-or
-
-    BROOT_LOG=info cargo run
-
-If you want to discuss the code or features of broot, please come to [our chat](https://miaou.dystroy.org/3490?broot). Before you start coding for a PR, it would really be a good idea to come and talk about it.
-
-If you'd like a new feature, don't hesitate to ask for it.
