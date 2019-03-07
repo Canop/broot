@@ -52,6 +52,15 @@ impl VerbStore {
             true, // leaves broot
             false,
         ).unwrap());
+        self.verbs.push(Verb::create_external(
+            "cp {newpath}",
+            None,
+            "/bin/cp -r {file} {parent}/{newpath}".to_string(),
+            None,
+            false,
+            false,
+            false,
+        ).unwrap());
         self.add_builtin(
             "focus",
             Some("goto".to_string()),
