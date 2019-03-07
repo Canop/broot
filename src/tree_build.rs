@@ -98,11 +98,10 @@ impl BLine {
             return BLineResult::FilteredOutAsHidden;
         }
         let mut has_match = true;
-        let mut score = 0;
+        let mut score = 10000 - i32::from(depth); // we dope less deep entries
         if options.pattern.is_some() {
             if let Some(m) = options.pattern.find(&name) {
-                // we dope less deep entries
-                score = m.score + 10000 - i32::from(depth);
+                score += m.score;
             } else {
                 has_match = false;
             }
@@ -183,10 +182,11 @@ impl BLine {
             LineType::File
         };
         let unlisted = if let Some(children) = &self.children {
-            children.len() - self.next_child_idx
+            children.len() - (self.nb_kept_children as usize)
         } else {
             0
         };
+        //debug!("unlisted in {:?} : {}", &self.path, unlisted);
         TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
@@ -435,6 +435,7 @@ impl TreeBuilder {
             if bline.has_match && bline.nb_kept_children == 0 && (bline.depth > 1 || trim_root)
             // keep the complete first level when showing sizes
             {
+                //debug!("in list: {:?} score: {}",  &bline.path, bline.score);
                 remove_queue.push(SortableBLineIdx {
                     idx: *idx,
                     score: bline.score,
@@ -447,6 +448,7 @@ impl TreeBuilder {
         );
         while count > self.targeted_size {
             if let Some(sli) = remove_queue.pop() {
+                //debug!("removing {:?}", &self.blines[sli.idx].path);
                 self.blines[sli.idx].has_match = false;
                 let parent_idx = self.blines[sli.idx].parent_idx;
                 let mut parent = &mut self.blines[parent_idx];
