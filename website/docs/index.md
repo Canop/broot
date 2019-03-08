@@ -4,7 +4,7 @@
 <img src="img/vache.svg" height=140px title="You're a talented drawer ? You wish to contribute to open-source ? You know how to draw a goat chewing a tree branch ? And make it a lovely and readable logo ? GIMME!">
 </p>
 
-# Get an overview of a directory, even a big one:
+# Get an overview of a directory, even a big one
 
 ![overview](img/20190128-overview.png)
 
@@ -12,7 +12,7 @@ Notice the "unlisted"? That's what makes it usable where the old `tree` command 
 
 `.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see documentation).
 
-# Find a directory then `cd` to it:
+# Find a directory then `cd` to it
 
 ![cd](img/20190128-cd.png)
 
@@ -28,7 +28,7 @@ Most useful keys for this:
 * `<alt><enter>` to get back to the shell having `cd` to the selected directory
 * `:q` if you just want to quit (`<esc>` works too)
 
-# Never lose track of file hierarchy while you search:
+# Never lose track of file hierarchy while you search
 
 ![size](img/20190212-mycnf.png)
 
@@ -36,13 +36,13 @@ broot tries to select the most relevant file. You can still go from one match to
 
 You may also search with a regular expression. To do this, add a `/` before or after the pattern.
 
-# See what takes space:
+# See what takes space
 
 ![size](img/20190128-only-folders-with-size.png)
 
 To toggle size display, type `:s`. Sizes are computed in the background, you don't have to wait for them when you navigate.
 
-# Apply a personal shortcut to a file:
+# Apply a personal shortcut to a file
 
 ![size](img/20190128-edit.png)
 

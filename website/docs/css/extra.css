@@ -47,12 +47,36 @@ kbd.b {
 	border-radius: 0;
 	margin: 10px auto 20px auto;
 }
-
+.navbar-collapse {
+	padding-left: 0;
+}
+.bs-sidenav.nav li {
+	padding-left: 10px;
+}
+.bs-sidenav.nav li.main {
+	padding-left: 0px;
+}
 .navbar-brand {
 	background: url(../img/vache-blanche.svg) no-repeat;
 	background-position: left center;
 	background-size: 40px 40px;
 	padding-left: 50px;
+}
+
+.bs-sidebar .nav > li > a {
+	border-right: 1px solid transparent;
+}
+.bs-sidebar .nav > .active > a,
+.bs-sidebar .nav > .active:hover > a,
+.bs-sidebar .nav > .active:focus > a {
+	font-weight: initial;
+	background-color: #bed7e632;
+	border-right: 1px solid;
+}
+.bs-sidebar .nav > .main.active > a,
+.bs-sidebar .nav > .main.active:hover > a,
+.bs-sidebar .nav > .main.active:focus > a {
+	font-weight: bold;
 }
 
 /******************/
