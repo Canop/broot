@@ -168,14 +168,10 @@ impl Conf {
 const DEFAULT_CONF_FILE: &str = r#"
 # This configuration file lets you define new commands
 # or change the shortcut of built-in verbs.
+# You can change the colors of broot too.
 #
-# 'invocation' can be a letter or a word
-# 'execution' is either a command, where {file} will be replaced by the selected line,
-# 	or one of the built-in commands.
+# Configuration documentation is available at https://dystroy.org/broot
 #
-# The configuration documentation and complete list of built-in verbs
-# can be found in https://github.com/Canop/broot
-
 
 ###############################
 # shortcuts for built-in verbs:
