@@ -29,6 +29,7 @@ pub struct TreeLine {
     pub path: PathBuf,
     pub line_type: LineType,
     pub has_error: bool,
+    pub nb_kept_children: usize,
     pub unlisted: usize, // number of not listed children (Dir) or brothers (Pruning)
     pub score: i32,      // 0 if there's no pattern
     pub size: Option<Size>, // None when not measured
@@ -201,7 +202,7 @@ impl Tree {
                 if parent_index != last_parent_index {
                     // the line at end_index is the last listed child of the line at parent_index
                     let unlisted = self.lines[parent_index].unlisted;
-                    if unlisted > 0 {
+                    if unlisted > 0 && self.lines[end_index].nb_kept_children == 0 {
                         self.lines[end_index].line_type = LineType::Pruning;
                         self.lines[end_index].unlisted = unlisted + 1;
                         self.lines[parent_index].unlisted = 0;

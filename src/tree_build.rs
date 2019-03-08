@@ -182,11 +182,14 @@ impl BLine {
             LineType::File
         };
         let unlisted = if let Some(children) = &self.children {
-            children.len() - (self.nb_kept_children as usize)
+            //debug!(
+            //    "{:?} children.len()={} nb_kept_children={}",
+            //    &self.path, children.len(), self.nb_kept_children
+            //);
+            children.len() - self.next_child_idx
         } else {
             0
         };
-        //debug!("unlisted in {:?} : {}", &self.path, unlisted);
         TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
@@ -194,6 +197,7 @@ impl BLine {
             path: self.path.clone(),
             line_type,
             has_error,
+            nb_kept_children: self.nb_kept_children as usize,
             unlisted,
             score: self.score,
             mode,
@@ -435,7 +439,7 @@ impl TreeBuilder {
             if bline.has_match && bline.nb_kept_children == 0 && (bline.depth > 1 || trim_root)
             // keep the complete first level when showing sizes
             {
-                //debug!("in list: {:?} score: {}",  &bline.path, bline.score);
+                debug!("in list: {:?} score: {}",  &bline.path, bline.score);
                 remove_queue.push(SortableBLineIdx {
                     idx: *idx,
                     score: bline.score,
@@ -448,11 +452,12 @@ impl TreeBuilder {
         );
         while count > self.targeted_size {
             if let Some(sli) = remove_queue.pop() {
-                //debug!("removing {:?}", &self.blines[sli.idx].path);
+                debug!("removing {:?}", &self.blines[sli.idx].path);
                 self.blines[sli.idx].has_match = false;
                 let parent_idx = self.blines[sli.idx].parent_idx;
                 let mut parent = &mut self.blines[parent_idx];
                 parent.nb_kept_children -= 1;
+                parent.next_child_idx -= 1; // to fix the number of "unlisted"
                 if parent.nb_kept_children == 0 {
                     remove_queue.push(SortableBLineIdx {
                         idx: parent_idx,

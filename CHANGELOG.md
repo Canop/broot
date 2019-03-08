@@ -1,3 +1,7 @@
+<a name="v0.7.1"></a>
+### v0.7.1 - 2019-03-08
+- fix a few problems with the count of "unlisted" files
+
 <a name="v0.7.0"></a>
 ### v0.7.0 - 2019-03-07
 ##### Major changes
