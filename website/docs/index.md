@@ -1,7 +1,7 @@
 
 
 <p align=center style="max-width:600px">
-<img src="img/vache.svg" height=140px title="You're a talented drawer ? You wish to contribute to open-source ? You know how to draw a goat chewing a tree branch ? And make it a lovely and readable logo ? GIMME!">
+<img src="img/vache.svg" height=140px>
 </p>
 
 # Get an overview of a directory, even a big one

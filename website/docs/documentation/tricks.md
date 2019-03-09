@@ -28,6 +28,10 @@ Example:
 
 ## focus a new directory but keep the current filter
 
+When you hit `enter` on a directory, it's focused and the filter is reset.
+
+If you want to keep the filter, for example to search deeper, you may use `:focus` instead.
+
 Similarly, `:back` keeps can be used in place of `esc` to keep the filter when going to the previous state.
 
 ## Going from a fixed search to an exact one
