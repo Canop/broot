@@ -36,17 +36,27 @@ broot tries to select the most relevant file. You can still go from one match to
 
 You may also search with a regular expression. To do this, add a `/` before or after the pattern.
 
-# See what takes space
+# Manipulate your files
 
-![size](img/20190128-only-folders-with-size.png)
+![size](img/20190306-mv.png)
 
-To toggle size display, type `:s`. Sizes are computed in the background, you don't have to wait for them when you navigate.
+Most often you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
+
+You can instead to it without losing the view of the file hierarchy.
+
+Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
 # Apply a personal shortcut to a file
 
 ![size](img/20190128-edit.png)
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your preferred editor, see [documentation](documentation/usage.md#verbs)).
+
+# See what takes space
+
+![size](img/20190128-only-folders-with-size.png)
+
+To toggle size display, type `:s`. Sizes are computed in the background, you don't have to wait for them when you navigate.
 
 # More...
 
