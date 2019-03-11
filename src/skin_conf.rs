@@ -25,29 +25,26 @@ fn parse_gray(raw: &str) -> Result<Option<u8>, InvalidSkinError> {
 }
 
 enum ColorType {Foreground, Background}
+struct TypedColor {color: Box<Color>, typ: ColorType}
 
-fn color_str<C: Color>(color: C, typ: ColorType) -> String {
-    match typ {
-        ColorType::Foreground => format!("{}", Fg(color)),
-        ColorType::Background => format!("{}", Bg(color)),
+impl std::fmt::Display for TypedColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self.typ {
+            ColorType::Foreground => self.color.write_fg(f),
+            ColorType::Background => self.color.write_bg(f),
+        }
     }
 }
 
 macro_rules! define_color_from_name {
-    (
-        $($name:ident),*
-    ) => {
-        fn color_from_name(raw: &str, typ: ColorType) -> Result<String, InvalidSkinError> {
+    ( $($name:ident),* ) => {
+        fn color_from_name(raw: &str) -> Result<Box<Color>, InvalidSkinError> {
             if raw.eq_ignore_ascii_case("none") {
-                Ok(color_str(Reset, typ))
-            }
-            $(
-                else if raw.eq_ignore_ascii_case(stringify!($name)) {
-                    Ok(color_str($name, typ))
-                }
-            )*
-            else if let Some(level) = parse_gray(raw)? {
-                return Ok(color_str(AnsiValue::grayscale(level), typ));
+                Ok(Box::new(Reset))
+            } $(else if raw.eq_ignore_ascii_case(stringify!($name)) {
+                Ok(Box::new($name))
+            })* else if let Some(level) = parse_gray(raw)? {
+                Ok(Box::new(AnsiValue::grayscale(level)))
             } else {
                 Err(InvalidSkinError::InvalidColor{ raw: raw.to_string() })
             }
@@ -80,6 +77,7 @@ pub fn parse_config_entry(key: &str, value: &str) -> Result<String, ConfError>{
         k if k.ends_with("_fg") => Ok(ColorType:: Foreground),
         k if k.ends_with("_bg") => Ok(ColorType:: Background),
         _ => Err(InvalidSkinError::BadKey)
-    }.and_then(|typ| color_from_name(value, typ))
-    .map_err(|source| ConfError::InvalidSkinEntry{key: key.into(), source})
+    }.and_then(|typ|
+        Ok(TypedColor{ color: color_from_name(value)?, typ }.to_string())
+    ).map_err(|source| ConfError::InvalidSkinEntry{key: key.into(), source})
 }
