@@ -4,8 +4,6 @@ use regex::Regex;
 /// defining foreground and background colors into
 /// a string with TTY colors
 ///
-/// The code is ugly. Really. I know.
-/// I found no clean way to deal with termion colors.
 use std::result::Result;
 use termion::color::*;
 
@@ -69,7 +67,7 @@ define_color_from_name! {
     Red,
     Reset,
     White,
-    Yellow
+    Yellow,
 }
 
 pub fn parse_config_entry(key: &str, value: &str) -> Result<String, ConfError>{
