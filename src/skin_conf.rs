@@ -35,7 +35,7 @@ impl std::fmt::Display for TypedColor {
 }
 
 macro_rules! define_color_from_name {
-    ( $($name:ident),* ) => {
+    ( $($name:ident,)* ) => {
         fn color_from_name(raw: &str) -> Result<Box<Color>, InvalidSkinError> {
             if raw.eq_ignore_ascii_case("none") {
                 Ok(Box::new(Reset))
