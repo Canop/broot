@@ -3,6 +3,10 @@ use custom_error::custom_error;
 use regex;
 use std::io;
 
+custom_error! {
+    pub LaunchError {program:String, source: io::Error} = "Unable to launch {program}: {source}"
+}
+
 custom_error! {pub TreeBuildError
     NotADirectory { path: String } = "Not a directory: {}",
     FileNotFound { path: String } = "File not found: {}",

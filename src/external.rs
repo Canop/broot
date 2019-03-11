@@ -1,11 +1,12 @@
+use regex::Regex;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use regex::Regex;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
+use crate::errors::LaunchError;
 
 /// description of a possible launch of an external program
 /// (might be more complex, and a sequence of things to try, in the future).
@@ -35,7 +36,7 @@ impl Launchable {
             None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
         }
     }
-    pub fn execute(&self) -> io::Result<()> {
+    pub fn execute(&self) -> Result<(), LaunchError> {
         if self.just_print {
             print!("{}", &self.exe);
             for arg in &self.args {
@@ -45,8 +46,12 @@ impl Launchable {
         } else {
             Command::new(&self.exe)
                 .args(self.args.iter())
-                .spawn()?
-                .wait()?;
+                .spawn()
+                .and_then(|mut p| p.wait())
+                .map_err(|source| LaunchError {
+                    program: self.exe.clone().into(),
+                    source,
+                })?;
         }
         Ok(())
     }
@@ -73,7 +78,10 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
     Ok(
         if let Some(ref output_path) = con.launch_args.file_export_path {
             // an output path was provided, we write to it
-            let f = OpenOptions::new().create(true).append(true).open(output_path)?;
+            let f = OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(output_path)?;
             writeln!(&f, "{}", path)?;
             AppStateCmdResult::Quit
         } else {
@@ -82,6 +90,6 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
             let mut launchable = Launchable::from(vec![path])?;
             launchable.just_print = true;
             AppStateCmdResult::Launch(launchable)
-        }
+        },
     )
 }

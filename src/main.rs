@@ -115,7 +115,7 @@ fn main() {
         if let Err(e) = launchable.execute() {
             warn!("Failed to launch {:?}", &launchable);
             warn!("Error: {:?}", e);
-            println!("Failed to lauch executable: {:?}", e);
+            eprintln!("{}", e);
         }
     }
     info!("bye");

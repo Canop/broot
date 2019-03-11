@@ -43,7 +43,7 @@ version = "0.7.1"
 dependencies = [
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "crossbeam 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "custom_error 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "custom_error 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "directories 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "glob 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)",
  "jemallocator 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -158,7 +158,7 @@ dependencies = [
 
 [[package]]
 name = "custom_error"
-version = "1.5.1"
+version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -425,7 +425,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 "checksum crossbeam-epoch 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)" = "04c9e3102cc2d69cd681412141b390abd55a362afc1540965dad0ad4d34280b4"
 "checksum crossbeam-queue 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7c979cd6cfe72335896575c6b5688da489e420d36a27a0b9eb0c73db574b4a4b"
 "checksum crossbeam-utils 0.6.5 (registry+https://github.com/rust-lang/crates.io-index)" = "f8306fcef4a7b563b76b7dd949ca48f52bc1141aa067d2ea09565f3e2652aa5c"
-"checksum custom_error 1.5.1 (registry+https://github.com/rust-lang/crates.io-index)" = "6bb5f1cb8ddd932be36de6e15e835af6e95f45c214cad52ce602a18d96114236"
+"checksum custom_error 1.6.0 (registry+https://github.com/rust-lang/crates.io-index)" = "c189751d60563837f66c7ebf87f6a6e4c101e937d54521e88620e89c79b8a2ad"
 "checksum directories 1.0.2 (registry+https://github.com/rust-lang/crates.io-index)" = "72d337a64190607d4fcca2cb78982c5dd57f4916e19696b48a575fa746b6cb0f"
 "checksum fs_extra 1.1.0 (registry+https://github.com/rust-lang/crates.io-index)" = "5f2a4a2034423744d2cc7ca2068453168dcdb82c438419e639a26bd87839c674"
 "checksum glob 0.2.11 (registry+https://github.com/rust-lang/crates.io-index)" = "8be18de09a56b60ed0edf84bc9df007e30040691af7acd1c41874faac5895bfb"
