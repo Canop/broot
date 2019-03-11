@@ -1,4 +1,4 @@
-use crate::errors::ConfError;
+use crate::errors::{ConfError, InvalidSkinError};
 use regex::Regex;
 /// Manage conversion of a user provided string
 /// defining foreground and background colors into
@@ -9,62 +9,50 @@ use regex::Regex;
 use std::result::Result;
 use termion::color::*;
 
-fn parse_gray(raw: &str) -> Result<Option<u8>, ConfError> {
+fn parse_gray_option(raw: &str) -> Option<u8> {
     lazy_static! {
         static ref RE: Regex = Regex::new(r"^grayscale\((?P<level>\d+)\)$").unwrap();
     }
-    if let Some(c) = RE.captures(raw) {
-        if let Some(level) = c.name("level") {
-            if let Ok(level) = level.as_str().parse() {
-                return if level < 24 {
-                    Ok(Some(level))
-                } else {
-                    Err(ConfError::InvalidSkinEntry {
-                        reason: "gray level must be between 0 and 23".to_string(),
-                    })
-                };
-            }
-        }
-    }
-    Ok(None)
+    RE.captures(raw)?.name("level")?.as_str().parse().ok()
 }
 
-macro_rules! make_parseurs {
-    (
-        $($name:tt,)*
-    ) => {
-        pub fn parse_fg(raw: &str) -> Result<String, ConfError> {
-            if raw.eq_ignore_ascii_case("none") {
-                return Ok(format!("{}", Fg(Reset)));
-            }
-            $(
-                if raw.eq_ignore_ascii_case(stringify!($name)) {
-                    return Ok(format!("{}", Fg($name)));
-                }
-            )*
-            if let Some(level) = parse_gray(raw)? {
-                return Ok(format!("{}", Fg(AnsiValue::grayscale(level))));
-            }
-            return Err(ConfError::InvalidSkinEntry{reason:raw.to_string()});
-        }
-        pub fn parse_bg(raw: &str) -> Result<String, ConfError> {
-            if raw.eq_ignore_ascii_case("none") {
-                return Ok(format!("{}", Bg(Reset)));
-            }
-            $(
-                if raw.eq_ignore_ascii_case(stringify!($name)) {
-                    return Ok(format!("{}", Bg($name)));
-                }
-            )*
-            if let Some(level) = parse_gray(raw)? {
-                return Ok(format!("{}", Bg(AnsiValue::grayscale(level))));
-            }
-            return Err(ConfError::InvalidSkinEntry{reason:raw.to_string()});
+fn parse_gray(raw: &str) -> Result<Option<u8>, InvalidSkinError> {
+    match parse_gray_option(raw) {
+        Some(level) if level < 24 => Ok(Some(level)),
+        Some(level) => Err(InvalidSkinError::InvalidGreyLevel { level }),
+        None => Ok(None),
+    }
+}
+
+enum ColorType {Foreground, Background}
+struct TypedColor {color: Box<Color>, typ: ColorType}
+
+impl std::fmt::Display for TypedColor {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self.typ {
+            ColorType::Foreground => self.color.write_fg(f),
+            ColorType::Background => self.color.write_bg(f),
         }
     }
 }
 
-make_parseurs! {
+macro_rules! define_color_from_name {
+    ( $($name:ident),* ) => {
+        fn color_from_name(raw: &str) -> Result<Box<Color>, InvalidSkinError> {
+            if raw.eq_ignore_ascii_case("none") {
+                Ok(Box::new(Reset))
+            } $(else if raw.eq_ignore_ascii_case(stringify!($name)) {
+                Ok(Box::new($name))
+            })* else if let Some(level) = parse_gray(raw)? {
+                Ok(Box::new(AnsiValue::grayscale(level)))
+            } else {
+                Err(InvalidSkinError::InvalidColor{ raw: raw.to_string() })
+            }
+        }
+    }
+}
+
+define_color_from_name! {
     Black,
     Blue,
     Cyan,
@@ -81,5 +69,15 @@ make_parseurs! {
     Red,
     Reset,
     White,
-    Yellow,
+    Yellow
+}
+
+pub fn parse_config_entry(key: &str, value: &str) -> Result<String, ConfError>{
+    match key {
+        k if k.ends_with("_fg") => Ok(ColorType:: Foreground),
+        k if k.ends_with("_bg") => Ok(ColorType:: Background),
+        _ => Err(InvalidSkinError::BadKey)
+    }.and_then(|typ|
+        Ok(TypedColor{ color: color_from_name(value)?, typ }.to_string())
+    ).map_err(|source| ConfError::InvalidSkinEntry{key: key.into(), source})
 }
