@@ -140,7 +140,7 @@ impl AppState for BrowserState {
                     let tl = TaskLifetime::unlimited();
                     match &line.line_type {
                         LineType::File => {
-                            AppStateCmdResult::Launch(Launchable::opener(&line.path)?)
+                            AppStateCmdResult::Launch(Launchable::opener(line.path.clone()))
                         }
                         LineType::Dir | LineType::SymLinkToDir(_) => {
                             AppStateCmdResult::from_optional_state(
@@ -154,7 +154,7 @@ impl AppState for BrowserState {
                             )
                         }
                         LineType::SymLinkToFile(target) => {
-                            AppStateCmdResult::Launch(Launchable::opener(&PathBuf::from(target))?)
+                            AppStateCmdResult::Launch(Launchable::opener(PathBuf::from(target)))
                         }
                         _ => {
                             unreachable!();

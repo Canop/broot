@@ -2,6 +2,7 @@
 use custom_error::custom_error;
 use regex;
 use std::io;
+use opener;
 
 custom_error! {pub TreeBuildError
     NotADirectory { path: String } = "Not a directory: {}",
@@ -13,6 +14,7 @@ custom_error! {pub ProgramError
     Conf {source: ConfError} = "Bad configuration: {}",
     ArgParse {bad: String, valid: String} = "{:?} can't be parsed (valid values: {:?})",
     TreeBuild {source: TreeBuildError} = "{}",
+    OpenError {err: opener::OpenError} = "{}",
 }
 
 custom_error! {pub RegexError

@@ -36,14 +36,14 @@ impl VerbExecutor for HelpState {
                 Command::new(),
             ),
             ":help" => AppStateCmdResult::Keep,
-            ":open" => AppStateCmdResult::Launch(Launchable::opener(&Conf::default_location())?),
+            ":open" => AppStateCmdResult::Launch(Launchable::opener(Conf::default_location())),
             ":print_path" => external::print_path(&Conf::default_location(), con)?,
             ":quit" => AppStateCmdResult::Quit,
             _ => {
                 if verb.execution.starts_with(":toggle") {
                     AppStateCmdResult::PopStateAndReapply
                 } else {
-                    AppStateCmdResult::Launch(Launchable::from(
+                    AppStateCmdResult::Launch(Launchable::program(
                         verb.exec_token(&Conf::default_location(), &invocation.args),
                     )?)
                 }
