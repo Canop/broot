@@ -166,6 +166,11 @@ execution = ":parent"
 #####################
 # user defined verbs:
 
+# If $EDITOR isn't set on your computer, you should either set it
+#  or just replace it with your editor of choice in the 'execution'
+#  pattern.
+# Example:
+#  execution = "/usr/bin/nvim {file}"
 [[verbs]]
 invocation = "edit"
 shortcut = "e"
