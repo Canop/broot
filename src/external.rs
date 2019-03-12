@@ -1,3 +1,4 @@
+use std::env;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
@@ -17,6 +18,15 @@ pub struct Launchable {
     pub just_print: bool, // this part of the API will change
 }
 
+/// If s starts by a '$', replace it by the environment variable of the same name
+fn resolve_env_variable(s: String) -> String {
+    if s.starts_with('$') {
+        env::var(&s[1..]).unwrap_or(s)
+    } else {
+        s
+    }
+}
+
 impl Launchable {
     pub fn opener(path: &PathBuf) -> io::Result<Launchable> {
         Launchable::from(vec![
@@ -25,7 +35,7 @@ impl Launchable {
         ])
     }
     pub fn from(mut parts: Vec<String>) -> io::Result<Launchable> {
-        let mut parts = parts.drain(0..);
+        let mut parts = parts.drain(0..).map(resolve_env_variable);
         match parts.next() {
             Some(exe) => Ok(Launchable {
                 exe,

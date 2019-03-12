@@ -169,11 +169,11 @@ execution = ":parent"
 [[verbs]]
 invocation = "edit"
 shortcut = "e"
-execution = "/usr/bin/nvim {file}"
+execution = "$EDITOR {file}"
 
 [[verbs]]
 invocation = "create {subpath}"
-execution = "/usr/bin/nvim {directory}/{subpath}"
+execution = "$EDITOR {directory}/{subpath}"
 
 [[verbs]]
 name = "view"
