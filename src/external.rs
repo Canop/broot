@@ -7,7 +7,6 @@ use opener;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
-use crate::errors::LaunchError;
 use crate::errors::ProgramError;
 
 /// description of a possible launch of an external program
@@ -57,8 +56,8 @@ impl Launchable {
                   .args(args.iter())
                   .spawn()
                   .and_then(|mut p| p.wait())
-                  .map_err(|source| LaunchError {
-                      program: self.exe.clone().into(),
+                  .map_err(|source| ProgramError::LaunchError {
+                      program: exe.clone().into(),
                       source,
                   })?;
                 Ok(())
