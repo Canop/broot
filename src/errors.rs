@@ -19,7 +19,9 @@ custom_error! {pub ProgramError
 }
 
 custom_error! {pub RegexError
-    Parsing {source: regex::Error} = "Invalid Regular Expression",
+    Parsing {source: regex::Error} = @{
+        format!("Invalid Regular Expression: {}", source.to_string().lines().last().unwrap_or(""))
+    },
     UnknownFlag {bad: char} = "Unknown regular expression flag: {:?}",
 }
 
