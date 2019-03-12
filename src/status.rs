@@ -11,17 +11,21 @@ pub trait Status {
     fn write_status_err(&mut self, text: &str) -> io::Result<()>;
 }
 
-impl Status for Screen {
-    fn write_status_err(&mut self, text: &str) -> io::Result<()> {
-        let y = self.h - 1;
+impl Screen {
+    fn write_status(&mut self, text: &str, error: bool) -> io::Result<()> {
+        let skin = if error {
+            &self.skin.status_error
+        } else {
+            &self.skin.status_normal
+        };
         let mut text = String::from(text);
         text.truncate(self.w as usize - 2);
         write!(
             self.stdout,
             "{}{}{}{} {}{}",
-            termion::cursor::Goto(2, y),
-            self.skin.status_error.fg,
-            self.skin.status_error.bg,
+            termion::cursor::Goto(2, self.h - 1),
+            skin.fg,
+            skin.bg,
             termion::clear::CurrentLine,
             text,
             self.skin.reset.bg,
@@ -29,21 +33,14 @@ impl Status for Screen {
         self.stdout.flush()?;
         Ok(())
     }
+}
+
+impl Status for Screen {
+    fn write_status_err(&mut self, text: &str) -> io::Result<()> {
+        self.write_status(text, true)
+    }
+
     fn write_status_text(&mut self, text: &str) -> io::Result<()> {
-        let y = self.h - 1;
-        let mut text = String::from(text);
-        text.truncate(self.w as usize - 2);
-        write!(
-            self.stdout,
-            "{}{}{}{} {}{}",
-            termion::cursor::Goto(2, y),
-            self.skin.status_normal.fg,
-            self.skin.status_normal.bg,
-            termion::clear::CurrentLine,
-            text,
-            self.skin.reset.bg,
-        )?;
-        self.stdout.flush()?;
-        Ok(())
+        self.write_status(text, false)
     }
 }
