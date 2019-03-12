@@ -10,7 +10,6 @@ use crate::app_context::AppContext;
 use crate::errors::ProgramError;
 
 /// description of a possible launch of an external program
-/// (might be more complex, and a sequence of things to try, in the future).
 /// A launchable can only be executed on end of life of broot.
 #[derive(Debug)]
 pub enum Launchable {
@@ -57,7 +56,7 @@ impl Launchable {
                   .spawn()
                   .and_then(|mut p| p.wait())
                   .map_err(|source| ProgramError::LaunchError {
-                      program: exe.clone().into(),
+                      program: exe.clone(),
                       source,
                   })?;
                 Ok(())

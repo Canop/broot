@@ -15,7 +15,7 @@ custom_error! {pub ProgramError
     ArgParse {bad: String, valid: String} = "{:?} can't be parsed (valid values: {:?})",
     TreeBuild {source: TreeBuildError} = "{}",
     OpenError {err: opener::OpenError} = "{}",
-    LaunchError {program:String, source: io::Error} = "Unable to launch {program}: {source}",
+    LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
 }
 
 custom_error! {pub RegexError
