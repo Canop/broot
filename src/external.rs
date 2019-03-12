@@ -3,19 +3,28 @@ use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
+use opener;
 use regex::Regex;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
+use crate::errors::ProgramError;
 
 /// description of a possible launch of an external program
 /// (might be more complex, and a sequence of things to try, in the future).
 /// A launchable can only be executed on end of life of broot.
 #[derive(Debug)]
-pub struct Launchable {
-    exe: String,
-    args: Vec<String>,
-    pub just_print: bool, // this part of the API will change
+pub enum Launchable {
+    Printer { // just print something on stdout on end of broot
+        to_print: String,
+    },
+    Program { // execute an external program
+        exe: String,
+        args: Vec<String>,
+    },
+    SystemOpen { // open a path
+        path: PathBuf,
+    }
 }
 
 /// If s starts by a '$', replace it by the environment variable of the same name
@@ -28,37 +37,40 @@ fn resolve_env_variable(s: String) -> String {
 }
 
 impl Launchable {
-    pub fn opener(path: &PathBuf) -> io::Result<Launchable> {
-        Launchable::from(vec![
-            "xdg-open".to_string(),
-            path.to_string_lossy().to_string(),
-        ])
+    pub fn opener(path: PathBuf) -> Launchable {
+        Launchable::SystemOpen {
+            path
+        }
     }
-    pub fn from(mut parts: Vec<String>) -> io::Result<Launchable> {
+    pub fn printer(to_print: String) -> Launchable {
+        Launchable::Printer {
+            to_print
+        }
+    }
+    pub fn program(mut parts: Vec<String>) -> io::Result<Launchable> {
         let mut parts = parts.drain(0..).map(resolve_env_variable);
         match parts.next() {
-            Some(exe) => Ok(Launchable {
+            Some(exe) => Ok(Launchable::Program {
                 exe,
                 args: parts.collect(),
-                just_print: false,
             }),
             None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
         }
     }
-    pub fn execute(&self) -> io::Result<()> {
-        if self.just_print {
-            print!("{}", &self.exe);
-            for arg in &self.args {
-                print!(" {}", &arg);
+    pub fn execute(&self) -> Result<(), ProgramError> {
+        match self {
+            Launchable::Printer { to_print } => Ok(println!("{}", to_print)),
+            Launchable::Program { exe, args } => {
+                Command::new(&exe).args(args.iter()).spawn()?.wait()?;
+                Ok(())
             }
-            println!();
-        } else {
-            Command::new(&self.exe)
-                .args(self.args.iter())
-                .spawn()?
-                .wait()?;
+            Launchable::SystemOpen { path } => {
+                match opener::open(&path) {
+                    Ok(_) => Ok(()),
+                    Err(err) => Err(ProgramError::OpenError{err}),
+                }
+            }
         }
-        Ok(())
     }
 }
 
@@ -89,8 +101,7 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
         } else {
             // no output path provided. We write on stdout, but we must
             // do it after app closing to have the normal terminal
-            let mut launchable = Launchable::from(vec![path])?;
-            launchable.just_print = true;
+            let launchable = Launchable::printer(path);
             AppStateCmdResult::Launch(launchable)
         }
     )
