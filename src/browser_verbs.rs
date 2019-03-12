@@ -48,7 +48,7 @@ impl VerbExecutor for BrowserState {
             ":help" => {
                 AppStateCmdResult::NewState(Box::new(HelpState::new(screen)), Command::new())
             }
-            ":open" => AppStateCmdResult::Launch(Launchable::opener(&line.target())?),
+            ":open" => AppStateCmdResult::Launch(Launchable::opener(line.target())),
             ":parent" => match &line.target().parent() {
                 Some(path) => AppStateCmdResult::from_optional_state(
                     BrowserState::new(

@@ -239,7 +239,7 @@ impl Verb {
                 )
             }
         } else {
-            let launchable = external::Launchable::from(self.exec_token(file, args))?;
+            let launchable = external::Launchable::program(self.exec_token(file, args))?;
             if self.leave_broot {
                 AppStateCmdResult::Launch(launchable)
             } else {
