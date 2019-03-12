@@ -1,8 +1,8 @@
 //! Definitions of custom errors used in broot
 use custom_error::custom_error;
+use opener;
 use regex;
 use std::io;
-use opener;
 
 custom_error! {pub TreeBuildError
     NotADirectory { path: String } = "Not a directory: {}",
@@ -15,6 +15,7 @@ custom_error! {pub ProgramError
     ArgParse {bad: String, valid: String} = "{:?} can't be parsed (valid values: {:?})",
     TreeBuild {source: TreeBuildError} = "{}",
     OpenError {err: opener::OpenError} = "{}",
+    LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
 }
 
 custom_error! {pub RegexError

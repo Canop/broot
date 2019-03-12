@@ -1,17 +1,16 @@
 use std::env;
+use regex::Regex;
 use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use opener;
-use regex::Regex;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
 use crate::errors::ProgramError;
 
 /// description of a possible launch of an external program
-/// (might be more complex, and a sequence of things to try, in the future).
 /// A launchable can only be executed on end of life of broot.
 #[derive(Debug)]
 pub enum Launchable {
@@ -57,11 +56,19 @@ impl Launchable {
             None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
         }
     }
+
     pub fn execute(&self) -> Result<(), ProgramError> {
         match self {
             Launchable::Printer { to_print } => Ok(println!("{}", to_print)),
             Launchable::Program { exe, args } => {
-                Command::new(&exe).args(args.iter()).spawn()?.wait()?;
+                Command::new(&exe)
+                  .args(args.iter())
+                  .spawn()
+                  .and_then(|mut p| p.wait())
+                  .map_err(|source| ProgramError::LaunchError {
+                      program: exe.clone(),
+                      source,
+                  })?;
                 Ok(())
             }
             Launchable::SystemOpen { path } => {
@@ -95,7 +102,10 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
     Ok(
         if let Some(ref output_path) = con.launch_args.file_export_path {
             // an output path was provided, we write to it
-            let f = OpenOptions::new().create(true).append(true).open(output_path)?;
+            let f = OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(output_path)?;
             writeln!(&f, "{}", path)?;
             AppStateCmdResult::Quit
         } else {
@@ -103,6 +113,6 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
             // do it after app closing to have the normal terminal
             let launchable = Launchable::printer(path);
             AppStateCmdResult::Launch(launchable)
-        }
+        },
     )
 }
