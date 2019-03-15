@@ -32,6 +32,13 @@ From here you may navigate using the following keys:
 * <kbd>alt</kbd> + <kbd class=b>⏎</kbd> on a directory : leave broot and `cd` the shell to that directory.
 * <kbd>?</kbd> brings you to the help screen
 
+There are also a few more shortcuts:
+
+* moving one page up can be done with <kbd>Ctrl</kbd> <kbd>u</kbd>
+* moving one page down can be done with <kbd>Ctrl</kbd> <kbd>d</kbd>
+* you can quit with <kbd>Ctrl</kbd> <kbd>q</kbd>
+
+
 ## Fuzzy Patterns
 
 You would usually not just navigate this way: you'll filter the tree.

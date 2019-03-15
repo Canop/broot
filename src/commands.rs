@@ -143,10 +143,10 @@ impl Command {
             Key::Down => {
                 self.action = Action::MoveSelection(1);
             }
-            Key::PageUp => {
+            Key::PageUp | Key::Ctrl('u') => {
                 self.action = Action::ScrollPage(-1);
             }
-            Key::PageDown => {
+            Key::PageDown | Key::Ctrl('d') => {
                 self.action = Action::ScrollPage(1);
             }
             Key::Char(c) => {
