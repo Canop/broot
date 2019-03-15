@@ -1,3 +1,12 @@
+<a name="v0.7.2"></a>
+### v0.7.2 - 2019-03-15
+- env variables usable in verb execution patterns, which makes it possible to use `$EDITOR` in default conf.toml
+- ctrl-u and ctrl-d are now alternatives to page-up and page-down
+- better error messages regarding faulty configurations
+- more precise errors in case of invalid regexes
+- use the OS specific file opener instead of xdg-open (concretly it means `open` is now used on MacOS)
+Thanks Ophir LOJKINE for his contributions in this release
+
 <a name="v0.7.1"></a>
 ### v0.7.1 - 2019-03-08
 - fix a few problems with the count of "unlisted" files
