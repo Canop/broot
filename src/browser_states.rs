@@ -259,7 +259,8 @@ impl AppState for BrowserState {
     }
 
     fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
-        screen.write_tree(&self.displayed_tree())
+        let mut tree_view = TreeView::from_screen(screen);
+        tree_view.write_tree(&self.displayed_tree())
     }
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {

@@ -21,7 +21,7 @@ Before posting a new issue, check your problem hasn't already been raised and in
 
 ## Contribute
 
-**Broot** is written in [rust](https://www.rust-lang.org/). The current focus is linux but mac should be supported in the future and maybe windows too.
+**Broot** is written in [rust](https://www.rust-lang.org/). The current focus is linux+mac but windows should be supported in the future.
 
 Before starting working on a Pull Request, please join the Miaou room to coordinate the developement. There are frequently several feature branchs waiting to be merged and adding some wild ones may make the process painful.
 

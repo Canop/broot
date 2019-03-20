@@ -9,7 +9,7 @@ use std::fs;
 use std::ops::AddAssign;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
-use std::sync::{Mutex};
+use std::sync::Mutex;
 use std::time::Instant;
 use std::thread;
 use crossbeam::channel::unbounded;

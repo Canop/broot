@@ -8,17 +8,25 @@ use crate::file_sizes::Size;
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
 use crate::screens::{Screen, ScreenArea};
+use crate::skin::Skin;
 
-pub trait TreeView {
-    fn write_tree(&mut self, tree: &Tree) -> io::Result<()>;
-    fn write_line_size(&mut self, line: &TreeLine, total_size: Size) -> io::Result<()>;
-    fn write_mode(&mut self, mode: u32) -> io::Result<()>;
-    fn write_line_name(&mut self, line: &TreeLine, idx: usize, pattern: &Pattern)
-        -> io::Result<()>;
+pub struct TreeView<'a> {
+    w: u16,
+    h: u16,
+    out: &'a mut Write,
+    skin: &'a Skin,
 }
 
-impl TreeView for Screen {
-    fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
+impl TreeView<'_> {
+    pub fn from_screen(screen: &mut Screen) -> TreeView<'_> {
+            TreeView {
+                w: screen.w,
+                h: screen.h,
+                out: &mut screen.stdout,
+                skin: &screen.skin,
+            }
+    }
+    pub fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
         lazy_static! {
             static ref USERS_CACHE_MUTEX: Mutex<UsersCache> = Mutex::new(UsersCache::new());
         }
@@ -48,7 +56,7 @@ impl TreeView for Screen {
         };
         let scrollbar = area.scrollbar();
         for y in 1..self.h - 1 {
-            write!(self.stdout, "{}", termion::cursor::Goto(1, y),)?;
+            write!(self.out, "{}", termion::cursor::Goto(1, y),)?;
             let mut line_index = (y - 1) as usize;
             if line_index > 0 {
                 line_index += tree.scroll as usize;
@@ -56,10 +64,10 @@ impl TreeView for Screen {
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 //self.apply_skin_entry(&self.skin.tree)?;
-                write!(self.stdout, "{}", self.skin.tree.fgbg())?;
+                write!(self.out, "{}", self.skin.tree.fgbg())?;
                 for depth in 0..line.depth {
                     write!(
-                        self.stdout,
+                        self.out,
                         "{}",
                         if line.left_branchs[depth as usize] {
                             if tree.has_branch(line_index + 1, depth as usize) {
@@ -84,7 +92,7 @@ impl TreeView for Screen {
                         self.write_mode(line.mode)?;
                         if let Some(user) = users_cache.get_user_by_uid(line.uid) {
                             write!(
-                                self.stdout,
+                                self.out,
                                 " {:w$}",
                                 user.name().to_string_lossy(),
                                 w = max_user_name_len,
@@ -92,7 +100,7 @@ impl TreeView for Screen {
                         }
                         if let Some(group) = users_cache.get_group_by_gid(line.uid) {
                             write!(
-                                self.stdout,
+                                self.out,
                                 " {:w$} ",
                                 group.name().to_string_lossy(),
                                 w = max_group_name_len,
@@ -100,7 +108,7 @@ impl TreeView for Screen {
                         }
                     } else {
                         write!(
-                            self.stdout,
+                            self.out,
                             "{}──────────────{}",
                             self.skin.tree.fg, self.skin.reset.fg,
                         )?;
@@ -108,29 +116,29 @@ impl TreeView for Screen {
                 }
                 let selected = line_index == tree.selection;
                 if selected {
-                    write!(self.stdout, "{}", self.skin.selected_line.bg)?;
+                    write!(self.out, "{}", self.skin.selected_line.bg)?;
                 }
                 self.write_line_name(line, line_index, &tree.options.pattern)?;
             }
             write!(
-                self.stdout,
+                self.out,
                 "{}{}",
                 termion::clear::UntilNewline,
                 style::Reset,
             )?;
             if let Some((sctop, scbottom)) = scrollbar {
                 if sctop <= y && y <= scbottom {
-                    write!(self.stdout, "{}▐", termion::cursor::Goto(self.w, y),)?;
+                    write!(self.out, "{}▐", termion::cursor::Goto(self.w, y),)?;
                 }
             }
         }
-        self.stdout.flush()?;
+        self.out.flush()?;
         Ok(())
     }
 
     fn write_mode(&mut self, mode: u32) -> io::Result<()> {
         write!(
-            self.stdout,
+            self.out,
             "{} {}{}{}{}{}{}{}{}{}",
             self.skin.permissions.fg,
             if (mode & (1 << 8)) != 0 { 'r' } else { '-' },
@@ -150,21 +158,21 @@ impl TreeView for Screen {
             let dr: usize = s.discrete_ratio(total_size, 8) as usize;
             let s: Vec<char> = s.to_string().chars().collect();
             write!(
-                self.stdout,
+                self.out,
                 "{}{}",
                 self.skin.size_text.fg, self.skin.size_bar_full.bg,
             )?;
             for i in 0..dr {
-                write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
+                write!(self.out, "{}", if i < s.len() { s[i] } else { ' ' })?;
             }
-            write!(self.stdout, "{}", self.skin.size_bar_void.bg)?;
+            write!(self.out, "{}", self.skin.size_bar_void.bg)?;
             for i in dr..8 {
-                write!(self.stdout, "{}", if i < s.len() { s[i] } else { ' ' })?;
+                write!(self.out, "{}", if i < s.len() { s[i] } else { ' ' })?;
             }
-            write!(self.stdout, "{}{} ", self.skin.reset.fg, self.skin.reset.bg,)
+            write!(self.out, "{}{} ", self.skin.reset.fg, self.skin.reset.bg,)
         } else {
             write!(
-                self.stdout,
+                self.out,
                 "{}────────{} ",
                 self.skin.tree.fg, self.skin.reset.fg,
             )
@@ -182,7 +190,7 @@ impl TreeView for Screen {
             LineType::Dir => {
                 if idx == 0 {
                     write!(
-                        self.stdout,
+                        self.out,
                         "{}{}{}",
                         style::Bold,
                         &self.skin.directory.fg,
@@ -190,7 +198,7 @@ impl TreeView for Screen {
                     )?;
                 } else {
                     write!(
-                        self.stdout,
+                        self.out,
                         "{}{}{}",
                         style::Bold,
                         &self.skin.directory.fg,
@@ -202,14 +210,14 @@ impl TreeView for Screen {
                         ),
                     )?;
                     if line.unlisted > 0 {
-                        write!(self.stdout, " …",)?;
+                        write!(self.out, " …",)?;
                     }
                 }
             }
             LineType::File => {
                 if line.is_exe() {
                     write!(
-                        self.stdout,
+                        self.out,
                         "{}{}",
                         &self.skin.exe.fg,
                         decorated_name(
@@ -221,7 +229,7 @@ impl TreeView for Screen {
                     )?;
                 } else {
                     write!(
-                        self.stdout,
+                        self.out,
                         "{}{}",
                         &self.skin.file.fg,
                         decorated_name(
@@ -235,7 +243,7 @@ impl TreeView for Screen {
             }
             LineType::SymLinkToFile(target) => {
                 write!(
-                    self.stdout,
+                    self.out,
                     "{}{} {}->{} {}",
                     &self.skin.link.fg,
                     decorated_name(
@@ -255,7 +263,7 @@ impl TreeView for Screen {
             }
             LineType::SymLinkToDir(target) => {
                 write!(
-                    self.stdout,
+                    self.out,
                     "{}{} {}->{}{} {}",
                     &self.skin.link.fg,
                     decorated_name(
@@ -276,7 +284,7 @@ impl TreeView for Screen {
             }
             LineType::Pruning => {
                 write!(
-                    self.stdout,
+                    self.out,
                     //"{}{}… {} unlisted", still not sure whether I want this '…'
                     "{}{}{} unlisted",
                     self.skin.unlisted.fg,
