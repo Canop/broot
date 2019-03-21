@@ -1,8 +1,9 @@
+/// this module manages reading and translating
+/// the arguments passed on launch of the application.
+
 use crate::commands::Command;
 use crate::errors::{ProgramError, TreeBuildError};
 use crate::tree_options::TreeOptions;
-/// this module manages reading and translating
-/// the arguments passed on launch of the application.
 use clap;
 use std::env;
 use std::io::{self, stdin};
@@ -13,10 +14,12 @@ use termion::input::TermRead;
 pub struct AppLaunchArgs {
     pub root: PathBuf,                    // what should be the initial root
     pub file_export_path: Option<String>, // where to write the produced path (if required with --out)
-    pub cmd_export_path: Option<String>, // where to write the produced command (if required with --outcmd, or -oc)
-    pub tree_options: TreeOptions,       // initial tree options
-    pub commands: Vec<Command>,          // commands passed as cli argument
-    pub install: bool,                   // installation is required
+    pub cmd_export_path: Option<String>,  // where to write the produced command (if required with --outcmd, or -oc)
+    pub tree_options: TreeOptions,        // initial tree options
+    pub commands: Vec<Command>,           // commands passed as cli argument
+    pub install: bool,                    // installation is required
+    pub height: Option<u16>,              // an optional height to replace the screen's one
+    pub no_style: bool,                   // whether to remove all styles (including colors)
 }
 
 // declare the possible CLI arguments, and gets the values
@@ -60,9 +63,20 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
                 .help("show hidden files"),
         )
         .arg(
+            clap::Arg::with_name("height")
+                .long("height")
+                .help("height (if you don't want to fill the screen or for file export)")
+                .takes_value(true)
+        )
+        .arg(
             clap::Arg::with_name("install")
                 .long("install")
                 .help("install or reinstall the br shell function"),
+        )
+        .arg(
+            clap::Arg::with_name("no-style")
+                .long("no-style")
+                .help("whether to remove all style and colors"),
         )
         .arg(
             clap::Arg::with_name("only-folders")
@@ -132,6 +146,10 @@ pub fn read_lauch_args() -> Result<AppLaunchArgs, ProgramError> {
             .collect(),
         None => Vec::new(),
     };
+    let no_style = cli_args.is_present("no-style");
+    let height = cli_args
+        .value_of("height")
+        .and_then(|s| s.parse().ok());
     Ok(AppLaunchArgs {
         root,
         file_export_path,
@@ -139,6 +157,8 @@ pub fn read_lauch_args() -> Result<AppLaunchArgs, ProgramError> {
         tree_options,
         commands,
         install,
+        height,
+        no_style,
     })
 }
 

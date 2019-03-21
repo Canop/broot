@@ -1,7 +1,7 @@
 use std::env;
 use regex::Regex;
 use std::fs::OpenOptions;
-use std::io::{self, Write};
+use std::io::{self, Cursor, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use opener;
@@ -9,6 +9,10 @@ use opener;
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
 use crate::errors::ProgramError;
+use crate::flat_tree::Tree;
+use crate::screens::Screen;
+use crate::skin::Skin;
+use crate::tree_views::TreeView;
 
 /// description of a possible launch of an external program
 /// A launchable can only be executed on end of life of broot.
@@ -112,6 +116,38 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
             // no output path provided. We write on stdout, but we must
             // do it after app closing to have the normal terminal
             let launchable = Launchable::printer(path);
+            AppStateCmdResult::Launch(launchable)
+        },
+    )
+}
+
+pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    let no_style_skin = Skin::no_term();
+    let mut tree_view = TreeView::from_screen(screen);
+    tree_view.in_app = false;
+    Ok(
+        if let Some(ref output_path) = con.launch_args.file_export_path {
+            // an output path was provided, we write to it
+            let mut f = OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(output_path)?;
+            tree_view.out = &mut f;
+            tree_view.skin = &no_style_skin;
+            tree_view.write_tree(tree)?;
+            AppStateCmdResult::Quit
+        } else {
+            // no output path provided. We write on stdout, but we must
+            // do it after app closing to have the normal terminal
+            let mut curs: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+            tree_view.out = &mut curs;
+            if con.launch_args.no_style {
+                tree_view.skin = &no_style_skin;
+            }
+            tree_view.write_tree(tree)?;
+            let launchable = Launchable::printer(
+                String::from_utf8(curs.into_inner()).unwrap()
+            );
             AppStateCmdResult::Launch(launchable)
         },
     )

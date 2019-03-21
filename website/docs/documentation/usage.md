@@ -233,6 +233,7 @@ If you provide a path to broot with `--out`, then a few commands won't execute a
 
 This may be used by shell functions or other programs calling broot, in a similar way to `--outcmd`, for example in conjonction with ̀ --cmd`.
 
+<a name=cmd></a>
 ## the `--cmd` launch argument
 
 This argument lets you pass commands to broot. Those commands are executed exactly like any command you would type yourself in the application, a space meaning broot must wait for the end of execution.
@@ -259,3 +260,30 @@ The `--cmd` argument may be the basis for many of your own shell functions or pr
 
 !!!	Note
 	Due to the way a new char cancels an in progress search, you can't pass both a search and a verb in the same command, you have to separate them with a space. That is, if you want to search for `thing` then do `:rm` on the best match (assuming you like to live dangerously), you have to do `br --cmd "thing :rm"` instead of `br --cmd "thing:rm"`.
+
+# Export a tree
+
+If you want to use the pruned tree view out of broot (for example for a documentation), you may use the `:print_tree` verb.
+
+In can be used in several ways.
+
+The easiest is to just execute it from inside the application (the verb is also accessible with the `:pt` shortcut). This quits broot and you find the tree on your console, without the status line and the input, but with the same filtering state as when you were browsing.
+
+With the `--out` command, the tree is written in a passed file. For example `br --out test.txt`.
+
+!!!	Note
+	It's not possible today to simply redirect the output of broot into a file with `>>>`.
+
+You don't have to enter broot, you may also directly get the tree by using the [`--cmd` argument](#cmd). An additional parameter may come handy: `--height` which specifies the size of the virtual screen, which may be smaller or bigger than the real one (no problem if you want 10000 lines).
+
+Example with a filter:
+
+![exported styled tree](../img/20190321-cmd-pt-styled.png)
+
+Example without style or color, thanks to `--no-style`:
+
+![exported unstyled tree](../img/20190321-cmd-pt-unstyled.png)
+
+This is also how would look the tree directly exported into a file.
+
+

@@ -152,7 +152,7 @@ impl App {
     ) -> io::Result<Command> {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
-        screen.read_size()?;
+        screen.read_size(con)?;
         screen.write_input(&cmd)?;
         self.state().write_flags(screen, con)?;
         match self.mut_state().apply(&mut cmd, screen, con)? {
@@ -206,7 +206,7 @@ impl App {
 
     /// This is the main loop of the application
     pub fn run(mut self, con: &AppContext, skin: Skin) -> Result<Option<Launchable>, ProgramError> {
-        let mut screen = Screen::new(skin)?;
+        let mut screen = Screen::new(con, skin)?;
 
         // create the initial state
         if let Some(bs) = BrowserState::new(

@@ -1,8 +1,10 @@
-use crate::skin::Skin;
 use std::io::{self, stdout, Write};
 use termion::color;
 use termion::raw::{IntoRawMode, RawTerminal};
 use termion::screen::AlternateScreen;
+
+use crate::app_context::AppContext;
+use crate::skin::Skin;
 
 pub struct Screen {
     pub w: u16,
@@ -21,7 +23,7 @@ pub struct ScreenArea {
 }
 
 impl Screen {
-    pub fn new(skin: Skin) -> io::Result<Screen> {
+    pub fn new(con: &AppContext, skin: Skin) -> io::Result<Screen> {
         let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
         let mut screen = Screen {
             w: 0,
@@ -29,14 +31,17 @@ impl Screen {
             stdout,
             skin,
         };
-        screen.read_size()?;
+        screen.read_size(con)?;
         write!(screen.stdout, "{}", termion::cursor::Hide)?;
         Ok(screen)
     }
-    pub fn read_size(&mut self) -> io::Result<()> {
+    pub fn read_size(&mut self, con: &AppContext) -> io::Result<()> {
         let (w, h) = termion::terminal_size()?;
         self.w = w;
         self.h = h;
+        if let Some(h) = con.launch_args.height {
+            self.h = h;
+        }
         Ok(())
     }
     pub fn reset_colors(&mut self) -> io::Result<()> {
