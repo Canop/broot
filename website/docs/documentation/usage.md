@@ -19,7 +19,7 @@ You can pass as argument the path you want to see, for example
 
 ## Basics
 
-When you start broot, the current directory is displayed, with some directories open and or some lines truncated, in order to fit the available height.
+When you start broot, the current directory is displayed, with most often some directories open and some lines truncated, in order to fit the available height.
 
 The first line is called the root, and is currently selected.
 
@@ -29,6 +29,7 @@ From here you may navigate using the following keys:
 * <kbd class=b>⏎</kbd> on a simple file : leave broot and open the file using xdg-open
 * <kbd class=b>⏎</kbd> on a directory : focus the directory (i.e. make it the new root)
 * <kbd>esc</kbd> gets you back to the previous state (or leave broot if there's none)
+* <kbd>F5</kbd> refreshes the page
 * <kbd>alt</kbd> + <kbd class=b>⏎</kbd> on a directory : leave broot and `cd` the shell to that directory.
 * <kbd>?</kbd> brings you to the help screen
 
@@ -263,9 +264,9 @@ The `--cmd` argument may be the basis for many of your own shell functions or pr
 
 # Export a tree
 
-If you want to use the pruned tree view out of broot (for example for a documentation), you may use the `:print_tree` verb.
+If you want to use the pruned tree out of broot (for example for a documentation), you may use the `:print_tree` verb.
 
-In can be used in several ways.
+It can be used in several ways.
 
 The easiest is to just execute it from inside the application (the verb is also accessible with the `:pt` shortcut). This quits broot and you find the tree on your console, without the status line and the input, but with the same filtering state as when you were browsing.
 

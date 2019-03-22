@@ -48,7 +48,7 @@ macro_rules! Skin {
                         bg: "".to_string(),
                     },
                     style_folder: "".to_string(),
-                    style_pruning: " …".to_string(),
+                    style_pruning: " … ".to_string(),
                     style_reset: "".to_string(),
                 }
             }

@@ -10,7 +10,7 @@ use crate::verb_invocation::VerbInvocation;
 pub struct Command {
     pub raw: String,     // what's visible in the input
     parts: CommandParts, // the parsed parts of the visible input
-    pub action: Action, // what's required, based on the last key (which may be not visible, like esc)
+    pub action: Action,  // what's required, based on the last key (which may be not visible, like esc)
 }
 
 /// An intermediate parsed representation of the raw string
@@ -33,6 +33,7 @@ pub enum Action {
     RegexEdit(String, String), // a regex being edited (core & flags)
     Back,                      // back to last app state, or clear pattern
     Next,                      // goes to the next matching entry
+    Refresh,                   // refresh
     Help,                      // goes to help state
     Quit,                      // quit broot
     Unparsed,                  // or unparsable
@@ -142,6 +143,9 @@ impl Command {
             }
             Key::Down => {
                 self.action = Action::MoveSelection(1);
+            }
+            Key::F(5) => {
+                self.action = Action::Refresh;
             }
             Key::PageUp | Key::Ctrl('u') => {
                 self.action = Action::ScrollPage(-1);

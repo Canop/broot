@@ -9,12 +9,19 @@ use crate::patterns::Pattern;
 use crate::screens::{Screen, ScreenArea};
 use crate::skin::Skin;
 
+/// A tree writer, which can be used either to write on the screen in the application,
+/// or to write in a file or an exported string.
+/// Using it in the application (with in_app true) means
+///  - there will be a goto at start
+///  - the selection is drawn
+///  - a scrollbar may be drawn
+///  - the empty lines will be erased
 pub struct TreeView<'a> {
     pub w: u16,
     pub h: u16, // height of the tree part (so 2 lines less than the screen)
     pub out: &'a mut Write,
     pub skin: &'a Skin,
-    pub in_app: bool, // means we must goto, add a scrollbar
+    pub in_app: bool,
 }
 
 impl TreeView<'_> {

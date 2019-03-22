@@ -53,6 +53,7 @@ impl AppState for HelpState {
                 self.area.try_scroll(*dp * (self.area.height() - 1));
                 AppStateCmdResult::Keep
             }
+            Action::Refresh => AppStateCmdResult::RefreshState,
             Action::Quit => AppStateCmdResult::Quit,
             _ => AppStateCmdResult::Keep,
         })

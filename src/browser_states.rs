@@ -200,6 +200,7 @@ impl AppState for BrowserState {
             Action::Help => {
                 AppStateCmdResult::NewState(Box::new(HelpState::new(screen)), Command::new())
             }
+            Action::Refresh => AppStateCmdResult::RefreshState,
             Action::Quit => AppStateCmdResult::Quit,
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {

@@ -6,6 +6,8 @@ use termion::screen::AlternateScreen;
 use crate::app_context::AppContext;
 use crate::skin::Skin;
 
+/// A wrapper around the solution used to write on screen,
+/// the dimensions, and the skin
 pub struct Screen {
     pub w: u16,
     pub h: u16,
@@ -59,6 +61,7 @@ impl Drop for Screen {
         write!(self.stdout, "{}", termion::cursor::Show).unwrap();
         // if we don't flush now, the standard screen may receive some
         // unflushed data which was meant for the alternate screen.
+        // see https://gitlab.redox-os.org/redox-os/termion/issues/158
         self.stdout.flush().unwrap();
     }
 }

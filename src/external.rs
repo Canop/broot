@@ -145,10 +145,9 @@ pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Res
                 tree_view.skin = &no_style_skin;
             }
             tree_view.write_tree(tree)?;
-            let launchable = Launchable::printer(
+            AppStateCmdResult::Launch(Launchable::printer(
                 String::from_utf8(curs.into_inner()).unwrap()
-            );
-            AppStateCmdResult::Launch(launchable)
+            ))
         },
     )
 }

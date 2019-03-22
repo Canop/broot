@@ -15,12 +15,12 @@ use crate::external;
 use crate::screens::Screen;
 use crate::verb_invocation::VerbInvocation;
 
-// what makes a verb.
-//
-// There are two types of verbs executions:
-// - external programs or commands (cd, mkdir, user defined commands, etc.)
-// - built in behaviors (focusing a path, going back, showing the help, etc.)
-//
+/// what makes a verb.
+///
+/// There are two types of verbs executions:
+/// - external programs or commands (cd, mkdir, user defined commands, etc.)
+/// - built in behaviors (focusing a path, going back, showing the help, etc.)
+///
 #[derive(Debug, Clone)]
 pub struct Verb {
     pub invocation: VerbInvocation,// how the verb is supposed to be called (key may be replaced by shortcut)
