@@ -1,3 +1,8 @@
+<a name="v0.7.3"></a>
+### v0.7.3 - 2019-03-22
+- :print_tree outputs the tree. See [documentation](https://dystroy.org/broot/documentation/usage/#export-a-tree) for examples of use
+- F5 refreshes the tree
+
 <a name="v0.7.2"></a>
 ### v0.7.2 - 2019-03-15
 - env variables usable in verb execution patterns, which makes it possible to use `$EDITOR` in default conf.toml
