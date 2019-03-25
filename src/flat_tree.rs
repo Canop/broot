@@ -78,7 +78,9 @@ impl TreeLine {
             LineType::SymLinkToFile(target) | LineType::SymLinkToDir(target) => {
                 let mut target_path = PathBuf::from(target);
                 if target_path.is_relative() {
+                    debug!("remove 1");
                     target_path = self.path.parent().unwrap().join(target_path);
+                    debug!("remove 2");
                 }
                 if let Ok(canonic) = fs::canonicalize(&target_path) {
                     target_path = canonic;
@@ -153,7 +155,9 @@ impl Tree {
             self.options.clone(),
             page_height,
         )?;
+        debug!("remove 3");
         let mut tree = builder.build(&TaskLifetime::unlimited()).unwrap(); // should not fail
+        debug!("remove 4");
         // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);

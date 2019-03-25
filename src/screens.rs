@@ -1,7 +1,7 @@
-use std::io::{self, stdout, Write};
+use std::io::{self};
 use termion::color;
-use termion::raw::{IntoRawMode, RawTerminal};
-use termion::screen::AlternateScreen;
+
+use crossterm::{self, Crossterm};
 
 use crate::app_context::AppContext;
 use crate::skin::Skin;
@@ -11,7 +11,9 @@ use crate::skin::Skin;
 pub struct Screen {
     pub w: u16,
     pub h: u16,
-    pub stdout: AlternateScreen<RawTerminal<io::Stdout>>,
+    pub alternate_screen: crossterm::AlternateScreen,
+    //pub stdout: Arc<crossterm::TerminalOutput>,
+    //pub terminal : crossterm::Terminal,
     pub skin: Skin,
 }
 
@@ -26,15 +28,20 @@ pub struct ScreenArea {
 
 impl Screen {
     pub fn new(con: &AppContext, skin: Skin) -> io::Result<Screen> {
-        let stdout = AlternateScreen::from(stdout().into_raw_mode()?);
+        let screen = crossterm::Screen::default();
+        let alternate_screen = screen.enable_alternate_modes(true).unwrap();
+        //let crossterm = Crossterm::from_screen(&alternate_screen.screen);
+        //let terminal = crossterm.terminal();
         let mut screen = Screen {
             w: 0,
             h: 0,
-            stdout,
+            //terminal,
+            alternate_screen,
+            //stdout: alternate_screen.screen.stdout,
             skin,
         };
         screen.read_size(con)?;
-        write!(screen.stdout, "{}", termion::cursor::Hide)?;
+        screen.write(&format!("{}", termion::cursor::Hide));
         Ok(screen)
     }
     pub fn read_size(&mut self, con: &AppContext) -> io::Result<()> {
@@ -46,25 +53,41 @@ impl Screen {
         }
         Ok(())
     }
-    pub fn reset_colors(&mut self) -> io::Result<()> {
-        write!(
-            self.stdout,
+    pub fn reset_colors(&mut self) {
+        self.write(&format!(
             "{}{}",
             color::Fg(color::Reset),
             color::Bg(color::Reset),
-        )
+        ));
+    }
+    pub fn write(&mut self, s: &str) {
+        let crossterm = Crossterm::from_screen(&self.alternate_screen.screen);
+        let terminal = crossterm.terminal();
+        if let Err(e) = terminal.write(s) {
+            warn!("error in write: {:?}", e);
+        }
     }
 }
 
-impl Drop for Screen {
-    fn drop(&mut self) {
-        write!(self.stdout, "{}", termion::cursor::Show).unwrap();
-        // if we don't flush now, the standard screen may receive some
-        // unflushed data which was meant for the alternate screen.
-        // see https://gitlab.redox-os.org/redox-os/termion/issues/158
-        self.stdout.flush().unwrap();
-    }
-}
+//impl Drop for Screen {
+//    fn drop(&mut self) {
+//        write!(self.stdout, "{}", termion::cursor::Show).unwrap();
+//        // if we don't flush now, the standard screen may receive some
+//        // unflushed data which was meant for the alternate screen.
+//        // see https://gitlab.redox-os.org/redox-os/termion/issues/158
+//        self.stdout.flush().unwrap();
+//    }
+//}
+
+//impl Write for Screen {
+//    fn write(&mut self, buf: &[u8]) -> Result<usize> {
+//        self.stdout.write_buf(buf)
+//    }
+//
+//    fn flush(&mut self) -> Result<()> {
+//        self.stdout.flush()
+//    }
+//}
 
 impl ScreenArea {
     pub fn new(top: u16, bottom: u16, width: u16) -> ScreenArea {

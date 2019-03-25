@@ -135,7 +135,7 @@ impl Verb {
     fn replacement_map(&self, file: &Path, args: &Option<String>, for_shell: bool) -> HashMap<String, String> {
         let mut map = HashMap::new();
         // first we add the replacements computed from the given path
-        let parent = file.parent().unwrap();
+        let parent = file.parent().unwrap_or_else(||file.clone()); // when there's no parent... we take file
         let file_str = path_to_string(file, for_shell);
         let parent_str = path_to_string(parent, for_shell);
         map.insert("file".to_string(), file_str.to_string());

@@ -1,7 +1,7 @@
 //! the status module manages writing information on the grey line
 //!  near the bottom of the screen
 
-use std::io::{self, Write};
+use std::io::{self};
 use termion;
 
 use crate::screens::Screen;
@@ -20,8 +20,7 @@ impl Screen {
         };
         let mut text = String::from(text);
         text.truncate(self.w as usize - 2);
-        write!(
-            self.stdout,
+        self.write(&format!(
             "{}{}{}{} {}{}",
             termion::cursor::Goto(2, self.h - 1),
             skin.fg,
@@ -29,8 +28,7 @@ impl Screen {
             termion::clear::CurrentLine,
             text,
             self.skin.reset.bg,
-        )?;
-        self.stdout.flush()?;
+        ));
         Ok(())
     }
 }

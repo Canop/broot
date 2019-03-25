@@ -21,10 +21,13 @@ log = "0.4"
 simplelog = "0.5"
 clap = "2.32"
 glob = "0.2"
-users = "0.8"
 jemallocator = "0.1.9"
 crossbeam = "0.7"
 opener = "0.3.2"
+crossterm = "0.7.0"
+
+[target.'cfg(unix)'.dependencies]
+users = "0.8"
 
 [profile.release]
 lto = true

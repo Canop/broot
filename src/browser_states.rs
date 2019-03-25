@@ -1,7 +1,7 @@
 //! An application state dedicated to displaying a tree.
 //! It's the first and main screen of broot.
 
-use std::io::{self, Write};
+use std::io::{self};
 use std::path::PathBuf;
 use std::result::Result;
 use std::time::Instant;
@@ -346,8 +346,7 @@ impl AppState for BrowserState {
             None => &self.tree,
         };
         let total_char_size = 9;
-        write!(
-            screen.stdout,
+        screen.write(&format!(
             "{}{}{}{} h:{}{}{}{}{}  gi:{}{}{}",
             termion::cursor::Goto(screen.w - total_char_size, screen.h),
             screen.skin.flag_label.fg,
@@ -365,7 +364,7 @@ impl AppState for BrowserState {
                 OptionBool::Yes => 'y',
                 OptionBool::No => 'n',
             },
-        )?;
+        ));
         Ok(())
     }
 }

@@ -123,7 +123,7 @@ impl AppState for HelpState {
         text.md("  When gitignore is auto, .gitignore rules are respected if");
         text.md("   the displayed root is a git repository or in one.");
         self.area.content_length = text.height() as i32;
-        screen.reset_colors()?;
+        screen.reset_colors();
         text.write(screen, &self.area)?;
         Ok(())
     }

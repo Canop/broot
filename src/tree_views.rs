@@ -1,11 +1,10 @@
 use std::borrow::Cow;
 use std::io::{self, Write};
-use std::sync::Mutex;
-use users::{Groups, Users, UsersCache};
 
 use crate::file_sizes::Size;
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
+use crate::permissions;
 use crate::screens::{Screen, ScreenArea};
 use crate::skin::Skin;
 
@@ -30,30 +29,23 @@ impl TreeView<'_> {
             TreeView {
                 w: screen.w,
                 h: screen.h-2,
-                out: &mut screen.stdout,
+                out: &mut screen.alternate_screen.screen,
                 skin: &screen.skin,
                 in_app: true,
             }
     }
 
     pub fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {
-        lazy_static! {
-            static ref USERS_CACHE_MUTEX: Mutex<UsersCache> = Mutex::new(UsersCache::new());
-        }
-        let users_cache = USERS_CACHE_MUTEX.lock().unwrap();
-        let mut max_user_name_len = 0;
-        let mut max_group_name_len = 0;
+        let mut max_user_len = 0;
+        let mut max_group_len = 0;
         if tree.options.show_permissions {
             // we compute the max size of user/group names to reserve width for the columns
             for i in 1..tree.lines.len() {
                 let line = &tree.lines[i];
-                if let Some(user) = users_cache.get_user_by_uid(line.uid) {
-                    max_user_name_len = max_user_name_len.max(user.name().to_string_lossy().len());
-                }
-                if let Some(group) = users_cache.get_group_by_gid(line.uid) {
-                    max_group_name_len =
-                        max_group_name_len.max(group.name().to_string_lossy().len());
-                }
+                let user = permissions::user_name(line.uid);
+                max_user_len = max_user_len.max(user.len());
+                let group = permissions::group_name(line.gid);
+                max_group_len = max_group_len.max(group.len());
             }
         }
         let total_size = tree.total_size();
@@ -101,22 +93,20 @@ impl TreeView<'_> {
                 if tree.options.show_permissions && line_index > 0 {
                     if line.is_selectable() {
                         self.write_mode(line.mode)?;
-                        if let Some(user) = users_cache.get_user_by_uid(line.uid) {
-                            write!(
-                                self.out,
-                                " {:w$}",
-                                user.name().to_string_lossy(),
-                                w = max_user_name_len,
-                            )?;
-                        }
-                        if let Some(group) = users_cache.get_group_by_gid(line.uid) {
-                            write!(
-                                self.out,
-                                " {:w$} ",
-                                group.name().to_string_lossy(),
-                                w = max_group_name_len,
-                            )?;
-                        }
+                        let user = permissions::user_name(line.uid);
+                        write!(
+                            self.out,
+                            " {:w$}",
+                            &user,
+                            w = max_user_len,
+                        )?;
+                        let group = permissions::group_name(line.gid);
+                        write!(
+                            self.out,
+                            " {:w$} ",
+                            &group,
+                            w = max_group_len,
+                        )?;
                     } else {
                         write!(
                             self.out,

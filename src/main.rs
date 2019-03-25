@@ -23,6 +23,7 @@ mod help_states;
 mod help_verbs;
 mod input;
 mod patterns;
+mod permissions;
 mod regex_patterns;
 mod screen_text;
 mod screens;
