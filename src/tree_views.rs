@@ -50,7 +50,7 @@ impl TreeView<'_> {
                 if let Some(user) = users_cache.get_user_by_uid(line.uid) {
                     max_user_name_len = max_user_name_len.max(user.name().to_string_lossy().len());
                 }
-                if let Some(group) = users_cache.get_group_by_gid(line.uid) {
+                if let Some(group) = users_cache.get_group_by_gid(line.gid) {
                     max_group_name_len =
                         max_group_name_len.max(group.name().to_string_lossy().len());
                 }
@@ -109,7 +109,7 @@ impl TreeView<'_> {
                                 w = max_user_name_len,
                             )?;
                         }
-                        if let Some(group) = users_cache.get_group_by_gid(line.uid) {
+                        if let Some(group) = users_cache.get_group_by_gid(line.gid) {
                             write!(
                                 self.out,
                                 " {:w$} ",
@@ -151,7 +151,7 @@ impl TreeView<'_> {
     fn write_mode(&mut self, mode: u32) -> io::Result<()> {
         write!(
             self.out,
-            "{} {}{}{}{}{}{}{}{}{}",
+            "{}{}{}{}{}{}{}{}{}{}",
             self.skin.permissions.fg,
             if (mode & (1 << 8)) != 0 { 'r' } else { '-' },
             if (mode & (1 << 7)) != 0 { 'w' } else { '-' },
