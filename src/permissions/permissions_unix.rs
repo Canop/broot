@@ -3,7 +3,7 @@ use std::collections::{HashMap};
 use std::sync::Mutex;
 
 #[cfg(unix)]
-exter crate users;
+use users;
 
 #[cfg(unix)]
 pub fn user_name(uid: u32) -> String {
