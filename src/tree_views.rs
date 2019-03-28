@@ -133,7 +133,6 @@ impl TreeView<'_> {
                 write!(self.out, "\r\n",)?;
                 break; // no need to add empty lines
             }
-            write!(self.out, "{}", self.skin.style_reset)?;
             if self.in_app {
                 write!(self.out, "{}", termion::clear::UntilNewline)?;
                 if let Some((sctop, scbottom)) = scrollbar {
@@ -142,6 +141,7 @@ impl TreeView<'_> {
                     }
                 }
             }
+            write!(self.out, "{}", self.skin.style_reset)?;
             write!(self.out, "\r\n",)?;
         }
         self.out.flush()?;

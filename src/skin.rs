@@ -88,7 +88,7 @@ Skin! {
     input: White, Reset
     link: LightMagenta, Reset
     permissions: AnsiValue::grayscale(15), Reset
-    selected_line: Reset, AnsiValue::grayscale(3)
+    selected_line: Reset, AnsiValue::grayscale(4)
     size_bar_full: Reset, Magenta
     size_bar_void: Reset, AnsiValue::grayscale(2)
     size_text: AnsiValue::grayscale(15), Reset
