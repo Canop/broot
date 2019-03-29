@@ -123,7 +123,6 @@ impl TreeView<'_> {
                 write!(self.out, "\r\n",)?;
                 break; // no need to add empty lines
             }
-            write!(self.out, "{}", self.skin.style_reset)?;
             if self.in_app {
                 write!(self.out, "{}", termion::clear::UntilNewline)?;
                 if let Some((sctop, scbottom)) = scrollbar {
@@ -132,6 +131,7 @@ impl TreeView<'_> {
                     }
                 }
             }
+            write!(self.out, "{}", self.skin.style_reset)?;
             write!(self.out, "\r\n",)?;
         }
         self.out.flush()?;
@@ -141,7 +141,7 @@ impl TreeView<'_> {
     fn write_mode(&mut self, mode: u32) -> io::Result<()> {
         write!(
             self.out,
-            "{} {}{}{}{}{}{}{}{}{}",
+            "{}{}{}{}{}{}{}{}{}{}",
             self.skin.permissions.fg,
             if (mode & (1 << 8)) != 0 { 'r' } else { '-' },
             if (mode & (1 << 7)) != 0 { 'w' } else { '-' },

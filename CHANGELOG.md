@@ -1,3 +1,8 @@
+<a name="v0.7.4"></a>
+### v0.7.4 - 2019-03-25
+- fix verbs crashing broot in /
+- fix user displayed in place of user with :perm
+
 <a name="v0.7.3"></a>
 ### v0.7.3 - 2019-03-22
 - :print_tree outputs the tree. See [documentation](https://dystroy.org/broot/documentation/usage/#export-a-tree) for examples of use
