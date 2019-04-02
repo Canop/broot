@@ -55,8 +55,8 @@ impl AppStateCmdResult {
     }
 }
 
-// a whole application state, stackable to allow reverting
-//  to a previous one
+/// a whole application state, stackable to allow reverting
+///  to a previous one
 pub trait AppState {
     fn apply(
         &mut self,

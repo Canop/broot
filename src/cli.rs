@@ -22,7 +22,7 @@ pub struct AppLaunchArgs {
     pub no_style: bool,                   // whether to remove all styles (including colors)
 }
 
-// declare the possible CLI arguments, and gets the values
+/// declare the possible CLI arguments, and gets the values
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
         .version(env!("CARGO_PKG_VERSION"))
@@ -99,7 +99,7 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
         .get_matches()
 }
 
-// return the parsed launch arguments
+/// return the parsed launch arguments
 pub fn read_lauch_args() -> Result<AppLaunchArgs, ProgramError> {
     let cli_args = get_cli_args();
     let mut root = match cli_args.value_of("root") {

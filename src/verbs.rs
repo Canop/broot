@@ -52,6 +52,7 @@ fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
     let spec = format!("^{}$", spec);
     Regex::new(&spec.to_string()).or_else(|_| Err(ConfError::InvalidVerbInvocation{invocation: spec}))
 }
+
 fn path_to_string(path: &Path, for_shell: bool) -> String {
     if for_shell {
         external::escape_for_shell(path)
@@ -61,6 +62,8 @@ fn path_to_string(path: &Path, for_shell: bool) -> String {
 }
 
 impl Verb {
+    /// build a verb using standard configurable behavior.
+    /// "external" means not "built-in".
     pub fn create_external(
         invocation_str: &str,
         shortcut: Option<String>,
@@ -91,8 +94,9 @@ impl Verb {
             confirm,
         })
     }
-    // built-ins are verbs offering a logic other than the execution
-    //  based on exec_pattern. They mostly modify the appstate
+
+    /// built-ins are verbs offering a logic other than the execution
+    ///  based on exec_pattern. They mostly modify the appstate
     pub fn create_builtin(
         key: &str,
         shortcut: Option<String>,
@@ -113,8 +117,9 @@ impl Verb {
         }
     }
 
-    // the key is assumed to have been already checked
-    // (we can't check it here as it depends on the whole set of available verbs)
+    /// Assuming the verb has been matched, check whether the arguments
+    /// are OK according to the regex. Return none when there's no problem
+    /// and return the error to display if arguments don't match
     pub fn match_error(&self, invocation: &VerbInvocation) -> Option<String> {
         match (&invocation.args, &self.args_parser) {
             (None, None) => None,
@@ -132,6 +137,8 @@ impl Verb {
         }
     }
 
+    /// build the map which will be used to replace braced parts (i.e. like {part}) in
+    /// the execution pattern
     fn replacement_map(&self, file: &Path, args: &Option<String>, for_shell: bool) -> HashMap<String, String> {
         let mut map = HashMap::new();
         // first we add the replacements computed from the given path
@@ -159,6 +166,7 @@ impl Verb {
         }
         map
     }
+
     pub fn description_for(&self, path: PathBuf, args: &Option<String>) -> String {
         if let Some(s) = &self.description {
             s.clone()
@@ -166,8 +174,9 @@ impl Verb {
             self.shell_exec_string(&path, args)
         }
     }
-    // build the token which can be used to launch en executable.
-    // This doesn't make sense for a built-in.
+
+    /// build the token which can be used to launch en executable.
+    /// This doesn't make sense for a built-in.
     pub fn exec_token(&self, file: &Path, args: &Option<String>) -> Vec<String> {
         let map = self.replacement_map(file, args, false);
         self.execution
@@ -184,7 +193,8 @@ impl Verb {
             })
             .collect()
     }
-    // build a shell compatible command, with escapings
+
+    /// build a shell compatible command, with escapings
     pub fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
         let map = self.replacement_map(file, args, true);
         GROUP.replace_all(&self.execution, |ec:&Captures| {
@@ -211,8 +221,9 @@ impl Verb {
         .collect::<Vec<String>>()
         .join(" ")
     }
-    // build the cmd result for a verb defined with an exec pattern.
-    // Calling this function on a built-in doesn't make sense
+
+    /// build the cmd result for a verb defined with an exec pattern.
+    /// Calling this function on a built-in doesn't make sense
     pub fn to_cmd_result(
         &self,
         file: &Path,

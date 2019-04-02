@@ -134,7 +134,7 @@ impl AppState for BrowserState {
                     None => &self.tree,
                 };
                 if tree.selection == 0 {
-                    AppStateCmdResult::Quit
+                    AppStateCmdResult::Keep
                 } else {
                     let line = tree.selected_line();
                     let tl = TaskLifetime::unlimited();
