@@ -13,6 +13,9 @@ custom_error! {pub ProgramError
     Io {source: io::Error} = "IO Error : {:?}",
     Conf {source: ConfError} = "Bad configuration: {}",
     ArgParse {bad: String, valid: String} = "{:?} can't be parsed (valid values: {:?})",
+    UnknownVerb {key: String} = "No verb matches {:?}",
+    AmbiguousVerbKey {key: String} = "Ambiguous key: More than one verb matches {:?}",
+    UnmatchingVerbArgs {key: String} = "No matching argument found for verb {:?}",
     TreeBuild {source: TreeBuildError} = "{}",
     OpenError {err: opener::OpenError} = "{}",
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
@@ -32,10 +35,9 @@ custom_error! {pub InvalidSkinError
 }
 
 custom_error! {pub ConfError
-    Io{source: io::Error}                       = "unable to read from the file",
-    Toml{source: toml::de::Error}               = "unable to parse TOML",
-    MissingField{txt: String}                   = "missing field in conf",
-    InvalidSkinEntry{
-        key:String, source: InvalidSkinError}   = "Invalid skin configuration for {}: {}",
-    InvalidVerbInvocation{invocation: String}   = "invalid verb invocation: {}",
+    Io {source: io::Error}                                     = "unable to read from the file",
+    Toml {source: toml::de::Error}                             = "unable to parse TOML",
+    MissingField {txt: String}                                 = "missing field in conf",
+    InvalidSkinEntry { key:String, source: InvalidSkinError}   = "Invalid skin configuration for {}: {}",
+    InvalidVerbInvocation {invocation: String}                 = "invalid verb invocation: {}",
 }

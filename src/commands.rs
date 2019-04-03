@@ -27,8 +27,8 @@ pub enum Action {
     ScrollPage(i32),           // in number of pages, not lines
     OpenSelection,             // open the selected line
     AltOpenSelection,          // alternate open the selected line
-    VerbEdit(VerbInvocation),          // verb invocation, unfinished
-    Verb(VerbInvocation),              // verb invocation, after the user hit enter
+    VerbEdit(VerbInvocation),  // verb invocation, unfinished
+    Verb(VerbInvocation),      // verb invocation, after the user hit enter
     FuzzyPatternEdit(String),  // a pattern being edited
     RegexEdit(String, String), // a regex being edited (core & flags)
     Back,                      // back to last app state, or clear pattern
@@ -110,6 +110,7 @@ impl Command {
             action: Action::Unparsed,
         }
     }
+
     // build a command from a string
     // Note that this isn't used (or usable) for interpretation
     //  of the in-app user input. It's meant for interpretation
@@ -124,6 +125,7 @@ impl Command {
         let action = Action::from(&parts, raw.contains(':'));
         Command { raw, parts, action }
     }
+
     pub fn add_key(&mut self, key: Key) {
         match key {
             Key::Char('\t') => {

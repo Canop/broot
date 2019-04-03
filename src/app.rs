@@ -17,6 +17,7 @@ use termion::input::TermRead;
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::commands::Command;
+use crate::command_parsing::parse_command_sequence;
 use crate::errors::ProgramError;
 use crate::errors::TreeBuildError;
 use crate::external::Launchable;
@@ -224,12 +225,15 @@ impl App {
 
         // if some commands were passed to the application
         //  we execute them before even starting listening for keys
-        for arg_cmd in &con.launch_args.commands {
-            cmd = (*arg_cmd).clone();
-            cmd = self.apply_command(cmd, &mut screen, con)?;
-            self.do_pending_tasks(&cmd, &mut screen, con, TaskLifetime::unlimited())?;
-            if self.quitting {
-                return Ok(self.launch_at_end.take());
+        if let Some(unparsed_commands) = &con.launch_args.commands {
+            let commands = parse_command_sequence(unparsed_commands, con)?;
+            for arg_cmd in &commands {
+                cmd = (*arg_cmd).clone();
+                cmd = self.apply_command(cmd, &mut screen, con)?;
+                self.do_pending_tasks(&cmd, &mut screen, con, TaskLifetime::unlimited())?;
+                if self.quitting {
+                    return Ok(self.launch_at_end.take());
+                }
             }
         }
 

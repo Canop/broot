@@ -12,6 +12,7 @@ mod browser_states;
 mod browser_verbs;
 mod cli;
 mod commands;
+mod command_parsing;
 mod conf;
 mod errors;
 mod external;
