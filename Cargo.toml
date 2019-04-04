@@ -15,19 +15,19 @@ termion = "1.5"
 regex = "1"
 lazy_static = "1.2"
 directories = "1.0"
-toml = "0.4"
+toml = "0.5"
 custom_error = "1.6"
 log = "0.4"
 simplelog = "0.5"
 clap = "2.32"
-glob = "0.2"
-jemallocator = "0.1.9"
+glob = "0.3"
+jemallocator = "0.3"
 crossbeam = "0.7"
 opener = "0.3.2"
-crossterm = { git = "https://github.com/Canop/crossterm" }
+crossterm = "0.8"
 
 [target.'cfg(unix)'.dependencies]
-users = "0.8"
+users = "0.9"
 
 [profile.release]
 lto = true
