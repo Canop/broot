@@ -118,6 +118,8 @@ Let's say we don't want the type to contain dots, then we do this:
 	execution = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
 	from_shell = true
 
+You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
+
 # Colors
 
 You can change all colors by adding a `[skin]` section in your `conf.toml` file.

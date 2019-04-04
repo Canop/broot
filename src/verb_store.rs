@@ -4,6 +4,7 @@ use crate::verbs::Verb;
 /// Provide access to the verbs:
 /// - the built-in ones
 /// - the user defined ones
+/// A user defined verb can replace a built-in.
 /// When the user types some keys, we select a verb
 /// - if the input exactly matches a shortcut or the key
 /// - if only one verb key starts with the input
@@ -37,7 +38,27 @@ impl VerbStore {
         ));
     }
     pub fn init(&mut self, conf: &Conf) {
-        // we first add the built-in verbs
+        // we first add the verbs coming from configuration, as
+        // we'll search in order. This way, a user can overload a
+        // standard verb.
+        for verb_conf in &conf.verbs {
+            match Verb::create_external(
+                &verb_conf.invocation,
+                verb_conf.shortcut.clone(),
+                verb_conf.execution.clone(),
+                verb_conf.description.clone(),
+                verb_conf.from_shell.unwrap_or(false),
+                verb_conf.leave_broot.unwrap_or(true),
+                verb_conf.confirm.unwrap_or(false),
+            ) {
+                Ok(v) => {
+                    self.verbs.push(v);
+                }
+                Err(e) => {
+                    eprintln!("Verb error: {:?}", e);
+                }
+            }
+        }
         self.add_builtin(
             "back",
             None,
@@ -153,24 +174,6 @@ impl VerbStore {
             Some("t".to_string()),
             "toggle removing nodes at first level too (default)",
         );
-        for verb_conf in &conf.verbs {
-            match Verb::create_external(
-                &verb_conf.invocation,
-                verb_conf.shortcut.clone(),
-                verb_conf.execution.clone(),
-                verb_conf.description.clone(),
-                verb_conf.from_shell.unwrap_or(false),
-                verb_conf.leave_broot.unwrap_or(true),
-                verb_conf.confirm.unwrap_or(false),
-            ) {
-                Ok(v) => {
-                    self.verbs.push(v);
-                }
-                Err(e) => {
-                    eprintln!("Verb error: {:?}", e);
-                }
-            }
-        }
     }
     pub fn search(&self, prefix: &str) -> PrefixSearchResult<&Verb> {
         let mut found_index = 0;
