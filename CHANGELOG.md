@@ -1,3 +1,8 @@
+<a name="v0.7.5"></a>
+### v0.7.5 - 2019-04-03
+- try to give arguments to verbs executed with --cmd
+- Hitting <enter> no longer quits when root is selected (many users found it confusing)
+
 <a name="v0.7.4"></a>
 ### v0.7.4 - 2019-03-25
 - fix verbs crashing broot in /

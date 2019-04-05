@@ -1,7 +1,6 @@
 /// this module manages reading and translating
 /// the arguments passed on launch of the application.
 
-use crate::commands::Command;
 use crate::errors::{ProgramError, TreeBuildError};
 use crate::tree_options::TreeOptions;
 use clap;
@@ -16,13 +15,13 @@ pub struct AppLaunchArgs {
     pub file_export_path: Option<String>, // where to write the produced path (if required with --out)
     pub cmd_export_path: Option<String>,  // where to write the produced command (if required with --outcmd, or -oc)
     pub tree_options: TreeOptions,        // initial tree options
-    pub commands: Vec<Command>,           // commands passed as cli argument
+    pub commands: Option<String>,         // commands passed as cli argument, still unparsed
     pub install: bool,                    // installation is required
     pub height: Option<u16>,              // an optional height to replace the screen's one
     pub no_style: bool,                   // whether to remove all styles (including colors)
 }
 
-// declare the possible CLI arguments, and gets the values
+/// declare the possible CLI arguments, and gets the values
 fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
     clap::App::new("broot")
         .version(env!("CARGO_PKG_VERSION"))
@@ -99,7 +98,7 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
         .get_matches()
 }
 
-// return the parsed launch arguments
+/// return the parsed launch arguments
 pub fn read_lauch_args() -> Result<AppLaunchArgs, ProgramError> {
     let cli_args = get_cli_args();
     let mut root = match cli_args.value_of("root") {
@@ -139,13 +138,9 @@ pub fn read_lauch_args() -> Result<AppLaunchArgs, ProgramError> {
     let cmd_export_path = cli_args
         .value_of("cmd_export_path")
         .and_then(|s| Some(s.to_owned()));
-    let commands: Vec<Command> = match cli_args.value_of("commands") {
-        Some(str) => str
-            .split(' ')
-            .map(|s| Command::from(s.to_string()))
-            .collect(),
-        None => Vec::new(),
-    };
+    let commands = cli_args
+        .value_of("commands")
+        .and_then(|s| Some(s.to_owned()));
     let no_style = cli_args.is_present("no-style");
     let height = cli_args
         .value_of("height")

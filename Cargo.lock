@@ -84,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "0.7.4"
+version = "0.7.5"
 dependencies = [
  "clap 2.32.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "crossbeam 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
