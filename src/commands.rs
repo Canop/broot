@@ -3,7 +3,7 @@
 //!  (verbs arent checked at this point)
 
 use regex::Regex;
-use termion::event::Key;
+use crossterm::{KeyEvent};
 use crate::verb_invocation::VerbInvocation;
 
 #[derive(Debug, Clone)]
@@ -126,36 +126,36 @@ impl Command {
         Command { raw, parts, action }
     }
 
-    pub fn add_key(&mut self, key: Key) {
+    pub fn add_key(&mut self, key: KeyEvent) {
         match key {
-            Key::Char('\t') => {
+            KeyEvent::Char('\t') => {
                 self.action = Action::Next;
             }
-            Key::Char('\n') => {
+            KeyEvent::Char('\n') => {
                 self.action = Action::from(&self.parts, true);
             }
-            Key::Alt('\r') | Key::Alt('\n') => {
+            KeyEvent::Alt('\r') | KeyEvent::Alt('\n') => {
                 self.action = Action::AltOpenSelection;
             }
-            Key::Ctrl('q') => {
+            KeyEvent::Ctrl('q') => {
                 self.action = Action::Quit;
             }
-            Key::Up => {
+            KeyEvent::Up => {
                 self.action = Action::MoveSelection(-1);
             }
-            Key::Down => {
+            KeyEvent::Down => {
                 self.action = Action::MoveSelection(1);
             }
-            Key::F(5) => {
+            KeyEvent::F(5) => {
                 self.action = Action::Refresh;
             }
-            Key::PageUp | Key::Ctrl('u') => {
+            KeyEvent::PageUp | KeyEvent::Ctrl('u') => {
                 self.action = Action::ScrollPage(-1);
             }
-            Key::PageDown | Key::Ctrl('d') => {
+            KeyEvent::PageDown | KeyEvent::Ctrl('d') => {
                 self.action = Action::ScrollPage(1);
             }
-            Key::Char(c) => {
+            KeyEvent::Char(c) => {
                 if c == '?' && self.raw.is_empty() {
                     // as first character, a '?' is a request for help
                     self.action = Action::Help;
@@ -165,10 +165,10 @@ impl Command {
                     self.action = Action::from(&self.parts, false);
                 }
             }
-            Key::Esc => {
+            KeyEvent::Esc => {
                 self.action = Action::Back;
             }
-            Key::Backspace => {
+            KeyEvent::Backspace => {
                 if self.raw == "" {
                     self.action = Action::Back;
                 } else {

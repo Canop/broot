@@ -1,7 +1,7 @@
 use std::io::{self};
 use termion::color;
 
-use crossterm::{self, Crossterm};
+use crossterm::{self, Crossterm, TerminalCursor};
 
 use crate::app_context::AppContext;
 use crate::skin::Skin;
@@ -11,9 +11,8 @@ use crate::skin::Skin;
 pub struct Screen {
     pub w: u16,
     pub h: u16,
-    pub alternate_screen: crossterm::AlternateScreen,
-    //pub stdout: Arc<crossterm::TerminalOutput>,
-    //pub terminal : crossterm::Terminal,
+    pub alternate_screen: crossterm::AlternateScreen, // alternateScree.screen implements Write
+    //pub crossterm: crossterm::Crossterm,
     pub skin: Skin,
 }
 
@@ -31,16 +30,15 @@ impl Screen {
         let screen = crossterm::Screen::default();
         let alternate_screen = screen.enable_alternate_modes(true).unwrap();
         //let crossterm = Crossterm::from_screen(&alternate_screen.screen);
-        //let terminal = crossterm.terminal();
         let mut screen = Screen {
             w: 0,
             h: 0,
-            //terminal,
             alternate_screen,
-            //stdout: alternate_screen.screen.stdout,
+            //crossterm,
             skin,
         };
         screen.read_size(con)?;
+        info!("screen size: {} x {}", screen.w, screen.h);
         screen.write(&format!("{}", termion::cursor::Hide));
         Ok(screen)
     }
@@ -60,12 +58,28 @@ impl Screen {
             color::Bg(color::Reset),
         ));
     }
+    pub fn flush(&mut self) -> io::Result<()> {
+        self.alternate_screen.screen.stdout.flush()
+    }
     pub fn write(&mut self, s: &str) {
         let crossterm = Crossterm::from_screen(&self.alternate_screen.screen);
         let terminal = crossterm.terminal();
         if let Err(e) = terminal.write(s) {
             warn!("error in write: {:?}", e);
         }
+        self.flush().unwrap();
+    }
+    pub fn goto(&mut self, x: u16, y: u16) {
+        let cursor = TerminalCursor::from_output(&self.alternate_screen.screen.stdout);
+        info!("goto x={}, y={}", x, y);
+        cursor.goto(x+1, y+1).unwrap();
+    }
+}
+
+impl Drop for Screen {
+    fn drop(&mut self) {
+        let cursor = TerminalCursor::from_output(&self.alternate_screen.screen.stdout);
+        cursor.show().unwrap();
     }
 }
 

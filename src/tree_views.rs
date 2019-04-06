@@ -30,6 +30,7 @@ impl TreeView<'_> {
                 w: screen.w,
                 h: screen.h-2,
                 out: &mut screen.alternate_screen.screen,
+                //out: &mut screen.crossterm.terminal(),
                 skin: &screen.skin,
                 in_app: true,
             }

@@ -346,9 +346,11 @@ impl AppState for BrowserState {
             None => &self.tree,
         };
         let total_char_size = 9;
+        screen.goto(screen.w - total_char_size, screen.h);
         screen.write(&format!(
-            "{}{}{}{} h:{}{}{}{}{}  gi:{}{}{}",
-            termion::cursor::Goto(screen.w - total_char_size, screen.h),
+            //"{}{}{}{} h:{}{}{}{}{}  gi:{}{}{}",
+            //termion::cursor::Goto(screen.w - total_char_size, screen.h),
+            "{}{}{} h:{}{}{}{}{}  gi:{}{}{}",
             screen.skin.flag_label.fg,
             screen.skin.flag_label.bg,
             termion::clear::UntilNewline,
