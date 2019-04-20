@@ -140,10 +140,10 @@ impl Command {
             Key::Ctrl('q') => {
                 self.action = Action::Quit;
             }
-            Key::Up => {
+            Key::Up | Key::Ctrl('p') => {
                 self.action = Action::MoveSelection(-1);
             }
-            Key::Down => {
+            Key::Down | Key::Ctrl('n') => {
                 self.action = Action::MoveSelection(1);
             }
             Key::F(5) => {

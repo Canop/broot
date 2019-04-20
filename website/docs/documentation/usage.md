@@ -25,7 +25,8 @@ The first line is called the root, and is currently selected.
 
 From here you may navigate using the following keys:
 
-* <kbd class=b>↓</kbd> or <kbd class=b>↑</kbd> : select the next or previous line
+* <kbd class=b>↓</kbd> or <kbd>ctrl</kbd> <kbd>n</kbd> : select the next line
+* <kbd class=b>↑</kbd> or <kbd>ctrl</kbd> <kbd>p</kbd> : select the previous line
 * <kbd class=b>⏎</kbd> on a simple file : leave broot and open the file using xdg-open
 * <kbd class=b>⏎</kbd> on a directory : focus the directory (i.e. make it the new root)
 * <kbd>esc</kbd> gets you back to the previous state (or leave broot if there's none)
