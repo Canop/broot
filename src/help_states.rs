@@ -10,8 +10,8 @@ use crate::screen_text::{Text, TextTable};
 use crate::screens::{Screen, ScreenArea};
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
+use crate::verb_store::PrefixSearchResult;
 use crate::verbs::{Verb, VerbExecutor};
-use crate::verb_store::{PrefixSearchResult};
 
 pub struct HelpState {
     area: ScreenArea, // where the help is drawn
@@ -42,7 +42,9 @@ impl AppState for HelpState {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
             Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation, screen, con)?,
+                PrefixSearchResult::Match(verb) => {
+                    self.execute_verb(verb, &invocation, screen, con)?
+                }
                 _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::MoveSelection(dy) => {
@@ -59,11 +61,7 @@ impl AppState for HelpState {
         })
     }
 
-    fn refresh(
-        &mut self,
-        _screen: &Screen,
-        _con: &AppContext,
-    ) -> Command {
+    fn refresh(&mut self, _screen: &Screen, _con: &AppContext) -> Command {
         Command::new()
     }
 
@@ -142,7 +140,7 @@ impl AppState for HelpState {
                                 &verb.invocation.key,
                                 &verb.description_for(Conf::default_location(), &invocation.args)
                             )
-                            .to_string()
+                            .to_string(),
                         )
                     }
                 }

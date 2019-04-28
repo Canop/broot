@@ -1,10 +1,10 @@
-use std::env;
+use opener;
 use regex::Regex;
+use std::env;
 use std::fs::OpenOptions;
 use std::io::{self, Cursor, Write};
 use std::path::{Path, PathBuf};
 use std::process::Command;
-use opener;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
@@ -18,16 +18,19 @@ use crate::tree_views::TreeView;
 /// A launchable can only be executed on end of life of broot.
 #[derive(Debug)]
 pub enum Launchable {
-    Printer { // just print something on stdout on end of broot
+    Printer {
+        // just print something on stdout on end of broot
         to_print: String,
     },
-    Program { // execute an external program
+    Program {
+        // execute an external program
         exe: String,
         args: Vec<String>,
     },
-    SystemOpen { // open a path
+    SystemOpen {
+        // open a path
         path: PathBuf,
-    }
+    },
 }
 
 /// If s starts by a '$', replace it by the environment variable of the same name
@@ -41,14 +44,10 @@ fn resolve_env_variable(s: String) -> String {
 
 impl Launchable {
     pub fn opener(path: PathBuf) -> Launchable {
-        Launchable::SystemOpen {
-            path
-        }
+        Launchable::SystemOpen { path }
     }
     pub fn printer(to_print: String) -> Launchable {
-        Launchable::Printer {
-            to_print
-        }
+        Launchable::Printer { to_print }
     }
     pub fn program(mut parts: Vec<String>) -> io::Result<Launchable> {
         let mut parts = parts.drain(0..).map(resolve_env_variable);
@@ -66,21 +65,19 @@ impl Launchable {
             Launchable::Printer { to_print } => Ok(println!("{}", to_print)),
             Launchable::Program { exe, args } => {
                 Command::new(&exe)
-                  .args(args.iter())
-                  .spawn()
-                  .and_then(|mut p| p.wait())
-                  .map_err(|source| ProgramError::LaunchError {
-                      program: exe.clone(),
-                      source,
-                  })?;
+                    .args(args.iter())
+                    .spawn()
+                    .and_then(|mut p| p.wait())
+                    .map_err(|source| ProgramError::LaunchError {
+                        program: exe.clone(),
+                        source,
+                    })?;
                 Ok(())
             }
-            Launchable::SystemOpen { path } => {
-                match opener::open(&path) {
-                    Ok(_) => Ok(()),
-                    Err(err) => Err(ProgramError::OpenError{err}),
-                }
-            }
+            Launchable::SystemOpen { path } => match opener::open(&path) {
+                Ok(_) => Ok(()),
+                Err(err) => Err(ProgramError::OpenError { err }),
+            },
         }
     }
 }
@@ -121,7 +118,11 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
     )
 }
 
-pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
+pub fn print_tree(
+    tree: &Tree,
+    screen: &mut Screen,
+    con: &AppContext,
+) -> io::Result<AppStateCmdResult> {
     let no_style_skin = Skin::no_term();
     let mut tree_view = TreeView::from_screen(screen);
     tree_view.in_app = false;
@@ -146,7 +147,7 @@ pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Res
             }
             tree_view.write_tree(tree)?;
             AppStateCmdResult::Launch(Launchable::printer(
-                String::from_utf8(curs.into_inner()).unwrap()
+                String::from_utf8(curs.into_inner()).unwrap(),
             ))
         },
     )

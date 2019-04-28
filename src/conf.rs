@@ -113,9 +113,11 @@ impl Conf {
                 let from_shell = bool_field(verb_value, "from_shell");
                 let leave_broot = bool_field(verb_value, "leave_broot");
                 if leave_broot == Some(false) && from_shell == Some(true) {
-                        eprintln!("Invalid [[verbs]] entry in configuration");
-                        eprintln!("You can't simultaneously have leave_broot=false and from_shell=true");
-                        continue;
+                    eprintln!("Invalid [[verbs]] entry in configuration");
+                    eprintln!(
+                        "You can't simultaneously have leave_broot=false and from_shell=true"
+                    );
+                    continue;
                 }
                 verbs.push(VerbConf {
                     invocation,
@@ -134,8 +136,12 @@ impl Conf {
             for (k, v) in entries_tbl.iter() {
                 if let Some(s) = v.as_str() {
                     match skin_conf::parse_config_entry(k, s) {
-                        Ok(ske) => { skin_entries.insert(k.to_string(), ske); },
-                        Err(e) => { eprintln!("{}", e); }
+                        Ok(ske) => {
+                            skin_entries.insert(k.to_string(), ske);
+                        }
+                        Err(e) => {
+                            eprintln!("{}", e);
+                        }
                     }
                 }
             }

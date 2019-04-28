@@ -439,7 +439,7 @@ impl TreeBuilder {
             if bline.has_match && bline.nb_kept_children == 0 && (bline.depth > 1 || trim_root)
             // keep the complete first level when showing sizes
             {
-                debug!("in list: {:?} score: {}",  &bline.path, bline.score);
+                debug!("in list: {:?} score: {}", &bline.path, bline.score);
                 remove_queue.push(SortableBLineIdx {
                     idx: *idx,
                     score: bline.score,

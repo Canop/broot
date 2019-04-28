@@ -25,15 +25,14 @@ pub struct TreeView<'a> {
 }
 
 impl TreeView<'_> {
-
     pub fn from_screen(screen: &mut Screen) -> TreeView<'_> {
-            TreeView {
-                w: screen.w,
-                h: screen.h-2,
-                out: &mut screen.stdout,
-                skin: &screen.skin,
-                in_app: true,
-            }
+        TreeView {
+            w: screen.w,
+            h: screen.h - 2,
+            out: &mut screen.stdout,
+            skin: &screen.skin,
+            in_app: true,
+        }
     }
 
     pub fn write_tree(&mut self, tree: &Tree) -> io::Result<()> {

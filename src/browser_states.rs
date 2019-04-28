@@ -20,8 +20,8 @@ use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
 use crate::tree_options::{OptionBool, TreeOptions};
 use crate::tree_views::TreeView;
-use crate::verbs::{VerbExecutor};
-use crate::verb_store::{PrefixSearchResult};
+use crate::verb_store::PrefixSearchResult;
+use crate::verbs::VerbExecutor;
 
 pub struct BrowserState {
     pub tree: Tree,
@@ -172,7 +172,9 @@ impl AppState for BrowserState {
                 con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, screen, con)?
             }
             Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation, screen, con)?,
+                PrefixSearchResult::Match(verb) => {
+                    self.execute_verb(verb, &invocation, screen, con)?
+                }
                 _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::FuzzyPatternEdit(pat) => match pat.len() {
@@ -319,11 +321,7 @@ impl AppState for BrowserState {
         }
     }
 
-    fn refresh(
-        &mut self,
-        screen: &Screen,
-        _con: &AppContext,
-    ) -> Command {
+    fn refresh(&mut self, screen: &Screen, _con: &AppContext) -> Command {
         let page_height = BrowserState::page_height(screen) as usize;
         // refresh the base tree
         if let Err(e) = self.tree.refresh(page_height) {

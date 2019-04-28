@@ -11,7 +11,7 @@ use crate::verb_store::PrefixSearchResult;
 #[derive(Debug)]
 enum CommandSequenceToken {
     Standard(String), // one or several words, not starting with a ':'. May be a filter or a verb argument
-    VerbKey(String), // a verb (the ':' isn't given)
+    VerbKey(String),  // a verb (the ':' isn't given)
 }
 struct CommandSequenceTokenizer {
     chars: Vec<char>,
@@ -21,7 +21,7 @@ impl CommandSequenceTokenizer {
     pub fn from(sequence: &str) -> CommandSequenceTokenizer {
         CommandSequenceTokenizer {
             chars: sequence.chars().collect(),
-            pos: 0
+            pos: 0,
         }
     }
 }
@@ -49,13 +49,11 @@ impl Iterator for CommandSequenceTokenizer {
         }
         let token: String = self.chars[self.pos..end].iter().collect();
         self.pos = end + 1;
-        Some(
-            if is_verb {
-                CommandSequenceToken::VerbKey(token)
-            } else {
-                CommandSequenceToken::Standard(token)
-            }
-        )
+        Some(if is_verb {
+            CommandSequenceToken::VerbKey(token)
+        } else {
+            CommandSequenceToken::Standard(token)
+        })
     }
 }
 
@@ -70,7 +68,10 @@ impl Iterator for CommandSequenceTokenizer {
 /// The current parsing try to be the least possible flawed by
 /// giving verbs the biggest sequence of tokens accepted by their
 /// execution pattern.
-pub fn parse_command_sequence(sequence: &str, con: &AppContext) -> Result<Vec<Command>, ProgramError> {
+pub fn parse_command_sequence(
+    sequence: &str,
+    con: &AppContext,
+) -> Result<Vec<Command>, ProgramError> {
     let mut tokenizer = CommandSequenceTokenizer::from(sequence);
     let mut commands: Vec<Command> = Vec::new();
     let mut leftover: Option<CommandSequenceToken> = None;
@@ -84,12 +85,12 @@ pub fn parse_command_sequence(sequence: &str, con: &AppContext) -> Result<Vec<Co
             CommandSequenceToken::VerbKey(key) => {
                 let verb = match con.verb_store.search(&key) {
                     PrefixSearchResult::NoMatch => {
-                        return Err(ProgramError::UnknownVerb{key});
+                        return Err(ProgramError::UnknownVerb { key });
                     }
                     PrefixSearchResult::TooManyMatches => {
-                        return Err(ProgramError::AmbiguousVerbKey{key});
+                        return Err(ProgramError::AmbiguousVerbKey { key });
                     }
-                    PrefixSearchResult::Match(verb) => verb
+                    PrefixSearchResult::Match(verb) => verb,
                 };
                 let mut raw = format!(":{}", key);
                 if let Some(args_regex) = &verb.args_parser {
@@ -111,7 +112,7 @@ pub fn parse_command_sequence(sequence: &str, con: &AppContext) -> Result<Vec<Co
                         }
                     }
                     if nb_valid_args == 0 && !args_regex.is_match("") {
-                        return Err(ProgramError::UnmatchingVerbArgs{key});
+                        return Err(ProgramError::UnmatchingVerbArgs { key });
                     }
                     for (i, arg) in args.drain(..).enumerate() {
                         if i < nb_valid_args {
@@ -124,16 +125,15 @@ pub fn parse_command_sequence(sequence: &str, con: &AppContext) -> Result<Vec<Co
                 }
                 raw
             }
-            CommandSequenceToken::Standard(raw) => raw
+            CommandSequenceToken::Standard(raw) => raw,
         };
         commands.push(Command::from(raw));
     }
     if let Some(token) = leftover.take() {
-        commands.push(Command::from(match token{
+        commands.push(Command::from(match token {
             CommandSequenceToken::Standard(raw) => raw,
             CommandSequenceToken::VerbKey(raw) => format!(":{}", raw),
         }));
     }
     Ok(commands)
 }
-

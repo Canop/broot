@@ -22,8 +22,14 @@ fn parse_gray(raw: &str) -> Result<Option<u8>, InvalidSkinError> {
     }
 }
 
-enum ColorType {Foreground, Background}
-struct TypedColor {color: Box<Color>, typ: ColorType}
+enum ColorType {
+    Foreground,
+    Background,
+}
+struct TypedColor {
+    color: Box<Color>,
+    typ: ColorType,
+}
 
 impl std::fmt::Display for TypedColor {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
@@ -70,12 +76,21 @@ define_color_from_name! {
     Yellow,
 }
 
-pub fn parse_config_entry(key: &str, value: &str) -> Result<String, ConfError>{
+pub fn parse_config_entry(key: &str, value: &str) -> Result<String, ConfError> {
     match key {
-        k if k.ends_with("_fg") => Ok(ColorType:: Foreground),
-        k if k.ends_with("_bg") => Ok(ColorType:: Background),
-        _ => Err(InvalidSkinError::BadKey)
-    }.and_then(|typ|
-        Ok(TypedColor{ color: color_from_name(value)?, typ }.to_string())
-    ).map_err(|source| ConfError::InvalidSkinEntry{key: key.into(), source})
+        k if k.ends_with("_fg") => Ok(ColorType::Foreground),
+        k if k.ends_with("_bg") => Ok(ColorType::Background),
+        _ => Err(InvalidSkinError::BadKey),
+    }
+    .and_then(|typ| {
+        Ok(TypedColor {
+            color: color_from_name(value)?,
+            typ,
+        }
+        .to_string())
+    })
+    .map_err(|source| ConfError::InvalidSkinEntry {
+        key: key.into(),
+        source,
+    })
 }

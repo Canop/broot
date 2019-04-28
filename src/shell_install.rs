@@ -34,17 +34,16 @@ use crate::conf;
 use crate::shell_bash::BASH;
 use crate::shell_fish::FISH;
 
-const SHELL_FAMILIES: &[ShellFamily<'static>] = &[ BASH, FISH ];
+const SHELL_FAMILIES: &[ShellFamily<'static>] = &[BASH, FISH];
 
 pub struct ShellFamily<'a> {
     pub name: &'a str,
-    pub sourcing_files: &'a[&'a str],
+    pub sourcing_files: &'a [&'a str],
     pub version: usize,
     pub script: &'a str,
 }
 
 impl ShellFamily<'static> {
-
     // make sure the script and symlink are installed
     // but don't touch the shellrc files
     // (i.e. this isn't enough to make the function available)
@@ -106,13 +105,17 @@ impl ShellFamily<'static> {
                 return Ok(false);
             }
         };
-        let rc_files: Vec<_> = self.sourcing_files
+        let rc_files: Vec<_> = self
+            .sourcing_files
             .iter()
             .map(|name| (name, homedir_path.join(name)))
             .filter(|t| t.1.exists())
             .collect();
         if rc_files.is_empty() {
-            warn!("no {} compatible shell config file found, no installation possible", self.name);
+            warn!(
+                "no {} compatible shell config file found, no installation possible",
+                self.name
+            );
             if installation_required {
                 println!("No shell config found, we can't install the br function.");
                 println!("We were looking for the following file(s):");
@@ -216,7 +219,11 @@ pub fn init(launch_args: &AppLaunchArgs) -> io::Result<bool> {
     let mut should_quit = false;
     for family in SHELL_FAMILIES {
         family.ensure_script_installed(&launcher_dir)?;
-        let done = family.maybe_patch_all_sourcing_files(&launcher_dir, launch_args.install, should_quit)?;
+        let done = family.maybe_patch_all_sourcing_files(
+            &launcher_dir,
+            launch_args.install,
+            should_quit,
+        )?;
         should_quit |= done;
     }
     Ok(should_quit)

@@ -4,19 +4,19 @@
 /// Hard links are checked to avoid counting
 ///  twice an inode.
 use crate::task_sync::TaskLifetime;
+use crossbeam::channel::unbounded;
+use crossbeam::sync::WaitGroup;
 use std::collections::{HashMap, HashSet};
 use std::fs;
 use std::ops::AddAssign;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
-use std::sync::Mutex;
-use std::time::Instant;
-use std::thread;
-use crossbeam::channel::unbounded;
-use crossbeam::sync::WaitGroup;
-use std::sync::Arc;
 use std::sync::atomic::{AtomicIsize, AtomicUsize, Ordering};
+use std::sync::Arc;
+use std::sync::Mutex;
+use std::thread;
 use std::time::Duration;
+use std::time::Instant;
 
 const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"]; // Y: for when your disk is bigger than 1024 ZB
 

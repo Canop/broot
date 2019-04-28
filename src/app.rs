@@ -16,8 +16,8 @@ use termion::input::TermRead;
 
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
-use crate::commands::Command;
 use crate::command_parsing::parse_command_sequence;
+use crate::commands::Command;
 use crate::errors::ProgramError;
 use crate::errors::TreeBuildError;
 use crate::external::Launchable;
@@ -65,11 +65,7 @@ pub trait AppState {
         screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult>;
-    fn refresh(
-        &mut self,
-        screen: &Screen,
-        con: &AppContext,
-    ) -> Command;
+    fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
     fn has_pending_tasks(&self) -> bool;
     fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime);
     fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;

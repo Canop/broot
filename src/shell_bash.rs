@@ -4,7 +4,7 @@ pub const BASH: ShellFamily<'static> = ShellFamily {
     name: "bash",
     sourcing_files: &[".bashrc", ".zshrc"],
     version: 1,
-    script: BASH_FUNC
+    script: BASH_FUNC,
 };
 
 // This script has been tested on bash and zsh.
