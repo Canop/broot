@@ -9,7 +9,7 @@ assignees: ''
 
 **Did a discussion occur before?**
 We prefer to discuss new features or unsure problems in the chat before, where an open conversation is possible.
-[![Broot chat room](https://miaou.dystroy.org/static/shields/room-en.svg?v=1)](https://miaou.dystroy.org/3490?broot)
+Broot chat room: https://miaou.dystroy.org/3490?broot
 
 **Is your feature request related to a problem? Please describe.**
 A clear and concise description of what the problem is. Ex. I'm always frustrated when [...]
