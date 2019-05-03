@@ -1,12 +1,13 @@
 use std::borrow::Cow;
-use std::io::{self, Write};
+use std::io::{self, Cursor, Write};
+use crossterm::{Attribute::{self, Reset}, ClearType, Color::{self, *}, Colored, Color::AnsiValue};
 
 use crate::file_sizes::Size;
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
 use crate::permissions;
 use crate::screens::{Screen, ScreenArea};
-use crate::skin::Skin;
+use crate::skin::{Skin, SkinEntry};
 
 /// A tree writer, which can be used either to write on the screen in the application,
 /// or to write in a file or an exported string.
@@ -25,12 +26,12 @@ pub struct TreeView<'a> {
 
 impl TreeView<'_> {
 
-    pub fn from_screen(screen: &mut Screen) -> TreeView<'_> {
+    pub fn from_screen<'a>(screen: &'a mut Screen, out: &'a mut Write) -> TreeView<'a> {
             TreeView {
                 w: screen.w,
                 h: screen.h-2,
-                out: &mut screen.alternate_screen.screen,
-                //out: &mut screen.crossterm.terminal(),
+                out,
+                //out: &mut crossterm::Terminal::new(),
                 skin: &screen.skin,
                 in_app: true,
             }
@@ -59,7 +60,7 @@ impl TreeView<'_> {
         };
         let scrollbar = area.scrollbar();
         if self.in_app {
-            write!(self.out, "{}", termion::cursor::Goto(1, 1))?;
+            print!("{}", termion::cursor::Goto(1, 1));
         }
         for y in 1..self.h + 1 {
             let mut line_index = (y - 1) as usize;
@@ -68,10 +69,9 @@ impl TreeView<'_> {
             }
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
-                write!(self.out, "{}", self.skin.tree.fgbg())?;
+                self.skin.tree.print_fg();
                 for depth in 0..line.depth {
-                    write!(
-                        self.out,
+                    print!(
                         "{}",
                         if line.left_branchs[depth as usize] {
                             if tree.has_branch(line_index + 1, depth as usize) {
@@ -86,64 +86,66 @@ impl TreeView<'_> {
                         } else {
                             "   "
                         },
-                    )?;
+                    );
                 }
                 if tree.options.show_sizes && line_index > 0 {
-                    self.write_line_size(line, total_size)?;
+                    self.write_line_size(line, total_size);
                 }
                 if tree.options.show_permissions && line_index > 0 {
                     if line.is_selectable() {
-                        self.write_mode(line.mode)?;
+                        self.write_mode(line.mode);
                         let user = permissions::user_name(line.uid);
-                        write!(
-                            self.out,
+                        print!(
                             " {:w$}",
                             &user,
                             w = max_user_len,
-                        )?;
+                        );
                         let group = permissions::group_name(line.gid);
-                        write!(
-                            self.out,
+                        print!(
                             " {:w$} ",
                             &group,
                             w = max_group_len,
-                        )?;
+                        );
                     } else {
-                        write!(
-                            self.out,
-                            "{}──────────────{}",
-                            self.skin.tree.fg, self.skin.reset.fg,
-                        )?;
+                        print!(
+                            "{}",
+                            self.skin.tree.apply_to("──────────────"),
+                        );
                     }
                 }
-                if self.in_app && line_index == tree.selection {
-                    write!(self.out, "{}", self.skin.selected_line.bg)?;
+                let selected = self.in_app && line_index == tree.selection;
+                if selected {
+                    self.skin.selected_line.print_bg();
                 }
-                self.write_line_name(line, line_index, &tree.options.pattern)?;
+                self.write_line_name(line, line_index, &tree.options.pattern, selected)?;
+                if selected {
+                    // hack to extend selection background -> improve
+                    self.skin.selected_line.print_bg();
+                    let terminal = crossterm::Terminal::new();
+                    terminal.clear(ClearType::UntilNewLine).unwrap();
+                }
             } else if !self.in_app {
-                write!(self.out, "\r\n",)?;
+                print!("\r\n",);
                 break; // no need to add empty lines
             }
             if self.in_app {
-                write!(self.out, "{}", termion::clear::UntilNewline)?;
+                print!("{}", termion::clear::UntilNewline);
                 if let Some((sctop, scbottom)) = scrollbar {
                     if sctop <= y && y <= scbottom {
-                        write!(self.out, "{}▐", termion::cursor::Goto(self.w, y),)?;
+                        print!("{}▐", termion::cursor::Goto(self.w, y),);
                     }
                 }
             }
-            write!(self.out, "{}", self.skin.style_reset)?;
-            write!(self.out, "\r\n",)?;
+            print!("{}\r\n", Attribute::Reset);
         }
         self.out.flush()?;
         Ok(())
     }
 
-    fn write_mode(&mut self, mode: u32) -> io::Result<()> {
-        write!(
-            self.out,
-            "{}{}{}{}{}{}{}{}{}{}",
-            self.skin.permissions.fg,
+    fn write_mode(&mut self, mode: u32) {
+        self.skin.permissions.print_fg();
+        print!(
+            "{}{}{}{}{}{}{}{}{}",
             if (mode & (1 << 8)) != 0 { 'r' } else { '-' },
             if (mode & (1 << 7)) != 0 { 'w' } else { '-' },
             if (mode & (1 << 6)) != 0 { 'x' } else { '-' },
@@ -156,30 +158,28 @@ impl TreeView<'_> {
         )
     }
 
-    fn write_line_size(&mut self, line: &TreeLine, total_size: Size) -> io::Result<()> {
-        if let Some(s) = line.size {
-            let dr: usize = s.discrete_ratio(total_size, 8) as usize;
-            let s: Vec<char> = s.to_string().chars().collect();
-            write!(
-                self.out,
-                "{}{}",
-                self.skin.size_text.fg, self.skin.size_bar_full.bg,
-            )?;
-            for i in 0..dr {
-                write!(self.out, "{}", if i < s.len() { s[i] } else { ' ' })?;
-            }
-            write!(self.out, "{}", self.skin.size_bar_void.bg)?;
-            for i in dr..8 {
-                write!(self.out, "{}", if i < s.len() { s[i] } else { ' ' })?;
-            }
-            write!(self.out, "{}{} ", self.skin.reset.fg, self.skin.reset.bg,)
-        } else {
-            write!(
-                self.out,
-                "{}────────{} ",
-                self.skin.tree.fg, self.skin.reset.fg,
-            )
-        }
+    fn write_line_size(&mut self, line: &TreeLine, total_size: Size) {
+        // FIXME...
+        //if let Some(s) = line.size {
+        //    let dr: usize = s.discrete_ratio(total_size, 8) as usize;
+        //    let s: Vec<char> = s.to_string().chars().collect();
+        //    print!(
+        //        "{}{}",
+        //        self.skin.size_text.fg, self.skin.size_bar_full.bg,
+        //    );
+        //    for i in 0..dr {
+        //        print!("{}", if i < s.len() { s[i] } else { ' ' });
+        //    }
+        //    print!("{}", self.skin.size_bar_void.bg);
+        //    for i in dr..8 {
+        //        print!("{}", if i < s.len() { s[i] } else { ' ' });
+        //    }
+        //} else {
+        //    print!(
+        //        "{}────────{} ",
+        //        self.skin.tree.fg, self.skin.reset.fg,
+        //    )
+        //}
     }
 
     fn write_line_name(
@@ -187,128 +187,61 @@ impl TreeView<'_> {
         line: &TreeLine,
         idx: usize,
         pattern: &Pattern,
+        selected: bool,
     ) -> io::Result<()> {
+        let style = match &line.line_type {
+            LineType::Dir => &self.skin.directory,
+            LineType::File => {
+                if line.is_exe() { &self.skin.exe } else { &self.skin.file }
+            }
+            LineType::SymLinkToFile(_) | LineType::SymLinkToDir(_) => &self.skin.link,
+            LineType::Pruning => &self.skin.pruning,
+        };
+        let mut style = style.clone();
+        if selected {
+            if let Some(c) = self.skin.selected_line.bg_color {
+                style = style.bg(c);
+            }
+        }
+        if idx == 0 {
+            print!(
+                "{}",
+                style.apply_to(&line.path.to_string_lossy()),
+            );
+        } else {
+            print!(
+                "{}",
+                pattern.style(
+                    &line.name,
+                    &style,
+                    &self.skin.char_match,
+                ),
+            );
+        }
         match &line.line_type {
             LineType::Dir => {
-                if idx == 0 {
-                    write!(
-                        self.out,
-                        "{}{}{}",
-                        self.skin.style_folder,
-                        &self.skin.directory.fg,
-                        &line.path.to_string_lossy(),
-                    )?;
+                if line.unlisted > 0 {
+                    style.print_string(" …",);
+                }
+            }
+            LineType::SymLinkToFile(target) | LineType::SymLinkToDir(target) => {
+                style.print_string(" -> ");
+                if line.has_error {
+                    self.skin.file_error.print_string(&target);
                 } else {
-                    write!(
-                        self.out,
-                        "{}{}{}",
-                        self.skin.style_folder,
-                        &self.skin.directory.fg,
-                        decorated_name(
-                            &line.name,
-                            pattern,
-                            &self.skin.char_match.fg,
-                            &self.skin.directory.fg
-                        ),
-                    )?;
-                    if line.unlisted > 0 {
-                        write!(self.out, " …",)?;
+                    let target_style = if line.is_dir() { &self.skin.directory } else { &self.skin.file };
+                    let mut target_style = target_style.clone();
+                    if selected {
+                        if let Some(c) = self.skin.selected_line.bg_color {
+                            target_style = target_style.bg(c);
+                        }
                     }
+                    target_style.print_string(&target);
                 }
             }
-            LineType::File => {
-                if line.is_exe() {
-                    write!(
-                        self.out,
-                        "{}{}",
-                        &self.skin.exe.fg,
-                        decorated_name(
-                            &line.name,
-                            pattern,
-                            &self.skin.char_match.fg,
-                            &self.skin.exe.fg
-                        ),
-                    )?;
-                } else {
-                    write!(
-                        self.out,
-                        "{}{}",
-                        &self.skin.file.fg,
-                        decorated_name(
-                            &line.name,
-                            pattern,
-                            &self.skin.char_match.fg,
-                            &self.skin.file.fg
-                        ),
-                    )?;
-                }
-            }
-            LineType::SymLinkToFile(target) => {
-                write!(
-                    self.out,
-                    "{}{} {}->{} {}",
-                    &self.skin.link.fg,
-                    decorated_name(
-                        &line.name,
-                        pattern,
-                        &self.skin.char_match.fg,
-                        &self.skin.link.fg
-                    ),
-                    if line.has_error {
-                        &self.skin.file_error.fg
-                    } else {
-                        &self.skin.link.fg
-                    },
-                    &self.skin.file.fg,
-                    &target,
-                )?;
-            }
-            LineType::SymLinkToDir(target) => {
-                write!(
-                    self.out,
-                    "{}{} {}->{}{} {}",
-                    &self.skin.link.fg,
-                    decorated_name(
-                        &line.name,
-                        pattern,
-                        &self.skin.char_match.fg,
-                        &self.skin.link.fg
-                    ),
-                    if line.has_error {
-                        &self.skin.file_error.fg
-                    } else {
-                        &self.skin.link.fg
-                    },
-                    self.skin.style_folder,
-                    &self.skin.directory.fg,
-                    &target,
-                )?;
-            }
-            LineType::Pruning => {
-                write!(
-                    self.out,
-                    //"{}{}… {} unlisted", still not sure whether I want this '…'
-                    "{}{}{} unlisted",
-                    self.skin.unlisted.fg,
-                    self.skin.style_pruning,
-                    &line.unlisted,
-                )?;
-            }
+            _ => { }
         }
         Ok(())
     }
 }
 
-fn decorated_name<'a>(
-    name: &'a str,
-    pattern: &Pattern,
-    prefix: &str,
-    postfix: &str,
-) -> Cow<'a, str> {
-    if pattern.is_some() {
-        if let Some(m) = pattern.find(name) {
-            return Cow::Owned(m.wrap_matching_chars(name, prefix, postfix));
-        }
-    }
-    Cow::Borrowed(name)
-}

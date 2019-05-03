@@ -6,6 +6,8 @@
 use core::result;
 use std::{fmt, mem};
 
+use crossterm::{Attribute::{self, Reset}, Color::{self, *}, Colored, Color::AnsiValue, ObjectStyle};
+
 use crate::commands::Command;
 use crate::errors::RegexError;
 use crate::fuzzy_patterns::FuzzyPattern;
@@ -102,5 +104,52 @@ impl Match {
             }
         }
         decorated
+    }
+}
+
+
+// TODO move in another file
+pub struct MatchedString<'a> {
+    pub pattern: &'a Pattern,
+    pub string: &'a str,
+    pub base_style: &'a ObjectStyle,
+    pub match_style: &'a ObjectStyle,
+}
+impl Pattern {
+    pub fn style<'a>(
+        &'a self,
+        string: &'a str,
+        base_style: &'a ObjectStyle,
+        match_style: &'a ObjectStyle
+    ) -> MatchedString<'a> {
+        MatchedString{
+            pattern: self,
+            string,
+            base_style,
+            match_style,
+        }
+    }
+}
+
+impl fmt::Display for MatchedString<'_> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.pattern.is_some() {
+            if let Some(m) = self.pattern.find(self.string) {
+                let mut pos_idx: usize = 0;
+                for (cand_idx, cand_char) in self.string.chars().enumerate() {
+                    let styled_char = self.base_style.apply_to(cand_char);
+                    if pos_idx < m.pos.len() && m.pos[pos_idx] == cand_idx {
+                        write!(f, "{}", self.base_style.apply_to(
+                            self.match_style.apply_to(cand_char)
+                        ));
+                        pos_idx += 1;
+                    } else {
+                        write!(f, "{}", self.base_style.apply_to(cand_char));
+                    }
+                }
+                return Ok(())
+            }
+        }
+        write!(f, "{}", self.base_style.apply_to(self.string))
     }
 }

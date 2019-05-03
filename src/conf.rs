@@ -1,6 +1,7 @@
 //! manage reading the verb shortcuts from the configuration file,
 //! initializing if if it doesn't yet exist
 
+use crossterm::{Attribute};
 use directories::ProjectDirs;
 use std::collections::HashMap;
 use std::fs;
@@ -69,10 +70,10 @@ impl Conf {
         if !conf_filepath.exists() {
             Conf::write_sample(&conf_filepath)?;
             println!(
-                "{}New Configuration file written in {:?}.{}",
-                termion::style::Bold,
+                "New Configuration file written in {}{:?}{}.",
+                Attribute::Bold,
                 &conf_filepath,
-                termion::style::Reset
+                Attribute::Reset,
             );
             println!("You should have a look at it.");
         }

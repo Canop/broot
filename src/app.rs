@@ -246,24 +246,28 @@ impl App {
         thread::spawn(move || {
             let crossterm = crossterm::Crossterm::new();
             let input = crossterm.input();
-            let crossterm_events = input.read_sync();
-            for event in crossterm_events {
-                debug!(" => crossterm event={:?}", event);
-                if let InputEvent::Keyboard(key) = event {
-                    key_count.fetch_add(1, Ordering::SeqCst);
-                    // we send the command to the receiver in the
-                    //  main event loop
-                    tx_keys.send(key).unwrap();
-                    let quit = rx_quit.recv().unwrap();
-                    if quit {
-                        // cleanly quitting this thread is necessary
-                        //  to ensure stdin is properly closed when
-                        //  we launch an external application in the same
-                        //  terminal
-                        return;
+            let mut crossterm_events = input.read_sync();
+            loop {
+                if let Some(event) = crossterm_events.next() {
+                    info!(" => crossterm event={:?}", event);
+                    if let InputEvent::Keyboard(key) = event {
+                        key_count.fetch_add(1, Ordering::SeqCst);
+                        // we send the command to the receiver in the
+                        //  main event loop
+                        tx_keys.send(key).unwrap();
+                        let quit = rx_quit.recv().unwrap();
+                        if quit {
+                            // cleanly quitting this thread is necessary
+                            //  to ensure stdin is properly closed when
+                            //  we launch an external application in the same
+                            //  terminal
+                            return;
+                        }
+                    } else {
+                        debug!("disregarding unrelevant event: {:?}", event);
                     }
                 } else {
-                    debug!("disregarding unrelevant event: {:?}", event);
+                    debug!("crossterm events iterator gave us a None"); // happens on windows
                 }
             }
         });

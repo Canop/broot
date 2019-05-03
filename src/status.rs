@@ -2,9 +2,11 @@
 //!  near the bottom of the screen
 
 use std::io::{self};
-use termion;
+
+use crossterm::{Attribute::{self, Reset}, Color::{self, *}, Colored, Color::AnsiValue};
 
 use crate::screens::Screen;
+use crate::skin::SkinEntry;
 
 pub trait Status {
     fn write_status_text(&mut self, text: &str) -> io::Result<()>;
@@ -20,15 +22,8 @@ impl Screen {
         };
         let mut text = String::from(text);
         text.truncate(self.w as usize - 2);
-        self.write(&format!(
-            "{}{}{}{} {}{}",
-            termion::cursor::Goto(2, self.h - 1),
-            skin.fg,
-            skin.bg,
-            termion::clear::CurrentLine,
-            text,
-            self.skin.reset.bg,
-        ));
+        self.goto_clear(2, self.h - 1);
+        skin.print_string(&text);
         Ok(())
     }
 }

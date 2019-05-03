@@ -11,13 +11,12 @@ pub trait Spinner {
 
 impl Spinner for Screen {
     fn write_spinner(&mut self, spinning: bool) -> io::Result<()> {
-        let y = self.h - 1;
+        self.goto_clear(1, self.h-1);
         self.write(&format!(
-            "{}{}{}{}",
-            termion::cursor::Goto(1, y),
-            self.skin.spinner.fg,
-            self.skin.spinner.bg,
-            if spinning { "⌛" } else { " " },
+            "{}",
+            self.skin.spinner.apply_to(
+                if spinning { "⌛" } else { " " }
+            ),
         ));
         Ok(())
     }

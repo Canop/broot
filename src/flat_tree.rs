@@ -25,7 +25,7 @@ pub enum LineType {
 pub struct TreeLine {
     pub left_branchs: Box<[bool]>, // a depth-sized array telling whether a branch pass
     pub depth: u16,
-    pub name: String, // name of the first unlisted, in case of Pruning
+    pub name: String,
     pub path: PathBuf,
     pub line_type: LineType,
     pub has_error: bool,
@@ -209,6 +209,7 @@ impl Tree {
                     if unlisted > 0 && self.lines[end_index].nb_kept_children == 0 {
                         self.lines[end_index].line_type = LineType::Pruning;
                         self.lines[end_index].unlisted = unlisted + 1;
+                        self.lines[end_index].name = format!("{} unlisted", unlisted+1).to_owned();
                         self.lines[parent_index].unlisted = 0;
                     }
                     last_parent_index = parent_index;

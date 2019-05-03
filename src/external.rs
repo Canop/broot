@@ -123,8 +123,6 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
 
 pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
     let no_style_skin = Skin::no_term();
-    let mut tree_view = TreeView::from_screen(screen);
-    tree_view.in_app = false;
     Ok(
         if let Some(ref output_path) = con.launch_args.file_export_path {
             // an output path was provided, we write to it
@@ -132,18 +130,20 @@ pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Res
                 .create(true)
                 .append(true)
                 .open(output_path)?;
-            tree_view.out = &mut f;
+            let mut tree_view = TreeView::from_screen(screen, &mut f);
             tree_view.skin = &no_style_skin;
+            tree_view.in_app = false;
             tree_view.write_tree(tree)?;
             AppStateCmdResult::Quit
         } else {
             // no output path provided. We write on stdout, but we must
             // do it after app closing to have the normal terminal
             let mut curs: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            tree_view.out = &mut curs;
+            let mut tree_view = TreeView::from_screen(screen, &mut curs);
             if con.launch_args.no_style {
                 tree_view.skin = &no_style_skin;
             }
+            tree_view.in_app = false;
             tree_view.write_tree(tree)?;
             AppStateCmdResult::Launch(Launchable::printer(
                 String::from_utf8(curs.into_inner()).unwrap()

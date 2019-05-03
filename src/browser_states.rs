@@ -1,10 +1,12 @@
 //! An application state dedicated to displaying a tree.
 //! It's the first and main screen of broot.
 
-use std::io::{self};
+use std::io::{self, Cursor, Write};
 use std::path::PathBuf;
 use std::result::Result;
 use std::time::Instant;
+
+use crossterm::{Attribute::{self, Reset}, Color::{self, *}, Colored, Color::AnsiValue};
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
@@ -15,6 +17,7 @@ use crate::flat_tree::{LineType, Tree};
 use crate::help_states::HelpState;
 use crate::patterns::Pattern;
 use crate::screens::Screen;
+use crate::skin::{Skin, SkinEntry};
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
@@ -22,6 +25,7 @@ use crate::tree_options::{OptionBool, TreeOptions};
 use crate::tree_views::TreeView;
 use crate::verbs::{VerbExecutor};
 use crate::verb_store::{PrefixSearchResult};
+
 
 pub struct BrowserState {
     pub tree: Tree,
@@ -260,8 +264,12 @@ impl AppState for BrowserState {
     }
 
     fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
-        let mut tree_view = TreeView::from_screen(screen);
-        tree_view.write_tree(&self.displayed_tree())
+        let mut curs: Cursor<Vec<u8>> = Cursor::new(Vec::new());
+        let mut tree_view = TreeView::from_screen(screen, &mut curs);
+        tree_view.write_tree(&self.displayed_tree())?;
+        let terminal = crossterm::Terminal::new();
+        terminal.write(&String::from_utf8(curs.into_inner()).unwrap());
+        Ok(())
     }
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
@@ -347,25 +355,22 @@ impl AppState for BrowserState {
         };
         let total_char_size = 9;
         screen.goto(screen.w - total_char_size, screen.h);
+        let terminal = crossterm::Terminal::new();
+        terminal.clear(crossterm::ClearType::UntilNewLine);
         screen.write(&format!(
-            //"{}{}{}{} h:{}{}{}{}{}  gi:{}{}{}",
-            //termion::cursor::Goto(screen.w - total_char_size, screen.h),
-            "{}{}{} h:{}{}{}{}{}  gi:{}{}{}",
-            screen.skin.flag_label.fg,
-            screen.skin.flag_label.bg,
-            termion::clear::UntilNewline,
-            screen.skin.flag_value.fg,
-            screen.skin.flag_value.bg,
-            if tree.options.show_hidden { 'y' } else { 'n' },
-            screen.skin.flag_label.fg,
-            screen.skin.flag_label.bg,
-            screen.skin.flag_value.fg,
-            screen.skin.flag_value.bg,
-            match tree.options.respect_git_ignore {
-                OptionBool::Auto => 'a',
-                OptionBool::Yes => 'y',
-                OptionBool::No => 'n',
-            },
+            "{}{}  {}{}",
+            screen.skin.flag_label.apply_to(" h:"),
+            screen.skin.flag_value.apply_to(
+                if tree.options.show_hidden { 'y' } else { 'n' }
+            ),
+            screen.skin.flag_label.apply_to(" gi:"),
+            screen.skin.flag_value.apply_to(
+                match tree.options.respect_git_ignore {
+                    OptionBool::Auto => 'a',
+                    OptionBool::Yes => 'y',
+                    OptionBool::No => 'n',
+                }
+            ),
         ));
         Ok(())
     }

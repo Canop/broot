@@ -5,7 +5,8 @@
 
 use regex::Regex;
 use std::io::{self};
-use termion::style;
+
+use crossterm::{Attribute::{self, Reset}, Color::{self, *}, Colored, Color::AnsiValue};
 
 use crate::screens::{Screen, ScreenArea};
 use crate::skin::Skin;
@@ -22,20 +23,20 @@ fn append_pad(dest: &mut String, s: &str, w: usize) {
 /// A Text is a vec of lines
 pub struct Text {
     lines: Vec<String>,
-    md_bold_repl: String,
-    md_code_repl: String,
+    //md_bold_repl: String,
+    //md_code_repl: String,
 }
 impl Text {
     pub fn new(skin: &Skin) -> Text {
-        let md_code_repl = format!(
-            "{}{} $1 {}{}",
-            skin.code.fg, skin.code.bg, skin.reset.fg, skin.reset.bg,
-        );
-        let md_bold_repl = format!("{}$1{}", style::Bold, style::Reset);
+        //let md_code_repl = format!(
+        //    "{}{} $1 {}{}",
+        //    skin.code.fg, skin.code.bg, skin.reset.fg, skin.reset.bg,
+        //);
+        //let md_bold_repl = format!("{}$1{}", Attribute::Bold, Attribute::Reset);
         Text {
             lines: Vec::new(),
-            md_bold_repl,
-            md_code_repl,
+            //md_bold_repl,
+            //md_code_repl,
         }
     }
     pub fn height(&self) -> usize {
@@ -45,13 +46,14 @@ impl Text {
     // - bold: **bold text**
     // - code: `some code`
     pub fn md_to_tty(&self, raw: &str) -> String {
-        lazy_static! {
-            static ref BOLD_REGEX: Regex = Regex::new(r"\*\*([^*]+)\*\*").unwrap();
-            static ref CODE_REGEX: Regex = Regex::new(r"`([^`]+)`").unwrap();
-        }
-        let s = BOLD_REGEX.replace_all(raw, &*self.md_bold_repl);
-        let s = CODE_REGEX.replace_all(&s, &*self.md_code_repl);
-        s.to_string()
+        //lazy_static! {
+        //    static ref BOLD_REGEX: Regex = Regex::new(r"\*\*([^*]+)\*\*").unwrap();
+        //    static ref CODE_REGEX: Regex = Regex::new(r"`([^`]+)`").unwrap();
+        //}
+        //let s = BOLD_REGEX.replace_all(raw, &*self.md_bold_repl);
+        //let s = CODE_REGEX.replace_all(&s, &*self.md_code_repl);
+        //s.to_string()
+        raw.to_string()
     }
     // add a line from the line interpreted as "markdown"
     pub fn md(&mut self, line: &str) {
@@ -66,18 +68,15 @@ impl Text {
         let scrollbar = area.scrollbar();
         let mut i = area.scroll as usize;
         for y in area.top..=area.bottom {
-            screen.write(&format!(
-                "{}{}",
-                termion::cursor::Goto(1, y),
-                termion::clear::CurrentLine,
-            ));
+            screen.goto_clear(1, y);
             if i < self.lines.len() {
-                screen.write(&format!("{}", &self.lines[i]));
+                println!("{}", &self.lines[i]);
                 i += 1;
             }
             if let Some((sctop, scbottom)) = scrollbar {
                 if sctop <= y && y <= scbottom {
-                    screen.write(&format!("{}▐", termion::cursor::Goto(screen.w, y)));
+                    screen.goto(screen.w, y);
+                    println!("▐");
                 }
             }
         }
@@ -102,7 +101,8 @@ pub struct TextTable<'a, R> {
 
 impl<'a, R> TextTable<'a, R> {
     pub fn new(skin: &Skin) -> TextTable<'a, R> {
-        let md_bar = format!(" {}│{} ", skin.table_border.fg, skin.reset.fg,);
+        //let md_bar = format!(" {}│{} ", skin.table_border.fg, skin.reset.fg,);
+        let md_bar = " | ".to_owned();
         TextTable {
             cols: Vec::new(),
             md_bar,
