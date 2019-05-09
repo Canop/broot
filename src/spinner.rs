@@ -4,6 +4,7 @@
 use std::io::{self};
 
 use crate::screens::Screen;
+use crate::skin::SkinEntry;
 
 pub trait Spinner {
     fn write_spinner(&mut self, spinning: bool) -> io::Result<()>;
@@ -11,13 +12,10 @@ pub trait Spinner {
 
 impl Spinner for Screen {
     fn write_spinner(&mut self, spinning: bool) -> io::Result<()> {
-        self.goto_clear(1, self.h-1);
-        self.write(&format!(
-            "{}",
-            self.skin.spinner.apply_to(
-                if spinning { "⌛" } else { " " }
-            ),
-        ));
+        self.goto(1, self.h-1);
+        self.skin.spinner.print_string(
+            if spinning { "⌛" } else { " " }
+        );
         Ok(())
     }
 }

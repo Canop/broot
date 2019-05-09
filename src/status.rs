@@ -9,17 +9,12 @@ use crate::screens::Screen;
 use crate::skin::SkinEntry;
 
 pub trait Status {
-    fn write_status_text(&mut self, text: &str) -> io::Result<()>;
-    fn write_status_err(&mut self, text: &str) -> io::Result<()>;
+    fn write_status_text(&self, text: &str) -> io::Result<()>;
+    fn write_status_err(&self, text: &str) -> io::Result<()>;
 }
 
 impl Screen {
-    fn write_status(&mut self, text: &str, error: bool) -> io::Result<()> {
-        let skin = if error {
-            &self.skin.status_error
-        } else {
-            &self.skin.status_normal
-        };
+    fn write_status(&self, text: &str, skin: &SkinEntry) -> io::Result<()> {
         let mut text = String::from(text);
         text.truncate(self.w as usize - 2);
         self.goto_clear(2, self.h - 1);
@@ -29,11 +24,10 @@ impl Screen {
 }
 
 impl Status for Screen {
-    fn write_status_err(&mut self, text: &str) -> io::Result<()> {
-        self.write_status(text, true)
+    fn write_status_err(&self, text: &str) -> io::Result<()> {
+        self.write_status(text, &self.skin.status_error)
     }
-
-    fn write_status_text(&mut self, text: &str) -> io::Result<()> {
-        self.write_status(text, false)
+    fn write_status_text(&self, text: &str) -> io::Result<()> {
+        self.write_status(text, &self.skin.status_normal)
     }
 }

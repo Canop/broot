@@ -439,7 +439,7 @@ impl TreeBuilder {
             if bline.has_match && bline.nb_kept_children == 0 && (bline.depth > 1 || trim_root)
             // keep the complete first level when showing sizes
             {
-                debug!("in list: {:?} score: {}",  &bline.path, bline.score);
+                //debug!("in list: {:?} score: {}",  &bline.path, bline.score);
                 remove_queue.push(SortableBLineIdx {
                     idx: *idx,
                     score: bline.score,
@@ -452,7 +452,7 @@ impl TreeBuilder {
         );
         while count > self.targeted_size {
             if let Some(sli) = remove_queue.pop() {
-                debug!("removing {:?}", &self.blines[sli.idx].path);
+                //debug!("removing {:?}", &self.blines[sli.idx].path);
                 self.blines[sli.idx].has_match = false;
                 let parent_idx = self.blines[sli.idx].parent_idx;
                 let mut parent = &mut self.blines[parent_idx];
