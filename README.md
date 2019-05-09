@@ -8,6 +8,9 @@ A better way to navigate directories
 
 [**Broot's Web Site**](https://dystroy.org/broot)
 
+|*Note:* **Current work is focused on Windows compatibility and happens in crossterm branch**|
+|-|
+
 ### Get an overview of a directory, even a big one:
 
 ![overview](img/20190128-overview.png)
