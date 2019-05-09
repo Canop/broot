@@ -7,12 +7,12 @@
 //! - an operation which keeps the state
 //! - a request to quit broot
 //! - a request to launch an executable (thus leaving broot)
-use std::io::{self, stdin, Write};
+use std::io::{self, Write};
 use std::result::Result;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread;
-use crossterm::{KeyEvent, InputEvent};
+use crossterm::{InputEvent};
 
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
@@ -156,6 +156,7 @@ impl App {
         screen.read_size(con)?;
         screen.write_input(&cmd)?;
         self.state().write_flags(screen, con)?;
+        screen.write_spinner(false)?;
         match self.mut_state().apply(&mut cmd, screen, con)? {
             AppStateCmdResult::Quit => {
                 debug!("cmd result quit");

@@ -1,3 +1,8 @@
+
+// This file is ignored for now. I'll have to rewrite
+// skin configuration parsing for crossterm when the
+// rest is proven OK
+
 use crate::errors::{ConfError, InvalidSkinError};
 use regex::Regex;
 /// Manage conversion of a user provided string

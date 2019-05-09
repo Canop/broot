@@ -23,7 +23,7 @@
 
 use std::fs::{self, OpenOptions};
 use std::io::{self, BufRead, BufReader, Write};
-use std::os::unix::fs::symlink;
+use std::os;
 use std::path::Path;
 
 use crossterm::Attribute;
@@ -64,7 +64,10 @@ impl ShellFamily<'static> {
         }
         if !func_present || !link_present {
             info!("creating link from {:?} to {:?}", &link_path, &script_path);
-            symlink(&script_path, &link_path)?;
+            #[cfg(unix)]
+            os::unix::fs::symlink(&script_path, &link_path)?;
+            #[cfg(windows)]
+            os::windows::fs::symlink_file(&script_path, &link_path)?;
         }
         Ok(())
     }

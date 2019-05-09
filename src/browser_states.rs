@@ -6,8 +6,6 @@ use std::path::PathBuf;
 use std::result::Result;
 use std::time::Instant;
 
-use crossterm::{Attribute::{self, Reset}, Color::{self, *}, Colored, Color::AnsiValue};
-
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
@@ -17,7 +15,6 @@ use crate::flat_tree::{LineType, Tree};
 use crate::help_states::HelpState;
 use crate::patterns::Pattern;
 use crate::screens::Screen;
-use crate::skin::{Skin, SkinEntry};
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
@@ -266,6 +263,7 @@ impl AppState for BrowserState {
     fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
         let mut curs: Cursor<Vec<u8>> = Cursor::new(Vec::new());
         let mut tree_view = TreeView::from_screen(screen, &mut curs);
+        screen.goto(1, 1);
         tree_view.write_tree(&self.displayed_tree())?;
         let terminal = crossterm::Terminal::new();
         terminal.write(&String::from_utf8(curs.into_inner()).unwrap());

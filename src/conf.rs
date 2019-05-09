@@ -11,7 +11,6 @@ use std::result::Result;
 use toml::{self, Value};
 
 use crate::errors::ConfError;
-use crate::skin_conf;
 
 /// what's needed to handle a verb
 #[derive(Debug)]
@@ -131,16 +130,16 @@ impl Conf {
         }
         // reading the skin
         let mut skin_entries = HashMap::new();
-        if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
-            for (k, v) in entries_tbl.iter() {
-                if let Some(s) = v.as_str() {
-                    match skin_conf::parse_config_entry(k, s) {
-                        Ok(ske) => { skin_entries.insert(k.to_string(), ske); },
-                        Err(e) => { eprintln!("{}", e); }
-                    }
-                }
-            }
-        }
+        //if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
+        //    for (k, v) in entries_tbl.iter() {
+        //        if let Some(s) = v.as_str() {
+        //            match skin_conf::parse_config_entry(k, s) {
+        //                Ok(ske) => { skin_entries.insert(k.to_string(), ske); },
+        //                Err(e) => { eprintln!("{}", e); }
+        //            }
+        //        }
+        //    }
+        //}
 
         Ok(Conf {
             verbs,

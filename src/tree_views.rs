@@ -1,13 +1,13 @@
 use std::borrow::Cow;
 use std::io::{self, Cursor, Write};
-use crossterm::{Attribute::{self, Reset}, ClearType, Color::{self, *}, Colored, Color::AnsiValue};
+use crossterm::{Attribute::{self, Reset}, ClearType, Color::{self, *}, Colored, Color::AnsiValue, TerminalCursor};
 
 use crate::file_sizes::Size;
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
 use crate::permissions;
 use crate::screens::{Screen, ScreenArea};
-use crate::skin::{Skin, SkinEntry};
+use crate::skin::{self, Skin, SkinEntry};
 
 /// A tree writer, which can be used either to write on the screen in the application,
 /// or to write in a file or an exported string.
@@ -26,7 +26,7 @@ pub struct TreeView<'a> {
 
 impl TreeView<'_> {
 
-    pub fn from_screen<'a>(screen: &'a mut Screen, out: &'a mut Write) -> TreeView<'a> {
+    pub fn from_screen<'a>(screen: &'a Screen, out: &'a mut Write) -> TreeView<'a> {
             TreeView {
                 w: screen.w,
                 h: screen.h-2,
@@ -58,10 +58,9 @@ impl TreeView<'_> {
             content_length: tree.lines.len() as i32,
             width: self.w,
         };
+        let cursor = TerminalCursor::new(); // TODO clean this out
+        let terminal = crossterm::Terminal::new(); // TODO clean this out
         let scrollbar = area.scrollbar();
-        if self.in_app {
-            print!("{}", termion::cursor::Goto(1, 1));
-        }
         for y in 1..self.h + 1 {
             let mut line_index = (y - 1) as usize;
             if line_index > 0 {
@@ -121,7 +120,6 @@ impl TreeView<'_> {
                 if selected {
                     // hack to extend selection background -> improve
                     self.skin.selected_line.print_bg();
-                    let terminal = crossterm::Terminal::new();
                     terminal.clear(ClearType::UntilNewLine).unwrap();
                 }
             } else if !self.in_app {
@@ -129,10 +127,10 @@ impl TreeView<'_> {
                 break; // no need to add empty lines
             }
             if self.in_app {
-                print!("{}", termion::clear::UntilNewline);
+                terminal.clear(ClearType::UntilNewLine).unwrap();
                 if let Some((sctop, scbottom)) = scrollbar {
                     if sctop <= y && y <= scbottom {
-                        print!("{}▐", termion::cursor::Goto(self.w, y),);
+                        cursor.goto(self.w-1, y-1).unwrap();
                     }
                 }
             }
@@ -159,27 +157,23 @@ impl TreeView<'_> {
     }
 
     fn write_line_size(&mut self, line: &TreeLine, total_size: Size) {
-        // FIXME...
-        //if let Some(s) = line.size {
-        //    let dr: usize = s.discrete_ratio(total_size, 8) as usize;
-        //    let s: Vec<char> = s.to_string().chars().collect();
-        //    print!(
-        //        "{}{}",
-        //        self.skin.size_text.fg, self.skin.size_bar_full.bg,
-        //    );
-        //    for i in 0..dr {
-        //        print!("{}", if i < s.len() { s[i] } else { ' ' });
-        //    }
-        //    print!("{}", self.skin.size_bar_void.bg);
-        //    for i in dr..8 {
-        //        print!("{}", if i < s.len() { s[i] } else { ' ' });
-        //    }
-        //} else {
-        //    print!(
-        //        "{}────────{} ",
-        //        self.skin.tree.fg, self.skin.reset.fg,
-        //    )
-        //}
+        if let Some(s) = line.size {
+            let dr: usize = s.discrete_ratio(total_size, 8) as usize;
+            let s: Vec<char> = s.to_string().chars().collect();
+            self.skin.size_text.print_fg();
+            self.skin.size_bar_full.print_bg();
+            for i in 0..dr {
+                print!("{}", if i < s.len() { s[i] } else { ' ' });
+            }
+            self.skin.size_bar_void.print_bg();
+            for i in dr..8 {
+                print!("{}", if i < s.len() { s[i] } else { ' ' });
+            }
+            skin::reset();
+            print!(" ");
+        } else {
+            self.skin.tree.print_string("──────── ");
+        }
     }
 
     fn write_line_name(

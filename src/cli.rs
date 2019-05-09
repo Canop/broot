@@ -5,7 +5,7 @@ use crate::errors::{ProgramError, TreeBuildError};
 use crate::tree_options::TreeOptions;
 use clap;
 use std::env;
-use std::io::{self, stdin};
+use std::io;
 use std::path::PathBuf;
 use std::result::Result;
 

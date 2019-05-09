@@ -141,10 +141,10 @@ impl fmt::Display for MatchedString<'_> {
                     if pos_idx < m.pos.len() && m.pos[pos_idx] == cand_idx {
                         write!(f, "{}", self.base_style.apply_to(
                             self.match_style.apply_to(cand_char)
-                        ));
+                        ))?;
                         pos_idx += 1;
                     } else {
-                        write!(f, "{}", self.base_style.apply_to(cand_char));
+                        write!(f, "{}", self.base_style.apply_to(cand_char))?;
                     }
                 }
                 return Ok(())

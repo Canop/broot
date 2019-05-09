@@ -35,7 +35,7 @@ impl Screen {
         screen.read_size(con)?;
         info!("screen size: {} x {}", screen.w, screen.h);
         let cursor = TerminalCursor::new();
-        cursor.hide();
+        cursor.hide().unwrap();
         Ok(screen)
     }
     pub fn read_size(&mut self, con: &AppContext) -> io::Result<()> {
@@ -62,7 +62,7 @@ impl Screen {
     }
     pub fn goto(&self, x: u16, y: u16) {
         let cursor = TerminalCursor::new();
-        info!("goto x={}, y={}", x, y);
+        //debug!("goto x={}, y={}", x, y);
         cursor.goto(x-1, y-1).unwrap();
     }
     pub fn clear_line(&self) {

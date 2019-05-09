@@ -64,10 +64,13 @@ macro_rules! Skin {
 pub fn gray(level: u8) -> Option<Color> {
     Some(AnsiValue(0xE8 + level))
 }
+pub fn rgb(r: u8, g: u8, b: u8) -> Option<Color> {
+    Some(Rgb{r, g, b})
+}
 
 Skin! {
     // FIXME some colors to rebuild using Rgb
-    char_match: Some(Rgb{r:78, g:154, b:8}), None;
+    char_match: rgb(78, 154, 8), None;
     code: Some(White), gray(2);
     directory: Some(Blue), None; {Bold}
     exe: Some(Cyan), None;
@@ -80,7 +83,7 @@ Skin! {
     link: Some(Magenta), None;
     permissions: gray(15), None;
     selected_line: None, gray(3);
-    size_bar_full: Some(White), Some(Magenta);
+    size_bar_full: Some(White), rgb(117, 80, 123);
     size_bar_void: Some(White), gray(2);
     size_text: gray(15), None;
     spinner: gray(10), gray(2);
@@ -89,4 +92,8 @@ Skin! {
     table_border: gray(8), None;
     tree: gray(5), None;
     unlisted: gray(13), None;
+}
+
+pub fn reset() {
+    print!("{}", Attribute::Reset);
 }

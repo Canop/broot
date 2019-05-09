@@ -1,3 +1,4 @@
+use std::path::Path;
 
 
 //////////////////// UNIX
@@ -28,6 +29,11 @@ pub fn supported() -> bool {
 }
 
 #[cfg(windows)]
-pub fn from(path: &Path) -> Option<Permissions> {
-    unreachable!();
+pub fn user_name(uid: u32) -> String {
+    unreachable!()
+}
+
+#[cfg(windows)]
+pub fn group_name(gid: u32) -> String {
+    unreachable!()
 }

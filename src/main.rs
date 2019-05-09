@@ -32,7 +32,7 @@ mod shell_bash;
 mod shell_fish;
 mod shell_install;
 mod skin;
-mod skin_conf;
+//mod skin_conf; disabled until rewrite
 mod spinner;
 mod status;
 mod task_sync;
