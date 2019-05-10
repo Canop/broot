@@ -1,6 +1,6 @@
 use std::io::{self};
 
-use crossterm::{self, AlternateScreen, ClearType, Crossterm, TerminalCursor};
+use crossterm::{self, AlternateScreen, ClearType, TerminalCursor};
 
 use crate::app_context::AppContext;
 use crate::skin::Skin;

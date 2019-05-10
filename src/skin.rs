@@ -1,13 +1,11 @@
 /// Defines the Skin structure with its defautl value.
 ///
-/// A skin is a collection of skin entries and the
-/// store of all color changing TTY codes used by
-/// the application. It can be changed by configuration.
-/// A skin also contains some style change (bold, italic, reset)
-/// but they're not configurable right now (they exist mainly
-/// so that unstyled output for files can be produced)
+/// A skin is a collection of skin entries which are crossterm
+/// objectstyles:
+/// - an optional fg color
+/// - an optional bg color
+/// - a vector of attributes (bold, italic)
 use std::collections::HashMap;
-use std::fmt;
 
 use crossterm::{Attribute::{self, *}, Color::{self, *}, Colored, Color::AnsiValue, ObjectStyle};
 
@@ -48,13 +46,13 @@ macro_rules! Skin {
                 }
             }
             // build a skin with some entry overloaded by configuration
-            pub fn create(skin_conf: HashMap<String, String>) -> Skin {
+            pub fn create(mut skin_conf: HashMap<String, ObjectStyle>) -> Skin {
                 Skin {
-                    $($name: ObjectStyle {
+                    $($name: skin_conf.remove(stringify!($name)).unwrap_or(ObjectStyle {
                         fg_color: $fg,
                         bg_color: $bg,
                         attrs: [$($a),*].to_vec()
-                    },)*
+                    }),)*
                 }
             }
         }

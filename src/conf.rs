@@ -9,8 +9,10 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
+use crossterm::ObjectStyle;
 
 use crate::errors::ConfError;
+use crate::skin_conf;
 
 /// what's needed to handle a verb
 #[derive(Debug)]
@@ -24,10 +26,9 @@ pub struct VerbConf {
     pub confirm: Option<bool>,
 }
 
-#[derive(Debug)]
 pub struct Conf {
     pub verbs: Vec<VerbConf>,
-    pub skin_entries: HashMap<String, String>,
+    pub skin: HashMap<String, ObjectStyle>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -129,21 +130,21 @@ impl Conf {
             }
         }
         // reading the skin
-        let mut skin_entries = HashMap::new();
-        //if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
-        //    for (k, v) in entries_tbl.iter() {
-        //        if let Some(s) = v.as_str() {
-        //            match skin_conf::parse_config_entry(k, s) {
-        //                Ok(ske) => { skin_entries.insert(k.to_string(), ske); },
-        //                Err(e) => { eprintln!("{}", e); }
-        //            }
-        //        }
-        //    }
-        //}
+        let mut skin = HashMap::new();
+        if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
+            for (k, v) in entries_tbl.iter() {
+                if let Some(s) = v.as_str() {
+                    match skin_conf::parse_object_style(s) {
+                        Ok(ske) => { skin.insert(k.to_string(), ske); },
+                        Err(e) => { eprintln!("{}", e); }
+                    }
+                }
+            }
+        }
 
         Ok(Conf {
             verbs,
-            skin_entries,
+            skin,
         })
     }
 }

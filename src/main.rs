@@ -33,7 +33,7 @@ mod shell_bash;
 mod shell_fish;
 mod shell_install;
 mod skin;
-//mod skin_conf; disabled until rewrite
+mod skin_conf;
 mod spinner;
 mod status;
 mod task_sync;
@@ -99,7 +99,7 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         launch_args,
         verb_store,
     };
-    let skin = skin::Skin::create(config.skin_entries);
+    let skin = skin::Skin::create(config.skin);
     App::new().run(&context, skin)
 }
 

@@ -31,13 +31,13 @@ custom_error! {pub RegexError
 custom_error! {pub InvalidSkinError
     InvalidColor { raw : String }  = "'{}' is not a valid color",
     InvalidGreyLevel { level: u8 } = "grey level must be between 0 and 23 (got {})",
-    BadKey                         = "not a valid skin configuration key",
+    InvalidStyle {style: String}   = "Invalid skin style : {}",
+    //BadKey                         = "not a valid skin configuration key",
 }
 
 custom_error! {pub ConfError
-    Io {source: io::Error}                                     = "unable to read from the file",
-    Toml {source: toml::de::Error}                             = "unable to parse TOML",
-    MissingField {txt: String}                                 = "missing field in conf",
-    InvalidSkinEntry { key:String, source: InvalidSkinError}   = "Invalid skin configuration for {}: {}",
-    InvalidVerbInvocation {invocation: String}                 = "invalid verb invocation: {}",
+    Io {source: io::Error}                          = "unable to read from the file",
+    Toml {source: toml::de::Error}                  = "unable to parse TOML",
+    MissingField {txt: String}                      = "missing field in conf",
+    InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: {}",
 }

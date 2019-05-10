@@ -6,7 +6,7 @@
 use crate::task_sync::TaskLifetime;
 use std::fs;
 use std::ops::AddAssign;
-use std::path::{Path, PathBuf};
+use std::path::Path;
 
 #[cfg(unix)]
 mod file_sizes_unix;
