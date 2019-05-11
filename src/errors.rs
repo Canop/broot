@@ -30,6 +30,7 @@ custom_error! {pub RegexError
 
 custom_error! {pub InvalidSkinError
     InvalidColor { raw : String }  = "'{}' is not a valid color",
+    InvalidAttribute { raw : String }  = "'{}' is not a valid style attribute",
     InvalidGreyLevel { level: u8 } = "grey level must be between 0 and 23 (got {})",
     InvalidStyle {style: String}   = "Invalid skin style : {}",
     //BadKey                         = "not a valid skin configuration key",

@@ -14,9 +14,11 @@ use crossterm::{Attribute::{self, *}, Color::{self, *}, ObjectStyle};
 use crate::errors::InvalidSkinError;
 use crate::skin;
 
+/// read a color from a string. It may be either
+/// - one of the few known color name. Example: "darkred"
+/// - grayscale with level in [0,3[. Example: "grey(5)"
+/// - RGB. Example: "rgb(25, 100, 0)"
 fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
-    let s = s.to_ascii_lowercase();
-
     lazy_static! {
         static ref GRAY_REX: Regex = Regex::new(r"^gr[ae]y(?:scale)?\((?P<level>\d+)\)$").unwrap();
     }
@@ -67,11 +69,25 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
     }
 }
 
+///
+fn parse_attribute(s: &str) -> Result<Attribute, InvalidSkinError> {
+    match s {
+        "bold" => Ok(Bold),
+        "crossedout" => Ok(CrossedOut),
+        "dim" => Ok(Dim), // does it do anything ?
+        "italic" => Ok(Italic),
+        "underlined" => Ok(Underlined),
+        _ => Err(InvalidSkinError::InvalidAttribute{ raw: s.to_owned()}),
+    }
+}
+
+/// parse a sequence of space separated style attributes
 fn parse_attributes(s: &str) -> Result<Vec<Attribute>, InvalidSkinError> {
-    Ok(Vec::new())
+    s.split_whitespace().map(|t| parse_attribute(t)).collect()
 }
 
 pub fn parse_object_style(s: &str) -> Result<ObjectStyle, InvalidSkinError>{
+    let s = s.to_ascii_lowercase();
     lazy_static! {
         static ref PARTS_REX: Regex = Regex::new(
             r"(?x)
@@ -85,7 +101,7 @@ pub fn parse_object_style(s: &str) -> Result<ObjectStyle, InvalidSkinError>{
         )
         .unwrap();
     }
-    if let Some(c) = PARTS_REX.captures(s) {
+    if let Some(c) = PARTS_REX.captures(&s) {
         debug!("match for {:?}", s);
         let fg_color = parse_color(c.name("fg").unwrap().as_str())?;
         let bg_color = parse_color(c.name("bg").unwrap().as_str())?;

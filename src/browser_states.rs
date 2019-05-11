@@ -354,7 +354,7 @@ impl AppState for BrowserState {
         let total_char_size = 9;
         screen.goto(screen.w - total_char_size, screen.h);
         let terminal = crossterm::Terminal::new();
-        terminal.clear(crossterm::ClearType::UntilNewLine);
+        terminal.clear(crossterm::ClearType::UntilNewLine)?;
         screen.write(&format!(
             "{}{}  {}{}",
             screen.skin.flag_label.apply_to(" h:"),

@@ -137,7 +137,6 @@ impl fmt::Display for MatchedString<'_> {
             if let Some(m) = self.pattern.find(self.string) {
                 let mut pos_idx: usize = 0;
                 for (cand_idx, cand_char) in self.string.chars().enumerate() {
-                    let styled_char = self.base_style.apply_to(cand_char);
                     if pos_idx < m.pos.len() && m.pos[pos_idx] == cand_idx {
                         write!(f, "{}", self.base_style.apply_to(
                             self.match_style.apply_to(cand_char)
