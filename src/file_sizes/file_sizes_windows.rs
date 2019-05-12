@@ -1,7 +1,5 @@
 use crate::task_sync::TaskLifetime;
-use std::collections::{HashMap, HashSet};
 use std::fs;
-use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
@@ -13,7 +11,6 @@ use std::sync::atomic::{AtomicIsize, AtomicUsize, Ordering};
 use std::time::Duration;
 
 pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
-        let inodes = Arc::new(Mutex::new(HashSet::<u64>::new())); // to avoid counting twice an inode
         let size = Arc::new(AtomicUsize::new(0));
 
         // this MPMC channel contains the directory paths which must be handled
@@ -33,7 +30,6 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
             let wg = wg.clone();
             let (dirs_sender, dirs_receiver) = (dirs_sender.clone(), dirs_receiver.clone());
             let tl = tl.clone();
-            let inodes = inodes.clone();
             thread::spawn(move || {
                 loop {
                     let o = dirs_receiver.recv_timeout(period);
@@ -44,12 +40,6 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
                                     if md.is_dir() {
                                         busy.fetch_add(1, Ordering::Relaxed);
                                         dirs_sender.send(Some(e.path())).unwrap();
-                                    } else if md.nlink() > 1 {
-                                        let mut inodes = inodes.lock().unwrap();
-                                        if !inodes.insert(md.ino()) {
-                                            // it was already in the set
-                                            continue; // let's not add the size
-                                        }
                                     }
                                     size.fetch_add(md.len() as usize, Ordering::Relaxed);
                                 }
@@ -76,3 +66,4 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
         let size: u64 = size as u64;
         Some(size)
 }
+
