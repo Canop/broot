@@ -10,12 +10,6 @@ use std::collections::{HashMap, HashSet};
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;
-use std::thread;
-use crossbeam::channel::unbounded;
-use crossbeam::sync::WaitGroup;
-use std::sync::Arc;
-use std::sync::atomic::{AtomicIsize, AtomicUsize, Ordering};
-use std::time::Duration;
 
 const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"]; // Y: for when your disk is bigger than 1024 ZB
 

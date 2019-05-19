@@ -107,7 +107,7 @@ impl AppState for HelpState {
         tbl.write(&con.verb_store.verbs, &mut text);
         text.md("");
         text.md(&format!(
-            " Verb can be configured in {:?}.",
+            " Verbs and skin can be configured in {:?}.",
             Conf::default_location()
         ));
         text.md("");

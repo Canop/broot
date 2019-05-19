@@ -115,6 +115,7 @@ pub struct MatchedString<'a> {
     pub base_style: &'a ObjectStyle,
     pub match_style: &'a ObjectStyle,
 }
+
 impl Pattern {
     pub fn style<'a>(
         &'a self,
