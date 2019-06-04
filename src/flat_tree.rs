@@ -15,7 +15,7 @@ use crate::tree_options::TreeOptions;
 pub enum LineType {
     File,
     Dir,
-    SymLinkToDir(String),  //
+    SymLinkToDir(String),
     SymLinkToFile(String), // (to file or to symlink)
     Pruning,               // a "xxx unlisted" line
 }
@@ -78,9 +78,7 @@ impl TreeLine {
             LineType::SymLinkToFile(target) | LineType::SymLinkToDir(target) => {
                 let mut target_path = PathBuf::from(target);
                 if target_path.is_relative() {
-                    debug!("remove 1");
                     target_path = self.path.parent().unwrap().join(target_path);
-                    debug!("remove 2");
                 }
                 if let Ok(canonic) = fs::canonicalize(&target_path) {
                     target_path = canonic;

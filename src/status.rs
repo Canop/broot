@@ -14,7 +14,7 @@ pub trait Status {
 }
 
 impl Screen {
-    fn write_status(&self, text: &str, skin: &SkinEntry) -> io::Result<()> {
+    fn write_status(&self, text: &str, skin: &dyn SkinEntry) -> io::Result<()> {
         let mut text = String::from(text);
         text.truncate(self.w as usize - 3);
         self.goto_clear(2, self.h - 1);

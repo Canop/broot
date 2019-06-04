@@ -10,7 +10,6 @@ use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
 use crate::errors::ProgramError;
 use crate::flat_tree::Tree;
-use crate::screens::Screen;
 use crate::skin::Skin;
 use crate::tree_views::TreeView;
 
@@ -121,6 +120,10 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
     )
 }
 
+// FIXME not working since crossterm (need to find a way to write the tree
+// in a file)
+//
+/*
 pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
     let no_style_skin = Skin::no_term();
     Ok(
@@ -130,7 +133,7 @@ pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Res
                 .create(true)
                 .append(true)
                 .open(output_path)?;
-            let mut tree_view = TreeView::from_screen(screen, &mut f);
+            let mut tree_view = TreeView::from_screen(screen);
             tree_view.skin = &no_style_skin;
             tree_view.in_app = false;
             tree_view.write_tree(tree)?;
@@ -151,3 +154,4 @@ pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Res
         },
     )
 }
+*/

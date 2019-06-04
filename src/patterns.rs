@@ -21,7 +21,7 @@ pub enum Pattern {
 }
 
 impl fmt::Display for Pattern {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Pattern::Fuzzy(fp) => write!(f, "Fuzzy({})", fp),
             Pattern::Regex(rp) => write!(f, "Regex({})", rp),
@@ -133,7 +133,7 @@ impl Pattern {
 }
 
 impl fmt::Display for MatchedString<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if self.pattern.is_some() {
             if let Some(m) = self.pattern.find(self.string) {
                 let mut pos_idx: usize = 0;

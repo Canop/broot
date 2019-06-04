@@ -1,7 +1,7 @@
 //! An application state dedicated to displaying a tree.
 //! It's the first and main screen of broot.
 
-use std::io::{self, Cursor, Write};
+use std::io::{self, Cursor};
 use std::path::PathBuf;
 use std::result::Result;
 use std::time::Instant;
@@ -52,7 +52,7 @@ impl BrowserState {
     pub fn with_new_options(
         &self,
         screen: &Screen,
-        change_options: &Fn(&mut TreeOptions),
+        change_options: &dyn Fn(&mut TreeOptions),
     ) -> AppStateCmdResult {
         let tree = match &self.filtered_tree {
             Some(tree) => &tree,
@@ -82,6 +82,7 @@ impl BrowserState {
 }
 
 impl AppState for BrowserState {
+
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -199,7 +200,10 @@ impl AppState for BrowserState {
                 }
             }
             Action::Help => {
-                AppStateCmdResult::NewState(Box::new(HelpState::new(screen)), Command::new())
+                AppStateCmdResult::NewState(
+                    Box::new(HelpState::new(screen, con)),
+                    Command::new()
+                )
             }
             Action::Refresh => AppStateCmdResult::RefreshState,
             Action::Quit => AppStateCmdResult::Quit,
@@ -261,13 +265,9 @@ impl AppState for BrowserState {
     }
 
     fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
-        let mut curs: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-        let mut tree_view = TreeView::from_screen(screen, &mut curs);
+        let mut tree_view = TreeView::from_screen(screen);
         screen.goto(1, 1);
-        tree_view.write_tree(&self.displayed_tree())?;
-        let terminal = crossterm::Terminal::new();
-        terminal.write(&String::from_utf8(curs.into_inner()).unwrap());
-        Ok(())
+        tree_view.write_tree(&self.displayed_tree())
     }
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {

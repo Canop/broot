@@ -46,7 +46,7 @@ impl VerbExecutor for BrowserState {
                 )
             }
             ":help" => {
-                AppStateCmdResult::NewState(Box::new(HelpState::new(screen)), Command::new())
+                AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)), Command::new())
             }
             ":open" => AppStateCmdResult::Launch(Launchable::opener(line.target())),
             ":parent" => match &line.target().parent() {
@@ -62,7 +62,9 @@ impl VerbExecutor for BrowserState {
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
             ":print_path" => external::print_path(&line.target(), con)?,
-            ":print_tree" => external::print_tree(&tree, screen, con)?,
+            // FIXME print_tree has been disabled since crossterm, must
+            //  be written differently
+            //":print_tree" => external::print_tree(&tree, screen, con)?,
             ":toggle_files" => {
                 self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true)
             }

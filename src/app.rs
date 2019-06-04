@@ -12,7 +12,7 @@ use std::result::Result;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread;
-use crossterm::{InputEvent};
+use crossterm::{TerminalInput, InputEvent};
 
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
@@ -245,8 +245,7 @@ impl App {
         let cmd_count = Arc::new(AtomicUsize::new(0));
         let key_count = Arc::clone(&cmd_count);
         thread::spawn(move || {
-            let crossterm = crossterm::Crossterm::new();
-            let input = crossterm.input();
+            let input = TerminalInput::new();
             let mut crossterm_events = input.read_sync();
             loop {
                 if let Some(event) = crossterm_events.next() {

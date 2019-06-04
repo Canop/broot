@@ -1,6 +1,5 @@
-use std::borrow::Cow;
-use std::io::{self, Cursor, Write};
-use crossterm::{Attribute::{self, Reset}, ClearType, Color::{self, *}, Colored, Color::AnsiValue, TerminalCursor};
+use std::io;
+use crossterm::{Attribute::{self}, ClearType, TerminalCursor};
 
 use crate::file_sizes::Size;
 use crate::flat_tree::{LineType, Tree, TreeLine};
@@ -19,19 +18,16 @@ use crate::skin::{self, Skin, SkinEntry};
 pub struct TreeView<'a> {
     pub w: u16,
     pub h: u16, // height of the tree part (so 2 lines less than the screen)
-    pub out: &'a mut Write,
     pub skin: &'a Skin,
     pub in_app: bool,
 }
 
 impl TreeView<'_> {
 
-    pub fn from_screen<'a>(screen: &'a Screen, out: &'a mut Write) -> TreeView<'a> {
+    pub fn from_screen<'a>(screen: &'a Screen) -> TreeView<'a> {
             TreeView {
                 w: screen.w,
                 h: screen.h-2,
-                out,
-                //out: &mut crossterm::Terminal::new(),
                 skin: &screen.skin,
                 in_app: true,
             }
@@ -136,7 +132,7 @@ impl TreeView<'_> {
             }
             print!("{}\r\n", Attribute::Reset);
         }
-        self.out.flush()?;
+        //self.out.flush()?;
         Ok(())
     }
 

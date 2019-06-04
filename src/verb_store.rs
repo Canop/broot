@@ -126,11 +126,12 @@ impl VerbStore {
             Some("pp".to_string()),
             "print path and leaves broot",
         );
-        self.add_builtin(
-            "print_tree",
-            Some("pt".to_string()),
-            "print tree and leaves broot",
-        );
+        // FIXME print_tree disabled since crossterm
+        // self.add_builtin(
+        //     "print_tree",
+        //     Some("pt".to_string()),
+        //     "print tree and leaves broot",
+        // );
         self.add_builtin(
             "quit",
             Some("q".to_string()),

@@ -78,6 +78,8 @@ impl Drop for Screen {
     }
 }
 
+/// a specific area on screen
+/// FIXME use Termimad's one ?
 impl ScreenArea {
     pub fn new(top: u16, bottom: u16, width: u16) -> ScreenArea {
         ScreenArea {
