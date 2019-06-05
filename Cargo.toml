@@ -23,12 +23,13 @@ glob = "0.3"
 crossbeam = "0.7"
 opener = "0.4"
 crossterm = "0.9.5"
-#termimad = "0.3.3"
-termimad = { path = "../termimad" }
+termimad = "0.3.3"
+#termimad = { path = "../termimad" }
 
 [target.'cfg(unix)'.dependencies]
 jemallocator = "0.3"
 users = "0.9"
 
 [profile.release]
-lto = true
+lto = true # link time optimization - roughly halves the size of the exec
+codegen-units = 1 # this removes a few hundred bytes from the final exec size
