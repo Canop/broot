@@ -6,6 +6,7 @@
 /// - an optional bg color
 /// - a vector of attributes (bold, italic)
 use std::collections::HashMap;
+use std::fmt;
 
 use crossterm::{Attribute::{self, *}, Color::{self, *}, Colored, Color::AnsiValue, ObjectStyle};
 
@@ -13,6 +14,7 @@ pub trait SkinEntry {
     fn print_fg(&self);
     fn print_bg(&self);
     fn print_string(&self, string: &str);
+    fn write(&self, f: &mut fmt::Formatter<'_>, string: &str) -> fmt::Result;
 }
 
 impl SkinEntry for ObjectStyle {
@@ -26,8 +28,13 @@ impl SkinEntry for ObjectStyle {
             print!("{}", Colored::Bg(c));
         }
     }
+    #[inline(always)]
     fn print_string(&self, string: &str) {
         print!("{}", self.apply_to(string));
+    }
+    #[inline(always)]
+    fn write(&self, f: &mut fmt::Formatter<'_>, string: &str) -> fmt::Result {
+        write!(f, "{}", self.apply_to(string))
     }
 }
 
@@ -81,15 +88,16 @@ Skin! {
     link: Some(Magenta), None;
     permissions: gray(15), None;
     selected_line: None, gray(3);
-    size_bar_full: Some(White), rgb(117, 80, 123);
-    size_bar_void: Some(White), gray(2);
-    size_text: gray(15), None;
+    size_bar: gray(15), rgb(117, 80, 123);
+    size_no_bar: gray(15), gray(2);
     spinner: gray(10), gray(2);
     status_error: Some(Red), gray(2);
     status_normal: Some(White), gray(2);
     table_border: gray(8), None;
     tree: gray(5), None;
     unlisted: gray(13), None;
+    scrollbar_thumb: Some(Blue), None;
+    scrollbar_track: rgb(20, 20, 20), None;
 }
 
 pub fn reset() {

@@ -8,10 +8,11 @@ use opener;
 
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
+use crate::displayable_tree::DisplayableTree;
 use crate::errors::ProgramError;
 use crate::flat_tree::Tree;
+use crate::screens::Screen;
 use crate::skin::Skin;
-use crate::tree_views::TreeView;
 
 /// description of a possible launch of an external program
 /// A launchable can only be executed on end of life of broot.
@@ -120,12 +121,19 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
     )
 }
 
-// FIXME not working since crossterm (need to find a way to write the tree
-// in a file)
-//
-/*
 pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Result<AppStateCmdResult> {
     let no_style_skin = Skin::no_term();
+    let dp = DisplayableTree {
+        tree,
+        skin: &no_style_skin,
+        area: termimad::Area {
+            left: 0,
+            top: 0,
+            width: screen.w,
+            height: tree.lines.len() as u16,
+        },
+        in_app: false,
+    };
     Ok(
         if let Some(ref output_path) = con.launch_args.file_export_path {
             // an output path was provided, we write to it
@@ -133,25 +141,16 @@ pub fn print_tree(tree: &Tree, screen: &mut Screen, con: &AppContext) -> io::Res
                 .create(true)
                 .append(true)
                 .open(output_path)?;
-            let mut tree_view = TreeView::from_screen(screen);
-            tree_view.skin = &no_style_skin;
-            tree_view.in_app = false;
-            tree_view.write_tree(tree)?;
+            write!(f, "{}", dp)?;
             AppStateCmdResult::Quit
         } else {
             // no output path provided. We write on stdout, but we must
             // do it after app closing to have the normal terminal
             let mut curs: Cursor<Vec<u8>> = Cursor::new(Vec::new());
-            let mut tree_view = TreeView::from_screen(screen, &mut curs);
-            if con.launch_args.no_style {
-                tree_view.skin = &no_style_skin;
-            }
-            tree_view.in_app = false;
-            tree_view.write_tree(tree)?;
+            write!(&mut curs, "{}", dp)?;
             AppStateCmdResult::Launch(Launchable::printer(
                 String::from_utf8(curs.into_inner()).unwrap()
             ))
         },
     )
 }
-*/

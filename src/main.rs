@@ -15,6 +15,7 @@ mod cli;
 mod commands;
 mod command_parsing;
 mod conf;
+mod displayable_tree;
 mod errors;
 mod external;
 mod file_sizes;
@@ -39,7 +40,6 @@ mod status;
 mod task_sync;
 mod tree_build;
 mod tree_options;
-mod tree_views;
 mod verbs;
 mod verb_invocation;
 mod verb_store;
@@ -58,11 +58,13 @@ use crate::errors::ProgramError;
 use crate::external::Launchable;
 use crate::verb_store::VerbStore;
 
-// There's no log unless the BROOT_LOG environment variable is set to
-//  a valid log level (trace, debug, info, warn, error, off)
-// Example:
-//      BROOT_LOG=info broot
-// As broot is a terminal application, we only log to a file (dev.log)
+/// configure the application log according to env variable.
+///
+/// There's no log unless the BROOT_LOG environment variable is set to
+///  a valid log level (trace, debug, info, warn, error, off)
+/// Example:
+///      BROOT_LOG=info broot
+/// As broot is a terminal application, we only log to a file (dev.log)
 fn configure_log() {
     let level = env::var("BROOT_LOG").unwrap_or_else(|_| "off".to_string());
     if level == "off" {
@@ -83,8 +85,8 @@ fn configure_log() {
     }
 }
 
-// run the application, and maybe return a launchable
-// which must be run after broot
+/// run the application, and maybe return a launchable
+/// which must be run after broot
 fn run() -> Result<Option<Launchable>, ProgramError> {
     configure_log();
     let launch_args = cli::read_lauch_args()?;

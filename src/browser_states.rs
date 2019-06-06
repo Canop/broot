@@ -1,7 +1,5 @@
-//! An application state dedicated to displaying a tree.
-//! It's the first and main screen of broot.
 
-use std::io::{self, Cursor};
+use std::io;
 use std::path::PathBuf;
 use std::result::Result;
 use std::time::Instant;
@@ -9,6 +7,7 @@ use std::time::Instant;
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
+use crate::displayable_tree::DisplayableTree;
 use crate::errors::TreeBuildError;
 use crate::external::Launchable;
 use crate::flat_tree::{LineType, Tree};
@@ -19,11 +18,11 @@ use crate::status::Status;
 use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
 use crate::tree_options::{OptionBool, TreeOptions};
-use crate::tree_views::TreeView;
 use crate::verbs::{VerbExecutor};
 use crate::verb_store::{PrefixSearchResult};
 
-
+/// An application state dedicated to displaying a tree.
+/// It's the first and main screen of broot.
 pub struct BrowserState {
     pub tree: Tree,
     pub filtered_tree: Option<Tree>,
@@ -31,6 +30,7 @@ pub struct BrowserState {
 }
 
 impl BrowserState {
+
     pub fn new(
         path: PathBuf,
         mut options: TreeOptions,
@@ -49,6 +49,7 @@ impl BrowserState {
             None => None, // interrupted
         })
     }
+
     pub fn with_new_options(
         &self,
         screen: &Screen,
@@ -70,15 +71,18 @@ impl BrowserState {
             tree.options.pattern.to_command(),
         )
     }
+
     fn page_height(screen: &Screen) -> i32 {
         i32::from(screen.h) - 2
     }
+
     pub fn displayed_tree(&self) -> &Tree {
         match &self.filtered_tree {
             Some(tree) => &tree,
             None => &self.tree,
         }
     }
+
 }
 
 impl AppState for BrowserState {
@@ -265,9 +269,20 @@ impl AppState for BrowserState {
     }
 
     fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
-        let mut tree_view = TreeView::from_screen(screen);
+        let dp = DisplayableTree {
+            tree: &self.displayed_tree(),
+            skin: &screen.skin,
+            area: termimad::Area {
+                left: 0,
+                top: 0,
+                width: screen.w,
+                height: screen.h-2,
+            },
+            in_app: true,
+        };
         screen.goto(1, 1);
-        tree_view.write_tree(&self.displayed_tree())
+        print!("{}", dp);
+        Ok(())
     }
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {

@@ -50,7 +50,7 @@ fn bool_field(value: &Value, field_name: &str) -> Option<bool> {
     None
 }
 
-// return the path to the config directory, based on XDG
+/// return the path to the config directory, based on XDG
 pub fn dir() -> PathBuf {
     if let Some(dirs) = ProjectDirs::from("org", "dystroy", "broot") {
         dirs.config_dir().to_path_buf()
@@ -60,11 +60,13 @@ pub fn dir() -> PathBuf {
 }
 
 impl Conf {
+
     pub fn default_location() -> PathBuf {
         dir().join("conf.toml")
     }
-    // read the configuration file from the default OS specific location.
-    // Create it if it doesn't exist
+
+    /// read the configuration file from the default OS specific location.
+    /// Create it if it doesn't exist
     pub fn from_default_location() -> Result<Conf, ConfError> {
         let conf_filepath = Conf::default_location();
         if !conf_filepath.exists() {
@@ -79,15 +81,17 @@ impl Conf {
         }
         Ok(Conf::from_file(&conf_filepath)?)
     }
-    // assume the file doesn't yet exist
+
+    /// assume the file doesn't yet exist
     pub fn write_sample(filepath: &Path) -> Result<(), io::Error> {
         fs::create_dir_all(filepath.parent().unwrap())?;
         fs::write(filepath, DEFAULT_CONF_FILE)?;
         Ok(())
     }
-    // read the configuration from a given path. Assume it exists.
-    // stderr is supposed to be a valid solution for displaying errors
-    // (i.e. this function is called before or after the terminal alternation)
+
+    /// read the configuration from a given path. Assume it exists.
+    /// stderr is supposed to be a valid solution for displaying errors
+    /// (i.e. this function is called before or after the terminal alternation)
     pub fn from_file(filepath: &Path) -> Result<Conf, ConfError> {
         let data = fs::read_to_string(filepath)?;
         let root: Value = data.parse::<Value>()?;

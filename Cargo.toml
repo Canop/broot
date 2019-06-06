@@ -23,7 +23,7 @@ glob = "0.3"
 crossbeam = "0.7"
 opener = "0.4"
 crossterm = "0.9.5"
-termimad = "0.3.3"
+termimad = "0.3.4"
 #termimad = { path = "../termimad" }
 
 [target.'cfg(unix)'.dependencies]

@@ -21,7 +21,7 @@ pub struct HelpState {
 
 impl HelpState {
 
-    pub fn new(screen: &Screen, con: &AppContext) -> HelpState {
+    pub fn new(_screen: &Screen, con: &AppContext) -> HelpState {
         let mut area = Area::uninitialized();
         area.top = 0;
         area.left = 0;
@@ -38,7 +38,7 @@ impl HelpState {
     }
 
     fn resize_area(&mut self, screen: &Screen) {
-        let mut area = Area::new(0, 0, screen.w, screen.h - 3);
+        let area = Area::new(0, 0, screen.w, screen.h - 3);
         self.view.resize(&area);
     }
 
@@ -89,7 +89,7 @@ impl AppState for HelpState {
         unreachable!();
     }
 
-    fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
+    fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
         self.resize_area(screen);
         let r = self.view.write();
         debug!("r={:?}", r);

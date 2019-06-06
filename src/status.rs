@@ -3,7 +3,6 @@
 
 use std::io::{self};
 
-use crossterm::{Attribute::{self, Reset}, Color::{self, *}, Colored, Color::AnsiValue};
 
 use crate::screens::Screen;
 use crate::skin::{self, SkinEntry};

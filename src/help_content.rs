@@ -15,6 +15,7 @@ pub fn build_markdown(con: &AppContext) -> String {
 
 const MD_HELP_INTRO: &'static str = r#"
 # Help
+
 **broot** lets you explore directory trees and launch commands.
 See https://dystroy.org/broot for a complete guide.
 
