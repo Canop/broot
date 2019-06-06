@@ -142,7 +142,7 @@ impl Verb {
     fn replacement_map(&self, file: &Path, args: &Option<String>, for_shell: bool) -> HashMap<String, String> {
         let mut map = HashMap::new();
         // first we add the replacements computed from the given path
-        let parent = file.parent().unwrap_or_else(||file.clone());
+        let parent = file.parent().unwrap_or_else(||file.clone()); // when there's no parent... we take file
         let file_str = path_to_string(file, for_shell);
         let parent_str = path_to_string(parent, for_shell);
         map.insert("file".to_string(), file_str.to_string());
@@ -182,7 +182,7 @@ impl Verb {
         self.execution
             .split_whitespace()
             .map(|token| {
-                GROUP.replace_all(token, |ec:&Captures| {
+                GROUP.replace_all(token, |ec:&Captures<'_>| {
                     let name = ec.get(1).unwrap().as_str();
                     if let Some(cap) = map.get(name) {
                         cap.as_str().to_string()
@@ -197,7 +197,7 @@ impl Verb {
     /// build a shell compatible command, with escapings
     pub fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
         let map = self.replacement_map(file, args, true);
-        GROUP.replace_all(&self.execution, |ec:&Captures| {
+        GROUP.replace_all(&self.execution, |ec:&Captures<'_>| {
             let name = ec.get(1).unwrap().as_str();
             if let Some(cap) = map.get(name) {
                 cap.as_str().to_string()

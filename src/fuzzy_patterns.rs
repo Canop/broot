@@ -21,7 +21,7 @@ pub struct FuzzyPattern {
 }
 
 impl fmt::Display for FuzzyPattern {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         for &c in self.lc_chars.iter() {
             f.write_char(c)?
         }

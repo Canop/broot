@@ -5,10 +5,9 @@ use crate::errors::{ProgramError, TreeBuildError};
 use crate::tree_options::TreeOptions;
 use clap;
 use std::env;
-use std::io::{self, stdin};
+use std::io;
 use std::path::PathBuf;
 use std::result::Result;
-use termion::input::TermRead;
 
 pub struct AppLaunchArgs {
     pub root: PathBuf,                    // what should be the initial root
@@ -159,12 +158,9 @@ pub fn read_lauch_args() -> Result<AppLaunchArgs, ProgramError> {
 
 pub fn ask_authorization(question: &str) -> io::Result<bool> {
     println!("{}", question);
-    let answer = stdin().lock().read_line()?;
-    Ok(match answer {
-        Some(ref s) => match &s[..] {
-            "n" => false,
-            _ => true,
-        },
+    let answer = crossterm::input().read_line()?;
+    Ok(match answer.as_ref() {
+        "n" => false,
         _ => true,
     })
 }

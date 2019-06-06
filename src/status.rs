@@ -1,46 +1,36 @@
 //! the status module manages writing information on the grey line
 //!  near the bottom of the screen
 
-use std::io::{self, Write};
-use termion;
+use std::io::{self};
+
 
 use crate::screens::Screen;
+use crate::skin::{self, SkinEntry};
 
 pub trait Status {
-    fn write_status_text(&mut self, text: &str) -> io::Result<()>;
-    fn write_status_err(&mut self, text: &str) -> io::Result<()>;
+    fn write_status_text(&self, text: &str) -> io::Result<()>;
+    fn write_status_err(&self, text: &str) -> io::Result<()>;
 }
 
 impl Screen {
-    fn write_status(&mut self, text: &str, error: bool) -> io::Result<()> {
-        let skin = if error {
-            &self.skin.status_error
-        } else {
-            &self.skin.status_normal
-        };
+    fn write_status(&self, text: &str, skin: &dyn SkinEntry) -> io::Result<()> {
         let mut text = String::from(text);
-        text.truncate(self.w as usize - 2);
-        write!(
-            self.stdout,
-            "{}{}{}{} {}{}",
-            termion::cursor::Goto(2, self.h - 1),
-            skin.fg,
-            skin.bg,
-            termion::clear::CurrentLine,
-            text,
-            self.skin.reset.bg,
-        )?;
-        self.stdout.flush()?;
+        text.truncate(self.w as usize - 3);
+        self.goto_clear(2, self.h - 1);
+        skin.print_string(" ");
+        skin.print_string(&text);
+        skin.print_bg();
+        self.clear_line();
+        skin::reset();
         Ok(())
     }
 }
 
 impl Status for Screen {
-    fn write_status_err(&mut self, text: &str) -> io::Result<()> {
-        self.write_status(text, true)
+    fn write_status_err(&self, text: &str) -> io::Result<()> {
+        self.write_status(text, &self.skin.status_error)
     }
-
-    fn write_status_text(&mut self, text: &str) -> io::Result<()> {
-        self.write_status(text, false)
+    fn write_status_text(&self, text: &str) -> io::Result<()> {
+        self.write_status(text, &self.skin.status_normal)
     }
 }

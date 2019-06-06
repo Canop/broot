@@ -1,101 +1,105 @@
 /// Defines the Skin structure with its defautl value.
 ///
-/// A skin is a collection of skin entries and the
-/// store of all color changing TTY codes used by
-/// the application. It can be changed by configuration.
-/// A skin also contains some style change (bold, italic, reset)
-/// but they're not configurable right now (they exist mainly
-/// so that unstyled output for files can be produced)
+/// A skin is a collection of skin entries which are crossterm
+/// objectstyles:
+/// - an optional fg color
+/// - an optional bg color
+/// - a vector of attributes (bold, italic)
 use std::collections::HashMap;
-use termion::color::{self, *};
-use termion::style;
+use std::fmt;
 
-/// a Skin entry is a couple of strings, one for the foreground
-/// and one for the background, each one made of TTY escape
-/// codes defining color changes.
-pub struct SkinEntry {
-    pub fg: String,
-    pub bg: String,
+use crossterm::{Attribute::{self, *}, Color::{self, *}, Colored, Color::AnsiValue, ObjectStyle};
+
+pub trait SkinEntry {
+    fn print_fg(&self);
+    fn print_bg(&self);
+    fn print_string(&self, string: &str);
+    fn write(&self, f: &mut fmt::Formatter<'_>, string: &str) -> fmt::Result;
 }
 
-impl SkinEntry {
-    pub fn fgbg(&self) -> String {
-        format!("{}{}", self.fg, self.bg)
+impl SkinEntry for ObjectStyle {
+    fn print_fg(&self) {
+        if let Some(c) = self.fg_color {
+            print!("{}", Colored::Fg(c));
+        }
+    }
+    fn print_bg(&self) {
+        if let Some(c) = self.bg_color {
+            print!("{}", Colored::Bg(c));
+        }
+    }
+    #[inline(always)]
+    fn print_string(&self, string: &str) {
+        print!("{}", self.apply_to(string));
+    }
+    #[inline(always)]
+    fn write(&self, f: &mut fmt::Formatter<'_>, string: &str) -> fmt::Result {
+        write!(f, "{}", self.apply_to(string))
     }
 }
 
 macro_rules! Skin {
     (
-        $($name:ident: $fg:expr, $bg:expr)*
+        $($name:ident: $fg:expr, $bg:expr; $({$a:expr})*)*
     ) => {
         pub struct Skin {
-            $(pub $name: SkinEntry,)*
-            pub reset: SkinEntry,
-            pub style_folder: String,
-            pub style_pruning: String,
-            pub style_reset: String,
+            $(pub $name: ObjectStyle,)*
         }
         impl Skin {
             // build a skin without any terminal control character (for file output)
             pub fn no_term() -> Skin {
                 Skin {
-                    $($name: SkinEntry {
-                        fg: "".to_string(),
-                        bg: "".to_string(),
-                    },)*
-                    reset: SkinEntry {
-                        fg: "".to_string(),
-                        bg: "".to_string(),
-                    },
-                    style_folder: "".to_string(),
-                    style_pruning: " … ".to_string(),
-                    style_reset: "".to_string(),
+                    $($name: ObjectStyle::new(),)*
                 }
             }
             // build a skin with some entry overloaded by configuration
-            pub fn create(mut skin_conf: HashMap<String, String>) -> Skin {
+            pub fn create(mut skin_conf: HashMap<String, ObjectStyle>) -> Skin {
                 Skin {
-                    $($name: SkinEntry {
-                        fg: skin_conf.remove(&format!("{}_fg", stringify!($name))).unwrap_or(
-                            format!("{}", color::Fg($fg)).to_string()
-                        ),
-                        bg: skin_conf.remove(&format!("{}_bg", stringify!($name))).unwrap_or(
-                            format!("{}", color::Bg($bg)).to_string()
-                        ),
-                    },)*
-                    reset: SkinEntry {
-                        fg: format!("{}", color::Fg(color::Reset)).to_string(),
-                        bg: format!("{}", color::Bg(color::Reset)).to_string(),
-                    },
-                    style_folder: style::Bold.to_string(),
-                    style_pruning: style::Italic.to_string(),
-                    style_reset: style::Reset.to_string(),
+                    $($name: skin_conf.remove(stringify!($name)).unwrap_or(ObjectStyle {
+                        fg_color: $fg,
+                        bg_color: $bg,
+                        attrs: [$($a),*].to_vec()
+                    }),)*
                 }
             }
         }
     }
 }
 
+pub fn gray(level: u8) -> Option<Color> {
+    Some(AnsiValue(0xE8 + level))
+}
+pub fn rgb(r: u8, g: u8, b: u8) -> Option<Color> {
+    Some(Rgb{r, g, b})
+}
+
 Skin! {
-    char_match: Green, Reset
-    code: Reset, AnsiValue::grayscale(2)
-    directory: LightBlue, Reset
-    exe: LightCyan, Reset
-    file: White, Reset
-    file_error: Red, Reset
-    flag_label: AnsiValue::grayscale(12), AnsiValue::grayscale(1)
-    flag_value: AnsiValue::grayscale(16), AnsiValue::grayscale(1)
-    input: White, Reset
-    link: LightMagenta, Reset
-    permissions: AnsiValue::grayscale(15), Reset
-    selected_line: Reset, AnsiValue::grayscale(4)
-    size_bar_full: Reset, Magenta
-    size_bar_void: Reset, AnsiValue::grayscale(2)
-    size_text: AnsiValue::grayscale(15), Reset
-    spinner: AnsiValue::grayscale(10), AnsiValue::grayscale(2)
-    status_error: Red, AnsiValue::grayscale(2)
-    status_normal: White, AnsiValue::grayscale(2)
-    table_border: AnsiValue::grayscale(8), Reset
-    tree: AnsiValue::grayscale(5), Reset
-    unlisted: AnsiValue::grayscale(13), Reset
+    // FIXME some colors to rebuild using Rgb
+    char_match: rgb(78, 154, 8), None;
+    code: Some(White), gray(2);
+    directory: Some(Blue), None; {Bold}
+    exe: Some(Cyan), None;
+    file: gray(18), None;
+    pruning: gray(17), None; {Italic}
+    file_error: Some(Red), None;
+    flag_label: gray(12), gray(1);
+    flag_value: gray(16), gray(1);
+    input: Some(White), None;
+    link: Some(Magenta), None;
+    permissions: gray(15), None;
+    selected_line: None, gray(3);
+    size_bar: gray(15), rgb(117, 80, 123);
+    size_no_bar: gray(15), gray(2);
+    spinner: gray(10), gray(2);
+    status_error: Some(Red), gray(2);
+    status_normal: Some(White), gray(2);
+    table_border: gray(8), None;
+    tree: gray(5), None;
+    unlisted: gray(13), None;
+    scrollbar_thumb: Some(Blue), None;
+    scrollbar_track: rgb(20, 20, 20), None;
+}
+
+pub fn reset() {
+    print!("{}", Attribute::Reset);
 }

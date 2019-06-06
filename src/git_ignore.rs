@@ -123,9 +123,9 @@ impl GitIgnoreFilter {
                     continue;
                 }
                 let ok = if rule.filename {
-                    rule.pattern.matches_with(filename, &rule.pattern_options)
+                    rule.pattern.matches_with(filename, rule.pattern_options)
                 } else {
-                    rule.pattern.matches_path_with(path, &rule.pattern_options)
+                    rule.pattern.matches_path_with(path, rule.pattern_options)
                 };
                 if ok {
                     return rule.ok;

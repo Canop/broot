@@ -14,7 +14,7 @@ pub struct RegexPattern {
 }
 
 impl fmt::Display for RegexPattern {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}/{}", self.rex, self.flags)
     }
 }

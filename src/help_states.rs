@@ -1,37 +1,51 @@
-//! an application state dedicated to help
 
 use std::io;
+
+use termimad::{Area, MadSkin, MadView};
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
 use crate::conf::Conf;
-use crate::screen_text::{Text, TextTable};
-use crate::screens::{Screen, ScreenArea};
+use crate::screens::{Screen};
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
-use crate::verbs::{Verb, VerbExecutor};
+use crate::verbs::VerbExecutor;
 use crate::verb_store::{PrefixSearchResult};
+use crate::help_content;
 
+/// an application state dedicated to help
 pub struct HelpState {
-    area: ScreenArea, // where the help is drawn
+    view: MadView,
 }
 
 impl HelpState {
-    pub fn new(screen: &Screen) -> HelpState {
-        let mut state = HelpState {
-            area: ScreenArea::new(1, 1, 1),
-        };
-        state.resize_area(screen);
-        state
+
+    pub fn new(_screen: &Screen, con: &AppContext) -> HelpState {
+        let mut area = Area::uninitialized();
+        area.top = 0;
+        area.left = 0;
+        let markdown = help_content::build_markdown(con);
+        let mut skin = MadSkin::default();
+        let view = MadView::from(
+            markdown,
+            area,
+            skin
+        );
+        HelpState {
+            view
+        }
     }
+
     fn resize_area(&mut self, screen: &Screen) {
-        self.area.bottom = screen.h - 2;
-        self.area.width = screen.w;
+        let area = Area::new(0, 0, screen.w, screen.h - 3);
+        self.view.resize(&area);
     }
+
 }
 
 impl AppState for HelpState {
+
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -46,11 +60,11 @@ impl AppState for HelpState {
                 _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::MoveSelection(dy) => {
-                self.area.try_scroll(*dy);
+                self.view.try_scroll_lines(*dy);
                 AppStateCmdResult::Keep
             }
             Action::ScrollPage(dp) => {
-                self.area.try_scroll(*dp * (self.area.height() - 1));
+                self.view.try_scroll_pages(*dp);
                 AppStateCmdResult::Keep
             }
             Action::Refresh => AppStateCmdResult::RefreshState,
@@ -75,60 +89,15 @@ impl AppState for HelpState {
         unreachable!();
     }
 
-    fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()> {
-        let mut text = Text::new(&screen.skin);
-        text.md("");
-        text.md(r#" **broot** lets you explore directory trees and launch commands."#);
-        text.md(r#" site: https://github.com/Canop/broot."#);
-        text.md(r#" broot is best used when launched as `br`."#);
-        text.md("");
-        text.md(r#" `<esc>` gets you back to the previous state."#);
-        text.md(r#" Typing some letters searches the tree and selects the most relevant file."#);
-        text.md(r#" To use a regular expression, use a slash eg `/j(ava|s)$`."#);
-        text.md("");
-        text.md(r#" To execute a verb, type a space or `:` then start of its name or shortcut."#);
-        text.md(" Verbs:");
-        let mut tbl: TextTable<Verb> = TextTable::new(&screen.skin);
-        tbl.add_col("name", &|verb| &verb.invocation.key);
-        tbl.add_col("shortcut", &|verb| {
-            if let Some(sk) = &verb.shortcut {
-                &sk
-            } else {
-                ""
-            }
-        });
-        tbl.add_col("description", &|verb: &Verb| {
-            if let Some(s) = &verb.description {
-                &s
-            } else {
-                &verb.execution
-            }
-        });
-        tbl.write(&con.verb_store.verbs, &mut text);
-        text.md("");
-        text.md(&format!(
-            " Verb can be configured in {:?}.",
-            Conf::default_location()
-        ));
-        text.md("");
-        text.md(" Some options can be set on launch:");
-        text.md("  `-h` or `--hidden` : show hidden files");
-        text.md("  `-f` or `--only-folders` : only show folders");
-        text.md("  `-s` or `--sizes` : display sizes");
-        text.md("  (for the complete list, run `broot --help`)");
-        text.md("");
-        text.md(" Flags are displayed at bottom right:");
-        text.md("  `h:y` or `h:n` : whether hidden files are shown");
-        text.md("  `gi:a`, `gi:y`, `gi:n` : gitignore on auto, yes or no");
-        text.md("  When gitignore is auto, .gitignore rules are respected if");
-        text.md("   the displayed root is a git repository or in one.");
-        self.area.content_length = text.height() as i32;
-        screen.reset_colors()?;
-        text.write(screen, &self.area)?;
+    fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
+        self.resize_area(screen);
+        let r = self.view.write();
+        debug!("r={:?}", r);
         Ok(())
     }
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
+        debug!("help write_status");
         match &cmd.action {
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::NoMatch => screen.write_status_err("No matching verb)"),

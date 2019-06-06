@@ -1,6 +1,7 @@
 //! manage reading the verb shortcuts from the configuration file,
 //! initializing if if it doesn't yet exist
 
+use crossterm::{Attribute};
 use directories::ProjectDirs;
 use std::collections::HashMap;
 use std::fs;
@@ -8,6 +9,7 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
+use crossterm::ObjectStyle;
 
 use crate::errors::ConfError;
 use crate::skin_conf;
@@ -24,10 +26,9 @@ pub struct VerbConf {
     pub confirm: Option<bool>,
 }
 
-#[derive(Debug)]
 pub struct Conf {
     pub verbs: Vec<VerbConf>,
-    pub skin_entries: HashMap<String, String>,
+    pub skin: HashMap<String, ObjectStyle>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -49,7 +50,7 @@ fn bool_field(value: &Value, field_name: &str) -> Option<bool> {
     None
 }
 
-// return the path to the config directory, based on XDG
+/// return the path to the config directory, based on XDG
 pub fn dir() -> PathBuf {
     if let Some(dirs) = ProjectDirs::from("org", "dystroy", "broot") {
         dirs.config_dir().to_path_buf()
@@ -59,34 +60,38 @@ pub fn dir() -> PathBuf {
 }
 
 impl Conf {
+
     pub fn default_location() -> PathBuf {
         dir().join("conf.toml")
     }
-    // read the configuration file from the default OS specific location.
-    // Create it if it doesn't exist
+
+    /// read the configuration file from the default OS specific location.
+    /// Create it if it doesn't exist
     pub fn from_default_location() -> Result<Conf, ConfError> {
         let conf_filepath = Conf::default_location();
         if !conf_filepath.exists() {
             Conf::write_sample(&conf_filepath)?;
             println!(
-                "{}New Configuration file written in {:?}.{}",
-                termion::style::Bold,
+                "New Configuration file written in {}{:?}{}.",
+                Attribute::Bold,
                 &conf_filepath,
-                termion::style::Reset
+                Attribute::Reset,
             );
             println!("You should have a look at it.");
         }
         Ok(Conf::from_file(&conf_filepath)?)
     }
-    // assume the file doesn't yet exist
+
+    /// assume the file doesn't yet exist
     pub fn write_sample(filepath: &Path) -> Result<(), io::Error> {
         fs::create_dir_all(filepath.parent().unwrap())?;
         fs::write(filepath, DEFAULT_CONF_FILE)?;
         Ok(())
     }
-    // read the configuration from a given path. Assume it exists.
-    // stderr is supposed to be a valid solution for displaying errors
-    // (i.e. this function is called before or after the terminal alternation)
+
+    /// read the configuration from a given path. Assume it exists.
+    /// stderr is supposed to be a valid solution for displaying errors
+    /// (i.e. this function is called before or after the terminal alternation)
     pub fn from_file(filepath: &Path) -> Result<Conf, ConfError> {
         let data = fs::read_to_string(filepath)?;
         let root: Value = data.parse::<Value>()?;
@@ -129,12 +134,12 @@ impl Conf {
             }
         }
         // reading the skin
-        let mut skin_entries = HashMap::new();
+        let mut skin = HashMap::new();
         if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
             for (k, v) in entries_tbl.iter() {
                 if let Some(s) = v.as_str() {
-                    match skin_conf::parse_config_entry(k, s) {
-                        Ok(ske) => { skin_entries.insert(k.to_string(), ske); },
+                    match skin_conf::parse_object_style(s) {
+                        Ok(ske) => { skin.insert(k.to_string(), ske); },
                         Err(e) => { eprintln!("{}", e); }
                     }
                 }
@@ -143,7 +148,7 @@ impl Conf {
 
         Ok(Conf {
             verbs,
-            skin_entries,
+            skin,
         })
     }
 }

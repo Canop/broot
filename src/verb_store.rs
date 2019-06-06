@@ -1,4 +1,5 @@
 use crate::conf::Conf;
+use crate::permissions;
 use crate::verbs::Verb;
 
 /// Provide access to the verbs:
@@ -159,11 +160,13 @@ impl VerbStore {
             Some("h".to_string()),
             "toggle showing hidden files",
         );
-        self.add_builtin(
-            "toggle_perm",
-            Some("perm".to_string()),
-            "toggle showing file permissions",
-        );
+        if permissions::supported() {
+            self.add_builtin(
+                "toggle_perm",
+                Some("perm".to_string()),
+                "toggle showing file permissions",
+            );
+        }
         self.add_builtin(
             "toggle_sizes",
             Some("sizes".to_string()),

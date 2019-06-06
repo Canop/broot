@@ -7,12 +7,12 @@
 //! - an operation which keeps the state
 //! - a request to quit broot
 //! - a request to launch an executable (thus leaving broot)
-use std::io::{self, stdin, Write};
+use std::io::{self, Write};
 use std::result::Result;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::sync::{mpsc, Arc};
 use std::thread;
-use termion::input::TermRead;
+use crossterm::{TerminalInput, InputEvent};
 
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
@@ -156,6 +156,7 @@ impl App {
         screen.read_size(con)?;
         screen.write_input(&cmd)?;
         self.state().write_flags(screen, con)?;
+        screen.write_spinner(false)?;
         match self.mut_state().apply(&mut cmd, screen, con)? {
             AppStateCmdResult::Quit => {
                 debug!("cmd result quit");
@@ -237,26 +238,36 @@ impl App {
             }
         }
 
-        // we listen for keys in a separate thread so that we can go on listening
+        // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
-        let keys = stdin().keys();
         let (tx_keys, rx_keys) = mpsc::channel();
         let (tx_quit, rx_quit) = mpsc::channel();
         let cmd_count = Arc::new(AtomicUsize::new(0));
         let key_count = Arc::clone(&cmd_count);
         thread::spawn(move || {
-            for c in keys {
-                key_count.fetch_add(1, Ordering::SeqCst);
-                // we send the command to the receiver in the
-                //  main event loop
-                tx_keys.send(c).unwrap();
-                let quit = rx_quit.recv().unwrap();
-                if quit {
-                    // cleanly quitting this thread is necessary
-                    //  to ensure stdin is properly closed when
-                    //  we launch an external application in the same
-                    //  terminal
-                    return;
+            let input = TerminalInput::new();
+            let mut crossterm_events = input.read_sync();
+            loop {
+                if let Some(event) = crossterm_events.next() {
+                    info!(" => crossterm event={:?}", event);
+                    if let InputEvent::Keyboard(key) = event {
+                        key_count.fetch_add(1, Ordering::SeqCst);
+                        // we send the command to the receiver in the
+                        //  main event loop
+                        tx_keys.send(key).unwrap();
+                        let quit = rx_quit.recv().unwrap();
+                        if quit {
+                            // cleanly quitting this thread is necessary
+                            //  to ensure stdin is properly closed when
+                            //  we launch an external application in the same
+                            //  terminal
+                            return;
+                        }
+                    } else {
+                        debug!("disregarding unrelevant event: {:?}", event);
+                    }
+                } else {
+                    debug!("crossterm events iterator gave us a None"); // happens on windows
                 }
             }
         });
@@ -268,15 +279,15 @@ impl App {
             if !self.quitting {
                 self.do_pending_tasks(&cmd, &mut screen, con, TaskLifetime::new(&cmd_count))?;
             }
-            let c = match rx_keys.recv() {
-                Ok(c) => c,
+            let k = match rx_keys.recv() {
+                Ok(k) => k,
                 Err(_) => {
                     // this is how we quit the application,
                     // when the input thread is properly closed
                     break;
                 }
             };
-            cmd.add_key(c?);
+            cmd.add_key(k);
             cmd = self.apply_command(cmd, &mut screen, con)?;
             tx_quit.send(self.quitting).unwrap();
         }

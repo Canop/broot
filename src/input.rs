@@ -1,9 +1,12 @@
 /// displays the "input" at the bottom of the screen
 /// (reading is managed in the app module)
-use std::io::{self, Write};
+use std::io::{self};
+
+use crossterm::Attribute;
 
 use crate::commands::Command;
 use crate::screens::Screen;
+use crate::skin;
 
 pub trait Input {
     fn write_input(&mut self, cmd: &Command) -> io::Result<()>;
@@ -11,18 +14,14 @@ pub trait Input {
 
 impl Input for Screen {
     fn write_input(&mut self, cmd: &Command) -> io::Result<()> {
-        write!(
-            self.stdout,
-            "{}{}{}{}{}{} {}",
-            termion::cursor::Goto(1, self.h),
-            self.skin.input.fg,
-            self.skin.input.bg,
-            termion::clear::CurrentLine,
-            cmd.raw,
-            termion::style::Invert,
-            termion::style::NoInvert,
-        )?;
-        self.stdout.flush()?;
+        skin::reset();
+        self.goto_clear(1, self.h);
+        self.write(&format!(
+            "{}{} {}",
+            self.skin.input.apply_to(&cmd.raw),
+            Attribute::Reverse,
+            Attribute::NoInverse,
+        ));
         Ok(())
     }
 }

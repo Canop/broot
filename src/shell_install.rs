@@ -23,11 +23,11 @@
 
 use std::fs::{self, OpenOptions};
 use std::io::{self, BufRead, BufReader, Write};
-use std::os::unix::fs::symlink;
+use std::os;
 use std::path::Path;
 
+use crossterm::Attribute;
 use directories::UserDirs;
-use termion::style;
 
 use crate::cli::{self, AppLaunchArgs};
 use crate::conf;
@@ -64,7 +64,10 @@ impl ShellFamily<'static> {
         }
         if !func_present || !link_present {
             info!("creating link from {:?} to {:?}", &link_path, &script_path);
-            symlink(&script_path, &link_path)?;
+            #[cfg(unix)]
+            os::unix::fs::symlink(&script_path, &link_path)?;
+            #[cfg(windows)]
+            os::windows::fs::symlink_file(&script_path, &link_path)?;
         }
         Ok(())
     }
@@ -126,8 +129,8 @@ impl ShellFamily<'static> {
             if !motivation_already_explained {
                 println!(
                     "{}Broot{} should be launched using a shell function",
-                    style::Bold,
-                    style::Reset
+                    Attribute::Bold,
+                    Attribute::Reset
                 );
                 println!("(see https://github.com/Canop/broot for explanations).");
                 println!("The function is either missing, old or badly installed.");
@@ -185,8 +188,8 @@ impl ShellFamily<'static> {
         if changes_made {
             println!(
                 "You should afterwards start broot with just {}br{}.",
-                style::Bold,
-                style::Reset
+                Attribute::Bold,
+                Attribute::Reset
             );
         }
         // and remember we did it

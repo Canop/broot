@@ -15,7 +15,7 @@ use crate::tree_options::TreeOptions;
 pub enum LineType {
     File,
     Dir,
-    SymLinkToDir(String),  //
+    SymLinkToDir(String),
     SymLinkToFile(String), // (to file or to symlink)
     Pruning,               // a "xxx unlisted" line
 }
@@ -25,7 +25,7 @@ pub enum LineType {
 pub struct TreeLine {
     pub left_branchs: Box<[bool]>, // a depth-sized array telling whether a branch pass
     pub depth: u16,
-    pub name: String, // name of the first unlisted, in case of Pruning
+    pub name: String,
     pub path: PathBuf,
     pub line_type: LineType,
     pub has_error: bool,
@@ -153,7 +153,9 @@ impl Tree {
             self.options.clone(),
             page_height,
         )?;
+        debug!("remove 3");
         let mut tree = builder.build(&TaskLifetime::unlimited()).unwrap(); // should not fail
+        debug!("remove 4");
         // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
@@ -205,6 +207,7 @@ impl Tree {
                     if unlisted > 0 && self.lines[end_index].nb_kept_children == 0 {
                         self.lines[end_index].line_type = LineType::Pruning;
                         self.lines[end_index].unlisted = unlisted + 1;
+                        self.lines[end_index].name = format!("{} unlisted", unlisted+1).to_owned();
                         self.lines[parent_index].unlisted = 0;
                     }
                     last_parent_index = parent_index;
