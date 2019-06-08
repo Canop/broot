@@ -1,5 +1,5 @@
 
-The current version of broot works on linux, mac and windows.
+The current version of broot works on linux, mac and windows (win 10+).
 
 While the linux version is quite well tested the other versions are lacking testers and maybe involved developpers.
 
