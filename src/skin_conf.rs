@@ -1,15 +1,18 @@
-
 // This file is ignored for now. I'll have to rewrite
 // skin configuration parsing for crossterm when the
 // rest is proven OK
 
+use crossterm::{
+    Attribute::{self, *},
+    Color::{self, *},
+    ObjectStyle,
+};
 use regex::Regex;
 /// Manage conversion of a user provided string
 /// defining foreground and background colors into
 /// a string with TTY colors
 ///
 use std::result::Result;
-use crossterm::{Attribute::{self, *}, Color::{self, *}, ObjectStyle};
 
 use crate::errors::InvalidSkinError;
 use crate::skin;
@@ -27,16 +30,17 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         let level = level.parse();
         if let Ok(level) = level {
             if level > 23 {
-                return Err( InvalidSkinError::InvalidGreyLevel { level });
+                return Err(InvalidSkinError::InvalidGreyLevel { level });
             }
             return Ok(skin::gray(level));
         } else {
-            return Err( InvalidSkinError::InvalidColor{raw: s.to_owned()});
+            return Err(InvalidSkinError::InvalidColor { raw: s.to_owned() });
         }
     }
 
     lazy_static! {
-        static ref RGB_REX: Regex = Regex::new(r"^rgb\((?P<r>\d+),\s*(?P<g>\d+),\s*(?P<b>\d+)\)$").unwrap();
+        static ref RGB_REX: Regex =
+            Regex::new(r"^rgb\((?P<r>\d+),\s*(?P<g>\d+),\s*(?P<b>\d+)\)$").unwrap();
     }
     if let Some(c) = RGB_REX.captures(&s) {
         let r = c.name("r").unwrap().as_str().parse();
@@ -45,11 +49,12 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         if let (Ok(r), Ok(g), Ok(b)) = (r, g, b) {
             return Ok(skin::rgb(r, g, b));
         } else {
-            return Err( InvalidSkinError::InvalidColor{raw: s.to_owned()});
+            return Err(InvalidSkinError::InvalidColor { raw: s.to_owned() });
         }
     }
 
     match s.as_ref() {
+        // TODO: we could add a table of common colors
         "black" => Ok(skin::rgb(0, 0, 0)), // crossterm black isn't black
         "blue" => Ok(Some(Blue)),
         "cyan" => Ok(Some(Cyan)),
@@ -64,8 +69,9 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         "red" => Ok(Some(Red)),
         "yellow" => Ok(Some(Yellow)),
         "darkyellow" => Ok(Some(DarkYellow)),
+        "white" => Ok(Some(White)),
         "none" => Ok(None),
-        _ => Err(InvalidSkinError::InvalidColor{raw: s.to_owned()}),
+        _ => Err(InvalidSkinError::InvalidColor { raw: s.to_owned() }),
     }
 }
 
@@ -77,7 +83,8 @@ fn parse_attribute(s: &str) -> Result<Attribute, InvalidSkinError> {
         "dim" => Ok(Dim), // does it do anything ?
         "italic" => Ok(Italic),
         "underlined" => Ok(Underlined),
-        _ => Err(InvalidSkinError::InvalidAttribute{ raw: s.to_owned()}),
+        "overlined" => Ok(OverLined),
+        _ => Err(InvalidSkinError::InvalidAttribute { raw: s.to_owned() }),
     }
 }
 
@@ -86,7 +93,7 @@ fn parse_attributes(s: &str) -> Result<Vec<Attribute>, InvalidSkinError> {
     s.split_whitespace().map(|t| parse_attribute(t)).collect()
 }
 
-pub fn parse_object_style(s: &str) -> Result<ObjectStyle, InvalidSkinError>{
+pub fn parse_object_style(s: &str) -> Result<ObjectStyle, InvalidSkinError> {
     let s = s.to_ascii_lowercase();
     lazy_static! {
         static ref PARTS_REX: Regex = Regex::new(
@@ -106,10 +113,15 @@ pub fn parse_object_style(s: &str) -> Result<ObjectStyle, InvalidSkinError>{
         let fg_color = parse_color(c.name("fg").unwrap().as_str())?;
         let bg_color = parse_color(c.name("bg").unwrap().as_str())?;
         let attrs = parse_attributes(c.name("attributes").unwrap().as_str())?;
-        Ok(ObjectStyle { fg_color, bg_color, attrs })
+        Ok(ObjectStyle {
+            fg_color,
+            bg_color,
+            attrs,
+        })
     } else {
         debug!("NO match for {:?}", s);
-        Err(InvalidSkinError::InvalidStyle{style: s.to_owned()})
+        Err(InvalidSkinError::InvalidStyle {
+            style: s.to_owned(),
+        })
     }
 }
-

@@ -5,7 +5,7 @@ The configuration file location follows the XDG convention and its location depe
 
 The easiest way to read and edit broot's configuration file is to go the help screen (using <kbd>?</kbd>) then to type `:open`.
 
-This file is called conf.toml and is in [TOML](https://github.com/toml-lang/toml).
+This file is called `conf.toml` and is in [TOML](https://github.com/toml-lang/toml).
 
 Currently, you can configure
 
@@ -126,51 +126,50 @@ You can change all colors by adding a `[skin]` section in your `conf.toml` file.
 
 For example:
 
-    [skin]
-    status_normal_fg = "grayscale(18)"
-    status_normal_bg = "grayscale(3)"
-    status_error_fg = "red"
-    status_error_bg = "yellow"
-    tree_fg = "red"
-    selected_line_bg = "grayscale(7)"
-    permissions_fg = "grayscale(12)"
-    size_bar_full_bg = "red"
-    size_bar_void_bg = "black"
-    directory_fg = "lightyellow"
-    input_fg = "cyan"
-    flag_value_fg = "lightyellow"
-    table_border_fg = "red"
-    code_fg = "lightyellow"
+	[skin]
+	tree = "rgb(89, 73, 101) none"
+	file = "gray(21) none"
+	directory = "rgb(255, 152, 0) none bold"
+	exe = "rgb(17, 164, 181) none"
+	link = "Magenta none"
+	pruning = "rgb(89, 73, 101) none Italic"
+	permissions = "gray(12) none "
+	selected_line = "none gray(3)"
+	size_bar = "black rgb(255, 152, 0)"
+	size_no_bar = "gray(15) gray(2)"
+	char_match = "yellow none"
+	file_error = "Red none"
+	flag_label = "gray(16) none"
+	flag_value = "rgb(255, 152, 0) none bold"
+	input = "White none"
+	spinner = "gray(10) gray(2)"
+	status_error = "Red gray(2)"
+	status_normal = "gray(20) gray(2)"
+	scrollbar_track = "rgb(80, 50, 0) none"
+	scrollbar_thumb = "rgb(255, 187, 0) none"
+	help_paragraph = "gray(20) none"
+	help_bold = "rgb(255, 187, 0) none bold"
+	help_italic = "Magenta rgb(30, 30, 40) italic"
+	help_code = "gray(21) gray(3)"
+	help_headers = "rgb(255, 187, 0) none"
+	help_table_border = "rgb(170, 136, 0) none"
 
 which would look like this:
 
-![custom colors tree](../img/20190217-custom-colors-tree.png)
+![custom colors tree](../img/20190607-custom-colors-tree.png)
+![custom colors sizes](../img/20190607-custom-colors-sizes.png)
 
-![custom colors help](../img/20190217-custom-colors-help.png)
+Each skin entry value is made of
 
-Complete list of keys (expected to change before the v1 of broot):
+* a foreground color
+* a background color (or `none`)
+* zero, one, or more *attributes*
 
-    char_match
-    code
-    directory
-    file
-    file_error
-    flag_label
-    flag_value
-    exe
-    input
-    link
-    permissions
-    selected_line
-    size_bar_full
-    size_bar_void
-    size_text
-    spinner
-    status_error
-    status_normal
-    table_border
-    tree
-    unlisted
+Currently supported attributes are:
 
-Add `_fg` for a foreground color while `_bg` is for background colors.
+* bold
+* italic
+* crossedout
+* underlined
+* overlined
 

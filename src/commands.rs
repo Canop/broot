@@ -2,15 +2,15 @@
 //!  in the input. It's independant of the state of the application
 //!  (verbs arent checked at this point)
 
-use regex::Regex;
-use crossterm::{KeyEvent};
 use crate::verb_invocation::VerbInvocation;
+use crossterm::KeyEvent;
+use regex::Regex;
 
 #[derive(Debug, Clone)]
 pub struct Command {
     pub raw: String,     // what's visible in the input
     parts: CommandParts, // the parsed parts of the visible input
-    pub action: Action,  // what's required, based on the last key (which may be not visible, like esc)
+    pub action: Action, // what's required, based on the last key (which may be not visible, like esc)
 }
 
 /// An intermediate parsed representation of the raw string

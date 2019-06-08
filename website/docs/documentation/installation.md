@@ -1,5 +1,7 @@
 
-The current version of broot only runs on linux.
+The current version of broot works on linux, mac and windows.
+
+While the linux version is quite well tested the other versions are lacking testers and maybe involved developpers.
 
 Precompiled binaries and the crates.io repository are updated at the same time, with tested releases.
 
@@ -10,6 +12,7 @@ If you prefer to get the very last version, even when not tagged, you may compil
 The last one is always made available at:
 
 * [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
+* [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
 
 You may download previous releases on [GitHub releases](https://github.com/Canop/broot/releases).
 

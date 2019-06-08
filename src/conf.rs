@@ -1,7 +1,8 @@
 //! manage reading the verb shortcuts from the configuration file,
 //! initializing if if it doesn't yet exist
 
-use crossterm::{Attribute};
+use crossterm::Attribute;
+use crossterm::ObjectStyle;
 use directories::ProjectDirs;
 use std::collections::HashMap;
 use std::fs;
@@ -9,7 +10,6 @@ use std::io;
 use std::path::{Path, PathBuf};
 use std::result::Result;
 use toml::{self, Value};
-use crossterm::ObjectStyle;
 
 use crate::errors::ConfError;
 use crate::skin_conf;
@@ -60,7 +60,6 @@ pub fn dir() -> PathBuf {
 }
 
 impl Conf {
-
     pub fn default_location() -> PathBuf {
         dir().join("conf.toml")
     }
@@ -118,9 +117,11 @@ impl Conf {
                 let from_shell = bool_field(verb_value, "from_shell");
                 let leave_broot = bool_field(verb_value, "leave_broot");
                 if leave_broot == Some(false) && from_shell == Some(true) {
-                        eprintln!("Invalid [[verbs]] entry in configuration");
-                        eprintln!("You can't simultaneously have leave_broot=false and from_shell=true");
-                        continue;
+                    eprintln!("Invalid [[verbs]] entry in configuration");
+                    eprintln!(
+                        "You can't simultaneously have leave_broot=false and from_shell=true"
+                    );
+                    continue;
                 }
                 verbs.push(VerbConf {
                     invocation,
@@ -139,17 +140,18 @@ impl Conf {
             for (k, v) in entries_tbl.iter() {
                 if let Some(s) = v.as_str() {
                     match skin_conf::parse_object_style(s) {
-                        Ok(ske) => { skin.insert(k.to_string(), ske); },
-                        Err(e) => { eprintln!("{}", e); }
+                        Ok(ske) => {
+                            skin.insert(k.to_string(), ske);
+                        }
+                        Err(e) => {
+                            eprintln!("{}", e);
+                        }
                     }
                 }
             }
         }
 
-        Ok(Conf {
-            verbs,
-            skin,
-        })
+        Ok(Conf { verbs, skin })
     }
 }
 
@@ -190,4 +192,39 @@ name = "view"
 invocation = "view"
 execution = "less {file}"
 
+#####################
+# Skin
+
+# If you want to change the colors of broot,
+# uncomment the following bloc and start messing
+# with the various values
+#
+# [skin]
+# tree = "rgb(89, 73, 101) none"
+# file = "gray(21) none"
+# directory = "rgb(255, 152, 0) none bold"
+# exe = "rgb(17, 164, 181) none"
+# link = "Magenta none"
+# pruning = "rgb(89, 73, 101) none Italic"
+# permissions = "gray(12) none "
+# selected_line = "none gray(3)"
+# size_bar = "black rgb(255, 152, 0)"
+# size_no_bar = "gray(15) gray(2)"
+# char_match = "yellow none"
+# file_error = "Red none"
+# flag_label = "gray(16) none"
+# flag_value = "rgb(255, 152, 0) none bold"
+# input = "White none"
+# spinner = "gray(10) gray(2)"
+# status_error = "Red gray(2)"
+# status_normal = "gray(20) gray(2)"
+# scrollbar_track = "rgb(80, 50, 0) none"
+# scrollbar_thumb = "rgb(255, 187, 0) none"
+# help_paragraph = "gray(20) none"
+# help_bold = "rgb(255, 187, 0) none bold"
+# help_italic = "Magenta rgb(30, 30, 40) italic"
+# help_code = "gray(21) gray(3)"
+# help_headers = "rgb(255, 187, 0) none"
+# help_table_border = "rgb(170, 136, 0) none"
+#
 "#;

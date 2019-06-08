@@ -86,29 +86,6 @@ pub struct Match {
     pub pos: Vec<usize>, // positions of the matching chars
 }
 
-impl Match {
-    // returns a new string made from candidate (which should be at the origin of the match)
-    //  where the characters at positions pos (matching chars) are wrapped between
-    //  prefix and postfix
-    pub fn wrap_matching_chars(&self, candidate: &str, prefix: &str, postfix: &str) -> String {
-        let mut pos_idx: usize = 0;
-        let mut decorated = String::new();
-        for (cand_idx, cand_char) in candidate.chars().enumerate() {
-            if pos_idx < self.pos.len() && self.pos[pos_idx] == cand_idx {
-                decorated.push_str(prefix);
-                decorated.push(cand_char);
-                decorated.push_str(postfix);
-                pos_idx += 1;
-            } else {
-                decorated.push(cand_char);
-            }
-        }
-        decorated
-    }
-}
-
-
-// TODO move in another file
 pub struct MatchedString<'a> {
     pub pattern: &'a Pattern,
     pub string: &'a str,
@@ -121,9 +98,9 @@ impl Pattern {
         &'a self,
         string: &'a str,
         base_style: &'a ObjectStyle,
-        match_style: &'a ObjectStyle
+        match_style: &'a ObjectStyle,
     ) -> MatchedString<'a> {
-        MatchedString{
+        MatchedString {
             pattern: self,
             string,
             base_style,
@@ -139,15 +116,18 @@ impl fmt::Display for MatchedString<'_> {
                 let mut pos_idx: usize = 0;
                 for (cand_idx, cand_char) in self.string.chars().enumerate() {
                     if pos_idx < m.pos.len() && m.pos[pos_idx] == cand_idx {
-                        write!(f, "{}", self.base_style.apply_to(
-                            self.match_style.apply_to(cand_char)
-                        ))?;
+                        write!(
+                            f,
+                            "{}",
+                            self.base_style
+                                .apply_to(self.match_style.apply_to(cand_char))
+                        )?;
                         pos_idx += 1;
                     } else {
                         write!(f, "{}", self.base_style.apply_to(cand_char))?;
                     }
                 }
-                return Ok(())
+                return Ok(());
             }
         }
         write!(f, "{}", self.base_style.apply_to(self.string))

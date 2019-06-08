@@ -1,3 +1,7 @@
+<a name="v0.8.0"></a>
+### v0.8.0 - 2019-06-07
+Half broot has been rewritten to allow Windows compatibility. Termion has been replaced with crossterm.
+
 <a name="v0.7.5"></a>
 ### v0.7.5 - 2019-04-03
 - try to give arguments to verbs executed with --cmd

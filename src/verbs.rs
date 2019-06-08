@@ -23,10 +23,10 @@ use crate::verb_invocation::VerbInvocation;
 ///
 #[derive(Debug, Clone)]
 pub struct Verb {
-    pub invocation: VerbInvocation,// how the verb is supposed to be called (key may be replaced by shortcut)
+    pub invocation: VerbInvocation, // how the verb is supposed to be called (key may be replaced by shortcut)
     pub args_parser: Option<Regex>,
-    pub shortcut: Option<String>,  // a shortcut, eg "c"
-    pub execution: String,         // a pattern usable for execution, eg ":quit" or "less {file}"
+    pub shortcut: Option<String>,    // a shortcut, eg "c"
+    pub execution: String,           // a pattern usable for execution, eg ":quit" or "less {file}"
     pub description: Option<String>, // a description for the user
     pub from_shell: bool, // whether it must be launched from the parent shell (eg because it's a shell function)
     pub leave_broot: bool, // only defined for external
@@ -50,7 +50,8 @@ pub trait VerbExecutor {
 fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
     let spec = GROUP.replace_all(spec, r"(?P<$1>.+)");
     let spec = format!("^{}$", spec);
-    Regex::new(&spec.to_string()).or_else(|_| Err(ConfError::InvalidVerbInvocation{invocation: spec}))
+    Regex::new(&spec.to_string())
+        .or_else(|_| Err(ConfError::InvalidVerbInvocation { invocation: spec }))
 }
 
 fn path_to_string(path: &Path, for_shell: bool) -> String {
@@ -75,8 +76,8 @@ impl Verb {
     ) -> Result<Verb, ConfError> {
         let invocation = VerbInvocation::from(invocation_str);
         if invocation.is_empty() {
-            return Err(ConfError::InvalidVerbInvocation{
-                invocation: invocation_str.to_string()
+            return Err(ConfError::InvalidVerbInvocation {
+                invocation: invocation_str.to_string(),
             });
         }
         let args_parser = match &invocation.args {
@@ -97,15 +98,11 @@ impl Verb {
 
     /// built-ins are verbs offering a logic other than the execution
     ///  based on exec_pattern. They mostly modify the appstate
-    pub fn create_builtin(
-        key: &str,
-        shortcut: Option<String>,
-        description: &str,
-    ) -> Verb {
+    pub fn create_builtin(key: &str, shortcut: Option<String>, description: &str) -> Verb {
         Verb {
-            invocation: VerbInvocation{
-                key:key.to_string(),
-                args:None,
+            invocation: VerbInvocation {
+                key: key.to_string(),
+                args: None,
             },
             args_parser: None,
             shortcut,
@@ -113,7 +110,7 @@ impl Verb {
             description: Some(description.to_string()),
             from_shell: false,
             leave_broot: true, // ignored
-            confirm: false, // ignored
+            confirm: false,    // ignored
         }
     }
 
@@ -123,15 +120,19 @@ impl Verb {
     pub fn match_error(&self, invocation: &VerbInvocation) -> Option<String> {
         match (&invocation.args, &self.args_parser) {
             (None, None) => None,
-            (None, Some(ref regex)) => if regex.is_match("") {
-                None
-            } else {
-                Some(self.invocation.to_string_for_key(&invocation.key))
+            (None, Some(ref regex)) => {
+                if regex.is_match("") {
+                    None
+                } else {
+                    Some(self.invocation.to_string_for_key(&invocation.key))
+                }
             }
-            (Some(ref s), Some(ref regex)) => if regex.is_match(&s) {
-                None
-            } else {
-                Some(self.invocation.to_string_for_key(&invocation.key))
+            (Some(ref s), Some(ref regex)) => {
+                if regex.is_match(&s) {
+                    None
+                } else {
+                    Some(self.invocation.to_string_for_key(&invocation.key))
+                }
             }
             (Some(_), None) => Some(format!("{} doesn't take arguments", invocation.key)),
         }
@@ -139,10 +140,15 @@ impl Verb {
 
     /// build the map which will be used to replace braced parts (i.e. like {part}) in
     /// the execution pattern
-    fn replacement_map(&self, file: &Path, args: &Option<String>, for_shell: bool) -> HashMap<String, String> {
+    fn replacement_map(
+        &self,
+        file: &Path,
+        args: &Option<String>,
+        for_shell: bool,
+    ) -> HashMap<String, String> {
         let mut map = HashMap::new();
         // first we add the replacements computed from the given path
-        let parent = file.parent().unwrap_or_else(||file.clone()); // when there's no parent... we take file
+        let parent = file.parent().unwrap_or_else(|| file.clone()); // when there's no parent... we take file
         let file_str = path_to_string(file, for_shell);
         let parent_str = path_to_string(parent, for_shell);
         map.insert("file".to_string(), file_str.to_string());
@@ -182,14 +188,16 @@ impl Verb {
         self.execution
             .split_whitespace()
             .map(|token| {
-                GROUP.replace_all(token, |ec:&Captures<'_>| {
-                    let name = ec.get(1).unwrap().as_str();
-                    if let Some(cap) = map.get(name) {
-                        cap.as_str().to_string()
-                    } else {
-                        format!("{{{}}}", name)
-                    }
-                }).to_string()
+                GROUP
+                    .replace_all(token, |ec: &Captures<'_>| {
+                        let name = ec.get(1).unwrap().as_str();
+                        if let Some(cap) = map.get(name) {
+                            cap.as_str().to_string()
+                        } else {
+                            format!("{{{}}}", name)
+                        }
+                    })
+                    .to_string()
             })
             .collect()
     }
@@ -197,29 +205,30 @@ impl Verb {
     /// build a shell compatible command, with escapings
     pub fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
         let map = self.replacement_map(file, args, true);
-        GROUP.replace_all(&self.execution, |ec:&Captures<'_>| {
-            let name = ec.get(1).unwrap().as_str();
-            if let Some(cap) = map.get(name) {
-                cap.as_str().to_string()
-            } else {
-                format!("{{{}}}", name)
-            }
-        })
-        .to_string()
-        .split_whitespace()
-        .map(|token| {
-            let path = Path::new(token);
-            if path.exists() {
-                if let Ok(path) = path.canonicalize() {
-                    if let Some(path) = path.to_str() {
-                        return path.to_string();
+        GROUP
+            .replace_all(&self.execution, |ec: &Captures<'_>| {
+                let name = ec.get(1).unwrap().as_str();
+                if let Some(cap) = map.get(name) {
+                    cap.as_str().to_string()
+                } else {
+                    format!("{{{}}}", name)
+                }
+            })
+            .to_string()
+            .split_whitespace()
+            .map(|token| {
+                let path = Path::new(token);
+                if path.exists() {
+                    if let Ok(path) = path.canonicalize() {
+                        if let Some(path) = path.to_str() {
+                            return path.to_string();
+                        }
                     }
                 }
-            }
-            token.to_string()
-        })
-        .collect::<Vec<String>>()
-        .join(" ")
+                token.to_string()
+            })
+            .collect::<Vec<String>>()
+            .join(" ")
     }
 
     /// build the cmd result for a verb defined with an exec pattern.
@@ -229,7 +238,7 @@ impl Verb {
         file: &Path,
         args: &Option<String>,
         _screen: &mut Screen,
-        con: &AppContext
+        con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
         Ok(if self.from_shell {
             if let Some(ref export_path) = con.launch_args.cmd_export_path {
@@ -260,7 +269,7 @@ impl Verb {
                     Ok(()) => {
                         info!("ok");
                         AppStateCmdResult::RefreshState
-                    },
+                    }
                     Err(e) => {
                         warn!("launchable failed : {:?}", e);
                         AppStateCmdResult::DisplayError(e.to_string())
@@ -270,4 +279,3 @@ impl Verb {
         })
     }
 }
-

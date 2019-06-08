@@ -1,4 +1,4 @@
-use std::io::{self};
+use std::io;
 
 use crossterm::{self, AlternateScreen, ClearType, TerminalCursor};
 
@@ -33,17 +33,11 @@ impl Screen {
         let terminal = crossterm::Terminal::new();
         let (w, h) = terminal.terminal_size();
         self.w = w;
-        self.h = h+1;
+        self.h = h + 1;
         if let Some(h) = con.launch_args.height {
             self.h = h;
         }
         Ok(())
-    }
-    pub fn write(&mut self, s: &str) {
-        let terminal = crossterm::Terminal::new();
-        if let Err(e) = terminal.write(s) {
-            warn!("error in write: {:?}", e);
-        }
     }
     // move the cursor to x,y
     // top left corner is (1, 1)
@@ -54,7 +48,7 @@ impl Screen {
     pub fn goto(&self, x: u16, y: u16) {
         let cursor = TerminalCursor::new();
         //debug!("goto x={}, y={}", x, y);
-        cursor.goto(x-1, y-1).unwrap();
+        cursor.goto(x - 1, y - 1).unwrap();
     }
     pub fn clear_line(&self) {
         let terminal = crossterm::Terminal::new();

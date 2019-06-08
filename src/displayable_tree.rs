@@ -1,5 +1,5 @@
-use std::fmt;
 use crossterm::{ClearType, Terminal};
+use std::fmt;
 
 use crate::file_sizes::Size;
 use crate::flat_tree::{LineType, Tree, TreeLine};
@@ -26,9 +26,27 @@ pub struct DisplayableTree<'s, 't> {
     pub in_app: bool, // if true we show the selection and scrollbar
 }
 
-impl DisplayableTree<'_, '_> {
+impl<'s, 't> DisplayableTree<'s, 't> {
+    pub fn out_of_app(tree: &'t Tree, skin: &'s Skin, width: u16) -> DisplayableTree<'s, 't> {
+        DisplayableTree {
+            tree,
+            skin,
+            area: termimad::Area {
+                left: 0,
+                top: 0,
+                width,
+                height: tree.lines.len() as u16,
+            },
+            in_app: false,
+        }
+    }
 
-    fn write_line_size(&self, f: &mut fmt::Formatter<'_>, line: &TreeLine, total_size: Size) -> fmt::Result {
+    fn write_line_size(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+        line: &TreeLine,
+        total_size: Size,
+    ) -> fmt::Result {
         if let Some(s) = line.size {
             let dr: usize = s.discrete_ratio(total_size, 8) as usize;
             let s: Vec<char> = s.to_string().chars().collect();
@@ -49,8 +67,10 @@ impl DisplayableTree<'_, '_> {
     }
 
     fn write_mode(&self, f: &mut fmt::Formatter<'_>, mode: u32) -> fmt::Result {
-        write!(f, "{}", self.skin.permissions.apply_to(
-            format!(
+        write!(
+            f,
+            "{}",
+            self.skin.permissions.apply_to(format!(
                 "{}{}{}{}{}{}{}{}{}",
                 if (mode & (1 << 8)) != 0 { 'r' } else { '-' },
                 if (mode & (1 << 7)) != 0 { 'w' } else { '-' },
@@ -61,8 +81,8 @@ impl DisplayableTree<'_, '_> {
                 if (mode & (1 << 2)) != 0 { 'r' } else { '-' },
                 if (mode & (1 << 1)) != 0 { 'w' } else { '-' },
                 if (mode & 1) != 0 { 'x' } else { '-' },
-            )
-        ))
+            ))
+        )
     }
 
     fn write_line_name(
@@ -76,7 +96,11 @@ impl DisplayableTree<'_, '_> {
         let style = match &line.line_type {
             LineType::Dir => &self.skin.directory,
             LineType::File => {
-                if line.is_exe() { &self.skin.exe } else { &self.skin.file }
+                if line.is_exe() {
+                    &self.skin.exe
+                } else {
+                    &self.skin.file
+                }
             }
             LineType::SymLinkToFile(_) | LineType::SymLinkToDir(_) => &self.skin.link,
             LineType::Pruning => &self.skin.pruning,
@@ -93,11 +117,7 @@ impl DisplayableTree<'_, '_> {
             write!(
                 f,
                 "{}",
-                pattern.style(
-                    &line.name,
-                    &style,
-                    &self.skin.char_match,
-                ),
+                pattern.style(&line.name, &style, &self.skin.char_match,),
             )?;
         }
         match &line.line_type {
@@ -111,7 +131,11 @@ impl DisplayableTree<'_, '_> {
                 if line.has_error {
                     self.skin.file_error.write(f, &target)?;
                 } else {
-                    let target_style = if line.is_dir() { &self.skin.directory } else { &self.skin.file };
+                    let target_style = if line.is_dir() {
+                        &self.skin.directory
+                    } else {
+                        &self.skin.file
+                    };
                     let mut target_style = target_style.clone();
                     if selected {
                         if let Some(c) = self.skin.selected_line.bg_color {
@@ -121,11 +145,10 @@ impl DisplayableTree<'_, '_> {
                     target_style.write(f, &target)?;
                 }
             }
-            _ => { }
+            _ => {}
         }
         Ok(())
     }
-
 }
 
 impl fmt::Display for DisplayableTree<'_, '_> {
@@ -152,6 +175,9 @@ impl fmt::Display for DisplayableTree<'_, '_> {
             None
         };
         for y in 0..self.area.height {
+            if self.in_app {
+                cursor.goto(0, y).unwrap();
+            }
             let mut line_index = y as usize;
             if line_index > 0 {
                 line_index += tree.scroll as usize;
@@ -173,7 +199,7 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                             }
                         } else {
                             "   "
-                        }
+                        },
                     )?;
                 }
                 if tree.options.show_sizes && line_index > 0 {
@@ -183,19 +209,9 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                     if line.is_selectable() {
                         self.write_mode(f, line.mode)?;
                         let user = permissions::user_name(line.uid);
-                        write!(
-                            f,
-                            " {:w$}",
-                            &user,
-                            w = max_user_len,
-                        )?;
+                        write!(f, " {:w$}", &user, w = max_user_len,)?;
                         let group = permissions::group_name(line.gid);
-                        write!(
-                            f,
-                            " {:w$} ",
-                            &group,
-                            w = max_group_len,
-                        )?;
+                        write!(f, " {:w$} ", &group, w = max_group_len,)?;
                     } else {
                         self.skin.tree.write(f, "──────────────")?;
                     }
@@ -224,4 +240,3 @@ impl fmt::Display for DisplayableTree<'_, '_> {
         Ok(())
     }
 }
-

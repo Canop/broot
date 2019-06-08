@@ -26,7 +26,6 @@ use std::io::{self, BufRead, BufReader, Write};
 use std::os;
 use std::path::Path;
 
-use crossterm::Attribute;
 use directories::UserDirs;
 
 use crate::cli::{self, AppLaunchArgs};
@@ -34,17 +33,21 @@ use crate::conf;
 use crate::shell_bash::BASH;
 use crate::shell_fish::FISH;
 
-const SHELL_FAMILIES: &[ShellFamily<'static>] = &[ BASH, FISH ];
+const SHELL_FAMILIES: &[ShellFamily<'static>] = &[BASH, FISH];
+
+const MD_INSTALL_REQUEST: &'static str = r#"
+**Broot** should be launched using a shell function (see *https://github.com/Canop/broot* for explanations).
+The function is either missing, old or badly installed.
+"#;
 
 pub struct ShellFamily<'a> {
     pub name: &'a str,
-    pub sourcing_files: &'a[&'a str],
+    pub sourcing_files: &'a [&'a str],
     pub version: usize,
     pub script: &'a str,
 }
 
 impl ShellFamily<'static> {
-
     // make sure the script and symlink are installed
     // but don't touch the shellrc files
     // (i.e. this isn't enough to make the function available)
@@ -102,6 +105,7 @@ impl ShellFamily<'static> {
             }
         }
         // it looks like the shell function is neither installed nor refused
+        let ms = cli::mad_skin();
         let homedir_path = match UserDirs::new() {
             Some(user_dirs) => user_dirs.home_dir().to_path_buf(),
             None => {
@@ -109,40 +113,42 @@ impl ShellFamily<'static> {
                 return Ok(false);
             }
         };
-        let rc_files: Vec<_> = self.sourcing_files
+        let rc_files: Vec<_> = self
+            .sourcing_files
             .iter()
             .map(|name| (name, homedir_path.join(name)))
             .filter(|t| t.1.exists())
             .collect();
         if rc_files.is_empty() {
-            warn!("no {} compatible shell config file found, no installation possible", self.name);
+            warn!(
+                "no {} compatible shell config file found, no installation possible",
+                self.name
+            );
             if installation_required {
-                println!("No shell config found, we can't install the br function.");
-                println!("We were looking for the following file(s):");
+                let mut md =
+                    String::from("No shell config found, we can't install the br function.\n");
+                md.push_str("We were looking for the following file(s):\n");
                 for name in self.sourcing_files {
-                    println!(" - {:?}", homedir_path.join(name));
+                    md.push_str(&format!("* {:?}\n", homedir_path.join(name)));
                 }
+                ms.print_text(&md);
             }
             return Ok(installation_required);
         }
         if !installation_required {
             if !motivation_already_explained {
-                println!(
-                    "{}Broot{} should be launched using a shell function",
-                    Attribute::Bold,
-                    Attribute::Reset
-                );
-                println!("(see https://github.com/Canop/broot for explanations).");
-                println!("The function is either missing, old or badly installed.");
+                let mut md = String::from(MD_INSTALL_REQUEST);
+                md.push_str(&format!(
+                    "Can I add a line in {:?} ? `[Y n]`",
+                    rc_files
+                        .iter()
+                        .map(|f| *f.0)
+                        .collect::<Vec<&str>>()
+                        .join(" and ")
+                ));
+                ms.print_text(&md);
             }
-            let proceed = cli::ask_authorization(&format!(
-                "Can I add a line in {:?} ? [Y n]",
-                rc_files
-                    .iter()
-                    .map(|f| *f.0)
-                    .collect::<Vec<&str>>()
-                    .join(" and "),
-            ))?;
+            let proceed = cli::ask_authorization()?;
             debug!("proceed: {:?}", proceed);
             if !proceed {
                 // user doesn't want the shell function, let's remember it
@@ -150,7 +156,7 @@ impl ShellFamily<'static> {
                     &refused_path,
                     "to install the br function, run broot --install\n",
                 )?;
-                println!("Okey. If you change your mind, use ̀ broot --install`.");
+                ms.print_text("**Okey**. If you change your mind, use `broot --install`.");
                 return Ok(false);
             }
         }
@@ -186,11 +192,7 @@ impl ShellFamily<'static> {
             }
         }
         if changes_made {
-            println!(
-                "You should afterwards start broot with just {}br{}.",
-                Attribute::Bold,
-                Attribute::Reset
-            );
+            ms.print_text("You should afterwards start broot with just **br**.\n");
         }
         // and remember we did it
         fs::write(
@@ -219,7 +221,11 @@ pub fn init(launch_args: &AppLaunchArgs) -> io::Result<bool> {
     let mut should_quit = false;
     for family in SHELL_FAMILIES {
         family.ensure_script_installed(&launcher_dir)?;
-        let done = family.maybe_patch_all_sourcing_files(&launcher_dir, launch_args.install, should_quit)?;
+        let done = family.maybe_patch_all_sourcing_files(
+            &launcher_dir,
+            launch_args.install,
+            should_quit,
+        )?;
         should_quit |= done;
     }
     Ok(should_quit)

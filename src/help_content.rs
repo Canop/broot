@@ -4,7 +4,9 @@ use crate::conf::Conf;
 /// build the markdown which will be displayed in the help page
 ///
 pub fn build_markdown(con: &AppContext) -> String {
-    let mut md = String::from(MD_HELP_INTRO);
+    let mut md = String::new();
+    md.push_str(&format!("\n# broot v{}", env!("CARGO_PKG_VERSION")));
+    md.push_str(MD_HELP_INTRO);
     append_verbs_table(&mut md, con);
     append_config_info(&mut md, con);
     md.push_str(MD_HELP_LAUNCH_ARGUMENTS);
@@ -12,21 +14,18 @@ pub fn build_markdown(con: &AppContext) -> String {
     md
 }
 
-
 const MD_HELP_INTRO: &'static str = r#"
-# Help
 
 **broot** lets you explore directory trees and launch commands.
-See https://dystroy.org/broot for a complete guide.
+It's best used when launched as **br**.
+See *https://dystroy.org/broot* for a complete guide.
 
-**broot** is best used when launched as `br`.
 `<esc>` gets you back to the previous state.
 Typing some letters searches the tree and selects the most relevant file.
 To use a regular expression, use a slash eg `/j(ava|s)$`.
+The **🡑** and **🡓** arrow keys can be used to change selection.
 
 To execute a verb, type a space or `:` then start of its name or shortcut.
-
-## Verbs
 
 "#;
 
@@ -51,6 +50,7 @@ Flags are displayed at bottom right:
 "#;
 
 fn append_verbs_table(md: &mut String, con: &AppContext) {
+    md.push_str("## Verbs\n\n");
     md.push_str("|-:\n");
     md.push_str("|**name**|**shortcut**|**description**\n");
     md.push_str("|-:|:-:|:-\n");

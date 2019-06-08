@@ -1,18 +1,17 @@
-
 use std::io;
 
-use termimad::{Area, MadSkin, MadView};
+use termimad::{Area, MadView};
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
 use crate::conf::Conf;
-use crate::screens::{Screen};
+use crate::help_content;
+use crate::screens::Screen;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
+use crate::verb_store::PrefixSearchResult;
 use crate::verbs::VerbExecutor;
-use crate::verb_store::{PrefixSearchResult};
-use crate::help_content;
 
 /// an application state dedicated to help
 pub struct HelpState {
@@ -20,32 +19,22 @@ pub struct HelpState {
 }
 
 impl HelpState {
-
-    pub fn new(_screen: &Screen, con: &AppContext) -> HelpState {
+    pub fn new(screen: &Screen, con: &AppContext) -> HelpState {
         let mut area = Area::uninitialized();
         area.top = 0;
         area.left = 0;
         let markdown = help_content::build_markdown(con);
-        let mut skin = MadSkin::default();
-        let view = MadView::from(
-            markdown,
-            area,
-            skin
-        );
-        HelpState {
-            view
-        }
+        let view = MadView::from(markdown, area, screen.skin.to_mad_skin());
+        HelpState { view }
     }
 
     fn resize_area(&mut self, screen: &Screen) {
         let area = Area::new(0, 0, screen.w, screen.h - 3);
         self.view.resize(&area);
     }
-
 }
 
 impl AppState for HelpState {
-
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -56,7 +45,9 @@ impl AppState for HelpState {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
             Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation, screen, con)?,
+                PrefixSearchResult::Match(verb) => {
+                    self.execute_verb(verb, &invocation, screen, con)?
+                }
                 _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::MoveSelection(dy) => {
@@ -73,11 +64,7 @@ impl AppState for HelpState {
         })
     }
 
-    fn refresh(
-        &mut self,
-        _screen: &Screen,
-        _con: &AppContext,
-    ) -> Command {
+    fn refresh(&mut self, _screen: &Screen, _con: &AppContext) -> Command {
         Command::new()
     }
 
@@ -111,7 +98,7 @@ impl AppState for HelpState {
                                 &verb.invocation.key,
                                 &verb.description_for(Conf::default_location(), &invocation.args)
                             )
-                            .to_string()
+                            .to_string(),
                         )
                     }
                 }

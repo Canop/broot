@@ -4,9 +4,9 @@
 /// Hard links are checked to avoid counting
 ///  twice an inode.
 use crate::task_sync::TaskLifetime;
+use std::collections::HashMap;
 use std::fs;
 use std::ops::AddAssign;
-use std::collections::HashMap;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
 use std::time::Instant;

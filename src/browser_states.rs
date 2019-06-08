@@ -1,4 +1,3 @@
-
 use std::io;
 use std::path::PathBuf;
 use std::result::Result;
@@ -18,8 +17,8 @@ use crate::status::Status;
 use crate::task_sync::TaskLifetime;
 use crate::tree_build::TreeBuilder;
 use crate::tree_options::{OptionBool, TreeOptions};
-use crate::verbs::{VerbExecutor};
-use crate::verb_store::{PrefixSearchResult};
+use crate::verb_store::PrefixSearchResult;
+use crate::verbs::VerbExecutor;
 
 /// An application state dedicated to displaying a tree.
 /// It's the first and main screen of broot.
@@ -30,7 +29,6 @@ pub struct BrowserState {
 }
 
 impl BrowserState {
-
     pub fn new(
         path: PathBuf,
         mut options: TreeOptions,
@@ -82,11 +80,9 @@ impl BrowserState {
             None => &self.tree,
         }
     }
-
 }
 
 impl AppState for BrowserState {
-
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -178,7 +174,9 @@ impl AppState for BrowserState {
                 con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, screen, con)?
             }
             Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::Match(verb) => self.execute_verb(verb, &invocation, screen, con)?,
+                PrefixSearchResult::Match(verb) => {
+                    self.execute_verb(verb, &invocation, screen, con)?
+                }
                 _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::FuzzyPatternEdit(pat) => match pat.len() {
@@ -204,10 +202,7 @@ impl AppState for BrowserState {
                 }
             }
             Action::Help => {
-                AppStateCmdResult::NewState(
-                    Box::new(HelpState::new(screen, con)),
-                    Command::new()
-                )
+                AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)), Command::new())
             }
             Action::Refresh => AppStateCmdResult::RefreshState,
             Action::Quit => AppStateCmdResult::Quit,
@@ -276,7 +271,7 @@ impl AppState for BrowserState {
                 left: 0,
                 top: 0,
                 width: screen.w,
-                height: screen.h-2,
+                height: screen.h - 2,
             },
             in_app: true,
         };
@@ -340,11 +335,7 @@ impl AppState for BrowserState {
         }
     }
 
-    fn refresh(
-        &mut self,
-        screen: &Screen,
-        _con: &AppContext,
-    ) -> Command {
+    fn refresh(&mut self, screen: &Screen, _con: &AppContext) -> Command {
         let page_height = BrowserState::page_height(screen) as usize;
         // refresh the base tree
         if let Err(e) = self.tree.refresh(page_height) {
@@ -370,21 +361,23 @@ impl AppState for BrowserState {
         screen.goto(screen.w - total_char_size, screen.h);
         let terminal = crossterm::Terminal::new();
         terminal.clear(crossterm::ClearType::UntilNewLine)?;
-        screen.write(&format!(
+        print!(
             "{}{}  {}{}",
             screen.skin.flag_label.apply_to(" h:"),
-            screen.skin.flag_value.apply_to(
-                if tree.options.show_hidden { 'y' } else { 'n' }
-            ),
+            screen
+                .skin
+                .flag_value
+                .apply_to(if tree.options.show_hidden { 'y' } else { 'n' }),
             screen.skin.flag_label.apply_to(" gi:"),
-            screen.skin.flag_value.apply_to(
-                match tree.options.respect_git_ignore {
+            screen
+                .skin
+                .flag_value
+                .apply_to(match tree.options.respect_git_ignore {
                     OptionBool::Auto => 'a',
                     OptionBool::Yes => 'y',
                     OptionBool::No => 'n',
-                }
-            ),
-        ));
+                }),
+        );
         Ok(())
     }
 }

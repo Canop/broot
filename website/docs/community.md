@@ -1,5 +1,5 @@
 
-**broot** is developped by [Denys Séguret](https://stackoverflow.com/users/263525), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
+**broot** is iminly developped by [Denys Séguret](https://stackoverflow.com/users/263525), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
 
 ## Discuss Broot in a chat room
 
@@ -17,11 +17,11 @@ If you're French speaking, you might prefer to directly come where other French 
 
 We use [GitHub's issue manager](https://github.com/Canop/broot/issues).
 
-Before posting a new issue, check your problem hasn't already been raised and in case of doubt please come first discuss it on the chat.
+Before posting a new issue, check your problem hasn't already been raised and in case of doubt **please come first discuss it on the chat**.
 
 ## Contribute
 
-**Broot** is written in [rust](https://www.rust-lang.org/). The current focus is linux+mac but windows should be supported in the future.
+**Broot** is written in [rust](https://www.rust-lang.org/). The current focus is linux+mac but we try to support windows too.
 
 Before starting working on a Pull Request, please join the Miaou room to coordinate the developement. There are frequently several feature branchs waiting to be merged and adding some wild ones may make the process painful.
 

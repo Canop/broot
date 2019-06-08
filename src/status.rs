@@ -1,12 +1,10 @@
-//! the status module manages writing information on the grey line
-//!  near the bottom of the screen
-
-use std::io::{self};
-
+use std::io;
 
 use crate::screens::Screen;
 use crate::skin::{self, SkinEntry};
 
+/// the status module manages writing information on the grey line
+///  near the bottom of the screen
 pub trait Status {
     fn write_status_text(&self, text: &str) -> io::Result<()>;
     fn write_status_err(&self, text: &str) -> io::Result<()>;

@@ -21,7 +21,7 @@ pub enum LineType {
 }
 
 /// a line in the representation of the file hierarchy
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct TreeLine {
     pub left_branchs: Box<[bool]>, // a depth-sized array telling whether a branch pass
     pub depth: u16,
@@ -38,7 +38,7 @@ pub struct TreeLine {
     pub gid: u32,        // unix group id
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Tree {
     pub lines: Box<[TreeLine]>,
     pub selection: usize, // there's always a selection (starts with root, which is 0)
@@ -143,16 +143,9 @@ impl PartialOrd for TreeLine {
 }
 
 impl Tree {
-
-    pub fn refresh(
-        &mut self,
-        page_height: usize,
-   ) -> Result<(), errors::TreeBuildError> {
-        let builder = TreeBuilder::from(
-            self.root().to_path_buf(),
-            self.options.clone(),
-            page_height,
-        )?;
+    pub fn refresh(&mut self, page_height: usize) -> Result<(), errors::TreeBuildError> {
+        let builder =
+            TreeBuilder::from(self.root().to_path_buf(), self.options.clone(), page_height)?;
         debug!("remove 3");
         let mut tree = builder.build(&TaskLifetime::unlimited()).unwrap(); // should not fail
         debug!("remove 4");
@@ -207,7 +200,8 @@ impl Tree {
                     if unlisted > 0 && self.lines[end_index].nb_kept_children == 0 {
                         self.lines[end_index].line_type = LineType::Pruning;
                         self.lines[end_index].unlisted = unlisted + 1;
-                        self.lines[end_index].name = format!("{} unlisted", unlisted+1).to_owned();
+                        self.lines[end_index].name =
+                            format!("{} unlisted", unlisted + 1).to_owned();
                         self.lines[parent_index].unlisted = 0;
                     }
                     last_parent_index = parent_index;

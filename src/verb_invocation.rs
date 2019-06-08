@@ -13,10 +13,7 @@ impl VerbInvocation {
         let caps = PARTS.captures(invocation).unwrap(); // this regex should always match
         let key = caps.get(1).unwrap().as_str().to_string();
         let args = caps.get(2).map(|c| c.as_str().to_string());
-        VerbInvocation {
-            key,
-            args,
-        }
+        VerbInvocation { key, args }
     }
     pub fn is_empty(&self) -> bool {
         self.key.is_empty()
@@ -28,4 +25,3 @@ impl VerbInvocation {
         }
     }
 }
-

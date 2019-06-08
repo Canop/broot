@@ -4,7 +4,7 @@ pub const FISH: ShellFamily<'static> = ShellFamily {
     name: "fish",
     sourcing_files: &[".config/fish/config.fish"], // idealy we should probably use XDG here...
     version: 1,
-    script: FISH_FUNC
+    script: FISH_FUNC,
 };
 
 const FISH_FUNC: &str = r#"

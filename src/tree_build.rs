@@ -156,9 +156,9 @@ impl BLine {
         #[cfg(unix)]
         {
             if let Ok(metadata) = fs::symlink_metadata(&self.path) {
-                    mode = metadata.mode();
-                    uid = metadata.uid();
-                    gid = metadata.gid();
+                mode = metadata.mode();
+                uid = metadata.uid();
+                gid = metadata.gid();
             }
         }
 

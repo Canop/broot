@@ -22,21 +22,11 @@ pub enum PrefixSearchResult<T> {
 
 impl VerbStore {
     pub fn new() -> VerbStore {
-        VerbStore {
-            verbs: Vec::new(),
-        }
+        VerbStore { verbs: Vec::new() }
     }
-    fn add_builtin(
-        &mut self,
-        key: &str,
-        shortcut: Option<String>,
-        description: &str,
-    ) {
-        self.verbs.push(Verb::create_builtin(
-            key,
-            shortcut,
-            description,
-        ));
+    fn add_builtin(&mut self, key: &str, shortcut: Option<String>, description: &str) {
+        self.verbs
+            .push(Verb::create_builtin(key, shortcut, description));
     }
     pub fn init(&mut self, conf: &Conf) {
         // we first add the verbs coming from configuration, as
@@ -65,62 +55,66 @@ impl VerbStore {
             None,
             "revert to the previous state (mapped to `<esc>`)",
         );
-        self.verbs.push(Verb::create_external(
-            "cd",
-            None, // no real need for a shortcut as it's mapped to alt-enter
-            "cd {directory}".to_string(),
-            Some("change directory and quit (mapped to `<alt><enter>`)".to_string()),
-            true, // needs to be launched from the parent shell
-            true, // leaves broot
-            false,
-        ).unwrap());
-        self.verbs.push(Verb::create_external(
-            "cp {newpath}",
-            None,
-            "/bin/cp -r {file} {parent}/{newpath}".to_string(),
-            None,
-            false,
-            false,
-            false,
-        ).unwrap());
+        self.verbs.push(
+            Verb::create_external(
+                "cd",
+                None, // no real need for a shortcut as it's mapped to alt-enter
+                "cd {directory}".to_string(),
+                Some("change directory and quit (mapped to `<alt><enter>`)".to_string()),
+                true, // needs to be launched from the parent shell
+                true, // leaves broot
+                false,
+            )
+            .unwrap(),
+        );
+        self.verbs.push(
+            Verb::create_external(
+                "cp {newpath}",
+                None,
+                "/bin/cp -r {file} {parent}/{newpath}".to_string(),
+                None,
+                false,
+                false,
+                false,
+            )
+            .unwrap(),
+        );
         self.add_builtin(
             "focus",
             Some("goto".to_string()),
             "display the directory (mapped to `<enter>` in tree)",
         );
-        self.add_builtin(
-            "help",
-            Some("?".to_string()),
-            "display broot's help",
+        self.add_builtin("help", Some("?".to_string()), "display broot's help");
+        self.verbs.push(
+            Verb::create_external(
+                "mkdir {subpath}",
+                Some("md".to_string()),
+                "/bin/mkdir -p {directory}/{subpath}".to_string(),
+                None,
+                false,
+                false, // doesn't leave broot
+                false,
+            )
+            .unwrap(),
         );
-        self.verbs.push(Verb::create_external(
-            "mkdir {subpath}",
-            Some("md".to_string()),
-            "/bin/mkdir -p {directory}/{subpath}".to_string(),
-            None,
-            false,
-            false, // doesn't leave broot
-            false,
-        ).unwrap());
-        self.verbs.push(Verb::create_external(
-            "mv {newpath}",
-            None,
-            "/bin/mv {file} {parent}/{newpath}".to_string(),
-            None,
-            false,
-            false, // doesn't leave broot
-            false,
-        ).unwrap());
+        self.verbs.push(
+            Verb::create_external(
+                "mv {newpath}",
+                None,
+                "/bin/mv {file} {parent}/{newpath}".to_string(),
+                None,
+                false,
+                false, // doesn't leave broot
+                false,
+            )
+            .unwrap(),
+        );
         self.add_builtin(
             "open",
             None,
             "open file according to OS settings (mapped to `<enter>`)",
         );
-        self.add_builtin(
-            "parent",
-            None,
-            "move to the parent directory",
-        );
+        self.add_builtin("parent", None, "move to the parent directory");
         self.add_builtin(
             "print_path",
             Some("pp".to_string()),
@@ -131,20 +125,19 @@ impl VerbStore {
             Some("pt".to_string()),
             "print tree and leaves broot",
         );
-        self.add_builtin(
-            "quit",
-            Some("q".to_string()),
-            "quit the application",
+        self.add_builtin("quit", Some("q".to_string()), "quit the application");
+        self.verbs.push(
+            Verb::create_external(
+                "rm",
+                None,
+                "/bin/rm -rf {file}".to_string(),
+                None,
+                false,
+                false, // doesn't leave broot
+                false,
+            )
+            .unwrap(),
         );
-        self.verbs.push(Verb::create_external(
-            "rm",
-            None,
-            "/bin/rm -rf {file}".to_string(),
-            None,
-            false,
-            false, // doesn't leave broot
-            false,
-        ).unwrap());
         self.add_builtin(
             "toggle_files",
             Some("files".to_string()),
@@ -219,4 +212,3 @@ impl VerbStore {
         panic!("invalid verb search");
     }
 }
-
