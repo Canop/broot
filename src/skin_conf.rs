@@ -1,7 +1,3 @@
-// This file is ignored for now. I'll have to rewrite
-// skin configuration parsing for crossterm when the
-// rest is proven OK
-
 use crossterm::{
     Attribute::{self, *},
     Color::{self, *},
@@ -17,11 +13,30 @@ use std::result::Result;
 use crate::errors::InvalidSkinError;
 use crate::skin;
 
-/// read a color from a string. It may be either
+/// read a color from a string.
+/// It may be either
+/// - "none"
 /// - one of the few known color name. Example: "darkred"
-/// - grayscale with level in [0,3[. Example: "grey(5)"
+/// - grayscale with level in [0,24[. Example: "grey(5)"
+/// - an Ansi code. Example "ansi(106)"
 /// - RGB. Example: "rgb(25, 100, 0)"
+/// This function needs a lowercase string (assuming lowercasing
+/// has be done before, to ensure case-insensitive parsing)
 fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
+
+    lazy_static! {
+        static ref ANSI_REX: Regex = Regex::new(r"^ansi\((?P<value>\d+)\)$").unwrap();
+    }
+    if let Some(c) = ANSI_REX.captures(&s) {
+        let value: &str = c.name("value").unwrap().as_str();
+        let value = value.parse();
+        if let Ok(value) = value {
+            return Ok(skin::ansi(value)); // all ANSI values are ok
+        } else {
+            return Err(InvalidSkinError::InvalidColor { raw: s.to_owned() });
+        }
+    }
+
     lazy_static! {
         static ref GRAY_REX: Regex = Regex::new(r"^gr[ae]y(?:scale)?\((?P<level>\d+)\)$").unwrap();
     }
@@ -54,7 +69,7 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
     }
 
     match s.as_ref() {
-        // TODO: we could add a table of common colors
+        // TODO: we could add a table of common colors and map to ansi colors
         "black" => Ok(skin::rgb(0, 0, 0)), // crossterm black isn't black
         "blue" => Ok(Some(Blue)),
         "cyan" => Ok(Some(Cyan)),

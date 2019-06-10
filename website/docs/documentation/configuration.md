@@ -165,6 +165,15 @@ Each skin entry value is made of
 * a background color (or `none`)
 * zero, one, or more *attributes*
 
+A color can be
+
+* `none`
+* an [Ansi value](https://en.wikipedia.org/wiki/ANSI_escape_code), for example `ansi(160)`
+* a grayscale value, with a level between 0 and 23, for example `grey(3)`
+* a RGB color, for example `rgb(255, 187, 0)`
+
+Beware that many terminals aren't compatible with RGB 24 bits colors (or aren't usually configured for).
+
 Currently supported attributes are:
 
 * bold

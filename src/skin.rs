@@ -100,7 +100,7 @@ Skin! {
     pruning: gray(17), None; {Italic}
     permissions: gray(15), None;
     selected_line: None, gray(3);
-    size_bar: gray(15), ansi(53);
+    size_bar: Some(White), Some(DarkBlue);
     size_no_bar: gray(15), gray(2);
     char_match: Some(Green), None;
     file_error: Some(Red), None;

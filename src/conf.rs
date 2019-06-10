@@ -78,7 +78,14 @@ impl Conf {
             );
             println!("You should have a look at it.");
         }
-        Ok(Conf::from_file(&conf_filepath)?)
+        match Conf::from_file(&conf_filepath) {
+            Ok(conf) => Ok(conf),
+            Err(e) => {
+                println!("Failed to read configuration in {:?}.", &conf_filepath);
+                println!("Please delete or fix this file.");
+                Err(e)
+            }
+        }
     }
 
     /// assume the file doesn't yet exist
@@ -198,6 +205,8 @@ execution = "less {file}"
 # If you want to change the colors of broot,
 # uncomment the following bloc and start messing
 # with the various values
+# Note that some of those colors might not correcly
+# render on terminals with low capabilities
 #
 # [skin]
 # tree = "rgb(89, 73, 101) none"
