@@ -5,7 +5,7 @@ use std::collections::HashSet;
 use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicIsize, AtomicUsize, Ordering};
+use std::sync::atomic::{AtomicIsize, AtomicU64, Ordering};
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
@@ -13,7 +13,7 @@ use std::time::Duration;
 
 pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     let inodes = Arc::new(Mutex::new(HashSet::<u64>::new())); // to avoid counting twice an inode
-    let size = Arc::new(AtomicUsize::new(0));
+    let size = Arc::new(AtomicU64::new(0));
 
     // this MPMC channel contains the directory paths which must be handled
     let (dirs_sender, dirs_receiver) = unbounded();
@@ -50,7 +50,7 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
                                         continue; // let's not add the size
                                     }
                                 }
-                                size.fetch_add(md.len() as usize, Ordering::Relaxed);
+                                size.fetch_add(md.len(), Ordering::Relaxed);
                             }
                         }
                     }
@@ -71,7 +71,6 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     if tl.is_expired() {
         return None;
     }
-    let size: usize = size.load(Ordering::Relaxed);
-    let size: u64 = size as u64;
+    let size = size.load(Ordering::Relaxed);
     Some(size)
 }
