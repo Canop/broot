@@ -87,6 +87,10 @@ pub fn rgb(r: u8, g: u8, b: u8) -> Option<Color> {
     Some(Rgb { r, g, b })
 }
 
+pub fn ansi(v: u8) -> Option<Color> {
+    Some(AnsiValue(v))
+}
+
 Skin! {
     tree: gray(5), None;
     file: gray(18), None;
@@ -96,9 +100,9 @@ Skin! {
     pruning: gray(17), None; {Italic}
     permissions: gray(15), None;
     selected_line: None, gray(3);
-    size_bar: gray(15), rgb(117, 80, 123);
+    size_bar: gray(15), ansi(53);
     size_no_bar: gray(15), gray(2);
-    char_match: rgb(78, 154, 8), None;
+    char_match: Some(Green), None;
     file_error: Some(Red), None;
     flag_label: gray(15), gray(1);
     flag_value: Some(Blue), gray(1);
@@ -106,14 +110,14 @@ Skin! {
     spinner: gray(10), gray(2);
     status_error: Some(Red), gray(2);
     status_normal: Some(White), gray(2);
-    scrollbar_track: rgb(80, 50, 0), None;
-    scrollbar_thumb: rgb(255, 187, 0), None;
+    scrollbar_track: gray(7), None;
+    scrollbar_thumb: ansi(178), None;
     help_paragraph: gray(20), None;
-    help_bold: rgb(255, 187, 0), None; {Bold}
-    help_italic: Some(Magenta), rgb(30, 30, 40); {Italic}
+    help_bold: ansi(178), None; {Bold}
+    help_italic: ansi(229), None; {Italic}
     help_code: gray(21), gray(3);
-    help_headers: rgb(255, 187, 0), None;
-    help_table_border: rgb(84, 72, 29), None;
+    help_headers: ansi(178), None;
+    help_table_border: ansi(239), None;
 }
 
 impl Skin {
