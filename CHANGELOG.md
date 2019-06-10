@@ -1,3 +1,8 @@
+<a name="v0.8.1"></a>
+### v0.8.1 - 2019-06-10
+- change default skin to only use highly compatible colors
+- allow ANSI colors in skin configuration
+
 <a name="v0.8.0"></a>
 ### v0.8.0 - 2019-06-07
 Half broot has been rewritten to allow Windows compatibility. Termion has been replaced with crossterm.
