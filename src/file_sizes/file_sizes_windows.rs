@@ -5,10 +5,8 @@ use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicIsize, AtomicUsize, Ordering};
 use std::sync::Arc;
-use std::sync::Mutex;
 use std::thread;
 use std::time::Duration;
-use std::time::Instant;
 
 pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     let size = Arc::new(AtomicUsize::new(0));

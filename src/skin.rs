@@ -17,18 +17,12 @@ use crossterm::{
 use termimad::{CompoundStyle, MadSkin};
 
 pub trait SkinEntry {
-    fn print_fg(&self);
     fn print_bg(&self);
     fn print_string(&self, string: &str);
     fn write(&self, f: &mut fmt::Formatter<'_>, string: &str) -> fmt::Result;
 }
 
 impl SkinEntry for ObjectStyle {
-    fn print_fg(&self) {
-        if let Some(c) = self.fg_color {
-            print!("{}", Colored::Fg(c));
-        }
-    }
     fn print_bg(&self) {
         if let Some(c) = self.bg_color {
             print!("{}", Colored::Bg(c));

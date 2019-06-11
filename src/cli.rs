@@ -100,7 +100,7 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
 }
 
 /// return the parsed launch arguments
-pub fn read_lauch_args() -> Result<AppLaunchArgs, ProgramError> {
+pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
     let cli_args = get_cli_args();
     let mut root = match cli_args.value_of("root") {
         Some(path) => PathBuf::from(path),

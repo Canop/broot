@@ -147,6 +147,7 @@ impl BLine {
             nb_kept_children: 0,
         })
     }
+
     fn to_tree_line(&self) -> TreeLine {
         let mut mode = 0;
         let mut uid = 0;

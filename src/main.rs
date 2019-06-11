@@ -89,7 +89,7 @@ fn configure_log() {
 /// which must be run after broot
 fn run() -> Result<Option<Launchable>, ProgramError> {
     configure_log();
-    let launch_args = cli::read_lauch_args()?;
+    let launch_args = cli::read_launch_args()?;
     let should_quit = shell_install::init(&launch_args)?;
     if should_quit {
         return Ok(None);
