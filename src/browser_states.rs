@@ -1,7 +1,8 @@
-use std::io;
+use std::io::{self, Write};
 use std::path::PathBuf;
 use std::result::Result;
 use std::time::Instant;
+use std::fs::OpenOptions;
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
@@ -80,6 +81,27 @@ impl BrowserState {
             None => &self.tree,
         }
     }
+
+}
+
+fn opener(path: PathBuf, is_exe: bool, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    Ok(
+        if is_exe {
+            let path = path.to_string_lossy().to_string();
+            if let Some(export_path) = &con.launch_args.cmd_export_path {
+                // broot was launched as br, we can launch the executable from the shell
+                let f = OpenOptions::new().append(true).open(export_path)?;
+                writeln!(&f, "{}", path)?;
+                AppStateCmdResult::Quit
+            } else {
+                AppStateCmdResult::Launch(
+                    Launchable::program(vec![path])?
+                )
+            }
+        } else {
+            AppStateCmdResult::Launch(Launchable::opener(path))
+        }
+    )
 }
 
 impl AppState for BrowserState {
@@ -91,18 +113,18 @@ impl AppState for BrowserState {
     ) -> io::Result<AppStateCmdResult> {
         self.pending_pattern = Pattern::None;
         let page_height = BrowserState::page_height(screen);
-        Ok(match &cmd.action {
+        match &cmd.action {
             Action::Back => {
                 if self.filtered_tree.is_some() {
                     self.filtered_tree = None;
                     cmd.raw.clear();
-                    AppStateCmdResult::Keep
+                    Ok(AppStateCmdResult::Keep)
                 } else if self.tree.selection > 0 {
                     self.tree.selection = 0;
                     cmd.raw.clear();
-                    AppStateCmdResult::Keep
+                    Ok(AppStateCmdResult::Keep)
                 } else {
-                    AppStateCmdResult::PopState
+                    Ok(AppStateCmdResult::PopState)
                 }
             }
             Action::MoveSelection(dy) => {
@@ -114,7 +136,7 @@ impl AppState for BrowserState {
                         self.tree.move_selection(*dy, page_height);
                     }
                 };
-                AppStateCmdResult::Keep
+                Ok(AppStateCmdResult::Keep)
             }
             Action::ScrollPage(dp) => {
                 if page_height < self.displayed_tree().lines.len() as i32 {
@@ -126,9 +148,9 @@ impl AppState for BrowserState {
                         None => {
                             self.tree.try_scroll(dy, page_height);
                         }
-                    };
+                    }
                 }
-                AppStateCmdResult::Keep
+                Ok(AppStateCmdResult::Keep)
             }
             Action::OpenSelection => {
                 let tree = match &self.filtered_tree {
@@ -136,16 +158,16 @@ impl AppState for BrowserState {
                     None => &self.tree,
                 };
                 if tree.selection == 0 {
-                    AppStateCmdResult::Keep
+                    Ok(AppStateCmdResult::Keep)
                 } else {
                     let line = tree.selected_line();
                     let tl = TaskLifetime::unlimited();
                     match &line.line_type {
                         LineType::File => {
-                            AppStateCmdResult::Launch(Launchable::opener(line.path.clone()))
+                            opener(line.path.clone(), line.is_exe(), con)
                         }
                         LineType::Dir | LineType::SymLinkToDir(_) => {
-                            AppStateCmdResult::from_optional_state(
+                            Ok(AppStateCmdResult::from_optional_state(
                                 BrowserState::new(
                                     line.target(),
                                     tree.options.without_pattern(),
@@ -153,10 +175,14 @@ impl AppState for BrowserState {
                                     &tl,
                                 ),
                                 Command::new(),
-                            )
+                            ))
                         }
                         LineType::SymLinkToFile(target) => {
-                            AppStateCmdResult::Launch(Launchable::opener(PathBuf::from(target)))
+                            opener(
+                                PathBuf::from(target),
+                                line.is_exe(), // today this always return false
+                                con,
+                            )
                         }
                         _ => {
                             unreachable!();
@@ -171,25 +197,26 @@ impl AppState for BrowserState {
                 };
                 let line = tree.selected_line();
                 let cd_idx = con.verb_store.index_of("cd");
-                con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, screen, con)?
+                con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, screen, con)
             }
             Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::Match(verb) => {
-                    self.execute_verb(verb, &invocation, screen, con)?
+                    self.execute_verb(verb, &invocation, screen, con)
                 }
-                _ => AppStateCmdResult::verb_not_found(&invocation.key),
+                _ => Ok(AppStateCmdResult::verb_not_found(&invocation.key)),
             },
-            Action::FuzzyPatternEdit(pat) => match pat.len() {
-                0 => {
-                    self.filtered_tree = None;
-                    AppStateCmdResult::Keep
+            Action::FuzzyPatternEdit(pat) => {
+                match pat.len() {
+                    0 => {
+                        self.filtered_tree = None;
+                    }
+                    _ => {
+                        self.pending_pattern = Pattern::fuzzy(pat);
+                    }
                 }
-                _ => {
-                    self.pending_pattern = Pattern::fuzzy(pat);
-                    AppStateCmdResult::Keep
-                }
-            },
-            Action::RegexEdit(pat, flags) => {
+                Ok(AppStateCmdResult::Keep)
+            }
+            Action::RegexEdit(pat, flags) => Ok(
                 match Pattern::regex(pat, flags) {
                     Ok(regex_pattern) => {
                         self.pending_pattern = regex_pattern;
@@ -200,21 +227,21 @@ impl AppState for BrowserState {
                         AppStateCmdResult::DisplayError(format!("{}", e))
                     }
                 }
-            }
-            Action::Help => {
+            ),
+            Action::Help => Ok(
                 AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)), Command::new())
-            }
-            Action::Refresh => AppStateCmdResult::RefreshState,
-            Action::Quit => AppStateCmdResult::Quit,
+            ),
+            Action::Refresh => Ok(AppStateCmdResult::RefreshState),
+            Action::Quit => Ok(AppStateCmdResult::Quit),
             Action::Next => {
                 if let Some(ref mut tree) = self.filtered_tree {
                     tree.try_select_next_match();
                     tree.make_selection_visible(page_height);
                 }
-                AppStateCmdResult::Keep
+                Ok(AppStateCmdResult::Keep)
             }
-            _ => AppStateCmdResult::Keep,
-        })
+            _ => Ok(AppStateCmdResult::Keep),
+        }
     }
 
     fn has_pending_tasks(&self) -> bool {

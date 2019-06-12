@@ -62,6 +62,7 @@ impl Launchable {
             width: screen.w,
         }
     }
+
     pub fn program(mut parts: Vec<String>) -> io::Result<Launchable> {
         let mut parts = parts.drain(0..).map(resolve_env_variable);
         match parts.next() {

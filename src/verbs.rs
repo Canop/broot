@@ -242,8 +242,8 @@ impl Verb {
     ) -> io::Result<AppStateCmdResult> {
         Ok(if self.from_shell {
             if let Some(ref export_path) = con.launch_args.cmd_export_path {
-                // new version of the br function: the whole command is exported
-                // in the passed file
+                // Broot was probably launched as br.
+                // the whole command is exported in the passed file
                 let f = OpenOptions::new().append(true).open(export_path)?;
                 writeln!(&f, "{}", self.shell_exec_string(file, args))?;
                 AppStateCmdResult::Quit
