@@ -20,9 +20,7 @@ pub struct HelpState {
 
 impl HelpState {
     pub fn new(screen: &Screen, con: &AppContext) -> HelpState {
-        let mut area = Area::uninitialized();
-        area.top = 0;
-        area.left = 0;
+        let area = Area::uninitialized(); // will be fixed at drawing time
         let markdown = help_content::build_markdown(con);
         let view = MadView::from(markdown, area, screen.skin.to_mad_skin());
         HelpState { view }
@@ -78,13 +76,10 @@ impl AppState for HelpState {
 
     fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
         self.resize_area(screen);
-        let r = self.view.write();
-        debug!("r={:?}", r);
-        Ok(())
+        self.view.write()
     }
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
-        debug!("help write_status");
         match &cmd.action {
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::NoMatch => screen.write_status_err("No matching verb)"),

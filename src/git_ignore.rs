@@ -102,7 +102,7 @@ impl GitIgnoreFilter {
                     filter.files.push(gif);
                 }
                 Err(e) => {
-                    info!("reading GIF failed: {:?}", e);
+                    info!("reading git ignore file failed: {:?}", e);
                 }
             }
         }

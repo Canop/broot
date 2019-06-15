@@ -24,7 +24,7 @@ impl Screen {
             skin,
         };
         screen.read_size(con)?;
-        info!("screen size: {} x {}", screen.w, screen.h);
+        debug!("screen size: {} x {}", screen.w, screen.h);
         let cursor = TerminalCursor::new();
         cursor.hide().unwrap();
         Ok(screen)

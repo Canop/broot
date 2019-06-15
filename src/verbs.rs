@@ -267,7 +267,7 @@ impl Verb {
                 let execution = launchable.execute();
                 match execution {
                     Ok(()) => {
-                        info!("ok");
+                        debug!("ok");
                         AppStateCmdResult::RefreshState
                     }
                     Err(e) => {
