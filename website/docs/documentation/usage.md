@@ -38,6 +38,8 @@ There are also a few more shortcuts:
 * moving one page up can be done with <kbd>Ctrl</kbd> <kbd>u</kbd>
 * moving one page down can be done with <kbd>Ctrl</kbd> <kbd>d</kbd>
 * you can quit with <kbd>Ctrl</kbd> <kbd>q</kbd>
+* you can select a line with a mouse click
+* you can open a line with a mouse double-click
 
 
 ## Fuzzy Patterns
