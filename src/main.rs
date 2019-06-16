@@ -18,6 +18,7 @@ mod conf;
 mod displayable_tree;
 mod errors;
 mod external;
+mod event;
 mod file_sizes;
 mod flat_tree;
 mod fuzzy_patterns;

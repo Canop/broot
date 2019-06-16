@@ -82,6 +82,49 @@ impl BrowserState {
         }
     }
 
+    fn open_selection(
+        &mut self,
+        screen: &mut Screen,
+        con: &AppContext,
+    ) -> io::Result<AppStateCmdResult> {
+        let tree = match &self.filtered_tree {
+            Some(tree) => tree,
+            None => &self.tree,
+        };
+        if tree.selection == 0 {
+            Ok(AppStateCmdResult::Keep)
+        } else {
+            let line = tree.selected_line();
+            let tl = TaskLifetime::unlimited();
+            match &line.line_type {
+                LineType::File => {
+                    opener(line.path.clone(), line.is_exe(), con)
+                }
+                LineType::Dir | LineType::SymLinkToDir(_) => {
+                    Ok(AppStateCmdResult::from_optional_state(
+                        BrowserState::new(
+                            line.target(),
+                            tree.options.without_pattern(),
+                            screen,
+                            &tl,
+                        ),
+                        Command::new(),
+                    ))
+                }
+                LineType::SymLinkToFile(target) => {
+                    opener(
+                        PathBuf::from(target),
+                        line.is_exe(), // today this always return false
+                        con,
+                    )
+                }
+                _ => {
+                    unreachable!();
+                }
+            }
+        }
+}
+
 }
 
 fn opener(path: PathBuf, is_exe: bool, con: &AppContext) -> io::Result<AppStateCmdResult> {
@@ -152,44 +195,33 @@ impl AppState for BrowserState {
                 }
                 Ok(AppStateCmdResult::Keep)
             }
-            Action::OpenSelection => {
+            Action::Click(_, y) => {
+                let y = *y as i32 - 1; // click position starts at (1, 1)
+                match self.filtered_tree {
+                    Some(ref mut tree) => {
+                        tree.try_select_y(y);
+                    }
+                    None => {
+                        self.tree.try_select_y(y);
+                    }
+                };
+                Ok(AppStateCmdResult::Keep)
+            }
+            Action::DoubleClick(_, y) => {
                 let tree = match &self.filtered_tree {
                     Some(tree) => tree,
                     None => &self.tree,
                 };
-                if tree.selection == 0 {
-                    Ok(AppStateCmdResult::Keep)
+                if tree.selection + 1 == *y as usize {
+                    self.open_selection(screen, con)
                 } else {
-                    let line = tree.selected_line();
-                    let tl = TaskLifetime::unlimited();
-                    match &line.line_type {
-                        LineType::File => {
-                            opener(line.path.clone(), line.is_exe(), con)
-                        }
-                        LineType::Dir | LineType::SymLinkToDir(_) => {
-                            Ok(AppStateCmdResult::from_optional_state(
-                                BrowserState::new(
-                                    line.target(),
-                                    tree.options.without_pattern(),
-                                    screen,
-                                    &tl,
-                                ),
-                                Command::new(),
-                            ))
-                        }
-                        LineType::SymLinkToFile(target) => {
-                            opener(
-                                PathBuf::from(target),
-                                line.is_exe(), // today this always return false
-                                con,
-                            )
-                        }
-                        _ => {
-                            unreachable!();
-                        }
-                    }
+                    // A double click always come after a simple click at
+                    // same position. If it's not the selected line, it means
+                    // the click wasn't on a selectable/openable tree line
+                    Ok(AppStateCmdResult::Keep)
                 }
             }
+            Action::OpenSelection => self.open_selection(screen, con),
             Action::AltOpenSelection => {
                 let tree = match &self.filtered_tree {
                     Some(tree) => tree,

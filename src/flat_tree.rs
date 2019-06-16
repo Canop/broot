@@ -242,7 +242,20 @@ impl Tree {
         self.scroll = (self.scroll + dy).max(0).min(self.lines.len() as i32 - 5);
         self.select_visible_line(page_height);
     }
-    pub fn select_visible_line(&mut self, page_height: i32) {
+    /// try to select a line (works if y+scroll falls on a selectable line)
+    pub fn try_select_y(&mut self, y: i32) -> bool {
+        let y = y + self.scroll;
+        if y >= 0 && y <= self.lines.len() as i32 {
+            let y = y as usize;
+            if self.lines[y].is_selectable() {
+                self.selection = y;
+                return true;
+            }
+        }
+        false
+    }
+    /// fix the selection so that it's a selectable visible line
+    fn select_visible_line(&mut self, page_height: i32) {
         let sel = self.selection as i32;
         if sel < self.scroll || sel >= self.scroll + page_height {
             self.selection = self.scroll as usize;

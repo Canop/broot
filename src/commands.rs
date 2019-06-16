@@ -3,6 +3,7 @@
 //!  (verbs arent checked at this point)
 
 use crate::verb_invocation::VerbInvocation;
+use crate::event::Event;
 use crossterm::KeyEvent;
 use regex::Regex;
 
@@ -36,6 +37,8 @@ pub enum Action {
     Refresh,                   // refresh
     Help,                      // goes to help state
     Quit,                      // quit broot
+    Click(u16, u16),           // usually a mouse click
+    DoubleClick(u16, u16),     // always come after a simple click at same position
     Unparsed,                  // or unparsable
 }
 
@@ -126,7 +129,21 @@ impl Command {
         Command { raw, parts, action }
     }
 
-    pub fn add_key(&mut self, key: KeyEvent) {
+    pub fn add_event(&mut self, event: Event) {
+        match event {
+            Event::Click(x, y) => {
+                self.action = Action::Click(x, y);
+            }
+            Event::DoubleClick(x, y) => {
+                self.action = Action::DoubleClick(x, y);
+            }
+            Event::Key(key) => {
+                self.add_key(key);
+            }
+        }
+    }
+
+    fn add_key(&mut self, key: KeyEvent) {
         match key {
             KeyEvent::Char('\t') => {
                 self.action = Action::Next;
