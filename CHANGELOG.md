@@ -1,3 +1,11 @@
+<a name="v0.8.3"></a>
+### v0.8.3 - 2019-06-16
+- mouse support: click to select, double-click to open
+
+<a name="v0.8.2"></a>
+### v0.8.2 - 2019-06-15
+- fix wrong result of scrolling when help text fits the screen
+
 <a name="v0.8.1"></a>
 ### v0.8.1 - 2019-06-10
 - change default skin to only use highly compatible colors

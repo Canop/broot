@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "0.8.1"
+version = "0.8.3"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 description = "Fuzzy Search + tree + cd"
@@ -11,19 +11,19 @@ categories = ["command-line-utilities"]
 readme = "README.md"
 
 [dependencies]
-regex = "1"
+regex = "1.1"
 lazy_static = "1.3"
 directories = "2.0"
 toml = "0.5"
 custom_error = "1.6"
 log = "0.4"
 simplelog = "0.5"
-clap = "2.32"
+clap = "2.33"
 glob = "0.3"
 crossbeam = "0.7"
 opener = "0.4"
 crossterm = "0.9.6"
-termimad = "0.3.5"
+termimad = "0.3.6"
 #termimad = { path = "../termimad" }
 
 [target.'cfg(unix)'.dependencies]

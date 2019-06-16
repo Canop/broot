@@ -7,18 +7,14 @@
 //! - an operation which keeps the state
 //! - a request to quit broot
 //! - a request to launch an executable (thus leaving broot)
-use crossterm::TerminalInput;
 use std::io::{self, Write};
 use std::result::Result;
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::{mpsc, Arc};
-use std::thread;
 
 use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::command_parsing::parse_command_sequence;
 use crate::commands::Command;
-use crate::event::{Event, EventSource};
+use crate::event::EventSource;
 use crate::errors::ProgramError;
 use crate::errors::TreeBuildError;
 use crate::external::Launchable;
