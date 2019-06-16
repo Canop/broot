@@ -49,7 +49,7 @@ impl VerbExecutor for BrowserState {
                 AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)), Command::new())
             }
             ":open" => AppStateCmdResult::Launch(Launchable::opener(line.target())),
-            ":parent" => match &line.target().parent() {
+            ":parent" => match &line.path.parent() {
                 Some(path) => AppStateCmdResult::from_optional_state(
                     BrowserState::new(
                         path.to_path_buf(),
@@ -84,7 +84,7 @@ impl VerbExecutor for BrowserState {
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),
             ":quit" => AppStateCmdResult::Quit,
-            _ => verb.to_cmd_result(&line.target(), &invocation.args, screen, con)?,
+            _ => verb.to_cmd_result(&line.path.clone(), &invocation.args, screen, con)?,
         })
     }
 }

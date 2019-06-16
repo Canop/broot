@@ -219,10 +219,8 @@ impl Verb {
             .map(|token| {
                 let path = Path::new(token);
                 if path.exists() {
-                    if let Ok(path) = path.canonicalize() {
-                        if let Some(path) = path.to_str() {
-                            return path.to_string();
-                        }
+                    if let Some(path) = path.to_str() {
+                        return path.to_string();
                     }
                 }
                 token.to_string()

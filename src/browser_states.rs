@@ -123,7 +123,7 @@ impl BrowserState {
                 }
             }
         }
-}
+    }
 
 }
 
@@ -364,7 +364,7 @@ impl AppState for BrowserState {
                                 &format!(
                                     "Hit <enter> to {} : {}",
                                     &verb.invocation.key,
-                                    verb.description_for(line.target(), &invocation.args)
+                                    verb.description_for(line.path.clone(), &invocation.args)
                                 )
                                 .to_string(),
                             )
