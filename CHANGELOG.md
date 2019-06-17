@@ -1,3 +1,7 @@
+<a name="v0.8.4"></a>
+### v0.8.4 - 2019-06-17
+- apply verbs on link files, not on their targets (rm some_link was dangerous)
+
 <a name="v0.8.3"></a>
 ### v0.8.3 - 2019-06-16
 - mouse support: click to select, double-click to open

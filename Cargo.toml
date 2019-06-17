@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "0.8.3"
+version = "0.8.4"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 description = "Fuzzy Search + tree + cd"
@@ -23,7 +23,7 @@ glob = "0.3"
 crossbeam = "0.7"
 opener = "0.4"
 crossterm = "0.9.6"
-termimad = "0.3.6"
+termimad = "0.3.7"
 #termimad = { path = "../termimad" }
 
 [target.'cfg(unix)'.dependencies]
