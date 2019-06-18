@@ -14,7 +14,7 @@ use crossterm::{
     Color::{self, *},
     Colored, ObjectStyle,
 };
-use termimad::{CompoundStyle, MadSkin};
+use termimad::{Alignment, CompoundStyle, LineStyle, MadSkin};
 
 pub trait SkinEntry {
     fn print_bg(&self);
@@ -124,7 +124,10 @@ impl Skin {
         ms.code.compound_style = CompoundStyle::from(self.help_code.clone());
         ms.bold = CompoundStyle::from(self.help_bold.clone());
         ms.italic = CompoundStyle::from(self.help_italic.clone());
-        ms.table_border = CompoundStyle::from(self.help_table_border.clone());
+        ms.table = LineStyle {
+            compound_style: CompoundStyle::from(self.help_table_border.clone()),
+            align: Alignment::Center,
+        };
         if let Some(c) = self.help_headers.fg_color {
             ms.set_headers_fg(c);
         }

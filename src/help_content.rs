@@ -7,6 +7,7 @@ pub fn build_markdown(con: &AppContext) -> String {
     let mut md = String::new();
     md.push_str(&format!("\n# broot v{}", env!("CARGO_PKG_VERSION")));
     md.push_str(MD_HELP_INTRO);
+    md.push_str(MD_VERBS);
     append_verbs_table(&mut md, con);
     append_config_info(&mut md, con);
     md.push_str(MD_HELP_LAUNCH_ARGUMENTS);
@@ -25,8 +26,12 @@ Typing some letters searches the tree and selects the most relevant file.
 To use a regular expression, use a slash eg `/j(ava|s)$`.
 The **🡑** and **🡓** arrow keys can be used to change selection.
 
-To execute a verb, type a space or `:` then start of its name or shortcut.
+"#;
 
+const MD_VERBS: &'static str = r#"
+## Verbs
+
+To execute a verb, type a space or `:` then start of its name or shortcut.
 "#;
 
 const MD_HELP_LAUNCH_ARGUMENTS: &'static str = r#"
@@ -50,7 +55,6 @@ Flags are displayed at bottom right:
 "#;
 
 fn append_verbs_table(md: &mut String, con: &AppContext) {
-    md.push_str("## Verbs\n\n");
     md.push_str("|-:\n");
     md.push_str("|**name**|**shortcut**|**description**\n");
     md.push_str("|-:|:-:|:-\n");
@@ -75,7 +79,7 @@ fn append_verbs_table(md: &mut String, con: &AppContext) {
 
 fn append_config_info(md: &mut String, _con: &AppContext) {
     md.push_str(&format!(
-        " Verbs and skin can be configured in {:?}.\n",
-        Conf::default_location()
+        "\n## Configuration\n\nVerbs and skin can be configured in *{}*.\n",
+        Conf::default_location().to_string_lossy()
     ));
 }
