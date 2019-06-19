@@ -68,7 +68,7 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         }
     }
 
-    match s.as_ref() {
+    match s {
         // TODO: we could add a table of common colors and map to ansi colors
         "black" => Ok(skin::rgb(0, 0, 0)), // crossterm black isn't black
         "blue" => Ok(Some(Blue)),

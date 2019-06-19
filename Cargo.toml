@@ -17,13 +17,13 @@ directories = "2.0"
 toml = "0.5"
 custom_error = "1.6"
 log = "0.4"
-simplelog = "0.5"
+simplelog = "0.6"
 clap = "2.33"
 glob = "0.3"
 crossbeam = "0.7"
 opener = "0.4"
 crossterm = "0.9.6"
-termimad = "0.3.8"
+termimad = "0.3.9"
 #termimad = { path = "../termimad" }
 
 [target.'cfg(unix)'.dependencies]

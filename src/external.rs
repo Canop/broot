@@ -76,7 +76,10 @@ impl Launchable {
 
     pub fn execute(&self) -> Result<(), ProgramError> {
         match self {
-            Launchable::Printer { to_print } => Ok(println!("{}", to_print)),
+            Launchable::Printer { to_print } => {
+                println!("{}", to_print);
+                Ok(())
+            }
             Launchable::TreePrinter { tree, skin, width } => {
                 let dp = DisplayableTree::out_of_app(&tree, &skin, *width);
                 print!("{}", dp);
@@ -131,8 +134,7 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
         } else {
             // no output path provided. We write on stdout, but we must
             // do it after app closing to have the normal terminal
-            let launchable = Launchable::printer(path);
-            AppStateCmdResult::Launch(launchable)
+            AppStateCmdResult::from(Launchable::printer(path))
         },
     )
 }
@@ -163,7 +165,7 @@ pub fn print_tree(
     } else {
         // no output path provided. We write on stdout, but we must
         // do it after app closing to have the normal terminal
-        Ok(AppStateCmdResult::Launch(Launchable::tree_printer(
+        Ok(AppStateCmdResult::from(Launchable::tree_printer(
             tree, screen,
         )))
     }

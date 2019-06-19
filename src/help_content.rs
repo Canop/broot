@@ -15,7 +15,7 @@ pub fn build_markdown(con: &AppContext) -> String {
     md
 }
 
-const MD_HELP_INTRO: &'static str = r#"
+const MD_HELP_INTRO: &str = r#"
 
 **broot** lets you explore directory trees and launch commands.
 It's best used when launched as **br**.
@@ -28,13 +28,13 @@ The **🡑** and **🡓** arrow keys can be used to change selection.
 
 "#;
 
-const MD_VERBS: &'static str = r#"
+const MD_VERBS: &str = r#"
 ## Verbs
 
 To execute a verb, type a space or `:` then start of its name or shortcut.
 "#;
 
-const MD_HELP_LAUNCH_ARGUMENTS: &'static str = r#"
+const MD_HELP_LAUNCH_ARGUMENTS: &str = r#"
 ## Launch Arguments
 
 Some options can be set on launch:
@@ -44,7 +44,7 @@ Some options can be set on launch:
  (for the complete list, run `broot --help`)
 "#;
 
-const MD_HELP_FLAGS: &'static str = r#"
+const MD_HELP_FLAGS: &str = r#"
 ## Flags
 
 Flags are displayed at bottom right:

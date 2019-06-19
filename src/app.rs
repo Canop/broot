@@ -29,7 +29,7 @@ use crate::task_sync::TaskLifetime;
 pub enum AppStateCmdResult {
     Quit,
     Keep,
-    Launch(Launchable),
+    Launch(Box<Launchable>),
     DisplayError(String),
     NewState(Box<dyn AppState>, Command),
     PopStateAndReapply, // the state asks the command be executed on a previous state
@@ -50,6 +50,12 @@ impl AppStateCmdResult {
             Ok(None) => AppStateCmdResult::Keep,
             Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
         }
+    }
+}
+
+impl From<Launchable> for AppStateCmdResult {
+    fn from(launchable: Launchable) -> Self {
+        AppStateCmdResult::Launch(Box::new(launchable))
     }
 }
 
@@ -157,7 +163,7 @@ impl App {
                 self.quitting = true;
             }
             AppStateCmdResult::Launch(launchable) => {
-                self.launch_at_end = Some(launchable);
+                self.launch_at_end = Some(*launchable);
                 self.quitting = true;
             }
             AppStateCmdResult::NewState(boxed_state, new_cmd) => {

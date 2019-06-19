@@ -35,7 +35,7 @@ use crate::shell_fish::FISH;
 
 const SHELL_FAMILIES: &[ShellFamily<'static>] = &[BASH, FISH];
 
-const MD_INSTALL_REQUEST: &'static str = r#"
+const MD_INSTALL_REQUEST: & str = r#"
 **Broot** should be launched using a shell function (see *https://github.com/Canop/broot* for explanations).
 The function is either missing, old or badly installed.
 "#;

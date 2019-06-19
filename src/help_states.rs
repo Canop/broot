@@ -1,5 +1,6 @@
 use std::io;
 
+use crossterm::{Terminal, ClearType};
 use termimad::{Area, MadView};
 
 use crate::app::{AppState, AppStateCmdResult};
@@ -21,13 +22,15 @@ pub struct HelpState {
 impl HelpState {
     pub fn new(screen: &Screen, con: &AppContext) -> HelpState {
         let area = Area::uninitialized(); // will be fixed at drawing time
+        Terminal::new().clear(ClearType::All).unwrap();
         let markdown = help_content::build_markdown(con);
         let view = MadView::from(markdown, area, screen.skin.to_mad_skin());
         HelpState { view }
     }
 
     fn resize_area(&mut self, screen: &Screen) {
-        let area = Area::new(0, 0, screen.w, screen.h - 2);
+        let mut area = Area::new(0, 0, screen.w, screen.h - 2);
+        area.pad_for_max_width(100);
         self.view.resize(&area);
     }
 }

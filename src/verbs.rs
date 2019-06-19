@@ -148,7 +148,7 @@ impl Verb {
     ) -> HashMap<String, String> {
         let mut map = HashMap::new();
         // first we add the replacements computed from the given path
-        let parent = file.parent().unwrap_or_else(|| file.clone()); // when there's no parent... we take file
+        let parent = file.parent().unwrap_or(file); // when there's no parent... we take file
         let file_str = path_to_string(file, for_shell);
         let parent_str = path_to_string(parent, for_shell);
         map.insert("file".to_string(), file_str.to_string());
@@ -259,7 +259,7 @@ impl Verb {
         } else {
             let launchable = external::Launchable::program(self.exec_token(file, args))?;
             if self.leave_broot {
-                AppStateCmdResult::Launch(launchable)
+                AppStateCmdResult::from(launchable)
             } else {
                 info!("Executing not leaving, launchable {:?}", launchable);
                 let execution = launchable.execute();

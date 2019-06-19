@@ -75,12 +75,7 @@ pub fn parse_command_sequence(
     let mut tokenizer = CommandSequenceTokenizer::from(sequence);
     let mut commands: Vec<Command> = Vec::new();
     let mut leftover: Option<CommandSequenceToken> = None;
-    loop {
-        let first_token = if let Some(token) = leftover.take().or_else(|| tokenizer.next()) {
-            token
-        } else {
-            break;
-        };
+    while let Some(first_token) = leftover.take().or_else(|| tokenizer.next()) {
         let raw = match first_token {
             CommandSequenceToken::VerbKey(key) => {
                 let verb = match con.verb_store.search(&key) {

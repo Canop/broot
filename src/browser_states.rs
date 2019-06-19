@@ -137,12 +137,10 @@ fn opener(path: PathBuf, is_exe: bool, con: &AppContext) -> io::Result<AppStateC
                 writeln!(&f, "{}", path)?;
                 AppStateCmdResult::Quit
             } else {
-                AppStateCmdResult::Launch(
-                    Launchable::program(vec![path])?
-                )
+                AppStateCmdResult::from(Launchable::program(vec![path])?)
             }
         } else {
-            AppStateCmdResult::Launch(Launchable::opener(path))
+            AppStateCmdResult::from(Launchable::opener(path))
         }
     )
 }
