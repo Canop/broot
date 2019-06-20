@@ -1,3 +1,7 @@
+<a name="v0.8.5"></a>
+### v0.8.5 - 2019-06-20
+- minor cosmetic changes (this version was mostly released to ensure consistency with termimad's crate)
+
 <a name="v0.8.4"></a>
 ### v0.8.4 - 2019-06-17
 - apply verbs on link files, not on their targets (rm some_link was dangerous)
