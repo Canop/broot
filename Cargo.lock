@@ -88,6 +88,7 @@ dependencies = [
 name = "broot"
 version = "0.8.5"
 dependencies = [
+ "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "crossbeam 0.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "crossterm 0.9.6 (registry+https://github.com/rust-lang/crates.io-index)",

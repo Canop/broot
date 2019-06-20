@@ -93,6 +93,7 @@ Skin! {
     link: Some(Magenta), None;
     pruning: gray(17), None; {Italic}
     permissions: gray(15), None;
+    dates: ansi(109), None;
     selected_line: None, gray(3);
     size_bar: Some(White), Some(DarkBlue);
     size_no_bar: gray(15), gray(2);

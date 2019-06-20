@@ -29,7 +29,7 @@ impl VerbExecutor for HelpState {
             ":focus" | ":parent" => AppStateCmdResult::from_optional_state(
                 BrowserState::new(
                     conf::dir(),
-                    TreeOptions::new(),
+                    TreeOptions::default(),
                     screen,
                     &TaskLifetime::unlimited(),
                 ),

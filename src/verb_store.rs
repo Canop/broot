@@ -139,6 +139,11 @@ impl VerbStore {
             .unwrap(),
         );
         self.add_builtin(
+            "toggle_dates",
+            Some("dates".to_string()),
+            "toggle showing last modified dates",
+        );
+        self.add_builtin(
             "toggle_files",
             Some("files".to_string()),
             "toggle showing files (or just folders)",

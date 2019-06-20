@@ -137,6 +137,7 @@ For example:
 	selected_line = "none gray(3)"
 	size_bar = "black rgb(255, 152, 0)"
 	size_no_bar = "gray(15) gray(2)"
+	dates = "Magenta none"
 	char_match = "yellow none"
 	file_error = "Red none"
 	flag_label = "gray(16) none"

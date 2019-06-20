@@ -41,6 +41,7 @@ Some options can be set on launch:
 * `-h` or `--hidden` : show hidden files
 * `-f` or `--only-folders` : only show folders
 * `-s` or `--sizes` : display sizes
+* `-d` or `--dates` : display last modified dates
  (for the complete list, run `broot --help`)
 "#;
 

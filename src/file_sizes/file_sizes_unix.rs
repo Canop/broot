@@ -12,7 +12,7 @@ use std::thread;
 use std::time::Duration;
 
 pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
-    let inodes = Arc::new(Mutex::new(HashSet::<u64>::new())); // to avoid counting twice an inode
+    let inodes = Arc::new(Mutex::new(HashSet::<u64>::default())); // to avoid counting twice an inode
     let size = Arc::new(AtomicU64::new(0));
 
     // this MPMC channel contains the directory paths which must be handled

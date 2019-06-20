@@ -153,14 +153,18 @@ impl BLine {
         let mut uid = 0;
         let mut gid = 0;
         let mut has_error = self.has_error;
+        let mut last_modified = None;
 
-        #[cfg(unix)]
-        {
-            if let Ok(metadata) = fs::symlink_metadata(&self.path) {
+        if let Ok(metadata) = fs::symlink_metadata(&self.path) {
+            last_modified = Some(metadata.modified().unwrap());
+            #[cfg(unix)]
+            {
                 mode = metadata.mode();
                 uid = metadata.uid();
                 gid = metadata.gid();
             }
+        } else {
+            has_error = true;
         }
 
         let line_type = if self.file_type.is_dir() {
@@ -208,10 +212,11 @@ impl BLine {
             nb_kept_children: self.nb_kept_children as usize,
             unlisted,
             score: self.score,
+            size: None,
+            last_modified,
             mode,
             uid,
             gid,
-            size: None,
         }
     }
 }

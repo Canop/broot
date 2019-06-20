@@ -1,5 +1,8 @@
-use crossterm::{ClearType, Terminal};
 use std::fmt;
+use std::time::SystemTime;
+use crossterm::{ClearType, Terminal};
+use chrono::offset::Local;
+use chrono::DateTime;
 
 use crate::file_sizes::Size;
 use crate::flat_tree::{LineType, Tree, TreeLine};
@@ -13,7 +16,7 @@ use crossterm::{Color, Colored, TerminalCursor};
 /// which can be used either
 /// - to write on the screen in the application,
 /// - or to write in a file or an exported string.
-/// Using it in the application (with in_app true) means
+/// Using it in the application (with in_app true) means that
 ///  - the selection is drawn
 ///  - a scrollbar may be drawn
 ///  - the empty lines will be erased
@@ -64,6 +67,17 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         } else {
             self.skin.tree.write(f, "──────── ")
         }
+    }
+
+    fn write_date(&self, f: &mut fmt::Formatter<'_>, system_time: SystemTime) -> fmt::Result {
+        let date_time: DateTime<Local> = system_time.into();
+        write!(
+            f,
+            "{}",
+            self.skin.dates.apply_to(
+                date_time.format("%Y/%m/%d %R ")
+            ),
+        )
     }
 
     fn write_mode(&self, f: &mut fmt::Formatter<'_>, mode: u32) -> fmt::Result {
@@ -214,6 +228,13 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                         write!(f, " {:w$} ", &group, w = max_group_len,)?;
                     } else {
                         self.skin.tree.write(f, "──────────────")?;
+                    }
+                }
+                if tree.options.show_dates && line_index > 0 {
+                    if let Some(date) = line.last_modified {
+                        self.write_date(f, date)?;
+                    } else {
+                        self.skin.tree.write(f, "──────────────── ")?;
                     }
                 }
                 let selected = self.in_app && line_index == tree.selection;

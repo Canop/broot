@@ -63,6 +63,7 @@ impl VerbExecutor for BrowserState {
             },
             ":print_path" => external::print_path(&line.target(), con)?,
             ":print_tree" => external::print_tree(&tree, screen, con)?,
+            ":toggle_dates" => self.with_new_options(screen, &|o| o.show_dates ^= true),
             ":toggle_files" => {
                 self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true)
             }

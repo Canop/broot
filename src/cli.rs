@@ -43,6 +43,12 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
                 .help("commands to execute (space separated, experimental)"),
         )
         .arg(
+            clap::Arg::with_name("dates")
+                .short("d")
+                .long("dates")
+                .help("show the last modified date of files and directories"),
+        )
+        .arg(
             clap::Arg::with_name("file_export_path")
                 .short("o")
                 .long("out")
@@ -124,10 +130,11 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
         }
     }
     let root = root.canonicalize()?;
-    let mut tree_options = TreeOptions::new();
+    let mut tree_options = TreeOptions::default();
     tree_options.only_folders = cli_args.is_present("only-folders");
     tree_options.show_hidden = cli_args.is_present("hidden");
     tree_options.show_sizes = cli_args.is_present("sizes");
+    tree_options.show_dates = cli_args.is_present("dates");
     tree_options.show_permissions = cli_args.is_present("permissions");
     if let Some(respect_ignore) = cli_args.value_of("gitignore") {
         tree_options.respect_git_ignore = respect_ignore.parse()?;
