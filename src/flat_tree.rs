@@ -4,7 +4,12 @@ use std::cmp::{self, Ordering};
 use std::fs;
 use std::mem;
 use std::path::{Path, PathBuf};
-use std::time::SystemTime;
+
+#[cfg(unix)]
+use std::os::unix::fs::MetadataExt;
+
+#[cfg(windows)]
+use is_executable::IsExecutable;
 
 use crate::errors;
 use crate::file_sizes::Size;
@@ -34,10 +39,7 @@ pub struct TreeLine {
     pub unlisted: usize, // number of not listed children (Dir) or brothers (Pruning)
     pub score: i32,      // 0 if there's no pattern
     pub size: Option<Size>, // None when not measured
-    pub last_modified: Option<SystemTime>, // None only in case of error (reading metadata)
-    pub mode: u32,       // unix file mode
-    pub uid: u32,        // unix user id
-    pub gid: u32,        // unix group id
+    pub metadata: fs::Metadata,
 }
 
 #[derive(Debug, Clone)]
@@ -70,7 +72,11 @@ impl TreeLine {
         }
     }
     pub fn is_exe(&self) -> bool {
-        (self.mode & 0o111) != 0
+        #[cfg(unix)]
+        return (self.metadata.mode() & 0o111) != 0;
+
+        #[cfg(windows)]
+        return self.path.is_executable()
     }
     // build and return the absolute targeted path: either self.path or the
     //  solved canonicalized symlink

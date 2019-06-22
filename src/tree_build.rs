@@ -5,9 +5,6 @@ use std::path::PathBuf;
 use std::result::Result;
 use std::time::{Duration, Instant};
 
-#[cfg(unix)]
-use std::os::unix::fs::MetadataExt;
-
 use crate::errors::TreeBuildError;
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::git_ignore::GitIgnoreFilter;
@@ -148,25 +145,8 @@ impl BLine {
         })
     }
 
-    fn to_tree_line(&self) -> TreeLine {
-        let mut mode = 0;
-        let mut uid = 0;
-        let mut gid = 0;
+    fn to_tree_line(&self) -> std::io::Result<TreeLine> {
         let mut has_error = self.has_error;
-        let mut last_modified = None;
-
-        if let Ok(metadata) = fs::symlink_metadata(&self.path) {
-            last_modified = Some(metadata.modified().unwrap());
-            #[cfg(unix)]
-            {
-                mode = metadata.mode();
-                uid = metadata.uid();
-                gid = metadata.gid();
-            }
-        } else {
-            has_error = true;
-        }
-
         let line_type = if self.file_type.is_dir() {
             LineType::Dir
         } else if self.file_type.is_symlink() {
@@ -202,7 +182,8 @@ impl BLine {
         } else {
             0
         };
-        TreeLine {
+        let metadata = fs::symlink_metadata(&self.path)?;
+        Ok(TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
             name: self.name.to_string(),
@@ -213,11 +194,8 @@ impl BLine {
             unlisted,
             score: self.score,
             size: None,
-            last_modified,
-            mode,
-            uid,
-            gid,
-        }
+            metadata,
+        })
     }
 }
 
@@ -494,7 +472,15 @@ impl TreeBuilder {
                 if self.blines[*idx].file_type.is_dir() && self.blines[*idx].children.is_none() {
                     self.load_children(*idx);
                 }
-                lines.push(self.blines[*idx].to_tree_line());
+                if let Ok(tree_line) = self.blines[*idx].to_tree_line() {
+                    lines.push(tree_line);
+                } else {
+                    // I guess the file went missing during tree computation
+                    warn!(
+                        "Error while builind treeline for {:?}",
+                        self.blines[*idx].path,
+                    );
+                }
             }
         }
         let mut tree = Tree {

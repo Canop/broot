@@ -24,13 +24,3 @@ pub fn group_name(gid: u32) -> String {
 pub fn supported() -> bool {
     false
 }
-
-#[cfg(windows)]
-pub fn user_name(_uid: u32) -> String {
-    unreachable!()
-}
-
-#[cfg(windows)]
-pub fn group_name(_gid: u32) -> String {
-    unreachable!()
-}

@@ -4,10 +4,15 @@ use crossterm::{ClearType, Terminal};
 use chrono::offset::Local;
 use chrono::DateTime;
 
+#[cfg(unix)]
+use std::os::unix::fs::MetadataExt;
+
+#[cfg(unix)]
+use crate::permissions;
+
 use crate::file_sizes::Size;
 use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
-use crate::permissions;
 use crate::skin::{Skin, SkinEntry};
 
 use crossterm::{Color, Colored, TerminalCursor};
@@ -80,6 +85,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         )
     }
 
+    #[cfg(unix)]
     fn write_mode(&self, f: &mut fmt::Formatter<'_>, mode: u32) -> fmt::Result {
         write!(
             f,
@@ -165,23 +171,29 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     }
 }
 
+#[cfg(unix)]
+fn user_group_max_lengths(tree: &Tree) -> (usize, usize) {
+    let mut max_user_len = 0;
+    let mut max_group_len = 0;
+    if tree.options.show_permissions {
+        for i in 1..tree.lines.len() {
+            let line = &tree.lines[i];
+            let user = permissions::user_name(line.metadata.uid());
+            max_user_len = max_user_len.max(user.len());
+            let group = permissions::group_name(line.metadata.gid());
+            max_group_len = max_group_len.max(group.len());
+        }
+    }
+    (max_user_len, max_group_len)
+}
+
 impl fmt::Display for DisplayableTree<'_, '_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let terminal = Terminal::new();
         let cursor = TerminalCursor::new();
-        let mut max_user_len = 0;
-        let mut max_group_len = 0;
         let tree = self.tree;
-        if tree.options.show_permissions {
-            // we compute the max size of user/group names to reserve width for the columns
-            for i in 1..tree.lines.len() {
-                let line = &tree.lines[i];
-                let user = permissions::user_name(line.uid);
-                max_user_len = max_user_len.max(user.len());
-                let group = permissions::group_name(line.gid);
-                max_group_len = max_group_len.max(group.len());
-            }
-        }
+        #[cfg(unix)]
+        let user_group_max_lengths = user_group_max_lengths(&tree);
         let total_size = tree.total_size();
         let scrollbar = if self.in_app {
             self.area.scrollbar(tree.scroll, tree.lines.len() as i32)
@@ -219,19 +231,22 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                 if tree.options.show_sizes && line_index > 0 {
                     self.write_line_size(f, line, total_size)?;
                 }
-                if tree.options.show_permissions && line_index > 0 {
-                    if line.is_selectable() {
-                        self.write_mode(f, line.mode)?;
-                        let user = permissions::user_name(line.uid);
-                        write!(f, " {:w$}", &user, w = max_user_len,)?;
-                        let group = permissions::group_name(line.gid);
-                        write!(f, " {:w$} ", &group, w = max_group_len,)?;
-                    } else {
-                        self.skin.tree.write(f, "──────────────")?;
+                #[cfg(unix)]
+                {
+                    if tree.options.show_permissions && line_index > 0 {
+                        if line.is_selectable() {
+                            self.write_mode(f, line.metadata.mode())?;
+                            let user = permissions::user_name(line.metadata.uid());
+                            write!(f, " {:w$}", &user, w = user_group_max_lengths.0,)?;
+                            let group = permissions::group_name(line.metadata.gid());
+                            write!(f, " {:w$} ", &group, w = user_group_max_lengths.1,)?;
+                        } else {
+                            self.skin.tree.write(f, "──────────────")?;
+                        }
                     }
                 }
                 if tree.options.show_dates && line_index > 0 {
-                    if let Some(date) = line.last_modified {
+                    if let Ok(date) = line.metadata.modified() {
                         self.write_date(f, date)?;
                     } else {
                         self.skin.tree.write(f, "──────────────── ")?;

@@ -31,6 +31,9 @@ termimad = "0.3.9"
 jemallocator = "0.3"
 users = "0.9"
 
+[target.'cfg(windows)'.dependencies]
+is_executable = "0.1"
+
 [profile.release]
 lto = true # link time optimization - roughly halves the size of the exec
 codegen-units = 1 # this removes a few hundred bytes from the final exec size

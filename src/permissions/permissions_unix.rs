@@ -38,19 +38,3 @@ pub fn group_name(gid: u32) -> String {
         .to_string()
 }
 
-/*
-
-        mettre directement les string en cache
-
-        renvoyer des &str, pas des String
-
-        lazy_static! {
-            static ref USERS_CACHE_MUTEX: Mutex<UsersCache> = Mutex::new(UsersCache::new());
-        }
-        let users_cache = USERS_CACHE_MUTEX.lock().unwrap();
-
-
-
-
-
-*/
