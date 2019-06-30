@@ -79,7 +79,7 @@ fn configure_log() {
         )
         .expect("log initialization failed");
         info!(
-            "Starting B-Root v{} with log level {}",
+            "Starting Broot v{} with log level {}",
             env!("CARGO_PKG_VERSION"),
             level
         );

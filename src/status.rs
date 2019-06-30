@@ -2,6 +2,7 @@ use std::io;
 
 use crate::screens::Screen;
 use crate::skin::{self, SkinEntry};
+use crossterm::ObjectStyle;
 
 /// the status module manages writing information on the grey line
 ///  near the bottom of the screen
@@ -11,7 +12,7 @@ pub trait Status {
 }
 
 impl Screen {
-    fn write_status(&self, text: &str, skin: &dyn SkinEntry) -> io::Result<()> {
+    fn write_status(&self, text: &str, skin: &ObjectStyle) -> io::Result<()> {
         let mut text = String::from(text);
         text.truncate(self.w as usize - 3);
         self.goto_clear(2, self.h - 1);

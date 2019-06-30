@@ -5,9 +5,7 @@ use std::collections::HashSet;
 use std::fs;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicIsize, AtomicU64, Ordering};
-use std::sync::Arc;
-use std::sync::Mutex;
+use std::sync::{atomic::{AtomicIsize, AtomicU64, Ordering}, Arc, Mutex};
 use std::thread;
 use std::time::Duration;
 
