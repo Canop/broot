@@ -1,6 +1,9 @@
 #[cfg(unix)]
+use mimalloc::MiMalloc;
+#[cfg(unix)]
 #[global_allocator]
-static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
+static GLOBAL: MiMalloc = MiMalloc;
+//static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 #[macro_use]
 extern crate lazy_static;
@@ -83,6 +86,8 @@ fn configure_log() {
             env!("CARGO_PKG_VERSION"),
             level
         );
+        #[cfg(unix)]
+        info!("allocator: Mimalloc");
     }
 }
 
