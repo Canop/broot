@@ -3,7 +3,6 @@ use mimalloc::MiMalloc;
 #[cfg(unix)]
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
-//static ALLOC: jemallocator::Jemalloc = jemallocator::Jemalloc;
 
 #[macro_use]
 extern crate lazy_static;
