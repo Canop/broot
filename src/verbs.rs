@@ -80,10 +80,9 @@ impl Verb {
                 invocation: invocation_str.to_string(),
             });
         }
-        let args_parser = match &invocation.args {
-            Some(ref args) => Some(make_invocation_args_regex(&args)?),
-            None => None,
-        };
+        let args_parser = invocation.args.as_ref()
+            .map(|args| make_invocation_args_regex(&args))
+            .transpose()?;
         Ok(Verb {
             invocation,
             args_parser,

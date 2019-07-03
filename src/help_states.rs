@@ -85,7 +85,7 @@ impl AppState for HelpState {
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
         match &cmd.action {
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::NoMatch => screen.write_status_err("No matching verb)"),
+                PrefixSearchResult::NoMatch => screen.write_status_err("No matching verb"),
                 PrefixSearchResult::Match(verb) => {
                     if let Some(err) = verb.match_error(invocation) {
                         screen.write_status_err(&err)

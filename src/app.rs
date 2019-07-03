@@ -96,20 +96,10 @@ impl App {
     }
 
     fn mut_state(&mut self) -> &mut Box<dyn AppState> {
-        match self.states.last_mut() {
-            Some(s) => s,
-            None => {
-                panic!("No path has been pushed");
-            }
-        }
+        self.states.last_mut().expect("No path has been pushed")
     }
     fn state(&self) -> &Box<dyn AppState> {
-        match self.states.last() {
-            Some(s) => s,
-            None => {
-                panic!("No path has been pushed");
-            }
-        }
+        self.states.last().expect("No path has been pushed")
     }
 
     /// execute all the pending tasks until there's none remaining or

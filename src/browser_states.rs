@@ -54,10 +54,7 @@ impl BrowserState {
         screen: &Screen,
         change_options: &dyn Fn(&mut TreeOptions),
     ) -> AppStateCmdResult {
-        let tree = match &self.filtered_tree {
-            Some(tree) => &tree,
-            None => &self.tree,
-        };
+        let tree = self.displayed_tree();
         let mut options = tree.options.clone();
         change_options(&mut options);
         AppStateCmdResult::from_optional_state(
@@ -75,11 +72,16 @@ impl BrowserState {
         i32::from(screen.h) - 2
     }
 
+    /// return a reference to the currently displayed tree, which
+    /// is the filtered tree if there's one, the base tree if not.
     pub fn displayed_tree(&self) -> &Tree {
-        match &self.filtered_tree {
-            Some(tree) => &tree,
-            None => &self.tree,
-        }
+        self.filtered_tree.as_ref().unwrap_or(&self.tree)
+    }
+
+    /// return a mutable reference to the currently displayed tree, which
+    /// is the filtered tree if there's one, the base tree if not.
+    pub fn displayed_tree_mut(&mut self) -> &mut Tree {
+        self.filtered_tree.as_mut().unwrap_or(&mut self.tree)
     }
 
     fn open_selection(
@@ -87,40 +89,41 @@ impl BrowserState {
         screen: &mut Screen,
         con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
-        let tree = match &self.filtered_tree {
-            Some(tree) => tree,
-            None => &self.tree,
-        };
-        if tree.selection == 0 {
-            Ok(AppStateCmdResult::Keep)
-        } else {
-            let line = tree.selected_line();
-            let tl = TaskLifetime::unlimited();
-            match &line.line_type {
-                LineType::File => {
-                    opener(line.path.clone(), line.is_exe(), con)
+        let tree = self.displayed_tree();
+        let line = tree.selected_line();
+        let tl = TaskLifetime::unlimited();
+        match &line.line_type {
+            LineType::File => {
+                opener(line.path.clone(), line.is_exe(), con)
+            }
+            LineType::Dir | LineType::SymLinkToDir(_) => {
+                let mut target = line.target();
+                if tree.selection == 0 {
+                    // opening the root would be going to where we already are.
+                    // We go up one level instead
+                    if let Some(parent) = target.parent() {
+                        target = PathBuf::from(parent);
+                    }
                 }
-                LineType::Dir | LineType::SymLinkToDir(_) => {
-                    Ok(AppStateCmdResult::from_optional_state(
-                        BrowserState::new(
-                            line.target(),
-                            tree.options.without_pattern(),
-                            screen,
-                            &tl,
-                        ),
-                        Command::new(),
-                    ))
-                }
-                LineType::SymLinkToFile(target) => {
-                    opener(
-                        PathBuf::from(target),
-                        line.is_exe(), // today this always return false
-                        con,
-                    )
-                }
-                _ => {
-                    unreachable!();
-                }
+                Ok(AppStateCmdResult::from_optional_state(
+                    BrowserState::new(
+                        target,
+                        tree.options.without_pattern(),
+                        screen,
+                        &tl,
+                    ),
+                    Command::new(),
+                ))
+            }
+            LineType::SymLinkToFile(target) => {
+                opener(
+                    PathBuf::from(target),
+                    line.is_exe(), // today this always return false
+                    con,
+                )
+            }
+            _ => {
+                unreachable!();
             }
         }
     }
@@ -169,48 +172,24 @@ impl AppState for BrowserState {
                 }
             }
             Action::MoveSelection(dy) => {
-                match self.filtered_tree {
-                    Some(ref mut tree) => {
-                        tree.move_selection(*dy, page_height);
-                    }
-                    None => {
-                        self.tree.move_selection(*dy, page_height);
-                    }
-                };
+                self.displayed_tree_mut().move_selection(*dy, page_height);
                 Ok(AppStateCmdResult::Keep)
             }
             Action::ScrollPage(dp) => {
-                if page_height < self.displayed_tree().lines.len() as i32 {
+                let tree = self.displayed_tree_mut();
+                if page_height < tree.lines.len() as i32 {
                     let dy = dp * page_height;
-                    match self.filtered_tree {
-                        Some(ref mut tree) => {
-                            tree.try_scroll(dy, page_height);
-                        }
-                        None => {
-                            self.tree.try_scroll(dy, page_height);
-                        }
-                    }
+                    tree.try_scroll(dy, page_height);
                 }
                 Ok(AppStateCmdResult::Keep)
             }
             Action::Click(_, y) => {
                 let y = *y as i32 - 1; // click position starts at (1, 1)
-                match self.filtered_tree {
-                    Some(ref mut tree) => {
-                        tree.try_select_y(y);
-                    }
-                    None => {
-                        self.tree.try_select_y(y);
-                    }
-                };
+                self.displayed_tree_mut().try_select_y(y);
                 Ok(AppStateCmdResult::Keep)
             }
             Action::DoubleClick(_, y) => {
-                let tree = match &self.filtered_tree {
-                    Some(tree) => tree,
-                    None => &self.tree,
-                };
-                if tree.selection + 1 == *y as usize {
+                if self.displayed_tree().selection + 1 == *y as usize {
                     self.open_selection(screen, con)
                 } else {
                     // A double click always come after a simple click at
@@ -221,11 +200,7 @@ impl AppState for BrowserState {
             }
             Action::OpenSelection => self.open_selection(screen, con),
             Action::AltOpenSelection => {
-                let tree = match &self.filtered_tree {
-                    Some(tree) => tree,
-                    None => &self.tree,
-                };
-                let line = tree.selected_line();
+                let line = self.displayed_tree().selected_line();
                 let cd_idx = con.verb_store.index_of("cd");
                 con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, screen, con)
             }
@@ -264,7 +239,7 @@ impl AppState for BrowserState {
             Action::Refresh => Ok(AppStateCmdResult::RefreshState),
             Action::Quit => Ok(AppStateCmdResult::Quit),
             Action::Next => {
-                if let Some(ref mut tree) = self.filtered_tree {
+                if let Some(tree) = &mut self.filtered_tree {
                     tree.try_select_next_match();
                     tree.make_selection_visible(page_height);
                 }
@@ -339,10 +314,10 @@ impl AppState for BrowserState {
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
         match &cmd.action {
-            Action::FuzzyPatternEdit(_) => {
+            Action::FuzzyPatternEdit(s) if s.len() > 0 => {
                 screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
             }
-            Action::RegexEdit(_, _) => {
+            Action::RegexEdit(s, _) if s.len() > 0 => {
                 screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
             }
             Action::VerbEdit(invocation) => {
@@ -354,10 +329,7 @@ impl AppState for BrowserState {
                         if let Some(err) = verb.match_error(invocation) {
                             screen.write_status_err(&err)
                         } else {
-                            let line = match &self.filtered_tree {
-                                Some(tree) => tree.selected_line(),
-                                None => self.tree.selected_line(),
-                            };
+                            let line = self.displayed_tree().selected_line();
                             screen.write_status_text(
                                 &format!(
                                     "Hit <enter> to {} : {}",
@@ -378,7 +350,7 @@ impl AppState for BrowserState {
                 let tree = self.displayed_tree();
                 if tree.selection == 0 {
                     screen.write_status_text(
-                        "Hit <enter> to quit, '?' for help, or a few letters to search",
+                        "Hit <esc> to go back, <enter> to go up, '?' for help, or a few letters to search",
                     )
                 } else {
                     let line = &tree.lines[tree.selection];
@@ -410,30 +382,23 @@ impl AppState for BrowserState {
     }
 
     fn write_flags(&self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
-        let tree = match &self.filtered_tree {
-            Some(tree) => &tree,
-            None => &self.tree,
-        };
+        let tree = self.displayed_tree();
         let total_char_size = 9;
         screen.goto(screen.w - total_char_size, screen.h);
         let terminal = crossterm::Terminal::new();
         terminal.clear(crossterm::ClearType::UntilNewLine)?;
+        let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
+        let gi_value = match tree.options.respect_git_ignore {
+            OptionBool::Auto => 'a',
+            OptionBool::Yes => 'y',
+            OptionBool::No => 'n',
+        };
         print!(
             "{}{}  {}{}",
             screen.skin.flag_label.apply_to(" h:"),
-            screen
-                .skin
-                .flag_value
-                .apply_to(if tree.options.show_hidden { 'y' } else { 'n' }),
+            screen.skin.flag_value.apply_to(h_value),
             screen.skin.flag_label.apply_to(" gi:"),
-            screen
-                .skin
-                .flag_value
-                .apply_to(match tree.options.respect_git_ignore {
-                    OptionBool::Auto => 'a',
-                    OptionBool::Yes => 'y',
-                    OptionBool::No => 'n',
-                }),
+            screen.skin.flag_value.apply_to(gi_value),
         );
         Ok(())
     }

@@ -1,3 +1,10 @@
+<a name="v0.8.6"></a>
+### v0.8.6 - 2019-07-03
+- Hitting enter when first line is selected, or clicking it, goes up to the parent directory
+- detect and color executable files on windows
+- new toggle to display dates of files (last modification)
+- a few small improvements
+
 <a name="v0.8.5"></a>
 ### v0.8.5 - 2019-06-20
 - minor cosmetic changes (this version was mostly released to ensure consistency with termimad's crate)

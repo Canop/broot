@@ -124,7 +124,7 @@ impl FuzzyPattern {
     }
     // return the number of results we should find before starting to
     //  sort them (unless time is runing out).
-    pub fn optimal_result_number(&self, targeted_size: usize) -> usize {
+    pub const fn optimal_result_number(&self, targeted_size: usize) -> usize {
         20 * targeted_size
     }
 }

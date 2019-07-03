@@ -1,15 +1,16 @@
 /// this module manages reading and translating
 /// the arguments passed on launch of the application.
-use crate::errors::{ProgramError, TreeBuildError};
-use crate::tree_options::TreeOptions;
-use clap;
+
 use std::env;
 use std::io;
 use std::path::PathBuf;
 use std::result::Result;
 
-use crossterm::Color::*;
-use termimad::{rgb, Alignment, MadSkin};
+use crossterm::Color::{self, *};
+use termimad::{Alignment, MadSkin};
+
+use crate::errors::{ProgramError, TreeBuildError};
+use crate::tree_options::TreeOptions;
 
 pub struct AppLaunchArgs {
     pub root: PathBuf,                    // what should be the initial root
@@ -175,15 +176,9 @@ pub fn ask_authorization() -> io::Result<bool> {
 
 pub fn mad_skin() -> MadSkin {
     let mut skin = MadSkin::default();
-    skin.set_headers_fg(rgb!(255, 187, 0));
+    skin.set_headers_fg(Color::AnsiValue(178));
     skin.bold.set_fg(Yellow);
-    skin.italic.set_fgbg(Magenta, rgb!(30, 30, 40));
-    skin.scrollbar.set_track_fg(Rgb {
-        r: 30,
-        g: 30,
-        b: 40,
-    });
-    skin.scrollbar.set_thumb_fg(Rgb { r: 67, g: 51, b: 0 });
+    skin.italic.set_fg(Magenta);
     skin.code.align = Alignment::Center;
     skin
 }

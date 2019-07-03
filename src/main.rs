@@ -1,8 +1,3 @@
-#[cfg(unix)]
-use mimalloc::MiMalloc;
-#[cfg(unix)]
-#[global_allocator]
-static GLOBAL: MiMalloc = MiMalloc;
 
 #[macro_use]
 extern crate lazy_static;
@@ -85,8 +80,6 @@ fn configure_log() {
             env!("CARGO_PKG_VERSION"),
             level
         );
-        #[cfg(unix)]
-        info!("allocator: Mimalloc");
     }
 }
 

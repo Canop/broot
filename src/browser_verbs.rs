@@ -23,10 +23,7 @@ impl VerbExecutor for BrowserState {
         if let Some(err) = verb.match_error(invocation) {
             return Ok(AppStateCmdResult::DisplayError(err));
         }
-        let tree = match &self.filtered_tree {
-            Some(tree) => &tree,
-            None => &self.tree,
-        };
+        let tree = self.displayed_tree();
         let line = &tree.selected_line();
         Ok(match verb.execution.as_ref() {
             ":back" => AppStateCmdResult::PopState,

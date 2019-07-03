@@ -132,8 +132,8 @@ impl Skin {
         if let Some(c) = self.help_headers.fg_color {
             ms.set_headers_fg(c);
         }
-        ms.scrollbar.set_track_object_style(&self.scrollbar_track);
-        ms.scrollbar.set_thumb_object_style(&self.scrollbar_thumb);
+        ms.scrollbar.track.set_compound_style(CompoundStyle::from(self.scrollbar_track.clone()));
+        ms.scrollbar.thumb.set_compound_style(CompoundStyle::from(self.scrollbar_thumb.clone()));
         ms
     }
 }
