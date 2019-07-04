@@ -4,6 +4,7 @@ use std::cmp::{self, Ordering};
 use std::fs;
 use std::mem;
 use std::path::{Path, PathBuf};
+use umask::Mode;
 
 #[cfg(unix)]
 use std::os::unix::fs::MetadataExt;
@@ -71,12 +72,16 @@ impl TreeLine {
             _ => false,
         }
     }
+    #[cfg(unix)]
+    pub fn mode(&self) -> Mode {
+        Mode::from(self.metadata.mode())
+    }
     pub fn is_exe(&self) -> bool {
         #[cfg(unix)]
-        return (self.metadata.mode() & 0o111) != 0;
+        return self.mode().is_exe();
 
         #[cfg(windows)]
-        return self.path.is_executable()
+        return self.path.is_executable();
     }
     // build and return the absolute targeted path: either self.path or the
     //  solved canonicalized symlink

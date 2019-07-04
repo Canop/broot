@@ -85,26 +85,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         )
     }
 
-    #[cfg(unix)]
-    fn write_mode(&self, f: &mut fmt::Formatter<'_>, mode: u32) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            self.skin.permissions.apply_to(format!(
-                "{}{}{}{}{}{}{}{}{}",
-                if (mode & (1 << 8)) != 0 { 'r' } else { '-' },
-                if (mode & (1 << 7)) != 0 { 'w' } else { '-' },
-                if (mode & (1 << 6)) != 0 { 'x' } else { '-' },
-                if (mode & (1 << 5)) != 0 { 'r' } else { '-' },
-                if (mode & (1 << 4)) != 0 { 'w' } else { '-' },
-                if (mode & (1 << 3)) != 0 { 'x' } else { '-' },
-                if (mode & (1 << 2)) != 0 { 'r' } else { '-' },
-                if (mode & (1 << 1)) != 0 { 'w' } else { '-' },
-                if (mode & 1) != 0 { 'x' } else { '-' },
-            ))
-        )
-    }
-
     fn write_line_name(
         &self,
         f: &mut fmt::Formatter<'_>,
@@ -235,7 +215,7 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                 {
                     if tree.options.show_permissions && line_index > 0 {
                         if line.is_selectable() {
-                            self.write_mode(f, line.metadata.mode())?;
+                            write!(f, "{}", self.skin.permissions.apply_to(line.mode()))?;
                             let user = permissions::user_name(line.metadata.uid());
                             write!(f, " {:w$}", &user, w = user_group_max_lengths.0,)?;
                             let group = permissions::group_name(line.metadata.gid());
