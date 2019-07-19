@@ -1,3 +1,26 @@
+<a name="v0.9.0"></a>
+### v0.9.0 - 2019-07-19
+#### Major change
+The logic behind opening has changed to allow easier opening of files in non terminal applications without closing broot.
+
+**Old behavior:**
+- in case of enter or double-click
+   - on a directory: open that directory, staying in broot
+   - on a file: open the file, quitting broot
+- in case of alt-enter
+   - on a directory: cd to that directory, quitting broot
+   - on a file: cd to that file's parent directory, quitting broot
+
+**New behavior:**
+- in case of enter or double-click
+   - on a directory: open that directory, staying in broot
+   - on a file: open that file in default editor, not closing broot
+- in case of alt-enter
+   - on a directory: cd to that directory, quitting broot
+   - on a file: open that file in default editor, quitting broot
+#### Minor change
+- Hitting `?` more directly opens the help screen, even when executing a verb
+
 <a name="v0.8.6"></a>
 ### v0.8.6 - 2019-07-03
 - Hitting enter when first line is selected, or clicking it, goes up to the parent directory

@@ -4,6 +4,8 @@ use std::result::Result;
 use std::time::Instant;
 use std::fs::OpenOptions;
 
+use opener;
+
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
 use crate::commands::{Action, Command};
@@ -84,17 +86,18 @@ impl BrowserState {
         self.filtered_tree.as_mut().unwrap_or(&mut self.tree)
     }
 
-    fn open_selection(
+    fn open_selection_stay_in_broot(
         &mut self,
         screen: &mut Screen,
-        con: &AppContext,
+        _con: &AppContext,
     ) -> io::Result<AppStateCmdResult> {
         let tree = self.displayed_tree();
         let line = tree.selected_line();
         let tl = TaskLifetime::unlimited();
         match &line.line_type {
             LineType::File => {
-                opener(line.path.clone(), line.is_exe(), con)
+                opener::open(&line.path).unwrap();
+                Ok(AppStateCmdResult::Keep)
             }
             LineType::Dir | LineType::SymLinkToDir(_) => {
                 let mut target = line.target();
@@ -116,7 +119,39 @@ impl BrowserState {
                 ))
             }
             LineType::SymLinkToFile(target) => {
-                opener(
+                let path = PathBuf::from(target);
+                opener::open(&path).unwrap();
+                Ok(AppStateCmdResult::Keep)
+            }
+            _ => {
+                unreachable!();
+            }
+        }
+    }
+
+    fn open_selection_quit_broot(
+        &mut self,
+        screen: &mut Screen,
+        con: &AppContext,
+    ) -> io::Result<AppStateCmdResult> {
+        let tree = self.displayed_tree();
+        let line = tree.selected_line();
+        match &line.line_type {
+            LineType::File => {
+                make_opener(line.path.clone(), line.is_exe(), con)
+            }
+            LineType::Dir | LineType::SymLinkToDir(_) => {
+                if con.launch_args.cmd_export_path.is_some() {
+                    let cd_idx = con.verb_store.index_of("cd");
+                    con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, screen, con)
+                } else {
+                    Ok(AppStateCmdResult::DisplayError(
+                        "This feature needs broot to be launched with the `br` script".to_owned()
+                    ))
+                }
+            }
+            LineType::SymLinkToFile(target) => {
+                make_opener(
                     PathBuf::from(target),
                     line.is_exe(), // today this always return false
                     con,
@@ -128,9 +163,40 @@ impl BrowserState {
         }
     }
 
+    fn write_status_normal(&self, screen: &mut Screen, has_pattern: bool) -> io::Result<()> {
+        let tree = self.displayed_tree();
+        screen.write_status_text(
+            if tree.selection == 0 {
+                if has_pattern {
+                    "Hit <esc> to go back, <enter> to go up, '?' for help, or a few letters to search"
+                } else {
+                    "Hit <esc> to remove the filter, <enter> to go up, '?' for help"
+                }
+            } else {
+                let line = &tree.lines[tree.selection];
+                if has_pattern {
+                    if line.is_dir() {
+                        "Hit <enter> to focus, <alt><enter> to cd, <esc> to remove the filter, or a space then a verb"
+                    } else {
+                        "Hit <enter> to open, <alt><enter> to open and quit, <esc> to clear the filter, or a space then a verb"
+                    }
+                } else {
+                    if line.is_dir() {
+                        "Hit <enter> to focus, <alt><enter> to cd, or a space then a verb"
+                    } else {
+                        "Hit <enter> to open the file, <alt><enter> to open and quit, or type a space then a verb"
+                    }
+                }
+            }
+        )
+    }
+
 }
 
-fn opener(path: PathBuf, is_exe: bool, con: &AppContext) -> io::Result<AppStateCmdResult> {
+/// build a AppStateCmdResult with a launchable which will be used to
+///  1/ quit broot
+///  2/ open the relevant file the best possible way
+fn make_opener(path: PathBuf, is_exe: bool, con: &AppContext) -> io::Result<AppStateCmdResult> {
     Ok(
         if is_exe {
             let path = path.to_string_lossy().to_string();
@@ -190,7 +256,7 @@ impl AppState for BrowserState {
             }
             Action::DoubleClick(_, y) => {
                 if self.displayed_tree().selection + 1 == *y as usize {
-                    self.open_selection(screen, con)
+                    self.open_selection_stay_in_broot(screen, con)
                 } else {
                     // A double click always come after a simple click at
                     // same position. If it's not the selected line, it means
@@ -198,12 +264,8 @@ impl AppState for BrowserState {
                     Ok(AppStateCmdResult::Keep)
                 }
             }
-            Action::OpenSelection => self.open_selection(screen, con),
-            Action::AltOpenSelection => {
-                let line = self.displayed_tree().selected_line();
-                let cd_idx = con.verb_store.index_of("cd");
-                con.verb_store.verbs[cd_idx].to_cmd_result(&line.target(), &None, screen, con)
-            }
+            Action::OpenSelection => self.open_selection_stay_in_broot(screen, con),
+            Action::AltOpenSelection => self.open_selection_quit_broot(screen, con),
             Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::Match(verb) => {
                     self.execute_verb(verb, &invocation, screen, con)
@@ -312,18 +374,15 @@ impl AppState for BrowserState {
         Ok(())
     }
 
+
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
         match &cmd.action {
-            Action::FuzzyPatternEdit(s) if s.len() > 0 => {
-                screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
-            }
-            Action::RegexEdit(s, _) if s.len() > 0 => {
-                screen.write_status_text("Hit <enter> to select, <esc> to remove the filter")
-            }
+            Action::FuzzyPatternEdit(s) if s.len() > 0 => self.write_status_normal(screen, true),
+            Action::RegexEdit(s, _) if s.len() > 0 => self.write_status_normal(screen, true),
             Action::VerbEdit(invocation) => {
                 match con.verb_store.search(&invocation.key) {
                     PrefixSearchResult::NoMatch => {
-                        screen.write_status_err("No matching verb (':?' for the list of verbs)")
+                        screen.write_status_err("No matching verb ('?' for the list of verbs)")
                     }
                     PrefixSearchResult::Match(verb) => {
                         if let Some(err) = verb.match_error(invocation) {
@@ -341,26 +400,11 @@ impl AppState for BrowserState {
                         }
                     }
                     PrefixSearchResult::TooManyMatches => screen.write_status_text(
-                        // TODO show what verbs start with the currently edited verb key
-                        "Type a verb then <enter> to execute it (':?' for the list of verbs)",
+                        "Type a verb then <enter> to execute it ('?' for the list of verbs)",
                     ),
                 }
             }
-            _ => {
-                let tree = self.displayed_tree();
-                if tree.selection == 0 {
-                    screen.write_status_text(
-                        "Hit <esc> to go back, <enter> to go up, '?' for help, or a few letters to search",
-                    )
-                } else {
-                    let line = &tree.lines[tree.selection];
-                    screen.write_status_text(if line.is_dir() {
-                        "Hit <enter> to focus, <alt><enter> to cd, or a space then a verb"
-                    } else {
-                        "Hit <enter> to open the file, or type a space then a verb"
-                    })
-                }
-            }
+            _ => self.write_status_normal(screen, false),
         }
     }
 

@@ -103,7 +103,7 @@ Skin! {
     flag_value: Some(Blue), gray(1);
     input: Some(White), None;
     spinner: gray(10), gray(2);
-    status_error: Some(Red), gray(2);
+    status_error: Some(White), Some(Red);
     status_normal: Some(White), gray(2);
     scrollbar_track: gray(7), None;
     scrollbar_thumb: ansi(178), None;
@@ -122,7 +122,8 @@ impl Skin {
     pub fn to_mad_skin(&self) -> MadSkin {
         let mut ms = MadSkin::default();
         ms.paragraph.compound_style = CompoundStyle::from(self.help_paragraph.clone());
-        ms.code.compound_style = CompoundStyle::from(self.help_code.clone());
+        ms.inline_code = CompoundStyle::from(self.help_code.clone());
+        ms.code_block.compound_style = ms.inline_code.clone();
         ms.bold = CompoundStyle::from(self.help_bold.clone());
         ms.italic = CompoundStyle::from(self.help_italic.clone());
         ms.table = LineStyle {

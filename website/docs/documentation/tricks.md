@@ -41,3 +41,9 @@ Let's assume you type `too` to search for some files. You might have got too man
 You may switch to an exact search by just adding `/`, which changes the fuzzy pattern to a regular expression.
 
 Or if you realize you want to match `tOo` too, then you make it case insensitive by adding an i: `too/i`.
+
+## Open a directory in your default file explorer
+
+When a directory is selected, just do `:o` (with default command mappings).
+
+This calls the system's default program for opening directories and it's usually a file explorer.

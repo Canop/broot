@@ -26,12 +26,13 @@ The first line is called the root, and is currently selected.
 From here you may navigate using the following keys:
 
 * <kbd class=b>↓</kbd> or <kbd class=b>↑</kbd> : select the next or previous line
-* <kbd class=b>⏎</kbd> on a simple file : leave broot and open the file using xdg-open
+* <kbd class=b>⏎</kbd> on a file : open the file using xdg-open (or your OS equivalent)
+* <kbd>alt</kbd> + <kbd class=b>⏎</kbd> on a file : leave broot and open the file using xdg-open
 * <kbd class=b>⏎</kbd> on a directory : focus the directory (i.e. make it the new root)
+* <kbd>alt</kbd> + <kbd class=b>⏎</kbd> on a directory : leave broot and `cd` the shell to that directory.
 * <kbd class=b>⏎</kbd> on the first line : goes up one level (focus the parent directory)
 * <kbd>esc</kbd> gets you back to the previous state (or leave broot if there's none)
 * <kbd>F5</kbd> refreshes the page
-* <kbd>alt</kbd> + <kbd class=b>⏎</kbd> on a directory : leave broot and `cd` the shell to that directory.
 * <kbd>?</kbd> brings you to the help screen
 
 There are also a few more shortcuts:
@@ -45,7 +46,7 @@ There are also a few more shortcuts:
 
 ## Fuzzy Patterns
 
-You would usually not just navigate this way: you'll filter the tree.
+The best way to navigate is by filtering the tree.
 
 This is done simply by typing a few letters.
 

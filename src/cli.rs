@@ -179,6 +179,6 @@ pub fn mad_skin() -> MadSkin {
     skin.set_headers_fg(Color::AnsiValue(178));
     skin.bold.set_fg(Yellow);
     skin.italic.set_fg(Magenta);
-    skin.code.align = Alignment::Center;
+    skin.code_block.align = Alignment::Center;
     skin
 }

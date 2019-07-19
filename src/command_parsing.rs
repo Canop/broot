@@ -32,7 +32,7 @@ impl Iterator for CommandSequenceTokenizer {
             return None;
         }
         let is_verb = if self.chars[self.pos] == ':' {
-            self.pos = self.pos + 1;
+            self.pos += 1;
             true
         } else {
             false

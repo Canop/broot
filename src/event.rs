@@ -1,10 +1,9 @@
-use crossterm::TerminalInput;
 use std::sync::atomic::{AtomicUsize, Ordering};
 use std::thread;
 use std::time::{Instant, Duration};
 use std::sync::{mpsc::{self, Sender, Receiver, RecvError}, Arc};
 use crate::task_sync::TaskLifetime;
-use crossterm::{InputEvent, KeyEvent, MouseEvent};
+use crossterm::{InputEvent, KeyEvent, MouseEvent, TerminalInput};
 
 const DOUBLE_CLICK_MAX_DURATION: Duration = Duration::from_millis(700);
 
@@ -65,14 +64,14 @@ impl EventSource {
             let mut crossterm_events = input.read_sync();
             loop {
                 let crossterm_event = crossterm_events.next();
-                info!(" => crossterm event={:?}", crossterm_event);
+                debug!(" => crossterm event={:?}", crossterm_event);
                 if let Some(mut event) = Event::from_crossterm_event(crossterm_event) {
                     // save the event, and maybe change it
                     // (may change a click into a double-click)
                     if let Event::Click(x, y) = event {
                         if let Some(TimedEvent{time, event:Event::Click(_, last_y)}) = last_event {
                             if last_y == y && time.elapsed() < DOUBLE_CLICK_MAX_DURATION {
-                                info!("DOUBLE CLICK");
+                                debug!("double click");
                                 event = Event::DoubleClick(x, y);
                             }
                         }

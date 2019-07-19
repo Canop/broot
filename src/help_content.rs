@@ -23,8 +23,9 @@ See *https://dystroy.org/broot* for a complete guide.
 
 `<esc>` gets you back to the previous state.
 Typing some letters searches the tree and selects the most relevant file.
-To use a regular expression, use a slash eg `/j(ava|s)$`.
+To use a regular expression, use a slash at start or end eg `/j(ava|s)$`.
 The **🡑** and **🡓** arrow keys can be used to change selection.
+The mouse can be used to select (on click) or open (on double-click).
 
 "#;
 

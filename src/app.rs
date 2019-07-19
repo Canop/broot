@@ -126,9 +126,9 @@ impl App {
                 }
             }
             screen.write_spinner(false)?;
+            self.mut_state().display(screen, con)?;
+            self.mut_state().write_status(screen, &cmd, con)?;
         }
-        self.mut_state().display(screen, con)?;
-        self.mut_state().write_status(screen, &cmd, con)?;
         Ok(())
     }
 
@@ -191,6 +191,7 @@ impl App {
                 self.state().write_status(screen, &cmd, con)?;
             }
         }
+        self.mut_state().display(screen, con)?;
         screen.write_input(&cmd)?;
         self.state().write_flags(screen, con)?;
         Ok(cmd)
@@ -233,6 +234,7 @@ impl App {
         let event_source = EventSource::new();
 
         screen.write_input(&cmd)?;
+        self.mut_state().display(&mut screen, con)?;
         screen.write_status_text("Hit <esc> to quit, '?' for help, or some letters to search")?;
         self.state().write_flags(&mut screen, con)?;
         loop {

@@ -1,5 +1,5 @@
 
-**broot** is iminly developped by [Denys Séguret](https://stackoverflow.com/users/263525), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
+**broot** is developped by [Denys Séguret](https://stackoverflow.com/users/263525), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
 
 ## Discuss Broot in a chat room
 

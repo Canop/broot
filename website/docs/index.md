@@ -36,6 +36,12 @@ broot tries to select the most relevant file. You can still go from one match to
 
 You may also search with a regular expression. To do this, add a `/` before or after the pattern.
 
+Once the file you want is selected you can
+
+* hit `<enter>` (or double-click) to open it in your system's default program
+* hit `<alt><enter>` to open it in your system's default program and close broot
+* type a verb. For example `:e` should be configured to open the file in your preferred editor (which may be a terminal one)
+
 # Manipulate your files
 
 ![size](img/20190306-mv.png)

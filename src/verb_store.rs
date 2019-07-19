@@ -112,7 +112,7 @@ impl VerbStore {
         self.add_builtin(
             "open",
             None,
-            "open file according to OS settings (mapped to `<enter>`)",
+            "open file or directory according to OS settings (quit broot)",
         );
         self.add_builtin("parent", None, "move to the parent directory");
         self.add_builtin(
