@@ -244,6 +244,13 @@ impl AppState for BrowserState {
                     tree.make_selection_visible(page_height);
                 }
                 Ok(AppStateCmdResult::Keep)
+            },
+            Action::Previous => {
+                if let Some(tree) = &mut self.filtered_tree {
+                    tree.try_select_previous_match();
+                    tree.make_selection_visible(page_height);
+                }
+                Ok(AppStateCmdResult::Keep)
             }
             _ => Ok(AppStateCmdResult::Keep),
         }

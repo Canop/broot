@@ -34,6 +34,7 @@ pub enum Action {
     RegexEdit(String, String), // a regex being edited (core & flags)
     Back,                      // back to last app state, or clear pattern
     Next,                      // goes to the next matching entry
+    Previous,                  // goes to the previous matching entry
     Refresh,                   // refresh
     Help,                      // goes to help state
     Quit,                      // quit broot
@@ -147,6 +148,9 @@ impl Command {
         match key {
             KeyEvent::Char('\t') => {
                 self.action = Action::Next;
+            }
+            KeyEvent::BackTab => {
+                self.action = Action::Previous;
             }
             KeyEvent::Char('\n') => {
                 self.action = Action::from(&self.parts, true);
