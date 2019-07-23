@@ -1,3 +1,10 @@
+
+### Unreleased
+- shift-tab selects the previous match
+- mouse wheel support (selection in tree, scroll in help)
+
+
+
 <a name="v0.9.0"></a>
 ### v0.9.0 - 2019-07-19
 #### Major change

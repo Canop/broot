@@ -141,6 +141,9 @@ impl Command {
             Event::Key(key) => {
                 self.add_key(key);
             }
+            Event::Wheel(lines_count) => {
+                self.action = Action::MoveSelection(lines_count);
+            }
         }
     }
 
