@@ -71,7 +71,7 @@ impl VerbStore {
             Verb::create_external(
                 "cp {newpath}",
                 None,
-                "/bin/cp -r {file} {parent}/{newpath}".to_string(),
+                "/bin/cp -r {file} {newpath:path-from-parent}".to_string(),
                 None,
                 false,
                 false,
@@ -89,7 +89,7 @@ impl VerbStore {
             Verb::create_external(
                 "mkdir {subpath}",
                 Some("md".to_string()),
-                "/bin/mkdir -p {directory}/{subpath}".to_string(),
+                "/bin/mkdir -p {subpath:path-from-directory}".to_string(),
                 None,
                 false,
                 false, // doesn't leave broot
@@ -101,7 +101,7 @@ impl VerbStore {
             Verb::create_external(
                 "mv {newpath}",
                 None,
-                "/bin/mv {file} {parent}/{newpath}".to_string(),
+                "/bin/mv {file} {newpath:path-from-parent}".to_string(),
                 None,
                 false,
                 false, // doesn't leave broot

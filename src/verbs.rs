@@ -1,4 +1,4 @@
-use regex::{Captures, Regex};
+use regex::{self, Captures, Regex};
 /// Verbs are the engines of broot commands, and apply
 /// - to the selected file (if user-defined, then must contain {file}, {parent} or {directory})
 /// - to the current app state
@@ -34,7 +34,7 @@ pub struct Verb {
 }
 
 lazy_static! {
-    static ref GROUP: Regex = Regex::new(r"\{([^{}]+)\}").unwrap();
+    static ref GROUP: Regex = Regex::new(r"\{([^{}:]+)(?::([^{}:]+))?\}").unwrap();
 }
 
 pub trait VerbExecutor {
@@ -180,54 +180,6 @@ impl Verb {
         }
     }
 
-    /// build the token which can be used to launch en executable.
-    /// This doesn't make sense for a built-in.
-    pub fn exec_token(&self, file: &Path, args: &Option<String>) -> Vec<String> {
-        let map = self.replacement_map(file, args, false);
-        self.execution
-            .split_whitespace()
-            .map(|token| {
-                GROUP
-                    .replace_all(token, |ec: &Captures<'_>| {
-                        let name = ec.get(1).unwrap().as_str();
-                        if let Some(cap) = map.get(name) {
-                            cap.as_str().to_string()
-                        } else {
-                            format!("{{{}}}", name)
-                        }
-                    })
-                    .to_string()
-            })
-            .collect()
-    }
-
-    /// build a shell compatible command, with escapings
-    pub fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
-        let map = self.replacement_map(file, args, true);
-        GROUP
-            .replace_all(&self.execution, |ec: &Captures<'_>| {
-                let name = ec.get(1).unwrap().as_str();
-                if let Some(cap) = map.get(name) {
-                    cap.as_str().to_string()
-                } else {
-                    format!("{{{}}}", name)
-                }
-            })
-            .to_string()
-            .split_whitespace()
-            .map(|token| {
-                let path = Path::new(token);
-                if path.exists() {
-                    if let Some(path) = path.to_str() {
-                        return path.to_string();
-                    }
-                }
-                token.to_string()
-            })
-            .collect::<Vec<String>>()
-            .join(" ")
-    }
-
     /// build the cmd result for a verb defined with an exec pattern.
     /// Calling this function on a built-in doesn't make sense
     pub fn to_cmd_result(
@@ -274,5 +226,80 @@ impl Verb {
                 }
             }
         })
+    }
+
+    /// build the token which can be used to launch en executable.
+    /// This doesn't make sense for a built-in.
+    pub fn exec_token(&self, file: &Path, args: &Option<String>) -> Vec<String> {
+        let map = self.replacement_map(file, args, false);
+        self.execution
+            .split_whitespace()
+            .map(|token| {
+                GROUP
+                    .replace_all(token, |ec: &Captures<'_>| {
+                        do_exec_replacement(ec, &map)
+                    })
+                    .to_string()
+            })
+            .collect()
+    }
+
+    /// build a shell compatible command, with escapings
+    pub fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
+        let map = self.replacement_map(file, args, true);
+        GROUP
+            .replace_all(&self.execution, |ec: &Captures<'_>| {
+                do_exec_replacement(ec, &map)
+            })
+            .to_string()
+            .split_whitespace()
+            .map(|token| {
+                let path = Path::new(token);
+                if path.exists() {
+                    if let Some(path) = path.to_str() {
+                        return path.to_string();
+                    }
+                }
+                token.to_string()
+            })
+            .collect::<Vec<String>>()
+            .join(" ")
+    }
+}
+
+/// replace a group in the execution string, using
+///  data from the user input and from the selected line
+fn do_exec_replacement(
+    ec: &Captures<'_>,
+    replacement_map: &HashMap<String, String>,
+) -> String {
+    let name = ec.get(1).unwrap().as_str();
+    if let Some(cap) = replacement_map.get(name) {
+        let cap = cap.as_str();
+        if let Some(fmt) = ec.get(2) {
+            match fmt.as_str() {
+                "path-from-directory" => {
+                    if cap.starts_with('/') {
+                        cap.to_string()
+                    } else {
+                        format!("{}/{}", replacement_map.get("directory").unwrap(), cap)
+                    }
+                }
+                "path-from-parent" => {
+                    if cap.starts_with('/') {
+                        cap.to_string()
+                    } else {
+                        format!("{}/{}", replacement_map.get("parent").unwrap(), cap)
+                    }
+                }
+                _ => {
+                    format!("invalid format: {:?}", fmt.as_str())
+                }
+            }
+        } else {
+            cap.to_string()
+        }
+    } else {
+        format!("{{{}}}", name)
     }
 }

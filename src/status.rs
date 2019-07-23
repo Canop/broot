@@ -27,11 +27,11 @@ impl Screen {
 
 impl Status for Screen {
     fn write_status_err(&self, text: &str) -> io::Result<()> {
-        debug!("display error {:?}", text);
+        //debug!("display error {:?}", text);
         self.write_status(text, &self.skin.status_error)
     }
     fn write_status_text(&self, text: &str) -> io::Result<()> {
-        debug!("display status {:?}", text);
+        //debug!("display status {:?}", text);
         self.write_status(text, &self.skin.status_normal)
     }
 }
