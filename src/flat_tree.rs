@@ -341,6 +341,20 @@ impl Tree {
         }
         false
     }
+    pub fn try_select_previous_match(&mut self) -> bool {
+        for di in (0..self.lines.len()).rev() {
+            let idx = (self.selection + di) % self.lines.len();
+            let line = &self.lines[idx];
+            if !line.is_selectable() {
+                continue;
+            }
+            if line.score > 0 {
+                self.selection = idx;
+                return true;
+            }
+        }
+        false
+    }
     pub fn has_dir_missing_size(&self) -> bool {
         if !self.options.show_sizes {
             return false;
