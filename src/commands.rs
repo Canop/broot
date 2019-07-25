@@ -4,6 +4,7 @@
 
 use crate::verb_invocation::VerbInvocation;
 use crate::event::Event;
+use crate::input_field::InputField;
 use crossterm::KeyEvent;
 use regex::Regex;
 
@@ -130,78 +131,84 @@ impl Command {
         Command { raw, parts, action }
     }
 
-    pub fn add_event(&mut self, event: Event) {
+    pub fn add_event(&mut self, event: &Event, input_field: &mut InputField) {
+        let mut handled_by_input_field = false;
         match event {
             Event::Click(x, y) => {
-                self.action = Action::Click(x, y);
+                if !input_field.apply_event(&event) {
+                    self.action = Action::Click(*x, *y);
+                }
             }
             Event::DoubleClick(x, y) => {
-                self.action = Action::DoubleClick(x, y);
+                self.action = Action::DoubleClick(*x, *y);
             }
             Event::Key(key) => {
-                self.add_key(key);
+                match *key {
+                    KeyEvent::Char('\t') => {
+                        self.action = Action::Next;
+                    }
+                    KeyEvent::BackTab => {
+                        self.action = Action::Previous;
+                    }
+                    KeyEvent::Char('\n') => {
+                        self.action = Action::from(&self.parts, true);
+                    }
+                    KeyEvent::Alt('\r') | KeyEvent::Alt('\n') => {
+                        self.action = Action::AltOpenSelection;
+                    }
+                    KeyEvent::Ctrl('q') => {
+                        self.action = Action::Quit;
+                    }
+                    KeyEvent::Up => {
+                        self.action = Action::MoveSelection(-1);
+                    }
+                    KeyEvent::Down => {
+                        self.action = Action::MoveSelection(1);
+                    }
+                    KeyEvent::F(5) => {
+                        self.action = Action::Refresh;
+                    }
+                    KeyEvent::PageUp | KeyEvent::Ctrl('u') => {
+                        self.action = Action::ScrollPage(-1);
+                    }
+                    KeyEvent::PageDown | KeyEvent::Ctrl('d') => {
+                        self.action = Action::ScrollPage(1);
+                    }
+                    KeyEvent::Char(c) if c =='?' && (self.raw.is_empty() || self.parts.verb_invocation.is_some()) => {
+                        // a '?' opens the help when it's the first char or when it's part of the verb
+                        // invocation
+                        self.action = Action::Help;
+                    }
+                    KeyEvent::Esc => {
+                        self.action = Action::Back;
+                    }
+                    KeyEvent::Char(_) |
+                        KeyEvent::Home |
+                        KeyEvent::End |
+                        KeyEvent::Left |
+                        KeyEvent::Right |
+                        KeyEvent::Delete
+                    => {
+                        handled_by_input_field = input_field.apply_event(&event);
+                    }
+                    KeyEvent::Backspace => {
+                        handled_by_input_field = input_field.apply_event(&event);
+                        if !handled_by_input_field {
+                            self.action = Action::Back;
+                        }
+                    }
+                    _ => {}
+                }
             }
             Event::Wheel(lines_count) => {
-                self.action = Action::MoveSelection(lines_count);
+                self.action = Action::MoveSelection(*lines_count);
             }
+        }
+        if handled_by_input_field {
+            self.raw = input_field.get_content();
+            self.parts = CommandParts::from(&self.raw);
+            self.action = Action::from(&self.parts, false);
         }
     }
 
-    fn add_key(&mut self, key: KeyEvent) {
-        match key {
-            KeyEvent::Char('\t') => {
-                self.action = Action::Next;
-            }
-            KeyEvent::BackTab => {
-                self.action = Action::Previous;
-            }
-            KeyEvent::Char('\n') => {
-                self.action = Action::from(&self.parts, true);
-            }
-            KeyEvent::Alt('\r') | KeyEvent::Alt('\n') => {
-                self.action = Action::AltOpenSelection;
-            }
-            KeyEvent::Ctrl('q') => {
-                self.action = Action::Quit;
-            }
-            KeyEvent::Up => {
-                self.action = Action::MoveSelection(-1);
-            }
-            KeyEvent::Down => {
-                self.action = Action::MoveSelection(1);
-            }
-            KeyEvent::F(5) => {
-                self.action = Action::Refresh;
-            }
-            KeyEvent::PageUp | KeyEvent::Ctrl('u') => {
-                self.action = Action::ScrollPage(-1);
-            }
-            KeyEvent::PageDown | KeyEvent::Ctrl('d') => {
-                self.action = Action::ScrollPage(1);
-            }
-            KeyEvent::Char(c) if c =='?' && (self.raw.is_empty() || self.parts.verb_invocation.is_some()) => {
-                // a '?' opens the help when it's the first char or when it's part of the verb
-                // invocation
-                self.action = Action::Help;
-            }
-            KeyEvent::Char(c) => {
-                self.raw.push(c);
-                self.parts = CommandParts::from(&self.raw);
-                self.action = Action::from(&self.parts, false);
-            }
-            KeyEvent::Esc => {
-                self.action = Action::Back;
-            }
-            KeyEvent::Backspace => {
-                if self.raw == "" {
-                    self.action = Action::Back;
-                } else {
-                    self.raw.pop();
-                    self.parts = CommandParts::from(&self.raw);
-                    self.action = Action::from(&self.parts, false);
-                }
-            }
-            _ => {}
-        }
-    }
 }

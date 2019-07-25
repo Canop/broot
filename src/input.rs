@@ -13,15 +13,16 @@ pub trait Input {
 }
 
 impl Input for Screen {
-    fn write_input(&mut self, cmd: &Command) -> io::Result<()> {
-        skin::reset();
-        self.goto_clear(1, self.h);
-        print!(
-            "{}{} {}",
-            self.skin.input.apply_to(&cmd.raw),
-            Attribute::Reverse,
-            Attribute::NoInverse,
-        );
+    fn write_input(&mut self, _cmd: &Command) -> io::Result<()> {
+        debug!("skip write input");
+        // skin::reset();
+        // self.goto_clear(1, self.h);
+        // print!(
+        //     "{}{} {}",
+        //     self.skin.input.apply_to(&cmd.raw),
+        //     Attribute::Reverse,
+        //     Attribute::NoInverse,
+        // );
         Ok(())
     }
 }

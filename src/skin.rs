@@ -113,6 +113,7 @@ Skin! {
     help_code: gray(21), gray(3);
     help_headers: ansi(178), None;
     help_table_border: ansi(239), None;
+    cursor: None, None; {Reverse}
 }
 
 impl Skin {

@@ -23,7 +23,7 @@ mod git_ignore;
 mod help_content;
 mod help_states;
 mod help_verbs;
-mod input;
+mod input_field;
 mod patterns;
 mod permissions;
 mod regex_patterns;

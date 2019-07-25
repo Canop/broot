@@ -1,8 +1,12 @@
 use std::io;
 
 use crossterm::{self, AlternateScreen, ClearType, TerminalCursor};
+use termimad::{
+    Area,
+};
 
 use crate::app_context::AppContext;
+use crate::input_field::InputField;
 use crate::skin::Skin;
 
 /// A wrapper around the solution used to write on screen,
@@ -12,6 +16,7 @@ pub struct Screen {
     pub h: u16,
     pub alternate_screen: crossterm::AlternateScreen,
     pub skin: Skin,
+    pub input_field: InputField,
 }
 
 impl Screen {
@@ -22,6 +27,7 @@ impl Screen {
             h: 0,
             alternate_screen,
             skin,
+            input_field: InputField::new(Area::new(0, 0, 10, 1)),
         };
         screen.read_size(con)?;
         debug!("screen size: {} x {}", screen.w, screen.h);
@@ -37,6 +43,7 @@ impl Screen {
         if let Some(h) = con.launch_args.height {
             self.h = h;
         }
+        self.input_field.change_area(0, h, w-15);
         Ok(())
     }
     // move the cursor to x,y

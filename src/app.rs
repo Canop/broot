@@ -18,7 +18,6 @@ use crate::event::EventSource;
 use crate::errors::ProgramError;
 use crate::errors::TreeBuildError;
 use crate::external::Launchable;
-use crate::input::Input;
 use crate::screens::Screen;
 use crate::skin::Skin;
 use crate::spinner::Spinner;
@@ -144,7 +143,7 @@ impl App {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
         screen.read_size(con)?;
-        screen.write_input(&cmd)?;
+        screen.input_field.display(&screen.skin);
         self.state().write_flags(screen, con)?;
         screen.write_spinner(false)?;
         match self.mut_state().apply(&mut cmd, screen, con)? {
@@ -191,8 +190,9 @@ impl App {
                 self.state().write_status(screen, &cmd, con)?;
             }
         }
+        screen.input_field.set_content(&cmd.raw);
         self.mut_state().display(screen, con)?;
-        screen.write_input(&cmd)?;
+        screen.input_field.display(&screen.skin);
         self.state().write_flags(screen, con)?;
         Ok(cmd)
     }
@@ -233,7 +233,7 @@ impl App {
         // when a long search is running, and interrupt it if needed
         let event_source = EventSource::new();
 
-        screen.write_input(&cmd)?;
+        screen.input_field.display(&screen.skin);
         self.mut_state().display(&mut screen, con)?;
         screen.write_status_text("Hit <esc> to quit, '?' for help, or some letters to search")?;
         self.state().write_flags(&mut screen, con)?;
@@ -249,7 +249,7 @@ impl App {
                     break;
                 }
             };
-            cmd.add_event(event);
+            cmd.add_event(&event, &mut screen.input_field);
             cmd = self.apply_command(cmd, &mut screen, con)?;
             event_source.unblock(self.quitting);
         }
