@@ -50,7 +50,7 @@ You may also search with a regular expression. To do this, add a `/` before or a
 
 Complex regular expression are possible, but you'll probably most often use a regex to do an "exact" search, or search an expression at the start or end of the filename.
 
-For example, assuming you look for your one file whose name contains `abc` in a big directory, you may not see it immediately because of many fuzzy matches. In that case, just add a slash at the end to change you fuzzy search into an exact expression: `abc/`.
+For example, assuming you look for your one file whose name contains `abc` in a big directory, you may not see it immediately because of many fuzzy matches. In that case, just add a slash at the end to change your fuzzy search into an exact expression: `abc/`.
 
 And if you look for a filename *ending* in `abc` then you may anchor the regex: `abc$/`.
 
