@@ -22,7 +22,7 @@ A better way to navigate directories
 
 Notice the "unlisted"? That's what makes it usable where the old `tree` command would produce pages of output.
 
-`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see documentation).
+`.gitignore` files are properly dealt with to put unwanted files out of your way (if you want to see git ignored files, type `:gi`).
 
 ### Find a directory then `cd` to it:
 
@@ -38,7 +38,7 @@ Most useful keys for this:
 * `<enter>` to select a directory (staying in broot)
 * `<esc>` to get back to the previous state or clear your search
 * `<alt><enter>` to get back to the shell having `cd` to the selected directory
-* `:q` if you just want to quit (`<esc>` works too)
+* `:q` if you just want to quit (`<ctrl><q>` works too)
 
 ### Never lose track of file hierarchy while you fuzzy search:
 
@@ -50,7 +50,7 @@ You may also search with a regular expression. To do this, add a `/` before or a
 
 Complex regular expression are possible, but you'll probably most often use a regex to do an "exact" search, or search an expression at the start or end of the filename.
 
-For example, assuming you look for your one file whose name contains `abc` in a big directory, you may not see it immediately because of many fuzzy matches. In that case, just add a slash at the end to change you fuzzy search into an exact expression: `abc/`.
+For example, assuming you look for your one file whose name contains `abc` in a big directory, you may not see it immediately because of many fuzzy matches. In that case, just add a slash at the end to change your fuzzy search into an exact expression: `abc/`.
 
 And if you look for a filename *ending* in `abc` then you may anchor the regex: `abc$/`.
 
