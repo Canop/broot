@@ -2,11 +2,13 @@
 //!  in the input. It's independant of the state of the application
 //!  (verbs arent checked at this point)
 
-use crate::verb_invocation::VerbInvocation;
-use crate::event::Event;
-use crate::input_field::InputField;
 use crossterm::KeyEvent;
 use regex::Regex;
+use crate::verb_invocation::VerbInvocation;
+use termimad::{
+    Event,
+    InputField,
+};
 
 #[derive(Debug, Clone)]
 pub struct Command {

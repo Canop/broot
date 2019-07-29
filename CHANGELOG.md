@@ -1,6 +1,7 @@
 
-### Unreleased
-#### Major changes
+<a name="v0.9.1"></a>
+### v0.9.1 - 2019-07-29
+#### Major change
 * A new syntax allows specifying verbs which can work on relative paths or absolute paths alike.
 For example the old definition of `cp` was
 
@@ -16,12 +17,10 @@ The :path-from-parent formatting means the token will be interpreted as a path, 
 not starting with a / will be prefixed by the parent path.
 It's possible to also use `{subpath:path-from-directory}` where directory is parent only if
 the selected file isn't a directory itself.
-* the input field handles left/right arrow keys, home/end, click, and delete
 #### Minor changes
 - shift-tab selects the previous match
 - mouse wheel support (selection in tree, scroll in help)
-
-
+- the input field handles left/right arrow keys, home/end, click, and delete
 
 <a name="v0.9.0"></a>
 ### v0.9.0 - 2019-07-19

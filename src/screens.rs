@@ -3,10 +3,11 @@ use std::io;
 use crossterm::{self, AlternateScreen, ClearType, TerminalCursor};
 use termimad::{
     Area,
+    CompoundStyle,
+    InputField,
 };
 
 use crate::app_context::AppContext;
-use crate::input_field::InputField;
 use crate::skin::Skin;
 
 /// A wrapper around the solution used to write on screen,
@@ -22,12 +23,14 @@ pub struct Screen {
 impl Screen {
     pub fn new(con: &AppContext, skin: Skin) -> io::Result<Screen> {
         let alternate_screen = AlternateScreen::to_alternate(true)?;
+        let mut input_field = InputField::new(Area::new(0, 0, 10, 1));
+        input_field.set_normal_style(CompoundStyle::from(skin.input.clone()));
         let mut screen = Screen {
             w: 0,
             h: 0,
             alternate_screen,
             skin,
-            input_field: InputField::new(Area::new(0, 0, 10, 1)),
+            input_field,
         };
         screen.read_size(con)?;
         debug!("screen size: {} x {}", screen.w, screen.h);

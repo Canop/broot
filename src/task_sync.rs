@@ -10,10 +10,10 @@ pub struct TaskLifetime {
 }
 
 impl TaskLifetime {
-    pub fn new(external_value: &Arc<AtomicUsize>) -> TaskLifetime {
+    pub fn new(external_value: Arc<AtomicUsize>) -> TaskLifetime {
         TaskLifetime {
             initial_value: external_value.load(Ordering::Relaxed),
-            external_value: Arc::clone(external_value),
+            external_value,
         }
     }
     pub fn clone(&self) -> TaskLifetime {

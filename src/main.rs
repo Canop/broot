@@ -1,4 +1,3 @@
-
 #[macro_use]
 extern crate lazy_static;
 #[macro_use]
@@ -15,7 +14,6 @@ mod conf;
 mod displayable_tree;
 mod errors;
 mod external;
-mod event;
 mod file_sizes;
 mod flat_tree;
 mod fuzzy_patterns;
@@ -23,7 +21,6 @@ mod git_ignore;
 mod help_content;
 mod help_states;
 mod help_verbs;
-mod input_field;
 mod patterns;
 mod permissions;
 mod regex_patterns;

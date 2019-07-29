@@ -14,7 +14,7 @@ use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::command_parsing::parse_command_sequence;
 use crate::commands::Command;
-use crate::event::EventSource;
+//use crate::event::EventSource;
 use crate::errors::ProgramError;
 use crate::errors::TreeBuildError;
 use crate::external::Launchable;
@@ -23,6 +23,8 @@ use crate::skin::Skin;
 use crate::spinner::Spinner;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
+
+use termimad::EventSource;
 
 /// Result of applying a command to a state
 pub enum AppStateCmdResult {
@@ -143,7 +145,7 @@ impl App {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
         screen.read_size(con)?;
-        screen.input_field.display(&screen.skin);
+        screen.input_field.display();
         self.state().write_flags(screen, con)?;
         screen.write_spinner(false)?;
         match self.mut_state().apply(&mut cmd, screen, con)? {
@@ -192,7 +194,7 @@ impl App {
         }
         screen.input_field.set_content(&cmd.raw);
         self.mut_state().display(screen, con)?;
-        screen.input_field.display(&screen.skin);
+        screen.input_field.display();
         self.state().write_flags(screen, con)?;
         Ok(cmd)
     }
@@ -232,16 +234,18 @@ impl App {
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
         let event_source = EventSource::new();
+        let rx_events = event_source.receiver();
 
-        screen.input_field.display(&screen.skin);
+        screen.input_field.display();
         self.mut_state().display(&mut screen, con)?;
         screen.write_status_text("Hit <esc> to quit, '?' for help, or some letters to search")?;
         self.state().write_flags(&mut screen, con)?;
         loop {
+            let tl = TaskLifetime::new(event_source.shared_event_count());
             if !self.quitting {
-                self.do_pending_tasks(&cmd, &mut screen, con, event_source.new_task_lifetime())?;
+                self.do_pending_tasks(&cmd, &mut screen, con, tl)?;
             }
-            let event = match event_source.recv() {
+            let event = match rx_events.recv() {
                 Ok(event) => event,
                 Err(_) => {
                     // this is how we quit the application,
