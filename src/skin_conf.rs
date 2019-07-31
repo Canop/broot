@@ -1,4 +1,4 @@
-use crossterm::{
+use crossterm_style::{
     Attribute::{self, *},
     Color::{self, *},
     ObjectStyle,

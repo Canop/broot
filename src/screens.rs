@@ -1,6 +1,8 @@
 use std::io;
 
-use crossterm::{self, AlternateScreen, ClearType, TerminalCursor};
+use crossterm_cursor::TerminalCursor;
+use crossterm_screen::AlternateScreen;
+use crossterm_terminal::{ClearType};
 use termimad::{
     Area,
     CompoundStyle,
@@ -15,7 +17,7 @@ use crate::skin::Skin;
 pub struct Screen {
     pub w: u16,
     pub h: u16,
-    pub alternate_screen: crossterm::AlternateScreen,
+    pub alternate_screen: crossterm_screen::AlternateScreen,
     pub skin: Skin,
     pub input_field: InputField,
 }
@@ -39,7 +41,7 @@ impl Screen {
         Ok(screen)
     }
     pub fn read_size(&mut self, con: &AppContext) -> io::Result<()> {
-        let terminal = crossterm::Terminal::new();
+        let terminal = crossterm_terminal::Terminal::new();
         let (w, h) = terminal.terminal_size();
         self.w = w;
         self.h = h + 1;
@@ -61,7 +63,7 @@ impl Screen {
         cursor.goto(x - 1, y - 1).unwrap();
     }
     pub fn clear_line(&self) {
-        let terminal = crossterm::Terminal::new();
+        let terminal = crossterm_terminal::Terminal::new();
         terminal.clear(ClearType::UntilNewLine).unwrap(); // FIXME try to manage those errors
     }
 }

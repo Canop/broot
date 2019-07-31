@@ -5,6 +5,7 @@ use std::time::Instant;
 use std::fs::OpenOptions;
 
 use opener;
+use crossterm_terminal::{ClearType, Terminal};
 
 use crate::app::{AppState, AppStateCmdResult};
 use crate::app_context::AppContext;
@@ -436,8 +437,8 @@ impl AppState for BrowserState {
         let tree = self.displayed_tree();
         let total_char_size = 9;
         screen.goto(screen.w - total_char_size, screen.h);
-        let terminal = crossterm::Terminal::new();
-        terminal.clear(crossterm::ClearType::UntilNewLine)?;
+        let terminal = Terminal::new();
+        terminal.clear(ClearType::UntilNewLine)?;
         let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
         let gi_value = match tree.options.respect_git_ignore {
             OptionBool::Auto => 'a',

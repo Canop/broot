@@ -1,6 +1,6 @@
 use std::io;
 
-use crossterm::{Terminal, ClearType};
+use crossterm_terminal::{Terminal, ClearType};
 use termimad::{Area, MadView};
 
 use crate::app::{AppState, AppStateCmdResult};

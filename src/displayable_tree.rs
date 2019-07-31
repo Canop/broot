@@ -1,6 +1,6 @@
 use std::fmt;
 use std::time::SystemTime;
-use crossterm::{ClearType, Terminal};
+use crossterm_terminal::{ClearType, Terminal};
 use chrono::offset::Local;
 use chrono::DateTime;
 
@@ -15,7 +15,8 @@ use crate::flat_tree::{LineType, Tree, TreeLine};
 use crate::patterns::Pattern;
 use crate::skin::{Skin, SkinEntry};
 
-use crossterm::{Color, Colored, TerminalCursor};
+use crossterm_style::{Color, Colored};
+use crossterm_cursor::TerminalCursor;
 
 /// A tree wrapper implementing Display
 /// which can be used either

@@ -2,7 +2,7 @@
 //!  in the input. It's independant of the state of the application
 //!  (verbs arent checked at this point)
 
-use crossterm::KeyEvent;
+use crossterm_input::KeyEvent;
 use regex::Regex;
 use crate::verb_invocation::VerbInvocation;
 use termimad::{

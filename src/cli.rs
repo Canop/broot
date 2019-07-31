@@ -6,7 +6,7 @@ use std::io;
 use std::path::PathBuf;
 use std::result::Result;
 
-use crossterm::Color::{self, *};
+use crossterm_style::Color;
 use termimad::{Alignment, MadSkin};
 
 use crate::errors::{ProgramError, TreeBuildError};
@@ -167,7 +167,7 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
 /// wait for user input, return `true` if she
 /// didn't answer 'n'
 pub fn ask_authorization() -> io::Result<bool> {
-    let answer = crossterm::input().read_line()?;
+    let answer = crossterm_input::input().read_line()?;
     Ok(match answer.as_ref() {
         "n" | "N" => false,
         _ => true,
@@ -177,8 +177,8 @@ pub fn ask_authorization() -> io::Result<bool> {
 pub fn mad_skin() -> MadSkin {
     let mut skin = MadSkin::default();
     skin.set_headers_fg(Color::AnsiValue(178));
-    skin.bold.set_fg(Yellow);
-    skin.italic.set_fg(Magenta);
+    skin.bold.set_fg(Color::Yellow);
+    skin.italic.set_fg(Color::Magenta);
     skin.code_block.align = Alignment::Center;
     skin
 }

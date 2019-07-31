@@ -1,3 +1,6 @@
+<a name="v0.9.2"></a>
+### v0.9.2 - 2019-07-31
+Fix non consistent builds due to lack of precise versionning in crossterm subcrate versionning
 
 <a name="v0.9.1"></a>
 ### v0.9.1 - 2019-07-29

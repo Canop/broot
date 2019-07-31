@@ -1,8 +1,7 @@
 //! manage reading the verb shortcuts from the configuration file,
 //! initializing if if it doesn't yet exist
 
-use crossterm::Attribute;
-use crossterm::ObjectStyle;
+use crossterm_style::{Attribute, ObjectStyle};
 use directories::ProjectDirs;
 use std::collections::HashMap;
 use std::fs;

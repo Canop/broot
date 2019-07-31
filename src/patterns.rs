@@ -6,7 +6,7 @@
 use core::result;
 use std::{fmt, mem};
 
-use crossterm::ObjectStyle;
+use crossterm_style::ObjectStyle;
 
 use crate::commands::Command;
 use crate::errors::RegexError;

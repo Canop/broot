@@ -8,7 +8,7 @@
 use std::collections::HashMap;
 use std::fmt;
 
-use crossterm::{
+use crossterm_style::{
     Attribute::{self, *},
     Color::AnsiValue,
     Color::{self, *},
