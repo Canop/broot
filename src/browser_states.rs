@@ -169,9 +169,9 @@ impl BrowserState {
         screen.write_status_text(
             if tree.selection == 0 {
                 if has_pattern {
-                    "Hit <esc> to go back, <enter> to go up, '?' for help, or a few letters to search"
-                } else {
                     "Hit <esc> to remove the filter, <enter> to go up, '?' for help"
+                } else {
+                    "Hit <esc> to go back, <enter> to go up, '?' for help, or a few letters to search"
                 }
             } else {
                 let line = &tree.lines[tree.selection];

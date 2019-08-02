@@ -94,19 +94,18 @@ Skin! {
     pruning: gray(17), None; {Italic}
     permissions: gray(15), None;
     dates: ansi(109), None;
-    selected_line: None, gray(3);
-    size_bar: Some(White), Some(DarkBlue);
-    size_no_bar: gray(15), gray(2);
+    selected_line: None, gray(4);
+    size_bar: Some(White), gray(2);
     char_match: Some(Green), None;
     file_error: Some(Red), None;
     flag_label: gray(15), gray(1);
-    flag_value: Some(Blue), gray(1);
+    flag_value: Some(Blue), gray(1); {Bold}
     input: Some(White), None;
     spinner: gray(10), gray(2);
     status_error: Some(White), Some(Red);
     status_normal: Some(White), gray(2);
     scrollbar_track: gray(7), None;
-    scrollbar_thumb: ansi(178), None;
+    scrollbar_thumb: gray(22), None;
     help_paragraph: gray(20), None;
     help_bold: ansi(178), None; {Bold}
     help_italic: ansi(229), None; {Italic}

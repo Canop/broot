@@ -3,6 +3,7 @@ use crossbeam::channel::unbounded;
 use crossbeam::sync::WaitGroup;
 use std::collections::HashSet;
 use std::fs;
+//use std::os::linux::fs::MetadataExt;
 use std::os::unix::fs::MetadataExt;
 use std::path::{Path, PathBuf};
 use std::sync::{atomic::{AtomicIsize, AtomicU64, Ordering}, Arc, Mutex};
@@ -48,7 +49,8 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
                                         continue; // let's not add the size
                                     }
                                 }
-                                size.fetch_add(md.len(), Ordering::Relaxed);
+                                let file_size = if md.blocks()==0 { 0 } else { md.size() };
+                                size.fetch_add(file_size, Ordering::Relaxed);
                             }
                         }
                     }
@@ -71,4 +73,11 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     }
     let size = size.load(Ordering::Relaxed);
     Some(size)
+}
+
+pub fn compute_file_size(path: &Path) -> u64 {
+    match fs::metadata(path) {
+        Ok(m) => if m.blocks()==0 { 0 } else { m.size() },
+        Err(_) => 0,
+    }
 }

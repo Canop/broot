@@ -10,7 +10,7 @@ use crossterm_style::Color;
 use termimad::{Alignment, MadSkin};
 
 use crate::errors::{ProgramError, TreeBuildError};
-use crate::tree_options::TreeOptions;
+use crate::tree_options::{OptionBool, TreeOptions};
 
 pub struct AppLaunchArgs {
     pub root: PathBuf,                    // what should be the initial root
@@ -132,9 +132,14 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
     }
     let root = root.canonicalize()?;
     let mut tree_options = TreeOptions::default();
+    tree_options.show_sizes = cli_args.is_present("sizes");
+    if tree_options.show_sizes {
+        // by default, if we're asked to show the size, we show all files
+        tree_options.show_hidden = true;
+        tree_options.respect_git_ignore = OptionBool::No;
+    }
     tree_options.only_folders = cli_args.is_present("only-folders");
     tree_options.show_hidden = cli_args.is_present("hidden");
-    tree_options.show_sizes = cli_args.is_present("sizes");
     tree_options.show_dates = cli_args.is_present("dates");
     tree_options.show_permissions = cli_args.is_present("permissions");
     if let Some(respect_ignore) = cli_args.value_of("gitignore") {

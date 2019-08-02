@@ -1,6 +1,6 @@
 /// In the flat_tree structure, every "node" is just a line, there's
 ///  no link from a child to its parent or from a parent to its children.
-use std::cmp::{self, Ordering};
+use std::cmp::{self, Ord, PartialOrd, Ordering};
 use std::fs;
 use std::mem;
 use std::path::{Path, PathBuf};
@@ -157,11 +157,8 @@ impl PartialOrd for TreeLine {
 
 impl Tree {
     pub fn refresh(&mut self, page_height: usize) -> Result<(), errors::TreeBuildError> {
-        let builder =
-            TreeBuilder::from(self.root().to_path_buf(), self.options.clone(), page_height)?;
-        debug!("remove 3");
+        let builder = TreeBuilder::from(self.root().to_path_buf(), self.options.clone(), page_height)?;
         let mut tree = builder.build(&TaskLifetime::unlimited()).unwrap(); // should not fail
-        debug!("remove 4");
         // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
@@ -174,8 +171,8 @@ impl Tree {
     // - sort the lines
     // - compute left branchs
     pub fn after_lines_changed(&mut self) {
-        // we sort the lines
-        self.lines.sort();
+        // we sort the lines (this is mandatory to avoid crashes)
+        self.lines[1..].sort();
 
         for i in 1..self.lines.len() {
             for d in 0..self.lines[i].left_branchs.len() {
@@ -372,14 +369,28 @@ impl Tree {
                 self.lines[i].size = Some(Size::from_file(&self.lines[i].path));
             }
         }
+        self.sort_siblings_by_size();
     }
     pub fn fetch_some_missing_dir_size(&mut self, tl: &TaskLifetime) {
         for i in 1..self.lines.len() {
             if self.lines[i].size.is_none() && self.lines[i].line_type == LineType::Dir {
                 self.lines[i].size = Size::from_dir(&self.lines[i].path, tl);
+                self.sort_siblings_by_size();
                 return;
             }
         }
+    }
+    /// Sort files according to their size
+    ///
+    /// Warning: must not be called if there's more than one level displayed!
+    /// (a better sort should be devised but it's unsure whether it would be
+    /// readable enough)
+    fn sort_siblings_by_size(&mut self) {
+        self.lines[1..].sort_by(|a, b| {
+            let asize = a.size.map_or(0, |s| s.into());
+            let bsize = b.size.map_or(0, |s| s.into());
+            bsize.cmp(&asize)
+        });
     }
     pub fn total_size(&self) -> Size {
         if let Some(size) = self.lines[0].size {

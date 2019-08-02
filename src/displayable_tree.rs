@@ -1,5 +1,6 @@
 use std::fmt;
 use std::time::SystemTime;
+use crossterm_style::{ObjectStyle};
 use crossterm_terminal::{ClearType, Terminal};
 use chrono::offset::Local;
 use chrono::DateTime;
@@ -17,6 +18,7 @@ use crate::skin::{Skin, SkinEntry};
 
 use crossterm_style::{Color, Colored};
 use crossterm_cursor::TerminalCursor;
+use termimad::ProgressBar;
 
 /// A tree wrapper implementing Display
 /// which can be used either
@@ -50,6 +52,24 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         }
     }
 
+    fn name_style(
+        &self,
+        line: &TreeLine,
+    ) -> &ObjectStyle {
+        match &line.line_type {
+            LineType::Dir => &self.skin.directory,
+            LineType::File => {
+                if line.is_exe() {
+                    &self.skin.exe
+                } else {
+                    &self.skin.file
+                }
+            }
+            LineType::SymLinkToFile(_) | LineType::SymLinkToDir(_) => &self.skin.link,
+            LineType::Pruning => &self.skin.pruning,
+        }
+    }
+
     fn write_line_size(
         &self,
         f: &mut fmt::Formatter<'_>,
@@ -57,21 +77,15 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         total_size: Size,
     ) -> fmt::Result {
         if let Some(s) = line.size {
-            let dr: usize = s.discrete_ratio(total_size, 8) as usize;
-            let s: Vec<char> = s.to_string().chars().collect();
-            let mut bar = String::new();
-            for i in 0..dr {
-                bar.push(if i < s.len() { s[i] } else { ' ' });
+            let pb = ProgressBar::new(s.part_of(total_size), 10);
+            let style = self.name_style(line);
+            if let Some(fg) = style.fg_color {
+                write!(f, "{}{:>5} {:<10} ", Colored::Fg(fg), s.to_string(), pb)
+            } else {
+                write!(f, "{:>5} {:<10} ", s.to_string(), pb)
             }
-            self.skin.size_bar.write(f, &bar)?;
-            let mut no_bar = String::new();
-            for i in dr..8 {
-                no_bar.push(if i < s.len() { s[i] } else { ' ' });
-            }
-            self.skin.size_no_bar.write(f, &no_bar)?;
-            write!(f, " ")
         } else {
-            self.skin.tree.write(f, "──────── ")
+            self.skin.tree.write(f, "──────────────── ")
         }
     }
 

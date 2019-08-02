@@ -54,17 +54,21 @@ For example, assuming you look for your one file whose name contains `abc` in a 
 
 And if you look for a filename *ending* in `abc` then you may anchor the regex: `abc$/`.
 
-### See what takes space:
-
-![size](img/20190128-only-folders-with-size.png)
-
-To toggle size display, type `:s`. Sizes are computed in the background, you don't have to wait for them when you navigate.
-
 ### Apply a personal shortcut to a file:
 
 ![size](img/20190128-edit.png)
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your preferred editor, see [documentation](documentation.md#verbs)).
+
+### See what takes space:
+
+![size](img/20190802-sizes.png)
+
+If you start broot with the `--sizes` option, you get a mode tailored to "whale spotting" nagigation, making it easy to determine what files or folders take space.
+
+And you keep all broot tools, like filtering or the ability to delete or open files and directories.
+
+Sizes are computed in the background, you don't have to wait for them when you navigate.
 
 ### More...
 

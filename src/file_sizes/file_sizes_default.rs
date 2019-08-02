@@ -1,3 +1,5 @@
+//! size computation for non linux
+
 use crate::task_sync::TaskLifetime;
 use crossbeam::channel::unbounded;
 use crossbeam::sync::WaitGroup;
@@ -63,4 +65,12 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     let size: usize = size.load(Ordering::Relaxed);
     let size: u64 = size as u64;
     Some(size)
+}
+
+
+pub fn compute_file_size(path: &Path) -> u64 {
+    match fs::metadata(path) {
+        Ok(m) => m.len(),
+        Err(_) => 0,
+    }
 }

@@ -44,7 +44,7 @@ Once the file you want is selected you can
 
 # Manipulate your files
 
-![size](img/20190306-mv.png)
+![mv](img/20190306-mv.png)
 
 Most often you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
 
@@ -58,11 +58,16 @@ Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your preferred editor, see [documentation](documentation/usage.md#verbs)).
 
-# See what takes space
+### See what takes space:
 
-![size](img/20190128-only-folders-with-size.png)
+![size](img/20190802-sizes.png)
 
-To toggle size display, type `:s`. Sizes are computed in the background, you don't have to wait for them when you navigate.
+If you start broot with the `--sizes` option, you get a mode tailored to "whale spotting" nagigation, making it easy to determine what files or folders take space.
+
+And you keep all broot tools, like filtering or the ability to delete or open files and directories.
+
+Sizes are computed in the background, you don't have to wait for them when you navigate.
+
 
 # More...
 

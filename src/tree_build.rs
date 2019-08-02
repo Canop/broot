@@ -369,6 +369,12 @@ impl TreeBuilder {
                 }
             } else {
                 // this depth is finished, we must go deeper
+                if self.options.show_sizes {
+                    // both for technical reasons (bad sort) and ergonomics
+                    //  ones (it proved to be hard to read), we don't want
+                    //  a deep tree when looking at sizes.
+                    break;
+                }
                 if next_level_dirs.is_empty() {
                     // except there's nothing deeper
                     break;

@@ -5,7 +5,6 @@
 ///  twice an inode.
 use crate::task_sync::TaskLifetime;
 use std::collections::HashMap;
-use std::fs;
 use std::ops::AddAssign;
 use std::path::{Path, PathBuf};
 use std::sync::Mutex;
@@ -18,10 +17,7 @@ pub struct Size(u64);
 
 impl Size {
     pub fn from_file(path: &Path) -> Size {
-        Size(match fs::metadata(path) {
-            Ok(m) => m.len(),
-            Err(_) => 0,
-        })
+        Size(compute_file_size(path))
     }
 
     /// Return the size of the directory, either by computing it of by
@@ -51,17 +47,17 @@ impl Size {
     pub fn to_string(self) -> String {
         let mut v = self.0;
         let mut i = 0;
-        while v >= 9000 && i < SIZE_NAMES.len() - 1 {
+        while v >= 5000 && i < SIZE_NAMES.len() - 1 {
             v >>= 10;
             i += 1;
         }
         format!("{}{}", v, &SIZE_NAMES[i])
     }
-    pub fn discrete_ratio(self, max: Size, r: u64) -> u64 {
-        if max.0 == 0 || self.0 == 0 {
-            0
+    pub fn part_of(&self, total: Size) -> f32 {
+        if total.0 <= 0 {
+            0.0
         } else {
-            ((r as f64) * (self.0 as f64).cbrt() / (max.0 as f64).cbrt()).round() as u64
+            self.0 as f32 / total.0 as f32
         }
     }
 }
@@ -94,10 +90,19 @@ fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     file_sizes_unix::compute_dir_size(path, tl)
 }
 
-#[cfg(windows)]
-mod file_sizes_windows;
+#[cfg(unix)]
+fn compute_file_size(path: &Path) -> u64 {
+    file_sizes_unix::compute_file_size(path)
+}
 
-#[cfg(windows)]
+#[cfg(not(unix))]
+mod file_sizes_default;
+
+#[cfg(not(unix))]
 fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
-    file_sizes_windows::compute_dir_size(path, tl)
+    file_sizes_default::compute_dir_size(path, tl)
+}
+#[cfg(not(unix))]
+fn compute_file_size(path: &Path) -> u64 {
+    file_sizes_default::compute_file_size(path)
 }
