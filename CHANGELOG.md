@@ -1,3 +1,6 @@
+### Next Version
+Pressing F5 clears the directory sizes cache
+
 <a name="v0.9.3"></a>
 ### v0.9.3 - 2019-08-02
 Launching broot with `--sizes` now sets a set of features enabling fast "whale spotting" navigation

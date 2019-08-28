@@ -14,16 +14,15 @@ use crate::app_context::AppContext;
 use crate::browser_states::BrowserState;
 use crate::command_parsing::parse_command_sequence;
 use crate::commands::Command;
-//use crate::event::EventSource;
 use crate::errors::ProgramError;
 use crate::errors::TreeBuildError;
 use crate::external::Launchable;
+use crate::file_sizes;
 use crate::screens::Screen;
 use crate::skin::Skin;
 use crate::spinner::Spinner;
 use crate::status::Status;
 use crate::task_sync::TaskLifetime;
-
 use termimad::EventSource;
 
 /// Result of applying a command to a state
@@ -163,6 +162,7 @@ impl App {
                 self.state().write_status(screen, &cmd, con)?;
             }
             AppStateCmdResult::RefreshState => {
+                file_sizes::clear_cache();
                 cmd = self.mut_state().refresh(screen, con);
             }
             AppStateCmdResult::PopState => {

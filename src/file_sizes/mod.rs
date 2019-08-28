@@ -12,10 +12,20 @@ use std::time::Instant;
 
 const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"]; // Y: for when your disk is bigger than 1024 ZB
 
+lazy_static! {
+    static ref SIZE_CACHE_MUTEX: Mutex<HashMap<PathBuf, Size>> = Mutex::new(HashMap::new());
+}
+
+pub fn clear_cache() {
+    let mut size_cache = SIZE_CACHE_MUTEX.lock().unwrap();
+    size_cache.clear();
+}
+
 #[derive(Debug, Copy, Clone)]
 pub struct Size(u64);
 
 impl Size {
+
     pub fn from_file(path: &Path) -> Size {
         Size(compute_file_size(path))
     }
@@ -24,9 +34,6 @@ impl Size {
     ///  fetching it from cache.
     /// If the lifetime expires before complete computation, None is returned.
     pub fn from_dir(path: &Path, tl: &TaskLifetime) -> Option<Size> {
-        lazy_static! {
-            static ref SIZE_CACHE_MUTEX: Mutex<HashMap<PathBuf, Size>> = Mutex::new(HashMap::new());
-        }
         let mut size_cache = SIZE_CACHE_MUTEX.lock().unwrap();
         if let Some(s) = size_cache.get(path) {
             return Some(*s);
