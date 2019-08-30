@@ -48,7 +48,7 @@ Once the file you want is selected you can
 
 Most often you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
 
-You can instead to it without losing the view of the file hierarchy.
+You can instead do it without losing the view of the file hierarchy.
 
 Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
