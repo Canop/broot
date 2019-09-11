@@ -324,6 +324,26 @@ impl Tree {
             }
         }
     }
+    pub fn try_select_first(&mut self) -> bool {
+        for idx in 0..self.lines.len() {
+            let line = &self.lines[idx];
+            if line.is_selectable() {
+                self.selection = idx;
+                return true;
+            }
+        }
+        false
+    }
+    pub fn try_select_last(&mut self) -> bool {
+        for idx in (0..self.lines.len()).rev() {
+            let line = &self.lines[idx];
+            if line.is_selectable() {
+                self.selection = idx;
+                return true;
+            }
+        }
+        false
+    }
     pub fn try_select_next_match(&mut self) -> bool {
         for di in 0..self.lines.len() {
             let idx = (self.selection + di + 1) % self.lines.len();

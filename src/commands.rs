@@ -176,6 +176,9 @@ impl Command {
                     KeyEvent::PageDown | KeyEvent::Ctrl('d') => {
                         self.action = Action::ScrollPage(1);
                     }
+                    KeyEvent::F(1) => {
+                        self.action = Action::Help;
+                    }
                     KeyEvent::Char(c) if c =='?' && (self.raw.is_empty() || self.parts.verb_invocation.is_some()) => {
                         // a '?' opens the help when it's the first char or when it's part of the verb
                         // invocation
