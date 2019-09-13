@@ -1,5 +1,33 @@
-### Next Version
-Pressing F5 clears the directory sizes cache
+<a name="v0.9.4"></a>
+### v0.9.4 - 2019-09-13
+New internal verbs like :focus_root, :focus_user_home, :refresh, :select_first
+You can define triggering keys for verbs.
+
+For example you can add those mappings:
+
+	[[verbs]]
+	invocation = "root"
+	key = "F9"
+	execution = ":focus_root"
+
+	[[verbs]]
+	invocation = "home"
+	key = "ctrl-H"
+	execution = ":focus_user_home"
+
+	[[verbs]]
+	invocation = "top"
+	key = "F6"
+	execution = ":select_first"
+
+	[[verbs]]
+	invocation = "bottom"
+	key = "F7"
+	execution = ":select_last"
+
+Then, when doing <key>Ctrl-H</key>, you would go to you user home (`~` when on linux) and <key>F7</key> would select the last line of the tree.
+
+A few more keys are defined as default, like F1 for `:help` and F5 for `:refresh`.
 
 <a name="v0.9.3"></a>
 ### v0.9.3 - 2019-08-02
