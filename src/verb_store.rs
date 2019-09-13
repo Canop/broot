@@ -1,14 +1,15 @@
 use crate::conf::Conf;
 use crate::permissions;
 use crate::verbs::Verb;
+use crossterm_input::KeyEvent;
 
 /// Provide access to the verbs:
 /// - the built-in ones
 /// - the user defined ones
 /// A user defined verb can replace a built-in.
 /// When the user types some keys, we select a verb
-/// - if the input exactly matches a shortcut or the key
-/// - if only one verb key starts with the input
+/// - if the input exactly matches a shortcut or the name
+/// - if only one verb name starts with the input
 pub struct VerbStore {
     pub verbs: Vec<Verb>,
 }
@@ -24,9 +25,14 @@ impl VerbStore {
     pub fn new() -> VerbStore {
         VerbStore { verbs: Vec::new() }
     }
-    fn add_builtin(&mut self, key: &str, shortcut: Option<String>, description: &str) {
-        self.verbs
-            .push(Verb::create_builtin(key, shortcut, description));
+    fn add_builtin(
+        &mut self,
+        name: &str,
+        key: Option<KeyEvent>,
+        shortcut: Option<String>,
+        description: &str
+    ) {
+        self.verbs.push(Verb::create_builtin(name, key, shortcut, description));
     }
     pub fn init(&mut self, conf: &Conf) {
         // we first add the verbs coming from configuration, as
@@ -35,6 +41,7 @@ impl VerbStore {
         for verb_conf in &conf.verbs {
             match Verb::create_external(
                 &verb_conf.invocation,
+                verb_conf.key.clone(),
                 verb_conf.shortcut.clone(),
                 verb_conf.execution.clone(),
                 verb_conf.description.clone(),
@@ -53,11 +60,13 @@ impl VerbStore {
         self.add_builtin(
             "back",
             None,
+            None,
             "revert to the previous state (mapped to `<esc>`)",
         );
         self.verbs.push(
             Verb::create_external(
                 "cd",
+                None,
                 None, // no real need for a shortcut as it's mapped to alt-enter
                 "cd {directory}".to_string(),
                 Some("change directory and quit (mapped to `<alt><enter>`)".to_string()),
@@ -71,6 +80,7 @@ impl VerbStore {
             Verb::create_external(
                 "cp {newpath}",
                 None,
+                None,
                 "/bin/cp -r {file} {newpath:path-from-parent}".to_string(),
                 None,
                 false,
@@ -81,13 +91,20 @@ impl VerbStore {
         );
         self.add_builtin(
             "focus",
+            None, // enter
             Some("goto".to_string()),
             "display the directory (mapped to `<enter>` in tree)",
         );
-        self.add_builtin("help", Some("?".to_string()), "display broot's help");
+        self.add_builtin(
+            "help",
+            Some(KeyEvent::F(1)), // note: some terminals intercept the F1 key
+            Some("?".to_string()),
+            "display broot's help",
+        );
         self.verbs.push(
             Verb::create_external(
                 "mkdir {subpath}",
+                None,
                 Some("md".to_string()),
                 "/bin/mkdir -p {subpath:path-from-directory}".to_string(),
                 None,
@@ -101,6 +118,7 @@ impl VerbStore {
             Verb::create_external(
                 "mv {newpath}",
                 None,
+                None,
                 "/bin/mv {file} {newpath:path-from-parent}".to_string(),
                 None,
                 false,
@@ -112,23 +130,43 @@ impl VerbStore {
         self.add_builtin(
             "open",
             None,
+            None,
             "open file or directory according to OS settings (quit broot)",
         );
-        self.add_builtin("parent", None, "move to the parent directory");
+        self.add_builtin(
+            "parent",
+            None,
+            None,
+            "move to the parent directory"
+        );
         self.add_builtin(
             "print_path",
+            None,
             Some("pp".to_string()),
             "print path and leaves broot",
         );
         self.add_builtin(
             "print_tree",
+            None,
             Some("pt".to_string()),
             "print tree and leaves broot",
         );
-        self.add_builtin("quit", Some("q".to_string()), "quit the application");
+        self.add_builtin(
+            "quit",
+            Some(KeyEvent::Ctrl('q')),
+            Some("q".to_string()),
+            "quit the application",
+        );
+        self.add_builtin(
+            "refresh",
+            Some(KeyEvent::F(5)),
+            None,
+            "refresh tree and clear size cache",
+        );
         self.verbs.push(
             Verb::create_external(
                 "rm",
+                None, // the delete key is used in the input
                 None,
                 "/bin/rm -rf {file}".to_string(),
                 None,
@@ -140,38 +178,45 @@ impl VerbStore {
         );
         self.add_builtin(
             "toggle_dates",
+            None,
             Some("dates".to_string()),
             "toggle showing last modified dates",
         );
         self.add_builtin(
             "toggle_files",
+            None,
             Some("files".to_string()),
             "toggle showing files (or just folders)",
         );
         self.add_builtin(
             "toggle_git_ignore",
+            None,
             Some("gi".to_string()),
             "toggle use of .gitignore",
         );
         self.add_builtin(
             "toggle_hidden",
+            None,
             Some("h".to_string()),
             "toggle showing hidden files",
         );
         if permissions::supported() {
             self.add_builtin(
                 "toggle_perm",
+                None,
                 Some("perm".to_string()),
                 "toggle showing file permissions",
             );
         }
         self.add_builtin(
             "toggle_sizes",
+            None,
             Some("sizes".to_string()),
             "toggle showing sizes",
         );
         self.add_builtin(
             "toggle_trim_root",
+            None,
             Some("t".to_string()),
             "toggle removing nodes at first level too (default)",
         );
@@ -204,13 +249,13 @@ impl VerbStore {
             _ => PrefixSearchResult::TooManyMatches,
         }
     }
-    // return the index of the verb having the long key. This function is meant
+    // return the index of the verb having the long name. This function is meant
     // for internal access when it's sure it can't failed (i.e. for a builtin)
     // It looks for verbs by key, starting from the builtins, to
     // ensure it hasn't been overriden.
-    pub fn index_of(&self, key: &str) -> usize {
+    pub fn index_of(&self, name: &str) -> usize {
         for i in 0..self.verbs.len() {
-            if self.verbs[i].invocation.key == key {
+            if self.verbs[i].invocation.key == name {
                 return i;
             }
         }

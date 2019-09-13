@@ -45,7 +45,7 @@ impl AppState for HelpState {
         self.resize_area(screen);
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
-            Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
+            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::Match(verb) => {
                     self.execute_verb(verb, &invocation, screen, con)?
                 }
@@ -59,8 +59,6 @@ impl AppState for HelpState {
                 self.view.try_scroll_pages(*dp);
                 AppStateCmdResult::Keep
             }
-            Action::Refresh => AppStateCmdResult::RefreshState,
-            Action::Quit => AppStateCmdResult::Quit,
             _ => AppStateCmdResult::Keep,
         })
     }

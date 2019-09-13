@@ -8,6 +8,8 @@ use std::fs::OpenOptions;
 use std::io::{self, Write};
 use std::path::{Path, PathBuf};
 
+use crossterm_input::KeyEvent;
+
 use crate::app::AppStateCmdResult;
 use crate::app_context::AppContext;
 use crate::errors::ConfError;
@@ -24,6 +26,7 @@ use crate::verb_invocation::VerbInvocation;
 #[derive(Debug, Clone)]
 pub struct Verb {
     pub invocation: VerbInvocation, // how the verb is supposed to be called (key may be replaced by shortcut)
+    pub key: Option<KeyEvent>,
     pub args_parser: Option<Regex>,
     pub shortcut: Option<String>,    // a shortcut, eg "c"
     pub execution: String,           // a pattern usable for execution, eg ":quit" or "less {file}"
@@ -39,7 +42,7 @@ lazy_static! {
 
 pub trait VerbExecutor {
     fn execute_verb(
-        &self,
+        &mut self,
         verb: &Verb,
         invocation: &VerbInvocation,
         screen: &mut Screen,
@@ -67,6 +70,7 @@ impl Verb {
     /// "external" means not "built-in".
     pub fn create_external(
         invocation_str: &str,
+        key: Option<KeyEvent>,
         shortcut: Option<String>,
         execution: String,
         description: Option<String>,
@@ -85,6 +89,7 @@ impl Verb {
             .transpose()?;
         Ok(Verb {
             invocation,
+            key,
             args_parser,
             shortcut,
             execution,
@@ -97,15 +102,21 @@ impl Verb {
 
     /// built-ins are verbs offering a logic other than the execution
     ///  based on exec_pattern. They mostly modify the appstate
-    pub fn create_builtin(key: &str, shortcut: Option<String>, description: &str) -> Verb {
+    pub fn create_builtin(
+        name: &str,
+        key: Option<KeyEvent>,
+        shortcut: Option<String>,
+        description: &str
+    ) -> Verb {
         Verb {
             invocation: VerbInvocation {
-                key: key.to_string(),
+                key: name.to_string(),
                 args: None,
             },
+            key,
             args_parser: None,
             shortcut,
-            execution: format!(":{}", key),
+            execution: format!(":{}", name),
             description: Some(description.to_string()),
             from_shell: false,
             leave_broot: true, // ignored

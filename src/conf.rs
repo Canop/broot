@@ -11,19 +11,8 @@ use std::result::Result;
 use toml::{self, Value};
 
 use crate::errors::ConfError;
+use crate::verb_conf::{self, VerbConf};
 use crate::skin_conf;
-
-/// what's needed to handle a verb
-#[derive(Debug)]
-pub struct VerbConf {
-    pub shortcut: Option<String>,
-    pub invocation: String,
-    pub execution: String,
-    pub description: Option<String>,
-    pub from_shell: Option<bool>,
-    pub leave_broot: Option<bool>,
-    pub confirm: Option<bool>,
-}
 
 pub struct Conf {
     pub verbs: Vec<VerbConf>,
@@ -112,6 +101,9 @@ impl Conf {
                         continue;
                     }
                 };
+                let key = string_field(verb_value, "key").map(
+                    |s| verb_conf::parse_key(&s)
+                ).transpose()?;
                 let execution = match string_field(verb_value, "execution") {
                     Some(s) => s,
                     None => {
@@ -132,6 +124,7 @@ impl Conf {
                 verbs.push(VerbConf {
                     invocation,
                     execution,
+                    key,
                     shortcut: string_field(verb_value, "shortcut"),
                     description: string_field(verb_value, "description"),
                     from_shell,
@@ -186,6 +179,7 @@ execution = ":parent"
 #  execution = "/usr/bin/nvim {file}"
 [[verbs]]
 invocation = "edit"
+key = "F2"
 shortcut = "e"
 execution = "$EDITOR {file}"
 

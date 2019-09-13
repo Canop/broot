@@ -200,7 +200,11 @@ impl App {
     }
 
     /// This is the main loop of the application
-    pub fn run(mut self, con: &AppContext, skin: Skin) -> Result<Option<Launchable>, ProgramError> {
+    pub fn run(
+        mut self,
+        con: &AppContext,
+        skin: Skin,
+    ) -> Result<Option<Launchable>, ProgramError> {
         let mut screen = Screen::new(con, skin)?;
 
         // create the initial state
@@ -253,7 +257,7 @@ impl App {
                     break;
                 }
             };
-            cmd.add_event(&event, &mut screen.input_field);
+            cmd.add_event(&event, &mut screen.input_field, con);
             cmd = self.apply_command(cmd, &mut screen, con)?;
             event_source.unblock(self.quitting);
         }

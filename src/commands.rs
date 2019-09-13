@@ -4,11 +4,13 @@
 
 use crossterm_input::KeyEvent;
 use regex::Regex;
-use crate::verb_invocation::VerbInvocation;
 use termimad::{
     Event,
     InputField,
 };
+
+use crate::app_context::AppContext;
+use crate::verb_invocation::VerbInvocation;
 
 #[derive(Debug, Clone)]
 pub struct Command {
@@ -27,23 +29,21 @@ struct CommandParts {
 
 #[derive(Debug, Clone)]
 pub enum Action {
-    MoveSelection(i32),        // up (neg) or down (positive) in the list
-    ScrollPage(i32),           // in number of pages, not lines
-    OpenSelection,             // open the selected line
-    AltOpenSelection,          // alternate open the selected line
-    VerbEdit(VerbInvocation),  // verb invocation, unfinished
-    Verb(VerbInvocation),      // verb invocation, after the user hit enter
-    FuzzyPatternEdit(String),  // a pattern being edited
-    RegexEdit(String, String), // a regex being edited (core & flags)
-    Back,                      // back to last app state, or clear pattern
-    Next,                      // goes to the next matching entry
-    Previous,                  // goes to the previous matching entry
-    Refresh,                   // refresh
-    Help,                      // goes to help state
-    Quit,                      // quit broot
-    Click(u16, u16),           // usually a mouse click
-    DoubleClick(u16, u16),     // always come after a simple click at same position
-    Unparsed,                  // or unparsable
+    MoveSelection(i32),             // up (neg) or down (positive) in the list
+    ScrollPage(i32),                // in number of pages, not lines
+    OpenSelection,                  // open the selected line
+    AltOpenSelection,               // alternate open the selected line
+    VerbEdit(VerbInvocation),       // verb invocation, unfinished
+    VerbInvocate(VerbInvocation),   // verb invocation, after the user hit enter (or used a trigger key)
+    FuzzyPatternEdit(String),       // a pattern being edited
+    RegexEdit(String, String),      // a regex being edited (core & flags)
+    Back,                           // back to last app state, or clear pattern
+    Next,                           // goes to the next matching entry
+    Previous,                       // goes to the previous matching entry
+    Help,                           // goes to help state
+    Click(u16, u16),                // usually a mouse click
+    DoubleClick(u16, u16),          // always come after a simple click at same position
+    Unparsed,                       // or unparsable
 }
 
 impl CommandParts {
@@ -90,7 +90,7 @@ impl Action {
     fn from(cp: &CommandParts, finished: bool) -> Action {
         if let Some(verb_invocation) = &cp.verb_invocation {
             if finished {
-                Action::Verb(verb_invocation.clone())
+                Action::VerbInvocate(verb_invocation.clone())
             } else {
                 Action::VerbEdit(verb_invocation.clone())
             }
@@ -118,22 +118,27 @@ impl Command {
         }
     }
 
-    // build a command from a string
-    // Note that this isn't used (or usable) for interpretation
-    //  of the in-app user input. It's meant for interpretation
-    //  of a file or from a sequence of commands passed as argument
-    //  of the program.
-    // A ':', even if at the end, is assumed to mean that the
-    //  command must be executed (it's equivalent to the user
-    //  typing `enter` in the app
-    // This specific syntax isn't definitive
+    /// build a command from a string
+    /// Note that this isn't used (or usable) for interpretation
+    ///  of the in-app user input. It's meant for interpretation
+    ///  of a file or from a sequence of commands passed as argument
+    ///  of the program.
+    /// A ':', even if at the end, is assumed to mean that the
+    ///  command must be executed (it's equivalent to the user
+    ///  typing `enter` in the app
+    /// This specific syntax isn't definitive
     pub fn from(raw: String) -> Command {
         let parts = CommandParts::from(&raw);
         let action = Action::from(&parts, raw.contains(':'));
         Command { raw, parts, action }
     }
 
-    pub fn add_event(&mut self, event: &Event, input_field: &mut InputField) {
+    pub fn add_event(
+        &mut self,
+        event: &Event,
+        input_field: &mut InputField,
+        con: &AppContext,
+    ) {
         let mut handled_by_input_field = false;
         match event {
             Event::Click(x, y) => {
@@ -145,6 +150,19 @@ impl Command {
                 self.action = Action::DoubleClick(*x, *y);
             }
             Event::Key(key) => {
+                // we start by looking if the key is the trigger key of
+                // one of the verbs
+                for verb in &con.verb_store.verbs {
+                    if let Some(verb_key) = verb.key {
+                        if verb_key == *key {
+                            // Cloning the invocation when we already know the verb
+                            //  isn't very clean or efficient (it means a second search will
+                            //  occur behind but it's simpler to manage now
+                            self.action = Action::VerbInvocate(verb.invocation.clone());
+                            return;
+                        }
+                    }
+                }
                 match *key {
                     KeyEvent::Char('\t') => {
                         self.action = Action::Next;
@@ -158,26 +176,17 @@ impl Command {
                     KeyEvent::Alt('\r') | KeyEvent::Alt('\n') => {
                         self.action = Action::AltOpenSelection;
                     }
-                    KeyEvent::Ctrl('q') => {
-                        self.action = Action::Quit;
-                    }
                     KeyEvent::Up => {
                         self.action = Action::MoveSelection(-1);
                     }
                     KeyEvent::Down => {
                         self.action = Action::MoveSelection(1);
                     }
-                    KeyEvent::F(5) => {
-                        self.action = Action::Refresh;
-                    }
                     KeyEvent::PageUp | KeyEvent::Ctrl('u') => {
                         self.action = Action::ScrollPage(-1);
                     }
                     KeyEvent::PageDown | KeyEvent::Ctrl('d') => {
                         self.action = Action::ScrollPage(1);
-                    }
-                    KeyEvent::F(1) => {
-                        self.action = Action::Help;
                     }
                     KeyEvent::Char(c) if c =='?' && (self.raw.is_empty() || self.parts.verb_invocation.is_some()) => {
                         // a '?' opens the help when it's the first char or when it's part of the verb

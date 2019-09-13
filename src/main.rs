@@ -35,6 +35,7 @@ mod status;
 mod task_sync;
 mod tree_build;
 mod tree_options;
+mod verb_conf;
 mod verb_invocation;
 mod verb_store;
 mod verbs;

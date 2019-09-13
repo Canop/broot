@@ -15,7 +15,7 @@ use crate::verbs::{Verb, VerbExecutor};
 
 impl VerbExecutor for HelpState {
     fn execute_verb(
-        &self,
+        &mut self,
         verb: &Verb,
         invocation: &VerbInvocation,
         screen: &mut Screen,
@@ -39,15 +39,12 @@ impl VerbExecutor for HelpState {
             ":open" => AppStateCmdResult::from(Launchable::opener(Conf::default_location())),
             ":print_path" => external::print_path(&Conf::default_location(), con)?,
             ":quit" => AppStateCmdResult::Quit,
-            _ => {
-                if verb.execution.starts_with(":toggle") {
-                    AppStateCmdResult::PopStateAndReapply
-                } else {
-                    AppStateCmdResult::from(Launchable::program(
-                        verb.exec_token(&Conf::default_location(), &invocation.args),
-                    )?)
-                }
-            }
+            ":focus_user_home" | ":focus_root" => AppStateCmdResult::PopStateAndReapply,
+            _ if verb.execution.starts_with(":toggle") => AppStateCmdResult::PopStateAndReapply,
+            _ if verb.execution.starts_with(":") => AppStateCmdResult::Keep, // other internal verbs do nothing
+            _ => AppStateCmdResult::from(Launchable::program(
+                verb.exec_token(&Conf::default_location(), &invocation.args),
+            )?),
         })
     }
 }

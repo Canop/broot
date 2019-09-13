@@ -267,7 +267,7 @@ impl AppState for BrowserState {
             }
             Action::OpenSelection => self.open_selection_stay_in_broot(screen, con),
             Action::AltOpenSelection => self.open_selection_quit_broot(screen, con),
-            Action::Verb(invocation) => match con.verb_store.search(&invocation.key) {
+            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::Match(verb) => {
                     self.execute_verb(verb, &invocation, screen, con)
                 }
@@ -299,8 +299,6 @@ impl AppState for BrowserState {
             Action::Help => Ok(
                 AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)), Command::new())
             ),
-            Action::Refresh => Ok(AppStateCmdResult::RefreshState),
-            Action::Quit => Ok(AppStateCmdResult::Quit),
             Action::Next => {
                 if let Some(tree) = &mut self.filtered_tree {
                     tree.try_select_next_match();

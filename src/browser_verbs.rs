@@ -1,5 +1,5 @@
 use std::io;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
 use directories::UserDirs;
 
 use crate::app::AppStateCmdResult;
@@ -33,7 +33,7 @@ fn focus_path(
 
 impl VerbExecutor for BrowserState {
     fn execute_verb(
-        &self,
+        &mut self,
         verb: &Verb,
         invocation: &VerbInvocation,
         screen: &mut Screen,
@@ -66,6 +66,15 @@ impl VerbExecutor for BrowserState {
             }
             ":print_path" => external::print_path(&line.target(), con)?,
             ":print_tree" => external::print_tree(&tree, screen, con)?,
+            ":refresh" => AppStateCmdResult::RefreshState,
+            ":select_first" => {
+                self.displayed_tree_mut().try_select_first();
+                AppStateCmdResult::Keep
+            }
+            ":select_last" => {
+                self.displayed_tree_mut().try_select_last();
+                AppStateCmdResult::Keep
+            }
             ":toggle_dates" => self.with_new_options(screen, &|o| o.show_dates ^= true),
             ":toggle_files" => self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true),
             ":toggle_hidden" => self.with_new_options(screen, &|o| o.show_hidden ^= true),

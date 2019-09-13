@@ -1,3 +1,5 @@
+use crossterm_input::KeyEvent::*;
+
 use crate::app_context::AppContext;
 use crate::conf::Conf;
 
@@ -58,8 +60,8 @@ Flags are displayed at bottom right:
 
 fn append_verbs_table(md: &mut String, con: &AppContext) {
     md.push_str("|-:\n");
-    md.push_str("|**name**|**shortcut**|**description**\n");
-    md.push_str("|-:|:-:|:-\n");
+    md.push_str("|**name**|**shortcut**|**key**|**description**\n");
+    md.push_str("|-:|:-:|:-:|:-\n");
     for verb in &con.verb_store.verbs {
         md.push_str(&format!(
             "|{}|{}|",
@@ -70,6 +72,15 @@ fn append_verbs_table(md: &mut String, con: &AppContext) {
                 ""
             },
         ));
+        if let Some(key) = &verb.key {
+            match key {
+                F(d) => md.push_str(&format!("F{}", d)),
+                Ctrl(c) => md.push_str(&format!("^{}", c)),
+                Alt(c) => md.push_str(&format!("alt-{}", c)),
+                _ => md.push_str(&format!("{:?}", key)),
+            }
+        }
+        md.push_str("|");
         if let Some(s) = &verb.description {
             md.push_str(&format!("{}\n", &s));
         } else {

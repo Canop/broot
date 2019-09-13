@@ -20,6 +20,7 @@ You can define a new verb in the TOML configuration file with a `[[verbs]]` sect
 
 	[[verbs]]
 	invocation = "edit"
+	key = "F2"
 	shortcut = "e"
 	execution = "/usr/bin/nvim {file}"
 
@@ -29,6 +30,7 @@ name | mandatory | role
 -|-|-
 invocation | yes | how the verb is called by the user, with placeholders for arguments
 execution | yes | how the verb is executed
+key | no | a keyboard key triggerring execution
 shorcut | no | an alternate way to call the verb (without the arguments part)
 leave_broot | no | whether to quit broot on execution (default: `true`)
 from_shell | no | whether the verb must be executed from the parent shell (needs `br`, default: `false`)
@@ -53,6 +55,41 @@ This verb is an alias to the internal builtin already available if you type `:pa
 Its interest is that if you do `:p`, then `enter`, it is executed even while there are other verbs whose invocation pattern starts with a `p`.
 
 Use shortcuts for verbs you frequently use.
+
+### Keyboard key
+
+The main keys you can use are
+
+* The function keys (for example `"F3"`)
+* Ctrl and Alt keys (for example `"^T"` `"alt-a"`)
+
+It's possible to define a verb just to add a trigger key to an internal verb.
+
+For example you could add those mappings:
+
+	[[verbs]]
+	invocation = "root"
+	key = "F9"
+	execution = ":focus_root"
+
+	[[verbs]]
+	invocation = "home"
+	key = "ctrl-H"
+	execution = ":focus_user_home"
+
+	[[verbs]]
+	invocation = "top"
+	key = "F6"
+	execution = ":select_first"
+
+	[[verbs]]
+	invocation = "bottom"
+	key = "F7"
+	execution = ":select_last"
+
+Then, when doing <key>Ctrl-H</key>, you would go to you user home (`~` when on linux) and <key>F7</key> would select the last line of the tree.
+
+Beware that consoles often intercept some possible keys.
 
 ### Verbs not leaving broot
 
