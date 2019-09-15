@@ -30,11 +30,11 @@ struct CommandParts {
 #[derive(Debug, Clone)]
 pub enum Action {
     MoveSelection(i32),             // up (neg) or down (positive) in the list
-    ScrollPage(i32),                // in number of pages, not lines
     OpenSelection,                  // open the selected line
     AltOpenSelection,               // alternate open the selected line
     VerbEdit(VerbInvocation),       // verb invocation, unfinished
-    VerbInvocate(VerbInvocation),   // verb invocation, after the user hit enter (or used a trigger key)
+    VerbInvocate(VerbInvocation),   // verb invocation, after the user hit enter
+    VerbIndex(usize),               // verb call, withtout specific argument (using a trigger key)
     FuzzyPatternEdit(String),       // a pattern being edited
     RegexEdit(String, String),      // a regex being edited (core & flags)
     Back,                           // back to last app state, or clear pattern
@@ -140,6 +140,7 @@ impl Command {
         con: &AppContext,
     ) {
         let mut handled_by_input_field = false;
+        debug!("add_event {:?}", event);
         match event {
             Event::Click(x, y) => {
                 if !input_field.apply_event(&event) {
@@ -150,18 +151,10 @@ impl Command {
                 self.action = Action::DoubleClick(*x, *y);
             }
             Event::Key(key) => {
-                // we start by looking if the key is the trigger key of
-                // one of the verbs
-                for verb in &con.verb_store.verbs {
-                    if let Some(verb_key) = verb.key {
-                        if verb_key == *key {
-                            // Cloning the invocation when we already know the verb
-                            //  isn't very clean or efficient (it means a second search will
-                            //  occur behind but it's simpler to manage now
-                            self.action = Action::VerbInvocate(verb.invocation.clone());
-                            return;
-                        }
-                    }
+                // we start by looking if the key is the trigger key of one of the verbs
+                if let Some(index) = con.verb_store.index_of_key(key) {
+                    self.action = Action::VerbIndex(index);
+                    return;
                 }
                 match *key {
                     KeyEvent::Char('\t') => {
@@ -170,25 +163,20 @@ impl Command {
                     KeyEvent::BackTab => {
                         self.action = Action::Previous;
                     }
+
+                    // this may be a call to open_stay, or simply
+                    // validating the verb choice in the input
                     KeyEvent::Char('\n') => {
                         self.action = Action::from(&self.parts, true);
                     }
+
+                    // Normally redundant due to internal verb but
+                    // I'm not yet 100% sure it's Alt('\r') on all platforms
                     KeyEvent::Alt('\r') | KeyEvent::Alt('\n') => {
                         self.action = Action::AltOpenSelection;
                     }
-                    KeyEvent::Up => {
-                        self.action = Action::MoveSelection(-1);
-                    }
-                    KeyEvent::Down => {
-                        self.action = Action::MoveSelection(1);
-                    }
-                    KeyEvent::PageUp | KeyEvent::Ctrl('u') => {
-                        self.action = Action::ScrollPage(-1);
-                    }
-                    KeyEvent::PageDown | KeyEvent::Ctrl('d') => {
-                        self.action = Action::ScrollPage(1);
-                    }
-                    KeyEvent::Char(c) if c =='?' && (self.raw.is_empty() || self.parts.verb_invocation.is_some()) => {
+
+                    KeyEvent::Char('?') if self.raw.is_empty() || self.parts.verb_invocation.is_some() => {
                         // a '?' opens the help when it's the first char or when it's part of the verb
                         // invocation
                         self.action = Action::Help;

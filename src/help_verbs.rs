@@ -36,7 +36,23 @@ impl VerbExecutor for HelpState {
                 Command::new(),
             ),
             ":help" => AppStateCmdResult::Keep,
+            ":line_down" => {
+                self.view.try_scroll_lines(1);
+                AppStateCmdResult::Keep
+            }
+            ":line_up" => {
+                self.view.try_scroll_lines(-1);
+                AppStateCmdResult::Keep
+            }
             ":open" => AppStateCmdResult::from(Launchable::opener(Conf::default_location())),
+            ":page_down" => {
+                self.view.try_scroll_pages(1);
+                AppStateCmdResult::Keep
+            }
+            ":page_up" => {
+                self.view.try_scroll_pages(-1);
+                AppStateCmdResult::Keep
+            }
             ":print_path" => external::print_path(&Conf::default_location(), con)?,
             ":quit" => AppStateCmdResult::Quit,
             ":focus_user_home" | ":focus_root" => AppStateCmdResult::PopStateAndReapply,

@@ -12,7 +12,7 @@ Currently, you can configure
 * verbs
 * colors
 
-# Verbs
+# Verbs, Shortcuts, and keys
 
 ## Verb Definition Attributes
 
@@ -35,7 +35,7 @@ shorcut | no | an alternate way to call the verb (without the arguments part)
 leave_broot | no | whether to quit broot on execution (default: `true`)
 from_shell | no | whether the verb must be executed from the parent shell (needs `br`, default: `false`)
 
-### Shortcuts and Verb search
+## Shortcuts and Verb search
 
 **broot** looks for the first token following a space or `:` and tryes to find the verb you want.
 
@@ -56,7 +56,7 @@ Its interest is that if you do `:p`, then `enter`, it is executed even while the
 
 Use shortcuts for verbs you frequently use.
 
-### Keyboard key
+## Keyboard key
 
 The main keys you can use are
 
@@ -87,9 +87,26 @@ For example you could add those mappings:
 	key = "F7"
 	execution = ":select_last"
 
-Then, when doing <key>Ctrl-H</key>, you would go to you user home (`~` when on linux) and <key>F7</key> would select the last line of the tree.
+	[[verbs]]
+	invocation = "open"
+	key = "^O"
+	execution = ":open_stay"
 
-Beware that consoles often intercept some possible keys.
+	[[verbs]]
+	invocation = "edit"
+	key = "F2"
+	shortcut = "e"
+	execution = "$EDITOR {file}"
+	from_shell = true
+
+Then,
+
+* when doing <kbd>Ctrl-H</kbd>, you would go to you user home (`~` when on linux),
+* you would open files (without closing broot) with <kbd>ctrl-O</kbd>,
+* <kbd>F7</kbd> would select the last line of the tree,
+* and you'd switch to your favorite editor with <kbd>F2</kbd>
+
+Beware that consoles intercept some possible keys. Many keyboard shortcuts aren't available, depending on your configuration.
 
 ### Verbs not leaving broot
 
@@ -156,6 +173,49 @@ Let's say we don't want the type to contain dots, then we do this:
 	from_shell = true
 
 You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
+
+## Built In Verbs
+
+Here's the list of actions you can add an alternate shortcut or keyboard key for:
+
+invocation | default key | default shortcut | behavior / details
+-|-|-|-
+:back | <kbd>Esc</kbd> | - | back to previous app state (see Usage page) |
+:cd | <kbd>alt</kbd><kbd>enter</kbd> | - | leave broot and cd to the selected directory (needs the br shell function)
+:cp {newpath} | - | - | copy the file or directory to the provided name
+:help | <kbd>F1</kbd> | - | open the help page. Help page can also be open with <kbd>?</kbd>
+:focus | <kbd>enter</kbd> | - | set the selected directory the root of the displayed tree |
+:focus_user_home | - | - | focus the user's home (`~` on linux) |
+:focus_root | - | - | focus the root directory (`/` on linux)
+:line_down | <kbd>↓</kbd> | - | scroll one line down or select the next line
+:line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
+:mkdir {subpath} | - | md | create a directory
+:mv {newpath} | - | - | move the file or directory to the provided path
+:open_stay | <kbd>enter</kbd> | - | open the selected file in the default OS opener
+:open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leaves broot
+:page_down | <kbd>⇟</kbd> | - | scroll one page down
+:page_up | <kbd>⇞</kbd> | - | scroll one page up
+:parent | - | - | focus the parent directory
+:print_path | - | pp | print path and leaves broot
+:print_tree | - | pt | print tree and leaves broot
+:quit | <kbd>ctrl</kbd><kbd>q</kbd> | q | quit broot
+:refresh | <kbd>F5</kbd> | - | refresh the displayed tree and clears the directory sizes cache
+:rm | - | - | remove the selected file or directory. To stay safe, don't define a keyboard key for this action
+:select_firt | - | - | select the firt line
+:select_last | - | - | select the last line
+:toggle_dates | - | - | toggle display of last modified dates
+:toggle_files | - | - | toggle showing files (or just folders)
+:toggle_git_ignore | - | - | toggle git hignore handling (auto, no or yes)
+:toggle_hidden | - | - | toggle display of hidden files (the ones whose name starts with a dot on linux)
+:toggle_perm | - | - | toggle display of permissions (not available on Windows)
+:toggle_sizes | - | - | toggle the size mode
+:toggle_trim_root | - | - | toggle trimming of top level files in tree display
+
+Note that
+
+- you can always call a verb with its default invocation, you don't *have* to define a shortcut
+- verbs whose invocation needs an argument (like `{newpath}`) can't be triggered with just a keyboard key.
+- many keyboard keys should be kept available for the input
 
 # Colors
 

@@ -16,7 +16,7 @@ use crate::verbs::VerbExecutor;
 
 /// an application state dedicated to help
 pub struct HelpState {
-    view: MadView,
+    pub view: MadView,
 }
 
 impl HelpState {
@@ -30,7 +30,7 @@ impl HelpState {
 
     fn resize_area(&mut self, screen: &Screen) {
         let mut area = Area::new(0, 0, screen.w, screen.h - 2);
-        area.pad_for_max_width(100);
+        area.pad_for_max_width(110);
         self.view.resize(&area);
     }
 }
@@ -45,6 +45,10 @@ impl AppState for HelpState {
         self.resize_area(screen);
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
+            Action::VerbIndex(index) => {
+                let verb = &con.verb_store.verbs[*index];
+                self.execute_verb(verb, &verb.invocation, screen, con)?
+            },
             Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::Match(verb) => {
                     self.execute_verb(verb, &invocation, screen, con)?
@@ -53,10 +57,6 @@ impl AppState for HelpState {
             },
             Action::MoveSelection(dy) => {
                 self.view.try_scroll_lines(*dy);
-                AppStateCmdResult::Keep
-            }
-            Action::ScrollPage(dp) => {
-                self.view.try_scroll_pages(*dp);
                 AppStateCmdResult::Keep
             }
             _ => AppStateCmdResult::Keep,

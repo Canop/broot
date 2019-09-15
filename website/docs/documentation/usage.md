@@ -37,11 +37,11 @@ From here you may navigate using the following keys:
 
 There are also a few more shortcuts:
 
-* moving one page up can be done with <kbd>Ctrl</kbd> <kbd>u</kbd>
-* moving one page down can be done with <kbd>Ctrl</kbd> <kbd>d</kbd>
 * you can quit with <kbd>Ctrl</kbd> <kbd>q</kbd>
 * you can select a line with a mouse click
 * you can open a line with a mouse double-click
+
+and you can define your own [shorcuts](../configuration//#shortcuts-and-verb-search) or triggering [keyboard keys](../configuration/#keyboard-key).
 
 
 ## Fuzzy Patterns

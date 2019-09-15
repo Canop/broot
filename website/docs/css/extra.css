@@ -30,6 +30,7 @@ kbd {
 	background-color: #333;
 	border-radius: 2px;
 	box-shadow: none;
+	margin: 1px;
 }
 
 kbd.b {

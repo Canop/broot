@@ -59,7 +59,7 @@ impl VerbStore {
         }
         self.add_builtin(
             "back",
-            None,
+            None, // esc is mapped in commands.rs
             None,
             "revert to the previous state (mapped to `<esc>`)",
         );
@@ -101,6 +101,18 @@ impl VerbStore {
             Some("?".to_string()),
             "display broot's help",
         );
+        self.add_builtin(
+            "line_down",
+            Some(KeyEvent::Down),
+            None,
+            "move one line down"
+        );
+        self.add_builtin(
+            "line_up",
+            Some(KeyEvent::Up),
+            None,
+            "move one line up"
+        );
         self.verbs.push(
             Verb::create_external(
                 "mkdir {subpath}",
@@ -128,15 +140,33 @@ impl VerbStore {
             .unwrap(),
         );
         self.add_builtin(
-            "open",
+            "open_stay",
+            None, // default mapping directly handled in commands#add_event
             None,
+            "open file or directory according to OS settings (stays in broot)",
+        );
+        self.add_builtin(
+            "open_leave",
+            None, // default mapping directly handled in commands#add_event
             None,
             "open file or directory according to OS settings (quit broot)",
         );
         self.add_builtin(
+            "page_down",
+            Some(KeyEvent::PageDown),
+            None,
+            "scroll one page down"
+        );
+        self.add_builtin(
+            "page_up",
+            Some(KeyEvent::PageUp),
+            None,
+            "scroll one page up"
+        );
+        self.add_builtin(
             "parent",
             None,
-            None,
+            Some("p".to_string()),
             "move to the parent directory"
         );
         self.add_builtin(
@@ -249,10 +279,10 @@ impl VerbStore {
             _ => PrefixSearchResult::TooManyMatches,
         }
     }
-    // return the index of the verb having the long name. This function is meant
-    // for internal access when it's sure it can't failed (i.e. for a builtin)
-    // It looks for verbs by key, starting from the builtins, to
-    // ensure it hasn't been overriden.
+    /// return the index of the verb having the long name. This function is meant
+    /// for internal access when it's sure it can't failed (i.e. for a builtin)
+    /// It looks for verbs by key, starting from the builtins, to
+    /// ensure it hasn't been overriden.
     pub fn index_of(&self, name: &str) -> usize {
         for i in 0..self.verbs.len() {
             if self.verbs[i].invocation.key == name {
@@ -260,5 +290,16 @@ impl VerbStore {
             }
         }
         panic!("invalid verb search");
+    }
+    /// return the index of the verb which is triggered by the given key, if any
+    pub fn index_of_key(&self, key: &KeyEvent) -> Option<usize> {
+        for i in 0..self.verbs.len() {
+            if let Some(verb_key) = self.verbs[i].key {
+                if verb_key == *key {
+                    return Some(i);
+                }
+            }
+        }
+        None
     }
 }

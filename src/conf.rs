@@ -156,18 +156,11 @@ impl Conf {
 
 const DEFAULT_CONF_FILE: &str = r#"
 # This configuration file lets you define new commands
-# or change the shortcut of built-in verbs.
+# or change the shortcut or triggering keys of built-in verbs.
 # You can change the colors of broot too.
 #
 # Configuration documentation is available at https://dystroy.org/broot
 #
-
-###############################
-# shortcuts for built-in verbs:
-
-[[verbs]]
-invocation = "p"
-execution = ":parent"
 
 #####################
 # user defined verbs:

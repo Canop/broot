@@ -71,7 +71,7 @@ impl BrowserState {
         )
     }
 
-    fn page_height(screen: &Screen) -> i32 {
+    pub fn page_height(screen: &Screen) -> i32 {
         i32::from(screen.h) - 2
     }
 
@@ -87,7 +87,7 @@ impl BrowserState {
         self.filtered_tree.as_mut().unwrap_or(&mut self.tree)
     }
 
-    fn open_selection_stay_in_broot(
+    pub fn open_selection_stay_in_broot(
         &mut self,
         screen: &mut Screen,
         _con: &AppContext,
@@ -130,7 +130,7 @@ impl BrowserState {
         }
     }
 
-    fn open_selection_quit_broot(
+    pub fn open_selection_quit_broot(
         &mut self,
         screen: &mut Screen,
         con: &AppContext,
@@ -242,14 +242,6 @@ impl AppState for BrowserState {
                 self.displayed_tree_mut().move_selection(*dy, page_height);
                 Ok(AppStateCmdResult::Keep)
             }
-            Action::ScrollPage(dp) => {
-                let tree = self.displayed_tree_mut();
-                if page_height < tree.lines.len() as i32 {
-                    let dy = dp * page_height;
-                    tree.try_scroll(dy, page_height);
-                }
-                Ok(AppStateCmdResult::Keep)
-            }
             Action::Click(_, y) => {
                 let y = *y as i32 - 1; // click position starts at (1, 1)
                 self.displayed_tree_mut().try_select_y(y);
@@ -267,6 +259,10 @@ impl AppState for BrowserState {
             }
             Action::OpenSelection => self.open_selection_stay_in_broot(screen, con),
             Action::AltOpenSelection => self.open_selection_quit_broot(screen, con),
+            Action::VerbIndex(index) => {
+                let verb = &con.verb_store.verbs[*index];
+                self.execute_verb(verb, &verb.invocation, screen, con)
+            },
             Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::Match(verb) => {
                     self.execute_verb(verb, &invocation, screen, con)

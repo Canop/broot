@@ -62,8 +62,7 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
             ("ctrl", Some(minor)) | ("^", Some(minor)) => KeyEvent::Ctrl(
                 minor.as_str().chars().next().unwrap().to_ascii_lowercase()
             ),
-            // other possible mappings are disabled as they would break
-            // basic behaviors of broot
+            // other possible mappings are disabled as they would break basic behaviors of broot
             _ => bad_key(raw)?
         }),
         None => bad_key(raw)

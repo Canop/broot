@@ -1,3 +1,6 @@
+### Next version
+* keyboard keys & shortcuts can be defined for more actions, all built-in verbs documented in website
+
 <a name="v0.9.4"></a>
 ### v0.9.4 - 2019-09-13
 New internal verbs like :focus_root, :focus_user_home, :refresh, :select_first

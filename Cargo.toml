@@ -30,7 +30,7 @@ crossterm_style = "=0.3.3"
 crossterm_terminal = "=0.2.4"
 crossterm_utils = "=0.2.3"
 umask = "0.1.4"
-termimad = "0.6.4"
+termimad = "0.6.5"
 #termimad = { path = "../termimad" }
 
 [target.'cfg(unix)'.dependencies]
