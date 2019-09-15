@@ -152,7 +152,7 @@ impl Command {
             }
             Event::Key(key) => {
                 // we start by looking if the key is the trigger key of one of the verbs
-                if let Some(index) = con.verb_store.index_of_key(key) {
+                if let Some(index) = con.verb_store.index_of_key(*key) {
                     self.action = Action::VerbIndex(index);
                     return;
                 }

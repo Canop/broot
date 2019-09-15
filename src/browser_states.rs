@@ -379,8 +379,8 @@ impl AppState for BrowserState {
 
     fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
         match &cmd.action {
-            Action::FuzzyPatternEdit(s) if s.len() > 0 => self.write_status_normal(screen, true),
-            Action::RegexEdit(s, _) if s.len() > 0 => self.write_status_normal(screen, true),
+            Action::FuzzyPatternEdit(s) if !s.is_empty() => self.write_status_normal(screen, true),
+            Action::RegexEdit(s, _) if !s.is_empty() => self.write_status_normal(screen, true),
             Action::VerbEdit(invocation) => {
                 match con.verb_store.search(&invocation.key) {
                     PrefixSearchResult::NoMatch => {

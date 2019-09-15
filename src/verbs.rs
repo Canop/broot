@@ -293,14 +293,18 @@ fn do_exec_replacement(
                     if cap.starts_with('/') {
                         cap.to_string()
                     } else {
-                        format!("{}/{}", replacement_map.get("directory").unwrap(), cap)
+                        normalize_path(
+                            format!("{}/{}", replacement_map.get("directory").unwrap(), cap)
+                        )
                     }
                 }
                 "path-from-parent" => {
                     if cap.starts_with('/') {
                         cap.to_string()
                     } else {
-                        format!("{}/{}", replacement_map.get("parent").unwrap(), cap)
+                        normalize_path(
+                            format!("{}/{}", replacement_map.get("parent").unwrap(), cap)
+                        )
                     }
                 }
                 _ => {
@@ -314,3 +318,45 @@ fn do_exec_replacement(
         format!("{{{}}}", name)
     }
 }
+
+/// Improve the path to remove and solve .. token.
+///
+/// This will be removed when this issue is solved: https://github.com/rust-lang/rfcs/issues/2208
+///
+/// Note that this operation might be a little too optimistic in some cases
+/// of aliases but it's probably OK in broot.
+pub fn normalize_path(mut path: String) -> String {
+    lazy_static! {
+        static ref RE: Regex = Regex::new(r"/[^/.\\]+/\.\.").unwrap();
+    }
+    let mut len_before = path.len();
+    loop {
+        path = RE.replace(&path, "").to_string();
+        let len = path.len();
+        if len == len_before {
+            return path;
+        }
+        len_before = len;
+    }
+}
+#[cfg(test)]
+mod path_normalize_tests {
+
+    use crate::verbs::normalize_path;
+
+    fn check(before: &str, after: &str) {
+        assert_eq!(normalize_path(before.to_string()), after.to_string());
+    }
+
+    #[test]
+    fn test_path_normalization() {
+        check("/abc/test/../thing.png", "/abc/thing.png");
+        check("/abc/def/../../thing.png", "/thing.png");
+        check("/home/dys/test", "/home/dys/test");
+        check("/home/dys/..", "/home");
+        check("/home/dys/../", "/home/");
+        check("/..", "/..");
+        check("/home/dys/dev/broot/../../../canop/test", "/home/canop/test");
+    }
+}
+

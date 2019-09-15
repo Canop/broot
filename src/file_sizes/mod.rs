@@ -60,8 +60,8 @@ impl Size {
         }
         format!("{}{}", v, &SIZE_NAMES[i])
     }
-    pub fn part_of(&self, total: Size) -> f32 {
-        if total.0 <= 0 {
+    pub fn part_of(self, total: Size) -> f32 {
+        if total.0 == 0 {
             0.0
         } else {
             self.0 as f32 / total.0 as f32
