@@ -1,5 +1,7 @@
-### Next version
+<a name="v0.9.5"></a>
+### v0.9.5 - 2019-09-15
 * keyboard keys & shortcuts can be defined for more actions, all built-in verbs documented in website
+* paths built from verb arguments are now normalized
 
 <a name="v0.9.4"></a>
 ### v0.9.4 - 2019-09-13
