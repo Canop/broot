@@ -75,9 +75,13 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         f: &mut fmt::Formatter<'_>,
         line: &TreeLine,
         total_size: Size,
+        selected: bool,
     ) -> fmt::Result {
         if let Some(s) = line.size {
             let pb = ProgressBar::new(s.part_of(total_size), 10);
+            if selected {
+                self.skin.selected_line.print_bg();
+            }
             let style = self.name_style(line);
             if let Some(fg) = style.fg_color {
                 write!(f, "{}{:>5} {:<10} ", Colored::Fg(fg), s.to_string(), pb)
@@ -205,6 +209,7 @@ impl fmt::Display for DisplayableTree<'_, '_> {
             }
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
+                let selected = self.in_app && line_index == tree.selection;
                 for depth in 0..line.depth {
                     self.skin.tree.write(
                         f,
@@ -224,7 +229,7 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                     )?;
                 }
                 if tree.options.show_sizes && line_index > 0 {
-                    self.write_line_size(f, line, total_size)?;
+                    self.write_line_size(f, line, total_size, selected)?;
                 }
                 #[cfg(unix)]
                 {
@@ -247,7 +252,6 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                         self.skin.tree.write(f, "──────────────── ")?;
                     }
                 }
-                let selected = self.in_app && line_index == tree.selection;
                 self.write_line_name(f, line, line_index, &tree.options.pattern, selected)?;
                 if selected {
                     self.skin.selected_line.print_bg();
