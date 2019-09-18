@@ -51,15 +51,18 @@ impl Screen {
         self.input_field.change_area(0, h, w-15);
         Ok(())
     }
-    // move the cursor to x,y
-    // top left corner is (1, 1)
+    /// move the cursor to x,y and clears the line.
+    ///
+    /// top left corner is (1, 1)
     pub fn goto_clear(&self, x: u16, y: u16) {
         self.goto(x, y);
         self.clear_line();
     }
+    /// move the cursor to x,y
+    ///
+    /// top left corner is (1, 1)
     pub fn goto(&self, x: u16, y: u16) {
         let cursor = TerminalCursor::new();
-        //debug!("goto x={}, y={}", x, y);
         cursor.goto(x - 1, y - 1).unwrap();
     }
     pub fn clear_line(&self) {

@@ -25,7 +25,7 @@ pub enum Launchable {
     TreePrinter {
         // print the tree on end of broot
         tree: Box<Tree>,
-        skin: Skin,
+        skin: Box<Skin>,
         width: u16,
     },
     Program {
@@ -58,7 +58,7 @@ impl Launchable {
     pub fn tree_printer(tree: &Tree, screen: &Screen) -> Launchable {
         Launchable::TreePrinter {
             tree: Box::new(tree.clone()),
-            skin: screen.skin.clone(),
+            skin: Box::new(screen.skin.clone()),
             width: screen.w,
         }
     }

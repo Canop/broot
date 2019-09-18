@@ -1,19 +1,20 @@
 use std::fmt;
 
+/// An ElidedString is the list of parts we keep after we removed
+/// enough to fit a given width.
+///
+/// We try to remove parts in the middle of the longest tokens
+/// (parts without spaces).
+///
+/// Note: our heuristic works for broot status lines but isn't
+/// expected to be a universally good solution.
 pub struct ElidedString<'a> {
     pub parts: Vec<&'a str>,
 }
 
 /// we won't cut into smaller tokens
-const CUTTABLE_TOKEN_THRESHOLD: usize = 7;
+const CUTABLE_TOKEN_THRESHOLD: usize = 7;
 
-/// An ElidedString is the list of parts we keep after we removed
-/// enough to fit a given width.
-///
-/// We try to remove parts from the longest tokens (parts without spaces).
-///
-/// Note: our heuristic works for broot status lines but isn't
-/// expected to be a universally good solution.
 impl<'a> ElidedString<'_> {
     /// return a vector of strings, whose total length, if you add an
     /// ellipsis between parts, fits the given width.
@@ -25,13 +26,13 @@ impl<'a> ElidedString<'_> {
             let mut to_remove = text.len() - width;
             let mut ranges = core_ranges(text);
             ranges.sort_unstable_by(|a, b| b.possible_gain().cmp(&a.possible_gain()));
-            for i in 0..ranges.len() {
-                if ranges[i].protected {
+            for r in ranges.iter_mut() {
+                if r.protected {
                     continue;
                 }
-                let gain = ranges[i].possible_gain().min(to_remove);
+                let gain = r.possible_gain().min(to_remove);
                 to_remove -= gain;
-                ranges[i].removed += gain;
+                r.removed += gain;
                 if to_remove == 0 {
                     break;
                 }
@@ -81,7 +82,7 @@ impl Range {
             start,
             end,
             removed: 0,
-            protected: protected || (end - start + 1 < CUTTABLE_TOKEN_THRESHOLD),
+            protected: protected || (end - start + 1 < CUTABLE_TOKEN_THRESHOLD),
         }
     }
     /// the number of chars which would be gained by removing

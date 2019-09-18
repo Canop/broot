@@ -4,7 +4,6 @@ use crate::app_context::AppContext;
 use crate::conf::Conf;
 
 /// build the markdown which will be displayed in the help page
-///
 pub fn build_markdown(con: &AppContext) -> String {
     let mut md = String::new();
     md.push_str(&format!("\n# broot v{}", env!("CARGO_PKG_VERSION")));
@@ -28,7 +27,6 @@ Typing some letters searches the tree and selects the most relevant file.
 To use a regular expression, use a slash at start or end eg `/j(ava|s)$`.
 The **🡑** and **🡓** arrow keys can be used to change selection.
 The mouse can be used to select (on click) or open (on double-click).
-
 "#;
 
 const MD_VERBS: &str = r#"

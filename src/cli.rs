@@ -179,6 +179,8 @@ pub fn ask_authorization() -> io::Result<bool> {
     })
 }
 
+/// build a termimad skin for cli output (mostly
+/// for the install process)
 pub fn mad_skin() -> MadSkin {
     let mut skin = MadSkin::default();
     skin.set_headers_fg(Color::AnsiValue(178));

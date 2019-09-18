@@ -11,8 +11,8 @@ use crate::git_ignore::GitIgnoreFilter;
 use crate::task_sync::TaskLifetime;
 use crate::tree_options::{OptionBool, TreeOptions};
 
-// like a tree line, but with the info needed during the build
-// This structure isn't usable independantly from the tree builder
+/// like a tree line, but with the info needed during the build
+/// This structure isn't usable independantly from the tree builder
 struct BLine {
     parent_idx: usize,
     path: PathBuf,
@@ -28,7 +28,7 @@ struct BLine {
     nb_kept_children: i32, // used during the trimming step
 }
 
-// the result of trying to build a bline
+/// the result of trying to build a bline
 enum BLineResult {
     Some(BLine), // the only positive result
     FilteredOutAsHidden,
@@ -39,7 +39,7 @@ enum BLineResult {
 }
 
 impl BLine {
-    // a special constructor, checking nothing
+    /// a special constructor, checking nothing
     fn from_root(path: PathBuf, respect_ignore: OptionBool) -> Result<BLine, TreeBuildError> {
         let name = match path.file_name() {
             Some(name) => name.to_string_lossy().to_string(),
@@ -78,7 +78,7 @@ impl BLine {
             })
         }
     }
-    // return a bline if the direntry directly matches the options and there's no error
+    /// return a bline if the direntry directly matches the options and there's no error
     fn from(
         parent_idx: usize,
         e: fs::DirEntry,
@@ -174,10 +174,6 @@ impl BLine {
             LineType::File
         };
         let unlisted = if let Some(children) = &self.children {
-            //debug!(
-            //    "{:?} children.len()={} nb_kept_children={}",
-            //    &self.path, children.len(), self.nb_kept_children
-            //);
             children.len() - self.next_child_idx
         } else {
             0
@@ -229,11 +225,11 @@ impl PartialOrd for SortableBLineIdx {
     }
 }
 
-// The TreeBuilder builds a Tree according to options (including an optional search pattern)
-// Instead of the final TreeLine, the builder uses an internal structure: BLine.
-// All BLines used during build are stored in the blines vector and kept until the end.
-// Most operations and temporary data structures just deal with the indexes of lines in
-//  the blines vector.
+/// The TreeBuilder builds a Tree according to options (including an optional search pattern)
+/// Instead of the final TreeLine, the builder uses an internal structure: BLine.
+/// All BLines used during build are stored in the blines vector and kept until the end.
+/// Most operations and temporary data structures just deal with the indexes of lines in
+///  the blines vector.
 pub struct TreeBuilder {
     blines: Vec<BLine>, // all blines, even the ones not yet "seen" by BFS
     options: TreeOptions,
@@ -255,13 +251,13 @@ impl TreeBuilder {
             nb_gitignored: 0,
         })
     }
-    // stores (move) the bline in the global vec. Returns its index
+    /// stores (move) the bline in the global vec. Returns its index
     fn store(&mut self, bline: BLine) -> usize {
         let idx = self.blines.len();
         self.blines.push(bline);
         idx
     }
-    // returns true when there are direct matches among children
+    /// returns true when there are direct matches among children
     fn load_children(&mut self, bline_idx: usize) -> bool {
         let mut has_child_match = false;
         match fs::read_dir(&self.blines[bline_idx].path) {
@@ -303,10 +299,6 @@ impl TreeBuilder {
                 self.blines[bline_idx].children = Some(children);
             }
             Err(_err) => {
-                //debug!(
-                //    "Error while listing {:?} : {:?}",
-                //    self.blines[bline_idx].path, err
-                //);
                 self.blines[bline_idx].has_error = true;
                 self.blines[bline_idx].children = Some(Vec::new());
             }
@@ -332,9 +324,9 @@ impl TreeBuilder {
         }
     }
 
-    // first step of the build: we explore the directories and gather lines.
-    // If there's no search pattern we stop when we have enough lines to fill the screen.
-    // If there's a pattern, we try to gather more lines that will be sorted afterwards.
+    /// first step of the build: we explore the directories and gather lines.
+    /// If there's no search pattern we stop when we have enough lines to fill the screen.
+    /// If there's a pattern, we try to gather more lines that will be sorted afterwards.
     fn gather_lines(&mut self, task_lifetime: &TaskLifetime) -> Option<Vec<usize>> {
         let start = Instant::now();
         let mut out_blines: Vec<usize> = Vec::new(); // the blines we want to display (indexes into blines)
@@ -415,11 +407,11 @@ impl TreeBuilder {
         Some(out_blines)
     }
 
-    // Post search trimming
-    // When there's a pattern, gathering normally brings many more lines than
-    //  strictly necessary to fill the screen.
-    // This function keeps only the best ones while taking care of not
-    //  removing a parent before its children.
+    /// Post search trimming
+    /// When there's a pattern, gathering normally brings many more lines than
+    ///  strictly necessary to fill the screen.
+    /// This function keeps only the best ones while taking care of not
+    ///  removing a parent before its children.
     fn trim_excess(&mut self, out_blines: &[usize]) {
         let mut count = 1;
         let trim_root = self.options.trim_root && !self.options.show_sizes;
@@ -504,7 +496,10 @@ impl TreeBuilder {
         tree
     }
 
-    // build a tree. Can be called only once per builder
+    /// build a tree. Can be called only once per builder.
+    ///
+    /// Return None if the lifetime expires before end of computation
+    /// (usually because the user hit a key)
     pub fn build(mut self, task_lifetime: &TaskLifetime) -> Option<Tree> {
         debug!("start building with pattern {}", self.options.pattern);
         match self.gather_lines(task_lifetime) {
