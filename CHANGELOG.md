@@ -1,3 +1,7 @@
+### next version
+* smarter cut of the status line when it doesn't fit the console's width
+* fix mouse click on the status line crashing broot
+
 <a name="v0.9.5"></a>
 ### v0.9.5 - 2019-09-15
 * keyboard keys & shortcuts can be defined for more actions, all built-in verbs documented in website

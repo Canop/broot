@@ -101,9 +101,10 @@ Skin! {
     flag_label: gray(15), gray(1);
     flag_value: Some(Blue), gray(1); {Bold}
     input: Some(White), None;
-    spinner: gray(10), gray(2);
+    spinner: gray(10), gray(3);
     status_error: Some(White), Some(Red);
-    status_normal: Some(White), gray(2);
+    status_normal: Some(White), gray(3);
+    status_elision: gray(15), None;
     scrollbar_track: gray(7), None;
     scrollbar_thumb: gray(22), None;
     help_paragraph: gray(20), None;

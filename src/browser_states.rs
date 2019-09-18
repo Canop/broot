@@ -393,8 +393,7 @@ impl AppState for BrowserState {
                             let line = self.displayed_tree().selected_line();
                             screen.write_status_text(
                                 &format!(
-                                    "Hit <enter> to {} : {}",
-                                    &verb.invocation.key,
+                                    "Hit <enter> for: {}",
                                     verb.description_for(line.path.clone(), &invocation.args)
                                 )
                                 .to_string(),

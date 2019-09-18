@@ -1,5 +1,6 @@
 use std::io;
 
+use crate::elision::ElidedString;
 use crate::screens::Screen;
 use crate::skin::{self, SkinEntry};
 use crossterm_style::ObjectStyle;
@@ -13,11 +14,15 @@ pub trait Status {
 
 impl Screen {
     fn write_status(&self, text: &str, skin: &ObjectStyle) -> io::Result<()> {
-        let mut text = String::from(text);
-        text.truncate(self.w as usize - 3);
+        let es = ElidedString::from(text, self.w as usize - 1); // why isn't it -3 ?
         self.goto_clear(2, self.h - 1);
         skin.print_string(" ");
-        skin.print_string(&text);
+        for (i, part) in es.parts.iter().enumerate() {
+            if i > 0 {
+                self.skin.status_elision.print_string("…");
+            }
+            skin.print_string(&part);
+        }
         skin.print_bg();
         self.clear_line();
         skin::reset();
@@ -27,11 +32,10 @@ impl Screen {
 
 impl Status for Screen {
     fn write_status_err(&self, text: &str) -> io::Result<()> {
-        //debug!("display error {:?}", text);
         self.write_status(text, &self.skin.status_error)
     }
     fn write_status_text(&self, text: &str) -> io::Result<()> {
-        //debug!("display status {:?}", text);
         self.write_status(text, &self.skin.status_normal)
     }
 }
+

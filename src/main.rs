@@ -12,6 +12,7 @@ mod command_parsing;
 mod commands;
 mod conf;
 mod displayable_tree;
+mod elision;
 mod errors;
 mod external;
 mod file_sizes;
