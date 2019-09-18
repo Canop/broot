@@ -255,7 +255,7 @@ impl Tree {
     /// try to select a line (works if y+scroll falls on a selectable line)
     pub fn try_select_y(&mut self, y: i32) -> bool {
         let y = y + self.scroll;
-        if y >= 0 && y <= self.lines.len() as i32 {
+        if y >= 0 && y < self.lines.len() as i32 {
             let y = y as usize;
             if self.lines[y].is_selectable() {
                 self.selection = y;
