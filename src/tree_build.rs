@@ -174,6 +174,7 @@ impl BLine {
             LineType::File
         };
         let unlisted = if let Some(children) = &self.children {
+            // number of not listed children
             children.len() - self.next_child_idx
         } else {
             0
@@ -417,6 +418,7 @@ impl TreeBuilder {
         let trim_root = self.options.trim_root && !self.options.show_sizes;
         for idx in out_blines[1..].iter() {
             if self.blines[*idx].has_match {
+                //debug!("bline before trimming: {:?}", &self.blines[*idx].path);
                 count += 1;
                 let parent_idx = self.blines[*idx].parent_idx;
                 self.blines[parent_idx].nb_kept_children += 1;

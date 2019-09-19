@@ -174,7 +174,11 @@ impl Tree {
         // we sort the lines (this is mandatory to avoid crashes)
         self.lines[1..].sort();
 
+        let mut best_index = 0; // index of the line with the best score
         for i in 1..self.lines.len() {
+            if self.lines[i].score > self.lines[best_index].score {
+                best_index = i;
+            }
             for d in 0..self.lines[i].left_branchs.len() {
                 self.lines[i].left_branchs[d] = false;
             }
@@ -208,11 +212,15 @@ impl Tree {
                     // the line at end_index is the last listed child of the line at parent_index
                     let unlisted = self.lines[parent_index].unlisted;
                     if unlisted > 0 && self.lines[end_index].nb_kept_children == 0 {
-                        self.lines[end_index].line_type = LineType::Pruning;
-                        self.lines[end_index].unlisted = unlisted + 1;
-                        self.lines[end_index].name =
-                            format!("{} unlisted", unlisted + 1).to_owned();
-                        self.lines[parent_index].unlisted = 0;
+                        if best_index==end_index {
+                            debug!("Avoiding to prune the line with best score");
+                        } else {
+                            debug!("turning {:?} into Pruning", self.lines[end_index].path);
+                            self.lines[end_index].line_type = LineType::Pruning;
+                            self.lines[end_index].unlisted = unlisted + 1;
+                            self.lines[end_index].name = format!("{} unlisted", unlisted + 1).to_owned();
+                            self.lines[parent_index].unlisted = 0;
+                        }
                     }
                     last_parent_index = parent_index;
                 }
