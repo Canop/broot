@@ -1,6 +1,8 @@
-### next version
+<a name="v0.9.6"></a>
+### v0.9.6 - 2019-09-20
 * smarter cut of the status line when it doesn't fit the console's width
 * fix mouse click on the status line crashing broot
+* prevent the best match from being hidden inside "unlisted" matches
 
 <a name="v0.9.5"></a>
 ### v0.9.5 - 2019-09-15

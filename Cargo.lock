@@ -86,7 +86,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "0.9.5"
+version = "0.9.6"
 dependencies = [
  "chrono 0.4.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
