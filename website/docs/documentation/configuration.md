@@ -37,7 +37,7 @@ from_shell | no | whether the verb must be executed from the parent shell (needs
 
 ## Shortcuts and Verb search
 
-**broot** looks for the first token following a space or `:` and tryes to find the verb you want.
+**broot** looks for the first token following a space or `:` and tries to find the verb you want.
 
 * If what you typed is exactly the shorcut or name of a verb, then this verb is selected: broot explains you what it would do if you were to type `enter`
 * If there's exactly one verb whose name or shortcut starts with the characters you typed, then it's selected
