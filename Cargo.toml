@@ -19,7 +19,7 @@ directories = "2.0"
 toml = "0.5"
 custom_error = "1.6"
 log = "0.4"
-simplelog = "0.6"
+simplelog = "0.7"
 clap = "2.33"
 glob = "0.3"
 crossbeam = "0.7"
@@ -33,6 +33,7 @@ crossterm_utils = "=0.2.3"
 umask = "0.1.4"
 termimad = "0.6.5"
 #termimad = { path = "../termimad" }
+id-arena = "2.2.1"
 
 [target.'cfg(unix)'.dependencies]
 users = "0.9"

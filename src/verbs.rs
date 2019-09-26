@@ -356,6 +356,8 @@ mod path_normalize_tests {
         check("/home/dys/..", "/home");
         check("/home/dys/../", "/home/");
         check("/..", "/..");
+        check("../test", "../test");
+        check("/home/dys/../../../test", "/../test");
         check("/home/dys/dev/broot/../../../canop/test", "/home/canop/test");
     }
 }

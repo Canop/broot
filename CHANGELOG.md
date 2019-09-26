@@ -1,3 +1,6 @@
+### next version
+Nothing notable yet
+
 <a name="v0.9.6"></a>
 ### v0.9.6 - 2019-09-20
 * smarter cut of the status line when it doesn't fit the console's width
