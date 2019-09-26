@@ -174,6 +174,7 @@ impl ShellFamily<'static> {
                     .open(&rc_file.1)?;
                 shellrc.write_all(b"\n")?;
                 shellrc.write_all(source_line.as_bytes())?;
+                shellrc.write_all(b"\n")?;
                 println!(
                     "{} successfully patched, you should now refresh it with",
                     rc_file.0
