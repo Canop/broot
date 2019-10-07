@@ -109,11 +109,8 @@ impl Launchable {
 // Don't do unnecessary transformation, so that the produced string
 //  is prettier on screen.
 pub fn escape_for_shell(path: &Path) -> String {
-    lazy_static! {
-        static ref SIMPLE_PATH: Regex = Regex::new(r"^[\w/.-]*$").unwrap();
-    }
     let path = path.to_string_lossy();
-    if SIMPLE_PATH.is_match(&path) {
+    if regex!(r"^[\w/.-]*$").is_match(&path) {
         path.to_string()
     } else {
         format!("'{}'", &path.replace('\'', r"'\''"))

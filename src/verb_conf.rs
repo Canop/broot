@@ -26,18 +26,15 @@ fn bad_key(raw: &str) -> Result<KeyEvent, ConfError> {
 /// parsed because we don't want to let the user override
 /// the related behaviors.
 pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(
-            r"(?x)
-            ^
-            (?P<major>([a-zA-Z]+|\^))
-            (?:\W?(?P<minor>\w\d?)\W?)?
-            $
-            "
-        )
-        .unwrap();
-    }
-    match RE.captures(raw) {
+    let key_regex = regex!(
+        r"(?x)
+        ^
+        (?P<major>([a-zA-Z]+|\^))
+        (?:\W?(?P<minor>\w\d?)\W?)?
+        $
+        "
+    );
+    match key_regex.captures(raw) {
         Some(c) => Ok(match (
                 c.name("major").unwrap().as_str().to_ascii_lowercase().as_ref(), c.name("minor")
             ) {

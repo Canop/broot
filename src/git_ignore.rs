@@ -20,22 +20,19 @@ struct GitIgnoreRule {
 
 impl GitIgnoreRule {
     fn from(line: &str, dir: &Path) -> Option<GitIgnoreRule> {
-        lazy_static! {
-            static ref RE: Regex = Regex::new(
-                r"(?x)
-                ^\s*
-                (!)?    # 1 : negation
-                (.+?)   # 2 : pattern
-                (/)?    # 3 : directory
-                \s*$
-                "
-            )
-            .unwrap();
-        }
         if line.starts_with('#') {
             return None; // comment line
         }
-        if let Some(c) = RE.captures(line) {
+        let r = regex!(
+            r"(?x)
+            ^\s*
+            (!)?    # 1 : negation
+            (.+?)   # 2 : pattern
+            (/)?    # 3 : directory
+            \s*$
+            "
+        );
+        if let Some(c) = r.captures(line) {
             if let Some(p) = c.get(2) {
                 let mut p = p.as_str().to_string();
                 let has_separator = p.contains('/');

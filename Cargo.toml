@@ -34,6 +34,7 @@ umask = "0.1.4"
 termimad = "0.6.5"
 #termimad = { path = "../termimad" }
 id-arena = "2.2.1"
+lazy-regex = "0.1.0"
 
 [target.'cfg(unix)'.dependencies]
 users = "0.9"

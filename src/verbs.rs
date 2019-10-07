@@ -326,12 +326,9 @@ fn do_exec_replacement(
 /// Note that this operation might be a little too optimistic in some cases
 /// of aliases but it's probably OK in broot.
 pub fn normalize_path(mut path: String) -> String {
-    lazy_static! {
-        static ref RE: Regex = Regex::new(r"/[^/.\\]+/\.\.").unwrap();
-    }
     let mut len_before = path.len();
     loop {
-        path = RE.replace(&path, "").to_string();
+        path = regex!(r"/[^/.\\]+/\.\.").replace(&path, "").to_string();
         let len = path.len();
         if len == len_before {
             return path;

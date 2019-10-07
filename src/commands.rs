@@ -56,8 +56,7 @@ impl CommandParts {
     }
     fn from(raw: &str) -> CommandParts {
         let mut cp = CommandParts::new();
-        lazy_static! {
-            static ref RE: Regex = Regex::new(
+        let r = regex!(
                 r"(?x)
                 ^
                 (?P<slash_before>/)?
@@ -66,10 +65,8 @@ impl CommandParts {
                 (?:[\s:]+(?P<verb_invocation>.*))?
                 $
                 "
-            )
-            .unwrap();
-        }
-        if let Some(c) = RE.captures(raw) {
+        );
+        if let Some(c) = r.captures(raw) {
             if let Some(pattern) = c.name("pattern") {
                 cp.pattern = Some(String::from(pattern.as_str()));
                 if let Some(rxf) = c.name("regex_flags") {

@@ -24,10 +24,7 @@ use crate::skin;
 /// has be done before, to ensure case-insensitive parsing)
 fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
 
-    lazy_static! {
-        static ref ANSI_REX: Regex = Regex::new(r"^ansi\((?P<value>\d+)\)$").unwrap();
-    }
-    if let Some(c) = ANSI_REX.captures(&s) {
+    if let Some(c) = regex!(r"^ansi\((?P<value>\d+)\)$").captures(&s) {
         let value: &str = c.name("value").unwrap().as_str();
         let value = value.parse();
         if let Ok(value) = value {
@@ -37,10 +34,7 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         }
     }
 
-    lazy_static! {
-        static ref GRAY_REX: Regex = Regex::new(r"^gr[ae]y(?:scale)?\((?P<level>\d+)\)$").unwrap();
-    }
-    if let Some(c) = GRAY_REX.captures(&s) {
+    if let Some(c) = regex!(r"^gr[ae]y(?:scale)?\((?P<level>\d+)\)$").captures(&s) {
         let level: &str = c.name("level").unwrap().as_str();
         let level = level.parse();
         if let Ok(level) = level {
@@ -53,11 +47,7 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         }
     }
 
-    lazy_static! {
-        static ref RGB_REX: Regex =
-            Regex::new(r"^rgb\((?P<r>\d+),\s*(?P<g>\d+),\s*(?P<b>\d+)\)$").unwrap();
-    }
-    if let Some(c) = RGB_REX.captures(&s) {
+    if let Some(c) = regex!(r"^rgb\((?P<r>\d+),\s*(?P<g>\d+),\s*(?P<b>\d+)\)$").captures(&s) {
         let r = c.name("r").unwrap().as_str().parse();
         let g = c.name("g").unwrap().as_str().parse();
         let b = c.name("b").unwrap().as_str().parse();
@@ -109,20 +99,17 @@ fn parse_attributes(s: &str) -> Result<Vec<Attribute>, InvalidSkinError> {
 
 pub fn parse_object_style(s: &str) -> Result<ObjectStyle, InvalidSkinError> {
     let s = s.to_ascii_lowercase();
-    lazy_static! {
-        static ref PARTS_REX: Regex = Regex::new(
-            r"(?x)
-            ^
-            (?P<fg>\w+(\([\d,\s]+\))?)
-            \s+
-            (?P<bg>\w+(\([\d,\s]+\))?)
-            (?P<attributes>.*)
-            $
-            "
-        )
-        .unwrap();
-    }
-    if let Some(c) = PARTS_REX.captures(&s) {
+    let parts_rex = regex!(
+        r"(?x)
+        ^
+        (?P<fg>\w+(\([\d,\s]+\))?)
+        \s+
+        (?P<bg>\w+(\([\d,\s]+\))?)
+        (?P<attributes>.*)
+        $
+        "
+    );
+    if let Some(c) = parts_rex.captures(&s) {
         debug!("match for {:?}", s);
         let fg_color = parse_color(c.name("fg").unwrap().as_str())?;
         let bg_color = parse_color(c.name("bg").unwrap().as_str())?;
