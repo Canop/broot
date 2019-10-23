@@ -24,17 +24,11 @@ clap = "2.33"
 glob = "0.3"
 crossbeam = "0.7"
 opener = "0.4"
-crossterm_cursor = "=0.2.4"
-crossterm_input = "=0.3.6"
-crossterm_screen = "=0.2.3"
-crossterm_style = "=0.3.3"
-crossterm_terminal = "=0.2.4"
-crossterm_utils = "=0.2.3"
+crossterm = "0.12.1"
 umask = "0.1.4"
-termimad = "0.6.5"
-#termimad = { path = "../termimad" }
+termimad = "0.7.0"
 id-arena = "2.2.1"
-lazy-regex = "0.1.0"
+lazy-regex = "0.1"
 
 [target.'cfg(unix)'.dependencies]
 users = "0.9"
@@ -45,3 +39,8 @@ is_executable = "0.1"
 [profile.release]
 lto = true # link time optimization - roughly halves the size of the exec
 codegen-units = 1 # this removes a few hundred bytes from the final exec size
+
+[patch.crates-io]
+# termimad = { path = "../termimad" }
+# crossterm = { path = "../crossterm-rs/crossterm" }
+

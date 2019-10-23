@@ -1,5 +1,5 @@
 ### next version
-Nothing notable yet
+* moved to the new versions of crossterm and termimad
 
 <a name="v0.9.6"></a>
 ### v0.9.6 - 2019-09-20

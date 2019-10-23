@@ -3,10 +3,10 @@
 //! the verbstore to try guess what part is an argument and what
 //! part is a filter
 
-use crate::app_context::AppContext;
-use crate::commands::Command;
-use crate::errors::ProgramError;
-use crate::verb_store::PrefixSearchResult;
+use crate::{
+    app_context::AppContext, commands::Command, errors::ProgramError,
+    verb_store::PrefixSearchResult,
+};
 
 #[derive(Debug)]
 enum CommandSequenceToken {

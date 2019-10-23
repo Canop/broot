@@ -3,12 +3,15 @@
 ///  same directories again and again.
 /// Hard links are checked to avoid counting
 ///  twice an inode.
+use std::{
+    collections::HashMap,
+    ops::AddAssign,
+    path::{Path, PathBuf},
+    sync::Mutex,
+    time::Instant,
+};
+
 use crate::task_sync::TaskLifetime;
-use std::collections::HashMap;
-use std::ops::AddAssign;
-use std::path::{Path, PathBuf};
-use std::sync::Mutex;
-use std::time::Instant;
 
 const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"]; // Y: for when your disk is bigger than 1024 ZB
 
@@ -25,7 +28,8 @@ pub fn clear_cache() {
 pub struct Size(u64);
 
 impl Size {
-
+    /// return the size of the given file, which is assumed
+    /// to be a normal file (ie not a directory)
     pub fn from_file(path: &Path) -> Size {
         Size(compute_file_size(path))
     }

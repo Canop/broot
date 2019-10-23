@@ -1,25 +1,24 @@
-use std::io;
 use std::path::PathBuf;
+
 use directories::UserDirs;
 
-use crate::app::AppStateCmdResult;
-use crate::app_context::AppContext;
-use crate::browser_states::BrowserState;
-use crate::commands::Command;
-use crate::external;
-use crate::flat_tree::Tree;
-use crate::help_states::HelpState;
-use crate::screens::Screen;
-use crate::task_sync::TaskLifetime;
-use crate::tree_options::{OptionBool, TreeOptions};
-use crate::verb_invocation::VerbInvocation;
-use crate::verbs::{Verb, VerbExecutor};
+use crate::{
+    app::AppStateCmdResult,
+    app_context::AppContext,
+    browser_states::BrowserState,
+    commands::Command,
+    errors::ProgramError,
+    external,
+    flat_tree::Tree,
+    help_states::HelpState,
+    screens::Screen,
+    task_sync::TaskLifetime,
+    tree_options::{OptionBool, TreeOptions},
+    verb_invocation::VerbInvocation,
+    verbs::{Verb, VerbExecutor},
+};
 
-fn focus_path(
-    path: PathBuf,
-    screen: &mut Screen,
-    tree: &Tree,
-) -> AppStateCmdResult {
+fn focus_path(path: PathBuf, screen: &mut Screen, tree: &Tree) -> AppStateCmdResult {
     AppStateCmdResult::from_optional_state(
         BrowserState::new(
             path,
@@ -38,7 +37,7 @@ impl VerbExecutor for BrowserState {
         invocation: &VerbInvocation,
         screen: &mut Screen,
         con: &AppContext,
-    ) -> io::Result<AppStateCmdResult> {
+    ) -> Result<AppStateCmdResult, ProgramError> {
         if let Some(err) = verb.match_error(invocation) {
             return Ok(AppStateCmdResult::DisplayError(err));
         }
@@ -58,8 +57,10 @@ impl VerbExecutor for BrowserState {
             ":focus_user_home" => match UserDirs::new() {
                 Some(ud) => focus_path(ud.home_dir().to_path_buf(), screen, self.displayed_tree()),
                 None => AppStateCmdResult::DisplayError("no user home directory found".to_string()), // does this happen ?
+            },
+            ":help" => {
+                AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)), Command::new())
             }
-            ":help" => AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)), Command::new()),
             //":open" => AppStateCmdResult::from(Launchable::opener(self.displayed_tree().selected_line().target())),
             ":open_stay" => self.open_selection_stay_in_broot(screen, con)?,
             ":open_leave" => self.open_selection_quit_broot(screen, con)?,
@@ -88,8 +89,10 @@ impl VerbExecutor for BrowserState {
             ":parent" => match &self.displayed_tree().selected_line().path.parent() {
                 Some(path) => focus_path(path.to_path_buf(), screen, self.displayed_tree()),
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
+            },
+            ":print_path" => {
+                external::print_path(&self.displayed_tree().selected_line().target(), con)?
             }
-            ":print_path" => external::print_path(&self.displayed_tree().selected_line().target(), con)?,
             ":print_tree" => external::print_tree(&self.displayed_tree(), screen, con)?,
             ":refresh" => AppStateCmdResult::RefreshState,
             ":select_first" => {
@@ -101,7 +104,9 @@ impl VerbExecutor for BrowserState {
                 AppStateCmdResult::Keep
             }
             ":toggle_dates" => self.with_new_options(screen, &|o| o.show_dates ^= true),
-            ":toggle_files" => self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true),
+            ":toggle_files" => {
+                self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true)
+            }
             ":toggle_hidden" => self.with_new_options(screen, &|o| o.show_hidden ^= true),
             ":toggle_git_ignore" => self.with_new_options(screen, &|options| {
                 options.respect_git_ignore = match options.respect_git_ignore {
@@ -120,7 +125,12 @@ impl VerbExecutor for BrowserState {
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),
             ":quit" => AppStateCmdResult::Quit,
-            _ => verb.to_cmd_result(&self.displayed_tree().selected_line().path.clone(), &invocation.args, screen, con)?,
+            _ => verb.to_cmd_result(
+                &self.displayed_tree().selected_line().path.clone(),
+                &invocation.args,
+                screen,
+                con,
+            )?,
         })
     }
 }

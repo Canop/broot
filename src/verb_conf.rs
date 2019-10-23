@@ -1,4 +1,4 @@
-use crossterm_input::KeyEvent;
+use crossterm::KeyEvent;
 use regex::Regex;
 
 use crate::errors::ConfError;
@@ -17,7 +17,9 @@ pub struct VerbConf {
 }
 
 fn bad_key(raw: &str) -> Result<KeyEvent, ConfError> {
-    Err(ConfError::InvalidKey { raw: raw.to_owned() })
+    Err(ConfError::InvalidKey {
+        raw: raw.to_owned(),
+    })
 }
 
 /// parse a string as a keyboard key definition.
@@ -35,41 +37,49 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
         "
     );
     match key_regex.captures(raw) {
-        Some(c) => Ok(match (
-                c.name("major").unwrap().as_str().to_ascii_lowercase().as_ref(), c.name("minor")
+        Some(c) => Ok(
+            match (
+                c.name("major")
+                    .unwrap()
+                    .as_str()
+                    .to_ascii_lowercase()
+                    .as_ref(),
+                c.name("minor"),
             ) {
-            ("left", None) => KeyEvent::Left,
-            ("right", None) => KeyEvent::Right,
-            ("up", None) => KeyEvent::Up,
-            ("down", None) => KeyEvent::Down,
-            ("home", None) => KeyEvent::Home,
-            ("end", None) => KeyEvent::End,
-            ("pageup", None) => KeyEvent::PageUp,
-            ("pagedown", None) => KeyEvent::PageDown,
-            ("backtab", None) => KeyEvent::BackTab,
-            ("delete", None) => KeyEvent::Delete,
-            ("insert", None) => KeyEvent::Insert,
-            ("f", Some(minor)) => match minor.as_str().parse() {
+                ("left", None) => KeyEvent::Left,
+                ("right", None) => KeyEvent::Right,
+                ("up", None) => KeyEvent::Up,
+                ("down", None) => KeyEvent::Down,
+                ("home", None) => KeyEvent::Home,
+                ("end", None) => KeyEvent::End,
+                ("pageup", None) => KeyEvent::PageUp,
+                ("pagedown", None) => KeyEvent::PageDown,
+                ("backtab", None) => KeyEvent::BackTab,
+                ("delete", None) => KeyEvent::Delete,
+                ("insert", None) => KeyEvent::Insert,
+                ("f", Some(minor)) => match minor.as_str().parse() {
                     Ok(digit) => KeyEvent::F(digit),
-                    _ => bad_key(raw)?
+                    _ => bad_key(raw)?,
+                },
+                ("alt", Some(minor)) => {
+                    KeyEvent::Alt(minor.as_str().chars().next().unwrap().to_ascii_lowercase())
+                }
+                ("ctrl", Some(minor)) | ("^", Some(minor)) => {
+                    KeyEvent::Ctrl(minor.as_str().chars().next().unwrap().to_ascii_lowercase())
+                }
+                // other possible mappings are disabled as they would break basic behaviors of broot
+                _ => bad_key(raw)?,
             },
-            ("alt", Some(minor)) => KeyEvent::Alt(
-                minor.as_str().chars().next().unwrap().to_ascii_lowercase()
-            ),
-            ("ctrl", Some(minor)) | ("^", Some(minor)) => KeyEvent::Ctrl(
-                minor.as_str().chars().next().unwrap().to_ascii_lowercase()
-            ),
-            // other possible mappings are disabled as they would break basic behaviors of broot
-            _ => bad_key(raw)?
-        }),
-        None => bad_key(raw)
+        ),
+        None => bad_key(raw),
     }
 }
 
 #[cfg(test)]
 mod key_parsing_tests {
 
-    use crossterm_input::KeyEvent::*;
+    use crossterm::KeyEvent::*;
+
     use crate::verb_conf::*;
 
     fn check_ok(raw: &str, key: KeyEvent) {

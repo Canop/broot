@@ -1,5 +1,4 @@
-use std::collections::HashMap;
-use std::sync::Mutex;
+use std::{collections::HashMap, sync::Mutex};
 
 #[cfg(unix)]
 use users;
@@ -37,4 +36,3 @@ pub fn group_name(gid: u32) -> String {
         })
         .to_string()
 }
-

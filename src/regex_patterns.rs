@@ -1,11 +1,10 @@
 //! a filename filtering pattern using a regular expression
 
-use core::result;
-use regex;
 use std::fmt;
 
-use crate::errors::RegexError;
-use crate::patterns;
+use regex;
+
+use crate::{errors::RegexError, patterns};
 
 #[derive(Debug, Clone)]
 pub struct RegexPattern {
@@ -20,7 +19,7 @@ impl fmt::Display for RegexPattern {
 }
 
 impl RegexPattern {
-    pub fn from(pat: &str, flags: &str) -> result::Result<RegexPattern, RegexError> {
+    pub fn from(pat: &str, flags: &str) -> Result<RegexPattern, RegexError> {
         let mut builder = regex::RegexBuilder::new(pat);
         for c in flags.chars() {
             match c {

@@ -1,14 +1,19 @@
+use std::{
+    collections::HashSet,
+    fs,
+    os::unix::fs::MetadataExt,
+    path::{Path, PathBuf},
+    sync::{
+        atomic::{AtomicIsize, AtomicU64, Ordering},
+        Arc, Mutex,
+    },
+    thread,
+    time::Duration,
+};
+
+use crossbeam::{channel::unbounded, sync::WaitGroup};
+
 use crate::task_sync::TaskLifetime;
-use crossbeam::channel::unbounded;
-use crossbeam::sync::WaitGroup;
-use std::collections::HashSet;
-use std::fs;
-//use std::os::linux::fs::MetadataExt;
-use std::os::unix::fs::MetadataExt;
-use std::path::{Path, PathBuf};
-use std::sync::{atomic::{AtomicIsize, AtomicU64, Ordering}, Arc, Mutex};
-use std::thread;
-use std::time::Duration;
 
 pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     let inodes = Arc::new(Mutex::new(HashSet::<u64>::default())); // to avoid counting twice an inode
@@ -49,7 +54,7 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
                                         continue; // let's not add the size
                                     }
                                 }
-                                let file_size = if md.blocks()==0 { 0 } else { md.size() };
+                                let file_size = if md.blocks() == 0 { 0 } else { md.size() };
                                 size.fetch_add(file_size, Ordering::Relaxed);
                             }
                         }
@@ -77,7 +82,13 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
 
 pub fn compute_file_size(path: &Path) -> u64 {
     match fs::metadata(path) {
-        Ok(m) => if m.blocks()==0 { 0 } else { m.size() },
+        Ok(m) => {
+            if m.blocks() == 0 {
+                0
+            } else {
+                m.size()
+            }
+        }
         Err(_) => 0,
     }
 }

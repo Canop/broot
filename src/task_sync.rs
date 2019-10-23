@@ -1,5 +1,7 @@
-use std::sync::atomic::{AtomicUsize, Ordering};
-use std::sync::Arc;
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc,
+};
 
 /// a TL initialized from an Arc<AtomicUsize> stays
 ///  alive as long as the passed arc doesn't change.

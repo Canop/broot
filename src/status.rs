@@ -1,19 +1,22 @@
-use std::io;
 
-use crate::elision::ElidedString;
-use crate::screens::Screen;
-use crate::skin::{self, SkinEntry};
-use crossterm_style::ObjectStyle;
+use crossterm::ObjectStyle;
+
+use crate::{
+    elision::ElidedString,
+    errors::ProgramError,
+    screens::Screen,
+    skin::{self, SkinEntry},
+};
 
 /// the status module manages writing information on the grey line
 ///  near the bottom of the screen
 pub trait Status {
-    fn write_status_text(&self, text: &str) -> io::Result<()>;
-    fn write_status_err(&self, text: &str) -> io::Result<()>;
+    fn write_status_text(&self, text: &str) -> Result<(), ProgramError>;
+    fn write_status_err(&self, text: &str) -> Result<(), ProgramError>;
 }
 
 impl Screen {
-    fn write_status(&self, text: &str, skin: &ObjectStyle) -> io::Result<()> {
+    fn write_status(&self, text: &str, skin: &ObjectStyle) -> Result<(), ProgramError> {
         let es = ElidedString::from(text, self.w as usize - 1); // why isn't it -3 ?
         self.goto_clear(2, self.h - 1);
         skin.print_string(" ");
@@ -31,11 +34,10 @@ impl Screen {
 }
 
 impl Status for Screen {
-    fn write_status_err(&self, text: &str) -> io::Result<()> {
+    fn write_status_err(&self, text: &str) -> Result<(), ProgramError> {
         self.write_status(text, &self.skin.status_error)
     }
-    fn write_status_text(&self, text: &str) -> io::Result<()> {
+    fn write_status_text(&self, text: &str) -> Result<(), ProgramError> {
         self.write_status(text, &self.skin.status_normal)
     }
 }
-

@@ -1,7 +1,6 @@
-use crate::conf::Conf;
-use crate::permissions;
-use crate::verbs::Verb;
-use crossterm_input::KeyEvent;
+use crossterm::KeyEvent;
+
+use crate::{conf::Conf, permissions, verbs::Verb};
 
 /// Provide access to the verbs:
 /// - the built-in ones
@@ -30,9 +29,10 @@ impl VerbStore {
         name: &str,
         key: Option<KeyEvent>,
         shortcut: Option<String>,
-        description: &str
+        description: &str,
     ) {
-        self.verbs.push(Verb::create_builtin(name, key, shortcut, description));
+        self.verbs
+            .push(Verb::create_builtin(name, key, shortcut, description));
     }
     pub fn init(&mut self, conf: &Conf) {
         // we first add the verbs coming from configuration, as
@@ -41,7 +41,8 @@ impl VerbStore {
         for verb_conf in &conf.verbs {
             match Verb::create_external(
                 &verb_conf.invocation,
-                verb_conf.key,
+                // TODO remove the clone in the following line when crossterm's KeyEvent is Copy
+                verb_conf.key.clone(),
                 verb_conf.shortcut.clone(),
                 verb_conf.execution.clone(),
                 verb_conf.description.clone(),
@@ -105,14 +106,9 @@ impl VerbStore {
             "line_down",
             Some(KeyEvent::Down),
             None,
-            "move one line down"
+            "move one line down",
         );
-        self.add_builtin(
-            "line_up",
-            Some(KeyEvent::Up),
-            None,
-            "move one line up"
-        );
+        self.add_builtin("line_up", Some(KeyEvent::Up), None, "move one line up");
         self.verbs.push(
             Verb::create_external(
                 "mkdir {subpath}",
@@ -155,19 +151,19 @@ impl VerbStore {
             "page_down",
             Some(KeyEvent::PageDown),
             None,
-            "scroll one page down"
+            "scroll one page down",
         );
         self.add_builtin(
             "page_up",
             Some(KeyEvent::PageUp),
             None,
-            "scroll one page up"
+            "scroll one page up",
         );
         self.add_builtin(
             "parent",
             None,
             Some("p".to_string()),
-            "move to the parent directory"
+            "move to the parent directory",
         );
         self.add_builtin(
             "print_path",
@@ -294,7 +290,8 @@ impl VerbStore {
     /// return the index of the verb which is triggered by the given key, if any
     pub fn index_of_key(&self, key: KeyEvent) -> Option<usize> {
         for i in 0..self.verbs.len() {
-            if let Some(verb_key) = self.verbs[i].key {
+            // TODO remove the clone in the following line when crossterm's KeyEvent is Copy
+            if let Some(verb_key) = self.verbs[i].key.clone() {
                 if verb_key == key {
                     return Some(i);
                 }

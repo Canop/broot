@@ -1,10 +1,11 @@
 /// In the flat_tree structure, every "node" is just a line, there's
 ///  no link from a child to its parent or from a parent to its children.
-use std::cmp::{self, Ord, PartialOrd, Ordering};
-use std::fs;
-use std::mem;
-use std::path::{Path, PathBuf};
-use umask::Mode;
+use std::{
+    cmp::{self, Ord, Ordering, PartialOrd},
+    fs,
+    mem,
+    path::{Path, PathBuf},
+};
 
 #[cfg(unix)]
 use std::os::unix::fs::MetadataExt;
@@ -12,11 +13,15 @@ use std::os::unix::fs::MetadataExt;
 #[cfg(windows)]
 use is_executable::IsExecutable;
 
-use crate::errors;
-use crate::file_sizes::Size;
-use crate::task_sync::TaskLifetime;
-use crate::tree_build::TreeBuilder;
-use crate::tree_options::TreeOptions;
+use umask::Mode;
+
+use crate::{
+    errors,
+    file_sizes::Size,
+    task_sync::TaskLifetime,
+    tree_build::TreeBuilder,
+    tree_options::TreeOptions,
+};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LineType {
@@ -157,9 +162,10 @@ impl PartialOrd for TreeLine {
 
 impl Tree {
     pub fn refresh(&mut self, page_height: usize) -> Result<(), errors::TreeBuildError> {
-        let builder = TreeBuilder::from(self.root().to_path_buf(), self.options.clone(), page_height)?;
+        let builder =
+            TreeBuilder::from(self.root().to_path_buf(), self.options.clone(), page_height)?;
         let mut tree = builder.build(&TaskLifetime::unlimited()).unwrap(); // should not fail
-        // we save the old selection to try restore it
+                                                                           // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
         self.try_select_path(&selected_path);
@@ -212,13 +218,14 @@ impl Tree {
                     // the line at end_index is the last listed child of the line at parent_index
                     let unlisted = self.lines[parent_index].unlisted;
                     if unlisted > 0 && self.lines[end_index].nb_kept_children == 0 {
-                        if best_index==end_index {
+                        if best_index == end_index {
                             debug!("Avoiding to prune the line with best score");
                         } else {
                             debug!("turning {:?} into Pruning", self.lines[end_index].path);
                             self.lines[end_index].line_type = LineType::Pruning;
                             self.lines[end_index].unlisted = unlisted + 1;
-                            self.lines[end_index].name = format!("{} unlisted", unlisted + 1).to_owned();
+                            self.lines[end_index].name =
+                                format!("{} unlisted", unlisted + 1).to_owned();
                             self.lines[parent_index].unlisted = 0;
                         }
                     }

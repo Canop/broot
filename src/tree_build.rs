@@ -1,16 +1,21 @@
-use std::cmp::{self, Ordering};
-use std::collections::{BinaryHeap, VecDeque};
-use std::fs;
-use std::path::PathBuf;
-use std::result::Result;
-use std::time::{Duration, Instant};
+use std::{
+    cmp::{self, Ordering},
+    collections::{BinaryHeap, VecDeque},
+    fs,
+    path::PathBuf,
+    result::Result,
+    time::{Duration, Instant},
+};
+
 use id_arena::{Arena, Id};
 
-use crate::errors::TreeBuildError;
-use crate::flat_tree::{LineType, Tree, TreeLine};
-use crate::git_ignore::GitIgnoreFilter;
-use crate::task_sync::TaskLifetime;
-use crate::tree_options::{OptionBool, TreeOptions};
+use crate::{
+    errors::TreeBuildError,
+    flat_tree::{LineType, Tree, TreeLine},
+    git_ignore::GitIgnoreFilter,
+    task_sync::TaskLifetime,
+    tree_options::{OptionBool, TreeOptions},
+};
 
 type BId = Id<BLine>;
 
@@ -23,7 +28,7 @@ struct BLine {
     name: String,
     file_type: fs::FileType,
     children: Option<Vec<BId>>, // sorted and filtered
-    next_child_idx: usize,        // index for iteration, among the children
+    next_child_idx: usize,      // index for iteration, among the children
     has_error: bool,
     has_match: bool,
     score: i32,
@@ -195,12 +200,7 @@ impl TreeBuilder {
         })
     }
     /// return a bline if the direntry directly matches the options and there's no error
-    fn make_line(
-        &mut self,
-        parent_id: BId,
-        e: fs::DirEntry,
-        depth: u16,
-    ) -> BLineResult {
+    fn make_line(&mut self, parent_id: BId, e: fs::DirEntry, depth: u16) -> BLineResult {
         let name = e.file_name();
         let name = match name.to_str() {
             Some(name) => name,
@@ -269,11 +269,7 @@ impl TreeBuilder {
                 let child_depth = self.blines[bid].depth + 1;
                 for e in entries {
                     if let Ok(e) = e {
-                        let bl = self.make_line(
-                            bid,
-                            e,
-                            child_depth,
-                        );
+                        let bl = self.make_line(bid, e, child_depth);
                         match bl {
                             BLineResult::Some(child_id) => {
                                 if self.blines[child_id].has_match {
@@ -308,10 +304,7 @@ impl TreeBuilder {
         has_child_match
     }
     // load_children must have been called before on parent_id
-    fn next_child(
-        &mut self,
-        parent_id: BId,
-    ) -> Option<BId> {
+    fn next_child(&mut self, parent_id: BId) -> Option<BId> {
         let bline = &mut self.blines[parent_id];
         if let Some(children) = &bline.children {
             if bline.next_child_idx < children.len() {

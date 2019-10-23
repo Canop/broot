@@ -1,21 +1,24 @@
-use regex::{self, Captures, Regex};
 /// Verbs are the engines of broot commands, and apply
 /// - to the selected file (if user-defined, then must contain {file}, {parent} or {directory})
 /// - to the current app state
-use std;
-use std::collections::HashMap;
-use std::fs::OpenOptions;
-use std::io::{self, Write};
-use std::path::{Path, PathBuf};
+use std::{
+    collections::HashMap,
+    fs::OpenOptions,
+    io::Write,
+    path::{Path, PathBuf},
+};
 
-use crossterm_input::KeyEvent;
+use crossterm::KeyEvent;
+use regex::{self, Captures, Regex};
 
-use crate::app::AppStateCmdResult;
-use crate::app_context::AppContext;
-use crate::errors::ConfError;
-use crate::external;
-use crate::screens::Screen;
-use crate::verb_invocation::VerbInvocation;
+use crate::{
+    app::AppStateCmdResult,
+    app_context::AppContext,
+    errors::{ConfError, ProgramError},
+    external,
+    screens::Screen,
+    verb_invocation::VerbInvocation,
+};
 
 /// what makes a verb.
 ///
@@ -47,7 +50,7 @@ pub trait VerbExecutor {
         invocation: &VerbInvocation,
         screen: &mut Screen,
         con: &AppContext,
-    ) -> io::Result<AppStateCmdResult>;
+    ) -> Result<AppStateCmdResult, ProgramError>;
 }
 
 fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
@@ -84,7 +87,9 @@ impl Verb {
                 invocation: invocation_str.to_string(),
             });
         }
-        let args_parser = invocation.args.as_ref()
+        let args_parser = invocation
+            .args
+            .as_ref()
             .map(|args| make_invocation_args_regex(&args))
             .transpose()?;
         Ok(Verb {
@@ -106,7 +111,7 @@ impl Verb {
         name: &str,
         key: Option<KeyEvent>,
         shortcut: Option<String>,
-        description: &str
+        description: &str,
     ) -> Verb {
         Verb {
             invocation: VerbInvocation {
@@ -199,7 +204,7 @@ impl Verb {
         args: &Option<String>,
         _screen: &mut Screen,
         con: &AppContext,
-    ) -> io::Result<AppStateCmdResult> {
+    ) -> Result<AppStateCmdResult, ProgramError> {
         Ok(if self.from_shell {
             if let Some(ref export_path) = con.launch_args.cmd_export_path {
                 // Broot was probably launched as br.
@@ -247,9 +252,7 @@ impl Verb {
             .split_whitespace()
             .map(|token| {
                 GROUP
-                    .replace_all(token, |ec: &Captures<'_>| {
-                        do_exec_replacement(ec, &map)
-                    })
+                    .replace_all(token, |ec: &Captures<'_>| do_exec_replacement(ec, &map))
                     .to_string()
             })
             .collect()
@@ -280,10 +283,7 @@ impl Verb {
 
 /// replace a group in the execution string, using
 ///  data from the user input and from the selected line
-fn do_exec_replacement(
-    ec: &Captures<'_>,
-    replacement_map: &HashMap<String, String>,
-) -> String {
+fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &HashMap<String, String>) -> String {
     let name = ec.get(1).unwrap().as_str();
     if let Some(cap) = replacement_map.get(name) {
         let cap = cap.as_str();
@@ -293,23 +293,25 @@ fn do_exec_replacement(
                     if cap.starts_with('/') {
                         cap.to_string()
                     } else {
-                        normalize_path(
-                            format!("{}/{}", replacement_map.get("directory").unwrap(), cap)
-                        )
+                        normalize_path(format!(
+                            "{}/{}",
+                            replacement_map.get("directory").unwrap(),
+                            cap
+                        ))
                     }
                 }
                 "path-from-parent" => {
                     if cap.starts_with('/') {
                         cap.to_string()
                     } else {
-                        normalize_path(
-                            format!("{}/{}", replacement_map.get("parent").unwrap(), cap)
-                        )
+                        normalize_path(format!(
+                            "{}/{}",
+                            replacement_map.get("parent").unwrap(),
+                            cap
+                        ))
                     }
                 }
-                _ => {
-                    format!("invalid format: {:?}", fmt.as_str())
-                }
+                _ => format!("invalid format: {:?}", fmt.as_str()),
             }
         } else {
             cap.to_string()
@@ -355,7 +357,9 @@ mod path_normalize_tests {
         check("/..", "/..");
         check("../test", "../test");
         check("/home/dys/../../../test", "/../test");
-        check("/home/dys/dev/broot/../../../canop/test", "/home/canop/test");
+        check(
+            "/home/dys/dev/broot/../../../canop/test",
+            "/home/canop/test",
+        );
     }
 }
-

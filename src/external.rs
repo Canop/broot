@@ -1,18 +1,18 @@
+use std::{
+    env,
+    fs::OpenOptions,
+    io::{self, Write},
+    path::{Path, PathBuf},
+    process::Command,
+};
+
 use opener;
 use regex::Regex;
-use std::env;
-use std::fs::OpenOptions;
-use std::io::{self, Write};
-use std::path::{Path, PathBuf};
-use std::process::Command;
 
-use crate::app::AppStateCmdResult;
-use crate::app_context::AppContext;
-use crate::displayable_tree::DisplayableTree;
-use crate::errors::ProgramError;
-use crate::flat_tree::Tree;
-use crate::screens::Screen;
-use crate::skin::Skin;
+use crate::{
+    app::AppStateCmdResult, app_context::AppContext, displayable_tree::DisplayableTree,
+    errors::ProgramError, flat_tree::Tree, screens::Screen, skin::Skin,
+};
 
 /// description of a possible launch of an external program
 /// A launchable can only be executed on end of life of broot.

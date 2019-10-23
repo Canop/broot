@@ -8,22 +8,23 @@
 //! - a request to quit broot
 //! - a request to launch an executable (thus leaving broot)
 use std::io::{self, Write};
-use std::result::Result;
 
-use crate::app_context::AppContext;
-use crate::browser_states::BrowserState;
-use crate::command_parsing::parse_command_sequence;
-use crate::commands::Command;
-use crate::errors::ProgramError;
-use crate::errors::TreeBuildError;
-use crate::external::Launchable;
-use crate::file_sizes;
-use crate::screens::Screen;
-use crate::skin::Skin;
-use crate::spinner::Spinner;
-use crate::status::Status;
-use crate::task_sync::TaskLifetime;
 use termimad::EventSource;
+
+use crate::{
+    app_context::AppContext,
+    browser_states::BrowserState,
+    command_parsing::parse_command_sequence,
+    commands::Command,
+    errors::{ProgramError, TreeBuildError},
+    external::Launchable,
+    file_sizes,
+    screens::Screen,
+    skin::Skin,
+    spinner::Spinner,
+    status::Status,
+    task_sync::TaskLifetime,
+};
 
 /// Result of applying a command to a state
 pub enum AppStateCmdResult {
@@ -67,13 +68,18 @@ pub trait AppState {
         cmd: &mut Command,
         screen: &mut Screen,
         con: &AppContext,
-    ) -> io::Result<AppStateCmdResult>;
+    ) -> Result<AppStateCmdResult, ProgramError>;
     fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
     fn has_pending_tasks(&self) -> bool;
     fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime);
-    fn display(&mut self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
-    fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()>;
-    fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> io::Result<()>;
+    fn display(&mut self, screen: &mut Screen, con: &AppContext) -> Result<(), ProgramError>;
+    fn write_status(
+        &self,
+        screen: &mut Screen,
+        cmd: &Command,
+        con: &AppContext,
+    ) -> Result<(), ProgramError>;
+    fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> Result<(), ProgramError>;
 }
 
 pub struct App {
@@ -110,7 +116,7 @@ impl App {
         screen: &mut Screen,
         con: &AppContext,
         tl: TaskLifetime,
-    ) -> io::Result<()> {
+    ) -> Result<(), ProgramError> {
         let has_task = self.state().has_pending_tasks();
         if has_task {
             loop {
@@ -140,7 +146,7 @@ impl App {
         cmd: Command,
         screen: &mut Screen,
         con: &AppContext,
-    ) -> io::Result<Command> {
+    ) -> Result<Command, ProgramError> {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
         screen.read_size(con)?;
@@ -200,11 +206,7 @@ impl App {
     }
 
     /// This is the main loop of the application
-    pub fn run(
-        mut self,
-        con: &AppContext,
-        skin: Skin,
-    ) -> Result<Option<Launchable>, ProgramError> {
+    pub fn run(mut self, con: &AppContext, skin: Skin) -> Result<Option<Launchable>, ProgramError> {
         let mut screen = Screen::new(con, skin)?;
 
         // create the initial state

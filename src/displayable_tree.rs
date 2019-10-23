@@ -1,24 +1,22 @@
-use std::fmt;
-use std::time::SystemTime;
-use crossterm_style::{ObjectStyle};
-use crossterm_terminal::{ClearType, Terminal};
-use chrono::offset::Local;
-use chrono::DateTime;
+use std::{fmt, time::SystemTime};
 
 #[cfg(unix)]
 use std::os::unix::fs::MetadataExt;
 
+use chrono::{offset::Local, DateTime};
+
+use crossterm::{ClearType, Color, Colored, ObjectStyle, Terminal, TerminalCursor};
+use termimad::ProgressBar;
+
 #[cfg(unix)]
 use crate::permissions;
 
-use crate::file_sizes::Size;
-use crate::flat_tree::{LineType, Tree, TreeLine};
-use crate::patterns::Pattern;
-use crate::skin::{Skin, SkinEntry};
-
-use crossterm_style::{Color, Colored};
-use crossterm_cursor::TerminalCursor;
-use termimad::ProgressBar;
+use crate::{
+    file_sizes::Size,
+    flat_tree::{LineType, Tree, TreeLine},
+    patterns::Pattern,
+    skin::{Skin, SkinEntry},
+};
 
 /// A tree wrapper implementing Display
 /// which can be used either
@@ -52,10 +50,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         }
     }
 
-    fn name_style(
-        &self,
-        line: &TreeLine,
-    ) -> &ObjectStyle {
+    fn name_style(&self, line: &TreeLine) -> &ObjectStyle {
         match &line.line_type {
             LineType::Dir => &self.skin.directory,
             LineType::File => {
@@ -98,9 +93,9 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         write!(
             f,
             "{}",
-            self.skin.dates.apply_to(
-                date_time.format("%Y/%m/%d %R ")
-            ),
+            self.skin
+                .dates
+                .apply_to(date_time.format("%Y/%m/%d %R ").to_string()),
         )
     }
 
@@ -189,7 +184,7 @@ fn user_group_max_lengths(tree: &Tree) -> (usize, usize) {
 impl fmt::Display for DisplayableTree<'_, '_> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         let terminal = Terminal::new();
-        let cursor = TerminalCursor::new();
+        let cursor = TerminalCursor::new(); // FIXME
         let tree = self.tree;
         #[cfg(unix)]
         let user_group_max_lengths = user_group_max_lengths(&tree);

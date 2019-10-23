@@ -1,17 +1,20 @@
-use std::io;
+//! this modules defines the execution of verbs on the help screen
 
-use crate::app::AppStateCmdResult;
-use crate::app_context::AppContext;
-use crate::browser_states::BrowserState;
-use crate::commands::Command;
-use crate::conf::{self, Conf};
-use crate::external::{self, Launchable};
-use crate::help_states::HelpState;
-use crate::screens::Screen;
-use crate::task_sync::TaskLifetime;
-use crate::tree_options::TreeOptions;
-use crate::verb_invocation::VerbInvocation;
-use crate::verbs::{Verb, VerbExecutor};
+use crate::{
+    app::AppStateCmdResult,
+    app_context::AppContext,
+    browser_states::BrowserState,
+    commands::Command,
+    conf::{self, Conf},
+    errors::ProgramError,
+    external::{self, Launchable},
+    help_states::HelpState,
+    screens::Screen,
+    task_sync::TaskLifetime,
+    tree_options::TreeOptions,
+    verb_invocation::VerbInvocation,
+    verbs::{Verb, VerbExecutor},
+};
 
 impl VerbExecutor for HelpState {
     fn execute_verb(
@@ -20,7 +23,7 @@ impl VerbExecutor for HelpState {
         invocation: &VerbInvocation,
         screen: &mut Screen,
         con: &AppContext,
-    ) -> io::Result<AppStateCmdResult> {
+    ) -> Result<AppStateCmdResult, ProgramError> {
         if let Some(err) = verb.match_error(invocation) {
             return Ok(AppStateCmdResult::DisplayError(err));
         }

@@ -1,14 +1,17 @@
 //! size computation for non linux
 
+use std::{
+    fs,
+    path::{Path, PathBuf},
+    sync::atomic::{AtomicIsize, AtomicUsize, Ordering},
+    sync::Arc,
+    thread,
+    time::Duration,
+};
+
+use crossbeam::{channel::unbounded, sync::WaitGroup};
+
 use crate::task_sync::TaskLifetime;
-use crossbeam::channel::unbounded;
-use crossbeam::sync::WaitGroup;
-use std::fs;
-use std::path::{Path, PathBuf};
-use std::sync::atomic::{AtomicIsize, AtomicUsize, Ordering};
-use std::sync::Arc;
-use std::thread;
-use std::time::Duration;
 
 pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     let size = Arc::new(AtomicUsize::new(0));
@@ -66,7 +69,6 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     let size: u64 = size as u64;
     Some(size)
 }
-
 
 pub fn compute_file_size(path: &Path) -> u64 {
     match fs::metadata(path) {

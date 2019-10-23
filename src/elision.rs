@@ -53,7 +53,7 @@ impl<'a> ElidedString<'_> {
                 parts.push(&text[idx..]);
             }
         }
-        ElidedString{ parts }
+        ElidedString { parts }
     }
     /// return the total length, assuming there's an ellipsis (of length 1)
     /// between parts.
@@ -108,11 +108,7 @@ fn core_ranges(text: &str) -> Vec<Range> {
         if c.is_ascii_whitespace() {
             if let Some(start) = start {
                 if idx > start + 3 {
-                    ranges.push(Range::new(
-                        start + 1,
-                        idx - 2,
-                        protected,
-                    ));
+                    ranges.push(Range::new(start + 1, idx - 2, protected));
                 }
             }
             start = None;
@@ -125,11 +121,7 @@ fn core_ranges(text: &str) -> Vec<Range> {
     }
     if let Some(start) = start {
         if text.len() > start + 3 {
-            ranges.push(Range::new(
-                start + 1,
-                text.len() - 2,
-                protected,
-            ));
+            ranges.push(Range::new(start + 1, text.len() - 2, protected));
         }
     }
     ranges
@@ -163,4 +155,3 @@ mod status_fitting_tests {
         check_width("Hit <enter> to mv : /bin/mv /home/dys/dev/broot/img/20181215-only-folders-with-size.png /home/dys/dev/toto.png", 20);
     }
 }
-

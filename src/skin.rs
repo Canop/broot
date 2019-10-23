@@ -5,10 +5,9 @@
 /// - an optional fg color
 /// - an optional bg color
 /// - a vector of attributes (bold, italic)
-use std::collections::HashMap;
-use std::fmt;
+use std::{collections::HashMap, fmt};
 
-use crossterm_style::{
+use crossterm::{
     Attribute::{self, *},
     Color::AnsiValue,
     Color::{self, *},
@@ -133,8 +132,12 @@ impl Skin {
         if let Some(c) = self.help_headers.fg_color {
             ms.set_headers_fg(c);
         }
-        ms.scrollbar.track.set_compound_style(CompoundStyle::from(self.scrollbar_track.clone()));
-        ms.scrollbar.thumb.set_compound_style(CompoundStyle::from(self.scrollbar_thumb.clone()));
+        ms.scrollbar
+            .track
+            .set_compound_style(CompoundStyle::from(self.scrollbar_track.clone()));
+        ms.scrollbar
+            .thumb
+            .set_compound_style(CompoundStyle::from(self.scrollbar_thumb.clone()));
         ms
     }
 }

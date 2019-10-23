@@ -3,15 +3,14 @@
 //!  by a regular expression (in which case there's no real
 //!  score)
 
-use core::result;
 use std::{fmt, mem};
 
-use crossterm_style::ObjectStyle;
+use crossterm::ObjectStyle;
 
-use crate::commands::Command;
-use crate::errors::RegexError;
-use crate::fuzzy_patterns::FuzzyPattern;
-use crate::regex_patterns::RegexPattern;
+use crate::{
+    commands::Command, errors::RegexError, fuzzy_patterns::FuzzyPattern,
+    regex_patterns::RegexPattern,
+};
 
 #[derive(Debug, Clone)]
 pub enum Pattern {
@@ -36,7 +35,7 @@ impl Pattern {
         Pattern::Fuzzy(FuzzyPattern::from(pat))
     }
     /// try to create a regex pattern
-    pub fn regex(pat: &str, flags: &str) -> result::Result<Pattern, RegexError> {
+    pub fn regex(pat: &str, flags: &str) -> Result<Pattern, RegexError> {
         Ok(Pattern::Regex(RegexPattern::from(pat, flags)?))
     }
     pub fn find(&self, candidate: &str) -> Option<Match> {

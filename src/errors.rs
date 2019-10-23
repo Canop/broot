@@ -1,16 +1,14 @@
 //! Definitions of custom errors used in broot
+use std::io;
+
 use custom_error::custom_error;
 use opener;
 use regex;
-use std::io;
-
-custom_error! {pub TreeBuildError
-    NotADirectory { path: String } = "Not a directory: {}",
-    FileNotFound { path: String } = "File not found: {}",
-}
 
 custom_error! {pub ProgramError
     Io {source: io::Error} = "IO Error : {:?}",
+    Crossterm {source: crossterm::ErrorKind} = "Crossterm Error : {:?}",
+    Termimad {source: termimad::Error} = "Termimad Error : {:?}",
     Conf {source: ConfError} = "Bad configuration: {}",
     ArgParse {bad: String, valid: String} = "{:?} can't be parsed (valid values: {:?})",
     UnknownVerb {key: String} = "No verb matches {:?}",
@@ -19,6 +17,19 @@ custom_error! {pub ProgramError
     TreeBuild {source: TreeBuildError} = "{}",
     OpenError {err: opener::OpenError} = "{}",
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
+}
+
+custom_error! {pub TreeBuildError
+    NotADirectory { path: String } = "Not a directory: {}",
+    FileNotFound { path: String } = "File not found: {}",
+}
+
+custom_error! {pub ConfError
+    Io {source: io::Error}                          = "unable to read from the file",
+    Toml {source: toml::de::Error}                  = "unable to parse TOML",
+    MissingField {txt: String}                      = "missing field in conf",
+    InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: {}",
+    InvalidKey {raw: String}                        = "not a valid key: {}",
 }
 
 custom_error! {pub RegexError
@@ -34,12 +45,4 @@ custom_error! {pub InvalidSkinError
     InvalidGreyLevel { level: u8 } = "grey level must be between 0 and 23 (got {})",
     InvalidStyle {style: String}   = "Invalid skin style : {}",
     //BadKey                         = "not a valid skin configuration key",
-}
-
-custom_error! {pub ConfError
-    Io {source: io::Error}                          = "unable to read from the file",
-    Toml {source: toml::de::Error}                  = "unable to parse TOML",
-    MissingField {txt: String}                      = "missing field in conf",
-    InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: {}",
-    InvalidKey {raw: String}                        = "not a valid key: {}",
 }

@@ -1,18 +1,22 @@
 //! manage reading the verb shortcuts from the configuration file,
 //! initializing if if it doesn't yet exist
 
-use crossterm_style::{Attribute, ObjectStyle};
+use std::{
+    collections::HashMap,
+    fs, io,
+    path::{Path, PathBuf},
+    result::Result,
+};
+
+use crossterm::{Attribute, ObjectStyle};
 use directories::ProjectDirs;
-use std::collections::HashMap;
-use std::fs;
-use std::io;
-use std::path::{Path, PathBuf};
-use std::result::Result;
 use toml::{self, Value};
 
-use crate::errors::ConfError;
-use crate::verb_conf::{self, VerbConf};
-use crate::skin_conf;
+use crate::{
+    errors::ConfError,
+    skin_conf,
+    verb_conf::{self, VerbConf},
+};
 
 pub struct Conf {
     pub verbs: Vec<VerbConf>,
@@ -101,9 +105,9 @@ impl Conf {
                         continue;
                     }
                 };
-                let key = string_field(verb_value, "key").map(
-                    |s| verb_conf::parse_key(&s)
-                ).transpose()?;
+                let key = string_field(verb_value, "key")
+                    .map(|s| verb_conf::parse_key(&s))
+                    .transpose()?;
                 let execution = match string_field(verb_value, "execution") {
                     Some(s) => s,
                     None => {

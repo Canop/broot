@@ -1,8 +1,3 @@
-use crossterm_style::{
-    Attribute::{self, *},
-    Color::{self, *},
-    ObjectStyle,
-};
 use regex::Regex;
 /// Manage conversion of a user provided string
 /// defining foreground and background colors into
@@ -10,8 +5,13 @@ use regex::Regex;
 ///
 use std::result::Result;
 
-use crate::errors::InvalidSkinError;
-use crate::skin;
+use crossterm::{
+    Attribute::{self, *},
+    Color::{self, *},
+    ObjectStyle,
+};
+
+use crate::{errors::InvalidSkinError, skin};
 
 /// read a color from a string.
 /// It may be either
@@ -23,7 +23,6 @@ use crate::skin;
 /// This function needs a lowercase string (assuming lowercasing
 /// has be done before, to ensure case-insensitive parsing)
 fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
-
     if let Some(c) = regex!(r"^ansi\((?P<value>\d+)\)$").captures(&s) {
         let value: &str = c.name("value").unwrap().as_str();
         let value = value.parse();

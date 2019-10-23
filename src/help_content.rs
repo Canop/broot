@@ -1,7 +1,9 @@
-use crossterm_input::KeyEvent::*;
+use crossterm::KeyEvent::*;
 
-use crate::app_context::AppContext;
-use crate::conf::Conf;
+use crate::{
+    app_context::AppContext,
+    conf::Conf,
+};
 
 /// build the markdown which will be displayed in the help page
 pub fn build_markdown(con: &AppContext) -> String {

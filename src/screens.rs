@@ -1,29 +1,21 @@
-use std::io;
 
-use crossterm_cursor::TerminalCursor;
-use crossterm_screen::AlternateScreen;
-use crossterm_terminal::{ClearType};
-use termimad::{
-    Area,
-    CompoundStyle,
-    InputField,
-};
+use crossterm::{AlternateScreen, ClearType, TerminalCursor};
+use termimad::{Area, CompoundStyle, InputField};
 
-use crate::app_context::AppContext;
-use crate::skin::Skin;
+use crate::{app_context::AppContext, errors::ProgramError, skin::Skin};
 
 /// A wrapper around the solution used to write on screen,
 /// the dimensions, and the skin
 pub struct Screen {
     pub w: u16,
     pub h: u16,
-    pub alternate_screen: crossterm_screen::AlternateScreen,
+    pub alternate_screen: crossterm::AlternateScreen,
     pub skin: Skin,
     pub input_field: InputField,
 }
 
 impl Screen {
-    pub fn new(con: &AppContext, skin: Skin) -> io::Result<Screen> {
+    pub fn new(con: &AppContext, skin: Skin) -> Result<Screen, ProgramError> {
         let alternate_screen = AlternateScreen::to_alternate(true)?;
         let mut input_field = InputField::new(Area::new(0, 0, 10, 1));
         input_field.set_normal_style(CompoundStyle::from(skin.input.clone()));
@@ -40,15 +32,14 @@ impl Screen {
         cursor.hide().unwrap();
         Ok(screen)
     }
-    pub fn read_size(&mut self, con: &AppContext) -> io::Result<()> {
-        let terminal = crossterm_terminal::Terminal::new();
-        let (w, h) = terminal.terminal_size();
+    pub fn read_size(&mut self, con: &AppContext) -> Result<(), ProgramError> {
+        let (w, h) = termimad::terminal_size();
         self.w = w;
-        self.h = h + 1;
+        self.h = h;
         if let Some(h) = con.launch_args.height {
             self.h = h;
         }
-        self.input_field.change_area(0, h, w-15);
+        self.input_field.change_area(0, h, w - 15);
         Ok(())
     }
     /// move the cursor to x,y and clears the line.
@@ -66,7 +57,7 @@ impl Screen {
         cursor.goto(x - 1, y - 1).unwrap();
     }
     pub fn clear_line(&self) {
-        let terminal = crossterm_terminal::Terminal::new();
+        let terminal = crossterm::Terminal::new();
         terminal.clear(ClearType::UntilNewLine).unwrap(); // FIXME try to manage those errors
     }
 }

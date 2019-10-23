@@ -1,21 +1,20 @@
 /// this module manages reading and translating
 /// the arguments passed on launch of the application.
+use std::{env, path::PathBuf, result::Result};
 
-use std::env;
-use std::io;
-use std::path::PathBuf;
-use std::result::Result;
-
-use crossterm_style::Color;
+use crossterm::Color;
 use termimad::{Alignment, MadSkin};
 
-use crate::errors::{ProgramError, TreeBuildError};
-use crate::tree_options::{OptionBool, TreeOptions};
+use crate::{
+    errors::{ProgramError, TreeBuildError},
+    tree_options::{OptionBool, TreeOptions},
+};
 
+/// the parsed program launch arguments
 pub struct AppLaunchArgs {
     pub root: PathBuf,                    // what should be the initial root
     pub file_export_path: Option<String>, // where to write the produced path (if required with --out)
-    pub cmd_export_path: Option<String>, // where to write the produced command (if required with --outcmd, or -oc)
+    pub cmd_export_path: Option<String>, // where to write the produced command (if required with --outcmd or -oc)
     pub tree_options: TreeOptions,       // initial tree options
     pub commands: Option<String>,        // commands passed as cli argument, still unparsed
     pub install: bool,                   // installation is required
@@ -171,8 +170,8 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
 
 /// wait for user input, return `true` if she
 /// didn't answer 'n'
-pub fn ask_authorization() -> io::Result<bool> {
-    let answer = crossterm_input::input().read_line()?;
+pub fn ask_authorization() -> Result<bool, ProgramError> {
+    let answer = crossterm::input().read_line()?;
     Ok(match answer.as_ref() {
         "n" | "N" => false,
         _ => true,

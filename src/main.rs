@@ -43,19 +43,15 @@ mod verb_invocation;
 mod verb_store;
 mod verbs;
 
+use std::{env, fs::File, result::Result, str::FromStr};
+
 use log::LevelFilter;
 use simplelog;
-use std::env;
-use std::fs::File;
-use std::result::Result;
-use std::str::FromStr;
 
-use crate::app::App;
-use crate::app_context::AppContext;
-use crate::conf::Conf;
-use crate::errors::ProgramError;
-use crate::external::Launchable;
-use crate::verb_store::VerbStore;
+use crate::{
+    app::App, app_context::AppContext, conf::Conf, errors::ProgramError, external::Launchable,
+    verb_store::VerbStore,
+};
 
 /// configure the application log according to env variable.
 ///

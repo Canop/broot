@@ -1,18 +1,19 @@
-use std::io;
-
-use crossterm_terminal::{Terminal, ClearType};
+use crossterm::{ClearType, Terminal};
 use termimad::{Area, MadView};
 
-use crate::app::{AppState, AppStateCmdResult};
-use crate::app_context::AppContext;
-use crate::commands::{Action, Command};
-use crate::conf::Conf;
-use crate::help_content;
-use crate::screens::Screen;
-use crate::status::Status;
-use crate::task_sync::TaskLifetime;
-use crate::verb_store::PrefixSearchResult;
-use crate::verbs::VerbExecutor;
+use crate::{
+    app::{AppState, AppStateCmdResult},
+    app_context::AppContext,
+    commands::{Action, Command},
+    conf::Conf,
+    errors::ProgramError,
+    help_content,
+    screens::Screen,
+    status::Status,
+    task_sync::TaskLifetime,
+    verb_store::PrefixSearchResult,
+    verbs::VerbExecutor,
+};
 
 /// an application state dedicated to help
 pub struct HelpState {
@@ -41,14 +42,14 @@ impl AppState for HelpState {
         cmd: &mut Command,
         screen: &mut Screen,
         con: &AppContext,
-    ) -> io::Result<AppStateCmdResult> {
+    ) -> Result<AppStateCmdResult, ProgramError> {
         self.resize_area(screen);
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
             Action::VerbIndex(index) => {
                 let verb = &con.verb_store.verbs[*index];
                 self.execute_verb(verb, &verb.invocation, screen, con)?
-            },
+            }
             Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::Match(verb) => {
                     self.execute_verb(verb, &invocation, screen, con)?
@@ -75,12 +76,17 @@ impl AppState for HelpState {
         unreachable!();
     }
 
-    fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
+    fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> Result<(), ProgramError> {
         self.resize_area(screen);
-        self.view.write()
+        Ok(self.view.write()?)
     }
 
-    fn write_status(&self, screen: &mut Screen, cmd: &Command, con: &AppContext) -> io::Result<()> {
+    fn write_status(
+        &self,
+        screen: &mut Screen,
+        cmd: &Command,
+        con: &AppContext,
+    ) -> Result<(), ProgramError> {
         match &cmd.action {
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::NoMatch => screen.write_status_err("No matching verb"),
@@ -107,7 +113,7 @@ impl AppState for HelpState {
         }
     }
 
-    fn write_flags(&self, _screen: &mut Screen, _con: &AppContext) -> io::Result<()> {
+    fn write_flags(&self, _screen: &mut Screen, _con: &AppContext) -> Result<(), ProgramError> {
         Ok(())
     }
 }

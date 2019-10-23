@@ -1,6 +1,6 @@
-use crate::errors::ProgramError;
-use crate::patterns::Pattern;
 use std::str::FromStr;
+
+use crate::{errors::ProgramError, patterns::Pattern};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum OptionBool {
@@ -63,6 +63,5 @@ impl Default for TreeOptions {
             respect_git_ignore: OptionBool::Auto,
             pattern: Pattern::None,
         }
-
     }
 }

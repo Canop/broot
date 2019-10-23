@@ -21,17 +21,22 @@
 //! place of the "installed" one.
 //!
 
-use std::fs::{self, OpenOptions};
-use std::io::{self, BufRead, BufReader, Write};
-use std::os;
-use std::path::Path;
+use std::{
+    fs::{self, OpenOptions},
+    io::{self, BufRead, BufReader, Write},
+    os,
+    path::Path,
+};
 
 use directories::UserDirs;
 
-use crate::cli::{self, AppLaunchArgs};
-use crate::conf;
-use crate::shell_bash::BASH;
-use crate::shell_fish::FISH;
+use crate::{
+    cli::{self, AppLaunchArgs},
+    conf,
+    errors::ProgramError,
+    shell_bash::BASH,
+    shell_fish::FISH,
+};
 
 const SHELL_FAMILIES: &[ShellFamily<'static>] = &[BASH, FISH];
 
@@ -51,7 +56,7 @@ impl ShellFamily<'static> {
     // make sure the script and symlink are installed
     // but don't touch the shellrc files
     // (i.e. this isn't enough to make the function available)
-    fn ensure_script_installed(&self, launcher_dir: &Path) -> io::Result<()> {
+    fn ensure_script_installed(&self, launcher_dir: &Path) -> Result<(), ProgramError> {
         let dir = launcher_dir.join(self.name);
         let link_path = dir.join("br");
         let link_present = link_path.exists();
@@ -81,7 +86,7 @@ impl ShellFamily<'static> {
         launcher_dir: &Path,
         installation_required: bool,
         motivation_already_explained: bool,
-    ) -> io::Result<bool> {
+    ) -> Result<bool, ProgramError> {
         let installed_path = launcher_dir.join("installed");
         if installed_path.exists() {
             debug!("*installed* file found");
@@ -217,7 +222,7 @@ fn file_contains_line(path: &Path, searched_line: &str) -> io::Result<bool> {
 /// it if it wasn't refused before or if broot is launched
 /// with --install.
 /// returns true if the app should quit
-pub fn init(launch_args: &AppLaunchArgs) -> io::Result<bool> {
+pub fn init(launch_args: &AppLaunchArgs) -> Result<bool, ProgramError> {
     let launcher_dir = conf::dir().join("launcher");
     let mut should_quit = false;
     for family in SHELL_FAMILIES {
