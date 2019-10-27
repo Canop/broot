@@ -8,7 +8,8 @@ use std::{
     result::Result,
 };
 
-use crossterm::{Attribute, ObjectStyle};
+use crossterm::{Attribute};
+use termimad::{CompoundStyle};
 use directories::ProjectDirs;
 use toml::{self, Value};
 
@@ -20,7 +21,7 @@ use crate::{
 
 pub struct Conf {
     pub verbs: Vec<VerbConf>,
-    pub skin: HashMap<String, ObjectStyle>,
+    pub skin: HashMap<String, CompoundStyle>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {

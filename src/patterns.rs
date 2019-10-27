@@ -5,7 +5,7 @@
 
 use std::{fmt, mem};
 
-use crossterm::ObjectStyle;
+use termimad::CompoundStyle;
 
 use crate::{
     commands::Command, errors::RegexError, fuzzy_patterns::FuzzyPattern,
@@ -88,16 +88,16 @@ pub struct Match {
 pub struct MatchedString<'a> {
     pub pattern: &'a Pattern,
     pub string: &'a str,
-    pub base_style: &'a ObjectStyle,
-    pub match_style: &'a ObjectStyle,
+    pub base_style: &'a CompoundStyle,
+    pub match_style: &'a CompoundStyle,
 }
 
 impl Pattern {
     pub fn style<'a>(
         &'a self,
         string: &'a str,
-        base_style: &'a ObjectStyle,
-        match_style: &'a ObjectStyle,
+        base_style: &'a CompoundStyle,
+        match_style: &'a CompoundStyle,
     ) -> MatchedString<'a> {
         MatchedString {
             pattern: self,
@@ -108,27 +108,55 @@ impl Pattern {
     }
 }
 
-impl fmt::Display for MatchedString<'_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//pub struct MatchWriter {
+//    pub base_style: &'a CompoundStyle,
+//    pub match_style: &'a CompoundStyle,
+
+impl<'a> MatchedString<'a> {
+    pub fn write_on<W>(&self, w: &mut W) -> Result<(), termimad::Error>
+        where W: std::io::Write
+    {
         if self.pattern.is_some() {
             if let Some(m) = self.pattern.find(self.string) {
                 let mut pos_idx: usize = 0;
+                let mut combined_style = self.base_style.clone();
+                combined_style.overwrite_with(self.match_style);
                 for (cand_idx, cand_char) in self.string.chars().enumerate() {
                     if pos_idx < m.pos.len() && m.pos[pos_idx] == cand_idx {
-                        write!(
-                            f,
-                            "{}",
-                            self.base_style
-                                .apply_to(self.match_style.apply_to(cand_char))
-                        )?;
+                        combined_style.queue(w, cand_char)?;
                         pos_idx += 1;
                     } else {
-                        write!(f, "{}", self.base_style.apply_to(cand_char))?;
+                        self.base_style.queue(w, cand_char)?;
                     }
                 }
                 return Ok(());
             }
         }
-        write!(f, "{}", self.base_style.apply_to(self.string))
+        self.base_style.queue_str(w, self.string)
     }
 }
+
+//impl fmt::Display for MatchedString<'_> {
+//    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+//        if self.pattern.is_some() {
+//            if let Some(m) = self.pattern.find(self.string) {
+//                let mut pos_idx: usize = 0;
+//                for (cand_idx, cand_char) in self.string.chars().enumerate() {
+//                    if pos_idx < m.pos.len() && m.pos[pos_idx] == cand_idx {
+//                        write!(
+//                            f,
+//                            "{}",
+//                            self.base_style
+//                                .apply_to(self.match_style.apply_to(cand_char))
+//                        )?;
+//                        pos_idx += 1;
+//                    } else {
+//                        write!(f, "{}", self.base_style.apply_to(cand_char))?;
+//                    }
+//                }
+//                return Ok(());
+//            }
+//        }
+//        write!(f, "{}", self.base_style.apply_to(self.string))
+//    }
+//}

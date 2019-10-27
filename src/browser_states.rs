@@ -5,11 +5,10 @@ use std::{
     time::Instant,
 };
 
-use crossterm::{ClearType, Terminal};
 use opener;
 
 use crate::{
-    app::{AppState, AppStateCmdResult},
+    app::{AppState, AppStateCmdResult, W},
     app_context::AppContext,
     commands::{Action, Command},
     displayable_tree::DisplayableTree,
@@ -75,7 +74,7 @@ impl BrowserState {
     }
 
     pub fn page_height(screen: &Screen) -> i32 {
-        i32::from(screen.h) - 2
+        i32::from(screen.height) - 2
     }
 
     /// return a reference to the currently displayed tree, which
@@ -167,11 +166,14 @@ impl BrowserState {
 
     fn write_status_normal(
         &self,
+        w: &mut W,
         screen: &mut Screen,
         has_pattern: bool,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<(), ProgramError>
+    {
         let tree = self.displayed_tree();
         screen.write_status_text(
+            w,
             if tree.selection == 0 {
                 if has_pattern {
                     "Hit <esc> to remove the filter, <enter> to go up, '?' for help"
@@ -249,7 +251,7 @@ impl AppState for BrowserState {
                 Ok(AppStateCmdResult::Keep)
             }
             Action::Click(_, y) => {
-                let y = *y as i32 - 1; // click position starts at (1, 1)
+                let y = *y as i32;
                 self.displayed_tree_mut().try_select_y(y);
                 Ok(AppStateCmdResult::Keep)
             }
@@ -330,7 +332,7 @@ impl AppState for BrowserState {
 
     /// do some work, totally or partially, if there's some to do.
     /// Stop as soon as the lifetime is expired.
-    fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime) {
+    fn do_pending_task(&mut self, w: &mut W, screen: &mut Screen, tl: &TaskLifetime) {
         if self.pending_pattern.is_some() {
             let start = Instant::now();
             let mut options = self.tree.options.clone();
@@ -340,7 +342,7 @@ impl AppState for BrowserState {
             let mut filtered_tree = match TreeBuilder::from(root, options, len as usize) {
                 Ok(builder) => builder.build(tl),
                 Err(e) => {
-                    let _ = screen.write_status_err(&e.to_string());
+                    let _ = screen.write_status_err(w, &e.to_string());
                     warn!("Error while building tree: {:?}", e);
                     return;
                 }
@@ -364,42 +366,50 @@ impl AppState for BrowserState {
         }
     }
 
-    fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> Result<(), ProgramError> {
+    fn display(
+        &mut self,
+        w: &mut W,
+        screen: &Screen,
+        _con: &AppContext
+    ) -> Result<(), ProgramError>
+    {
+        screen.goto(w, 0, 0)?;
         let dp = DisplayableTree {
             tree: &self.displayed_tree(),
             skin: &screen.skin,
             area: termimad::Area {
                 left: 0,
                 top: 0,
-                width: screen.w,
-                height: screen.h - 2,
+                width: screen.width,
+                height: screen.height - 2,
             },
             in_app: true,
         };
-        screen.goto(1, 1);
-        print!("{}", dp);
-        Ok(())
+        dp.write_on(w)
     }
 
     fn write_status(
         &self,
+        w: &mut W,
         screen: &mut Screen,
         cmd: &Command,
         con: &AppContext,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<(), ProgramError>
+    {
         match &cmd.action {
-            Action::FuzzyPatternEdit(s) if !s.is_empty() => self.write_status_normal(screen, true),
-            Action::RegexEdit(s, _) if !s.is_empty() => self.write_status_normal(screen, true),
+            Action::FuzzyPatternEdit(s) if !s.is_empty() => self.write_status_normal(w, screen, true),
+            Action::RegexEdit(s, _) if !s.is_empty() => self.write_status_normal(w, screen, true),
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::NoMatch => {
-                    screen.write_status_err("No matching verb ('?' for the list of verbs)")
+                    screen.write_status_err(w, "No matching verb ('?' for the list of verbs)")
                 }
                 PrefixSearchResult::Match(verb) => {
                     if let Some(err) = verb.match_error(invocation) {
-                        screen.write_status_err(&err)
+                        screen.write_status_err(w, &err)
                     } else {
                         let line = self.displayed_tree().selected_line();
                         screen.write_status_text(
+                            w,
                             &format!(
                                 "Hit <enter> for: {}",
                                 verb.description_for(line.path.clone(), &invocation.args)
@@ -409,10 +419,11 @@ impl AppState for BrowserState {
                     }
                 }
                 PrefixSearchResult::TooManyMatches => screen.write_status_text(
+                    w,
                     "Type a verb then <enter> to execute it ('?' for the list of verbs)",
                 ),
             },
-            _ => self.write_status_normal(screen, false),
+            _ => self.write_status_normal(w, screen, false),
         }
     }
 
@@ -434,25 +445,30 @@ impl AppState for BrowserState {
     }
 
     /// draw the flags at the bottom right of the screen
-    fn write_flags(&self, screen: &mut Screen, _con: &AppContext) -> Result<(), ProgramError> {
+    fn write_flags(
+        &self,
+        w: &mut W,
+        screen: &mut Screen,
+        _con: &AppContext
+    ) -> Result<(), ProgramError>
+    {
         let tree = self.displayed_tree();
-        let total_char_size = 9;
-        screen.goto(screen.w - total_char_size, screen.h);
-        let terminal = Terminal::new();
-        terminal.clear(ClearType::UntilNewLine)?;
+        let total_char_size = 10;
+        screen.goto_clear(w, screen.width - total_char_size - 1, screen.height - 1)?;
         let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
         let gi_value = match tree.options.respect_git_ignore {
             OptionBool::Auto => 'a',
             OptionBool::Yes => 'y',
             OptionBool::No => 'n',
         };
-        print!(
+        write!(
+            w,
             "{}{}  {}{}",
             screen.skin.flag_label.apply_to(" h:"),
             screen.skin.flag_value.apply_to(h_value),
             screen.skin.flag_label.apply_to(" gi:"),
             screen.skin.flag_value.apply_to(gi_value),
-        );
+        )?;
         Ok(())
     }
 }

@@ -43,7 +43,7 @@ mod verb_invocation;
 mod verb_store;
 mod verbs;
 
-use std::{env, fs::File, result::Result, str::FromStr};
+use std::{env, fs::File, str::FromStr};
 
 use log::LevelFilter;
 use simplelog;
@@ -97,7 +97,7 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         verb_store,
     };
     let skin = skin::Skin::create(config.skin);
-    App::new().run(&context, skin)
+    App::new().run(&mut std::io::stderr(), &context, skin)
 }
 
 fn main() {

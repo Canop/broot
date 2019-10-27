@@ -8,8 +8,8 @@ use std::result::Result;
 use crossterm::{
     Attribute::{self, *},
     Color::{self, *},
-    ObjectStyle,
 };
+use termimad::CompoundStyle;
 
 use crate::{errors::InvalidSkinError, skin};
 
@@ -96,7 +96,7 @@ fn parse_attributes(s: &str) -> Result<Vec<Attribute>, InvalidSkinError> {
     s.split_whitespace().map(|t| parse_attribute(t)).collect()
 }
 
-pub fn parse_object_style(s: &str) -> Result<ObjectStyle, InvalidSkinError> {
+pub fn parse_object_style(s: &str) -> Result<CompoundStyle, InvalidSkinError> {
     let s = s.to_ascii_lowercase();
     let parts_rex = regex!(
         r"(?x)
@@ -113,11 +113,11 @@ pub fn parse_object_style(s: &str) -> Result<ObjectStyle, InvalidSkinError> {
         let fg_color = parse_color(c.name("fg").unwrap().as_str())?;
         let bg_color = parse_color(c.name("bg").unwrap().as_str())?;
         let attrs = parse_attributes(c.name("attributes").unwrap().as_str())?;
-        Ok(ObjectStyle {
+        Ok(CompoundStyle::new(
             fg_color,
             bg_color,
             attrs,
-        })
+        ))
     } else {
         debug!("NO match for {:?}", s);
         Err(InvalidSkinError::InvalidStyle {

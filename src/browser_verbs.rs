@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use directories::UserDirs;
 
 use crate::{
-    app::AppStateCmdResult,
+    app::{AppStateCmdResult, W},
     app_context::AppContext,
     browser_states::BrowserState,
     commands::Command,
@@ -18,7 +18,8 @@ use crate::{
     verbs::{Verb, VerbExecutor},
 };
 
-fn focus_path(path: PathBuf, screen: &mut Screen, tree: &Tree) -> AppStateCmdResult {
+fn focus_path(path: PathBuf, screen: &mut Screen, tree: &Tree) -> AppStateCmdResult
+{
     AppStateCmdResult::from_optional_state(
         BrowserState::new(
             path,

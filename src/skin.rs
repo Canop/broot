@@ -1,64 +1,44 @@
 /// Defines the Skin structure with its defautl value.
 ///
-/// A skin is a collection of skin entries which are crossterm
-/// objectstyles:
-/// - an optional fg color
-/// - an optional bg color
-/// - a vector of attributes (bold, italic)
-use std::{collections::HashMap, fmt};
+/// A skin is a collection of termimad compound_style
+use std::{collections::HashMap, fmt, io::Write};
 
 use crossterm::{
-    Attribute::{self, *},
+    Attribute::*,
     Color::AnsiValue,
     Color::{self, *},
-    Colored, ObjectStyle,
+    ResetColor,
+    queue,
 };
 use termimad::{Alignment, CompoundStyle, LineStyle, MadSkin};
 
-pub trait SkinEntry {
-    fn print_bg(&self);
-    fn print_string(&self, string: &str);
-    fn write(&self, f: &mut fmt::Formatter<'_>, string: &str) -> fmt::Result;
-}
-
-impl SkinEntry for ObjectStyle {
-    fn print_bg(&self) {
-        if let Some(c) = self.bg_color {
-            print!("{}", Colored::Bg(c));
-        }
-    }
-    #[inline(always)]
-    fn print_string(&self, string: &str) {
-        print!("{}", self.apply_to(string));
-    }
-    #[inline(always)]
-    fn write(&self, f: &mut fmt::Formatter<'_>, string: &str) -> fmt::Result {
-        write!(f, "{}", self.apply_to(string))
-    }
-}
+use crate::{
+    app::W,
+    errors::ProgramError,
+};
 
 macro_rules! Skin {
     (
         $($name:ident: $fg:expr, $bg:expr; $({$a:expr})*)*
     ) => {
         pub struct Skin {
-            $(pub $name: ObjectStyle,)*
+            $(pub $name: CompoundStyle,)*
         }
         impl Skin {
             // build a skin without any terminal control character (for file output)
             pub fn no_term() -> Skin {
                 Skin {
-                    $($name: ObjectStyle::new(),)*
+                    $($name: CompoundStyle::default(),)*
                 }
             }
             // build a skin with some entry overloaded by configuration
-            pub fn create(mut skin_conf: HashMap<String, ObjectStyle>) -> Skin {
+            pub fn create(mut skin_conf: HashMap<String, CompoundStyle>) -> Skin {
                 Skin {
-                    $($name: skin_conf.remove(stringify!($name)).unwrap_or(ObjectStyle {
-                        fg_color: $fg,
-                        bg_color: $bg,
-                        attrs: [$($a),*].to_vec()
-                    }),)*
+                    $($name: skin_conf.remove(stringify!($name)).unwrap_or(CompoundStyle::new(
+                        $fg,
+                        $bg,
+                        [$($a),*].to_vec(),
+                    )),)*
                 }
             }
         }
@@ -129,7 +109,7 @@ impl Skin {
             compound_style: CompoundStyle::from(self.help_table_border.clone()),
             align: Alignment::Center,
         };
-        if let Some(c) = self.help_headers.fg_color {
+        if let Some(c) = self.help_headers.get_fg() {
             ms.set_headers_fg(c);
         }
         ms.scrollbar
@@ -142,8 +122,9 @@ impl Skin {
     }
 }
 
-pub fn reset() {
-    print!("{}", Attribute::Reset);
+pub fn reset(w: &mut W) -> Result<(), ProgramError> where W: std::io::Write {
+    queue!(w, ResetColor)?;
+    Ok(())
 }
 
 impl fmt::Debug for Skin {

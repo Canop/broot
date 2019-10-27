@@ -59,7 +59,7 @@ impl Launchable {
         Launchable::TreePrinter {
             tree: Box::new(tree.clone()),
             skin: Box::new(screen.skin.clone()),
-            width: screen.w,
+            width: screen.width,
         }
     }
 
@@ -82,8 +82,7 @@ impl Launchable {
             }
             Launchable::TreePrinter { tree, skin, width } => {
                 let dp = DisplayableTree::out_of_app(&tree, &skin, *width);
-                print!("{}", dp);
-                Ok(())
+                dp.write_on(&mut std::io::stdout())
             }
             Launchable::Program { exe, args } => {
                 Command::new(&exe)
@@ -140,14 +139,14 @@ fn print_tree_to_file(
     tree: &Tree,
     screen: &mut Screen,
     file_path: &str,
-) -> io::Result<AppStateCmdResult> {
+) -> Result<AppStateCmdResult, ProgramError> {
     let no_style_skin = Skin::no_term();
-    let dp = DisplayableTree::out_of_app(tree, &no_style_skin, screen.w);
+    let dp = DisplayableTree::out_of_app(tree, &no_style_skin, screen.width);
     let mut f = OpenOptions::new()
         .create(true)
         .append(true)
         .open(file_path)?;
-    write!(f, "{}", dp)?;
+    dp.write_on(&mut f)?;
     Ok(AppStateCmdResult::Quit)
 }
 
@@ -155,7 +154,7 @@ pub fn print_tree(
     tree: &Tree,
     screen: &mut Screen,
     con: &AppContext,
-) -> io::Result<AppStateCmdResult> {
+) -> Result<AppStateCmdResult, ProgramError> {
     if let Some(ref output_path) = con.launch_args.file_export_path {
         // an output path was provided, we write to it
         print_tree_to_file(tree, screen, output_path)

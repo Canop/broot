@@ -1,8 +1,7 @@
-use crossterm::{ClearType, Terminal};
 use termimad::{Area, MadView};
 
 use crate::{
-    app::{AppState, AppStateCmdResult},
+    app::{AppState, AppStateCmdResult, W},
     app_context::AppContext,
     commands::{Action, Command},
     conf::Conf,
@@ -23,14 +22,14 @@ pub struct HelpState {
 impl HelpState {
     pub fn new(screen: &Screen, con: &AppContext) -> HelpState {
         let area = Area::uninitialized(); // will be fixed at drawing time
-        Terminal::new().clear(ClearType::All).unwrap();
+        //Terminal::new().clear(ClearType::All).unwrap(); // FIXME
         let markdown = help_content::build_markdown(con);
         let view = MadView::from(markdown, area, screen.skin.to_mad_skin());
         HelpState { view }
     }
 
     fn resize_area(&mut self, screen: &Screen) {
-        let mut area = Area::new(0, 0, screen.w, screen.h - 2);
+        let mut area = Area::new(0, 0, screen.width, screen.height - 2);
         area.pad_for_max_width(110);
         self.view.resize(&area);
     }
@@ -72,29 +71,38 @@ impl AppState for HelpState {
         false
     }
 
-    fn do_pending_task(&mut self, _screen: &mut Screen, _tl: &TaskLifetime) {
+    fn do_pending_task(&mut self, _w: &mut W, _screen: &mut Screen, _tl: &TaskLifetime) {
         unreachable!();
     }
 
-    fn display(&mut self, screen: &mut Screen, _con: &AppContext) -> Result<(), ProgramError> {
+    fn display(
+        &mut self,
+        w: &mut W,
+        screen: &Screen,
+        _con: &AppContext
+    ) -> Result<(), ProgramError>
+    {
         self.resize_area(screen);
-        Ok(self.view.write()?)
+        Ok(self.view.write_on(w)?)
     }
 
     fn write_status(
         &self,
+        w: &mut W,
         screen: &mut Screen,
         cmd: &Command,
         con: &AppContext,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<(), ProgramError>
+    {
         match &cmd.action {
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::NoMatch => screen.write_status_err("No matching verb"),
+                PrefixSearchResult::NoMatch => screen.write_status_err(w, "No matching verb"),
                 PrefixSearchResult::Match(verb) => {
                     if let Some(err) = verb.match_error(invocation) {
-                        screen.write_status_err(&err)
+                        screen.write_status_err(w, &err)
                     } else {
                         screen.write_status_text(
+                            w,
                             &format!(
                                 "Hit <enter> to {} : {}",
                                 &verb.invocation.key,
@@ -105,15 +113,24 @@ impl AppState for HelpState {
                     }
                 }
                 PrefixSearchResult::TooManyMatches => {
-                    screen.write_status_text("Type a verb then <enter> to execute it")
+                    screen.write_status_text(w, "Type a verb then <enter> to execute it")
                 }
             },
-            _ => screen
-                .write_status_text("Hit <esc> to get back to the tree, or a space to start a verb"),
+            _ => screen.write_status_text(
+                w, "Hit <esc> to get back to the tree, or a space to start a verb"
+            ),
         }
     }
 
-    fn write_flags(&self, _screen: &mut Screen, _con: &AppContext) -> Result<(), ProgramError> {
+    /// the help state doesn't rewrite the flags. We assume the one from the coming
+    /// state are still relevant.
+    fn write_flags(
+        &self,
+        _w: &mut W,
+        _screen: &mut Screen,
+        _con: &AppContext
+    ) -> Result<(), ProgramError>
+    {
         Ok(())
     }
 }

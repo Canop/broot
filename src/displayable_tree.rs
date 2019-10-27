@@ -1,12 +1,22 @@
-use std::{fmt, time::SystemTime};
+use std::{time::SystemTime};
 
 #[cfg(unix)]
 use std::os::unix::fs::MetadataExt;
 
 use chrono::{offset::Local, DateTime};
-
-use crossterm::{ClearType, Color, Colored, ObjectStyle, Terminal, TerminalCursor};
-use termimad::ProgressBar;
+use crossterm::{
+    Clear,
+    ClearType,
+    Color,
+    Colored,
+    Goto,
+    Output,
+    queue,
+};
+use termimad::{
+    CompoundStyle,
+    ProgressBar,
+};
 
 #[cfg(unix)]
 use crate::permissions;
@@ -14,12 +24,12 @@ use crate::permissions;
 use crate::{
     file_sizes::Size,
     flat_tree::{LineType, Tree, TreeLine},
+    errors::ProgramError,
     patterns::Pattern,
-    skin::{Skin, SkinEntry},
+    skin::Skin,
 };
 
-/// A tree wrapper implementing Display
-/// which can be used either
+/// A tree wrapper which can be used either
 /// - to write on the screen in the application,
 /// - or to write in a file or an exported string.
 /// Using it in the application (with in_app true) means that
@@ -50,7 +60,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         }
     }
 
-    fn name_style(&self, line: &TreeLine) -> &ObjectStyle {
+    fn name_style(&self, line: &TreeLine) -> &CompoundStyle {
         match &line.line_type {
             LineType::Dir => &self.skin.directory,
             LineType::File => {
@@ -65,48 +75,43 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         }
     }
 
-    fn write_line_size(
+    fn write_line_size<F>(
         &self,
-        f: &mut fmt::Formatter<'_>,
+        f: &mut F,
         line: &TreeLine,
         total_size: Size,
         selected: bool,
-    ) -> fmt::Result {
+    ) -> Result<(), termimad::Error> where F: std::io::Write {
         if let Some(s) = line.size {
             let pb = ProgressBar::new(s.part_of(total_size), 10);
             if selected {
-                self.skin.selected_line.print_bg();
+                self.skin.selected_line.queue_bg(f)?;
             }
             let style = self.name_style(line);
-            if let Some(fg) = style.fg_color {
-                write!(f, "{}{:>5} {:<10} ", Colored::Fg(fg), s.to_string(), pb)
-            } else {
-                write!(f, "{:>5} {:<10} ", s.to_string(), pb)
-            }
+            style.queue_fg(f)?;
+            Ok(write!(f, "{:>5} {:<10} ", s.to_string(), pb)?)
         } else {
-            self.skin.tree.write(f, "──────────────── ")
+            self.skin.tree.queue_str(f, "──────────────── ")
         }
     }
 
-    fn write_date(&self, f: &mut fmt::Formatter<'_>, system_time: SystemTime) -> fmt::Result {
+    fn write_date<F>(
+        &self,
+        f: &mut F,
+        system_time: SystemTime,
+    ) -> Result<(), termimad::Error> where F: std::io::Write {
         let date_time: DateTime<Local> = system_time.into();
-        write!(
-            f,
-            "{}",
-            self.skin
-                .dates
-                .apply_to(date_time.format("%Y/%m/%d %R ").to_string()),
-        )
+        self.skin.dates.queue(f, date_time.format("%Y/%m/%d %R ").to_string())
     }
 
-    fn write_line_name(
+    fn write_line_name<F>(
         &self,
-        f: &mut fmt::Formatter<'_>,
+        f: &mut F,
         line: &TreeLine,
         idx: usize,
         pattern: &Pattern,
         selected: bool,
-    ) -> fmt::Result {
+    ) -> Result<(), ProgramError> where F: std::io::Write {
         let style = match &line.line_type {
             LineType::Dir => &self.skin.directory,
             LineType::File => {
@@ -121,29 +126,25 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         };
         let mut style = style.clone();
         if selected {
-            if let Some(c) = self.skin.selected_line.bg_color {
-                style = style.bg(c);
+            if let Some(c) = self.skin.selected_line.get_bg() {
+                style.set_bg(c);
             }
         }
         if idx == 0 {
-            style.write(f, &line.path.to_string_lossy())?;
+            style.queue_str(f, &line.path.to_string_lossy())?;
         } else {
-            write!(
-                f,
-                "{}",
-                pattern.style(&line.name, &style, &self.skin.char_match,),
-            )?;
+            pattern.style(&line.name, &style, &self.skin.char_match).write_on(f)?;
         }
         match &line.line_type {
             LineType::Dir => {
                 if line.unlisted > 0 {
-                    style.write(f, " …")?;
+                    style.queue_str(f, " …")?;
                 }
             }
             LineType::SymLinkToFile(target) | LineType::SymLinkToDir(target) => {
-                style.write(f, " -> ")?;
+                style.queue_str(f, " -> ")?;
                 if line.has_error {
-                    self.skin.file_error.write(f, &target)?;
+                    self.skin.file_error.queue_str(f, &target)?;
                 } else {
                     let target_style = if line.is_dir() {
                         &self.skin.directory
@@ -152,39 +153,22 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     };
                     let mut target_style = target_style.clone();
                     if selected {
-                        if let Some(c) = self.skin.selected_line.bg_color {
-                            target_style = target_style.bg(c);
+                        if let Some(c) = self.skin.selected_line.get_bg() {
+                            target_style.set_bg(c);
                         }
                     }
-                    target_style.write(f, &target)?;
+                    target_style.queue(f, &target)?;
                 }
             }
             _ => {}
         }
         Ok(())
     }
-}
 
-#[cfg(unix)]
-fn user_group_max_lengths(tree: &Tree) -> (usize, usize) {
-    let mut max_user_len = 0;
-    let mut max_group_len = 0;
-    if tree.options.show_permissions {
-        for i in 1..tree.lines.len() {
-            let line = &tree.lines[i];
-            let user = permissions::user_name(line.metadata.uid());
-            max_user_len = max_user_len.max(user.len());
-            let group = permissions::group_name(line.metadata.gid());
-            max_group_len = max_group_len.max(group.len());
-        }
-    }
-    (max_user_len, max_group_len)
-}
-
-impl fmt::Display for DisplayableTree<'_, '_> {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let terminal = Terminal::new();
-        let cursor = TerminalCursor::new(); // FIXME
+    pub fn write_on<F>(
+        &self,
+        f: &mut F,
+    ) -> Result<(), ProgramError> where F: std::io::Write {
         let tree = self.tree;
         #[cfg(unix)]
         let user_group_max_lengths = user_group_max_lengths(&tree);
@@ -196,7 +180,7 @@ impl fmt::Display for DisplayableTree<'_, '_> {
         };
         for y in 0..self.area.height {
             if self.in_app {
-                cursor.goto(0, y).unwrap();
+                queue!(f, Goto(0, y))?;
             }
             let mut line_index = y as usize;
             if line_index > 0 {
@@ -206,7 +190,7 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                 let line = &tree.lines[line_index];
                 let selected = self.in_app && line_index == tree.selection;
                 for depth in 0..line.depth {
-                    self.skin.tree.write(
+                    self.skin.tree.queue_str(
                         f,
                         if line.left_branchs[depth as usize] {
                             if self.tree.has_branch(line_index + 1, depth as usize) {
@@ -230,13 +214,13 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                 {
                     if tree.options.show_permissions && line_index > 0 {
                         if line.is_selectable() {
-                            write!(f, "{}", self.skin.permissions.apply_to(line.mode()))?;
+                            self.skin.permissions.queue(f, line.mode())?;
                             let user = permissions::user_name(line.metadata.uid());
                             write!(f, " {:w$}", &user, w = user_group_max_lengths.0,)?;
                             let group = permissions::group_name(line.metadata.gid());
                             write!(f, " {:w$} ", &group, w = user_group_max_lengths.1,)?;
                         } else {
-                            self.skin.tree.write(f, "──────────────")?;
+                            self.skin.tree.queue_str(f, "──────────────")?;
                         }
                     }
                 }
@@ -244,29 +228,47 @@ impl fmt::Display for DisplayableTree<'_, '_> {
                     if let Ok(date) = line.metadata.modified() {
                         self.write_date(f, date)?;
                     } else {
-                        self.skin.tree.write(f, "──────────────── ")?;
+                        self.skin.tree.queue_str(f, "──────────────── ")?;
                     }
                 }
                 self.write_line_name(f, line, line_index, &tree.options.pattern, selected)?;
                 if selected {
-                    self.skin.selected_line.print_bg();
+                    self.skin.selected_line.queue_bg(f)?;
                 }
             }
             if self.in_app {
-                terminal.clear(ClearType::UntilNewLine).unwrap();
+                queue!(f, Clear(ClearType::UntilNewLine))?;
+                //queue!(f, ResetColor{})?,
                 write!(f, "{}", Colored::Bg(Color::Reset))?; // to end selection background
                 if let Some((sctop, scbottom)) = scrollbar {
-                    cursor.goto(self.area.width, y).unwrap();
+                    queue!(f, Goto(self.area.width, y))?;
                     let style = if sctop <= y && y <= scbottom {
                         &self.skin.scrollbar_thumb
                     } else {
                         &self.skin.scrollbar_track
                     };
-                    style.write(f, "▐")?;
+                    style.queue_str(f, "▐")?;
                 }
             }
-            write!(f, "\r\n")?;
+            queue!(f, Output("\r\n".to_string()))?;
         }
         Ok(())
     }
 }
+
+#[cfg(unix)]
+fn user_group_max_lengths(tree: &Tree) -> (usize, usize) {
+    let mut max_user_len = 0;
+    let mut max_group_len = 0;
+    if tree.options.show_permissions {
+        for i in 1..tree.lines.len() {
+            let line = &tree.lines[i];
+            let user = permissions::user_name(line.metadata.uid());
+            max_user_len = max_user_len.max(user.len());
+            let group = permissions::group_name(line.metadata.gid());
+            max_group_len = max_group_len.max(group.len());
+        }
+    }
+    (max_user_len, max_group_len)
+}
+

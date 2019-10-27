@@ -41,6 +41,6 @@ lto = true # link time optimization - roughly halves the size of the exec
 codegen-units = 1 # this removes a few hundred bytes from the final exec size
 
 [patch.crates-io]
-# termimad = { path = "../termimad" }
+termimad = { path = "../termimad" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 

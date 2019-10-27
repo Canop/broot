@@ -7,8 +7,11 @@
 //! - an operation which keeps the state
 //! - a request to quit broot
 //! - a request to launch an executable (thus leaving broot)
-use std::io::{self, Write};
+use std::io::Write;
 
+use crossterm::{
+    Hide, Show, EnterAlternateScreen, queue, LeaveAlternateScreen,
+};
 use termimad::EventSource;
 
 use crate::{
@@ -25,6 +28,8 @@ use crate::{
     status::Status,
     task_sync::TaskLifetime,
 };
+
+pub type W = std::io::Stderr;
 
 /// Result of applying a command to a state
 pub enum AppStateCmdResult {
@@ -71,15 +76,31 @@ pub trait AppState {
     ) -> Result<AppStateCmdResult, ProgramError>;
     fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
     fn has_pending_tasks(&self) -> bool;
-    fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime);
-    fn display(&mut self, screen: &mut Screen, con: &AppContext) -> Result<(), ProgramError>;
+    fn do_pending_task(
+        &mut self,
+        w: &mut W, // TODO make this useless ?
+        screen: &mut Screen,
+        tl: &TaskLifetime
+    );
+    fn display(
+        &mut self,
+        w: &mut W,
+        screen: &Screen,
+        con: &AppContext
+    ) -> Result<(), ProgramError>;
     fn write_status(
         &self,
+        w: &mut W,
         screen: &mut Screen,
         cmd: &Command,
         con: &AppContext,
     ) -> Result<(), ProgramError>;
-    fn write_flags(&self, screen: &mut Screen, con: &AppContext) -> Result<(), ProgramError>;
+    fn write_flags(
+        &self,
+        w: &mut W,
+        screen: &mut Screen,
+        con: &AppContext,
+    ) -> Result<(), ProgramError>;
 }
 
 pub struct App {
@@ -112,6 +133,7 @@ impl App {
     ///  the allowed lifetime is expired (usually when the user typed a new key)
     fn do_pending_tasks(
         &mut self,
+        w: &mut W,
         cmd: &Command,
         screen: &mut Screen,
         con: &AppContext,
@@ -120,20 +142,20 @@ impl App {
         let has_task = self.state().has_pending_tasks();
         if has_task {
             loop {
-                self.mut_state().display(screen, con)?;
-                self.state().write_status(screen, &cmd, con)?;
-                screen.write_spinner(true)?;
+                self.mut_state().display(w, screen, con)?;
+                self.state().write_status(w, screen, &cmd, con)?;
+                screen.write_spinner(w, true)?;
                 if tl.is_expired() {
                     break;
                 }
-                self.mut_state().do_pending_task(screen, &tl);
+                self.mut_state().do_pending_task(w, screen, &tl);
                 if !self.state().has_pending_tasks() {
                     break;
                 }
             }
-            screen.write_spinner(false)?;
-            self.mut_state().display(screen, con)?;
-            self.mut_state().write_status(screen, &cmd, con)?;
+            screen.write_spinner(w, false)?;
+            self.mut_state().display(w, screen, con)?;
+            self.mut_state().write_status(w, screen, &cmd, con)?;
         }
         Ok(())
     }
@@ -143,6 +165,7 @@ impl App {
     /// This normally mutates self
     fn apply_command(
         &mut self,
+        w: &mut W,
         cmd: Command,
         screen: &mut Screen,
         con: &AppContext,
@@ -150,9 +173,9 @@ impl App {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
         screen.read_size(con)?;
-        screen.input_field.display();
-        self.state().write_flags(screen, con)?;
-        screen.write_spinner(false)?;
+        screen.input_field.display_on(w)?;
+        self.state().write_flags(w, screen, con)?;
+        screen.write_spinner(w, false)?;
         match self.mut_state().apply(&mut cmd, screen, con)? {
             AppStateCmdResult::Quit => {
                 debug!("cmd result quit");
@@ -165,7 +188,7 @@ impl App {
             AppStateCmdResult::NewState(boxed_state, new_cmd) => {
                 self.push(boxed_state);
                 cmd = new_cmd;
-                self.state().write_status(screen, &cmd, con)?;
+                self.state().write_status(w, screen, &cmd, con)?;
             }
             AppStateCmdResult::RefreshState => {
                 file_sizes::clear_cache();
@@ -178,7 +201,7 @@ impl App {
                 } else {
                     self.states.pop();
                     cmd = self.mut_state().refresh(screen, con);
-                    self.state().write_status(screen, &cmd, con)?;
+                    self.state().write_status(w, screen, &cmd, con)?;
                 }
             }
             AppStateCmdResult::PopStateAndReapply => {
@@ -188,25 +211,48 @@ impl App {
                 } else {
                     self.states.pop();
                     debug!("about to reapply {:?}", &cmd);
-                    return self.apply_command(cmd, screen, con);
+                    return self.apply_command(w, cmd, screen, con);
                 }
             }
             AppStateCmdResult::DisplayError(txt) => {
-                screen.write_status_err(&txt)?;
+                screen.write_status_err(w, &txt)?;
             }
             AppStateCmdResult::Keep => {
-                self.state().write_status(screen, &cmd, con)?;
+                self.state().write_status(w, screen, &cmd, con)?;
             }
         }
         screen.input_field.set_content(&cmd.raw);
-        self.mut_state().display(screen, con)?;
-        screen.input_field.display();
-        self.state().write_flags(screen, con)?;
+        self.mut_state().display(w, screen, con)?;
+        screen.input_field.display_on(w)?;
+        self.state().write_flags(w, screen, con)?;
         Ok(cmd)
     }
 
+    fn end(&mut self, writer: &mut W) ->Result<Option<Launchable>, ProgramError> {
+        queue!(writer, Show).unwrap(); // restoring the cursor
+        queue!(writer, LeaveAlternateScreen).unwrap(); // and going back to normal screen
+        writer.flush()?;
+        debug!("we left the screen");
+        Ok(self.launch_at_end.take())
+    }
+
     /// This is the main loop of the application
-    pub fn run(mut self, con: &AppContext, skin: Skin) -> Result<Option<Launchable>, ProgramError> {
+    pub fn run(
+        &mut self,
+        writer: &mut W,
+        con: &AppContext,
+        skin: Skin,
+    ) -> Result<Option<Launchable>, ProgramError> {
+
+        // we listen for events in a separate thread so that we can go on listening
+        // when a long search is running, and interrupt it if needed
+        let mouse_support = true; // TODO move to args
+        let event_source = EventSource::new(mouse_support)?;
+        let rx_events = event_source.receiver();
+
+        queue!(writer, EnterAlternateScreen)?;
+        queue!(writer, Hide)?; // hiding the cursor
+        debug!("we're on screen");
         let mut screen = Screen::new(con, skin)?;
 
         // create the initial state
@@ -226,30 +272,27 @@ impl App {
         // if some commands were passed to the application
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {
+            debug!("some commands to apply");
             let commands = parse_command_sequence(unparsed_commands, con)?;
             for arg_cmd in &commands {
                 cmd = (*arg_cmd).clone();
-                cmd = self.apply_command(cmd, &mut screen, con)?;
-                self.do_pending_tasks(&cmd, &mut screen, con, TaskLifetime::unlimited())?;
+                cmd = self.apply_command(writer, cmd, &mut screen, con)?;
+                self.do_pending_tasks(writer, &cmd, &mut screen, con, TaskLifetime::unlimited())?;
                 if self.quitting {
-                    return Ok(self.launch_at_end.take());
+                    return self.end(writer);
                 }
             }
         }
 
-        // we listen for events in a separate thread so that we can go on listening
-        // when a long search is running, and interrupt it if needed
-        let event_source = EventSource::new();
-        let rx_events = event_source.receiver();
+        screen.input_field.display_on(writer)?;
+        self.mut_state().display(writer, &mut screen, con)?;
+        screen.write_status_text(writer, "Hit <esc> to quit, '?' for help, or some letters to search")?;
+        self.state().write_flags(writer, &mut screen, con)?;
 
-        screen.input_field.display();
-        self.mut_state().display(&mut screen, con)?;
-        screen.write_status_text("Hit <esc> to quit, '?' for help, or some letters to search")?;
-        self.state().write_flags(&mut screen, con)?;
         loop {
             let tl = TaskLifetime::new(event_source.shared_event_count());
             if !self.quitting {
-                self.do_pending_tasks(&cmd, &mut screen, con, tl)?;
+                self.do_pending_tasks(writer, &cmd, &mut screen, con, tl)?;
             }
             let event = match rx_events.recv() {
                 Ok(event) => event,
@@ -260,15 +303,10 @@ impl App {
                 }
             };
             cmd.add_event(&event, &mut screen.input_field, con);
-            cmd = self.apply_command(cmd, &mut screen, con)?;
+            cmd = self.apply_command(writer, cmd, &mut screen, con)?;
             event_source.unblock(self.quitting);
         }
-        Ok(self.launch_at_end.take())
-    }
-}
 
-impl Drop for App {
-    fn drop(&mut self) {
-        io::stdout().flush().unwrap();
+        self.end(writer)
     }
 }

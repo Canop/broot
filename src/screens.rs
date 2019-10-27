@@ -1,70 +1,77 @@
+use std::io::Write;
 
-use crossterm::{AlternateScreen, ClearType, TerminalCursor};
+use crossterm::{
+    Clear, ClearType, Goto, queue,
+};
 use termimad::{Area, CompoundStyle, InputField};
 
-use crate::{app_context::AppContext, errors::ProgramError, skin::Skin};
+use crate::{
+    app::W,
+    app_context::AppContext,
+    errors::ProgramError,
+    skin::Skin,
+};
 
 /// A wrapper around the solution used to write on screen,
 /// the dimensions, and the skin
 pub struct Screen {
-    pub w: u16,
-    pub h: u16,
-    pub alternate_screen: crossterm::AlternateScreen,
+    pub width: u16,
+    pub height: u16,
     pub skin: Skin,
     pub input_field: InputField,
+    //pub writer: Stderr,
 }
 
 impl Screen {
     pub fn new(con: &AppContext, skin: Skin) -> Result<Screen, ProgramError> {
-        let alternate_screen = AlternateScreen::to_alternate(true)?;
+        //let mut writer = stderr();
         let mut input_field = InputField::new(Area::new(0, 0, 10, 1));
         input_field.set_normal_style(CompoundStyle::from(skin.input.clone()));
         let mut screen = Screen {
-            w: 0,
-            h: 0,
-            alternate_screen,
+            width: 0,
+            height: 0,
             skin,
             input_field,
         };
         screen.read_size(con)?;
-        debug!("screen size: {} x {}", screen.w, screen.h);
-        let cursor = TerminalCursor::new();
-        cursor.hide().unwrap();
         Ok(screen)
     }
     pub fn read_size(&mut self, con: &AppContext) -> Result<(), ProgramError> {
         let (w, h) = termimad::terminal_size();
-        self.w = w;
-        self.h = h;
+        self.width = w;
+        self.height = h;
         if let Some(h) = con.launch_args.height {
-            self.h = h;
+            self.height = h;
         }
-        self.input_field.change_area(0, h, w - 15);
+        debug!("screen size: {} x {}", self.width, self.height);
+        self.input_field.change_area(0, h-1, w - 15);
+        debug!("input_field area: {:?}", self.input_field.area);
         Ok(())
     }
     /// move the cursor to x,y and clears the line.
-    ///
-    /// top left corner is (1, 1)
-    pub fn goto_clear(&self, x: u16, y: u16) {
-        self.goto(x, y);
-        self.clear_line();
+    pub fn goto_clear(&self, w: &mut W, x: u16, y: u16)
+    -> Result<(), ProgramError> {
+        self.goto(w, x, y)?;
+        self.clear_line(w)
     }
     /// move the cursor to x,y
     ///
-    /// top left corner is (1, 1)
-    pub fn goto(&self, x: u16, y: u16) {
-        let cursor = TerminalCursor::new();
-        cursor.goto(x - 1, y - 1).unwrap();
+    pub fn goto(
+        &self,
+        w: &mut W,
+        x: u16,
+        y: u16
+    ) -> Result<(), ProgramError> {
+        queue!(w, Goto(x, y))?;
+        Ok(())
     }
-    pub fn clear_line(&self) {
-        let terminal = crossterm::Terminal::new();
-        terminal.clear(ClearType::UntilNewLine).unwrap(); // FIXME try to manage those errors
+    pub fn clear_line(&self, w: &mut W) -> Result<(), ProgramError> {
+        queue!(w, Clear(ClearType::UntilNewLine))?;
+        Ok(())
     }
 }
 
-impl Drop for Screen {
-    fn drop(&mut self) {
-        let cursor = TerminalCursor::new();
-        cursor.show().unwrap();
-    }
-}
+//impl Drop for Screen {
+//    fn drop(&mut self) {
+//    }
+//}
