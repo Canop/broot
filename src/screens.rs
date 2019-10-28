@@ -1,7 +1,7 @@
 use std::io::Write;
 
 use crossterm::{
-    Clear, ClearType, Goto, queue,
+    Clear, ClearType, cursor, queue,
 };
 use termimad::{Area, CompoundStyle, InputField};
 
@@ -12,19 +12,15 @@ use crate::{
     skin::Skin,
 };
 
-/// A wrapper around the solution used to write on screen,
-/// the dimensions, and the skin
 pub struct Screen {
     pub width: u16,
     pub height: u16,
     pub skin: Skin,
     pub input_field: InputField,
-    //pub writer: Stderr,
 }
 
 impl Screen {
     pub fn new(con: &AppContext, skin: Skin) -> Result<Screen, ProgramError> {
-        //let mut writer = stderr();
         let mut input_field = InputField::new(Area::new(0, 0, 10, 1));
         input_field.set_normal_style(CompoundStyle::from(skin.input.clone()));
         let mut screen = Screen {
@@ -62,7 +58,7 @@ impl Screen {
         x: u16,
         y: u16
     ) -> Result<(), ProgramError> {
-        queue!(w, Goto(x, y))?;
+        queue!(w, cursor::MoveTo(x, y))?;
         Ok(())
     }
     pub fn clear_line(&self, w: &mut W) -> Result<(), ProgramError> {

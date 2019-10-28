@@ -10,7 +10,7 @@
 use std::io::Write;
 
 use crossterm::{
-    Hide, Show, EnterAlternateScreen, queue, LeaveAlternateScreen,
+    cursor, EnterAlternateScreen, queue, LeaveAlternateScreen,
 };
 use termimad::EventSource;
 
@@ -228,9 +228,11 @@ impl App {
         Ok(cmd)
     }
 
+    /// called exactly once at end run, cleans the writer (which
+    /// is usually stdout or stderr)
     fn end(&mut self, writer: &mut W) ->Result<Option<Launchable>, ProgramError> {
-        queue!(writer, Show).unwrap(); // restoring the cursor
-        queue!(writer, LeaveAlternateScreen).unwrap(); // and going back to normal screen
+        queue!(writer, cursor::Show)?;
+        queue!(writer, LeaveAlternateScreen)?;
         writer.flush()?;
         debug!("we left the screen");
         Ok(self.launch_at_end.take())
@@ -246,12 +248,16 @@ impl App {
 
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
-        let mouse_support = true; // TODO move to args
+
+        // mouse_support=true is the last case of having
+        // things written on stdout when there should not
+
+        let mouse_support = false; // FIXME move to args
         let event_source = EventSource::new(mouse_support)?;
         let rx_events = event_source.receiver();
 
         queue!(writer, EnterAlternateScreen)?;
-        queue!(writer, Hide)?; // hiding the cursor
+        queue!(writer, cursor::Hide)?;
         debug!("we're on screen");
         let mut screen = Screen::new(con, skin)?;
 
@@ -285,7 +291,8 @@ impl App {
         }
 
         screen.input_field.display_on(writer)?;
-        self.mut_state().display(writer, &mut screen, con)?;
+        self.mut_state().display(writer, &screen, con)?;
+        screen.write_spinner(writer, false)?;
         screen.write_status_text(writer, "Hit <esc> to quit, '?' for help, or some letters to search")?;
         self.state().write_flags(writer, &mut screen, con)?;
 

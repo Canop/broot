@@ -5,6 +5,7 @@
 ///  twice an inode.
 use std::{
     collections::HashMap,
+    fmt,
     ops::AddAssign,
     path::{Path, PathBuf},
     sync::Mutex,
@@ -53,23 +54,25 @@ impl Size {
             None
         }
     }
-
-    /// format a number of bytes as a string
-    pub fn to_string(self) -> String {
-        let mut v = self.0;
-        let mut i = 0;
-        while v >= 5000 && i < SIZE_NAMES.len() - 1 {
-            v >>= 10;
-            i += 1;
-        }
-        format!("{}{}", v, &SIZE_NAMES[i])
-    }
     pub fn part_of(self, total: Size) -> f32 {
         if total.0 == 0 {
             0.0
         } else {
             self.0 as f32 / total.0 as f32
         }
+    }
+}
+
+impl fmt::Display for Size {
+    /// format a number of bytes as a string, for example 247K
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut v = self.0;
+        let mut i = 0;
+        while v >= 5000 && i < SIZE_NAMES.len() - 1 {
+            v >>= 10;
+            i += 1;
+        }
+        write!(f, "{}{}", v, &SIZE_NAMES[i])
     }
 }
 

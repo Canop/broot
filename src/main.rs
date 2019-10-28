@@ -111,7 +111,6 @@ fn main() {
         }
     };
     if let Some(launchable) = res {
-        info!("launching {:?}", &launchable);
         if let Err(e) = launchable.execute() {
             warn!("Failed to launch {:?}", &launchable);
             warn!("Error: {:?}", e);

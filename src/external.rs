@@ -10,8 +10,13 @@ use opener;
 use regex::Regex;
 
 use crate::{
-    app::AppStateCmdResult, app_context::AppContext, displayable_tree::DisplayableTree,
-    errors::ProgramError, flat_tree::Tree, screens::Screen, skin::Skin,
+    app::AppStateCmdResult,
+    app_context::AppContext,
+    displayable_tree::DisplayableTree,
+    errors::ProgramError,
+    flat_tree::Tree,
+    screens::Screen,
+    skin::Skin,
 };
 
 /// description of a possible launch of an external program
@@ -55,10 +60,20 @@ impl Launchable {
     pub fn printer(to_print: String) -> Launchable {
         Launchable::Printer { to_print }
     }
-    pub fn tree_printer(tree: &Tree, screen: &Screen) -> Launchable {
+    pub fn tree_printer(
+        tree: &Tree,
+        screen: &Screen,
+        no_style: bool,
+    ) -> Launchable {
         Launchable::TreePrinter {
             tree: Box::new(tree.clone()),
-            skin: Box::new(screen.skin.clone()),
+            skin: Box::new(
+                if no_style {
+                    Skin::no_term()
+                } else {
+                    screen.skin.clone()
+                }
+            ),
             width: screen.width,
         }
     }
@@ -98,7 +113,7 @@ impl Launchable {
             Launchable::SystemOpen { path } => match opener::open(&path) {
                 Ok(_) => Ok(()),
                 Err(err) => Err(ProgramError::OpenError { err }),
-            },
+            }
         }
     }
 }
@@ -162,7 +177,9 @@ pub fn print_tree(
         // no output path provided. We write on stdout, but we must
         // do it after app closing to have the normal terminal
         Ok(AppStateCmdResult::from(Launchable::tree_printer(
-            tree, screen,
+            tree,
+            screen,
+            con.launch_args.no_style,
         )))
     }
 }

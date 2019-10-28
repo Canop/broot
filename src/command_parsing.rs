@@ -4,7 +4,9 @@
 //! part is a filter
 
 use crate::{
-    app_context::AppContext, commands::Command, errors::ProgramError,
+    app_context::AppContext,
+    commands::Command,
+    errors::ProgramError,
     verb_store::PrefixSearchResult,
 };
 

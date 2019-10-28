@@ -256,7 +256,7 @@ impl AppState for BrowserState {
                 Ok(AppStateCmdResult::Keep)
             }
             Action::DoubleClick(_, y) => {
-                if self.displayed_tree().selection + 1 == *y as usize {
+                if self.displayed_tree().selection == *y as usize {
                     self.open_selection_stay_in_broot(screen, con)
                 } else {
                     // A double click always come after a simple click at
@@ -371,8 +371,7 @@ impl AppState for BrowserState {
         w: &mut W,
         screen: &Screen,
         _con: &AppContext
-    ) -> Result<(), ProgramError>
-    {
+    ) -> Result<(), ProgramError> {
         screen.goto(w, 0, 0)?;
         let dp = DisplayableTree {
             tree: &self.displayed_tree(),
@@ -394,8 +393,7 @@ impl AppState for BrowserState {
         screen: &mut Screen,
         cmd: &Command,
         con: &AppContext,
-    ) -> Result<(), ProgramError>
-    {
+    ) -> Result<(), ProgramError> {
         match &cmd.action {
             Action::FuzzyPatternEdit(s) if !s.is_empty() => self.write_status_normal(w, screen, true),
             Action::RegexEdit(s, _) if !s.is_empty() => self.write_status_normal(w, screen, true),

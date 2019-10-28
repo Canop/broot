@@ -6,7 +6,10 @@ use crossterm::KeyEvent;
 use regex::Regex;
 use termimad::{Event, InputField};
 
-use crate::{app_context::AppContext, verb_invocation::VerbInvocation};
+use crate::{
+    app_context::AppContext,
+    verb_invocation::VerbInvocation,
+};
 
 #[derive(Debug, Clone)]
 pub struct Command {
@@ -126,6 +129,7 @@ impl Command {
         Command { raw, parts, action }
     }
 
+    /// apply an event to modify the command
     pub fn add_event(&mut self, event: &Event, input_field: &mut InputField, con: &AppContext) {
         let mut handled_by_input_field = false;
         debug!("add_event {:?}", event);

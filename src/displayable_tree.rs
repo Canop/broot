@@ -8,10 +8,10 @@ use crossterm::{
     Clear,
     ClearType,
     Color,
-    Colored,
-    Goto,
     Output,
+    cursor,
     queue,
+    SetBg,
 };
 use termimad::{
     CompoundStyle,
@@ -180,7 +180,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         };
         for y in 0..self.area.height {
             if self.in_app {
-                queue!(f, Goto(0, y))?;
+                queue!(f, cursor::MoveTo(0, y))?;
             }
             let mut line_index = y as usize;
             if line_index > 0 {
@@ -238,10 +238,9 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             }
             if self.in_app {
                 queue!(f, Clear(ClearType::UntilNewLine))?;
-                //queue!(f, ResetColor{})?,
-                write!(f, "{}", Colored::Bg(Color::Reset))?; // to end selection background
+                queue!(f, SetBg(Color::Reset))?; // to end selection background
                 if let Some((sctop, scbottom)) = scrollbar {
-                    queue!(f, Goto(self.area.width, y))?;
+                    queue!(f, cursor::MoveTo(self.area.width, y))?;
                     let style = if sctop <= y && y <= scbottom {
                         &self.skin.scrollbar_thumb
                     } else {

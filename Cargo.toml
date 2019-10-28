@@ -42,5 +42,5 @@ codegen-units = 1 # this removes a few hundred bytes from the final exec size
 
 [patch.crates-io]
 termimad = { path = "../termimad" }
-# crossterm = { path = "../crossterm-rs/crossterm" }
+crossterm = { path = "../crossterm-rs/crossterm" }
 

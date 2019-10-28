@@ -32,6 +32,8 @@ custom_error! {pub ConfError
     InvalidKey {raw: String}                        = "not a valid key: {}",
 }
 
+// error which can be raised when parsing a regex the
+// user typed
 custom_error! {pub RegexError
     Parsing {source: regex::Error} = @{
         format!("Invalid Regular Expression: {}", source.to_string().lines().last().unwrap_or(""))
@@ -44,5 +46,4 @@ custom_error! {pub InvalidSkinError
     InvalidAttribute { raw : String }  = "'{}' is not a valid style attribute",
     InvalidGreyLevel { level: u8 } = "grey level must be between 0 and 23 (got {})",
     InvalidStyle {style: String}   = "Invalid skin style : {}",
-    //BadKey                         = "not a valid skin configuration key",
 }

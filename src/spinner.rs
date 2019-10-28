@@ -14,7 +14,7 @@ pub trait Spinner {
 impl Spinner for Screen {
     fn write_spinner(&mut self, w: &mut W, spinning: bool) -> Result<(), ProgramError> {
         self.goto(w, 0, self.height - 2)?;
-        self.skin.spinner.queue_str(w, if spinning { "⌛" } else { " " })?;
+        self.skin.spinner.queue_str(w, if spinning { "⌛" } else { "  " })?;
         Ok(())
     }
 }
