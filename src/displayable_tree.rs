@@ -5,13 +5,12 @@ use std::os::unix::fs::MetadataExt;
 
 use chrono::{offset::Local, DateTime};
 use crossterm::{
-    Clear,
-    ClearType,
     Color,
     Output,
     cursor,
     queue,
     SetBg,
+    terminal::{Clear, ClearType},
 };
 use termimad::{
     CompoundStyle,

@@ -10,7 +10,12 @@
 use std::io::Write;
 
 use crossterm::{
-    cursor, EnterAlternateScreen, queue, LeaveAlternateScreen,
+    cursor,
+    DisableMouseCapture,
+    EnableMouseCapture,
+    EnterAlternateScreen,
+    queue,
+    LeaveAlternateScreen,
 };
 use termimad::EventSource;
 
@@ -231,6 +236,7 @@ impl App {
     /// called exactly once at end run, cleans the writer (which
     /// is usually stdout or stderr)
     fn end(&mut self, writer: &mut W) ->Result<Option<Launchable>, ProgramError> {
+        queue!(writer, DisableMouseCapture)?;
         queue!(writer, cursor::Show)?;
         queue!(writer, LeaveAlternateScreen)?;
         writer.flush()?;
@@ -246,20 +252,16 @@ impl App {
         skin: Skin,
     ) -> Result<Option<Launchable>, ProgramError> {
 
-        // we listen for events in a separate thread so that we can go on listening
-        // when a long search is running, and interrupt it if needed
-
-        // mouse_support=true is the last case of having
-        // things written on stdout when there should not
-
-        let mouse_support = false; // FIXME move to args
-        let event_source = EventSource::new(mouse_support)?;
-        let rx_events = event_source.receiver();
-
         queue!(writer, EnterAlternateScreen)?;
         queue!(writer, cursor::Hide)?;
         debug!("we're on screen");
         let mut screen = Screen::new(con, skin)?;
+
+        // we listen for events in a separate thread so that we can go on listening
+        // when a long search is running, and interrupt it if needed
+        queue!(writer, EnableMouseCapture)?;
+        let event_source = EventSource::new()?;
+        let rx_events = event_source.receiver();
 
         // create the initial state
         if let Some(bs) = BrowserState::new(

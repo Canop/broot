@@ -1,7 +1,9 @@
 use std::io::Write;
 
 use crossterm::{
-    Clear, ClearType, cursor, queue,
+    cursor,
+    terminal::{Clear, ClearType},
+    queue,
 };
 use termimad::{Area, CompoundStyle, InputField};
 
@@ -66,8 +68,3 @@ impl Screen {
         Ok(())
     }
 }
-
-//impl Drop for Screen {
-//    fn drop(&mut self) {
-//    }
-//}
