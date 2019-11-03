@@ -1,4 +1,4 @@
-use crossterm::KeyEvent;
+use crossterm::input::KeyEvent;
 use regex::Regex;
 
 use crate::errors::ConfError;
@@ -78,7 +78,7 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
 #[cfg(test)]
 mod key_parsing_tests {
 
-    use crossterm::KeyEvent::*;
+    use crossterm::input::KeyEvent::*;
 
     use crate::verb_conf::*;
 

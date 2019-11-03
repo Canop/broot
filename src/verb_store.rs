@@ -1,4 +1,4 @@
-use crossterm::KeyEvent;
+use crossterm::input::KeyEvent;
 
 use crate::{conf::Conf, permissions, verbs::Verb};
 

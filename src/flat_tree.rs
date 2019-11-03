@@ -8,12 +8,13 @@ use std::{
 };
 
 #[cfg(unix)]
-use std::os::unix::fs::MetadataExt;
+use {
+    std::os::unix::fs::MetadataExt,
+    umask::Mode,
+};
 
 #[cfg(windows)]
 use is_executable::IsExecutable;
-
-use umask::Mode;
 
 use crate::{
     errors,
@@ -173,9 +174,9 @@ impl Tree {
         Ok(())
     }
 
-    // do what must be done after line additions or removals:
-    // - sort the lines
-    // - compute left branchs
+    /// do what must be done after line additions or removals:
+    /// - sort the lines
+    /// - compute left branchs
     pub fn after_lines_changed(&mut self) {
         // we sort the lines (this is mandatory to avoid crashes)
         self.lines[1..].sort();
@@ -245,6 +246,9 @@ impl Tree {
         let line = &self.lines[line_index];
         depth < usize::from(line.depth) && line.left_branchs[depth]
     }
+    /// select another line
+    ///
+    /// For example the following one if dy is 1.
     pub fn move_selection(&mut self, dy: i32, page_height: i32) {
         // only work for +1 or -1
         let l = self.lines.len();
@@ -427,6 +431,7 @@ impl Tree {
             bsize.cmp(&asize)
         });
     }
+    /// compute and return the size of the root
     pub fn total_size(&self) -> Size {
         if let Some(size) = self.lines[0].size {
             // if the real total size is computed, it's in the root line

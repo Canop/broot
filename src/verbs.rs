@@ -8,7 +8,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crossterm::KeyEvent;
+use crossterm::input::KeyEvent;
 use regex::{self, Captures, Regex};
 
 use crate::{

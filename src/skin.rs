@@ -4,10 +4,12 @@
 use std::{collections::HashMap, fmt, io::Write};
 
 use crossterm::{
-    Attribute::*,
-    Color::AnsiValue,
-    Color::{self, *},
-    ResetColor,
+    style::{
+        Attribute::*,
+        Color::AnsiValue,
+        Color::{self, *},
+        ResetColor,
+    },
     queue,
 };
 use termimad::{Alignment, CompoundStyle, LineStyle, MadSkin};
@@ -25,13 +27,13 @@ macro_rules! Skin {
             $(pub $name: CompoundStyle,)*
         }
         impl Skin {
-            // build a skin without any terminal control character (for file output)
+            /// build a skin without any terminal control character (for file output)
             pub fn no_term() -> Skin {
                 Skin {
                     $($name: CompoundStyle::default(),)*
                 }
             }
-            // build a skin with some entry overloaded by configuration
+            /// build a skin with some entry overloaded by configuration
             pub fn create(mut skin_conf: HashMap<String, CompoundStyle>) -> Skin {
                 Skin {
                     $($name: skin_conf.remove(stringify!($name)).unwrap_or(CompoundStyle::new(
@@ -122,7 +124,7 @@ impl Skin {
     }
 }
 
-pub fn reset(w: &mut W) -> Result<(), ProgramError> where W: std::io::Write {
+pub fn reset(w: &mut W) -> Result<(), ProgramError> {
     queue!(w, ResetColor)?;
     Ok(())
 }

@@ -2,7 +2,10 @@
 /// the arguments passed on launch of the application.
 use std::{env, path::PathBuf, result::Result};
 
-use crossterm::Color;
+use crossterm::{
+    input::input,
+    style::Color,
+};
 use termimad::{Alignment, MadSkin};
 
 use crate::{
@@ -171,7 +174,7 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
 /// wait for user input, return `true` if she
 /// didn't answer 'n'
 pub fn ask_authorization() -> Result<bool, ProgramError> {
-    let answer = crossterm::input().read_line()?;
+    let answer = input().read_line()?;
     Ok(match answer.as_ref() {
         "n" | "N" => false,
         _ => true,

@@ -11,11 +11,9 @@ use std::io::Write;
 
 use crossterm::{
     cursor,
-    DisableMouseCapture,
-    EnableMouseCapture,
-    EnterAlternateScreen,
+    input::{DisableMouseCapture, EnableMouseCapture},
     queue,
-    LeaveAlternateScreen,
+    screen::{EnterAlternateScreen, LeaveAlternateScreen},
 };
 use termimad::EventSource;
 
@@ -178,10 +176,11 @@ impl App {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
         screen.read_size(con)?;
-        screen.input_field.display_on(w)?;
-        self.state().write_flags(w, screen, con)?;
-        screen.write_spinner(w, false)?;
-        match self.mut_state().apply(&mut cmd, screen, con)? {
+        //screen.input_field.display_on(w)?;
+        //self.state().write_flags(w, screen, con)?;
+        let mut error: Option<String> = None;
+        let cmd_result = self.mut_state().apply(&mut cmd, screen, con)?;
+        match cmd_result {
             AppStateCmdResult::Quit => {
                 debug!("cmd result quit");
                 self.quitting = true;
@@ -193,7 +192,6 @@ impl App {
             AppStateCmdResult::NewState(boxed_state, new_cmd) => {
                 self.push(boxed_state);
                 cmd = new_cmd;
-                self.state().write_status(w, screen, &cmd, con)?;
             }
             AppStateCmdResult::RefreshState => {
                 file_sizes::clear_cache();
@@ -206,7 +204,6 @@ impl App {
                 } else {
                     self.states.pop();
                     cmd = self.mut_state().refresh(screen, con);
-                    self.state().write_status(w, screen, &cmd, con)?;
                 }
             }
             AppStateCmdResult::PopStateAndReapply => {
@@ -220,14 +217,17 @@ impl App {
                 }
             }
             AppStateCmdResult::DisplayError(txt) => {
-                screen.write_status_err(w, &txt)?;
+                error = Some(txt.clone());
             }
-            AppStateCmdResult::Keep => {
-                self.state().write_status(w, screen, &cmd, con)?;
-            }
+            _ => {}
+        }
+        self.mut_state().display(w, screen, con)?;
+        screen.write_spinner(w, false)?;
+        match error {
+            Some(text) => screen.write_status_err(w, &text)?,
+            None => self.state().write_status(w, screen, &cmd, con)?,
         }
         screen.input_field.set_content(&cmd.raw);
-        self.mut_state().display(w, screen, con)?;
         screen.input_field.display_on(w)?;
         self.state().write_flags(w, screen, con)?;
         Ok(cmd)
@@ -280,7 +280,6 @@ impl App {
         // if some commands were passed to the application
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {
-            debug!("some commands to apply");
             let commands = parse_command_sequence(unparsed_commands, con)?;
             for arg_cmd in &commands {
                 cmd = (*arg_cmd).clone();

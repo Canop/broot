@@ -5,11 +5,9 @@ use std::os::unix::fs::MetadataExt;
 
 use chrono::{offset::Local, DateTime};
 use crossterm::{
-    Color,
-    Output,
     cursor,
     queue,
-    SetBg,
+    style::{Color, SetBackgroundColor},
     terminal::{Clear, ClearType},
 };
 use termimad::{
@@ -237,7 +235,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             }
             if self.in_app {
                 queue!(f, Clear(ClearType::UntilNewLine))?;
-                queue!(f, SetBg(Color::Reset))?; // to end selection background
+                queue!(f, SetBackgroundColor(Color::Reset))?; // to end selection background
                 if let Some((sctop, scbottom)) = scrollbar {
                     queue!(f, cursor::MoveTo(self.area.width, y))?;
                     let style = if sctop <= y && y <= scbottom {
@@ -248,7 +246,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     style.queue_str(f, "▐")?;
                 }
             }
-            queue!(f, Output("\r\n".to_string()))?;
+            write!(f, "\r\n")?;
         }
         Ok(())
     }

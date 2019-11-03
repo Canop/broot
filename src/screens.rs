@@ -53,7 +53,6 @@ impl Screen {
         self.clear_line(w)
     }
     /// move the cursor to x,y
-    ///
     pub fn goto(
         &self,
         w: &mut W,
@@ -63,6 +62,12 @@ impl Screen {
         queue!(w, cursor::MoveTo(x, y))?;
         Ok(())
     }
+    /// clear the whole screen
+    pub fn clear(&self, w: &mut W) -> Result<(), ProgramError> {
+        queue!(w, Clear(ClearType::All))?;
+        Ok(())
+    }
+    /// clear from the cursor to the end of line
     pub fn clear_line(&self, w: &mut W) -> Result<(), ProgramError> {
         queue!(w, Clear(ClearType::UntilNewLine))?;
         Ok(())

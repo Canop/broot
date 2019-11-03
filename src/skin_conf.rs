@@ -5,7 +5,7 @@ use regex::Regex;
 ///
 use std::result::Result;
 
-use crossterm::{
+use crossterm::style::{
     Attribute::{self, *},
     Color::{self, *},
 };

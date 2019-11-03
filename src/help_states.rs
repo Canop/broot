@@ -16,16 +16,19 @@ use crate::{
 
 /// an application state dedicated to help
 pub struct HelpState {
+    dirty: bool, // when the screen background must be cleared
     pub view: MadView,
 }
 
 impl HelpState {
     pub fn new(screen: &Screen, con: &AppContext) -> HelpState {
         let area = Area::uninitialized(); // will be fixed at drawing time
-        //Terminal::new().clear(ClearType::All).unwrap(); // FIXME
         let markdown = help_content::build_markdown(con);
         let view = MadView::from(markdown, area, screen.skin.to_mad_skin());
-        HelpState { view }
+        HelpState {
+            dirty: true,
+            view,
+        }
     }
 
     fn resize_area(&mut self, screen: &Screen) {
@@ -80,8 +83,13 @@ impl AppState for HelpState {
         w: &mut W,
         screen: &Screen,
         _con: &AppContext
-    ) -> Result<(), ProgramError>
-    {
+    ) -> Result<(), ProgramError> {
+        if self.dirty {
+            // we don't clear the whole screen more than necessary because
+            //  it makes scrolling flicker
+            screen.clear(w)?;
+            self.dirty = false;
+        }
         self.resize_area(screen);
         Ok(self.view.write_on(w)?)
     }
@@ -92,8 +100,7 @@ impl AppState for HelpState {
         screen: &mut Screen,
         cmd: &Command,
         con: &AppContext,
-    ) -> Result<(), ProgramError>
-    {
+    ) -> Result<(), ProgramError> {
         match &cmd.action {
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
                 PrefixSearchResult::NoMatch => screen.write_status_err(w, "No matching verb"),
@@ -129,8 +136,7 @@ impl AppState for HelpState {
         _w: &mut W,
         _screen: &mut Screen,
         _con: &AppContext
-    ) -> Result<(), ProgramError>
-    {
+    ) -> Result<(), ProgramError> {
         Ok(())
     }
 }

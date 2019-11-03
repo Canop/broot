@@ -1,5 +1,9 @@
-### next version
-* moved to the new versions of crossterm and termimad
+<a name="v0.10.0"></a>
+### v0.10.0 - 2019-11-03
+* moved to the crossterm 0.13 and termimad 0.7.1
+* broot runs on stderr,
+* broot can run in a subshell
+Those changes allow tricks like `my_unix_command "$(broot)"` when you do `:pp` to print the path on stdout from broot
 
 <a name="v0.9.6"></a>
 ### v0.9.6 - 2019-09-20

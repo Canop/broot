@@ -8,8 +8,8 @@ use std::{
     result::Result,
 };
 
-use crossterm::{Attribute};
-use termimad::{CompoundStyle};
+use crossterm::style::Attribute;
+use termimad::CompoundStyle;
 use directories::ProjectDirs;
 use toml::{self, Value};
 

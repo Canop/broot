@@ -15,6 +15,12 @@ You can pass as argument the path you want to see, for example
 
 	br ~
 
+Broot renders on `stderr` and can be ran in a subshell, which means you can also (on unix) do things like
+
+	my_unix_command "$(broot some_dir)"
+
+and quit broot with `:pp` on the selected path. But most often you'll more conveniently simply add your command (and maybe a shorcut) to the [config file](configuration.md#verbs).
+
 # Navigate
 
 ## Basics
@@ -89,12 +95,13 @@ This behavior is tuned with several toggles.
 
 To apply one, just type a space (or `:`), then the start of its shortcut, then hit <kbd class=b>⏎</kbd>.
 
-For example typing `:s` then enter will show directory sizes:
+For example typing `:s` then enter will show file and directory sizes:
 
-![dev sizes](../img/20190305-dev-sizes.png)
+![dev sizes](../img/20191030-dev-sizes.png)
 
-You may notice a scrollbar on this screenshot.
-You may sometimes want to *not* trim the first level of the tree, which is done by using the `toggle_trim_root` (and which is also automatically done when displaying sizes).
+You may notice a scrollbar on this screenshot. The first level of the tree is always uncut when you display sizes (you're in a special "whale hunt" mode).
+
+Not trimming the root is also possible in normal mode by using the `toggle_trim_root` toggle.
 
 ## gitignore
 
@@ -105,6 +112,8 @@ mode | display | filtering
 no | `gi:n` | .gitignore files aren't applied
 yes | `gi:y` | .gitignore rules are applied whenever they're found. If the root contains several git projects, it means different visible subtrees follow different sets of rules
 auto| `gi:a` | if the current root is a git directory or inside one, then the rules are applied. Otherwise they aren't
+
+*You don't really have to remember the meaning of those three mode: you may just do `:gi` to show or hide the git ignored files as desired.*
 
 ## Quitting broot
 
@@ -274,12 +283,6 @@ It can be used in several ways.
 
 The easiest is to just execute it from inside the application (the verb is also accessible with the `:pt` shortcut). This quits broot and you find the tree on your console, without the status line and the input, but with the same filtering state as when you were browsing.
 
-With the `--out` command, the tree is written in a passed file. For example `br --out test.txt`.
-
-!!!	Note
-	It's not possible today to simply redirect the output of broot into a file with `>>>`.
-
-You don't have to enter broot, you may also directly get the tree by using the [`--cmd` argument](#cmd). An additional parameter may come handy: `--height` which specifies the size of the virtual screen, which may be smaller or bigger than the real one (no problem if you want 10000 lines).
 
 Example with a filter:
 
@@ -291,4 +294,21 @@ Example without style or color, thanks to `--no-style`:
 
 This is also how would look the tree directly exported into a file.
 
+With the `--out` command, the tree is written in a given file. For example `br --out test.txt`.
+
+You can also  redirect the output of broot in a standard unix way.
+
+You don't have to enter broot, you may also directly get the tree by using the [`--cmd` argument](#cmd). An additional parameter may come handy: `--height` which specifies the size of the virtual screen, which may be smaller or bigger than the real one (no problem if you want 10000 lines).
+
+For example
+
+    broot --cmd ":pt" --no-style > my_file.txt
+
+will export the local tree to the `my_file.txt` file.
+
+Or just
+
+    broot --no-style > tree.txt
+
+in which case you'll manually do `:pt` when in broot but after having had the opportunity to navigate, filter and change toggles as desired.
 
