@@ -4,6 +4,7 @@ dev.log
 deploy.sh
 deploy-win.sh
 install.sh
+log-start.sh
 /releases
 /target
 **/*.rs.bk
