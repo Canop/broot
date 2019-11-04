@@ -176,8 +176,6 @@ impl App {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
         screen.read_size(con)?;
-        //screen.input_field.display_on(w)?;
-        //self.state().write_flags(w, screen, con)?;
         let mut error: Option<String> = None;
         let cmd_result = self.mut_state().apply(&mut cmd, screen, con)?;
         match cmd_result {

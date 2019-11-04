@@ -61,9 +61,12 @@ impl VerbExecutor for HelpState {
             ":focus_user_home" | ":focus_root" => AppStateCmdResult::PopStateAndReapply,
             _ if verb.execution.starts_with(":toggle") => AppStateCmdResult::PopStateAndReapply,
             _ if verb.execution.starts_with(':') => AppStateCmdResult::Keep, // other internal verbs do nothing
-            _ => AppStateCmdResult::from(Launchable::program(
-                verb.exec_token(&Conf::default_location(), &invocation.args),
-            )?),
+            _ => verb.to_cmd_result(
+                &Conf::default_location(),
+                &invocation.args,
+                screen,
+                con,
+            )?,
         })
     }
 }
