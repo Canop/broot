@@ -32,7 +32,7 @@ impl HelpState {
     }
 
     fn resize_area(&mut self, screen: &Screen) {
-        let mut area = Area::new(0, 0, screen.width, screen.height - 2);
+        let mut area = Area::new(0, 1, screen.width, screen.height - 4);
         area.pad_for_max_width(110);
         self.view.resize(&area);
     }
