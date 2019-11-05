@@ -15,7 +15,7 @@ custom_error! {pub ProgramError
     AmbiguousVerbKey {key: String} = "Ambiguous key: More than one verb matches {:?}",
     UnmatchingVerbArgs {key: String} = "No matching argument found for verb {:?}",
     TreeBuild {source: TreeBuildError} = "{}",
-    OpenError {err: opener::OpenError} = "{}",
+    OpenError {source: opener::OpenError} = "Open Error : {:?}",
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
 }
 

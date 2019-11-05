@@ -110,9 +110,9 @@ impl Launchable {
                     })?;
                 Ok(())
             }
-            Launchable::SystemOpen { path } => match opener::open(&path) {
-                Ok(_) => Ok(()),
-                Err(err) => Err(ProgramError::OpenError { err }),
+            Launchable::SystemOpen { path } => {
+                opener::open(&path)?;
+                Ok(())
             }
         }
     }

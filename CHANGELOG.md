@@ -1,3 +1,6 @@
+### Next Version
+* better handling of errors when opening files externally
+
 <a name="v0.10.1"></a>
 ### v0.10.1 - 2019-11-04
 * incorporate crossterm 0.13.2 to fix a regression in vi launch (see https://github.com/Canop/broot/issues/73)
@@ -7,6 +10,7 @@
 * moved to the crossterm 0.13 and termimad 0.7.1
 * broot runs on stderr,
 * broot can run in a subshell
+
 Those changes allow tricks like `my_unix_command "$(broot)"` when you do `:pp` to print the path on stdout from broot
 
 <a name="v0.9.6"></a>

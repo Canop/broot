@@ -61,7 +61,6 @@ impl VerbExecutor for BrowserState {
             ":help" => {
                 AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)), Command::new())
             }
-            //":open" => AppStateCmdResult::from(Launchable::opener(self.displayed_tree().selected_line().target())),
             ":open_stay" => self.open_selection_stay_in_broot(screen, con)?,
             ":open_leave" => self.open_selection_quit_broot(screen, con)?,
             ":line_down" => {

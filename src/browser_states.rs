@@ -99,7 +99,7 @@ impl BrowserState {
         let tl = TaskLifetime::unlimited();
         match &line.line_type {
             LineType::File => {
-                opener::open(&line.path).unwrap();
+                opener::open(&line.path)?;
                 Ok(AppStateCmdResult::Keep)
             }
             LineType::Dir | LineType::SymLinkToDir(_) => {
@@ -118,7 +118,7 @@ impl BrowserState {
             }
             LineType::SymLinkToFile(target) => {
                 let path = PathBuf::from(target);
-                opener::open(&path).unwrap();
+                opener::open(&path)?;
                 Ok(AppStateCmdResult::Keep)
             }
             _ => {
