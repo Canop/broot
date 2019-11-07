@@ -8,9 +8,9 @@ use crossterm::{
 use termimad::{Area, CompoundStyle, InputField};
 
 use crate::{
-    app::W,
     app_context::AppContext,
     errors::ProgramError,
+    io::W,
     skin::Skin,
 };
 

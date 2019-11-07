@@ -1,8 +1,8 @@
 //! this modules defines the execution of verbs on the help screen
 
 use crate::{
-    app::AppStateCmdResult,
     app_context::AppContext,
+    app_state::AppStateCmdResult,
     browser_states::BrowserState,
     commands::Command,
     conf::{self, Conf},

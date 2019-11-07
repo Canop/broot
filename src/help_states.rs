@@ -1,12 +1,13 @@
 use termimad::{Area, MadView};
 
 use crate::{
-    app::{AppState, AppStateCmdResult, W},
+    app_state::{AppState, AppStateCmdResult},
     app_context::AppContext,
     commands::{Action, Command},
     conf::Conf,
     errors::ProgramError,
     help_content,
+    io::W,
     screens::Screen,
     status::Status,
     task_sync::TaskLifetime,
@@ -70,11 +71,7 @@ impl AppState for HelpState {
         Command::new()
     }
 
-    fn has_pending_tasks(&self) -> bool {
-        false
-    }
-
-    fn do_pending_task(&mut self, _w: &mut W, _screen: &mut Screen, _tl: &TaskLifetime) {
+    fn do_pending_task(&mut self, _screen: &mut Screen, _tl: &TaskLifetime) {
         unreachable!();
     }
 
@@ -94,38 +91,32 @@ impl AppState for HelpState {
         Ok(self.view.write_on(w)?)
     }
 
-    fn write_status(
+    fn get_status(
         &self,
-        w: &mut W,
-        screen: &mut Screen,
         cmd: &Command,
         con: &AppContext,
-    ) -> Result<(), ProgramError> {
+    ) -> Status {
         match &cmd.action {
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::NoMatch => screen.write_status_err(w, "No matching verb"),
+                PrefixSearchResult::NoMatch => Status::from_error("No matching verb"),
                 PrefixSearchResult::Match(verb) => {
                     if let Some(err) = verb.match_error(invocation) {
-                        screen.write_status_err(w, &err)
+                        Status::from_error(err)
                     } else {
-                        screen.write_status_text(
-                            w,
-                            &format!(
+                        Status::from_message(
+                            format!(
                                 "Hit <enter> to {} : {}",
                                 &verb.invocation.key,
                                 &verb.description_for(Conf::default_location(), &invocation.args)
                             )
-                            .to_string(),
                         )
                     }
                 }
-                PrefixSearchResult::TooManyMatches => {
-                    screen.write_status_text(w, "Type a verb then <enter> to execute it")
-                }
-            },
-            _ => screen.write_status_text(
-                w, "Hit <esc> to get back to the tree, or a space to start a verb"
-            ),
+                PrefixSearchResult::TooManyMatches => Status::from_message(
+                    "Type a verb then <enter> to execute it"
+                )
+            }
+            _ => Status::from_message("Hit <esc> to get back to the tree, or a space to start a verb"),
         }
     }
 

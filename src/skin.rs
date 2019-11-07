@@ -15,7 +15,7 @@ use crossterm::{
 use termimad::{Alignment, CompoundStyle, LineStyle, MadSkin};
 
 use crate::{
-    app::W,
+    io::W,
     errors::ProgramError,
 };
 
@@ -84,6 +84,7 @@ Skin! {
     input: Some(White), None;
     spinner: gray(10), gray(3);
     status_error: Some(White), Some(Red);
+    status_job: ansi(220), gray(5);
     status_normal: Some(White), gray(3);
     status_elision: gray(15), None;
     scrollbar_track: gray(7), None;

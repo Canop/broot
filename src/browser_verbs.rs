@@ -3,7 +3,7 @@ use std::path::PathBuf;
 use directories::UserDirs;
 
 use crate::{
-    app::{AppStateCmdResult},
+    app_state::{AppStateCmdResult},
     app_context::AppContext,
     browser_states::BrowserState,
     commands::Command,

@@ -144,8 +144,7 @@ impl Command {
             }
             Event::Key(key) => {
                 // we start by looking if the key is the trigger key of one of the verbs
-                // TODO remove the clone in the following line when crossterm's KeyEvent is Copy
-                if let Some(index) = con.verb_store.index_of_key(key.clone()) {
+                if let Some(index) = con.verb_store.index_of_key(*key) {
                     self.action = Action::VerbIndex(index);
                     return;
                 }

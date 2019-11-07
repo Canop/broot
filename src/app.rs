@@ -19,105 +19,36 @@ use termimad::EventSource;
 
 use crate::{
     app_context::AppContext,
+    app_state::{AppStateCmdResult, AppState},
     browser_states::BrowserState,
     command_parsing::parse_command_sequence,
     commands::Command,
-    errors::{ProgramError, TreeBuildError},
+    errors::ProgramError,
     external::Launchable,
     file_sizes,
+    io::W,
     screens::Screen,
     skin::Skin,
-    spinner::Spinner,
     status::Status,
     task_sync::TaskLifetime,
 };
-
-pub type W = std::io::Stderr;
-
-/// Result of applying a command to a state
-pub enum AppStateCmdResult {
-    Quit,
-    Keep,
-    Launch(Box<Launchable>),
-    DisplayError(String),
-    NewState(Box<dyn AppState>, Command),
-    PopStateAndReapply, // the state asks the command be executed on a previous state
-    PopState,
-    RefreshState,
-}
-
-impl AppStateCmdResult {
-    pub fn verb_not_found(text: &str) -> AppStateCmdResult {
-        AppStateCmdResult::DisplayError(format!("verb not found: {:?}", &text))
-    }
-    pub fn from_optional_state(
-        os: Result<Option<BrowserState>, TreeBuildError>,
-        cmd: Command,
-    ) -> AppStateCmdResult {
-        match os {
-            Ok(Some(os)) => AppStateCmdResult::NewState(Box::new(os), cmd),
-            Ok(None) => AppStateCmdResult::Keep,
-            Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
-        }
-    }
-}
-
-impl From<Launchable> for AppStateCmdResult {
-    fn from(launchable: Launchable) -> Self {
-        AppStateCmdResult::Launch(Box::new(launchable))
-    }
-}
-
-/// a whole application state, stackable to allow reverting
-///  to a previous one
-pub trait AppState {
-    fn apply(
-        &mut self,
-        cmd: &mut Command,
-        screen: &mut Screen,
-        con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError>;
-    fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
-    fn has_pending_tasks(&self) -> bool;
-    fn do_pending_task(
-        &mut self,
-        w: &mut W, // TODO make this useless ?
-        screen: &mut Screen,
-        tl: &TaskLifetime
-    );
-    fn display(
-        &mut self,
-        w: &mut W,
-        screen: &Screen,
-        con: &AppContext
-    ) -> Result<(), ProgramError>;
-    fn write_status(
-        &self,
-        w: &mut W,
-        screen: &mut Screen,
-        cmd: &Command,
-        con: &AppContext,
-    ) -> Result<(), ProgramError>;
-    fn write_flags(
-        &self,
-        w: &mut W,
-        screen: &mut Screen,
-        con: &AppContext,
-    ) -> Result<(), ProgramError>;
-}
 
 pub struct App {
     states: Vec<Box<dyn AppState>>, // stack: the last one is current
     quitting: bool,
     launch_at_end: Option<Launchable>, // what must be launched after end
+    status: Status,
 }
 
 impl App {
+
     pub fn new() -> App {
+        let status = Status::from_message("Hit <esc> to quit, '?' for help, or some letters to search");
         App {
             states: Vec::new(),
             quitting: false,
             launch_at_end: None,
+            status,
         }
     }
 
@@ -142,23 +73,14 @@ impl App {
         con: &AppContext,
         tl: TaskLifetime,
     ) -> Result<(), ProgramError> {
-        let has_task = self.state().has_pending_tasks();
-        if has_task {
-            loop {
-                self.mut_state().display(w, screen, con)?;
-                self.state().write_status(w, screen, &cmd, con)?;
-                screen.write_spinner(w, true)?;
-                if tl.is_expired() {
-                    break;
-                }
-                self.mut_state().do_pending_task(w, screen, &tl);
-                if !self.state().has_pending_tasks() {
-                    break;
-                }
+        while self.status.has_pending_task() {
+            if tl.is_expired() {
+                break;
             }
-            screen.write_spinner(w, false)?;
+            self.mut_state().do_pending_task(screen, &tl);
+            self.status = self.state().get_status(&cmd, con);
             self.mut_state().display(w, screen, con)?;
-            self.mut_state().write_status(w, screen, &cmd, con)?;
+            self.status.display(w, screen)?;
         }
         Ok(())
     }
@@ -219,19 +141,20 @@ impl App {
             }
             _ => {}
         }
-        self.mut_state().display(w, screen, con)?;
-        screen.write_spinner(w, false)?;
-        match error {
-            Some(text) => screen.write_status_err(w, &text)?,
-            None => self.state().write_status(w, screen, &cmd, con)?,
+        if let Some(text) = error {
+            self.status = Status::from_error(text);
+        } else {
+            self.status = self.state().get_status(&cmd, con);
         }
         screen.input_field.set_content(&cmd.raw);
+        self.mut_state().display(w, screen, con)?;
         screen.input_field.display_on(w)?;
+        self.status.display(w, screen)?;
         self.state().write_flags(w, screen, con)?;
         Ok(cmd)
     }
 
-    /// called exactly once at end run, cleans the writer (which
+    /// called exactly once at end of `run`, cleans the writer (which
     /// is usually stdout or stderr)
     fn end(&mut self, writer: &mut W) ->Result<Option<Launchable>, ProgramError> {
         queue!(writer, DisableMouseCapture)?;
@@ -289,11 +212,10 @@ impl App {
             }
         }
 
-        screen.input_field.display_on(writer)?;
         self.mut_state().display(writer, &screen, con)?;
-        screen.write_spinner(writer, false)?;
-        screen.write_status_text(writer, "Hit <esc> to quit, '?' for help, or some letters to search")?;
+        self.status.display(writer, &screen)?;
         self.state().write_flags(writer, &mut screen, con)?;
+        screen.input_field.display_on(writer)?;
 
         loop {
             let tl = TaskLifetime::new(event_source.shared_event_count());

@@ -7,6 +7,7 @@ extern crate lazy_regex;
 
 mod app;
 mod app_context;
+mod app_state;
 mod browser_states;
 mod browser_verbs;
 mod cli;
@@ -24,6 +25,7 @@ mod git_ignore;
 mod help_content;
 mod help_states;
 mod help_verbs;
+mod io;
 mod patterns;
 mod permissions;
 mod regex_patterns;
@@ -33,7 +35,6 @@ mod shell_fish;
 mod shell_install;
 mod skin;
 mod skin_conf;
-mod spinner;
 mod status;
 mod task_sync;
 mod tree_build;
@@ -97,7 +98,7 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
         verb_store,
     };
     let skin = skin::Skin::create(config.skin);
-    App::new().run(&mut std::io::stderr(), &context, skin)
+    App::new().run(&mut io::writer(), &context, skin)
 }
 
 fn main() {

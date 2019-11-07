@@ -8,14 +8,15 @@ use std::{
 use opener;
 
 use crate::{
-    app::{AppState, AppStateCmdResult, W},
     app_context::AppContext,
+    app_state::{AppState, AppStateCmdResult},
     commands::{Action, Command},
     displayable_tree::DisplayableTree,
     errors::{ProgramError, TreeBuildError},
     external::Launchable,
     flat_tree::{LineType, Tree},
     help_states::HelpState,
+    io::W,
     patterns::Pattern,
     screens::Screen,
     status::Status,
@@ -164,39 +165,33 @@ impl BrowserState {
         }
     }
 
-    fn write_status_normal(
+    fn normal_status_message(
         &self,
-        w: &mut W,
-        screen: &mut Screen,
         has_pattern: bool,
-    ) -> Result<(), ProgramError>
-    {
+    ) -> &str {
         let tree = self.displayed_tree();
-        screen.write_status_text(
-            w,
-            if tree.selection == 0 {
-                if has_pattern {
-                    "Hit <esc> to remove the filter, <enter> to go up, '?' for help"
+        if tree.selection == 0 {
+            if has_pattern {
+                "Hit <esc> to remove the filter, <enter> to go up, '?' for help"
+            } else {
+                "Hit <esc> to go back, <enter> to go up, '?' for help, or a few letters to search"
+            }
+        } else {
+            let line = &tree.lines[tree.selection];
+            if has_pattern {
+                if line.is_dir() {
+                    "Hit <enter> to focus, <alt><enter> to cd, <esc> to remove the filter, or a space then a verb"
                 } else {
-                    "Hit <esc> to go back, <enter> to go up, '?' for help, or a few letters to search"
+                    "Hit <enter> to open, <alt><enter> to open and quit, <esc> to clear the filter, or a space then a verb"
                 }
             } else {
-                let line = &tree.lines[tree.selection];
-                if has_pattern {
-                    if line.is_dir() {
-                        "Hit <enter> to focus, <alt><enter> to cd, <esc> to remove the filter, or a space then a verb"
-                    } else {
-                        "Hit <enter> to open, <alt><enter> to open and quit, <esc> to clear the filter, or a space then a verb"
-                    }
+                if line.is_dir() {
+                    "Hit <enter> to focus, <alt><enter> to cd, or a space then a verb"
                 } else {
-                    if line.is_dir() {
-                        "Hit <enter> to focus, <alt><enter> to cd, or a space then a verb"
-                    } else {
-                        "Hit <enter> to open the file, <alt><enter> to open and quit, or type a space then a verb"
-                    }
+                    "Hit <enter> to open the file, <alt><enter> to open and quit, or type a space then a verb"
                 }
             }
-        )
+        }
     }
 }
 
@@ -224,6 +219,50 @@ fn make_opener(
 }
 
 impl AppState for BrowserState {
+
+    fn get_status(
+        &self,
+        cmd: &Command,
+        con: &AppContext,
+    ) -> Status {
+        let mut status = match &cmd.action {
+            Action::FuzzyPatternEdit(s) if !s.is_empty() => Status::from_message(
+                self.normal_status_message(true)
+            ),
+            Action::RegexEdit(s, _) if !s.is_empty() => Status::from_message(
+                self.normal_status_message(true)
+            ),
+            Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
+                PrefixSearchResult::NoMatch => Status::from_error(
+                    "No matching verb ('?' for the list of verbs)"
+                ),
+                PrefixSearchResult::Match(verb) => {
+                    if let Some(err) = verb.match_error(invocation) {
+                        Status::from_error(err.to_string())
+                    } else {
+                        let line = self.displayed_tree().selected_line();
+                        Status::from_message(
+                            format!(
+                                "Hit <enter> for: {}",
+                                verb.description_for(line.path.clone(), &invocation.args)
+                            )
+                        )
+                    }
+                }
+                PrefixSearchResult::TooManyMatches => Status::from_message(
+                    "Type a verb then <enter> to execute it ('?' for the list of verbs)"
+                ),
+            }
+            _ => Status::from_message(self.normal_status_message(false)),
+        };
+        if self.pending_pattern.is_some() {
+            status.set_pending_task("searching");
+        } else if self.displayed_tree().has_dir_missing_size() {
+            status.set_pending_task("computing sizes");
+        }
+        status
+    }
+
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -320,19 +359,9 @@ impl AppState for BrowserState {
         }
     }
 
-    fn has_pending_tasks(&self) -> bool {
-        if self.pending_pattern.is_some() {
-            return true;
-        }
-        if self.displayed_tree().has_dir_missing_size() {
-            return true;
-        }
-        false
-    }
-
     /// do some work, totally or partially, if there's some to do.
     /// Stop as soon as the lifetime is expired.
-    fn do_pending_task(&mut self, w: &mut W, screen: &mut Screen, tl: &TaskLifetime) {
+    fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime) {
         if self.pending_pattern.is_some() {
             let start = Instant::now();
             let mut options = self.tree.options.clone();
@@ -342,7 +371,6 @@ impl AppState for BrowserState {
             let mut filtered_tree = match TreeBuilder::from(root, options, len as usize) {
                 Ok(builder) => builder.build(tl),
                 Err(e) => {
-                    let _ = screen.write_status_err(w, &e.to_string());
                     warn!("Error while building tree: {:?}", e);
                     return;
                 }
@@ -359,11 +387,7 @@ impl AppState for BrowserState {
             self.filtered_tree = filtered_tree;
             return;
         }
-        if let Some(ref mut tree) = self.filtered_tree {
-            tree.fetch_some_missing_dir_size(tl);
-        } else {
-            self.tree.fetch_some_missing_dir_size(tl);
-        }
+        self.displayed_tree_mut().fetch_some_missing_dir_size(tl);
     }
 
     fn display(
@@ -385,44 +409,6 @@ impl AppState for BrowserState {
             in_app: true,
         };
         dp.write_on(w)
-    }
-
-    fn write_status(
-        &self,
-        w: &mut W,
-        screen: &mut Screen,
-        cmd: &Command,
-        con: &AppContext,
-    ) -> Result<(), ProgramError> {
-        match &cmd.action {
-            Action::FuzzyPatternEdit(s) if !s.is_empty() => self.write_status_normal(w, screen, true),
-            Action::RegexEdit(s, _) if !s.is_empty() => self.write_status_normal(w, screen, true),
-            Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::NoMatch => {
-                    screen.write_status_err(w, "No matching verb ('?' for the list of verbs)")
-                }
-                PrefixSearchResult::Match(verb) => {
-                    if let Some(err) = verb.match_error(invocation) {
-                        screen.write_status_err(w, &err)
-                    } else {
-                        let line = self.displayed_tree().selected_line();
-                        screen.write_status_text(
-                            w,
-                            &format!(
-                                "Hit <enter> for: {}",
-                                verb.description_for(line.path.clone(), &invocation.args)
-                            )
-                            .to_string(),
-                        )
-                    }
-                }
-                PrefixSearchResult::TooManyMatches => screen.write_status_text(
-                    w,
-                    "Type a verb then <enter> to execute it ('?' for the list of verbs)",
-                ),
-            },
-            _ => self.write_status_normal(w, screen, false),
-        }
     }
 
     fn refresh(&mut self, screen: &Screen, _con: &AppContext) -> Command {

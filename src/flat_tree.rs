@@ -391,17 +391,14 @@ impl Tree {
         }
         false
     }
+
     pub fn has_dir_missing_size(&self) -> bool {
-        if !self.options.show_sizes {
-            return false;
-        }
-        for i in 1..self.lines.len() {
-            if self.lines[i].size.is_none() && self.lines[i].line_type == LineType::Dir {
-                return true;
-            }
-        }
-        false
+        self.options.show_sizes
+            && self.lines.iter().skip(1).any(|line|
+                line.line_type == LineType::Dir && line.size.is_none()
+            )
     }
+
     pub fn fetch_file_sizes(&mut self) {
         for i in 1..self.lines.len() {
             if self.lines[i].is_file() {
@@ -410,6 +407,11 @@ impl Tree {
         }
         self.sort_siblings_by_size();
     }
+
+    /// compute the size of one directory
+    ///
+    /// To compute the size of all of them, this should be called until
+    ///  has_dir_missing_size returns false
     pub fn fetch_some_missing_dir_size(&mut self, tl: &TaskLifetime) {
         for i in 1..self.lines.len() {
             if self.lines[i].size.is_none() && self.lines[i].line_type == LineType::Dir {

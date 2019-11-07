@@ -10,8 +10,8 @@ use opener;
 use regex::Regex;
 
 use crate::{
-    app::AppStateCmdResult,
     app_context::AppContext,
+    app_state::AppStateCmdResult,
     displayable_tree::DisplayableTree,
     errors::ProgramError,
     flat_tree::Tree,

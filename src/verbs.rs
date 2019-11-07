@@ -12,8 +12,8 @@ use crossterm::input::KeyEvent;
 use regex::{self, Captures, Regex};
 
 use crate::{
-    app::AppStateCmdResult,
     app_context::AppContext,
+    app_state::AppStateCmdResult,
     errors::{ConfError, ProgramError},
     external,
     screens::Screen,

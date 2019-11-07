@@ -41,8 +41,7 @@ impl VerbStore {
         for verb_conf in &conf.verbs {
             match Verb::create_external(
                 &verb_conf.invocation,
-                // TODO remove the clone in the following line when crossterm's KeyEvent is Copy
-                verb_conf.key.clone(),
+                verb_conf.key,
                 verb_conf.shortcut.clone(),
                 verb_conf.execution.clone(),
                 verb_conf.description.clone(),
@@ -290,8 +289,7 @@ impl VerbStore {
     /// return the index of the verb which is triggered by the given key, if any
     pub fn index_of_key(&self, key: KeyEvent) -> Option<usize> {
         for i in 0..self.verbs.len() {
-            // TODO remove the clone in the following line when crossterm's KeyEvent is Copy
-            if let Some(verb_key) = self.verbs[i].key.clone() {
+            if let Some(verb_key) = self.verbs[i].key {
                 if verb_key == key {
                     return Some(i);
                 }
