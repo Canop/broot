@@ -6,6 +6,7 @@ use std::{
 };
 
 use opener;
+use minimad::Composite;
 
 use crate::{
     app_context::AppContext,
@@ -168,27 +169,27 @@ impl BrowserState {
     fn normal_status_message(
         &self,
         has_pattern: bool,
-    ) -> &str {
+    ) -> Composite<'static> {
         let tree = self.displayed_tree();
         if tree.selection == 0 {
             if has_pattern {
-                "Hit <esc> to remove the filter, <enter> to go up, '?' for help"
+                mad_inline!("Hit *esc* to remove the filter, *enter* to go up, '?' for help")
             } else {
-                "Hit <esc> to go back, <enter> to go up, '?' for help, or a few letters to search"
+                mad_inline!("Hit *esc* to go back, *enter* to go up, *?* for help, or a few letters to search")
             }
         } else {
             let line = &tree.lines[tree.selection];
             if has_pattern {
                 if line.is_dir() {
-                    "Hit <enter> to focus, <alt><enter> to cd, <esc> to remove the filter, or a space then a verb"
+                    mad_inline!("Hit *enter* to focus, *alt*-*enter* to cd, *esc* to remove the filter, or a space then a verb")
                 } else {
-                    "Hit <enter> to open, <alt><enter> to open and quit, <esc> to clear the filter, or a space then a verb"
+                    mad_inline!("Hit *enter* to open, *alt*-*enter* to open and quit, *esc* to clear the filter, or a space then a verb")
                 }
             } else {
                 if line.is_dir() {
-                    "Hit <enter> to focus, <alt><enter> to cd, or a space then a verb"
+                    mad_inline!("Hit *enter* to focus, *alt*-*enter* to cd, or a space then a verb")
                 } else {
-                    "Hit <enter> to open the file, <alt><enter> to open and quit, or type a space then a verb"
+                    mad_inline!("Hit *enter* to open the file, *alt*-*enter* to open and quit, or type a space then a verb")
                 }
             }
         }
@@ -220,47 +221,61 @@ fn make_opener(
 
 impl AppState for BrowserState {
 
-    fn get_status(
+    fn has_pending_task(&self) -> bool {
+        self.pending_pattern.is_some()
+            || self.displayed_tree().has_dir_missing_size()
+    }
+
+    fn write_status(
         &self,
+        w: &mut W,
         cmd: &Command,
+        screen: &Screen,
         con: &AppContext,
-    ) -> Status {
-        let mut status = match &cmd.action {
-            Action::FuzzyPatternEdit(s) if !s.is_empty() => Status::from_message(
-                self.normal_status_message(true)
-            ),
-            Action::RegexEdit(s, _) if !s.is_empty() => Status::from_message(
-                self.normal_status_message(true)
-            ),
+    ) -> Result<(), ProgramError> {
+        let task = if self.pending_pattern.is_some() {
+            Some("searching")
+        } else if self.displayed_tree().has_dir_missing_size() {
+            Some("computing sizes")
+        } else {
+            None
+        };
+        match &cmd.action {
+            Action::FuzzyPatternEdit(s) if !s.is_empty() => Status::new(
+                task, self.normal_status_message(true), false
+            ).display(w, screen),
+            Action::RegexEdit(s, _) if !s.is_empty() => Status::new(
+                task, self.normal_status_message(true), false
+            ).display(w, screen),
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::NoMatch => Status::from_error(
-                    "No matching verb ('?' for the list of verbs)"
-                ),
+                PrefixSearchResult::NoMatch => Status::new(
+                    task, mad_inline!("No matching verb (*?* for the list of verbs)"), true
+                ).display(w, screen),
                 PrefixSearchResult::Match(verb) => {
                     if let Some(err) = verb.match_error(invocation) {
-                        Status::from_error(err.to_string())
+                        Status::new(task, Composite::from_inline(&err), true).display(w, screen)
                     } else {
                         let line = self.displayed_tree().selected_line();
-                        Status::from_message(
-                            format!(
-                                "Hit <enter> for: {}",
-                                verb.description_for(line.path.clone(), &invocation.args)
-                            )
-                        )
+                        let verb_description = verb.description_for(line.path.clone(), &invocation.args);
+                        Status::new(
+                            task,
+                            mad_inline!(
+                                "Hit *enter* to **$0**: `$1`",
+                                &verb.invocation.key,
+                                &verb_description,
+                            ),
+                            false
+                        ).display(w, screen)
                     }
                 }
-                PrefixSearchResult::TooManyMatches => Status::from_message(
-                    "Type a verb then <enter> to execute it ('?' for the list of verbs)"
-                ),
+                PrefixSearchResult::TooManyMatches => Status::new(
+                    task,
+                    mad_inline!("Type a verb then *enter* to execute it (*?* for the list of verbs)"),
+                    false,
+                ).display(w, screen)
             }
-            _ => Status::from_message(self.normal_status_message(false)),
-        };
-        if self.pending_pattern.is_some() {
-            status.set_pending_task("searching");
-        } else if self.displayed_tree().has_dir_missing_size() {
-            status.set_pending_task("computing sizes");
+            _ => Status::new(task, self.normal_status_message(false), false).display(w, screen),
         }
-        status
     }
 
     fn apply(

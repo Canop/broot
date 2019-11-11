@@ -26,7 +26,8 @@ crossbeam = "0.7"
 opener = "0.4"
 crossterm = "0.13.2"
 umask = "0.1.7"
-termimad = "0.7.2"
+minimad = "0.4.2"
+termimad = "0.7.4"
 id-arena = "2.2.1"
 lazy-regex = "0.1"
 
@@ -41,8 +42,9 @@ lto = true # link time optimization - roughly halves the size of the exec
 codegen-units = 1 # this removes a few hundred bytes from the final exec size
 
 [patch.crates-io]
-termimad = { path = "../termimad" }
+# minimad = { path = "../minimad" }
+# termimad = { path = "../termimad" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
-opener = { path = "../opener/opener" }
+# opener = { path = "../opener/opener" }
 # umask = { path = "../umask" }
 

@@ -1,5 +1,7 @@
 ### Next Version
+* colored status line
 * better handling of errors when opening files externally
+* spinner replaced with an explicit text
 
 <a name="v0.10.1"></a>
 ### v0.10.1 - 2019-11-04

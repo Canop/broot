@@ -1,53 +1,55 @@
 
+use minimad::{
+    Alignment,
+    Composite,
+};
+
 use crate::{
-    elision::ElidedString,
     errors::ProgramError,
     io::W,
     screens::Screen,
-    skin,
 };
 
 /// the status contains information written on the grey line
 ///  near the bottom of the screen
-pub struct Status {
+pub struct Status<'a> {
     pending_task: Option<&'static str>, // current pending_task
-    message: String,
+    message: Composite<'a>,
     error: bool, // is the current message an error?
 }
 
-impl Status {
+impl<'a> Status<'a> {
 
-    pub fn from_message<S: Into<String>>(message: S) -> Self {
+    pub fn new(
+        pending_task: Option<&'static str>,
+        message: Composite<'a>,
+        error: bool,
+    ) -> Status<'a> {
+        Self {
+            pending_task,
+            message,
+            error,
+        }
+    }
+
+    pub fn from_message(message: Composite<'a>) -> Status<'a> {
         Self {
             pending_task: None,
-            message: message.into(),
+            message,
             error: false,
         }
     }
 
-    pub fn from_error<S: Into<String>>(error: S) -> Self {
+    pub fn from_error(message: Composite<'a>) -> Status<'a> {
         Self {
             pending_task: None,
-            message: error.into(),
+            message,
             error: true,
         }
     }
 
-    pub fn set_pending_task(
-        &mut self,
-        pending_task: &'static str,
-    ) {
-        self.pending_task = Some(pending_task);
-    }
-
-    pub fn has_pending_task(
-        &self,
-    ) -> bool {
-        self.pending_task.is_some()
-    }
-
     pub fn display(
-        &self,
+        self,
         w: &mut W,
         screen: &Screen,
     ) -> Result<(), ProgramError> {
@@ -61,21 +63,14 @@ impl Status {
         }
         screen.goto(w, x as u16, y)?;
         let skin = if self.error {
-            &screen.skin.status_error
+            &screen.status_skin.error
         } else {
-            &screen.skin.status_normal
+            &screen.status_skin.normal
         };
-        let es = ElidedString::from(&self.message, screen.width as usize - x - 1);
-        skin.queue_str(w, " ")?;
-        for (i, part) in es.parts.iter().enumerate() {
-            if i > 0 {
-                screen.skin.status_elision.queue_str(w, "…")?;
-            }
-            skin.queue_str(w, &part)?;
-        }
-        skin.queue_bg(w)?;
-        screen.clear_line(w)?;
-        skin::reset(w) // FIXME check it's necessary
+        skin.write_inline_on(w, " ")?;
+        let remaining_width = screen.width as usize - x - 1;
+        skin.write_composite_fill(w, self.message, remaining_width, Alignment::Left)?;
+        screen.clear_line(w)
     }
 
 }

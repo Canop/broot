@@ -1,3 +1,4 @@
+use minimad::Composite;
 use termimad::{Area, MadView};
 
 use crate::{
@@ -40,6 +41,11 @@ impl HelpState {
 }
 
 impl AppState for HelpState {
+
+    fn has_pending_task(&self) -> bool {
+        false
+    }
+
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -91,32 +97,39 @@ impl AppState for HelpState {
         Ok(self.view.write_on(w)?)
     }
 
-    fn get_status(
+    fn write_status(
         &self,
+        w: &mut W,
         cmd: &Command,
+        screen: &Screen,
         con: &AppContext,
-    ) -> Status {
+    ) -> Result<(), ProgramError> {
         match &cmd.action {
             Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
-                PrefixSearchResult::NoMatch => Status::from_error("No matching verb"),
+                PrefixSearchResult::NoMatch => {
+                    Status::from_error(mad_inline!("No matching verb")).display(w, screen)
+                }
                 PrefixSearchResult::Match(verb) => {
                     if let Some(err) = verb.match_error(invocation) {
-                        Status::from_error(err)
+                        Status::from_error(Composite::from_inline(&err)).display(w, screen)
                     } else {
+                        let verb_description = verb.description_for(Conf::default_location(), &invocation.args);
                         Status::from_message(
-                            format!(
-                                "Hit <enter> to {} : {}",
+                            mad_inline!(
+                                "Hit *enter* to **$0** : `$1`",
                                 &verb.invocation.key,
-                                &verb.description_for(Conf::default_location(), &invocation.args)
+                                &verb_description,
                             )
-                        )
+                        ).display(w, screen)
                     }
                 }
-                PrefixSearchResult::TooManyMatches => Status::from_message(
-                    "Type a verb then <enter> to execute it"
-                )
+                PrefixSearchResult::TooManyMatches => Status::from_message(mad_inline!(
+                    "Type a verb then *enter* to execute it"
+                )).display(w, screen),
             }
-            _ => Status::from_message("Hit <esc> to get back to the tree, or a space to start a verb"),
+            _ => Status::from_message(mad_inline!(
+                "Hit *esc* to get back to the tree, or a space to start a verb"
+            )).display(w, screen),
         }
     }
 

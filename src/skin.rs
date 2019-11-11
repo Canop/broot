@@ -1,23 +1,19 @@
-/// Defines the Skin structure with its defautl value.
+/// Defines the Skin structure with its default value.
 ///
 /// A skin is a collection of termimad compound_style
-use std::{collections::HashMap, fmt, io::Write};
+use std::{
+    collections::HashMap,
+    fmt,
+};
 
 use crossterm::{
     style::{
         Attribute::*,
         Color::AnsiValue,
         Color::{self, *},
-        ResetColor,
     },
-    queue,
 };
 use termimad::{Alignment, CompoundStyle, LineStyle, MadSkin};
-
-use crate::{
-    io::W,
-    errors::ProgramError,
-};
 
 macro_rules! Skin {
     (
@@ -66,6 +62,8 @@ pub fn ansi(v: u8) -> Option<Color> {
     Some(AnsiValue(v))
 }
 
+// Gold alternative: use 178 for boldish and italic/code is 229
+// Orange alternative: boldish is 208 and italic/code is 222
 Skin! {
     tree: gray(5), None;
     file: gray(18), None;
@@ -80,13 +78,16 @@ Skin! {
     char_match: Some(Green), None;
     file_error: Some(Red), None;
     flag_label: gray(15), gray(1);
-    flag_value: Some(Blue), gray(1); {Bold}
+    flag_value: ansi(178), gray(1); {Bold}
     input: Some(White), None;
     spinner: gray(10), gray(3);
     status_error: Some(White), Some(Red);
     status_job: ansi(220), gray(5);
-    status_normal: Some(White), gray(3);
-    status_elision: gray(15), None;
+    status_normal: gray(20), gray(3);
+    status_italic: ansi(178), None;
+    status_bold: ansi(178), None; {Bold}
+    status_code: ansi(229), gray(3);
+    status_ellipsis: gray(19), gray(1);
     scrollbar_track: gray(7), None;
     scrollbar_thumb: gray(22), None;
     help_paragraph: gray(20), None;
@@ -96,6 +97,7 @@ Skin! {
     help_headers: ansi(178), None;
     help_table_border: ansi(239), None;
 }
+
 
 impl Skin {
     /// build a MadSkin, which will be used for markdown formatting
@@ -123,11 +125,6 @@ impl Skin {
             .set_compound_style(CompoundStyle::from(self.scrollbar_thumb.clone()));
         ms
     }
-}
-
-pub fn reset(w: &mut W) -> Result<(), ProgramError> {
-    queue!(w, ResetColor)?;
-    Ok(())
 }
 
 impl fmt::Debug for Skin {

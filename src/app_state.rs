@@ -7,7 +7,6 @@ use crate::{
     external::Launchable,
     io::W,
     screens::Screen,
-    status::Status,
     task_sync::TaskLifetime,
 };
 
@@ -64,6 +63,8 @@ pub trait AppState {
         tl: &TaskLifetime
     );
 
+    fn has_pending_task(&self) -> bool;
+
     fn display(
         &mut self,
         w: &mut W,
@@ -71,16 +72,18 @@ pub trait AppState {
         con: &AppContext
     ) -> Result<(), ProgramError>;
 
-    fn get_status(
-        &self,
-        cmd: &Command,
-        con: &AppContext,
-    ) -> Status;
-
     fn write_flags(
         &self,
         w: &mut W,
         screen: &mut Screen,
+        con: &AppContext,
+    ) -> Result<(), ProgramError>;
+
+    fn write_status(
+        &self,
+        w: &mut W,
+        cmd: &Command,
+        screen: &Screen,
         con: &AppContext,
     ) -> Result<(), ProgramError>;
 

@@ -15,6 +15,7 @@ use crossterm::{
     queue,
     screen::{EnterAlternateScreen, LeaveAlternateScreen},
 };
+use minimad::Composite;
 use termimad::EventSource;
 
 use crate::{
@@ -37,18 +38,15 @@ pub struct App {
     states: Vec<Box<dyn AppState>>, // stack: the last one is current
     quitting: bool,
     launch_at_end: Option<Launchable>, // what must be launched after end
-    status: Status,
 }
 
 impl App {
 
     pub fn new() -> App {
-        let status = Status::from_message("Hit <esc> to quit, '?' for help, or some letters to search");
         App {
             states: Vec::new(),
             quitting: false,
             launch_at_end: None,
-            status,
         }
     }
 
@@ -73,14 +71,15 @@ impl App {
         con: &AppContext,
         tl: TaskLifetime,
     ) -> Result<(), ProgramError> {
-        while self.status.has_pending_task() {
+        let mut has_pending_task = self.state().has_pending_task();
+        while has_pending_task {
             if tl.is_expired() {
                 break;
             }
             self.mut_state().do_pending_task(screen, &tl);
-            self.status = self.state().get_status(&cmd, con);
             self.mut_state().display(w, screen, con)?;
-            self.status.display(w, screen)?;
+            self.state().write_status(w, cmd, &screen, con)?;
+            has_pending_task = self.state().has_pending_task();
         }
         Ok(())
     }
@@ -141,15 +140,15 @@ impl App {
             }
             _ => {}
         }
+        self.mut_state().display(w, screen, con)?;
         if let Some(text) = error {
-            self.status = Status::from_error(text);
+            let status = Status::from_error(Composite::from_inline(&text));
+            status.display(w, screen)?;
         } else {
-            self.status = self.state().get_status(&cmd, con);
+            self.state().write_status(w, &cmd, screen, con)?;
         }
         screen.input_field.set_content(&cmd.raw);
-        self.mut_state().display(w, screen, con)?;
         screen.input_field.display_on(w)?;
-        self.status.display(w, screen)?;
         self.state().write_flags(w, screen, con)?;
         Ok(cmd)
     }
@@ -213,7 +212,7 @@ impl App {
         }
 
         self.mut_state().display(writer, &screen, con)?;
-        self.status.display(writer, &screen)?;
+        self.state().write_status(writer, &cmd, &screen, con)?;
         self.state().write_flags(writer, &mut screen, con)?;
         screen.input_field.display_on(writer)?;
 

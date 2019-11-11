@@ -1,4 +1,6 @@
 #[macro_use]
+extern crate minimad;
+#[macro_use]
 extern crate lazy_static;
 #[macro_use]
 extern crate log;
@@ -15,7 +17,6 @@ mod command_parsing;
 mod commands;
 mod conf;
 mod displayable_tree;
-mod elision;
 mod errors;
 mod external;
 mod file_sizes;
@@ -26,6 +27,7 @@ mod help_content;
 mod help_states;
 mod help_verbs;
 mod io;
+mod mad_skin;
 mod patterns;
 mod permissions;
 mod regex_patterns;
