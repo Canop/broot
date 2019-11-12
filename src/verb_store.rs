@@ -96,6 +96,12 @@ impl VerbStore {
             "display the directory (mapped to `<enter>` in tree)",
         );
         self.add_builtin(
+            "focus_root",
+            None,
+            None,
+            "focus `/`",
+        );
+        self.add_builtin(
             "help",
             Some(KeyEvent::F(1)), // note: some terminals intercept the F1 key
             Some("?".to_string()),
@@ -107,7 +113,12 @@ impl VerbStore {
             None,
             "move one line down",
         );
-        self.add_builtin("line_up", Some(KeyEvent::Up), None, "move one line up");
+        self.add_builtin(
+            "line_up",
+            Some(KeyEvent::Up),
+            None,
+            "move one line up"
+        );
         self.verbs.push(
             Verb::create_external(
                 "mkdir {subpath}",
@@ -244,6 +255,12 @@ impl VerbStore {
             None,
             Some("t".to_string()),
             "toggle removing nodes at first level too (default)",
+        );
+        self.add_builtin(
+            "up_tree",
+            None,
+            Some("up".to_string()),
+            "focus the parent of the current root",
         );
     }
     pub fn search(&self, prefix: &str) -> PrefixSearchResult<&Verb> {

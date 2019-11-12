@@ -54,6 +54,10 @@ impl VerbExecutor for BrowserState {
                 focus_path(path, screen, tree)
             }
             ":focus_root" => focus_path(PathBuf::from("/"), screen, self.displayed_tree()),
+            ":up_tree" => match self.displayed_tree().root().parent() {
+                Some(path) => focus_path(path.to_path_buf(), screen,self.displayed_tree()),
+                None => AppStateCmdResult::DisplayError("no parent found".to_string()),
+            },
             ":focus_user_home" => match UserDirs::new() {
                 Some(ud) => focus_path(ud.home_dir().to_path_buf(), screen, self.displayed_tree()),
                 None => AppStateCmdResult::DisplayError("no user home directory found".to_string()), // does this happen ?
