@@ -80,13 +80,12 @@ Skin! {
     flag_label: gray(15), gray(1);
     flag_value: ansi(178), gray(1); {Bold}
     input: Some(White), None;
-    spinner: gray(10), gray(3);
-    status_error: Some(White), Some(Red);
+    status_error: gray(22), ansi(124);
     status_job: ansi(220), gray(5);
     status_normal: gray(20), gray(3);
     status_italic: ansi(178), None;
     status_bold: ansi(178), None; {Bold}
-    status_code: ansi(229), gray(3);
+    status_code: ansi(229), gray(5);
     status_ellipsis: gray(19), gray(1);
     scrollbar_track: gray(7), None;
     scrollbar_thumb: gray(22), None;

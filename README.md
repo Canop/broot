@@ -16,17 +16,19 @@
 
 A better way to navigate directories
 
-### Get an overview of a directory, even a big one:
+### Get an overview of a directory, even a big one
 
-![overview](img/20190128-overview.png)
+![overview](img/20191112-overview.png)
 
-Notice the "unlisted"? That's what makes it usable where the old `tree` command would produce pages of output.
+Notice the *unlisted*?
 
-`.gitignore` files are properly dealt with to put unwanted files out of your way (if you want to see git ignored files, type `:gi`).
+That's what makes it usable where the old `tree` command would produce pages of output.
 
-### Find a directory then `cd` to it:
+`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see documentation).
 
-![cd](img/20190128-cd.png)
+### Find a directory then `cd` to it
+
+![cd](img/20191112-cd.png)
 
 This way, you can navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
@@ -38,33 +40,47 @@ Most useful keys for this:
 * `<enter>` to select a directory (staying in broot)
 * `<esc>` to get back to the previous state or clear your search
 * `<alt><enter>` to get back to the shell having `cd` to the selected directory
-* `:q` if you just want to quit (`<ctrl><q>` works too)
+* `:q` if you just want to quit (`<esc>` works too)
 
-### Never lose track of file hierarchy while you fuzzy search:
+### Never lose track of file hierarchy while you search
 
-![size](img/20190212-mycnf.png)
+![size](img/20191112-mycnf.png)
 
 broot tries to select the most relevant file. You can still go from one match to another one using `<tab>` or arrow keys.
 
 You may also search with a regular expression. To do this, add a `/` before or after the pattern.
 
-Complex regular expression are possible, but you'll probably most often use a regex to do an "exact" search, or search an expression at the start or end of the filename.
+Once the file you want is selected you can
 
-For example, assuming you look for your one file whose name contains `abc` in a big directory, you may not see it immediately because of many fuzzy matches. In that case, just add a slash at the end to change your fuzzy search into an exact expression: `abc/`.
+* hit `<enter>` (or double-click) to open it in your system's default program
+* hit `<alt><enter>` to open it in your system's default program and close broot
+* type a verb. For example `:e` opens the file in your preferred editor (which may be a terminal one)
 
-And if you look for a filename *ending* in `abc` then you may anchor the regex: `abc$/`.
+### Manipulate your files
 
-### Apply a personal shortcut to a file:
+![mv](img/20191112-mv.png)
 
-![size](img/20190128-edit.png)
+Most often you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
 
-Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your preferred editor, see [documentation](documentation.md#verbs)).
+You can instead do it without losing the view of the file hierarchy.
+
+Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
+
+### Apply a standard or personal shortcut to a file
+
+![size](img/20191112-edit.png)
+
+Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>`.
+
+You can add verbs or configure the existing ones; see [documentation](documentation/usage.md#verbs).
+
+And you can add shorcuts, for example a `ctrl` sequence or a function key
 
 ### See what takes space:
 
-![size](img/20190802-sizes.png)
+![size](img/20191112-sizes.png)
 
-If you start broot with the `--sizes` option, you get a mode tailored to "whale spotting" nagigation, making it easy to determine what files or folders take space.
+If you start broot with the `--sizes` option, or if you type `:s` while in broot, you get a mode tailored to "whale spotting" nagigation, making it easy to determine what files or folders take space.
 
 And you keep all broot tools, like filtering or the ability to delete or open files and directories.
 

@@ -181,15 +181,15 @@ impl BrowserState {
             let line = &tree.lines[tree.selection];
             if has_pattern {
                 if line.is_dir() {
-                    mad_inline!("Hit *enter* to focus, *alt*-*enter* to cd, *esc* to remove the filter, or a space then a verb")
+                    mad_inline!("Hit *enter* to focus, *alt*-*enter* to cd, *esc* to clear filter, or a space then a verb")
                 } else {
-                    mad_inline!("Hit *enter* to open, *alt*-*enter* to open and quit, *esc* to clear the filter, or a space then a verb")
+                    mad_inline!("Hit *enter* to open, *alt*-*enter* to open and quit, *esc* to clear filter, or *:* + verb")
                 }
             } else {
                 if line.is_dir() {
                     mad_inline!("Hit *enter* to focus, *alt*-*enter* to cd, or a space then a verb")
                 } else {
-                    mad_inline!("Hit *enter* to open the file, *alt*-*enter* to open and quit, or type a space then a verb")
+                    mad_inline!("Hit *enter* to open the file, *alt*-*enter* to open and quit, or a space then a verb")
                 }
             }
         }
@@ -252,21 +252,8 @@ impl AppState for BrowserState {
                     task, mad_inline!("No matching verb (*?* for the list of verbs)"), true
                 ).display(w, screen),
                 PrefixSearchResult::Match(verb) => {
-                    if let Some(err) = verb.match_error(invocation) {
-                        Status::new(task, Composite::from_inline(&err), true).display(w, screen)
-                    } else {
-                        let line = self.displayed_tree().selected_line();
-                        let verb_description = verb.description_for(line.path.clone(), &invocation.args);
-                        Status::new(
-                            task,
-                            mad_inline!(
-                                "Hit *enter* to **$0**: `$1`",
-                                &verb.invocation.key,
-                                &verb_description,
-                            ),
-                            false
-                        ).display(w, screen)
-                    }
+                    let line = self.displayed_tree().selected_line();
+                    verb.write_status(w, task, line.path.clone(), invocation, screen)
                 }
                 PrefixSearchResult::TooManyMatches => Status::new(
                     task,

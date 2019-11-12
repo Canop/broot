@@ -234,15 +234,18 @@ For example:
 	selected_line = "none gray(3)"
 	size_bar = "black rgb(255, 152, 0)"
 	size_no_bar = "gray(15) gray(2)"
-	dates = "Magenta none"
 	char_match = "yellow none"
 	file_error = "Red none"
 	flag_label = "gray(16) none"
 	flag_value = "rgb(255, 152, 0) none bold"
 	input = "White none"
-	spinner = "gray(10) gray(2)"
 	status_error = "Red gray(2)"
-	status_normal = "gray(20) gray(2)"
+	status_job = "ansi(220) gray(5)"
+	status_normal = "gray(20) gray(3)"
+	status_italic = "rgb(255, 152, 0) None"
+	status_bold = "rgb(255, 152, 0) None bold"
+	status_code = "ansi(229) gray(5)"
+	status_ellipsis = "gray(19) gray(1)"
 	scrollbar_track = "rgb(80, 50, 0) none"
 	scrollbar_thumb = "rgb(255, 187, 0) none"
 	help_paragraph = "gray(20) none"
@@ -250,12 +253,10 @@ For example:
 	help_italic = "Magenta rgb(30, 30, 40) italic"
 	help_code = "gray(21) gray(3)"
 	help_headers = "rgb(255, 187, 0) none"
-	help_table_border = "rgb(170, 136, 0) none"
 
 which would look like this:
 
-![custom colors tree](../img/20190607-custom-colors-tree.png)
-![custom colors sizes](../img/20190607-custom-colors-sizes.png)
+![custom colors tree](../img/20191112-custom-colors-tree.png)
 
 Each skin entry value is made of
 

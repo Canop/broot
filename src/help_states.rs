@@ -1,4 +1,3 @@
-use minimad::Composite;
 use termimad::{Area, MadView};
 
 use crate::{
@@ -34,7 +33,7 @@ impl HelpState {
     }
 
     fn resize_area(&mut self, screen: &Screen) {
-        let mut area = Area::new(0, 1, screen.width, screen.height - 4);
+        let mut area = Area::new(0, 0, screen.width, screen.height - 2);
         area.pad_for_max_width(110);
         self.view.resize(&area);
     }
@@ -110,18 +109,7 @@ impl AppState for HelpState {
                     Status::from_error(mad_inline!("No matching verb")).display(w, screen)
                 }
                 PrefixSearchResult::Match(verb) => {
-                    if let Some(err) = verb.match_error(invocation) {
-                        Status::from_error(Composite::from_inline(&err)).display(w, screen)
-                    } else {
-                        let verb_description = verb.description_for(Conf::default_location(), &invocation.args);
-                        Status::from_message(
-                            mad_inline!(
-                                "Hit *enter* to **$0** : `$1`",
-                                &verb.invocation.key,
-                                &verb_description,
-                            )
-                        ).display(w, screen)
-                    }
+                    verb.write_status(w, None, Conf::default_location(), invocation, screen)
                 }
                 PrefixSearchResult::TooManyMatches => Status::from_message(mad_inline!(
                     "Type a verb then *enter* to execute it"

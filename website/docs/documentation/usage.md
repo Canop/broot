@@ -163,11 +163,19 @@ For example mkdir is defined as
 	invocation = "mkdir {subpath}"
 	execution = "/bin/mkdir -p {directory}/{subpath}"
 
+(it's now a built-in, you won't see it in the config file)
+
 which means that if you type `c/d`, and the file `/a/b/some_file.rs` is selected, then the created directory would be `a/b/c/d`.
 
 Example:
 
-![md](../img/20190306-md-c-client.png)
+Before you type a subpath, broot tells you, in red, the argument is missing:
+
+![md](../img/20191112-md-missing-subpath.png)
+
+If we type an argument, the command to execute is computed and shown:
+
+![md](../img/20191112-md-list.png)
 
 In this screenshot, we didn't type `mkdir` or its start but `md`. That's because the complete definition of this verb includes this line:
 

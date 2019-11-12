@@ -61,7 +61,7 @@ impl VerbStore {
             "back",
             None, // esc is mapped in commands.rs
             None,
-            "revert to the previous state (mapped to `<esc>`)",
+            "revert to the previous state (mapped to *esc*)",
         );
         self.verbs.push(
             Verb::create_external(
@@ -69,7 +69,7 @@ impl VerbStore {
                 None,
                 None, // no real need for a shortcut as it's mapped to alt-enter
                 "cd {directory}".to_string(),
-                Some("change directory and quit (mapped to `<alt><enter>`)".to_string()),
+                Some("change directory and quit (mapped to *alt*-*enter*)".to_string()),
                 true, // needs to be launched from the parent shell
                 true, // leaves broot
                 false,
@@ -93,7 +93,7 @@ impl VerbStore {
             "focus",
             None, // enter
             Some("goto".to_string()),
-            "display the directory (mapped to `<enter>` in tree)",
+            "display the directory (mapped to *enter* in tree)",
         );
         self.add_builtin(
             "focus_root",

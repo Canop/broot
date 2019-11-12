@@ -6,15 +6,17 @@
 
 # Get an overview of a directory, even a big one
 
-![overview](img/20190128-overview.png)
+![overview](img/20191112-overview.png)
 
-Notice the "unlisted"? That's what makes it usable where the old `tree` command would produce pages of output.
+Notice the *unlisted*?
+
+That's what makes it usable where the old `tree` command would produce pages of output.
 
 `.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see documentation).
 
 # Find a directory then `cd` to it
 
-![cd](img/20190128-cd.png)
+![cd](img/20191112-cd.png)
 
 This way, you can navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
@@ -30,7 +32,7 @@ Most useful keys for this:
 
 # Never lose track of file hierarchy while you search
 
-![size](img/20190212-mycnf.png)
+![size](img/20191112-mycnf.png)
 
 broot tries to select the most relevant file. You can still go from one match to another one using `<tab>` or arrow keys.
 
@@ -40,11 +42,11 @@ Once the file you want is selected you can
 
 * hit `<enter>` (or double-click) to open it in your system's default program
 * hit `<alt><enter>` to open it in your system's default program and close broot
-* type a verb. For example `:e` should be configured to open the file in your preferred editor (which may be a terminal one)
+* type a verb. For example `:e` opens the file in your preferred editor (which may be a terminal one)
 
 # Manipulate your files
 
-![mv](img/20190306-mv.png)
+![mv](img/20191112-mv.png)
 
 Most often you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
 
@@ -52,22 +54,25 @@ You can instead do it without losing the view of the file hierarchy.
 
 Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
-# Apply a personal shortcut to a file
+# Apply a standard or personal shortcut to a file
 
-![size](img/20190128-edit.png)
+![size](img/20191112-edit.png)
 
-Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>` (you should define your preferred editor, see [documentation](documentation/usage.md#verbs)).
+Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>`.
 
-### See what takes space:
+You can add verbs or configure the existing ones; see [documentation](documentation/usage.md#verbs).
 
-![size](img/20190802-sizes.png)
+And you can add shorcuts, for example a `ctrl` sequence or a function key
 
-If you start broot with the `--sizes` option, you get a mode tailored to "whale spotting" nagigation, making it easy to determine what files or folders take space.
+# See what takes space:
+
+![size](img/20191112-sizes.png)
+
+If you start broot with the `--sizes` option, or if you type `:s` while in broot, you get a mode tailored to "whale spotting" nagigation, making it easy to determine what files or folders take space.
 
 And you keep all broot tools, like filtering or the ability to delete or open files and directories.
 
 Sizes are computed in the background, you don't have to wait for them when you navigate.
-
 
 # More...
 

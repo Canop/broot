@@ -9,6 +9,7 @@ use std::{
 };
 
 use crossterm::input::KeyEvent;
+use minimad::Composite;
 use regex::{self, Captures, Regex};
 
 use crate::{
@@ -16,7 +17,9 @@ use crate::{
     app_state::AppStateCmdResult,
     errors::{ConfError, ProgramError},
     external,
+    io::W,
     screens::Screen,
+    status::Status,
     verb_invocation::VerbInvocation,
 };
 
@@ -188,11 +191,39 @@ impl Verb {
         map
     }
 
-    pub fn description_for(&self, path: PathBuf, args: &Option<String>) -> String {
-        if let Some(s) = &self.description {
-            s.clone()
+    pub fn write_status (
+        &self,
+        w: &mut W,
+        task: Option<&'static str>,
+        path: PathBuf,
+        invocation: &VerbInvocation,
+        screen: &Screen,
+    ) -> Result<(), ProgramError> {
+        if let Some(err) = self.match_error(invocation) {
+            Status::new(task, Composite::from_inline(&err), true).display(w, screen)
         } else {
-            self.shell_exec_string(&path, args)
+            let verb_description;
+            let markdown;
+            let composite = if let Some(description) = &self.description {
+                markdown = format!(
+                    "Hit *enter* to **{}**: {}",
+                    &self.invocation.key,
+                    description,
+                );
+                Composite::from_inline(&markdown)
+            } else {
+                verb_description = self.shell_exec_string(&path, &invocation.args);
+                mad_inline!(
+                    "Hit *enter* to **$0**: `$1`",
+                    &self.invocation.key,
+                    &verb_description,
+                )
+            };
+            Status::new(
+                task,
+                composite,
+                false
+            ).display(w, screen)
         }
     }
 
