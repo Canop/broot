@@ -43,6 +43,7 @@ pub struct DisplayableTree<'s, 't> {
 }
 
 impl<'s, 't> DisplayableTree<'s, 't> {
+
     pub fn out_of_app(tree: &'t Tree, skin: &'s Skin, width: u16) -> DisplayableTree<'s, 't> {
         DisplayableTree {
             tree,
@@ -122,15 +123,17 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             LineType::Pruning => &self.skin.pruning,
         };
         let mut style = style.clone();
+        let mut char_match_style = self.skin.char_match.clone();
         if selected {
             if let Some(c) = self.skin.selected_line.get_bg() {
                 style.set_bg(c);
+                char_match_style.set_bg(c);
             }
         }
         if idx == 0 {
             style.queue_str(f, &line.path.to_string_lossy())?;
         } else {
-            pattern.style(&line.name, &style, &self.skin.char_match).write_on(f)?;
+            pattern.style(&line.name, &style, &char_match_style).write_on(f)?;
         }
         match &line.line_type {
             LineType::Dir => {
@@ -183,9 +186,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             if line_index > 0 {
                 line_index += tree.scroll as usize;
             }
+            let mut selected = false;
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
-                let selected = self.in_app && line_index == tree.selection;
+                selected = self.in_app && line_index == tree.selection;
                 for depth in 0..line.depth {
                     self.skin.tree.queue_str(
                         f,
@@ -229,9 +233,11 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     }
                 }
                 self.write_line_name(f, line, line_index, &tree.options.pattern, selected)?;
-                if selected {
-                    self.skin.selected_line.queue_bg(f)?;
-                }
+            }
+            if selected {
+                self.skin.selected_line.queue_bg(f)?;
+            } else {
+                self.skin.default.queue_bg(f)?;
             }
             if self.in_app {
                 queue!(f, Clear(ClearType::UntilNewLine))?;

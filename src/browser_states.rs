@@ -447,14 +447,10 @@ impl AppState for BrowserState {
             OptionBool::Yes => 'y',
             OptionBool::No => 'n',
         };
-        write!(
-            w,
-            "{}{}  {}{}",
-            screen.skin.flag_label.apply_to(" h:"),
-            screen.skin.flag_value.apply_to(h_value),
-            screen.skin.flag_label.apply_to(" gi:"),
-            screen.skin.flag_value.apply_to(gi_value),
-        )?;
+        screen.skin.flag_label.queue_str(w, " h:")?;
+        screen.skin.flag_value.queue(w, h_value)?;
+        screen.skin.flag_label.queue_str(w, "   gi:")?;
+        screen.skin.flag_value.queue(w, gi_value)?;
         Ok(())
     }
 }

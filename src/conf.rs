@@ -205,6 +205,7 @@ execution = "$PAGER {file}"
 # render on terminals with low capabilities
 #
 # [skin]
+# default = "gray(20) gray(1)"
 # tree = "rgb(89, 73, 101) none"
 # file = "gray(21) none"
 # directory = "rgb(255, 152, 0) none bold"

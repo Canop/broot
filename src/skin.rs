@@ -13,7 +13,7 @@ use crossterm::{
         Color::{self, *},
     },
 };
-use termimad::{Alignment, CompoundStyle, LineStyle, MadSkin};
+use termimad::CompoundStyle;
 
 macro_rules! Skin {
     (
@@ -31,13 +31,19 @@ macro_rules! Skin {
             }
             /// build a skin with some entry overloaded by configuration
             pub fn create(mut skin_conf: HashMap<String, CompoundStyle>) -> Skin {
-                Skin {
+                let mut skin = Skin {
                     $($name: skin_conf.remove(stringify!($name)).unwrap_or(CompoundStyle::new(
                         $fg,
                         $bg,
                         [$($a),*].to_vec(),
                     )),)*
-                }
+                };
+                $(
+                    let mut base = skin.default.clone();
+                    base.overwrite_with(&skin.$name);
+                    skin.$name = base;
+                )*
+                skin
             }
         }
         impl Clone for Skin {
@@ -65,6 +71,7 @@ pub fn ansi(v: u8) -> Option<Color> {
 // Gold alternative: use 178 for boldish and italic/code is 229
 // Orange alternative: boldish is 208 and italic/code is 222
 Skin! {
+    default: gray(22), gray(1);
     tree: gray(5), None;
     file: gray(18), None;
     directory: Some(Blue), None; {Bold}
@@ -76,14 +83,14 @@ Skin! {
     selected_line: None, gray(4);
     char_match: Some(Green), None;
     file_error: Some(Red), None;
-    flag_label: gray(15), gray(1);
-    flag_value: ansi(178), gray(1); {Bold}
+    flag_label: gray(15), None;
+    flag_value: ansi(178), None; {Bold}
     input: Some(White), None;
     status_error: gray(22), ansi(124);
     status_job: ansi(220), gray(5);
     status_normal: gray(20), gray(3);
-    status_italic: ansi(178), None;
-    status_bold: ansi(178), None; {Bold}
+    status_italic: ansi(178), gray(3);
+    status_bold: ansi(178), gray(3); {Bold}
     status_code: ansi(229), gray(5);
     status_ellipsis: gray(19), gray(1);
     scrollbar_track: gray(7), None;
@@ -96,34 +103,6 @@ Skin! {
     help_table_border: ansi(239), None;
 }
 
-
-impl Skin {
-    /// build a MadSkin, which will be used for markdown formatting
-    /// (for the help screen) by applying the `help_*` entries
-    /// of the skin.
-    pub fn to_mad_skin(&self) -> MadSkin {
-        let mut ms = MadSkin::default();
-        ms.paragraph.compound_style = CompoundStyle::from(self.help_paragraph.clone());
-        ms.inline_code = CompoundStyle::from(self.help_code.clone());
-        ms.code_block.compound_style = ms.inline_code.clone();
-        ms.bold = CompoundStyle::from(self.help_bold.clone());
-        ms.italic = CompoundStyle::from(self.help_italic.clone());
-        ms.table = LineStyle {
-            compound_style: CompoundStyle::from(self.help_table_border.clone()),
-            align: Alignment::Center,
-        };
-        if let Some(c) = self.help_headers.get_fg() {
-            ms.set_headers_fg(c);
-        }
-        ms.scrollbar
-            .track
-            .set_compound_style(CompoundStyle::from(self.scrollbar_track.clone()));
-        ms.scrollbar
-            .thumb
-            .set_compound_style(CompoundStyle::from(self.scrollbar_thumb.clone()));
-        ms
-    }
-}
 
 impl fmt::Debug for Skin {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

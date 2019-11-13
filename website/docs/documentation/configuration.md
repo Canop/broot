@@ -226,6 +226,7 @@ You can change all colors by adding a `[skin]` section in your `conf.toml` file.
 For example:
 
 	[skin]
+	default = "gray(22) gray(1)"
 	tree = "rgb(89, 73, 101) none"
 	file = "gray(21) none"
 	directory = "rgb(255, 152, 0) none bold"
@@ -292,6 +293,7 @@ Here's a skin specifically designed for this case:
 ![light skin](../img/20191114-light-skin.png)
 
 	[skin]
+	default = "gray(2) gray(23)"
 	tree = "gray(17) none"
 	file = "gray(1) none"
 	directory = "ansi(20) none bold"
@@ -299,19 +301,19 @@ Here's a skin specifically designed for this case:
 	link = "Magenta none"
 	pruning = "gray(5) none Italic"
 	permissions = "gray(4) none "
-	selected_line = "none gray(21)"
+	selected_line = "none gray(20)"
 	char_match = "ansi(28) none"
 	file_error = "Red none"
 	flag_label = "gray(16) none"
 	flag_value = "ansi(202) none bold"
 	input = "ansi(0) none"
 	status_error = "ansi(196) gray(22)"
-	status_job = "ansi(220) gray(5)"
+	status_job = "ansi(220) gray(18)"
 	status_normal = "gray(2) gray(22)"
-	status_italic = "ansi(202) None"
-	status_bold = "ansi(202) None bold"
+	status_italic = "ansi(202) gray(22)"
+	status_bold = "ansi(202) gray(22) bold"
 	status_code = "ansi(17) gray(22)"
-	status_ellipsis = "gray(1) gray(23)"
+	status_ellipsis = "gray(1) white"
 	scrollbar_track = "gray(20) none"
 	scrollbar_thumb = "ansi(238) none"
 	help_paragraph = "gray(2) none"

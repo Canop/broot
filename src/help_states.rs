@@ -1,3 +1,9 @@
+use std::io::Write;
+
+use crossterm::{
+    queue,
+    terminal::{Clear, ClearType},
+};
 use termimad::{Area, MadView};
 
 use crate::{
@@ -8,6 +14,7 @@ use crate::{
     errors::ProgramError,
     help_content,
     io::W,
+    mad_skin,
     screens::Screen,
     status::Status,
     task_sync::TaskLifetime,
@@ -25,7 +32,7 @@ impl HelpState {
     pub fn new(screen: &Screen, con: &AppContext) -> HelpState {
         let area = Area::uninitialized(); // will be fixed at drawing time
         let markdown = help_content::build_markdown(con);
-        let view = MadView::from(markdown, area, screen.skin.to_mad_skin());
+        let view = MadView::from(markdown, area, mad_skin::make_help_mad_skin(&screen.skin));
         HelpState {
             dirty: true,
             view,
@@ -121,14 +128,15 @@ impl AppState for HelpState {
         }
     }
 
-    /// the help state doesn't rewrite the flags. We assume the one from the coming
-    /// state are still relevant.
+    /// there's no meaningful flags here
     fn write_flags(
         &self,
-        _w: &mut W,
-        _screen: &mut Screen,
+        w: &mut W,
+        screen: &mut Screen,
         _con: &AppContext
     ) -> Result<(), ProgramError> {
+        screen.skin.default.queue_bg(w)?;
+        queue!(w, Clear(ClearType::UntilNewLine))?;
         Ok(())
     }
 }

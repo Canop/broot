@@ -1,3 +1,4 @@
+
 ### Next Version
 * colored status line
 * better handling of errors when opening files externally
@@ -5,6 +6,7 @@
 * `:parent` no longer keeps the filter (this was too confusing)
 * new `:up` command, focusing the parent of the current tree root
 * `$PAGER` used in default config. Fix #20
+* default conf links to the white background skin published on web site
 
 <a name="v0.10.1"></a>
 ### v0.10.1 - 2019-11-04
