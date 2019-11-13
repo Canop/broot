@@ -185,10 +185,15 @@ execution = "$EDITOR {file}"
 invocation = "create {subpath}"
 execution = "$EDITOR {directory}/{subpath}"
 
+# If $PAGER isn't set on your computer, you should either set it
+#  or just replace it with your viewer of choice in the 'execution'
+#  pattern.
+# Example:
+#  execution = "less {file}"
 [[verbs]]
 name = "view"
 invocation = "view"
-execution = "less {file}"
+execution = "$PAGER {file}"
 
 #####################
 # Skin
