@@ -112,7 +112,23 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
 pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
     let cli_args = get_cli_args();
     let mut root = match cli_args.value_of("root") {
-        Some(path) => PathBuf::from(path),
+        Some(path) => {
+
+            /*
+            // On windows we unwrap the argument if it's given between
+            // double quotes, which notably happens when broot is called
+            // because mapped to a right click action in Explorer.
+            // Related issue: #72
+            // I'm not sure it's the best way. Inputs welcome.
+            #[cfg(windows)] {
+                if path.starts_with('"') && path.ends_with('"') {
+                    path = &path[1..path.len()-1];
+                }
+            }
+            */
+
+            PathBuf::from(path)
+        }
         None => env::current_dir()?,
     };
     if !root.exists() {

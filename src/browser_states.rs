@@ -19,7 +19,7 @@ use crate::{
     help_states::HelpState,
     io::W,
     patterns::Pattern,
-    screens::Screen,
+    screens::{self, Screen},
     status::Status,
     task_sync::TaskLifetime,
     tree_build::TreeBuilder,
@@ -439,7 +439,7 @@ impl AppState for BrowserState {
     ) -> Result<(), ProgramError>
     {
         let tree = self.displayed_tree();
-        let total_char_size = 10;
+        let total_char_size = screens::FLAGS_AREA_WIDTH;
         screen.goto_clear(w, screen.width - total_char_size - 1, screen.height - 1)?;
         let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
         let gi_value = match tree.options.respect_git_ignore {

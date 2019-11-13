@@ -213,8 +213,6 @@ execution = "$PAGER {file}"
 # pruning = "rgb(89, 73, 101) none Italic"
 # permissions = "gray(12) none "
 # selected_line = "none gray(3)"
-# size_bar = "black rgb(255, 152, 0)"
-# size_no_bar = "gray(15) gray(2)"
 # char_match = "yellow none"
 # file_error = "Red none"
 # flag_label = "gray(16) none"
@@ -234,4 +232,9 @@ execution = "$PAGER {file}"
 # help_italic = "Magenta rgb(30, 30, 40) italic"
 # help_code = "gray(21) gray(3)"
 # help_headers = "rgb(255, 187, 0) none"
+
+# You may find other skins on
+#  https://dystroy.org/broot/documentation/configuration/#colors
+# for example a skin suitable for white backgrounds
+
 "#;

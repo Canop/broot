@@ -15,6 +15,8 @@ use crate::{
     skin::Skin,
 };
 
+pub static FLAGS_AREA_WIDTH: u16 = 10;
+
 pub struct Screen {
     pub width: u16,
     pub height: u16,
@@ -46,7 +48,7 @@ impl Screen {
             self.height = h;
         }
         debug!("screen size: {} x {}", self.width, self.height);
-        self.input_field.change_area(0, h-1, w - 15);
+        self.input_field.change_area(0, h-1, w - FLAGS_AREA_WIDTH);
         debug!("input_field area: {:?}", self.input_field.area);
         Ok(())
     }

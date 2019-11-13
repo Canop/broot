@@ -70,11 +70,10 @@ Skin! {
     directory: Some(Blue), None; {Bold}
     exe: Some(Cyan), None;
     link: Some(Magenta), None;
-    pruning: gray(17), None; {Italic}
+    pruning: gray(12), None; {Italic}
     permissions: gray(15), None;
     dates: ansi(109), None;
     selected_line: None, gray(4);
-    size_bar: Some(White), gray(2);
     char_match: Some(Green), None;
     file_error: Some(Red), None;
     flag_label: gray(15), gray(1);
