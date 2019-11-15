@@ -1,5 +1,6 @@
 
-### Next Version
+<a name="v0.10.2"></a>
+### v0.10.2 - 2019-11-15
 * colored status line
 * better handling of errors when opening files externally
 * spinner replaced with an explicit text
@@ -7,6 +8,7 @@
 * new `:up` command, focusing the parent of the current tree root
 * `$PAGER` used in default config. Fix #20
 * default conf links to the white background skin published on web site
+* new "default" entry in skin, to define a global background replacing the terminal's one
 
 <a name="v0.10.1"></a>
 ### v0.10.1 - 2019-11-04

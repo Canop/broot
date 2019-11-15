@@ -225,8 +225,7 @@ impl Tree {
                             debug!("turning {:?} into Pruning", self.lines[end_index].path);
                             self.lines[end_index].line_type = LineType::Pruning;
                             self.lines[end_index].unlisted = unlisted + 1;
-                            self.lines[end_index].name =
-                                format!("{} unlisted", unlisted + 1).to_owned();
+                            self.lines[end_index].name = format!("{} unlisted", unlisted + 1);
                             self.lines[parent_index].unlisted = 0;
                         }
                     }

@@ -70,11 +70,12 @@ pub fn ansi(v: u8) -> Option<Color> {
 
 // Gold alternative: use 178 for boldish and italic/code is 229
 // Orange alternative: boldish is 208 and italic/code is 222
+// // 32 ?
 Skin! {
     default: gray(22), gray(1);
     tree: gray(5), None;
     file: gray(18), None;
-    directory: Some(Blue), None; {Bold}
+    directory: ansi(110), None; {Bold}
     exe: Some(Cyan), None;
     link: Some(Magenta), None;
     pruning: gray(12), None; {Italic}
@@ -91,7 +92,7 @@ Skin! {
     status_normal: gray(20), gray(3);
     status_italic: ansi(178), gray(3);
     status_bold: ansi(178), gray(3); {Bold}
-    status_code: ansi(229), gray(5);
+    status_code: ansi(229), gray(3);
     status_ellipsis: gray(19), gray(1);
     scrollbar_track: gray(7), None;
     scrollbar_thumb: gray(22), None;
