@@ -286,9 +286,7 @@ Note that some of them may be ignored by your terminal. Windows supports about n
 
 ## White background skin
 
-If your console has a white background, the default skin is probably not convenient.
-
-Here's a skin specifically designed for this case:
+If you're used to black on white, you might prefer to use a white background skin:
 
 ![light skin](../img/20191114-light-skin.png)
 
