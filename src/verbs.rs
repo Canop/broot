@@ -33,6 +33,7 @@ use crate::{
 pub struct Verb {
     pub invocation: VerbInvocation, // how the verb is supposed to be called (key may be replaced by shortcut)
     pub key: Option<KeyEvent>,
+    pub key_desc: String, // a description of the optional keyboard key triggering that verb
     pub args_parser: Option<Regex>,
     pub shortcut: Option<String>,    // a shortcut, eg "c"
     pub execution: String,           // a pattern usable for execution, eg ":quit" or "less {file}"
@@ -44,6 +45,19 @@ pub struct Verb {
 
 lazy_static! {
     static ref GROUP: Regex = Regex::new(r"\{([^{}:]+)(?::([^{}:]+))?\}").unwrap();
+}
+
+/// build a human description of a key event
+fn key_event_desc(key: &Option<KeyEvent>) -> String {
+    match key {
+        Some(key) => match key {
+            KeyEvent::F(d) => format!("F{}", d),
+            KeyEvent::Ctrl(c) => format!("^{}", c),
+            KeyEvent::Alt(c) => format!("alt-{}", c),
+            _ => format!("{:?}", key),
+        }
+        None => "".to_owned(),
+    }
 }
 
 pub trait VerbExecutor {
@@ -97,6 +111,7 @@ impl Verb {
             .transpose()?;
         Ok(Verb {
             invocation,
+            key_desc: key_event_desc(&key),
             key,
             args_parser,
             shortcut,
@@ -121,6 +136,7 @@ impl Verb {
                 key: name.to_string(),
                 args: None,
             },
+            key_desc: key_event_desc(&key),
             key,
             args_parser: None,
             shortcut,

@@ -95,10 +95,7 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     let mut verb_store = VerbStore::new();
     let config = Conf::from_default_location()?;
     verb_store.init(&config);
-    let context = AppContext {
-        launch_args,
-        verb_store,
-    };
+    let context = AppContext::from(launch_args, verb_store);
     let skin = skin::Skin::create(config.skin);
     App::new().run(&mut io::writer(), &context, skin)
 }

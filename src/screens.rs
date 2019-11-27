@@ -5,13 +5,16 @@ use crossterm::{
     terminal::{Clear, ClearType},
     queue,
 };
-use termimad::{Area, CompoundStyle, InputField};
+use termimad::{Area, CompoundStyle, InputField, MadSkin};
 
 use crate::{
     app_context::AppContext,
     errors::ProgramError,
     io::W,
-    mad_skin::StatusMadSkinSet,
+    mad_skin::{
+        self,
+        StatusMadSkinSet,
+    },
     skin::Skin,
 };
 
@@ -23,6 +26,7 @@ pub struct Screen {
     pub skin: Skin,
     pub input_field: InputField,
     pub status_skin: StatusMadSkinSet,
+    pub help_skin: MadSkin,
 }
 
 impl Screen {
@@ -30,12 +34,14 @@ impl Screen {
         let mut input_field = InputField::new(Area::new(0, 0, 10, 1));
         input_field.set_normal_style(CompoundStyle::from(skin.input.clone()));
         let status_skin = StatusMadSkinSet::from_skin(&skin);
+        let help_skin = mad_skin::make_help_mad_skin(&skin);
         let mut screen = Screen {
             width: 0,
             height: 0,
             skin,
             input_field,
             status_skin,
+            help_skin,
         };
         screen.read_size(con)?;
         Ok(screen)
@@ -49,7 +55,6 @@ impl Screen {
         }
         debug!("screen size: {} x {}", self.width, self.height);
         self.input_field.change_area(0, h-1, w - FLAGS_AREA_WIDTH);
-        debug!("input_field area: {:?}", self.input_field.area);
         Ok(())
     }
     /// move the cursor to x,y and clears the line.

@@ -98,25 +98,11 @@ impl Into<u64> for Size {
 
 #[cfg(unix)]
 mod file_sizes_unix;
-
 #[cfg(unix)]
-fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
-    file_sizes_unix::compute_dir_size(path, tl)
-}
-
-#[cfg(unix)]
-fn compute_file_size(path: &Path) -> u64 {
-    file_sizes_unix::compute_file_size(path)
-}
+use file_sizes_unix::*;
 
 #[cfg(not(unix))]
 mod file_sizes_default;
+#[cfg(not(unix))]
+use file_sizes_default::*;
 
-#[cfg(not(unix))]
-fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
-    file_sizes_default::compute_dir_size(path, tl)
-}
-#[cfg(not(unix))]
-fn compute_file_size(path: &Path) -> u64 {
-    file_sizes_default::compute_file_size(path)
-}

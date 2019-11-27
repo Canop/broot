@@ -1,4 +1,8 @@
 
+### Master
+* refactor help page generation using Termimad templates
+* clear help background when terminal was resized
+
 <a name="v0.10.2"></a>
 ### v0.10.2 - 2019-11-15
 * colored status line

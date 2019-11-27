@@ -9,14 +9,7 @@ pub fn supported() -> bool {
 }
 
 #[cfg(unix)]
-pub fn user_name(uid: u32) -> String {
-    permissions_unix::user_name(uid)
-}
-
-#[cfg(unix)]
-pub fn group_name(gid: u32) -> String {
-    permissions_unix::group_name(gid)
-}
+pub use permissions_unix::*;
 
 //////////////////// WINDOWS
 

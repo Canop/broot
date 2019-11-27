@@ -4,7 +4,11 @@ use crossterm::{
     queue,
     terminal::{Clear, ClearType},
 };
-use termimad::{Area, MadView};
+use termimad::{
+    Area,
+    FmtText,
+    TextView,
+};
 
 use crate::{
     app_state::{AppState, AppStateCmdResult},
@@ -14,7 +18,6 @@ use crate::{
     errors::ProgramError,
     help_content,
     io::W,
-    mad_skin,
     screens::Screen,
     status::Status,
     task_sync::TaskLifetime,
@@ -24,27 +27,33 @@ use crate::{
 
 /// an application state dedicated to help
 pub struct HelpState {
-    dirty: bool, // when the screen background must be cleared
-    pub view: MadView,
+    pub scroll: i32, // scroll position
+    pub area: Area,
+    screen_size: (u16, u16), // kept to detect when the background should be cleared
 }
 
 impl HelpState {
-    pub fn new(screen: &Screen, con: &AppContext) -> HelpState {
+    pub fn new(_screen: &Screen, _con: & AppContext) -> HelpState {
         let area = Area::uninitialized(); // will be fixed at drawing time
-        let markdown = help_content::build_markdown(con);
-        let view = MadView::from(markdown, area, mad_skin::make_help_mad_skin(&screen.skin));
         HelpState {
-            dirty: true,
-            view,
+            area,
+            scroll: 0,
+            screen_size: (0, 0),
         }
     }
 
-    fn resize_area(&mut self, screen: &Screen) {
-        let mut area = Area::new(0, 0, screen.width, screen.height - 2);
-        area.pad_for_max_width(110);
-        self.view.resize(&area);
+    /// return true when the screen area changed
+    fn resize_area(&mut self, screen: &Screen) -> bool {
+        if self.screen_size == (screen.width, screen.height) {
+            return false;
+        }
+        self.screen_size = (screen.width, screen.height);
+        self.area = Area::new(0, 0, screen.width, screen.height - 2);
+        self.area.pad_for_max_width(110);
+        true
     }
 }
+
 
 impl AppState for HelpState {
 
@@ -58,7 +67,6 @@ impl AppState for HelpState {
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        self.resize_area(screen);
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
             Action::VerbIndex(index) => {
@@ -72,7 +80,7 @@ impl AppState for HelpState {
                 _ => AppStateCmdResult::verb_not_found(&invocation.key),
             },
             Action::MoveSelection(dy) => {
-                self.view.try_scroll_lines(*dy);
+                self.scroll += *dy;
                 AppStateCmdResult::Keep
             }
             _ => AppStateCmdResult::Keep,
@@ -91,16 +99,16 @@ impl AppState for HelpState {
         &mut self,
         w: &mut W,
         screen: &Screen,
-        _con: &AppContext
+        con: &AppContext
     ) -> Result<(), ProgramError> {
-        if self.dirty {
-            // we don't clear the whole screen more than necessary because
-            //  it makes scrolling flicker
+        if self.resize_area(screen) {
             screen.clear(w)?;
-            self.dirty = false;
         }
-        self.resize_area(screen);
-        Ok(self.view.write_on(w)?)
+        let text = help_content::build_text(con);
+        let fmt_text = FmtText::from_text(&screen.help_skin, text, Some((self.area.width - 1) as usize));
+        let mut text_view = TextView::from(&self.area, &fmt_text);
+        self.scroll = text_view.set_scroll(self.scroll);
+        Ok(text_view.write_on(w)?)
     }
 
     fn write_status(
