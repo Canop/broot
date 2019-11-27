@@ -1,7 +1,9 @@
 
-### Master
+<a name="v0.10.3"></a>
+### v0.10.3 - 2019-11-27
+* fix crash on doing `:rm` on the last child of current root
 * refactor help page generation using Termimad templates
-* clear help background when terminal was resized
+* clear help background when terminal was resized between redraws
 
 <a name="v0.10.2"></a>
 ### v0.10.2 - 2019-11-15
