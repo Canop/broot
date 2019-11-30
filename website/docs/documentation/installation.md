@@ -30,9 +30,7 @@ You'll need to have the [Rust development environment](https://www.rust-lang.org
 
 Fetch the Canop/broot repository, move to the broot directory, then run
 
-    cargo build --release
-
-The executable is written in the `target/release` directory (you might want to move it to your `/usr/bin`, or to add the release directory to your path).
+    cargo install --path .
 
 # Installation Completion : the `br` shell function
 

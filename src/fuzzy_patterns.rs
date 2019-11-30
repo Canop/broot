@@ -30,6 +30,12 @@ impl fmt::Display for FuzzyPattern {
     }
 }
 
+enum MatchSearchResult {
+    Perfect(Match), // no need to test other positions
+    Some(Match),
+    None,
+}
+
 impl FuzzyPattern {
     pub fn from(pat: &str) -> FuzzyPattern {
         let lc_chars: Vec<char> = pat.chars().map(|c| c.to_ascii_lowercase()).collect();
@@ -50,13 +56,14 @@ impl FuzzyPattern {
             max_nb_holes,
         }
     }
+
     fn match_starting_at_index(
         &self,
         cand_chars: &[char],
         start_idx: usize, // start index in candidate
-    ) -> Option<Match> {
+    ) -> MatchSearchResult {
         if cand_chars[start_idx] != self.lc_chars[0] {
-            return None;
+            return MatchSearchResult::None;
         }
         let mut pos: Vec<usize> = vec![]; // positions of matching chars in candidate
         pos.push(start_idx);
@@ -67,7 +74,7 @@ impl FuzzyPattern {
             loop {
                 let cand_idx = start_idx + d;
                 if cand_idx == cand_chars.len() {
-                    return None;
+                    return MatchSearchResult::None;
                 }
                 d += 1;
                 if cand_chars[cand_idx] == self.lc_chars[pat_idx] {
@@ -79,7 +86,7 @@ impl FuzzyPattern {
                 // note that there's no absolute guarantee we found the minimal
                 // number of holes. The algorithm isn't perfect
                 if nb_holes >= self.max_nb_holes {
-                    return None;
+                    return MatchSearchResult::None;
                 }
                 nb_holes += 1;
             }
@@ -93,32 +100,43 @@ impl FuzzyPattern {
             score += BONUS_START;
             if cand_chars.len() == self.lc_chars.len() {
                 score += BONUS_EXACT;
+                return MatchSearchResult::Perfect(Match { score, pos });
             }
         } else {
             let previous = cand_chars[start_idx - 1];
             if previous == '_' || previous == ' ' || previous == '-' {
                 score += BONUS_START_WORD;
+                if cand_chars.len() == self.lc_chars.len() {
+                    return MatchSearchResult::Perfect(Match { score, pos });
+                }
             }
         }
-        Some(Match { score, pos })
+        MatchSearchResult::Some(Match { score, pos })
     }
     // return a match if the pattern can be found in the candidate string.
     // The algorithm tries to return the best one. For example if you search
-    // "abc" in "ababaca-abc", the returned match would be at the end.
+    // "abc" in "ababca-abc", the returned match would be at the end.
     pub fn find(&self, candidate: &str) -> Option<Match> {
-        let cand_chars: Vec<char> = candidate.chars().map(|c| c.to_ascii_lowercase()).collect();
+        let mut cand_chars: Vec<char> = Vec::with_capacity(candidate.len());
+        cand_chars.extend(candidate.chars().map(|c| c.to_ascii_lowercase()));
         if cand_chars.len() < self.lc_chars.len() {
             return None;
         }
         let mut best_score = 0;
         let mut best_match: Option<Match> = None;
-        for start_idx in 0..=cand_chars.len() - self.lc_chars.len() {
-            let sm = self.match_starting_at_index(&cand_chars, start_idx);
-            if let Some(m) = sm {
-                if m.score > best_score {
-                    best_score = m.score;
-                    best_match = Some(m);
+        let n = cand_chars.len() - self.lc_chars.len();
+        for start_idx in 0..=n {
+            match self.match_starting_at_index(&cand_chars, start_idx) {
+                MatchSearchResult::Perfect(m) => {
+                    return Some(m);
                 }
+                MatchSearchResult::Some(m) => {
+                    if m.score > best_score {
+                        best_score = m.score;
+                        best_match = Some(m);
+                    }
+                }
+                _ => {}
             }
         }
         best_match
@@ -126,6 +144,6 @@ impl FuzzyPattern {
     // return the number of results we should find before starting to
     //  sort them (unless time is runing out).
     pub const fn optimal_result_number(&self, targeted_size: usize) -> usize {
-        20 * targeted_size
+        40 * targeted_size
     }
 }

@@ -60,11 +60,11 @@ Once the file you want is selected you can
 
 ![mv](img/20191112-mv.png)
 
-Most often you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
+Without broot you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
 
 You can instead do it without losing the view of the file hierarchy.
 
-Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
+`mv`, `cp`, `rm`, `mkdir`, are built in and you can add your own shortcuts.
 
 ### Apply a standard or personal shortcut to a file
 

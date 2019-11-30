@@ -19,6 +19,11 @@ use crate::{
 
 type BId = Id<BLine>;
 
+/// If a search found enough results to fill the screen but didn't scan
+/// everything, we search a little more in case we find better matches
+/// but not after the NOT_LONG duration.
+static NOT_LONG: Duration = Duration::from_millis(1300);
+
 /// like a tree line, but with the info needed during the build
 /// This structure isn't usable independantly from the tree builder
 struct BLine {
@@ -325,7 +330,6 @@ impl TreeBuilder {
     fn gather_lines(&mut self, task_lifetime: &TaskLifetime) -> Option<Vec<BId>> {
         let start = Instant::now();
         let mut out_blines: Vec<BId> = Vec::new(); // the blines we want to display
-        let not_long = Duration::from_millis(600);
         let optimal_size = self
             .options
             .pattern
@@ -338,7 +342,7 @@ impl TreeBuilder {
         open_dirs.push_back(self.root_id);
         loop {
             if (nb_lines_ok > optimal_size)
-                || (nb_lines_ok >= self.targeted_size && start.elapsed() > not_long)
+                || (nb_lines_ok >= self.targeted_size && start.elapsed() > NOT_LONG)
             {
                 break;
             }
