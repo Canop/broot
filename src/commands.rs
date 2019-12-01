@@ -9,6 +9,7 @@ use termimad::{Event, InputField};
 use crate::{
     app_context::AppContext,
     verb_invocation::VerbInvocation,
+    patterns::Pattern,
 };
 
 #[derive(Debug, Clone)]
@@ -129,6 +130,14 @@ impl Command {
         Command { raw, parts, action }
     }
 
+    pub fn from_pattern(pattern: &Pattern) -> Self {
+        Self::from(match pattern {
+            Pattern::Fuzzy(fp) => fp.to_string(),
+            Pattern::Regex(rp) => rp.to_string(),
+            Pattern::None => String::new(),
+        })
+    }
+
     /// apply an event to modify the command
     pub fn add_event(&mut self, event: &Event, input_field: &mut InputField, con: &AppContext) {
         let mut handled_by_input_field = false;
@@ -206,3 +215,4 @@ impl Command {
         }
     }
 }
+

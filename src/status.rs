@@ -57,8 +57,8 @@ impl<'a> Status<'a> {
         screen.goto_clear(w, 0, y)?;
         let mut x = 0;
         if let Some(pending_task) = self.pending_task {
-            let pending_task = format!(" {} ", pending_task);
-            x += pending_task.len();
+            let pending_task = format!(" {}… ", pending_task);
+            x += pending_task.chars().count();
             screen.skin.status_job.queue(w, pending_task)?;
         }
         screen.goto(w, x as u16, y)?;

@@ -26,7 +26,7 @@ fn focus_path(path: PathBuf, screen: &mut Screen, tree: &Tree) -> AppStateCmdRes
             screen,
             &TaskLifetime::unlimited(),
         ),
-        tree.options.pattern.to_command(),
+        Command::from_pattern(&tree.options.pattern),
     )
 }
 

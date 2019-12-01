@@ -7,31 +7,32 @@
 //! - an operation which keeps the state
 //! - a request to quit broot
 //! - a request to launch an executable (thus leaving broot)
-use std::io::Write;
 
-use crossterm::{
-    cursor,
-    input::{DisableMouseCapture, EnableMouseCapture},
-    queue,
-    screen::{EnterAlternateScreen, LeaveAlternateScreen},
-};
-use minimad::Composite;
-use termimad::EventSource;
-
-use crate::{
-    app_context::AppContext,
-    app_state::{AppStateCmdResult, AppState},
-    browser_states::BrowserState,
-    command_parsing::parse_command_sequence,
-    commands::Command,
-    errors::ProgramError,
-    external::Launchable,
-    file_sizes,
-    io::W,
-    screens::Screen,
-    skin::Skin,
-    status::Status,
-    task_sync::TaskLifetime,
+use {
+    std::io::Write,
+    crossterm::{
+        cursor,
+        input::{DisableMouseCapture, EnableMouseCapture},
+        queue,
+        screen::{EnterAlternateScreen, LeaveAlternateScreen},
+    },
+    minimad::Composite,
+    termimad::EventSource,
+    crate::{
+        app_context::AppContext,
+        app_state::{AppStateCmdResult, AppState},
+        browser_states::BrowserState,
+        command_parsing::parse_command_sequence,
+        commands::Command,
+        errors::ProgramError,
+        external::Launchable,
+        file_sizes,
+        io::W,
+        screens::Screen,
+        skin::Skin,
+        status::Status,
+        task_sync::TaskLifetime,
+    }
 };
 
 pub struct App {

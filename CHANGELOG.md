@@ -1,4 +1,7 @@
 
+### master
+* fuzzy search performance improvement
+
 <a name="v0.10.3"></a>
 ### v0.10.3 - 2019-11-27
 * fix crash on doing `:rm` on the last child of current root

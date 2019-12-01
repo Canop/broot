@@ -71,7 +71,7 @@ impl BrowserState {
                 screen,
                 &TaskLifetime::unlimited(),
             ),
-            tree.options.pattern.to_command(),
+            Command::from_pattern(&tree.options.pattern),
         )
     }
 
@@ -420,14 +420,16 @@ impl AppState for BrowserState {
             warn!("refreshing base tree failed : {:?}", e);
         }
         // refresh the filtered tree, if any
-        if let Some(ref mut tree) = self.filtered_tree {
-            if let Err(e) = tree.refresh(page_height) {
-                warn!("refreshing filtered tree failed : {:?}", e);
+        Command::from_pattern(
+            if let Some(ref mut tree) = self.filtered_tree {
+                if let Err(e) = tree.refresh(page_height) {
+                    warn!("refreshing filtered tree failed : {:?}", e);
+                }
+                &tree.options.pattern
+            } else {
+                &self.tree.options.pattern
             }
-            tree.options.pattern.to_command()
-        } else {
-            self.tree.options.pattern.to_command()
-        }
+        )
     }
 
     /// draw the flags at the bottom right of the screen

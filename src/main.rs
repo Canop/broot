@@ -1,59 +1,26 @@
 #[macro_use]
-extern crate minimad;
-#[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate log;
-#[macro_use]
-extern crate lazy_regex;
 
-mod app;
-mod app_context;
-mod app_state;
-mod browser_states;
-mod browser_verbs;
-mod cli;
-mod command_parsing;
-mod commands;
-mod conf;
-mod displayable_tree;
-mod errors;
-mod external;
-mod file_sizes;
-mod flat_tree;
-mod fuzzy_patterns;
-mod git_ignore;
-mod help_content;
-mod help_states;
-mod help_verbs;
-mod io;
-mod mad_skin;
-mod patterns;
-mod permissions;
-mod regex_patterns;
-mod screens;
-mod shell_bash;
-mod shell_fish;
-mod shell_install;
-mod skin;
-mod skin_conf;
-mod status;
-mod task_sync;
-mod tree_build;
-mod tree_options;
-mod verb_conf;
-mod verb_invocation;
-mod verb_store;
-mod verbs;
-
-use std::{env, fs::File, str::FromStr};
-
-use log::LevelFilter;
-use simplelog;
-
-use crate::{
-    app::App, app_context::AppContext, conf::Conf, errors::ProgramError, external::Launchable,
-    verb_store::VerbStore,
+use {
+    std::{
+        env,
+        fs::File,
+        str::FromStr,
+    },
+    log::LevelFilter,
+    simplelog,
+    broot::{
+        app::App,
+        app_context::AppContext,
+        cli,
+        conf::Conf,
+        errors::ProgramError,
+        external::Launchable,
+        io,
+        shell_install,
+        skin,
+        verb_store::VerbStore,
+    },
 };
 
 /// configure the application log according to env variable.

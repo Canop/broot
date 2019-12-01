@@ -219,8 +219,8 @@ impl TreeBuilder {
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
         if self.options.pattern.is_some() {
-            if let Some(m) = self.options.pattern.find(&name) {
-                score += m.score;
+            if let Some(pattern_score) = self.options.pattern.score_of(&name) {
+                score += pattern_score;
             } else {
                 has_match = false;
             }
