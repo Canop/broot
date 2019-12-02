@@ -73,11 +73,11 @@ impl AppState for HelpState {
                 let verb = &con.verb_store.verbs[*index];
                 self.execute_verb(verb, &verb.invocation, screen, con)?
             }
-            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.key) {
+            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::Match(verb) => {
                     self.execute_verb(verb, &invocation, screen, con)?
                 }
-                _ => AppStateCmdResult::verb_not_found(&invocation.key),
+                _ => AppStateCmdResult::verb_not_found(&invocation.name),
             },
             Action::MoveSelection(dy) => {
                 self.scroll += *dy;
@@ -119,7 +119,7 @@ impl AppState for HelpState {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         match &cmd.action {
-            Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
+            Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::NoMatch => {
                     Status::from_error(mad_inline!("No matching verb")).display(w, screen)
                 }

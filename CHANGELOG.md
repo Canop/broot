@@ -1,6 +1,7 @@
 
 ### master
 * fuzzy search performance improvement
+* verb invocation now optional so that a verb can be defined to just introduce a keyboard shortcut
 
 <a name="v0.10.3"></a>
 ### v0.10.3 - 2019-11-27

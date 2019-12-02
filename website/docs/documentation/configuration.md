@@ -28,7 +28,7 @@ The possible attributes are:
 
 name | mandatory | role
 -|-|-
-invocation | yes | how the verb is called by the user, with placeholders for arguments
+invocation | no | how the verb is called by the user, with placeholders for arguments
 execution | yes | how the verb is executed
 key | no | a keyboard key triggerring execution
 shorcut | no | an alternate way to call the verb (without the arguments part)
@@ -78,6 +78,10 @@ For example you could add those mappings:
 	execution = ":focus_user_home"
 
 	[[verbs]]
+	key = "alt-j"
+	execution = ":line_down"
+
+	[[verbs]]
 	invocation = "top"
 	key = "F6"
 	execution = ":select_first"
@@ -101,6 +105,7 @@ For example you could add those mappings:
 
 Then,
 
+* when doing <kbd>alt</kbd><kbd>J<kbd>, you would move the selection down (notice we don't need an invocation)
 * when doing <kbd>Ctrl-H</kbd>, you would go to you user home (`~` when on linux),
 * you would open files (without closing broot) with <kbd>ctrl-O</kbd>,
 * <kbd>F7</kbd> would select the last line of the tree,

@@ -247,7 +247,7 @@ impl AppState for BrowserState {
             Action::RegexEdit(s, _) if !s.is_empty() => Status::new(
                 task, self.normal_status_message(true), false
             ).display(w, screen),
-            Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.key) {
+            Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::NoMatch => Status::new(
                     task, mad_inline!("No matching verb (*?* for the list of verbs)"), true
                 ).display(w, screen),
@@ -312,11 +312,11 @@ impl AppState for BrowserState {
                 let verb = &con.verb_store.verbs[*index];
                 self.execute_verb(verb, &verb.invocation, screen, con)
             }
-            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.key) {
+            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::Match(verb) => {
                     self.execute_verb(verb, &invocation, screen, con)
                 }
-                _ => Ok(AppStateCmdResult::verb_not_found(&invocation.key)),
+                _ => Ok(AppStateCmdResult::verb_not_found(&invocation.name)),
             },
             Action::FuzzyPatternEdit(pat) => {
                 match pat.len() {

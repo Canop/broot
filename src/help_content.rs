@@ -65,7 +65,7 @@ pub fn build_text(con: &AppContext) -> Text<'_> {
         .set("config-path", &con.config_path);
     for verb in &con.verb_store.verbs {
         let sub = expander.sub("verb-rows")
-            .set("name", &verb.invocation.key)
+            .set("name", &verb.invocation.name)
             .set(
                 "shortcut",
                 if let Some(sk) = &verb.shortcut { &sk } else { "" }, // TODO use as_deref when it's available

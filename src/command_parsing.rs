@@ -13,7 +13,7 @@ use crate::{
 #[derive(Debug)]
 enum CommandSequenceToken {
     Standard(String), // one or several words, not starting with a ':'. May be a filter or a verb argument
-    VerbKey(String),  // a verb (the ':' isn't given)
+    VerbName(String),  // a verb (the ':' isn't given)
 }
 struct CommandSequenceTokenizer {
     chars: Vec<char>,
@@ -52,7 +52,7 @@ impl Iterator for CommandSequenceTokenizer {
         let token: String = self.chars[self.pos..end].iter().collect();
         self.pos = end + 1;
         Some(if is_verb {
-            CommandSequenceToken::VerbKey(token)
+            CommandSequenceToken::VerbName(token)
         } else {
             CommandSequenceToken::Standard(token)
         })
@@ -79,24 +79,24 @@ pub fn parse_command_sequence(
     let mut leftover: Option<CommandSequenceToken> = None;
     while let Some(first_token) = leftover.take().or_else(|| tokenizer.next()) {
         let raw = match first_token {
-            CommandSequenceToken::VerbKey(key) => {
-                let verb = match con.verb_store.search(&key) {
+            CommandSequenceToken::VerbName(name) => {
+                let verb = match con.verb_store.search(&name) {
                     PrefixSearchResult::NoMatch => {
-                        return Err(ProgramError::UnknownVerb { key });
+                        return Err(ProgramError::UnknownVerb { name });
                     }
                     PrefixSearchResult::TooManyMatches => {
-                        return Err(ProgramError::AmbiguousVerbKey { key });
+                        return Err(ProgramError::AmbiguousVerbName { name });
                     }
                     PrefixSearchResult::Match(verb) => verb,
                 };
-                let mut raw = format!(":{}", key);
+                let mut raw = format!(":{}", name);
                 if let Some(args_regex) = &verb.args_parser {
                     let mut args: Vec<String> = Vec::new();
                     let mut nb_valid_args = 0;
                     // we'll try to consume as many tokens as possible
                     while let Some(token) = tokenizer.next() {
                         match token {
-                            CommandSequenceToken::VerbKey(_) => {
+                            CommandSequenceToken::VerbName(_) => {
                                 leftover = Some(token);
                                 break;
                             }
@@ -109,7 +109,7 @@ pub fn parse_command_sequence(
                         }
                     }
                     if nb_valid_args == 0 && !args_regex.is_match("") {
-                        return Err(ProgramError::UnmatchingVerbArgs { key });
+                        return Err(ProgramError::UnmatchingVerbArgs { name });
                     }
                     for (i, arg) in args.drain(..).enumerate() {
                         if i < nb_valid_args {
@@ -129,7 +129,7 @@ pub fn parse_command_sequence(
     if let Some(token) = leftover.take() {
         commands.push(Command::from(match token {
             CommandSequenceToken::Standard(raw) => raw,
-            CommandSequenceToken::VerbKey(raw) => format!(":{}", raw),
+            CommandSequenceToken::VerbName(raw) => format!(":{}", raw),
         }));
     }
     Ok(commands)

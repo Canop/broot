@@ -31,7 +31,7 @@ use crate::{
 ///
 #[derive(Debug, Clone)]
 pub struct Verb {
-    pub invocation: VerbInvocation, // how the verb is supposed to be called (key may be replaced by shortcut)
+    pub invocation: VerbInvocation, // how the verb is supposed to be called, may be empty
     pub key: Option<KeyEvent>,
     pub key_desc: String, // a description of the optional keyboard key triggering that verb
     pub args_parser: Option<Regex>,
@@ -99,11 +99,6 @@ impl Verb {
         confirm: bool,
     ) -> Result<Verb, ConfError> {
         let invocation = VerbInvocation::from(invocation_str);
-        if invocation.is_empty() {
-            return Err(ConfError::InvalidVerbInvocation {
-                invocation: invocation_str.to_string(),
-            });
-        }
         let args_parser = invocation
             .args
             .as_ref()
@@ -133,7 +128,7 @@ impl Verb {
     ) -> Verb {
         Verb {
             invocation: VerbInvocation {
-                key: name.to_string(),
+                name: name.to_string(),
                 args: None,
             },
             key_desc: key_event_desc(&key),
@@ -158,17 +153,17 @@ impl Verb {
                 if regex.is_match("") {
                     None
                 } else {
-                    Some(self.invocation.to_string_for_key(&invocation.key))
+                    Some(self.invocation.to_string_for_name(&invocation.name))
                 }
             }
             (Some(ref s), Some(ref regex)) => {
                 if regex.is_match(&s) {
                     None
                 } else {
-                    Some(self.invocation.to_string_for_key(&invocation.key))
+                    Some(self.invocation.to_string_for_name(&invocation.name))
                 }
             }
-            (Some(_), None) => Some(format!("{} doesn't take arguments", invocation.key)),
+            (Some(_), None) => Some(format!("{} doesn't take arguments", invocation.name)),
         }
     }
 
@@ -223,7 +218,7 @@ impl Verb {
             let composite = if let Some(description) = &self.description {
                 markdown = format!(
                     "Hit *enter* to **{}**: {}",
-                    &self.invocation.key,
+                    &self.invocation.name,
                     description,
                 );
                 Composite::from_inline(&markdown)
@@ -231,7 +226,7 @@ impl Verb {
                 verb_description = self.shell_exec_string(&path, &invocation.args);
                 mad_inline!(
                     "Hit *enter* to **$0**: `$1`",
-                    &self.invocation.key,
+                    &self.invocation.name,
                     &verb_description,
                 )
             };

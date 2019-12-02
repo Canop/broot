@@ -98,14 +98,8 @@ impl Conf {
         let mut verbs: Vec<VerbConf> = vec![];
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {
-                let invocation = match string_field(verb_value, "invocation") {
-                    Some(s) => s,
-                    None => {
-                        eprintln!("Invalid [[verbs]] entry in configuration");
-                        eprintln!("Missing invocation");
-                        continue;
-                    }
-                };
+                let invocation = string_field(verb_value, "invocation")
+                    .unwrap_or("".to_string());
                 let key = string_field(verb_value, "key")
                     .map(|s| verb_conf::parse_key(&s))
                     .transpose()?;
