@@ -33,7 +33,7 @@ function br {
     if [ "$code" != 0 ]; then
 	return "$code"
     fi
-    d=$(cat "$f")
+    d=$(<"$f")
     rm -f "$f"
     eval "$d"
 }
