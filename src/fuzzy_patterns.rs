@@ -44,6 +44,8 @@ enum ScoreSearchResult {
 
 impl FuzzyPattern {
 
+    /// build a pattern which will later be usable for fuzzy search.
+    /// A pattern should be reused
     pub fn from(pat: &str) -> FuzzyPattern {
         let lc_bytes = pat.to_lowercase().as_bytes().to_vec();
         let lc_bytes = lc_bytes.into_boxed_slice();
@@ -67,60 +69,7 @@ impl FuzzyPattern {
         }
     }
 
-    fn score_starting_at(
-        &self,
-        cand: &[u8],
-        start_idx: usize, // start index in candidate, in bytes
-    ) -> ScoreSearchResult {
-        if cand[start_idx].to_ascii_lowercase() != self.lc_bytes[0] {
-            return ScoreSearchResult::None;
-        }
-        let mut d = 1;
-        let mut nb_holes = 0;
-        for pat_idx in 1..self.lc_bytes.len() {
-            let hole_start = d;
-            loop {
-                let cand_idx = start_idx + d;
-                if cand_idx == cand.len() {
-                    return ScoreSearchResult::None;
-                }
-                d += 1;
-                if cand[cand_idx].to_ascii_lowercase() == self.lc_bytes[pat_idx] {
-                    break;
-                }
-            }
-            if hole_start + 1 != d {
-                // note that there's no absolute guarantee we found the minimal
-                // number of holes. The algorithm isn't perfect
-                if nb_holes >= self.max_nb_holes {
-                    return ScoreSearchResult::None;
-                }
-                nb_holes += 1;
-            }
-        }
-        let match_len = (d as i32) - 1;
-        let mut score = BONUS_MATCH
-            + BONUS_CANDIDATE_LENGTH * (cand.len() as i32)
-            + BONUS_NB_HOLES * (nb_holes as i32)
-            + match_len * BONUS_LENGTH;
-        if start_idx == 0 {
-            score += BONUS_START;
-            if cand.len() == self.lc_bytes.len() {
-                score += BONUS_EXACT;
-                return ScoreSearchResult::Perfect(score);
-            }
-        } else {
-            let previous = cand[start_idx - 1];
-            if previous == b'_' || previous == b' ' || previous == b'-' {
-                score += BONUS_START_WORD;
-                if cand.len()-start_idx == self.lc_bytes.len() {
-                    return ScoreSearchResult::Perfect(score);
-                }
-            }
-        }
-        ScoreSearchResult::Some(score)
-    }
-
+    /// look for a match starting at a given character
     fn match_starting_at_index(
         &self,
         cand_chars: &[char],
@@ -207,6 +156,64 @@ impl FuzzyPattern {
         best_match
     }
 
+    /// if a match starts at the given byte index, return its score.
+    /// Return it as "Perfect" if no better match can be found further
+    /// in the string.
+    /// Otherwise return None.
+    fn score_starting_at(
+        &self,
+        cand: &[u8],
+        start_idx: usize, // start index in candidate, in bytes
+    ) -> ScoreSearchResult {
+        if cand[start_idx].to_ascii_lowercase() != self.lc_bytes[0] {
+            return ScoreSearchResult::None;
+        }
+        let mut d = 1;
+        let mut nb_holes = 0;
+        for pat_idx in 1..self.lc_bytes.len() {
+            let hole_start = d;
+            loop {
+                let cand_idx = start_idx + d;
+                if cand_idx == cand.len() {
+                    return ScoreSearchResult::None;
+                }
+                d += 1;
+                if cand[cand_idx].to_ascii_lowercase() == self.lc_bytes[pat_idx] {
+                    break;
+                }
+            }
+            if hole_start + 1 != d {
+                // note that there's no absolute guarantee we found the minimal
+                // number of holes. The algorithm isn't perfect
+                if nb_holes >= self.max_nb_holes {
+                    return ScoreSearchResult::None;
+                }
+                nb_holes += 1;
+            }
+        }
+        let match_len = (d as i32) - 1;
+        let mut score = BONUS_MATCH
+            + BONUS_CANDIDATE_LENGTH * (cand.len() as i32)
+            + BONUS_NB_HOLES * (nb_holes as i32)
+            + match_len * BONUS_LENGTH;
+        if start_idx == 0 {
+            score += BONUS_START;
+            if cand.len() == self.lc_bytes.len() {
+                score += BONUS_EXACT;
+                return ScoreSearchResult::Perfect(score);
+            }
+        } else {
+            let previous = cand[start_idx - 1];
+            if previous == b'_' || previous == b' ' || previous == b'-' {
+                score += BONUS_START_WORD;
+                if cand.len()-start_idx == self.lc_bytes.len() {
+                    return ScoreSearchResult::Perfect(score);
+                }
+            }
+        }
+        ScoreSearchResult::Some(score)
+    }
+
     /// compute the score of the best match, in a way mostly similar to `find` but
     /// much faster by
     /// - working on bytes instead of chars
@@ -242,10 +249,10 @@ impl FuzzyPattern {
         }
     }
 
-    // return the number of results we should find before starting to
-    //  sort them (unless time is runing out).
+    /// return the number of results we should find before starting to
+    ///  sort them (unless time is runing out).
     pub const fn optimal_result_number(&self, targeted_size: usize) -> usize {
-        40 * targeted_size
+        10 * targeted_size
     }
 }
 

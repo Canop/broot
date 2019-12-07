@@ -22,7 +22,7 @@ type BId = Id<BLine>;
 /// If a search found enough results to fill the screen but didn't scan
 /// everything, we search a little more in case we find better matches
 /// but not after the NOT_LONG duration.
-static NOT_LONG: Duration = Duration::from_millis(1300);
+static NOT_LONG: Duration = Duration::from_millis(900);
 
 /// like a tree line, but with the info needed during the build
 /// This structure isn't usable independantly from the tree builder
@@ -308,7 +308,9 @@ impl TreeBuilder {
         }
         has_child_match
     }
-    // load_children must have been called before on parent_id
+
+    /// return the next child.
+    /// load_children must have been called before on parent_id
     fn next_child(&mut self, parent_id: BId) -> Option<BId> {
         let bline = &mut self.blines[parent_id];
         if let Some(children) = &bline.children {
@@ -463,7 +465,7 @@ impl TreeBuilder {
         }
     }
 
-    // makes a tree from the builder's specific structure
+    /// makes a tree from the builder's specific structure
     fn take(&mut self, out_blines: &[BId]) -> Tree {
         let mut lines: Vec<TreeLine> = Vec::new();
         for id in out_blines.iter() {
