@@ -17,7 +17,7 @@ use {
         errors::ProgramError,
         external::Launchable,
         io,
-        shell_install,
+        shell_install::ShellInstall,
         skin,
         verb_store::VerbStore,
     },
@@ -55,8 +55,9 @@ fn configure_log() {
 fn run() -> Result<Option<Launchable>, ProgramError> {
     configure_log();
     let launch_args = cli::read_launch_args()?;
-    let should_quit = shell_install::init(&launch_args)?;
-    if should_quit {
+    let mut shell_install = ShellInstall::new(&launch_args);
+    shell_install.check()?;
+    if shell_install.should_quit {
         return Ok(None);
     }
     let mut verb_store = VerbStore::new();

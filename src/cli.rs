@@ -4,9 +4,7 @@ use std::{env, path::PathBuf, result::Result};
 
 use crossterm::{
     input::input,
-    style::Color,
 };
-use termimad::{Alignment, MadSkin};
 
 use crate::{
     errors::{ProgramError, TreeBuildError},
@@ -195,15 +193,4 @@ pub fn ask_authorization() -> Result<bool, ProgramError> {
         "n" | "N" => false,
         _ => true,
     })
-}
-
-/// build a termimad skin for cli output (mostly
-/// for the install process)
-pub fn mad_skin() -> MadSkin {
-    let mut skin = MadSkin::default();
-    skin.set_headers_fg(Color::AnsiValue(178));
-    skin.bold.set_fg(Color::Yellow);
-    skin.italic.set_fg(Color::Magenta);
-    skin.code_block.align = Alignment::Center;
-    skin
 }

@@ -1,22 +1,22 @@
 //! manage reading the verb shortcuts from the configuration file,
 //! initializing if if it doesn't yet exist
 
-use std::{
-    collections::HashMap,
-    fs, io,
-    path::{Path, PathBuf},
-    result::Result,
-};
-
-use crossterm::style::Attribute;
-use termimad::CompoundStyle;
-use directories::ProjectDirs;
-use toml::{self, Value};
-
-use crate::{
-    errors::ConfError,
-    skin_conf,
-    verb_conf::{self, VerbConf},
+use {
+    crate::{
+        errors::ConfError,
+        skin_conf,
+        verb_conf::{self, VerbConf},
+    }
+    crossterm::style::Attribute,
+    directories::ProjectDirs,
+    std::{
+        collections::HashMap,
+        fs, io,
+        path::{Path, PathBuf},
+        result::Result,
+    },
+    termimad::CompoundStyle,
+    toml::{self, Value},
 };
 
 pub struct Conf {
@@ -43,16 +43,19 @@ fn bool_field(value: &Value, field_name: &str) -> Option<bool> {
     None
 }
 
+/// return the instance of ProjectDirs holding broot's specific paths
+pub fn app_dirs() -> ProjectDirs {
+    ProjectDirs::from("org", "dystroy", "broot")
+        .expect("Unable to find configuration directories")
+}
+
 /// return the path to the config directory, based on XDG
 pub fn dir() -> PathBuf {
-    if let Some(dirs) = ProjectDirs::from("org", "dystroy", "broot") {
-        dirs.config_dir().to_path_buf()
-    } else {
-        panic!("Unable to find configuration directories");
-    }
+    app_dirs().config_dir().to_path_buf()
 }
 
 impl Conf {
+
     pub fn default_location() -> PathBuf {
         dir().join("conf.toml")
     }
