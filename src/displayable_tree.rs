@@ -221,7 +221,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             let group = permissions::group_name(line.metadata.gid());
                             write!(f, " {:w$} ", &group, w = user_group_max_lengths.1,)?;
                         } else {
-                            self.skin.tree.queue_str(f, "──────────────")?;
+                            let length = 9 + 1 +user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
+                            for _ in 0..length {
+                                self.skin.tree.queue_str(f, "─")?;
+                            }
                         }
                     }
                 }
@@ -229,7 +232,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     if let Some(date) = line.modified() {
                         self.write_date(f, date)?;
                     } else {
-                        self.skin.tree.queue_str(f, "──────────────── ")?;
+                        self.skin.tree.queue_str(f, "─────────────────")?;
                     }
                 }
                 self.write_line_name(f, line, line_index, &tree.options.pattern, selected)?;
