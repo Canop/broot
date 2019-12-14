@@ -78,7 +78,11 @@ And you can add shorcuts, for example a `ctrl` sequence or a function key
 
 ### Replace `ls` (and its clones):
 
+If you want to display *dates* and *permissions*, do `br -dp` which gets you this:
+
 ![replace ls](img/20191214-replace-ls.png)
+
+You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates.
 
 ### See what takes space:
 

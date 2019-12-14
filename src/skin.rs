@@ -79,8 +79,10 @@ Skin! {
     exe: Some(Cyan), None;
     link: Some(Magenta), None;
     pruning: gray(12), None; {Italic}
-    permissions: gray(15), None;
-    dates: ansi(109), None;
+    permissions: ansi(94), None;
+    owner: ansi(138), None;
+    group: ansi(131), None;
+    dates: ansi(66), None;
     selected_line: None, gray(4);
     char_match: Some(Green), None;
     file_error: Some(Red), None;

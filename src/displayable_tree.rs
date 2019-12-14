@@ -216,10 +216,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     if tree.options.show_permissions && line_index > 0 {
                         if line.is_selectable() {
                             self.skin.permissions.queue(f, line.mode())?;
-                            let user = permissions::user_name(line.metadata.uid());
-                            write!(f, " {:w$}", &user, w = user_group_max_lengths.0,)?;
+                            let owner = permissions::user_name(line.metadata.uid());
+                            self.skin.owner.queue(f, format!(" {:w$}", &owner, w = user_group_max_lengths.0,))?;
                             let group = permissions::group_name(line.metadata.gid());
-                            write!(f, " {:w$} ", &group, w = user_group_max_lengths.1,)?;
+                            self.skin.group.queue(f, format!(" {:w$} ", &group, w = user_group_max_lengths.1,))?;
                         } else {
                             let length = 9 + 1 +user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
                             for _ in 0..length {
