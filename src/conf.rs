@@ -6,7 +6,7 @@ use {
         errors::ConfError,
         skin_conf,
         verb_conf::{self, VerbConf},
-    }
+    },
     crossterm::style::Attribute,
     directories::ProjectDirs,
     std::{

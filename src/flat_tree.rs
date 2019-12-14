@@ -1,10 +1,20 @@
 /// In the flat_tree structure, every "node" is just a line, there's
 ///  no link from a child to its parent or from a parent to its children.
-use std::{
-    cmp::{self, Ord, Ordering, PartialOrd},
-    fs,
-    mem,
-    path::{Path, PathBuf},
+use {
+    crate::{
+        errors,
+        file_sizes::Size,
+        task_sync::TaskLifetime,
+        tree_build::TreeBuilder,
+        tree_options::TreeOptions,
+    },
+    std::{
+        cmp::{self, Ord, Ordering, PartialOrd},
+        fs,
+        mem,
+        path::{Path, PathBuf},
+        time::SystemTime,
+    },
 };
 
 #[cfg(unix)]
@@ -16,13 +26,6 @@ use {
 #[cfg(windows)]
 use is_executable::IsExecutable;
 
-use crate::{
-    errors,
-    file_sizes::Size,
-    task_sync::TaskLifetime,
-    tree_build::TreeBuilder,
-    tree_options::TreeOptions,
-};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LineType {
@@ -89,9 +92,9 @@ impl TreeLine {
         #[cfg(windows)]
         return self.path.is_executable();
     }
-    // build and return the absolute targeted path: either self.path or the
-    //  solved canonicalized symlink
-    // (the path may be invalid if the symlink is)
+    /// build and return the absolute targeted path: either self.path or the
+    ///  solved canonicalized symlink
+    /// (the path may be invalid if the symlink is)
     pub fn target(&self) -> PathBuf {
         match &self.line_type {
             LineType::SymLinkToFile(target) | LineType::SymLinkToDir(target) => {
@@ -105,6 +108,13 @@ impl TreeLine {
                 target_path
             }
             _ => self.path.clone(),
+        }
+    }
+    /// return the last modification date, if it makes sense
+    pub fn modified(&self) -> Option<SystemTime> {
+        match &self.line_type {
+            LineType::Pruning => None,
+            _ => self.metadata.modified().ok(),
         }
     }
 }

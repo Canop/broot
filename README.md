@@ -76,6 +76,10 @@ You can add verbs or configure the existing ones; see [documentation](documentat
 
 And you can add shorcuts, for example a `ctrl` sequence or a function key
 
+### Replace `ls` (and its clones):
+
+![replace ls](img/20191214-replace-ls.png)
+
 ### See what takes space:
 
 ![size](img/20191112-sizes.png)

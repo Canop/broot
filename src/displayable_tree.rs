@@ -1,29 +1,29 @@
-use std::{time::SystemTime};
+use {
+    crate::{
+        file_sizes::Size,
+        flat_tree::{LineType, Tree, TreeLine},
+        errors::ProgramError,
+        patterns::Pattern,
+        skin::Skin,
+    },
+    chrono::{offset::Local, DateTime},
+    crossterm::{
+        cursor,
+        queue,
+        style::{Color, SetBackgroundColor},
+        terminal::{Clear, ClearType},
+    },
+    std::{time::SystemTime},
+    termimad::{
+        CompoundStyle,
+        ProgressBar,
+    },
+};
 
 #[cfg(unix)]
-use std::os::unix::fs::MetadataExt;
-
-use chrono::{offset::Local, DateTime};
-use crossterm::{
-    cursor,
-    queue,
-    style::{Color, SetBackgroundColor},
-    terminal::{Clear, ClearType},
-};
-use termimad::{
-    CompoundStyle,
-    ProgressBar,
-};
-
-#[cfg(unix)]
-use crate::permissions;
-
-use crate::{
-    file_sizes::Size,
-    flat_tree::{LineType, Tree, TreeLine},
-    errors::ProgramError,
-    patterns::Pattern,
-    skin::Skin,
+use {
+    crate::permissions,
+    std::os::unix::fs::MetadataExt,
 };
 
 /// A tree wrapper which can be used either
@@ -226,7 +226,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     }
                 }
                 if tree.options.show_dates && line_index > 0 {
-                    if let Ok(date) = line.metadata.modified() {
+                    if let Some(date) = line.modified() {
                         self.write_date(f, date)?;
                     } else {
                         self.skin.tree.queue_str(f, "──────────────── ")?;
