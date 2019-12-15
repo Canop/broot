@@ -1,17 +1,18 @@
-use regex::Regex;
 /// Manage conversion of a user provided string
 /// defining foreground and background colors into
 /// a string with TTY colors
 ///
-use std::result::Result;
 
-use crossterm::style::{
-    Attribute::{self, *},
-    Color::{self, *},
+use {
+    crate::{errors::InvalidSkinError, skin},
+    crossterm::style::{
+        Attribute::{self, *},
+        Color::{self, *},
+    },
+    regex::Regex,
+    std::result::Result,
+    termimad::CompoundStyle,
 };
-use termimad::CompoundStyle;
-
-use crate::{errors::InvalidSkinError, skin};
 
 /// read a color from a string.
 /// It may be either

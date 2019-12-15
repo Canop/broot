@@ -12,9 +12,9 @@ use {
     std::io::Write,
     crossterm::{
         cursor,
-        input::{DisableMouseCapture, EnableMouseCapture},
+        event::{DisableMouseCapture, EnableMouseCapture},
         queue,
-        screen::{EnterAlternateScreen, LeaveAlternateScreen},
+        terminal::{EnterAlternateScreen, LeaveAlternateScreen},
     },
     minimad::Composite,
     termimad::EventSource,

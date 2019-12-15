@@ -1,14 +1,16 @@
 /// this module manages reading and translating
 /// the arguments passed on launch of the application.
-use std::{env, path::PathBuf, result::Result};
 
-use crossterm::{
-    input::input,
-};
-
-use crate::{
-    errors::{ProgramError, TreeBuildError},
-    tree_options::{OptionBool, TreeOptions},
+use {
+    crate::{
+        errors::{ProgramError, TreeBuildError},
+        tree_options::{OptionBool, TreeOptions},
+    },
+    std::{
+        env,
+        io,
+        path::PathBuf,
+    },
 };
 
 /// the parsed program launch arguments
@@ -188,7 +190,8 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
 /// wait for user input, return `true` if she
 /// didn't answer 'n'
 pub fn ask_authorization() -> Result<bool, ProgramError> {
-    let answer = input().read_line()?;
+    let mut answer = String::new();
+    io::stdin().read_line(&mut answer)?;
     Ok(match answer.as_ref() {
         "n" | "N" => false,
         _ => true,

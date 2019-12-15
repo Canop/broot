@@ -1,26 +1,27 @@
 /// Verbs are the engines of broot commands, and apply
 /// - to the selected file (if user-defined, then must contain {file}, {parent} or {directory})
 /// - to the current app state
-use std::{
-    collections::HashMap,
-    fs::OpenOptions,
-    io::Write,
-    path::{Path, PathBuf},
-};
-
-use crossterm::input::KeyEvent;
-use minimad::Composite;
-use regex::{self, Captures, Regex};
-
-use crate::{
-    app_context::AppContext,
-    app_state::AppStateCmdResult,
-    errors::{ConfError, ProgramError},
-    external,
-    io::W,
-    screens::Screen,
-    status::Status,
-    verb_invocation::VerbInvocation,
+use {
+    crate::{
+        app_context::AppContext,
+        app_state::AppStateCmdResult,
+        errors::{ConfError, ProgramError},
+        external,
+        io::W,
+        key_str,
+        screens::Screen,
+        status::Status,
+        verb_invocation::VerbInvocation,
+    },
+    crossterm::event::KeyEvent,
+    minimad::Composite,
+    regex::{self, Captures, Regex},
+    std::{
+        collections::HashMap,
+        fs::OpenOptions,
+        io::Write,
+        path::{Path, PathBuf},
+    },
 };
 
 /// what makes a verb.
@@ -47,18 +48,6 @@ lazy_static! {
     static ref GROUP: Regex = Regex::new(r"\{([^{}:]+)(?::([^{}:]+))?\}").unwrap();
 }
 
-/// build a human description of a key event
-fn key_event_desc(key: &Option<KeyEvent>) -> String {
-    match key {
-        Some(key) => match key {
-            KeyEvent::F(d) => format!("F{}", d),
-            KeyEvent::Ctrl(c) => format!("^{}", c),
-            KeyEvent::Alt(c) => format!("alt-{}", c),
-            _ => format!("{:?}", key),
-        }
-        None => "".to_owned(),
-    }
-}
 
 pub trait VerbExecutor {
     fn execute_verb(
@@ -106,7 +95,7 @@ impl Verb {
             .transpose()?;
         Ok(Verb {
             invocation,
-            key_desc: key_event_desc(&key),
+            key_desc: key.map_or("".to_string(), key_str::key_event_desc),
             key,
             args_parser,
             shortcut,
@@ -131,7 +120,7 @@ impl Verb {
                 name: name.to_string(),
                 args: None,
             },
-            key_desc: key_event_desc(&key),
+            key_desc: key.map_or("".to_string(), key_str::key_event_desc),
             key,
             args_parser: None,
             shortcut,

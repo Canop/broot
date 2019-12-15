@@ -4,8 +4,9 @@
 use {
     crate::{
         errors::ConfError,
+        key_str,
         skin_conf,
-        verb_conf::{self, VerbConf},
+        verb_conf::VerbConf,
     },
     crossterm::style::Attribute,
     directories::ProjectDirs,
@@ -104,7 +105,7 @@ impl Conf {
                 let invocation = string_field(verb_value, "invocation")
                     .unwrap_or("".to_string());
                 let key = string_field(verb_value, "key")
-                    .map(|s| verb_conf::parse_key(&s))
+                    .map(|s| key_str::parse_key(&s))
                     .transpose()?;
                 let execution = match string_field(verb_value, "execution") {
                     Some(s) => s,

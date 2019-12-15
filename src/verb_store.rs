@@ -1,6 +1,18 @@
-use crossterm::input::KeyEvent;
 
-use crate::{conf::Conf, permissions, verbs::Verb};
+
+use {
+    crate::{
+        conf::Conf,
+        permissions,
+        verbs::Verb,
+    },
+    crossterm::event::{
+        KeyCode,
+        KeyEvent,
+        KeyModifiers,
+    },
+};
+
 
 /// Provide access to the verbs:
 /// - the built-in ones
@@ -103,19 +115,19 @@ impl VerbStore {
         );
         self.add_builtin(
             "help",
-            Some(KeyEvent::F(1)), // note: some terminals intercept the F1 key
+            Some(KeyEvent::from(KeyCode::F(1))),
             Some("?".to_string()),
             "display broot's help",
         );
         self.add_builtin(
             "line_down",
-            Some(KeyEvent::Down),
+            Some(KeyEvent::from(KeyCode::Down)),
             None,
             "move one line down",
         );
         self.add_builtin(
             "line_up",
-            Some(KeyEvent::Up),
+            Some(KeyEvent::from(KeyCode::Up)),
             None,
             "move one line up"
         );
@@ -159,13 +171,13 @@ impl VerbStore {
         );
         self.add_builtin(
             "page_down",
-            Some(KeyEvent::PageDown),
+            Some(KeyEvent::from(KeyCode::PageDown)),
             None,
             "scroll one page down",
         );
         self.add_builtin(
             "page_up",
-            Some(KeyEvent::PageUp),
+            Some(KeyEvent::from(KeyCode::PageUp)),
             None,
             "scroll one page up",
         );
@@ -189,13 +201,13 @@ impl VerbStore {
         );
         self.add_builtin(
             "quit",
-            Some(KeyEvent::Ctrl('q')),
+            Some(KeyEvent::new(KeyCode::Char('q'), KeyModifiers::CONTROL)),
             Some("q".to_string()),
             "quit the application",
         );
         self.add_builtin(
             "refresh",
-            Some(KeyEvent::F(5)),
+            Some(KeyEvent::from(KeyCode::F(5))),
             None,
             "refresh tree and clear size cache",
         );

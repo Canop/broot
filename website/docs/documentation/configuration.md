@@ -93,7 +93,7 @@ For example you could add those mappings:
 
 	[[verbs]]
 	invocation = "open"
-	key = "^O"
+	key = "crtl-O"
 	execution = ":open_stay"
 
 	[[verbs]]

@@ -2,14 +2,14 @@
 //!  in the input. It's independant of the state of the application
 //!  (verbs arent checked at this point)
 
-use crossterm::input::KeyEvent;
-use regex::Regex;
-use termimad::{Event, InputField};
-
-use crate::{
-    app_context::AppContext,
-    verb_invocation::VerbInvocation,
-    patterns::Pattern,
+use {
+    regex::Regex,
+    termimad::{Event, InputField},
+    crate::{
+        app_context::AppContext,
+        verb_invocation::VerbInvocation,
+        patterns::Pattern,
+    },
 };
 
 #[derive(Debug, Clone)]
@@ -157,48 +157,50 @@ impl Command {
                     self.action = Action::VerbIndex(index);
                     return;
                 }
-                match *key {
-                    KeyEvent::Tab => {
-                        self.action = Action::Next;
+                use crossterm::event::{
+                    KeyCode::*, KeyModifiers,
+                };
+                const NONE: KeyModifiers = KeyModifiers::empty();
+                match key.modifiers {
+                    NONE => {
+                        match key.code {
+                            Tab => {
+                                self.action = Action::Next;
+                            }
+                            BackTab => {
+                                self.action = Action::Previous;
+                            }
+                            Enter => {
+                                self.action = Action::from(&self.parts, true);
+                            }
+                            Char('?') if self.raw.is_empty() || self.parts.verb_invocation.is_some() => {
+                                // a '?' opens the help when it's the first char or when it's part of the verb
+                                // invocation
+                                self.action = Action::Help;
+                            }
+                            Esc => {
+                                self.action = Action::Back;
+                            }
+                            Char(_) | Home | End | Left | Right | Delete => {
+                                handled_by_input_field = input_field.apply_event(&event);
+                            }
+                            Backspace => {
+                                handled_by_input_field = input_field.apply_event(&event);
+                                if !handled_by_input_field {
+                                    self.action = Action::Back;
+                                }
+                            }
+                            _ => {}
+                        }
                     }
-                    KeyEvent::BackTab => {
-                        self.action = Action::Previous;
-                    }
-
-                    // this may be a call to open_stay, or simply
-                    // validating the verb choice in the input
-                    KeyEvent::Enter => {
-                        self.action = Action::from(&self.parts, true);
-                    }
-
-                    // Normally redundant due to internal verb but
-                    // I'm not yet 100% sure it's Alt('\r') on all platforms
-                    KeyEvent::Alt('\r') | KeyEvent::Alt('\n') => {
-                        self.action = Action::AltOpenSelection;
-                    }
-
-                    KeyEvent::Char('?')
-                        if self.raw.is_empty() || self.parts.verb_invocation.is_some() =>
-                    {
-                        // a '?' opens the help when it's the first char or when it's part of the verb
-                        // invocation
-                        self.action = Action::Help;
-                    }
-                    KeyEvent::Esc => {
-                        self.action = Action::Back;
-                    }
-                    KeyEvent::Char(_)
-                    | KeyEvent::Home
-                    | KeyEvent::End
-                    | KeyEvent::Left
-                    | KeyEvent::Right
-                    | KeyEvent::Delete => {
-                        handled_by_input_field = input_field.apply_event(&event);
-                    }
-                    KeyEvent::Backspace => {
-                        handled_by_input_field = input_field.apply_event(&event);
-                        if !handled_by_input_field {
-                            self.action = Action::Back;
+                    KeyModifiers::ALT => {
+                        match key.code {
+                            Char('\r') | Char('\n') => {
+                                // Normally redundant due to internal verb but
+                                // I'm not yet 100% sure it's Alt('\r') on all platforms
+                                self.action = Action::AltOpenSelection;
+                            }
+                            _ => {}
                         }
                     }
                     _ => {}
@@ -207,6 +209,7 @@ impl Command {
             Event::Wheel(lines_count) => {
                 self.action = Action::MoveSelection(*lines_count);
             }
+            _ => {}
         }
         if handled_by_input_field {
             self.raw = input_field.get_content();

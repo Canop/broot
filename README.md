@@ -84,6 +84,8 @@ If you want to display *dates* and *permissions*, do `br -dp` which gets you thi
 
 You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates.
 
+You still have all broot features, you can filter, navigate, create directories, copy files, etc.
+
 ### See what takes space:
 
 ![size](img/20191112-sizes.png)
