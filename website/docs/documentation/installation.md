@@ -32,6 +32,9 @@ Fetch the Canop/broot repository, move to the broot directory, then run
 
     cargo install --path .
 
+!!! Note
+	Windows users: broot may need additional rights at first use in order to write its configuration file
+
 # Installation Completion : the `br` shell function
 
 broot is convenient to find a directory then `cd` to it, which is done using `<alt><enter>` or `:cd`.
