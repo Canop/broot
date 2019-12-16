@@ -13,8 +13,8 @@ use {
     crossterm::{
         cursor,
         event::{DisableMouseCapture, EnableMouseCapture},
-        queue,
         terminal::{EnterAlternateScreen, LeaveAlternateScreen},
+        QueueableCommand,
     },
     minimad::Composite,
     termimad::EventSource,
@@ -157,9 +157,9 @@ impl App {
     /// called exactly once at end of `run`, cleans the writer (which
     /// is usually stdout or stderr)
     fn end(&mut self, writer: &mut W) ->Result<Option<Launchable>, ProgramError> {
-        queue!(writer, DisableMouseCapture)?;
-        queue!(writer, cursor::Show)?;
-        queue!(writer, LeaveAlternateScreen)?;
+        writer.queue(DisableMouseCapture)?;
+        writer.queue(cursor::Show)?;
+        writer.queue(LeaveAlternateScreen)?;
         writer.flush()?;
         debug!("we left the screen");
         Ok(self.launch_at_end.take())
@@ -173,14 +173,14 @@ impl App {
         skin: Skin,
     ) -> Result<Option<Launchable>, ProgramError> {
 
-        queue!(writer, EnterAlternateScreen)?;
-        queue!(writer, cursor::Hide)?;
+        writer.queue(EnterAlternateScreen)?;
+        writer.queue(cursor::Hide)?;
         debug!("we're on screen");
         let mut screen = Screen::new(con, skin)?;
 
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
-        queue!(writer, EnableMouseCapture)?;
+        writer.queue(EnableMouseCapture)?;
         let event_source = EventSource::new()?;
         let rx_events = event_source.receiver();
 

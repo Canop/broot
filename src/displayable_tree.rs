@@ -9,9 +9,9 @@ use {
     chrono::{offset::Local, DateTime},
     crossterm::{
         cursor,
-        queue,
         style::{Color, SetBackgroundColor},
         terminal::{Clear, ClearType},
+        QueueableCommand,
     },
     std::{time::SystemTime},
     termimad::{
@@ -180,7 +180,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         };
         for y in 0..self.area.height {
             if self.in_app {
-                queue!(f, cursor::MoveTo(0, y))?;
+                f.queue(cursor::MoveTo(0, y))?;
             }
             let mut line_index = y as usize;
             if line_index > 0 {
@@ -243,10 +243,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 self.skin.default.queue_bg(f)?;
             }
             if self.in_app {
-                queue!(f, Clear(ClearType::UntilNewLine))?;
-                queue!(f, SetBackgroundColor(Color::Reset))?; // to end selection background
+                f.queue(Clear(ClearType::UntilNewLine))?;
+                f.queue(SetBackgroundColor(Color::Reset))?; // to end selection background
                 if let Some((sctop, scbottom)) = scrollbar {
-                    queue!(f, cursor::MoveTo(self.area.width, y))?;
+                    f.queue(cursor::MoveTo(self.area.width, y))?;
                     let style = if sctop <= y && y <= scbottom {
                         &self.skin.scrollbar_thumb
                     } else {

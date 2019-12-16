@@ -1,21 +1,21 @@
-use std::io::Write;
 
-use crossterm::{
-    cursor,
-    terminal::{Clear, ClearType},
-    queue,
-};
-use termimad::{Area, CompoundStyle, InputField, MadSkin};
-
-use crate::{
-    app_context::AppContext,
-    errors::ProgramError,
-    io::W,
-    mad_skin::{
-        self,
-        StatusMadSkinSet,
+use {
+    crate::{
+        app_context::AppContext,
+        errors::ProgramError,
+        io::W,
+        mad_skin::{
+            self,
+            StatusMadSkinSet,
+        },
+        skin::Skin,
     },
-    skin::Skin,
+    crossterm::{
+        cursor,
+        terminal::{Clear, ClearType},
+        QueueableCommand,
+    },
+    termimad::{Area, CompoundStyle, InputField, MadSkin},
 };
 
 pub static FLAGS_AREA_WIDTH: u16 = 10;
@@ -70,17 +70,17 @@ impl Screen {
         x: u16,
         y: u16
     ) -> Result<(), ProgramError> {
-        queue!(w, cursor::MoveTo(x, y))?;
+        w.queue(cursor::MoveTo(x, y))?;
         Ok(())
     }
     /// clear the whole screen
     pub fn clear(&self, w: &mut W) -> Result<(), ProgramError> {
-        queue!(w, Clear(ClearType::All))?;
+        w.queue(Clear(ClearType::All))?;
         Ok(())
     }
     /// clear from the cursor to the end of line
     pub fn clear_line(&self, w: &mut W) -> Result<(), ProgramError> {
-        queue!(w, Clear(ClearType::UntilNewLine))?;
+        w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
     }
 }

@@ -1,9 +1,12 @@
 
-### master
+<a name="v0.10.4"></a>
+### v0.10.4 - 2019-12-16
 * fuzzy search performance improvement
 * verb invocation now optional so that a verb can be defined to just introduce a keyboard shortcut
-* changes in br shell function storage and sourcing from fish, bash, and zsh. Fixes #39 and #53. This means broot will ask you again to install the br function
 * owner and group separately skinned
+* screen redrawn on resize (but tree not recomputed, you may want to do F5 to have the best sized tree)
+* changes in br shell function storage and sourcing from fish, bash, and zsh. Fixes #39 and #53.
+Note that broot will ask you again to install the br function
 
 <a name="v0.10.3"></a>
 ### v0.10.3 - 2019-11-27

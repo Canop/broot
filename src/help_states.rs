@@ -1,29 +1,30 @@
-use std::io::Write;
 
-use crossterm::{
-    queue,
-    terminal::{Clear, ClearType},
-};
-use termimad::{
-    Area,
-    FmtText,
-    TextView,
+use {
+    crate::{
+        app_state::{AppState, AppStateCmdResult},
+        app_context::AppContext,
+        commands::{Action, Command},
+        conf::Conf,
+        errors::ProgramError,
+        help_content,
+        io::W,
+        screens::Screen,
+        status::Status,
+        task_sync::TaskLifetime,
+        verb_store::PrefixSearchResult,
+        verbs::VerbExecutor,
+    },
+    crossterm::{
+        terminal::{Clear, ClearType},
+        QueueableCommand,
+    },
+    termimad::{
+        Area,
+        FmtText,
+        TextView,
+    },
 };
 
-use crate::{
-    app_state::{AppState, AppStateCmdResult},
-    app_context::AppContext,
-    commands::{Action, Command},
-    conf::Conf,
-    errors::ProgramError,
-    help_content,
-    io::W,
-    screens::Screen,
-    status::Status,
-    task_sync::TaskLifetime,
-    verb_store::PrefixSearchResult,
-    verbs::VerbExecutor,
-};
 
 /// an application state dedicated to help
 pub struct HelpState {
@@ -144,7 +145,7 @@ impl AppState for HelpState {
         _con: &AppContext
     ) -> Result<(), ProgramError> {
         screen.skin.default.queue_bg(w)?;
-        queue!(w, Clear(ClearType::UntilNewLine))?;
+        w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
     }
 }
