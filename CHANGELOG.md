@@ -1,3 +1,5 @@
+### master
+- should not panic anymore when opening arbitrary files on server
 
 <a name="v0.10.4"></a>
 ### v0.10.4 - 2019-12-16

@@ -42,6 +42,10 @@ You may switch to an exact search by just adding `/`, which changes the fuzzy pa
 
 Or if you realize you want to match `tOo` too, then you make it case insensitive by adding an i: `too/i`.
 
+## Run an script or program from broot
+
+If your system is normally configured, just doing `alt`-`enter` on an executable will close broot and executes the file.
+
 ## Open a directory in your default file explorer
 
 When a directory is selected, just do `:o` (with default command mappings).

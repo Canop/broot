@@ -2,7 +2,6 @@
 use std::io;
 
 use custom_error::custom_error;
-use opener;
 use regex;
 
 custom_error! {pub ProgramError
@@ -15,7 +14,6 @@ custom_error! {pub ProgramError
     AmbiguousVerbName {name: String} = "Ambiguous name: More than one verb matches {:?}",
     UnmatchingVerbArgs {name: String} = "No matching argument found for verb {:?}",
     TreeBuild {source: TreeBuildError} = "{}",
-    OpenError {source: opener::OpenError} = "Open Error : {:?}",
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
 }
 

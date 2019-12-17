@@ -5,7 +5,7 @@ use std::{
     time::Instant,
 };
 
-use opener;
+use open;
 use minimad::Composite;
 
 use crate::{
@@ -101,8 +101,17 @@ impl BrowserState {
         let tl = TaskLifetime::unlimited();
         match &line.line_type {
             LineType::File => {
-                opener::open(&line.path)?;
-                Ok(AppStateCmdResult::Keep)
+                match open::that(&line.path) {
+                    Ok(exit_status) => {
+                        info!("open returned with exit_status {:?}", exit_status);
+                        Ok(AppStateCmdResult::Keep)
+                    }
+                    Err(e) => {
+                        Ok(AppStateCmdResult::DisplayError(
+                            format!("{:?}", e)
+                        ))
+                    }
+                }
             }
             LineType::Dir | LineType::SymLinkToDir(_) => {
                 let mut target = line.target();
@@ -120,7 +129,7 @@ impl BrowserState {
             }
             LineType::SymLinkToFile(target) => {
                 let path = PathBuf::from(target);
-                opener::open(&path)?;
+                open::that(&path)?;
                 Ok(AppStateCmdResult::Keep)
             }
             _ => {

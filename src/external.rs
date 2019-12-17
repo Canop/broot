@@ -6,7 +6,7 @@ use std::{
     process::Command,
 };
 
-use opener;
+use open;
 use regex::Regex;
 
 use crate::{
@@ -111,7 +111,7 @@ impl Launchable {
                 Ok(())
             }
             Launchable::SystemOpen { path } => {
-                opener::open(&path)?;
+                open::that(&path)?;
                 Ok(())
             }
         }
