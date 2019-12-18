@@ -7,6 +7,8 @@ use {
     termimad::{Event, InputField},
     crate::{
         app_context::AppContext,
+        app_state::AppState,
+        keys,
         verb_invocation::VerbInvocation,
         patterns::Pattern,
     },
@@ -138,8 +140,15 @@ impl Command {
         })
     }
 
-    /// apply an event to modify the command
-    pub fn add_event(&mut self, event: &Event, input_field: &mut InputField, con: &AppContext) {
+    /// apply an event to modify the command.
+    /// The command isn't applied to the state
+    pub fn add_event(
+        &mut self,
+        event: &Event,
+        input_field: &mut InputField,
+        con: &AppContext,
+        state: &Box<dyn AppState>,
+    ) {
         let mut handled_by_input_field = false;
         debug!("add_event {:?}", event);
         match event {
@@ -152,59 +161,69 @@ impl Command {
                 self.action = Action::DoubleClick(*x, *y);
             }
             Event::Key(key) => {
-                // we start by looking if the key is the trigger key of one of the verbs
-                if let Some(index) = con.verb_store.index_of_key(*key) {
-                    self.action = Action::VerbIndex(index);
+
+                // we first handle the cases that MUST absolutely
+                // not be overriden by configuration
+
+                if *key == keys::ENTER && self.parts.verb_invocation.is_some() {
+                    self.action = Action::from(&self.parts, true);
                     return;
                 }
-                use crossterm::event::{
-                    KeyCode::*, KeyModifiers,
-                };
-                const NONE: KeyModifiers = KeyModifiers::empty();
-                match key.modifiers {
-                    NONE => {
-                        match key.code {
-                            Tab => {
-                                self.action = Action::Next;
-                            }
-                            BackTab => {
-                                self.action = Action::Previous;
-                            }
-                            Enter => {
-                                self.action = Action::from(&self.parts, true);
-                            }
-                            Char('?') if self.raw.is_empty() || self.parts.verb_invocation.is_some() => {
-                                // a '?' opens the help when it's the first char or when it's part of the verb
-                                // invocation
-                                self.action = Action::Help;
-                            }
-                            Esc => {
-                                self.action = Action::Back;
-                            }
-                            Char(_) | Home | End | Left | Right | Delete => {
-                                handled_by_input_field = input_field.apply_event(&event);
-                            }
-                            Backspace => {
-                                handled_by_input_field = input_field.apply_event(&event);
-                                if !handled_by_input_field {
-                                    self.action = Action::Back;
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
-                    KeyModifiers::ALT => {
-                        match key.code {
-                            Char('\r') | Char('\n') => {
-                                // Normally redundant due to internal verb but
-                                // I'm not yet 100% sure it's Alt('\r') on all platforms
-                                self.action = Action::AltOpenSelection;
-                            }
-                            _ => {}
-                        }
-                    }
-                    _ => {}
+
+                if *key == keys::ALT_ENTER {
+                    self.action = Action::AltOpenSelection;
+                    return;
                 }
+
+                if *key == keys::ESC {
+                    // Esc it's also a reserved key so order doesn't matter
+                    self.action = Action::Back;
+                    return;
+                }
+
+                if *key == keys::QUESTION && (self.raw.is_empty() || self.parts.verb_invocation.is_some()) {
+                    // a '?' opens the help when it's the first char
+                    // or when it's part of the verb invocation
+                    self.action = Action::Help;
+                    return;
+                }
+
+                // we now check if the key is the trigger key of one of the verbs
+                if let Some(index) = con.verb_store.index_of_key(*key) {
+                    if state.can_execute(index, con) {
+                        self.action = Action::VerbIndex(index);
+                        return;
+                    } else {
+                        debug!("verb not allowed on current selection");
+                    }
+                }
+
+                if *key == keys::ENTER {
+                    self.action = Action::from(&self.parts, true);
+                    return;
+                }
+
+                if *key == keys::TAB {
+                    self.action = Action::Next;
+                    return;
+                }
+
+                if *key == keys::BACK_TAB {
+                    // should probably be a normal verb instead of an action with a special
+                    // handling here
+                    self.action = Action::Previous;
+                    return;
+                }
+
+                if *key == keys::BACKSPACE {
+                    handled_by_input_field = input_field.apply_event(&event);
+                    if !handled_by_input_field {
+                        self.action = Action::Back;
+                        return;
+                    }
+                }
+
+                handled_by_input_field = input_field.apply_event(&event);
             }
             Event::Wheel(lines_count) => {
                 self.action = Action::MoveSelection(*lines_count);
@@ -218,4 +237,5 @@ impl Command {
         }
     }
 }
+
 

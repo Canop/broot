@@ -1,5 +1,6 @@
 ### master
 - should not panic anymore when opening arbitrary files on server
+- allow more keys for verbs. For example you can use `enter` (this one won't apply on directories but only on files)
 
 <a name="v0.10.4"></a>
 ### v0.10.4 - 2019-12-16

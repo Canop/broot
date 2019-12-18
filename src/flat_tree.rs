@@ -4,6 +4,7 @@ use {
     crate::{
         errors,
         file_sizes::Size,
+        selection_type::SelectionType,
         task_sync::TaskLifetime,
         tree_build::TreeBuilder,
         tree_options::TreeOptions,
@@ -79,6 +80,13 @@ impl TreeLine {
         match &self.line_type {
             LineType::File => true,
             _ => false,
+        }
+    }
+    pub fn is_of(&self, selection_type: SelectionType) -> bool {
+        match selection_type {
+            SelectionType::Any => true,
+            SelectionType::File => self.is_file(),
+            SelectionType::Directory => self.is_dir(),
         }
     }
     #[cfg(unix)]

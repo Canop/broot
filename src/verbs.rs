@@ -8,12 +8,16 @@ use {
         errors::{ConfError, ProgramError},
         external,
         io::W,
-        key_str,
+        keys,
         screens::Screen,
+        selection_type::SelectionType,
         status::Status,
         verb_invocation::VerbInvocation,
     },
-    crossterm::event::KeyEvent,
+    crossterm::event::{
+        KeyCode,
+        KeyEvent,
+    },
     minimad::Composite,
     regex::{self, Captures, Regex},
     std::{
@@ -41,13 +45,13 @@ pub struct Verb {
     pub description: Option<String>, // a description for the user
     pub from_shell: bool, // whether it must be launched from the parent shell (eg because it's a shell function)
     pub leave_broot: bool, // only defined for external
-    pub confirm: bool,
+    pub confirm: bool, // not yet used...
+    pub selection_condition: SelectionType,
 }
 
 lazy_static! {
     static ref GROUP: Regex = Regex::new(r"\{([^{}:]+)(?::([^{}:]+))?\}").unwrap();
 }
-
 
 pub trait VerbExecutor {
     fn execute_verb(
@@ -93,9 +97,15 @@ impl Verb {
             .as_ref()
             .map(|args| make_invocation_args_regex(&args))
             .transpose()?;
+        // we use the selection condition to prevent configured
+        // verb execution on enter on directories
+        let selection_condition = match key {
+            Some(KeyEvent{code:KeyCode::Enter, ..}) => SelectionType::File,
+            _ => SelectionType::Any,
+        };
         Ok(Verb {
             invocation,
-            key_desc: key.map_or("".to_string(), key_str::key_event_desc),
+            key_desc: key.map_or("".to_string(), keys::key_event_desc),
             key,
             args_parser,
             shortcut,
@@ -104,6 +114,7 @@ impl Verb {
             from_shell,
             leave_broot,
             confirm,
+            selection_condition,
         })
     }
 
@@ -120,7 +131,7 @@ impl Verb {
                 name: name.to_string(),
                 args: None,
             },
-            key_desc: key.map_or("".to_string(), key_str::key_event_desc),
+            key_desc: key.map_or("".to_string(), keys::key_event_desc),
             key,
             args_parser: None,
             shortcut,
@@ -129,6 +140,7 @@ impl Verb {
             from_shell: false,
             leave_broot: true, // ignored
             confirm: false,    // ignored
+            selection_condition: SelectionType::Any,
         }
     }
 
@@ -394,3 +406,4 @@ mod path_normalize_tests {
         );
     }
 }
+

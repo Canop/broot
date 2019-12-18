@@ -1,5 +1,4 @@
 
-
 use {
     crate::{
         conf::Conf,
@@ -12,7 +11,6 @@ use {
         KeyModifiers,
     },
 };
-
 
 /// Provide access to the verbs:
 /// - the built-in ones
@@ -43,8 +41,7 @@ impl VerbStore {
         shortcut: Option<String>,
         description: &str,
     ) {
-        self.verbs
-            .push(Verb::create_builtin(name, key, shortcut, description));
+        self.verbs.push(Verb::create_builtin(name, key, shortcut, description));
     }
     pub fn init(&mut self, conf: &Conf) {
         // we first add the verbs coming from configuration, as
@@ -79,7 +76,7 @@ impl VerbStore {
             Verb::create_external(
                 "cd",
                 None,
-                None, // no real need for a shortcut as it's mapped to alt-enter
+                None, // no real need for a shortcut as it's mapped to alt-enter on directories
                 "cd {directory}".to_string(),
                 Some("change directory and quit (mapped to *alt*-*enter*)".to_string()),
                 true, // needs to be launched from the parent shell
@@ -160,13 +157,14 @@ impl VerbStore {
         self.add_builtin(
             "open_stay",
             None, // default mapping directly handled in commands#add_event
-            None,
-            "open file or directory according to OS settings (stays in broot)",
+            Some("os".to_string()),
+            "open file or directory according to OS settings (stay in broot)",
         );
         self.add_builtin(
             "open_leave",
             None, // default mapping directly handled in commands#add_event
-            None,
+                  // It's 'alt-enter' but only for files
+            Some("ol".to_string()),
             "open file or directory according to OS settings (quit broot)",
         );
         self.add_builtin(
@@ -304,7 +302,7 @@ impl VerbStore {
         }
     }
     /// return the index of the verb having the long name. This function is meant
-    /// for internal access when it's sure it can't failed (i.e. for a builtin)
+    /// for internal access when it's sure it can't fail (i.e. for a builtin)
     /// It looks for verbs by name, starting from the builtins, to
     /// ensure it hasn't been overriden.
     pub fn index_of(&self, name: &str) -> usize {
@@ -327,3 +325,4 @@ impl VerbStore {
         None
     }
 }
+

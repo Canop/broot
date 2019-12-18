@@ -62,6 +62,14 @@ impl AppState for HelpState {
         false
     }
 
+    fn can_execute(
+        &self,
+        _verb_index: usize,
+        _con: &AppContext,
+    ) -> bool {
+        true // we'll probably refine this later
+    }
+
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -103,6 +111,7 @@ impl AppState for HelpState {
         con: &AppContext
     ) -> Result<(), ProgramError> {
         if self.resize_area(screen) {
+            screen.skin.default.queue_bg(w)?;
             screen.clear(w)?;
         }
         let text = help_content::build_text(con);
@@ -149,3 +158,4 @@ impl AppState for HelpState {
         Ok(())
     }
 }
+

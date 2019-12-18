@@ -11,6 +11,37 @@ use {
     },
 };
 
+macro_rules! const_key {
+    ($name:ident, $code:ident) => {
+        pub const $name: KeyEvent = KeyEvent{code:KeyCode::$code, modifiers:KeyModifiers::empty()};
+    };
+    ($name:ident, $code:expr) => {
+        pub const $name: KeyEvent = KeyEvent{code:$code, modifiers:KeyModifiers::empty()};
+    };
+    ($name:ident, $code:ident, $mod:expr) => {
+        pub const $name: KeyEvent = KeyEvent{code:KeyCode::$code, modifiers:$mod};
+    };
+    ($name:ident, $code:expr, $mod:expr) => {
+        pub const $name: KeyEvent = KeyEvent{code:$code, modifiers:$mod};
+    };
+}
+
+// we define a few constants which make it easier to check key events
+const_key!(ALT_ENTER, KeyCode::Char('\r'), KeyModifiers::ALT);
+const_key!(ENTER, Enter);
+const_key!(BACKSPACE, Backspace);
+const_key!(BACK_TAB, BackTab);
+const_key!(DELETE, Delete);
+const_key!(DOWN, Down);
+const_key!(END, End);
+const_key!(ESC, Esc);
+const_key!(HOME, Home);
+const_key!(LEFT, Left);
+const_key!(QUESTION, KeyCode::Char('?'));
+const_key!(RIGHT, Right);
+const_key!(TAB, Tab);
+const_key!(UP, Up);
+
 /// build a human description of a key event
 pub fn key_event_desc(key: KeyEvent) -> String {
     let mut s = String::new();
@@ -24,6 +55,9 @@ pub fn key_event_desc(key: KeyEvent) -> String {
         s.push_str("shift-");
     }
     match key.code {
+        KeyCode::Char('\r') | KeyCode::Char('\n') => {
+            s.push_str("enter");
+        }
         KeyCode::Char(c) => {
             s.push(c);
         }
@@ -43,15 +77,29 @@ fn bad_key(raw: &str) -> Result<KeyEvent, ConfError> {
     })
 }
 
+pub fn is_reserved(key: KeyEvent) -> bool {
+    match key {
+        BACKSPACE => true, // needed for the input field
+        HOME => true, // needed for the input field
+        END => true, // needed for the input field
+        LEFT => true, // needed for the input field
+        RIGHT => true, // needed for the input field
+        DELETE => true, // needed for the input field
+        ESC => true, // basic navigation
+        UP => true, // basic navigation
+        DOWN => true, // basic navigation
+        _ => false,
+    }
+}
+
 /// parse a string as a keyboard key definition.
 ///
-/// Note that some mappings allowed by crossterm aren't
-/// parsed because we don't want to let the user override
-/// the related behaviors.
 pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
     let tokens: Vec<&str> = raw.split('-').collect();
     let last = tokens[tokens.len()-1].to_ascii_lowercase();
     let code = match last.as_ref() {
+        "esc" => KeyCode::Esc,
+        "enter" => KeyCode::Enter,
         "left" => KeyCode::Left,
         "right" => KeyCode::Right,
         "up" => KeyCode::Up,
@@ -61,6 +109,7 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
         "pageup" => KeyCode::PageUp,
         "pagedown" => KeyCode::PageDown,
         "backtab" => KeyCode::BackTab,
+        "backspace" => KeyCode::Backspace,
         "delete" => KeyCode::Delete,
         "insert" => KeyCode::Insert,
         "ins" => KeyCode::Insert,
@@ -105,13 +154,17 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
 mod key_parsing_tests {
 
     use {
-        crate::key_str::*,
+        crate::keys::*,
         crossterm::event::{
             KeyEvent,
             KeyCode,
         },
     };
 
+    #[test]
+    fn check_key_description(){
+        assert_eq!(key_event_desc(ALT_ENTER), "alt-enter");
+    }
 
     fn check_ok(raw: &str, key: KeyEvent) {
         let parsed = parse_key(raw);
@@ -121,12 +174,15 @@ mod key_parsing_tests {
 
     #[test]
     fn check_key_parsing() {
-        check_ok("left", KeyEvent::from(KeyCode::Left));
-        check_ok("RIGHT", KeyEvent::from(KeyCode::Right));
-        check_ok("Home", KeyEvent::from(KeyCode::Home));
+        check_ok("left", LEFT);
+        check_ok("RIGHT", RIGHT);
+        check_ok("Home", HOME);
         check_ok("f1", KeyEvent::from(KeyCode::F(1)));
         check_ok("F2", KeyEvent::from(KeyCode::F(2)));
+        check_ok("Enter", KeyEvent::from(KeyCode::Enter));
+        check_ok("alt-enter", KeyEvent::new(KeyCode::Enter, KeyModifiers::ALT));
         check_ok("insert", KeyEvent::from(KeyCode::Insert));
         check_ok("ctrl-Q", KeyEvent::new(KeyCode::Char('q'), KeyModifiers::CONTROL));
     }
 }
+

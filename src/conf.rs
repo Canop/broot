@@ -4,7 +4,7 @@
 use {
     crate::{
         errors::ConfError,
-        key_str,
+        keys,
         skin_conf,
         verb_conf::VerbConf,
     },
@@ -105,8 +105,13 @@ impl Conf {
                 let invocation = string_field(verb_value, "invocation")
                     .unwrap_or("".to_string());
                 let key = string_field(verb_value, "key")
-                    .map(|s| key_str::parse_key(&s))
+                    .map(|s| keys::parse_key(&s))
                     .transpose()?;
+                if let Some(key) = key {
+                    if keys::is_reserved(key) {
+                        return Err(ConfError::ReservedKey{key: keys::key_event_desc(key)});
+                    }
+                }
                 let execution = match string_field(verb_value, "execution") {
                     Some(s) => s,
                     None => {
@@ -239,3 +244,4 @@ execution = "$PAGER {file}"
 # for example a skin suitable for white backgrounds
 
 "#;
+

@@ -55,6 +55,12 @@ pub trait AppState {
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError>;
 
+    fn can_execute(
+        &self,
+        verb_index: usize,
+        con: &AppContext,
+    ) -> bool;
+
     fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
 
     fn do_pending_task(

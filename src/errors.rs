@@ -1,8 +1,10 @@
 //! Definitions of custom errors used in broot
-use std::io;
 
-use custom_error::custom_error;
-use regex;
+use {
+    custom_error::custom_error,
+    regex,
+    std::io,
+};
 
 custom_error! {pub ProgramError
     Io {source: io::Error} = "IO Error : {:?}",
@@ -28,6 +30,7 @@ custom_error! {pub ConfError
     MissingField {txt: String}                      = "missing field in conf",
     InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: {}",
     InvalidKey {raw: String}                        = "not a valid key: {}",
+    ReservedKey {key: String}                       = "reserved key: {}",
 }
 
 // error which can be raised when parsing a regex the
@@ -45,3 +48,4 @@ custom_error! {pub InvalidSkinError
     InvalidGreyLevel { level: u8 } = "grey level must be between 0 and 23 (got {})",
     InvalidStyle {style: String}   = "Invalid skin style : {}",
 }
+

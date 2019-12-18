@@ -230,7 +230,7 @@ impl App {
                     break;
                 }
             };
-            cmd.add_event(&event, &mut screen.input_field, con);
+            cmd.add_event(&event, &mut screen.input_field, con, self.state());
             cmd = self.apply_command(writer, cmd, &mut screen, con)?;
             event_source.unblock(self.quitting);
         }

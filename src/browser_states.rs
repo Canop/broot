@@ -274,6 +274,16 @@ impl AppState for BrowserState {
         }
     }
 
+    fn can_execute(
+        &self,
+        verb_index: usize,
+        con: &AppContext,
+    ) -> bool {
+        self.displayed_tree().selected_line().is_of(
+            con.verb_store.verbs[verb_index].selection_condition
+        )
+    }
+
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -465,3 +475,4 @@ impl AppState for BrowserState {
         Ok(())
     }
 }
+

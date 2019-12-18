@@ -46,8 +46,16 @@ Or if you realize you want to match `tOo` too, then you make it case insensitive
 
 If your system is normally configured, just doing `alt`-`enter` on an executable will close broot and executes the file.
 
-## Open a directory in your default file explorer
+## Open files without a windowing system
 
-When a directory is selected, just do `:o` (with default command mappings).
+If you're on a server linux without xdg-open or equivalent, you may want to redefine the way broot open files on `enter`.
 
-This calls the system's default program for opening directories and it's usually a file explorer.
+You may use such configuration:
+
+	[[verbs]]
+	invocation = "edit"
+	key = "enter"
+	execution = "$EDITOR {file}"
+
+
+
