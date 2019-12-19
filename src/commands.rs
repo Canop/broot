@@ -149,7 +149,6 @@ impl Command {
         con: &AppContext,
         state: &Box<dyn AppState>,
     ) {
-        let mut handled_by_input_field = false;
         debug!("add_event {:?}", event);
         match event {
             Event::Click(x, y) => {
@@ -215,25 +214,25 @@ impl Command {
                     return;
                 }
 
-                if *key == keys::BACKSPACE {
-                    handled_by_input_field = input_field.apply_event(&event);
-                    if !handled_by_input_field {
-                        self.action = Action::Back;
-                        return;
-                    }
+                // input field management
+                if input_field.apply_event(&event) {
+                    self.raw = input_field.get_content();
+                    self.parts = CommandParts::from(&self.raw);
+                    self.action = Action::from(&self.parts, false);
+                    return;
                 }
 
-                handled_by_input_field = input_field.apply_event(&event);
+                // following handling have the lowest priority
+
+                if *key == keys::BACKSPACE {
+                    self.action = Action::Back;
+                    return;
+                }
             }
             Event::Wheel(lines_count) => {
                 self.action = Action::MoveSelection(*lines_count);
             }
             _ => {}
-        }
-        if handled_by_input_field {
-            self.raw = input_field.get_content();
-            self.parts = CommandParts::from(&self.raw);
-            self.action = Action::from(&self.parts, false);
         }
     }
 }
