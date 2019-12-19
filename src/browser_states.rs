@@ -1,32 +1,33 @@
-use std::{
-    fs::OpenOptions,
-    io::Write,
-    path::PathBuf,
-    time::Instant,
+use {
+    crate::{
+        app_context::AppContext,
+        app_state::{AppState, AppStateCmdResult},
+        commands::{Action, Command},
+        displayable_tree::DisplayableTree,
+        errors::{ProgramError, TreeBuildError},
+        external::Launchable,
+        flat_tree::{LineType, Tree},
+        help_states::HelpState,
+        io::W,
+        patterns::Pattern,
+        screens::{self, Screen},
+        status::Status,
+        task_sync::TaskLifetime,
+        tree_build::TreeBuilder,
+        tree_options::{OptionBool, TreeOptions},
+        verb_store::PrefixSearchResult,
+        verbs::VerbExecutor,
+    },
+    minimad::Composite,
+    open,
+    std::{
+        fs::OpenOptions,
+        io::Write,
+        path::PathBuf,
+        time::Instant,
+    },
 };
 
-use open;
-use minimad::Composite;
-
-use crate::{
-    app_context::AppContext,
-    app_state::{AppState, AppStateCmdResult},
-    commands::{Action, Command},
-    displayable_tree::DisplayableTree,
-    errors::{ProgramError, TreeBuildError},
-    external::Launchable,
-    flat_tree::{LineType, Tree},
-    help_states::HelpState,
-    io::W,
-    patterns::Pattern,
-    screens::{self, Screen},
-    status::Status,
-    task_sync::TaskLifetime,
-    tree_build::TreeBuilder,
-    tree_options::{OptionBool, TreeOptions},
-    verb_store::PrefixSearchResult,
-    verbs::VerbExecutor,
-};
 
 /// An application state dedicated to displaying a tree.
 /// It's the first and main screen of broot.
@@ -256,19 +257,32 @@ impl AppState for BrowserState {
             Action::RegexEdit(s, _) if !s.is_empty() => Status::new(
                 task, self.normal_status_message(true), false
             ).display(w, screen),
-            Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.name) {
-                PrefixSearchResult::NoMatch => Status::new(
-                    task, mad_inline!("No matching verb (*?* for the list of verbs)"), true
-                ).display(w, screen),
-                PrefixSearchResult::Match(verb) => {
-                    let line = self.displayed_tree().selected_line();
-                    verb.write_status(w, task, line.path.clone(), invocation, screen)
+            Action::VerbEdit(invocation) => {
+                if invocation.name.is_empty() {
+                    Status::new(
+                        task,
+                        mad_inline!("Type a verb then *enter* to execute it (*?* for the list of verbs)"),
+                        false,
+                    ).display(w, screen)
+                } else {
+                    match con.verb_store.search(&invocation.name) {
+                        PrefixSearchResult::NoMatch => Status::new(
+                            task, mad_inline!("No matching verb (*?* for the list of verbs)"), true
+                        ).display(w, screen),
+                        PrefixSearchResult::Match(verb) => {
+                            let line = self.displayed_tree().selected_line();
+                            verb.write_status(w, task, line.path.clone(), invocation, screen)
+                        }
+                        PrefixSearchResult::TooManyMatches(completions) => Status::new(
+                            task,
+                            Composite::from_inline(&format!(
+                                "Possible completions: {}",
+                                completions.iter().map(|c| format!("*{}*", c)).collect::<Vec<String>>().join(", "),
+                            )),
+                            false,
+                        ).display(w, screen)
+                    }
                 }
-                PrefixSearchResult::TooManyMatches => Status::new(
-                    task,
-                    mad_inline!("Type a verb then *enter* to execute it (*?* for the list of verbs)"),
-                    false,
-                ).display(w, screen)
             }
             _ => Status::new(task, self.normal_status_message(false), false).display(w, screen),
         }

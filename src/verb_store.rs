@@ -24,10 +24,10 @@ pub struct VerbStore {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum PrefixSearchResult<T> {
+pub enum PrefixSearchResult<'v, T> {
     NoMatch,
     Match(T),
-    TooManyMatches,
+    TooManyMatches(Vec<&'v str>),
 }
 
 impl VerbStore {
@@ -273,9 +273,10 @@ impl VerbStore {
             "focus the parent of the current root",
         );
     }
-    pub fn search(&self, prefix: &str) -> PrefixSearchResult<&Verb> {
+    pub fn search<'v>(&'v self, prefix: &str) -> PrefixSearchResult<'v, &Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
+        let mut completions: Vec<&str> = Vec::new();
         for (index, verb) in self.verbs.iter().enumerate() {
             if let Some(shortcut) = &verb.shortcut {
                 if shortcut.starts_with(prefix) {
@@ -284,6 +285,7 @@ impl VerbStore {
                     }
                     found_index = index;
                     nb_found += 1;
+                    completions.push(&shortcut);
                     continue;
                 }
             }
@@ -293,12 +295,13 @@ impl VerbStore {
                 }
                 found_index = index;
                 nb_found += 1;
+                completions.push(&verb.invocation.name);
             }
         }
         match nb_found {
             0 => PrefixSearchResult::NoMatch,
             1 => PrefixSearchResult::Match(&self.verbs[found_index]),
-            _ => PrefixSearchResult::TooManyMatches,
+            _ => PrefixSearchResult::TooManyMatches(completions),
         }
     }
     /// return the index of the verb having the long name. This function is meant

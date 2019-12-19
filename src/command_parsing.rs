@@ -84,7 +84,7 @@ pub fn parse_command_sequence(
                     PrefixSearchResult::NoMatch => {
                         return Err(ProgramError::UnknownVerb { name });
                     }
-                    PrefixSearchResult::TooManyMatches => {
+                    PrefixSearchResult::TooManyMatches(..) => {
                         return Err(ProgramError::AmbiguousVerbName { name });
                     }
                     PrefixSearchResult::Match(verb) => verb,

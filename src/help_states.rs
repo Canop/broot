@@ -18,6 +18,7 @@ use {
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
+    minimad::Composite,
     termimad::{
         Area,
         FmtText,
@@ -129,16 +130,27 @@ impl AppState for HelpState {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         match &cmd.action {
-            Action::VerbEdit(invocation) => match con.verb_store.search(&invocation.name) {
-                PrefixSearchResult::NoMatch => {
-                    Status::from_error(mad_inline!("No matching verb")).display(w, screen)
+            Action::VerbEdit(invocation) => {
+                if invocation.name.is_empty() {
+                    Status::from_message(
+                        mad_inline!("Type a verb then *enter* to execute it (*?* for the list of verbs)"),
+                    ).display(w, screen)
+                } else {
+                    match con.verb_store.search(&invocation.name) {
+                        PrefixSearchResult::NoMatch => {
+                            Status::from_error(mad_inline!("No matching verb")).display(w, screen)
+                        }
+                        PrefixSearchResult::Match(verb) => {
+                            verb.write_status(w, None, Conf::default_location(), invocation, screen)
+                        }
+                        PrefixSearchResult::TooManyMatches(completions) => Status::from_message(
+                            Composite::from_inline(&format!(
+                                "Possible completions: {}",
+                                completions.iter().map(|c| format!("*{}*", c)).collect::<Vec<String>>().join(", "),
+                            )),
+                        ).display(w, screen)
+                    }
                 }
-                PrefixSearchResult::Match(verb) => {
-                    verb.write_status(w, None, Conf::default_location(), invocation, screen)
-                }
-                PrefixSearchResult::TooManyMatches => Status::from_message(mad_inline!(
-                    "Type a verb then *enter* to execute it"
-                )).display(w, screen),
             }
             _ => Status::from_message(mad_inline!(
                 "Hit *esc* to get back to the tree, or a space to start a verb"
