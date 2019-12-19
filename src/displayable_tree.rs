@@ -26,6 +26,25 @@ use {
     std::os::unix::fs::MetadataExt,
 };
 
+/// declare a style named `$dst` which is usually a reference to the `$src`
+/// skin but, in case `selected` is true, is a clone with background changed
+/// to the one of selected lines.
+macro_rules! cond_bg {
+    ($dst:ident, $self:ident, $selected:expr, $src:expr) => {
+        let mut cloned_style;
+        let $dst = if $selected {
+            cloned_style = $src.clone();
+            if let Some(c) = $self.skin.selected_line.get_bg() {
+                cloned_style.set_bg(c);
+            }
+            &cloned_style
+        } else {
+            &$src
+        };
+    }
+}
+
+
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
 /// - or to write in a file or an exported string.
@@ -97,9 +116,11 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         &self,
         f: &mut F,
         system_time: SystemTime,
+        selected: bool,
     ) -> Result<(), termimad::Error> where F: std::io::Write {
         let date_time: DateTime<Local> = system_time.into();
-        self.skin.dates.queue(f, date_time.format("%Y/%m/%d %R ").to_string())
+        cond_bg!(date_style, self, selected, self.skin.dates);
+        date_style.queue(f, date_time.format("%Y/%m/%d %R ").to_string())
     }
 
     fn write_line_name<F>(
@@ -122,14 +143,8 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             LineType::SymLinkToFile(_) | LineType::SymLinkToDir(_) => &self.skin.link,
             LineType::Pruning => &self.skin.pruning,
         };
-        let mut style = style.clone();
-        let mut char_match_style = self.skin.char_match.clone();
-        if selected {
-            if let Some(c) = self.skin.selected_line.get_bg() {
-                style.set_bg(c);
-                char_match_style.set_bg(c);
-            }
-        }
+        cond_bg!(style, self, selected, style);
+        cond_bg!(char_match_style, self, selected, self.skin.char_match);
         if idx == 0 {
             style.queue_str(f, &line.path.to_string_lossy())?;
         } else {
@@ -151,12 +166,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     } else {
                         &self.skin.file
                     };
-                    let mut target_style = target_style.clone();
-                    if selected {
-                        if let Some(c) = self.skin.selected_line.get_bg() {
-                            target_style.set_bg(c);
-                        }
-                    }
+                    cond_bg!(target_style, self, selected, target_style);
                     target_style.queue(f, &target)?;
                 }
             }
@@ -215,11 +225,14 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 {
                     if tree.options.show_permissions && line_index > 0 {
                         if line.is_selectable() {
-                            self.skin.permissions.queue(f, line.mode())?;
+                            cond_bg!(perm_style, self, selected, self.skin.permissions);
+                            perm_style.queue(f, line.mode())?;
                             let owner = permissions::user_name(line.metadata.uid());
-                            self.skin.owner.queue(f, format!(" {:w$}", &owner, w = user_group_max_lengths.0,))?;
+                            cond_bg!(owner_style, self, selected, self.skin.owner);
+                            owner_style.queue(f, format!(" {:w$}", &owner, w = user_group_max_lengths.0,))?;
                             let group = permissions::group_name(line.metadata.gid());
-                            self.skin.group.queue(f, format!(" {:w$} ", &group, w = user_group_max_lengths.1,))?;
+                            cond_bg!(group_style, self, selected, self.skin.group);
+                            group_style.queue(f, format!(" {:w$} ", &group, w = user_group_max_lengths.1,))?;
                         } else {
                             let length = 9 + 1 +user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
                             for _ in 0..length {
@@ -230,7 +243,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 }
                 if tree.options.show_dates && line_index > 0 {
                     if let Some(date) = line.modified() {
-                        self.write_date(f, date)?;
+                        self.write_date(f, date, selected)?;
                     } else {
                         self.skin.tree.queue_str(f, "─────────────────")?;
                     }
