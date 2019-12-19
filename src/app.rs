@@ -97,7 +97,6 @@ impl App {
     ) -> Result<Command, ProgramError> {
         let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
-        screen.read_size(con)?;
         let mut error: Option<String> = None;
         let cmd_result = self.mut_state().apply(&mut cmd, screen, con)?;
         match cmd_result {
@@ -113,8 +112,10 @@ impl App {
                 self.push(boxed_state);
                 cmd = new_cmd;
             }
-            AppStateCmdResult::RefreshState => {
-                file_sizes::clear_cache();
+            AppStateCmdResult::RefreshState{clear_cache} => {
+                if clear_cache {
+                    file_sizes::clear_cache();
+                }
                 cmd = self.mut_state().refresh(screen, con);
             }
             AppStateCmdResult::PopState => {

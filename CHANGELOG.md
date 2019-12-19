@@ -1,6 +1,8 @@
 ### master
 - should not panic anymore when opening arbitrary files on server
 - allow more keys for verbs. For example you can use `enter` (this one won't apply on directories but only on files)
+- display all possible verb completions in status
+- don't query the terminal size after start: use the new Resize event of Crossterm
 
 <a name="v0.10.4"></a>
 ### v0.10.4 - 2019-12-16

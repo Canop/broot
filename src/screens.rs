@@ -46,17 +46,17 @@ impl Screen {
         screen.read_size(con)?;
         Ok(screen)
     }
-    ///
-    /// Note: with the resize event we could theoretically avoid to call
-    /// this so often
-    pub fn read_size(&mut self, con: &AppContext) -> Result<(), ProgramError> {
-        let (w, h) = termimad::terminal_size();
+    pub fn set_terminal_size(&mut self, w: u16, h: u16, con: &AppContext) {
         self.width = w;
         self.height = h;
         if let Some(h) = con.launch_args.height {
             self.height = h;
         }
         self.input_field.change_area(0, h-1, w - FLAGS_AREA_WIDTH);
+    }
+    pub fn read_size(&mut self, con: &AppContext) -> Result<(), ProgramError> {
+        let (w, h) = termimad::terminal_size();
+        self.set_terminal_size(w, h, con);
         Ok(())
     }
     /// move the cursor to x,y and clears the line.

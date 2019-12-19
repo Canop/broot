@@ -26,12 +26,11 @@ use {
     },
 };
 
-
 /// an application state dedicated to help
 pub struct HelpState {
     pub scroll: i32, // scroll position
     pub area: Area,
-    screen_size: (u16, u16), // kept to detect when the background should be cleared
+    dirty: bool, // background must be cleared
 }
 
 impl HelpState {
@@ -40,22 +39,10 @@ impl HelpState {
         HelpState {
             area,
             scroll: 0,
-            screen_size: (0, 0),
+            dirty: true,
         }
-    }
-
-    /// return true when the screen area changed
-    fn resize_area(&mut self, screen: &Screen) -> bool {
-        if self.screen_size == (screen.width, screen.height) {
-            return false;
-        }
-        self.screen_size = (screen.width, screen.height);
-        self.area = Area::new(0, 0, screen.width, screen.height - 2);
-        self.area.pad_for_max_width(110);
-        true
     }
 }
-
 
 impl AppState for HelpState {
 
@@ -79,6 +66,15 @@ impl AppState for HelpState {
     ) -> Result<AppStateCmdResult, ProgramError> {
         Ok(match &cmd.action {
             Action::Back => AppStateCmdResult::PopState,
+            Action::MoveSelection(dy) => {
+                self.scroll += *dy;
+                AppStateCmdResult::Keep
+            }
+            Action::Resize(w, h) => {
+                screen.set_terminal_size(*w, *h, con);
+                self.dirty = true;
+                AppStateCmdResult::RefreshState{clear_cache: false}
+            }
             Action::VerbIndex(index) => {
                 let verb = &con.verb_store.verbs[*index];
                 self.execute_verb(verb, &verb.invocation, screen, con)?
@@ -89,10 +85,6 @@ impl AppState for HelpState {
                 }
                 _ => AppStateCmdResult::verb_not_found(&invocation.name),
             },
-            Action::MoveSelection(dy) => {
-                self.scroll += *dy;
-                AppStateCmdResult::Keep
-            }
             _ => AppStateCmdResult::Keep,
         })
     }
@@ -111,9 +103,12 @@ impl AppState for HelpState {
         screen: &Screen,
         con: &AppContext
     ) -> Result<(), ProgramError> {
-        if self.resize_area(screen) {
+        if self.dirty {
             screen.skin.default.queue_bg(w)?;
             screen.clear(w)?;
+            self.area = Area::new(0, 0, screen.width, screen.height - 2);
+            self.area.pad_for_max_width(110);
+            self.dirty = false;
         }
         let text = help_content::build_text(con);
         let fmt_text = FmtText::from_text(&screen.help_skin, text, Some((self.area.width - 1) as usize));

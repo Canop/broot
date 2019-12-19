@@ -19,7 +19,7 @@ pub enum AppStateCmdResult {
     NewState(Box<dyn AppState>, Command),
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
-    RefreshState,
+    RefreshState{clear_cache: bool},
 }
 
 impl AppStateCmdResult {

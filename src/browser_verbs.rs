@@ -105,7 +105,7 @@ impl VerbExecutor for BrowserState {
                 external::print_path(&self.displayed_tree().selected_line().target(), con)?
             }
             ":print_tree" => external::print_tree(&self.displayed_tree(), screen, con)?,
-            ":refresh" => AppStateCmdResult::RefreshState,
+            ":refresh" => AppStateCmdResult::RefreshState{clear_cache: true},
             ":select_first" => {
                 self.displayed_tree_mut().try_select_first();
                 AppStateCmdResult::Keep

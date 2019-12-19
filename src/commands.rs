@@ -45,6 +45,7 @@ pub enum Action {
     Help,                         // goes to help state
     Click(u16, u16),              // usually a mouse click
     DoubleClick(u16, u16),        // always come after a simple click at same position
+    Resize(u16, u16),             // terminal was resized to those dimensions
     Unparsed,                     // or unparsable
 }
 
@@ -228,6 +229,9 @@ impl Command {
                     self.action = Action::Back;
                     return;
                 }
+            }
+            Event::Resize(w, h) => {
+                self.action = Action::Resize(*w, *h);
             }
             Event::Wheel(lines_count) => {
                 self.action = Action::MoveSelection(*lines_count);

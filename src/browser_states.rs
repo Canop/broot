@@ -276,7 +276,7 @@ impl AppState for BrowserState {
                         PrefixSearchResult::TooManyMatches(completions) => Status::new(
                             task,
                             Composite::from_inline(&format!(
-                                "Possible completions: {}",
+                                "Possible verbs: {}",
                                 completions.iter().map(|c| format!("*{}*", c)).collect::<Vec<String>>().join(", "),
                             )),
                             false,
@@ -341,16 +341,6 @@ impl AppState for BrowserState {
             }
             Action::OpenSelection => self.open_selection_stay_in_broot(screen, con),
             Action::AltOpenSelection => self.open_selection_quit_broot(screen, con),
-            Action::VerbIndex(index) => {
-                let verb = &con.verb_store.verbs[*index];
-                self.execute_verb(verb, &verb.invocation, screen, con)
-            }
-            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
-                PrefixSearchResult::Match(verb) => {
-                    self.execute_verb(verb, &invocation, screen, con)
-                }
-                _ => Ok(AppStateCmdResult::verb_not_found(&invocation.name)),
-            },
             Action::FuzzyPatternEdit(pat) => {
                 match pat.len() {
                     0 => {
@@ -362,16 +352,6 @@ impl AppState for BrowserState {
                 }
                 Ok(AppStateCmdResult::Keep)
             }
-            Action::RegexEdit(pat, flags) => Ok(match Pattern::regex(pat, flags) {
-                Ok(regex_pattern) => {
-                    self.pending_pattern = regex_pattern;
-                    AppStateCmdResult::Keep
-                }
-                Err(e) => {
-                    // FIXME details
-                    AppStateCmdResult::DisplayError(format!("{}", e))
-                }
-            }),
             Action::Help => Ok(AppStateCmdResult::NewState(
                 Box::new(HelpState::new(screen, con)),
                 Command::new(),
@@ -390,6 +370,30 @@ impl AppState for BrowserState {
                 }
                 Ok(AppStateCmdResult::Keep)
             }
+            Action::RegexEdit(pat, flags) => Ok(match Pattern::regex(pat, flags) {
+                Ok(regex_pattern) => {
+                    self.pending_pattern = regex_pattern;
+                    AppStateCmdResult::Keep
+                }
+                Err(e) => {
+                    // FIXME details
+                    AppStateCmdResult::DisplayError(format!("{}", e))
+                }
+            }),
+            Action::Resize(w, h) => {
+                screen.set_terminal_size(*w, *h, con);
+                Ok(AppStateCmdResult::RefreshState{clear_cache: false})
+            }
+            Action::VerbIndex(index) => {
+                let verb = &con.verb_store.verbs[*index];
+                self.execute_verb(verb, &verb.invocation, screen, con)
+            }
+            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
+                PrefixSearchResult::Match(verb) => {
+                    self.execute_verb(verb, &invocation, screen, con)
+                }
+                _ => Ok(AppStateCmdResult::verb_not_found(&invocation.name)),
+            },
             _ => Ok(AppStateCmdResult::Keep),
         }
     }

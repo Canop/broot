@@ -276,7 +276,7 @@ impl Verb {
                 match execution {
                     Ok(()) => {
                         debug!("ok");
-                        AppStateCmdResult::RefreshState
+                        AppStateCmdResult::RefreshState{clear_cache: true}
                     }
                     Err(e) => {
                         warn!("launchable failed : {:?}", e);
