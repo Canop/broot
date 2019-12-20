@@ -1,4 +1,5 @@
-### master
+<a name="v0.10.5"></a>
+### v0.10.5 - 2019-12-20
 - should not panic anymore when opening arbitrary files on server
 - allow more keys for verbs. For example you can use `enter` (this one won't apply on directories but only on files)
 - display all possible verb completions in status
