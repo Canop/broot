@@ -49,7 +49,6 @@ There are also a few more shortcuts:
 
 and you can define your own [shorcuts](../configuration//#shortcuts-and-verb-search) or triggering [keyboard keys](../configuration/#keyboard-key).
 
-
 ## Fuzzy Patterns
 
 The best way to navigate is by filtering the tree.
@@ -71,6 +70,14 @@ If there's a `/` before or after the patten, it's interpreted as a regular expre
 For example `/pat+ern` would match `"patern.zip"` or `"some_patttern.rar"` but not `"pATTern"`.
 
 If you want the regex to be case insensitive, add the `i` flag: `pat+ern/i`.
+
+## Total Search
+
+When you search in broot in a very big directory on a slow disk, broot doesn't always look at all files. It stops when it found enough matches and then rates those matches.
+
+If you think there might be a better match, hidden deeper, you may require a *total search*, which is a search which look at *all* files. This is done using the `:total_search` verb, which may be triggered with the <kbd>Ctrl</kbd>-<kbd>S</kbd> key combination (you may redefine it, see [configuration](configuration.md)).
+
+As for other searches, it's interrupted as soon as you type anything.
 
 ## Flags
 

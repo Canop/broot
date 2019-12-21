@@ -2,6 +2,7 @@
 use {
     crate::{
         conf::Conf,
+        keys,
         permissions,
         verbs::Verb,
     },
@@ -265,6 +266,12 @@ impl VerbStore {
             None,
             Some("t".to_string()),
             "toggle removing nodes at first level too (default)",
+        );
+        self.add_builtin(
+            "total_search",
+            Some(keys::CTRL_S),
+            None,
+            "search again but on *all* children",
         );
         self.add_builtin(
             "up_tree",

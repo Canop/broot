@@ -34,7 +34,8 @@ use {
 pub struct BrowserState {
     pub tree: Tree,
     pub filtered_tree: Option<Tree>,
-    pending_pattern: Pattern, // a pattern (or not) which has not yet be applied
+    pub pending_pattern: Pattern, // a pattern (or not) which has not yet be applied
+    pub total_search_required: bool, // whether the pending pattern should be done in total search mode
 }
 
 impl BrowserState {
@@ -47,11 +48,12 @@ impl BrowserState {
         let pending_pattern = options.pattern;
         options.pattern = Pattern::None;
         let builder = TreeBuilder::from(path, options, BrowserState::page_height(screen) as usize)?;
-        Ok(match builder.build(tl) {
+        Ok(match builder.build(tl, false) {
             Some(tree) => Some(BrowserState {
                 tree,
                 filtered_tree: None,
                 pending_pattern,
+                total_search_required: false,
             }),
             None => None, // interrupted
         })
@@ -232,8 +234,7 @@ fn make_opener(
 impl AppState for BrowserState {
 
     fn has_pending_task(&self) -> bool {
-        self.pending_pattern.is_some()
-            || self.displayed_tree().has_dir_missing_size()
+        self.pending_pattern.is_some() || self.displayed_tree().has_dir_missing_size()
     }
 
     fn write_status(
@@ -408,18 +409,20 @@ impl AppState for BrowserState {
             let root = self.tree.root().clone();
             let len = self.tree.lines.len() as u16;
             let mut filtered_tree = match TreeBuilder::from(root, options, len as usize) {
-                Ok(builder) => builder.build(tl),
+                Ok(builder) => builder.build(tl, self.total_search_required),
                 Err(e) => {
                     warn!("Error while building tree: {:?}", e);
                     return;
                 }
             };
+            self.total_search_required = false;
             if let Some(ref mut filtered_tree) = filtered_tree {
                 info!(
                     "Tree search with pattern {} took {:?}",
                     &filtered_tree.options.pattern,
                     start.elapsed()
                 );
+                debug!("was it total search ? {}", filtered_tree.total_search);
                 filtered_tree.try_select_best_match();
                 filtered_tree.make_selection_visible(BrowserState::page_height(screen));
             } // if none: task was cancelled from elsewhere

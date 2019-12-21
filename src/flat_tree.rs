@@ -60,6 +60,7 @@ pub struct Tree {
     pub options: TreeOptions,
     pub scroll: i32, // the number of lines at the top hidden because of scrolling
     pub nb_gitignored: u32, // number of times a gitignore pattern excluded a file
+    pub total_search: bool, // whether the search was made on all children
 }
 
 impl TreeLine {
@@ -186,8 +187,11 @@ impl Tree {
             self.options.clone(),
             page_height,
         )?;
-        let mut tree = builder.build(&TaskLifetime::unlimited()).unwrap(); // should not fail
-                                                                           // we save the old selection to try restore it
+        let mut tree = builder.build(
+            &TaskLifetime::unlimited(),
+            false, // on refresh we always do a non total search
+        ).unwrap(); // should not fail
+        // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
         self.selection = 0; // so that there's no error if we can't find the selection after refresh

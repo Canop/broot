@@ -45,6 +45,7 @@ pub struct TreeBuilder {
     nb_gitignored: u32,   // number of times a gitignore pattern excluded a file
     blines: Arena<BLine>,
     root_id: BId,
+    total_search: bool,
 }
 impl TreeBuilder {
     pub fn from(
@@ -60,6 +61,7 @@ impl TreeBuilder {
             nb_gitignored: 0,
             blines,
             root_id,
+            total_search: true, // we'll set it to false if we don't look at all children
         })
     }
     /// return a bline if the direntry directly matches the options and there's no error
@@ -187,7 +189,7 @@ impl TreeBuilder {
     /// first step of the build: we explore the directories and gather lines.
     /// If there's no search pattern we stop when we have enough lines to fill the screen.
     /// If there's a pattern, we try to gather more lines that will be sorted afterwards.
-    fn gather_lines(&mut self, task_lifetime: &TaskLifetime) -> Option<Vec<BId>> {
+    fn gather_lines(&mut self, task_lifetime: &TaskLifetime, total_search: bool) -> Option<Vec<BId>> {
         let start = Instant::now();
         let mut out_blines: Vec<BId> = Vec::new(); // the blines we want to display
         let optimal_size = self
@@ -201,9 +203,14 @@ impl TreeBuilder {
         self.load_children(self.root_id);
         open_dirs.push_back(self.root_id);
         loop {
-            if (nb_lines_ok > optimal_size)
-                || (nb_lines_ok >= self.targeted_size && start.elapsed() > NOT_LONG)
+            if
+                !total_search
+                && (
+                    (nb_lines_ok > optimal_size)
+                    || (nb_lines_ok >= self.targeted_size && start.elapsed() > NOT_LONG)
+                )
             {
+                self.total_search = false;
                 break;
             }
             if let Some(open_dir_id) = open_dirs.pop_front() {
@@ -349,9 +356,9 @@ impl TreeBuilder {
             options: self.options.clone(),
             scroll: 0,
             nb_gitignored: self.nb_gitignored,
+            total_search: self.total_search,
         };
         tree.after_lines_changed();
-
         if self.options.show_sizes {
             tree.fetch_file_sizes(); // not the dirs, only simple files
         }
@@ -362,9 +369,13 @@ impl TreeBuilder {
     ///
     /// Return None if the lifetime expires before end of computation
     /// (usually because the user hit a key)
-    pub fn build(mut self, task_lifetime: &TaskLifetime) -> Option<Tree> {
-        debug!("start building with pattern {}", self.options.pattern);
-        match self.gather_lines(task_lifetime) {
+    pub fn build(
+        mut self,
+        task_lifetime: &TaskLifetime,
+        total_search: bool,
+    ) -> Option<Tree> {
+        debug!("start building - total={} pattern={}", total_search, self.options.pattern);
+        match self.gather_lines(task_lifetime, total_search) {
             Some(out_blines) => {
                 self.trim_excess(&out_blines);
                 Some(self.take(&out_blines))

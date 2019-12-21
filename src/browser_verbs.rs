@@ -1,21 +1,21 @@
-use std::path::PathBuf;
-
-use directories::UserDirs;
-
-use crate::{
-    app_state::{AppStateCmdResult},
-    app_context::AppContext,
-    browser_states::BrowserState,
-    commands::Command,
-    errors::ProgramError,
-    external,
-    flat_tree::Tree,
-    help_states::HelpState,
-    screens::Screen,
-    task_sync::TaskLifetime,
-    tree_options::{OptionBool, TreeOptions},
-    verb_invocation::VerbInvocation,
-    verbs::{Verb, VerbExecutor},
+use {
+    crate::{
+        app_state::{AppStateCmdResult},
+        app_context::AppContext,
+        browser_states::BrowserState,
+        commands::Command,
+        errors::ProgramError,
+        external,
+        flat_tree::Tree,
+        help_states::HelpState,
+        screens::Screen,
+        task_sync::TaskLifetime,
+        tree_options::{OptionBool, TreeOptions},
+        verb_invocation::VerbInvocation,
+        verbs::{Verb, VerbExecutor},
+    },
+    directories::UserDirs,
+    std::path::PathBuf,
 };
 
 fn focus_path(path: PathBuf, screen: &mut Screen, tree: &Tree) -> AppStateCmdResult {
@@ -60,7 +60,7 @@ impl VerbExecutor for BrowserState {
             },
             ":focus_user_home" => match UserDirs::new() {
                 Some(ud) => focus_path(ud.home_dir().to_path_buf(), screen, self.displayed_tree()),
-                None => AppStateCmdResult::DisplayError("no user home directory found".to_string()), // does this happen ?
+                None => AppStateCmdResult::DisplayError("no user home directory found".to_string()),
             },
             ":help" => {
                 AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)), Command::new())
@@ -135,6 +135,19 @@ impl VerbExecutor for BrowserState {
             ":toggle_perm" => self.with_new_options(screen, &|o| o.show_permissions ^= true),
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),
+            ":total_search" => {
+                if let Some(tree) = &self.filtered_tree {
+                    if tree.total_search {
+                        AppStateCmdResult::DisplayError("search was already total - all children have been rated".to_owned())
+                    } else {
+                        self.pending_pattern = tree.options.pattern.clone();
+                        self.total_search_required = true;
+                        AppStateCmdResult::Keep
+                    }
+                } else {
+                    AppStateCmdResult::DisplayError("this verb can be used only after a search".to_owned())
+                }
+            }
             ":quit" => AppStateCmdResult::Quit,
             _ => verb.to_cmd_result(
                 &self.displayed_tree().selected_line().path.clone(),
