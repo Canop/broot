@@ -1,3 +1,7 @@
+<a name="v0.11.0"></a>
+### v0.11.0 - 2019-12-21
+New major feature: the `:total_search` verb, normally triggered with *ctrl-s*: done after a search it repeats it but looks at **all** the children, even if it's long and there were a lot of matches
+
 <a name="v0.10.5"></a>
 ### v0.10.5 - 2019-12-20
 - should not panic anymore when opening arbitrary files on server
