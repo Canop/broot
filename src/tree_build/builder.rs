@@ -1,45 +1,28 @@
-use std::{
-    cmp::{self, Ordering},
-    collections::{BinaryHeap, VecDeque},
-    fs,
-    path::PathBuf,
-    result::Result,
-    time::{Duration, Instant},
+use {
+    crate::{
+        errors::TreeBuildError,
+        flat_tree::{Tree, TreeLine},
+        task_sync::TaskLifetime,
+        tree_options::{TreeOptions},
+    },
+    id_arena::Arena,
+    std::{
+        collections::{BinaryHeap, VecDeque},
+        fs,
+        path::PathBuf,
+        result::Result,
+        time::{Duration, Instant},
+    },
+    super::{
+        bline::BLine,
+        bid::{BId, SortableBId},
+    },
 };
-
-use id_arena::{Arena, Id};
-
-use crate::{
-    errors::TreeBuildError,
-    flat_tree::{LineType, Tree, TreeLine},
-    git_ignore::GitIgnoreFilter,
-    task_sync::TaskLifetime,
-    tree_options::{OptionBool, TreeOptions},
-};
-
-type BId = Id<BLine>;
 
 /// If a search found enough results to fill the screen but didn't scan
 /// everything, we search a little more in case we find better matches
 /// but not after the NOT_LONG duration.
 static NOT_LONG: Duration = Duration::from_millis(900);
-
-/// like a tree line, but with the info needed during the build
-/// This structure isn't usable independantly from the tree builder
-struct BLine {
-    parent_id: Option<BId>,
-    path: PathBuf,
-    depth: u16,
-    name: String,
-    file_type: fs::FileType,
-    children: Option<Vec<BId>>, // sorted and filtered
-    next_child_idx: usize,      // index for iteration, among the children
-    has_error: bool,
-    has_match: bool,
-    score: i32,
-    ignore_filter: Option<GitIgnoreFilter>,
-    nb_kept_children: i32, // used during the trimming step
-}
 
 /// the result of trying to build a bline
 enum BLineResult {
@@ -49,131 +32,6 @@ enum BLineResult {
     FilteredOutAsNonFolder,
     GitIgnored,
     Invalid,
-}
-
-impl BLine {
-    /// a special constructor, checking nothing
-    fn from_root(
-        blines: &mut Arena<BLine>,
-        path: PathBuf,
-        respect_ignore: OptionBool,
-    ) -> Result<BId, TreeBuildError> {
-        let name = match path.file_name() {
-            Some(name) => name.to_string_lossy().to_string(),
-            None => String::from("???"), // should not happen
-        };
-        let ignore_filter = if respect_ignore == OptionBool::No {
-            None
-        } else {
-            let gif = GitIgnoreFilter::applicable_to(&path);
-            // if auto, we don't look for other gif if we're not in a git dir
-            if respect_ignore == OptionBool::Auto && gif.files.is_empty() {
-                None
-            } else {
-                Some(gif)
-            }
-        };
-        if let Ok(md) = fs::metadata(&path) {
-            let file_type = md.file_type();
-            Ok(blines.alloc(BLine {
-                parent_id: None,
-                path,
-                depth: 0,
-                name,
-                children: None,
-                next_child_idx: 0,
-                file_type,
-                has_error: false,
-                has_match: true,
-                score: 0,
-                ignore_filter,
-                nb_kept_children: 0,
-            }))
-        } else {
-            Err(TreeBuildError::FileNotFound {
-                path: format!("{:?}", path),
-            })
-        }
-    }
-    fn to_tree_line(&self) -> std::io::Result<TreeLine> {
-        let mut has_error = self.has_error;
-        let line_type = if self.file_type.is_dir() {
-            LineType::Dir
-        } else if self.file_type.is_symlink() {
-            if let Ok(target) = fs::read_link(&self.path) {
-                let target = target.to_string_lossy().into_owned();
-                let mut target_path = PathBuf::from(&target);
-                if target_path.is_relative() {
-                    target_path = self.path.parent().unwrap().join(target_path)
-                }
-                if let Ok(target_metadata) = fs::symlink_metadata(&target_path) {
-                    if target_metadata.file_type().is_dir() {
-                        LineType::SymLinkToDir(target)
-                    } else {
-                        LineType::SymLinkToFile(target)
-                    }
-                } else {
-                    has_error = true;
-                    LineType::SymLinkToFile(target)
-                }
-            } else {
-                has_error = true;
-                LineType::SymLinkToFile(String::from("????"))
-            }
-        } else {
-            LineType::File
-        };
-        let unlisted = if let Some(children) = &self.children {
-            // number of not listed children
-            children.len() - self.next_child_idx
-        } else {
-            0
-        };
-        let metadata = fs::symlink_metadata(&self.path)?;
-        Ok(TreeLine {
-            left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
-            depth: self.depth,
-            name: self.name.to_string(),
-            path: self.path.clone(),
-            line_type,
-            has_error,
-            nb_kept_children: self.nb_kept_children as usize,
-            unlisted,
-            score: self.score,
-            size: None,
-            metadata,
-        })
-    }
-}
-
-// a structure making it possible to keep bline references
-//  sorted in a binary heap with the line with the smallest
-//  score at the top
-struct SortableBId {
-    id: BId,
-    score: i32,
-}
-impl Eq for SortableBId {}
-impl PartialEq for SortableBId {
-    fn eq(&self, other: &SortableBId) -> bool {
-        self.score == other.score // unused but required by spec of Ord
-    }
-}
-impl Ord for SortableBId {
-    fn cmp(&self, other: &SortableBId) -> Ordering {
-        if self.score == other.score {
-            Ordering::Equal
-        } else if self.score < other.score {
-            Ordering::Greater
-        } else {
-            Ordering::Less
-        }
-    }
-}
-impl PartialOrd for SortableBId {
-    fn partial_cmp(&self, other: &SortableBId) -> Option<cmp::Ordering> {
-        Some(self.cmp(other))
-    }
 }
 
 /// The TreeBuilder builds a Tree according to options (including an optional search pattern)
@@ -466,7 +324,7 @@ impl TreeBuilder {
     }
 
     /// makes a tree from the builder's specific structure
-    fn take(&mut self, out_blines: &[BId]) -> Tree {
+    fn take(mut self, out_blines: &[BId]) -> Tree {
         let mut lines: Vec<TreeLine> = Vec::new();
         for id in out_blines.iter() {
             if self.blines[*id].has_match {
