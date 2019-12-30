@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "0.11.0"
+version = "0.11.1"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -26,8 +26,8 @@ crossbeam = "0.7"
 open = "1.3.2"
 crossterm = "0.14.1"
 umask = "0.1.7"
-minimad = "0.6.0"
-termimad = "0.8.5"
+minimad = "0.6.3"
+termimad = "0.8.9"
 id-arena = "2.2.1"
 lazy-regex = "0.1"
 
