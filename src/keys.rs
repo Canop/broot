@@ -21,7 +21,7 @@ macro_rules! const_key {
 }
 
 // we define a few constants which make it easier to check key events
-const_key!(ALT_ENTER, Char('\r'), KeyModifiers::ALT);
+const_key!(ALT_ENTER, Enter, KeyModifiers::ALT);
 const_key!(ENTER, Enter);
 const_key!(BACKSPACE, Backspace);
 const_key!(BACK_TAB, BackTab);
@@ -50,7 +50,7 @@ pub fn key_event_desc(key: KeyEvent) -> String {
         s.push_str("shift-");
     }
     match key.code {
-        Char('\r') | Char('\n') => {
+        Char('\r') | Char('\n') | Enter => {
             s.push_str("enter");
         }
         Char(c) => {

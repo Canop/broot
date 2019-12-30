@@ -1,5 +1,5 @@
-<a name="v0.11.1"></a>
-### v0.11.1 - 2019-12-30
+<a name="v0.11.2"></a>
+### v0.11.2 - 2019-12-30
 - fix alt-enter not recognized on some computers
 
 <a name="v0.11.0"></a>
