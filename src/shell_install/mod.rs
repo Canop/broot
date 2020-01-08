@@ -131,6 +131,7 @@ impl ShellInstall {
         debug!("proceed: {:?}", proceed);
         self.authorization = Some(proceed);
         if !proceed {
+            fs::create_dir_all(refused_path.parent().unwrap())?;
             fs::write(
                 &refused_path,
                 REFUSED_FILE_CONTENT,

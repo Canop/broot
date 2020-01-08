@@ -192,6 +192,7 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
 pub fn ask_authorization() -> Result<bool, ProgramError> {
     let mut answer = String::new();
     io::stdin().read_line(&mut answer)?;
+    let answer = answer.trim();
     Ok(match answer.as_ref() {
         "n" | "N" => false,
         _ => true,
