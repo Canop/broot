@@ -9,7 +9,7 @@ use {
     std::{
         env,
         io,
-        path::PathBuf,
+        path::{Path, PathBuf},
     },
 };
 
@@ -108,6 +108,22 @@ fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
         .get_matches()
 }
 
+#[cfg(not(windows))]
+fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
+    root.canonicalize()
+}
+
+#[cfg(windows)]
+fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
+    Ok(
+        if root.is_relative() {
+            env::current_dir()?.join(root)
+        } else {
+            root.to_path_buf()
+        }
+    )
+}
+
 /// return the parsed launch arguments
 pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
     let cli_args = get_cli_args();
@@ -148,7 +164,9 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
             })?;
         }
     }
-    let root = root.canonicalize()?;
+
+    let root = canonicalize_root(&root)?;
+
     let mut tree_options = TreeOptions::default();
     tree_options.show_sizes = cli_args.is_present("sizes");
     if tree_options.show_sizes {
