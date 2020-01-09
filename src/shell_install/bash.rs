@@ -29,7 +29,7 @@ use {
 };
 
 const NAME: &str = "bash";
-const SOURCING_FILES: &[&str] = &[".bashrc", ".zshrc"];
+const SOURCING_FILES: &[&str] = &[".bashrc", ".zshrc", ".bash_profile"];
 const VERSION: &str = "1";
 
 // This script has been tested on bash and zsh.
@@ -85,7 +85,6 @@ fn get_script_path() -> PathBuf {
 }
 
 /// return the paths to the files in which the br function is sourced
-/// (.bashrc and .zshrc, if they're present)
 fn get_sourcing_paths() -> Vec<PathBuf> {
     let homedir_path = UserDirs::new()
         .expect("no home directory!")

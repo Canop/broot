@@ -1,6 +1,8 @@
-### master
+<a name="v0.11.4"></a>
+### v0.11.4 - 2020-01-09
 - make :open_stay and :open_leave work in help screen (applying on configuration file)
-- fish installation: use ~/.config/fish even on systems where the config home is usually different
+- Mac/fish: use ~/.config/fish even on systems where the config home is usually different
+- Mac/bash: add .bash_profile to the list of possible sourcing files
 
 <a name="v0.11.3"></a>
 ### v0.11.3 - 2020-01-09
