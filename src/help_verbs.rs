@@ -47,7 +47,20 @@ impl VerbExecutor for HelpState {
                 self.scroll -= 1;
                 AppStateCmdResult::Keep
             }
-            ":open" => AppStateCmdResult::from(Launchable::opener(Conf::default_location())),
+            ":open_stay" => {
+                match open::that(&Conf::default_location()) {
+                    Ok(exit_status) => {
+                        info!("open returned with exit_status {:?}", exit_status);
+                        AppStateCmdResult::Keep
+                    }
+                    Err(e) => {
+                        AppStateCmdResult::DisplayError(
+                            format!("{:?}", e)
+                        )
+                    }
+                }
+            },
+            ":open_leave" => AppStateCmdResult::from(Launchable::opener(Conf::default_location())),
             ":page_down" => {
                 self.scroll += self.area.height as i32;
                 AppStateCmdResult::Keep

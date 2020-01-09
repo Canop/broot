@@ -1,3 +1,6 @@
+### master
+- make :open_stay and :open_leave work in help screen (applying on configuration file)
+
 <a name="v0.11.3"></a>
 ### v0.11.3 - 2020-01-09
 - fix the 'n' answer being ignored when user is asked authorization

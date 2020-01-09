@@ -3,7 +3,7 @@
 
 The configuration file location follows the XDG convention and its location depends on your OS.
 
-The easiest way to read and edit broot's configuration file is to go the help screen (using <kbd>?</kbd>) then to type `:open`.
+The easiest way to read and edit broot's configuration file is to go the help screen (using <kbd>?</kbd>) then to type `:os` (shorcut for `:open_stay`).
 
 This file is called `conf.toml` and is in [TOML](https://github.com/toml-lang/toml).
 
