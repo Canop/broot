@@ -16,6 +16,8 @@
 
 A better way to navigate directories
 
+[jump to installation](https://dystroy.org/broot/documentation/installation/)
+
 ### Get an overview of a directory, even a big one
 
 ![overview](img/20191112-overview.png)
