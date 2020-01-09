@@ -4,6 +4,8 @@
 <img src="img/vache.svg" height=140px>
 </p>
 
+**[Installation](documentation/installation.md)**
+
 # Get an overview of a directory, even a big one
 
 ![overview](img/20191112-overview.png)
@@ -84,5 +86,5 @@ Sizes are computed in the background, you don't have to wait for them when you n
 
 # More...
 
-See the complete [Documentation](documentation/usage.md).
+See the complete [Documentation](documentation/usage.md) and [how to install](documentation/installation.md).
 
