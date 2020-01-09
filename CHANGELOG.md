@@ -1,5 +1,6 @@
 ### master
 - make :open_stay and :open_leave work in help screen (applying on configuration file)
+- fish installation: use ~/.config/fish even on systems where the config home is usually different
 
 <a name="v0.11.3"></a>
 ### v0.11.3 - 2020-01-09
