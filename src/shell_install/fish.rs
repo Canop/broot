@@ -56,11 +56,7 @@ fn get_fish_dir() -> PathBuf {
 
 /// return the fish conf.d directory
 fn get_confd_path() -> PathBuf {
-    ProjectDirs::from("fish", "fish", "fish") // hem...
-        .expect("Unable to find configuration directories")
-        .config_dir()
-        .to_path_buf()
-        .join("conf.d")
+    get_fish_dir().join("conf.d")
 }
 
 /// return the path to the link to the function script
