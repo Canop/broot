@@ -26,7 +26,7 @@ Notice the *unlisted*?
 
 That's what makes it usable where the old `tree` command would produce pages of output.
 
-`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see documentation).
+`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](https://dystroy.org/broot/documentation/usage/#gitignore)).
 
 ### Find a directory then `cd` to it
 
@@ -74,7 +74,7 @@ You can instead do it without losing the view of the file hierarchy.
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>`.
 
-You can add verbs or configure the existing ones; see [documentation](documentation/usage.md#verbs).
+You can add verbs or configure the existing ones; see [documentation](https://dystroy.org/broot/documentation/usage/#verbs).
 
 And you can add shorcuts, for example a `ctrl` sequence or a function key
 
