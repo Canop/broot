@@ -3,6 +3,7 @@
 - make :open_stay and :open_leave work in help screen (applying on configuration file)
 - Mac/fish: use ~/.config/fish even on systems where the config home is usually different
 - Mac/bash: add .bash_profile to the list of possible sourcing files
+- define ctrl-c as a new way to quit
 
 <a name="v0.11.3"></a>
 ### v0.11.3 - 2020-01-09

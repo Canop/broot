@@ -42,7 +42,7 @@ Most useful keys for this:
 * `<enter>` to select a directory (staying in broot)
 * `<esc>` to get back to the previous state or clear your search
 * `<alt><enter>` to get back to the shell having `cd` to the selected directory
-* `:q` if you just want to quit (`<esc>` works too)
+* `:q` if you just want to quit (`<esc>`, or `<ctrl><q>` or `<ctrl><c>` work too)
 
 ### Never lose track of file hierarchy while you search
 

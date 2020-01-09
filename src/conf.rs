@@ -185,6 +185,10 @@ shortcut = "e"
 execution = "$EDITOR {file}"
 
 [[verbs]]
+key = "ctrl-c"
+execution = ":quit"
+
+[[verbs]]
 invocation = "create {subpath}"
 execution = "$EDITOR {directory}/{subpath}"
 
