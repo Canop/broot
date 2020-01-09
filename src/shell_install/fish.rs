@@ -11,6 +11,7 @@
 
 use {
     std::path::PathBuf,
+    directories::BaseDirs,
     directories::ProjectDirs,
     crate::{
         conf,
@@ -48,6 +49,12 @@ end
 
 /// return the root of fish's config
 fn get_fish_dir() -> PathBuf {
+    if let Some(base_dirs) = BaseDirs::new() {
+        let fish_dir = base_dirs.home_dir().join(".config/fish");
+        if fish_dir.exists() {
+            return fish_dir.to_path_buf();
+        }
+    }
     ProjectDirs::from("fish", "fish", "fish") // hem...
         .expect("Unable to find configuration directories")
         .config_dir()
@@ -56,11 +63,7 @@ fn get_fish_dir() -> PathBuf {
 
 /// return the fish conf.d directory
 fn get_confd_path() -> PathBuf {
-    ProjectDirs::from("fish", "fish", "fish") // hem...
-        .expect("Unable to find configuration directories")
-        .config_dir()
-        .to_path_buf()
-        .join("conf.d")
+    get_fish_dir().join("conf.d")
 }
 
 /// return the path to the link to the function script
@@ -100,5 +103,3 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
     si.done = true;
     Ok(())
 }
-
-
