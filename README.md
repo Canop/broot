@@ -92,7 +92,7 @@ You still have all broot features, you can filter, navigate, create directories,
 
 ![size](img/20191112-sizes.png)
 
-If you start broot with the `--sizes` option, or if you type `:s` while in broot, you get a mode tailored to "whale spotting" nagigation, making it easy to determine what files or folders take space.
+If you start broot with the `--sizes` option, or if you type `:s` while in broot, you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
 
 And you keep all broot tools, like filtering or the ability to delete or open files and directories.
 
