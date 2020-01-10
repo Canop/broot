@@ -41,6 +41,8 @@ If you're using [homebrew](https://brew.sh/), you can use the `brew install` com
 
     brew install broot
 
+*note: the brew formula is maintained by a third party*
+
 # Installation Completion : the `br` shell function
 
 broot is convenient to find a directory then `cd` to it, which is done using `<alt><enter>` or `:cd`.
