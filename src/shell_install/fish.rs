@@ -35,15 +35,15 @@ const FISH_FUNC: &str = r#"
 # It's needed because some shell commands, like `cd`,
 # have no useful effect if executed in a subshell.
 function br
-    set f (mktemp)
-    broot --outcmd $f $argv
+    set -l command_file (mktemp)
+    broot --outcmd $command_file $argv
     if test $status -ne 0
-        rm -f "$f"
-        return "$code"
+        rm -f "$command_file"
+        return "$status"
     end
-    set d (cat "$f")
-    rm -f "$f"
-    eval "$d"
+    set -l command_str (cat "$command_file")
+    rm -f "$command_file"
+    eval "$command_str"
 end
 "#;
 
