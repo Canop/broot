@@ -1,8 +1,10 @@
 ### master
-- backspace was previously bind to back if not consumed by input. This is removed
-- fix unsignificative events interpreted as previous event repetition
-- fix wrong background applied below sizes
+- backspace was previously bound to :back if not consumed by input. This is removed
+- fix unsignificative event interpreted as previous event repetition
+- fix wrong background applied on sizes in tree display
 - allow env vars used in verb execution to contain parameters (fix #114)
+- allow the use of arrow keys as triggers for verbs (fix #121)
+- fix scroll adjustement when using the arrow keys (when there's a scrollbar) (fix #112)
 
 <a name="v0.11.5"></a>
 ### v0.11.5 - 2020-01-10

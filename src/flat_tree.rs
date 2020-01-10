@@ -287,10 +287,20 @@ impl Tree {
         // we adjust the scroll
         let l = l as i32;
         let sel = self.selection as i32;
-        if dy < 0 && sel < self.scroll + 5 {
-            self.scroll = (self.scroll + 2 * dy).max(0);
-        } else if dy > 0 && l > page_height && sel > self.scroll + page_height - 5 {
-            self.scroll += 2 * dy;
+        if l > page_height {
+            if dy < 0 { // -1
+                if sel == l - 1 { // cycling
+                    self.scroll = l - page_height;
+                } else if sel < self.scroll + 5 {
+                    self.scroll = (self.scroll + 2 * dy).max(0);
+                }
+            } else { // +1
+                if sel == 0 { // cycling brought us back to top
+                    self.scroll = 0;
+                } else if sel > self.scroll + page_height - 5 {
+                    self.scroll = (self.scroll + 2 * dy).min(l - page_height);
+                }
+            }
         }
     }
     pub fn try_scroll(&mut self, dy: i32, page_height: i32) {
