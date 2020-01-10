@@ -1,5 +1,7 @@
-### master
+<a name="v0.11.5"></a>
+### v0.11.5 - 2020-01-10
 - keep same path selected when lines are reordered (such as when directory sizes are computed
+- changed the skin used before installation so that it works better on white backgrounds
 
 <a name="v0.11.4"></a>
 ### v0.11.4 - 2020-01-09
