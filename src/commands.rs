@@ -151,6 +151,7 @@ impl Command {
         state: &Box<dyn AppState>,
     ) {
         debug!("add_event {:?}", event);
+        self.action = Action::Unparsed;
         match event {
             Event::Click(x, y) => {
                 if !input_field.apply_event(&event) {
