@@ -16,7 +16,25 @@
 
 A better way to navigate directories
 
-[jump to installation](https://dystroy.org/broot/documentation/installation/)
+
+Table of Contents
+=================
+
+  * [Installation](#installation)
+  * [Feature Showcase](#feature-showcase)
+    * [Get an overview of a directory, even a big one](#get-an-overview-of-a-directory-even-a-big-one)
+    * [Find a directory then `cd` to it](#find-a-directory-then-cd-to-it)
+    * [Never lose track of file hierarchy while you search](#never-lose-track-of-file-hierarchy-while-you-search)
+    * [Manipulate your files](#manipulate-your-files)
+    * [Apply a standard or personal shortcut to a file](#apply-a-standard-or-personal-shortcut-to-a-file)
+    * [Replace `ls` (and its clones)](#replace-ls-and-its-clones)
+    * [See what takes space](#see-what-takes-space)
+  * [Further Reading](#further-reading)
+
+## Installation
+Full installation documentation can be found [here](https://dystroy.org/broot/documentation/installation/).
+
+## Feature Showcase
 
 ### Get an overview of a directory, even a big one
 
@@ -98,7 +116,5 @@ And you keep all broot tools, like filtering or the ability to delete or open fi
 
 Sizes are computed in the background, you don't have to wait for them when you navigate.
 
-### More...
-
+## Further Reading
 See **[Broot's web site](https://dystroy.org/broot)** for instructions regarding installation and usage.
-
