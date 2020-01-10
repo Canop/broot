@@ -75,14 +75,14 @@ fn bad_key(raw: &str) -> Result<KeyEvent, ConfError> {
 pub fn is_reserved(key: KeyEvent) -> bool {
     match key {
         BACKSPACE => true, // needed for the input field
-        HOME => true, // needed for the input field
-        END => true, // needed for the input field
-        LEFT => true, // needed for the input field
-        RIGHT => true, // needed for the input field
+        //HOME => true, // needed for the input field
+        //END => true, // needed for the input field
+        //LEFT => true, // needed for the input field
+        //RIGHT => true, // needed for the input field
         DELETE => true, // needed for the input field
         ESC => true, // basic navigation
-        UP => true, // basic navigation
-        DOWN => true, // basic navigation
+        //UP => true, // basic navigation
+        //DOWN => true, // basic navigation
         _ => false,
     }
 }
