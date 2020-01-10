@@ -1,3 +1,6 @@
+### master
+- backspace was previously bind to back if not consumed by input. This is removed
+
 <a name="v0.11.5"></a>
 ### v0.11.5 - 2020-01-10
 - keep same path selected when lines are reordered (such as when directory sizes are computed

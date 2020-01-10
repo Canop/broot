@@ -225,10 +225,7 @@ impl Command {
 
                 // following handling have the lowest priority
 
-                if *key == keys::BACKSPACE {
-                    self.action = Action::Back;
-                    return;
-                }
+                // and there's none, in fact
             }
             Event::Resize(w, h) => {
                 self.action = Action::Resize(*w, *h);
