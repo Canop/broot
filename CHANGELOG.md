@@ -2,6 +2,7 @@
 - backspace was previously bind to back if not consumed by input. This is removed
 - fix unsignificative events interpreted as previous event repetition
 - fix wrong background applied below sizes
+- allow env vars used in verb execution to contain parameters (fix #114)
 
 <a name="v0.11.5"></a>
 ### v0.11.5 - 2020-01-10

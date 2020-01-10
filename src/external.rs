@@ -44,13 +44,20 @@ pub enum Launchable {
     },
 }
 
-/// If s starts by a '$', replace it by the environment variable of the same name
-fn resolve_env_variable(s: String) -> String {
-    if s.starts_with('$') {
-        env::var(&s[1..]).unwrap_or(s)
-    } else {
-        s
+/// If a part starts by a '$', replace it by the environment variable of the same name.
+/// This part is splitted too (because of https://github.com/Canop/broot/issues/114)
+fn resolve_env_variables(parts: Vec<String>) -> Vec<String> {
+    let mut resolved = Vec::new();
+    for part in parts.into_iter() {
+        if part.starts_with('$') {
+            if let Ok(val) = env::var(&part[1..]) {
+                resolved.extend(val.split(' ').map(|s|s.to_string()));
+                continue;
+            }
+        }
+        resolved.push(part);
     }
+    resolved
 }
 
 impl Launchable {
@@ -78,8 +85,8 @@ impl Launchable {
         }
     }
 
-    pub fn program(mut parts: Vec<String>) -> io::Result<Launchable> {
-        let mut parts = parts.drain(0..).map(resolve_env_variable);
+    pub fn program(parts: Vec<String>) -> io::Result<Launchable> {
+        let mut parts = resolve_env_variables(parts).into_iter();
         match parts.next() {
             Some(exe) => Ok(Launchable::Program {
                 exe,
