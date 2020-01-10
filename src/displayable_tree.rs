@@ -101,12 +101,8 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     ) -> Result<(), termimad::Error> where F: std::io::Write {
         if let Some(s) = line.size {
             let pb = ProgressBar::new(s.part_of(total_size), 10);
-            if selected {
-                self.skin.selected_line.queue_bg(f)?;
-            }
-            let style = self.name_style(line);
-            style.queue_fg(f)?;
-            Ok(write!(f, "{:>5} {:<10} ", s.to_string(), pb)?)
+            cond_bg!(size_style, self, selected, self.name_style(&line));
+            size_style.queue(f, format!("{:>5} {:<10} ", s.to_string(), pb))
         } else {
             self.skin.tree.queue_str(f, "──────────────── ")
         }
