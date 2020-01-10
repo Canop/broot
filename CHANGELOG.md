@@ -1,3 +1,6 @@
+### master
+- keep same path selected when lines are reordered (such as when directory sizes are computed
+
 <a name="v0.11.4"></a>
 ### v0.11.4 - 2020-01-09
 - make :open_stay and :open_leave work in help screen (applying on configuration file)

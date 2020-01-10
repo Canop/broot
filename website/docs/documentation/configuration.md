@@ -206,7 +206,7 @@ invocation | default key | default shortcut | behavior / details
 :quit | <kbd>ctrl</kbd><kbd>q</kbd> | q | quit broot
 :refresh | <kbd>F5</kbd> | - | refresh the displayed tree and clears the directory sizes cache
 :rm | - | - | remove the selected file or directory. To stay safe, don't define a keyboard key for this action
-:select_firt | - | - | select the firt line
+:select_first | - | - | select the firt line
 :select_last | - | - | select the last line
 :toggle_dates | - | - | toggle display of last modified dates
 :toggle_files | - | - | toggle showing files (or just folders)

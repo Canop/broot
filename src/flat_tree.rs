@@ -453,12 +453,16 @@ impl Tree {
     /// (a better sort should be devised but it's unsure whether it would be
     /// readable enough)
     fn sort_siblings_by_size(&mut self) {
+        // we'll try to keep the same path selected
+        let selected_path = self.selected_line().path.to_path_buf();
         self.lines[1..].sort_by(|a, b| {
             let asize = a.size.map_or(0, |s| s.into());
             let bsize = b.size.map_or(0, |s| s.into());
             bsize.cmp(&asize)
         });
+        self.try_select_path(&selected_path);
     }
+
     /// compute and return the size of the root
     pub fn total_size(&self) -> Size {
         if let Some(size) = self.lines[0].size {
