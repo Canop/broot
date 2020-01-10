@@ -1,4 +1,5 @@
-### master
+<a name="v0.11.6"></a>
+### v0.11.6 - 2020-01-10
 - backspace was previously bound to :back if not consumed by input. This is removed
 - fix unsignificative event interpreted as previous event repetition
 - fix wrong background applied on sizes in tree display
