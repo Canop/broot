@@ -1,6 +1,6 @@
 # Broot
 
-[![CI][s3]][l3] [![MIT][s2]][l2] [![Latest Version][s1]][l1] [![Homebrew Formula][s5]][l5] [![Chat on Miaou][s4]][l4]
+[![CI][s3]][l3] [![MIT][s2]][l2] [![Latest Version][s1]][l1] [![Chat on Miaou][s4]][l4]
 
 [s1]: https://img.shields.io/crates/v/broot.svg
 [l1]: https://crates.io/crates/broot
@@ -13,9 +13,6 @@
 
 [s4]: https://miaou.dystroy.org/static/shields/room.svg
 [l4]: https://miaou.dystroy.org/3490?broot
-
-[s5]: https://img.shields.io/homebrew/v/broot
-[l5]: https://formulae.brew.sh/formula/broot
 
 A better way to navigate directories
 
