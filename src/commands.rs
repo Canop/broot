@@ -3,15 +3,12 @@
 //!  (verbs arent checked at this point)
 
 use {
+    crate::{
+        app_context::AppContext, app_state::AppState, keys, patterns::Pattern,
+        verb_invocation::VerbInvocation,
+    },
     regex::Regex,
     termimad::{Event, InputField},
-    crate::{
-        app_context::AppContext,
-        app_state::AppState,
-        keys,
-        verb_invocation::VerbInvocation,
-        patterns::Pattern,
-    },
 };
 
 #[derive(Debug, Clone)]
@@ -86,6 +83,12 @@ impl CommandParts {
     }
 }
 
+impl Default for CommandParts {
+    fn default() -> CommandParts {
+        CommandParts::new()
+    }
+}
+
 impl Action {
     fn from(cp: &CommandParts, finished: bool) -> Action {
         if let Some(verb_invocation) = &cp.verb_invocation {
@@ -118,29 +121,6 @@ impl Command {
         }
     }
 
-    /// build a command from a string
-    /// Note that this isn't used (or usable) for interpretation
-    ///  of the in-app user input. It's meant for interpretation
-    ///  of a file or from a sequence of commands passed as argument
-    ///  of the program.
-    /// A ':', even if at the end, is assumed to mean that the
-    ///  command must be executed (it's equivalent to the user
-    ///  typing `enter` in the app
-    /// This specific syntax isn't definitive
-    pub fn from(raw: String) -> Command {
-        let parts = CommandParts::from(&raw);
-        let action = Action::from(&parts, raw.contains(':'));
-        Command { raw, parts, action }
-    }
-
-    pub fn from_pattern(pattern: &Pattern) -> Self {
-        Self::from(match pattern {
-            Pattern::Fuzzy(fp) => fp.to_string(),
-            Pattern::Regex(rp) => rp.to_string(),
-            Pattern::None => String::new(),
-        })
-    }
-
     /// apply an event to modify the command.
     /// The command isn't applied to the state
     pub fn add_event(
@@ -148,7 +128,7 @@ impl Command {
         event: &Event,
         input_field: &mut InputField,
         con: &AppContext,
-        state: &Box<dyn AppState>,
+        state: &dyn AppState,
     ) {
         debug!("add_event {:?}", event);
         self.action = Action::Unparsed;
@@ -162,7 +142,6 @@ impl Command {
                 self.action = Action::DoubleClick(*x, *y);
             }
             Event::Key(key) => {
-
                 // we first handle the cases that MUST absolutely
                 // not be overriden by configuration
 
@@ -182,7 +161,9 @@ impl Command {
                     return;
                 }
 
-                if *key == keys::QUESTION && (self.raw.is_empty() || self.parts.verb_invocation.is_some()) {
+                if *key == keys::QUESTION
+                    && (self.raw.is_empty() || self.parts.verb_invocation.is_some())
+                {
                     // a '?' opens the help when it's the first char
                     // or when it's part of the verb invocation
                     self.action = Action::Help;
@@ -239,4 +220,36 @@ impl Command {
     }
 }
 
+impl From<String> for Command {
+    /// build a command from a string
+    /// Note that this isn't used (or usable) for interpretation
+    ///  of the in-app user input. It's meant for interpretation
+    ///  of a file or from a sequence of commands passed as argument
+    ///  of the program.
+    /// A ':', even if at the end, is assumed to mean that the
+    ///  command must be executed (it's equivalent to the user
+    ///  typing `enter` in the app
+    /// This specific syntax isn't definitive
+    fn from(raw: String) -> Command {
+        let parts = CommandParts::from(&raw);
+        let action = Action::from(&parts, raw.contains(':'));
+        Command { raw, parts, action }
+    }
+}
 
+impl From<&Pattern> for Command {
+    fn from(pattern: &Pattern) -> Self {
+        match pattern {
+            Pattern::Fuzzy(fp) => fp.to_string(),
+            Pattern::Regex(rp) => rp.to_string(),
+            Pattern::None => String::new(),
+        }
+        .into()
+    }
+}
+
+impl Default for Command {
+    fn default() -> Command {
+        Command::new()
+    }
+}

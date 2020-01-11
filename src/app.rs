@@ -9,18 +9,9 @@
 //! - a request to launch an executable (thus leaving broot)
 
 use {
-    std::io::Write,
-    crossterm::{
-        cursor,
-        event::{DisableMouseCapture, EnableMouseCapture},
-        terminal::{EnterAlternateScreen, LeaveAlternateScreen},
-        QueueableCommand,
-    },
-    minimad::Composite,
-    termimad::EventSource,
     crate::{
         app_context::AppContext,
-        app_state::{AppStateCmdResult, AppState},
+        app_state::{AppState, AppStateCmdResult},
         browser_states::BrowserState,
         command_parsing::parse_command_sequence,
         commands::Command,
@@ -32,7 +23,16 @@ use {
         skin::Skin,
         status::Status,
         task_sync::TaskLifetime,
-    }
+    },
+    crossterm::{
+        cursor,
+        event::{DisableMouseCapture, EnableMouseCapture},
+        terminal::{EnterAlternateScreen, LeaveAlternateScreen},
+        QueueableCommand,
+    },
+    minimad::Composite,
+    std::io::Write,
+    termimad::EventSource,
 };
 
 pub struct App {
@@ -42,7 +42,6 @@ pub struct App {
 }
 
 impl App {
-
     pub fn new() -> App {
         App {
             states: Vec::new(),
@@ -55,11 +54,17 @@ impl App {
         self.states.push(new_state);
     }
 
-    fn mut_state(&mut self) -> &mut Box<dyn AppState> {
-        self.states.last_mut().expect("No path has been pushed")
+    fn mut_state(&mut self) -> &mut dyn AppState {
+        self.states
+            .last_mut()
+            .expect("No path has been pushed")
+            .as_mut()
     }
-    fn state(&self) -> &Box<dyn AppState> {
-        self.states.last().expect("No path has been pushed")
+    fn state(&self) -> &dyn AppState {
+        self.states
+            .last()
+            .expect("No path has been pushed")
+            .as_ref()
     }
 
     /// execute all the pending tasks until there's none remaining or
@@ -72,15 +77,11 @@ impl App {
         con: &AppContext,
         tl: TaskLifetime,
     ) -> Result<(), ProgramError> {
-        let mut has_pending_task = self.state().has_pending_task();
-        while has_pending_task {
-            if tl.is_expired() {
-                break;
-            }
-            self.mut_state().do_pending_task(screen, &tl);
-            self.mut_state().display(w, screen, con)?;
-            self.state().write_status(w, cmd, &screen, con)?;
-            has_pending_task = self.state().has_pending_task();
+        let state = self.mut_state();
+        while state.has_pending_task() & !tl.is_expired() {
+            state.do_pending_task(screen, &tl);
+            state.display(w, screen, con)?;
+            state.write_status(w, cmd, &screen, con)?;
         }
         Ok(())
     }
@@ -91,15 +92,13 @@ impl App {
     fn apply_command(
         &mut self,
         w: &mut W,
-        cmd: Command,
+        mut cmd: Command,
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
-        let mut cmd = cmd;
         debug!("action: {:?}", &cmd.action);
         let mut error: Option<String> = None;
-        let cmd_result = self.mut_state().apply(&mut cmd, screen, con)?;
-        match cmd_result {
+        match self.mut_state().apply(&mut cmd, screen, con)? {
             AppStateCmdResult::Quit => {
                 debug!("cmd result quit");
                 self.quitting = true;
@@ -112,7 +111,7 @@ impl App {
                 self.push(boxed_state);
                 cmd = new_cmd;
             }
-            AppStateCmdResult::RefreshState{clear_cache} => {
+            AppStateCmdResult::RefreshState { clear_cache } => {
                 if clear_cache {
                     file_sizes::clear_cache();
                 }
@@ -138,16 +137,14 @@ impl App {
                 }
             }
             AppStateCmdResult::DisplayError(txt) => {
-                error = Some(txt.clone());
+                error = Some(txt);
             }
             _ => {}
         }
         self.mut_state().display(w, screen, con)?;
-        if let Some(text) = error {
-            let status = Status::from_error(Composite::from_inline(&text));
-            status.display(w, screen)?;
-        } else {
-            self.state().write_status(w, &cmd, screen, con)?;
+        match error {
+            Some(text) => Status::from_error(Composite::from_inline(&text)).display(w, screen)?,
+            None => self.state().write_status(w, &cmd, screen, con)?,
         }
         screen.input_field.set_content(&cmd.raw);
         screen.input_field.display_on(w)?;
@@ -157,23 +154,22 @@ impl App {
 
     /// called exactly once at end of `run`, cleans the writer (which
     /// is usually stdout or stderr)
-    fn end(&mut self, writer: &mut W) ->Result<Option<Launchable>, ProgramError> {
+    fn end(self, writer: &mut W) -> Result<Option<Launchable>, ProgramError> {
         writer.queue(DisableMouseCapture)?;
         writer.queue(cursor::Show)?;
         writer.queue(LeaveAlternateScreen)?;
         writer.flush()?;
         debug!("we left the screen");
-        Ok(self.launch_at_end.take())
+        Ok(self.launch_at_end)
     }
 
     /// This is the main loop of the application
     pub fn run(
-        &mut self,
+        mut self,
         writer: &mut W,
         con: &AppContext,
         skin: Skin,
     ) -> Result<Option<Launchable>, ProgramError> {
-
         writer.queue(EnterAlternateScreen)?;
         writer.queue(cursor::Hide)?;
         debug!("we're on screen");
@@ -185,55 +181,53 @@ impl App {
         let event_source = EventSource::new()?;
         let rx_events = event_source.receiver();
 
-        // create the initial state
-        if let Some(bs) = BrowserState::new(
-            con.launch_args.root.clone(),
-            con.launch_args.tree_options.clone(),
-            &screen,
-            &TaskLifetime::unlimited(),
-        )? {
-            self.push(Box::new(bs));
-        } else {
-            unreachable!();
-        }
+        self.push(Box::new(
+            BrowserState::new(
+                con.launch_args.root.clone(),
+                con.launch_args.tree_options.clone(),
+                &screen,
+                &TaskLifetime::unlimited(),
+            )?
+            .expect("Failed to create BrowserState"),
+        ));
 
         let mut cmd = Command::new();
 
         // if some commands were passed to the application
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {
-            let commands = parse_command_sequence(unparsed_commands, con)?;
-            for arg_cmd in &commands {
-                cmd = (*arg_cmd).clone();
-                cmd = self.apply_command(writer, cmd, &mut screen, con)?;
-                self.do_pending_tasks(writer, &cmd, &mut screen, con, TaskLifetime::unlimited())?;
+            let lifetime = TaskLifetime::unlimited();
+
+            for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
+                cmd = self.apply_command(writer, arg_cmd, &mut screen, con)?;
+                self.do_pending_tasks(writer, &cmd, &mut screen, con, lifetime.clone())?;
                 if self.quitting {
                     return self.end(writer);
                 }
             }
         }
 
-        self.mut_state().display(writer, &screen, con)?;
-        self.state().write_status(writer, &cmd, &screen, con)?;
-        self.state().write_flags(writer, &mut screen, con)?;
+        let state = self.mut_state();
+        state.display(writer, &screen, con)?;
+        state.write_status(writer, &cmd, &screen, con)?;
+        state.write_flags(writer, &mut screen, con)?;
+
         screen.input_field.display_on(writer)?;
 
-        loop {
-            let tl = TaskLifetime::new(event_source.shared_event_count());
-            if !self.quitting {
-                self.do_pending_tasks(writer, &cmd, &mut screen, con, tl)?;
-            }
-            let event = match rx_events.recv() {
-                Ok(event) => event,
-                Err(_) => {
-                    // this is how we quit the application,
-                    // when the input thread is properly closed
-                    break;
-                }
-            };
+        for event in rx_events {
             cmd.add_event(&event, &mut screen.input_field, con, self.state());
             cmd = self.apply_command(writer, cmd, &mut screen, con)?;
             event_source.unblock(self.quitting);
+
+            if !self.quitting {
+                self.do_pending_tasks(
+                    writer,
+                    &cmd,
+                    &mut screen,
+                    con,
+                    TaskLifetime::new(event_source.shared_event_count()),
+                )?;
+            }
         }
 
         self.end(writer)
