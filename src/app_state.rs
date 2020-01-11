@@ -1,4 +1,3 @@
-
 use crate::{
     app_context::AppContext,
     browser_states::BrowserState,
@@ -19,7 +18,7 @@ pub enum AppStateCmdResult {
     NewState(Box<dyn AppState>, Command),
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
-    RefreshState{clear_cache: bool},
+    RefreshState { clear_cache: bool },
 }
 
 impl AppStateCmdResult {
@@ -47,7 +46,6 @@ impl From<Launchable> for AppStateCmdResult {
 /// a whole application state, stackable to allow reverting
 ///  to a previous one
 pub trait AppState {
-
     fn apply(
         &mut self,
         cmd: &mut Command,
@@ -55,28 +53,16 @@ pub trait AppState {
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError>;
 
-    fn can_execute(
-        &self,
-        verb_index: usize,
-        con: &AppContext,
-    ) -> bool;
+    fn can_execute(&self, verb_index: usize, con: &AppContext) -> bool;
 
     fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
 
-    fn do_pending_task(
-        &mut self,
-        screen: &mut Screen,
-        tl: &TaskLifetime
-    );
+    fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime);
 
     fn has_pending_task(&self) -> bool;
 
-    fn display(
-        &mut self,
-        w: &mut W,
-        screen: &Screen,
-        con: &AppContext
-    ) -> Result<(), ProgramError>;
+    fn display(&mut self, w: &mut W, screen: &Screen, con: &AppContext)
+        -> Result<(), ProgramError>;
 
     fn write_flags(
         &self,
@@ -92,5 +78,4 @@ pub trait AppState {
         screen: &Screen,
         con: &AppContext,
     ) -> Result<(), ProgramError>;
-
 }

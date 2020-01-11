@@ -20,14 +20,8 @@ use {
     },
     minimad::Composite,
     open,
-    std::{
-        fs::OpenOptions,
-        io::Write,
-        path::PathBuf,
-        time::Instant,
-    },
+    std::{fs::OpenOptions, io::Write, path::PathBuf, time::Instant},
 };
-
 
 /// An application state dedicated to displaying a tree.
 /// It's the first and main screen of broot.
@@ -45,18 +39,14 @@ impl BrowserState {
         screen: &Screen,
         tl: &TaskLifetime,
     ) -> Result<Option<BrowserState>, TreeBuildError> {
-        let pending_pattern = options.pattern;
-        options.pattern = Pattern::None;
+        let pending_pattern = options.pattern.take();
         let builder = TreeBuilder::from(path, options, BrowserState::page_height(screen) as usize)?;
-        Ok(match builder.build(tl, false) {
-            Some(tree) => Some(BrowserState {
-                tree,
-                filtered_tree: None,
-                pending_pattern,
-                total_search_required: false,
-            }),
-            None => None, // interrupted
-        })
+        Ok(builder.build(tl, false).map(move |tree| BrowserState {
+            tree,
+            filtered_tree: None,
+            pending_pattern,
+            total_search_required: false,
+        }))
     }
 
     pub fn with_new_options(
@@ -74,7 +64,7 @@ impl BrowserState {
                 screen,
                 &TaskLifetime::unlimited(),
             ),
-            Command::from_pattern(&tree.options.pattern),
+            Command::from(&tree.options.pattern),
         )
     }
 
@@ -103,19 +93,13 @@ impl BrowserState {
         let line = tree.selected_line();
         let tl = TaskLifetime::unlimited();
         match &line.line_type {
-            LineType::File => {
-                match open::that(&line.path) {
-                    Ok(exit_status) => {
-                        info!("open returned with exit_status {:?}", exit_status);
-                        Ok(AppStateCmdResult::Keep)
-                    }
-                    Err(e) => {
-                        Ok(AppStateCmdResult::DisplayError(
-                            format!("{:?}", e)
-                        ))
-                    }
+            LineType::File => match open::that(&line.path) {
+                Ok(exit_status) => {
+                    info!("open returned with exit_status {:?}", exit_status);
+                    Ok(AppStateCmdResult::Keep)
                 }
-            }
+                Err(e) => Ok(AppStateCmdResult::DisplayError(format!("{:?}", e))),
+            },
             LineType::Dir | LineType::SymLinkToDir(_) => {
                 let mut target = line.target();
                 if tree.selection == 0 {
@@ -178,10 +162,7 @@ impl BrowserState {
         }
     }
 
-    fn normal_status_message(
-        &self,
-        has_pattern: bool,
-    ) -> Composite<'static> {
+    fn normal_status_message(&self, has_pattern: bool) -> Composite<'static> {
         let tree = self.displayed_tree();
         if tree.selection == 0 {
             if has_pattern {
@@ -232,7 +213,6 @@ fn make_opener(
 }
 
 impl AppState for BrowserState {
-
     fn has_pending_task(&self) -> bool {
         self.pending_pattern.is_some() || self.displayed_tree().has_dir_missing_size()
     }
@@ -383,7 +363,7 @@ impl AppState for BrowserState {
             }),
             Action::Resize(w, h) => {
                 screen.set_terminal_size(*w, *h, con);
-                Ok(AppStateCmdResult::RefreshState{clear_cache: false})
+                Ok(AppStateCmdResult::RefreshState { clear_cache: false })
             }
             Action::VerbIndex(index) => {
                 let verb = &con.verb_store.verbs[*index];
@@ -436,7 +416,7 @@ impl AppState for BrowserState {
         &mut self,
         w: &mut W,
         screen: &Screen,
-        _con: &AppContext
+        _con: &AppContext,
     ) -> Result<(), ProgramError> {
         screen.goto(w, 0, 0)?;
         let dp = DisplayableTree {
@@ -460,16 +440,16 @@ impl AppState for BrowserState {
             warn!("refreshing base tree failed : {:?}", e);
         }
         // refresh the filtered tree, if any
-        Command::from_pattern(
-            if let Some(ref mut tree) = self.filtered_tree {
+        match self.filtered_tree {
+            Some(ref mut tree) => {
                 if let Err(e) = tree.refresh(page_height) {
                     warn!("refreshing filtered tree failed : {:?}", e);
                 }
                 &tree.options.pattern
-            } else {
-                &self.tree.options.pattern
             }
-        )
+            None => &self.tree.options.pattern,
+        }
+        .into()
     }
 
     /// draw the flags at the bottom right of the screen
@@ -477,9 +457,8 @@ impl AppState for BrowserState {
         &self,
         w: &mut W,
         screen: &mut Screen,
-        _con: &AppContext
-    ) -> Result<(), ProgramError>
-    {
+        _con: &AppContext,
+    ) -> Result<(), ProgramError> {
         let tree = self.displayed_tree();
         let total_char_size = screens::FLAGS_AREA_WIDTH;
         screen.goto_clear(w, screen.width - total_char_size - 1, screen.height - 1)?;
@@ -496,4 +475,3 @@ impl AppState for BrowserState {
         Ok(())
     }
 }
-

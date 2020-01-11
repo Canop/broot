@@ -5,11 +5,7 @@
 
 use std::{fmt, mem};
 
-use crate::{
-    errors::RegexError,
-    fuzzy_patterns::FuzzyPattern,
-    regex_patterns::RegexPattern,
-};
+use crate::{errors::RegexError, fuzzy_patterns::FuzzyPattern, regex_patterns::RegexPattern};
 
 #[derive(Debug, Clone)]
 pub enum Pattern {
@@ -78,10 +74,8 @@ impl Pattern {
 }
 
 /// A Match is a positive result of pattern matching
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Match {
     pub score: i32, // score of the match, guaranteed strictly positive, bigger is better
     pub pos: Vec<usize>, // positions of the matching chars
 }
-
-

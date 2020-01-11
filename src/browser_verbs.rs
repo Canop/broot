@@ -1,7 +1,7 @@
 use {
     crate::{
-        app_state::{AppStateCmdResult},
         app_context::AppContext,
+        app_state::AppStateCmdResult,
         browser_states::BrowserState,
         commands::Command,
         errors::ProgramError,
@@ -26,7 +26,7 @@ fn focus_path(path: PathBuf, screen: &mut Screen, tree: &Tree) -> AppStateCmdRes
             screen,
             &TaskLifetime::unlimited(),
         ),
-        Command::from_pattern(&tree.options.pattern),
+        Command::from(&tree.options.pattern),
     )
 }
 
@@ -55,7 +55,7 @@ impl VerbExecutor for BrowserState {
             }
             ":focus_root" => focus_path(PathBuf::from("/"), screen, self.displayed_tree()),
             ":up_tree" => match self.displayed_tree().root().parent() {
-                Some(path) => focus_path(path.to_path_buf(), screen,self.displayed_tree()),
+                Some(path) => focus_path(path.to_path_buf(), screen, self.displayed_tree()),
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
             ":focus_user_home" => match UserDirs::new() {
@@ -105,7 +105,7 @@ impl VerbExecutor for BrowserState {
                 external::print_path(&self.displayed_tree().selected_line().target(), con)?
             }
             ":print_tree" => external::print_tree(&self.displayed_tree(), screen, con)?,
-            ":refresh" => AppStateCmdResult::RefreshState{clear_cache: true},
+            ":refresh" => AppStateCmdResult::RefreshState { clear_cache: true },
             ":select_first" => {
                 self.displayed_tree_mut().try_select_first();
                 AppStateCmdResult::Keep
@@ -138,14 +138,18 @@ impl VerbExecutor for BrowserState {
             ":total_search" => {
                 if let Some(tree) = &self.filtered_tree {
                     if tree.total_search {
-                        AppStateCmdResult::DisplayError("search was already total - all children have been rated".to_owned())
+                        AppStateCmdResult::DisplayError(
+                            "search was already total - all children have been rated".to_owned(),
+                        )
                     } else {
                         self.pending_pattern = tree.options.pattern.clone();
                         self.total_search_required = true;
                         AppStateCmdResult::Keep
                     }
                 } else {
-                    AppStateCmdResult::DisplayError("this verb can be used only after a search".to_owned())
+                    AppStateCmdResult::DisplayError(
+                        "this verb can be used only after a search".to_owned(),
+                    )
                 }
             }
             ":quit" => AppStateCmdResult::Quit,
@@ -158,4 +162,3 @@ impl VerbExecutor for BrowserState {
         })
     }
 }
-
