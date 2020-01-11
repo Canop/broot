@@ -30,6 +30,8 @@ minimad = "0.6.3"
 termimad = "0.8.9"
 id-arena = "2.2.1"
 lazy-regex = "0.1"
+joinery = "2.0.0"
+lazy_format = "1.7.4"
 
 [target.'cfg(unix)'.dependencies]
 users = "0.9"

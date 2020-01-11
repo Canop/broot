@@ -25,6 +25,7 @@ use {
         fs::OpenOptions,
         io::Write,
         path::{Path, PathBuf},
+        borrow::Cow,
     },
 };
 
@@ -66,7 +67,7 @@ pub trait VerbExecutor {
 fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
     let spec = GROUP.replace_all(spec, r"(?P<$1>.+)");
     let spec = format!("^{}$", spec);
-    Regex::new(&spec.to_string())
+    Regex::new(&spec)
         .or_else(|_| Err(ConfError::InvalidVerbInvocation { invocation: spec }))
 }
 
@@ -371,14 +372,12 @@ fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &HashMap<String, Stri
 /// Note that this operation might be a little too optimistic in some cases
 /// of aliases but it's probably OK in broot.
 pub fn normalize_path(mut path: String) -> String {
-    let mut len_before = path.len();
     loop {
-        path = regex!(r"/[^/.\\]+/\.\.").replace(&path, "").to_string();
-        let len = path.len();
-        if len == len_before {
-            return path;
+        match regex!(r"/[^/.\\]+/\.\.").replace(&path, "") {
+            Cow::Owned(updated_path) => path = updated_path,
+            // Returning a borrowed means it was unchanged
+            Cow::Borrowed(..) => break path,
         }
-        len_before = len;
     }
 }
 #[cfg(test)]

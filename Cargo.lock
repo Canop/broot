@@ -105,7 +105,9 @@ dependencies = [
  "glob 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "id-arena 2.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "is_executable 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "joinery 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy-regex 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
+ "lazy_format 1.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.4.8 (registry+https://github.com/rust-lang/crates.io-index)",
  "minimad 0.6.3 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -493,6 +495,11 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
+name = "joinery"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
 name = "kernel32-sys"
 version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -508,6 +515,11 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "lazy_format"
+version = "1.7.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "lazy_static"
@@ -1165,8 +1177,10 @@ dependencies = [
 "checksum is_executable 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "302d553b8abc8187beb7d663e34c065ac4570b273bc9511a50e940e99409c577"
 "checksum itertools 0.8.2 (registry+https://github.com/rust-lang/crates.io-index)" = "f56a2d0bc861f9165be4eb3442afd3c236d8a98afd426f65d92324ae1091a484"
 "checksum itoa 0.4.4 (registry+https://github.com/rust-lang/crates.io-index)" = "501266b7edd0174f8530248f87f99c88fbe60ca4ef3dd486835b8d8d53136f7f"
+"checksum joinery 2.0.0 (registry+https://github.com/rust-lang/crates.io-index)" = "85a5c968b1e8336a945da21fab473045df2d5f8c81535e762d52f6b2c49477b9"
 "checksum kernel32-sys 0.2.2 (registry+https://github.com/rust-lang/crates.io-index)" = "7507624b29483431c0ba2d82aece8ca6cdba9382bff4ddd0f7490560c056098d"
 "checksum lazy-regex 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)" = "03d91276c62198fd9dd1be0d8a4ed647d0a51d5d6a0679dc324dd0b499d024ff"
+"checksum lazy_format 1.7.4 (registry+https://github.com/rust-lang/crates.io-index)" = "1fcbfa370488b9d46f50882230e38c0b9e1f7bf2e8aabb883540dfe2d5985008"
 "checksum lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "e2abad23fbc42b3700f2f279844dc832adb2b2eb069b2df918f455c4e18cc646"
 "checksum libc 0.2.65 (registry+https://github.com/rust-lang/crates.io-index)" = "1a31a0627fdf1f6a39ec0dd577e101440b7db22672c0901fe00a9a6fbb5c24e8"
 "checksum lock_api 0.3.2 (registry+https://github.com/rust-lang/crates.io-index)" = "e57b3997725d2b60dbec1297f6c2e2957cc383db1cebd6be812163f969c7d586"

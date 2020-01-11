@@ -20,6 +20,8 @@ use {
     },
     minimad::Composite,
     open,
+    lazy_format::lazy_format,
+    joinery::JoinableIterator,
     std::{
         fs::OpenOptions,
         io::Write,
@@ -278,7 +280,7 @@ impl AppState for BrowserState {
                             task,
                             Composite::from_inline(&format!(
                                 "Possible verbs: {}",
-                                completions.iter().map(|c| format!("*{}*", c)).collect::<Vec<String>>().join(", "),
+                                completions.iter().map(|c| lazy_format!("*{}*", c)).join_with(", "),
                             )),
                             false,
                         ).display(w, screen)

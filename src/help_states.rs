@@ -14,6 +14,8 @@ use {
         verb_store::PrefixSearchResult,
         verbs::VerbExecutor,
     },
+    lazy_format::lazy_format,
+    joinery::JoinableIterator,
     crossterm::{
         terminal::{Clear, ClearType},
         QueueableCommand,
@@ -45,7 +47,6 @@ impl HelpState {
 }
 
 impl AppState for HelpState {
-
     fn has_pending_task(&self) -> bool {
         false
     }
@@ -141,7 +142,7 @@ impl AppState for HelpState {
                         PrefixSearchResult::TooManyMatches(completions) => Status::from_message(
                             Composite::from_inline(&format!(
                                 "Possible completions: {}",
-                                completions.iter().map(|c| format!("*{}*", c)).collect::<Vec<String>>().join(", "),
+                                completions.iter().map(|c| lazy_format!("*{}*", c)).join_with(", "),
                             )),
                         ).display(w, screen)
                     }
