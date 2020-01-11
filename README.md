@@ -1,5 +1,7 @@
 # Broot
 
+![logo](https://docs.google.com/drawings/d/e/2PACX-1vTQ0JQZgNzghpWOi_lTRZaiyUJlTlBV1_ArYclpoJesiXenWwniXBfsDllYAbjvr_ky9JRYTvWAa7A5/pub?w=300&h=300) 
+
 [![CI][s3]][l3] [![MIT][s2]][l2] [![Latest Version][s1]][l1] [![Chat on Miaou][s4]][l4]
 
 [s1]: https://img.shields.io/crates/v/broot.svg
