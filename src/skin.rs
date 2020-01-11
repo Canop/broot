@@ -79,7 +79,10 @@ Skin! {
     exe: Some(Cyan), None;
     link: Some(Magenta), None;
     pruning: gray(12), None; {Italic}
-    permissions: ansi(94), None;
+    perm__: gray(5), None;
+    perm_r: ansi(94), None;
+    perm_w: ansi(132), None;
+    perm_x: ansi(65), None;
     owner: ansi(138), None;
     group: ansi(131), None;
     dates: ansi(66), None;

@@ -18,6 +18,7 @@ use {
         CompoundStyle,
         ProgressBar,
     },
+    umask::*,
 };
 
 #[cfg(unix)]
@@ -117,6 +118,68 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         let date_time: DateTime<Local> = system_time.into();
         cond_bg!(date_style, self, selected, self.skin.dates);
         date_style.queue(f, date_time.format("%Y/%m/%d %R ").to_string())
+    }
+
+    fn write_mode<F>(
+        &self,
+        f: &mut F,
+        mode: Mode,
+        selected: bool,
+    ) -> Result<(), termimad::Error> where F: std::io::Write {
+        cond_bg!(n_style, self, selected, self.skin.perm__);
+        cond_bg!(r_style, self, selected, self.skin.perm_r);
+        cond_bg!(w_style, self, selected, self.skin.perm_w);
+        cond_bg!(x_style, self, selected, self.skin.perm_x);
+
+        if mode.has(USER_READ) {
+            r_style.queue(f, 'r')?;
+        } else {
+            n_style.queue(f, '_')?;
+        }
+        if mode.has(USER_WRITE) {
+            w_style.queue(f, 'w')?;
+        } else {
+            n_style.queue(f, '_')?;
+        }
+        if mode.has(USER_EXEC) {
+            x_style.queue(f, 'x')?;
+        } else {
+            n_style.queue(f, '_')?;
+        }
+
+        if mode.has(GROUP_READ) {
+            r_style.queue(f, 'r')?;
+        } else {
+            n_style.queue(f, '_')?;
+        }
+        if mode.has(GROUP_WRITE) {
+            w_style.queue(f, 'w')?;
+        } else {
+            n_style.queue(f, '_')?;
+        }
+        if mode.has(GROUP_EXEC) {
+            x_style.queue(f, 'x')?;
+        } else {
+            n_style.queue(f, '_')?;
+        }
+
+        if mode.has(OTHERS_READ) {
+            r_style.queue(f, 'r')?;
+        } else {
+            n_style.queue(f, '_')?;
+        }
+        if mode.has(OTHERS_WRITE) {
+            w_style.queue(f, 'w')?;
+        } else {
+            n_style.queue(f, '_')?;
+        }
+        if mode.has(OTHERS_EXEC) {
+            x_style.queue(f, 'x')?;
+        } else {
+            n_style.queue(f, '_')?;
+        }
+
+        Ok(())
     }
 
     fn write_line_name<F>(
@@ -221,8 +284,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 {
                     if tree.options.show_permissions && line_index > 0 {
                         if line.is_selectable() {
-                            cond_bg!(perm_style, self, selected, self.skin.permissions);
-                            perm_style.queue(f, line.mode())?;
+                            self.write_mode(f, line.mode(), selected)?;
                             let owner = permissions::user_name(line.metadata.uid());
                             cond_bg!(owner_style, self, selected, self.skin.owner);
                             owner_style.queue(f, format!(" {:w$}", &owner, w = user_group_max_lengths.0,))?;

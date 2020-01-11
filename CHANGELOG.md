@@ -1,3 +1,6 @@
+### master
+- set different skins for the r, w and x parts of the mode (permission)
+
 <a name="v0.11.7"></a>
 ### v0.11.7 - 2020-01-11
 - fix cancelled verbs possibly executed (fix #104) (major dangerous bug)
