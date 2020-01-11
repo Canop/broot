@@ -19,7 +19,7 @@ Broot renders on `stderr` and can be ran in a subshell, which means you can also
 
 	my_unix_command "$(broot some_dir)"
 
-and quit broot with `:pp` on the selected path. But most often you'll more conveniently simply add your command (and maybe a shorcut) to the [config file](configuration.md#verbs).
+and quit broot with `:pp` on the selected path. But most often you'll more conveniently simply add your command (and maybe a shorcut) to the [config file](configuration.md#verbs-shortcuts-and-keys).
 
 # Navigate
 
