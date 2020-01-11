@@ -1,5 +1,6 @@
 ### master
 - set different skins for the r, w and x parts of the mode (permission)
+- upgrade crossterm to 0.14.2 to (hopefully) bring compatibility with freeBSD
 
 <a name="v0.11.7"></a>
 ### v0.11.7 - 2020-01-11
