@@ -18,13 +18,13 @@ use {
         CompoundStyle,
         ProgressBar,
     },
-    umask::*,
 };
 
 #[cfg(unix)]
 use {
     crate::permissions,
     std::os::unix::fs::MetadataExt,
+    umask::*,
 };
 
 /// declare a style named `$dst` which is usually a reference to the `$src`
@@ -120,6 +120,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         date_style.queue(f, date_time.format("%Y/%m/%d %R ").to_string())
     }
 
+    #[cfg(unix)]
     fn write_mode<F>(
         &self,
         f: &mut F,
