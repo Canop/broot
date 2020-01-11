@@ -1,3 +1,7 @@
+<a name="v0.11.7"></a>
+### v0.11.7 - 2020-01-11
+- fix cancelled verbs possibly executed (fix #104) (major dangerous bug)
+
 <a name="v0.11.6"></a>
 ### v0.11.6 - 2020-01-10
 - backspace was previously bound to :back if not consumed by input. This is removed

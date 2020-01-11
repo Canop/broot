@@ -121,6 +121,16 @@ impl Command {
         }
     }
 
+    /// set the action and clears the other parts :
+    ///  the command is now just the action.
+    /// This isn't used when the parts must be kept,
+    ///  like on edition or enter
+    fn set_action(&mut self, action: Action) {
+        self.raw = "".to_string();
+        self.parts = CommandParts::new();
+        self.action = action;
+    }
+
     /// apply an event to modify the command.
     /// The command isn't applied to the state
     pub fn add_event(
@@ -135,7 +145,7 @@ impl Command {
         match event {
             Event::Click(x, y) => {
                 if !input_field.apply_event(&event) {
-                    self.action = Action::Click(*x, *y);
+                    self.set_action(Action::Click(*x, *y));
                 }
             }
             Event::DoubleClick(x, y) => {
@@ -157,7 +167,7 @@ impl Command {
 
                 if *key == keys::ESC {
                     // Esc it's also a reserved key so order doesn't matter
-                    self.action = Action::Back;
+                    self.set_action(Action::Back);
                     return;
                 }
 
@@ -166,14 +176,14 @@ impl Command {
                 {
                     // a '?' opens the help when it's the first char
                     // or when it's part of the verb invocation
-                    self.action = Action::Help;
+                    self.set_action(Action::Help);
                     return;
                 }
 
                 // we now check if the key is the trigger key of one of the verbs
                 if let Some(index) = con.verb_store.index_of_key(*key) {
                     if state.can_execute(index, con) {
-                        self.action = Action::VerbIndex(index);
+                        self.set_action(Action::VerbIndex(index));
                         return;
                     } else {
                         debug!("verb not allowed on current selection");
@@ -186,14 +196,14 @@ impl Command {
                 }
 
                 if *key == keys::TAB {
-                    self.action = Action::Next;
+                    self.set_action(Action::Next);
                     return;
                 }
 
                 if *key == keys::BACK_TAB {
                     // should probably be a normal verb instead of an action with a special
                     // handling here
-                    self.action = Action::Previous;
+                    self.set_action(Action::Previous);
                     return;
                 }
 

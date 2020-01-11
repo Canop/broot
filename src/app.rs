@@ -216,6 +216,7 @@ impl App {
 
         for event in rx_events {
             cmd.add_event(&event, &mut screen.input_field, con, self.state());
+            debug!("command after add_event: {:?}", &cmd);
             cmd = self.apply_command(writer, cmd, &mut screen, con)?;
             event_source.unblock(self.quitting);
 
