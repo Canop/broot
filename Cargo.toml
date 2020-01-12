@@ -10,6 +10,7 @@ keywords = ["cli", "fuzzy", "tree", "search", "regex"]
 license = "MIT"
 categories = ["command-line-utilities"]
 readme = "README.md"
+build = "build.rs"
 
 [dependencies]
 chrono = "0.4"
@@ -39,6 +40,9 @@ is_executable = "0.1"
 
 [dev-dependencies]
 criterion = "0.3"
+
+[build-dependencies]
+clap = "2.33"
 
 [profile.release]
 lto = true # link time optimization - roughly halves the size of the exec
