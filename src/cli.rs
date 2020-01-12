@@ -17,7 +17,8 @@ use {
 pub struct AppLaunchArgs {
     pub root: PathBuf,                    // what should be the initial root
     pub file_export_path: Option<String>, // where to write the produced path (if required with --out)
-    pub cmd_export_path: Option<String>, // where to write the produced command (if required with --outcmd or -oc)
+    pub cmd_export_path: Option<String>, // where to write the produced command (if required with --outcmd)
+    pub print_shell_function: Option<String>, // shell function to print on stdout
     pub tree_options: TreeOptions,       // initial tree options
     pub commands: Option<String>,        // commands passed as cli argument, still unparsed
     pub install: bool,                   // installation is required
@@ -44,26 +45,8 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
 /// return the parsed launch arguments
 pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
     let cli_args = crate::clap::clap_app().get_matches();
-    let mut root = match cli_args.value_of("root") {
-        Some(path) => {
-
-            /*
-            // On windows we unwrap the argument if it's given between
-            // double quotes, which notably happens when broot is called
-            // because mapped to a right click action in Explorer.
-            // Related issue: #72
-            // I'm not sure it's the best way. Inputs welcome.
-            #[cfg(windows)] {
-                if path.starts_with('"') && path.ends_with('"') {
-                    path = &path[1..path.len()-1];
-                }
-            }
-            */
-
-            PathBuf::from(path)
-        }
-        None => env::current_dir()?,
-    };
+    let mut root = cli_args.value_of("root")
+        .map_or(env::current_dir()?, PathBuf::from);
     if !root.exists() {
         Err(TreeBuildError::FileNotFound {
             path: format!("{:?}", &root),
@@ -101,19 +84,23 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
     let install = cli_args.is_present("install");
     let file_export_path = cli_args
         .value_of("file_export_path")
-        .and_then(|s| Some(s.to_owned()));
+        .map(str::to_string);
     let cmd_export_path = cli_args
         .value_of("cmd_export_path")
-        .and_then(|s| Some(s.to_owned()));
+        .map(str::to_string);
     let commands = cli_args
         .value_of("commands")
-        .and_then(|s| Some(s.to_owned()));
+        .map(str::to_string);
     let no_style = cli_args.is_present("no-style");
     let height = cli_args.value_of("height").and_then(|s| s.parse().ok());
+    let print_shell_function = cli_args
+        .value_of("print-shell-function")
+        .map(str::to_string);
     Ok(AppLaunchArgs {
         root,
         file_export_path,
         cmd_export_path,
+        print_shell_function,
         tree_options,
         commands,
         install,

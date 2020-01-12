@@ -17,6 +17,7 @@ custom_error! {pub ProgramError
     UnmatchingVerbArgs {name: String} = "No matching argument found for verb {:?}",
     TreeBuild {source: TreeBuildError} = "{}",
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
+    UnknowShell {shell: String} = "Unknown shell: {shell}",
 }
 
 custom_error! {pub TreeBuildError

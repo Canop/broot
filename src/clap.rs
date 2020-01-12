@@ -46,16 +46,16 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("respect .gitignore rules (yes, no, auto)"),
         )
         .arg(
-            clap::Arg::with_name("hidden")
-                .short("h")
-                .long("hidden")
-                .help("show hidden files"),
-        )
-        .arg(
             clap::Arg::with_name("height")
                 .long("height")
                 .help("height (if you don't want to fill the screen or for file export)")
                 .takes_value(true),
+        )
+        .arg(
+            clap::Arg::with_name("hidden")
+                .short("h")
+                .long("hidden")
+                .help("show hidden files"),
         )
         .arg(
             clap::Arg::with_name("install")
@@ -78,6 +78,12 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .short("p")
                 .long("permissions")
                 .help("show permissions, with owner and group"),
+        )
+        .arg(
+            clap::Arg::with_name("print-shell-function")
+                .long("print-shell-function")
+                .takes_value(true)
+                .help("print to stdout the br function for a given shell"),
         )
         .arg(
             clap::Arg::with_name("sizes")

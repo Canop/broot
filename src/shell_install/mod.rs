@@ -72,6 +72,21 @@ impl ShellInstall {
         }
     }
 
+    /// write on stdout the script building the function for
+    /// the given shell
+    pub fn print(shell: &str) -> Result<(), ProgramError> {
+        match shell {
+            "bash" | "zsh" => println!("{}", bash::get_script()),
+            "fish" => println!("{}", fish::get_script()),
+            _ => {
+                return Err(ProgramError::UnknowShell{
+                    shell: shell.to_string(),
+                });
+            }
+        }
+        Ok(())
+    }
+
     /// check whether the shell function is installed, install
     /// it if it wasn't refused before or if broot is launched
     /// with --install.
