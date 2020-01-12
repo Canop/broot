@@ -12,6 +12,7 @@ pub mod app_context;
 pub mod app_state;
 pub mod browser_states;
 pub mod browser_verbs;
+pub mod clap;
 pub mod cli;
 pub mod command_parsing;
 pub mod commands;

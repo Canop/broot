@@ -25,89 +25,6 @@ pub struct AppLaunchArgs {
     pub no_style: bool,                  // whether to remove all styles (including colors)
 }
 
-/// declare the possible CLI arguments, and gets the values
-fn get_cli_args<'a>() -> clap::ArgMatches<'a> {
-    clap::App::new("broot")
-        .version(env!("CARGO_PKG_VERSION"))
-        .author("dystroy <denys.seguret@gmail.com>")
-        .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
-        .arg(clap::Arg::with_name("root").help("sets the root directory"))
-        .arg(
-            clap::Arg::with_name("cmd_export_path")
-                .long("outcmd")
-                .takes_value(true)
-                .help("where to write the produced cmd (if any)"),
-        )
-        .arg(
-            clap::Arg::with_name("commands")
-                .short("c")
-                .long("cmd")
-                .takes_value(true)
-                .help("commands to execute (space separated, experimental)"),
-        )
-        .arg(
-            clap::Arg::with_name("dates")
-                .short("d")
-                .long("dates")
-                .help("show the last modified date of files and directories"),
-        )
-        .arg(
-            clap::Arg::with_name("file_export_path")
-                .short("o")
-                .long("out")
-                .takes_value(true)
-                .help("where to write the produced path (if any)"),
-        )
-        .arg(
-            clap::Arg::with_name("gitignore")
-                .short("g")
-                .long("gitignore")
-                .takes_value(true)
-                .help("respect .gitignore rules (yes, no, auto)"),
-        )
-        .arg(
-            clap::Arg::with_name("hidden")
-                .short("h")
-                .long("hidden")
-                .help("show hidden files"),
-        )
-        .arg(
-            clap::Arg::with_name("height")
-                .long("height")
-                .help("height (if you don't want to fill the screen or for file export)")
-                .takes_value(true),
-        )
-        .arg(
-            clap::Arg::with_name("install")
-                .long("install")
-                .help("install or reinstall the br shell function"),
-        )
-        .arg(
-            clap::Arg::with_name("no-style")
-                .long("no-style")
-                .help("whether to remove all style and colors"),
-        )
-        .arg(
-            clap::Arg::with_name("only-folders")
-                .short("f")
-                .long("only-folders")
-                .help("only show folders"),
-        )
-        .arg(
-            clap::Arg::with_name("permissions")
-                .short("p")
-                .long("permissions")
-                .help("show permissions, with owner and group"),
-        )
-        .arg(
-            clap::Arg::with_name("sizes")
-                .short("s")
-                .long("sizes")
-                .help("show the size of files and directories"),
-        )
-        .get_matches()
-}
-
 #[cfg(not(windows))]
 fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
     root.canonicalize()
@@ -126,7 +43,7 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
 
 /// return the parsed launch arguments
 pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
-    let cli_args = get_cli_args();
+    let cli_args = crate::clap::clap_app().get_matches();
     let mut root = match cli_args.value_of("root") {
         Some(path) => {
 
