@@ -2,6 +2,7 @@
 - set different skins for the r, w and x parts of the mode (permission)
 - upgrade crossterm to 0.14.2 to bring compatibility with freeBSD
 - generate shell completion scripts on build (deep into the target directory)
+- --print-shell-function launch argument to print the shell functions to stdout
 
 <a name="v0.11.7"></a>
 ### v0.11.7 - 2020-01-11
