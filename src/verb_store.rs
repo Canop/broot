@@ -1,16 +1,6 @@
-
 use {
-    crate::{
-        conf::Conf,
-        keys,
-        permissions,
-        verbs::Verb,
-    },
-    crossterm::event::{
-        KeyCode,
-        KeyEvent,
-        KeyModifiers,
-    },
+    crate::{conf::Conf, keys, permissions, verbs::Verb},
+    crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
 };
 
 /// Provide access to the verbs:
@@ -24,10 +14,10 @@ pub struct VerbStore {
     pub verbs: Vec<Verb>,
 }
 
-#[derive(Debug, Clone, PartialEq)]
-pub enum PrefixSearchResult<'v, T> {
+#[derive(Debug, Clone)]
+pub enum PrefixSearchResult<'v> {
     NoMatch,
-    Match(T),
+    Match(&'v Verb),
     TooManyMatches(Vec<&'v str>),
 }
 
@@ -42,7 +32,8 @@ impl VerbStore {
         shortcut: Option<String>,
         description: &str,
     ) {
-        self.verbs.push(Verb::create_builtin(name, key, shortcut, description));
+        self.verbs
+            .push(Verb::create_builtin(name, key, shortcut, description));
     }
     pub fn init(&mut self, conf: &Conf) {
         // we first add the verbs coming from configuration, as
@@ -105,12 +96,7 @@ impl VerbStore {
             Some("goto".to_string()),
             "display the directory (mapped to *enter* in tree)",
         );
-        self.add_builtin(
-            "focus_root",
-            None,
-            None,
-            "focus `/`",
-        );
+        self.add_builtin("focus_root", None, None, "focus `/`");
         self.add_builtin(
             "help",
             Some(KeyEvent::from(KeyCode::F(1))),
@@ -127,7 +113,7 @@ impl VerbStore {
             "line_up",
             Some(KeyEvent::from(KeyCode::Up)),
             None,
-            "move one line up"
+            "move one line up",
         );
         self.verbs.push(
             Verb::create_external(
@@ -164,7 +150,7 @@ impl VerbStore {
         self.add_builtin(
             "open_leave",
             None, // default mapping directly handled in commands#add_event
-                  // It's 'alt-enter' but only for files
+            // It's 'alt-enter' but only for files
             Some("ol".to_string()),
             "open file or directory according to OS settings (quit broot)",
         );
@@ -280,34 +266,33 @@ impl VerbStore {
             "focus the parent of the current root",
         );
     }
-    pub fn search<'v>(&'v self, prefix: &str) -> PrefixSearchResult<'v, &Verb> {
-        let mut found_index = 0;
-        let mut nb_found = 0;
+    pub fn search(&self, prefix: &str) -> PrefixSearchResult {
+        let mut found = None;
         let mut completions: Vec<&str> = Vec::new();
-        for (index, verb) in self.verbs.iter().enumerate() {
+
+        for verb in &self.verbs {
             if let Some(shortcut) = &verb.shortcut {
                 if shortcut.starts_with(prefix) {
                     if shortcut == prefix {
-                        return PrefixSearchResult::Match(&verb);
+                        return PrefixSearchResult::Match(verb);
                     }
-                    found_index = index;
-                    nb_found += 1;
+                    found = Some(verb);
                     completions.push(&shortcut);
                     continue;
                 }
             }
             if verb.invocation.name.starts_with(prefix) {
                 if verb.invocation.name == prefix {
-                    return PrefixSearchResult::Match(&verb);
+                    return PrefixSearchResult::Match(verb);
                 }
-                found_index = index;
-                nb_found += 1;
+                found = Some(verb);
                 completions.push(&verb.invocation.name);
             }
         }
-        match nb_found {
-            0 => PrefixSearchResult::NoMatch,
-            1 => PrefixSearchResult::Match(&self.verbs[found_index]),
+
+        match (completions.len(), found) {
+            (0, None) => PrefixSearchResult::NoMatch,
+            (1, Some(verb)) => PrefixSearchResult::Match(verb),
             _ => PrefixSearchResult::TooManyMatches(completions),
         }
     }
@@ -335,4 +320,3 @@ impl VerbStore {
         None
     }
 }
-

@@ -35,6 +35,11 @@ lazy-regex = "0.1"
 [dev-dependencies]
 criterion = "0.3"
 
+[dependencies.nom]
+version = "5.1.0"
+default-features = false
+features = ["std"]
+
 [target.'cfg(unix)'.dependencies]
 users = "0.9"
 

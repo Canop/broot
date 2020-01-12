@@ -198,7 +198,16 @@ impl App {
         if let Some(unparsed_commands) = &con.launch_args.commands {
             let lifetime = TaskLifetime::unlimited();
 
-            for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
+            for arg_cmd in parse_command_sequence(
+                con.launch_args
+                    .command_separator
+                    .as_ref()
+                    .map(String::as_str)
+                    .unwrap_or(";")
+                    .trim(),
+                unparsed_commands,
+                &con.verb_store,
+            )? {
                 cmd = self.apply_command(writer, arg_cmd, &mut screen, con)?;
                 self.do_pending_tasks(writer, &cmd, &mut screen, con, lifetime.clone())?;
                 if self.quitting {

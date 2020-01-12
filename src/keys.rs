@@ -1,22 +1,23 @@
 //! parsing keys from strings, and describing keys in strings
 
 use {
-    crate::{
-        errors::ConfError,
-    },
-    crossterm::event::{
-        KeyCode::*,
-        KeyEvent,
-        KeyModifiers,
-    },
+    crate::errors::ConfError,
+    crossterm::event::{KeyCode::*, KeyEvent, KeyModifiers},
+    std::fmt::Write,
 };
 
 macro_rules! const_key {
     ($name:ident, $code:expr) => {
-        pub const $name: KeyEvent = KeyEvent{code:$code, modifiers:KeyModifiers::empty()};
+        pub const $name: KeyEvent = KeyEvent {
+            code: $code,
+            modifiers: KeyModifiers::empty(),
+        };
     };
     ($name:ident, $code:expr, $mod:expr) => {
-        pub const $name: KeyEvent = KeyEvent{code:$code, modifiers:$mod};
+        pub const $name: KeyEvent = KeyEvent {
+            code: $code,
+            modifiers: $mod,
+        };
     };
 }
 
@@ -50,18 +51,10 @@ pub fn key_event_desc(key: KeyEvent) -> String {
         s.push_str("shift-");
     }
     match key.code {
-        Char('\r') | Char('\n') | Enter => {
-            s.push_str("enter");
-        }
-        Char(c) => {
-            s.push(c);
-        }
-        F(u) => {
-            s.push_str(&format!("F{}", u));
-        }
-        _ => {
-            s.push_str(&format!("{:?}", key.code)); // FIXME check
-        }
+        Char('\r') | Char('\n') | Enter => s.push_str("enter"),
+        Char(c) => s.push(c),
+        F(u) => write!(&mut s, "F{}", u).unwrap(),
+        _ => write!(&mut s, "{:?}", key.code).unwrap(), // FIXME check
     }
     s
 }
@@ -80,7 +73,7 @@ pub fn is_reserved(key: KeyEvent) -> bool {
         //LEFT => true, // needed for the input field
         //RIGHT => true, // needed for the input field
         DELETE => true, // needed for the input field
-        ESC => true, // basic navigation
+        ESC => true,    // basic navigation
         //UP => true, // basic navigation
         //DOWN => true, // basic navigation
         _ => false,
@@ -91,7 +84,7 @@ pub fn is_reserved(key: KeyEvent) -> bool {
 ///
 pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
     let tokens: Vec<&str> = raw.split('-').collect();
-    let last = tokens[tokens.len()-1].to_ascii_lowercase();
+    let last = tokens[tokens.len() - 1].to_ascii_lowercase();
     let code = match last.as_ref() {
         "esc" => Esc,
         "enter" => Enter,
@@ -120,13 +113,13 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
         "f10" => F(10),
         "f11" => F(11),
         "f12" => F(12),
-        c if c.len()==1 => Char(c.chars().next().unwrap()),
-        _=> {
+        c if c.len() == 1 => Char(c.chars().next().unwrap()),
+        _ => {
             return bad_key(raw);
         }
     };
     let mut modifiers = KeyModifiers::empty();
-    for i in 0..tokens.len()-1 {
+    for i in 0..tokens.len() - 1 {
         let token = tokens[i];
         match token.to_ascii_lowercase().as_ref() {
             "ctrl" => {
@@ -138,26 +131,20 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
             "shift" => {
                 modifiers.insert(KeyModifiers::SHIFT);
             }
-            _=> {
+            _ => {
                 return bad_key(raw);
             }
         }
     }
-    Ok(KeyEvent{ code, modifiers })
+    Ok(KeyEvent { code, modifiers })
 }
 #[cfg(test)]
 mod key_parsing_tests {
 
-    use {
-        crate::keys::*,
-        crossterm::event::{
-            KeyEvent,
-            KeyCode::*,
-        },
-    };
+    use {crate::keys::*, crossterm::event::KeyEvent};
 
     #[test]
-    fn check_key_description(){
+    fn check_key_description() {
         assert_eq!(key_event_desc(ALT_ENTER), "alt-enter");
     }
 
@@ -180,4 +167,3 @@ mod key_parsing_tests {
         check_ok("ctrl-Q", KeyEvent::new(Char('q'), KeyModifiers::CONTROL));
     }
 }
-

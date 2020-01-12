@@ -1,9 +1,6 @@
 /// this module generate the clap App, which defines
 /// launch arguments
-
-use {
-    clap,
-};
+use clap;
 
 /// declare the possible CLI arguments, and gets the values
 pub fn clap_app() -> clap::App<'static, 'static> {
@@ -23,7 +20,15 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .short("c")
                 .long("cmd")
                 .takes_value(true)
-                .help("commands to execute (space separated, experimental)"),
+                .help("commands to execute (experimental)"),
+        )
+        .arg(
+            clap::Arg::with_name("command_separator")
+                .long("cmd-sep")
+                .takes_value(true)
+                .help("the separator string when using multiple commands with `--cmd`")
+                .requires("commands")
+                .env("BROOT_CMD_SEP"),
         )
         .arg(
             clap::Arg::with_name("dates")
@@ -83,9 +88,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
             clap::Arg::with_name("set-install-state")
                 .long("set-install-state")
                 .takes_value(true)
-                .possible_values(
-                    &["undefined", "refused", "installed"]
-                )
+                .possible_values(&["undefined", "refused", "installed"])
                 .help("set the installation state (for use in install script)"),
         )
         .arg(
