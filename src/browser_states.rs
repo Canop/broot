@@ -396,17 +396,17 @@ impl AppState for BrowserState {
                 }
             };
             self.total_search_required = false;
-            if let Some(ref mut filtered_tree) = filtered_tree {
+            if let Some(ref mut ft) = filtered_tree {
                 info!(
                     "Tree search with pattern {} took {:?}",
-                    &filtered_tree.options.pattern,
+                    &ft.options.pattern,
                     start.elapsed()
                 );
-                debug!("was it total search ? {}", filtered_tree.total_search);
-                filtered_tree.try_select_best_match();
-                filtered_tree.make_selection_visible(BrowserState::page_height(screen));
+                debug!("was it total search ? {}", ft.total_search);
+                ft.try_select_best_match();
+                ft.make_selection_visible(BrowserState::page_height(screen));
+                self.filtered_tree = filtered_tree;
             } // if none: task was cancelled from elsewhere
-            self.filtered_tree = filtered_tree;
             return;
         }
         self.displayed_tree_mut().fetch_some_missing_dir_size(tl);
