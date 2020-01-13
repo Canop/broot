@@ -173,7 +173,9 @@ const DEFAULT_CONF_FILE: &str = r#"
 #####################
 # user defined verbs:
 
-# If $EDITOR isn't set on your computer, you should either set it
+# If $EDITOR isn't set on your computer, you should either set it using
+#  something similar to
+#   export EDITOR=/usr/bin/nvim
 #  or just replace it with your editor of choice in the 'execution'
 #  pattern.
 # Example:
