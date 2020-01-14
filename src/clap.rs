@@ -80,6 +80,15 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("show permissions, with owner and group"),
         )
         .arg(
+            clap::Arg::with_name("set-install-state")
+                .long("set-install-state")
+                .takes_value(true)
+                .possible_values(
+                    &["undefined", "refused", "installed"]
+                )
+                .help("set the installation state (for use in install script)"),
+        )
+        .arg(
             clap::Arg::with_name("print-shell-function")
                 .long("print-shell-function")
                 .takes_value(true)

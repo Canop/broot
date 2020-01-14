@@ -18,6 +18,7 @@ custom_error! {pub ProgramError
     TreeBuild {source: TreeBuildError} = "{}",
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
     UnknowShell {shell: String} = "Unknown shell: {shell}",
+    InternalError {details: String} = "Internal error: {details}", // should not happen
 }
 
 custom_error! {pub TreeBuildError

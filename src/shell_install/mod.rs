@@ -51,6 +51,55 @@ pub struct ShellInstall {
     done: bool, // true if the installation was just made
 }
 
+#[derive(Debug, Clone, Copy)]
+pub enum ShellInstallState {
+    Undefined, // before any install, this is the initial state
+    Refused,
+    Installed,
+}
+impl ShellInstallState {
+    pub fn from_str(state: &str) -> Result<Self, ProgramError> {
+        match state {
+            "undefined" => Ok(Self::Undefined),
+            "refused" => Ok(Self::Refused),
+            "installed" => Ok(Self::Installed),
+            _ => Err(ProgramError::InternalError {
+                // not supposed to happen because claps check the values
+                details: format!("unexpected install state: {:?}", state),
+            }),
+        }
+    }
+    /// write either the "installed" or the "refused" file, or remove
+    ///  those files.
+    ///
+    /// This is useful in installation
+    /// or test scripts when we don't want the user to be prompted
+    /// to install the function, or in case something doesn't properly
+    /// work in shell detections
+    pub fn write_file(&self) -> Result<(), ProgramError> {
+        let refused_path = get_refused_path();
+        let installed_path = get_installed_path();
+        if installed_path.exists() {
+            fs::remove_file(&installed_path)?;
+        }
+        if refused_path.exists() {
+            fs::remove_file(&refused_path)?;
+        }
+        match self {
+            Self::Refused => {
+                fs::create_dir_all(refused_path.parent().unwrap())?;
+                fs::write(&refused_path, REFUSED_FILE_CONTENT)?;
+            }
+            Self::Installed => {
+                fs::create_dir_all(installed_path.parent().unwrap())?;
+                fs::write(&installed_path, INSTALLED_FILE_CONTENT)?;
+            }
+            _ => {}
+        }
+        Ok(())
+    }
+}
+
 fn get_refused_path() -> PathBuf {
     conf::dir().join("launcher").join("refused")
 }
@@ -112,8 +161,7 @@ impl ShellInstall {
         fish::install(self)?;
         self.should_quit = true;
         if self.done {
-            fs::create_dir_all(installed_path.parent().unwrap())?;
-            fs::write(&installed_path, INSTALLED_FILE_CONTENT)?;
+            ShellInstallState::Installed.write_file()?;
             self.skin.print_text(MD_INSTALL_DONE);
         }
         Ok(())
@@ -146,12 +194,10 @@ impl ShellInstall {
         debug!("proceed: {:?}", proceed);
         self.authorization = Some(proceed);
         if !proceed {
-            fs::create_dir_all(refused_path.parent().unwrap())?;
-            fs::write(
-                &refused_path,
-                REFUSED_FILE_CONTENT,
-            )?;
-            self.skin.print_text("**Installation cancelled**. If you change your mind, run `broot --install`.");
+            ShellInstallState::Refused.write_file()?;
+            self.skin.print_text(
+                "**Installation cancelled**. If you change your mind, run `broot --install`."
+            );
         }
         Ok(proceed)
     }

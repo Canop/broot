@@ -55,8 +55,16 @@ fn configure_log() {
 fn run() -> Result<Option<Launchable>, ProgramError> {
     configure_log();
     let launch_args = cli::read_launch_args()?;
-    if let Some(shell) = launch_args.print_shell_function {
-        ShellInstall::print(&shell)?;
+    let mut must_quit = false;
+    if let Some(state) = launch_args.set_install_state {
+        state.write_file()?;
+        must_quit = true;
+    }
+    if let Some(shell) = &launch_args.print_shell_function {
+        ShellInstall::print(shell)?;
+        must_quit = true;
+    }
+    if must_quit {
         return Ok(None);
     }
     let mut shell_install = ShellInstall::new(&launch_args);

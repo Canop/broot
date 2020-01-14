@@ -4,6 +4,7 @@
 use {
     crate::{
         errors::{ProgramError, TreeBuildError},
+        shell_install::ShellInstallState,
         tree_options::{OptionBool, TreeOptions},
     },
     std::{
@@ -19,6 +20,7 @@ pub struct AppLaunchArgs {
     pub file_export_path: Option<String>, // where to write the produced path (if required with --out)
     pub cmd_export_path: Option<String>, // where to write the produced command (if required with --outcmd)
     pub print_shell_function: Option<String>, // shell function to print on stdout
+    pub set_install_state: Option<ShellInstallState>, // the state to set
     pub tree_options: TreeOptions,       // initial tree options
     pub commands: Option<String>,        // commands passed as cli argument, still unparsed
     pub install: bool,                   // installation is required
@@ -96,11 +98,16 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
     let print_shell_function = cli_args
         .value_of("print-shell-function")
         .map(str::to_string);
+    let set_install_state = cli_args
+        .value_of("set-install-state")
+        .map(ShellInstallState::from_str)
+        .transpose()?;
     Ok(AppLaunchArgs {
         root,
         file_export_path,
         cmd_export_path,
         print_shell_function,
+        set_install_state,
         tree_options,
         commands,
         install,
