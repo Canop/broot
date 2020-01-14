@@ -3,16 +3,21 @@ The current version of broot works on linux, mac and windows (win 10+).
 
 While the linux version is quite well tested the other versions are lacking testers and maybe involved developpers.
 
-Precompiled binaries and the crates.io repository are updated at the same time, with tested releases.
-
-If you prefer to get the very last version, even when not tagged, you may compile from the sources available on GitHub.
+!!! Note
+	Windows users: broot may need additional rights at first use in order to write its configuration file
 
 # From precompiled binaries
 
-The last one is always made available at:
+Binaries are made available at every release in [download](https://dystroy.org/broot/download).
 
-* [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
-* [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
+Direct links:
+
+Target|Files
+-|-
+Linux | [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
+Raspberry | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)
+Windows 10+ | [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
+Shell completion | [completion/](https://dystroy.org/broot/download/completion/)
 
 You may download previous releases on [GitHub releases](https://github.com/Canop/broot/releases).
 
@@ -28,12 +33,10 @@ Once it's installed, use cargo to install broot:
 
 You'll need to have the [Rust development environment](https://www.rust-lang.org/tools/install) installed.
 
-Fetch the Canop/broot repository, move to the broot directory, then run
+Fetch the [Canop/broot](https://github.com/Canop/broot) repository, move to the broot directory, then run
 
     cargo install --path .
 
-!!! Note
-	Windows users: broot may need additional rights at first use in order to write its configuration file
 
 # Homebrew
 
@@ -41,7 +44,7 @@ If you're using [homebrew](https://brew.sh/), you can use the `brew install` com
 
     brew install broot
 
-*note: the brew formula is maintained by a third party*
+*note: the brew formula is maintained by a third party and may be less up to date.*
 
 # MacPorts
 
@@ -50,7 +53,7 @@ You can also install broot via [MacPorts](https://www.macports.org):
     sudo port selfupdate
     sudo port install broot
 
-*note: the MacPorts port for broot is also maintained by a third party.*
+*note: the MacPorts port for broot is also maintained by a third party and may be less up to date.*
 
 # Installation Completion : the `br` shell function
 

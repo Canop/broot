@@ -32,14 +32,14 @@ termimad = "0.8.10"
 id-arena = "2.2.1"
 lazy-regex = "0.1"
 
+[dev-dependencies]
+criterion = "0.3"
+
 [target.'cfg(unix)'.dependencies]
 users = "0.9"
 
 [target.'cfg(windows)'.dependencies]
 is_executable = "0.1"
-
-[dev-dependencies]
-criterion = "0.3"
 
 [build-dependencies]
 clap = "2.33"

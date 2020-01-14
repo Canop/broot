@@ -1,5 +1,5 @@
 //! The goal of this mod is to ensure the launcher shell function
-//! is available for fish and zsh i.e. the `br` shell function can
+//! is available for fish i.e. the `br` shell function can
 //! be used to launch broot (and thus make it possible to execute
 //! some commands, like `cd`, from the starting shell.
 //!
