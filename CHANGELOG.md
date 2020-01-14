@@ -1,3 +1,6 @@
+### master
+- fix a case of bad selection after search then another search interrupted (#147)
+
 <a name="v0.11.8"></a>
 ### v0.11.8 - 2020-01-12
 - set different skins for the r, w and x parts of the mode (permission)
