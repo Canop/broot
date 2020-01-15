@@ -21,6 +21,8 @@ Shell completion | [completion/](https://dystroy.org/broot/download/completion/)
 
 You may download previous releases on [GitHub releases](https://github.com/Canop/broot/releases).
 
+When you download executable files, you'll have to ensure the shell can find them. An easy solution on linux is for example to put them in `/usr/local/bin`.
+
 # From crates.io
 
 You'll need to have the [Rust development environment](https://www.rust-lang.org/tools/install) installed.
