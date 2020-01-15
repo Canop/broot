@@ -1,9 +1,10 @@
 bench.sh
 dev.log
 deploy.sh
-/releases
+release.zip
 /target
 **/*.rs.bk
 screens
 /website/site
 build
+trav

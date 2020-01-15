@@ -1,6 +1,7 @@
 ### master
 - fix a case of bad selection after search then another search interrupted (#147)
 - `--set-install-state` can be used in tests or manual installs to set the installation state
+- Raspberry now a default target available in installation page
 
 <a name="v0.11.8"></a>
 ### v0.11.8 - 2020-01-12

@@ -25,6 +25,8 @@ Before posting a new issue, check your problem hasn't already been raised and in
 
 Before starting working on a Pull Request, please join the Miaou room to coordinate the developement. There are frequently several feature branchs waiting to be merged and adding some wild ones may make the process painful.
 
+A PR must be also be *focused*. Don't touch other code and don't refactor or reformat without discussion.
+
 If you think you might help, as a tester or coder, you're welcome.
 
 ## This documentation...
