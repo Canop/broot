@@ -33,7 +33,9 @@ fn parse_separator<'a>(separator: &'a str) -> impl Fn(&'a str) -> IResult<&'a st
     delimited(space0, tag(separator), space0)
 }
 
-// Parse the initial search pattern
+// Parse the initial search pattern, Which is a string containing no whitespace
+// or colons. Consumes any whitespace after the search pattern. Returns a
+// parse error if there is not search pattern.
 fn parse_search_pattern(input: &str) -> IResult<&str, &str, ()> {
     verify(terminated(is_not(" \t:"), space0), |pat: &str| {
         !pat.is_empty()
@@ -64,12 +66,17 @@ struct ParsedCommandParts<'a> {
 ///
 /// Assuming ; is the separator, it will return:
 ///
-/// ("command", "a b c", :command a b c")
+/// {
+///     verb: "command",
+///     args: "a b c",
+///     command: ":command a b c",
+/// }
 ///
-/// The verb part is used to look up the verb in the verb.
-/// The args part is used to validate the arguments
+/// The verb part is used to look up the verb in the VerbStore.
+/// The args part is used to validate the arguments against the Verb's
+/// arguments regex'
 /// The command part is used to construct a command. Be sure to prepend a :
-/// if there isn't one already there.
+/// if there isn't one already there, because Command::new requires a semicolon.
 /// Fails if the input is empty.
 fn parse_command_parts<'a>(
     separator: &'a str,
@@ -111,7 +118,9 @@ fn parse_command_parts<'a>(
 /// A single search string, followed by any number of commands. The search
 /// string is separated from the first command by a whitespace or semicolon,
 /// just like in the interactive interface; subsequent commands are separated
-/// by the `separator`, which the CLI defaults to ";"
+/// by the `separator`, which the CLI defaults to ";".
+///
+/// Verbs and their arguments are validated against `verb_store`.
 pub fn parse_command_sequence(
     separator: &str,
     input: &str,
