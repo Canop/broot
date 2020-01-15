@@ -189,8 +189,9 @@ pub fn parse_command_sequence(
                 match parse_sep(tail) {
                     Ok((tail, _)) => tail,
                     Err(_) => {
-                        // If this parser errored, no separator was found, which
-                        // should only be possible if the input is empty.
+                        // If this parser errored, no separator was found,
+                        // which should only be possible if the input is
+                        // empty, which means we're done parsing.
                         debug_assert!(tail.is_empty());
                         break;
                     }
