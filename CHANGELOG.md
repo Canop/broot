@@ -1,5 +1,6 @@
-### master
-- fix a case of bad selection after search then another search interrupted (#147)
+<a name="v0.11.9"></a>
+### v0.11.9 - 2020-01-15
+- fix a case of bad selection after search followed by interrupted search (#147)
 - `--set-install-state` can be used in tests or manual installs to set the installation state
 - Raspberry now a default target available in installation page
 - fix a regression: `br -s` not finishing computing size until receiving an event
