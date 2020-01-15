@@ -94,7 +94,7 @@ Just find the file you want to edit with a few keystrokes, type `:e`, then `<ent
 
 You can add verbs or configure the existing ones; see [documentation](https://dystroy.org/broot/documentation/usage/#verbs).
 
-And you can add shorcuts, for example a `ctrl` sequence or a function key
+And you can add shortcuts, for example a `ctrl` sequence or a function key
 
 ### Replace `ls` (and its clones):
 
