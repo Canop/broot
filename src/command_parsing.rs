@@ -5,16 +5,14 @@
 //!
 //! It currently uses the following syntax:
 //!
-//! A command string is a series of commands. These can be verb commands,
-//! which start with :, or search commands, which do not. Search commands
-//! are separated as individual token, indicated eithr by whitespace or
-//! double quotes. Verb commands are similarly tokenized, but they greedily
-//! consume everything up to the next verb or ; command separator as arguments.
-//! There is currently no way to escape characters.
+//! A command string is a series of commands. The first command can optionally
+//! be a search command. A verb command follows a search with a space or
+//! semicolon, just like the UI. Subsequent verb commands may follow, separated
+//! by a separator, which defaults to semicolon
 //!
 //! Examples:
 //!
-//! search1 search2 :verb1 arg :verb2 "arg with space"; search3 :"verb with space"
+//! search1 :verb1 arg; verb2;:verb3
 use {
     crate::{
         commands::Command,
