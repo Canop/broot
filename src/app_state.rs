@@ -1,12 +1,14 @@
-use crate::{
-    app_context::AppContext,
-    browser_states::BrowserState,
-    commands::Command,
-    errors::{ProgramError, TreeBuildError},
-    external::Launchable,
-    io::W,
-    screens::Screen,
-    task_sync::TaskLifetime,
+use {
+    crate::{
+        app_context::AppContext,
+        browser_states::BrowserState,
+        commands::Command,
+        errors::{ProgramError, TreeBuildError},
+        external::Launchable,
+        screens::Screen,
+        task_sync::TaskLifetime,
+    },
+    std::io::Write,
 };
 
 /// Result of applying a command to a state
@@ -61,19 +63,23 @@ pub trait AppState {
 
     fn has_pending_task(&self) -> bool;
 
-    fn display(&mut self, w: &mut W, screen: &Screen, con: &AppContext)
-        -> Result<(), ProgramError>;
+    fn display(
+        &mut self,
+        w: &mut dyn Write,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> Result<(), ProgramError>;
 
     fn write_flags(
         &self,
-        w: &mut W,
+        w: &mut dyn Write,
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<(), ProgramError>;
 
     fn write_status(
         &self,
-        w: &mut W,
+        w: &mut dyn Write,
         cmd: &Command,
         screen: &Screen,
         con: &AppContext,

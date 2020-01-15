@@ -1,8 +1,8 @@
 use {
     crate::{
+        errors::ProgramError,
         file_sizes::FileSize,
         flat_tree::{LineType, Tree, TreeLine},
-        errors::ProgramError,
         patterns::Pattern,
         skin::Skin,
     },
@@ -13,19 +13,12 @@ use {
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
-    std::{time::SystemTime},
-    termimad::{
-        CompoundStyle,
-        ProgressBar,
-    },
+    std::{io::Write, time::SystemTime},
+    termimad::{CompoundStyle, ProgressBar},
 };
 
 #[cfg(unix)]
-use {
-    crate::permissions,
-    std::os::unix::fs::MetadataExt,
-    umask::*,
-};
+use {crate::permissions, std::os::unix::fs::MetadataExt, umask::*};
 
 /// declare a style named `$dst` which is usually a reference to the `$src`
 /// skin but, in case `selected` is true, is a clone with background changed
@@ -42,9 +35,8 @@ macro_rules! cond_bg {
         } else {
             &$src
         };
-    }
+    };
 }
-
 
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
@@ -63,7 +55,6 @@ pub struct DisplayableTree<'s, 't> {
 }
 
 impl<'s, 't> DisplayableTree<'s, 't> {
-
     pub fn out_of_app(tree: &'t Tree, skin: &'s Skin, width: u16) -> DisplayableTree<'s, 't> {
         DisplayableTree {
             tree,
@@ -93,43 +84,43 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         }
     }
 
-    fn write_line_size<F>(
+    fn write_line_size(
         &self,
-        f: &mut F,
+        f: &mut impl Write,
         line: &TreeLine,
         total_size: FileSize,
         selected: bool,
-    ) -> Result<(), termimad::Error> where F: std::io::Write {
+    ) -> Result<(), termimad::Error> {
         if let Some(s) = line.size {
             let pb = ProgressBar::new(s.part_of(total_size), 10);
             cond_bg!(size_style, self, selected, self.name_style(&line));
             cond_bg!(sparse_style, self, selected, self.skin.sparse);
             size_style.queue(f, format!("{:>5}", s.to_string()))?;
-            sparse_style.queue(f, if s.sparse { 's' } else { ' '})?;
+            sparse_style.queue(f, if s.sparse { 's' } else { ' ' })?;
             size_style.queue(f, format!("{:<10} ", pb))
         } else {
             self.skin.tree.queue_str(f, "──────────────── ")
         }
     }
 
-    fn write_date<F>(
+    fn write_date(
         &self,
-        f: &mut F,
+        f: &mut impl Write,
         system_time: SystemTime,
         selected: bool,
-    ) -> Result<(), termimad::Error> where F: std::io::Write {
+    ) -> Result<(), termimad::Error> {
         let date_time: DateTime<Local> = system_time.into();
         cond_bg!(date_style, self, selected, self.skin.dates);
         date_style.queue(f, date_time.format("%Y/%m/%d %R ").to_string())
     }
 
     #[cfg(unix)]
-    fn write_mode<F>(
+    fn write_mode(
         &self,
-        f: &mut F,
+        f: &mut impl Write,
         mode: Mode,
         selected: bool,
-    ) -> Result<(), termimad::Error> where F: std::io::Write {
+    ) -> Result<(), termimad::Error> {
         cond_bg!(n_style, self, selected, self.skin.perm__);
         cond_bg!(r_style, self, selected, self.skin.perm_r);
         cond_bg!(w_style, self, selected, self.skin.perm_w);
@@ -186,14 +177,14 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         Ok(())
     }
 
-    fn write_line_name<F>(
+    fn write_line_name(
         &self,
-        f: &mut F,
+        f: &mut impl Write,
         line: &TreeLine,
         idx: usize,
         pattern: &Pattern,
         selected: bool,
-    ) -> Result<(), ProgramError> where F: std::io::Write {
+    ) -> Result<(), ProgramError> {
         let style = match &line.line_type {
             LineType::Dir => &self.skin.directory,
             LineType::File => {
@@ -211,7 +202,9 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         if idx == 0 {
             style.queue_str(f, &line.path.to_string_lossy())?;
         } else {
-            pattern.style(&line.name, &style, &char_match_style).write_on(f)?;
+            pattern
+                .style(&line.name, &style, &char_match_style)
+                .write_on(f)?;
         }
         match &line.line_type {
             LineType::Dir => {
@@ -238,10 +231,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         Ok(())
     }
 
-    pub fn write_on<F>(
-        &self,
-        f: &mut F,
-    ) -> Result<(), ProgramError> where F: std::io::Write {
+    pub fn write_on(&self, f: &mut impl Write) -> Result<(), ProgramError> {
         let tree = self.tree;
         #[cfg(unix)]
         let user_group_max_lengths = user_group_max_lengths(&tree);
@@ -291,12 +281,19 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             self.write_mode(f, line.mode(), selected)?;
                             let owner = permissions::user_name(line.metadata.uid());
                             cond_bg!(owner_style, self, selected, self.skin.owner);
-                            owner_style.queue(f, format!(" {:w$}", &owner, w = user_group_max_lengths.0,))?;
+                            owner_style.queue(
+                                f,
+                                format!(" {:w$}", &owner, w = user_group_max_lengths.0,),
+                            )?;
                             let group = permissions::group_name(line.metadata.gid());
                             cond_bg!(group_style, self, selected, self.skin.group);
-                            group_style.queue(f, format!(" {:w$} ", &group, w = user_group_max_lengths.1,))?;
+                            group_style.queue(
+                                f,
+                                format!(" {:w$} ", &group, w = user_group_max_lengths.1,),
+                            )?;
                         } else {
-                            let length = 9 + 1 +user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
+                            let length =
+                                9 + 1 + user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
                             for _ in 0..length {
                                 self.skin.tree.queue_str(f, "─")?;
                             }
@@ -351,4 +348,3 @@ fn user_group_max_lengths(tree: &Tree) -> (usize, usize) {
     }
     (max_user_len, max_group_len)
 }
-

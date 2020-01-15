@@ -1,13 +1,8 @@
-
 use {
     crate::{
         app_context::AppContext,
         errors::ProgramError,
-        io::W,
-        mad_skin::{
-            self,
-            StatusMadSkinSet,
-        },
+        mad_skin::{self, StatusMadSkinSet},
         skin::Skin,
     },
     crossterm::{
@@ -15,6 +10,7 @@ use {
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
+    std::io::Write,
     termimad::{Area, CompoundStyle, InputField, MadSkin},
 };
 
@@ -52,7 +48,7 @@ impl Screen {
         if let Some(h) = con.launch_args.height {
             self.height = h;
         }
-        self.input_field.change_area(0, h-1, w - FLAGS_AREA_WIDTH);
+        self.input_field.change_area(0, h - 1, w - FLAGS_AREA_WIDTH);
     }
     pub fn read_size(&mut self, con: &AppContext) -> Result<(), ProgramError> {
         let (w, h) = termimad::terminal_size();
@@ -60,28 +56,22 @@ impl Screen {
         Ok(())
     }
     /// move the cursor to x,y and clears the line.
-    pub fn goto_clear(&self, w: &mut W, x: u16, y: u16)
-    -> Result<(), ProgramError> {
+    pub fn goto_clear(&self, w: &mut impl Write, x: u16, y: u16) -> Result<(), ProgramError> {
         self.goto(w, x, y)?;
         self.clear_line(w)
     }
     /// move the cursor to x,y
-    pub fn goto(
-        &self,
-        w: &mut W,
-        x: u16,
-        y: u16
-    ) -> Result<(), ProgramError> {
+    pub fn goto(&self, w: &mut impl Write, x: u16, y: u16) -> Result<(), ProgramError> {
         w.queue(cursor::MoveTo(x, y))?;
         Ok(())
     }
     /// clear the whole screen
-    pub fn clear(&self, w: &mut W) -> Result<(), ProgramError> {
+    pub fn clear(&self, w: &mut impl Write) -> Result<(), ProgramError> {
         w.queue(Clear(ClearType::All))?;
         Ok(())
     }
     /// clear from the cursor to the end of line
-    pub fn clear_line(&self, w: &mut W) -> Result<(), ProgramError> {
+    pub fn clear_line(&self, w: &mut impl Write) -> Result<(), ProgramError> {
         w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
     }

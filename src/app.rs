@@ -18,14 +18,14 @@ use {
         errors::ProgramError,
         external::Launchable,
         file_sizes,
-        io::W,
+        io::WriteCleanup,
         screens::Screen,
         skin::Skin,
         status::Status,
         task_sync::TaskLifetime,
     },
     crossterm::{
-        cursor,
+        self, cursor,
         event::{DisableMouseCapture, EnableMouseCapture},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
@@ -34,6 +34,12 @@ use {
     std::io::Write,
     termimad::EventSource,
 };
+
+// Helper function for type inference: queue a Command but return Result<()>
+#[inline]
+fn just_queue(mut writer: impl Write, command: impl crossterm::Command) -> crossterm::Result<()> {
+    writer.queue(command).map(move |_| ())
+}
 
 pub struct App {
     states: Vec<Box<dyn AppState>>, // stack: the last one is current
@@ -71,7 +77,7 @@ impl App {
     ///  the allowed lifetime is expired (usually when the user typed a new key)
     fn do_pending_tasks(
         &mut self,
-        w: &mut W,
+        w: &mut impl Write,
         cmd: &Command,
         screen: &mut Screen,
         con: &AppContext,
@@ -91,7 +97,7 @@ impl App {
     /// This normally mutates self
     fn apply_command(
         &mut self,
-        w: &mut W,
+        w: &mut impl Write,
         mut cmd: Command,
         screen: &mut Screen,
         con: &AppContext,
@@ -152,32 +158,40 @@ impl App {
         Ok(cmd)
     }
 
-    /// called exactly once at end of `run`, cleans the writer (which
-    /// is usually stdout or stderr)
-    fn end(self, writer: &mut W) -> Result<Option<Launchable>, ProgramError> {
-        writer.queue(DisableMouseCapture)?;
-        writer.queue(cursor::Show)?;
-        writer.queue(LeaveAlternateScreen)?;
-        writer.flush()?;
-        debug!("we left the screen");
-        Ok(self.launch_at_end)
-    }
-
     /// This is the main loop of the application
     pub fn run(
         mut self,
-        writer: &mut W,
+        writer: impl Write,
         con: &AppContext,
         skin: Skin,
     ) -> Result<Option<Launchable>, ProgramError> {
-        writer.queue(EnterAlternateScreen)?;
-        writer.queue(cursor::Hide)?;
+        // Ensure the buffer is flushed before we return
+        let writer = WriteCleanup::new(writer, |w| w.flush());
+
+        // Push some terminal state changes, ensuring the're reverted when we
+        // end the program.
+        let writer = WriteCleanup::build(
+            writer,
+            |w| just_queue(w, EnterAlternateScreen),
+            |w| just_queue(w, LeaveAlternateScreen),
+        )?;
+        let writer = WriteCleanup::build(
+            writer,
+            |w| just_queue(w, cursor::Hide),
+            |w| just_queue(w, cursor::Show),
+        )?;
+
         debug!("we're on screen");
         let mut screen = Screen::new(con, skin)?;
 
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
-        writer.queue(EnableMouseCapture)?;
+        let mut writer = WriteCleanup::build(
+            writer,
+            |w| just_queue(w, EnableMouseCapture),
+            |w| just_queue(w, DisableMouseCapture),
+        )?;
+
         let event_source = EventSource::new()?;
         let rx_events = event_source.receiver();
 
@@ -199,24 +213,24 @@ impl App {
             let lifetime = TaskLifetime::unlimited();
 
             for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
-                cmd = self.apply_command(writer, arg_cmd, &mut screen, con)?;
-                self.do_pending_tasks(writer, &cmd, &mut screen, con, lifetime.clone())?;
+                cmd = self.apply_command(&mut writer, arg_cmd, &mut screen, con)?;
+                self.do_pending_tasks(&mut writer, &cmd, &mut screen, con, lifetime.clone())?;
                 if self.quitting {
-                    return self.end(writer);
+                    return Ok(self.launch_at_end.take());
                 }
             }
         }
 
         let state = self.mut_state();
-        state.display(writer, &screen, con)?;
-        state.write_status(writer, &cmd, &screen, con)?;
-        state.write_flags(writer, &mut screen, con)?;
+        state.display(&mut writer, &screen, con)?;
+        state.write_status(&mut writer, &cmd, &screen, con)?;
+        state.write_flags(&mut writer, &mut screen, con)?;
 
-        screen.input_field.display_on(writer)?;
+        screen.input_field.display_on(&mut writer)?;
         loop {
             let tl = TaskLifetime::new(event_source.shared_event_count());
             if !self.quitting {
-                self.do_pending_tasks(writer, &cmd, &mut screen, con, tl)?;
+                self.do_pending_tasks(&mut writer, &cmd, &mut screen, con, tl)?;
             }
             let event = match rx_events.recv() {
                 Ok(event) => event,
@@ -228,10 +242,16 @@ impl App {
             };
             cmd.add_event(&event, &mut screen.input_field, con, self.state());
             debug!("command after add_event: {:?}", &cmd);
-            cmd = self.apply_command(writer, cmd, &mut screen, con)?;
+            cmd = self.apply_command(&mut writer, cmd, &mut screen, con)?;
             event_source.unblock(self.quitting);
         }
 
-        self.end(writer)
+        Ok(self.launch_at_end.take())
+    }
+}
+
+impl Drop for App {
+    fn drop(&mut self) {
+        debug!("we left the screen");
     }
 }

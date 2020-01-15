@@ -1,13 +1,11 @@
-
 use {
     crate::{
-        app_state::{AppState, AppStateCmdResult},
         app_context::AppContext,
+        app_state::{AppState, AppStateCmdResult},
         commands::{Action, Command},
         conf::Conf,
         errors::ProgramError,
         help_content,
-        io::W,
         screens::Screen,
         status::Status,
         task_sync::TaskLifetime,
@@ -19,11 +17,8 @@ use {
         QueueableCommand,
     },
     minimad::Composite,
-    termimad::{
-        Area,
-        FmtText,
-        TextView,
-    },
+    std::io::Write,
+    termimad::{Area, FmtText, TextView},
 };
 
 /// an application state dedicated to help
@@ -34,7 +29,7 @@ pub struct HelpState {
 }
 
 impl HelpState {
-    pub fn new(_screen: &Screen, _con: & AppContext) -> HelpState {
+    pub fn new(_screen: &Screen, _con: &AppContext) -> HelpState {
         let area = Area::uninitialized(); // will be fixed at drawing time
         HelpState {
             area,
@@ -45,16 +40,11 @@ impl HelpState {
 }
 
 impl AppState for HelpState {
-
     fn has_pending_task(&self) -> bool {
         false
     }
 
-    fn can_execute(
-        &self,
-        _verb_index: usize,
-        _con: &AppContext,
-    ) -> bool {
+    fn can_execute(&self, _verb_index: usize, _con: &AppContext) -> bool {
         true // we'll probably refine this later
     }
 
@@ -73,7 +63,7 @@ impl AppState for HelpState {
             Action::Resize(w, h) => {
                 screen.set_terminal_size(*w, *h, con);
                 self.dirty = true;
-                AppStateCmdResult::RefreshState{clear_cache: false}
+                AppStateCmdResult::RefreshState { clear_cache: false }
             }
             Action::VerbIndex(index) => {
                 let verb = &con.verb_store.verbs[*index];
@@ -99,27 +89,31 @@ impl AppState for HelpState {
 
     fn display(
         &mut self,
-        w: &mut W,
+        mut w: &mut dyn Write,
         screen: &Screen,
-        con: &AppContext
+        con: &AppContext,
     ) -> Result<(), ProgramError> {
         if self.dirty {
-            screen.skin.default.queue_bg(w)?;
-            screen.clear(w)?;
+            screen.skin.default.queue_bg(&mut w)?;
+            screen.clear(&mut w)?;
             self.area = Area::new(0, 0, screen.width, screen.height - 2);
             self.area.pad_for_max_width(110);
             self.dirty = false;
         }
         let text = help_content::build_text(con);
-        let fmt_text = FmtText::from_text(&screen.help_skin, text, Some((self.area.width - 1) as usize));
+        let fmt_text = FmtText::from_text(
+            &screen.help_skin,
+            text,
+            Some((self.area.width - 1) as usize),
+        );
         let mut text_view = TextView::from(&self.area, &fmt_text);
         self.scroll = text_view.set_scroll(self.scroll);
-        Ok(text_view.write_on(w)?)
+        Ok(text_view.write_on(&mut w)?)
     }
 
     fn write_status(
         &self,
-        w: &mut W,
+        mut w: &mut dyn Write,
         cmd: &Command,
         screen: &Screen,
         con: &AppContext,
@@ -127,42 +121,53 @@ impl AppState for HelpState {
         match &cmd.action {
             Action::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
-                    Status::from_message(
-                        mad_inline!("Type a verb then *enter* to execute it (*?* for the list of verbs)"),
-                    ).display(w, screen)
+                    Status::from_message(mad_inline!(
+                        "Type a verb then *enter* to execute it (*?* for the list of verbs)"
+                    ))
+                    .display(&mut w, screen)
                 } else {
                     match con.verb_store.search(&invocation.name) {
                         PrefixSearchResult::NoMatch => {
-                            Status::from_error(mad_inline!("No matching verb")).display(w, screen)
+                            Status::from_error(mad_inline!("No matching verb"))
+                                .display(&mut w, screen)
                         }
-                        PrefixSearchResult::Match(verb) => {
-                            verb.write_status(w, None, Conf::default_location(), invocation, screen)
-                        }
-                        PrefixSearchResult::TooManyMatches(completions) => Status::from_message(
-                            Composite::from_inline(&format!(
+                        PrefixSearchResult::Match(verb) => verb.write_status(
+                            &mut w,
+                            None,
+                            Conf::default_location(),
+                            invocation,
+                            screen,
+                        ),
+                        PrefixSearchResult::TooManyMatches(completions) => {
+                            Status::from_message(Composite::from_inline(&format!(
                                 "Possible completions: {}",
-                                completions.iter().map(|c| format!("*{}*", c)).collect::<Vec<String>>().join(", "),
-                            )),
-                        ).display(w, screen)
+                                completions
+                                    .iter()
+                                    .map(|c| format!("*{}*", c))
+                                    .collect::<Vec<String>>()
+                                    .join(", "),
+                            )))
+                            .display(&mut w, screen)
+                        }
                     }
                 }
             }
             _ => Status::from_message(mad_inline!(
                 "Hit *esc* to get back to the tree, or a space to start a verb"
-            )).display(w, screen),
+            ))
+            .display(&mut w, screen),
         }
     }
 
     /// there's no meaningful flags here
     fn write_flags(
         &self,
-        w: &mut W,
+        mut w: &mut dyn Write,
         screen: &mut Screen,
-        _con: &AppContext
+        _con: &AppContext,
     ) -> Result<(), ProgramError> {
-        screen.skin.default.queue_bg(w)?;
+        screen.skin.default.queue_bg(&mut w)?;
         w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
     }
 }
-

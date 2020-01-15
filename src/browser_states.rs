@@ -8,7 +8,6 @@ use {
         external::Launchable,
         flat_tree::{LineType, Tree},
         help_states::HelpState,
-        io::W,
         patterns::Pattern,
         screens::{self, Screen},
         status::Status,
@@ -219,7 +218,7 @@ impl AppState for BrowserState {
 
     fn write_status(
         &self,
-        w: &mut W,
+        mut w: &mut dyn Write,
         cmd: &Command,
         screen: &Screen,
         con: &AppContext,
@@ -232,51 +231,60 @@ impl AppState for BrowserState {
             None
         };
         match &cmd.action {
-            Action::FuzzyPatternEdit(s) if !s.is_empty() => Status::new(
-                task, self.normal_status_message(true), false
-            ).display(w, screen),
-            Action::RegexEdit(s, _) if !s.is_empty() => Status::new(
-                task, self.normal_status_message(true), false
-            ).display(w, screen),
+            Action::FuzzyPatternEdit(s) if !s.is_empty() => {
+                Status::new(task, self.normal_status_message(true), false).display(&mut w, screen)
+            }
+            Action::RegexEdit(s, _) if !s.is_empty() => {
+                Status::new(task, self.normal_status_message(true), false).display(&mut w, screen)
+            }
             Action::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
                     Status::new(
                         task,
-                        mad_inline!("Type a verb then *enter* to execute it (*?* for the list of verbs)"),
+                        mad_inline!(
+                            "Type a verb then *enter* to execute it (*?* for the list of verbs)"
+                        ),
                         false,
-                    ).display(w, screen)
+                    )
+                    .display(&mut w, screen)
                 } else {
                     match con.verb_store.search(&invocation.name) {
                         PrefixSearchResult::NoMatch => Status::new(
-                            task, mad_inline!("No matching verb (*?* for the list of verbs)"), true
-                        ).display(w, screen),
+                            task,
+                            mad_inline!("No matching verb (*?* for the list of verbs)"),
+                            true,
+                        )
+                        .display(&mut w, screen),
                         PrefixSearchResult::Match(verb) => {
                             let line = self.displayed_tree().selected_line();
-                            verb.write_status(w, task, line.path.clone(), invocation, screen)
+                            verb.write_status(&mut w, task, line.path.clone(), invocation, screen)
                         }
                         PrefixSearchResult::TooManyMatches(completions) => Status::new(
                             task,
                             Composite::from_inline(&format!(
                                 "Possible verbs: {}",
-                                completions.iter().map(|c| format!("*{}*", c)).collect::<Vec<String>>().join(", "),
+                                completions
+                                    .iter()
+                                    .map(|c| format!("*{}*", c))
+                                    .collect::<Vec<String>>()
+                                    .join(", "),
                             )),
                             false,
-                        ).display(w, screen)
+                        )
+                        .display(&mut w, screen),
                     }
                 }
             }
-            _ => Status::new(task, self.normal_status_message(false), false).display(w, screen),
+            _ => {
+                Status::new(task, self.normal_status_message(false), false).display(&mut w, screen)
+            }
         }
     }
 
-    fn can_execute(
-        &self,
-        verb_index: usize,
-        con: &AppContext,
-    ) -> bool {
-        self.displayed_tree().selected_line().is_of(
-            con.verb_store.verbs[verb_index].selection_condition
-        )
+    fn can_execute(&self, verb_index: usize, con: &AppContext) -> bool {
+        self.displayed_tree()
+            .selected_line()
+            .is_of(con.verb_store.verbs[verb_index].selection_condition)
     }
 
     fn apply(
@@ -414,11 +422,11 @@ impl AppState for BrowserState {
 
     fn display(
         &mut self,
-        w: &mut W,
+        mut w: &mut dyn Write,
         screen: &Screen,
         _con: &AppContext,
     ) -> Result<(), ProgramError> {
-        screen.goto(w, 0, 0)?;
+        screen.goto(&mut w, 0, 0)?;
         let dp = DisplayableTree {
             tree: &self.displayed_tree(),
             skin: &screen.skin,
@@ -430,7 +438,7 @@ impl AppState for BrowserState {
             },
             in_app: true,
         };
-        dp.write_on(w)
+        dp.write_on(&mut w)
     }
 
     fn refresh(&mut self, screen: &Screen, _con: &AppContext) -> Command {
@@ -455,23 +463,27 @@ impl AppState for BrowserState {
     /// draw the flags at the bottom right of the screen
     fn write_flags(
         &self,
-        w: &mut W,
+        mut w: &mut dyn Write,
         screen: &mut Screen,
         _con: &AppContext,
     ) -> Result<(), ProgramError> {
         let tree = self.displayed_tree();
         let total_char_size = screens::FLAGS_AREA_WIDTH;
-        screen.goto_clear(w, screen.width - total_char_size - 1, screen.height - 1)?;
+        screen.goto_clear(
+            &mut w,
+            screen.width - total_char_size - 1,
+            screen.height - 1,
+        )?;
         let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
         let gi_value = match tree.options.respect_git_ignore {
             OptionBool::Auto => 'a',
             OptionBool::Yes => 'y',
             OptionBool::No => 'n',
         };
-        screen.skin.flag_label.queue_str(w, " h:")?;
-        screen.skin.flag_value.queue(w, h_value)?;
-        screen.skin.flag_label.queue_str(w, "   gi:")?;
-        screen.skin.flag_value.queue(w, gi_value)?;
+        screen.skin.flag_label.queue_str(&mut w, " h:")?;
+        screen.skin.flag_value.queue(&mut w, h_value)?;
+        screen.skin.flag_label.queue_str(&mut w, "   gi:")?;
+        screen.skin.flag_value.queue(&mut w, gi_value)?;
         Ok(())
     }
 }

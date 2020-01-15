@@ -1,14 +1,6 @@
-
-use minimad::{
-    Alignment,
-    Composite,
-};
-
-use crate::{
-    errors::ProgramError,
-    io::W,
-    screens::Screen,
-};
+use crate::{errors::ProgramError, screens::Screen};
+use minimad::{Alignment, Composite};
+use std::io::Write;
 
 /// the status contains information written on the grey line
 ///  near the bottom of the screen
@@ -19,7 +11,6 @@ pub struct Status<'a> {
 }
 
 impl<'a> Status<'a> {
-
     pub fn new(
         pending_task: Option<&'static str>,
         message: Composite<'a>,
@@ -48,11 +39,7 @@ impl<'a> Status<'a> {
         }
     }
 
-    pub fn display(
-        self,
-        w: &mut W,
-        screen: &Screen,
-    ) -> Result<(), ProgramError> {
+    pub fn display(self, w: &mut impl Write, screen: &Screen) -> Result<(), ProgramError> {
         let y = screen.height - 2;
         screen.goto_clear(w, 0, y)?;
         let mut x = 0;
@@ -72,6 +59,4 @@ impl<'a> Status<'a> {
         skin.write_composite_fill(w, self.message, remaining_width, Alignment::Left)?;
         screen.clear_line(w)
     }
-
 }
-

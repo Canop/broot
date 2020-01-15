@@ -2,25 +2,13 @@
 extern crate log;
 
 use {
-    std::{
-        env,
-        fs::File,
-        str::FromStr,
+    broot::{
+        app::App, app_context::AppContext, cli, conf::Conf, errors::ProgramError,
+        external::Launchable, io, shell_install::ShellInstall, skin, verb_store::VerbStore,
     },
     log::LevelFilter,
     simplelog,
-    broot::{
-        app::App,
-        app_context::AppContext,
-        cli,
-        conf::Conf,
-        errors::ProgramError,
-        external::Launchable,
-        io,
-        shell_install::ShellInstall,
-        skin,
-        verb_store::VerbStore,
-    },
+    std::{env, fs::File, str::FromStr},
 };
 
 /// configure the application log according to env variable.
@@ -77,25 +65,24 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     verb_store.init(&config);
     let context = AppContext::from(launch_args, verb_store);
     let skin = skin::Skin::create(config.skin);
-    App::new().run(&mut io::writer(), &context, skin)
+    App::new().run(io::writer(), &context, skin)
 }
 
 fn main() {
-    let res = match run() {
-        Ok(res) => res,
+    match run() {
+        Ok(Some(launchable)) => {
+            if let Err(e) = launchable.execute() {
+                warn!("Failed to launch {:?}", &launchable);
+                warn!("Error: {:?}", e);
+                eprintln!("{}", e);
+            }
+        }
+        Ok(None) => {}
         Err(e) => {
             // this usually happens when the passed path isn't of a directory
             warn!("Error: {}", e);
             eprintln!("{}", e);
-            return;
         }
     };
-    if let Some(launchable) = res {
-        if let Err(e) = launchable.execute() {
-            warn!("Failed to launch {:?}", &launchable);
-            warn!("Error: {:?}", e);
-            eprintln!("{}", e);
-        }
-    }
     info!("bye");
 }
