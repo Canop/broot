@@ -21,7 +21,7 @@ Shell completion | [completion/](https://dystroy.org/broot/download/completion/)
 
 You may download previous releases on [GitHub releases](https://github.com/Canop/broot/releases).
 
-When you download executable files, you'll have to ensure the shell can find them. An easy solution on linux is for example to put them in `/usr/local/bin`.
+When you download executable files, you'll have to ensure the shell can find them. An easy solution on linux is for example to put them in `/usr/local/bin`. You may also have to set them executable using `chmod +x broot`.
 
 # From crates.io
 
