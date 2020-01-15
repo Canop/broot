@@ -213,22 +213,23 @@ impl App {
         state.write_flags(writer, &mut screen, con)?;
 
         screen.input_field.display_on(writer)?;
-
-        for event in rx_events {
+        loop {
+            let tl = TaskLifetime::new(event_source.shared_event_count());
+            if !self.quitting {
+                self.do_pending_tasks(writer, &cmd, &mut screen, con, tl)?;
+            }
+            let event = match rx_events.recv() {
+                Ok(event) => event,
+                Err(_) => {
+                    // this is how we quit the application,
+                    // when the input thread is properly closed
+                    break;
+                }
+            };
             cmd.add_event(&event, &mut screen.input_field, con, self.state());
             debug!("command after add_event: {:?}", &cmd);
             cmd = self.apply_command(writer, cmd, &mut screen, con)?;
             event_source.unblock(self.quitting);
-
-            if !self.quitting {
-                self.do_pending_tasks(
-                    writer,
-                    &cmd,
-                    &mut screen,
-                    con,
-                    TaskLifetime::new(event_source.shared_event_count()),
-                )?;
-            }
         }
 
         self.end(writer)
