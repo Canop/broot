@@ -1,18 +1,20 @@
 //! size computation for non linux
 
-use std::{
-    fs,
-    path::{Path, PathBuf},
-    sync::atomic::{AtomicIsize, AtomicUsize, Ordering},
-    sync::Arc,
-    thread,
-    time::Duration,
+use {
+    crate::task_sync::TaskLifetime,
+    crossbeam::{channel::unbounded, sync::WaitGroup},
+    std::{
+        fs,
+        path::{Path, PathBuf},
+        sync::atomic::{AtomicIsize, AtomicUsize, Ordering},
+        sync::Arc,
+        thread,
+        time::Duration,
+    },
 };
 
-use crossbeam::{channel::unbounded, sync::WaitGroup};
-
-use crate::task_sync::TaskLifetime;
-
+// Note that this version doesn't try to compute the real size taken
+// on disk but report the value given by the `len` function
 pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     let size = Arc::new(AtomicUsize::new(0));
 
@@ -70,9 +72,9 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     Some(size)
 }
 
-pub fn compute_file_size(path: &Path) -> u64 {
+pub fn compute_file_size(path: &Path) -> FileSize {
     match fs::metadata(path) {
-        Ok(m) => m.len(),
+        Ok(m) => FileSize::new(m.len(), false),
         Err(_) => 0,
     }
 }

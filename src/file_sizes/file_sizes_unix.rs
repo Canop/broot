@@ -1,19 +1,20 @@
-use std::{
-    collections::HashSet,
-    fs,
-    os::unix::fs::MetadataExt,
-    path::{Path, PathBuf},
-    sync::{
-        atomic::{AtomicIsize, AtomicU64, Ordering},
-        Arc, Mutex,
+use {
+    crate::task_sync::TaskLifetime,
+    crossbeam::{channel::unbounded, sync::WaitGroup},
+    std::{
+        collections::HashSet,
+        fs,
+        os::unix::fs::MetadataExt,
+        path::{Path, PathBuf},
+        sync::{
+            atomic::{AtomicIsize, AtomicU64, Ordering},
+            Arc, Mutex,
+        },
+        thread,
+        time::Duration,
     },
-    thread,
-    time::Duration,
+    super::FileSize,
 };
-
-use crossbeam::{channel::unbounded, sync::WaitGroup};
-
-use crate::task_sync::TaskLifetime;
 
 pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     let inodes = Arc::new(Mutex::new(HashSet::<u64>::default())); // to avoid counting twice an inode
@@ -54,7 +55,9 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
                                         continue; // let's not add the size
                                     }
                                 }
-                                let file_size = if md.blocks() == 0 { 0 } else { md.size() };
+                                let nominal_size = md.size();
+                                let block_size = md.blocks() * md.blksize();
+                                let file_size = block_size.min(nominal_size);
                                 size.fetch_add(file_size, Ordering::Relaxed);
                             }
                         }
@@ -80,15 +83,13 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     Some(size)
 }
 
-pub fn compute_file_size(path: &Path) -> u64 {
+pub fn compute_file_size(path: &Path) -> FileSize {
     match fs::metadata(path) {
-        Ok(m) => {
-            if m.blocks() == 0 {
-                0
-            } else {
-                m.size()
-            }
+        Ok(md) => {
+            let nominal_size = md.size();
+            let block_size = md.blocks() * md.blksize();
+            FileSize::new(nominal_size.min(block_size), block_size < nominal_size)
         }
-        Err(_) => 0,
+        Err(_) => FileSize::new(0, false),
     }
 }

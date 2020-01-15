@@ -68,9 +68,6 @@ pub fn ansi(v: u8) -> Option<Color> {
     Some(AnsiValue(v))
 }
 
-// Gold alternative: use 178 for boldish and italic/code is 229
-// Orange alternative: boldish is 208 and italic/code is 222
-// // 32 ?
 Skin! {
     default: gray(22), gray(1);
     tree: gray(5), None;
@@ -86,6 +83,7 @@ Skin! {
     owner: ansi(138), None;
     group: ansi(131), None;
     dates: ansi(66), None;
+    sparse: ansi(214), None;
     selected_line: None, gray(4);
     char_match: Some(Green), None;
     file_error: Some(Red), None;
@@ -108,7 +106,6 @@ Skin! {
     help_headers: ansi(178), None;
     help_table_border: ansi(239), None;
 }
-
 
 impl fmt::Debug for Skin {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

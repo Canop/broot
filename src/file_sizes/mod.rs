@@ -14,10 +14,10 @@ use std::{
 
 use crate::task_sync::TaskLifetime;
 
-const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"]; // Y: for when your disk is bigger than 1024 ZB
+const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 
 lazy_static! {
-    static ref SIZE_CACHE_MUTEX: Mutex<HashMap<PathBuf, Size>> = Mutex::new(HashMap::new());
+    static ref SIZE_CACHE_MUTEX: Mutex<HashMap<PathBuf, u64>> = Mutex::new(HashMap::new());
 }
 
 pub fn clear_cache() {
@@ -26,47 +26,54 @@ pub fn clear_cache() {
 }
 
 #[derive(Debug, Copy, Clone)]
-pub struct Size(u64);
+pub struct FileSize {
+    real_size: u64, // bytes, the space it takes on disk
+    pub sparse: bool,   // only for non directories: tells whether the file is sparse
+}
 
-impl Size {
+impl FileSize {
+
+    pub fn new(real_size: u64, sparse: bool) -> Self {
+        Self { real_size, sparse }
+    }
+
     /// return the size of the given file, which is assumed
     /// to be a normal file (ie not a directory)
-    pub fn from_file(path: &Path) -> Size {
-        Size(compute_file_size(path))
+    pub fn from_file(path: &Path) -> Self {
+        compute_file_size(path)
     }
 
     /// Return the size of the directory, either by computing it of by
     ///  fetching it from cache.
     /// If the lifetime expires before complete computation, None is returned.
-    pub fn from_dir(path: &Path, tl: &TaskLifetime) -> Option<Size> {
+    pub fn from_dir(path: &Path, tl: &TaskLifetime) -> Option<Self> {
         let mut size_cache = SIZE_CACHE_MUTEX.lock().unwrap();
         if let Some(s) = size_cache.get(path) {
-            return Some(*s);
+            return Some(Self::new(*s, false));
         }
-
         let start = Instant::now();
         if let Some(s) = compute_dir_size(path, tl) {
-            let size = Size::from(s);
-            size_cache.insert(PathBuf::from(path), size);
+            size_cache.insert(PathBuf::from(path), s);
             debug!("size computation for {:?} took {:?}", path, start.elapsed());
-            Some(size)
+            Some(FileSize::new(s, false))
         } else {
             None
         }
     }
-    pub fn part_of(self, total: Size) -> f32 {
-        if total.0 == 0 {
+
+    pub fn part_of(self, total: Self) -> f32 {
+        if total.real_size == 0 {
             0.0
         } else {
-            self.0 as f32 / total.0 as f32
+            self.real_size as f32 / total.real_size as f32
         }
     }
 }
 
-impl fmt::Display for Size {
+impl fmt::Display for FileSize {
     /// format a number of bytes as a string, for example 247K
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let mut v = self.0;
+        let mut v = self.real_size;
         let mut i = 0;
         while v >= 5000 && i < SIZE_NAMES.len() - 1 {
             v >>= 10;
@@ -76,21 +83,18 @@ impl fmt::Display for Size {
     }
 }
 
-impl From<u64> for Size {
-    fn from(s: u64) -> Size {
-        Size(s)
+impl AddAssign for FileSize {
+    fn add_assign(&mut self, other: Self) {
+        *self = Self::new(
+            self.real_size + other.real_size,
+            self.sparse | other.sparse,
+        );
     }
 }
 
-impl AddAssign for Size {
-    fn add_assign(&mut self, other: Size) {
-        *self = Size(self.0 + other.0);
-    }
-}
-
-impl Into<u64> for Size {
+impl Into<u64> for FileSize {
     fn into(self) -> u64 {
-        self.0
+        self.real_size
     }
 }
 

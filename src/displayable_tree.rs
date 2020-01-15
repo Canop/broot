@@ -1,6 +1,6 @@
 use {
     crate::{
-        file_sizes::Size,
+        file_sizes::FileSize,
         flat_tree::{LineType, Tree, TreeLine},
         errors::ProgramError,
         patterns::Pattern,
@@ -97,13 +97,16 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         &self,
         f: &mut F,
         line: &TreeLine,
-        total_size: Size,
+        total_size: FileSize,
         selected: bool,
     ) -> Result<(), termimad::Error> where F: std::io::Write {
         if let Some(s) = line.size {
             let pb = ProgressBar::new(s.part_of(total_size), 10);
             cond_bg!(size_style, self, selected, self.name_style(&line));
-            size_style.queue(f, format!("{:>5} {:<10} ", s.to_string(), pb))
+            cond_bg!(sparse_style, self, selected, self.skin.sparse);
+            size_style.queue(f, format!("{:>5}", s.to_string()))?;
+            sparse_style.queue(f, if s.sparse { 's' } else { ' '})?;
+            size_style.queue(f, format!("{:<10} ", pb))
         } else {
             self.skin.tree.queue_str(f, "──────────────── ")
         }

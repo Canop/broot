@@ -241,6 +241,7 @@ For example:
 	exe = "rgb(17, 164, 181) none"
 	link = "Magenta none"
 	pruning = "rgb(89, 73, 101) none Italic"
+	sparse = "ansi(214) None"
 	perm__ = "gray(5) None"
 	perm_r = "ansi(92) None"
 	perm_w = "ansi(192) None"

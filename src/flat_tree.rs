@@ -3,7 +3,7 @@
 use {
     crate::{
         errors,
-        file_sizes::Size,
+        file_sizes::FileSize,
         selection_type::SelectionType,
         task_sync::TaskLifetime,
         tree_build::TreeBuilder,
@@ -49,7 +49,7 @@ pub struct TreeLine {
     pub nb_kept_children: usize,
     pub unlisted: usize, // number of not listed children (Dir) or brothers (Pruning)
     pub score: i32,      // 0 if there's no pattern
-    pub size: Option<Size>, // None when not measured
+    pub size: Option<FileSize>, // None when not measured
     pub metadata: fs::Metadata,
 }
 
@@ -438,7 +438,7 @@ impl Tree {
     pub fn fetch_file_sizes(&mut self) {
         for i in 1..self.lines.len() {
             if self.lines[i].is_file() {
-                self.lines[i].size = Some(Size::from_file(&self.lines[i].path));
+                self.lines[i].size = Some(FileSize::from_file(&self.lines[i].path));
             }
         }
         self.sort_siblings_by_size();
@@ -451,7 +451,7 @@ impl Tree {
     pub fn fetch_some_missing_dir_size(&mut self, tl: &TaskLifetime) {
         for i in 1..self.lines.len() {
             if self.lines[i].size.is_none() && self.lines[i].line_type == LineType::Dir {
-                self.lines[i].size = Size::from_dir(&self.lines[i].path, tl);
+                self.lines[i].size = FileSize::from_dir(&self.lines[i].path, tl);
                 self.sort_siblings_by_size();
                 return;
             }
@@ -474,14 +474,14 @@ impl Tree {
     }
 
     /// compute and return the size of the root
-    pub fn total_size(&self) -> Size {
+    pub fn total_size(&self) -> FileSize {
         if let Some(size) = self.lines[0].size {
             // if the real total size is computed, it's in the root line
             size
         } else {
             // if we don't have the size in root, the nearest estimate is
             // the sum of sizes of lines at depth 1
-            let mut sum = Size::from(0);
+            let mut sum = FileSize::new(0, false);
             for i in 1..self.lines.len() {
                 if self.lines[i].depth == 1 {
                     if let Some(size) = self.lines[i].size {

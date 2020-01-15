@@ -110,6 +110,9 @@ You may notice a scrollbar on this screenshot. The first level of the tree is al
 
 Not trimming the root is also possible in normal mode by using the `toggle_trim_root` toggle.
 
+!!!	Note
+	The displayed size on unix is the space the file takes on disk, that is the number of blocks multiplied by the size of a block. If a file is sparse, a little 's' is displayed next to the size.
+
 ## gitignore
 
 The gitignore "toggle" has 3 modes:

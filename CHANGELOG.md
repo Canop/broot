@@ -3,6 +3,7 @@
 - `--set-install-state` can be used in tests or manual installs to set the installation state
 - Raspberry now a default target available in installation page
 - fix a regression: `br -s` not finishing computing size until receiving an event
+- diplay the real size of sparse files (fix #102)
 
 <a name="v0.11.8"></a>
 ### v0.11.8 - 2020-01-12
