@@ -203,7 +203,7 @@ impl Verb {
         map
     }
 
-    pub fn write_status (
+    pub fn write_status(
         &self,
         w: &mut W,
         task: Option<&'static str>,
