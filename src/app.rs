@@ -37,7 +37,10 @@ use {
 
 /// Helper function for type inference: queue a Command but return Result<()>
 #[inline]
-fn just_queue(mut writer: impl Write, command: impl crossterm::Command) -> crossterm::Result<()> {
+fn just_queue(
+    mut writer: impl Write,
+    command: impl crossterm::Command,
+) -> crossterm::Result<()> {
     writer.queue(command).map(move |_| ())
 }
 
@@ -168,7 +171,7 @@ impl App {
         // Ensure the buffer is flushed before we return
         let writer = WriteCleanup::new(writer, |w| w.flush());
 
-        // Push some terminal state changes, ensuring the're reverted when we
+        // Push some terminal state changes, ensuring they're reverted when we
         // end the program.
         let writer = WriteCleanup::build(
             writer,
@@ -191,7 +194,6 @@ impl App {
             |w| just_queue(w, EnableMouseCapture),
             |w| just_queue(w, DisableMouseCapture),
         )?;
-
         let event_source = EventSource::new()?;
         let rx_events = event_source.receiver();
 

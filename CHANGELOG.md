@@ -1,3 +1,6 @@
+### master
+- fix some cases of terminal let in a bad state on errors
+
 <a name="v0.11.9"></a>
 ### v0.11.9 - 2020-01-15
 - fix a case of bad selection after search followed by interrupted search (#147)

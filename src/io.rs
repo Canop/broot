@@ -66,7 +66,7 @@ where
     F: Fn(&mut W) -> Result<(), E>,
     E: fmt::Display,
 {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("WriteCleanup")
             .field("writer", &self.writer)
             .field("cleanup", &"<closure>")
@@ -91,7 +91,7 @@ where
     }
 
     #[inline]
-    fn write_vectored(&mut self, bufs: &[io::IoSlice]) -> io::Result<usize> {
+    fn write_vectored(&mut self, bufs: &[io::IoSlice<'_>]) -> io::Result<usize> {
         self.writer.write_vectored(bufs)
     }
 
@@ -101,7 +101,7 @@ where
     }
 
     #[inline]
-    fn write_fmt(&mut self, fmt: fmt::Arguments) -> io::Result<()> {
+    fn write_fmt(&mut self, fmt: fmt::Arguments<'_>) -> io::Result<()> {
         self.writer.write_fmt(fmt)
     }
 }
