@@ -35,7 +35,7 @@ use {
     termimad::EventSource,
 };
 
-// Helper function for type inference: queue a Command but return Result<()>
+/// Helper function for type inference: queue a Command but return Result<()>
 #[inline]
 fn just_queue(mut writer: impl Write, command: impl crossterm::Command) -> crossterm::Result<()> {
     writer.queue(command).map(move |_| ())
