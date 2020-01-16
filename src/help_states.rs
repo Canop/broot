@@ -29,7 +29,7 @@ pub struct HelpState {
 }
 
 impl HelpState {
-    pub fn new(_screen: &Screen, _con: &AppContext) -> HelpState {
+    pub fn new(_screen: &Screen, _con: & AppContext) -> HelpState {
         let area = Area::uninitialized(); // will be fixed at drawing time
         HelpState {
             area,
@@ -40,11 +40,16 @@ impl HelpState {
 }
 
 impl AppState for HelpState {
+
     fn has_pending_task(&self) -> bool {
         false
     }
 
-    fn can_execute(&self, _verb_index: usize, _con: &AppContext) -> bool {
+    fn can_execute(
+        &self,
+        _verb_index: usize,
+        _con: &AppContext,
+    ) -> bool {
         true // we'll probably refine this later
     }
 
@@ -63,7 +68,7 @@ impl AppState for HelpState {
             Action::Resize(w, h) => {
                 screen.set_terminal_size(*w, *h, con);
                 self.dirty = true;
-                AppStateCmdResult::RefreshState { clear_cache: false }
+                AppStateCmdResult::RefreshState{clear_cache: false}
             }
             Action::VerbIndex(index) => {
                 let verb = &con.verb_store.verbs[*index];
@@ -101,11 +106,7 @@ impl AppState for HelpState {
             self.dirty = false;
         }
         let text = help_content::build_text(con);
-        let fmt_text = FmtText::from_text(
-            &screen.help_skin,
-            text,
-            Some((self.area.width - 1) as usize),
-        );
+        let fmt_text = FmtText::from_text(&screen.help_skin, text, Some((self.area.width - 1) as usize));
         let mut text_view = TextView::from(&self.area, &fmt_text);
         self.scroll = text_view.set_scroll(self.scroll);
         Ok(text_view.write_on(&mut w)?)

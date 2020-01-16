@@ -241,9 +241,7 @@ impl AppState for BrowserState {
                 if invocation.name.is_empty() {
                     Status::new(
                         task,
-                        mad_inline!(
-                            "Type a verb then *enter* to execute it (*?* for the list of verbs)"
-                        ),
+                        mad_inline!("Type a verb then *enter* to execute it (*?* for the list of verbs)"),
                         false,
                     )
                     .display(&mut w, screen)

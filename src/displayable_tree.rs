@@ -1,8 +1,8 @@
 use {
     crate::{
-        errors::ProgramError,
         file_sizes::FileSize,
         flat_tree::{LineType, Tree, TreeLine},
+        errors::ProgramError,
         patterns::Pattern,
         skin::Skin,
     },
@@ -18,7 +18,11 @@ use {
 };
 
 #[cfg(unix)]
-use {crate::permissions, std::os::unix::fs::MetadataExt, umask::*};
+use {
+    crate::permissions,
+    std::os::unix::fs::MetadataExt,
+    umask::*,
+};
 
 /// declare a style named `$dst` which is usually a reference to the `$src`
 /// skin but, in case `selected` is true, is a clone with background changed
@@ -38,6 +42,7 @@ macro_rules! cond_bg {
     };
 }
 
+
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
 /// - or to write in a file or an exported string.
@@ -55,6 +60,7 @@ pub struct DisplayableTree<'s, 't> {
 }
 
 impl<'s, 't> DisplayableTree<'s, 't> {
+
     pub fn out_of_app(tree: &'t Tree, skin: &'s Skin, width: u16) -> DisplayableTree<'s, 't> {
         DisplayableTree {
             tree,
@@ -202,9 +208,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         if idx == 0 {
             style.queue_str(f, &line.path.to_string_lossy())?;
         } else {
-            pattern
-                .style(&line.name, &style, &char_match_style)
-                .write_on(f)?;
+            pattern.style(&line.name, &style, &char_match_style).write_on(f)?;
         }
         match &line.line_type {
             LineType::Dir => {
@@ -281,19 +285,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             self.write_mode(f, line.mode(), selected)?;
                             let owner = permissions::user_name(line.metadata.uid());
                             cond_bg!(owner_style, self, selected, self.skin.owner);
-                            owner_style.queue(
-                                f,
-                                format!(" {:w$}", &owner, w = user_group_max_lengths.0,),
-                            )?;
+                            owner_style.queue(f, format!(" {:w$}", &owner, w = user_group_max_lengths.0,))?;
                             let group = permissions::group_name(line.metadata.gid());
                             cond_bg!(group_style, self, selected, self.skin.group);
-                            group_style.queue(
-                                f,
-                                format!(" {:w$} ", &group, w = user_group_max_lengths.1,),
-                            )?;
+                            group_style.queue(f, format!(" {:w$} ", &group, w = user_group_max_lengths.1,))?;
                         } else {
-                            let length =
-                                9 + 1 + user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
+                            let length = 9 + 1 +user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
                             for _ in 0..length {
                                 self.skin.tree.queue_str(f, "─")?;
                             }
@@ -348,3 +345,4 @@ fn user_group_max_lengths(tree: &Tree) -> (usize, usize) {
     }
     (max_user_len, max_group_len)
 }
+

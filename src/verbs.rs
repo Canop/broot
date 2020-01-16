@@ -12,7 +12,10 @@ use {
         status::Status,
         verb_invocation::VerbInvocation,
     },
-    crossterm::event::{KeyCode, KeyEvent},
+    crossterm::event::{
+        KeyCode,
+        KeyEvent,
+    },
     minimad::Composite,
     regex::{self, Captures, Regex},
     std::{
@@ -40,7 +43,7 @@ pub struct Verb {
     pub description: Option<String>, // a description for the user
     pub from_shell: bool, // whether it must be launched from the parent shell (eg because it's a shell function)
     pub leave_broot: bool, // only defined for external
-    pub confirm: bool,    // not yet used...
+    pub confirm: bool, // not yet used...
     pub selection_condition: SelectionType,
 }
 
@@ -95,10 +98,7 @@ impl Verb {
         // we use the selection condition to prevent configured
         // verb execution on enter on directories
         let selection_condition = match key {
-            Some(KeyEvent {
-                code: KeyCode::Enter,
-                ..
-            }) => SelectionType::File,
+            Some(KeyEvent{code:KeyCode::Enter, ..}) => SelectionType::File,
             _ => SelectionType::Any,
         };
         Ok(Verb {
@@ -217,7 +217,8 @@ impl Verb {
             let composite = if let Some(description) = &self.description {
                 markdown = format!(
                     "Hit *enter* to **{}**: {}",
-                    &self.invocation.name, description,
+                    &self.invocation.name,
+                    description,
                 );
                 Composite::from_inline(&markdown)
             } else {
@@ -228,7 +229,11 @@ impl Verb {
                     &verb_description,
                 )
             };
-            Status::new(task, composite, false).display(w, screen)
+            Status::new(
+                task,
+                composite,
+                false
+            ).display(w, screen)
         }
     }
 
@@ -269,7 +274,7 @@ impl Verb {
                 match execution {
                     Ok(()) => {
                         debug!("ok");
-                        AppStateCmdResult::RefreshState { clear_cache: true }
+                        AppStateCmdResult::RefreshState{clear_cache: true}
                     }
                     Err(e) => {
                         warn!("launchable failed : {:?}", e);

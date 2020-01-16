@@ -11,6 +11,7 @@ pub struct Status<'a> {
 }
 
 impl<'a> Status<'a> {
+
     pub fn new(
         pending_task: Option<&'static str>,
         message: Composite<'a>,
