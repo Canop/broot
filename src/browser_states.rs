@@ -28,7 +28,7 @@ pub struct BrowserState {
     pub tree: Tree,
     pub filtered_tree: Option<Tree>,
     pub pending_pattern: Pattern, // a pattern (or not) which has not yet be applied
-    pub total_search_required: bool, // whether the pending pattern should be done in total search mode
+    pub total_search_required: bool, // whether the pending pattern should be in total search mode
 }
 
 impl BrowserState {

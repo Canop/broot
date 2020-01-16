@@ -271,7 +271,7 @@ impl VerbStore {
             "total_search",
             Some(keys::CTRL_S),
             None,
-            "search again but on *all* children",
+            "search again but on all children",
         );
         self.add_builtin(
             "up_tree",

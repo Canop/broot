@@ -13,12 +13,12 @@ static MD: &str = r#"
 
 **broot** lets you explore directory trees and launch commands.
 It's best used when launched as **br**.
-See *https://dystroy.org/broot* for a complete guide.
+See **https://dystroy.org/broot** for a complete guide.
 
-`<esc>` gets you back to the previous state.
+The *esc* key gets you back to the previous state.
 Typing some letters searches the tree and selects the most relevant file.
 To use a regular expression, use a slash at start or end eg `/j(ava|s)$`.
-The **↑** and **↓** arrow keys can be used to change selection.
+The *↑* and *↓* arrow keys can be used to change selection.
 The mouse can be used to select (on click) or open (on double-click).
 
 ## Verbs
@@ -34,7 +34,7 @@ ${verb-rows
 
 ## Configuration
 
-Verbs and skin can be configured in *${config-path}*.
+Verbs and skin can be configured in **${config-path}**.
 
 ## Launch Arguments
 
