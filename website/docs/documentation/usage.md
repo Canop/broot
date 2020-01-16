@@ -268,13 +268,17 @@ This may be used by shell functions or other programs calling broot, in a simila
 <a name=cmd></a>
 ## the `--cmd` launch argument
 
-This argument lets you pass commands to broot. Those commands are executed exactly like any command you would type yourself in the application, a space meaning broot must wait for the end of execution.
+This argument lets you pass commands to broot. Those commands are executed exactly like any command you would type yourself in the application.
+
+Commands must be separated. The default separator is the semicolon (`;`) but another separator may be provided using the `BROOT_CMD_SEPARATOR` environment variable (the separator may be several characters long if needed).
+
+Broot waits for the end of execution of every command.
 
 For example if you launch
 
     br --cmd cow /
 
-Then broot is launched in the / directory and there's simply a filter typed for you.
+Then broot is launched in the `/` directory and there's simply a filter typed for you.
 
 If you do
 
@@ -287,6 +291,12 @@ If you do
     br --cmd "mucca$/ :cd"
 
 then broot searches for a file whose name ends with "mucca", and `cd` to the closest directory, leaving you on the shell, in your new directory (you may not have the time to notice the broot guy was displayed).
+
+If you do
+
+	BROOT_CMD_SEPARATOR=@ broot -c ":gi@target@:pp"
+
+then broot toggles the git_ignore filter, searches for `target` then prints the selection path on stdout (when doing it in my broot repository, I get `/home/dys/dev/broot/target`).
 
 The `--cmd` argument may be the basis for many of your own shell functions or programs.
 
