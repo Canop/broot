@@ -213,7 +213,6 @@ impl App {
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {
             let lifetime = TaskLifetime::unlimited();
-
             for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
                 cmd = self.apply_command(&mut writer, arg_cmd, &mut screen, con)?;
                 self.do_pending_tasks(&mut writer, &cmd, &mut screen, con, lifetime.clone())?;

@@ -20,10 +20,10 @@ pub struct Command {
 
 /// An intermediate parsed representation of the raw string
 #[derive(Debug, Clone)]
-struct CommandParts {
+pub struct CommandParts {
     pattern: Option<String>,     // either a fuzzy pattern or the core of a regex
     regex_flags: Option<String>, // may be Some("") if user asked for a regex but specified no flag
-    verb_invocation: Option<VerbInvocation>, // may be empty if user already typed the separator but no char after
+    verb_invocation: Option<VerbInvocation>, // may be empty if user typed the separator but no char after
 }
 
 #[derive(Debug, Clone)]
@@ -54,9 +54,9 @@ impl CommandParts {
             verb_invocation: None,
         }
     }
-    fn from(raw: &str) -> CommandParts {
+    fn from(raw: &str) -> Self {
         let mut cp = CommandParts::new();
-        let r = regex!(
+        let c = regex!(
             r"(?x)
                 ^
                 (?P<slash_before>/)?
@@ -64,22 +64,39 @@ impl CommandParts {
                 (?:/(?P<regex_flags>\w*))?
                 (?:[\s:]+(?P<verb_invocation>.*))?
                 $
-                "
-        );
-        if let Some(c) = r.captures(raw) {
-            if let Some(pattern) = c.name("pattern") {
-                cp.pattern = Some(String::from(pattern.as_str()));
-                if let Some(rxf) = c.name("regex_flags") {
-                    cp.regex_flags = Some(String::from(rxf.as_str()));
-                } else if c.name("slash_before").is_some() {
-                    cp.regex_flags = Some("".into());
-                }
-            }
-            if let Some(verb) = c.name("verb_invocation") {
-                cp.verb_invocation = Some(VerbInvocation::from(verb.as_str()));
+            "
+        )
+        .captures(raw)
+        .unwrap(); // all parts optional, so always captures
+        if let Some(pattern) = c.name("pattern") {
+            cp.pattern = Some(String::from(pattern.as_str()));
+            if let Some(rxf) = c.name("regex_flags") {
+                cp.regex_flags = Some(String::from(rxf.as_str()));
+            } else if c.name("slash_before").is_some() {
+                cp.regex_flags = Some("".into());
             }
         }
+        if let Some(verb) = c.name("verb_invocation") {
+            cp.verb_invocation = Some(VerbInvocation::from(verb.as_str()));
+        }
         cp
+    }
+    /// split an input into its two possible parts, the pattern
+    /// and the verb invocation. Each part, when defined, is
+    /// suitable to create a command on its own.
+    pub fn split(raw: &str) -> (Option<String>, Option<String>) {
+        let captures = regex!(
+            r"(?x)
+                ^
+                (?P<pattern_part>/?[^\s/:]+/?\w*)?
+                (?P<verb_part>[\s:]+(.+))?
+                $
+            "
+        ).captures(raw).unwrap(); // all parts optional : always captures
+        (
+            captures.name("pattern_part").map(|c| c.as_str().to_string()),
+            captures.name("verb_part").map(|c| c.as_str().to_string()),
+        )
     }
 }
 
@@ -119,6 +136,30 @@ impl Command {
             parts: CommandParts::new(),
             action: Action::Unparsed,
         }
+    }
+
+    /// create a command from a raw input. `finished` makes
+    /// the command an executed form, it's equivalent to
+    /// using the Enter key in the Gui.
+    pub fn from_raw(raw: String, finished: bool) -> Self {
+        let parts = CommandParts::from(&raw);
+        Self {
+            raw,
+            action: Action::from(&parts, finished),
+            parts,
+        }
+    }
+
+    /// build a non executed command from a pattern
+    pub fn from_pattern(pattern: &Pattern) -> Self {
+        Command::from_raw(
+            match pattern {
+                Pattern::Fuzzy(fp) => fp.to_string(),
+                Pattern::Regex(rp) => rp.to_string(),
+                Pattern::None => String::new(),
+            },
+            false,
+        )
     }
 
     /// set the action and clears the other parts :
@@ -227,34 +268,6 @@ impl Command {
             }
             _ => {}
         }
-    }
-}
-
-impl From<String> for Command {
-    /// build a command from a string
-    /// Note that this isn't used (or usable) for interpretation
-    ///  of the in-app user input. It's meant for interpretation
-    ///  of a file or from a sequence of commands passed as argument
-    ///  of the program.
-    /// A ':', even if at the end, is assumed to mean that the
-    ///  command must be executed (it's equivalent to the user
-    ///  typing `enter` in the app
-    /// This specific syntax isn't definitive
-    fn from(raw: String) -> Command {
-        let parts = CommandParts::from(&raw);
-        let action = Action::from(&parts, raw.contains(':'));
-        Command { raw, parts, action }
-    }
-}
-
-impl From<&Pattern> for Command {
-    fn from(pattern: &Pattern) -> Self {
-        match pattern {
-            Pattern::Fuzzy(fp) => fp.to_string(),
-            Pattern::Regex(rp) => rp.to_string(),
-            Pattern::None => String::new(),
-        }
-        .into()
     }
 }
 

@@ -23,7 +23,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .short("c")
                 .long("cmd")
                 .takes_value(true)
-                .help("commands to execute (space separated, experimental)"),
+                .help("semicolon separated commands to execute (experimental)"),
         )
         .arg(
             clap::Arg::with_name("dates")

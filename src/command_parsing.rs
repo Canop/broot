@@ -1,136 +1,68 @@
 //! this mod achieves the transformation of a string containing
-//! one or several commands into a vec of parsed commands, using
-//! the verbstore to try guess what part is an argument and what
-//! part is a filter
+//! one or several commands into a vec of parsed commands
 
-use crate::{
-    app_context::AppContext,
-    commands::Command,
-    errors::ProgramError,
-    verb_store::PrefixSearchResult,
+use {
+    crate::{
+        app_context::AppContext,
+        commands::{
+            Action,
+            Command, CommandParts,
+        },
+        errors::ProgramError,
+        verb_store::PrefixSearchResult,
+    },
 };
 
-#[derive(Debug)]
-enum CommandSequenceToken {
-    Standard(String), // one or several words, not starting with a ':'. May be a filter or a verb argument
-    VerbName(String),  // a verb (the ':' isn't given)
-}
-struct CommandSequenceTokenizer {
-    chars: Vec<char>,
-    pos: usize,
-}
-impl CommandSequenceTokenizer {
-    pub fn from(sequence: &str) -> CommandSequenceTokenizer {
-        CommandSequenceTokenizer {
-            chars: sequence.chars().collect(),
-            pos: 0,
-        }
-    }
-}
-impl Iterator for CommandSequenceTokenizer {
-    type Item = CommandSequenceToken;
-    fn next(&mut self) -> Option<CommandSequenceToken> {
-        if self.pos >= self.chars.len() {
-            return None;
-        }
-        let is_verb = if self.chars[self.pos] == ':' {
-            self.pos += 1;
-            true
-        } else {
-            false
-        };
-        let mut end = self.pos;
-        let mut between_quotes = false;
-        while end < self.chars.len() {
-            if self.chars[end] == '"' {
-                between_quotes = !between_quotes;
-            } else if self.chars[end] == ' ' && !between_quotes {
-                break;
-            }
-            end += 1;
-        }
-        let token: String = self.chars[self.pos..end].iter().collect();
-        self.pos = end + 1;
-        Some(if is_verb {
-            CommandSequenceToken::VerbName(token)
-        } else {
-            CommandSequenceToken::Standard(token)
-        })
-    }
-}
-
 /// parse a string which is meant as a sequence of commands.
-/// Note that this is inherently flawed as packing several commands
-/// into a string without hard separator is ambiguous in the general
-/// case.
 ///
-/// In the future I might introduce a way to define a variable hard separator
-/// (for example "::sep=#:some_filter#:some command with three arguments#a_filter")
-///
-/// The current parsing try to be the least possible flawed by
-/// giving verbs the biggest sequence of tokens accepted by their
-/// execution pattern.
+/// The ';' separator is used to identify inputs unless it's
+/// overriden in env variable BROOT_CMD_SEPARATOR.
+/// Verbs are verified, to ensure the command sequence has
+/// no unexpected holes.
 pub fn parse_command_sequence(
     sequence: &str,
     con: &AppContext,
 ) -> Result<Vec<Command>, ProgramError> {
-    let mut tokenizer = CommandSequenceTokenizer::from(sequence);
-    let mut commands: Vec<Command> = Vec::new();
-    let mut leftover: Option<CommandSequenceToken> = None;
-    while let Some(first_token) = leftover.take().or_else(|| tokenizer.next()) {
-        let raw = match first_token {
-            CommandSequenceToken::VerbName(name) => {
-                let verb = match con.verb_store.search(&name) {
+    let separator = match std::env::var("BROOT_CMD_SEPARATOR") {
+        Ok(sep) if !sep.is_empty() => sep,
+        _ => String::from(";"),
+    };
+    debug!("Splitting cmd sequence with {:?}", separator);
+    let mut commands = Vec::new();
+    for input in sequence.split(&separator) {
+        // an input may be made of two parts:
+        //  - a search pattern
+        //  - a verb followed by its arguments
+        // we need to build a command for each part so
+        // that the search is effectively done before
+        // the verb invocation
+        let (pattern, verb_invocation) = CommandParts::split(input);
+        if let Some(pattern) = pattern {
+            debug!("adding pattern: {:?}", pattern);
+            commands.push(Command::from_raw(pattern, false));
+        }
+        if let Some(verb_invocation) = verb_invocation {
+            debug!("adding verb_invocation: {:?}", verb_invocation);
+            let command = Command::from_raw(verb_invocation, true);
+            if let Action::VerbInvocate(invocation) = &command.action {
+                // we check that the verb exists to avoid running a sequence
+                // of actions with some missing
+                match con.verb_store.search(&invocation.name) {
                     PrefixSearchResult::NoMatch => {
-                        return Err(ProgramError::UnknownVerb { name });
+                        return Err(ProgramError::UnknownVerb{
+                            name: invocation.name.to_string(),
+                        });
                     }
-                    PrefixSearchResult::TooManyMatches(..) => {
-                        return Err(ProgramError::AmbiguousVerbName { name });
+                    PrefixSearchResult::TooManyMatches(_) => {
+                        return Err(ProgramError::AmbiguousVerbName{
+                            name: invocation.name.to_string(),
+                        });
                     }
-                    PrefixSearchResult::Match(verb) => verb,
-                };
-                let mut raw = format!(":{}", name);
-                if let Some(args_regex) = &verb.args_parser {
-                    let mut args: Vec<String> = Vec::new();
-                    let mut nb_valid_args = 0;
-                    // we'll try to consume as many tokens as possible
-                    while let Some(token) = tokenizer.next() {
-                        match token {
-                            CommandSequenceToken::VerbName(_) => {
-                                leftover = Some(token);
-                                break;
-                            }
-                            CommandSequenceToken::Standard(raw) => {
-                                args.push(raw);
-                                if args_regex.is_match(&args.join(" ")) {
-                                    nb_valid_args = args.len();
-                                }
-                            }
-                        }
-                    }
-                    if nb_valid_args == 0 && !args_regex.is_match("") {
-                        return Err(ProgramError::UnmatchingVerbArgs { name });
-                    }
-                    for (i, arg) in args.drain(..).enumerate() {
-                        if i < nb_valid_args {
-                            raw.push(' ');
-                            raw.push_str(&arg);
-                        } else {
-                            commands.push(Command::from(arg));
-                        }
-                    }
+                    _ => {}
                 }
-                raw
+                commands.push(command);
             }
-            CommandSequenceToken::Standard(raw) => raw,
-        };
-        commands.push(Command::from(raw));
-    }
-    if let Some(token) = leftover.take() {
-        commands.push(Command::from(match token {
-            CommandSequenceToken::Standard(raw) => raw,
-            CommandSequenceToken::VerbName(raw) => format!(":{}", raw),
-        }));
+        }
     }
     Ok(commands)
 }
