@@ -11,6 +11,7 @@
 
 use {
     std::{
+        env,
         fs::OpenOptions,
         io::Write,
         path::PathBuf,
@@ -25,11 +26,17 @@ use {
         util,
     },
     minimad::*,
+    regex::{Captures, Regex},
     termimad::mad_print_inline,
 };
 
 const NAME: &str = "bash";
-const SOURCING_FILES: &[&str] = &[".bashrc", ".zshrc", ".bash_profile"];
+const SOURCING_FILES: &[&str] = &[
+    ".bashrc",
+    ".bash_profile",
+    ".zshrc",
+    "$ZDOTDIR/.zshrc",
+];
 const VERSION: &str = "1";
 
 // This script has been tested on bash and zsh.
@@ -64,7 +71,7 @@ function br {
 "#;
 
 const MD_NO_SOURCING: &str =  r#"
-I found neither `.bashrc` nor `.zshrc`.
+I found no sourcing file for the bash/zsh family.
 If you're using bash or zsh, then installation isn't complete:
 the br function initialization script won't be sourced unless you source it yourself.
 "#;
@@ -87,15 +94,34 @@ fn get_script_path() -> PathBuf {
     conf::app_dirs().data_dir().join("launcher").join(NAME).join(VERSION)
 }
 
-/// return the paths to the files in which the br function is sourced
+/// return the paths to the files in which the br function is sourced.
+/// Paths in SOURCING_FILES can be absolute or relative to the home
+/// directory. Environnement variables designed as $NAME are interpolated.
 fn get_sourcing_paths() -> Vec<PathBuf> {
     let homedir_path = UserDirs::new()
         .expect("no home directory!")
         .home_dir()
         .to_path_buf();
     SOURCING_FILES.iter()
-        .map(|name| homedir_path.join(name))
-        .filter(|t| t.exists())
+        .map(|name|
+            regex!(r#"\$(\w+)"#)
+                .replace(name, |c: &Captures<'_>|
+                    env::var(&c[1]).unwrap_or(name.to_string())
+                )
+                .to_string()
+        )
+        .map(PathBuf::from)
+        .map(|path|
+            if path.is_absolute() {
+                path
+            } else {
+                homedir_path.join(path)
+            }
+        )
+        .filter(|path| {
+            debug!("considering path: {:?}", &path);
+            path.exists()
+        })
         .collect()
 }
 
