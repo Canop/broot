@@ -55,10 +55,8 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
                                         continue; // let's not add the size
                                     }
                                 }
-                                let nominal_size = md.size();
                                 let block_size = md.blocks() * md.blksize();
-                                let file_size = block_size.min(nominal_size);
-                                size.fetch_add(file_size, Ordering::Relaxed);
+                                size.fetch_add(block_size, Ordering::Relaxed);
                             }
                         }
                     }
@@ -88,7 +86,7 @@ pub fn compute_file_size(path: &Path) -> FileSize {
         Ok(md) => {
             let nominal_size = md.size();
             let block_size = md.blocks() * md.blksize();
-            FileSize::new(nominal_size.min(block_size), block_size < nominal_size)
+            FileSize::new(block_size, block_size < nominal_size)
         }
         Err(_) => FileSize::new(0, false),
     }
