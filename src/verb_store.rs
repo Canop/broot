@@ -193,6 +193,12 @@ impl VerbStore {
             "print path and leaves broot",
         );
         self.add_builtin(
+            "print_relative_path",
+            None,
+            Some("prp".to_string()),
+            "print relative path and leaves broot",
+        );
+        self.add_builtin(
             "print_tree",
             None,
             Some("pt".to_string()),

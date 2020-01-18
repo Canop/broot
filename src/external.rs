@@ -157,6 +157,36 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
     )
 }
 
+pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    let current_path = match env::current_dir() {
+        Ok(p) => p,
+        // Intentionally do not exit since we may want to print the
+        // absolute path instead, even if we cannot retrieve the cwd
+        Err(e) => {
+            return Ok(AppStateCmdResult::DisplayError(format!(
+                "Cannot determine current working directory: {}",
+                e.to_string()
+            )))
+        }
+    };
+
+    let canonical_path = path.canonicalize()?;
+
+    let relative_path = match canonical_path.strip_prefix(current_path.clone()) {
+        Ok(rel_path) => rel_path,
+        Err(e) => {
+            return Ok(AppStateCmdResult::DisplayError(format!(
+                "Cannot relativize {} against {}: {}",
+                canonical_path.to_string_lossy().to_string(),
+                current_path.to_string_lossy().to_string(),
+                e.to_string()
+            )))
+        }
+    };
+
+    print_path(relative_path, con)
+}
+
 fn print_tree_to_file(
     tree: &Tree,
     screen: &mut Screen,
