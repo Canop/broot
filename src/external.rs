@@ -8,6 +8,7 @@ use std::{
 
 use open;
 use regex::Regex;
+use pathdiff;
 
 use crate::{
     app_context::AppContext,
@@ -155,6 +156,39 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
             AppStateCmdResult::from(Launchable::printer(path))
         },
     )
+}
+
+pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult> {
+    let current_path = match env::current_dir() {
+        Ok(p) => p,
+        // Intentionally do not exit since we may want to print the
+        // absolute path instead, even if we cannot retrieve the cwd
+        Err(e) => {
+            return Ok(AppStateCmdResult::DisplayError(format!(
+                "Cannot determine current working directory: {}",
+                e.to_string()
+            )))
+        }
+    };
+
+    let canonical_path = path.canonicalize()?;
+
+    let relative_path = match pathdiff::diff_paths(
+        canonical_path.as_path(),
+        current_path.as_path()) {
+        None => return Ok(AppStateCmdResult::DisplayError(format!(
+            "Cannot relativize {} against {}",
+            canonical_path.to_string_lossy().to_string(),
+            current_path.to_string_lossy().to_string()
+        ))),
+        Some(p) => p,
+    };
+
+    return if relative_path.to_string_lossy().is_empty() {
+       print_path(Path::new("."), con)
+    } else {
+       print_path(relative_path.as_path(), con)
+    }
 }
 
 fn print_tree_to_file(
