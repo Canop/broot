@@ -62,7 +62,7 @@ impl Default for TreeOptions {
             only_folders: false,
             show_sizes: false,
             show_dates: false,
-            trim_root: true,
+            trim_root: false,
             show_permissions: false,
             respect_git_ignore: OptionBool::Auto,
             pattern: Pattern::None,

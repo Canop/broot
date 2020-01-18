@@ -1,8 +1,10 @@
 ### master
-- fix some cases of terminal let in a bad state on errors
-- some changes to the fish shell function and its installation (PR #128)
 - **breaking change:** commands given with `--cmd` must be separated (default separator is `;`)
+- fix some cases of terminal let in a bad state on errors (thanks Nathan West)
+- bring some changes to the fish shell function and its installation (PR #128)
 - consider path `$ZDOTDIR/.zshrc` for zsh shell function sourcing (fix #90)
+- don't use .gitignore files of parent repositories
+- change default value of the toggle_trim_root to false (fix #106 but might be reverted)
 
 <a name="v0.11.9"></a>
 ### v0.11.9 - 2020-01-15

@@ -121,7 +121,6 @@ impl GitIgnoreFilter {
     pub fn extended_to(
         &self,
         dir: &Path,
-        // chain_behaviour: IgnoreChainBehaviour,
     ) -> GitIgnoreFilter {
         let ignore_file = dir.join(".gitignore");
         if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
