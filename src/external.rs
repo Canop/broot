@@ -8,6 +8,7 @@ use std::{
 
 use open;
 use regex::Regex;
+use pathdiff;
 
 use crate::{
     app_context::AppContext,
@@ -172,19 +173,22 @@ pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<AppState
 
     let canonical_path = path.canonicalize()?;
 
-    let relative_path = match canonical_path.strip_prefix(current_path.clone()) {
-        Ok(rel_path) => rel_path,
-        Err(e) => {
-            return Ok(AppStateCmdResult::DisplayError(format!(
-                "Cannot relativize {} against {}: {}",
-                canonical_path.to_string_lossy().to_string(),
-                current_path.to_string_lossy().to_string(),
-                e.to_string()
-            )))
-        }
+    let relative_path = match pathdiff::diff_paths(
+        canonical_path.clone().as_path(),
+        current_path.as_path()) {
+        None => return Ok(AppStateCmdResult::DisplayError(format!(
+            "Cannot relativize {} against {}",
+            canonical_path.to_string_lossy().to_string(),
+            current_path.to_string_lossy().to_string()
+        ))),
+        Some(p) => p,
     };
 
-    print_path(relative_path, con)
+    return if relative_path.to_string_lossy().is_empty() {
+       print_path(Path::new("."), con)
+    } else {
+       print_path(relative_path.as_path(), con)
+    }
 }
 
 fn print_tree_to_file(
