@@ -159,35 +159,16 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
 }
 
 pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult> {
-    let current_path = match env::current_dir() {
-        Ok(p) => p,
-        // Intentionally do not exit since we may want to print the
-        // absolute path instead, even if we cannot retrieve the cwd
-        Err(e) => {
-            return Ok(AppStateCmdResult::DisplayError(format!(
-                "Cannot determine current working directory: {}",
-                e.to_string()
-            )))
-        }
-    };
-
-    let canonical_path = path.canonicalize()?;
-
-    let relative_path = match pathdiff::diff_paths(
-        canonical_path.as_path(),
-        current_path.as_path()) {
-        None => return Ok(AppStateCmdResult::DisplayError(format!(
-            "Cannot relativize {} against {}",
-            canonical_path.to_string_lossy().to_string(),
-            current_path.to_string_lossy().to_string()
-        ))),
+    let relative_path = match pathdiff::diff_paths(path, &con.launch_args.root) {
+        None => return Ok(AppStateCmdResult::DisplayError(
+            format!("Cannot relativize {:?}", path) // does this happen ? how ?
+        )),
         Some(p) => p,
     };
-
-    return if relative_path.to_string_lossy().is_empty() {
-       print_path(Path::new("."), con)
+    if relative_path.components().next().is_some() {
+        print_path(&relative_path, con)
     } else {
-       print_path(relative_path.as_path(), con)
+        print_path(Path::new("."), con)
     }
 }
 

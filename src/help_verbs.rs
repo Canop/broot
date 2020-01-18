@@ -70,13 +70,11 @@ impl VerbExecutor for HelpState {
                 AppStateCmdResult::Keep
             }
             ":print_path" => external::print_path(&Conf::default_location(), con)?,
-            ":print_relative_path" => {
-                external::print_relative_path(&Conf::default_location(), con)?
-            }
+            ":print_relative_path" => external::print_relative_path(&Conf::default_location(), con)?,
             ":quit" => AppStateCmdResult::Quit,
             ":focus_user_home" | ":focus_root" => AppStateCmdResult::PopStateAndReapply,
             _ if verb.execution.starts_with(":toggle") => AppStateCmdResult::PopStateAndReapply,
-            _ if verb.execution.starts_with(':') => AppStateCmdResult::Keep, // other internal verbs do nothing
+            _ if verb.execution.starts_with(':') => AppStateCmdResult::Keep,
             _ => verb.to_cmd_result(
                 &Conf::default_location(),
                 &invocation.args,

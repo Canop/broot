@@ -5,6 +5,7 @@
 - consider path `$ZDOTDIR/.zshrc` for zsh shell function sourcing (fix #90)
 - don't use .gitignore files of parent repositories
 - change default value of the toggle_trim_root to false (fix #106 but might be reverted)
+- `:print_relative_path` verb (fix #169, thanks Roshan George)
 
 <a name="v0.11.9"></a>
 ### v0.11.9 - 2020-01-15

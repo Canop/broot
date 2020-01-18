@@ -200,12 +200,13 @@ invocation | default key | default shortcut | behavior / details
 :mkdir {subpath} | - | md | create a directory
 :mv {newpath} | - | - | move the file or directory to the provided path
 :open_stay | <kbd>enter</kbd> | - | open the selected file in the default OS opener
-:open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leaves broot
+:open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leave broot
 :page_down | <kbd>⇟</kbd> | - | scroll one page down
 :page_up | <kbd>⇞</kbd> | - | scroll one page up
 :parent | - | - | focus the parent directory
-:print_path | - | pp | print path and leaves broot
-:print_tree | - | pt | print tree and leaves broot
+:print_path | - | pp | print path and leave broot
+:print_relative_path | - | pp | print relative path and leave broot
+:print_tree | - | pt | print tree and leave broot
 :quit | <kbd>ctrl</kbd><kbd>q</kbd> | q | quit broot
 :refresh | <kbd>F5</kbd> | - | refresh the displayed tree and clears the directory sizes cache
 :rm | - | - | remove the selected file or directory. To stay safe, don't define a keyboard key for this action
