@@ -174,7 +174,7 @@ pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<AppState
     let canonical_path = path.canonicalize()?;
 
     let relative_path = match pathdiff::diff_paths(
-        canonical_path.clone().as_path(),
+        canonical_path.as_path(),
         current_path.as_path()) {
         None => return Ok(AppStateCmdResult::DisplayError(format!(
             "Cannot relativize {} against {}",
