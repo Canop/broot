@@ -6,7 +6,7 @@
 use std::{
     fs::File,
     io::{BufRead, BufReader, Result},
-    path::{Path, PathBuf},
+    path::Path,
 };
 
 use glob;
@@ -91,31 +91,56 @@ impl GitIgnoreFile {
 }
 
 /// A stack of the gitignore files applying to a directory.
+#[derive(Clone)]
 pub struct GitIgnoreFilter {
     pub files: Vec<GitIgnoreFile>, // the last one is the deepest one
 }
 impl GitIgnoreFilter {
-    pub fn applicable_to(path: &Path) -> GitIgnoreFilter {
+    pub fn applicable_to(mut dir: &Path) -> GitIgnoreFilter {
         let mut filter = GitIgnoreFilter { files: Vec::new() };
-        for ignore_file in GitIgnoreFilesFinder::for_dir(path) {
-            match GitIgnoreFile::new(&ignore_file) {
-                Ok(gif) => {
-                    filter.files.push(gif);
-                }
-                Err(e) => {
-                    info!("reading git ignore file failed: {:?}", e);
-                }
+        debug!("searching applicable gifs for {:?}", dir);
+        loop {
+            debug!("  looking in {:?}", dir);
+            let ignore_file = dir.join(".gitignore");
+            if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
+                debug!("  adding {:?}", &ignore_file);
+                filter.files.push(gif);
+            }
+            if is_git_repo(dir) {
+                debug!("  break because git repo");
+                break;
+            }
+            if let Some(parent) = dir.parent() {
+                dir = parent;
+            } else {
+                break;
             }
         }
         filter
     }
-    pub fn extended_to(&self, dir: &Path) -> GitIgnoreFilter {
-        let mut files = self.files.clone();
+    pub fn extended_to(
+        &self,
+        dir: &Path,
+        // chain_behaviour: IgnoreChainBehaviour,
+    ) -> GitIgnoreFilter {
         let ignore_file = dir.join(".gitignore");
         if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
+            // if the current folder is a repository, then
+            // we reset the chain: we don't want the .gitignore
+            // files of super repositories
+            // (see https://github.com/Canop/broot/issues/160)
+            let mut files = if is_git_repo(dir) { // we'll assume it's a .git folder
+                debug!("entering a git repo {:?}", dir);
+                self.files.clone()
+            } else {
+                debug!("subfolder {:?} in same repo", dir);
+                Vec::new()
+            };
             files.push(gif);
+            GitIgnoreFilter { files }
+        } else {
+            self.clone()
         }
-        GitIgnoreFilter { files }
     }
     pub fn accepts(&self, path: &Path, filename: &str, directory: bool) -> bool {
         for file in &self.files {
@@ -137,31 +162,6 @@ impl GitIgnoreFilter {
     }
 }
 
-/// an iterator to find all applicable git_ignore files
-pub struct GitIgnoreFilesFinder<'a> {
-    dir: &'a Path,
-}
-impl<'a> GitIgnoreFilesFinder<'a> {
-    fn for_dir(dir: &'a Path) -> GitIgnoreFilesFinder<'a> {
-        GitIgnoreFilesFinder { dir }
-    }
-}
-impl<'a> Iterator for GitIgnoreFilesFinder<'a> {
-    type Item = PathBuf; // I don't really see a way to deal with only &'a Path as join makes a PathBuf
-    fn next(&mut self) -> Option<PathBuf> {
-        loop {
-            let ignore_file = self.dir.join(".gitignore");
-            match self.dir.parent() {
-                Some(parent) => {
-                    self.dir = parent;
-                    if ignore_file.exists() {
-                        return Some(ignore_file);
-                    }
-                }
-                None => {
-                    return None;
-                }
-            }
-        }
-    }
+fn is_git_repo(dir: &Path) -> bool {
+    dir.join(".git").exists()
 }

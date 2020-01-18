@@ -1,6 +1,10 @@
-use std::str::FromStr;
-
-use crate::{errors::ProgramError, patterns::Pattern};
+use {
+    crate::{
+        errors::ProgramError,
+        patterns::Pattern,
+    },
+    std::str::FromStr,
+};
 
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum OptionBool {

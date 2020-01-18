@@ -86,7 +86,7 @@ pub fn compute_file_size(path: &Path) -> FileSize {
         Ok(md) => {
             let nominal_size = md.size();
             let block_size = md.blocks() * md.blksize();
-            FileSize::new(block_size, block_size < nominal_size)
+            FileSize::new(block_size.min(nominal_size), block_size < nominal_size)
         }
         Err(_) => FileSize::new(0, false),
     }
