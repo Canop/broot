@@ -11,6 +11,7 @@ use {
         thread,
         time::Duration,
     },
+    super::FileSize,
 };
 
 // Note that this version doesn't try to compute the real size taken
@@ -75,6 +76,6 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
 pub fn compute_file_size(path: &Path) -> FileSize {
     match fs::metadata(path) {
         Ok(m) => FileSize::new(m.len(), false),
-        Err(_) => 0,
+        Err(_) => FileSize::new(0, false),
     }
 }
