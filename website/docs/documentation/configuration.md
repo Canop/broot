@@ -190,6 +190,7 @@ invocation | default key | default shortcut | behavior / details
 -|-|-|-
 :back | <kbd>Esc</kbd> | - | back to previous app state (see Usage page) |
 :cd | <kbd>alt</kbd><kbd>enter</kbd> | - | leave broot and cd to the selected directory (needs the br shell function)
+:chmod {args} | - | - | execute a chmod
 :cp {newpath} | - | - | copy the file or directory to the provided name
 :help | <kbd>F1</kbd> | - | open the help page. Help page can also be open with <kbd>?</kbd>
 :focus | <kbd>enter</kbd> | - | set the selected directory the root of the displayed tree |
