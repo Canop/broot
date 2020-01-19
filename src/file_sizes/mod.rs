@@ -76,7 +76,8 @@ impl fmt::Display for FileSize {
         let mut v = self.real_size;
         let mut i = 0;
         while v >= 5000 && i < SIZE_NAMES.len() - 1 {
-            v >>= 10;
+            //v >>= 10;
+            v /= 1000;
             i += 1;
         }
         write!(f, "{}{}", v, &SIZE_NAMES[i])

@@ -17,8 +17,11 @@ use {
 };
 
 pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
+    debug!("compute size of dir {:?} --------------- ", path);
     let inodes = Arc::new(Mutex::new(HashSet::<u64>::default())); // to avoid counting twice an inode
-    let size = Arc::new(AtomicU64::new(0));
+    // the computation is done on blocks of 512 bytes
+    // see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
+    let blocks = Arc::new(AtomicU64::new(0));
 
     // this MPMC channel contains the directory paths which must be handled
     let (dirs_sender, dirs_receiver) = unbounded();
@@ -32,7 +35,7 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     let wg = WaitGroup::new();
     let period = Duration::from_micros(50);
     for _ in 0..8 {
-        let size = Arc::clone(&size);
+        let blocks = Arc::clone(&blocks);
         let busy = Arc::clone(&busy);
         let wg = wg.clone();
         let (dirs_sender, dirs_receiver) = (dirs_sender.clone(), dirs_receiver.clone());
@@ -52,11 +55,10 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
                                     let mut inodes = inodes.lock().unwrap();
                                     if !inodes.insert(md.ino()) {
                                         // it was already in the set
-                                        continue; // let's not add the size
+                                        continue; // let's not add the blocks
                                     }
                                 }
-                                let block_size = md.blocks() * md.blksize();
-                                size.fetch_add(block_size, Ordering::Relaxed);
+                                blocks.fetch_add(md.blocks(), Ordering::Relaxed);
                             }
                         }
                     }
@@ -77,15 +79,15 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     if tl.is_expired() {
         return None;
     }
-    let size = size.load(Ordering::Relaxed);
-    Some(size)
+    let blocks = blocks.load(Ordering::Relaxed);
+    Some(blocks*512)
 }
 
 pub fn compute_file_size(path: &Path) -> FileSize {
     match fs::metadata(path) {
         Ok(md) => {
             let nominal_size = md.size();
-            let block_size = md.blocks() * md.blksize();
+            let block_size = md.blocks() * 512;
             FileSize::new(block_size.min(nominal_size), block_size < nominal_size)
         }
         Err(_) => FileSize::new(0, false),
