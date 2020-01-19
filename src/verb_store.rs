@@ -86,6 +86,20 @@ impl VerbStore {
             )
             .unwrap(),
         );
+        #[cfg(unix)]
+        self.verbs.push(
+            Verb::create_external(
+                "chmod {args}",
+                None,
+                None,
+                "chmod {args} {file}".to_string(),
+                None,
+                false,
+                false, // doesn't leave broot
+                false,
+            )
+            .unwrap(),
+        );
         self.verbs.push(
             Verb::create_external(
                 "cp {newpath}",
