@@ -1,10 +1,11 @@
-use minimad::{
-    Text,
-    TextTemplate,
-};
-
-use crate::{
-    app_context::AppContext,
+use {
+    crate::{
+        app_context::AppContext,
+    },
+    minimad::{
+        Text,
+        TextTemplate,
+    },
 };
 
 static MD: &str = r#"
@@ -64,7 +65,8 @@ pub fn build_text(con: &AppContext) -> Text<'_> {
         .set("version", env!("CARGO_PKG_VERSION"))
         .set("config-path", &con.config_path);
     for verb in &con.verb_store.verbs {
-        let sub = expander.sub("verb-rows")
+        let sub = expander
+            .sub("verb-rows")
             .set("name", &verb.invocation.name)
             .set(
                 "shortcut",

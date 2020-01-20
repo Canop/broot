@@ -148,7 +148,11 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
     for sourcing_path in &sourcing_paths {
         let sourcing_path_str = sourcing_path.to_string_lossy();
         if util::file_contains_line(sourcing_path, &source_line)? {
-            mad_print_inline!(&si.skin, "`$0` already patched, no change made.\n", &sourcing_path_str);
+            mad_print_inline!(
+                &si.skin,
+                "`$0` already patched, no change made.\n",
+                &sourcing_path_str
+            );
         } else {
             let mut shellrc = OpenOptions::new()
                 .write(true)

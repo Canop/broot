@@ -35,19 +35,18 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
 
 #[cfg(windows)]
 fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
-    Ok(
-        if root.is_relative() {
-            env::current_dir()?.join(root)
-        } else {
-            root.to_path_buf()
-        }
-    )
+    Ok(if root.is_relative() {
+        env::current_dir()?.join(root)
+    } else {
+        root.to_path_buf()
+    })
 }
 
 /// return the parsed launch arguments
 pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
     let cli_args = crate::clap::clap_app().get_matches();
-    let mut root = cli_args.value_of("root")
+    let mut root = cli_args
+        .value_of("root")
         .map_or(env::current_dir()?, PathBuf::from);
     if !root.exists() {
         Err(TreeBuildError::FileNotFound {
@@ -84,15 +83,9 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
         tree_options.respect_git_ignore = respect_ignore.parse()?;
     }
     let install = cli_args.is_present("install");
-    let file_export_path = cli_args
-        .value_of("file_export_path")
-        .map(str::to_string);
-    let cmd_export_path = cli_args
-        .value_of("cmd_export_path")
-        .map(str::to_string);
-    let commands = cli_args
-        .value_of("commands")
-        .map(str::to_string);
+    let file_export_path = cli_args.value_of("file_export_path").map(str::to_string);
+    let cmd_export_path = cli_args.value_of("cmd_export_path").map(str::to_string);
+    let commands = cli_args.value_of("commands").map(str::to_string);
     let no_style = cli_args.is_present("no-style");
     let height = cli_args.value_of("height").and_then(|s| s.parse().ok());
     let print_shell_function = cli_args

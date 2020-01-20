@@ -79,7 +79,8 @@ pub fn make_help_mad_skin(skin: &Skin) -> MadSkin {
     if let Some(c) = skin.help_headers.get_bg() {
         ms.set_headers_bg(c);
     }
-    ms.bullet.set_compound_style(ms.paragraph.compound_style.clone());
+    ms.bullet
+        .set_compound_style(ms.paragraph.compound_style.clone());
     ms.scrollbar
         .track
         .set_compound_style(CompoundStyle::from(skin.scrollbar_track.clone()));

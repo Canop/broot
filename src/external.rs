@@ -52,7 +52,7 @@ fn resolve_env_variables(parts: Vec<String>) -> Vec<String> {
     for part in parts.into_iter() {
         if part.starts_with('$') {
             if let Ok(val) = env::var(&part[1..]) {
-                resolved.extend(val.split(' ').map(|s|s.to_string()));
+                resolved.extend(val.split(' ').map(|s| s.to_string()));
                 continue;
             }
         }

@@ -83,9 +83,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
             clap::Arg::with_name("set-install-state")
                 .long("set-install-state")
                 .takes_value(true)
-                .possible_values(
-                    &["undefined", "refused", "installed"]
-                )
+                .possible_values(&["undefined", "refused", "installed"])
                 .help("set the installation state (for use in install script)"),
         )
         .arg(

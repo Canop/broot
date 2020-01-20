@@ -141,7 +141,7 @@ impl VerbStore {
             "line_up",
             Some(KeyEvent::from(KeyCode::Up)),
             None,
-            "move one line up"
+            "move one line up",
         );
         self.verbs.push(
             Verb::create_external(

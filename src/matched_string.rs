@@ -1,10 +1,11 @@
 
-
-use termimad::CompoundStyle;
-
-use crate::{
-    patterns::Pattern,
+use {
+    termimad::CompoundStyle,
+    crate::{
+        patterns::Pattern,
+    },
 };
+
 
 pub struct MatchedString<'a> {
     pub pattern: &'a Pattern,

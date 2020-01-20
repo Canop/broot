@@ -114,11 +114,7 @@ pub fn parse_object_style(s: &str) -> Result<CompoundStyle, InvalidSkinError> {
         let fg_color = parse_color(c.name("fg").unwrap().as_str())?;
         let bg_color = parse_color(c.name("bg").unwrap().as_str())?;
         let attrs = parse_attributes(c.name("attributes").unwrap().as_str())?;
-        Ok(CompoundStyle::new(
-            fg_color,
-            bg_color,
-            attrs,
-        ))
+        Ok(CompoundStyle::new(fg_color, bg_color, attrs))
     } else {
         debug!("NO match for {:?}", s);
         Err(InvalidSkinError::InvalidStyle {

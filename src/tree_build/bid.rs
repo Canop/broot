@@ -1,11 +1,7 @@
 use {
+    super::bline::BLine,
     id_arena::Id,
-    super::{
-        bline::BLine,
-    },
-    std::{
-        cmp::{self, Ordering},
-    },
+    std::cmp::{self, Ordering},
 };
 
 pub type BId = Id<BLine>;

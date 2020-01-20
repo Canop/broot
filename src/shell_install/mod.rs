@@ -25,7 +25,7 @@ The function is either missing, old or badly installed.
 Can I install it now? [**Y** n]
 "#;
 
-const MD_INSTALL_DONE : &str = r#"
+const MD_INSTALL_DONE: &str = r#"
 The **br** function has been installed.
 You may have to restart your shell or source your shell init files.
 Afterwards, you should start broot with `br` in order to use its full power.
@@ -128,7 +128,7 @@ impl ShellInstall {
             "bash" | "zsh" => println!("{}", bash::get_script()),
             "fish" => println!("{}", fish::get_script()),
             _ => {
-                return Err(ProgramError::UnknowShell{
+                return Err(ProgramError::UnknowShell {
                     shell: shell.to_string(),
                 });
             }
@@ -196,7 +196,7 @@ impl ShellInstall {
         if !proceed {
             ShellInstallState::Refused.write_file()?;
             self.skin.print_text(
-                "**Installation cancelled**. If you change your mind, run `broot --install`."
+                "**Installation cancelled**. If you change your mind, run `broot --install`.",
             );
         }
         Ok(proceed)
@@ -211,7 +211,11 @@ impl ShellInstall {
         self.remove(&script_path)?;
         info!("Writing `br` shell function in `{:?}`", &script_path);
         let script_path_str = script_path.to_string_lossy();
-        mad_print_inline!(&self.skin, "Writing *br* shell function in `$0`.\n", &script_path_str);
+        mad_print_inline!(
+            &self.skin,
+            "Writing *br* shell function in `$0`.\n",
+            &script_path_str
+        );
         fs::create_dir_all(script_path.parent().unwrap())?;
         fs::write(&script_path, content)?;
         Ok(())

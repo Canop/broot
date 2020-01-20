@@ -49,12 +49,12 @@ pub fn parse_command_sequence(
                 // of actions with some missing
                 match con.verb_store.search(&invocation.name) {
                     PrefixSearchResult::NoMatch => {
-                        return Err(ProgramError::UnknownVerb{
+                        return Err(ProgramError::UnknownVerb {
                             name: invocation.name.to_string(),
                         });
                     }
                     PrefixSearchResult::TooManyMatches(_) => {
-                        return Err(ProgramError::AmbiguousVerbName{
+                        return Err(ProgramError::AmbiguousVerbName {
                             name: invocation.name.to_string(),
                         });
                     }

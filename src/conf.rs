@@ -109,7 +109,9 @@ impl Conf {
                     .transpose()?;
                 if let Some(key) = key {
                     if keys::is_reserved(key) {
-                        return Err(ConfError::ReservedKey{key: keys::key_event_desc(key)});
+                        return Err(ConfError::ReservedKey {
+                            key: keys::key_event_desc(key),
+                        });
                     }
                 }
                 let execution = match string_field(verb_value, "execution") {

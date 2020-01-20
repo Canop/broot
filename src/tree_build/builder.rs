@@ -3,7 +3,7 @@ use {
         errors::TreeBuildError,
         flat_tree::{Tree, TreeLine},
         task_sync::TaskLifetime,
-        tree_options::{TreeOptions},
+        tree_options::TreeOptions,
     },
     id_arena::Arena,
     std::{
@@ -189,7 +189,11 @@ impl TreeBuilder {
     /// first step of the build: we explore the directories and gather lines.
     /// If there's no search pattern we stop when we have enough lines to fill the screen.
     /// If there's a pattern, we try to gather more lines that will be sorted afterwards.
-    fn gather_lines(&mut self, task_lifetime: &TaskLifetime, total_search: bool) -> Option<Vec<BId>> {
+    fn gather_lines(
+        &mut self,
+        task_lifetime: &TaskLifetime,
+        total_search: bool,
+    ) -> Option<Vec<BId>> {
         let start = Instant::now();
         let mut out_blines: Vec<BId> = Vec::new(); // the blines we want to display
         let optimal_size = self

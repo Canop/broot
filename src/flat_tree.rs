@@ -183,14 +183,14 @@ impl PartialOrd for TreeLine {
 impl Tree {
     pub fn refresh(&mut self, page_height: usize) -> Result<(), errors::TreeBuildError> {
         let builder = TreeBuilder::from(
-            self.root().to_path_buf(),
-            self.options.clone(),
-            page_height,
-        )?;
+            	self.root().to_path_buf(),
+            	self.options.clone(),
+            	page_height,
+        	)?;
         let mut tree = builder.build(
-            &TaskLifetime::unlimited(),
-            false, // on refresh we always do a non total search
-        ).unwrap(); // should not fail
+            	&TaskLifetime::unlimited(),
+            	false, // on refresh we always do a non total search
+        	).unwrap(); // should not fail
         // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);

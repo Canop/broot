@@ -1,6 +1,4 @@
-use {
-    crossterm::event::KeyEvent,
-};
+use crossterm::event::KeyEvent;
 
 /// what's needed to handle a verb
 #[derive(Debug)]

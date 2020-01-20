@@ -1,9 +1,10 @@
-use std::sync::{
-    atomic::{AtomicUsize, Ordering},
-    Arc,
+use {
+    lazy_static::lazy_static,
+    std::sync::{
+        atomic::{AtomicUsize, Ordering},
+        Arc,
+    },
 };
-
-use lazy_static::lazy_static;
 
 /// a TL initialized from an Arc<AtomicUsize> stays
 ///  alive as long as the passed arc doesn't change.

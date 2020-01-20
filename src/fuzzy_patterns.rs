@@ -119,7 +119,7 @@ impl FuzzyPattern {
             let previous = cand_chars[start_idx - 1];
             if previous == '_' || previous == ' ' || previous == '-' {
                 score += BONUS_START_WORD;
-                if cand_chars.len()-start_idx == self.lc_chars.len() {
+                if cand_chars.len() - start_idx == self.lc_chars.len() {
                     return MatchSearchResult::Perfect(Match { score, pos });
                 }
             }
@@ -206,7 +206,7 @@ impl FuzzyPattern {
             let previous = cand[start_idx - 1];
             if previous == b'_' || previous == b' ' || previous == b'-' {
                 score += BONUS_START_WORD;
-                if cand.len()-start_idx == self.lc_bytes.len() {
+                if cand.len() - start_idx == self.lc_bytes.len() {
                     return ScoreSearchResult::Perfect(score);
                 }
             }
@@ -267,7 +267,15 @@ mod fuzzy_pattern_tests {
     #[test]
     fn check_equal_scores() {
         static PATTERNS: &[&str] = &["reveil", "dystroy", "broot", "AB"];
-        static NAMES: &[&str] = &[" brr ooT", "Reveillon", "dys", "test", " a reveil", "a rbrroot", "Ab"];
+        static NAMES: &[&str] = &[
+            " brr ooT",
+            "Reveillon",
+            "dys",
+            "test",
+            " a reveil",
+            "a rbrroot",
+            "Ab",
+        ];
         for pattern in PATTERNS {
             let fp = FuzzyPattern::from(pattern);
             for name in NAMES {
@@ -287,7 +295,12 @@ mod fuzzy_pattern_tests {
         let mut last_name = pattern;
         for name in names {
             let score = fp.score_of(name);
-            assert!(score < last_score, "score({:?}) should be lower than score({:?}) (using score_of)", name, last_name);
+            assert!(
+                score < last_score,
+                "score({:?}) should be lower than score({:?}) (using score_of)",
+                name,
+                last_name
+            );
             last_name = name;
             last_score = score;
         }
@@ -296,7 +309,12 @@ mod fuzzy_pattern_tests {
         let mut last_name = pattern;
         for name in names {
             let score = fp.find(name).map(|m| m.score);
-            assert!(score < last_score, "score({:?}) should be lower than score({:?}) (using find)", name, last_name);
+            assert!(
+                score < last_score,
+                "score({:?}) should be lower than score({:?}) (using find)",
+                name,
+                last_name
+            );
             last_name = name;
             last_score = score;
         }
@@ -306,7 +324,16 @@ mod fuzzy_pattern_tests {
     fn check_orderings() {
         check_ordering_for(
             "broot",
-            &["a broot", "abbroot", "abcbroot", " abdbroot", "1234broot1", "12345brrrroooottt", "12345brrr roooottt", "brot"],
+            &[
+                "a broot",
+                "abbroot",
+                "abcbroot",
+                " abdbroot",
+                "1234broot1",
+                "12345brrrroooottt",
+                "12345brrr roooottt",
+                "brot",
+            ],
         );
         check_ordering_for(
             "Abc",
@@ -314,7 +341,14 @@ mod fuzzy_pattern_tests {
         );
         check_ordering_for(
             "réveil",
-            &["Réveillon", "Réveillons", " réveils", "πréveil", "déréveil", " rêves"],
+            &[
+                "Réveillon",
+                "Réveillons",
+                " réveils",
+                "πréveil",
+                "déréveil",
+                " rêves",
+            ],
         );
     }
 }

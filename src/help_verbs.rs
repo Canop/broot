@@ -47,18 +47,12 @@ impl VerbExecutor for HelpState {
                 self.scroll -= 1;
                 AppStateCmdResult::Keep
             }
-            ":open_stay" => {
-                match open::that(&Conf::default_location()) {
-                    Ok(exit_status) => {
-                        info!("open returned with exit_status {:?}", exit_status);
-                        AppStateCmdResult::Keep
-                    }
-                    Err(e) => {
-                        AppStateCmdResult::DisplayError(
-                            format!("{:?}", e)
-                        )
-                    }
+            ":open_stay" => match open::that(&Conf::default_location()) {
+                Ok(exit_status) => {
+                    info!("open returned with exit_status {:?}", exit_status);
+                    AppStateCmdResult::Keep
                 }
+                Err(e) => AppStateCmdResult::DisplayError(format!("{:?}", e)),
             },
             ":open_leave" => AppStateCmdResult::from(Launchable::opener(Conf::default_location())),
             ":page_down" => {
@@ -70,7 +64,9 @@ impl VerbExecutor for HelpState {
                 AppStateCmdResult::Keep
             }
             ":print_path" => external::print_path(&Conf::default_location(), con)?,
-            ":print_relative_path" => external::print_relative_path(&Conf::default_location(), con)?,
+            ":print_relative_path" => {
+                external::print_relative_path(&Conf::default_location(), con)?
+            }
             ":quit" => AppStateCmdResult::Quit,
             ":focus_user_home" | ":focus_root" => AppStateCmdResult::PopStateAndReapply,
             _ if verb.execution.starts_with(":toggle") => AppStateCmdResult::PopStateAndReapply,

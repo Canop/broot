@@ -80,7 +80,7 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
         return None;
     }
     let blocks = blocks.load(Ordering::Relaxed);
-    Some(blocks*512)
+    Some(blocks * 512)
 }
 
 pub fn compute_file_size(path: &Path) -> FileSize {

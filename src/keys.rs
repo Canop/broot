@@ -13,10 +13,16 @@ use {
 
 macro_rules! const_key {
     ($name:ident, $code:expr) => {
-        pub const $name: KeyEvent = KeyEvent{code:$code, modifiers:KeyModifiers::empty()};
+        pub const $name: KeyEvent = KeyEvent {
+            code: $code,
+            modifiers: KeyModifiers::empty(),
+        };
     };
     ($name:ident, $code:expr, $mod:expr) => {
-        pub const $name: KeyEvent = KeyEvent{code:$code, modifiers:$mod};
+        pub const $name: KeyEvent = KeyEvent {
+            code: $code,
+            modifiers: $mod,
+        };
     };
 }
 
@@ -91,7 +97,7 @@ pub fn is_reserved(key: KeyEvent) -> bool {
 ///
 pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
     let tokens: Vec<&str> = raw.split('-').collect();
-    let last = tokens[tokens.len()-1].to_ascii_lowercase();
+    let last = tokens[tokens.len() - 1].to_ascii_lowercase();
     let code = match last.as_ref() {
         "esc" => Esc,
         "enter" => Enter,
@@ -120,13 +126,13 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
         "f10" => F(10),
         "f11" => F(11),
         "f12" => F(12),
-        c if c.len()==1 => Char(c.chars().next().unwrap()),
-        _=> {
+        c if c.len() == 1 => Char(c.chars().next().unwrap()),
+        _ => {
             return bad_key(raw);
         }
     };
     let mut modifiers = KeyModifiers::empty();
-    for i in 0..tokens.len()-1 {
+    for i in 0..tokens.len() - 1 {
         let token = tokens[i];
         match token.to_ascii_lowercase().as_ref() {
             "ctrl" => {
@@ -138,12 +144,12 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
             "shift" => {
                 modifiers.insert(KeyModifiers::SHIFT);
             }
-            _=> {
+            _ => {
                 return bad_key(raw);
             }
         }
     }
-    Ok(KeyEvent{ code, modifiers })
+    Ok(KeyEvent { code, modifiers })
 }
 #[cfg(test)]
 mod key_parsing_tests {
@@ -157,7 +163,7 @@ mod key_parsing_tests {
     };
 
     #[test]
-    fn check_key_description(){
+    fn check_key_description() {
         assert_eq!(key_event_desc(ALT_ENTER), "alt-enter");
     }
 

@@ -1,13 +1,15 @@
-use crate::{
-    app_context::AppContext,
-    browser_states::BrowserState,
-    commands::Command,
-    errors::{ProgramError, TreeBuildError},
-    external::Launchable,
-    screens::Screen,
-    task_sync::TaskLifetime,
+use {
+    crate::{
+        app_context::AppContext,
+        browser_states::BrowserState,
+        commands::Command,
+        errors::{ProgramError, TreeBuildError},
+        external::Launchable,
+        screens::Screen,
+        task_sync::TaskLifetime,
+    },
+    std::io::Write,
 };
-use std::io::Write;
 
 /// Result of applying a command to a state
 pub enum AppStateCmdResult {

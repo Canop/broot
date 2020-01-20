@@ -3,14 +3,15 @@
 //!  can apply for a dir (i.e when entering a directory we
 //!  may add a gitignore file to the stack)
 
-use std::{
-    fs::File,
-    io::{BufRead, BufReader, Result},
-    path::Path,
+use {
+    glob,
+    regex::Regex,
+    std::{
+        fs::File,
+        io::{BufRead, BufReader, Result},
+        path::Path,
+    },
 };
-
-use glob;
-use regex::Regex;
 
 /// a simple rule of a gitignore file
 #[derive(Clone)]
@@ -128,7 +129,8 @@ impl GitIgnoreFilter {
             // we reset the chain: we don't want the .gitignore
             // files of super repositories
             // (see https://github.com/Canop/broot/issues/160)
-            let mut files = if is_git_repo(dir) { // we'll assume it's a .git folder
+            let mut files = if is_git_repo(dir) {
+                // we'll assume it's a .git folder
                 debug!("entering a git repo {:?}", dir);
                 self.files.clone()
             } else {

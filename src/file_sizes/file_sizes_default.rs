@@ -1,6 +1,7 @@
 //! size computation for non linux
 
 use {
+    super::FileSize,
     crate::task_sync::TaskLifetime,
     crossbeam::{channel::unbounded, sync::WaitGroup},
     std::{

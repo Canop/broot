@@ -241,7 +241,9 @@ impl AppState for BrowserState {
                 if invocation.name.is_empty() {
                     Status::new(
                         task,
-                        mad_inline!("Type a verb then *enter* to execute it (*?* for the list of verbs)"),
+                        mad_inline!(
+                            "Type a verb then *enter* to execute it (*?* for the list of verbs)"
+                        ),
                         false,
                     )
                     .display(&mut w, screen)
@@ -446,17 +448,15 @@ impl AppState for BrowserState {
             warn!("refreshing base tree failed : {:?}", e);
         }
         // refresh the filtered tree, if any
-        Command::from_pattern(
-            match self.filtered_tree {
-                Some(ref mut tree) => {
-                    if let Err(e) = tree.refresh(page_height) {
-                        warn!("refreshing filtered tree failed : {:?}", e);
-                    }
-                    &tree.options.pattern
+        Command::from_pattern(match self.filtered_tree {
+            Some(ref mut tree) => {
+                if let Err(e) = tree.refresh(page_height) {
+                    warn!("refreshing filtered tree failed : {:?}", e);
                 }
-                None => &self.tree.options.pattern,
+                &tree.options.pattern
             }
-        )
+            None => &self.tree.options.pattern,
+        })
     }
 
     /// draw the flags at the bottom right of the screen
