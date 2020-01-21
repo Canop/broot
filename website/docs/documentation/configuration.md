@@ -108,7 +108,7 @@ For example you could add those mappings:
 
 Then,
 
-* when doing <kbd>alt</kbd><kbd>J<kbd>, you would move the selection down (notice we don't need an invocation)
+* when doing <kbd>alt</kbd><kbd>J</kbd>, you would move the selection down (notice we don't need an invocation)
 * when doing <kbd>Ctrl-H</kbd>, you would go to you user home (`~` when on linux),
 * you would open files (without closing broot) with <kbd>ctrl-O</kbd>,
 * <kbd>F7</kbd> would select the last line of the tree,
