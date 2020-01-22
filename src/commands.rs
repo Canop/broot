@@ -28,6 +28,7 @@ pub struct CommandParts {
 
 #[derive(Debug, Clone)]
 pub enum Action {
+    Unparsed,
     MoveSelection(i32),           // up (neg) or down (positive) in the list
     OpenSelection,                // open the selected line
     AltOpenSelection,             // alternate open the selected line
@@ -43,7 +44,6 @@ pub enum Action {
     Click(u16, u16),              // usually a mouse click
     DoubleClick(u16, u16),        // always come after a simple click at same position
     Resize(u16, u16),             // terminal was resized to those dimensions
-    Unparsed,                     // or unparsable
 }
 
 impl CommandParts {
@@ -66,18 +66,24 @@ impl CommandParts {
                 $
             "
         )
-        .captures(raw)
-        .unwrap(); // all parts optional, so always captures
-        if let Some(pattern) = c.name("pattern") {
-            cp.pattern = Some(String::from(pattern.as_str()));
-            if let Some(rxf) = c.name("regex_flags") {
-                cp.regex_flags = Some(String::from(rxf.as_str()));
-            } else if c.name("slash_before").is_some() {
-                cp.regex_flags = Some("".into());
+        .captures(raw);
+        if let Some(c) = c {
+            if let Some(pattern) = c.name("pattern") {
+                cp.pattern = Some(String::from(pattern.as_str()));
+                if let Some(rxf) = c.name("regex_flags") {
+                    cp.regex_flags = Some(String::from(rxf.as_str()));
+                } else if c.name("slash_before").is_some() {
+                    cp.regex_flags = Some("".into());
+                }
             }
-        }
-        if let Some(verb) = c.name("verb_invocation") {
-            cp.verb_invocation = Some(VerbInvocation::from(verb.as_str()));
+            if let Some(verb) = c.name("verb_invocation") {
+                cp.verb_invocation = Some(VerbInvocation::from(verb.as_str()));
+            }
+        } else {
+            // Non matching pattterns include "///"
+            // We decide the whole is a fuzzy search pattern, in this case
+            // (this will change when we release the new input syntax)
+            cp.pattern = Some(String::from(raw));
         }
         cp
     }
@@ -143,11 +149,8 @@ impl Command {
     /// using the Enter key in the Gui.
     pub fn from_raw(raw: String, finished: bool) -> Self {
         let parts = CommandParts::from(&raw);
-        Self {
-            raw,
-            action: Action::from(&parts, finished),
-            parts,
-        }
+        let action = Action::from(&parts, finished);
+        Self { raw, action, parts }
     }
 
     /// build a non executed command from a pattern

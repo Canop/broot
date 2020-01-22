@@ -1,4 +1,7 @@
 
+### master
+- fix panic on input being "///" (Fix #175)
+
 <a name="v0.12.0"></a>
 ### v0.12.0 - 2020-01-19
 - **breaking change:** commands given with `--cmd` must be separated (default separator is `;`)

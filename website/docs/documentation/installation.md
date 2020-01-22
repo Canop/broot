@@ -1,10 +1,12 @@
 
 The current version of broot works on linux, mac and windows (win 10+).
 
-While the linux version is quite well tested the other versions are lacking testers and maybe involved developpers.
 
 !!! Note
 	Windows users: broot may need additional rights at first use in order to write its configuration file
+
+!!! Note
+	If you use cargo and there's a compilation error, it usually means you have an old version of the compiler, and you should update it (for example with `rustup update`).
 
 # From precompiled binaries
 
