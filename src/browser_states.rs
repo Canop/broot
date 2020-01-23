@@ -346,10 +346,8 @@ impl AppState for BrowserState {
                 Command::new(),
             )),
             Action::Next => {
-                if let Some(tree) = &mut self.filtered_tree {
-                    tree.try_select_next_match();
-                    tree.make_selection_visible(page_height);
-                }
+                self.displayed_tree_mut().try_select_next_match();
+                self.displayed_tree_mut().make_selection_visible(page_height);
                 Ok(AppStateCmdResult::Keep)
             }
             Action::Previous => {
