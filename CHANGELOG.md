@@ -2,6 +2,7 @@
 ### master
 - fix panic on input being "///" (Fix #175)
 - TAB key now jumps to direct matches only
+- `--conf` arg to launch broot with specific config file(s) (fix #141)
 
 <a name="v0.12.0"></a>
 ### v0.12.0 - 2020-01-19

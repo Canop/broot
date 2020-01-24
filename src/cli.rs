@@ -26,6 +26,7 @@ pub struct AppLaunchArgs {
     pub install: bool,                   // installation is required
     pub height: Option<u16>,             // an optional height to replace the screen's one
     pub no_style: bool,                  // whether to remove all styles (including colors)
+    pub specific_conf: Option<Vec<PathBuf>>,
 }
 
 #[cfg(not(windows))]
@@ -95,6 +96,8 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
         .value_of("set-install-state")
         .map(ShellInstallState::from_str)
         .transpose()?;
+    let specific_conf = cli_args.value_of("conf")
+        .map(|s| s.split(';').map(PathBuf::from).collect());
     Ok(AppLaunchArgs {
         root,
         file_export_path,
@@ -106,6 +109,7 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
         install,
         height,
         no_style,
+        specific_conf,
     })
 }
 

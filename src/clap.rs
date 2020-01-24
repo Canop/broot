@@ -26,6 +26,12 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("semicolon separated commands to execute (experimental)"),
         )
         .arg(
+            clap::Arg::with_name("conf")
+                .long("conf")
+                .takes_value(true)
+                .help("semicolon separated paths to specific config files"),
+        )
+        .arg(
             clap::Arg::with_name("dates")
                 .short("d")
                 .long("dates")

@@ -55,13 +55,24 @@ fn run() -> Result<Option<Launchable>, ProgramError> {
     if must_quit {
         return Ok(None);
     }
-    let mut shell_install = ShellInstall::new(&launch_args);
-    shell_install.check()?;
-    if shell_install.should_quit {
-        return Ok(None);
-    }
     let mut verb_store = VerbStore::new();
-    let config = Conf::from_default_location()?;
+    let config = match &launch_args.specific_conf {
+        Some(conf_paths) => {
+            let mut conf = Conf::default();
+            for path in conf_paths {
+                conf.read_file(path)?;
+            }
+            conf
+        }
+        _ => {
+            let mut shell_install = ShellInstall::new(&launch_args);
+            shell_install.check()?;
+            if shell_install.should_quit {
+                return Ok(None);
+            }
+            Conf::from_default_location()?
+        }
+    };
     verb_store.init(&config);
     let context = AppContext::from(launch_args, verb_store);
     let skin = skin::Skin::create(config.skin);
