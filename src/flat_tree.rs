@@ -4,6 +4,11 @@ use {
     crate::{
         errors,
         file_sizes::FileSize,
+        git::{
+            LineGitStatus,
+            TreeGitStatus,
+            GitStatusBuilder,
+        },
         selection_type::SelectionType,
         task_sync::TaskLifetime,
         tree_build::TreeBuilder,
@@ -14,7 +19,7 @@ use {
         fs,
         mem,
         path::{Path, PathBuf},
-        time::SystemTime,
+        time::{Duration, Instant, SystemTime},
     },
 };
 
@@ -26,7 +31,6 @@ use {
 
 #[cfg(windows)]
 use is_executable::IsExecutable;
-
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum LineType {
@@ -51,6 +55,7 @@ pub struct TreeLine {
     pub score: i32,      // 0 if there's no pattern
     pub size: Option<FileSize>, // None when not measured
     pub metadata: fs::Metadata,
+    pub git_status: Option<LineGitStatus>,
 }
 
 #[derive(Debug, Clone)]
@@ -61,6 +66,7 @@ pub struct Tree {
     pub scroll: i32, // the number of lines at the top hidden because of scrolling
     pub nb_gitignored: u32, // number of times a gitignore pattern excluded a file
     pub total_search: bool, // whether the search was made on all children
+    pub git_status: Option<TreeGitStatus>,
 }
 
 impl TreeLine {
@@ -263,6 +269,14 @@ impl Tree {
             for i in start_index..=end_index {
                 self.lines[i].left_branchs[depth] = true;
             }
+        }
+        if self.options.show_git_status {
+            let gs_start = Instant::now();
+            GitStatusBuilder::try_enrich(self);
+            for line in self.lines.iter() {
+                debug!("line {:?} gs: {:?}", &line.path, &line.git_status);
+            }
+            debug!("fetching git statuses took {:?}", gs_start.elapsed());
         }
     }
     pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {

@@ -2,6 +2,10 @@ use {
     crate::{
         errors::TreeBuildError,
         flat_tree::{Tree, TreeLine},
+        git::{
+            TreeGitStatus,
+            GitStatusBuilder,
+        },
         task_sync::TaskLifetime,
         tree_options::TreeOptions,
     },
@@ -361,6 +365,7 @@ impl TreeBuilder {
             scroll: 0,
             nb_gitignored: self.nb_gitignored,
             total_search: self.total_search,
+            git_status: None, // will be filled in tree.after_lines_changed
         };
         tree.after_lines_changed();
         if self.options.show_sizes {

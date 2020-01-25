@@ -4,6 +4,7 @@
 //!  may add a gitignore file to the stack)
 
 use {
+    crate::git,
     glob,
     regex::Regex,
     std::{
@@ -107,7 +108,7 @@ impl GitIgnoreFilter {
                 debug!("  adding {:?}", &ignore_file);
                 filter.files.push(gif);
             }
-            if is_git_repo(dir) {
+            if git::is_repo(dir) {
                 debug!("  break because git repo");
                 break;
             }
@@ -129,7 +130,7 @@ impl GitIgnoreFilter {
             // we reset the chain: we don't want the .gitignore
             // files of super repositories
             // (see https://github.com/Canop/broot/issues/160)
-            let mut files = if is_git_repo(dir) {
+            let mut files = if git::is_repo(dir) {
                 // we'll assume it's a .git folder
                 debug!("entering a git repo {:?}", dir);
                 self.files.clone()
@@ -163,6 +164,3 @@ impl GitIgnoreFilter {
     }
 }
 
-fn is_git_repo(dir: &Path) -> bool {
-    dir.join(".git").exists()
-}

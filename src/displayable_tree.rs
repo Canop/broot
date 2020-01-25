@@ -13,6 +13,9 @@ use {
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
+    git2::{
+        Status,
+    },
     std::{io::Write, time::SystemTime},
     termimad::{CompoundStyle, ProgressBar},
 };
@@ -107,6 +110,23 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         } else {
             self.skin.tree.queue_str(f, "──────────────── ")
         }
+    }
+
+    fn write_line_git_status(
+        &self,
+        f: &mut impl Write,
+        line: &TreeLine,
+        selected: bool,
+    ) -> Result<(), termimad::Error> {
+        match line.git_status.map(|s| s.status) {
+            Some(Status::CURRENT) => self.skin.git_status_current.queue(f, 'C'),
+            Some(Status::WT_NEW) => self.skin.git_status_new.queue(f, 'N'),
+            Some(Status::WT_MODIFIED) => self.skin.git_status_new.queue(f, 'M'),
+            Some(Status::IGNORED) => self.skin.git_status_ignored.queue(f, 'I'),
+            None => self.skin.tree.queue(f, '─'),
+            _ => self.skin.git_status_other.queue_str(f, "?"),
+        }?;
+        self.skin.tree.queue(f, '─')
     }
 
     fn write_date(
@@ -235,6 +255,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         Ok(())
     }
 
+    /// write the whole tree on the given `impl Write`
     pub fn write_on(&self, f: &mut impl Write) -> Result<(), ProgramError> {
         let tree = self.tree;
         #[cfg(unix)]
@@ -303,6 +324,9 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     } else {
                         self.skin.tree.queue_str(f, "─────────────────")?;
                     }
+                }
+                if tree.git_status.is_some() && line.is_file() {
+                    self.write_line_git_status(f, line, selected)?;
                 }
                 self.write_line_name(f, line, line_index, &tree.options.pattern, selected)?;
             }

@@ -3,16 +3,18 @@
 ///  same directories again and again.
 /// Hard links are checked to avoid counting
 ///  twice an inode.
-use std::{
-    collections::HashMap,
-    fmt,
-    ops::AddAssign,
-    path::{Path, PathBuf},
-    sync::Mutex,
-    time::Instant,
+///
+use {
+    crate::task_sync::TaskLifetime,
+    std::{
+        collections::HashMap,
+        fmt,
+        ops::AddAssign,
+        path::{Path, PathBuf},
+        sync::Mutex,
+        time::Instant,
+    },
 };
-
-use crate::task_sync::TaskLifetime;
 
 const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 

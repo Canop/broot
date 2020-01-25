@@ -124,6 +124,7 @@ impl BLine {
             score: self.score,
             size: None,
             metadata,
+            git_status: None,
         })
     }
 }
