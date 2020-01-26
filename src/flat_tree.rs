@@ -270,7 +270,7 @@ impl Tree {
                 self.lines[i].left_branchs[depth] = true;
             }
         }
-        if self.options.show_git_status {
+        if self.options.show_git_file_info {
             let gs_start = Instant::now();
             GitStatusBuilder::try_enrich(self);
             debug!("fetching git statuses took {:?}", gs_start.elapsed());

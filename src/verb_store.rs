@@ -262,6 +262,12 @@ impl VerbStore {
             "toggle use of .gitignore",
         );
         self.add_builtin(
+            "toggle_git_file_info",
+            None,
+            Some("gf".to_string()),
+            "toggle display of git file information",
+        );
+        self.add_builtin(
             "toggle_hidden",
             None,
             Some("h".to_string()),

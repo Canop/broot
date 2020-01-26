@@ -135,6 +135,7 @@ impl VerbExecutor for BrowserState {
                     OptionBool::No => OptionBool::Yes,
                 };
             }),
+            ":toggle_git_file_info" => self.with_new_options(screen, &|o| o.show_git_file_info ^= true),
             ":toggle_perm" => self.with_new_options(screen, &|o| o.show_permissions ^= true),
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),
