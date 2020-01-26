@@ -276,7 +276,8 @@ impl AppState for BrowserState {
                 }
             }
             _ => {
-                Status::new(task, self.normal_status_message(false), false).display(&mut w, screen)
+                Status::new(task, self.normal_status_message(false), false)
+                    .display(&mut w, screen)
             }
         }
     }

@@ -32,7 +32,10 @@ termimad = "0.8.11"
 id-arena = "2.2.1"
 lazy-regex = "0.1"
 pathdiff = "0.1.0"
-git2 = "0.11"
+
+[dependencies.git2]
+version = "0.11"
+default-features = false
 
 [dev-dependencies]
 criterion = "0.3"
