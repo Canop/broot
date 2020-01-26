@@ -19,7 +19,7 @@ use {
         fs,
         mem,
         path::{Path, PathBuf},
-        time::{Duration, Instant, SystemTime},
+        time::{Instant, SystemTime},
     },
 };
 
@@ -273,9 +273,6 @@ impl Tree {
         if self.options.show_git_status {
             let gs_start = Instant::now();
             GitStatusBuilder::try_enrich(self);
-            for line in self.lines.iter() {
-                debug!("line {:?} gs: {:?}", &line.path, &line.git_status);
-            }
             debug!("fetching git statuses took {:?}", gs_start.elapsed());
         }
     }

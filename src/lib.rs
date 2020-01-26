@@ -25,6 +25,7 @@ pub mod flat_tree;
 pub mod fuzzy_patterns;
 pub mod git;
 pub mod git_ignore;
+pub mod git_status_display;
 pub mod help_content;
 pub mod help_states;
 pub mod help_verbs;

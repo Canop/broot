@@ -31,8 +31,9 @@ pub struct LineGitStatus {
 }
 
 ///
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone)]
 pub struct TreeGitStatus {
+    pub current_branch_name: Option<String>,
     pub insertions: usize,
     pub deletions: usize,
 }
@@ -78,6 +79,8 @@ impl GitStatusBuilder {
             debug!("get statuses failed");
             return None;
         }*/
+        let current_branch_name = repo.head().ok()
+            .and_then(|head| head.shorthand().map(String::from));
         let stats = match repo.diff_index_to_workdir(None, None) {
             Ok(diff) => {
                 debug!("deltas: {:?}", diff.deltas().count());
@@ -96,6 +99,7 @@ impl GitStatusBuilder {
             }
         };
         let root_status = TreeGitStatus {
+            current_branch_name,
             insertions: stats.insertions(),
             deletions: stats.deletions(),
         };

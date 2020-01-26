@@ -1,15 +1,15 @@
 use {
     crate::{
+        errors::ProgramError,
         file_sizes::FileSize,
         flat_tree::{LineType, Tree, TreeLine},
-        errors::ProgramError,
+        git_status_display::GitStatusDisplay,
         patterns::Pattern,
         skin::Skin,
     },
     chrono::{offset::Local, DateTime},
     crossterm::{
         cursor,
-        style::{Color, SetBackgroundColor},
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
@@ -116,17 +116,20 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         &self,
         f: &mut impl Write,
         line: &TreeLine,
-        selected: bool,
     ) -> Result<(), termimad::Error> {
-        match line.git_status.map(|s| s.status) {
-            Some(Status::CURRENT) => self.skin.git_status_current.queue(f, 'C'),
-            Some(Status::WT_NEW) => self.skin.git_status_new.queue(f, 'N'),
-            Some(Status::WT_MODIFIED) => self.skin.git_status_new.queue(f, 'M'),
-            Some(Status::IGNORED) => self.skin.git_status_ignored.queue(f, 'I'),
-            None => self.skin.tree.queue(f, '─'),
-            _ => self.skin.git_status_other.queue_str(f, "?"),
-        }?;
-        self.skin.tree.queue(f, '─')
+        if !line.is_selectable() {
+            self.skin.tree.queue(f, ' ')
+        } else {
+            match line.git_status.map(|s| s.status) {
+                Some(Status::CURRENT) => self.skin.git_status_current.queue(f, ' '),
+                Some(Status::WT_NEW) => self.skin.git_status_new.queue(f, 'N'),
+                Some(Status::CONFLICTED) => self.skin.git_status_conflicted.queue(f, 'C'),
+                Some(Status::WT_MODIFIED) => self.skin.git_status_modified.queue(f, 'M'),
+                Some(Status::IGNORED) => self.skin.git_status_ignored.queue(f, 'I'),
+                None => self.skin.tree.queue(f, ' '),
+                _ => self.skin.git_status_other.queue_str(f, "?"),
+            }
+        }
     }
 
     fn write_date(
@@ -207,7 +210,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         &self,
         f: &mut impl Write,
         line: &TreeLine,
-        idx: usize,
         pattern: &Pattern,
         selected: bool,
     ) -> Result<(), ProgramError> {
@@ -225,11 +227,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         };
         cond_bg!(style, self, selected, style);
         cond_bg!(char_match_style, self, selected, self.skin.char_match);
-        if idx == 0 {
-            style.queue_str(f, &line.path.to_string_lossy())?;
-        } else {
-            pattern.style(&line.name, &style, &char_match_style).write_on(f)?;
-        }
+        pattern.style(&line.name, &style, &char_match_style).write_on(f)?;
         match &line.line_type {
             LineType::Dir => {
                 if line.unlisted > 0 {
@@ -255,6 +253,52 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         Ok(())
     }
 
+    pub fn write_root_line(
+        &self,
+        f: &mut impl Write,
+        selected: bool,
+    ) -> Result<(), ProgramError> {
+        cond_bg!(style, self, selected, self.skin.directory);
+        let title = self.tree.lines[0].path.to_string_lossy();
+        style.queue_str(f, &title)?;
+        if self.in_app {
+            self.extend_line(f, selected)?;
+            let title_len = title.chars().count();
+            if title_len < self.area.width as usize {
+                if let Some(git_status) = &self.tree.git_status {
+                    // git status is displayed if there's enough space for it
+                    let git_status_display = GitStatusDisplay::from(
+                        git_status,
+                        self.area.width as usize - title_len,
+                    );
+                    if git_status_display.width > 0 {
+                        let x = self.area.width - git_status_display.width as u16;
+                        f.queue(cursor::MoveTo(x, 0))?;
+                        git_status_display.write(f, &self.skin)?;
+                    }
+                }
+            }
+        }
+        Ok(())
+    }
+
+    /// if in app, extend the background till the end of screen row
+    pub fn extend_line(
+        &self,
+        f: &mut impl Write,
+        selected: bool,
+    ) -> Result<(), ProgramError> {
+        if self.in_app {
+            if selected {
+                self.skin.selected_line.queue_bg(f)?;
+            } else {
+                self.skin.default.queue_bg(f)?;
+            }
+            f.queue(Clear(ClearType::UntilNewLine))?;
+        }
+        Ok(())
+    }
+
     /// write the whole tree on the given `impl Write`
     pub fn write_on(&self, f: &mut impl Write) -> Result<(), ProgramError> {
         let tree = self.tree;
@@ -262,11 +306,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         let user_group_max_lengths = user_group_max_lengths(&tree);
         let total_size = tree.total_size();
         let scrollbar = if self.in_app {
-            self.area.scrollbar(tree.scroll, tree.lines.len() as i32)
+            self.area.scrollbar(tree.scroll, tree.lines.len() as i32 - 1)
         } else {
             None
         };
-        for y in 0..self.area.height {
+        self.write_root_line(f, tree.selection==0)?;
+        for y in 1..self.area.height {
             if self.in_app {
                 f.queue(cursor::MoveTo(0, y))?;
             }
@@ -278,6 +323,9 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
+                if tree.git_status.is_some() {
+                    self.write_line_git_status(f, line)?;
+                }
                 for depth in 0..line.depth {
                     self.skin.tree.queue_str(
                         f,
@@ -296,12 +344,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                         },
                     )?;
                 }
-                if tree.options.show_sizes && line_index > 0 {
+                if tree.options.show_sizes {
                     self.write_line_size(f, line, total_size, selected)?;
                 }
                 #[cfg(unix)]
                 {
-                    if tree.options.show_permissions && line_index > 0 {
+                    if tree.options.show_permissions {
                         if line.is_selectable() {
                             self.write_mode(f, line.mode(), selected)?;
                             let owner = permissions::user_name(line.metadata.uid());
@@ -318,26 +366,17 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                         }
                     }
                 }
-                if tree.options.show_dates && line_index > 0 {
+                if tree.options.show_dates {
                     if let Some(date) = line.modified() {
                         self.write_date(f, date, selected)?;
                     } else {
                         self.skin.tree.queue_str(f, "─────────────────")?;
                     }
                 }
-                if tree.git_status.is_some() && line.is_file() {
-                    self.write_line_git_status(f, line, selected)?;
-                }
-                self.write_line_name(f, line, line_index, &tree.options.pattern, selected)?;
+                self.write_line_name(f, line, &tree.options.pattern, selected)?;
             }
-            if selected {
-                self.skin.selected_line.queue_bg(f)?;
-            } else {
-                self.skin.default.queue_bg(f)?;
-            }
-            if self.in_app {
-                f.queue(Clear(ClearType::UntilNewLine))?;
-                f.queue(SetBackgroundColor(Color::Reset))?; // to end selection background
+            self.extend_line(f, selected)?;
+            if self.in_app && y > 0 {
                 if let Some((sctop, scbottom)) = scrollbar {
                     f.queue(cursor::MoveTo(self.area.width, y))?;
                     let style = if sctop <= y && y <= scbottom {

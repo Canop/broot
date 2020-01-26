@@ -2,10 +2,6 @@ use {
     crate::{
         errors::TreeBuildError,
         flat_tree::{Tree, TreeLine},
-        git::{
-            TreeGitStatus,
-            GitStatusBuilder,
-        },
         task_sync::TaskLifetime,
         tree_options::TreeOptions,
     },

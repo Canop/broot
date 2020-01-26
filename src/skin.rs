@@ -84,10 +84,14 @@ Skin! {
     group: ansi(131), None;
     dates: ansi(66), None;
     sparse: ansi(214), None;
+    git_branch: ansi(178), None;
+    git_insertions: ansi(28), None;
+    git_deletions: ansi(160), None;
     git_status_current: gray(5), None;
     git_status_modified: ansi(28), None;
-    git_status_new: ansi(28), None; {Bold}
+    git_status_new: ansi(94), None; {Bold}
     git_status_ignored: gray(17), None;
+    git_status_conflicted: ansi(88), None;
     git_status_other: ansi(88), None;
     selected_line: None, gray(4);
     char_match: Some(Green), None;
