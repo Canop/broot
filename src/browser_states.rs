@@ -13,7 +13,7 @@ use {
         status::Status,
         task_sync::TaskLifetime,
         tree_build::TreeBuilder,
-        tree_options::{OptionBool, TreeOptions},
+        tree_options::TreeOptions,
         verb_store::PrefixSearchResult,
         verbs::VerbExecutor,
     },
@@ -473,11 +473,7 @@ impl AppState for BrowserState {
             screen.height - 1,
         )?;
         let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
-        let gi_value = match tree.options.respect_git_ignore {
-            OptionBool::Auto => 'a',
-            OptionBool::Yes => 'y',
-            OptionBool::No => 'n',
-        };
+        let gi_value = if tree.options.respect_git_ignore { 'y' } else { 'n' };
         screen.skin.flag_label.queue_str(&mut w, " h:")?;
         screen.skin.flag_value.queue(&mut w, h_value)?;
         screen.skin.flag_label.queue_str(&mut w, "   gi:")?;

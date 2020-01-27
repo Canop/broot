@@ -39,11 +39,10 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("where to write the produced path (if any)"),
         )
         .arg(
-            clap::Arg::with_name("gitignore")
-                .short("g")
-                .long("gitignore")
-                .takes_value(true)
-                .help("respect .gitignore rules (yes, no, auto)"),
+            clap::Arg::with_name("show-gitignored")
+                .short("i")
+                .long("show-gitignored")
+                .help("show files which should be ignored according to git"),
         )
         .arg(
             clap::Arg::with_name("height")

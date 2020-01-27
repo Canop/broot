@@ -2,8 +2,18 @@ use {
     crate::{
         errors::TreeBuildError,
         flat_tree::{Tree, TreeLine},
+        git::{
+            self,
+            LineGitStatus,
+            TreeGitStatus,
+        },
         task_sync::TaskLifetime,
-        tree_options::TreeOptions,
+        tree_options::{
+            TreeOptions,
+        },
+    },
+    git2::{
+        Repository,
     },
     id_arena::Arena,
     std::{
@@ -46,6 +56,8 @@ pub struct TreeBuilder {
     blines: Arena<BLine>,
     root_id: BId,
     total_search: bool,
+    git_repos: Arena<Repository>,
+    //git_repo: Option<GitRepo>, // closest git repo
 }
 impl TreeBuilder {
     pub fn from(
@@ -54,7 +66,15 @@ impl TreeBuilder {
         targeted_size: usize,
     ) -> Result<TreeBuilder, TreeBuildError> {
         let mut blines = Arena::new();
-        let root_id = BLine::from_root(&mut blines, path, options.respect_git_ignore)?;
+        let mut git_repos = Arena::new();
+        let root_repo = Repository::discover(&path)
+            .ok()
+            .map(|repo| git_repos.alloc(repo));
+        let root_id = BLine::from_root(
+            &mut blines,
+            path,
+            root_repo,
+        )?;
         Ok(TreeBuilder {
             options,
             targeted_size,
@@ -62,6 +82,7 @@ impl TreeBuilder {
             blines,
             root_id,
             total_search: true, // we'll set it to false if we don't look at all children
+            git_repos,
         })
     }
     /// return a bline if the direntry directly matches the options and there's no error
@@ -100,13 +121,20 @@ impl TreeBuilder {
             }
         }
         let path = e.path();
-        let mut ignore_filter = None;
-        if let Some(gif) = &self.blines[parent_id].ignore_filter {
-            if !gif.accepts(&path, &name, file_type.is_dir()) {
-                return BLineResult::GitIgnored;
+        let mut git_repo = None;
+        if self.options.respect_git_ignore {
+            git_repo = self.blines[parent_id].git_repo;
+            if let Some(rid) = git_repo {
+                if self.options.respect_git_ignore {
+                    if Ok(true) == self.git_repos[rid].is_path_ignored(&path) {
+                        return BLineResult::GitIgnored;
+                    }
+                }
             }
-            if file_type.is_dir() {
-                ignore_filter = Some(gif.extended_to(&path));
+            if git::is_repo(&path) {
+                if let Ok(repo) = Repository::open(&path) {
+                    git_repo = Some(self.git_repos.alloc(repo))
+                }
             }
         }
         BLineResult::Some(self.blines.alloc(BLine {
@@ -120,8 +148,8 @@ impl TreeBuilder {
             has_error: false,
             has_match,
             score,
-            ignore_filter,
             nb_kept_children: 0,
+            git_repo,
         }))
     }
 
@@ -366,6 +394,20 @@ impl TreeBuilder {
         tree.after_lines_changed();
         if self.options.show_sizes {
             tree.fetch_file_sizes(); // not the dirs, only simple files
+        }
+        if self.options.show_git_file_info {
+            if let Some(rid) = self.blines[self.root_id].git_repo {
+                tree.git_status = TreeGitStatus::from(&self.git_repos[rid]);
+                let root_path = &self.blines[self.root_id].path;
+                for mut line in tree.lines.iter_mut() {
+                    if let Some(relative_path) = pathdiff::diff_paths(&line.path, &root_path) {
+                        line.git_status = LineGitStatus::from(
+                            &self.git_repos[rid],
+                            &relative_path,
+                        );
+                    };
+                }
+            }
         }
         tree
     }

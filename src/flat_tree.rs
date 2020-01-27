@@ -7,7 +7,6 @@ use {
         git::{
             LineGitStatus,
             TreeGitStatus,
-            GitStatusBuilder,
         },
         selection_type::SelectionType,
         task_sync::TaskLifetime,
@@ -19,7 +18,7 @@ use {
         fs,
         mem,
         path::{Path, PathBuf},
-        time::{Instant, SystemTime},
+        time::SystemTime,
     },
 };
 
@@ -269,11 +268,6 @@ impl Tree {
             for i in start_index..=end_index {
                 self.lines[i].left_branchs[depth] = true;
             }
-        }
-        if self.options.show_git_file_info {
-            let gs_start = Instant::now();
-            GitStatusBuilder::try_enrich(self);
-            debug!("fetching git statuses took {:?}", gs_start.elapsed());
         }
     }
     pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {

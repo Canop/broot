@@ -10,7 +10,7 @@ use {
         help_states::HelpState,
         screens::Screen,
         task_sync::TaskLifetime,
-        tree_options::{OptionBool, TreeOptions},
+        tree_options::TreeOptions,
         verb_invocation::VerbInvocation,
         verbs::{Verb, VerbExecutor},
     },
@@ -122,19 +122,9 @@ impl VerbExecutor for BrowserState {
                 self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true)
             }
             ":toggle_hidden" => self.with_new_options(screen, &|o| o.show_hidden ^= true),
-            ":toggle_git_ignore" => self.with_new_options(screen, &|options| {
-                options.respect_git_ignore = match options.respect_git_ignore {
-                    OptionBool::Auto => {
-                        if self.displayed_tree().nb_gitignored > 0 {
-                            OptionBool::No
-                        } else {
-                            OptionBool::Yes
-                        }
-                    }
-                    OptionBool::Yes => OptionBool::No,
-                    OptionBool::No => OptionBool::Yes,
-                };
-            }),
+            ":toggle_git_ignore" => {
+                self.with_new_options(screen, &|o| o.respect_git_ignore ^= true)
+            }
             ":toggle_git_file_info" => self.with_new_options(screen, &|o| o.show_git_file_info ^= true),
             ":toggle_perm" => self.with_new_options(screen, &|o| o.show_permissions ^= true),
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),

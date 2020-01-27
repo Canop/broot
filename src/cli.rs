@@ -5,7 +5,7 @@ use {
     crate::{
         errors::{ProgramError, TreeBuildError},
         shell_install::ShellInstallState,
-        tree_options::{OptionBool, TreeOptions},
+        tree_options::TreeOptions,
     },
     std::{
         env,
@@ -73,15 +73,13 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
     if tree_options.show_sizes {
         // by default, if we're asked to show the size, we show all files
         tree_options.show_hidden = true;
-        tree_options.respect_git_ignore = OptionBool::No;
+        tree_options.respect_git_ignore = false;
     }
     tree_options.only_folders = cli_args.is_present("only-folders");
     tree_options.show_hidden = cli_args.is_present("hidden");
     tree_options.show_dates = cli_args.is_present("dates");
     tree_options.show_permissions = cli_args.is_present("permissions");
-    if let Some(respect_ignore) = cli_args.value_of("gitignore") {
-        tree_options.respect_git_ignore = respect_ignore.parse()?;
-    }
+    tree_options.respect_git_ignore = !cli_args.is_present("show_git_ignored");
     let install = cli_args.is_present("install");
     let file_export_path = cli_args.value_of("file_export_path").map(str::to_string);
     let cmd_export_path = cli_args.value_of("cmd_export_path").map(str::to_string);

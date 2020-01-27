@@ -1,32 +1,30 @@
 use {
     crate::{
-        errors::ProgramError,
         patterns::Pattern,
     },
-    std::str::FromStr,
 };
 
-#[derive(Debug, Copy, Clone, PartialEq)]
-pub enum OptionBool {
-    Auto,
-    No,
-    Yes,
-}
-
-impl FromStr for OptionBool {
-    type Err = ProgramError;
-    fn from_str(s: &str) -> Result<OptionBool, ProgramError> {
-        match s {
-            "auto" => Ok(OptionBool::Auto),
-            "yes" => Ok(OptionBool::Yes),
-            "no" => Ok(OptionBool::No),
-            _ => Err(ProgramError::ArgParse {
-                bad: s.to_string(),
-                valid: "auto, yes, no".to_string(),
-            }),
-        }
-    }
-}
+//#[derive(Debug, Copy, Clone, PartialEq)]
+//pub enum OptionBool {
+//    Auto,
+//    No,
+//    Yes,
+//}
+//
+//impl FromStr for OptionBool {
+//    type Err = ProgramError;
+//    fn from_str(s: &str) -> Result<OptionBool, ProgramError> {
+//        match s {
+//            "auto" => Ok(OptionBool::Auto),
+//            "yes" => Ok(OptionBool::Yes),
+//            "no" => Ok(OptionBool::No),
+//            _ => Err(ProgramError::ArgParse {
+//                bad: s.to_string(),
+//                valid: "auto, yes, no".to_string(),
+//            }),
+//        }
+//    }
+//}
 
 #[derive(Debug, Clone)]
 pub struct TreeOptions {
@@ -37,7 +35,7 @@ pub struct TreeOptions {
     pub show_git_file_info: bool,
     pub trim_root: bool,   // whether to cut out direct children of root
     pub show_permissions: bool, // show classic rwx unix permissions
-    pub respect_git_ignore: OptionBool, // hide files as requested by .gitignore ?
+    pub respect_git_ignore: bool, // hide files as requested by .gitignore ?
     pub pattern: Pattern,  // an optional filtering/scoring pattern
 }
 
@@ -67,7 +65,7 @@ impl Default for TreeOptions {
             show_git_file_info: true,
             trim_root: false,
             show_permissions: false,
-            respect_git_ignore: OptionBool::Auto,
+            respect_git_ignore: true,
             pattern: Pattern::None,
         }
     }
