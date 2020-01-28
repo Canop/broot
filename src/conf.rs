@@ -20,6 +20,7 @@ use {
     toml::{self, Value},
 };
 
+#[derive(Default)]
 pub struct Conf {
     pub verbs: Vec<VerbConf>,
     pub skin: HashMap<String, CompoundStyle>,
@@ -75,13 +76,14 @@ impl Conf {
             );
             println!("You should have a look at it.");
         }
-        match Conf::from_file(&conf_filepath) {
-            Ok(conf) => Ok(conf),
+        let mut conf = Conf::default();
+        match conf.read_file(&conf_filepath) {
             Err(e) => {
                 println!("Failed to read configuration in {:?}.", &conf_filepath);
                 println!("Please delete or fix this file.");
                 Err(e)
             }
+            _ => Ok(conf),
         }
     }
 
@@ -95,11 +97,10 @@ impl Conf {
     /// read the configuration from a given path. Assume it exists.
     /// stderr is supposed to be a valid solution for displaying errors
     /// (i.e. this function is called before or after the terminal alternation)
-    pub fn from_file(filepath: &Path) -> Result<Conf, ConfError> {
+    pub fn read_file(&mut self, filepath: &Path) -> Result<(), ConfError> {
         let data = fs::read_to_string(filepath)?;
         let root: Value = data.parse::<Value>()?;
         // reading verbs
-        let mut verbs: Vec<VerbConf> = vec![];
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {
                 let invocation = string_field(verb_value, "invocation")
@@ -131,7 +132,7 @@ impl Conf {
                     );
                     continue;
                 }
-                verbs.push(VerbConf {
+                self.verbs.push(VerbConf {
                     invocation,
                     execution,
                     key,
@@ -144,13 +145,12 @@ impl Conf {
             }
         }
         // reading the skin
-        let mut skin = HashMap::new();
         if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
             for (k, v) in entries_tbl.iter() {
                 if let Some(s) = v.as_str() {
                     match skin_conf::parse_object_style(s) {
                         Ok(ske) => {
-                            skin.insert(k.to_string(), ske);
+                            self.skin.insert(k.to_string(), ske);
                         }
                         Err(e) => {
                             eprintln!("{}", e);
@@ -160,7 +160,7 @@ impl Conf {
             }
         }
 
-        Ok(Conf { verbs, skin })
+        Ok(())
     }
 }
 
