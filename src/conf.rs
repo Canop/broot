@@ -196,6 +196,11 @@ execution = ":quit"
 invocation = "create {subpath}"
 execution = "$EDITOR {directory}/{subpath}"
 
+[[verbs]]
+invocation = "git_diff"
+shortcut = "gd"
+execution = "git diff {file}"
+
 # If $PAGER isn't set on your computer, you should either set it
 #  or just replace it with your viewer of choice in the 'execution'
 #  pattern.
