@@ -64,7 +64,4 @@ impl TreeGitStatus {
     }
 }
 
-pub fn is_repo(root: &Path) -> bool {
-    root.join(".git").exists()
-}
 

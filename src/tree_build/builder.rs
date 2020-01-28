@@ -2,10 +2,13 @@ use {
     crate::{
         errors::TreeBuildError,
         flat_tree::{Tree, TreeLine},
-        git::{
-            self,
+        git_status::{
             LineGitStatus,
             TreeGitStatus,
+        },
+        git_ignore::{
+            GitIgnorer,
+            GitIgnoreChain,
         },
         task_sync::TaskLifetime,
         tree_options::{
@@ -56,8 +59,7 @@ pub struct TreeBuilder {
     blines: Arena<BLine>,
     root_id: BId,
     total_search: bool,
-    git_repos: Arena<Repository>,
-    //git_repo: Option<GitRepo>, // closest git repo
+    git_ignorer: GitIgnorer,
 }
 impl TreeBuilder {
     pub fn from(
@@ -66,14 +68,12 @@ impl TreeBuilder {
         targeted_size: usize,
     ) -> Result<TreeBuilder, TreeBuildError> {
         let mut blines = Arena::new();
-        let mut git_repos = Arena::new();
-        let root_repo = Repository::discover(&path)
-            .ok()
-            .map(|repo| git_repos.alloc(repo));
+        let mut git_ignorer = GitIgnorer::new();
+        let root_ignore_chain = git_ignorer.root_chain(&path);
         let root_id = BLine::from_root(
             &mut blines,
             path,
-            root_repo,
+            root_ignore_chain,
         )?;
         Ok(TreeBuilder {
             options,
@@ -82,11 +82,16 @@ impl TreeBuilder {
             blines,
             root_id,
             total_search: true, // we'll set it to false if we don't look at all children
-            git_repos,
+            git_ignorer,
         })
     }
-    /// return a bline if the direntry directly matches the options and there's no error
-    fn make_line(&mut self, parent_id: BId, e: fs::DirEntry, depth: u16) -> BLineResult {
+    /// return a bline if the dir_entry directly matches the options and there's no error
+    fn make_line(
+        &mut self,
+        parent_id: BId,
+        e: fs::DirEntry,
+        depth: u16,
+    ) -> BLineResult {
         let name = e.file_name();
         let name = match name.to_str() {
             Some(name) => name,
@@ -121,22 +126,19 @@ impl TreeBuilder {
             }
         }
         let path = e.path();
-        let mut git_repo = None;
-        if self.options.respect_git_ignore {
-            git_repo = self.blines[parent_id].git_repo;
-            if let Some(rid) = git_repo {
-                if self.options.respect_git_ignore {
-                    if Ok(true) == self.git_repos[rid].is_path_ignored(&path) {
-                        return BLineResult::GitIgnored;
-                    }
-                }
+        let git_ignore_chain = if self.options.respect_git_ignore {
+            let parent_chain = &self.blines[parent_id].git_ignore_chain;
+            if !self.git_ignorer.accepts(parent_chain, &path, &name, file_type.is_dir()) {
+                return BLineResult::GitIgnored;
             }
-            if git::is_repo(&path) {
-                if let Ok(repo) = Repository::open(&path) {
-                    git_repo = Some(self.git_repos.alloc(repo))
-                }
+            if file_type.is_dir() {
+                self.git_ignorer.deeper_chain(parent_chain, &path)
+            } else {
+                parent_chain.clone()
             }
-        }
+        } else {
+            GitIgnoreChain::default()
+        };
         BLineResult::Some(self.blines.alloc(BLine {
             parent_id: Some(parent_id),
             path,
@@ -149,7 +151,7 @@ impl TreeBuilder {
             has_match,
             score,
             nb_kept_children: 0,
-            git_repo,
+            git_ignore_chain,
         }))
     }
 
@@ -396,13 +398,16 @@ impl TreeBuilder {
             tree.fetch_file_sizes(); // not the dirs, only simple files
         }
         if self.options.show_git_file_info {
-            if let Some(rid) = self.blines[self.root_id].git_repo {
-                tree.git_status = TreeGitStatus::from(&self.git_repos[rid]);
-                let root_path = &self.blines[self.root_id].path;
+            let root_path = &self.blines[self.root_id].path;
+            if let Ok(git_repo) = Repository::discover(root_path) {
+                tree.git_status = TreeGitStatus::from(&git_repo);
+                let repo_root_path = git_repo.path().parent().unwrap();
+                debug!("repo_root_path: {:?}", &repo_root_path);
                 for mut line in tree.lines.iter_mut() {
-                    if let Some(relative_path) = pathdiff::diff_paths(&line.path, &root_path) {
+                    if let Some(relative_path) = pathdiff::diff_paths(&line.path, &repo_root_path) {
+                        debug!("relative_path: {:?}", &relative_path);
                         line.git_status = LineGitStatus::from(
-                            &self.git_repos[rid],
+                            &git_repo,
                             &relative_path,
                         );
                     };

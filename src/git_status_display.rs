@@ -1,7 +1,7 @@
 use {
     crate::{
         errors::ProgramError,
-        git::{
+        git_status::{
             TreeGitStatus,
         },
         skin::Skin,

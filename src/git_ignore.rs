@@ -1,21 +1,26 @@
 //! Implements parsing and applying .gitignore files.
-//! Also manages a stack of such files, because more than one
-//!  can apply for a dir (i.e when entering a directory we
-//!  may add a gitignore file to the stack)
 
 use {
-    crate::git,
+    git2,
     glob,
+    id_arena::{
+        Arena,
+        Id,
+    },
     regex::Regex,
     std::{
         fs::File,
         io::{BufRead, BufReader, Result},
         path::Path,
+        time::Instant,
     },
 };
 
+pub fn is_repo(root: &Path) -> bool {
+    root.join(".git").exists()
+}
+
 /// a simple rule of a gitignore file
-#[derive(Clone)]
 struct GitIgnoreRule {
     ok: bool,        // does this rule when matched means the file is good? (usually false)
     directory: bool, // whether this rule only applies to directories
@@ -66,7 +71,6 @@ impl GitIgnoreRule {
 }
 
 /// The rules of a gitignore file
-#[derive(Clone)]
 pub struct GitIgnoreFile {
     rules: Vec<GitIgnoreRule>,
 }
@@ -92,23 +96,58 @@ impl GitIgnoreFile {
     }
 }
 
-/// A stack of the gitignore files applying to a directory.
-#[derive(Clone)]
-pub struct GitIgnoreFilter {
-    pub files: Vec<GitIgnoreFile>, // the last one is the deepest one
+pub fn find_global_ignore() -> Option<GitIgnoreFile> {
+    let global_conf = match git2::Config::open_default() {
+        Ok(conf) => conf,
+        Err(e) => {
+            debug!("open default git config failed : {:?}", e);
+            return None;
+        }
+    };
+    global_conf.get_path("core.excludesfile")
+        .ok()
+        .as_ref()
+        .and_then(|path| GitIgnoreFile::new(path).ok())
 }
-impl GitIgnoreFilter {
-    pub fn applicable_to(mut dir: &Path) -> GitIgnoreFilter {
-        let mut filter = GitIgnoreFilter { files: Vec::new() };
+
+#[derive(Debug, Clone, Default)]
+pub struct GitIgnoreChain {
+    file_ids: Vec<Id<GitIgnoreFile>>,
+}
+impl GitIgnoreChain {
+    pub fn push(&mut self, id: Id<GitIgnoreFile>) {
+        self.file_ids.push(id);
+    }
+}
+pub struct GitIgnorer {
+    files: Arena<GitIgnoreFile>,
+    global_chain: GitIgnoreChain,
+}
+impl GitIgnorer {
+    pub fn new() -> Self {
+        let start = Instant::now();
+        let mut files = Arena::new();
+        let mut global_chain = GitIgnoreChain::default();
+        if let Some(gif) = find_global_ignore() {
+            global_chain.push(files.alloc(gif));
+        }
+        debug!("git_ignorer init took {:?}", start.elapsed());
+        Self {
+            files,
+            global_chain,
+        }
+    }
+    pub fn root_chain(&mut self, mut dir: &Path) -> GitIgnoreChain {
         debug!("searching applicable gifs for {:?}", dir);
+        let mut chain = self.global_chain.clone();
         loop {
             debug!("  looking in {:?}", dir);
             let ignore_file = dir.join(".gitignore");
             if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
                 debug!("  adding {:?}", &ignore_file);
-                filter.files.push(gif);
+                chain.push(self.files.alloc(gif));
             }
-            if git::is_repo(dir) {
+            if is_repo(dir) {
                 debug!("  break because git repo");
                 break;
             }
@@ -118,34 +157,40 @@ impl GitIgnoreFilter {
                 break;
             }
         }
-        filter
+        chain
     }
-    pub fn extended_to(
-        &self,
+    pub fn deeper_chain(
+        &mut self,
+        parent_chain: &GitIgnoreChain,
         dir: &Path,
-    ) -> GitIgnoreFilter {
+    ) -> GitIgnoreChain {
+        // if the current folder is a repository, then
+        // we reset the chain to the root one:
+        // we don't want the .gitignore files of super repositories
+        // (see https://github.com/Canop/broot/issues/160)
+        let mut chain = if is_repo(dir) {
+            //debug!("entering a git repo {:?}", dir);
+            self.global_chain.clone()
+        } else {
+            //debug!("subfolder {:?} in same repo", dir);
+            parent_chain.clone()
+        };
         let ignore_file = dir.join(".gitignore");
         if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
-            // if the current folder is a repository, then
-            // we reset the chain: we don't want the .gitignore
-            // files of super repositories
-            // (see https://github.com/Canop/broot/issues/160)
-            let mut files = if git::is_repo(dir) {
-                // we'll assume it's a .git folder
-                debug!("entering a git repo {:?}", dir);
-                self.files.clone()
-            } else {
-                debug!("subfolder {:?} in same repo", dir);
-                Vec::new()
-            };
-            files.push(gif);
-            GitIgnoreFilter { files }
-        } else {
-            self.clone()
+            chain.push(self.files.alloc(gif));
         }
+        chain
     }
-    pub fn accepts(&self, path: &Path, filename: &str, directory: bool) -> bool {
-        for file in &self.files {
+    pub fn accepts(
+        &self,
+        chain: &GitIgnoreChain,
+        path: &Path,
+        filename: &str,
+        directory: bool,
+    ) -> bool {
+        // we start with deeper files: deeper rules have a bigger priority
+        for id in chain.file_ids.iter().rev() {
+            let file = &self.files[*id];
             for rule in &file.rules {
                 if rule.directory && !directory {
                     continue;

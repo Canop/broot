@@ -2,13 +2,12 @@ use {
     crate::{
         errors::TreeBuildError,
         flat_tree::{LineType, TreeLine},
+        git_ignore::{
+            GitIgnoreChain,
+        },
     },
     id_arena::{
         Arena,
-        Id,
-    },
-    git2::{
-        Repository,
     },
     std::{
         fs,
@@ -34,7 +33,7 @@ pub struct BLine {
     pub has_match: bool,
     pub score: i32,
     pub nb_kept_children: i32, // used during the trimming step
-    pub git_repo: Option<Id<Repository>>,
+    pub git_ignore_chain: GitIgnoreChain,
 }
 
 impl BLine {
@@ -42,23 +41,12 @@ impl BLine {
     pub fn from_root(
         blines: &mut Arena<BLine>,
         path: PathBuf,
-        git_repo: Option<Id<Repository>>,
+        git_ignore_chain: GitIgnoreChain,
     ) -> Result<BId, TreeBuildError> {
         let name = match path.file_name() {
             Some(name) => name.to_string_lossy().to_string(),
             None => String::from("???"), // should not happen
         };
-        //let ignore_filter = if respect_ignore == OptionBool::No {
-        //    None
-        //} else {
-        //    let gif = GitIgnoreFilter::applicable_to(&path);
-        //    // if auto, we don't look for other gif if we're not in a git dir
-        //    if respect_ignore == OptionBool::Auto && gif.files.is_empty() {
-        //        None
-        //    } else {
-        //        Some(gif)
-        //    }
-        //};
         if let Ok(md) = fs::metadata(&path) {
             let file_type = md.file_type();
             Ok(blines.alloc(BLine {
@@ -73,7 +61,7 @@ impl BLine {
                 has_match: true,
                 score: 0,
                 nb_kept_children: 0,
-                git_repo,
+                git_ignore_chain,
             }))
         } else {
             Err(TreeBuildError::FileNotFound {

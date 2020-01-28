@@ -70,11 +70,6 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
 
     let mut tree_options = TreeOptions::default();
     tree_options.show_sizes = cli_args.is_present("sizes");
-    if tree_options.show_sizes {
-        // by default, if we're asked to show the size, we show all files
-        tree_options.show_hidden = true;
-        tree_options.respect_git_ignore = false;
-    }
     tree_options.only_folders = cli_args.is_present("only-folders");
     tree_options.show_hidden = cli_args.is_present("hidden");
     tree_options.show_dates = cli_args.is_present("dates");
@@ -93,6 +88,11 @@ pub fn read_launch_args() -> Result<AppLaunchArgs, ProgramError> {
         .value_of("set-install-state")
         .map(ShellInstallState::from_str)
         .transpose()?;
+    if tree_options.show_sizes {
+        // by default, if we're asked to show the size, we show all files
+        tree_options.show_hidden = true;
+        tree_options.respect_git_ignore = false;
+    }
     Ok(AppLaunchArgs {
         root,
         file_export_path,

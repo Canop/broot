@@ -4,7 +4,7 @@ use {
     crate::{
         errors,
         file_sizes::FileSize,
-        git::{
+        git_status::{
             LineGitStatus,
             TreeGitStatus,
         },
