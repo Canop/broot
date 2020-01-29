@@ -1,3 +1,6 @@
+<a name="v0.12.2"></a>
+### v0.12.2 - 2020-01-29
+- fix Ctrl-J being interpreted as Enter (fix #177)
 
 <a name="v0.12.1"></a>
 ### v0.12.1 - 2020-01-25
