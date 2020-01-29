@@ -63,7 +63,7 @@ impl Default for TreeOptions {
             show_sizes: false,
             show_dates: false,
             show_git_file_info: true,
-            trim_root: false,
+            trim_root: true,
             show_permissions: false,
             respect_git_ignore: true,
             pattern: Pattern::None,
