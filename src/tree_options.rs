@@ -62,7 +62,7 @@ impl Default for TreeOptions {
             only_folders: false,
             show_sizes: false,
             show_dates: false,
-            show_git_file_info: true,
+            show_git_file_info: false,
             trim_root: true,
             show_permissions: false,
             respect_git_ignore: true,

@@ -398,14 +398,13 @@ impl TreeBuilder {
             tree.fetch_file_sizes(); // not the dirs, only simple files
         }
         if self.options.show_git_file_info {
+            let start = Instant::now();
             let root_path = &self.blines[self.root_id].path;
             if let Ok(git_repo) = Repository::discover(root_path) {
                 tree.git_status = TreeGitStatus::from(&git_repo);
                 let repo_root_path = git_repo.path().parent().unwrap();
-                debug!("repo_root_path: {:?}", &repo_root_path);
                 for mut line in tree.lines.iter_mut() {
                     if let Some(relative_path) = pathdiff::diff_paths(&line.path, &repo_root_path) {
-                        debug!("relative_path: {:?}", &relative_path);
                         line.git_status = LineGitStatus::from(
                             &git_repo,
                             &relative_path,
@@ -413,6 +412,7 @@ impl TreeBuilder {
                     };
                 }
             }
+            debug!("computing git file infos took {:?}", start.elapsed());
         }
         tree
     }

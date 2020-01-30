@@ -76,6 +76,7 @@ pub struct GitIgnoreFile {
 }
 impl GitIgnoreFile {
     pub fn new(path: &Path) -> Result<GitIgnoreFile> {
+        let start = Instant::now();
         let f = File::open(path)?;
         let parent = path.parent().unwrap();
         let mut rules: Vec<GitIgnoreRule> = Vec::new();
@@ -88,9 +89,10 @@ impl GitIgnoreFile {
         // we reverse the list to easily iterate from the last one to the first one
         rules.reverse();
         debug!(
-            "loaded .gitignore file {:?} with {} rules",
+            "loaded .gitignore file {:?} with {} rules in {:?}",
             path,
-            rules.len()
+            rules.len(),
+            start.elapsed(),
         );
         Ok(GitIgnoreFile { rules })
     }
