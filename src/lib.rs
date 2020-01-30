@@ -7,6 +7,9 @@ extern crate log;
 #[macro_use]
 extern crate lazy_regex;
 
+#[macro_use]
+mod time;
+
 pub mod app;
 pub mod app_context;
 pub mod app_state;

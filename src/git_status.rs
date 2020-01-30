@@ -9,7 +9,6 @@ use {
         path::{
             Path,
         },
-        time::Instant,
     },
 };
 
@@ -37,12 +36,10 @@ pub struct TreeGitStatus {
 }
 
 impl TreeGitStatus {
-    pub fn from(repo: &Repository) -> Option<TreeGitStatus> {
-        let start = Instant::now();
-        let current_branch_name = repo.head().ok()
+    pub fn from(repo: &Repository) -> Option<Self> {
+        let current_branch_name = repo.head()
+            .ok()
             .and_then(|head| head.shorthand().map(String::from));
-        debug!("finding current branch name took {:?}", start.elapsed());
-        let start = Instant::now();
         let stats = match repo.diff_index_to_workdir(None, None) {
             Ok(diff) => {
                 debug!("deltas: {:?}", diff.deltas().count());
@@ -56,11 +53,10 @@ impl TreeGitStatus {
                 stats
             }
             Err(e) => {
-                debug!("get diff took {:?} and failed : {:?}", start.elapsed(), e);
+                debug!("get diff failed : {:?}", e);
                 return None;
             }
         };
-        debug!("get diff and stats took {:?}", start.elapsed());
         Some(Self {
             current_branch_name,
             insertions: stats.insertions(),

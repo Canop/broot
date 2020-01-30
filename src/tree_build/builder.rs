@@ -53,7 +53,7 @@ enum BLineResult {
 /// Most operations and temporary data structures just deal with the indexes of lines in
 ///  the blines vector.
 pub struct TreeBuilder {
-    options: TreeOptions,
+    pub options: TreeOptions,
     targeted_size: usize, // the number of lines we should fill (height of the screen)
     nb_gitignored: u32,   // number of times a gitignore pattern excluded a file
     blines: Arena<BLine>,
@@ -68,7 +68,7 @@ impl TreeBuilder {
         targeted_size: usize,
     ) -> Result<TreeBuilder, TreeBuildError> {
         let mut blines = Arena::new();
-        let mut git_ignorer = GitIgnorer::new();
+        let mut git_ignorer = time!(Debug, "GitIgnorer::new", GitIgnorer::new());
         let root_ignore_chain = git_ignorer.root_chain(&path);
         let root_id = BLine::from_root(
             &mut blines,
@@ -395,24 +395,28 @@ impl TreeBuilder {
         };
         tree.after_lines_changed();
         if self.options.show_sizes {
-            tree.fetch_file_sizes(); // not the dirs, only simple files
+            time!(Debug, "fetch_file_sizes", tree.fetch_file_sizes()); // not the dirs, only simple files
         }
         if self.options.show_git_file_info {
-            let start = Instant::now();
             let root_path = &self.blines[self.root_id].path;
             if let Ok(git_repo) = Repository::discover(root_path) {
-                tree.git_status = TreeGitStatus::from(&git_repo);
+                tree.git_status = time!(
+                    Debug,
+                    "TreeGitStatus::from",
+                    TreeGitStatus::from(&git_repo),
+                );
                 let repo_root_path = git_repo.path().parent().unwrap();
                 for mut line in tree.lines.iter_mut() {
                     if let Some(relative_path) = pathdiff::diff_paths(&line.path, &repo_root_path) {
-                        line.git_status = LineGitStatus::from(
-                            &git_repo,
+                        line.git_status = time!(
+                            Debug,
+                            "LineGitStatus",
                             &relative_path,
+                            LineGitStatus::from(&git_repo, &relative_path),
                         );
                     };
                 }
             }
-            debug!("computing git file infos took {:?}", start.elapsed());
         }
         tree
     }
@@ -426,7 +430,7 @@ impl TreeBuilder {
         task_lifetime: &TaskLifetime,
         total_search: bool,
     ) -> Option<Tree> {
-        debug!("start building - total={} pattern={}", total_search, self.options.pattern);
+        debug!("Building - total={} pattern={}", total_search, self.options.pattern);
         match self.gather_lines(task_lifetime, total_search) {
             Some(out_blines) => {
                 self.trim_excess(&out_blines);

@@ -12,7 +12,6 @@ use {
         ops::AddAssign,
         path::{Path, PathBuf},
         sync::Mutex,
-        time::Instant,
     },
 };
 
@@ -53,10 +52,8 @@ impl FileSize {
         if let Some(s) = size_cache.get(path) {
             return Some(Self::new(*s, false));
         }
-        let start = Instant::now();
-        if let Some(s) = compute_dir_size(path, tl) {
+        if let Some(s) = time!(Debug, "size sum", path, compute_dir_size(path, tl)) {
             size_cache.insert(PathBuf::from(path), s);
-            debug!("size computation for {:?} took {:?}", path, start.elapsed());
             Some(FileSize::new(s, false))
         } else {
             None

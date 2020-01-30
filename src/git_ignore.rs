@@ -12,7 +12,6 @@ use {
         fs::File,
         io::{BufRead, BufReader, Result},
         path::Path,
-        time::Instant,
     },
 };
 
@@ -76,7 +75,6 @@ pub struct GitIgnoreFile {
 }
 impl GitIgnoreFile {
     pub fn new(path: &Path) -> Result<GitIgnoreFile> {
-        let start = Instant::now();
         let f = File::open(path)?;
         let parent = path.parent().unwrap();
         let mut rules: Vec<GitIgnoreRule> = Vec::new();
@@ -89,10 +87,9 @@ impl GitIgnoreFile {
         // we reverse the list to easily iterate from the last one to the first one
         rules.reverse();
         debug!(
-            "loaded .gitignore file {:?} with {} rules in {:?}",
+            "loaded .gitignore file {:?} with {} rules",
             path,
             rules.len(),
-            start.elapsed(),
         );
         Ok(GitIgnoreFile { rules })
     }
@@ -109,7 +106,13 @@ pub fn find_global_ignore() -> Option<GitIgnoreFile> {
     global_conf.get_path("core.excludesfile")
         .ok()
         .as_ref()
-        .and_then(|path| GitIgnoreFile::new(path).ok())
+        .and_then(
+            |path| time!(
+                Debug,
+                "GitIgnoreFile::new",
+                GitIgnoreFile::new(path)
+            ).ok()
+        )
 }
 
 #[derive(Debug, Clone, Default)]
@@ -127,13 +130,11 @@ pub struct GitIgnorer {
 }
 impl GitIgnorer {
     pub fn new() -> Self {
-        let start = Instant::now();
         let mut files = Arena::new();
         let mut global_chain = GitIgnoreChain::default();
         if let Some(gif) = find_global_ignore() {
             global_chain.push(files.alloc(gif));
         }
-        debug!("git_ignorer init took {:?}", start.elapsed());
         Self {
             files,
             global_chain,

@@ -19,7 +19,11 @@ use {
     },
     minimad::Composite,
     open,
-    std::{fs::OpenOptions, io::Write, path::PathBuf, time::Instant},
+    std::{
+        fs::OpenOptions,
+        io::Write,
+        path::PathBuf,
+    },
 };
 
 /// An application state dedicated to displaying a tree.
@@ -390,33 +394,33 @@ impl AppState for BrowserState {
     /// Stop as soon as the lifetime is expired.
     fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime) {
         if self.pending_pattern.is_some() {
-            let start = Instant::now();
+            let pattern_str = self.pending_pattern.to_string();
             let mut options = self.tree.options.clone();
             options.pattern = self.pending_pattern.take();
             let root = self.tree.root().clone();
             let len = self.tree.lines.len() as u16;
-            let mut filtered_tree = match TreeBuilder::from(root, options, len as usize) {
-                Ok(builder) => builder.build(tl, self.total_search_required),
+            let builder = match TreeBuilder::from(root, options, len as usize) {
+                Ok(builder) => builder,
                 Err(e) => {
-                    warn!("Error while building tree: {:?}", e);
+                    warn!("Error while preparing tree builder: {:?}", e);
                     return;
                 }
             };
+            let mut filtered_tree = time!(
+                Info,
+                "tree filtering",
+                pattern_str,
+                builder.build(tl, self.total_search_required),
+            ); // can be None if a cancellation was required
             self.total_search_required = false;
             if let Some(ref mut ft) = filtered_tree {
-                info!(
-                    "Tree search with pattern {} took {:?}",
-                    &ft.options.pattern,
-                    start.elapsed()
-                );
-                debug!("was it total search ? {}", ft.total_search);
                 ft.try_select_best_match();
                 ft.make_selection_visible(BrowserState::page_height(screen));
                 self.filtered_tree = filtered_tree;
-            } // if none: task was cancelled from elsewhere
-            return;
+            }
+        } else {
+            self.displayed_tree_mut().fetch_some_missing_dir_size(tl);
         }
-        self.displayed_tree_mut().fetch_some_missing_dir_size(tl);
     }
 
     fn display(
