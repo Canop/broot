@@ -8,7 +8,7 @@ use {
         help_content,
         screens::Screen,
         status::Status,
-        task_sync::TaskLifetime,
+        task_sync::Dam,
         verb_store::PrefixSearchResult,
         verbs::VerbExecutor,
     },
@@ -88,7 +88,7 @@ impl AppState for HelpState {
         Command::new()
     }
 
-    fn do_pending_task(&mut self, _screen: &mut Screen, _tl: &TaskLifetime) {
+    fn do_pending_task(&mut self, _screen: &mut Screen, _dam: &mut Dam) {
         unreachable!();
     }
 

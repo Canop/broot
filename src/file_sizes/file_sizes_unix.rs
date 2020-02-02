@@ -1,6 +1,10 @@
 use {
-    crate::task_sync::TaskLifetime,
-    crossbeam::{channel::unbounded, sync::WaitGroup},
+    crate::task_sync::Dam,
+    crossbeam::{
+        channel::unbounded,
+        //crossbeam_utils::thread,
+        sync::WaitGroup,
+    },
     std::{
         collections::HashSet,
         fs,
@@ -16,7 +20,7 @@ use {
     super::FileSize,
 };
 
-pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
+pub fn compute_dir_size(path: &Path, dam: &Dam) -> Option<u64> {
     debug!("compute size of dir {:?} --------------- ", path);
     let inodes = Arc::new(Mutex::new(HashSet::<u64>::default())); // to avoid counting twice an inode
     // the computation is done on blocks of 512 bytes
@@ -39,9 +43,9 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
         let busy = Arc::clone(&busy);
         let wg = wg.clone();
         let (dirs_sender, dirs_receiver) = (dirs_sender.clone(), dirs_receiver.clone());
-        let tl = tl.clone();
         let inodes = inodes.clone();
-        thread::spawn(move || {
+        let observer = dam.observer();
+        thread::spawn(move|| {
             loop {
                 let o = dirs_receiver.recv_timeout(period);
                 if let Ok(Some(open_dir)) = o {
@@ -67,7 +71,7 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
                 } else if busy.load(Ordering::Relaxed) < 1 {
                     break;
                 }
-                if tl.is_expired() {
+                if observer.has_event() {
                     break;
                 }
             }
@@ -76,7 +80,7 @@ pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
     }
     wg.wait();
 
-    if tl.is_expired() {
+    if dam.has_event() {
         return None;
     }
     let blocks = blocks.load(Ordering::Relaxed);

@@ -7,11 +7,12 @@ use {
         errors::{ProgramError, TreeBuildError},
         external::Launchable,
         flat_tree::{LineType, Tree},
+        git_status_computer,
         help_states::HelpState,
         patterns::Pattern,
         screens::{self, Screen},
         status::Status,
-        task_sync::TaskLifetime,
+        task_sync::Dam,
         tree_build::TreeBuilder,
         tree_options::TreeOptions,
         verb_store::PrefixSearchResult,
@@ -40,11 +41,11 @@ impl BrowserState {
         path: PathBuf,
         mut options: TreeOptions,
         screen: &Screen,
-        tl: &TaskLifetime,
+        dam: &Dam,
     ) -> Result<Option<BrowserState>, TreeBuildError> {
         let pending_pattern = options.pattern.take();
         let builder = TreeBuilder::from(path, options, BrowserState::page_height(screen) as usize)?;
-        Ok(builder.build(tl, false).map(move |tree| BrowserState {
+        Ok(builder.build(false, dam).map(move |tree| BrowserState {
             tree,
             filtered_tree: None,
             pending_pattern,
@@ -65,7 +66,7 @@ impl BrowserState {
                 tree.root().clone(),
                 options,
                 screen,
-                &TaskLifetime::unlimited(),
+                &Dam::unlimited(),
             ),
             Command::from_pattern(&tree.options.pattern),
         )
@@ -94,7 +95,6 @@ impl BrowserState {
     ) -> Result<AppStateCmdResult, ProgramError> {
         let tree = self.displayed_tree();
         let line = tree.selected_line();
-        let tl = TaskLifetime::unlimited();
         match &line.line_type {
             LineType::File => match open::that(&line.path) {
                 Ok(exit_status) => {
@@ -112,8 +112,9 @@ impl BrowserState {
                         target = PathBuf::from(parent);
                     }
                 }
+                let dam = Dam::unlimited();
                 Ok(AppStateCmdResult::from_optional_state(
-                    BrowserState::new(target, tree.options.without_pattern(), screen, &tl),
+                    BrowserState::new(target, tree.options.without_pattern(), screen, &dam),
                     Command::new(),
                 ))
             }
@@ -217,7 +218,13 @@ fn make_opener(
 
 impl AppState for BrowserState {
     fn has_pending_task(&self) -> bool {
-        self.pending_pattern.is_some() || self.displayed_tree().has_dir_missing_size()
+        debug!(
+            "CHECK self.displayed_tree().is_missing_git_status_computation() = {}",
+            self.displayed_tree().is_missing_git_status_computation(),
+        );
+        self.pending_pattern.is_some()
+            || self.displayed_tree().has_dir_missing_size()
+            || self.displayed_tree().is_missing_git_status_computation()
     }
 
     fn write_status(
@@ -391,8 +398,9 @@ impl AppState for BrowserState {
     }
 
     /// do some work, totally or partially, if there's some to do.
-    /// Stop as soon as the lifetime is expired.
-    fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime) {
+    /// Stop as soon as the dam asks for interruption
+    fn do_pending_task(&mut self, screen: &mut Screen, dam: &mut Dam) {
+        debug!("entering do_pending_task");
         if self.pending_pattern.is_some() {
             let pattern_str = self.pending_pattern.to_string();
             let mut options = self.tree.options.clone();
@@ -410,7 +418,7 @@ impl AppState for BrowserState {
                 Info,
                 "tree filtering",
                 pattern_str,
-                builder.build(tl, self.total_search_required),
+                builder.build(self.total_search_required, dam),
             ); // can be None if a cancellation was required
             self.total_search_required = false;
             if let Some(ref mut ft) = filtered_tree {
@@ -418,8 +426,51 @@ impl AppState for BrowserState {
                 ft.make_selection_visible(BrowserState::page_height(screen));
                 self.filtered_tree = filtered_tree;
             }
+
+        } else if self.displayed_tree().is_missing_git_status_computation() {
+            let root_path = self.displayed_tree().root().to_path_buf();
+            let git_status = dam.try_compute(||
+                git_status_computer::compute_tree_status(root_path)
+            );
+            debug!("computation result: {:?}", &git_status);
+            self.displayed_tree_mut().git_status = git_status;
+            debug!(
+                "self.displayed_tree().git_status = {:?}",
+                &self.displayed_tree().git_status,
+            );
+
+            debug!(
+                "AFTERCOMPUT self.displayed_tree().is_missing_git_status_computation() = {}",
+                self.displayed_tree().is_missing_git_status_computation(),
+            );
+
+
+            //if self.options.show_git_file_info {
+            //    let root_path = &self.blines[self.root_id].path;
+            //    if let Ok(git_repo) = Repository::discover(root_path) {
+            //        tree.git_status = time!(
+            //            Debug,
+            //            "TreeGitStatus::from",
+            //            TreeGitStatus::from(&git_repo),
+            //        );
+            //        let repo_root_path = git_repo.path().parent().unwrap();
+            //        for mut line in tree.lines.iter_mut() {
+            //            if let Some(relative_path) = pathdiff::diff_paths(&line.path, &repo_root_path) {
+            //                line.git_status = time!(
+            //                    Debug,
+            //                    "LineGitStatus",
+            //                    &relative_path,
+            //                    LineGitStatus::from(&git_repo, &relative_path),
+            //                );
+            //            };
+            //        }
+            //    }
+            //}
+
+
+
         } else {
-            self.displayed_tree_mut().fetch_some_missing_dir_size(tl);
+            self.displayed_tree_mut().fetch_some_missing_dir_size(dam);
         }
     }
 

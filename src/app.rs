@@ -22,7 +22,7 @@ use {
         screens::Screen,
         skin::Skin,
         status::Status,
-        task_sync::TaskLifetime,
+        task_sync::Dam,
     },
     crossterm::{
         self, cursor,
@@ -77,18 +77,18 @@ impl App {
     }
 
     /// execute all the pending tasks until there's none remaining or
-    ///  the allowed lifetime is expired (usually when the user typed a new key)
+    ///  the dam asks for interruption
     fn do_pending_tasks(
         &mut self,
         w: &mut impl Write,
         cmd: &Command,
         screen: &mut Screen,
         con: &AppContext,
-        tl: TaskLifetime,
+        dam: &mut Dam,
     ) -> Result<(), ProgramError> {
         let state = self.mut_state();
-        while state.has_pending_task() & !tl.is_expired() {
-            state.do_pending_task(screen, &tl);
+        while state.has_pending_task() & !dam.has_event() {
+            state.do_pending_task(screen, dam);
             state.display(w, screen, con)?;
             state.write_status(w, cmd, &screen, con)?;
         }
@@ -187,22 +187,24 @@ impl App {
         debug!("we're on screen");
         let mut screen = Screen::new(con, skin)?;
 
-        // we listen for events in a separate thread so that we can go on listening
-        // when a long search is running, and interrupt it if needed
         let mut writer = WriteCleanup::build(
             writer,
             |w| just_queue(w, EnableMouseCapture),
             |w| just_queue(w, DisableMouseCapture),
         )?;
+
+        // we listen for events in a separate thread so that we can go on listening
+        // when a long search is running, and interrupt it if needed
         let event_source = EventSource::new()?;
         let rx_events = event_source.receiver();
+        let mut dam = Dam::from(rx_events);
 
         self.push(Box::new(
             BrowserState::new(
                 con.launch_args.root.clone(),
                 con.launch_args.tree_options.clone(),
                 &screen,
-                &TaskLifetime::unlimited(),
+                &Dam::unlimited(),
             )?
             .expect("Failed to create BrowserState"),
         ));
@@ -212,10 +214,15 @@ impl App {
         // if some commands were passed to the application
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {
-            let lifetime = TaskLifetime::unlimited();
             for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
                 cmd = self.apply_command(&mut writer, arg_cmd, &mut screen, con)?;
-                self.do_pending_tasks(&mut writer, &cmd, &mut screen, con, lifetime.clone())?;
+                self.do_pending_tasks(
+                    &mut writer,
+                    &cmd,
+                    &mut screen,
+                    con,
+                    &mut dam,
+                )?;
                 if self.quitting {
                     return Ok(self.launch_at_end.take());
                 }
@@ -229,13 +236,12 @@ impl App {
 
         screen.input_field.display_on(&mut writer)?;
         loop {
-            let tl = TaskLifetime::new(event_source.shared_event_count());
             if !self.quitting {
-                self.do_pending_tasks(&mut writer, &cmd, &mut screen, con, tl)?;
+                self.do_pending_tasks(&mut writer, &cmd, &mut screen, con, &mut dam)?;
             }
-            let event = match rx_events.recv() {
-                Ok(event) => event,
-                Err(_) => {
+            let event = match dam.next_event() {
+                Some(event) => event,
+                None => {
                     // this is how we quit the application,
                     // when the input thread is properly closed
                     break;

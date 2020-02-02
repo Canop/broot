@@ -1,4 +1,6 @@
 #[macro_use]
+extern crate crossbeam;
+#[macro_use]
 extern crate minimad;
 #[macro_use]
 extern crate lazy_static;
@@ -28,6 +30,7 @@ pub mod flat_tree;
 pub mod fuzzy_patterns;
 pub mod git_ignore;
 pub mod git_status;
+pub mod git_status_computer;
 pub mod git_status_display;
 pub mod help_content;
 pub mod help_states;

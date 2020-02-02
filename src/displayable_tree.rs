@@ -3,6 +3,7 @@ use {
         errors::ProgramError,
         file_sizes::FileSize,
         flat_tree::{LineType, Tree, TreeLine},
+        task_sync::ComputationResult,
         git_status_display::GitStatusDisplay,
         patterns::Pattern,
         skin::Skin,
@@ -265,7 +266,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             self.extend_line(f, selected)?;
             let title_len = title.chars().count();
             if title_len < self.area.width as usize {
-                if let Some(git_status) = &self.tree.git_status {
+                if let ComputationResult::Done(git_status) = &self.tree.git_status {
                     // git status is displayed if there's enough space for it
                     let git_status_display = GitStatusDisplay::from(
                         git_status,
@@ -323,7 +324,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
-                if tree.git_status.is_some() {
+                if !tree.git_status.is_none() {
                     self.write_line_git_status(f, line)?;
                 }
                 for depth in 0..line.depth {

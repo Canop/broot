@@ -5,7 +5,7 @@
 ///  twice an inode.
 ///
 use {
-    crate::task_sync::TaskLifetime,
+    crate::task_sync::Dam,
     std::{
         collections::HashMap,
         fmt,
@@ -47,12 +47,12 @@ impl FileSize {
     /// Return the size of the directory, either by computing it of by
     ///  fetching it from cache.
     /// If the lifetime expires before complete computation, None is returned.
-    pub fn from_dir(path: &Path, tl: &TaskLifetime) -> Option<Self> {
+    pub fn from_dir(path: &Path, dam: &Dam) -> Option<Self> {
         let mut size_cache = SIZE_CACHE_MUTEX.lock().unwrap();
         if let Some(s) = size_cache.get(path) {
             return Some(Self::new(*s, false));
         }
-        if let Some(s) = time!(Debug, "size sum", path, compute_dir_size(path, tl)) {
+        if let Some(s) = time!(Debug, "size sum", path, compute_dir_size(path, dam)) {
             size_cache.insert(PathBuf::from(path), s);
             Some(FileSize::new(s, false))
         } else {

@@ -4,13 +4,15 @@ use {
         flat_tree::{Tree, TreeLine},
         git_status::{
             LineGitStatus,
-            TreeGitStatus,
+        },
+        task_sync::{
+            ComputationResult,
         },
         git_ignore::{
             GitIgnorer,
             GitIgnoreChain,
         },
-        task_sync::TaskLifetime,
+        task_sync::Dam,
         tree_options::{
             TreeOptions,
         },
@@ -221,8 +223,8 @@ impl TreeBuilder {
     /// If there's a pattern, we try to gather more lines that will be sorted afterwards.
     fn gather_lines(
         &mut self,
-        task_lifetime: &TaskLifetime,
         total_search: bool,
+        dam: &Dam,
     ) -> Option<Vec<BId>> {
         let start = Instant::now();
         let mut out_blines: Vec<BId> = Vec::new(); // the blines we want to display
@@ -272,7 +274,7 @@ impl TreeBuilder {
                     break;
                 }
                 for next_level_dir_id in &next_level_dirs {
-                    if task_lifetime.is_expired() {
+                    if dam.has_event() {
                         info!("task expired (core build - inner loop)");
                         return None;
                     }
@@ -391,7 +393,7 @@ impl TreeBuilder {
             scroll: 0,
             nb_gitignored: self.nb_gitignored,
             total_search: self.total_search,
-            git_status: None, // will be filled in tree.after_lines_changed
+            git_status: ComputationResult::None,
         };
         tree.after_lines_changed();
         if self.options.show_sizes {
@@ -400,11 +402,9 @@ impl TreeBuilder {
         if self.options.show_git_file_info {
             let root_path = &self.blines[self.root_id].path;
             if let Ok(git_repo) = Repository::discover(root_path) {
-                tree.git_status = time!(
-                    Debug,
-                    "TreeGitStatus::from",
-                    TreeGitStatus::from(&git_repo),
-                );
+                // tree git status is slow to compute, we just mark it should be
+                // done (later on)
+                tree.git_status = ComputationResult::NotComputed;
                 let repo_root_path = git_repo.path().parent().unwrap();
                 for mut line in tree.lines.iter_mut() {
                     if let Some(relative_path) = pathdiff::diff_paths(&line.path, &repo_root_path) {
@@ -427,11 +427,11 @@ impl TreeBuilder {
     /// (usually because the user hit a key)
     pub fn build(
         mut self,
-        task_lifetime: &TaskLifetime,
         total_search: bool,
+        dam: &Dam,
     ) -> Option<Tree> {
         debug!("Building - total={} pattern={}", total_search, self.options.pattern);
-        match self.gather_lines(task_lifetime, total_search) {
+        match self.gather_lines(total_search, dam) {
             Some(out_blines) => {
                 self.trim_excess(&out_blines);
                 Some(self.take(&out_blines))

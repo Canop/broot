@@ -6,7 +6,7 @@ use {
         errors::{ProgramError, TreeBuildError},
         external::Launchable,
         screens::Screen,
-        task_sync::TaskLifetime,
+        task_sync::Dam,
     },
     std::io::Write,
 };
@@ -59,7 +59,7 @@ pub trait AppState {
 
     fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
 
-    fn do_pending_task(&mut self, screen: &mut Screen, tl: &TaskLifetime);
+    fn do_pending_task(&mut self, screen: &mut Screen, dam: &mut Dam);
 
     fn has_pending_task(&self) -> bool;
 

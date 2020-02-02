@@ -8,8 +8,11 @@ use {
             LineGitStatus,
             TreeGitStatus,
         },
+        task_sync::{
+            ComputationResult,
+        },
         selection_type::SelectionType,
-        task_sync::TaskLifetime,
+        task_sync::Dam,
         tree_build::TreeBuilder,
         tree_options::TreeOptions,
     },
@@ -65,7 +68,7 @@ pub struct Tree {
     pub scroll: i32, // the number of lines at the top hidden because of scrolling
     pub nb_gitignored: u32, // number of times a gitignore pattern excluded a file
     pub total_search: bool, // whether the search was made on all children
-    pub git_status: Option<TreeGitStatus>,
+    pub git_status: ComputationResult<TreeGitStatus>,
 }
 
 impl TreeLine {
@@ -191,11 +194,11 @@ impl Tree {
             	self.root().to_path_buf(),
             	self.options.clone(),
             	page_height,
-        	)?;
+            )?;
         let mut tree = builder.build(
-            	&TaskLifetime::unlimited(),
             	false, // on refresh we always do a non total search
-        	).unwrap(); // should not fail
+                &Dam::unlimited(),
+            ).unwrap(); // should not fail
         // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
@@ -447,6 +450,11 @@ impl Tree {
             )
     }
 
+    pub fn is_missing_git_status_computation(&self) -> bool {
+        self.options.show_git_file_info
+            && self.git_status.is_not_computed()
+    }
+
     pub fn fetch_file_sizes(&mut self) {
         for i in 1..self.lines.len() {
             if self.lines[i].is_file() {
@@ -460,10 +468,10 @@ impl Tree {
     ///
     /// To compute the size of all of them, this should be called until
     ///  has_dir_missing_size returns false
-    pub fn fetch_some_missing_dir_size(&mut self, tl: &TaskLifetime) {
+    pub fn fetch_some_missing_dir_size(&mut self, dam: &Dam) {
         for i in 1..self.lines.len() {
             if self.lines[i].size.is_none() && self.lines[i].line_type == LineType::Dir {
-                self.lines[i].size = FileSize::from_dir(&self.lines[i].path, tl);
+                self.lines[i].size = FileSize::from_dir(&self.lines[i].path, dam);
                 self.sort_siblings_by_size();
                 return;
             }

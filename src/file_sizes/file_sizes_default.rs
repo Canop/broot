@@ -1,7 +1,7 @@
 //! size computation for non linux
 
 use {
-    crate::task_sync::TaskLifetime,
+    crate::task_sync::Dam,
     crossbeam::{channel::unbounded, sync::WaitGroup},
     std::{
         fs,
@@ -16,7 +16,7 @@ use {
 
 // Note that this version doesn't try to compute the real size taken
 // on disk but report the value given by the `len` function
-pub fn compute_dir_size(path: &Path, tl: &TaskLifetime) -> Option<u64> {
+pub fn compute_dir_size(path: &Path, dam: &Dam) -> Option<u64> {
     let size = Arc::new(AtomicUsize::new(0));
 
     // this MPMC channel contains the directory paths which must be handled
