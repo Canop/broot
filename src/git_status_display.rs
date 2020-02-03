@@ -9,24 +9,26 @@ use {
     std::io::Write,
 };
 
-pub struct GitStatusDisplay<'a> {
+pub struct GitStatusDisplay<'a, 's> {
     status: &'a TreeGitStatus,
+    skin: &'s Skin,
     show_branch: bool,
     show_wide: bool,
     show_stats: bool,
     pub width: usize,
 }
 
-impl<'a> GitStatusDisplay<'a> {
+impl<'a, 's> GitStatusDisplay<'a, 's> {
     pub fn from(
         status: &'a TreeGitStatus,
+        skin: &'s Skin,
         available_width: usize,
     ) -> Self {
         let mut show_branch = false;
         let mut width = 0;
         if let Some(branch) = &status.current_branch_name {
             let branch_width = branch.chars().count();
-            if branch_width <= available_width {
+            if branch_width < available_width {
                 width += branch_width;
                 show_branch = true;
             }
@@ -34,40 +36,45 @@ impl<'a> GitStatusDisplay<'a> {
         let mut show_stats = false;
         let unstyled_stats = format!("+{}-{}", status.insertions, status.deletions);
         let stats_width = unstyled_stats.len();
-        if width + stats_width <= available_width {
+        if width + stats_width < available_width {
             width += stats_width;
             show_stats = true;
         }
         let mut show_wide = false;
-        if width + 4 < available_width {
-            width += 4;
+        if width + 3 < available_width {
+            width += 3; // difference between compact and wide format widths
             show_wide = true;
         }
         Self {
             status,
+            skin,
             show_branch,
             show_stats,
             show_wide,
             width,
         }
     }
+
     pub fn write(
         &self,
         f: &mut impl Write,
-        skin: &Skin,
+        selected: bool,
     ) -> Result<(), ProgramError> {
         if self.show_branch {
+            cond_bg!(branch_style, self, selected, self.skin.git_branch);
             if let Some(name) = &self.status.current_branch_name {
                 if self.show_wide {
-                    skin.git_branch.queue(f, format!(" ᚜ {} ", name))?;
+                    branch_style.queue(f, format!(" ᚜ {} ", name))?;
                 } else {
-                    skin.git_branch.queue_str(f, name)?;
+                    branch_style.queue(f, format!(" {}", name))?;
                 }
             }
         }
         if self.show_stats {
-            skin.git_insertions.queue(f, format!("+{}", self.status.insertions))?;
-            skin.git_deletions.queue(f, format!("-{}", self.status.deletions))?;
+            cond_bg!(insertions_style, self, selected, self.skin.git_insertions);
+            insertions_style.queue(f, format!("+{}", self.status.insertions))?;
+            cond_bg!(deletions_style, self, selected, self.skin.git_deletions);
+            deletions_style.queue(f, format!("-{}", self.status.deletions))?;
         }
         Ok(())
     }

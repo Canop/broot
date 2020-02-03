@@ -1,4 +1,5 @@
 ### master
+New major feature:
 `:show_git_file_info` compute git repo statistics and file statuses.
 Statistics are computed in background and cached.
 

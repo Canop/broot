@@ -12,6 +12,9 @@ extern crate lazy_regex;
 #[macro_use]
 mod time;
 
+#[macro_use]
+pub mod displayable_tree;
+
 pub mod app;
 pub mod app_context;
 pub mod app_state;
@@ -22,7 +25,6 @@ pub mod cli;
 pub mod command_parsing;
 pub mod commands;
 pub mod conf;
-pub mod displayable_tree;
 pub mod errors;
 pub mod external;
 pub mod file_sizes;

@@ -267,16 +267,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             let title_len = title.chars().count();
             if title_len < self.area.width as usize {
                 if let ComputationResult::Done(git_status) = &self.tree.git_status {
-                    // git status is displayed if there's enough space for it
                     let git_status_display = GitStatusDisplay::from(
                         git_status,
+                        &self.skin,
                         self.area.width as usize - title_len,
                     );
-                    if git_status_display.width > 0 {
-                        let x = self.area.width - git_status_display.width as u16;
-                        f.queue(cursor::MoveTo(x, 0))?;
-                        git_status_display.write(f, &self.skin)?;
-                    }
+                    git_status_display.write(f, selected)?;
                 }
             }
         }
