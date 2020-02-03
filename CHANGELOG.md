@@ -1,7 +1,8 @@
 ### master
 New major feature: git related features
 - `:show_git_file_info` compute git repo statistics and file statuses. Statistics are computed in background and cached.
-- `:git_diff` verb
+- `:git_diff` verb launching `git diff {file}`
+- `:git_status` filter files to show only the ones which are relevant for `git status` (warning: slow on big repositories)
 Minor changes:
 - on refresh or after command, if the previously selected path can't be selected (missing file, probably) then the previous index will be kept if possible
 

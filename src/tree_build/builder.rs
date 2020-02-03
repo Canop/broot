@@ -3,7 +3,7 @@ use {
         errors::TreeBuildError,
         flat_tree::{Tree, TreeLine},
         git_status::{
-            LineGitStatus,
+            LineStatusComputer,
         },
         task_sync::{
             ComputationResult,
@@ -51,9 +51,9 @@ enum BLineResult {
 
 /// The TreeBuilder builds a Tree according to options (including an optional search pattern)
 /// Instead of the final TreeLine, the builder uses an internal structure: BLine.
-/// All BLines used during build are stored in the blines vector and kept until the end.
-/// Most operations and temporary data structures just deal with the indexes of lines in
-///  the blines vector.
+/// All BLines used during build are stored in the blines arena and kept until the end.
+/// Most operations and temporary data structures just deal with the ids of lines
+///  the blines arena.
 pub struct TreeBuilder {
     pub options: TreeOptions,
     targeted_size: usize, // the number of lines we should fill (height of the screen)
@@ -62,6 +62,7 @@ pub struct TreeBuilder {
     root_id: BId,
     total_search: bool,
     git_ignorer: GitIgnorer,
+    line_status_computer: Option<LineStatusComputer>,
 }
 impl TreeBuilder {
     pub fn from(
@@ -72,6 +73,11 @@ impl TreeBuilder {
         let mut blines = Arena::new();
         let mut git_ignorer = time!(Debug, "GitIgnorer::new", GitIgnorer::new());
         let root_ignore_chain = git_ignorer.root_chain(&path);
+        let line_status_computer = if options.filter_by_git_status || options.show_git_file_info {
+            Repository::discover(&path).ok().map(LineStatusComputer::from)
+        } else {
+            None
+        };
         let root_id = BLine::from_root(
             &mut blines,
             path,
@@ -85,6 +91,7 @@ impl TreeBuilder {
             root_id,
             total_search: true, // we'll set it to false if we don't look at all children
             git_ignorer,
+            line_status_computer,
         })
     }
     /// return a bline if the dir_entry directly matches the options and there's no error
@@ -113,6 +120,14 @@ impl TreeBuilder {
                 has_match = false;
             }
         }
+        let path = e.path();
+        if has_match && self.options.filter_by_git_status {
+            if let Some(line_status_computer) = &self.line_status_computer {
+                if !line_status_computer.is_interesting(&path) {
+                    has_match = false;
+                }
+            }
+        }
         let file_type = match e.file_type() {
             Ok(ft) => ft,
             Err(_) => {
@@ -127,7 +142,6 @@ impl TreeBuilder {
                 return BLineResult::FilteredOutAsNonFolder;
             }
         }
-        let path = e.path();
         let git_ignore_chain = if self.options.respect_git_ignore {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
             if !self.git_ignorer.accepts(parent_chain, &path, &name, file_type.is_dir()) {
@@ -399,23 +413,18 @@ impl TreeBuilder {
         if self.options.show_sizes {
             time!(Debug, "fetch_file_sizes", tree.fetch_file_sizes()); // not the dirs, only simple files
         }
-        if self.options.show_git_file_info {
-            let root_path = &self.blines[self.root_id].path;
-            if let Ok(git_repo) = Repository::discover(root_path) {
-                // tree git status is slow to compute, we just mark it should be
-                // done (later on)
-                tree.git_status = ComputationResult::NotComputed;
-                let repo_root_path = git_repo.path().parent().unwrap();
-                for mut line in tree.lines.iter_mut() {
-                    if let Some(relative_path) = pathdiff::diff_paths(&line.path, &repo_root_path) {
-                        line.git_status = time!(
-                            Debug,
-                            "LineGitStatus",
-                            &relative_path,
-                            LineGitStatus::from(&git_repo, &relative_path),
-                        );
-                    };
-                }
+        if let Some(computer) = self.line_status_computer {
+            // tree git status is slow to compute, we just mark it should be
+            // done (later on)
+            tree.git_status = ComputationResult::NotComputed;
+            // it would make no sense to keep only files having a git status and
+            // not display that type
+            for mut line in tree.lines.iter_mut() {
+                line.git_status = time!(
+                    Debug,
+                    "LineGitStatus",
+                    computer.line_status(&line.path),
+                );
             }
         }
         tree

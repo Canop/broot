@@ -4,28 +4,6 @@ use {
     },
 };
 
-//#[derive(Debug, Copy, Clone, PartialEq)]
-//pub enum OptionBool {
-//    Auto,
-//    No,
-//    Yes,
-//}
-//
-//impl FromStr for OptionBool {
-//    type Err = ProgramError;
-//    fn from_str(s: &str) -> Result<OptionBool, ProgramError> {
-//        match s {
-//            "auto" => Ok(OptionBool::Auto),
-//            "yes" => Ok(OptionBool::Yes),
-//            "no" => Ok(OptionBool::No),
-//            _ => Err(ProgramError::ArgParse {
-//                bad: s.to_string(),
-//                valid: "auto, yes, no".to_string(),
-//            }),
-//        }
-//    }
-//}
-
 #[derive(Debug, Clone)]
 pub struct TreeOptions {
     pub show_hidden: bool, // whether files whose name starts with a dot should be shown
@@ -36,6 +14,7 @@ pub struct TreeOptions {
     pub trim_root: bool,   // whether to cut out direct children of root
     pub show_permissions: bool, // show classic rwx unix permissions
     pub respect_git_ignore: bool, // hide files as requested by .gitignore ?
+    pub filter_by_git_status: bool, // only show files whose git status is not nul
     pub pattern: Pattern,  // an optional filtering/scoring pattern
 }
 
@@ -50,6 +29,7 @@ impl TreeOptions {
             trim_root: self.trim_root,
             show_permissions: self.show_permissions,
             respect_git_ignore: self.respect_git_ignore,
+            filter_by_git_status: self.filter_by_git_status,
             pattern: Pattern::None,
         }
     }
@@ -66,6 +46,7 @@ impl Default for TreeOptions {
             trim_root: true,
             show_permissions: false,
             respect_git_ignore: true,
+            filter_by_git_status: false,
             pattern: Pattern::None,
         }
     }

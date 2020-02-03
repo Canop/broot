@@ -456,8 +456,7 @@ impl Tree {
     }
 
     pub fn is_missing_git_status_computation(&self) -> bool {
-        self.options.show_git_file_info
-            && self.git_status.is_not_computed()
+        self.git_status.is_not_computed()
     }
 
     pub fn fetch_file_sizes(&mut self) {

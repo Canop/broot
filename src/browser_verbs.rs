@@ -125,7 +125,12 @@ impl VerbExecutor for BrowserState {
             ":toggle_git_ignore" => {
                 self.with_new_options(screen, &|o| o.respect_git_ignore ^= true)
             }
-            ":toggle_git_file_info" => self.with_new_options(screen, &|o| o.show_git_file_info ^= true),
+            ":toggle_git_file_info" => {
+                self.with_new_options(screen, &|o| o.show_git_file_info ^= true)
+            }
+            ":toggle_git_status" => {
+                self.with_new_options(screen, &|o| o.filter_by_git_status ^= true)
+            }
             ":toggle_perm" => self.with_new_options(screen, &|o| o.show_permissions ^= true),
             ":toggle_sizes" => self.with_new_options(screen, &|o| o.show_sizes ^= true),
             ":toggle_trim_root" => self.with_new_options(screen, &|o| o.trim_root ^= true),

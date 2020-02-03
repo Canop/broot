@@ -8,9 +8,14 @@ use {
     std::{
         path::{
             Path,
+            PathBuf,
         },
     },
 };
+
+const INTERESTING: Status = Status::from_bits_truncate(
+    Status::WT_NEW.bits() | Status::CONFLICTED.bits() | Status::WT_MODIFIED.bits()
+);
 
 // if I add nothing, I'll remove this useless struct
 // and only use git2.Status
@@ -25,7 +30,34 @@ impl LineGitStatus {
             .status_file(&relative_path).ok()
             .map(|status| LineGitStatus { status })
     }
+    pub fn is_interesting(&self) -> bool {
+        self.status.intersects(INTERESTING)
+    }
 }
+
+pub struct LineStatusComputer {
+    repo: Repository,
+    repo_path: PathBuf,
+}
+impl LineStatusComputer {
+    pub fn from(repo: Repository) -> Self {
+        Self {
+            repo_path: repo.path().parent().unwrap().to_path_buf(),
+            repo,
+        }
+    }
+    pub fn line_status(&self, path: &Path) -> Option<LineGitStatus> {
+        pathdiff::diff_paths(path, &self.repo_path)
+            .and_then(|relative_path| LineGitStatus::from(&self.repo, &relative_path))
+    }
+    pub fn is_interesting(&self, path: &Path) -> bool {
+        match self.line_status(path) {
+            Some(lgs) => lgs.is_interesting(),
+            None => false,
+        }
+    }
+}
+
 
 ///
 #[derive(Debug, Clone)]

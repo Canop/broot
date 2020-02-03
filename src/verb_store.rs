@@ -268,6 +268,12 @@ impl VerbStore {
             "toggle display of git file information",
         );
         self.add_builtin(
+            "toggle_git_status",
+            None,
+            Some("gs".to_string()),
+            "toggle showing only files relevant for git status",
+        );
+        self.add_builtin(
             "toggle_hidden",
             None,
             Some("h".to_string()),

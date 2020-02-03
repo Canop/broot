@@ -21,6 +21,7 @@ use {
 };
 
 
+
 fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {
     match Repository::open(root_path) {
         Ok(git_repo) => {
