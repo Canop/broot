@@ -1,7 +1,9 @@
 ### master
-New major feature:
-`:show_git_file_info` compute git repo statistics and file statuses.
-Statistics are computed in background and cached.
+New major feature: git related features
+- `:show_git_file_info` compute git repo statistics and file statuses. Statistics are computed in background and cached.
+- `:git_diff` verb
+Minor changes:
+- on refresh or after command, if the previously selected path can't be selected (missing file, probably) then the previous index will be kept if possible
 
 <a name="v0.12.2"></a>
 ### v0.12.2 - 2020-01-29

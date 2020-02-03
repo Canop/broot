@@ -265,6 +265,9 @@ impl Drop for App {
     }
 }
 
+/// clear the file sizes and git stats cache.
+/// This should be done on Refresh actions and after any external
+/// command.
 fn clear_caches() {
     file_sizes::clear_cache();
     git_status_computer::clear_cache();

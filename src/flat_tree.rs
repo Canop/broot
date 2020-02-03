@@ -1,5 +1,5 @@
-/// In the flat_tree structure, every "node" is just a line, there's
-///  no link from a child to its parent or from a parent to its children.
+//! In the flat_tree structure, every "node" is just a line, there's
+//!  no link from a child to its parent or from a parent to its children.
 use {
     crate::{
         errors,
@@ -202,9 +202,12 @@ impl Tree {
         // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
-        self.selection = 0; // so that there's no error if we can't find the selection after refresh
         self.scroll = 0;
-        self.try_select_path(&selected_path);
+        if !self.try_select_path(&selected_path) {
+            if self.selection >= self.lines.len() {
+                self.selection = 0;
+            }
+        }
         self.make_selection_visible(page_height as i32);
         Ok(())
     }
@@ -376,16 +379,18 @@ impl Tree {
             self.selection = idx;
         }
     }
-    pub fn try_select_path(&mut self, path: &Path) {
+    /// return true when we could select the given path
+    pub fn try_select_path(&mut self, path: &Path) -> bool {
         for (idx, line) in self.lines.iter().enumerate() {
             if !line.is_selectable() {
                 continue;
             }
             if path == line.path {
                 self.selection = idx;
-                return;
+                return true;
             }
         }
+        false
     }
     pub fn try_select_first(&mut self) -> bool {
         for idx in 0..self.lines.len() {
