@@ -35,7 +35,7 @@ pub fn compute_dir_size(path: &Path, dam: &Dam) -> Option<u64> {
         let busy = Arc::clone(&busy);
         let wg = wg.clone();
         let (dirs_sender, dirs_receiver) = (dirs_sender.clone(), dirs_receiver.clone());
-        let tl = tl.clone();
+        let observer = dam.observer();
         thread::spawn(move || {
             loop {
                 let o = dirs_receiver.recv_timeout(period);
@@ -56,7 +56,7 @@ pub fn compute_dir_size(path: &Path, dam: &Dam) -> Option<u64> {
                 } else if busy.load(Ordering::Relaxed) < 1 {
                     break;
                 }
-                if tl.is_expired() {
+                if observer.has_event() {
                     break;
                 }
             }
@@ -65,7 +65,7 @@ pub fn compute_dir_size(path: &Path, dam: &Dam) -> Option<u64> {
     }
     wg.wait();
 
-    if tl.is_expired() {
+    if dam.has_event() {
         return None;
     }
     let size: usize = size.load(Ordering::Relaxed);

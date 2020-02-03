@@ -6,6 +6,7 @@ use {
         Status,
     },
     std::{
+        collections::HashSet,
         path::{
             Path,
             PathBuf,
@@ -38,12 +39,14 @@ impl LineGitStatus {
 pub struct LineStatusComputer {
     repo: Repository,
     repo_path: PathBuf,
+    //interesting_paths: HashSet<PathBuf>,
 }
 impl LineStatusComputer {
     pub fn from(repo: Repository) -> Self {
         Self {
             repo_path: repo.path().parent().unwrap().to_path_buf(),
             repo,
+            //interesting_paths: HashSet::new(),
         }
     }
     pub fn line_status(&self, path: &Path) -> Option<LineGitStatus> {
@@ -56,6 +59,9 @@ impl LineStatusComputer {
             None => false,
         }
     }
+    //pub fn load_interesting_paths(&mut self) {
+
+    //}
 }
 
 
