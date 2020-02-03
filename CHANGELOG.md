@@ -1,3 +1,7 @@
+### master
+`:show_git_file_info` compute git repo statistics and file statuses.
+Statistics are computed in background and cached.
+
 <a name="v0.12.2"></a>
 ### v0.12.2 - 2020-01-29
 - fix Ctrl-J being interpreted as Enter (fix #177)

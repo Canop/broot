@@ -5,7 +5,6 @@ use {
         bounded,
         Receiver,
     },
-    lazy_static::lazy_static,
     std::{
         thread,
     },
@@ -13,12 +12,12 @@ use {
 };
 
 #[derive(Debug, Clone)]
-pub enum ComputationResult<T> {
+pub enum ComputationResult<V> {
     NotComputed, // not computed but will probably be
-    Done(T),
+    Done(V),
     None, // nothing to compute, cancelled, failed, etc.
 }
-impl<T> ComputationResult<T> {
+impl<V> ComputationResult<V> {
     pub fn is_done(&self) -> bool {
         match &self {
             Self::Done(_) => true,
@@ -77,10 +76,10 @@ impl Dam {
     /// launch the computation on a new thread and return
     /// when it finishes or when a new event appears on
     /// the channel
-    pub fn try_compute<T: Send + 'static, F: Send + 'static + FnOnce() -> ComputationResult<T>>(
+    pub fn try_compute<V: Send + 'static, F: Send + 'static + FnOnce() -> ComputationResult<V>>(
         &mut self,
         f: F,
-    ) -> ComputationResult<T> {
+    ) -> ComputationResult<V> {
         let (comp_sender, comp_receiver) = bounded(1);
         thread::spawn(move|| {
             let comp_res = time!(Debug, "comp in dam", f());
@@ -91,10 +90,10 @@ impl Dam {
         self.select(comp_receiver)
     }
 
-    fn select<T>(
+    pub fn select<V>(
         &mut self,
-        computation_channel: Receiver<ComputationResult<T>>,
-    ) -> ComputationResult<T> {
+        comp_receiver: Receiver<ComputationResult<V>>,
+    ) -> ComputationResult<V> {
         if self.in_dam.is_some() {
             // should probably not happen
             debug!("There's already an event in dam");
@@ -109,7 +108,7 @@ impl Dam {
                     self.in_dam = event.ok();
                     ComputationResult::None
                 }
-                recv(computation_channel) -> comp_res => {
+                recv(comp_receiver) -> comp_res => {
                     // computation finished
                     debug!("computation passes dam");
                     comp_res.unwrap_or(ComputationResult::None)
@@ -160,3 +159,13 @@ impl DamObserver {
     }
 }
 
+
+/// wraps either a computation in progress, or a finished
+/// one (even a failed or useless one).
+/// This can be stored in a map to avoid starting computations
+/// more than once.
+#[derive(Debug, Clone)]
+pub enum Computation<V> {
+    InProgress(Receiver<ComputationResult<V>>),
+    Finished(ComputationResult<V>),
+}

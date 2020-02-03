@@ -116,5 +116,11 @@ And you keep all broot tools, like filtering or the ability to delete or open fi
 
 Sizes are computed in the background, you don't have to wait for them when you navigate.
 
+### check git statuses:
+
+![size](img/20200203-git.png)
+
+Use `:gf` to display the statuses of files (what are the new ones, the modified ones, etc.), the current branch name and the change statistics.
+
 ## Further Reading
 See **[Broot's web site](https://dystroy.org/broot)** for instructions regarding installation and usage.

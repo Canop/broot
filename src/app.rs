@@ -18,6 +18,7 @@ use {
         errors::ProgramError,
         external::Launchable,
         file_sizes,
+        git_status_computer,
         io::WriteCleanup,
         screens::Screen,
         skin::Skin,
@@ -95,6 +96,7 @@ impl App {
         Ok(())
     }
 
+
     /// apply a command, and returns a command, which may be the same (modified or not)
     ///  or a new one.
     /// This normally mutates self
@@ -122,7 +124,7 @@ impl App {
             }
             AppStateCmdResult::RefreshState { clear_cache } => {
                 if clear_cache {
-                    file_sizes::clear_cache();
+                    clear_caches();
                 }
                 cmd = self.mut_state().refresh(screen, con);
             }
@@ -261,4 +263,9 @@ impl Drop for App {
     fn drop(&mut self) {
         debug!("we left the screen");
     }
+}
+
+fn clear_caches() {
+    file_sizes::clear_cache();
+    git_status_computer::clear_cache();
 }

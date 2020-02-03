@@ -400,7 +400,6 @@ impl AppState for BrowserState {
     /// do some work, totally or partially, if there's some to do.
     /// Stop as soon as the dam asks for interruption
     fn do_pending_task(&mut self, screen: &mut Screen, dam: &mut Dam) {
-        debug!("entering do_pending_task");
         if self.pending_pattern.is_some() {
             let pattern_str = self.pending_pattern.to_string();
             let mut options = self.tree.options.clone();
@@ -428,47 +427,9 @@ impl AppState for BrowserState {
             }
 
         } else if self.displayed_tree().is_missing_git_status_computation() {
-            let root_path = self.displayed_tree().root().to_path_buf();
-            let git_status = dam.try_compute(||
-                git_status_computer::compute_tree_status(root_path)
-            );
-            debug!("computation result: {:?}", &git_status);
+            let root_path = self.displayed_tree().root();
+            let git_status = git_status_computer::get_tree_status(root_path, dam);
             self.displayed_tree_mut().git_status = git_status;
-            debug!(
-                "self.displayed_tree().git_status = {:?}",
-                &self.displayed_tree().git_status,
-            );
-
-            debug!(
-                "AFTERCOMPUT self.displayed_tree().is_missing_git_status_computation() = {}",
-                self.displayed_tree().is_missing_git_status_computation(),
-            );
-
-
-            //if self.options.show_git_file_info {
-            //    let root_path = &self.blines[self.root_id].path;
-            //    if let Ok(git_repo) = Repository::discover(root_path) {
-            //        tree.git_status = time!(
-            //            Debug,
-            //            "TreeGitStatus::from",
-            //            TreeGitStatus::from(&git_repo),
-            //        );
-            //        let repo_root_path = git_repo.path().parent().unwrap();
-            //        for mut line in tree.lines.iter_mut() {
-            //            if let Some(relative_path) = pathdiff::diff_paths(&line.path, &repo_root_path) {
-            //                line.git_status = time!(
-            //                    Debug,
-            //                    "LineGitStatus",
-            //                    &relative_path,
-            //                    LineGitStatus::from(&git_repo, &relative_path),
-            //                );
-            //            };
-            //        }
-            //    }
-            //}
-
-
-
         } else {
             self.displayed_tree_mut().fetch_some_missing_dir_size(dam);
         }

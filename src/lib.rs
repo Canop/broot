@@ -28,6 +28,7 @@ pub mod external;
 pub mod file_sizes;
 pub mod flat_tree;
 pub mod fuzzy_patterns;
+pub mod git;
 pub mod git_ignore;
 pub mod git_status;
 pub mod git_status_computer;
