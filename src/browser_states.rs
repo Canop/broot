@@ -218,10 +218,6 @@ fn make_opener(
 
 impl AppState for BrowserState {
     fn has_pending_task(&self) -> bool {
-        debug!(
-            "CHECK self.displayed_tree().is_missing_git_status_computation() = {}",
-            self.displayed_tree().is_missing_git_status_computation(),
-        );
         self.pending_pattern.is_some()
             || self.displayed_tree().has_dir_missing_size()
             || self.displayed_tree().is_missing_git_status_computation()

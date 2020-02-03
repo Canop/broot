@@ -6,7 +6,7 @@ use {
         Status,
     },
     std::{
-        collections::HashSet,
+        collections::HashMap,
         path::{
             Path,
             PathBuf,
@@ -37,31 +37,35 @@ impl LineGitStatus {
 }
 
 pub struct LineStatusComputer {
-    repo: Repository,
-    repo_path: PathBuf,
-    //interesting_paths: HashSet<PathBuf>,
+    interesting_statuses: HashMap<PathBuf, Status>,
 }
 impl LineStatusComputer {
     pub fn from(repo: Repository) -> Self {
+        let repo_path = repo.path().parent().unwrap().to_path_buf();
+        let mut interesting_statuses = HashMap::new();
+        if let Ok(statuses) = &repo.statuses(None) {
+            for entry in statuses.iter() {
+                let status = entry.status();
+                if status.intersects(INTERESTING) {
+                    if let Some(path) = entry.path() {
+                        let path = repo_path.join(path);
+                        interesting_statuses.insert(path, status);
+                    }
+                }
+            }
+        } else {
+            debug!("get statuses failed");
+        }
         Self {
-            repo_path: repo.path().parent().unwrap().to_path_buf(),
-            repo,
-            //interesting_paths: HashSet::new(),
+            interesting_statuses,
         }
     }
     pub fn line_status(&self, path: &Path) -> Option<LineGitStatus> {
-        pathdiff::diff_paths(path, &self.repo_path)
-            .and_then(|relative_path| LineGitStatus::from(&self.repo, &relative_path))
+        self.interesting_statuses.get(path).map(|&status| LineGitStatus { status })
     }
     pub fn is_interesting(&self, path: &Path) -> bool {
-        match self.line_status(path) {
-            Some(lgs) => lgs.is_interesting(),
-            None => false,
-        }
+        self.interesting_statuses.contains_key(path)
     }
-    //pub fn load_interesting_paths(&mut self) {
-
-    //}
 }
 
 

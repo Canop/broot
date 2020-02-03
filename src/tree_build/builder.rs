@@ -74,7 +74,11 @@ impl TreeBuilder {
         let mut git_ignorer = time!(Debug, "GitIgnorer::new", GitIgnorer::new());
         let root_ignore_chain = git_ignorer.root_chain(&path);
         let line_status_computer = if options.filter_by_git_status || options.show_git_file_info {
-            Repository::discover(&path).ok().map(LineStatusComputer::from)
+            time!(
+                Debug,
+                "init line_status_computer",
+                Repository::discover(&path).ok().map(LineStatusComputer::from),
+            )
         } else {
             None
         };
@@ -420,11 +424,7 @@ impl TreeBuilder {
             // it would make no sense to keep only files having a git status and
             // not display that type
             for mut line in tree.lines.iter_mut() {
-                line.git_status = time!(
-                    Debug,
-                    "LineGitStatus",
-                    computer.line_status(&line.path),
-                );
+                line.git_status = computer.line_status(&line.path);
             }
         }
         tree
