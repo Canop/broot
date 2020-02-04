@@ -5,7 +5,7 @@ use {
     clap,
 };
 
-/// declare the possible CLI arguments, and gets the values
+/// declare the possible CLI arguments
 pub fn clap_app() -> clap::App<'static, 'static> {
     clap::App::new("broot")
         .version(env!("CARGO_PKG_VERSION"))
