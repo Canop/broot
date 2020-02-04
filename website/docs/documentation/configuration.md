@@ -216,6 +216,8 @@ invocation | default key | default shortcut | behavior / details
 :toggle_dates | - | - | toggle display of last modified dates
 :toggle_files | - | - | toggle showing files (or just folders)
 :toggle_git_ignore | - | - | toggle git hignore handling (auto, no or yes)
+:toggle_git_file_info | - | - | toggle display of git file information
+:toggle_git_status | - | - | toggle showing only the file which would show up on `git status`
 :toggle_hidden | - | - | toggle display of hidden files (the ones whose name starts with a dot on linux)
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_sizes | - | - | toggle the size mode

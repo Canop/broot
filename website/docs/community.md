@@ -19,6 +19,15 @@ We use [GitHub's issue manager](https://github.com/Canop/broot/issues).
 
 Before posting a new issue, check your problem hasn't already been raised and in case of doubt **please come first discuss it on the chat**.
 
+### Log
+
+When something looks like a bug, especially keyboard problems, we need both to know the exact configuration (OS, terminal program, mainly) and to have the log. The log can be obtained this way:
+
+1. start broot with `BROOT_LOG=debug br`
+2. do the action which seems not to properly work, and nothing else
+3. quit broot
+4. go to the chat (or the GitHub issue if you already made one) and paste the content of the `dev.log` file
+
 ## Contribute
 
 **Broot** is written in [rust](https://www.rust-lang.org/). The current focus is linux+mac but we try to support windows too (use PowerShell instead of the old cmd).

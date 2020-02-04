@@ -90,6 +90,9 @@ Sizes are computed in the background, you don't have to wait for them when you n
 
 Use `:gf` to display the statuses of files (what are the new ones, the modified ones, etc.), the current branch name and the change statistics.
 
+And if you want to see *only* the files which would be displayed by the `git status command`, do `:gs`.
+
+
 # More...
 
 See the complete [Documentation](documentation/usage.md) and [how to install](documentation/installation.md).

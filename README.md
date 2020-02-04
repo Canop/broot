@@ -29,6 +29,7 @@ Table of Contents
     * [Apply a standard or personal shortcut to a file](#apply-a-standard-or-personal-shortcut-to-a-file)
     * [Replace `ls` (and its clones)](#replace-ls-and-its-clones)
     * [See what takes space](#see-what-takes-space)
+    * [Check git statuses](#check-git-statuses)
   * [Further Reading](#further-reading)
 
 ## Installation
