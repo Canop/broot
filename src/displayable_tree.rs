@@ -308,6 +308,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             None
         };
         self.write_root_line(f, tree.selection==0)?;
+        write!(f, "\r\n")?;
         for y in 1..self.area.height {
             if self.in_app {
                 f.queue(cursor::MoveTo(0, y))?;
