@@ -1,4 +1,7 @@
 use {
+    clap::{
+        ArgMatches,
+    },
     crate::{
         patterns::Pattern,
     },
@@ -19,18 +22,54 @@ pub struct TreeOptions {
 }
 
 impl TreeOptions {
-    pub fn without_pattern(&self) -> TreeOptions {
+    pub fn without_pattern(&self) -> Self {
         TreeOptions {
             show_hidden: self.show_hidden,
             only_folders: self.only_folders,
             show_sizes: self.show_sizes,
             show_dates: self.show_dates,
-            show_git_file_info: self.show_git_file_info,
-            trim_root: self.trim_root,
             show_permissions: self.show_permissions,
             respect_git_ignore: self.respect_git_ignore,
             filter_by_git_status: self.filter_by_git_status,
+            show_git_file_info: self.show_git_file_info,
+            trim_root: self.trim_root,
             pattern: Pattern::None,
+        }
+    }
+    pub fn apply(&mut self, cli_args: &ArgMatches<'_>) {
+        if cli_args.is_present("sizes") {
+            self.show_sizes = true;
+            // by default, if we're asked to show the size, we show
+            // all files. This may be overriden by other settings
+            self.show_hidden = true;
+            self.respect_git_ignore = false;
+        } else if cli_args.is_present("no-sizes") {
+            self.show_sizes = false;
+        }
+        if cli_args.is_present("only-folders") {
+            self.only_folders = true;
+        } else if cli_args.is_present("no-only-folders") {
+            self.only_folders = false;
+        }
+        if cli_args.is_present("hidden") {
+            self.show_hidden = true;
+        } else if cli_args.is_present("no-hidden") {
+            self.show_hidden = false;
+        }
+        if cli_args.is_present("dates") {
+            self.show_dates = true;
+        } else if cli_args.is_present("no-dates") {
+            self.show_dates = false;
+        }
+        if cli_args.is_present("permissions") {
+            self.show_permissions = true;
+        } else if cli_args.is_present("no-permissions") {
+            self.show_permissions = false;
+        }
+        if cli_args.is_present("show_git_ignored") {
+            self.respect_git_ignore = false;
+        } else if cli_args.is_present("no-show_git_ignored") {
+            self.respect_git_ignore = true;
         }
     }
 }

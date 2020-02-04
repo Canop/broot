@@ -84,7 +84,7 @@ And you keep all broot tools, like filtering or the ability to delete or open fi
 
 Sizes are computed in the background, you don't have to wait for them when you navigate.
 
-### check git statuses:
+# check git statuses:
 
 ![size](img/20200203-git.png)
 

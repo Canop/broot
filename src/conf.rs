@@ -22,6 +22,7 @@ use {
 
 #[derive(Default)]
 pub struct Conf {
+    pub default_flags: String, // the flags to apply before cli ones
     pub verbs: Vec<VerbConf>,
     pub skin: HashMap<String, CompoundStyle>,
 }
@@ -100,6 +101,10 @@ impl Conf {
     pub fn read_file(&mut self, filepath: &Path) -> Result<(), ConfError> {
         let data = fs::read_to_string(filepath)?;
         let root: Value = data.parse::<Value>()?;
+        // reading default flags
+        if let Some(s) = string_field(&root, "default_flags") {
+            self.default_flags.push_str(&s);
+        }
         // reading verbs
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {
@@ -165,15 +170,22 @@ impl Conf {
 }
 
 const DEFAULT_CONF_FILE: &str = r#"
-# This configuration file lets you define new commands
-# or change the shortcut or triggering keys of built-in verbs.
-# You can change the colors of broot too.
+###############################################################
+# This configuration file lets you
+# - define new commands
+# - change the shortcut or triggering keys of built-in verbs
+# - change the colors
+# - set default values for flags
 #
-# Configuration documentation is available at https://dystroy.org/broot
-#
+# Configuration documentation is available at
+#     https://dystroy.org/broot
+###############################################################
 
-#####################
-# user defined verbs:
+###############################################################
+# default flags
+
+###############################################################
+# verbs and shortcuts
 
 # If $EDITOR isn't set on your computer, you should either set it using
 #  something similar to
@@ -211,7 +223,7 @@ name = "view"
 invocation = "view"
 execution = "$PAGER {file}"
 
-#####################
+###############################################################
 # Skin
 
 # If you want to change the colors of broot,

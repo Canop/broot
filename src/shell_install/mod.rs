@@ -110,8 +110,7 @@ fn get_installed_path() -> PathBuf {
 
 impl ShellInstall {
 
-    pub fn new(launch_args: &cli::AppLaunchArgs) -> Self {
-        let force_install = launch_args.install;
+    pub fn new(force_install: bool) -> Self {
         Self {
             force_install,
             skin: mad_skin::make_cli_mad_skin(),
