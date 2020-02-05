@@ -204,11 +204,6 @@ impl Command {
                     return;
                 }
 
-                if *key == keys::ALT_ENTER {
-                    self.action = Action::AltOpenSelection;
-                    return;
-                }
-
                 if *key == keys::ESC {
                     // Esc it's also a reserved key so order doesn't matter
                     self.set_action(Action::Back);
@@ -236,6 +231,11 @@ impl Command {
 
                 if *key == keys::ENTER {
                     self.action = Action::from(&self.parts, true);
+                    return;
+                }
+
+                if *key == keys::ALT_ENTER {
+                    self.action = Action::AltOpenSelection;
                     return;
                 }
 
