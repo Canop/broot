@@ -297,7 +297,7 @@ impl VerbStore {
             "toggle_trim_root",
             None,
             Some("t".to_string()),
-            "toggle removing nodes at first level too (default)",
+            "toggle removing nodes at first level too",
         );
         self.add_builtin(
             "total_search",

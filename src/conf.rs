@@ -182,10 +182,16 @@ const DEFAULT_CONF_FILE: &str = r#"
 ###############################################################
 
 ###############################################################
-# default flags
+# Default flags
+# You can set up flags you want broot to start with by
+# default, for example `default_flags="ihp"` if you usually want
+# to see hidden and gitignored files and the permissions (then
+# if you don't want the hidden files you can launch `br -H`
+#
+default_flags = ""
 
 ###############################################################
-# verbs and shortcuts
+# Verbs and shortcuts
 
 # If $EDITOR isn't set on your computer, you should either set it using
 #  something similar to
@@ -194,6 +200,7 @@ const DEFAULT_CONF_FILE: &str = r#"
 #  pattern.
 # Example:
 #  execution = "/usr/bin/nvim {file}"
+#
 [[verbs]]
 invocation = "edit"
 key = "F2"
@@ -223,15 +230,52 @@ name = "view"
 invocation = "view"
 execution = "$PAGER {file}"
 
+# If you uncomment the two next shortcuts, the left
+# and right arrow keys will be used to go to the parent
+# directory or to open a selected one:
+#
+# [[verbs]]
+# key = "left"
+# execution = ":parent"
+#
+# [[verbs]]
+# key = "right"
+# execution = ":focus"
+
+# Another popular set of shorctuts for going up and down:
+#
+# [[verbs]]
+# key = "ctrl-j"
+# execution = ":line_down"
+#
+# [[verbs]]
+# key = "ctrl-k"
+# execution = ":line_up"
+#
+# [[verbs]]
+# key = "ctrl-d"
+# execution = ":page_down"
+#
+# [[verbs]]
+# key = "ctrl-u"
+# execution = ":page_up"
+
+# If you develop using git, you might like to often switch
+# to the "git status" filter:
+#
+# [[verbs]]
+# key = "ctrl-g"
+# execution = ":toggle_git_status"
+
 ###############################################################
 # Skin
-
 # If you want to change the colors of broot,
 # uncomment the following bloc and start messing
-# with the various values
+# with the various values.
 # Note that some of those colors might not correcly
-# render on terminals with low capabilities
+# render on terminals with low capabilities.
 #
+
 # [skin]
 # default = "gray(20) gray(1)"
 # tree = "rgb(89, 73, 101) none"

@@ -1,11 +1,12 @@
 ### master
-Major change: git related features
+#### Major change: git related features
 - `:show_git_file_info` compute git repo statistics and file statuses. Statistics are computed in background and cached.
 - `:git_diff` verb launching `git diff {file}`
 - `:git_status` filter files to show only the ones which are relevant for `git status` (warning: slow on big repositories)
-Major change: rewamped launch
-Several new launch flags have been added, mostly doing the opposite of previous ones (eg `-S` negates `-s`)and a new entry in the conf.toml lets you define default flags (which can be overriden by the ones you pass on the command line)
-Minor changes:
+#### Major change: rewamped launch flags
+Several new launch flags have been added, mostly doing the opposite of previous ones (eg `-S` negates `-s`) and a new entry in the conf.toml lets you define default flags (which can be overriden by the ones you pass on the command line).
+Do `br --help` to view the complete list of flags.
+#### Minor changes:
 - on refresh or after command, if the previously selected path can't be selected (missing file, probably) then the previous index will be kept if possible
 
 <a name="v0.12.2"></a>

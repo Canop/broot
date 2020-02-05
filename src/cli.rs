@@ -176,8 +176,8 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     verb_store.init(&config);
 
     // reading the other arguments
-    let file_export_path = cli_matches.value_of("file_export_path").map(str::to_string);
-    let cmd_export_path = cli_matches.value_of("cmd_export_path").map(str::to_string);
+    let file_export_path = cli_matches.value_of("file-export-path").map(str::to_string);
+    let cmd_export_path = cli_matches.value_of("cmd-export-path").map(str::to_string);
     let commands = cli_matches.value_of("commands").map(str::to_string);
     let no_style = cli_matches.is_present("no-style");
     let height = cli_matches.value_of("height").and_then(|s| s.parse().ok());

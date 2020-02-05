@@ -66,10 +66,20 @@ impl TreeOptions {
         } else if cli_args.is_present("no-permissions") {
             self.show_permissions = false;
         }
-        if cli_args.is_present("show_git_ignored") {
+        if cli_args.is_present("show-git-ignored") {
             self.respect_git_ignore = false;
-        } else if cli_args.is_present("no-show_git_ignored") {
+        } else if cli_args.is_present("no-show-git-ignored") {
             self.respect_git_ignore = true;
+        }
+        if cli_args.is_present("show-git-info") {
+            self.show_git_file_info = true;
+        } else if cli_args.is_present("no-show-git-info") {
+            self.show_git_file_info = false;
+        }
+        if cli_args.is_present("trim-root") {
+            self.trim_root = true;
+        } else if cli_args.is_present("no-trim-root") {
+            self.trim_root = false;
         }
     }
 }

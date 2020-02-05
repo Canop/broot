@@ -9,8 +9,26 @@ This file is called `conf.toml` and is in [TOML](https://github.com/toml-lang/to
 
 Currently, you can configure
 
-* verbs
-* colors
+* default flags
+* verbs and shortcuts
+* style
+
+# Default flags
+
+Broot accepts a few flags at launch (the complete list is available with `broot --help`.
+
+For example, if you want to see hidden files (the ones whose name starts with a dot) and the status of files related to git, you launch broot with
+
+    br -gh
+
+If you almost always want those flags, you may define them as default in the `conf.toml` file, with the `default_flags` setting:
+
+    default_flags = "gh"
+
+Those flags can still be overriden at launch with the negating ones. For example if you don't want to see hidden files at a specific launch, do
+
+    br -H
+
 
 # Verbs, Shortcuts, and keys
 
