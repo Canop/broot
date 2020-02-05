@@ -8,6 +8,7 @@ Several new launch flags have been added, mostly doing the opposite of previous 
 Do `br --help` to view the complete list of flags.
 #### Minor changes:
 - on refresh or after command, if the previously selected path can't be selected (missing file, probably) then the previous index will be kept if possible
+- alt-enter can be rebinded (users should not do that whithout binding `:cd`, though)
 
 <a name="v0.12.2"></a>
 ### v0.12.2 - 2020-01-29
