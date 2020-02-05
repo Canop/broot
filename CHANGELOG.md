@@ -1,4 +1,5 @@
-### master
+<a name="v0.13.0"></a>
+### v0.13.0 - 2020-02-05
 #### Major change: git related features
 - `:show_git_file_info` compute git repo statistics and file statuses. Statistics are computed in background and cached.
 - `:git_diff` verb launching `git diff {file}`
