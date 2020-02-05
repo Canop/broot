@@ -52,10 +52,17 @@ If you're on a server linux without xdg-open or equivalent, you may want to rede
 
 You may use such configuration:
 
-	[[verbs]]
-	invocation = "edit"
-	key = "enter"
-	execution = "$EDITOR {file}"
+    [[verbs]]
+    invocation = "edit"
+    key = "enter"
+    execution = "$EDITOR {file}"
 
 
+## Git Status
+
+If you want to start navigating with a view of the files which changed, you may do
+
+    br -gc :gs
+
+Then just hitting the `esc` key will show you the normal unfiltered broot view.
 
