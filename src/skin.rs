@@ -9,6 +9,7 @@ use std::{
 use crossterm::{
     style::{
         Attribute::*,
+        Attributes,
         Color::AnsiValue,
         Color::{self, *},
     },
@@ -35,7 +36,7 @@ macro_rules! Skin {
                     $($name: skin_conf.remove(stringify!($name)).unwrap_or(CompoundStyle::new(
                         $fg,
                         $bg,
-                        [$($a),*].to_vec(),
+                        Attributes::from(vec![$($a),*].as_slice()),
                     )),)*
                 };
                 $(
