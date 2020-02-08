@@ -1,3 +1,7 @@
+<a name="v0.13.1"></a>
+### v0.13.1 - 2020-02-08
+- fix background not always removed when skin requires no background (Fix #194)
+
 <a name="v0.13.0"></a>
 ### v0.13.0 - 2020-02-05
 #### Major change: git related features

@@ -11,6 +11,7 @@ use {
     chrono::{offset::Local, DateTime},
     crossterm::{
         cursor,
+        style::{Color, SetBackgroundColor},
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
@@ -308,6 +309,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             None
         };
         self.write_root_line(f, tree.selection==0)?;
+        f.queue(SetBackgroundColor(Color::Reset))?;
         write!(f, "\r\n")?;
         for y in 1..self.area.height {
             if self.in_app {
@@ -374,6 +376,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 self.write_line_name(f, line, &tree.options.pattern, selected)?;
             }
             self.extend_line(f, selected)?;
+            f.queue(SetBackgroundColor(Color::Reset))?;
             if self.in_app && y > 0 {
                 if let Some((sctop, scbottom)) = scrollbar {
                     f.queue(cursor::MoveTo(self.area.width, y))?;
