@@ -66,9 +66,9 @@ impl TreeOptions {
         } else if cli_args.is_present("no-permissions") {
             self.show_permissions = false;
         }
-        if cli_args.is_present("show-git-ignored") {
+        if cli_args.is_present("show-gitignored") {
             self.respect_git_ignore = false;
-        } else if cli_args.is_present("no-show-git-ignored") {
+        } else if cli_args.is_present("no-show-gitignored") {
             self.respect_git_ignore = true;
         }
         if cli_args.is_present("show-git-info") {

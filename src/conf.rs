@@ -186,7 +186,8 @@ const DEFAULT_CONF_FILE: &str = r#"
 # You can set up flags you want broot to start with by
 # default, for example `default_flags="ihp"` if you usually want
 # to see hidden and gitignored files and the permissions (then
-# if you don't want the hidden files you can launch `br -H`
+# if you don't want the hidden files you can launch `br -H`)
+# A popular flag is the `g` one which displays git related info.
 #
 default_flags = ""
 

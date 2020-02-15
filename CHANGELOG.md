@@ -1,3 +1,6 @@
+### master
+- fix -i and -I launch arguments being ignored (fix #202)
+
 <a name="v0.13.1"></a>
 ### v0.13.1 - 2020-02-08
 - fix background not always removed when skin requires no background (Fix #194)

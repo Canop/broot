@@ -38,7 +38,8 @@ impl<V> ComputationResult<V> {
     }
 }
 
-/// a dam is used in broot to manage long computations and,
+/// The dam controls the flow of events.
+/// A dam is used in broot to manage long computations and,
 /// when the user presses a key, either tell the computation
 /// to stop (the computation function checking `has_event`)
 /// or drop the computation.
@@ -47,9 +48,6 @@ pub struct Dam {
     in_dam: Option<Event>,
 }
 
-// cache problem: we must receive the result of dropped
-// computattion to use it if we receive the same
-// computation key later
 impl Dam {
     pub fn from(receiver: Receiver<Event>) -> Self {
         Self {

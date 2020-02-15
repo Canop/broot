@@ -1,7 +1,7 @@
 use {
     super::bline::BLine,
     id_arena::Id,
-    std::cmp::{self, Ordering},
+    std::cmp::Ordering,
 };
 
 pub type BId = Id<BLine>;
@@ -31,7 +31,7 @@ impl Ord for SortableBId {
     }
 }
 impl PartialOrd for SortableBId {
-    fn partial_cmp(&self, other: &SortableBId) -> Option<cmp::Ordering> {
+    fn partial_cmp(&self, other: &SortableBId) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }
