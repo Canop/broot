@@ -1,4 +1,5 @@
-### master
+<a name="v0.13.2"></a>
+### v0.13.2 - 2020-02-16
 - fix -i and -I launch arguments being ignored (fix #202)
 
 <a name="v0.13.1"></a>

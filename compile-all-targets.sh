@@ -27,7 +27,8 @@ cp "$(broot -c ":gi;release :focus;broot.bash :parent;:pp" target)/"* build/comp
 
 # build the windows version
 # You need first to install the proper cargo toolchain:
-# rustup target add x86_64-pc-windows-gnu
+#  rustup target add x86_64-pc-windows-gnu
+#  sudo apt install mingw-w64
 echo "compiling the Windows version"
 cargo build --target x86_64-pc-windows-gnu --release
 mkdir build/x86_64-pc-windows-gnu/
