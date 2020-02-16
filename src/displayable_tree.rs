@@ -334,7 +334,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                                 if depth == line.depth - 1 {
                                     "├──"
                                 } else {
-                                    "│  "
+                                    "│  "
                                 }
                             } else {
                                 "└──"
