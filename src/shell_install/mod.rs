@@ -21,7 +21,6 @@ mod fish;
 
 const MD_INSTALL_REQUEST: &str = r#"
 **Broot** should be launched using a shell function (see *https://github.com/Canop/broot* for explanations).
-The function is either missing, old or badly installed.
 Can I install it now? [**Y** n]
 "#;
 

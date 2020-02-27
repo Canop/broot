@@ -111,7 +111,7 @@ Skin! {
     scrollbar_thumb: gray(22), None;
     help_paragraph: gray(20), None;
     help_bold: ansi(178), None; {Bold}
-    help_italic: ansi(229), None; {Italic}
+    help_italic: ansi(229), None;
     help_code: gray(21), gray(3);
     help_headers: ansi(178), None;
     help_table_border: ansi(239), None;

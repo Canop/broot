@@ -3,7 +3,8 @@ The current version of broot works on linux, mac and windows (win 10+).
 
 
 !!! Note
-	Windows users: broot may need additional rights at first use in order to write its configuration file
+	Windows users: broot may need additional rights at first use in order to write its configuration file.
+	Some users on Windows also report problems with the colon. Remember that a space can be used instead of a colon.
 
 !!! Note
 	If you use cargo and there's a compilation error, it usually means you have an old version of the compiler, and you should update it (for example with `rustup update`).

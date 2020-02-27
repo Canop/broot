@@ -187,7 +187,7 @@ impl Command {
         debug!("add_event {:?}", event);
         self.action = Action::Unparsed;
         match event {
-            Event::Click(x, y) => {
+            Event::Click(x, y, ..) => {
                 if !input_field.apply_event(&event) {
                     self.set_action(Action::Click(*x, *y));
                 }

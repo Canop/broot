@@ -1,4 +1,5 @@
 bench.sh
+compile.sh
 dev.log
 deploy.sh
 release.zip
