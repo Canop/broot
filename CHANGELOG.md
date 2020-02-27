@@ -1,3 +1,7 @@
+<a name="v0.13.3"></a>
+### v0.13.3 - 2020-02-27
+- fix a compilation problem related to dependency (termimad) versio
+
 <a name="v0.13.2"></a>
 ### v0.13.2 - 2020-02-16
 - fix -i and -I launch arguments being ignored (fix #202)
