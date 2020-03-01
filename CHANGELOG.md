@@ -1,3 +1,6 @@
+### master
+- support for an arg made of an optional group
+
 <a name="v0.13.3"></a>
 ### v0.13.3 - 2020-02-27
 - fix a compilation problem related to dependency (termimad) versio

@@ -64,6 +64,7 @@ pub trait VerbExecutor {
 fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
     let spec = GROUP.replace_all(spec, r"(?P<$1>.+)");
     let spec = format!("^{}$", spec);
+    info!("spec = {:?}", &spec);
     Regex::new(&spec.to_string())
         .or_else(|_| Err(ConfError::InvalidVerbInvocation { invocation: spec }))
 }
@@ -184,18 +185,24 @@ impl Verb {
         let dir_str = if file.is_dir() { file_str } else { parent_str };
         map.insert("directory".to_string(), dir_str.to_string());
         // then the ones computed from the user input
-        if let Some(args) = args {
-            if let Some(r) = &self.args_parser {
-                if let Some(input_cap) = r.captures(&args) {
-                    for name in r.capture_names().flatten() {
-                        if let Some(c) = input_cap.name(name) {
-                            map.insert(name.to_string(), c.as_str().to_string());
-                        }
+        debug!("building repmap, args_parser={:?}", &self.args_parser);
+        let default_args;
+        let args = match args {
+            Some(s) => s,
+            None => {
+                // empty args are useful when the args_parser contains
+                // an optional group
+                default_args = String::new();
+                &default_args
+            }
+        };
+        if let Some(r) = &self.args_parser {
+            if let Some(input_cap) = r.captures(&args) {
+                for name in r.capture_names().flatten() {
+                    if let Some(c) = input_cap.name(name) {
+                        map.insert(name.to_string(), c.as_str().to_string());
                     }
                 }
-            } else {
-                warn!("invocation args given but none expected");
-                // maybe tell the user?
             }
         }
         map
