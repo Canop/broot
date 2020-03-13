@@ -1,5 +1,6 @@
-### master
-- support for an arg made of an optional group
+<a name="v0.13.4"></a>
+### v0.13.4 - 2020-03-13
+- support for an arg made of an optional group - Fix #210
 
 <a name="v0.13.3"></a>
 ### v0.13.3 - 2020-02-27
