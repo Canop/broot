@@ -51,14 +51,11 @@ If you're using [homebrew](https://brew.sh/), you can use the `brew install` com
 
 *note: the brew formula is maintained by a third party and may be less up to date.*
 
-# MacPorts
+# APT / Deb
 
-You can also install broot via [MacPorts](https://www.macports.org):
+Ubuntu and Debian users may use this apt repository: [https://packages.azlux.fr/](https://packages.azlux.fr/)
 
-    sudo port selfupdate
-    sudo port install broot
-
-*note: the MacPorts port for broot is also maintained by a third party and may be less up to date.*
+*note: this repository is also maintained by a third party.*
 
 # Installation Completion : the `br` shell function
 
