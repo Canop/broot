@@ -318,44 +318,4 @@ Currently supported attributes are:
 
 Note that some of them may be ignored by your terminal. Windows supports about none of them, for example.
 
-## White background skin
-
-If you're used to black on white, you might prefer to use a white background skin:
-
-![light skin](../img/20191114-light-skin.png)
-
-	[skin]
-	default = "gray(2) gray(23)"
-	tree = "gray(17) none"
-	file = "gray(1) none"
-	directory = "ansi(20) none bold"
-	exe = "ansi(178) none"
-	link = "Magenta none"
-	pruning = "gray(5) none Italic"
-	perm__ = "gray(19) None"
-	perm_r = "ansi(92) None"
-	perm_w = "ansi(192) None"
-	perm_x = "ansi(69) None"
-	selected_line = "none gray(20)"
-	char_match = "ansi(28) none"
-	file_error = "Red none"
-	flag_label = "gray(16) none"
-	flag_value = "ansi(202) none bold"
-	input = "ansi(0) none"
-	status_error = "ansi(196) gray(22)"
-	status_job = "ansi(220) gray(18)"
-	status_normal = "gray(2) gray(22)"
-	status_italic = "ansi(202) gray(22)"
-	status_bold = "ansi(202) gray(22) bold"
-	status_code = "ansi(17) gray(22)"
-	status_ellipsis = "gray(1) white"
-	scrollbar_track = "gray(20) none"
-	scrollbar_thumb = "ansi(238) none"
-	help_paragraph = "gray(2) none"
-	help_bold = "ansi(202) none bold"
-	help_italic = "ansi(202) none italic"
-	help_code = "gray(5) gray(22)"
-	help_headers = "ansi(202) none"
-
-(don't hesitate to contact me or to do a PR if you have a better skin to propose)
-
+[Other Skin Examples](../skins.md)
