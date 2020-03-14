@@ -13,6 +13,7 @@ nav:
                 - Tips & Tricks: documentation/tricks.md
         # - Screens: screens/screenshots.md
         - Community: community.md
+        - Skins: skins.md
 
 extra_css:
     - css/extra.css
