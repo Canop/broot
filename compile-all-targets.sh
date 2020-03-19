@@ -1,4 +1,3 @@
- 
 # WARNING: This script is NOT meant for normal installation, it's dedicated
 # to the compilation of all supported targets. This is a long process and
 # it involves specialized toolchains.
@@ -7,6 +6,9 @@
 # or read all possible installation solutions on
 # https://dystroy.org/broot/documentation/installation/
 
+version=$(sed 's/version = "\([0-9.]\{1,\}\)"/\1/;t;d' Cargo.toml | head -1)
+echo "=== Compilation of all targets for broot $version ==="
+ 
 # clean previous build
 echo "cleaning build"
 rm -rf build

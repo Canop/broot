@@ -16,6 +16,7 @@ use {
         KeyCode,
         KeyEvent,
     },
+    directories::UserDirs,
     minimad::Composite,
     regex::{self, Captures, Regex},
     std::{
@@ -308,6 +309,7 @@ impl Verb {
 
     /// build a shell compatible command, with escapings
     pub fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
+        debug!("shell_exec_string args={:?}", args);
         let map = self.replacement_map(file, args, true);
         GROUP
             .replace_all(&self.execution, |ec: &Captures<'_>| {
@@ -316,6 +318,7 @@ impl Verb {
             .to_string()
             .split_whitespace()
             .map(|token| {
+                debug!("make path from {:?} token", &token);
                 let path = Path::new(token);
                 if path.exists() {
                     if let Some(path) = path.to_str() {
@@ -329,36 +332,73 @@ impl Verb {
     }
 }
 
+#[derive(Debug, Clone, Copy)]
+enum PathSource {
+    Directory,
+    Parent,
+}
+impl PathSource {
+    fn replacement_map_key(&self) -> &'static str {
+        match self {
+            Self::Directory => "directory",
+            Self::Parent => "parent",
+        }
+    }
+}
+
+/// build a usable path from a user input
+fn path_from(
+    source: PathSource,
+    input: &str,
+    replacement_map: &HashMap<String, String>,
+) -> String {
+    let tilde = regex!(r"^~(/|$)");
+    if input.starts_with('/') {
+        // if the input starts with a `/`, we use it as is, we don't
+        // use the replacement_map
+        input.to_string()
+    } else if tilde.is_match(input) {
+        // if the input starts with `~` as first token, we replace
+        // this `~` with the user home directory and  we don't use the
+        // replacement map
+        tilde.replace(input, |c: &Captures| {
+            if let Some(user_dirs) = UserDirs::new() {
+                format!(
+                    "{}{}",
+                    user_dirs.home_dir().to_string_lossy(),
+                    &c[1],
+                )
+            } else {
+                warn!("no user dirs found, no expansion of ~");
+                c[0].to_string()
+            }
+        }).to_string()
+    } else {
+        // we put the input behind the source (the selected directory
+        // or its parent) and we normalize so that the user can type
+        // paths with `../`
+        normalize_path(format!(
+            "{}/{}",
+            replacement_map.get(source.replacement_map_key()).unwrap(),
+            input
+        ))
+    }
+}
+
 /// replace a group in the execution string, using
 ///  data from the user input and from the selected line
-fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &HashMap<String, String>) -> String {
+fn do_exec_replacement(
+    ec: &Captures<'_>,
+    replacement_map: &HashMap<String, String>,
+) -> String {
     let name = ec.get(1).unwrap().as_str();
     if let Some(cap) = replacement_map.get(name) {
         let cap = cap.as_str();
+        debug!("do_exec_replacement cap={:?} with {:?}", &cap, ec.get(2));
         if let Some(fmt) = ec.get(2) {
             match fmt.as_str() {
-                "path-from-directory" => {
-                    if cap.starts_with('/') {
-                        cap.to_string()
-                    } else {
-                        normalize_path(format!(
-                            "{}/{}",
-                            replacement_map.get("directory").unwrap(),
-                            cap
-                        ))
-                    }
-                }
-                "path-from-parent" => {
-                    if cap.starts_with('/') {
-                        cap.to_string()
-                    } else {
-                        normalize_path(format!(
-                            "{}/{}",
-                            replacement_map.get("parent").unwrap(),
-                            cap
-                        ))
-                    }
-                }
+                "path-from-directory" => path_from(PathSource::Directory, cap, replacement_map),
+                "path-from-parent" => path_from(PathSource::Parent, cap, replacement_map),
                 _ => format!("invalid format: {:?}", fmt.as_str()),
             }
         } else {

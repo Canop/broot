@@ -1,3 +1,6 @@
+### master
+- replace ~ in path arguments with user home dir
+
 <a name="v0.13.4"></a>
 ### v0.13.4 - 2020-03-13
 - support for an arg made of an optional group - Fix #210
