@@ -1,5 +1,6 @@
 ### master
 - replace ~ in path arguments with user home dir
+- use $XDG_CONFIG_HOME/git/ignore when the normal core.excludesFile git setting is missing
 
 <a name="v0.13.4"></a>
 ### v0.13.4 - 2020-03-13

@@ -20,6 +20,7 @@ pub fn is_repo(root: &Path) -> bool {
 }
 
 /// a simple rule of a gitignore file
+#[derive(Clone)]
 struct GitIgnoreRule {
     ok: bool,        // does this rule when matched means the file is good? (usually false)
     directory: bool, // whether this rule only applies to directories
@@ -70,6 +71,7 @@ impl GitIgnoreRule {
 }
 
 /// The rules of a gitignore file
+#[derive(Clone)]
 pub struct GitIgnoreFile {
     rules: Vec<GitIgnoreRule>,
 }
@@ -96,15 +98,23 @@ impl GitIgnoreFile {
 }
 
 pub fn find_global_ignore() -> Option<GitIgnoreFile> {
-    let global_conf = match git2::Config::open_default() {
-        Ok(conf) => conf,
-        Err(e) => {
-            debug!("open default git config failed : {:?}", e);
-            return None;
-        }
-    };
-    global_conf.get_path("core.excludesfile")
+    git2::Config::open_default()
+        .and_then(|global_config|
+            global_config.get_path("core.excludesfile")
+        )
         .ok()
+        .or_else(||
+            directories::BaseDirs::new()
+                .map(|base_dirs|
+                    base_dirs.config_dir().join("git/ignore")
+                )
+        )
+        .or_else(||
+            directories::UserDirs::new()
+                .map(|user_dirs|
+                    user_dirs.home_dir().join(".config/git/ignore")
+                )
+        )
         .as_ref()
         .and_then(
             |path| time!(
@@ -132,8 +142,11 @@ impl GitIgnorer {
     pub fn new() -> Self {
         let mut files = Arena::new();
         let mut global_chain = GitIgnoreChain::default();
-        if let Some(gif) = find_global_ignore() {
-            global_chain.push(files.alloc(gif));
+        lazy_static! {
+            static ref GLOBAL_GI: Option<GitIgnoreFile> = find_global_ignore();
+        }
+        if let Some(gif) = &*GLOBAL_GI {
+            global_chain.push(files.alloc(gif.clone()));
         }
         Self {
             files,
