@@ -89,18 +89,7 @@ impl VerbExecutor for BrowserState {
                 }
                 AppStateCmdResult::Keep
             }
-            ":parent" => match &self.displayed_tree().selected_line().path.parent() {
-                Some(path) => AppStateCmdResult::from_optional_state(
-                    BrowserState::new(
-                        path.to_path_buf(),
-                        self.displayed_tree().options.without_pattern(),
-                        screen,
-                        &Dam::unlimited(),
-                    ),
-                    Command::new(),
-                ),
-                None => AppStateCmdResult::DisplayError("no parent found".to_string()),
-            },
+            ":parent" => self.go_to_parent(screen),
             ":print_path" => {
                 external::print_path(&self.displayed_tree().selected_line().target(), con)?
             }

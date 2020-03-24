@@ -244,6 +244,16 @@ impl Command {
                     return;
                 }
 
+                if *key == keys::LEFT && self.raw.is_empty() {
+                    self.set_action(Action::Back);
+                    return;
+                }
+
+                if *key == keys::RIGHT && self.raw.is_empty() {
+                    self.set_action(Action::OpenSelection);
+                    return;
+                }
+
                 if *key == keys::BACK_TAB {
                     // should probably be a normal verb instead of an action with a special
                     // handling here

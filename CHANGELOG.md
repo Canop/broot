@@ -1,4 +1,5 @@
 ### master
+- right key open directory, left key gets back (when input is empty)
 - replace ~ in path arguments with user home dir
 - use $XDG_CONFIG_HOME/git/ignore when the normal core.excludesFile git setting is missing
 
