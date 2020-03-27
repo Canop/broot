@@ -10,7 +10,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
     clap::App::new("broot")
         .version(env!("CARGO_PKG_VERSION"))
         .author("dystroy <denys.seguret@gmail.com>")
-        .about("Balanced tree view + fuzzy search + BFS + customizable launcher")
+        .about("A tree explorer and a customizable launcher")
         .arg(clap::Arg::with_name("root").help("sets the root directory"))
 
         // tree flags
@@ -61,7 +61,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
             clap::Arg::with_name("no-hidden")
                 .short("H")
                 .long("no-hidden")
-                .help("Show hidden files"),
+                .help("Don't show hidden files"),
         )
         .arg(
             clap::Arg::with_name("show-gitignored")
@@ -125,7 +125,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .short("c")
                 .long("cmd")
                 .takes_value(true)
-                .help("Semicolon separated commands to execute (experimental)"),
+                .help("Semicolon separated commands to execute"),
         )
         .arg(
             clap::Arg::with_name("conf")
@@ -134,17 +134,17 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("Semicolon separated paths to specific config files"),
         )
         .arg(
+            clap::Arg::with_name("height")
+                .long("height")
+                .help("Height (if you don't want to fill the screen or for file export)")
+                .takes_value(true),
+        )
+        .arg(
             clap::Arg::with_name("file-export-path")
                 .short("o")
                 .long("out")
                 .takes_value(true)
                 .help("Where to write the produced path (if any)"),
-        )
-        .arg(
-            clap::Arg::with_name("height")
-                .long("height")
-                .help("Height (if you don't want to fill the screen or for file export)")
-                .takes_value(true),
         )
         .arg(
             clap::Arg::with_name("install")

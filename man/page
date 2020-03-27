@@ -1,0 +1,115 @@
+.\" Manpage for broot
+.\" Some items starting with a # are replaced on build
+.TH broot 1 "#date" "#version" "broot manpage"
+.SH NAME
+broot \- Tree view, file manager, configurable launcher
+.SH SYNOPSIS
+.B broot
+[\fIflags\fR]
+[\fIoptions\fR]
+[path]
+.br
+.B br
+[\fIflags\fR]
+[\fIoptions\fR]
+[path]
+.SH DESCRIPTION
+\fBbroot\fR lets you explore file hierarchies with a tree-like view, manipulate files, launch actions, and define your own shortcuts.
+.PP
+\fBbroot\fR is best launched as \fBbr\fR: this shell function gives you access to more commands, especially \fIcd\fR. The \fBbr\fR shell function is interactively installed on first \fBbroot\fR launch.
+.PP
+Flags and options can be classically passed on launch but also written in the configuration file. Each flag has a counter-flag so that you can cancel at command line a flag which has been set in the configuration file.
+.SH FLAGS
+FLAGS
+.TP
+.B \-d ", " \-\-dates
+Show the last modified date of files and directories
+.TP
+.B \-D ", " \-\-no-dates
+Don't show the last modified date
+.TP
+.B \-f ", " \-\-only-folders
+Only show folders
+.TP
+.B \-F ", " \-\-no-only-folders
+Show folders and files alike
+.TP
+.B \-g ", " \-\-show-git-info
+Show git statuses on files and stats of repository
+.TP
+.B \-G ", " \-\-no-show-git-info
+Don't show git statuses on files nor stats
+.TP
+.B \-h ", " \-\-hidden
+Show hidden files
+.TP
+.B \-H ", " \-\-no-hidden
+Don't show hidden files
+.TP
+.B \-i ", " \-\-show-gitignored
+Show files which should be ignored according to git
+.TP
+.B \-I ", " \-\-no-show-gitignored
+Don't show gitignored files
+.TP
+.B \-p ", " \-\-permissions
+Show permissions with owner and group
+.TP
+.B \-P ", " \-\-no-permissions
+Don't show permissions
+.TP
+.B \-s ", " \-\-sizes
+Show the sizes of files and directories. When this mode is on, children aren't shown so that the biggest entries at the selected level can be sorted first.
+.TP
+.B \-S ", " \-\-no-sizes
+Don't show sizes
+.TP
+.B \-t ", " \-\-trim-root
+Trim the root: remove elements which would exceed the screen size. This removes the scrollbar.
+.TP
+.B \-T ", " \-\-no-trim-root
+Don't trim the root (still trim the deeper levels). A scrollbar may be used when there are too many elements to show on screen.
+.TP
+.B \-\-install
+Install or reinstall the \fBbr\fR shell function
+.TP
+.B \-\-no-style
+Remove all style and colors
+.TP
+.B \-\-help
+Prints a help page, with more or less the same content as this man page
+.TP
+.B \-v ", " \-\-version
+Prints the version of \fBbroot\fR
+.SH PARAMETERS:
+.TP
+.B \-\-outcmd <cmd-export-path>
+Where to write a command if broot produces one
+.TP
+.B \-c ", " \-\-cmd <commands>
+Semicolon separated commands to execute on start of \fBbroot\fR
+.TP
+.B \-\-height <height>
+Height to use if you don't want to fill the screen or for file export (by default the terminal height is used)
+.TP
+.B \-o ", " \-\-out <file-export-path>
+Where to write the produced path, if any
+.TP
+.B \-\-set-install-state <undefined|refused|installed>
+Set the installation state. This is mostly useful in installation scripts to override the normal installation process.
+.TP
+.B \-\-print-shell-function <bash|fish|zsh>
+Print to stdout the \fBbr\fR function for the given shell. This can be used in your own installation process overriden the standard one.
+.SH BUGS
+.PP
+.B broot
+is known to be slow on most \fIWindows\fR installations.
+.PP
+On unix and mac platforms, most problems you may encounter are related to some terminals or terminal multiplexers which either intercepts some standard TTY instructions or break buffering or size querying. The list of shortcuts you can define in the config file is thus dependent of your system.
+.SH AUTHOR
+.B broot
+is free and open-source and is written by \fIdenys.seguret@gmail.com\fR. The source code and documentation are available at https://dystroy.org/broot
+
+
+
+
