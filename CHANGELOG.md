@@ -1,8 +1,9 @@
-### master
-- right key open directory, left key gets back (when input is empty)
-- replace ~ in path arguments with user home dir
-- use $XDG_CONFIG_HOME/git/ignore when the normal core.excludesFile git setting is missing
-- add a man page to archive
+<a name="v0.13.5"></a>
+### v0.13.5 - 2020-03-28
+- right key open directory, left key gets back (when input is empty) - Fix #179
+- replace ~ in path arguments with user home dir - Fix #211
+- use $XDG_CONFIG_HOME/git/ignore when the normal core.excludesFile git setting is missing - Fix #212
+- add a man page to archive - Fix #165
 
 <a name="v0.13.4"></a>
 ### v0.13.4 - 2020-03-13
