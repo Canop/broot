@@ -2,7 +2,8 @@ bench.sh
 compile.sh
 dev.log
 deploy.sh
-release.zip
+fix-win-toolchain.sh
+releases
 /target
 **/*.rs.bk
 screens
