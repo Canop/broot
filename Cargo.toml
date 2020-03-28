@@ -11,6 +11,7 @@ license = "MIT"
 categories = ["command-line-utilities"]
 readme = "README.md"
 build = "build.rs"
+exclude = ["website", "broot*.zip"]
 
 [dependencies]
 clap = "2.33"
