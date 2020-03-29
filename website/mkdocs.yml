@@ -6,8 +6,8 @@ edit_uri: ''
 
 nav:
         - Why: index.md
+        - Install: install.md
         - Documentation:
-                - Installation: documentation/installation.md
                 - Usage: documentation/usage.md
                 - Configuration: documentation/configuration.md
                 - Tips & Tricks: documentation/tricks.md

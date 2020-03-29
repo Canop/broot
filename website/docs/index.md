@@ -4,7 +4,7 @@
 <img src="img/vache.svg" height=140px>
 </p>
 
-**[Installation](documentation/installation.md)**
+**[Installation](install)**
 
 # Get an overview of a directory, even a big one
 
@@ -95,5 +95,5 @@ And if you want to see *only* the files which would be displayed by the `git sta
 
 # More...
 
-See the complete [Documentation](documentation/usage.md) and [how to install](documentation/installation.md).
+See the complete [Documentation](documentation/usage.md) and [how to install](install).
 
