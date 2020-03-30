@@ -10,7 +10,7 @@ use {
         cli,
         conf,
         errors::ProgramError,
-        mad_skin,
+        skin,
     },
     termimad::{mad_print_inline, MadSkin,},
 };
@@ -112,7 +112,7 @@ impl ShellInstall {
     pub fn new(force_install: bool) -> Self {
         Self {
             force_install,
-            skin: mad_skin::make_cli_mad_skin(),
+            skin: skin::make_cli_mad_skin(),
             should_quit: false,
             authorization: if force_install { Some(true) } else { None },
             done: false,

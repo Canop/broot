@@ -2,7 +2,6 @@
 use {
     crate::{
         git,
-        git_status::*,
         task_sync::{
             Dam,
             ComputationResult,
@@ -18,6 +17,7 @@ use {
         path::{Path, PathBuf},
         sync::Mutex,
     },
+    super::TreeGitStatus,
 };
 
 
@@ -110,7 +110,7 @@ pub fn get_tree_status(root_path: &Path, dam: &mut Dam) -> ComputationResult<Tre
 /// Limit: we may receive in cache the result of a computation
 /// which started before the clear (if this is a problem we could
 /// store a cleaning counter alongside the cache to prevent insertions)
-pub fn clear_cache() {
+pub fn clear_status_computer_cache() {
     let mut ts_cache = TS_CACHE_MX.lock().unwrap();
     ts_cache.clear();
 }

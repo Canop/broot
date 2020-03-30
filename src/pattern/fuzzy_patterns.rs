@@ -2,9 +2,10 @@
 //! It's not meant for file contents but for small strings (less than 1000 chars)
 //!  such as file names.
 
-use std::fmt::{self, Write};
-
-use crate::patterns::Match;
+use {
+    std::fmt::{self, Write},
+    super::Match,
+};
 
 // weights used in match score computing
 const BONUS_MATCH: i32 = 50_000;

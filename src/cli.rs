@@ -7,8 +7,10 @@ use {
         ArgMatches,
     },
     crate::{
-        app::App,
-        app_context::AppContext,
+        app::{
+            App,
+            AppContext,
+        },
         conf::Conf,
         errors::{ProgramError, TreeBuildError},
         external::Launchable,
@@ -27,8 +29,8 @@ use {
     },
 };
 
-// launch arguments related to installation
-// (not used by the application after the first step)
+/// launch arguments related to installation
+/// (not used by the application after the first step)
 struct InstallLaunchArgs {
     install: bool,                   // installation is required
     set_install_state: Option<ShellInstallState>, // the state to set

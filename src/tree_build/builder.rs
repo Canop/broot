@@ -2,15 +2,13 @@ use {
     crate::{
         errors::TreeBuildError,
         flat_tree::{Tree, TreeLine},
-        git_status::{
-            LineStatusComputer,
-        },
         task_sync::{
             ComputationResult,
         },
-        git_ignore::{
+        git::{
             GitIgnorer,
             GitIgnoreChain,
+            LineStatusComputer,
         },
         task_sync::Dam,
         tree_options::{
@@ -384,7 +382,7 @@ impl TreeBuilder {
         }
     }
 
-    /// makes a tree from the builder's specific structure
+    /// make a tree from the builder's specific structure
     fn take(mut self, out_blines: &[BId]) -> Tree {
         let mut lines: Vec<TreeLine> = Vec::new();
         for id in out_blines.iter() {

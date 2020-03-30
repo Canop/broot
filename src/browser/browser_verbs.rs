@@ -1,13 +1,14 @@
 use {
     crate::{
-        app_context::AppContext,
-        app_state::AppStateCmdResult,
-        browser_states::BrowserState,
-        commands::Command,
+        app::{
+            AppContext,
+            AppStateCmdResult,
+        },
+        command::Command,
         errors::ProgramError,
         external,
         flat_tree::Tree,
-        help_states::HelpState,
+        help::HelpState,
         screens::Screen,
         task_sync::Dam,
         tree_options::TreeOptions,
@@ -16,6 +17,7 @@ use {
     },
     directories::UserDirs,
     std::path::PathBuf,
+    super::*,
 };
 
 fn focus_path(path: PathBuf, screen: &mut Screen, tree: &Tree) -> AppStateCmdResult {

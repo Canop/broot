@@ -1,13 +1,16 @@
 //! A command is the parsed representation of what the user types
 //!  in the input. It's independant of the state of the application
-//!  (verbs arent checked at this point)
 
 use {
     crate::{
-        app_context::AppContext, app_state::AppState, keys, patterns::Pattern,
-        verb_invocation::VerbInvocation,
+        app::{
+            AppContext,
+            AppState,
+        },
+        keys,
+        pattern::Pattern,
     },
-    regex::Regex,
+    super::*,
     termimad::{Event, InputField},
 };
 
@@ -16,123 +19,6 @@ pub struct Command {
     pub raw: String,     // what's visible in the input
     parts: CommandParts, // the parsed parts of the visible input
     pub action: Action, // what's required, based on the last key (which may be not visible, like esc)
-}
-
-/// An intermediate parsed representation of the raw string
-#[derive(Debug, Clone)]
-pub struct CommandParts {
-    pattern: Option<String>,     // either a fuzzy pattern or the core of a regex
-    regex_flags: Option<String>, // may be Some("") if user asked for a regex but specified no flag
-    verb_invocation: Option<VerbInvocation>, // may be empty if user typed the separator but no char after
-}
-
-#[derive(Debug, Clone)]
-pub enum Action {
-    Unparsed,
-    MoveSelection(i32),           // up (neg) or down (positive) in the list
-    OpenSelection,                // open the selected line
-    AltOpenSelection,             // alternate open the selected line
-    VerbEdit(VerbInvocation),     // verb invocation, unfinished
-    VerbInvocate(VerbInvocation), // verb invocation, after the user hit enter
-    VerbIndex(usize),             // verb call, withtout specific argument (using a trigger key)
-    FuzzyPatternEdit(String),     // a pattern being edited
-    RegexEdit(String, String),    // a regex being edited (core & flags)
-    Back,                         // back to last app state, or clear pattern
-    Next,                         // goes to the next matching entry
-    Previous,                     // goes to the previous matching entry
-    Help,                         // goes to help state
-    Click(u16, u16),              // usually a mouse click
-    DoubleClick(u16, u16),        // always come after a simple click at same position
-    Resize(u16, u16),             // terminal was resized to those dimensions
-}
-
-impl CommandParts {
-    fn new() -> CommandParts {
-        CommandParts {
-            pattern: None,
-            regex_flags: None,
-            verb_invocation: None,
-        }
-    }
-    fn from(raw: &str) -> Self {
-        let mut cp = CommandParts::new();
-        let c = regex!(
-            r"(?x)
-                ^
-                (?P<slash_before>/)?
-                (?P<pattern>[^\s/:]+)?
-                (?:/(?P<regex_flags>\w*))?
-                (?:[\s:]+(?P<verb_invocation>.*))?
-                $
-            "
-        )
-        .captures(raw);
-        if let Some(c) = c {
-            if let Some(pattern) = c.name("pattern") {
-                cp.pattern = Some(String::from(pattern.as_str()));
-                if let Some(rxf) = c.name("regex_flags") {
-                    cp.regex_flags = Some(String::from(rxf.as_str()));
-                } else if c.name("slash_before").is_some() {
-                    cp.regex_flags = Some("".into());
-                }
-            }
-            if let Some(verb) = c.name("verb_invocation") {
-                cp.verb_invocation = Some(VerbInvocation::from(verb.as_str()));
-            }
-        } else {
-            // Non matching pattterns include "///"
-            // We decide the whole is a fuzzy search pattern, in this case
-            // (this will change when we release the new input syntax)
-            cp.pattern = Some(String::from(raw));
-        }
-        cp
-    }
-    /// split an input into its two possible parts, the pattern
-    /// and the verb invocation. Each part, when defined, is
-    /// suitable to create a command on its own.
-    pub fn split(raw: &str) -> (Option<String>, Option<String>) {
-        let captures = regex!(
-            r"(?x)
-                ^
-                (?P<pattern_part>/?[^\s/:]+/?\w*)?
-                (?P<verb_part>[\s:]+(.+))?
-                $
-            "
-        ).captures(raw).unwrap(); // all parts optional : always captures
-        (
-            captures.name("pattern_part").map(|c| c.as_str().to_string()),
-            captures.name("verb_part").map(|c| c.as_str().to_string()),
-        )
-    }
-}
-
-impl Default for CommandParts {
-    fn default() -> CommandParts {
-        CommandParts::new()
-    }
-}
-
-impl Action {
-    fn from(cp: &CommandParts, finished: bool) -> Action {
-        if let Some(verb_invocation) = &cp.verb_invocation {
-            if finished {
-                Action::VerbInvocate(verb_invocation.clone())
-            } else {
-                Action::VerbEdit(verb_invocation.clone())
-            }
-        } else if finished {
-            Action::OpenSelection
-        } else if let Some(pattern) = &cp.pattern {
-            let pattern = String::from(pattern.as_str());
-            if let Some(regex_flags) = &cp.regex_flags {
-                Action::RegexEdit(pattern, String::from(regex_flags.as_str()))
-            } else {
-                Action::FuzzyPatternEdit(String::from(pattern.as_str()))
-            }
-        } else {
-            Action::FuzzyPatternEdit(String::from(""))
-        }
-    }
 }
 
 impl Command {

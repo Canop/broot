@@ -1,9 +1,7 @@
 use {
-    clap::{
-        ArgMatches,
-    },
+    clap::ArgMatches,
     crate::{
-        patterns::Pattern,
+        pattern::Pattern,
     },
 };
 

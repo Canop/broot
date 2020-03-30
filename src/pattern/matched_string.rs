@@ -1,9 +1,7 @@
 
 use {
     termimad::CompoundStyle,
-    crate::{
-        patterns::Pattern,
-    },
+    super::Pattern,
 };
 
 

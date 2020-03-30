@@ -1,12 +1,12 @@
 use {
     crate::{
         errors::ProgramError,
-        git_status::{
-            TreeGitStatus,
-        },
         skin::Skin,
     },
     std::io::Write,
+    super::{
+        TreeGitStatus,
+    },
 };
 
 pub struct GitStatusDisplay<'a, 's> {

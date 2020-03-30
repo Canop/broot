@@ -4,7 +4,7 @@
 ///
 
 use {
-    crate::{errors::InvalidSkinError, skin},
+    crate::errors::InvalidSkinError,
     crossterm::style::{
         Attribute::{self, *},
         Attributes,
@@ -12,6 +12,7 @@ use {
     },
     regex::Regex,
     std::result::Result,
+    super::*,
     termimad::CompoundStyle,
 };
 
@@ -80,7 +81,7 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
     }
 }
 
-///
+
 fn parse_attribute(s: &str) -> Result<Attribute, InvalidSkinError> {
     match s {
         "bold" => Ok(Bold),

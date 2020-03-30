@@ -3,8 +3,10 @@
 /// - to the current app state
 use {
     crate::{
-        app_context::AppContext,
-        app_state::AppStateCmdResult,
+        app::{
+            AppContext,
+            AppStateCmdResult,
+        },
         errors::{ConfError, ProgramError},
         external, keys,
         screens::Screen,

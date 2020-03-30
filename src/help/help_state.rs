@@ -1,11 +1,13 @@
 use {
     crate::{
-        app_context::AppContext,
-        app_state::{AppState, AppStateCmdResult},
-        commands::{Action, Command},
+        app::{
+            AppContext,
+            AppState,
+            AppStateCmdResult,
+        },
+        command::{Action, Command},
         conf::Conf,
         errors::ProgramError,
-        help_content,
         screens::Screen,
         status::Status,
         task_sync::Dam,
@@ -18,6 +20,9 @@ use {
     },
     minimad::Composite,
     std::io::Write,
+    super::{
+        help_content,
+    },
     termimad::{Area, FmtText, TextView},
 };
 

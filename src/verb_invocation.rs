@@ -1,5 +1,6 @@
 use regex::Regex;
 
+/// the verb and its arguments, making the invocation
 #[derive(Clone, Debug)]
 pub struct VerbInvocation {
     pub name: String,

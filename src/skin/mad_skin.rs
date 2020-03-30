@@ -1,12 +1,10 @@
 /// This module builds Termimad `MadSkin` from Broot `Skin`
 
 use {
-    crate::{
-        skin::Skin,
-    },
     crossterm::{
         style::Color,
     },
+    super::Skin,
     termimad::{
         Alignment,
         CompoundStyle,

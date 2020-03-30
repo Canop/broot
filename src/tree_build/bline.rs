@@ -2,9 +2,7 @@ use {
     crate::{
         errors::TreeBuildError,
         flat_tree::{LineType, TreeLine},
-        git_ignore::{
-            GitIgnoreChain,
-        },
+        git::GitIgnoreChain,
     },
     id_arena::{
         Arena,

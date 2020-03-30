@@ -5,7 +5,7 @@ use {
     crate::{
         errors::ConfError,
         keys,
-        skin_conf,
+        skin,
         verb_conf::VerbConf,
     },
     crossterm::style::Attribute,
@@ -153,7 +153,7 @@ impl Conf {
         if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
             for (k, v) in entries_tbl.iter() {
                 if let Some(s) = v.as_str() {
-                    match skin_conf::parse_object_style(s) {
+                    match skin::parse_object_style(s) {
                         Ok(ske) => {
                             self.skin.insert(k.to_string(), ske);
                         }

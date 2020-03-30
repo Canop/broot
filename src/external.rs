@@ -1,23 +1,25 @@
-use std::{
-    env,
-    fs::OpenOptions,
-    io::{self, Write},
-    path::{Path, PathBuf},
-    process::Command,
-};
-
-use open;
-use regex::Regex;
-use pathdiff;
-
-use crate::{
-    app_context::AppContext,
-    app_state::AppStateCmdResult,
-    displayable_tree::DisplayableTree,
-    errors::ProgramError,
-    flat_tree::Tree,
-    screens::Screen,
-    skin::Skin,
+use {
+    crate::{
+        app::{
+            AppContext,
+            AppStateCmdResult,
+        },
+        displayable_tree::DisplayableTree,
+        errors::ProgramError,
+        flat_tree::Tree,
+        screens::Screen,
+        skin::Skin,
+    },
+    open,
+    pathdiff,
+    regex::Regex,
+    std::{
+        env,
+        fs::OpenOptions,
+        io::{self, Write},
+        path::{Path, PathBuf},
+        process::Command,
+    },
 };
 
 /// description of a possible launch of an external program

@@ -3,13 +3,14 @@
 
 use {
     crate::{
-        app_context::AppContext,
-        commands::{
-            Action,
-            Command, CommandParts,
-        },
+        app::AppContext,
         errors::ProgramError,
         verb_store::PrefixSearchResult,
+    },
+    super::{
+        Action,
+        Command,
+        CommandParts,
     },
 };
 

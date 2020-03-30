@@ -1,20 +1,21 @@
 /// Defines the Skin structure with its default value.
 ///
 /// A skin is a collection of termimad compound_style
-use std::{
-    collections::HashMap,
-    fmt,
-};
-
-use crossterm::{
-    style::{
-        Attribute::*,
-        Attributes,
-        Color::AnsiValue,
-        Color::{self, *},
+use {
+    crossterm::{
+        style::{
+            Attribute::*,
+            Attributes,
+            Color::AnsiValue,
+            Color::{self, *},
+        },
     },
+    std::{
+        collections::HashMap,
+        fmt,
+    },
+    termimad::CompoundStyle,
 };
-use termimad::CompoundStyle;
 
 macro_rules! Skin {
     (

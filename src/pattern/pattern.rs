@@ -3,9 +3,19 @@
 //!  by a regular expression (in which case there's no real
 //!  score)
 
-use std::{fmt, mem};
-
-use crate::{errors::RegexError, fuzzy_patterns::FuzzyPattern, regex_patterns::RegexPattern};
+use {
+    crate::{
+        errors::RegexError,
+    },
+    std::{
+        fmt,
+        mem,
+    },
+    super::{
+        FuzzyPattern,
+        RegexPattern,
+    },
+};
 
 #[derive(Debug, Clone)]
 pub enum Pattern {

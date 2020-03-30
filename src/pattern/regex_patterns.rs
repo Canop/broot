@@ -1,10 +1,10 @@
 //! a filename filtering pattern using a regular expression
 
-use std::fmt;
-
-use regex;
-
-use crate::{errors::RegexError, patterns};
+use {
+    crate::errors::RegexError,
+    regex,
+    std::fmt,
+};
 
 #[derive(Debug, Clone)]
 pub struct RegexPattern {
@@ -40,19 +40,16 @@ impl RegexPattern {
         })
     }
     // return a match if the pattern can be found in the candidate string
-    pub fn find(&self, candidate: &str) -> Option<patterns::Match> {
+    pub fn find(&self, candidate: &str) -> Option<super::Match> {
         // note that there's no significative cost related to using
         //  find over is_match
-        match self.rex.find(candidate) {
-            Some(rm) => {
+        self.rex.find(candidate).map(|rm| {
                 let mut pos = Vec::with_capacity(rm.end() - rm.start());
                 for i in rm.start()..rm.end() {
                     pos.push(i);
                 }
-                Some(patterns::Match { score: 1, pos })
-            }
-            None => None,
-        }
+                super::Match { score: 1, pos }
+        })
     }
     // return the number of results we should find before starting to
     //  sort them (unless time is runing out).

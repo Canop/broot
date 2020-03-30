@@ -1,15 +1,18 @@
 use {
     crate::{
-        app_context::AppContext,
-        app_state::{AppState, AppStateCmdResult},
-        commands::{Action, Command},
+        app::{
+            AppContext,
+            AppState,
+            AppStateCmdResult,
+        },
+        command::{Action, Command},
         displayable_tree::DisplayableTree,
         errors::{ProgramError, TreeBuildError},
         external::Launchable,
         flat_tree::{LineType, Tree},
-        git_status_computer,
-        help_states::HelpState,
-        patterns::Pattern,
+        git,
+        help::HelpState,
+        pattern::Pattern,
         screens::{self, Screen},
         status::Status,
         task_sync::Dam,
@@ -442,7 +445,7 @@ impl AppState for BrowserState {
 
         } else if self.displayed_tree().is_missing_git_status_computation() {
             let root_path = self.displayed_tree().root();
-            let git_status = git_status_computer::get_tree_status(root_path, dam);
+            let git_status = git::get_tree_status(root_path, dam);
             self.displayed_tree_mut().git_status = git_status;
         } else {
             self.displayed_tree_mut().fetch_some_missing_dir_size(dam);

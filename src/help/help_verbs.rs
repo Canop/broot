@@ -1,19 +1,23 @@
 //! this modules defines the execution of verbs on the help screen
 
-use crate::{
-    app_context::AppContext,
-    app_state::AppStateCmdResult,
-    browser_states::BrowserState,
-    commands::Command,
-    conf::{self, Conf},
-    errors::ProgramError,
-    external::{self, Launchable},
-    help_states::HelpState,
-    screens::Screen,
-    task_sync::Dam,
-    tree_options::TreeOptions,
-    verb_invocation::VerbInvocation,
-    verbs::{Verb, VerbExecutor},
+use {
+    crate::{
+        app::{
+            AppContext,
+            AppStateCmdResult,
+        },
+        browser::BrowserState,
+        command::Command,
+        conf::{self, Conf},
+        errors::ProgramError,
+        external::{self, Launchable},
+        screens::Screen,
+        task_sync::Dam,
+        tree_options::TreeOptions,
+        verb_invocation::VerbInvocation,
+        verbs::{Verb, VerbExecutor},
+    },
+    super::HelpState,
 };
 
 impl VerbExecutor for HelpState {

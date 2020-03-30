@@ -10,15 +10,15 @@
 
 use {
     crate::{
-        app_context::AppContext,
-        app_state::{AppState, AppStateCmdResult},
-        browser_states::BrowserState,
-        command_parsing::parse_command_sequence,
-        commands::Command,
+        browser::BrowserState,
+        command::{
+            Command,
+            parse_command_sequence,
+        },
         errors::ProgramError,
         external::Launchable,
         file_sizes,
-        git_status_computer,
+        git,
         io::WriteCleanup,
         screens::Screen,
         skin::Skin,
@@ -33,6 +33,11 @@ use {
     },
     minimad::Composite,
     std::io::Write,
+    super::{
+        AppContext,
+        AppState,
+        AppStateCmdResult,
+    },
     termimad::EventSource,
 };
 
@@ -95,7 +100,6 @@ impl App {
         }
         Ok(())
     }
-
 
     /// apply a command, and returns a command, which may be the same (modified or not)
     ///  or a new one.
@@ -270,5 +274,5 @@ impl Drop for App {
 /// command.
 fn clear_caches() {
     file_sizes::clear_cache();
-    git_status_computer::clear_cache();
+    git::clear_status_computer_cache();
 }

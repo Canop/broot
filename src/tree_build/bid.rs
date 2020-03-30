@@ -6,9 +6,9 @@ use {
 
 pub type BId = Id<BLine>;
 
-// a structure making it possible to keep bline references
-//  sorted in a binary heap with the line with the smallest
-//  score at the top
+/// a structure making it possible to keep bline references
+///  sorted in a binary heap with the line with the smallest
+///  score at the top
 pub struct SortableBId {
     pub id: BId,
     pub score: i32,

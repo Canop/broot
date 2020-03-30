@@ -37,7 +37,6 @@ fn configure_log() {
     }
 }
 
-
 fn main() {
     configure_log();
     match cli::run() {

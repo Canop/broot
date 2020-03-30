@@ -1,6 +1,6 @@
 use {
     crate::{
-        app_context::AppContext,
+        app::AppContext,
     },
     minimad::{
         Text,
