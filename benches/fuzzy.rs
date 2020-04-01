@@ -1,7 +1,14 @@
 
-use criterion::{black_box, criterion_group, criterion_main, Criterion};
+use {
+    broot::pattern::FuzzyPattern,
+    criterion::{
+        black_box,
+        criterion_group,
+        criterion_main,
+        Criterion,
+    },
+};
 
-use broot::fuzzy_patterns::FuzzyPattern;
 
 static PATTERNS: &[&str] = &["réveil", "broot", "AB", "é"];
 // this list contains 100 names, which makes it easier to estimate the duration

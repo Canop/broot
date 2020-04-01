@@ -2,11 +2,11 @@
 mod action;
 mod command;
 mod parts;
-mod parsing;
+mod sequence;
 
 pub use {
     action::Action,
     command::Command,
     parts::CommandParts,
-    parsing::parse_command_sequence,
+    sequence::parse_command_sequence,
 };
