@@ -4,6 +4,7 @@
 
 use {
     std::fmt::{self, Write},
+    secular,
     super::Match,
 };
 
@@ -18,14 +19,13 @@ const BONUS_NB_HOLES: i32 = -30; // there's also a max on that number
 
 #[derive(Debug, Clone)]
 pub struct FuzzyPattern {
-    lc_bytes: Box<[u8]>,
-    lc_chars: Box<[char]>, // lowercase characters
+    chars: Box<[char]>, // secularized characters
     max_nb_holes: usize,
 }
 
 impl fmt::Display for FuzzyPattern {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for &c in self.lc_chars.iter() {
+        for &c in self.chars.iter() {
             f.write_char(c)?
         }
         Ok(())
@@ -48,11 +48,12 @@ impl FuzzyPattern {
     /// build a pattern which will later be usable for fuzzy search.
     /// A pattern should be reused
     pub fn from(pat: &str) -> FuzzyPattern {
-        let lc_bytes = pat.to_lowercase().as_bytes().to_vec();
-        let lc_bytes = lc_bytes.into_boxed_slice();
-        let lc_chars: Vec<char> = pat.chars().map(|c| c.to_ascii_lowercase()).collect();
-        let lc_chars = lc_chars.into_boxed_slice();
-        let max_nb_holes = match lc_chars.len() {
+        let chars = pat
+            .chars()
+            .map(secular::lower_lay_char)
+            .collect::<Vec<char>>()
+            .into_boxed_slice();
+        let max_nb_holes = match chars.len() {
             1 => 0,
             2 => 1,
             3 => 2,
@@ -61,11 +62,10 @@ impl FuzzyPattern {
             6 => 4,
             7 => 4,
             8 => 4,
-            _ => lc_chars.len() * 4 / 7,
+            _ => chars.len() * 4 / 7,
         };
         FuzzyPattern {
-            lc_bytes,
-            lc_chars,
+            chars,
             max_nb_holes,
         }
     }
@@ -76,14 +76,14 @@ impl FuzzyPattern {
         cand_chars: &[char],
         start_idx: usize, // start index in candidate, in chars
     ) -> MatchSearchResult {
-        if cand_chars[start_idx] != self.lc_chars[0] {
+        if cand_chars[start_idx] != self.chars[0] {
             return MatchSearchResult::None;
         }
         let mut pos: Vec<usize> = vec![]; // positions of matching chars in candidate
         pos.push(start_idx);
         let mut d = 1;
         let mut nb_holes = 0;
-        for pat_idx in 1..self.lc_chars.len() {
+        for pat_idx in 1..self.chars.len() {
             let hole_start = d;
             loop {
                 let cand_idx = start_idx + d;
@@ -91,7 +91,7 @@ impl FuzzyPattern {
                     return MatchSearchResult::None;
                 }
                 d += 1;
-                if cand_chars[cand_idx] == self.lc_chars[pat_idx] {
+                if cand_chars[cand_idx] == self.chars[pat_idx] {
                     pos.push(cand_idx);
                     break;
                 }
@@ -112,7 +112,7 @@ impl FuzzyPattern {
         score += match_len * BONUS_LENGTH;
         if start_idx == 0 {
             score += BONUS_START;
-            if cand_chars.len() == self.lc_chars.len() {
+            if cand_chars.len() == self.chars.len() {
                 score += BONUS_EXACT;
                 return MatchSearchResult::Perfect(Match { score, pos });
             }
@@ -120,7 +120,7 @@ impl FuzzyPattern {
             let previous = cand_chars[start_idx - 1];
             if previous == '_' || previous == ' ' || previous == '-' {
                 score += BONUS_START_WORD;
-                if cand_chars.len() - start_idx == self.lc_chars.len() {
+                if cand_chars.len() - start_idx == self.chars.len() {
                     return MatchSearchResult::Perfect(Match { score, pos });
                 }
             }
@@ -132,14 +132,17 @@ impl FuzzyPattern {
     /// The algorithm tries to return the best one. For example if you search
     /// "abc" in "ababca-abc", the returned match would be at the end.
     pub fn find(&self, candidate: &str) -> Option<Match> {
+        if candidate.len() < self.chars.len() {
+            return None;
+        }
         let mut cand_chars: Vec<char> = Vec::with_capacity(candidate.len());
-        cand_chars.extend(candidate.chars().map(|c| c.to_ascii_lowercase()));
-        if cand_chars.len() < self.lc_chars.len() {
+        cand_chars.extend(candidate.chars().map(secular::lower_lay_char));
+        if cand_chars.len() < self.chars.len() {
             return None;
         }
         let mut best_score = 0;
         let mut best_match: Option<Match> = None;
-        let n = cand_chars.len() - self.lc_chars.len();
+        let n = cand_chars.len() - self.chars.len();
         for start_idx in 0..=n {
             match self.match_starting_at_index(&cand_chars, start_idx) {
                 MatchSearchResult::Perfect(m) => {
@@ -163,23 +166,23 @@ impl FuzzyPattern {
     /// Otherwise return None.
     fn score_starting_at(
         &self,
-        cand: &[u8],
+        cand_chars: &[char],
         start_idx: usize, // start index in candidate, in bytes
     ) -> ScoreSearchResult {
-        if cand[start_idx].to_ascii_lowercase() != self.lc_bytes[0] {
+        if cand_chars[start_idx] != self.chars[0] {
             return ScoreSearchResult::None;
         }
         let mut d = 1;
         let mut nb_holes = 0;
-        for pat_idx in 1..self.lc_bytes.len() {
+        for pat_idx in 1..self.chars.len() {
             let hole_start = d;
             loop {
                 let cand_idx = start_idx + d;
-                if cand_idx == cand.len() {
+                if cand_idx == cand_chars.len() {
                     return ScoreSearchResult::None;
                 }
                 d += 1;
-                if cand[cand_idx].to_ascii_lowercase() == self.lc_bytes[pat_idx] {
+                if cand_chars[cand_idx] == self.chars[pat_idx] {
                     break;
                 }
             }
@@ -192,22 +195,22 @@ impl FuzzyPattern {
                 nb_holes += 1;
             }
         }
+        let mut score = BONUS_MATCH;
+        score += BONUS_CANDIDATE_LENGTH * (cand_chars.len() as i32);
+        score += BONUS_NB_HOLES * (nb_holes as i32);
         let match_len = (d as i32) - 1;
-        let mut score = BONUS_MATCH
-            + BONUS_CANDIDATE_LENGTH * (cand.len() as i32)
-            + BONUS_NB_HOLES * (nb_holes as i32)
-            + match_len * BONUS_LENGTH;
+        score += match_len * BONUS_LENGTH;
         if start_idx == 0 {
             score += BONUS_START;
-            if cand.len() == self.lc_bytes.len() {
+            if cand_chars.len() == self.chars.len() {
                 score += BONUS_EXACT;
                 return ScoreSearchResult::Perfect(score);
             }
         } else {
-            let previous = cand[start_idx - 1];
-            if previous == b'_' || previous == b' ' || previous == b'-' {
+            let previous = cand_chars[start_idx - 1];
+            if previous == '_' || previous == ' ' || previous == '-' {
                 score += BONUS_START_WORD;
-                if cand.len() - start_idx == self.lc_bytes.len() {
+                if cand_chars.len() - start_idx == self.chars.len() {
                     return ScoreSearchResult::Perfect(score);
                 }
             }
@@ -216,22 +219,20 @@ impl FuzzyPattern {
     }
 
     /// compute the score of the best match, in a way mostly similar to `find` but
-    /// much faster by
-    /// - working on bytes instead of chars
-    /// - not storing match positions
-    /// The result is about the same, but the values are often a little different
-    /// (because lengths of parts are in bytes instead of chars). The test module
-    /// cares of ensuring the results are the same when all chars are one byte (i.e.
-    /// there's no big bug) and that orderings are consistent (what matters for the
-    /// app is scores orderings).
+    /// faster by not storing match positions
     pub fn score_of(&self, candidate: &str) -> Option<i32> {
-        if candidate.len() < self.lc_bytes.len() {
+        if candidate.len() < self.chars.len() {
+            return None;
+        }
+        let mut cand_chars: Vec<char> = Vec::with_capacity(candidate.len());
+        cand_chars.extend(candidate.chars().map(secular::lower_lay_char));
+        if cand_chars.len() < self.chars.len() {
             return None;
         }
         let mut best_score = 0;
-        let n = candidate.len() - self.lc_bytes.len();
+        let n = cand_chars.len() - self.chars.len();
         for start_idx in 0..=n {
-            match self.score_starting_at(candidate.as_bytes(), start_idx) {
+            match self.score_starting_at(&cand_chars, start_idx) {
                 ScoreSearchResult::Perfect(s) => {
                     return Some(s);
                 }
@@ -262,12 +263,9 @@ mod fuzzy_pattern_tests {
 
     use super::*;
 
-    /// check that the scores obtained using score_of and find are equal at least for ascii strings
-    /// (scores are slightly different for strings having multibytes chars due to the notes given
-    /// to various lengths)
     #[test]
     fn check_equal_scores() {
-        static PATTERNS: &[&str] = &["reveil", "dystroy", "broot", "AB"];
+        static PATTERNS: &[&str] = &["reveil", "dystroy", "broot", "AB", "z", "é", "év"];
         static NAMES: &[&str] = &[
             " brr ooT",
             "Reveillon",
@@ -276,6 +274,11 @@ mod fuzzy_pattern_tests {
             " a reveil",
             "a rbrroot",
             "Ab",
+            "Eve",
+            "zeévr",
+            "alnékjhz vaoi",
+            "jfhf br mleh & é kn rr o hrzpqôùù",
+            "ÅΩ",
         ];
         for pattern in PATTERNS {
             let fp = FuzzyPattern::from(pattern);

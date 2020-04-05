@@ -10,7 +10,7 @@ use {
 };
 
 
-static PATTERNS: &[&str] = &["réveil", "broot", "AB", "é"];
+static PATTERNS: &[&str] = &["réveil", "AB", "e", "brt"];
 // this list contains 100 names, which makes it easier to estimate the duration
 // of a pattern matching per file name.
 static NAMES: &[&str] = &[
