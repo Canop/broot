@@ -14,7 +14,7 @@ const BONUS_EXACT: i32 = 1_000;
 const BONUS_START: i32 = 10;
 const BONUS_START_WORD: i32 = 5;
 const BONUS_CANDIDATE_LENGTH: i32 = -1; // per char
-const BONUS_LENGTH: i32 = -10; // per char of length of the match
+const BONUS_MATCH_LENGTH: i32 = -10; // per char of length of the match
 const BONUS_NB_HOLES: i32 = -30; // there's also a max on that number
 
 #[derive(Debug, Clone)]
@@ -108,10 +108,9 @@ impl FuzzyPattern {
         let mut score = BONUS_MATCH;
         score += BONUS_CANDIDATE_LENGTH * (cand_chars.len() as i32);
         score += BONUS_NB_HOLES * (nb_holes as i32);
-        let match_len = (d as i32) - 1;
-        score += match_len * BONUS_LENGTH;
+        score += d as i32 * BONUS_MATCH_LENGTH;
         if start_idx == 0 {
-            score += BONUS_START;
+            score += BONUS_START + BONUS_START_WORD;
             if cand_chars.len() == self.chars.len() {
                 score += BONUS_EXACT;
                 return MatchSearchResult::Perfect(Match { score, pos });
@@ -198,10 +197,9 @@ impl FuzzyPattern {
         let mut score = BONUS_MATCH;
         score += BONUS_CANDIDATE_LENGTH * (cand_chars.len() as i32);
         score += BONUS_NB_HOLES * (nb_holes as i32);
-        let match_len = (d as i32) - 1;
-        score += match_len * BONUS_LENGTH;
+        score += d as i32 * BONUS_MATCH_LENGTH;
         if start_idx == 0 {
-            score += BONUS_START;
+            score += BONUS_START + BONUS_START_WORD;
             if cand_chars.len() == self.chars.len() {
                 score += BONUS_EXACT;
                 return ScoreSearchResult::Perfect(score);
@@ -218,9 +216,62 @@ impl FuzzyPattern {
         ScoreSearchResult::Some(score)
     }
 
-    /// compute the score of the best match, in a way mostly similar to `find` but
-    /// faster by not storing match positions
-    pub fn score_of(&self, candidate: &str) -> Option<i32> {
+
+    /*
+    const BONUS_MATCH: i32 = 50_000;
+    const BONUS_EXACT: i32 = 1_000;
+    const BONUS_START: i32 = 10;
+    const BONUS_START_WORD: i32 = 5;
+    const BONUS_CANDIDATE_LENGTH: i32 = -1; // per char
+    const BONUS_MATCH_LENGTH: i32 = -10; // per char of length of the match
+    const BONUS_NB_HOLES: i32 = -30; // there's also a max on that number
+    */
+    /// compute the score in the specific case the pattern is of length 1
+    fn score_1_char(&self, candidate: &str, pat_chr: char) -> Option<i32> {
+        let mut cand_chars = candidate.chars().map(secular::lower_lay_char);
+        match cand_chars.next() {
+            None => None, // empty candidate: this looks pathological but might be valid
+            Some(chr) if pat_chr==chr => {
+                let cand_len = cand_chars.count() as i32 + 1;
+                let score = BONUS_MATCH
+                    + BONUS_START + BONUS_START_WORD
+                    + cand_len*BONUS_CANDIDATE_LENGTH
+                    + BONUS_MATCH_LENGTH;
+                Some(
+                    if cand_len==1 { score + BONUS_EXACT } else { score }
+                )
+            }
+            Some(chr) => {
+                let mut last_chr_is_space = chr == ' ';
+                while let Some(cand_chr) = cand_chars.next() {
+                    if cand_chr == pat_chr {
+                        let cand_len = candidate.chars().count() as i32;
+                        let score = BONUS_MATCH
+                            + cand_len*BONUS_CANDIDATE_LENGTH
+                            + BONUS_MATCH_LENGTH;
+                        if last_chr_is_space {
+                            return Some(score + BONUS_START_WORD);
+                        } else {
+                            // looking for another match after a space
+                            while let Some(cand_chr) = cand_chars.next() {
+                                if cand_chr == pat_chr && last_chr_is_space {
+                                        return Some(score + BONUS_START_WORD)
+                                } else {
+                                    last_chr_is_space = cand_chr == ' ';
+                                }
+                            }
+                            return Some(score);
+                        }
+                    } else {
+                        last_chr_is_space = cand_chr == ' ';
+                    }
+                }
+                None
+            }
+        }
+    }
+
+    fn score_n_chars(&self, candidate: &str) -> Option<i32> {
         if candidate.len() < self.chars.len() {
             return None;
         }
@@ -251,6 +302,15 @@ impl FuzzyPattern {
         }
     }
 
+    /// compute the score of the best match, in a way mostly similar to `find` but
+    /// faster by not storing match positions
+    pub fn score_of(&self, candidate: &str) -> Option<i32> {
+        match self.chars.len() {
+            1 => self.score_1_char(candidate, self.chars[0]),
+            _ => self.score_n_chars(candidate),
+        }
+    }
+
     /// return the number of results we should find before starting to
     ///  sort them (unless time is runing out).
     pub const fn optimal_result_number(&self, targeted_size: usize) -> usize {
@@ -265,10 +325,13 @@ mod fuzzy_pattern_tests {
 
     #[test]
     fn check_equal_scores() {
-        static PATTERNS: &[&str] = &["reveil", "dystroy", "broot", "AB", "z", "é", "év"];
+        static PATTERNS: &[&str] = &[
+            "reveil", "dystroy", "broot", "AB", "z", "é", "év", "a"
+        ];
         static NAMES: &[&str] = &[
             " brr ooT",
             "Reveillon",
+            "una a",
             "dys",
             "test",
             " a reveil",
