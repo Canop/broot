@@ -193,6 +193,21 @@ default_flags = ""
 
 ###############################################################
 # Verbs and shortcuts
+# You can define your own commands which would be applied to
+# the selection.
+#
+# Exemple 1: launching `tail -n` on the selected file (leaving broot)
+# [[verbs]]
+# name = "tail_lines"
+# invocation = "tl {lines_count}"
+# execution = "tail -f -n {lines_count} {file}"
+#
+# Exemple 2: creating a new file without leaving broot
+# [[verbs]]
+# name = "touch"
+# invocation = "touch {new_file}"
+# execution = "touch {directory}/{new_file}"
+# leave_broot = false
 
 # If $EDITOR isn't set on your computer, you should either set it using
 #  something similar to
@@ -201,7 +216,6 @@ default_flags = ""
 #  pattern.
 # Example:
 #  execution = "/usr/bin/nvim {file}"
-#
 [[verbs]]
 invocation = "edit"
 key = "F2"
@@ -231,19 +245,7 @@ name = "view"
 invocation = "view"
 execution = "$PAGER {file}"
 
-# If you uncomment the two next shortcuts, the left
-# and right arrow keys will be used to go to the parent
-# directory or to open a selected one:
-#
-# [[verbs]]
-# key = "left"
-# execution = ":parent"
-#
-# [[verbs]]
-# key = "right"
-# execution = ":focus"
-
-# Another popular set of shorctuts for going up and down:
+# A popular set of shorctuts for going up and down:
 #
 # [[verbs]]
 # key = "ctrl-j"
@@ -263,7 +265,6 @@ execution = "$PAGER {file}"
 
 # If you develop using git, you might like to often switch
 # to the "git status" filter:
-#
 # [[verbs]]
 # key = "ctrl-g"
 # execution = ":toggle_git_status"

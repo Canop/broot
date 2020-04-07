@@ -51,7 +51,7 @@ execution | yes | how the verb is executed
 key | no | a keyboard key triggerring execution
 shorcut | no | an alternate way to call the verb (without the arguments part)
 leave_broot | no | whether to quit broot on execution (default: `true`)
-from_shell | no | whether the verb must be executed from the parent shell (needs `br`, default: `false`)
+from_shell | no | whether the verb must be executed from the parent shell (needs `br`, default: `false`). As this is executed after broot closed, this isn't compatiple with `leave_broot = false`
 
 !!!	Note
 	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example `cd` is a shell builtin which must be executed in the parent shell.
