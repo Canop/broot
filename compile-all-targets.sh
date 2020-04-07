@@ -42,7 +42,7 @@ cp target/x86_64-pc-windows-gnu/release/broot.exe build/x86_64-pc-windows-gnu/
 #  rustup target add armv7-unknown-linux-gnueabihf 
 #  sudo apt-get install gcc-8-multilib-arm-linux-gnueabihf
 echo "compiling the Raspberry version"
-RUSTFLAGS="-C linker=arm-linux-gnueabihf-gcc-8" cargo build --target armv7-unknown-linux-gnueabihf --release
+cargo build --target armv7-unknown-linux-gnueabihf --release
 mkdir build/armv7-unknown-linux-gnueabihf
 cp target/armv7-unknown-linux-gnueabihf/release/broot build/armv7-unknown-linux-gnueabihf/
 

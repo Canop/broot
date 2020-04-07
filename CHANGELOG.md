@@ -1,3 +1,6 @@
+### master
+- ignore diacritics in searches - Fix #216
+
 <a name="v0.13.5"></a>
 ### v0.13.5 - 2020-03-28
 - right key open directory, left key gets back (when input is empty) - Fix #179
