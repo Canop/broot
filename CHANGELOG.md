@@ -1,4 +1,5 @@
-### master
+<a name="v0.13.6"></a>
+### v0.13.6 - 2020-04-08
 - ignore diacritics in searches - Fix #216
 
 <a name="v0.13.5"></a>
@@ -14,7 +15,7 @@
 
 <a name="v0.13.3"></a>
 ### v0.13.3 - 2020-02-27
-- fix a compilation problem related to dependency (termimad) versio
+- fix a compilation problem related to dependency (termimad) version
 
 <a name="v0.13.2"></a>
 ### v0.13.2 - 2020-02-16
