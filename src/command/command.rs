@@ -125,10 +125,10 @@ impl Command {
                     return;
                 }
 
-                if *key == keys::TAB {
-                    self.set_action(Action::Next);
-                    return;
-                }
+                //if *key == keys::TAB {
+                //    self.set_action(Action::Next);
+                //    return;
+                //}
 
                 if *key == keys::LEFT && self.raw.is_empty() {
                     self.set_action(Action::Back);

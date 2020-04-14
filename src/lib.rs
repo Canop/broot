@@ -40,8 +40,5 @@ pub mod status;
 pub mod task_sync;
 pub mod tree_build;
 pub mod tree_options;
-pub mod verb_conf;
-pub mod verb_invocation;
-pub mod verb_store;
-pub mod verbs;
+pub mod verb;
 

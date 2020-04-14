@@ -31,6 +31,7 @@ custom_error! {pub ConfError
     Toml {source: toml::de::Error}                  = "unable to parse TOML",
     MissingField {txt: String}                      = "missing field in conf",
     InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: {}",
+    UnknownInternal {verb: String}                  = "not a known internal: {}",
     InvalidKey {raw: String}                        = "not a valid key: {}",
     ReservedKey {key: String}                       = "reserved key: {}",
 }

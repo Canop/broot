@@ -12,14 +12,17 @@ use {
         flat_tree::{LineType, Tree},
         git,
         help::HelpState,
+        io::W,
         pattern::Pattern,
         screens::{self, Screen},
         status::Status,
         task_sync::Dam,
         tree_build::TreeBuilder,
         tree_options::TreeOptions,
-        verb_store::PrefixSearchResult,
-        verbs::VerbExecutor,
+        verb::{
+            PrefixSearchResult,
+            VerbExecutor,
+        },
     },
     minimad::Composite,
     open,
@@ -27,6 +30,9 @@ use {
         fs::OpenOptions,
         io::Write,
         path::PathBuf,
+    },
+    termimad::{
+        Area,
     },
 };
 
@@ -60,6 +66,7 @@ impl BrowserState {
         &self,
         screen: &Screen,
         change_options: &dyn Fn(&mut TreeOptions),
+        in_new_panel: bool,
     ) -> AppStateCmdResult {
         let tree = self.displayed_tree();
         let mut options = tree.options.clone();
@@ -72,6 +79,7 @@ impl BrowserState {
                 &Dam::unlimited(),
             ),
             Command::from_pattern(&tree.options.pattern),
+            in_new_panel,
         )
     }
 
@@ -95,6 +103,7 @@ impl BrowserState {
         &mut self,
         screen: &mut Screen,
         _con: &AppContext,
+        in_new_panel: bool,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let tree = self.displayed_tree();
         let line = tree.selected_line();
@@ -119,6 +128,7 @@ impl BrowserState {
                 Ok(AppStateCmdResult::from_optional_state(
                     BrowserState::new(target, tree.options.without_pattern(), screen, &dam),
                     Command::new(),
+                    in_new_panel,
                 ))
             }
             LineType::SymLinkToFile(target) => {
@@ -172,6 +182,7 @@ impl BrowserState {
     pub fn go_to_parent(
         &mut self,
         screen: &mut Screen,
+        in_new_panel: bool,
     ) -> AppStateCmdResult {
         match &self.displayed_tree().selected_line().path.parent() {
             Some(path) => AppStateCmdResult::from_optional_state(
@@ -182,6 +193,7 @@ impl BrowserState {
                     &Dam::unlimited(),
                 ),
                 Command::new(),
+                in_new_panel,
             ),
             None => AppStateCmdResult::DisplayError("no parent found".to_string()),
         }
@@ -246,7 +258,7 @@ impl AppState for BrowserState {
 
     fn write_status(
         &self,
-        mut w: &mut dyn Write,
+        w: &mut W,
         cmd: &Command,
         screen: &Screen,
         con: &AppContext,
@@ -260,10 +272,10 @@ impl AppState for BrowserState {
         };
         match &cmd.action {
             Action::FuzzyPatternEdit(s) if !s.is_empty() => {
-                Status::new(task, self.normal_status_message(true), false).display(&mut w, screen)
+                Status::new(task, self.normal_status_message(true), false).display(w, screen)
             }
             Action::RegexEdit(s, _) if !s.is_empty() => {
-                Status::new(task, self.normal_status_message(true), false).display(&mut w, screen)
+                Status::new(task, self.normal_status_message(true), false).display(w, screen)
             }
             Action::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
@@ -274,7 +286,7 @@ impl AppState for BrowserState {
                         ),
                         false,
                     )
-                    .display(&mut w, screen)
+                    .display(w, screen)
                 } else {
                     match con.verb_store.search(&invocation.name) {
                         PrefixSearchResult::NoMatch => Status::new(
@@ -282,10 +294,10 @@ impl AppState for BrowserState {
                             mad_inline!("No matching verb (*?* for the list of verbs)"),
                             true,
                         )
-                        .display(&mut w, screen),
+                        .display(w, screen),
                         PrefixSearchResult::Match(verb) => {
                             let line = self.displayed_tree().selected_line();
-                            verb.write_status(&mut w, task, line.path.clone(), invocation, screen)
+                            verb.write_status(w, task, line.path.clone(), invocation, screen)
                         }
                         PrefixSearchResult::TooManyMatches(completions) => Status::new(
                             task,
@@ -299,13 +311,13 @@ impl AppState for BrowserState {
                             )),
                             false,
                         )
-                        .display(&mut w, screen),
+                        .display(w, screen),
                     }
                 }
             }
             _ => {
                 Status::new(task, self.normal_status_message(false), false)
-                    .display(&mut w, screen)
+                    .display(w, screen)
             }
         }
     }
@@ -349,7 +361,7 @@ impl AppState for BrowserState {
             }
             Action::DoubleClick(_, y) => {
                 if self.displayed_tree().selection == *y as usize {
-                    self.open_selection_stay_in_broot(screen, con)
+                    self.open_selection_stay_in_broot(screen, con, false)
                 } else {
                     // A double click always come after a simple click at
                     // same position. If it's not the selected line, it means
@@ -357,7 +369,7 @@ impl AppState for BrowserState {
                     Ok(AppStateCmdResult::Keep)
                 }
             }
-            Action::OpenSelection => self.open_selection_stay_in_broot(screen, con),
+            Action::OpenSelection => self.open_selection_stay_in_broot(screen, con, false),
             Action::AltOpenSelection => self.open_selection_quit_broot(screen, con),
             Action::FuzzyPatternEdit(pat) => {
                 match pat.len() {
@@ -370,10 +382,11 @@ impl AppState for BrowserState {
                 }
                 Ok(AppStateCmdResult::Keep)
             }
-            Action::Help => Ok(AppStateCmdResult::NewState(
-                Box::new(HelpState::new(screen, con)),
-                Command::new(),
-            )),
+            Action::Help => Ok(AppStateCmdResult::NewState {
+                state: Box::new(HelpState::new(screen, con)),
+                cmd: Command::new(),
+                in_new_panel: false,
+            }),
             Action::Next => {
                 self.displayed_tree_mut().try_select_next_match();
                 self.displayed_tree_mut().make_selection_visible(page_height);
@@ -402,11 +415,11 @@ impl AppState for BrowserState {
             }
             Action::VerbIndex(index) => {
                 let verb = &con.verb_store.verbs[*index];
-                self.execute_verb(verb, &verb.invocation, screen, con)
+                self.execute_verb(verb, None, screen, con)
             }
             Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::Match(verb) => {
-                    self.execute_verb(verb, &invocation, screen, con)
+                    self.execute_verb(verb, Some(&invocation), screen, con)
                 }
                 _ => Ok(AppStateCmdResult::verb_not_found(&invocation.name)),
             },
@@ -454,23 +467,19 @@ impl AppState for BrowserState {
 
     fn display(
         &mut self,
-        mut w: &mut dyn Write,
+        w: &mut W,
         screen: &Screen,
+        area: Area,
         _con: &AppContext,
     ) -> Result<(), ProgramError> {
-        screen.goto(&mut w, 0, 0)?;
+        debug!("drawing tree in {:?}", &area);
         let dp = DisplayableTree {
             tree: &self.displayed_tree(),
             skin: &screen.skin,
-            area: termimad::Area {
-                left: 0,
-                top: 0,
-                width: screen.width,
-                height: screen.height - 2,
-            },
+            area,
             in_app: true,
         };
-        dp.write_on(&mut w)
+        dp.write_on(w)
     }
 
     fn refresh(&mut self, screen: &Screen, _con: &AppContext) -> Command {
@@ -494,23 +503,23 @@ impl AppState for BrowserState {
     /// draw the flags at the bottom right of the screen
     fn write_flags(
         &self,
-        mut w: &mut dyn Write,
+        w: &mut W,
         screen: &mut Screen,
         _con: &AppContext,
     ) -> Result<(), ProgramError> {
         let tree = self.displayed_tree();
         let total_char_size = screens::FLAGS_AREA_WIDTH;
         screen.goto_clear(
-            &mut w,
+            w,
             screen.width - total_char_size - 1,
             screen.height - 1,
         )?;
         let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
         let gi_value = if tree.options.respect_git_ignore { 'y' } else { 'n' };
-        screen.skin.flag_label.queue_str(&mut w, " h:")?;
-        screen.skin.flag_value.queue(&mut w, h_value)?;
-        screen.skin.flag_label.queue_str(&mut w, "   gi:")?;
-        screen.skin.flag_value.queue(&mut w, gi_value)?;
+        screen.skin.flag_label.queue_str(w, " h:")?;
+        screen.skin.flag_value.queue(w, h_value)?;
+        screen.skin.flag_label.queue_str(w, "   gi:")?;
+        screen.skin.flag_value.queue(w, gi_value)?;
         Ok(())
     }
 }

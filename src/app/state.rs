@@ -2,11 +2,12 @@ use {
     crate::{
         command::Command,
         errors::ProgramError,
+        io::W,
         screens::Screen,
         task_sync::Dam,
     },
-    std::io::Write,
     super::*,
+    termimad::Area,
 };
 
 /// a whole application state, stackable to allow reverting
@@ -21,7 +22,11 @@ pub trait AppState {
 
     fn can_execute(&self, verb_index: usize, con: &AppContext) -> bool;
 
-    fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
+    fn refresh(
+        &mut self,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> Command;
 
     fn do_pending_task(&mut self, screen: &mut Screen, dam: &mut Dam);
 
@@ -29,21 +34,22 @@ pub trait AppState {
 
     fn display(
         &mut self,
-        w: &mut dyn Write,
+        w: &mut W,
         screen: &Screen,
+        panel_area: Area,
         con: &AppContext,
     ) -> Result<(), ProgramError>;
 
     fn write_flags(
         &self,
-        w: &mut dyn Write,
+        w: &mut W,
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<(), ProgramError>;
 
     fn write_status(
         &self,
-        w: &mut dyn Write,
+        w: &mut W,
         cmd: &Command,
         screen: &Screen,
         con: &AppContext,

@@ -1,4 +1,4 @@
-/// Verbs are the engines of broot commands, and apply
+// Verbs are the engines of broot commands, and apply
 /// - to the selected file (if user-defined, then must contain {file}, {parent} or {directory})
 /// - to the current app state
 use {
@@ -12,7 +12,6 @@ use {
         screens::Screen,
         selection_type::SelectionType,
         status::Status,
-        verb_invocation::VerbInvocation,
     },
     crossterm::event::{
         KeyCode,
@@ -27,41 +26,15 @@ use {
         io::Write,
         path::{Path, PathBuf},
     },
+    super::{
+        Internal,
+        VerbExecution,
+        VerbInvocation,
+    },
 };
-
-/// what makes a verb.
-///
-/// There are two types of verbs executions:
-/// - external programs or commands (cd, mkdir, user defined commands, etc.)
-/// - built in behaviors (focusing a path, going back, showing the help, etc.)
-///
-#[derive(Debug, Clone)]
-pub struct Verb {
-    pub invocation: VerbInvocation, // how the verb is supposed to be called, may be empty
-    pub key: Option<KeyEvent>,
-    pub key_desc: String, // a description of the optional keyboard key triggering that verb
-    pub args_parser: Option<Regex>,
-    pub shortcut: Option<String>,    // a shortcut, eg "c"
-    pub execution: String,           // a pattern usable for execution, eg ":quit" or "less {file}"
-    pub description: Option<String>, // a description for the user
-    pub from_shell: bool, // whether it must be launched from the parent shell (eg because it's a shell function)
-    pub leave_broot: bool, // only defined for external
-    pub confirm: bool, // not yet used...
-    pub selection_condition: SelectionType,
-}
 
 lazy_static! {
     static ref GROUP: Regex = Regex::new(r"\{([^{}:]+)(?::([^{}:]+))?\}").unwrap();
-}
-
-pub trait VerbExecutor {
-    fn execute_verb(
-        &mut self,
-        verb: &Verb,
-        invocation: &VerbInvocation,
-        screen: &mut Screen,
-        con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError>;
 }
 
 fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
@@ -80,70 +53,133 @@ fn path_to_string(path: &Path, for_shell: bool) -> String {
     }
 }
 
+/// what makes a verb.
+///
+/// There are two types of verbs executions:
+/// - external programs or commands (cd, mkdir, user defined commands, etc.)
+/// - internal behaviors (focusing a path, going back, showing the help, etc.)
+#[derive(Debug, Clone)]
+pub struct Verb {
+
+    // a name with maybe _tab, for the help page
+    pub name: String,
+
+    /// how the verb is supposed to be called, may be empty
+    pub invocation: VerbInvocation,
+
+    pub keys: Vec<KeyEvent>,
+
+    /// description of the optional keyboard key(s) triggering that verb
+    pub keys_desc: String,
+
+    /// the regex used to parse the arguments typed by the user
+    /// in the input
+    pub args_parser: Option<Regex>,
+
+    /// a shortcut, eg "c"
+    pub shortcut: Option<String>,
+
+    /// How the verb will be executed
+    pub execution: VerbExecution,
+
+    /// a description
+    pub description: Option<String>,
+
+    /// whether it must be launched from the parent shell
+    pub from_shell: bool,
+
+    /// leave broot on execution, only defined for external
+    pub leave_broot: bool,
+
+    pub selection_condition: SelectionType,
+}
+
 impl Verb {
-    /// build a verb using standard configurable behavior.
-    /// "external" means not "built-in".
-    pub fn create_external(
+
+    fn new(
+        invocation: VerbInvocation,
+        args_parser: Option<Regex>,
+        execution: VerbExecution,
+    ) -> Self {
+        let name = invocation.complete_name();
+        Self {
+            name,
+            invocation,
+            keys: Vec::new(),
+            keys_desc: "".to_string(),
+            args_parser,
+            shortcut: None,
+            execution,
+            description: None,
+            from_shell: false,
+            leave_broot: false,
+            selection_condition: SelectionType::Any,
+        }
+    }
+
+    pub fn internal(
+        internal: Internal,
+    ) -> Self {
+        Self::internal_bang(internal, false)
+    }
+
+    pub fn internal_bang(
+        internal: Internal,
+        bang: bool,
+    ) -> Self {
+        let invocation = VerbInvocation {
+            name: internal.name().to_string(),
+            args: None,
+            bang,
+        };
+        let execution = VerbExecution::Internal {
+            internal,
+            bang,
+        };
+        Self::new(invocation, None, execution)
+    }
+
+    pub fn external(
         invocation_str: &str,
-        key: Option<KeyEvent>,
-        shortcut: Option<String>,
-        execution: String,
-        description: Option<String>,
-        from_shell: bool,
-        leave_broot: bool,
-        confirm: bool,
-    ) -> Result<Verb, ConfError> {
+        execution_str: &str,
+    ) -> Result<Self, ConfError> {
         let invocation = VerbInvocation::from(invocation_str);
         let args_parser = invocation
             .args
             .as_ref()
             .map(|args| make_invocation_args_regex(&args))
             .transpose()?;
-        // we use the selection condition to prevent configured
-        // verb execution on enter on directories
-        let selection_condition = match key {
-            Some(KeyEvent{code:KeyCode::Enter, ..}) => SelectionType::File,
-            _ => SelectionType::Any,
-        };
-        Ok(Verb {
-            invocation,
-            key_desc: key.map_or("".to_string(), keys::key_event_desc),
-            key,
-            args_parser,
-            shortcut,
-            execution,
-            description,
-            from_shell,
-            leave_broot,
-            confirm,
-            selection_condition,
-        })
+        let execution = VerbExecution::External(execution_str.to_string());
+        Ok(Self::new(invocation, args_parser, execution))
     }
 
-    /// built-ins are verbs offering a logic other than the execution
-    ///  based on exec_pattern. They mostly modify the appstate
-    pub fn create_builtin(
-        name: &str,
-        key: Option<KeyEvent>,
-        shortcut: Option<String>,
-        description: &str,
-    ) -> Verb {
-        Verb {
-            invocation: VerbInvocation {
-                name: name.to_string(),
-                args: None,
-            },
-            key_desc: key.map_or("".to_string(), keys::key_event_desc),
-            key,
-            args_parser: None,
-            shortcut,
-            execution: format!(":{}", name),
-            description: Some(description.to_string()),
-            from_shell: false,
-            leave_broot: true, // ignored
-            confirm: false,    // ignored
-            selection_condition: SelectionType::Any,
+    pub fn with_key(mut self, key: KeyEvent) -> Self {
+        self.keys.push(key);
+        if key.code==KeyCode::Enter {
+            self.selection_condition = SelectionType::File;
         }
+        self.keys_desc = self.keys
+            .iter()
+            .map(|&k| keys::key_event_desc(k))
+            .collect::<Vec<String>>() // no way to join an iterator today ?
+            .join(", ");
+        self
+    }
+    pub fn with_description(mut self, description: &str) -> Self {
+        self.description = Some(description.to_string());
+        self
+    }
+    pub fn with_shortcut(mut self, shortcut: &str) -> Self {
+        self.shortcut = Some(shortcut.to_string());
+        self
+    }
+    pub fn with_from_shell(mut self, from_shell: bool) -> Self {
+        self.from_shell = from_shell;
+        self
+    }
+    pub fn with_leave_broot(mut self, leave_broot: bool) -> Self {
+        self.leave_broot = leave_broot;
+        self
     }
 
     /// Assuming the verb has been matched, check whether the arguments
@@ -222,22 +258,34 @@ impl Verb {
         if let Some(err) = self.match_error(invocation) {
             Status::new(task, Composite::from_inline(&err), true).display(w, screen)
         } else {
-            let verb_description;
             let markdown;
+            let exec_desc;
             let composite = if let Some(description) = &self.description {
                 markdown = format!(
                     "Hit *enter* to **{}**: {}",
-                    &self.invocation.name,
+                    &self.name,
                     description,
                 );
                 Composite::from_inline(&markdown)
             } else {
-                verb_description = self.shell_exec_string(&path, &invocation.args);
-                mad_inline!(
-                    "Hit *enter* to **$0**: `$1`",
-                    &self.invocation.name,
-                    &verb_description,
-                )
+                match &self.execution {
+                    VerbExecution::Internal{ internal, .. } => {
+                        markdown = format!(
+                            "Hit *enter* to **{}**: {}",
+                            &self.name,
+                            internal.description(),
+                        );
+                        Composite::from_inline(&markdown)
+                    }
+                    VerbExecution::External(_) => {
+                        exec_desc = self.shell_exec_string(&path, &invocation.args);
+                        mad_inline!(
+                            "Hit *enter* to **$0**: `$1`",
+                            &self.name,
+                            &exec_desc,
+                        )
+                    }
+                }
             };
             Status::new(
                 task,
@@ -249,6 +297,7 @@ impl Verb {
 
     /// build the cmd result for a verb defined with an exec pattern.
     /// Calling this function on a built-in doesn't make sense
+    /// TODO cleaner types so that this isn't callable on internals
     pub fn to_cmd_result(
         &self,
         file: &Path,
@@ -275,7 +324,7 @@ impl Verb {
                 )
             }
         } else {
-            let launchable = external::Launchable::program(self.exec_token(file, args))?;
+            let launchable = external::Launchable::program(self.exec_token(file, args)?)?;
             if self.leave_broot {
                 AppStateCmdResult::from(launchable)
             } else {
@@ -297,40 +346,54 @@ impl Verb {
 
     /// build the token which can be used to launch en executable.
     /// This doesn't make sense for a built-in.
-    pub fn exec_token(&self, file: &Path, args: &Option<String>) -> Vec<String> {
-        let map = self.replacement_map(file, args, false);
-        self.execution
-            .split_whitespace()
-            .map(|token| {
-                GROUP
-                    .replace_all(token, |ec: &Captures<'_>| do_exec_replacement(ec, &map))
-                    .to_string()
-            })
-            .collect()
+    /// TODO cleaner types so that this isn't callable on internals
+    fn exec_token(&self, file: &Path, args: &Option<String>) -> Result<Vec<String>, ProgramError> {
+        match &self.execution {
+            VerbExecution::External(external) => {
+                let map = self.replacement_map(file, args, false);
+                Ok(external
+                    .split_whitespace()
+                    .map(|token| {
+                        GROUP
+                            .replace_all(token, |ec: &Captures<'_>| do_exec_replacement(ec, &map))
+                            .to_string()
+                    })
+                    .collect()
+                )
+            }
+            _ => Err(ProgramError::InternalError{ details:"not an external verb".to_string() }),
+        }
     }
 
     /// build a shell compatible command, with escapings
-    pub fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
+    /// TODO cleaner types so that this isn't callable on internals
+    fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
         debug!("shell_exec_string args={:?}", args);
-        let map = self.replacement_map(file, args, true);
-        GROUP
-            .replace_all(&self.execution, |ec: &Captures<'_>| {
-                do_exec_replacement(ec, &map)
-            })
-            .to_string()
-            .split_whitespace()
-            .map(|token| {
-                debug!("make path from {:?} token", &token);
-                let path = Path::new(token);
-                if path.exists() {
-                    if let Some(path) = path.to_str() {
-                        return path.to_string();
-                    }
-                }
-                token.to_string()
-            })
-            .collect::<Vec<String>>()
-            .join(" ")
+        match &self.execution {
+            VerbExecution::External(external) => {
+                let map = self.replacement_map(file, args, true);
+                GROUP
+                    .replace_all(&external, |ec: &Captures<'_>| {
+                        do_exec_replacement(ec, &map)
+                    })
+                    .to_string()
+                    .split_whitespace()
+                    .map(|token| {
+                        debug!("make path from {:?} token", &token);
+                        let path = Path::new(token);
+                        if path.exists() {
+                            if let Some(path) = path.to_str() {
+                                return path.to_string();
+                            }
+                        }
+                        token.to_string()
+                    })
+                    .collect::<Vec<String>>()
+                    .join(" ")
+
+            }
+            _ => "not an external verb".to_string(), // BUG - FIXME
+        }
     }
 }
 

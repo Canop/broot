@@ -14,7 +14,7 @@ pub enum AppStateCmdResult {
     Keep,
     Launch(Box<Launchable>),
     DisplayError(String),
-    NewState(Box<dyn AppState>, Command),
+    NewState { state: Box<dyn AppState>, cmd: Command, in_new_panel: bool },
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
     RefreshState { clear_cache: bool },
@@ -27,9 +27,14 @@ impl AppStateCmdResult {
     pub fn from_optional_state(
         os: Result<Option<BrowserState>, TreeBuildError>,
         cmd: Command,
+        in_new_panel: bool,
     ) -> AppStateCmdResult {
         match os {
-            Ok(Some(os)) => AppStateCmdResult::NewState(Box::new(os), cmd),
+            Ok(Some(os)) => AppStateCmdResult::NewState{
+                state: Box::new(os),
+                cmd,
+                in_new_panel,
+            },
             Ok(None) => AppStateCmdResult::Keep,
             Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
         }

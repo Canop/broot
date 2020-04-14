@@ -31,9 +31,12 @@ const_key!(ALT_ENTER, Enter, KeyModifiers::ALT);
 const_key!(ENTER, Enter);
 const_key!(BACKSPACE, Backspace);
 const_key!(BACK_TAB, BackTab);
+const_key!(CTRL_C, Char('c'), KeyModifiers::CONTROL);
+const_key!(CTRL_Q, Char('q'), KeyModifiers::CONTROL);
 const_key!(CTRL_S, Char('s'), KeyModifiers::CONTROL);
 const_key!(DELETE, Delete);
 const_key!(DOWN, Down);
+const_key!(PAGE_DOWN, PageDown);
 const_key!(END, End);
 const_key!(ESC, Esc);
 const_key!(HOME, Home);
@@ -43,6 +46,13 @@ const_key!(RIGHT, Right);
 const_key!(SPACE, Char(' '));
 const_key!(TAB, Tab);
 const_key!(UP, Up);
+const_key!(PAGE_UP, PageUp);
+const_key!(F1, F(1));
+const_key!(F2, F(2));
+const_key!(F3, F(3));
+const_key!(F4, F(4));
+const_key!(F5, F(5));
+const_key!(F6, F(6));
 
 /// build a human description of a key event
 pub fn key_event_desc(key: KeyEvent) -> String {
@@ -128,6 +138,7 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
         "f11" => F(11),
         "f12" => F(12),
         "space" => Char(' '),
+        "tab" => Tab,
         c if c.len() == 1 => Char(c.chars().next().unwrap()),
         _ => {
             return bad_key(raw);

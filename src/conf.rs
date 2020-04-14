@@ -6,7 +6,7 @@ use {
         errors::ConfError,
         keys,
         skin,
-        verb_conf::VerbConf,
+        verb::VerbConf,
     },
     crossterm::style::Attribute,
     directories::ProjectDirs,
@@ -137,7 +137,7 @@ impl Conf {
                     );
                     continue;
                 }
-                self.verbs.push(VerbConf {
+                let verb_conf = VerbConf {
                     invocation,
                     execution,
                     key,
@@ -145,8 +145,10 @@ impl Conf {
                     description: string_field(verb_value, "description"),
                     from_shell,
                     leave_broot,
-                    confirm: bool_field(verb_value, "confirm"),
-                });
+                };
+                debug!("\nread verb conf: {:?}\n", &verb_conf);
+
+                self.verbs.push(verb_conf);
             }
         }
         // reading the skin

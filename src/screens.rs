@@ -1,6 +1,9 @@
 use {
     crate::{
-        app::AppContext,
+        app::{
+            AppContext,
+            StatePanel,
+        },
         errors::ProgramError,
         skin::{self, StatusMadSkinSet},
         skin::Skin,
@@ -11,7 +14,13 @@ use {
         QueueableCommand,
     },
     std::io::Write,
-    termimad::{Area, CompoundStyle, InputField, MadSkin},
+    strict::NonEmptyVec,
+    termimad::{
+        Area,
+        CompoundStyle,
+        InputField,
+        MadSkin,
+    },
 };
 
 pub static FLAGS_AREA_WIDTH: u16 = 10;
@@ -74,5 +83,18 @@ impl Screen {
     pub fn clear_line(&self, w: &mut impl Write) -> Result<(), ProgramError> {
         w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
+    }
+    /// return the max number of panels, depending on the available space
+    pub fn max_panel_count(&self) -> usize {
+        self.width as usize / 20
+    }
+    pub fn panel_areas(&self, panels: &NonEmptyVec<StatePanel>) -> Vec<Area> {
+        let panel_width = self.width / (panels.len().get() as u16);
+        let mut x = 0;
+        panels.iter().map(|_| {
+            let area = Area::new(x, 0, panel_width, self.height - 2);
+            x += panel_width;
+            area
+        }).collect()
     }
 }

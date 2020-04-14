@@ -98,7 +98,6 @@ impl Dam {
             ComputationResult::None
         } else {
             //
-            debug!("start select! in dam");
             select! {
                 recv(self.receiver) -> event => {
                     // interruption
@@ -108,7 +107,6 @@ impl Dam {
                 }
                 recv(comp_receiver) -> comp_res => {
                     // computation finished
-                    debug!("computation passes dam");
                     comp_res.unwrap_or(ComputationResult::None)
                 }
             }

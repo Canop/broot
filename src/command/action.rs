@@ -1,6 +1,6 @@
 use {
     crate::{
-        verb_invocation::VerbInvocation,
+        verb::VerbInvocation,
     },
     super::*,
 };

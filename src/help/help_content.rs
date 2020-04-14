@@ -1,6 +1,7 @@
 use {
     crate::{
         app::AppContext,
+        verb::VerbExecution,
     },
     minimad::{
         Text,
@@ -67,18 +68,26 @@ pub fn build_text(con: &AppContext) -> Text<'_> {
     for verb in &con.verb_store.verbs {
         let sub = expander
             .sub("verb-rows")
-            .set("name", &verb.invocation.name)
+            .set("name", &verb.name)
             .set(
                 "shortcut",
                 if let Some(sk) = &verb.shortcut { &sk } else { "" }, // TODO use as_deref when it's available
             )
-            .set("key", &verb.key_desc);
+            .set("key", &verb.keys_desc);
         if let Some(description) = &verb.description {
-            sub.set_md("description", &description);
+            sub.set_md("description", description);
             sub.set("execution", "");
         } else {
-            sub.set("description", "");
-            sub.set("execution", &verb.execution);
+            match &verb.execution {
+                VerbExecution::Internal{ internal, .. } => {
+                    sub.set_md("description", internal.description());
+                    sub.set("execution", "");
+                }
+                VerbExecution::External(external) => {
+                    sub.set("description", "");
+                    sub.set("execution", &external);
+                }
+            }
         }
     }
     expander.expand()

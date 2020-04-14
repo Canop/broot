@@ -8,36 +8,42 @@ use {
         command::{Action, Command},
         conf::Conf,
         errors::ProgramError,
+        io::W,
         screens::Screen,
         status::Status,
         task_sync::Dam,
-        verb_store::PrefixSearchResult,
-        verbs::VerbExecutor,
+        verb::{
+            PrefixSearchResult,
+            VerbExecutor,
+        },
     },
     crossterm::{
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
     minimad::Composite,
-    std::io::Write,
     super::{
         help_content,
     },
-    termimad::{Area, FmtText, TextView},
+    termimad::{
+        Area,
+        FmtText,
+        TextView,
+    },
 };
 
 /// an application state dedicated to help
 pub struct HelpState {
     pub scroll: i32, // scroll position
-    pub area: Area,
+    pub text_area: Area,
     dirty: bool, // background must be cleared
 }
 
 impl HelpState {
     pub fn new(_screen: &Screen, _con: &AppContext) -> HelpState {
-        let area = Area::uninitialized(); // will be fixed at drawing time
+        let text_area = Area::uninitialized(); // will be fixed at drawing time
         HelpState {
-            area,
+            text_area,
             scroll: 0,
             dirty: true,
         }
@@ -77,11 +83,11 @@ impl AppState for HelpState {
             }
             Action::VerbIndex(index) => {
                 let verb = &con.verb_store.verbs[*index];
-                self.execute_verb(verb, &verb.invocation, screen, con)?
+                self.execute_verb(verb, None, screen, con)?
             }
             Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::Match(verb) => {
-                    self.execute_verb(verb, &invocation, screen, con)?
+                    self.execute_verb(verb, Some(&invocation), screen, con)?
                 }
                 _ => AppStateCmdResult::verb_not_found(&invocation.name),
             },
@@ -99,31 +105,32 @@ impl AppState for HelpState {
 
     fn display(
         &mut self,
-        mut w: &mut dyn Write,
+        w: &mut W,
         screen: &Screen,
+        panel_area: Area,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         if self.dirty {
-            screen.skin.default.queue_bg(&mut w)?;
-            screen.clear(&mut w)?;
-            self.area = Area::new(0, 0, screen.width, screen.height - 2);
-            self.area.pad_for_max_width(110);
+            screen.skin.default.queue_bg(w)?;
+            screen.clear(w)?;
+            self.text_area = panel_area.clone();
+            self.text_area.pad_for_max_width(110);
             self.dirty = false;
         }
         let text = help_content::build_text(con);
         let fmt_text = FmtText::from_text(
             &screen.help_skin,
             text,
-            Some((self.area.width - 1) as usize),
+            Some((self.text_area.width - 1) as usize),
         );
-        let mut text_view = TextView::from(&self.area, &fmt_text);
+        let mut text_view = TextView::from(&self.text_area, &fmt_text);
         self.scroll = text_view.set_scroll(self.scroll);
-        Ok(text_view.write_on(&mut w)?)
+        Ok(text_view.write_on(w)?)
     }
 
     fn write_status(
         &self,
-        mut w: &mut dyn Write,
+        w: &mut W,
         cmd: &Command,
         screen: &Screen,
         con: &AppContext,
@@ -134,15 +141,15 @@ impl AppState for HelpState {
                     Status::from_message(mad_inline!(
                         "Type a verb then *enter* to execute it (*?* for the list of verbs)"
                     ))
-                    .display(&mut w, screen)
+                    .display(w, screen)
                 } else {
                     match con.verb_store.search(&invocation.name) {
                         PrefixSearchResult::NoMatch => {
                             Status::from_error(mad_inline!("No matching verb"))
-                                .display(&mut w, screen)
+                                .display(w, screen)
                         }
                         PrefixSearchResult::Match(verb) => verb.write_status(
-                            &mut w,
+                            w,
                             None,
                             Conf::default_location(),
                             invocation,
@@ -157,7 +164,7 @@ impl AppState for HelpState {
                                     .collect::<Vec<String>>()
                                     .join(", "),
                             )))
-                            .display(&mut w, screen)
+                            .display(w, screen)
                         }
                     }
                 }
@@ -165,18 +172,18 @@ impl AppState for HelpState {
             _ => Status::from_message(mad_inline!(
                 "Hit *esc* to get back to the tree, or a space to start a verb"
             ))
-            .display(&mut w, screen),
+            .display(w, screen),
         }
     }
 
     /// there's no meaningful flags here
     fn write_flags(
         &self,
-        mut w: &mut dyn Write,
+        w: &mut W,
         screen: &mut Screen,
         _con: &AppContext,
     ) -> Result<(), ProgramError> {
-        screen.skin.default.queue_bg(&mut w)?;
+        screen.skin.default.queue_bg(w)?;
         w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
     }

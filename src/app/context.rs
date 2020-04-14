@@ -1,7 +1,7 @@
 use crate::{
     cli::AppLaunchArgs,
     conf::Conf,
-    verb_store::VerbStore,
+    verb::VerbStore,
 };
 
 /// The immutable container that can be passed around

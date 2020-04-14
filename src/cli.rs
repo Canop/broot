@@ -14,17 +14,25 @@ use {
         conf::Conf,
         errors::{ProgramError, TreeBuildError},
         external::Launchable,
+        screens::Screen,
         shell_install::{
             ShellInstall,
             ShellInstallState,
         },
         skin,
         tree_options::TreeOptions,
-        verb_store::VerbStore,
+        verb::VerbStore,
+    },
+    crossterm::{
+        self,
+        cursor,
+        event::{DisableMouseCapture, EnableMouseCapture},
+        terminal::{EnterAlternateScreen, LeaveAlternateScreen},
+        QueueableCommand,
     },
     std::{
         env,
-        io,
+        io::{self, Write},
         path::{Path, PathBuf},
     },
 };
@@ -198,7 +206,19 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     let context = AppContext::from(launch_args, verb_store);
     let skin = skin::Skin::create(config.skin);
-    App::new().run(crate::io::writer(), &context, skin)
+
+    let mut w = crate::io::writer();
+    let mut screen = Screen::new(&context, skin)?;
+    let app = App::new(&context, &screen)?;
+    w.queue(EnterAlternateScreen)?;
+    w.queue(cursor::Hide)?;
+    w.queue(EnableMouseCapture)?;
+    let r = app.run(&mut w, &mut screen, &context);
+    w.queue(DisableMouseCapture)?;
+    w.queue(cursor::Show)?;
+    w.queue(LeaveAlternateScreen)?;
+    w.flush()?;
+    r
 }
 
 /// wait for user input, return `true` if she

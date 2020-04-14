@@ -185,10 +185,8 @@ impl GitIgnorer {
         // we don't want the .gitignore files of super repositories
         // (see https://github.com/Canop/broot/issues/160)
         let mut chain = if is_repo(dir) {
-            //debug!("entering a git repo {:?}", dir);
             self.global_chain.clone()
         } else {
-            //debug!("subfolder {:?} in same repo", dir);
             parent_chain.clone()
         };
         let ignore_file = dir.join(".gitignore");

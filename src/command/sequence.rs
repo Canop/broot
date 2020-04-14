@@ -5,7 +5,7 @@ use {
     crate::{
         app::AppContext,
         errors::ProgramError,
-        verb_store::PrefixSearchResult,
+        verb::PrefixSearchResult,
     },
     super::{
         Action,
