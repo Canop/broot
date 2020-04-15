@@ -3,39 +3,34 @@ use {
     crate::{
         keys::*,
     },
-    super::{
-        Internal,
-        Verb,
-    },
+    super::Verb,
 };
 
 /// declare the built_in verbs, the ones which are available
 /// in standard (they still may be overriden by configuration)
 pub fn builtin_verbs() -> Vec<Verb> {
-    use {
+    use super::{
+        ExternalExecutionMode::*,
         Internal::*,
     };
     vec![
 
         Verb::internal(back),
 
-        Verb::external(
-            "cd",
-            "cd {directory}",
-        ).unwrap()
-        .with_description("change directory and quit (mapped to *alt*-*enter*)")
-        .with_from_shell(true)
-        .with_leave_broot(true),
+        Verb::from(super::cd::CD.clone())
+        .with_description("change directory and quit (mapped to *alt*-*enter*)"),
 
         #[cfg(unix)]
         Verb::external(
             "chmod {args}",
             "chmod {args} {file}",
+            StayInBroot,
         ).unwrap(),
 
         Verb::external(
             "cp {newpath}",
             "/bin/cp -r {file} {newpath:path-from-parent}",
+            StayInBroot,
         ).unwrap(),
 
         Verb::internal(focus) // hardcoded Enter
@@ -59,12 +54,14 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::external(
             "mkdir {subpath}",
             "/bin/mkdir -p {subpath:path-from-directory}",
+            StayInBroot,
         ).unwrap()
         .with_shortcut("md"),
 
         Verb::external(
             "mv {newpath}",
             "/bin/mv {file} {newpath:path-from-parent}",
+            StayInBroot,
         ).unwrap(),
 
         Verb::internal(open_stay)
@@ -105,6 +102,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::external(
             "rm",
             "/bin/rm -rf {file}",
+            StayInBroot,
         ).unwrap(),
 
         Verb::internal(toggle_dates)

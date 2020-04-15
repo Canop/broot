@@ -3,7 +3,7 @@ use {
         browser::BrowserState,
         command::Command,
         errors::TreeBuildError,
-        external::Launchable,
+        launchable::Launchable,
     },
     super::*,
 };

@@ -1,43 +1,24 @@
 
 use {
-    crate::{
-        errors::ConfError,
-    },
     super::{
+        External,
         Internal,
     },
 };
 
-/// how a verb must be executed, as described in the configuration
+/// how a verb must be executed
 #[derive(Debug, Clone)]
 pub enum VerbExecution {
 
-    /// the verb execution is an internal or refers to another verb.
+    /// the verb execution is based on a behavior defined in code in Broot.
     /// Executions in conf starting with ":" are of this type.
     Internal {
         internal: Internal,
         bang: bool,
     },
 
-    /// the verb execution refers to a command that will be executed by the system
-    External(String),
+    /// the verb execution refers to a command that will be executed by the system,
+    /// outside of broot.
+    External(External),
 }
 
-impl VerbExecution {
-    pub fn try_from(mut s: &str) -> Result<Self, ConfError> {
-        Ok(
-            if s.starts_with(':') || s.starts_with(' ') {
-                s = &s[1..];
-                let mut bang = false;
-                if s.starts_with('!') {
-                    bang = true;
-                    s = &s[1..];
-                }
-                let internal = Internal::try_from(s)?;
-                Self::Internal{ internal, bang }
-            } else {
-                Self::External(s.to_string())
-            }
-        )
-    }
-}

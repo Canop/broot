@@ -13,7 +13,7 @@ use {
         },
         conf::Conf,
         errors::{ProgramError, TreeBuildError},
-        external::Launchable,
+        launchable::Launchable,
         screens::Screen,
         shell_install::{
             ShellInstall,

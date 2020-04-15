@@ -5,8 +5,9 @@ use {
     crossterm::event::KeyEvent,
     std::convert::TryFrom,
     super::{
+        ExternalExecutionMode,
+        Internal,
         Verb,
-        VerbExecution,
     },
 };
 
@@ -22,33 +23,39 @@ pub struct VerbConf {
     pub leave_broot: Option<bool>,
 }
 
-
 impl TryFrom<&VerbConf> for Verb {
     type Error = ConfError;
     fn try_from(verb_conf: &VerbConf) -> Result<Self, Self::Error> {
-        let execution = VerbExecution::try_from(&verb_conf.execution)?;
-        let mut verb = match execution {
-            VerbExecution::Internal{ internal, bang } => {
-                Verb::internal_bang(internal, bang)
+        // if there's a ':' or ' ' at starts, it's an internal.
+        // In other cases it's an external.
+        // (we might support adding aliases to externals in the
+        // future. In such cases we'll check among previously
+        // added externals if no internal is found with the name)
+        let mut s: &str = &verb_conf.execution;
+        let mut verb = if s.starts_with(':') || s.starts_with(' ') {
+            s = &s[1..];
+            let mut bang = false;
+            if s.starts_with('!') {
+                bang = true;
+                s = &s[1..];
             }
-            VerbExecution::External(_) => {
-                Verb::external(
-                    &verb_conf.invocation,
-                    &verb_conf.execution,
-                )?
-            }
+            let internal = Internal::try_from(s)?; // check among known internals
+            Verb::internal_bang(internal, bang)
+        } else {
+            Verb::external(
+                &verb_conf.invocation,
+                &verb_conf.execution,
+                ExternalExecutionMode::from_conf(
+                    &verb_conf.from_shell,
+                    &verb_conf.leave_broot,
+                ),
+            )?
         };
         if let Some(key) = verb_conf.key {
             verb = verb.with_key(key);
         }
         verb.shortcut = verb_conf.shortcut.clone();
         verb.description = verb_conf.description.clone();
-        if let Some(b) = verb_conf.from_shell.as_ref() {
-            verb.from_shell = *b;
-        }
-        if let Some(b) = verb_conf.leave_broot.as_ref() {
-            verb.leave_broot = *b;
-        }
         Ok(verb)
     }
 }

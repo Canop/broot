@@ -8,7 +8,7 @@ use {
         command::{Action, Command},
         displayable_tree::DisplayableTree,
         errors::{ProgramError, TreeBuildError},
-        external::Launchable,
+        launchable::Launchable,
         flat_tree::{LineType, Tree},
         git,
         help::HelpState,
@@ -20,6 +20,7 @@ use {
         tree_build::TreeBuilder,
         tree_options::TreeOptions,
         verb::{
+            CD,
             PrefixSearchResult,
             VerbExecutor,
         },
@@ -144,7 +145,6 @@ impl BrowserState {
 
     pub fn open_selection_quit_broot(
         &mut self,
-        screen: &mut Screen,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let tree = self.displayed_tree();
@@ -153,11 +153,9 @@ impl BrowserState {
             LineType::File => make_opener(line.path.clone(), line.is_exe(), con),
             LineType::Dir | LineType::SymLinkToDir(_) => {
                 Ok(if con.launch_args.cmd_export_path.is_some() {
-                    let cd_idx = con.verb_store.index_of("cd");
-                    con.verb_store.verbs[cd_idx].to_cmd_result(
+                    CD.to_cmd_result(
                         &line.target(),
                         &None,
-                        screen,
                         con,
                     )?
                 } else {
@@ -370,7 +368,7 @@ impl AppState for BrowserState {
                 }
             }
             Action::OpenSelection => self.open_selection_stay_in_broot(screen, con, false),
-            Action::AltOpenSelection => self.open_selection_quit_broot(screen, con),
+            Action::AltOpenSelection => self.open_selection_quit_broot(con),
             Action::FuzzyPatternEdit(pat) => {
                 match pat.len() {
                     0 => {

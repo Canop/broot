@@ -69,13 +69,13 @@ impl VerbStore {
                     continue;
                 }
             }
-            if verb.invocation.name.starts_with(prefix) {
-                if verb.invocation.name == prefix {
+            if verb.name.starts_with(prefix) {
+                if verb.name == prefix {
                     return PrefixSearchResult::Match(&verb);
                 }
                 found_index = index;
                 nb_found += 1;
-                completions.push(&verb.invocation.name);
+                completions.push(&verb.name);
             }
         }
         match nb_found {
@@ -83,18 +83,6 @@ impl VerbStore {
             1 => PrefixSearchResult::Match(&self.verbs[found_index]),
             _ => PrefixSearchResult::TooManyMatches(completions),
         }
-    }
-    /// return the index of the verb having the long name. This function is meant
-    /// for internal access when it's sure it can't fail (i.e. for a builtin)
-    /// It looks for verbs by name, starting from the builtins, to
-    /// ensure it hasn't been overriden.
-    pub fn index_of(&self, name: &str) -> usize {
-        for i in 0..self.verbs.len() {
-            if self.verbs[i].invocation.name == name {
-                return i;
-            }
-        }
-        panic!("invalid verb search");
     }
     /// return the index of the verb which is triggered by the given keyboard key, if any
     pub fn index_of_key(&self, key: KeyEvent) -> Option<usize> {

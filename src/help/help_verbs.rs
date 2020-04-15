@@ -10,7 +10,8 @@ use {
         command::Command,
         conf::{self, Conf},
         errors::ProgramError,
-        external::{self, Launchable},
+        launchable::Launchable,
+        print,
         screens::Screen,
         task_sync::Dam,
         tree_options::TreeOptions,
@@ -77,9 +78,11 @@ impl VerbExecutor for HelpState {
                         self.scroll -= self.text_area.height as i32;
                         AppStateCmdResult::Keep
                     }
-                    print_path => external::print_path(&Conf::default_location(), con)?,
+                    print_path => {
+                        print::print_path(&Conf::default_location(), con)?
+                    }
                     print_relative_path => {
-                        external::print_relative_path(&Conf::default_location(), con)?
+                        print::print_relative_path(&Conf::default_location(), con)?
                     }
                     quit => AppStateCmdResult::Quit,
                     focus_user_home
@@ -97,14 +100,13 @@ impl VerbExecutor for HelpState {
                     _  => AppStateCmdResult::Keep,
                 }
             }
-            VerbExecution::External(_) => verb.to_cmd_result(
+            VerbExecution::External(external) => external.to_cmd_result(
                 &Conf::default_location(),
                 if let Some(inv) = &user_invocation {
                     &inv.args
                 } else {
                     &None
                 },
-                screen,
                 con,
             )?,
         })

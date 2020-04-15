@@ -85,7 +85,7 @@ pub fn build_text(con: &AppContext) -> Text<'_> {
                 }
                 VerbExecution::External(external) => {
                     sub.set("description", "");
-                    sub.set("execution", &external);
+                    sub.set("execution", &external.exec_pattern); // we should maybe also show the invoc pattern
                 }
             }
         }

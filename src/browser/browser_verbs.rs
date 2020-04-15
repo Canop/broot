@@ -6,9 +6,9 @@ use {
         },
         command::Command,
         errors::ProgramError,
-        external,
         flat_tree::Tree,
         help::HelpState,
+        print,
         screens::Screen,
         task_sync::Dam,
         tree_options::TreeOptions,
@@ -93,7 +93,7 @@ impl VerbExecutor for BrowserState {
                         }
                     }
                     open_stay => self.open_selection_stay_in_broot(screen, con, bang)?,
-                    open_leave => self.open_selection_quit_broot(screen, con)?,
+                    open_leave => self.open_selection_quit_broot(con)?,
                     line_down => {
                         self.displayed_tree_mut().move_selection(1, page_height);
                         AppStateCmdResult::Keep
@@ -118,12 +118,14 @@ impl VerbExecutor for BrowserState {
                     }
                     parent => self.go_to_parent(screen, bang),
                     print_path => {
-                        external::print_path(&self.displayed_tree().selected_line().target(), con)?
+                        print::print_path(&self.displayed_tree().selected_line().target(), con)?
                     }
                     print_relative_path => {
-                        external::print_relative_path(&self.displayed_tree().selected_line().target(), con)?
+                        print::print_relative_path(&self.displayed_tree().selected_line().target(), con)?
                     }
-                    print_tree => external::print_tree(&self.displayed_tree(), screen, con)?,
+                    print_tree => {
+                        print::print_tree(&self.displayed_tree(), screen, con)?
+                    }
                     refresh => AppStateCmdResult::RefreshState { clear_cache: true },
                     select_first => {
                         self.displayed_tree_mut().try_select_first();
@@ -170,14 +172,13 @@ impl VerbExecutor for BrowserState {
                     quit => AppStateCmdResult::Quit,
                 }
             },
-            VerbExecution::External(_) => verb.to_cmd_result(
+            VerbExecution::External(external) => external.to_cmd_result(
                 &self.displayed_tree().selected_line().path.clone(),
                 if let Some(inv) = &user_invocation {
                     &inv.args
                 } else {
                     &None
                 },
-                screen,
                 con,
             )?,
         })

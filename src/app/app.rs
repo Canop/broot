@@ -16,7 +16,7 @@ use {
             parse_command_sequence,
         },
         errors::ProgramError,
-        external::Launchable,
+        launchable::Launchable,
         file_sizes,
         git,
         io::W,
