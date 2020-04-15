@@ -61,6 +61,7 @@ impl VerbExecutor for BrowserState {
                 let bang = user_invocation.map(|inv| inv.bang).unwrap_or(*bang);
                 match internal {
                     back => AppStateCmdResult::PopState,
+                    close_tab => AppStateCmdResult::PopPanel,
                     focus => {
                         let tree = self.displayed_tree_mut();
                         let line = &tree.selected_line();

@@ -17,6 +17,7 @@ pub enum AppStateCmdResult {
     NewState { state: Box<dyn AppState>, cmd: Command, in_new_panel: bool },
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
+    PopPanel,
     RefreshState { clear_cache: bool },
 }
 

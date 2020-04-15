@@ -47,6 +47,7 @@ macro_rules! Internals {
 
 Internals! {
     back: "revert to the previous state (mapped to *esc*)",
+    close_tab: "close the current panel",
     focus: "display the directory (mapped to *enter*)",
     focus_root: "focus `/`",
     focus_user_home: "focus the home directory",

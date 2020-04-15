@@ -145,44 +145,52 @@ impl App {
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
+        use AppStateCmdResult::*;
         debug!("action: {:?}", &cmd.action);
         let mut error: Option<String> = None;
         match self.mut_state().apply(&mut cmd, screen, con)? {
-            AppStateCmdResult::Quit => {
+            Quit => {
                 self.quitting = true;
             }
-            AppStateCmdResult::Launch(launchable) => {
+            Launch(launchable) => {
                 self.launch_at_end = Some(*launchable);
                 self.quitting = true;
             }
-            AppStateCmdResult::NewState{ state, cmd: new_cmd, in_new_panel } => {
+            NewState{ state, cmd: new_cmd, in_new_panel } => {
                 self.push_state(state, in_new_panel);
                 cmd = new_cmd;
             }
-            AppStateCmdResult::RefreshState { clear_cache } => {
+            RefreshState { clear_cache } => {
                 if clear_cache {
                     clear_caches();
                 }
                 cmd = self.mut_state().refresh(screen, con);
             }
-            AppStateCmdResult::PopState => {
+            PopState => {
                 if self.remove_state() {
                     cmd = self.mut_state().refresh(screen, con);
                 } else {
                     self.quitting = true;
                 }
             }
-            AppStateCmdResult::PopStateAndReapply => {
+            PopStateAndReapply => {
                 if self.remove_state() {
                     return self.apply_command(w, cmd, screen, con);
                 } else {
                     self.quitting = true;
                 }
             }
-            AppStateCmdResult::DisplayError(txt) => {
+            PopPanel => {
+                if self.close_active_panel() {
+                    cmd = self.mut_state().refresh(screen, con);
+                } else {
+                    self.quitting = true;
+                }
+            }
+            DisplayError(txt) => {
                 error = Some(txt);
             }
-            _ => {}
+            Keep => {}
         }
         self.display_panels(w, screen, con)?;
         match error {
