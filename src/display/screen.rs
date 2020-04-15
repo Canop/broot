@@ -23,8 +23,6 @@ use {
     },
 };
 
-pub static FLAGS_AREA_WIDTH: u16 = 10;
-
 pub struct Screen {
     pub width: u16,
     pub height: u16,
@@ -57,7 +55,7 @@ impl Screen {
         if let Some(h) = con.launch_args.height {
             self.height = h;
         }
-        self.input_field.change_area(0, h - 1, w - FLAGS_AREA_WIDTH);
+        self.input_field.change_area(0, h - 1, w - super::FLAGS_AREA_WIDTH);
     }
     pub fn read_size(&mut self, con: &AppContext) -> Result<(), ProgramError> {
         let (w, h) = termimad::terminal_size();

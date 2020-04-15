@@ -14,7 +14,7 @@ extern crate lazy_regex;
 mod time;
 
 #[macro_use]
-pub mod displayable_tree;
+pub mod display;
 
 pub mod app;
 pub mod browser;
@@ -27,17 +27,14 @@ pub mod file_sizes;
 pub mod flat_tree;
 pub mod git;
 pub mod help;
-pub mod io;
 pub mod launchable;
 pub mod keys;
 pub mod pattern;
 pub mod permissions;
 pub mod print;
-pub mod screens;
 pub mod selection_type;
 pub mod shell_install;
 pub mod skin;
-pub mod status;
 pub mod task_sync;
 pub mod tree_build;
 pub mod tree_options;

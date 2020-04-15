@@ -6,16 +6,19 @@ use {
             AppStateCmdResult,
         },
         command::{Action, Command},
-        displayable_tree::DisplayableTree,
+        display::{
+            DisplayableTree,
+            FLAGS_AREA_WIDTH,
+            Screen,
+            Status,
+            W,
+        },
         errors::{ProgramError, TreeBuildError},
         launchable::Launchable,
         flat_tree::{LineType, Tree},
         git,
         help::HelpState,
-        io::W,
         pattern::Pattern,
-        screens::{self, Screen},
-        status::Status,
         task_sync::Dam,
         tree_build::TreeBuilder,
         tree_options::TreeOptions,
@@ -506,7 +509,7 @@ impl AppState for BrowserState {
         _con: &AppContext,
     ) -> Result<(), ProgramError> {
         let tree = self.displayed_tree();
-        let total_char_size = screens::FLAGS_AREA_WIDTH;
+        let total_char_size = FLAGS_AREA_WIDTH;
         screen.goto_clear(
             w,
             screen.width - total_char_size - 1,

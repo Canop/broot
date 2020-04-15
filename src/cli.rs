@@ -14,7 +14,10 @@ use {
         conf::Conf,
         errors::{ProgramError, TreeBuildError},
         launchable::Launchable,
-        screens::Screen,
+        display::{
+            self,
+            Screen,
+        },
         shell_install::{
             ShellInstall,
             ShellInstallState,
@@ -207,7 +210,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     let context = AppContext::from(launch_args, verb_store);
     let skin = skin::Skin::create(config.skin);
 
-    let mut w = crate::io::writer();
+    let mut w = display::writer();
     let mut screen = Screen::new(&context, skin)?;
     let app = App::new(&context, &screen)?;
     w.queue(EnterAlternateScreen)?;

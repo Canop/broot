@@ -2,8 +2,10 @@ use {
     crate::{
         command::Command,
         errors::ProgramError,
-        io::W,
-        screens::Screen,
+        display::{
+            Screen,
+            W,
+        },
         task_sync::Dam,
     },
     super::*,

@@ -8,9 +8,11 @@ use {
         command::{Action, Command},
         conf::Conf,
         errors::ProgramError,
-        io::W,
-        screens::Screen,
-        status::Status,
+        display::{
+            Screen,
+            Status,
+            W,
+        },
         task_sync::Dam,
         verb::{
             PrefixSearchResult,

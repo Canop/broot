@@ -12,7 +12,7 @@ use {
         errors::ProgramError,
         launchable::Launchable,
         print,
-        screens::Screen,
+        display::Screen,
         task_sync::Dam,
         tree_options::TreeOptions,
         verb::{

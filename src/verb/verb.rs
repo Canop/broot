@@ -5,9 +5,11 @@ use {
     crate::{
         errors::{ConfError, ProgramError},
         keys,
-        screens::Screen,
+        display::{
+            Screen,
+            Status,
+        },
         selection_type::SelectionType,
-        status::Status,
     },
     crossterm::event::{
         KeyCode,

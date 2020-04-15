@@ -29,25 +29,6 @@ use {
     umask::*,
 };
 
-/// declare a style named `$dst` which is usually a reference to the `$src`
-/// skin but, in case `selected` is true, is a clone with background changed
-/// to the one of selected lines.
-macro_rules! cond_bg {
-    ($dst:ident, $self:ident, $selected:expr, $src:expr) => {
-        let mut cloned_style;
-        let $dst = if $selected {
-            cloned_style = $src.clone();
-            if let Some(c) = $self.skin.selected_line.get_bg() {
-                cloned_style.set_bg(c);
-            }
-            &cloned_style
-        } else {
-            &$src
-        };
-    };
-}
-
-
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
 /// - or to write in a file or an exported string.

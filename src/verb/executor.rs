@@ -6,7 +6,7 @@ use {
             AppStateCmdResult,
         },
         errors::ProgramError,
-        screens::Screen,
+        display::Screen,
     },
     super::{
         Verb,

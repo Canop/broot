@@ -1,6 +1,13 @@
-use crate::{errors::ProgramError, screens::Screen};
-use minimad::{Alignment, Composite};
-use std::io::Write;
+use {
+    crate::{
+        errors::ProgramError,
+    },
+    minimad::{Alignment, Composite},
+    std::io::Write,
+    super::{
+        Screen,
+    },
+};
 
 /// the status contains information written on the grey line
 ///  near the bottom of the screen

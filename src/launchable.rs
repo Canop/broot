@@ -1,9 +1,11 @@
 use {
     crate::{
-        displayable_tree::DisplayableTree,
+        display::{
+            DisplayableTree,
+            Screen,
+        },
         errors::ProgramError,
         flat_tree::Tree,
-        screens::Screen,
         skin::Skin,
     },
     open,
