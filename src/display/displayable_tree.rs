@@ -11,7 +11,7 @@ use {
     crossterm::{
         cursor,
         style::{Color, SetBackgroundColor},
-        terminal::{Clear, ClearType},
+        terminal::ClearType,
         QueueableCommand,
     },
     git2::Status,

@@ -119,7 +119,7 @@ pub fn normalize_path(mut path: String) -> String {
 #[cfg(test)]
 mod path_normalize_tests {
 
-    use crate::verbs::normalize_path;
+    use super::normalize_path;
 
     fn check(before: &str, after: &str) {
         assert_eq!(normalize_path(before.to_string()), after.to_string());
