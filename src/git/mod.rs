@@ -2,7 +2,6 @@
 mod ignore;
 mod status;
 mod status_computer;
-mod status_display;
 
 pub use {
     ignore::{
@@ -18,7 +17,6 @@ pub use {
         clear_status_computer_cache,
         get_tree_status,
     },
-    status_display::GitStatusDisplay,
 };
 
 use {

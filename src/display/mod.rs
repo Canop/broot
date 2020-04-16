@@ -21,18 +21,22 @@ macro_rules! cond_bg {
     };
 }
 
+mod crop_writer;
 mod displayable_tree;
 mod screen;
 mod status;
+mod git_status_display;
 
 use std::{
     io::BufWriter,
 };
 
 pub use {
+    crop_writer::CropWriter,
     displayable_tree::DisplayableTree,
     screen::Screen,
     status::Status,
+    git_status_display::GitStatusDisplay,
 };
 
 pub static FLAGS_AREA_WIDTH: u16 = 10;

@@ -1,5 +1,8 @@
 
 use {
+    crate::{
+        display::CropWriter,
+    },
     termimad::CompoundStyle,
     super::Pattern,
 };
@@ -28,8 +31,11 @@ impl Pattern {
     }
 }
 
-impl<'a> MatchedString<'a> {
-    pub fn write_on<W>(&self, w: &mut W) -> Result<(), termimad::Error>
+impl<'a, 'w> MatchedString<'a> {
+    pub fn write_on<W>(
+        &self,
+        cw: &mut CropWriter<'w, W>,
+    ) -> Result<(), termimad::Error>
         where W: std::io::Write
     {
         if self.pattern.is_some() {
@@ -39,16 +45,16 @@ impl<'a> MatchedString<'a> {
                 combined_style.overwrite_with(self.match_style);
                 for (cand_idx, cand_char) in self.string.chars().enumerate() {
                     if pos_idx < m.pos.len() && m.pos[pos_idx] == cand_idx {
-                        combined_style.queue(w, cand_char)?;
+                        cw.queue_char(&combined_style, cand_char)?;
                         pos_idx += 1;
                     } else {
-                        self.base_style.queue(w, cand_char)?;
+                        cw.queue_char(&self.base_style, cand_char)?;
                     }
                 }
                 return Ok(());
             }
         }
-        self.base_style.queue_str(w, self.string)
+        cw.queue_str(&self.base_style, self.string)
     }
 }
 

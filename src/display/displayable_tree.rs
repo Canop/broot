@@ -4,7 +4,6 @@ use {
         file_sizes::FileSize,
         flat_tree::{LineType, Tree, TreeLine},
         task_sync::ComputationResult,
-        git::GitStatusDisplay,
         pattern::Pattern,
         skin::Skin,
     },
@@ -15,10 +14,12 @@ use {
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
-    git2::{
-        Status,
-    },
+    git2::Status,
     std::{io::Write, time::SystemTime},
+    super::{
+        CropWriter,
+        GitStatusDisplay,
+    },
     termimad::{CompoundStyle, ProgressBar},
 };
 
@@ -77,52 +78,52 @@ impl<'s, 't> DisplayableTree<'s, 't>
         }
     }
 
-    fn write_line_size<W>(
+    fn write_line_size<'w, W>(
         &self,
-        f: &mut W,
+        cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
         total_size: FileSize,
         selected: bool,
     ) -> Result<(), termimad::Error>
-            where W: Write
+        where W: Write
     {
         if let Some(s) = line.size {
             let pb = ProgressBar::new(s.part_of(total_size), 10);
             cond_bg!(size_style, self, selected, self.name_style(&line));
             cond_bg!(sparse_style, self, selected, self.skin.sparse);
-            size_style.queue(f, format!("{:>5}", s.to_string()))?;
-            sparse_style.queue(f, if s.sparse { 's' } else { ' ' })?;
-            size_style.queue(f, format!("{:<10} ", pb))
+            cw.queue_string(&size_style, format!("{:>5}", s.to_string()))?;
+            cw.queue_char(&sparse_style, if s.sparse { 's' } else { ' ' })?;
+            cw.queue_string(&size_style, format!("{:<10} ", pb))
         } else {
-            self.skin.tree.queue_str(f, "──────────────── ")
+            cw.queue_str(&self.skin.tree, "──────────────── ")
         }
     }
 
-    fn write_line_git_status<W>(
+    fn write_line_git_status<'w, W>(
         &self,
-        f: &mut W,
+        cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
     ) -> Result<(), termimad::Error>
         where W: Write
     {
         if !line.is_selectable() {
-            self.skin.tree.queue(f, ' ')
+            cw.queue_char(&self.skin.tree, ' ')
         } else {
             match line.git_status.map(|s| s.status) {
-                Some(Status::CURRENT) => self.skin.git_status_current.queue(f, ' '),
-                Some(Status::WT_NEW) => self.skin.git_status_new.queue(f, 'N'),
-                Some(Status::CONFLICTED) => self.skin.git_status_conflicted.queue(f, 'C'),
-                Some(Status::WT_MODIFIED) => self.skin.git_status_modified.queue(f, 'M'),
-                Some(Status::IGNORED) => self.skin.git_status_ignored.queue(f, 'I'),
-                None => self.skin.tree.queue(f, ' '),
-                _ => self.skin.git_status_other.queue_str(f, "?"),
+                Some(Status::CURRENT) => cw.queue_char(&self.skin.git_status_current, ' '),
+                Some(Status::WT_NEW) => cw.queue_char(&self.skin.git_status_new, 'N'),
+                Some(Status::CONFLICTED) => cw.queue_char(&self.skin.git_status_conflicted, 'C'),
+                Some(Status::WT_MODIFIED) => cw.queue_char(&self.skin.git_status_modified, 'M'),
+                Some(Status::IGNORED) => cw.queue_char(&self.skin.git_status_ignored, 'I'),
+                None => cw.queue_char(&self.skin.tree, ' '),
+                _ => cw.queue_char(&self.skin.git_status_other, '?'),
             }
         }
     }
 
-    fn write_date<W>(
+    fn write_date<'w, W>(
         &self,
-        f: &mut W,
+        cw: &mut CropWriter<'w, W>,
         system_time: SystemTime,
         selected: bool,
     ) -> Result<(), termimad::Error>
@@ -130,13 +131,13 @@ impl<'s, 't> DisplayableTree<'s, 't>
     {
         let date_time: DateTime<Local> = system_time.into();
         cond_bg!(date_style, self, selected, self.skin.dates);
-        date_style.queue(f, date_time.format("%Y/%m/%d %R ").to_string())
+        cw.queue_string(date_style, date_time.format("%Y/%m/%d %R ").to_string())
     }
 
     #[cfg(unix)]
-    fn write_mode<W>(
+    fn write_mode<'w, W>(
         &self,
-        f: &mut W,
+        cw: &mut CropWriter<'w, W>,
         mode: Mode,
         selected: bool,
     ) -> Result<(), termimad::Error>
@@ -148,59 +149,59 @@ impl<'s, 't> DisplayableTree<'s, 't>
         cond_bg!(x_style, self, selected, self.skin.perm_x);
 
         if mode.has(USER_READ) {
-            r_style.queue(f, 'r')?;
+            cw.queue_char(r_style, 'r')?;
         } else {
-            n_style.queue(f, '_')?;
+            cw.queue_char(n_style, '_')?;
         }
         if mode.has(USER_WRITE) {
-            w_style.queue(f, 'w')?;
+            cw.queue_char(w_style, 'w')?;
         } else {
-            n_style.queue(f, '_')?;
+            cw.queue_char(n_style, '_')?;
         }
         if mode.has(USER_EXEC) {
-            x_style.queue(f, 'x')?;
+            cw.queue_char(x_style, 'x')?;
         } else {
-            n_style.queue(f, '_')?;
+            cw.queue_char(n_style, '_')?;
         }
 
         if mode.has(GROUP_READ) {
-            r_style.queue(f, 'r')?;
+            cw.queue_char(r_style, 'r')?;
         } else {
-            n_style.queue(f, '_')?;
+            cw.queue_char(n_style, '_')?;
         }
         if mode.has(GROUP_WRITE) {
-            w_style.queue(f, 'w')?;
+            cw.queue_char(w_style, 'w')?;
         } else {
-            n_style.queue(f, '_')?;
+            cw.queue_char(n_style, '_')?;
         }
         if mode.has(GROUP_EXEC) {
-            x_style.queue(f, 'x')?;
+            cw.queue_char(x_style, 'x')?;
         } else {
-            n_style.queue(f, '_')?;
+            cw.queue_char(n_style, '_')?;
         }
 
         if mode.has(OTHERS_READ) {
-            r_style.queue(f, 'r')?;
+            cw.queue_char(r_style, 'r')?;
         } else {
-            n_style.queue(f, '_')?;
+            cw.queue_char(n_style, '_')?;
         }
         if mode.has(OTHERS_WRITE) {
-            w_style.queue(f, 'w')?;
+            cw.queue_char(w_style, 'w')?;
         } else {
-            n_style.queue(f, '_')?;
+            cw.queue_char(n_style, '_')?;
         }
         if mode.has(OTHERS_EXEC) {
-            x_style.queue(f, 'x')?;
+            cw.queue_char(x_style, 'x')?;
         } else {
-            n_style.queue(f, '_')?;
+            cw.queue_char(n_style, '_')?;
         }
 
         Ok(())
     }
 
-    fn write_line_name<W>(
+    fn write_line_name<'w, W>(
         &self,
-        f: &mut W,
+        cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
         pattern: &Pattern,
         selected: bool,
@@ -221,17 +222,17 @@ impl<'s, 't> DisplayableTree<'s, 't>
         };
         cond_bg!(style, self, selected, style);
         cond_bg!(char_match_style, self, selected, self.skin.char_match);
-        pattern.style(&line.name, &style, &char_match_style).write_on(f)?;
+        pattern.style(&line.name, &style, &char_match_style).write_on(cw)?;
         match &line.line_type {
             LineType::Dir => {
                 if line.unlisted > 0 {
-                    style.queue_str(f, " …")?;
+                    cw.queue_str(style, " …")?;
                 }
             }
             LineType::SymLinkToFile(target) | LineType::SymLinkToDir(target) => {
-                style.queue_str(f, " -> ")?;
+                    cw.queue_str(style, " -> ")?;
                 if line.has_error {
-                    self.skin.file_error.queue_str(f, &target)?;
+                    cw.queue_str(&self.skin.file_error, &target)?;
                 } else {
                     let target_style = if line.is_dir() {
                         &self.skin.directory
@@ -239,7 +240,7 @@ impl<'s, 't> DisplayableTree<'s, 't>
                         &self.skin.file
                     };
                     cond_bg!(target_style, self, selected, target_style);
-                    target_style.queue(f, &target)?;
+                    cw.queue_str(target_style, &target)?;
                 }
             }
             _ => {}
@@ -247,18 +248,18 @@ impl<'s, 't> DisplayableTree<'s, 't>
         Ok(())
     }
 
-    pub fn write_root_line<W>(
+    pub fn write_root_line<'w, W>(
         &self,
-        f: &mut W,
+        cw: &mut CropWriter<'w, W>,
         selected: bool,
     ) -> Result<(), ProgramError>
         where W: Write
     {
         cond_bg!(style, self, selected, self.skin.directory);
         let title = self.tree.lines[0].path.to_string_lossy();
-        style.queue_str(f, &title)?;
+        cw.queue_str(&style, &title)?;
         if self.in_app {
-            self.extend_line(f, selected)?;
+            self.extend_line_bg(cw, selected)?;
             let title_len = title.chars().count();
             if title_len < self.area.width as usize {
                 if let ComputationResult::Done(git_status) = &self.tree.git_status {
@@ -267,7 +268,7 @@ impl<'s, 't> DisplayableTree<'s, 't>
                         &self.skin,
                         self.area.width as usize - title_len,
                     );
-                    git_status_display.write(f, selected)?;
+                    git_status_display.write(cw, selected)?;
                 }
             }
         }
@@ -275,20 +276,20 @@ impl<'s, 't> DisplayableTree<'s, 't>
     }
 
     /// if in app, extend the background till the end of screen row
-    pub fn extend_line<W>(
+    pub fn extend_line_bg<'w, W>(
         &self,
-        f: &mut W,
+        cw: &mut CropWriter<'w, W>,
         selected: bool,
     ) -> Result<(), ProgramError>
         where W: Write
     {
         if self.in_app {
             if selected {
-                self.skin.selected_line.queue_bg(f)?;
+                cw.queue_bg(&self.skin.selected_line)?;
             } else {
-                self.skin.default.queue_bg(f)?;
+                cw.queue_bg(&self.skin.default)?;
             }
-            f.queue(Clear(ClearType::UntilNewLine))?;
+            cw.clear(ClearType::UntilNewLine)?;
         }
         Ok(())
     }
@@ -312,7 +313,8 @@ impl<'s, 't> DisplayableTree<'s, 't>
         if self.in_app {
             f.queue(cursor::MoveTo(self.area.left, self.area.top))?;
         }
-        self.write_root_line(f, tree.selection==0)?;
+        let mut cw = CropWriter::new(f, self.area.width as usize);
+        self.write_root_line(&mut cw, tree.selection==0)?;
         f.queue(SetBackgroundColor(Color::Reset))?;
         for y in 1..self.area.height {
             if self.in_app {
@@ -325,15 +327,17 @@ impl<'s, 't> DisplayableTree<'s, 't>
                 line_index += tree.scroll as usize;
             }
             let mut selected = false;
+            let mut cw = CropWriter::new(f, self.area.width as usize);
+            let cw = &mut cw;
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
                 if !tree.git_status.is_none() {
-                    self.write_line_git_status(f, line)?;
+                    self.write_line_git_status(cw, line)?;
                 }
                 for depth in 0..line.depth {
-                    self.skin.tree.queue_str(
-                        f,
+                    cw.queue_str(
+                        &self.skin.tree,
                         if line.left_branchs[depth as usize] {
                             if self.tree.has_branch(line_index + 1, depth as usize) {
                                 if depth == line.depth - 1 {
@@ -350,37 +354,43 @@ impl<'s, 't> DisplayableTree<'s, 't>
                     )?;
                 }
                 if tree.options.show_sizes {
-                    self.write_line_size(f, line, total_size, selected)?;
+                    self.write_line_size(cw, line, total_size, selected)?;
                 }
                 #[cfg(unix)]
                 {
                     if tree.options.show_permissions {
                         if line.is_selectable() {
-                            self.write_mode(f, line.mode(), selected)?;
+                            self.write_mode(cw, line.mode(), selected)?;
                             let owner = permissions::user_name(line.metadata.uid());
                             cond_bg!(owner_style, self, selected, self.skin.owner);
-                            owner_style.queue(f, format!(" {:w$}", &owner, w = user_group_max_lengths.0,))?;
+                            cw.queue_string(
+                                &owner_style,
+                                format!(" {:w$}", &owner, w = user_group_max_lengths.0,),
+                            )?;
                             let group = permissions::group_name(line.metadata.gid());
                             cond_bg!(group_style, self, selected, self.skin.group);
-                            group_style.queue(f, format!(" {:w$} ", &group, w = user_group_max_lengths.1,))?;
+                            cw.queue_string(
+                                &group_style,
+                                format!(" {:w$} ", &group, w = user_group_max_lengths.1,),
+                            )?;
                         } else {
                             let length = 9 + 1 +user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
                             for _ in 0..length {
-                                self.skin.tree.queue_str(f, "─")?;
+                                cw.queue_char(&self.skin.tree, ' ')?;
                             }
                         }
                     }
                 }
                 if tree.options.show_dates {
                     if let Some(date) = line.modified() {
-                        self.write_date(f, date, selected)?;
+                        self.write_date(cw, date, selected)?;
                     } else {
-                        self.skin.tree.queue_str(f, "─────────────────")?;
+                        cw.queue_str(&self.skin.tree, "─────────────────")?;
                     }
                 }
-                self.write_line_name(f, line, &tree.options.pattern, selected)?;
+                self.write_line_name(cw, line, &tree.options.pattern, selected)?;
             }
-            self.extend_line(f, selected)?;
+            self.extend_line_bg(cw, selected)?;
             f.queue(SetBackgroundColor(Color::Reset))?;
             if self.in_app && y > 0 {
                 if let Some((sctop, scbottom)) = scrollbar {

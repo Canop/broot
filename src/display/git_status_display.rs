@@ -1,11 +1,13 @@
 use {
     crate::{
         errors::ProgramError,
+        git::{
+            TreeGitStatus,
+        },
         skin::Skin,
     },
-    std::io::Write,
     super::{
-        TreeGitStatus,
+        CropWriter,
     },
 };
 
@@ -55,26 +57,28 @@ impl<'a, 's> GitStatusDisplay<'a, 's> {
         }
     }
 
-    pub fn write(
+    pub fn write<'w, W>(
         &self,
-        f: &mut impl Write,
+        cw: &mut CropWriter<'w, W>,
         selected: bool,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<(), ProgramError>
+        where W: std::io::Write
+    {
         if self.show_branch {
             cond_bg!(branch_style, self, selected, self.skin.git_branch);
             if let Some(name) = &self.status.current_branch_name {
                 if self.show_wide {
-                    branch_style.queue(f, format!(" ᚜ {} ", name))?;
+                    cw.queue_string(&branch_style, format!(" ᚜ {} ", name))?;
                 } else {
-                    branch_style.queue(f, format!(" {}", name))?;
+                    cw.queue_string(&branch_style, format!(" {} ", name))?;
                 }
             }
         }
         if self.show_stats {
             cond_bg!(insertions_style, self, selected, self.skin.git_insertions);
-            insertions_style.queue(f, format!("+{}", self.status.insertions))?;
+            cw.queue_string(&insertions_style, format!("+{}", self.status.insertions))?;
             cond_bg!(deletions_style, self, selected, self.skin.git_deletions);
-            deletions_style.queue(f, format!("-{}", self.status.deletions))?;
+            cw.queue_string(&deletions_style, format!("-{}", self.status.deletions))?;
         }
         Ok(())
     }
