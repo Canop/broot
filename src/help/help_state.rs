@@ -109,13 +109,13 @@ impl AppState for HelpState {
         &mut self,
         w: &mut W,
         screen: &Screen,
-        panel_area: Area,
+        state_area: Area,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         if self.dirty {
             screen.skin.default.queue_bg(w)?;
             screen.clear(w)?;
-            self.text_area = panel_area.clone();
+            self.text_area = state_area;
             self.text_area.pad_for_max_width(110);
             self.dirty = false;
         }

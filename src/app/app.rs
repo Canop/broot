@@ -20,6 +20,7 @@ use {
         file_sizes,
         git,
         display::{
+            Areas,
             Screen,
             Status,
             W,
@@ -33,13 +34,13 @@ use {
         AppContext,
         AppState,
         AppStateCmdResult,
-        StatePanel,
+        Panel,
     },
     termimad::EventSource,
 };
 
 pub struct App {
-    panels: NonEmptyVec<StatePanel>,
+    panels: NonEmptyVec<Panel>,
     active_panel_idx: usize,
     quitting: bool,
     launch_at_end: Option<Launchable>, // what must be launched after end
@@ -50,7 +51,7 @@ impl App {
         con: & AppContext,
         screen: &Screen,
     ) -> Result<App, ProgramError> {
-        let panel = StatePanel::new(
+        let panel = Panel::new(
             Box::new(
                 BrowserState::new(
                     con.launch_args.root.clone(),
@@ -60,6 +61,7 @@ impl App {
                 )?
                 .expect("Failed to create BrowserState"),
             ),
+            Areas::create(&mut Vec::new(), 0, screen)?,
         );
         Ok(App {
             active_panel_idx: 0,
@@ -69,19 +71,17 @@ impl App {
         })
     }
 
-    pub fn add_panel(&mut self, new_state: Box<dyn AppState>) {
-        let panel = StatePanel::new(new_state);
+    pub fn add_panel(
+        &mut self,
+        new_state: Box<dyn AppState>,
+        areas: Areas,
+    ) {
+        let panel = Panel::new(new_state, areas);
         self.active_panel_idx = self.panels.len().get();
         self.panels.push(panel);
     }
-
-    pub fn push_state(&mut self, new_state: Box<dyn AppState>, in_new_panel: bool) {
-        debug!("push_state in_new_panel={:?}", in_new_panel);
-        if in_new_panel {
-            self.add_panel(new_state);
-        } else {
-            self.panels[self.active_panel_idx].push(new_state);
-        }
+    pub fn push_state(&mut self, new_state: Box<dyn AppState>) {
+        self.panels[self.active_panel_idx].push(new_state);
     }
     fn state(&self) -> &dyn AppState {
         self.panels[self.active_panel_idx].state()
@@ -90,19 +90,24 @@ impl App {
         self.panels[self.active_panel_idx].mut_state()
     }
     /// return true when the panel has been removed (ie it wasn't the last one)
-    fn close_active_panel(&mut self) -> bool {
+    fn close_active_panel(&mut self, screen: &Screen) -> bool {
         if let Ok(_removed_panel) = self.panels.swap_remove(self.active_panel_idx) {
             //let parent_idx = _removed_panel.parent_panel_idx;
             // FIXME we can't use the parent_idx... we change the idx when we remove
             // elements. But we must store in the panel the parent id
             self.active_panel_idx = self.panels.len().get() - 1;
+            Areas::resize_all(
+                self.panels.as_mut_slice(),
+                screen,
+            ).expect("removing a panel should be easy");
             true
         } else {
             false // there's no other panel to go to
         }
     }
-    fn remove_state(&mut self) -> bool {
-        self.panels[self.active_panel_idx].remove_state() || self.close_active_panel()
+    fn remove_state(&mut self, screen: &Screen) -> bool {
+        self.panels[self.active_panel_idx].remove_state()
+            || self.close_active_panel(screen)
     }
 
     fn display_panels(
@@ -111,9 +116,8 @@ impl App {
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
-        let mut areas = screen.panel_areas(&self.panels);
-        for (i, area) in areas.drain(..).enumerate() {
-            self.panels[i].mut_state().display(w, screen, area, con)?;
+        for panel in self.panels.as_mut_slice().iter_mut() {
+            panel.display(w, screen, con)?;
         }
         Ok(())
     }
@@ -159,8 +163,25 @@ impl App {
                 self.quitting = true;
             }
             NewState{ state, cmd: new_cmd, in_new_panel } => {
-                self.push_state(state, in_new_panel);
-                cmd = new_cmd;
+                if in_new_panel {
+                    let insertion_idx = self.panels.len().get();
+                    match Areas::create(
+                        self.panels.as_mut_slice(),
+                        insertion_idx,
+                        screen,
+                    ) {
+                        Ok(areas) => {
+                            self.add_panel(state, areas);
+                            cmd = new_cmd;
+                        }
+                        Err(e) => {
+                            error = Some(e.to_string());
+                        }
+                    }
+                } else {
+                    self.push_state(state);
+                    cmd = new_cmd;
+                }
             }
             RefreshState { clear_cache } => {
                 if clear_cache {
@@ -169,21 +190,21 @@ impl App {
                 cmd = self.mut_state().refresh(screen, con);
             }
             PopState => {
-                if self.remove_state() {
+                if self.remove_state(screen) {
                     cmd = self.mut_state().refresh(screen, con);
                 } else {
                     self.quitting = true;
                 }
             }
             PopStateAndReapply => {
-                if self.remove_state() {
+                if self.remove_state(screen) {
                     return self.apply_command(w, cmd, screen, con);
                 } else {
                     self.quitting = true;
                 }
             }
             PopPanel => {
-                if self.close_active_panel() {
+                if self.close_active_panel(screen) {
                     cmd = self.mut_state().refresh(screen, con);
                 } else {
                     self.quitting = true;

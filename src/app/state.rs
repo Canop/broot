@@ -38,7 +38,7 @@ pub trait AppState {
         &mut self,
         w: &mut W,
         screen: &Screen,
-        panel_area: Area,
+        state_area: Area,
         con: &AppContext,
     ) -> Result<(), ProgramError>;
 

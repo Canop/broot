@@ -2,7 +2,6 @@ use {
     crate::{
         app::{
             AppContext,
-            StatePanel,
         },
         errors::ProgramError,
         skin::{self, StatusMadSkinSet},
@@ -82,17 +81,17 @@ impl Screen {
         w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
     }
-    /// return the max number of panels, depending on the available space
-    pub fn max_panel_count(&self) -> usize {
-        self.width as usize / 20
-    }
-    pub fn panel_areas(&self, panels: &NonEmptyVec<StatePanel>) -> Vec<Area> {
-        let panel_width = self.width / (panels.len().get() as u16);
-        let mut x = 0;
-        panels.iter().map(|_| {
-            let area = Area::new(x, 0, panel_width, self.height - 2);
-            x += panel_width;
-            area
-        }).collect()
-    }
+    ///// return the max number of panels, depending on the available space
+    //pub fn max_panel_count(&self) -> usize {
+    //    self.width as usize / 20
+    //}
+    //pub fn panel_areas(&self, panels: &NonEmptyVec<StatePanel>) -> Vec<Area> {
+    //    let panel_width = self.width / (panels.len().get() as u16);
+    //    let mut x = 0;
+    //    panels.iter().map(|_| {
+    //        let area = Area::new(x, 0, panel_width, self.height - 2);
+    //        x += panel_width;
+    //        area
+    //    }).collect()
+    //}
 }

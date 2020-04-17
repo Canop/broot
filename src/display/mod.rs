@@ -21,6 +21,7 @@ macro_rules! cond_bg {
     };
 }
 
+mod areas;
 mod crop_writer;
 mod displayable_tree;
 mod screen;
@@ -32,6 +33,7 @@ use std::{
 };
 
 pub use {
+    areas::Areas,
     crop_writer::CropWriter,
     displayable_tree::DisplayableTree,
     screen::Screen,

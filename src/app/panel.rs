@@ -1,5 +1,16 @@
 
 use {
+    crate::{
+        app::{
+            AppContext,
+        },
+        errors::ProgramError,
+        display::{
+            Areas,
+            Screen,
+            W,
+        },
+    },
     strict::NonEmptyVec,
     super::{
         AppState,
@@ -7,17 +18,20 @@ use {
 };
 
 
-pub struct StatePanel {
+pub struct Panel {
     //pub parent_panel_idx: Option<usize>, <- we must find an id
     states: NonEmptyVec<Box<dyn AppState>>, // stack: the last one is current
+    pub areas: Areas,
 }
 
-impl StatePanel {
+impl Panel {
     pub fn new(
         state: Box<dyn AppState>,
+        areas: Areas,
     ) -> Self {
         Self {
             states: state.into(),
+            areas,
         }
     }
     pub fn push(&mut self, new_state: Box<dyn AppState>) {
@@ -32,5 +46,14 @@ impl StatePanel {
     /// return true when the element has been removed
     pub fn remove_state(&mut self) -> bool {
         self.states.pop().is_some()
+    }
+    pub fn display(
+        &mut self,
+        w: &mut W,
+        screen: &mut Screen,
+        con: &AppContext,
+    ) -> Result<(), ProgramError> {
+        let state_area = self.areas.state.clone();
+        self.mut_state().display(w, screen, state_area, con)
     }
 }

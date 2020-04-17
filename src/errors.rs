@@ -19,6 +19,7 @@ custom_error! {pub ProgramError
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
     UnknowShell {shell: String} = "Unknown shell: {shell}",
     InternalError {details: String} = "Internal error: {details}", // should not happen
+    TerminalTooSmallError = "Terminal too small", // unable to open panel or app
 }
 
 custom_error! {pub TreeBuildError
