@@ -1,11 +1,13 @@
 use {
     crate::{
         command::Command,
-        errors::ProgramError,
         display::{
             Screen,
+            Status,
             W,
         },
+        errors::ProgramError,
+        selection_type::SelectionType,
         task_sync::Dam,
     },
     super::*,
@@ -22,7 +24,9 @@ pub trait AppState {
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError>;
 
-    fn can_execute(&self, verb_index: usize, con: &AppContext) -> bool;
+    //fn can_execute(&self, verb_index: usize, con: &AppContext) -> bool;
+
+    fn selection_type(&self) -> SelectionType;
 
     fn refresh(
         &mut self,
@@ -49,11 +53,9 @@ pub trait AppState {
         con: &AppContext,
     ) -> Result<(), ProgramError>;
 
-    fn write_status(
+    fn get_status(
         &self,
-        w: &mut W,
         cmd: &Command,
-        screen: &Screen,
         con: &AppContext,
-    ) -> Result<(), ProgramError>;
+    ) -> Status;
 }

@@ -5,10 +5,10 @@ use {
     crate::{
         app::{
             AppContext,
-            AppState,
         },
         keys,
         pattern::Pattern,
+        selection_type::SelectionType,
     },
     super::*,
     termimad::{Event, InputField},
@@ -65,38 +65,38 @@ impl Command {
     /// The command isn't applied to the state
     pub fn add_event(
         &mut self,
-        event: &Event,
+        event: Event,
         input_field: &mut InputField,
         con: &AppContext,
-        state: &dyn AppState,
+        selection_type: SelectionType,
     ) {
         debug!("add_event {:?}", event);
         self.action = Action::Unparsed;
         match event {
             Event::Click(x, y, ..) => {
                 if !input_field.apply_event(&event) {
-                    self.set_action(Action::Click(*x, *y));
+                    self.set_action(Action::Click(x, y));
                 }
             }
             Event::DoubleClick(x, y) => {
-                self.action = Action::DoubleClick(*x, *y);
+                self.action = Action::DoubleClick(x, y);
             }
             Event::Key(key) => {
                 // we first handle the cases that MUST absolutely
                 // not be overriden by configuration
 
-                if *key == keys::ENTER && self.parts.verb_invocation.is_some() {
+                if key == keys::ENTER && self.parts.verb_invocation.is_some() {
                     self.action = Action::from(&self.parts, true);
                     return;
                 }
 
-                if *key == keys::ESC {
+                if key == keys::ESC {
                     // Esc it's also a reserved key so order doesn't matter
                     self.set_action(Action::Back);
                     return;
                 }
 
-                if *key == keys::QUESTION
+                if key == keys::QUESTION
                     && (self.raw.is_empty() || self.parts.verb_invocation.is_some())
                 {
                     // a '?' opens the help when it's the first char
@@ -106,8 +106,8 @@ impl Command {
                 }
 
                 // we now check if the key is the trigger key of one of the verbs
-                if let Some(index) = con.verb_store.index_of_key(*key) {
-                    if state.can_execute(index, con) {
+                if let Some(index) = con.verb_store.index_of_key(key) {
+                    if selection_type.respects(con.verb_store.verbs[index].selection_condition) {
                         self.set_action(Action::VerbIndex(index));
                         return;
                     } else {
@@ -115,12 +115,12 @@ impl Command {
                     }
                 }
 
-                if *key == keys::ENTER {
+                if key == keys::ENTER {
                     self.action = Action::from(&self.parts, true);
                     return;
                 }
 
-                if *key == keys::ALT_ENTER {
+                if key == keys::ALT_ENTER {
                     self.action = Action::AltOpenSelection;
                     return;
                 }
@@ -130,17 +130,17 @@ impl Command {
                 //    return;
                 //}
 
-                if *key == keys::LEFT && self.raw.is_empty() {
+                if key == keys::LEFT && self.raw.is_empty() {
                     self.set_action(Action::Back);
                     return;
                 }
 
-                if *key == keys::RIGHT && self.raw.is_empty() {
+                if key == keys::RIGHT && self.raw.is_empty() {
                     self.set_action(Action::OpenSelection);
                     return;
                 }
 
-                if *key == keys::BACK_TAB {
+                if key == keys::BACK_TAB {
                     // should probably be a normal verb instead of an action with a special
                     // handling here
                     self.set_action(Action::Previous);
@@ -160,10 +160,10 @@ impl Command {
                 // and there's none, in fact
             }
             Event::Resize(w, h) => {
-                self.action = Action::Resize(*w, *h);
+                self.action = Action::Resize(w, h);
             }
             Event::Wheel(lines_count) => {
-                self.action = Action::MoveSelection(*lines_count);
+                self.action = Action::MoveSelection(lines_count);
             }
             _ => {}
         }

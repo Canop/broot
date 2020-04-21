@@ -22,12 +22,13 @@ use {
         display::{
             Areas,
             Screen,
-            Status,
             W,
         },
         task_sync::Dam,
     },
-    minimad::Composite,
+    crossterm::{
+        event::KeyModifiers,
+    },
     std::io::Write,
     strict::NonEmptyVec,
     super::{
@@ -36,7 +37,10 @@ use {
         AppStateCmdResult,
         Panel,
     },
-    termimad::EventSource,
+    termimad::{
+        Event,
+        EventSource,
+    },
 };
 
 pub struct App {
@@ -62,6 +66,8 @@ impl App {
                 .expect("Failed to create BrowserState"),
             ),
             Areas::create(&mut Vec::new(), 0, screen)?,
+            Command::new(),
+            screen,
         );
         Ok(App {
             active_panel_idx: 0,
@@ -75,20 +81,25 @@ impl App {
         &mut self,
         new_state: Box<dyn AppState>,
         areas: Areas,
+        cmd: Command,
+        screen: &Screen,
     ) {
-        let panel = Panel::new(new_state, areas);
+        let panel = Panel::new(new_state, areas, cmd, screen);
         self.active_panel_idx = self.panels.len().get();
         self.panels.push(panel);
     }
     pub fn push_state(&mut self, new_state: Box<dyn AppState>) {
         self.panels[self.active_panel_idx].push(new_state);
     }
-    fn state(&self) -> &dyn AppState {
-        self.panels[self.active_panel_idx].state()
-    }
     fn mut_state(&mut self) -> &mut dyn AppState {
         self.panels[self.active_panel_idx].mut_state()
     }
+    fn mut_panel(&mut self) -> &mut Panel {
+        unsafe {
+            self.panels.as_mut_slice().get_unchecked_mut(self.active_panel_idx)
+        }
+    }
+
     /// return true when the panel has been removed (ie it wasn't the last one)
     fn close_active_panel(&mut self, screen: &Screen) -> bool {
         if let Ok(_removed_panel) = self.panels.swap_remove(self.active_panel_idx) {
@@ -116,8 +127,8 @@ impl App {
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
-        for panel in self.panels.as_mut_slice().iter_mut() {
-            panel.display(w, screen, con)?;
+        for (idx, panel) in self.panels.as_mut_slice().iter_mut().enumerate() {
+            panel.display(w, idx == self.active_panel_idx, screen, con)?;
         }
         Ok(())
     }
@@ -127,7 +138,6 @@ impl App {
     fn do_pending_tasks(
         &mut self,
         w: &mut W,
-        cmd: &Command,
         screen: &mut Screen,
         con: &AppContext,
         dam: &mut Dam,
@@ -135,7 +145,6 @@ impl App {
         while self.mut_state().has_pending_task() & !dam.has_event() {
             self.mut_state().do_pending_task(screen, dam);
             self.display_panels(w, screen, con)?;
-            self.mut_state().write_status(w, cmd, screen, con)?;
             w.flush()?;
         }
         Ok(())
@@ -147,14 +156,13 @@ impl App {
     fn apply_command(
         &mut self,
         w: &mut W,
-        mut cmd: Command,
+        cmd: Command,
         screen: &mut Screen,
         con: &AppContext,
-    ) -> Result<Command, ProgramError> {
+    ) -> Result<(), ProgramError> {
         use AppStateCmdResult::*;
-        debug!("action: {:?}", &cmd.action);
         let mut error: Option<String> = None;
-        match self.mut_state().apply(&mut cmd, screen, con)? {
+        match self.mut_panel().apply_command(cmd, screen, con)? {
             Quit => {
                 self.quitting = true;
             }
@@ -171,8 +179,7 @@ impl App {
                         screen,
                     ) {
                         Ok(areas) => {
-                            self.add_panel(state, areas);
-                            cmd = new_cmd;
+                            self.add_panel(state, areas, new_cmd, screen);
                         }
                         Err(e) => {
                             error = Some(e.to_string());
@@ -180,32 +187,38 @@ impl App {
                     }
                 } else {
                     self.push_state(state);
-                    cmd = new_cmd;
+                    // FIXME should we set the cmd ?
                 }
             }
             RefreshState { clear_cache } => {
                 if clear_cache {
                     clear_caches();
                 }
-                cmd = self.mut_state().refresh(screen, con);
+                // should we set the cmd ?
+                self.mut_state().refresh(screen, con);
+                //self.mut_panel().cmd = self.mut_state().refresh(screen, con);
             }
             PopState => {
                 if self.remove_state(screen) {
-                    cmd = self.mut_state().refresh(screen, con);
+                    // should we set the cmd ?
+                    self.mut_state().refresh(screen, con);
                 } else {
                     self.quitting = true;
                 }
             }
             PopStateAndReapply => {
                 if self.remove_state(screen) {
-                    return self.apply_command(w, cmd, screen, con);
+                    let cmd = self.mut_panel().get_command();
+                    // FIXME check this
+                    self.mut_panel().apply_command(cmd, screen, con)?;
                 } else {
                     self.quitting = true;
                 }
             }
             PopPanel => {
                 if self.close_active_panel(screen) {
-                    cmd = self.mut_state().refresh(screen, con);
+                    // FIXME check this
+                    self.mut_state().refresh(screen, con);
                 } else {
                     self.quitting = true;
                 }
@@ -215,16 +228,16 @@ impl App {
             }
             Keep => {}
         }
-        self.display_panels(w, screen, con)?;
-        match error {
-            Some(text) => Status::from_error(Composite::from_inline(&text)).display(w, screen)?,
-            None => self.state().write_status(w, &cmd, screen, con)?,
+        if let Some(text) = error {
+            self.mut_panel().set_error(text);
         }
-        screen.input_field.set_content(&cmd.raw);
-        screen.input_field.display_on(w)?;
-        self.state().write_flags(w, screen, con)?;
-        w.flush()?;
-        Ok(cmd)
+        // FIXME flags
+        //self.state().write_flags(w, screen, con)?;
+        Ok(())
+    }
+
+    fn clicked_panel_index(&self, x: u16, y: u16, screen: &Screen) -> usize {
+        (self.panels.len().get() * x as usize ) / (screen.width as usize + 1)
     }
 
     /// This is the main loop of the application
@@ -242,16 +255,13 @@ impl App {
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
 
-        let mut cmd = Command::new();
-
         // if some commands were passed to the application
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {
             for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
-                cmd = self.apply_command(w, arg_cmd, screen, con)?;
+                self.apply_command(w, arg_cmd, screen, con)?;
                 self.do_pending_tasks(
                     w,
-                    &cmd,
                     screen,
                     con,
                     &mut dam,
@@ -263,14 +273,13 @@ impl App {
         }
 
         self.display_panels(w, screen, con)?;
-        self.mut_state().write_status(w, &cmd, screen, con)?;
-        self.mut_state().write_flags(w, screen, con)?;
-        screen.input_field.display_on(w)?;
+        // FIXME rétablir flags (en mieux)
+        //self.mut_state().write_flags(w, screen, con)?;
         w.flush()?;
 
         loop {
             if !self.quitting {
-                self.do_pending_tasks(w, &cmd, screen, con, &mut dam)?;
+                self.do_pending_tasks(w, screen, con, &mut dam)?;
             }
             let event = match dam.next_event() {
                 Some(event) => event,
@@ -280,9 +289,25 @@ impl App {
                     break;
                 }
             };
-            cmd.add_event(&event, &mut screen.input_field, con, self.state());
-            debug!("command after add_event: {:?}", &cmd);
-            cmd = self.apply_command(w, cmd, screen, con)?;
+            // we first check the event isn't simple left a click
+            // in a inactive panel
+            // FIXME new crossterm
+            let mut ignore_event = false;
+            if let Event::Click(x, y, modifiers) = event {
+                if modifiers == KeyModifiers::empty() {
+                    let clicked_panel_idx = self.clicked_panel_index(x, y, screen);
+                    if clicked_panel_idx != self.active_panel_idx {
+                        self.active_panel_idx = clicked_panel_idx;
+                        ignore_event = true;
+                    }
+                }
+            }
+            if !ignore_event {
+                let cmd = self.mut_panel().add_event(w, event, con)?;
+                debug!("command after add_event: {:?}", &cmd);
+                self.apply_command(w, cmd, screen, con)?;
+            }
+            self.display_panels(w, screen, con)?;
             w.flush()?;
             event_source.unblock(self.quitting);
         }

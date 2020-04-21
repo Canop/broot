@@ -98,6 +98,14 @@ impl TreeLine {
             SelectionType::Directory => self.is_dir(),
         }
     }
+    pub fn selection_type(&self) -> SelectionType {
+        use LineType::*;
+        match &self.line_type {
+            File | SymLinkToFile(_) => SelectionType::File,
+            Dir | SymLinkToDir(_) => SelectionType::Directory,
+            Pruning => SelectionType::Any, // should not happen today
+        }
+    }
     #[cfg(unix)]
     pub fn mode(&self) -> Mode {
         Mode::from(self.metadata.mode())
@@ -211,6 +219,7 @@ impl Tree {
         self.make_selection_visible(page_height as i32);
         Ok(())
     }
+
 
     /// do what must be done after line additions or removals:
     /// - sort the lines

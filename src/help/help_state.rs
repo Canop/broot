@@ -7,12 +7,13 @@ use {
         },
         command::{Action, Command},
         conf::Conf,
-        errors::ProgramError,
         display::{
             Screen,
             Status,
             W,
         },
+        errors::ProgramError,
+        selection_type::SelectionType,
         task_sync::Dam,
         verb::{
             PrefixSearchResult,
@@ -23,7 +24,6 @@ use {
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
-    minimad::Composite,
     super::{
         help_content,
     },
@@ -58,12 +58,16 @@ impl AppState for HelpState {
         false
     }
 
-    fn can_execute(
-        &self,
-        _verb_index: usize,
-        _con: &AppContext,
-    ) -> bool {
-        true // we'll probably refine this later
+    //fn can_execute(
+    //    &self,
+    //    _verb_index: usize,
+    //    _con: &AppContext,
+    //) -> bool {
+    //    true // we'll probably refine this later
+    //}
+
+    fn selection_type(&self) -> SelectionType {
+        SelectionType::Any
     }
 
     fn apply(
@@ -130,51 +134,43 @@ impl AppState for HelpState {
         Ok(text_view.write_on(w)?)
     }
 
-    fn write_status(
+    fn get_status(
         &self,
-        w: &mut W,
         cmd: &Command,
-        screen: &Screen,
         con: &AppContext,
-    ) -> Result<(), ProgramError> {
+    ) -> Status {
         match &cmd.action {
             Action::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
-                    Status::from_message(mad_inline!(
+                    Status::from_message(
                         "Type a verb then *enter* to execute it (*?* for the list of verbs)"
-                    ))
-                    .display(w, screen)
+                    )
                 } else {
                     match con.verb_store.search(&invocation.name) {
                         PrefixSearchResult::NoMatch => {
-                            Status::from_error(mad_inline!("No matching verb"))
-                                .display(w, screen)
+                            Status::from_error("No matching verb")
                         }
-                        PrefixSearchResult::Match(verb) => verb.write_status(
-                            w,
+                        PrefixSearchResult::Match(verb) => verb.get_status(
                             None,
                             Conf::default_location(),
                             invocation,
-                            screen,
                         ),
                         PrefixSearchResult::TooManyMatches(completions) => {
-                            Status::from_message(Composite::from_inline(&format!(
+                            Status::from_message(format!(
                                 "Possible completions: {}",
                                 completions
                                     .iter()
                                     .map(|c| format!("*{}*", c))
                                     .collect::<Vec<String>>()
                                     .join(", "),
-                            )))
-                            .display(w, screen)
+                            ))
                         }
                     }
                 }
             }
-            _ => Status::from_message(mad_inline!(
+            _ => Status::from_message(
                 "Hit *esc* to get back to the tree, or a space to start a verb"
-            ))
-            .display(w, screen),
+            )
         }
     }
 

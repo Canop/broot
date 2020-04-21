@@ -19,6 +19,7 @@ use {
         git,
         help::HelpState,
         pattern::Pattern,
+        selection_type::SelectionType,
         task_sync::Dam,
         tree_build::TreeBuilder,
         tree_options::TreeOptions,
@@ -28,7 +29,6 @@ use {
             VerbExecutor,
         },
     },
-    minimad::Composite,
     open,
     std::{
         fs::OpenOptions,
@@ -200,27 +200,27 @@ impl BrowserState {
         }
     }
 
-    fn normal_status_message(&self, has_pattern: bool) -> Composite<'static> {
+    fn normal_status_message(&self, has_pattern: bool) -> &'static str {
         let tree = self.displayed_tree();
         if tree.selection == 0 {
             if has_pattern {
-                mad_inline!("Hit *esc* to remove the filter, *enter* to go up, '?' for help")
+                "Hit *esc* to remove the filter, *enter* to go up, '?' for help"
             } else {
-                mad_inline!("Hit *esc* to go back, *enter* to go up, *?* for help, or a few letters to search")
+                "Hit *esc* to go back, *enter* to go up, *?* for help, or a few letters to search"
             }
         } else {
             let line = &tree.lines[tree.selection];
             if has_pattern {
                 if line.is_dir() {
-                    mad_inline!("Hit *enter* to focus, *alt*-*enter* to cd, *esc* to clear filter, or a space then a verb")
+                    "Hit *enter* to focus, *alt*-*enter* to cd, *esc* to clear filter, or a space then a verb"
                 } else {
-                    mad_inline!("Hit *enter* to open, *alt*-*enter* to open and quit, *esc* to clear filter, or *:* + verb")
+                    "Hit *enter* to open, *alt*-*enter* to open and quit, *esc* to clear filter, or *:* + verb"
                 }
             } else {
                 if line.is_dir() {
-                    mad_inline!("Hit *enter* to focus, *alt*-*enter* to cd, or a space then a verb")
+                    "Hit *enter* to focus, *alt*-*enter* to cd, or a space then a verb"
                 } else {
-                    mad_inline!("Hit *enter* to open the file, *alt*-*enter* to open and quit, or a space then a verb")
+                    "Hit *enter* to open the file, *alt*-*enter* to open and quit, or a space then a verb"
                 }
             }
         }
@@ -257,13 +257,11 @@ impl AppState for BrowserState {
             || self.displayed_tree().is_missing_git_status_computation()
     }
 
-    fn write_status(
+    fn get_status(
         &self,
-        w: &mut W,
         cmd: &Command,
-        screen: &Screen,
         con: &AppContext,
-    ) -> Result<(), ProgramError> {
+    ) -> Status {
         let task = if self.pending_pattern.is_some() {
             Some("searching")
         } else if self.displayed_tree().has_dir_missing_size() {
@@ -273,61 +271,59 @@ impl AppState for BrowserState {
         };
         match &cmd.action {
             Action::FuzzyPatternEdit(s) if !s.is_empty() => {
-                Status::new(task, self.normal_status_message(true), false).display(w, screen)
+                Status::new(task, self.normal_status_message(true), false)
             }
             Action::RegexEdit(s, _) if !s.is_empty() => {
-                Status::new(task, self.normal_status_message(true), false).display(w, screen)
+                Status::new(task, self.normal_status_message(true), false)
             }
             Action::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
                     Status::new(
                         task,
-                        mad_inline!(
-                            "Type a verb then *enter* to execute it (*?* for the list of verbs)"
-                        ),
+                        "Type a verb then *enter* to execute it (*?* for the list of verbs)",
                         false,
                     )
-                    .display(w, screen)
                 } else {
                     match con.verb_store.search(&invocation.name) {
                         PrefixSearchResult::NoMatch => Status::new(
                             task,
-                            mad_inline!("No matching verb (*?* for the list of verbs)"),
+                            "No matching verb (*?* for the list of verbs)",
                             true,
-                        )
-                        .display(w, screen),
+                        ),
                         PrefixSearchResult::Match(verb) => {
                             let line = self.displayed_tree().selected_line();
-                            verb.write_status(w, task, line.path.clone(), invocation, screen)
+                            verb.get_status(task, line.path.clone(), invocation)
                         }
                         PrefixSearchResult::TooManyMatches(completions) => Status::new(
                             task,
-                            Composite::from_inline(&format!(
+                            format!(
                                 "Possible verbs: {}",
                                 completions
                                     .iter()
                                     .map(|c| format!("*{}*", c))
                                     .collect::<Vec<String>>()
                                     .join(", "),
-                            )),
+                            ),
                             false,
-                        )
-                        .display(w, screen),
+                        ),
                     }
                 }
             }
             _ => {
                 Status::new(task, self.normal_status_message(false), false)
-                    .display(w, screen)
             }
         }
     }
 
-    fn can_execute(&self, verb_index: usize, con: &AppContext) -> bool {
-        self.displayed_tree()
-            .selected_line()
-            .is_of(con.verb_store.verbs[verb_index].selection_condition)
+    fn selection_type(&self) -> SelectionType {
+        self.displayed_tree().selected_line().selection_type()
     }
+
+    //fn can_execute(&self, verb_index: usize, con: &AppContext) -> bool {
+    //    self.displayed_tree()
+    //        .selected_line()
+    //        .is_of(con.verb_store.verbs[verb_index].selection_condition)
+    //}
 
     fn apply(
         &mut self,

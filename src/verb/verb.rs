@@ -3,10 +3,9 @@
 /// - to the current app state
 use {
     crate::{
-        errors::{ConfError, ProgramError},
+        errors::ConfError,
         keys,
         display::{
-            Screen,
             Status,
         },
         selection_type::SelectionType,
@@ -15,9 +14,7 @@ use {
         KeyCode,
         KeyEvent,
     },
-    minimad::Composite,
     std::{
-        io::Write,
         path::PathBuf,
     },
     super::{
@@ -156,40 +153,34 @@ impl Verb {
         }
     }
 
-    pub fn write_status(
+    pub fn get_status(
         &self,
-        w: &mut impl Write,
         task: Option<&'static str>,
         path: PathBuf,
         invocation: &VerbInvocation,
-        screen: &Screen,
-    ) -> Result<(), ProgramError> {
+    ) -> Status {
         if let Some(err) = self.match_error(invocation) {
-            Status::new(task, Composite::from_inline(&err), true).display(w, screen)
+            Status::new(task, err, true)
         } else {
-            let markdown;
-            let exec_desc;
-            let composite = if let Some(description) = &self.description {
-                markdown = format!(
+            let markdown = if let Some(description) = &self.description {
+                format!(
                     "Hit *enter* to **{}**: {}",
                     &self.name,
                     description,
-                );
-                Composite::from_inline(&markdown)
+                )
             } else {
                 match &self.execution {
                     VerbExecution::Internal{ internal, .. } => {
-                        markdown = format!(
+                        format!(
                             "Hit *enter* to **{}**: {}",
                             &self.name,
                             internal.description(),
-                        );
-                        Composite::from_inline(&markdown)
+                        )
                     }
                     VerbExecution::External(external) => {
-                        exec_desc = external.shell_exec_string(&path, &invocation.args);
-                        mad_inline!(
-                            "Hit *enter* to **$0**: `$1`",
+                        let exec_desc = external.shell_exec_string(&path, &invocation.args);
+                        format!(
+                            "Hit *enter* to **{}**: `{}`",
                             &self.name,
                             &exec_desc,
                         )
@@ -198,9 +189,9 @@ impl Verb {
             };
             Status::new(
                 task,
-                composite,
+                markdown,
                 false
-            ).display(w, screen)
+            )
         }
     }
 

@@ -88,6 +88,8 @@ impl Areas {
                 Slot::New(areas) => areas,
             };
             areas.state = Area::new(x, 0, panel_width, screen.height - 2);
+            areas.status = Area::new(x, screen.height - 2, panel_width, 1);
+            areas.input = Area::new(x, screen.height - 1, panel_width, 1);
             x += panel_width;
         }
         Ok(())
