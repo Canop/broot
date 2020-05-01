@@ -10,33 +10,17 @@
 //! (exact paths depend on XDG variables)
 
 use {
-    std::{
-        env,
-        fs::OpenOptions,
-        io::Write,
-        path::PathBuf,
-    },
+    super::{util, ShellInstall},
+    crate::{conf, errors::ProgramError},
     directories::UserDirs,
-    crate::{
-        conf,
-        errors::ProgramError,
-    },
-    super::{
-        ShellInstall,
-        util,
-    },
     minimad::*,
     regex::{Captures, Regex},
+    std::{env, fs::OpenOptions, io::Write, path::PathBuf},
     termimad::mad_print_inline,
 };
 
 const NAME: &str = "bash";
-const SOURCING_FILES: &[&str] = &[
-    ".bashrc",
-    ".bash_profile",
-    ".zshrc",
-    "$ZDOTDIR/.zshrc",
-];
+const SOURCING_FILES: &[&str] = &[".bashrc", ".bash_profile", ".zshrc", "$ZDOTDIR/.zshrc"];
 const VERSION: &str = "1";
 
 // This script has been tested on bash and zsh.
@@ -70,7 +54,7 @@ function br {
 }
 "#;
 
-const MD_NO_SOURCING: &str =  r#"
+const MD_NO_SOURCING: &str = r#"
 I found no sourcing file for the bash/zsh family.
 If you're using bash or zsh, then installation isn't complete:
 the br function initialization script won't be sourced unless you source it yourself.
@@ -91,7 +75,11 @@ fn get_link_path() -> PathBuf {
 /// It was previously with the link, but it's now in
 /// XDG_DATA_HOME (typically ~/.local/share on linux)
 fn get_script_path() -> PathBuf {
-    conf::app_dirs().data_dir().join("launcher").join(NAME).join(VERSION)
+    conf::app_dirs()
+        .data_dir()
+        .join("launcher")
+        .join(NAME)
+        .join(VERSION)
 }
 
 /// return the paths to the files in which the br function is sourced.
@@ -102,22 +90,23 @@ fn get_sourcing_paths() -> Vec<PathBuf> {
         .expect("no home directory!")
         .home_dir()
         .to_path_buf();
-    SOURCING_FILES.iter()
-        .map(|name|
+    SOURCING_FILES
+        .iter()
+        .map(|name| {
             regex!(r#"\$(\w+)"#)
-                .replace(name, |c: &Captures<'_>|
-                    env::var(&c[1]).unwrap_or(name.to_string())
-                )
+                .replace(name, |c: &Captures<'_>| {
+                    env::var(&c[1]).unwrap_or((*name).to_string())
+                })
                 .to_string()
-        )
+        })
         .map(PathBuf::from)
-        .map(|path|
+        .map(|path| {
             if path.is_absolute() {
                 path
             } else {
                 homedir_path.join(path)
             }
-        )
+        })
         .filter(|path| {
             debug!("considering path: {:?}", &path);
             path.exists()
@@ -141,10 +130,12 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
         return Ok(());
     }
     let source_line = format!("source {}", &link_path.to_string_lossy());
-    let sourced_template = TextTemplate::from(r#"
+    let sourced_template = TextTemplate::from(
+        r#"
         ${path} successfully patched, you can make the function immediately available with
             source ${path}
-        "#);
+        "#,
+    );
     for sourcing_path in &sourcing_paths {
         let sourcing_path_str = sourcing_path.to_string_lossy();
         if util::file_contains_line(sourcing_path, &source_line)? {
@@ -169,4 +160,3 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
     si.done = true;
     Ok(())
 }
-

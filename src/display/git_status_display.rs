@@ -1,14 +1,6 @@
 use {
-    crate::{
-        errors::ProgramError,
-        git::{
-            TreeGitStatus,
-        },
-        skin::Skin,
-    },
-    super::{
-        CropWriter,
-    },
+    super::CropWriter,
+    crate::{errors::ProgramError, git::TreeGitStatus, skin::Skin},
 };
 
 pub struct GitStatusDisplay<'a, 's> {
@@ -21,11 +13,7 @@ pub struct GitStatusDisplay<'a, 's> {
 }
 
 impl<'a, 's> GitStatusDisplay<'a, 's> {
-    pub fn from(
-        status: &'a TreeGitStatus,
-        skin: &'s Skin,
-        available_width: usize,
-    ) -> Self {
+    pub fn from(status: &'a TreeGitStatus, skin: &'s Skin, available_width: usize) -> Self {
         let mut show_branch = false;
         let mut width = 0;
         if let Some(branch) = &status.current_branch_name {
@@ -62,7 +50,8 @@ impl<'a, 's> GitStatusDisplay<'a, 's> {
         cw: &mut CropWriter<'w, W>,
         selected: bool,
     ) -> Result<(), ProgramError>
-        where W: std::io::Write
+    where
+        W: std::io::Write,
     {
         if self.show_branch {
             cond_bg!(branch_style, self, selected, self.skin.git_branch);
@@ -83,4 +72,3 @@ impl<'a, 's> GitStatusDisplay<'a, 's> {
         Ok(())
     }
 }
-

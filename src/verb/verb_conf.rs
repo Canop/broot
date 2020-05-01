@@ -1,14 +1,8 @@
 use {
-    crate::{
-        errors::ConfError,
-    },
+    super::{ExternalExecutionMode, Internal, Verb},
+    crate::errors::ConfError,
     crossterm::event::KeyEvent,
     std::convert::TryFrom,
-    super::{
-        ExternalExecutionMode,
-        Internal,
-        Verb,
-    },
 };
 
 /// what's needed to handle a verb
@@ -45,10 +39,7 @@ impl TryFrom<&VerbConf> for Verb {
             Verb::external(
                 &verb_conf.invocation,
                 &verb_conf.execution,
-                ExternalExecutionMode::from_conf(
-                    &verb_conf.from_shell,
-                    &verb_conf.leave_broot,
-                ),
+                ExternalExecutionMode::from_conf(verb_conf.from_shell, verb_conf.leave_broot),
             )?
         };
         if let Some(key) = verb_conf.key {

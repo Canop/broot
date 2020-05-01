@@ -1,23 +1,17 @@
 use {
+    super::{
+        bid::{BId, SortableBId},
+        bline::BLine,
+    },
     crate::{
         errors::TreeBuildError,
         flat_tree::{Tree, TreeLine},
-        task_sync::{
-            ComputationResult,
-        },
-        git::{
-            GitIgnorer,
-            GitIgnoreChain,
-            LineStatusComputer,
-        },
+        git::{GitIgnoreChain, GitIgnorer, LineStatusComputer},
+        task_sync::ComputationResult,
         task_sync::Dam,
-        tree_options::{
-            TreeOptions,
-        },
+        tree_options::TreeOptions,
     },
-    git2::{
-        Repository,
-    },
+    git2::Repository,
     id_arena::Arena,
     std::{
         collections::{BinaryHeap, VecDeque},
@@ -25,10 +19,6 @@ use {
         path::PathBuf,
         result::Result,
         time::{Duration, Instant},
-    },
-    super::{
-        bline::BLine,
-        bid::{BId, SortableBId},
     },
 };
 
@@ -75,16 +65,14 @@ impl TreeBuilder {
             time!(
                 Debug,
                 "init line_status_computer",
-                Repository::discover(&path).ok().map(LineStatusComputer::from),
+                Repository::discover(&path)
+                    .ok()
+                    .map(LineStatusComputer::from),
             )
         } else {
             None
         };
-        let root_id = BLine::from_root(
-            &mut blines,
-            path,
-            root_ignore_chain,
-        )?;
+        let root_id = BLine::from_root(&mut blines, path, root_ignore_chain)?;
         Ok(TreeBuilder {
             options,
             targeted_size,
@@ -97,12 +85,7 @@ impl TreeBuilder {
         })
     }
     /// return a bline if the dir_entry directly matches the options and there's no error
-    fn make_line(
-        &mut self,
-        parent_id: BId,
-        e: fs::DirEntry,
-        depth: u16,
-    ) -> BLineResult {
+    fn make_line(&mut self, parent_id: BId, e: fs::DirEntry, depth: u16) -> BLineResult {
         let name = e.file_name();
         let name = match name.to_str() {
             Some(name) => name,
@@ -146,7 +129,10 @@ impl TreeBuilder {
         }
         let git_ignore_chain = if self.options.respect_git_ignore {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
-            if !self.git_ignorer.accepts(parent_chain, &path, &name, file_type.is_dir()) {
+            if !self
+                .git_ignorer
+                .accepts(parent_chain, &path, &name, file_type.is_dir())
+            {
                 return BLineResult::GitIgnored;
             }
             if file_type.is_dir() {
@@ -237,11 +223,7 @@ impl TreeBuilder {
     /// first step of the build: we explore the directories and gather lines.
     /// If there's no search pattern we stop when we have enough lines to fill the screen.
     /// If there's a pattern, we try to gather more lines that will be sorted afterwards.
-    fn gather_lines(
-        &mut self,
-        total_search: bool,
-        dam: &Dam,
-    ) -> Option<Vec<BId>> {
+    fn gather_lines(&mut self, total_search: bool, dam: &Dam) -> Option<Vec<BId>> {
         let start = Instant::now();
         let mut out_blines: Vec<BId> = Vec::new(); // the blines we want to display
         let optimal_size = self
@@ -255,12 +237,9 @@ impl TreeBuilder {
         self.load_children(self.root_id);
         open_dirs.push_back(self.root_id);
         loop {
-            if
-                !total_search
-                && (
-                    (nb_lines_ok > optimal_size)
-                    || (nb_lines_ok >= self.targeted_size && start.elapsed() > NOT_LONG)
-                )
+            if !total_search
+                && ((nb_lines_ok > optimal_size)
+                    || (nb_lines_ok >= self.targeted_size && start.elapsed() > NOT_LONG))
             {
                 self.total_search = false;
                 break;
@@ -356,10 +335,10 @@ impl TreeBuilder {
                 });
             }
         }
-        debug!(
-            "Trimming: we have {} lines for a goal of {}",
-            count, self.targeted_size
-        );
+        // debug!(
+        //     "Trimming: we have {} lines for a goal of {}",
+        //     count, self.targeted_size
+        // );
         while count > self.targeted_size {
             if let Some(sli) = remove_queue.pop() {
                 //debug!("removing {:?}", &self.blines[sli.idx].path);
@@ -432,12 +411,8 @@ impl TreeBuilder {
     ///
     /// Return None if the lifetime expires before end of computation
     /// (usually because the user hit a key)
-    pub fn build(
-        mut self,
-        total_search: bool,
-        dam: &Dam,
-    ) -> Option<Tree> {
-        debug!("Building - total={} pattern={}", total_search, self.options.pattern);
+    pub fn build(mut self, total_search: bool, dam: &Dam) -> Option<Tree> {
+        //debug!("Building - total={} pattern={}", total_search, self.options.pattern);
         match self.gather_lines(total_search, dam) {
             Some(out_blines) => {
                 self.trim_excess(&out_blines);

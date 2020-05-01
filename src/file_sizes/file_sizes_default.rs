@@ -1,6 +1,7 @@
 //! size computation for non linux
 
 use {
+    super::FileSize,
     crate::task_sync::Dam,
     crossbeam::{channel::unbounded, sync::WaitGroup},
     std::{
@@ -11,7 +12,6 @@ use {
         thread,
         time::Duration,
     },
-    super::FileSize,
 };
 
 // Note that this version doesn't try to compute the real size taken

@@ -2,16 +2,8 @@
 //! one or several commands into a vec of parsed commands
 
 use {
-    crate::{
-        app::AppContext,
-        errors::ProgramError,
-        verb::PrefixSearchResult,
-    },
-    super::{
-        Action,
-        Command,
-        CommandParts,
-    },
+    super::{Command, CommandParts},
+    crate::{app::AppContext, errors::ProgramError, verb::PrefixSearchResult},
 };
 
 /// parse a string which is meant as a sequence of commands.
@@ -45,7 +37,7 @@ pub fn parse_command_sequence(
         if let Some(verb_invocation) = verb_invocation {
             debug!("adding verb_invocation: {:?}", verb_invocation);
             let command = Command::from_raw(verb_invocation, true);
-            if let Action::VerbInvocate(invocation) = &command.action {
+            if let Command::VerbInvocate(invocation) = &command {
                 // we check that the verb exists to avoid running a sequence
                 // of actions with some missing
                 match con.verb_store.search(&invocation.name) {

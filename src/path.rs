@@ -1,66 +1,49 @@
-
 use {
     directories::UserDirs,
     regex::{self, Captures, Regex},
-    std::{
-        collections::HashMap,
-        path::Path,
-    },
+    std::{collections::HashMap, path::Path},
 };
 
 /// build a usable path from a user input
-fn path_from(
-    source: PathSource,
-    input: &str,
-    replacement_map: &HashMap<String, String>,
-) -> String {
+///
+/// This function handles path starting with ~ or /.
+pub fn path_from(input: &str, base_dir: &str) -> String {
     let tilde = regex!(r"^~(/|$)");
     if input.starts_with('/') {
-        // if the input starts with a `/`, we use it as is, we don't
-        // use the replacement_map
+        // if the input starts with a `/`, we use it as is
         input.to_string()
     } else if tilde.is_match(input) {
         // if the input starts with `~` as first token, we replace
-        // this `~` with the user home directory and  we don't use the
-        // replacement map
-        tilde.replace(input, |c: &Captures| {
-            if let Some(user_dirs) = UserDirs::new() {
-                format!(
-                    "{}{}",
-                    user_dirs.home_dir().to_string_lossy(),
-                    &c[1],
-                )
-            } else {
-                warn!("no user dirs found, no expansion of ~");
-                c[0].to_string()
-            }
-        }).to_string()
+        // this `~` with the user home directory
+        tilde
+            .replace(input, |c: &Captures| {
+                if let Some(user_dirs) = UserDirs::new() {
+                    format!("{}{}", user_dirs.home_dir().to_string_lossy(), &c[1],)
+                } else {
+                    warn!("no user dirs found, no expansion of ~");
+                    c[0].to_string()
+                }
+            })
+            .to_string()
     } else {
         // we put the input behind the source (the selected directory
         // or its parent) and we normalize so that the user can type
         // paths with `../`
-        normalize_path(format!(
-            "{}/{}",
-            replacement_map.get(source.replacement_map_key()).unwrap(),
-            input
-        ))
+        normalize_path(format!("{}/{}", base_dir, input))
     }
 }
 
 /// replace a group in the execution string, using
 ///  data from the user input and from the selected line
-pub fn do_exec_replacement(
-    ec: &Captures<'_>,
-    replacement_map: &HashMap<String, String>,
-) -> String {
+pub fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &HashMap<String, String>) -> String {
     let name = ec.get(1).unwrap().as_str();
     if let Some(cap) = replacement_map.get(name) {
         let cap = cap.as_str();
         debug!("do_exec_replacement cap={:?} with {:?}", &cap, ec.get(2));
         if let Some(fmt) = ec.get(2) {
             match fmt.as_str() {
-                "path-from-directory" => path_from(PathSource::Directory, cap, replacement_map),
-                "path-from-parent" => path_from(PathSource::Parent, cap, replacement_map),
+                "path-from-directory" => path_from(cap, replacement_map.get("directory").unwrap()),
+                "path-from-parent" => path_from(cap, replacement_map.get("parent").unwrap()),
                 _ => format!("invalid format: {:?}", fmt.as_str()),
             }
         } else {
@@ -68,20 +51,6 @@ pub fn do_exec_replacement(
         }
     } else {
         format!("{{{}}}", name)
-    }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum PathSource {
-    Directory,
-    Parent,
-}
-impl PathSource {
-    pub fn replacement_map_key(&self) -> &'static str {
-        match self {
-            Self::Directory => "directory",
-            Self::Parent => "parent",
-        }
     }
 }
 
@@ -97,7 +66,6 @@ pub fn escape_for_shell(path: &Path) -> String {
         format!("'{}'", &path.replace('\'', r"'\''"))
     }
 }
-
 
 /// Improve the path to remove and solve .. token.
 ///

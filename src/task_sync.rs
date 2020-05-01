@@ -1,13 +1,6 @@
-
 use {
-    crossbeam::channel::{
-        self,
-        bounded,
-        Receiver,
-    },
-    std::{
-        thread,
-    },
+    crossbeam::channel::{self, bounded, Receiver},
+    std::thread,
     termimad::Event,
 };
 
@@ -79,7 +72,7 @@ impl Dam {
         f: F,
     ) -> ComputationResult<V> {
         let (comp_sender, comp_receiver) = bounded(1);
-        thread::spawn(move|| {
+        thread::spawn(move || {
             let comp_res = time!(Debug, "comp in dam", f());
             if comp_sender.send(comp_res).is_err() {
                 debug!("no channel at end of computation");
@@ -144,7 +137,7 @@ pub struct DamObserver {
 impl DamObserver {
     pub fn from(dam: &Dam) -> Self {
         Self {
-            receiver: dam.receiver.clone()
+            receiver: dam.receiver.clone(),
         }
     }
     /// be careful that this can be used as a thread
@@ -154,7 +147,6 @@ impl DamObserver {
         !self.receiver.is_empty()
     }
 }
-
 
 /// wraps either a computation in progress, or a finished
 /// one (even a failed or useless one).

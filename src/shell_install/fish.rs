@@ -54,7 +54,7 @@ fn get_fish_dir() -> PathBuf {
     if let Some(base_dirs) = BaseDirs::new() {
         let fish_dir = base_dirs.home_dir().join(".config/fish");
         if fish_dir.exists() {
-            return fish_dir.to_path_buf();
+            return fish_dir;
         }
     }
     ProjectDirs::from("fish", "fish", "fish") // hem...

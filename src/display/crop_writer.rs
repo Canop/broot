@@ -3,30 +3,25 @@ use {
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
-    termimad::{
-        CompoundStyle,
-        Result,
-    },
+    termimad::{CompoundStyle, Result},
 };
-
 
 /// wrap a writer to ensure that at most `allowed` chars are
 /// written.
 pub struct CropWriter<'w, W>
-    where W: std::io::Write,
+where
+    W: std::io::Write,
 {
     w: &'w mut W,
     allowed: usize,
 }
 
 impl<'w, W> CropWriter<'w, W>
-    where W: std::io::Write
+where
+    W: std::io::Write,
 {
     pub fn new(w: &'w mut W, limit: usize) -> Self {
-        Self {
-            w,
-            allowed: limit,
-        }
+        Self { w, allowed: limit }
     }
     pub fn is_full(&self) -> bool {
         self.allowed == 0
@@ -49,7 +44,6 @@ impl<'w, W> CropWriter<'w, W>
         if !self.is_full() {
             let len = s.chars().count();
             if len > self.allowed {
-                debug!("CROP {:?}", &s);
                 for c in s.chars().take(self.allowed) {
                     cs.queue(self.w, c)?;
                 }
@@ -68,6 +62,4 @@ impl<'w, W> CropWriter<'w, W>
         self.w.queue(Clear(clear_type))?;
         Ok(())
     }
-
 }
-

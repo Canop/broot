@@ -1,14 +1,9 @@
-use {
-    crate::{
-        verb::VerbInvocation,
-    },
-    regex::Regex,
-};
+use {crate::verb::VerbInvocation, regex::Regex};
 
 /// An intermediate parsed representation of the raw string
 #[derive(Debug, Clone)]
 pub struct CommandParts {
-    pub pattern: Option<String>,     // either a fuzzy pattern or the core of a regex
+    pub pattern: Option<String>, // either a fuzzy pattern or the core of a regex
     pub regex_flags: Option<String>, // may be Some("") if user asked for a regex but specified no flag
     pub verb_invocation: Option<VerbInvocation>, // may be empty if user typed the separator but no char after
 }
@@ -65,9 +60,13 @@ impl CommandParts {
                 (?P<verb_part>[\s:]+(.+))?
                 $
             "
-        ).captures(raw).unwrap(); // all parts optional : always captures
+        )
+        .captures(raw)
+        .unwrap(); // all parts optional : always captures
         (
-            captures.name("pattern_part").map(|c| c.as_str().to_string()),
+            captures
+                .name("pattern_part")
+                .map(|c| c.as_str().to_string()),
             captures.name("verb_part").map(|c| c.as_str().to_string()),
         )
     }
@@ -78,4 +77,3 @@ impl Default for CommandParts {
         CommandParts::new()
     }
 }
-

@@ -1,8 +1,4 @@
-use {
-    super::bline::BLine,
-    id_arena::Id,
-    std::cmp::Ordering,
-};
+use {super::bline::BLine, id_arena::Id, std::cmp::Ordering};
 
 pub type BId = Id<BLine>;
 
@@ -35,4 +31,3 @@ impl PartialOrd for SortableBId {
         Some(self.cmp(other))
     }
 }
-

@@ -1,37 +1,25 @@
 use {
+    super::help_content,
     crate::{
-        app::{
-            AppContext,
-            AppState,
-            AppStateCmdResult,
-        },
-        command::{Action, Command},
-        conf::Conf,
-        display::{
-            Screen,
-            Status,
-            W,
-        },
+        app::{AppContext, AppState, AppStateCmdResult, Status},
+        browser::BrowserState,
+        command::Command,
+        conf::{self, Conf},
+        display::{Screen, W},
         errors::ProgramError,
+        launchable::Launchable,
+        print,
         selection_type::SelectionType,
         task_sync::Dam,
-        verb::{
-            PrefixSearchResult,
-            VerbExecutor,
-        },
+        tree_options::TreeOptions,
+        verb::{Internal, PrefixSearchResult, VerbInvocation},
     },
     crossterm::{
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
-    super::{
-        help_content,
-    },
-    termimad::{
-        Area,
-        FmtText,
-        TextView,
-    },
+    std::path::Path,
+    termimad::{Area, FmtText, TextView},
 };
 
 /// an application state dedicated to help
@@ -53,56 +41,21 @@ impl HelpState {
 }
 
 impl AppState for HelpState {
-
-    fn has_pending_task(&self) -> bool {
-        false
+    fn get_pending_task(&self) -> Option<&'static str> {
+        None
     }
 
-    //fn can_execute(
-    //    &self,
-    //    _verb_index: usize,
-    //    _con: &AppContext,
-    //) -> bool {
-    //    true // we'll probably refine this later
-    //}
+    fn selected_path(&self) -> &Path {
+        Conf::default_location()
+    }
 
     fn selection_type(&self) -> SelectionType {
         SelectionType::Any
     }
 
-    fn apply(
-        &mut self,
-        cmd: &mut Command,
-        screen: &mut Screen,
-        con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
-        Ok(match &cmd.action {
-            Action::Back => AppStateCmdResult::PopState,
-            Action::MoveSelection(dy) => {
-                self.scroll += *dy;
-                AppStateCmdResult::Keep
-            }
-            Action::Resize(w, h) => {
-                screen.set_terminal_size(*w, *h, con);
-                self.dirty = true;
-                AppStateCmdResult::RefreshState { clear_cache: false }
-            }
-            Action::VerbIndex(index) => {
-                let verb = &con.verb_store.verbs[*index];
-                self.execute_verb(verb, None, screen, con)?
-            }
-            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
-                PrefixSearchResult::Match(verb) => {
-                    self.execute_verb(verb, Some(&invocation), screen, con)?
-                }
-                _ => AppStateCmdResult::verb_not_found(&invocation.name),
-            },
-            _ => AppStateCmdResult::Keep,
-        })
-    }
-
     fn refresh(&mut self, _screen: &Screen, _con: &AppContext) -> Command {
-        Command::new()
+        self.dirty = true;
+        Command::empty()
     }
 
     fn do_pending_task(&mut self, _screen: &mut Screen, _dam: &mut Dam) {
@@ -134,27 +87,19 @@ impl AppState for HelpState {
         Ok(text_view.write_on(w)?)
     }
 
-    fn get_status(
-        &self,
-        cmd: &Command,
-        con: &AppContext,
-    ) -> Status {
-        match &cmd.action {
-            Action::VerbEdit(invocation) => {
+    fn get_status(&self, cmd: &Command, con: &AppContext) -> Status {
+        match cmd {
+            Command::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
                     Status::from_message(
-                        "Type a verb then *enter* to execute it (*?* for the list of verbs)"
+                        "Type a verb then *enter* to execute it (*?* for the list of verbs)",
                     )
                 } else {
                     match con.verb_store.search(&invocation.name) {
-                        PrefixSearchResult::NoMatch => {
-                            Status::from_error("No matching verb")
+                        PrefixSearchResult::NoMatch => Status::from_error("No matching verb"),
+                        PrefixSearchResult::Match(verb) => {
+                            verb.get_status(Conf::default_location(), invocation)
                         }
-                        PrefixSearchResult::Match(verb) => verb.get_status(
-                            None,
-                            Conf::default_location(),
-                            invocation,
-                        ),
                         PrefixSearchResult::TooManyMatches(completions) => {
                             Status::from_message(format!(
                                 "Possible completions: {}",
@@ -169,8 +114,8 @@ impl AppState for HelpState {
                 }
             }
             _ => Status::from_message(
-                "Hit *esc* to get back to the tree, or a space to start a verb"
-            )
+                "Hit *esc* to get back to the tree, or a space to start a verb",
+            ),
         }
     }
 
@@ -184,5 +129,62 @@ impl AppState for HelpState {
         screen.skin.default.queue_bg(w)?;
         w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
+    }
+
+    fn on_internal(
+        &mut self,
+        internal: Internal,
+        bang: bool,
+        _invocation: Option<&VerbInvocation>,
+        screen: &mut Screen,
+        con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        use Internal::*;
+        Ok(match internal {
+            back => AppStateCmdResult::PopState,
+            focus | parent => AppStateCmdResult::from_optional_state(
+                BrowserState::new(
+                    conf::dir(),
+                    TreeOptions::default(),
+                    screen,
+                    &Dam::unlimited(),
+                ),
+                bang,
+            ),
+            help => AppStateCmdResult::Keep,
+            line_down => {
+                self.scroll += 1;
+                AppStateCmdResult::Keep
+            }
+            line_up => {
+                self.scroll -= 1;
+                AppStateCmdResult::Keep
+            }
+            open_stay => match open::that(&Conf::default_location()) {
+                Ok(exit_status) => {
+                    info!("open returned with exit_status {:?}", exit_status);
+                    AppStateCmdResult::Keep
+                }
+                Err(e) => AppStateCmdResult::DisplayError(format!("{:?}", e)),
+            },
+            open_leave => {
+                AppStateCmdResult::from(Launchable::opener(Conf::default_location().to_path_buf()))
+            }
+            page_down => {
+                self.scroll += self.text_area.height as i32;
+                AppStateCmdResult::Keep
+            }
+            page_up => {
+                self.scroll -= self.text_area.height as i32;
+                AppStateCmdResult::Keep
+            }
+            print_path => print::print_path(&Conf::default_location(), con)?,
+            print_relative_path => print::print_relative_path(&Conf::default_location(), con)?,
+            quit => AppStateCmdResult::Quit,
+            focus_user_home | focus_root | toggle_dates | toggle_files | toggle_hidden
+            | toggle_git_ignore | toggle_git_file_info | toggle_git_status | toggle_perm
+            | toggle_sizes | toggle_trim_root => AppStateCmdResult::PopStateAndReapply,
+            _ => AppStateCmdResult::Keep,
+        })
     }
 }

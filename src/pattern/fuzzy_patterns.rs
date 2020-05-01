@@ -3,9 +3,9 @@
 //!  such as file names.
 
 use {
-    std::fmt::{self, Write},
-    secular,
     super::Match,
+    secular,
+    std::fmt::{self, Write},
 };
 
 // weights used in match score computing
@@ -52,7 +52,6 @@ fn is_word_separator(c: char) -> bool {
 }
 
 impl FuzzyPattern {
-
     /// build a pattern which will later be usable for fuzzy search.
     /// A pattern should be reused
     pub fn from(pat: &str) -> FuzzyPattern {
@@ -172,31 +171,33 @@ impl FuzzyPattern {
         let mut cand_chars = candidate.chars().map(secular::lower_lay_char);
         match cand_chars.next() {
             None => None, // empty candidate: this looks pathological but might be valid
-            Some(chr) if pat_chr==chr => {
+            Some(chr) if pat_chr == chr => {
                 let cand_len = cand_chars.count() as i32 + 1;
                 let score = BONUS_MATCH
-                    + BONUS_START + BONUS_START_WORD
-                    + cand_len*BONUS_CANDIDATE_LENGTH
+                    + BONUS_START
+                    + BONUS_START_WORD
+                    + cand_len * BONUS_CANDIDATE_LENGTH
                     + BONUS_MATCH_LENGTH;
-                Some(
-                    if cand_len==1 { score + BONUS_EXACT } else { score }
-                )
+                Some(if cand_len == 1 {
+                    score + BONUS_EXACT
+                } else {
+                    score
+                })
             }
             Some(chr) => {
                 let mut starts_word = is_word_separator(chr);
                 while let Some(cand_chr) = cand_chars.next() {
                     if cand_chr == pat_chr {
                         let cand_len = candidate.chars().count() as i32;
-                        let score = BONUS_MATCH
-                            + cand_len*BONUS_CANDIDATE_LENGTH
-                            + BONUS_MATCH_LENGTH;
+                        let score =
+                            BONUS_MATCH + cand_len * BONUS_CANDIDATE_LENGTH + BONUS_MATCH_LENGTH;
                         if starts_word {
                             return Some(score + BONUS_START_WORD);
                         } else {
                             // looking for another match after a space
                             while let Some(cand_chr) = cand_chars.next() {
                                 if cand_chr == pat_chr && starts_word {
-                                        return Some(score + BONUS_START_WORD)
+                                    return Some(score + BONUS_START_WORD);
                                 } else {
                                     starts_word = is_word_separator(cand_chr);
                                 }
@@ -326,9 +327,7 @@ mod fuzzy_pattern_tests {
 
     #[test]
     fn check_equal_scores() {
-        static PATTERNS: &[&str] = &[
-            "reveil", "dystroy", "broot", "AB", "z", "é", "év", "a"
-        ];
+        static PATTERNS: &[&str] = &["reveil", "dystroy", "broot", "AB", "z", "é", "év", "a"];
         static NAMES: &[&str] = &[
             " brr ooT",
             "Reveillon",
@@ -420,4 +419,3 @@ mod fuzzy_pattern_tests {
         );
     }
 }
-

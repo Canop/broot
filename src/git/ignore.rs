@@ -1,12 +1,8 @@
 //! Implements parsing and applying .gitignore files.
 
 use {
-    git2,
-    glob,
-    id_arena::{
-        Arena,
-        Id,
-    },
+    git2, glob,
+    id_arena::{Arena, Id},
     regex::Regex,
     std::{
         fs::File,
@@ -88,41 +84,23 @@ impl GitIgnoreFile {
         // the last rule applicable to a path is the right one. So
         // we reverse the list to easily iterate from the last one to the first one
         rules.reverse();
-        debug!(
-            "loaded .gitignore file {:?} with {} rules",
-            path,
-            rules.len(),
-        );
         Ok(GitIgnoreFile { rules })
     }
 }
 
 pub fn find_global_ignore() -> Option<GitIgnoreFile> {
     git2::Config::open_default()
-        .and_then(|global_config|
-            global_config.get_path("core.excludesfile")
-        )
+        .and_then(|global_config| global_config.get_path("core.excludesfile"))
         .ok()
-        .or_else(||
-            directories::BaseDirs::new()
-                .map(|base_dirs|
-                    base_dirs.config_dir().join("git/ignore")
-                )
-        )
-        .or_else(||
+        .or_else(|| {
+            directories::BaseDirs::new().map(|base_dirs| base_dirs.config_dir().join("git/ignore"))
+        })
+        .or_else(|| {
             directories::UserDirs::new()
-                .map(|user_dirs|
-                    user_dirs.home_dir().join(".config/git/ignore")
-                )
-        )
+                .map(|user_dirs| user_dirs.home_dir().join(".config/git/ignore"))
+        })
         .as_ref()
-        .and_then(
-            |path| time!(
-                Debug,
-                "GitIgnoreFile::new",
-                GitIgnoreFile::new(path)
-            ).ok()
-        )
+        .and_then(|path| time!(Debug, "GitIgnoreFile::new", GitIgnoreFile::new(path)).ok())
 }
 
 #[derive(Debug, Clone, Default)]
@@ -154,17 +132,13 @@ impl GitIgnorer {
         }
     }
     pub fn root_chain(&mut self, mut dir: &Path) -> GitIgnoreChain {
-        debug!("searching applicable gifs for {:?}", dir);
         let mut chain = self.global_chain.clone();
         loop {
-            debug!("  looking in {:?}", dir);
             let ignore_file = dir.join(".gitignore");
             if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
-                debug!("  adding {:?}", &ignore_file);
                 chain.push(self.files.alloc(gif));
             }
             if is_repo(dir) {
-                debug!("  break because git repo");
                 break;
             }
             if let Some(parent) = dir.parent() {
@@ -175,11 +149,7 @@ impl GitIgnorer {
         }
         chain
     }
-    pub fn deeper_chain(
-        &mut self,
-        parent_chain: &GitIgnoreChain,
-        dir: &Path,
-    ) -> GitIgnoreChain {
+    pub fn deeper_chain(&mut self, parent_chain: &GitIgnoreChain, dir: &Path) -> GitIgnoreChain {
         // if the current folder is a repository, then
         // we reset the chain to the root one:
         // we don't want the .gitignore files of super repositories
@@ -222,4 +192,3 @@ impl GitIgnorer {
         true
     }
 }
-

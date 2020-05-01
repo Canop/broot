@@ -1,35 +1,23 @@
-
 use {
+    super::TreeGitStatus,
     crate::{
         git,
-        task_sync::{
-            Dam,
-            ComputationResult,
-            Computation,
-        },
-    },
-    git2::{
-        Repository,
+        task_sync::{Computation, ComputationResult, Dam},
     },
     crossbeam::channel::bounded,
+    git2::Repository,
     std::{
         collections::HashMap,
         path::{Path, PathBuf},
         sync::Mutex,
     },
-    super::TreeGitStatus,
 };
-
-
 
 fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {
     match Repository::open(root_path) {
         Ok(git_repo) => {
-            let tree_git_status = time!(
-                Debug,
-                "compute_tree_status",
-                TreeGitStatus::from(&git_repo),
-            );
+            let tree_git_status =
+                time!(Debug, "compute_tree_status", TreeGitStatus::from(&git_repo),);
             match tree_git_status {
                 Some(gs) => ComputationResult::Done(gs),
                 None => ComputationResult::None,
@@ -59,7 +47,11 @@ pub fn get_tree_status(root_path: &Path, dam: &mut Dam) -> ComputationResult<Tre
     match git::closest_repo_dir(root_path) {
         None => ComputationResult::None,
         Some(repo_path) => {
-            let comp = TS_CACHE_MX.lock().unwrap().get(&repo_path).map(|c| (*c).clone());
+            let comp = TS_CACHE_MX
+                .lock()
+                .unwrap()
+                .get(&repo_path)
+                .map(|c| (*c).clone());
             match comp {
                 Some(Computation::Finished(comp_res)) => {
                     // already computed
@@ -81,23 +73,19 @@ pub fn get_tree_status(root_path: &Path, dam: &mut Dam) -> ComputationResult<Tre
                     //
                     // note: must also update the TS_CACHE entry at end
                     let (s, r) = bounded(1);
-                    TS_CACHE_MX.lock().unwrap().insert(
-                        repo_path.clone(),
-                        Computation::InProgress(r),
-                    );
-                    dam.try_compute(move||{
-                        debug!("start computation");
+                    TS_CACHE_MX
+                        .lock()
+                        .unwrap()
+                        .insert(repo_path.clone(), Computation::InProgress(r));
+                    dam.try_compute(move || {
                         let comp_res = compute_tree_status(&repo_path);
-                        debug!("comp finished - try inserting");
-                        TS_CACHE_MX.lock().unwrap().insert(
-                            repo_path.clone(),
-                            Computation::Finished(comp_res.clone()),
-                        );
-                        debug!("result stored in cache, now sending to receiver");
+                        TS_CACHE_MX
+                            .lock()
+                            .unwrap()
+                            .insert(repo_path.clone(), Computation::Finished(comp_res.clone()));
                         if let Err(e) = s.send(comp_res.clone()) {
                             debug!("error while sending comp result: {:?}", e);
                         }
-                        debug!("result sent to receiver - now returning");
                         comp_res
                     })
                 }

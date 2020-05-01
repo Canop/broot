@@ -2,14 +2,8 @@
 
 use {
     crate::{
-        app::{
-            AppContext,
-            AppStateCmdResult,
-        },
-        display::{
-            DisplayableTree,
-            Screen,
-        },
+        app::{AppContext, AppStateCmdResult},
+        display::{DisplayableTree, Screen},
         errors::ProgramError,
         flat_tree::Tree,
         launchable::Launchable,
@@ -44,9 +38,11 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
 
 pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult> {
     let relative_path = match pathdiff::diff_paths(path, &con.launch_args.root) {
-        None => return Ok(AppStateCmdResult::DisplayError(
-            format!("Cannot relativize {:?}", path) // does this happen ? how ?
-        )),
+        None => {
+            return Ok(AppStateCmdResult::DisplayError(
+                format!("Cannot relativize {:?}", path), // does this happen ? how ?
+            ));
+        }
         Some(p) => p,
     };
     if relative_path.components().next().is_some() {

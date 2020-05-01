@@ -1,14 +1,13 @@
-
 mod app;
 mod cmd_result;
 mod context;
-mod state;
 mod panel;
+mod panel_id;
+mod panel_purpose;
+mod state;
+mod status;
 
 pub use {
-    app::App,
-    context::AppContext,
-    cmd_result::AppStateCmdResult,
-    state::AppState,
-    panel::*,
+    app::App, cmd_result::AppStateCmdResult, context::AppContext, panel::Panel, panel_id::PanelId,
+    panel_purpose::PanelPurpose, state::AppState, status::Status,
 };

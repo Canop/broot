@@ -11,10 +11,6 @@ mod regex_patterns;
 pub use {
     fuzzy_patterns::FuzzyPattern,
     matched_string::MatchedString,
-    pattern::{
-        Match,
-        Pattern,
-    },
+    pattern::{Match, Pattern},
     regex_patterns::RegexPattern,
 };
-

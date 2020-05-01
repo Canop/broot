@@ -1,44 +1,43 @@
 use {
     crate::{
-        app::{
-            AppContext,
-            AppState,
-            AppStateCmdResult,
-        },
-        command::{Action, Command},
-        display::{
-            DisplayableTree,
-            FLAGS_AREA_WIDTH,
-            Screen,
-            Status,
-            W,
-        },
+        app::{AppContext, AppState, AppStateCmdResult, Status},
+        command::Command,
+        display::{DisplayableTree, Screen, FLAGS_AREA_WIDTH, W},
         errors::{ProgramError, TreeBuildError},
-        launchable::Launchable,
         flat_tree::{LineType, Tree},
         git,
         help::HelpState,
+        launchable::Launchable,
         pattern::Pattern,
+        path,
+        print,
         selection_type::SelectionType,
         task_sync::Dam,
         tree_build::TreeBuilder,
         tree_options::TreeOptions,
-        verb::{
-            CD,
-            PrefixSearchResult,
-            VerbExecutor,
-        },
+        verb::{Internal, PrefixSearchResult, VerbInvocation, CD},
     },
+    directories::UserDirs,
     open,
     std::{
         fs::OpenOptions,
         io::Write,
-        path::PathBuf,
+        path::{Path, PathBuf},
     },
-    termimad::{
-        Area,
-    },
+    termimad::Area,
 };
+
+fn focus_path(
+    path: PathBuf,
+    screen: &mut Screen,
+    tree: &Tree,
+    in_new_panel: bool,
+) -> AppStateCmdResult {
+    AppStateCmdResult::from_optional_state(
+        BrowserState::new(path, tree.options.clone(), screen, &Dam::unlimited()),
+        in_new_panel,
+    )
+}
 
 /// An application state dedicated to displaying a tree.
 /// It's the first and main screen of broot.
@@ -50,6 +49,10 @@ pub struct BrowserState {
 }
 
 impl BrowserState {
+    /// build a new tree state if there's no error and there's no cancellation.
+    ///
+    /// In case of cancellation return `Ok(None)`. If dam is `unlimited()` then
+    /// this can't be returned.
     pub fn new(
         path: PathBuf,
         mut options: TreeOptions,
@@ -76,13 +79,7 @@ impl BrowserState {
         let mut options = tree.options.clone();
         change_options(&mut options);
         AppStateCmdResult::from_optional_state(
-            BrowserState::new(
-                tree.root().clone(),
-                options,
-                screen,
-                &Dam::unlimited(),
-            ),
-            Command::from_pattern(&tree.options.pattern),
+            BrowserState::new(tree.root().clone(), options, screen, &Dam::unlimited()),
             in_new_panel,
         )
     }
@@ -131,7 +128,6 @@ impl BrowserState {
                 let dam = Dam::unlimited();
                 Ok(AppStateCmdResult::from_optional_state(
                     BrowserState::new(target, tree.options.without_pattern(), screen, &dam),
-                    Command::new(),
                     in_new_panel,
                 ))
             }
@@ -156,11 +152,7 @@ impl BrowserState {
             LineType::File => make_opener(line.path.clone(), line.is_exe(), con),
             LineType::Dir | LineType::SymLinkToDir(_) => {
                 Ok(if con.launch_args.cmd_export_path.is_some() {
-                    CD.to_cmd_result(
-                        &line.target(),
-                        &None,
-                        con,
-                    )?
+                    CD.to_cmd_result(&line.target(), &None, con)?
                 } else {
                     AppStateCmdResult::DisplayError(
                         "This feature needs broot to be launched with the `br` script".to_owned(),
@@ -180,11 +172,7 @@ impl BrowserState {
         }
     }
 
-    pub fn go_to_parent(
-        &mut self,
-        screen: &mut Screen,
-        in_new_panel: bool,
-    ) -> AppStateCmdResult {
+    pub fn go_to_parent(&mut self, screen: &mut Screen, in_new_panel: bool) -> AppStateCmdResult {
         match &self.displayed_tree().selected_line().path.parent() {
             Some(path) => AppStateCmdResult::from_optional_state(
                 BrowserState::new(
@@ -193,7 +181,6 @@ impl BrowserState {
                     screen,
                     &Dam::unlimited(),
                 ),
-                Command::new(),
                 in_new_panel,
             ),
             None => AppStateCmdResult::DisplayError("no parent found".to_string()),
@@ -251,51 +238,42 @@ fn make_opener(
 }
 
 impl AppState for BrowserState {
-    fn has_pending_task(&self) -> bool {
-        self.pending_pattern.is_some()
-            || self.displayed_tree().has_dir_missing_size()
-            || self.displayed_tree().is_missing_git_status_computation()
-    }
-
-    fn get_status(
-        &self,
-        cmd: &Command,
-        con: &AppContext,
-    ) -> Status {
-        let task = if self.pending_pattern.is_some() {
+    fn get_pending_task(&self) -> Option<&'static str> {
+        if self.pending_pattern.is_some() {
             Some("searching")
         } else if self.displayed_tree().has_dir_missing_size() {
             Some("computing sizes")
+        } else if self.displayed_tree().is_missing_git_status_computation() {
+            Some("computing git status")
         } else {
             None
-        };
-        match &cmd.action {
-            Action::FuzzyPatternEdit(s) if !s.is_empty() => {
-                Status::new(task, self.normal_status_message(true), false)
+        }
+    }
+
+    fn get_status(&self, cmd: &Command, con: &AppContext) -> Status {
+        match cmd {
+            Command::FuzzyPatternEdit(s) if !s.is_empty() => {
+                Status::new(self.normal_status_message(true), false)
             }
-            Action::RegexEdit(s, _) if !s.is_empty() => {
-                Status::new(task, self.normal_status_message(true), false)
+            Command::RegexEdit(s, _) if !s.is_empty() => {
+                Status::new(self.normal_status_message(true), false)
             }
-            Action::VerbEdit(invocation) => {
+            Command::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
                     Status::new(
-                        task,
                         "Type a verb then *enter* to execute it (*?* for the list of verbs)",
                         false,
                     )
                 } else {
                     match con.verb_store.search(&invocation.name) {
-                        PrefixSearchResult::NoMatch => Status::new(
-                            task,
-                            "No matching verb (*?* for the list of verbs)",
-                            true,
-                        ),
+                        PrefixSearchResult::NoMatch => {
+                            Status::new("No matching verb (*?* for the list of verbs)", true)
+                        }
                         PrefixSearchResult::Match(verb) => {
                             let line = self.displayed_tree().selected_line();
-                            verb.get_status(task, line.path.clone(), invocation)
+                            verb.get_status(&line.path, invocation)
                         }
                         PrefixSearchResult::TooManyMatches(completions) => Status::new(
-                            task,
                             format!(
                                 "Possible verbs: {}",
                                 completions
@@ -309,119 +287,254 @@ impl AppState for BrowserState {
                     }
                 }
             }
-            _ => {
-                Status::new(task, self.normal_status_message(false), false)
-            }
+            _ => Status::new(self.normal_status_message(false), false),
         }
+    }
+
+    fn selected_path(&self) -> &Path {
+        &self.displayed_tree().selected_line().path
     }
 
     fn selection_type(&self) -> SelectionType {
         self.displayed_tree().selected_line().selection_type()
     }
 
-    //fn can_execute(&self, verb_index: usize, con: &AppContext) -> bool {
-    //    self.displayed_tree()
-    //        .selected_line()
-    //        .is_of(con.verb_store.verbs[verb_index].selection_condition)
-    //}
+    fn clear_pending(&mut self) {
+        self.pending_pattern = Pattern::None;
+    }
 
-    fn apply(
+    fn on_click(
         &mut self,
-        cmd: &mut Command,
+        _x: u16,
+        y: u16,
+        _screen: &mut Screen,
+        _con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        self.displayed_tree_mut().try_select_y(y as i32);
+        Ok(AppStateCmdResult::Keep)
+    }
+
+    fn on_double_click(
+        &mut self,
+        _x: u16,
+        y: u16,
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        self.pending_pattern = Pattern::None;
+        if self.displayed_tree().selection == y as usize {
+            self.open_selection_stay_in_broot(screen, con, false)
+        } else {
+            // A double click always come after a simple click at
+            // same position. If it's not the selected line, it means
+            // the click wasn't on a selectable/openable tree line
+            Ok(AppStateCmdResult::Keep)
+        }
+    }
+
+    fn on_fuzzy_pattern_edit(
+        &mut self,
+        pat: &str,
+        _con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        match pat.len() {
+            0 => {
+                self.filtered_tree = None;
+            }
+            _ => {
+                self.pending_pattern = Pattern::fuzzy(pat);
+            }
+        }
+        Ok(AppStateCmdResult::Keep)
+    }
+
+    fn on_regex_pattern_edit(
+        &mut self,
+        pat: &str,
+        flags: &str,
+        _con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        Ok(match Pattern::regex(pat, flags) {
+            Ok(regex_pattern) => {
+                self.pending_pattern = regex_pattern;
+                AppStateCmdResult::Keep
+            }
+            Err(e) => {
+                // FIXME details
+                AppStateCmdResult::DisplayError(format!("{}", e))
+            }
+        })
+    }
+
+    fn on_internal(
+        &mut self,
+        internal: Internal,
+        bang: bool,
+        input_invocation: Option<&VerbInvocation>,
+        screen: &mut Screen,
+        con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
         let page_height = BrowserState::page_height(screen);
-        match &cmd.action {
-            Action::Back => {
+        use Internal::*;
+        Ok(match internal {
+            back => {
                 if self.filtered_tree.is_some() {
                     self.filtered_tree = None;
-                    cmd.raw.clear();
-                    Ok(AppStateCmdResult::Keep)
+                    AppStateCmdResult::Keep
                 } else if self.tree.selection > 0 {
                     self.tree.selection = 0;
-                    cmd.raw.clear();
-                    Ok(AppStateCmdResult::Keep)
-                } else {
-                    Ok(AppStateCmdResult::PopState)
-                }
-            }
-            Action::MoveSelection(dy) => {
-                self.displayed_tree_mut().move_selection(*dy, page_height);
-                Ok(AppStateCmdResult::Keep)
-            }
-            Action::Click(_, y) => {
-                let y = *y as i32;
-                self.displayed_tree_mut().try_select_y(y);
-                Ok(AppStateCmdResult::Keep)
-            }
-            Action::DoubleClick(_, y) => {
-                if self.displayed_tree().selection == *y as usize {
-                    self.open_selection_stay_in_broot(screen, con, false)
-                } else {
-                    // A double click always come after a simple click at
-                    // same position. If it's not the selected line, it means
-                    // the click wasn't on a selectable/openable tree line
-                    Ok(AppStateCmdResult::Keep)
-                }
-            }
-            Action::OpenSelection => self.open_selection_stay_in_broot(screen, con, false),
-            Action::AltOpenSelection => self.open_selection_quit_broot(con),
-            Action::FuzzyPatternEdit(pat) => {
-                match pat.len() {
-                    0 => {
-                        self.filtered_tree = None;
-                    }
-                    _ => {
-                        self.pending_pattern = Pattern::fuzzy(pat);
-                    }
-                }
-                Ok(AppStateCmdResult::Keep)
-            }
-            Action::Help => Ok(AppStateCmdResult::NewState {
-                state: Box::new(HelpState::new(screen, con)),
-                cmd: Command::new(),
-                in_new_panel: false,
-            }),
-            Action::Next => {
-                self.displayed_tree_mut().try_select_next_match();
-                self.displayed_tree_mut().make_selection_visible(page_height);
-                Ok(AppStateCmdResult::Keep)
-            }
-            Action::Previous => {
-                if let Some(tree) = &mut self.filtered_tree {
-                    tree.try_select_previous_match();
-                    tree.make_selection_visible(page_height);
-                }
-                Ok(AppStateCmdResult::Keep)
-            }
-            Action::RegexEdit(pat, flags) => Ok(match Pattern::regex(pat, flags) {
-                Ok(regex_pattern) => {
-                    self.pending_pattern = regex_pattern;
                     AppStateCmdResult::Keep
+                } else {
+                    AppStateCmdResult::PopState
                 }
-                Err(e) => {
-                    // FIXME details
-                    AppStateCmdResult::DisplayError(format!("{}", e))
-                }
-            }),
-            Action::Resize(w, h) => {
-                screen.set_terminal_size(*w, *h, con);
-                Ok(AppStateCmdResult::RefreshState { clear_cache: false })
             }
-            Action::VerbIndex(index) => {
-                let verb = &con.verb_store.verbs[*index];
-                self.execute_verb(verb, None, screen, con)
-            }
-            Action::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
-                PrefixSearchResult::Match(verb) => {
-                    self.execute_verb(verb, Some(&invocation), screen, con)
+            close_panel => AppStateCmdResult::PopPanel,
+            complete => AppStateCmdResult::DisplayError("not yet implemented".to_string()),
+            focus => {
+                let tree = self.displayed_tree();
+                let line = &tree.selected_line();
+                let mut path = line.target();
+                if !path.is_dir() {
+                    path = path.parent().unwrap().to_path_buf();
                 }
-                _ => Ok(AppStateCmdResult::verb_not_found(&invocation.name)),
+                focus_path(path, screen, tree, bang)
+            }
+            focus_root => focus_path(PathBuf::from("/"), screen, self.displayed_tree(), bang),
+            up_tree => match self.displayed_tree().root().parent() {
+                Some(path) => focus_path(path.to_path_buf(), screen, self.displayed_tree(), bang),
+                None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
-            _ => Ok(AppStateCmdResult::Keep),
-        }
+            focus_user_home => match UserDirs::new() {
+                Some(ud) => focus_path(
+                    ud.home_dir().to_path_buf(),
+                    screen,
+                    self.displayed_tree(),
+                    bang,
+                ),
+                None => AppStateCmdResult::DisplayError("no user home directory found".to_string()),
+            },
+            help => AppStateCmdResult::NewState {
+                state: Box::new(HelpState::new(screen, con)),
+                in_new_panel: bang,
+            },
+            open_panel => {
+                if let Some(invocation) = input_invocation {
+                    if let Some(arg) = &invocation.args {
+                        if invocation.name == internal.name() {
+                            // FIXME the name test is a hack, we should
+                            // use the trigger type of the command
+                            debug!("case A");
+                            let tree = self.displayed_tree();
+                            let base_dir = tree.selected_line().path.to_string_lossy();
+                            let path = path::path_from(&arg, &base_dir);
+                            let new_state = BrowserState::new(
+                                PathBuf::from(&path),
+                                tree.options.clone(),
+                                screen,
+                                &Dam::unlimited(),
+                            )?.unwrap();
+                            AppStateCmdResult::NewState {
+                                state: Box::new(new_state),
+                                in_new_panel: true,
+                            }
+                        } else {
+                            // user would like to open for arg edition
+                            // the current arg as a tree panel
+                            debug!("case B");
+                            AppStateCmdResult::DisplayError("not yet implemented".to_string())
+                        }
+                    } else {
+                        // user wants to open for arg edition the selected
+                        // tree line
+                        debug!("case C");
+                        AppStateCmdResult::DisplayError("not yet implemented".to_string())
+                    }
+                } else {
+                    // just opening a new panel on the selected tree line
+                    debug!("case D");
+                    let tree = self.displayed_tree();
+                    let line = &tree.selected_line();
+                    let mut path = line.target();
+                    if !path.is_dir() {
+                        path = path.parent().unwrap().to_path_buf();
+                    }
+                    focus_path(path, screen, tree, true)
+                }
+            }
+            open_stay => self.open_selection_stay_in_broot(screen, con, bang)?,
+            open_leave => self.open_selection_quit_broot(con)?,
+            line_down => {
+                self.displayed_tree_mut().move_selection(1, page_height);
+                AppStateCmdResult::Keep
+            }
+            line_up => {
+                self.displayed_tree_mut().move_selection(-1, page_height);
+                AppStateCmdResult::Keep
+            }
+            page_down => {
+                let tree = self.displayed_tree_mut();
+                if page_height < tree.lines.len() as i32 {
+                    tree.try_scroll(page_height, page_height);
+                }
+                AppStateCmdResult::Keep
+            }
+            page_up => {
+                let tree = self.displayed_tree_mut();
+                if page_height < tree.lines.len() as i32 {
+                    tree.try_scroll(-page_height, page_height);
+                }
+                AppStateCmdResult::Keep
+            }
+            parent => self.go_to_parent(screen, bang),
+            print_path => print::print_path(&self.displayed_tree().selected_line().target(), con)?,
+            print_relative_path => {
+                print::print_relative_path(&self.displayed_tree().selected_line().target(), con)?
+            }
+            print_tree => print::print_tree(&self.displayed_tree(), screen, con)?,
+            refresh => AppStateCmdResult::RefreshState { clear_cache: true },
+            select_first => {
+                self.displayed_tree_mut().try_select_first();
+                AppStateCmdResult::Keep
+            }
+            select_last => {
+                self.displayed_tree_mut().try_select_last();
+                AppStateCmdResult::Keep
+            }
+            toggle_dates => self.with_new_options(screen, &|o| o.show_dates ^= true, bang),
+            toggle_files => {
+                self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true, bang)
+            }
+            toggle_hidden => self.with_new_options(screen, &|o| o.show_hidden ^= true, bang),
+            toggle_git_ignore => {
+                self.with_new_options(screen, &|o| o.respect_git_ignore ^= true, bang)
+            }
+            toggle_git_file_info => {
+                self.with_new_options(screen, &|o| o.show_git_file_info ^= true, bang)
+            }
+            toggle_git_status => {
+                self.with_new_options(screen, &|o| o.filter_by_git_status ^= true, bang)
+            }
+            toggle_perm => self.with_new_options(screen, &|o| o.show_permissions ^= true, bang),
+            toggle_sizes => self.with_new_options(screen, &|o| o.show_sizes ^= true, bang),
+            toggle_trim_root => self.with_new_options(screen, &|o| o.trim_root ^= true, bang),
+            total_search => {
+                if let Some(tree) = &self.filtered_tree {
+                    if tree.total_search {
+                        AppStateCmdResult::DisplayError(
+                            "search was already total - all children have been rated".to_owned(),
+                        )
+                    } else {
+                        self.pending_pattern = tree.options.pattern.clone();
+                        self.total_search_required = true;
+                        AppStateCmdResult::Keep
+                    }
+                } else {
+                    AppStateCmdResult::DisplayError(
+                        "this verb can be used only after a search".to_owned(),
+                    )
+                }
+            }
+            quit => AppStateCmdResult::Quit,
+        })
     }
 
     /// do some work, totally or partially, if there's some to do.
@@ -452,7 +565,6 @@ impl AppState for BrowserState {
                 ft.make_selection_visible(BrowserState::page_height(screen));
                 self.filtered_tree = filtered_tree;
             }
-
         } else if self.displayed_tree().is_missing_git_status_computation() {
             let root_path = self.displayed_tree().root();
             let git_status = git::get_tree_status(root_path, dam);
@@ -469,7 +581,6 @@ impl AppState for BrowserState {
         area: Area,
         _con: &AppContext,
     ) -> Result<(), ProgramError> {
-        debug!("drawing tree in {:?}", &area);
         let dp = DisplayableTree {
             tree: &self.displayed_tree(),
             skin: &screen.skin,
@@ -506,13 +617,13 @@ impl AppState for BrowserState {
     ) -> Result<(), ProgramError> {
         let tree = self.displayed_tree();
         let total_char_size = FLAGS_AREA_WIDTH;
-        screen.goto_clear(
-            w,
-            screen.width - total_char_size - 1,
-            screen.height - 1,
-        )?;
+        screen.goto_clear(w, screen.width - total_char_size - 1, screen.height - 1)?;
         let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
-        let gi_value = if tree.options.respect_git_ignore { 'y' } else { 'n' };
+        let gi_value = if tree.options.respect_git_ignore {
+            'y'
+        } else {
+            'n'
+        };
         screen.skin.flag_label.queue_str(w, " h:")?;
         screen.skin.flag_value.queue(w, h_value)?;
         screen.skin.flag_label.queue_str(w, "   gi:")?;

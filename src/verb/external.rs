@@ -1,24 +1,15 @@
-
 use {
+    super::{ExternalExecutionMode, VerbInvocation},
     crate::{
         app::*,
         errors::{ConfError, ProgramError},
         launchable::Launchable,
+        path,
+        selection_type::SelectionType,
     },
     regex::{Captures, Regex},
-    std::{
-        collections::HashMap,
-        fs::OpenOptions,
-        io::Write,
-        path::Path,
-    },
-    super::{
-        ExternalExecutionMode,
-        path,
-        VerbInvocation,
-    },
+    std::{collections::HashMap, fs::OpenOptions, io::Write, path::Path},
 };
-
 
 fn path_to_string(path: &Path, for_shell: bool) -> String {
     if for_shell {
@@ -39,12 +30,20 @@ fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
         .or_else(|_| Err(ConfError::InvalidVerbInvocation { invocation: spec }))
 }
 
+fn determine_arg_selection_type(args: &str) -> Option<SelectionType> {
+    GROUP
+        .find(args)
+        .filter(|m| {
+            info!(" m: {:?}", m);
+            m.start() == 0 && m.end() == args.len()
+        })
+        .map(|_| SelectionType::Any)
+}
 
 /// Definition of how the user input should be interpreted
 /// to be executed in an external command.
 #[derive(Debug, Clone)]
 pub struct External {
-
     /// pattern of how the command is supposed to be typed in the input
     invocation_pattern: VerbInvocation,
 
@@ -55,18 +54,26 @@ pub struct External {
     /// completed with the args
     pub exec_pattern: String,
 
+    /// how the external process must be launched
     pub exec_mode: ExternalExecutionMode,
 
+    /// contain the type of selection in case there's only one arg
+    /// and it's a path (when it's not None, the user can type Tab
+    /// to select the argument in another panel)
+    pub arg_selection_type: Option<SelectionType>,
 }
 
 impl External {
-
     pub fn new(
         invocation_str: &str,
         execution_str: &str,
         exec_mode: ExternalExecutionMode,
     ) -> Result<Self, ConfError> {
         let invocation_pattern = VerbInvocation::from(invocation_str);
+        let arg_selection_type = invocation_pattern
+            .args
+            .as_ref()
+            .and_then(|args| determine_arg_selection_type(&args));
         let args_parser = invocation_pattern
             .args
             .as_ref()
@@ -77,6 +84,7 @@ impl External {
             args_parser,
             exec_pattern: execution_str.to_string(),
             exec_mode,
+            arg_selection_type,
         })
     }
 
@@ -183,7 +191,8 @@ impl External {
             Ok(AppStateCmdResult::Quit)
         } else {
             Ok(AppStateCmdResult::DisplayError(
-                "this verb needs broot to be launched as `br`. Try `broot --install` if necessary.".to_string()
+                "this verb needs broot to be launched as `br`. Try `broot --install` if necessary."
+                    .to_string(),
             ))
         }
     }
@@ -222,7 +231,9 @@ impl External {
             .split_whitespace()
             .map(|token| {
                 GROUP
-                    .replace_all(token, |ec: &Captures<'_>| path::do_exec_replacement(ec, &map))
+                    .replace_all(token, |ec: &Captures<'_>| {
+                        path::do_exec_replacement(ec, &map)
+                    })
                     .to_string()
             })
             .collect()
@@ -251,4 +262,3 @@ impl External {
             .join(" ")
     }
 }
-

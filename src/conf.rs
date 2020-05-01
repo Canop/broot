@@ -2,12 +2,7 @@
 //! initializing if if it doesn't yet exist
 
 use {
-    crate::{
-        errors::ConfError,
-        keys,
-        skin,
-        verb::VerbConf,
-    },
+    crate::{errors::ConfError, keys, skin, verb::VerbConf},
     crossterm::style::Attribute,
     directories::ProjectDirs,
     std::{
@@ -48,8 +43,7 @@ fn bool_field(value: &Value, field_name: &str) -> Option<bool> {
 
 /// return the instance of ProjectDirs holding broot's specific paths
 pub fn app_dirs() -> ProjectDirs {
-    ProjectDirs::from("org", "dystroy", "broot")
-        .expect("Unable to find configuration directories")
+    ProjectDirs::from("org", "dystroy", "broot").expect("Unable to find configuration directories")
 }
 
 /// return the path to the config directory, based on XDG
@@ -58,9 +52,11 @@ pub fn dir() -> PathBuf {
 }
 
 impl Conf {
-
-    pub fn default_location() -> PathBuf {
-        dir().join("conf.toml")
+    pub fn default_location() -> &'static Path {
+        lazy_static! {
+            static ref CONF_PATH: PathBuf = dir().join("conf.toml");
+        }
+        &*CONF_PATH
     }
 
     /// read the configuration file from the default OS specific location.
@@ -108,8 +104,7 @@ impl Conf {
         // reading verbs
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {
-                let invocation = string_field(verb_value, "invocation")
-                    .unwrap_or("".to_string());
+                let invocation = string_field(verb_value, "invocation").unwrap_or("".to_string());
                 let key = string_field(verb_value, "key")
                     .map(|s| keys::parse_key(&s))
                     .transpose()?;
@@ -146,7 +141,6 @@ impl Conf {
                     from_shell,
                     leave_broot,
                 };
-                debug!("\nread verb conf: {:?}\n", &verb_conf);
 
                 self.verbs.push(verb_conf);
             }
@@ -320,4 +314,3 @@ execution = "$PAGER {file}"
 # for example a skin suitable for white backgrounds
 
 "#;
-

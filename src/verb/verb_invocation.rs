@@ -1,7 +1,4 @@
-use {
-    regex::Regex,
-    std::fmt,
-};
+use {regex::Regex, std::fmt};
 
 /// the verb and its arguments, making the invocation
 #[derive(Clone, Debug)]
@@ -40,7 +37,7 @@ impl VerbInvocation {
 }
 
 impl From<&str> for VerbInvocation {
-    /// parse a string describing the invocation of a verb with its
+    /// parse a string being or describing the invocation of a verb with its
     /// arguments and optional bang. The leading space or colon must
     /// have been stripped before.
     fn from(invocation: &str) -> Self {
@@ -55,7 +52,9 @@ impl From<&str> for VerbInvocation {
                 \s*
                 $
             "
-        ).captures(invocation).unwrap();
+        )
+        .captures(invocation)
+        .unwrap();
         let bang_before = caps.name("bang_before").is_some();
         let bang_after = caps.name("bang_after").is_some();
         let bang = bang_before || bang_after;

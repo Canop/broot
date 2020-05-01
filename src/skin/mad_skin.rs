@@ -1,17 +1,8 @@
 /// This module builds Termimad `MadSkin` from Broot `Skin`
-
 use {
-    crossterm::{
-        style::Color,
-    },
     super::Skin,
-    termimad::{
-        Alignment,
-        CompoundStyle,
-        LineStyle,
-        gray,
-        MadSkin,
-    },
+    crossterm::style::Color,
+    termimad::{gray, Alignment, CompoundStyle, LineStyle, MadSkin},
 };
 
 /// the mad skin applying to the status depending whether it's an
@@ -62,13 +53,13 @@ impl StatusMadSkinSet {
 /// of the skin.
 pub fn make_help_mad_skin(skin: &Skin) -> MadSkin {
     let mut ms = MadSkin::default();
-    ms.paragraph.compound_style = CompoundStyle::from(skin.help_paragraph.clone());
-    ms.inline_code = CompoundStyle::from(skin.help_code.clone());
+    ms.paragraph.compound_style = skin.help_paragraph.clone();
+    ms.inline_code = skin.help_code.clone();
     ms.code_block.compound_style = ms.inline_code.clone();
-    ms.bold = CompoundStyle::from(skin.help_bold.clone());
-    ms.italic = CompoundStyle::from(skin.help_italic.clone());
+    ms.bold = skin.help_bold.clone();
+    ms.italic = skin.help_italic.clone();
     ms.table = LineStyle {
-        compound_style: CompoundStyle::from(skin.help_table_border.clone()),
+        compound_style: skin.help_table_border.clone(),
         align: Alignment::Center,
     };
     if let Some(c) = skin.help_headers.get_fg() {

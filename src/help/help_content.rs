@@ -1,12 +1,6 @@
 use {
-    crate::{
-        app::AppContext,
-        verb::VerbExecution,
-    },
-    minimad::{
-        Text,
-        TextTemplate,
-    },
+    crate::{app::AppContext, verb::VerbExecution},
+    minimad::{Text, TextTemplate},
 };
 
 static MD: &str = r#"
@@ -71,7 +65,11 @@ pub fn build_text(con: &AppContext) -> Text<'_> {
             .set("name", &verb.name)
             .set(
                 "shortcut",
-                if let Some(sk) = &verb.shortcut { &sk } else { "" }, // TODO use as_deref when it's available
+                if let Some(sk) = &verb.shortcut {
+                    &sk
+                } else {
+                    ""
+                }, // TODO use as_deref when it's available
             )
             .set("key", &verb.keys_desc);
         if let Some(description) = &verb.description {
@@ -79,7 +77,7 @@ pub fn build_text(con: &AppContext) -> Text<'_> {
             sub.set("execution", "");
         } else {
             match &verb.execution {
-                VerbExecution::Internal{ internal, .. } => {
+                VerbExecution::Internal { internal, .. } => {
                     sub.set_md("description", internal.description());
                     sub.set("execution", "");
                 }

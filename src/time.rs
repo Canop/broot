@@ -1,5 +1,3 @@
-
-
 /// print the time that executing $timed took
 /// but only when the log level is "debug".
 /// The goal of this macro is to avoid doing useless

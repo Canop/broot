@@ -1,9 +1,6 @@
 /// this module generate the clap App, which defines
 /// launch arguments
-
-use {
-    clap,
-};
+use clap;
 
 /// declare the possible CLI arguments
 pub fn clap_app() -> clap::App<'static, 'static> {
@@ -12,9 +9,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
         .author("dystroy <denys.seguret@gmail.com>")
         .about("A tree explorer and a customizable launcher")
         .arg(clap::Arg::with_name("root").help("sets the root directory"))
-
         // tree flags
-
         .arg(
             clap::Arg::with_name("dates")
                 .short("d")
@@ -111,9 +106,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .long("no-trim-root")
                 .help("Don't trim the root level, show a scrollbar"),
         )
-
         // other options
-
         .arg(
             clap::Arg::with_name("cmd-export-path")
                 .long("outcmd")

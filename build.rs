@@ -3,10 +3,7 @@
 
 use {
     clap::Shell,
-    std::{
-        env,
-        str::FromStr,
-    },
+    std::{env, str::FromStr},
 };
 
 include!("src/clap.rs");

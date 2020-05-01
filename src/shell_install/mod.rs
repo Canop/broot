@@ -1,23 +1,15 @@
-
 use {
+    crate::{cli, conf, errors::ProgramError, skin},
     std::{
-        fs,
-        io,
-        os,
+        fs, io, os,
         path::{Path, PathBuf},
     },
-    crate::{
-        cli,
-        conf,
-        errors::ProgramError,
-        skin,
-    },
-    termimad::{mad_print_inline, MadSkin,},
+    termimad::{mad_print_inline, MadSkin},
 };
 
-mod util;
 mod bash;
 mod fish;
+mod util;
 
 const MD_INSTALL_REQUEST: &str = r#"
 **Broot** should be launched using a shell function (see *https://github.com/Canop/broot* for explanations).
@@ -75,7 +67,7 @@ impl ShellInstallState {
     /// or test scripts when we don't want the user to be prompted
     /// to install the function, or in case something doesn't properly
     /// work in shell detections
-    pub fn write_file(&self) -> Result<(), ProgramError> {
+    pub fn write_file(self) -> Result<(), ProgramError> {
         let refused_path = get_refused_path();
         let installed_path = get_installed_path();
         if installed_path.exists() {
@@ -108,7 +100,6 @@ fn get_installed_path() -> PathBuf {
 }
 
 impl ShellInstall {
-
     pub fn new(force_install: bool) -> Self {
         Self {
             force_install,
@@ -201,11 +192,7 @@ impl ShellInstall {
     }
 
     /// write the script at the given path
-    fn write_script(
-        &self,
-        script_path: &Path,
-        content: &str,
-    ) -> Result<(), ProgramError> {
+    fn write_script(&self, script_path: &Path, content: &str) -> Result<(), ProgramError> {
         self.remove(&script_path)?;
         info!("Writing `br` shell function in `{:?}`", &script_path);
         let script_path_str = script_path.to_string_lossy();
@@ -220,11 +207,7 @@ impl ShellInstall {
     }
 
     /// create a link
-    fn create_link(
-        &self,
-        link_path: &Path,
-        script_path: &Path,
-    ) -> Result<(), ProgramError> {
+    fn create_link(&self, link_path: &Path, script_path: &Path) -> Result<(), ProgramError> {
         info!("Creating link from {:?} to {:?}", &link_path, &script_path);
         self.remove(&link_path)?;
         let link_path_str = link_path.to_string_lossy();
@@ -242,5 +225,4 @@ impl ShellInstall {
         os::windows::fs::symlink_file(&script_path, &link_path)?;
         Ok(())
     }
-
 }

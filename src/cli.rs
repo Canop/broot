@@ -1,34 +1,20 @@
 /// this module manages reading and translating
 /// the arguments passed on launch of the application.
-
 use {
-    clap::{
-        self,
-        ArgMatches,
-    },
     crate::{
-        app::{
-            App,
-            AppContext,
-        },
+        app::{App, AppContext},
         conf::Conf,
+        display::{self, Screen},
         errors::{ProgramError, TreeBuildError},
         launchable::Launchable,
-        display::{
-            self,
-            Screen,
-        },
-        shell_install::{
-            ShellInstall,
-            ShellInstallState,
-        },
+        shell_install::{ShellInstall, ShellInstallState},
         skin,
         tree_options::TreeOptions,
         verb::VerbStore,
     },
+    clap::{self, ArgMatches},
     crossterm::{
-        self,
-        cursor,
+        self, cursor,
         event::{DisableMouseCapture, EnableMouseCapture},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
@@ -43,9 +29,9 @@ use {
 /// launch arguments related to installation
 /// (not used by the application after the first step)
 struct InstallLaunchArgs {
-    install: bool,                   // installation is required
+    install: bool,                                // installation is required
     set_install_state: Option<ShellInstallState>, // the state to set
-    print_shell_function: Option<String>, // shell function to print on stdout
+    print_shell_function: Option<String>,         // shell function to print on stdout
 }
 impl InstallLaunchArgs {
     fn from(cli_args: &ArgMatches<'_>) -> Result<Self, ProgramError> {
@@ -141,7 +127,8 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     }
 
     // read the list of specific config files
-    let specific_conf: Option<Vec<PathBuf>> = cli_matches.value_of("conf")
+    let specific_conf: Option<Vec<PathBuf>> = cli_matches
+        .value_of("conf")
         .map(|s| s.split(';').map(PathBuf::from).collect());
 
     // if we don't run on a specific config file, we check the
@@ -164,9 +151,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
             }
             conf
         }
-        _ => {
-            Conf::from_default_location()?
-        }
+        _ => Conf::from_default_location()?,
     };
 
     // tree options are built from the default_flags
@@ -174,13 +159,10 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     // by the cli args
     let mut tree_options = TreeOptions::default();
     if !config.default_flags.is_empty() {
-        debug!("Applying default flags {:?} from conf", &config.default_flags);
-        let clap_app = crate::clap::clap_app()
-            .setting(clap::AppSettings::NoBinaryName);
+        let clap_app = crate::clap::clap_app().setting(clap::AppSettings::NoBinaryName);
         let flags_args = format!("-{}", &config.default_flags);
         let conf_matches = clap_app.get_matches_from(vec![&flags_args]);
         tree_options.apply(&conf_matches);
-        debug!("modified tree options: {:?}", &tree_options);
     }
     tree_options.apply(&cli_matches);
 

@@ -1,11 +1,9 @@
 use {
     crate::{
-        app::{
-            AppContext,
-        },
+        app::AppContext,
         errors::ProgramError,
-        skin::{self, StatusMadSkinSet},
         skin::Skin,
+        skin::{self, StatusMadSkinSet},
     },
     crossterm::{
         cursor,
@@ -13,9 +11,7 @@ use {
         QueueableCommand,
     },
     std::io::Write,
-    termimad::{
-        MadSkin,
-    },
+    termimad::MadSkin,
 };
 
 pub struct Screen {

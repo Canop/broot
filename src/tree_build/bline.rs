@@ -1,20 +1,12 @@
 use {
+    super::bid::BId,
     crate::{
         errors::TreeBuildError,
         flat_tree::{LineType, TreeLine},
         git::GitIgnoreChain,
     },
-    id_arena::{
-        Arena,
-    },
-    std::{
-        fs,
-        path::PathBuf,
-        result::Result,
-    },
-    super::{
-        bid::BId,
-    },
+    id_arena::Arena,
+    std::{fs, path::PathBuf, result::Result},
 };
 
 /// like a tree line, but with the info needed during the build
@@ -118,4 +110,3 @@ impl BLine {
         })
     }
 }
-

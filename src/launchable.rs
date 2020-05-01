@@ -1,20 +1,12 @@
 use {
     crate::{
-        display::{
-            DisplayableTree,
-            Screen,
-        },
+        display::{DisplayableTree, Screen},
         errors::ProgramError,
         flat_tree::Tree,
         skin::Skin,
     },
     open,
-    std::{
-        env,
-        io,
-        path::PathBuf,
-        process::Command,
-    },
+    std::{env, io, path::PathBuf, process::Command},
 };
 
 /// description of a possible launch of an external program
@@ -65,20 +57,14 @@ impl Launchable {
     pub fn printer(to_print: String) -> Launchable {
         Launchable::Printer { to_print }
     }
-    pub fn tree_printer(
-        tree: &Tree,
-        screen: &Screen,
-        no_style: bool,
-    ) -> Launchable {
+    pub fn tree_printer(tree: &Tree, screen: &Screen, no_style: bool) -> Launchable {
         Launchable::TreePrinter {
             tree: Box::new(tree.clone()),
-            skin: Box::new(
-                if no_style {
-                    Skin::no_term()
-                } else {
-                    screen.skin.clone()
-                }
-            ),
+            skin: Box::new(if no_style {
+                Skin::no_term()
+            } else {
+                screen.skin.clone()
+            }),
             width: screen.width,
         }
     }
@@ -122,4 +108,3 @@ impl Launchable {
         }
     }
 }
-

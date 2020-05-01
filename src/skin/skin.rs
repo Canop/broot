@@ -2,18 +2,13 @@
 ///
 /// A skin is a collection of termimad compound_style
 use {
-    crossterm::{
-        style::{
-            Attribute::*,
-            Attributes,
-            Color::AnsiValue,
-            Color::{self, *},
-        },
+    crossterm::style::{
+        Attribute::*,
+        Attributes,
+        Color::AnsiValue,
+        Color::{self, *},
     },
-    std::{
-        collections::HashMap,
-        fmt,
-    },
+    std::{collections::HashMap, fmt},
     termimad::CompoundStyle,
 };
 

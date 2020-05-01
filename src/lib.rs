@@ -1,3 +1,4 @@
+// #![ allow( dead_code, unused_imports ) ]
 
 #[macro_use]
 extern crate crossbeam;
@@ -27,8 +28,9 @@ pub mod file_sizes;
 pub mod flat_tree;
 pub mod git;
 pub mod help;
-pub mod launchable;
 pub mod keys;
+pub mod launchable;
+pub mod path;
 pub mod pattern;
 pub mod permissions;
 pub mod print;
@@ -39,4 +41,3 @@ pub mod task_sync;
 pub mod tree_build;
 pub mod tree_options;
 pub mod verb;
-

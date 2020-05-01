@@ -1,11 +1,7 @@
 use {
-    crate::{
-        browser::BrowserState,
-        command::Command,
-        errors::TreeBuildError,
-        launchable::Launchable,
-    },
     super::*,
+    crate::{browser::BrowserState, errors::TreeBuildError, launchable::Launchable},
+    std::fmt,
 };
 
 /// Result of applying a command to a state
@@ -14,11 +10,17 @@ pub enum AppStateCmdResult {
     Keep,
     Launch(Box<Launchable>),
     DisplayError(String),
-    NewState { state: Box<dyn AppState>, cmd: Command, in_new_panel: bool },
+    NewState {
+        state: Box<dyn AppState>,
+        in_new_panel: bool,
+    },
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
     PopPanel,
-    RefreshState { clear_cache: bool },
+    RefreshState {
+        clear_cache: bool,
+        //clear_input: bool,
+    },
 }
 
 impl AppStateCmdResult {
@@ -27,13 +29,11 @@ impl AppStateCmdResult {
     }
     pub fn from_optional_state(
         os: Result<Option<BrowserState>, TreeBuildError>,
-        cmd: Command,
         in_new_panel: bool,
     ) -> AppStateCmdResult {
         match os {
-            Ok(Some(os)) => AppStateCmdResult::NewState{
+            Ok(Some(os)) => AppStateCmdResult::NewState {
                 state: Box::new(os),
-                cmd,
                 in_new_panel,
             },
             Ok(None) => AppStateCmdResult::Keep,
@@ -45,5 +45,26 @@ impl AppStateCmdResult {
 impl From<Launchable> for AppStateCmdResult {
     fn from(launchable: Launchable) -> Self {
         AppStateCmdResult::Launch(Box::new(launchable))
+    }
+}
+
+impl fmt::Debug for AppStateCmdResult {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        use AppStateCmdResult::*;
+        write!(
+            f,
+            "{}",
+            match self {
+                Quit => "Quit",
+                Keep => "Keep",
+                Launch(_) => "Launch",
+                DisplayError(_) => "DisplayError",
+                NewState { .. } => "NewState",
+                PopStateAndReapply => "PopStateAndReapply",
+                PopState => "PopState",
+                PopPanel => "PopPanel",
+                RefreshState { .. } => "RefreshState",
+            }
+        )
     }
 }

@@ -2,8 +2,8 @@
 /// defining foreground and background colors into
 /// a string with TTY colors
 ///
-
 use {
+    super::*,
     crate::errors::InvalidSkinError,
     crossterm::style::{
         Attribute::{self, *},
@@ -12,7 +12,6 @@ use {
     },
     regex::Regex,
     std::result::Result,
-    super::*,
     termimad::CompoundStyle,
 };
 
@@ -81,7 +80,6 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
     }
 }
 
-
 fn parse_attribute(s: &str) -> Result<Attribute, InvalidSkinError> {
     match s {
         "bold" => Ok(Bold),
@@ -115,7 +113,11 @@ pub fn parse_object_style(s: &str) -> Result<CompoundStyle, InvalidSkinError> {
         let fg_color = parse_color(c.name("fg").unwrap().as_str())?;
         let bg_color = parse_color(c.name("bg").unwrap().as_str())?;
         let attrs = parse_attributes(c.name("attributes").unwrap().as_str())?;
-        Ok(CompoundStyle::new(fg_color, bg_color, Attributes::from(attrs.as_slice())))
+        Ok(CompoundStyle::new(
+            fg_color,
+            bg_color,
+            Attributes::from(attrs.as_slice()),
+        ))
     } else {
         Err(InvalidSkinError::InvalidStyle {
             style: s.to_owned(),

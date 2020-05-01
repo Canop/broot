@@ -1,9 +1,7 @@
 use {
+    super::FileSize,
     crate::task_sync::Dam,
-    crossbeam::{
-        channel::unbounded,
-        sync::WaitGroup,
-    },
+    crossbeam::{channel::unbounded, sync::WaitGroup},
     std::{
         collections::HashSet,
         fs,
@@ -16,14 +14,13 @@ use {
         thread,
         time::Duration,
     },
-    super::FileSize,
 };
 
 pub fn compute_dir_size(path: &Path, dam: &Dam) -> Option<u64> {
-    debug!("compute size of dir {:?} --------------- ", path);
+    //debug!("compute size of dir {:?} --------------- ", path);
     let inodes = Arc::new(Mutex::new(HashSet::<u64>::default())); // to avoid counting twice an inode
-    // the computation is done on blocks of 512 bytes
-    // see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
+                                                                  // the computation is done on blocks of 512 bytes
+                                                                  // see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
     let blocks = Arc::new(AtomicU64::new(0));
 
     // this MPMC channel contains the directory paths which must be handled
@@ -44,7 +41,7 @@ pub fn compute_dir_size(path: &Path, dam: &Dam) -> Option<u64> {
         let (dirs_sender, dirs_receiver) = (dirs_sender.clone(), dirs_receiver.clone());
         let inodes = inodes.clone();
         let observer = dam.observer();
-        thread::spawn(move|| {
+        thread::spawn(move || {
             loop {
                 let o = dirs_receiver.recv_timeout(period);
                 if let Ok(Some(open_dir)) = o {

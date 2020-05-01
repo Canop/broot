@@ -1,17 +1,8 @@
-
 use {
-    crate::{
-        app::{
-            Panel,
-        },
-        errors::ProgramError,
-    },
-    super::{
-        Screen,
-    },
+    super::Screen,
+    crate::{app::Panel, errors::ProgramError},
     termimad::Area,
 };
-
 
 #[derive(Debug, Clone)]
 pub struct Areas {
@@ -21,8 +12,8 @@ pub struct Areas {
     pub flags: Option<Area>,
 }
 
-const MINIMAL_PANEL_HEIGHT: u16 = 20;
-const MINIMAL_PANEL_WIDTH: u16 = 30;
+const MINIMAL_PANEL_HEIGHT: u16 = 10;
+const MINIMAL_PANEL_WIDTH: u16 = 20;
 
 enum Slot<'a> {
     Panel(usize),
@@ -30,7 +21,6 @@ enum Slot<'a> {
 }
 
 impl Areas {
-
     /// compute an area for a new panel which will be inserted
     pub fn create(
         present_panels: &mut [Panel],
@@ -46,22 +36,19 @@ impl Areas {
             input: Area::uninitialized(),
             flags: None,
         };
-        let mut slots = Vec::with_capacity(present_panels.len()+1);
+        let mut slots = Vec::with_capacity(present_panels.len() + 1);
         for i in 0..insertion_idx {
             slots.push(Slot::Panel(i));
         }
         slots.push(Slot::New(&mut areas));
-        for i in insertion_idx+1..present_panels.len() {
+        for i in insertion_idx + 1..present_panels.len() {
             slots.push(Slot::Panel(i));
         }
         Self::compute_areas(present_panels, &mut slots, screen)?;
         Ok(areas)
     }
 
-    pub fn resize_all(
-        panels: &mut [Panel],
-        screen: &Screen,
-    ) -> Result<(), ProgramError> {
+    pub fn resize_all(panels: &mut [Panel], screen: &Screen) -> Result<(), ProgramError> {
         let mut slots = Vec::new();
         for i in 0..panels.len() {
             slots.push(Slot::Panel(i));

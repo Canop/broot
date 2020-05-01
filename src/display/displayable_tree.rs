@@ -1,11 +1,12 @@
 use {
+    super::{CropWriter, GitStatusDisplay},
     crate::{
         errors::ProgramError,
         file_sizes::FileSize,
         flat_tree::{LineType, Tree, TreeLine},
-        task_sync::ComputationResult,
         pattern::Pattern,
         skin::Skin,
+        task_sync::ComputationResult,
     },
     chrono::{offset::Local, DateTime},
     crossterm::{
@@ -16,19 +17,11 @@ use {
     },
     git2::Status,
     std::{io::Write, time::SystemTime},
-    super::{
-        CropWriter,
-        GitStatusDisplay,
-    },
     termimad::{CompoundStyle, ProgressBar},
 };
 
 #[cfg(unix)]
-use {
-    crate::permissions,
-    std::os::unix::fs::MetadataExt,
-    umask::*,
-};
+use {crate::permissions, std::os::unix::fs::MetadataExt, umask::*};
 
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
@@ -46,9 +39,7 @@ pub struct DisplayableTree<'s, 't> {
     pub in_app: bool, // if true we show the selection and scrollbar
 }
 
-impl<'s, 't> DisplayableTree<'s, 't>
-{
-
+impl<'s, 't> DisplayableTree<'s, 't> {
     pub fn out_of_app(tree: &'t Tree, skin: &'s Skin, width: u16) -> DisplayableTree<'s, 't> {
         DisplayableTree {
             tree,
@@ -85,7 +76,8 @@ impl<'s, 't> DisplayableTree<'s, 't>
         total_size: FileSize,
         selected: bool,
     ) -> Result<(), termimad::Error>
-        where W: Write
+    where
+        W: Write,
     {
         if let Some(s) = line.size {
             let pb = ProgressBar::new(s.part_of(total_size), 10);
@@ -104,7 +96,8 @@ impl<'s, 't> DisplayableTree<'s, 't>
         cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
     ) -> Result<(), termimad::Error>
-        where W: Write
+    where
+        W: Write,
     {
         if !line.is_selectable() {
             cw.queue_char(&self.skin.tree, ' ')
@@ -127,7 +120,8 @@ impl<'s, 't> DisplayableTree<'s, 't>
         system_time: SystemTime,
         selected: bool,
     ) -> Result<(), termimad::Error>
-        where W: Write
+    where
+        W: Write,
     {
         let date_time: DateTime<Local> = system_time.into();
         cond_bg!(date_style, self, selected, self.skin.dates);
@@ -141,7 +135,8 @@ impl<'s, 't> DisplayableTree<'s, 't>
         mode: Mode,
         selected: bool,
     ) -> Result<(), termimad::Error>
-        where W: Write
+    where
+        W: Write,
     {
         cond_bg!(n_style, self, selected, self.skin.perm__);
         cond_bg!(r_style, self, selected, self.skin.perm_r);
@@ -206,7 +201,8 @@ impl<'s, 't> DisplayableTree<'s, 't>
         pattern: &Pattern,
         selected: bool,
     ) -> Result<(), ProgramError>
-        where W: Write
+    where
+        W: Write,
     {
         let style = match &line.line_type {
             LineType::Dir => &self.skin.directory,
@@ -222,7 +218,9 @@ impl<'s, 't> DisplayableTree<'s, 't>
         };
         cond_bg!(style, self, selected, style);
         cond_bg!(char_match_style, self, selected, self.skin.char_match);
-        pattern.style(&line.name, &style, &char_match_style).write_on(cw)?;
+        pattern
+            .style(&line.name, &style, &char_match_style)
+            .write_on(cw)?;
         match &line.line_type {
             LineType::Dir => {
                 if line.unlisted > 0 {
@@ -230,7 +228,7 @@ impl<'s, 't> DisplayableTree<'s, 't>
                 }
             }
             LineType::SymLinkToFile(target) | LineType::SymLinkToDir(target) => {
-                    cw.queue_str(style, " -> ")?;
+                cw.queue_str(style, " -> ")?;
                 if line.has_error {
                     cw.queue_str(&self.skin.file_error, &target)?;
                 } else {
@@ -253,7 +251,8 @@ impl<'s, 't> DisplayableTree<'s, 't>
         cw: &mut CropWriter<'w, W>,
         selected: bool,
     ) -> Result<(), ProgramError>
-        where W: Write
+    where
+        W: Write,
     {
         cond_bg!(style, self, selected, self.skin.directory);
         let title = self.tree.lines[0].path.to_string_lossy();
@@ -281,7 +280,8 @@ impl<'s, 't> DisplayableTree<'s, 't>
         cw: &mut CropWriter<'w, W>,
         selected: bool,
     ) -> Result<(), ProgramError>
-        where W: Write
+    where
+        W: Write,
     {
         if self.in_app {
             if selected {
@@ -295,18 +295,17 @@ impl<'s, 't> DisplayableTree<'s, 't>
     }
 
     /// write the whole tree on the given `W`
-    pub fn write_on<W>(
-        &self,
-        f: &mut W,
-    ) -> Result<(), ProgramError>
-        where W: Write
+    pub fn write_on<W>(&self, f: &mut W) -> Result<(), ProgramError>
+    where
+        W: Write,
     {
         let tree = self.tree;
         #[cfg(unix)]
         let user_group_max_lengths = user_group_max_lengths(&tree);
         let total_size = tree.total_size();
         let scrollbar = if self.in_app {
-            self.area.scrollbar(tree.scroll, tree.lines.len() as i32 - 1)
+            self.area
+                .scrollbar(tree.scroll, tree.lines.len() as i32 - 1)
         } else {
             None
         };
@@ -314,7 +313,7 @@ impl<'s, 't> DisplayableTree<'s, 't>
             f.queue(cursor::MoveTo(self.area.left, self.area.top))?;
         }
         let mut cw = CropWriter::new(f, self.area.width as usize);
-        self.write_root_line(&mut cw, tree.selection==0)?;
+        self.write_root_line(&mut cw, tree.selection == 0)?;
         f.queue(SetBackgroundColor(Color::Reset))?;
         for y in 1..self.area.height {
             if self.in_app {
@@ -374,7 +373,8 @@ impl<'s, 't> DisplayableTree<'s, 't>
                                 format!(" {:w$} ", &group, w = user_group_max_lengths.1,),
                             )?;
                         } else {
-                            let length = 9 + 1 +user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
+                            let length =
+                                9 + 1 + user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
                             for _ in 0..length {
                                 cw.queue_char(&self.skin.tree, ' ')?;
                             }
@@ -426,4 +426,3 @@ fn user_group_max_lengths(tree: &Tree) -> (usize, usize) {
     }
     (max_user_len, max_group_len)
 }
-

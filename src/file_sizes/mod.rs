@@ -28,12 +28,11 @@ pub fn clear_cache() {
 
 #[derive(Debug, Copy, Clone)]
 pub struct FileSize {
-    real_size: u64, // bytes, the space it takes on disk
-    pub sparse: bool,   // only for non directories: tells whether the file is sparse
+    real_size: u64,   // bytes, the space it takes on disk
+    pub sparse: bool, // only for non directories: tells whether the file is sparse
 }
 
 impl FileSize {
-
     pub fn new(real_size: u64, sparse: bool) -> Self {
         Self { real_size, sparse }
     }
@@ -85,10 +84,7 @@ impl fmt::Display for FileSize {
 
 impl AddAssign for FileSize {
     fn add_assign(&mut self, other: Self) {
-        *self = Self::new(
-            self.real_size + other.real_size,
-            self.sparse | other.sparse,
-        );
+        *self = Self::new(self.real_size + other.real_size, self.sparse | other.sparse);
     }
 }
 
@@ -109,4 +105,3 @@ use file_sizes_unix::*;
 mod file_sizes_default;
 #[cfg(not(unix))]
 use file_sizes_default::*;
-

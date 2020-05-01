@@ -1,18 +1,8 @@
-
 use {
-    crate::{
-        conf::Conf,
-    },
-    crossterm::event::{
-        KeyEvent,
-    },
-    std::{
-        convert::TryFrom,
-    },
-    super::{
-        builtin::builtin_verbs,
-        Verb,
-    },
+    super::{builtin::builtin_verbs, Verb},
+    crate::conf::Conf,
+    crossterm::event::KeyEvent,
+    std::convert::TryFrom,
 };
 
 /// Provide access to the verbs:
@@ -96,4 +86,3 @@ impl VerbStore {
         None
     }
 }
-

@@ -1,9 +1,4 @@
-use {
-    clap::ArgMatches,
-    crate::{
-        pattern::Pattern,
-    },
-};
+use {crate::pattern::Pattern, clap::ArgMatches};
 
 #[derive(Debug, Clone)]
 pub struct TreeOptions {
@@ -12,11 +7,11 @@ pub struct TreeOptions {
     pub show_sizes: bool,  // whether to compute and show sizes of files and dirs
     pub show_dates: bool,  // whether to show the last modified date
     pub show_git_file_info: bool,
-    pub trim_root: bool,   // whether to cut out direct children of root
-    pub show_permissions: bool, // show classic rwx unix permissions
-    pub respect_git_ignore: bool, // hide files as requested by .gitignore ?
+    pub trim_root: bool,            // whether to cut out direct children of root
+    pub show_permissions: bool,     // show classic rwx unix permissions
+    pub respect_git_ignore: bool,   // hide files as requested by .gitignore ?
     pub filter_by_git_status: bool, // only show files whose git status is not nul
-    pub pattern: Pattern,  // an optional filtering/scoring pattern
+    pub pattern: Pattern,           // an optional filtering/scoring pattern
 }
 
 impl TreeOptions {

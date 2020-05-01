@@ -4,17 +4,9 @@
 //!  score)
 
 use {
-    crate::{
-        errors::RegexError,
-    },
-    std::{
-        fmt,
-        mem,
-    },
-    super::{
-        FuzzyPattern,
-        RegexPattern,
-    },
+    super::{FuzzyPattern, RegexPattern},
+    crate::errors::RegexError,
+    std::{fmt, mem},
 };
 
 #[derive(Debug, Clone)]

@@ -9,38 +9,20 @@
 //! - a request to launch an executable (thus leaving broot)
 
 use {
+    super::{AppContext, AppState, AppStateCmdResult, Panel, PanelId},
     crate::{
         browser::BrowserState,
-        command::{
-            Command,
-            parse_command_sequence,
-        },
+        command::{parse_command_sequence, Command},
+        display::{Areas, Screen, W},
         errors::ProgramError,
+        file_sizes, git,
         launchable::Launchable,
-        file_sizes,
-        git,
-        display::{
-            Areas,
-            Screen,
-            W,
-        },
         task_sync::Dam,
     },
-    crossterm::{
-        event::KeyModifiers,
-    },
+    crossterm::event::KeyModifiers,
     std::io::Write,
     strict::NonEmptyVec,
-    super::{
-        AppContext,
-        AppState,
-        AppStateCmdResult,
-        Panel,
-    },
-    termimad::{
-        Event,
-        EventSource,
-    },
+    termimad::{Event, EventSource},
 };
 
 pub struct App {
@@ -48,14 +30,13 @@ pub struct App {
     active_panel_idx: usize,
     quitting: bool,
     launch_at_end: Option<Launchable>, // what must be launched after end
+    created_panels_count: usize,
 }
 
 impl App {
-    pub fn new(
-        con: & AppContext,
-        screen: &Screen,
-    ) -> Result<App, ProgramError> {
+    pub fn new(con: &AppContext, screen: &Screen) -> Result<App, ProgramError> {
         let panel = Panel::new(
+            PanelId::from(0),
             Box::new(
                 BrowserState::new(
                     con.launch_args.root.clone(),
@@ -66,7 +47,6 @@ impl App {
                 .expect("Failed to create BrowserState"),
             ),
             Areas::create(&mut Vec::new(), 0, screen)?,
-            Command::new(),
             screen,
         );
         Ok(App {
@@ -74,29 +54,24 @@ impl App {
             panels: panel.into(),
             quitting: false,
             launch_at_end: None,
+            created_panels_count: 1,
         })
     }
 
-    pub fn add_panel(
-        &mut self,
-        new_state: Box<dyn AppState>,
-        areas: Areas,
-        cmd: Command,
-        screen: &Screen,
-    ) {
-        let panel = Panel::new(new_state, areas, cmd, screen);
+    pub fn add_panel(&mut self, new_state: Box<dyn AppState>, areas: Areas, screen: &Screen) {
+        let panel = Panel::new(self.created_panels_count.into(), new_state, areas, screen);
+        self.created_panels_count += 1;
         self.active_panel_idx = self.panels.len().get();
         self.panels.push(panel);
-    }
-    pub fn push_state(&mut self, new_state: Box<dyn AppState>) {
-        self.panels[self.active_panel_idx].push(new_state);
     }
     fn mut_state(&mut self) -> &mut dyn AppState {
         self.panels[self.active_panel_idx].mut_state()
     }
     fn mut_panel(&mut self) -> &mut Panel {
         unsafe {
-            self.panels.as_mut_slice().get_unchecked_mut(self.active_panel_idx)
+            self.panels
+                .as_mut_slice()
+                .get_unchecked_mut(self.active_panel_idx)
         }
     }
 
@@ -107,18 +82,15 @@ impl App {
             // FIXME we can't use the parent_idx... we change the idx when we remove
             // elements. But we must store in the panel the parent id
             self.active_panel_idx = self.panels.len().get() - 1;
-            Areas::resize_all(
-                self.panels.as_mut_slice(),
-                screen,
-            ).expect("removing a panel should be easy");
+            Areas::resize_all(self.panels.as_mut_slice(), screen)
+                .expect("removing a panel should be easy");
             true
         } else {
             false // there's no other panel to go to
         }
     }
     fn remove_state(&mut self, screen: &Screen) -> bool {
-        self.panels[self.active_panel_idx].remove_state()
-            || self.close_active_panel(screen)
+        self.panels[self.active_panel_idx].remove_state() || self.close_active_panel(screen)
     }
 
     fn display_panels(
@@ -133,36 +105,19 @@ impl App {
         Ok(())
     }
 
-    /// execute all the pending tasks until there's none remaining or
-    ///  the dam asks for interruption
-    fn do_pending_tasks(
-        &mut self,
-        w: &mut W,
-        screen: &mut Screen,
-        con: &AppContext,
-        dam: &mut Dam,
-    ) -> Result<(), ProgramError> {
-        while self.mut_state().has_pending_task() & !dam.has_event() {
-            self.mut_state().do_pending_task(screen, dam);
-            self.display_panels(w, screen, con)?;
-            w.flush()?;
-        }
-        Ok(())
-    }
-
     /// apply a command, and returns a command, which may be the same (modified or not)
     ///  or a new one.
     /// This normally mutates self
     fn apply_command(
         &mut self,
-        w: &mut W,
         cmd: Command,
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         use AppStateCmdResult::*;
         let mut error: Option<String> = None;
-        match self.mut_panel().apply_command(cmd, screen, con)? {
+        let is_input_invocation = cmd.is_verb_invocated_from_input();
+        match self.mut_panel().apply_command(&cmd, screen, con)? {
             Quit => {
                 self.quitting = true;
             }
@@ -170,35 +125,41 @@ impl App {
                 self.launch_at_end = Some(*launchable);
                 self.quitting = true;
             }
-            NewState{ state, cmd: new_cmd, in_new_panel } => {
+            NewState {
+                state,
+                in_new_panel,
+            } => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
                 if in_new_panel {
                     let insertion_idx = self.panels.len().get();
-                    match Areas::create(
-                        self.panels.as_mut_slice(),
-                        insertion_idx,
-                        screen,
-                    ) {
+                    match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
                         Ok(areas) => {
-                            self.add_panel(state, areas, new_cmd, screen);
+                            self.add_panel(state, areas, screen);
                         }
                         Err(e) => {
                             error = Some(e.to_string());
                         }
                     }
                 } else {
-                    self.push_state(state);
-                    // FIXME should we set the cmd ?
+                    self.mut_panel().push_state(state);
                 }
             }
             RefreshState { clear_cache } => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
                 if clear_cache {
                     clear_caches();
                 }
                 // should we set the cmd ?
                 self.mut_state().refresh(screen, con);
-                //self.mut_panel().cmd = self.mut_state().refresh(screen, con);
             }
             PopState => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
                 if self.remove_state(screen) {
                     // should we set the cmd ?
                     self.mut_state().refresh(screen, con);
@@ -207,15 +168,21 @@ impl App {
                 }
             }
             PopStateAndReapply => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
                 if self.remove_state(screen) {
-                    let cmd = self.mut_panel().get_command();
+                    //let cmd = self.mut_panel().get_command();
                     // FIXME check this
-                    self.mut_panel().apply_command(cmd, screen, con)?;
+                    self.mut_panel().apply_command(&cmd, screen, con)?;
                 } else {
                     self.quitting = true;
                 }
             }
             PopPanel => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
                 if self.close_active_panel(screen) {
                     // FIXME check this
                     self.mut_state().refresh(screen, con);
@@ -236,8 +203,10 @@ impl App {
         Ok(())
     }
 
-    fn clicked_panel_index(&self, x: u16, y: u16, screen: &Screen) -> usize {
-        (self.panels.len().get() * x as usize ) / (screen.width as usize + 1)
+    fn clicked_panel_index(&self, x: u16, _y: u16, screen: &Screen) -> usize {
+        let len = self.panels.len().get();
+        (len * x as usize) / (screen.width as usize + 1)
+        //if idx < len { Some(idx) } else { None }
     }
 
     /// This is the main loop of the application
@@ -259,13 +228,9 @@ impl App {
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {
             for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
-                self.apply_command(w, arg_cmd, screen, con)?;
-                self.do_pending_tasks(
-                    w,
-                    screen,
-                    con,
-                    &mut dam,
-                )?;
+                self.apply_command(arg_cmd, screen, con)?;
+                self.mut_panel()
+                    .do_pending_tasks(w, screen, con, &mut dam)?;
                 if self.quitting {
                     return Ok(self.launch_at_end.take());
                 }
@@ -279,7 +244,8 @@ impl App {
 
         loop {
             if !self.quitting {
-                self.do_pending_tasks(w, screen, con, &mut dam)?;
+                self.mut_panel()
+                    .do_pending_tasks(w, screen, con, &mut dam)?;
             }
             let event = match dam.next_event() {
                 Some(event) => event,
@@ -289,23 +255,28 @@ impl App {
                     break;
                 }
             };
-            // we first check the event isn't simple left a click
-            // in a inactive panel
-            // FIXME new crossterm
-            let mut ignore_event = false;
-            if let Event::Click(x, y, modifiers) = event {
-                if modifiers == KeyModifiers::empty() {
-                    let clicked_panel_idx = self.clicked_panel_index(x, y, screen);
-                    if clicked_panel_idx != self.active_panel_idx {
-                        self.active_panel_idx = clicked_panel_idx;
-                        ignore_event = true;
+            match event {
+                Event::Click(x, y, KeyModifiers::NONE)
+                    if self.clicked_panel_index(x, y, screen) != self.active_panel_idx =>
+                {
+                    // panel activation clic
+                    // this will be cleaner when if let will be allowed in match guards with
+                    // chaining (currently experimental)
+                    self.active_panel_idx = self.clicked_panel_index(x, y, screen);
+                }
+                Event::Resize(w, h) => {
+                    screen.set_terminal_size(w, h, con);
+                    Areas::resize_all(self.panels.as_mut_slice(), screen)?;
+                    for panel in &mut self.panels {
+                        panel.mut_state().refresh(screen, con);
                     }
                 }
-            }
-            if !ignore_event {
-                let cmd = self.mut_panel().add_event(w, event, con)?;
-                debug!("command after add_event: {:?}", &cmd);
-                self.apply_command(w, cmd, screen, con)?;
+                _ => {
+                    // event handled by the panel
+                    let cmd = self.mut_panel().add_event(w, event, con)?;
+                    debug!("command after add_event: {:?}", &cmd);
+                    self.apply_command(cmd, screen, con)?;
+                }
             }
             self.display_panels(w, screen, con)?;
             w.flush()?;

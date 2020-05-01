@@ -4,17 +4,13 @@
 //! They can be called as ":some_name" from builtin verbs and
 //! from configured verbs.
 
-use {
-    crate::{
-        errors::ConfError,
-    },
-};
+use crate::errors::ConfError;
 
 macro_rules! Internals {
     (
         $($name:ident: $description:expr,)*
     ) => {
-        #[derive(Debug, Clone, Copy)]
+        #[derive(Debug, Clone, Copy, PartialEq)]
         #[allow(non_camel_case_types)]
         pub enum Internal {
             $($name,)*
@@ -47,13 +43,15 @@ macro_rules! Internals {
 
 Internals! {
     back: "revert to the previous state (mapped to *esc*)",
-    close_tab: "close the current panel",
+    close_panel: "close the current panel",
+    complete: "complete the current argument",
     focus: "display the directory (mapped to *enter*)",
     focus_root: "focus `/`",
     focus_user_home: "focus the home directory",
     help: "display broot's help",
     line_down: "move one line down",
     line_up: "move one line up",
+    open_panel: "open a new panel",
     open_stay: "open file or directory according to OS settings (stay in broot)",
     open_leave: "open file or directory according to OS settings (quit broot)",
     page_down: "scroll one page down",
@@ -78,5 +76,3 @@ Internals! {
     total_search: "search again but on all children",
     up_tree: "focus the parent of the current root",
 }
-
-

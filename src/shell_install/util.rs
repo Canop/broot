@@ -1,4 +1,3 @@
-
 use std::{
     fs,
     io::{self, BufRead, BufReader},
@@ -13,4 +12,3 @@ pub fn file_contains_line(path: &Path, searched_line: &str) -> io::Result<bool> 
     }
     Ok(false)
 }
-

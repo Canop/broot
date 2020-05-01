@@ -1,12 +1,4 @@
-
-use {
-    crate::{
-        display::CropWriter,
-    },
-    termimad::CompoundStyle,
-    super::Pattern,
-};
-
+use {super::Pattern, crate::display::CropWriter, termimad::CompoundStyle};
 
 pub struct MatchedString<'a> {
     pub pattern: &'a Pattern,
@@ -32,11 +24,9 @@ impl Pattern {
 }
 
 impl<'a, 'w> MatchedString<'a> {
-    pub fn write_on<W>(
-        &self,
-        cw: &mut CropWriter<'w, W>,
-    ) -> Result<(), termimad::Error>
-        where W: std::io::Write
+    pub fn write_on<W>(&self, cw: &mut CropWriter<'w, W>) -> Result<(), termimad::Error>
+    where
+        W: std::io::Write,
     {
         if self.pattern.is_some() {
             if let Some(m) = self.pattern.find(self.string) {
@@ -57,4 +47,3 @@ impl<'a, 'w> MatchedString<'a> {
         cw.queue_str(&self.base_style, self.string)
     }
 }
-

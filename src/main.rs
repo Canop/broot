@@ -2,9 +2,7 @@
 extern crate log;
 
 use {
-    broot::{
-        cli,
-    },
+    broot::cli,
     log::LevelFilter,
     simplelog,
     std::{env, fs::File, str::FromStr},

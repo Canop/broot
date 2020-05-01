@@ -1,21 +1,13 @@
-
 use {
-    git2::{
-        self,
-        Repository,
-        Status,
-    },
+    git2::{self, Repository, Status},
     std::{
         collections::HashMap,
-        path::{
-            Path,
-            PathBuf,
-        },
+        path::{Path, PathBuf},
     },
 };
 
 const INTERESTING: Status = Status::from_bits_truncate(
-    Status::WT_NEW.bits() | Status::CONFLICTED.bits() | Status::WT_MODIFIED.bits()
+    Status::WT_NEW.bits() | Status::CONFLICTED.bits() | Status::WT_MODIFIED.bits(),
 );
 
 // if I add nothing, I'll remove this useless struct
@@ -27,8 +19,8 @@ pub struct LineGitStatus {
 
 impl LineGitStatus {
     pub fn from(repo: &Repository, relative_path: &Path) -> Option<LineGitStatus> {
-        repo
-            .status_file(&relative_path).ok()
+        repo.status_file(&relative_path)
+            .ok()
             .map(|status| LineGitStatus { status })
     }
     pub fn is_interesting(&self) -> bool {
@@ -61,13 +53,14 @@ impl LineStatusComputer {
         }
     }
     pub fn line_status(&self, path: &Path) -> Option<LineGitStatus> {
-        self.interesting_statuses.get(path).map(|&status| LineGitStatus { status })
+        self.interesting_statuses
+            .get(path)
+            .map(|&status| LineGitStatus { status })
     }
     pub fn is_interesting(&self, path: &Path) -> bool {
         self.interesting_statuses.contains_key(path)
     }
 }
-
 
 ///
 #[derive(Debug, Clone)]
@@ -79,12 +72,12 @@ pub struct TreeGitStatus {
 
 impl TreeGitStatus {
     pub fn from(repo: &Repository) -> Option<Self> {
-        let current_branch_name = repo.head()
+        let current_branch_name = repo
+            .head()
             .ok()
             .and_then(|head| head.shorthand().map(String::from));
         let stats = match repo.diff_index_to_workdir(None, None) {
             Ok(diff) => {
-                debug!("deltas: {:?}", diff.deltas().count());
                 let stats = match diff.stats() {
                     Ok(stats) => stats,
                     Err(e) => {
@@ -106,5 +99,3 @@ impl TreeGitStatus {
         })
     }
 }
-
-

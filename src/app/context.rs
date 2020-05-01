@@ -1,8 +1,4 @@
-use crate::{
-    cli::AppLaunchArgs,
-    conf::Conf,
-    verb::VerbStore,
-};
+use crate::{cli::AppLaunchArgs, conf::Conf, verb::VerbStore};
 
 /// The immutable container that can be passed around
 /// to provide the configuration things
@@ -13,13 +9,8 @@ pub struct AppContext {
 }
 
 impl AppContext {
-    pub fn from(
-        launch_args: AppLaunchArgs,
-        verb_store: VerbStore
-    ) -> Self {
-        let config_path = Conf::default_location()
-            .to_string_lossy()
-            .to_string();
+    pub fn from(launch_args: AppLaunchArgs, verb_store: VerbStore) -> Self {
+        let config_path = Conf::default_location().to_string_lossy().to_string();
         Self {
             config_path,
             launch_args,

@@ -4,32 +4,23 @@ use {
     crate::{
         errors,
         file_sizes::FileSize,
-        git::{
-            LineGitStatus,
-            TreeGitStatus,
-        },
-        task_sync::{
-            ComputationResult,
-        },
+        git::{LineGitStatus, TreeGitStatus},
         selection_type::SelectionType,
+        task_sync::ComputationResult,
         task_sync::Dam,
         tree_build::TreeBuilder,
         tree_options::TreeOptions,
     },
     std::{
         cmp::{self, Ord, Ordering, PartialOrd},
-        fs,
-        mem,
+        fs, mem,
         path::{Path, PathBuf},
         time::SystemTime,
     },
 };
 
 #[cfg(unix)]
-use {
-    std::os::unix::fs::MetadataExt,
-    umask::Mode,
-};
+use {std::os::unix::fs::MetadataExt, umask::Mode};
 
 #[cfg(windows)]
 use is_executable::IsExecutable;
@@ -198,16 +189,15 @@ impl PartialOrd for TreeLine {
 
 impl Tree {
     pub fn refresh(&mut self, page_height: usize) -> Result<(), errors::TreeBuildError> {
-        let builder = TreeBuilder::from(
-            	self.root().to_path_buf(),
-            	self.options.clone(),
-            	page_height,
-            )?;
-        let mut tree = builder.build(
-            	false, // on refresh we always do a non total search
+        let builder =
+            TreeBuilder::from(self.root().to_path_buf(), self.options.clone(), page_height)?;
+        let mut tree = builder
+            .build(
+                false, // on refresh we always do a non total search
                 &Dam::unlimited(),
-            ).unwrap(); // should not fail
-        // we save the old selection to try restore it
+            )
+            .unwrap(); // should not fail
+                       // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
         self.scroll = 0;
@@ -219,7 +209,6 @@ impl Tree {
         self.make_selection_visible(page_height as i32);
         Ok(())
     }
-
 
     /// do what must be done after line additions or removals:
     /// - sort the lines
@@ -267,9 +256,9 @@ impl Tree {
                     let unlisted = self.lines[parent_index].unlisted;
                     if unlisted > 0 && self.lines[end_index].nb_kept_children == 0 {
                         if best_index == end_index {
-                            debug!("Avoiding to prune the line with best score");
+                            //debug!("Avoiding to prune the line with best score");
                         } else {
-                            debug!("turning {:?} into Pruning", self.lines[end_index].path);
+                            //debug!("turning {:?} into Pruning", self.lines[end_index].path);
                             self.lines[end_index].line_type = LineType::Pruning;
                             self.lines[end_index].unlisted = unlisted + 1;
                             self.lines[end_index].name = format!("{} unlisted", unlisted + 1);
@@ -308,14 +297,18 @@ impl Tree {
         let l = l as i32;
         let sel = self.selection as i32;
         if l > page_height {
-            if dy < 0 { // -1
-                if sel == l - 1 { // cycling
+            if dy < 0 {
+                // -1
+                if sel == l - 1 {
+                    // cycling
                     self.scroll = l - page_height;
                 } else if sel < self.scroll + 5 {
                     self.scroll = (self.scroll + 2 * dy).max(0);
                 }
-            } else { // +1
-                if sel == 0 { // cycling brought us back to top
+            } else {
+                // +1
+                if sel == 0 {
+                    // cycling brought us back to top
                     self.scroll = 0;
                 } else if sel > self.scroll + page_height - 5 {
                     self.scroll = (self.scroll + 2 * dy).min(l - page_height);
@@ -431,8 +424,8 @@ impl Tree {
             // Not very elegant
             // If we implement several types of search (path, content),
             // we'll rather store a direct_match boolean in the line.
-            if self.options.pattern.is_some()
-                && self.options.pattern.score_of(&line.name).is_none() {
+            if self.options.pattern.is_some() && self.options.pattern.score_of(&line.name).is_none()
+            {
                 continue;
             }
             if line.score > 0 {
@@ -459,9 +452,11 @@ impl Tree {
 
     pub fn has_dir_missing_size(&self) -> bool {
         self.options.show_sizes
-            && self.lines.iter().skip(1).any(|line|
-                line.line_type == LineType::Dir && line.size.is_none()
-            )
+            && self
+                .lines
+                .iter()
+                .skip(1)
+                .any(|line| line.line_type == LineType::Dir && line.size.is_none())
     }
 
     pub fn is_missing_git_status_computation(&self) -> bool {

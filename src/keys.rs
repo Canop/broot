@@ -1,14 +1,8 @@
 //! parsing keys from strings, and describing keys in strings
 
 use {
-    crate::{
-        errors::ConfError,
-    },
-    crossterm::event::{
-        KeyCode::*,
-        KeyEvent,
-        KeyModifiers,
-    },
+    crate::errors::ConfError,
+    crossterm::event::{KeyCode::*, KeyEvent, KeyModifiers},
 };
 
 macro_rules! const_key {
@@ -97,7 +91,8 @@ pub fn is_reserved(key: KeyEvent) -> bool {
         //LEFT => true, // needed for the input field
         //RIGHT => true, // needed for the input field
         DELETE => true, // needed for the input field
-        ESC => true, // basic navigation
+        ESC => true,    // basic navigation
+        TAB => true,    // open tab/panel
         //UP => true, // basic navigation
         //DOWN => true, // basic navigation
         _ => false,
@@ -169,10 +164,7 @@ mod key_parsing_tests {
 
     use {
         crate::keys::*,
-        crossterm::event::{
-            KeyEvent,
-            KeyCode::*,
-        },
+        crossterm::event::{KeyCode::*, KeyEvent},
     };
 
     #[test]
@@ -199,4 +191,3 @@ mod key_parsing_tests {
         check_ok("ctrl-Q", KeyEvent::new(Char('q'), KeyModifiers::CONTROL));
     }
 }
-

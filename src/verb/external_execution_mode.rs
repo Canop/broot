@@ -1,7 +1,5 @@
-
 #[derive(Debug, Clone, Copy)]
 pub enum ExternalExecutionMode {
-
     /// executed in the parent shell, on broot leaving, using the `br` function
     FromParentShell,
 
@@ -10,9 +8,7 @@ pub enum ExternalExecutionMode {
 
     /// executed in a sub process without quitting broot
     StayInBroot,
-
 }
-
 
 impl ExternalExecutionMode {
     pub fn from_shell(self) -> bool {
@@ -29,8 +25,8 @@ impl ExternalExecutionMode {
     }
 
     pub fn from_conf(
-        from_shell: &Option<bool>, // default is false
-        leave_broot: &Option<bool>, // default is true
+        from_shell: Option<bool>,  // default is false
+        leave_broot: Option<bool>, // default is true
     ) -> Self {
         if from_shell.unwrap_or(false) {
             Self::FromParentShell
