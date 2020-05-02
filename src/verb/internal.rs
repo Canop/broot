@@ -51,7 +51,6 @@ Internals! {
     help: "display broot's help",
     line_down: "move one line down",
     line_up: "move one line up",
-    open_panel: "open a new panel",
     open_stay: "open file or directory according to OS settings (stay in broot)",
     open_leave: "open file or directory according to OS settings (quit broot)",
     page_down: "scroll one page down",
@@ -75,4 +74,14 @@ Internals! {
     toggle_trim_root: "toggle removing nodes at first level too",
     total_search: "search again but on all children",
     up_tree: "focus the parent of the current root",
+}
+
+impl Internal {
+    /// whether this internal accept a path as (optional) argument
+    pub fn accept_path(self) -> bool {
+        match self {
+            Internal::focus => true,
+            _ => false,
+        }
+    }
 }

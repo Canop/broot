@@ -33,6 +33,7 @@ fn focus_path(
     tree: &Tree,
     in_new_panel: bool,
 ) -> AppStateCmdResult {
+    let path = path::closest_dir(&path);
     AppStateCmdResult::from_optional_state(
         BrowserState::new(path, tree.options.clone(), screen, &Dam::unlimited()),
         in_new_panel,
@@ -390,13 +391,40 @@ impl AppState for BrowserState {
             close_panel => AppStateCmdResult::PopPanel,
             complete => AppStateCmdResult::DisplayError("not yet implemented".to_string()),
             focus => {
-                let tree = self.displayed_tree();
-                let line = &tree.selected_line();
-                let mut path = line.target();
-                if !path.is_dir() {
-                    path = path.parent().unwrap().to_path_buf();
+                if let Some(invocation) = input_invocation {
+                    if let Some(arg) = &invocation.args {
+                        if invocation.name == internal.name() {
+                            // TODO the name test is a hack, we should
+                            // use the trigger type of the command
+                            debug!("case A");
+                            let tree = self.displayed_tree();
+                            let base_dir = tree.selected_line().path.to_string_lossy();
+                            let path = path::path_from(&base_dir, &arg);
+                            let path = PathBuf::from(path);
+                            focus_path(path, screen, tree, bang)
+                        } else {
+                            // user would like to open for arg edition
+                            // the current arg as a tree panel
+                            // TODO add purpose
+                            debug!("case B");
+                            AppStateCmdResult::DisplayError("arg panel not yet implemented".to_string())
+                        }
+                    } else {
+                        // user wants to open for arg edition the selected
+                        // tree line
+                        // TODO add purpose
+                        debug!("case C");
+                        let tree = self.displayed_tree();
+                        let path = tree.selected_line().target();
+                        focus_path(path, screen, tree, bang)
+                    }
+                } else {
+                    // just opening a new panel on the selected tree line (without purpose)
+                    debug!("case D");
+                    let tree = self.displayed_tree();
+                    let path = tree.selected_line().target();
+                    focus_path(path, screen, tree, bang)
                 }
-                focus_path(path, screen, tree, bang)
             }
             focus_root => focus_path(PathBuf::from("/"), screen, self.displayed_tree(), bang),
             up_tree => match self.displayed_tree().root().parent() {
@@ -416,50 +444,6 @@ impl AppState for BrowserState {
                 state: Box::new(HelpState::new(screen, con)),
                 in_new_panel: bang,
             },
-            open_panel => {
-                if let Some(invocation) = input_invocation {
-                    if let Some(arg) = &invocation.args {
-                        if invocation.name == internal.name() {
-                            // FIXME the name test is a hack, we should
-                            // use the trigger type of the command
-                            debug!("case A");
-                            let tree = self.displayed_tree();
-                            let base_dir = tree.selected_line().path.to_string_lossy();
-                            let path = path::path_from(&arg, &base_dir);
-                            let new_state = BrowserState::new(
-                                PathBuf::from(&path),
-                                tree.options.clone(),
-                                screen,
-                                &Dam::unlimited(),
-                            )?.unwrap();
-                            AppStateCmdResult::NewState {
-                                state: Box::new(new_state),
-                                in_new_panel: true,
-                            }
-                        } else {
-                            // user would like to open for arg edition
-                            // the current arg as a tree panel
-                            debug!("case B");
-                            AppStateCmdResult::DisplayError("not yet implemented".to_string())
-                        }
-                    } else {
-                        // user wants to open for arg edition the selected
-                        // tree line
-                        debug!("case C");
-                        AppStateCmdResult::DisplayError("not yet implemented".to_string())
-                    }
-                } else {
-                    // just opening a new panel on the selected tree line
-                    debug!("case D");
-                    let tree = self.displayed_tree();
-                    let line = &tree.selected_line();
-                    let mut path = line.target();
-                    if !path.is_dir() {
-                        path = path.parent().unwrap().to_path_buf();
-                    }
-                    focus_path(path, screen, tree, true)
-                }
-            }
             open_stay => self.open_selection_stay_in_broot(screen, con, bang)?,
             open_leave => self.open_selection_quit_broot(con)?,
             line_down => {

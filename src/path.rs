@@ -1,13 +1,19 @@
 use {
     directories::UserDirs,
     regex::{self, Captures, Regex},
-    std::{collections::HashMap, path::Path},
+    std::{
+        collections::HashMap,
+        path::{
+            Path,
+            PathBuf,
+        },
+    },
 };
 
 /// build a usable path from a user input
 ///
 /// This function handles path starting with ~ or /.
-pub fn path_from(input: &str, base_dir: &str) -> String {
+pub fn path_from(base_dir: &str, input: &str) -> String {
     let tilde = regex!(r"^~(/|$)");
     if input.starts_with('/') {
         // if the input starts with a `/`, we use it as is
@@ -33,6 +39,24 @@ pub fn path_from(input: &str, base_dir: &str) -> String {
     }
 }
 
+/// return the closest enclosing directory
+pub fn closest_dir(mut path: &Path) -> PathBuf {
+    loop {
+        if path.exists() && path.is_dir() {
+            return path.to_path_buf();
+        }
+        match path.parent() {
+            Some(parent) => {
+                path = parent
+            }
+            None => {
+                debug!("no existing parent"); // unexpected
+                return path.to_path_buf();
+            }
+        }
+    }
+}
+
 /// replace a group in the execution string, using
 ///  data from the user input and from the selected line
 pub fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &HashMap<String, String>) -> String {
@@ -42,7 +66,7 @@ pub fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &HashMap<String, 
         debug!("do_exec_replacement cap={:?} with {:?}", &cap, ec.get(2));
         if let Some(fmt) = ec.get(2) {
             match fmt.as_str() {
-                "path-from-directory" => path_from(cap, replacement_map.get("directory").unwrap()),
+                "path-from-directory" => path_from(replacement_map.get("directory").unwrap(), cap),
                 "path-from-parent" => path_from(cap, replacement_map.get("parent").unwrap()),
                 _ => format!("invalid format: {:?}", fmt.as_str()),
             }

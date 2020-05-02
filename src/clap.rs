@@ -1,6 +1,5 @@
 /// this module generate the clap App, which defines
 /// launch arguments
-use clap;
 
 /// declare the possible CLI arguments
 pub fn clap_app() -> clap::App<'static, 'static> {

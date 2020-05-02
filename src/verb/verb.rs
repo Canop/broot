@@ -1,6 +1,3 @@
-// Verbs are the engines of broot commands, and apply
-/// - to the selected file (if user-defined, then must contain {file}, {parent} or {directory})
-/// - to the current app state
 use {
     super::{External, ExternalExecutionMode, Internal, VerbExecution, VerbInvocation},
     crate::{app::Status, errors::ConfError, keys, selection_type::SelectionType},
@@ -10,6 +7,9 @@ use {
 
 /// what makes a verb.
 ///
+/// Verbs are the engines of broot commands, and apply
+/// - to the selected file (if user-defined, then must contain {file}, {parent} or {directory})
+/// - to the current app state
 /// There are two types of verbs executions:
 /// - external programs or commands (cd, mkdir, user defined commands, etc.)
 /// - internal behaviors (focusing a path, going back, showing the help, etc.)
@@ -122,21 +122,21 @@ impl Verb {
     /// Assuming the verb has been matched, check whether the arguments
     /// are OK according to the regex. Return none when there's no problem
     /// and return the error to display if arguments don't match
-    pub fn match_error(&self, invocation: &VerbInvocation) -> Option<String> {
+    pub fn check_args(&self, invocation: &VerbInvocation) -> Option<String> {
         match &self.execution {
-            VerbExecution::Internal { .. } => {
-                if invocation.args.is_some() {
+            VerbExecution::Internal { internal, .. } => {
+                if invocation.args.is_some() && !internal.accept_path() {
                     Some(format!("{} doesn't take arguments", invocation.name))
                 } else {
                     None
                 }
             }
-            VerbExecution::External(external) => external.match_error(invocation),
+            VerbExecution::External(external) => external.check_args(invocation),
         }
     }
 
     pub fn get_status(&self, path: &Path, invocation: &VerbInvocation) -> Status {
-        if let Some(err) = self.match_error(invocation) {
+        if let Some(err) = self.check_args(invocation) {
             Status::new(err, true)
         } else {
             let markdown = if let Some(description) = &self.description {

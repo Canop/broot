@@ -95,7 +95,7 @@ impl External {
     /// Assuming the verb has been matched, check whether the arguments
     /// are OK according to the regex. Return none when there's no problem
     /// and return the error to display if arguments don't match
-    pub fn match_error(&self, invocation: &VerbInvocation) -> Option<String> {
+    pub fn check_args(&self, invocation: &VerbInvocation) -> Option<String> {
         match (&invocation.args, &self.args_parser) {
             (None, None) => None,
             (None, Some(ref regex)) => {

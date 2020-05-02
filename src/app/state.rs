@@ -111,7 +111,7 @@ pub trait AppState {
             } => self.on_internal(*internal, false, input_invocation.as_ref(), screen, con),
             Command::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::Match(verb) => {
-                    if let Some(err) = verb.match_error(invocation) {
+                    if let Some(err) = verb.check_args(invocation) {
                         Ok(AppStateCmdResult::DisplayError(err))
                     } else {
                         match &verb.execution {
