@@ -2,7 +2,7 @@ use {
     super::bid::BId,
     crate::{
         errors::TreeBuildError,
-        flat_tree::{LineType, TreeLine},
+        tree::{TreeLineType, TreeLine},
         git::GitIgnoreChain,
     },
     id_arena::Arena,
@@ -62,7 +62,7 @@ impl BLine {
     pub fn to_tree_line(&self) -> std::io::Result<TreeLine> {
         let mut has_error = self.has_error;
         let line_type = if self.file_type.is_dir() {
-            LineType::Dir
+            TreeLineType::Dir
         } else if self.file_type.is_symlink() {
             if let Ok(target) = fs::read_link(&self.path) {
                 let target = target.to_string_lossy().into_owned();
@@ -72,20 +72,20 @@ impl BLine {
                 }
                 if let Ok(target_metadata) = fs::symlink_metadata(&target_path) {
                     if target_metadata.file_type().is_dir() {
-                        LineType::SymLinkToDir(target)
+                        TreeLineType::SymLinkToDir(target)
                     } else {
-                        LineType::SymLinkToFile(target)
+                        TreeLineType::SymLinkToFile(target)
                     }
                 } else {
                     has_error = true;
-                    LineType::SymLinkToFile(target)
+                    TreeLineType::SymLinkToFile(target)
                 }
             } else {
                 has_error = true;
-                LineType::SymLinkToFile(String::from("????"))
+                TreeLineType::SymLinkToFile(String::from("????"))
             }
         } else {
-            LineType::File
+            TreeLineType::File
         };
         let unlisted = if let Some(children) = &self.children {
             // number of not listed children

@@ -9,7 +9,7 @@ use {
         launchable::Launchable,
         shell_install::{ShellInstall, ShellInstallState},
         skin,
-        tree_options::TreeOptions,
+        tree::TreeOptions,
         verb::VerbStore,
     },
     clap::{self, ArgMatches},

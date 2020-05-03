@@ -2,7 +2,7 @@ use {
     crate::{
         display::{DisplayableTree, Screen},
         errors::ProgramError,
-        flat_tree::Tree,
+        tree::Tree,
         skin::Skin,
     },
     open,

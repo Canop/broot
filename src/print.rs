@@ -5,7 +5,7 @@ use {
         app::{AppContext, AppStateCmdResult},
         display::{DisplayableTree, Screen},
         errors::ProgramError,
-        flat_tree::Tree,
+        tree::Tree,
         launchable::Launchable,
         skin::Skin,
     },

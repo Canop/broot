@@ -3,7 +3,7 @@ use {
     crate::{
         errors::ProgramError,
         file_sizes::FileSize,
-        flat_tree::{LineType, Tree, TreeLine},
+        tree::{TreeLineType, Tree, TreeLine},
         pattern::Pattern,
         skin::Skin,
         task_sync::ComputationResult,
@@ -56,16 +56,16 @@ impl<'s, 't> DisplayableTree<'s, 't> {
 
     fn name_style(&self, line: &TreeLine) -> &CompoundStyle {
         match &line.line_type {
-            LineType::Dir => &self.skin.directory,
-            LineType::File => {
+            TreeLineType::Dir => &self.skin.directory,
+            TreeLineType::File => {
                 if line.is_exe() {
                     &self.skin.exe
                 } else {
                     &self.skin.file
                 }
             }
-            LineType::SymLinkToFile(_) | LineType::SymLinkToDir(_) => &self.skin.link,
-            LineType::Pruning => &self.skin.pruning,
+            TreeLineType::SymLinkToFile(_) | TreeLineType::SymLinkToDir(_) => &self.skin.link,
+            TreeLineType::Pruning => &self.skin.pruning,
         }
     }
 
@@ -205,16 +205,16 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         W: Write,
     {
         let style = match &line.line_type {
-            LineType::Dir => &self.skin.directory,
-            LineType::File => {
+            TreeLineType::Dir => &self.skin.directory,
+            TreeLineType::File => {
                 if line.is_exe() {
                     &self.skin.exe
                 } else {
                     &self.skin.file
                 }
             }
-            LineType::SymLinkToFile(_) | LineType::SymLinkToDir(_) => &self.skin.link,
-            LineType::Pruning => &self.skin.pruning,
+            TreeLineType::SymLinkToFile(_) | TreeLineType::SymLinkToDir(_) => &self.skin.link,
+            TreeLineType::Pruning => &self.skin.pruning,
         };
         cond_bg!(style, self, selected, style);
         cond_bg!(char_match_style, self, selected, self.skin.char_match);
@@ -222,12 +222,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             .style(&line.name, &style, &char_match_style)
             .write_on(cw)?;
         match &line.line_type {
-            LineType::Dir => {
+            TreeLineType::Dir => {
                 if line.unlisted > 0 {
                     cw.queue_str(style, " …")?;
                 }
             }
-            LineType::SymLinkToFile(target) | LineType::SymLinkToDir(target) => {
+            TreeLineType::SymLinkToFile(target) | TreeLineType::SymLinkToDir(target) => {
                 cw.queue_str(style, " -> ")?;
                 if line.has_error {
                     cw.queue_str(&self.skin.file_error, &target)?;

@@ -4,7 +4,7 @@ use {
         command::Command,
         display::{DisplayableTree, Screen, FLAGS_AREA_WIDTH, W},
         errors::{ProgramError, TreeBuildError},
-        flat_tree::{LineType, Tree},
+        tree::{TreeLineType, Tree, TreeOptions},
         git,
         help::HelpState,
         launchable::Launchable,
@@ -14,7 +14,6 @@ use {
         selection_type::SelectionType,
         task_sync::Dam,
         tree_build::TreeBuilder,
-        tree_options::TreeOptions,
         verb::{Internal, PrefixSearchResult, VerbInvocation, CD},
     },
     directories::UserDirs,
@@ -110,14 +109,14 @@ impl BrowserState {
         let tree = self.displayed_tree();
         let line = tree.selected_line();
         match &line.line_type {
-            LineType::File => match open::that(&line.path) {
+            TreeLineType::File => match open::that(&line.path) {
                 Ok(exit_status) => {
                     info!("open returned with exit_status {:?}", exit_status);
                     Ok(AppStateCmdResult::Keep)
                 }
                 Err(e) => Ok(AppStateCmdResult::DisplayError(format!("{:?}", e))),
             },
-            LineType::Dir | LineType::SymLinkToDir(_) => {
+            TreeLineType::Dir | TreeLineType::SymLinkToDir(_) => {
                 let mut target = line.target();
                 if tree.selection == 0 {
                     // opening the root would be going to where we already are.
@@ -132,7 +131,7 @@ impl BrowserState {
                     in_new_panel,
                 ))
             }
-            LineType::SymLinkToFile(target) => {
+            TreeLineType::SymLinkToFile(target) => {
                 let path = PathBuf::from(target);
                 open::that(&path)?;
                 Ok(AppStateCmdResult::Keep)
@@ -150,8 +149,8 @@ impl BrowserState {
         let tree = self.displayed_tree();
         let line = tree.selected_line();
         match &line.line_type {
-            LineType::File => make_opener(line.path.clone(), line.is_exe(), con),
-            LineType::Dir | LineType::SymLinkToDir(_) => {
+            TreeLineType::File => make_opener(line.path.clone(), line.is_exe(), con),
+            TreeLineType::Dir | TreeLineType::SymLinkToDir(_) => {
                 Ok(if con.launch_args.cmd_export_path.is_some() {
                     CD.to_cmd_result(&line.target(), &None, con)?
                 } else {
@@ -160,7 +159,7 @@ impl BrowserState {
                     )
                 })
             }
-            LineType::SymLinkToFile(target) => {
+            TreeLineType::SymLinkToFile(target) => {
                 make_opener(
                     PathBuf::from(target),
                     line.is_exe(), // today this always return false

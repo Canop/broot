@@ -5,11 +5,10 @@ use {
     },
     crate::{
         errors::TreeBuildError,
-        flat_tree::{Tree, TreeLine},
+        tree::{Tree, TreeLine, TreeOptions},
         git::{GitIgnoreChain, GitIgnorer, LineStatusComputer},
         task_sync::ComputationResult,
         task_sync::Dam,
-        tree_options::TreeOptions,
     },
     git2::Repository,
     id_arena::Arena,

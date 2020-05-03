@@ -11,7 +11,7 @@ use {
         print,
         selection_type::SelectionType,
         task_sync::Dam,
-        tree_options::TreeOptions,
+        tree::TreeOptions,
         verb::{Internal, PrefixSearchResult, VerbInvocation},
     },
     crossterm::{
