@@ -1,7 +1,7 @@
-use super::{External, ExternalExecutionMode};
+use super::{ExternalExecution, ExternalExecutionMode};
 
 lazy_static! {
-    pub static ref CD: External = External::new(
+    pub static ref CD: ExternalExecution = ExternalExecution::new(
         "cd",
         "cd {directory}",
         ExternalExecutionMode::FromParentShell,

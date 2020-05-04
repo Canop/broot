@@ -46,8 +46,6 @@ Internals! {
     close_panel: "close the current panel",
     complete: "complete the current argument",
     focus: "display the directory (mapped to *enter*)",
-    focus_root: "focus `/`",
-    focus_user_home: "focus the home directory",
     help: "display broot's help",
     line_down: "move one line down",
     line_up: "move one line up",

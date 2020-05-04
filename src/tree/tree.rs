@@ -1,20 +1,16 @@
 //! In the tree structure, every "node" is just a line, there's
 //!  no link from a child to its parent or from a parent to its children.
 use {
+    super::*,
     crate::{
-        errors,
-        file_sizes::FileSize,
-        git::TreeGitStatus,
-        task_sync::ComputationResult,
-        task_sync::Dam,
-        tree_build::TreeBuilder,
+        errors, file_sizes::FileSize, git::TreeGitStatus, task_sync::ComputationResult,
+        task_sync::Dam, tree_build::TreeBuilder,
     },
     std::{
         cmp::Ord,
         mem,
         path::{Path, PathBuf},
     },
-    super::*,
 };
 
 #[cfg(windows)]

@@ -1,12 +1,12 @@
 use {
     super::*,
     crate::{
-        command::Command,
+        command::{Command, TriggerType},
         display::{Screen, W},
         errors::ProgramError,
         selection_type::SelectionType,
         task_sync::Dam,
-        verb::{Internal, PrefixSearchResult, VerbExecution, VerbInvocation},
+        verb::{InternalExecution, PrefixSearchResult, VerbExecution, VerbInvocation},
     },
     std::path::Path,
     termimad::Area,
@@ -62,9 +62,9 @@ pub trait AppState {
     /// by a key shorctut)
     fn on_internal(
         &mut self,
-        internal: Internal,
-        bang: bool,
-        invocation: Option<&VerbInvocation>,
+        internal_exec: &InternalExecution,
+        input_invocation: Option<&VerbInvocation>,
+        trigger_type: TriggerType,
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError>;
@@ -87,13 +87,13 @@ pub trait AppState {
             } => {
                 let verb = &con.verb_store.verbs[*index];
                 match &verb.execution {
-                    VerbExecution::Internal { internal, bang } => {
-                        let bang = input_invocation
-                            .as_ref()
-                            .map(|inv| inv.bang)
-                            .unwrap_or(*bang);
-                        self.on_internal(*internal, bang, input_invocation.as_ref(), screen, con)
-                    }
+                    VerbExecution::Internal(internal_exec) => self.on_internal(
+                        internal_exec,
+                        input_invocation.as_ref(),
+                        TriggerType::Other,
+                        screen,
+                        con,
+                    ),
                     VerbExecution::External(external) => external.to_cmd_result(
                         self.selected_path(),
                         if let Some(inv) = &input_invocation {
@@ -108,17 +108,26 @@ pub trait AppState {
             Command::Internal {
                 internal,
                 input_invocation,
-            } => self.on_internal(*internal, false, input_invocation.as_ref(), screen, con),
+            } => self.on_internal(
+                &InternalExecution::from_internal(*internal),
+                input_invocation.as_ref(),
+                TriggerType::Other,
+                screen,
+                con,
+            ),
             Command::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::Match(verb) => {
                     if let Some(err) = verb.check_args(invocation) {
                         Ok(AppStateCmdResult::DisplayError(err))
                     } else {
                         match &verb.execution {
-                            VerbExecution::Internal { internal, bang } => {
-                                let bang = invocation.bang || *bang;
-                                self.on_internal(*internal, bang, Some(invocation), screen, con)
-                            }
+                            VerbExecution::Internal(internal_exec) => self.on_internal(
+                                internal_exec,
+                                Some(invocation),
+                                TriggerType::Input,
+                                screen,
+                                con,
+                            ),
                             VerbExecution::External(external) => {
                                 external.to_cmd_result(self.selected_path(), &invocation.args, con)
                             }
@@ -130,31 +139,7 @@ pub trait AppState {
             Command::None | Command::VerbEdit(_) => {
                 // we do nothing here, the real job is done in get_status
                 Ok(AppStateCmdResult::Keep)
-            } // Command::ArgTab(verb_invocation) => {
-              //     match con.verb_store.search(&verb_invocation.name) {
-              //         PrefixSearchResult::Match(verb) => {
-              //             let arg_selection_type = verb.get_arg_selection_type();
-              //             if let Some(sel_type) = arg_selection_type {
-              //                 // this verb expects a path, so tab makes sense
-              //                 if let Some(arg) = verb_invocation.arg {
-              //                     // the user started typing an arg
-
-              //                 } else {
-
-              //                 }
-              //             } else {
-              //                 // we don't know what to do with a tab here, we
-              //                 // do nothing
-              //                 Ok(AppStateCmdResult::DisplayError(
-              //                     "no tab completion available for this verb"
-              //                 ))
-              //             }
-
-              //             Ok(AppStateCmdResult::Keep)
-              //         }
-              //         _ => Ok(AppStateCmdResult::verb_not_found(&verb_invocation.name)),
-              //     }
-              // }
+            }
         }
     }
 

@@ -104,7 +104,7 @@ impl Conf {
         // reading verbs
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {
-                let invocation = string_field(verb_value, "invocation").unwrap_or("".to_string());
+                let invocation = string_field(verb_value, "invocation");
                 let key = string_field(verb_value, "key")
                     .map(|s| keys::parse_key(&s))
                     .transpose()?;

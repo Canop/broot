@@ -1,25 +1,18 @@
 //! In the tree structure, every "node" is just a line, there's
 //!  no link from a child to its parent or from a parent to its children.
 use {
-    crate::{
-        file_sizes::FileSize,
-        git::LineGitStatus,
-        selection_type::SelectionType,
-    },
+    super::*,
+    crate::{file_sizes::FileSize, git::LineGitStatus, selection_type::SelectionType},
     std::{
         cmp::{self, Ord, Ordering, PartialOrd},
         fs,
         path::PathBuf,
         time::SystemTime,
     },
-    super::*,
 };
 
 #[cfg(unix)]
-use {
-    std::os::unix::fs::MetadataExt,
-    umask::Mode,
-};
+use {std::os::unix::fs::MetadataExt, umask::Mode};
 
 #[cfg(windows)]
 use is_executable::IsExecutable;

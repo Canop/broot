@@ -2,8 +2,8 @@ use {
     super::bid::BId,
     crate::{
         errors::TreeBuildError,
-        tree::{TreeLineType, TreeLine},
         git::GitIgnoreChain,
+        tree::{TreeLine, TreeLineType},
     },
     id_arena::Arena,
     std::{fs, path::PathBuf, result::Result},

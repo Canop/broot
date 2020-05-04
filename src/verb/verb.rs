@@ -1,5 +1,5 @@
 use {
-    super::{External, ExternalExecutionMode, Internal, VerbExecution, VerbInvocation},
+    super::*,
     crate::{app::Status, errors::ConfError, keys, selection_type::SelectionType},
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
     std::path::Path,
@@ -13,64 +13,74 @@ use {
 /// There are two types of verbs executions:
 /// - external programs or commands (cd, mkdir, user defined commands, etc.)
 /// - internal behaviors (focusing a path, going back, showing the help, etc.)
+/// Some verbs are builtins, some other ones are created by configuration.
+/// Both builtins and configured vers can be internal or external based.
 #[derive(Debug, Clone)]
 pub struct Verb {
-    // a name, like "cd", "focus", "focus_tab"
-    pub name: String,
+    /// names (like "cd", "focus", "focus_tab", "c") by which
+    /// a verb can be called.
+    /// Can be empty if the verb is only called with a key shortcut.
+    /// Right now there's no way for it to contain more than 2 elements
+    /// but this may change.
+    pub names: Vec<String>,
 
     pub keys: Vec<KeyEvent>,
 
     /// description of the optional keyboard key(s) triggering that verb
     pub keys_desc: String,
 
-    /// a shortcut, eg "c"
-    pub shortcut: Option<String>,
-
     /// How the verb will be executed
     pub execution: VerbExecution,
 
     /// a description
-    pub description: Option<String>,
+    pub description: VerbDescription,
 
     /// the type of selection this verb applies to
     pub selection_condition: SelectionType,
 }
 
-impl From<External> for Verb {
-    fn from(external: External) -> Self {
-        Self::new(
-            external.name().to_string(),
-            VerbExecution::External(external),
-        )
+impl From<ExternalExecution> for Verb {
+    fn from(external_exec: ExternalExecution) -> Self {
+        let name = Some(external_exec.name().to_string());
+        let description = VerbDescription::from_code(external_exec.exec_pattern.to_string());
+        let execution = VerbExecution::External(external_exec);
+        Self::new(name, execution, description)
     }
 }
 
 impl Verb {
-    fn new(name: String, execution: VerbExecution) -> Self {
+    pub fn new(
+        name: Option<String>,
+        execution: VerbExecution,
+        description: VerbDescription,
+    ) -> Self {
+        let mut names = Vec::new();
+        if let Some(name) = name {
+            names.push(name);
+        }
         Self {
-            name,
+            names,
             keys: Vec::new(),
             keys_desc: "".to_string(),
-            shortcut: None,
             execution,
-            description: None,
+            description,
             selection_condition: SelectionType::Any,
         }
     }
 
     pub fn internal(internal: Internal) -> Self {
-        Self::internal_bang(internal, false)
+        let name = Some(internal.name().to_string());
+        let execution = VerbExecution::Internal(InternalExecution::from_internal(internal));
+        let description = VerbDescription::from_text(internal.description().to_string());
+        Self::new(name, execution, description)
     }
 
-    pub fn internal_bang(internal: Internal, bang: bool) -> Self {
-        let invocation = VerbInvocation {
-            name: internal.name().to_string(),
-            args: None,
-            bang,
-        };
-        let name = invocation.complete_name();
-        let execution = VerbExecution::Internal { internal, bang };
-        Self::new(name, execution)
+    pub fn internal_bang(internal: Internal) -> Self {
+        let name = None;
+        let execution =
+            VerbExecution::Internal(InternalExecution::from_internal_bang(internal, true));
+        let description = VerbDescription::from_text(internal.description().to_string());
+        Self::new(name, execution, description)
     }
 
     pub fn external(
@@ -78,20 +88,11 @@ impl Verb {
         execution_str: &str,
         exec_mode: ExternalExecutionMode,
     ) -> Result<Self, ConfError> {
-        let external = External::new(invocation_str, execution_str, exec_mode)?;
-        let name = external.name().to_string();
-        let execution = VerbExecution::External(external);
-        Ok(Self::new(name, execution))
-    }
-
-    pub fn has_internal(&self, internal: Internal) -> bool {
-        match &self.execution {
-            VerbExecution::Internal {
-                internal: self_internal,
-                ..
-            } => *self_internal == internal,
-            _ => false,
-        }
+        Ok(Self::from(ExternalExecution::new(
+            invocation_str,
+            execution_str,
+            exec_mode,
+        )?))
     }
 
     pub fn with_key(mut self, key: KeyEvent) -> Self {
@@ -111,11 +112,11 @@ impl Verb {
         })
     }
     pub fn with_description(mut self, description: &str) -> Self {
-        self.description = Some(description.to_string());
+        self.description = VerbDescription::from_text(description.to_string());
         self
     }
     pub fn with_shortcut(mut self, shortcut: &str) -> Self {
-        self.shortcut = Some(shortcut.to_string());
+        self.names.push(shortcut.to_string());
         self
     }
 
@@ -124,14 +125,8 @@ impl Verb {
     /// and return the error to display if arguments don't match
     pub fn check_args(&self, invocation: &VerbInvocation) -> Option<String> {
         match &self.execution {
-            VerbExecution::Internal { internal, .. } => {
-                if invocation.args.is_some() && !internal.accept_path() {
-                    Some(format!("{} doesn't take arguments", invocation.name))
-                } else {
-                    None
-                }
-            }
-            VerbExecution::External(external) => external.check_args(invocation),
+            VerbExecution::Internal(internal_exec) => internal_exec.check_args(invocation),
+            VerbExecution::External(external_exec) => external_exec.check_args(invocation),
         }
     }
 
@@ -139,20 +134,17 @@ impl Verb {
         if let Some(err) = self.check_args(invocation) {
             Status::new(err, true)
         } else {
-            let markdown = if let Some(description) = &self.description {
-                format!("Hit *enter* to **{}**: {}", &self.name, description,)
+            let name = self.names.get(0).unwrap_or(&invocation.name);
+            let markdown = if let VerbExecution::External(external_exec) = &self.execution {
+                let exec_desc = external_exec.shell_exec_string(path, &invocation.args);
+                format!("Hit *enter* to **{}**: `{}`", name, &exec_desc,)
+            } else if self.description.code {
+                format!(
+                    "Hit *enter* to **{}**: `{}`",
+                    name, &self.description.content
+                )
             } else {
-                match &self.execution {
-                    VerbExecution::Internal { internal, .. } => format!(
-                        "Hit *enter* to **{}**: {}",
-                        &self.name,
-                        internal.description(),
-                    ),
-                    VerbExecution::External(external) => {
-                        let exec_desc = external.shell_exec_string(path, &invocation.args);
-                        format!("Hit *enter* to **{}**: `{}`", &self.name, &exec_desc,)
-                    }
-                }
+                format!("Hit *enter* to **{}**: {}", name, &self.description.content)
             };
             Status::new(markdown, false)
         }

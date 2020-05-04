@@ -1,7 +1,4 @@
-use {
-    crate::pattern::Pattern,
-    clap::ArgMatches,
-};
+use {crate::pattern::Pattern, clap::ArgMatches};
 
 #[derive(Debug, Clone)]
 pub struct TreeOptions {

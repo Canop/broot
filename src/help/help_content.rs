@@ -1,5 +1,5 @@
 use {
-    crate::{app::AppContext, verb::VerbExecution},
+    crate::app::AppContext,
     minimad::{Text, TextTemplate},
 };
 
@@ -62,30 +62,29 @@ pub fn build_text(con: &AppContext) -> Text<'_> {
     for verb in &con.verb_store.verbs {
         let sub = expander
             .sub("verb-rows")
-            .set("name", &verb.name)
             .set(
-                "shortcut",
-                if let Some(sk) = &verb.shortcut {
-                    &sk
+                "name",
+                if let Some(name) = verb.names.get(0) {
+                    &name
                 } else {
                     ""
-                }, // TODO use as_deref when it's available
+                },
+            )
+            .set(
+                "shortcut",
+                if let Some(shortcut) = verb.names.get(1) {
+                    &shortcut
+                } else {
+                    ""
+                },
             )
             .set("key", &verb.keys_desc);
-        if let Some(description) = &verb.description {
-            sub.set_md("description", description);
-            sub.set("execution", "");
+        if verb.description.code {
+            sub.set("description", "");
+            sub.set("execution", &verb.description.content);
         } else {
-            match &verb.execution {
-                VerbExecution::Internal { internal, .. } => {
-                    sub.set_md("description", internal.description());
-                    sub.set("execution", "");
-                }
-                VerbExecution::External(external) => {
-                    sub.set("description", "");
-                    sub.set("execution", &external.exec_pattern); // we should maybe also show the invoc pattern
-                }
-            }
+            sub.set("description", &verb.description.content);
+            sub.set("execution", "");
         }
     }
     expander.expand()

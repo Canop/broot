@@ -31,6 +31,7 @@ custom_error! {pub ConfError
     UnknownInternal {verb: String}                  = "not a known internal: {}",
     InvalidKey {raw: String}                        = "not a valid key: {}",
     ReservedKey {key: String}                       = "reserved key: {}",
+    UnexpectedInternalArg { invocation: String}     = "unexpected argument for internal: {}",
 }
 
 // error which can be raised when parsing a regex the

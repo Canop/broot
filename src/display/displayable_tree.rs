@@ -3,10 +3,10 @@ use {
     crate::{
         errors::ProgramError,
         file_sizes::FileSize,
-        tree::{TreeLineType, Tree, TreeLine},
         pattern::Pattern,
         skin::Skin,
         task_sync::ComputationResult,
+        tree::{Tree, TreeLine, TreeLineType},
     },
     chrono::{offset::Local, DateTime},
     crossterm::{

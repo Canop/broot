@@ -3,7 +3,7 @@ use {
     crate::{
         app::{AppContext, AppState, AppStateCmdResult, Status},
         browser::BrowserState,
-        command::Command,
+        command::{Command, TriggerType},
         conf::{self, Conf},
         display::{Screen, W},
         errors::ProgramError,
@@ -12,7 +12,7 @@ use {
         selection_type::SelectionType,
         task_sync::Dam,
         tree::TreeOptions,
-        verb::{Internal, PrefixSearchResult, VerbInvocation},
+        verb::*,
     },
     crossterm::{
         terminal::{Clear, ClearType},
@@ -133,14 +133,17 @@ impl AppState for HelpState {
 
     fn on_internal(
         &mut self,
-        internal: Internal,
-        bang: bool,
-        _invocation: Option<&VerbInvocation>,
+        internal_exec: &InternalExecution,
+        input_invocation: Option<&VerbInvocation>,
+        trigger_type: TriggerType,
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         use Internal::*;
-        Ok(match internal {
+        let bang = input_invocation
+            .map(|inv| inv.bang)
+            .unwrap_or(internal_exec.bang);
+        Ok(match internal_exec.internal {
             back => AppStateCmdResult::PopState,
             focus | parent => AppStateCmdResult::from_optional_state(
                 BrowserState::new(
@@ -168,7 +171,9 @@ impl AppState for HelpState {
                 Err(e) => AppStateCmdResult::DisplayError(format!("{:?}", e)),
             },
             open_leave => {
-                AppStateCmdResult::from(Launchable::opener(Conf::default_location().to_path_buf()))
+                AppStateCmdResult::from(Launchable::opener(
+                    Conf::default_location().to_path_buf()
+                ))
             }
             page_down => {
                 self.scroll += self.text_area.height as i32;
@@ -181,9 +186,9 @@ impl AppState for HelpState {
             print_path => print::print_path(&Conf::default_location(), con)?,
             print_relative_path => print::print_relative_path(&Conf::default_location(), con)?,
             quit => AppStateCmdResult::Quit,
-            focus_user_home | focus_root | toggle_dates | toggle_files | toggle_hidden
-            | toggle_git_ignore | toggle_git_file_info | toggle_git_status | toggle_perm
-            | toggle_sizes | toggle_trim_root => AppStateCmdResult::PopStateAndReapply,
+            toggle_dates | toggle_files | toggle_hidden | toggle_git_ignore
+            | toggle_git_file_info | toggle_git_status | toggle_perm | toggle_sizes
+            | toggle_trim_root => AppStateCmdResult::PopStateAndReapply,
             _ => AppStateCmdResult::Keep,
         })
     }

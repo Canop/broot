@@ -62,10 +62,7 @@ pub fn to_command(
                         input_invocation: parts.verb_invocation,
                     };
                 } else {
-                    debug!(
-                        "verb {} not allowed on current selection",
-                        &con.verb_store.verbs[index].name
-                    );
+                    debug!("verb not allowed on current selection");
                 }
             }
 

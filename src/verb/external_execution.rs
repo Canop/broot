@@ -43,7 +43,7 @@ fn determine_arg_selection_type(args: &str) -> Option<SelectionType> {
 /// Definition of how the user input should be interpreted
 /// to be executed in an external command.
 #[derive(Debug, Clone)]
-pub struct External {
+pub struct ExternalExecution {
     /// pattern of how the command is supposed to be typed in the input
     invocation_pattern: VerbInvocation,
 
@@ -63,7 +63,7 @@ pub struct External {
     pub arg_selection_type: Option<SelectionType>,
 }
 
-impl External {
+impl ExternalExecution {
     pub fn new(
         invocation_str: &str,
         execution_str: &str,

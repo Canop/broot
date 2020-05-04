@@ -5,9 +5,9 @@ use {
         app::{AppContext, AppStateCmdResult},
         display::{DisplayableTree, Screen},
         errors::ProgramError,
-        tree::Tree,
         launchable::Launchable,
         skin::Skin,
+        tree::Tree,
     },
     pathdiff,
     std::{

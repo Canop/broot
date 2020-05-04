@@ -1,22 +1,21 @@
 use {
     crate::{
         app::{AppContext, AppState, AppStateCmdResult, Status},
-        command::Command,
+        command::{Command, TriggerType},
         display::{DisplayableTree, Screen, FLAGS_AREA_WIDTH, W},
         errors::{ProgramError, TreeBuildError},
-        tree::{TreeLineType, Tree, TreeOptions},
         git,
         help::HelpState,
         launchable::Launchable,
-        pattern::Pattern,
         path,
+        pattern::Pattern,
         print,
         selection_type::SelectionType,
         task_sync::Dam,
+        tree::*,
         tree_build::TreeBuilder,
-        verb::{Internal, PrefixSearchResult, VerbInvocation, CD},
+        verb::*,
     },
-    directories::UserDirs,
     open,
     std::{
         fs::OpenOptions,
@@ -25,19 +24,6 @@ use {
     },
     termimad::Area,
 };
-
-fn focus_path(
-    path: PathBuf,
-    screen: &mut Screen,
-    tree: &Tree,
-    in_new_panel: bool,
-) -> AppStateCmdResult {
-    let path = path::closest_dir(&path);
-    AppStateCmdResult::from_optional_state(
-        BrowserState::new(path, tree.options.clone(), screen, &Dam::unlimited()),
-        in_new_panel,
-    )
-}
 
 /// An application state dedicated to displaying a tree.
 /// It's the first and main screen of broot.
@@ -367,16 +353,19 @@ impl AppState for BrowserState {
 
     fn on_internal(
         &mut self,
-        internal: Internal,
-        bang: bool,
+        internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
+        trigger_type: TriggerType,
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let page_height = BrowserState::page_height(screen);
+        let bang = input_invocation
+            .map(|inv| inv.bang)
+            .unwrap_or(internal_exec.bang);
         use Internal::*;
-        Ok(match internal {
-            back => {
+        Ok(match internal_exec.internal {
+            Internal::back => {
                 if self.filtered_tree.is_some() {
                     self.filtered_tree = None;
                     AppStateCmdResult::Keep
@@ -387,119 +376,101 @@ impl AppState for BrowserState {
                     AppStateCmdResult::PopState
                 }
             }
-            close_panel => AppStateCmdResult::PopPanel,
-            complete => AppStateCmdResult::DisplayError("not yet implemented".to_string()),
-            focus => {
-                if let Some(invocation) = input_invocation {
-                    if let Some(arg) = &invocation.args {
-                        if invocation.name == internal.name() {
-                            // TODO the name test is a hack, we should
-                            // use the trigger type of the command
-                            debug!("case A");
-                            let tree = self.displayed_tree();
-                            let base_dir = tree.selected_line().path.to_string_lossy();
-                            let path = path::path_from(&base_dir, &arg);
-                            let path = PathBuf::from(path);
-                            focus_path(path, screen, tree, bang)
-                        } else {
-                            // user would like to open for arg edition
-                            // the current arg as a tree panel
-                            // TODO add purpose
-                            debug!("case B");
-                            AppStateCmdResult::DisplayError("arg panel not yet implemented".to_string())
-                        }
-                    } else {
-                        // user wants to open for arg edition the selected
-                        // tree line
-                        // TODO add purpose
-                        debug!("case C");
-                        let tree = self.displayed_tree();
-                        let path = tree.selected_line().target();
-                        focus_path(path, screen, tree, bang)
-                    }
-                } else {
-                    // just opening a new panel on the selected tree line (without purpose)
-                    debug!("case D");
-                    let tree = self.displayed_tree();
-                    let path = tree.selected_line().target();
-                    focus_path(path, screen, tree, bang)
-                }
+            Internal::close_panel => AppStateCmdResult::PopPanel,
+            Internal::complete => {
+                AppStateCmdResult::DisplayError("not yet implemented".to_string())
             }
-            focus_root => focus_path(PathBuf::from("/"), screen, self.displayed_tree(), bang),
-            up_tree => match self.displayed_tree().root().parent() {
-                Some(path) => focus_path(path.to_path_buf(), screen, self.displayed_tree(), bang),
-                None => AppStateCmdResult::DisplayError("no parent found".to_string()),
-            },
-            focus_user_home => match UserDirs::new() {
-                Some(ud) => focus_path(
-                    ud.home_dir().to_path_buf(),
+            Internal::focus => internal_focus::on_internal(
+                internal_exec,
+                input_invocation,
+                trigger_type,
+                self.selected_path(),
+                screen,
+                con,
+                self.displayed_tree().options.clone(),
+            ),
+            Internal::up_tree => match self.displayed_tree().root().parent() {
+                Some(path) => internal_focus::on_path(
+                    path.to_path_buf(),
                     screen,
-                    self.displayed_tree(),
+                    self.displayed_tree().options.clone(),
                     bang,
                 ),
-                None => AppStateCmdResult::DisplayError("no user home directory found".to_string()),
+                None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
-            help => AppStateCmdResult::NewState {
+            Internal::help => AppStateCmdResult::NewState {
                 state: Box::new(HelpState::new(screen, con)),
                 in_new_panel: bang,
             },
-            open_stay => self.open_selection_stay_in_broot(screen, con, bang)?,
-            open_leave => self.open_selection_quit_broot(con)?,
-            line_down => {
+            Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang)?,
+            Internal::open_leave => self.open_selection_quit_broot(con)?,
+            Internal::line_down => {
                 self.displayed_tree_mut().move_selection(1, page_height);
                 AppStateCmdResult::Keep
             }
-            line_up => {
+            Internal::line_up => {
                 self.displayed_tree_mut().move_selection(-1, page_height);
                 AppStateCmdResult::Keep
             }
-            page_down => {
+            Internal::page_down => {
                 let tree = self.displayed_tree_mut();
                 if page_height < tree.lines.len() as i32 {
                     tree.try_scroll(page_height, page_height);
                 }
                 AppStateCmdResult::Keep
             }
-            page_up => {
+            Internal::page_up => {
                 let tree = self.displayed_tree_mut();
                 if page_height < tree.lines.len() as i32 {
                     tree.try_scroll(-page_height, page_height);
                 }
                 AppStateCmdResult::Keep
             }
-            parent => self.go_to_parent(screen, bang),
-            print_path => print::print_path(&self.displayed_tree().selected_line().target(), con)?,
-            print_relative_path => {
+            Internal::parent => self.go_to_parent(screen, bang),
+            Internal::print_path => {
+                print::print_path(&self.displayed_tree().selected_line().target(), con)?
+            }
+            Internal::print_relative_path => {
                 print::print_relative_path(&self.displayed_tree().selected_line().target(), con)?
             }
-            print_tree => print::print_tree(&self.displayed_tree(), screen, con)?,
-            refresh => AppStateCmdResult::RefreshState { clear_cache: true },
-            select_first => {
+            Internal::print_tree => print::print_tree(&self.displayed_tree(), screen, con)?,
+            Internal::refresh => AppStateCmdResult::RefreshState { clear_cache: true },
+            Internal::select_first => {
                 self.displayed_tree_mut().try_select_first();
                 AppStateCmdResult::Keep
             }
-            select_last => {
+            Internal::select_last => {
                 self.displayed_tree_mut().try_select_last();
                 AppStateCmdResult::Keep
             }
-            toggle_dates => self.with_new_options(screen, &|o| o.show_dates ^= true, bang),
-            toggle_files => {
+            Internal::toggle_dates => {
+                self.with_new_options(screen, &|o| o.show_dates ^= true, bang)
+            }
+            Internal::toggle_files => {
                 self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true, bang)
             }
-            toggle_hidden => self.with_new_options(screen, &|o| o.show_hidden ^= true, bang),
-            toggle_git_ignore => {
+            Internal::toggle_hidden => {
+                self.with_new_options(screen, &|o| o.show_hidden ^= true, bang)
+            }
+            Internal::toggle_git_ignore => {
                 self.with_new_options(screen, &|o| o.respect_git_ignore ^= true, bang)
             }
-            toggle_git_file_info => {
+            Internal::toggle_git_file_info => {
                 self.with_new_options(screen, &|o| o.show_git_file_info ^= true, bang)
             }
-            toggle_git_status => {
+            Internal::toggle_git_status => {
                 self.with_new_options(screen, &|o| o.filter_by_git_status ^= true, bang)
             }
-            toggle_perm => self.with_new_options(screen, &|o| o.show_permissions ^= true, bang),
-            toggle_sizes => self.with_new_options(screen, &|o| o.show_sizes ^= true, bang),
-            toggle_trim_root => self.with_new_options(screen, &|o| o.trim_root ^= true, bang),
-            total_search => {
+            Internal::toggle_perm => {
+                self.with_new_options(screen, &|o| o.show_permissions ^= true, bang)
+            }
+            Internal::toggle_sizes => {
+                self.with_new_options(screen, &|o| o.show_sizes ^= true, bang)
+            }
+            Internal::toggle_trim_root => {
+                self.with_new_options(screen, &|o| o.trim_root ^= true, bang)
+            }
+            Internal::total_search => {
                 if let Some(tree) = &self.filtered_tree {
                     if tree.total_search {
                         AppStateCmdResult::DisplayError(
@@ -516,7 +487,7 @@ impl AppState for BrowserState {
                     )
                 }
             }
-            quit => AppStateCmdResult::Quit,
+            Internal::quit => AppStateCmdResult::Quit,
         })
     }
 

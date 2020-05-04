@@ -1,15 +1,10 @@
-use {
-    super::{ExternalExecutionMode, Internal, Verb},
-    crate::errors::ConfError,
-    crossterm::event::KeyEvent,
-    std::convert::TryFrom,
-};
+use {super::*, crate::errors::ConfError, crossterm::event::KeyEvent, std::convert::TryFrom};
 
 /// what's needed to handle a verb
 #[derive(Debug)]
 pub struct VerbConf {
     pub shortcut: Option<String>,
-    pub invocation: String,
+    pub invocation: Option<String>,
     pub key: Option<KeyEvent>,
     pub execution: String,
     pub description: Option<String>,
@@ -28,16 +23,29 @@ impl TryFrom<&VerbConf> for Verb {
         let mut s: &str = &verb_conf.execution;
         let mut verb = if s.starts_with(':') || s.starts_with(' ') {
             s = &s[1..];
-            let mut bang = false;
-            if s.starts_with('!') {
-                bang = true;
-                s = &s[1..];
-            }
-            let internal = Internal::try_from(s)?; // check among known internals
-            Verb::internal_bang(internal, bang)
+            let internal_execution = InternalExecution::try_from(s)?;
+            let name = verb_conf.invocation.as_ref().map(|inv| {
+                let inv: &str = &inv;
+                VerbInvocation::from(inv).name.to_string()
+            });
+            debug!(
+                "**** conf internal={:?} invocation={:?}",
+                internal_execution.internal.name(),
+                &verb_conf.invocation
+            );
+            Verb::new(
+                name,
+                VerbExecution::Internal(internal_execution),
+                VerbDescription::from_code(verb_conf.execution.to_string()),
+            )
         } else {
             Verb::external(
-                &verb_conf.invocation,
+                if let Some(inv) = &verb_conf.invocation {
+                    inv
+                } else {
+                    // can we really accept externals without invocation ? Is this supported ?
+                    ""
+                },
                 &verb_conf.execution,
                 ExternalExecutionMode::from_conf(verb_conf.from_shell, verb_conf.leave_broot),
             )?
@@ -45,8 +53,12 @@ impl TryFrom<&VerbConf> for Verb {
         if let Some(key) = verb_conf.key {
             verb = verb.with_key(key);
         }
-        verb.shortcut = verb_conf.shortcut.clone();
-        verb.description = verb_conf.description.clone();
+        if let Some(shortcut) = &verb_conf.shortcut {
+            verb.names.push(shortcut.to_string());
+        }
+        if let Some(description) = &verb_conf.description {
+            verb.description = VerbDescription::from_text(description.to_string());
+        }
         Ok(verb)
     }
 }

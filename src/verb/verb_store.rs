@@ -48,24 +48,16 @@ impl VerbStore {
         let mut nb_found = 0;
         let mut completions: Vec<&str> = Vec::new();
         for (index, verb) in self.verbs.iter().enumerate() {
-            if let Some(shortcut) = &verb.shortcut {
-                if shortcut.starts_with(prefix) {
-                    if shortcut == prefix {
+            for name in &verb.names {
+                if name.starts_with(prefix) {
+                    if name == prefix {
                         return PrefixSearchResult::Match(&verb);
                     }
                     found_index = index;
                     nb_found += 1;
-                    completions.push(&shortcut);
+                    completions.push(name);
                     continue;
                 }
-            }
-            if verb.name.starts_with(prefix) {
-                if verb.name == prefix {
-                    return PrefixSearchResult::Match(&verb);
-                }
-                found_index = index;
-                nb_found += 1;
-                completions.push(&verb.name);
             }
         }
         match nb_found {

@@ -22,7 +22,6 @@ pub fn builtin_verbs() -> Vec<Verb> {
         .unwrap(),
         Verb::internal(focus) // hardcoded Enter
             .with_shortcut("goto"),
-        Verb::internal(focus_root),
         Verb::internal(help).with_key(F1).with_shortcut("?"),
         Verb::internal(line_down).with_key(DOWN),
         Verb::internal(line_up).with_key(UP),
@@ -39,7 +38,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             StayInBroot,
         )
         .unwrap(),
-        Verb::internal_bang(focus, true).with_control_key('p'),
+        Verb::internal_bang(focus).with_control_key('p'),
         Verb::internal(open_stay)
             .with_key(ENTER)
             .with_shortcut("os"),

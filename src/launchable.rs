@@ -2,8 +2,8 @@ use {
     crate::{
         display::{DisplayableTree, Screen},
         errors::ProgramError,
-        tree::Tree,
         skin::Skin,
+        tree::Tree,
     },
     open,
     std::{env, io, path::PathBuf, process::Command},

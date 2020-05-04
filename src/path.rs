@@ -3,10 +3,7 @@ use {
     regex::{self, Captures, Regex},
     std::{
         collections::HashMap,
-        path::{
-            Path,
-            PathBuf,
-        },
+        path::{Path, PathBuf},
     },
 };
 
@@ -46,9 +43,7 @@ pub fn closest_dir(mut path: &Path) -> PathBuf {
             return path.to_path_buf();
         }
         match path.parent() {
-            Some(parent) => {
-                path = parent
-            }
+            Some(parent) => path = parent,
             None => {
                 debug!("no existing parent"); // unexpected
                 return path.to_path_buf();
