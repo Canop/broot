@@ -1,13 +1,3 @@
-//! broot's app is mainly a stack of AppState.
-//! Commands parsed from the input are submitted to the current
-//! appstate, which replies with a stateCmdResult which may
-//! be
-//! - a transition to a new state
-//! - a pop to get back to the previous one
-//! - an operation which keeps the state
-//! - a request to quit broot
-//! - a request to launch an executable (thus leaving broot)
-
 use {
     super::{AppContext, AppState, AppStateCmdResult, Panel, PanelId},
     crate::{
@@ -25,6 +15,7 @@ use {
     termimad::{Event, EventSource},
 };
 
+/// The GUI
 pub struct App {
     panels: NonEmptyVec<Panel>,
     active_panel_idx: usize,
@@ -78,9 +69,6 @@ impl App {
     /// return true when the panel has been removed (ie it wasn't the last one)
     fn close_active_panel(&mut self, screen: &Screen) -> bool {
         if let Ok(_removed_panel) = self.panels.swap_remove(self.active_panel_idx) {
-            //let parent_idx = _removed_panel.parent_panel_idx;
-            // FIXME we can't use the parent_idx... we change the idx when we remove
-            // elements. But we must store in the panel the parent id
             self.active_panel_idx = self.panels.len().get() - 1;
             Areas::resize_all(self.panels.as_mut_slice(), screen)
                 .expect("removing a panel should be easy");
@@ -129,10 +117,10 @@ impl App {
                 state,
                 in_new_panel,
             } => {
-                if is_input_invocation {
-                    self.mut_panel().clear_input();
-                }
                 if in_new_panel {
+                    if is_input_invocation {
+                        self.mut_panel().clear_input();
+                    }
                     let insertion_idx = self.panels.len().get();
                     match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
                         Ok(areas) => {
@@ -143,6 +131,7 @@ impl App {
                         }
                     }
                 } else {
+                    self.mut_panel().clear_input();
                     self.mut_panel().push_state(state);
                 }
             }
@@ -229,8 +218,7 @@ impl App {
         if let Some(unparsed_commands) = &con.launch_args.commands {
             for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
                 self.apply_command(arg_cmd, screen, con)?;
-                self.mut_panel()
-                    .do_pending_tasks(w, screen, con, &mut dam)?;
+                self.mut_panel().do_pending_tasks(w, screen, con, &mut dam)?;
                 if self.quitting {
                     return Ok(self.launch_at_end.take());
                 }
@@ -238,14 +226,11 @@ impl App {
         }
 
         self.display_panels(w, screen, con)?;
-        // FIXME rétablir flags (en mieux)
-        //self.mut_state().write_flags(w, screen, con)?;
         w.flush()?;
 
         loop {
             if !self.quitting {
-                self.mut_panel()
-                    .do_pending_tasks(w, screen, con, &mut dam)?;
+                self.mut_panel().do_pending_tasks(w, screen, con, &mut dam)?;
             }
             let event = match dam.next_event() {
                 Some(event) => event,
@@ -278,6 +263,7 @@ impl App {
                     self.apply_command(cmd, screen, con)?;
                 }
             }
+            debug!("app display_panels");
             self.display_panels(w, screen, con)?;
             w.flush()?;
             event_source.unblock(self.quitting);

@@ -10,8 +10,11 @@ use {
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
-    std::io::Write,
-    termimad::MadSkin,
+    super::W,
+    termimad::{
+        Area,
+        MadSkin,
+    },
 };
 
 pub struct Screen {
@@ -49,36 +52,30 @@ impl Screen {
         Ok(())
     }
     /// move the cursor to x,y and clears the line.
-    pub fn goto_clear(&self, w: &mut impl Write, x: u16, y: u16) -> Result<(), ProgramError> {
+    pub fn goto_clear(&self, w: &mut W, x: u16, y: u16) -> Result<(), ProgramError> {
         self.goto(w, x, y)?;
         self.clear_line(w)
     }
     /// move the cursor to x,y
-    pub fn goto(&self, w: &mut impl Write, x: u16, y: u16) -> Result<(), ProgramError> {
+    pub fn goto(&self, w: &mut W, x: u16, y: u16) -> Result<(), ProgramError> {
         w.queue(cursor::MoveTo(x, y))?;
         Ok(())
     }
     /// clear the whole screen
-    pub fn clear(&self, w: &mut impl Write) -> Result<(), ProgramError> {
+    pub fn clear(&self, w: &mut W) -> Result<(), ProgramError> {
         w.queue(Clear(ClearType::All))?;
         Ok(())
     }
     /// clear from the cursor to the end of line
-    pub fn clear_line(&self, w: &mut impl Write) -> Result<(), ProgramError> {
+    pub fn clear_line(&self, w: &mut W) -> Result<(), ProgramError> {
         w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
     }
-    ///// return the max number of panels, depending on the available space
-    //pub fn max_panel_count(&self) -> usize {
-    //    self.width as usize / 20
-    //}
-    //pub fn panel_areas(&self, panels: &NonEmptyVec<StatePanel>) -> Vec<Area> {
-    //    let panel_width = self.width / (panels.len().get() as u16);
-    //    let mut x = 0;
-    //    panels.iter().map(|_| {
-    //        let area = Area::new(x, 0, panel_width, self.height - 2);
-    //        x += panel_width;
-    //        area
-    //    }).collect()
-    //}
+    pub fn clear_area_to_right(&self, w: &mut W, area: &Area)  -> Result<(), ProgramError> {
+        for y in area.top..area.top+area.height {
+            self.goto(w, area.left, y)?;
+            self.clear_line(w)?;
+        }
+        Ok(())
+    }
 }

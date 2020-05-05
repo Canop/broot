@@ -70,8 +70,8 @@ impl AppState for HelpState {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         if self.dirty {
-            screen.skin.default.queue_bg(w)?;
-            screen.clear(w)?;
+            //screen.skin.default.queue_bg(w)?;
+            screen.clear_area_to_right(w, &state_area)?;
             self.text_area = state_area;
             self.text_area.pad_for_max_width(110);
             self.dirty = false;
@@ -135,7 +135,7 @@ impl AppState for HelpState {
         &mut self,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
-        trigger_type: TriggerType,
+        _trigger_type: TriggerType,
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {

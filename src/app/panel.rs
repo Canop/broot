@@ -111,6 +111,8 @@ impl Panel {
     ) -> Result<(), ProgramError> {
         let state_area = self.areas.state.clone();
         self.mut_state().display(w, screen, state_area, con)?;
+        self.input_field.focused = active;
+        self.input_field.area = self.areas.input.clone();
         self.input_field.display_on(w)?;
         self.write_status(w, active, screen)?;
         Ok(())

@@ -7,7 +7,6 @@ use {
         git,
         help::HelpState,
         launchable::Launchable,
-        path,
         pattern::Pattern,
         print,
         selection_type::SelectionType,
@@ -363,7 +362,6 @@ impl AppState for BrowserState {
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
-        use Internal::*;
         Ok(match internal_exec.internal {
             Internal::back => {
                 if self.filtered_tree.is_some() {

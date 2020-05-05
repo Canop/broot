@@ -31,7 +31,7 @@ pub fn on_internal(
     trigger_type: TriggerType,
     selected_path: &Path,
     screen: &mut Screen,
-    con: &AppContext,
+    _con: &AppContext,
     tree_options: TreeOptions,
 ) -> AppStateCmdResult {
     if let Some(arg) = &internal_exec.arg {
