@@ -134,7 +134,6 @@ impl ExternalExecution {
         let dir_str = if file.is_dir() { file_str } else { parent_str };
         map.insert("directory".to_string(), dir_str.to_string());
         // then the ones computed from the user input
-        debug!("building repmap, args_parser={:?}", &self.args_parser);
         let default_args;
         let args = match args {
             Some(s) => s,
@@ -249,7 +248,6 @@ impl ExternalExecution {
             .to_string()
             .split_whitespace()
             .map(|token| {
-                debug!("make path from {:?} token", &token);
                 let path = Path::new(token);
                 if path.exists() {
                     if let Some(path) = path.to_str() {

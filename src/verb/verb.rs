@@ -137,7 +137,7 @@ impl Verb {
             let name = self.names.get(0).unwrap_or(&invocation.name);
             let markdown = if let VerbExecution::External(external_exec) = &self.execution {
                 let exec_desc = external_exec.shell_exec_string(path, &invocation.args);
-                format!("Hit *enter* to **{}**: `{}`", name, &exec_desc,)
+                format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
             } else if self.description.code {
                 format!(
                     "Hit *enter* to **{}**: `{}`",

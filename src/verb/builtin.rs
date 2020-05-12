@@ -11,9 +11,10 @@ pub fn builtin_verbs() -> Vec<Verb> {
         #[cfg(unix)]
         Verb::external("chmod {args}", "chmod {args} {file}", StayInBroot).unwrap(),
         Verb::internal(complete).with_key(TAB),
-        Verb::internal(close_panel)
+        Verb::internal(close_panel_ok)
             //.with_key(BACK_TAB),
             .with_control_key('w'),
+        Verb::internal(close_panel_cancel),
         Verb::external(
             "cp {newpath}",
             "/bin/cp -r {file} {newpath:path-from-parent}",
@@ -38,7 +39,10 @@ pub fn builtin_verbs() -> Vec<Verb> {
             StayInBroot,
         )
         .unwrap(),
-        Verb::internal_bang(focus).with_control_key('p'),
+        Verb::internal_bang(focus)
+            .with_control_key('t'),
+        Verb::internal_bang(start_end_panel)
+            .with_control_key('p'),
         Verb::internal(open_stay)
             .with_key(ENTER)
             .with_shortcut("os"),
@@ -53,8 +57,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::internal(print_relative_path).with_shortcut("prp"),
         Verb::internal(print_tree).with_shortcut("pt"),
         Verb::internal(quit)
-            .with_key(CTRL_C)
-            .with_key(CTRL_Q)
+            .with_control_key('c')
+            .with_control_key('q')
             .with_shortcut("q"),
         Verb::internal(refresh).with_key(F5),
         Verb::external("rm", "/bin/rm -rf {file}", StayInBroot).unwrap(),

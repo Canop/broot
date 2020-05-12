@@ -1,35 +1,40 @@
 use {
-    super::{AppContext, AppState, AppStateCmdResult, PanelId, Status},
+    super::*,
     crate::{
-        command::{event, Command},
+        command::*,
         display::{status_line, Areas, Screen, W},
         errors::ProgramError,
         task_sync::Dam,
     },
     std::io::Write,
-    strict::NonEmptyVec,
     termimad::{Event, InputField},
 };
 
 pub struct Panel {
     id: PanelId,
-    //pub parent_panel_id: Option<usize>,
-    states: NonEmptyVec<Box<dyn AppState>>, // stack: the last one is current
+    states: Vec<Box<dyn AppState>>, // stack: the last one is current
     pub areas: Areas,
-    status: Option<Status>, // FIXME Why an option ?
+    status: Option<Status>,
+    pub purpose: PanelPurpose,
     input_field: InputField,
 }
 
 impl Panel {
-    pub fn new(id: PanelId, state: Box<dyn AppState>, areas: Areas, screen: &Screen) -> Self {
+    pub fn new(
+        id: PanelId,
+        state: Box<dyn AppState>,
+        areas: Areas,
+        screen: &Screen,
+    ) -> Self {
         let mut input_field = InputField::new(areas.input.clone());
         input_field.set_normal_style(screen.skin.input.clone());
+        let purpose = PanelPurpose::None;
         Self {
             id,
-            // parent_panel_id: None,
-            states: state.into(),
+            states: vec![state],
             areas,
             status: None,
+            purpose,
             input_field,
         }
     }
@@ -48,7 +53,8 @@ impl Panel {
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        let result = self.mut_state().on_command(cmd, screen, con);
+        let purpose = self.purpose;
+        let result = self.mut_state().on_command(cmd, screen, con, purpose);
         self.status = Some(self.state().get_status(cmd, con));
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
@@ -65,7 +71,6 @@ impl Panel {
     ) -> Result<(), ProgramError> {
         while self.mut_state().get_pending_task().is_some() & !dam.has_event() {
             self.mut_state().do_pending_task(screen, dam);
-            //self.status = Some(self.state().get_status(&self.cmd, con));
             let is_active = true; // or we wouldn't do pending tasks
             self.display(w, is_active, screen, con)?;
             w.flush()?;
@@ -81,8 +86,7 @@ impl Panel {
         event: Event,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
-        let selection_type = self.state().selection_type();
-        let cmd = event::to_command(event, &mut self.input_field, con, selection_type);
+        let cmd = event::to_command(event, &mut self.input_field, con, &*self.states[self.states.len()-1]);
         self.input_field.display_on(w)?;
         Ok(cmd)
     }
@@ -91,15 +95,29 @@ impl Panel {
         self.states.push(new_state);
     }
     pub fn mut_state(&mut self) -> &mut dyn AppState {
-        self.states.last_mut().as_mut()
+        self.states.last_mut().unwrap().as_mut()
     }
     pub fn state(&self) -> &dyn AppState {
-        self.states.last().as_ref()
+        self.states.last().unwrap().as_ref()
+    }
+
+    pub fn set_input_arg(&mut self, arg: String) {
+        let mut command_parts = CommandParts::from(&self.input_field.get_content());
+        if let Some(invocation) = &mut command_parts.verb_invocation {
+            invocation.args = Some(arg);
+            let new_input = format!("{}", command_parts);
+            self.input_field.set_content(&new_input);
+        }
     }
 
     /// return true when the element has been removed
     pub fn remove_state(&mut self) -> bool {
-        self.states.pop().is_some()
+        if self.states.len() > 1 {
+            self.states.pop();
+            true
+        } else {
+            false
+        }
     }
 
     pub fn display(

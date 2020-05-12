@@ -1,6 +1,6 @@
 use {
     crate::{
-        app::{AppContext, AppState, AppStateCmdResult, Status},
+        app::*,
         command::{Command, TriggerType},
         display::{DisplayableTree, Screen, FLAGS_AREA_WIDTH, W},
         errors::{ProgramError, TreeBuildError},
@@ -8,6 +8,7 @@ use {
         help::HelpState,
         launchable::Launchable,
         pattern::Pattern,
+        path,
         print,
         selection_type::SelectionType,
         task_sync::Dam,
@@ -357,6 +358,7 @@ impl AppState for BrowserState {
         trigger_type: TriggerType,
         screen: &mut Screen,
         con: &AppContext,
+        panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let page_height = BrowserState::page_height(screen);
         let bang = input_invocation
@@ -374,7 +376,12 @@ impl AppState for BrowserState {
                     AppStateCmdResult::PopState
                 }
             }
-            Internal::close_panel => AppStateCmdResult::PopPanel,
+            Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
+                validate_purpose: true,
+            },
+            Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
+                validate_purpose: false,
+            },
             Internal::complete => {
                 AppStateCmdResult::DisplayError("not yet implemented".to_string())
             }
@@ -396,10 +403,16 @@ impl AppState for BrowserState {
                 ),
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
-            Internal::help => AppStateCmdResult::NewState {
-                state: Box::new(HelpState::new(screen, con)),
-                in_new_panel: bang,
-            },
+            Internal::help => {
+                if bang {
+                    AppStateCmdResult::NewPanel {
+                        state: Box::new(HelpState::new(screen, con)),
+                        purpose: PanelPurpose::None,
+                    }
+                } else {
+                    AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)))
+                }
+            }
             Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang)?,
             Internal::open_leave => self.open_selection_quit_broot(con)?,
             Internal::line_down => {
@@ -440,6 +453,39 @@ impl AppState for BrowserState {
             Internal::select_last => {
                 self.displayed_tree_mut().try_select_last();
                 AppStateCmdResult::Keep
+            }
+            Internal::start_end_panel => {
+                if panel_purpose.is_arg_edition() {
+                    debug!("start_end understood as end");
+                    AppStateCmdResult::ClosePanel {
+                        validate_purpose: true,
+                    }
+                } else {
+                    debug!("start_end understood as start");
+                    let tree_options = self.displayed_tree().options.clone();
+                    if let Some(input_invocation) = input_invocation {
+                        // we'll go for input arg editing
+                        let path = if let Some(input_arg) = &input_invocation.args {
+                            let path = self.selected_path().to_string_lossy();
+                            let path = path::path_from(&path, input_arg);
+                            PathBuf::from(path)
+                        } else {
+                            self.selected_path().to_path_buf()
+                        };
+                        let arg_type = SelectionType::Any; // We might do better later
+                        let purpose = PanelPurpose::ArgEdition { arg_type };
+                        internal_focus::new_panel_on_path(path, screen, tree_options, purpose)
+                    } else {
+                        // we just open a new panel on the selected path,
+                        // without purpose
+                        internal_focus::new_panel_on_path(
+                            self.selected_path().to_path_buf(),
+                            screen,
+                            tree_options,
+                            PanelPurpose::None,
+                        )
+                    }
+                }
             }
             Internal::toggle_dates => {
                 self.with_new_options(screen, &|o| o.show_dates ^= true, bang)

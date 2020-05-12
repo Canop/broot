@@ -1,7 +1,7 @@
 use {
     super::help_content,
     crate::{
-        app::{AppContext, AppState, AppStateCmdResult, Status},
+        app::*,
         browser::BrowserState,
         command::{Command, TriggerType},
         conf::{self, Conf},
@@ -138,6 +138,7 @@ impl AppState for HelpState {
         _trigger_type: TriggerType,
         screen: &mut Screen,
         con: &AppContext,
+        _purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
         use Internal::*;
         let bang = input_invocation

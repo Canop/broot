@@ -1,5 +1,5 @@
 use {
-    super::{AppContext, AppState, AppStateCmdResult, Panel, PanelId},
+    super::*,
     crate::{
         browser::BrowserState,
         command::{parse_command_sequence, Command},
@@ -49,8 +49,15 @@ impl App {
         })
     }
 
-    pub fn add_panel(&mut self, new_state: Box<dyn AppState>, areas: Areas, screen: &Screen) {
-        let panel = Panel::new(self.created_panels_count.into(), new_state, areas, screen);
+    pub fn add_panel(
+        &mut self,
+        new_state: Box<dyn AppState>,
+        purpose: PanelPurpose,
+        areas: Areas,
+        screen: &Screen,
+    ) {
+        let mut panel = Panel::new(self.created_panels_count.into(), new_state, areas, screen);
+        panel.purpose = purpose;
         self.created_panels_count += 1;
         self.active_panel_idx = self.panels.len().get();
         self.panels.push(panel);
@@ -113,27 +120,26 @@ impl App {
                 self.launch_at_end = Some(*launchable);
                 self.quitting = true;
             }
-            NewState {
+            NewPanel {
                 state,
-                in_new_panel,
+                purpose,
             } => {
-                if in_new_panel {
-                    if is_input_invocation {
-                        self.mut_panel().clear_input();
-                    }
-                    let insertion_idx = self.panels.len().get();
-                    match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
-                        Ok(areas) => {
-                            self.add_panel(state, areas, screen);
-                        }
-                        Err(e) => {
-                            error = Some(e.to_string());
-                        }
-                    }
-                } else {
+                if is_input_invocation {
                     self.mut_panel().clear_input();
-                    self.mut_panel().push_state(state);
                 }
+                let insertion_idx = self.panels.len().get();
+                match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
+                    Ok(areas) => {
+                        self.add_panel(state, purpose, areas, screen);
+                    }
+                    Err(e) => {
+                        error = Some(e.to_string());
+                    }
+                }
+            }
+            NewState(state) => {
+                self.mut_panel().clear_input();
+                self.mut_panel().push_state(state);
             }
             RefreshState { clear_cache } => {
                 if is_input_invocation {
@@ -161,20 +167,25 @@ impl App {
                     self.mut_panel().clear_input();
                 }
                 if self.remove_state(screen) {
-                    //let cmd = self.mut_panel().get_command();
-                    // FIXME check this
                     self.mut_panel().apply_command(&cmd, screen, con)?;
                 } else {
                     self.quitting = true;
                 }
             }
-            PopPanel => {
-                if is_input_invocation {
-                    self.mut_panel().clear_input();
+            ClosePanel { validate_purpose } => {
+                let mut new_arg = None;
+                if validate_purpose {
+                    let purpose = &self.panels[self.active_panel_idx].purpose;
+                    if let PanelPurpose::ArgEdition { .. } = purpose {
+                        let path = self.panels[self.active_panel_idx].state().selected_path();
+                        new_arg = Some(path.to_string_lossy().to_string());
+                    }
                 }
                 if self.close_active_panel(screen) {
-                    // FIXME check this
                     self.mut_state().refresh(screen, con);
+                    if let Some(new_arg) = new_arg {
+                        self.mut_panel().set_input_arg(new_arg);
+                    }
                 } else {
                     self.quitting = true;
                 }
@@ -205,8 +216,6 @@ impl App {
         screen: &mut Screen,
         con: &AppContext,
     ) -> Result<Option<Launchable>, ProgramError> {
-        debug!("we're on screen");
-
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
         let event_source = EventSource::new()?;
@@ -263,7 +272,6 @@ impl App {
                     self.apply_command(cmd, screen, con)?;
                 }
             }
-            debug!("app display_panels");
             self.display_panels(w, screen, con)?;
             w.flush()?;
             event_source.unblock(self.quitting);

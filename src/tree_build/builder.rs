@@ -334,10 +334,6 @@ impl TreeBuilder {
                 });
             }
         }
-        // debug!(
-        //     "Trimming: we have {} lines for a goal of {}",
-        //     count, self.targeted_size
-        // );
         while count > self.targeted_size {
             if let Some(sli) = remove_queue.pop() {
                 //debug!("removing {:?}", &self.blines[sli.idx].path);
@@ -411,7 +407,6 @@ impl TreeBuilder {
     /// Return None if the lifetime expires before end of computation
     /// (usually because the user hit a key)
     pub fn build(mut self, total_search: bool, dam: &Dam) -> Option<Tree> {
-        //debug!("Building - total={} pattern={}", total_search, self.options.pattern);
         match self.gather_lines(total_search, dam) {
             Some(out_blines) => {
                 self.trim_excess(&out_blines);

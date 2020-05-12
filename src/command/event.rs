@@ -1,6 +1,13 @@
 use {
     super::{Command, CommandParts},
-    crate::{app::AppContext, keys, selection_type::SelectionType, verb::Internal},
+    crate::{
+        app::{
+            AppContext,
+            AppState,
+        },
+        keys,
+        verb::Internal,
+    },
     termimad::{Event, InputField},
 };
 
@@ -11,7 +18,8 @@ pub fn to_command(
     event: Event,
     input_field: &mut InputField,
     con: &AppContext,
-    selection_type: SelectionType,
+    //selection_type: SelectionType,
+    state: &dyn AppState,
 ) -> Command {
     match event {
         Event::Click(x, y, ..) => {
@@ -56,6 +64,7 @@ pub fn to_command(
 
             // we now check if the key is the trigger key of one of the verbs
             if let Some(index) = con.verb_store.index_of_key(key) {
+                let selection_type = state.selection_type();
                 if selection_type.respects(con.verb_store.verbs[index].selection_condition) {
                     return Command::VerbTrigger {
                         index,

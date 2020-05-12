@@ -43,7 +43,8 @@ macro_rules! Internals {
 
 Internals! {
     back: "revert to the previous state (mapped to *esc*)",
-    close_panel: "close the current panel",
+    close_panel_ok: "close the current panel, validating the selected path",
+    close_panel_cancel: "close the current panel, not using the selected path",
     complete: "complete the current argument",
     focus: "display the directory (mapped to *enter*)",
     help: "display broot's help",
@@ -57,6 +58,7 @@ Internals! {
     print_path: "print path and leaves broot",
     print_relative_path: "print relative path and leaves broot",
     print_tree: "print tree and leaves broot",
+    start_end_panel: "ok, I need to explain this in a few words",
     quit: "quit Broot",
     refresh: "refresh tree and clear size cache",
     select_first: "select the first file",

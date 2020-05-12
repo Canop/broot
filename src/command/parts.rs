@@ -1,4 +1,8 @@
-use {crate::verb::VerbInvocation, regex::Regex};
+use {
+    crate::verb::VerbInvocation,
+    regex::Regex,
+    std::fmt,
+};
 
 /// An intermediate parsed representation of the raw string
 #[derive(Debug, Clone)]
@@ -8,7 +12,23 @@ pub struct CommandParts {
     pub verb_invocation: Option<VerbInvocation>, // may be empty if user typed the separator but no char after
 }
 
+impl fmt::Display for CommandParts {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let Some(pattern) = &self.pattern {
+            write!(f, "{}", pattern)?;
+            if let Some(flags) = &self.regex_flags {
+                write!(f, "/{}", flags)?;
+            }
+        }
+        if let Some(invocation) = &self.verb_invocation {
+            write!(f, "{}", invocation)?;
+        }
+        Ok(())
+    }
+}
+
 impl CommandParts {
+
     pub fn new() -> CommandParts {
         CommandParts {
             pattern: None,
@@ -16,6 +36,7 @@ impl CommandParts {
             verb_invocation: None,
         }
     }
+
     pub fn from(raw: &str) -> Self {
         let mut cp = CommandParts::new();
         let c = regex!(
@@ -49,6 +70,7 @@ impl CommandParts {
         }
         cp
     }
+
     /// split an input into its two possible parts, the pattern
     /// and the verb invocation. Each part, when defined, is
     /// suitable to create a command on its own.

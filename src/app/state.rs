@@ -67,6 +67,7 @@ pub trait AppState {
         trigger_type: TriggerType,
         screen: &mut Screen,
         con: &AppContext,
+        panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError>;
 
     fn on_command(
@@ -74,6 +75,7 @@ pub trait AppState {
         cmd: &Command,
         screen: &mut Screen,
         con: &AppContext,
+        panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
         self.clear_pending();
         match cmd {
@@ -93,6 +95,7 @@ pub trait AppState {
                         TriggerType::Other,
                         screen,
                         con,
+                        panel_purpose,
                     ),
                     VerbExecution::External(external) => external.to_cmd_result(
                         self.selected_path(),
@@ -114,6 +117,7 @@ pub trait AppState {
                 TriggerType::Other,
                 screen,
                 con,
+                panel_purpose,
             ),
             Command::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::Match(verb) => {
@@ -127,6 +131,7 @@ pub trait AppState {
                                 TriggerType::Input,
                                 screen,
                                 con,
+                                panel_purpose,
                             ),
                             VerbExecution::External(external) => {
                                 external.to_cmd_result(self.selected_path(), &invocation.args, con)

@@ -1,9 +1,20 @@
-use {super::PanelId, crate::selection_type::SelectionType};
+use {
+    crate::selection_type::SelectionType,
+};
 
+#[derive(Debug, Clone, Copy)]
 pub enum PanelPurpose {
     None,
     ArgEdition {
-        parent_panel_id: PanelId,
         arg_type: SelectionType,
     },
+}
+
+impl PanelPurpose {
+    pub fn is_arg_edition(self) -> bool {
+        match self {
+            PanelPurpose::ArgEdition { .. } => true,
+            _ => false,
+        }
+    }
 }

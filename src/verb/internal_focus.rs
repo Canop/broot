@@ -6,6 +6,7 @@ use {
         command::TriggerType,
         display::Screen,
         path,
+        selection_type::SelectionType,
         task_sync::Dam,
         tree::TreeOptions,
     },
@@ -18,13 +19,46 @@ pub fn on_path(
     tree_options: TreeOptions,
     in_new_panel: bool,
 ) -> AppStateCmdResult {
+    if in_new_panel {
+        new_state_on_path(path, screen, tree_options)
+    } else {
+        new_panel_on_path(path, screen, tree_options, PanelPurpose::None)
+    }
+}
+
+pub fn new_state_on_path(
+    path: PathBuf,
+    screen: &mut Screen,
+    tree_options: TreeOptions,
+) -> AppStateCmdResult {
     let path = path::closest_dir(&path);
     AppStateCmdResult::from_optional_state(
         BrowserState::new(path, tree_options, screen, &Dam::unlimited()),
-        in_new_panel,
+        false,
     )
 }
 
+pub fn new_panel_on_path(
+    path: PathBuf,
+    screen: &mut Screen,
+    tree_options: TreeOptions,
+    purpose: PanelPurpose,
+) -> AppStateCmdResult {
+    let path = path::closest_dir(&path);
+    match BrowserState::new(path, tree_options, screen, &Dam::unlimited()) {
+        Ok(Some(os)) => {
+            AppStateCmdResult::NewPanel {
+                state: Box::new(os),
+                purpose,
+            }
+        }
+        Ok(None) => AppStateCmdResult::Keep, // this isn't supposed to happen
+        Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
+    }
+}
+
+/// general implementation  for verbs based on the :focus internal with optionally
+/// a bang or an argument.
 pub fn on_internal(
     internal_exec: &InternalExecution,
     input_invocation: Option<&VerbInvocation>,
@@ -66,13 +100,12 @@ pub fn on_internal(
                     // the :focus internal was triggered by a key, which
                     // means the user wants to explore the arg with purpose
                     // of selecting a path
-                    debug!("PURPOSE OF EDITING {:?}", &input_arg);
-                    // FIXME add purpose
                     let base_dir = selected_path.to_string_lossy();
                     let path = path::path_from(&base_dir, input_arg);
                     let path = PathBuf::from(path);
-                    let bang = true; // arg editing can only be done in a child panel
-                    return on_path(path, screen, tree_options, bang);
+                    let arg_type = SelectionType::Any; // We might do better later
+                    let purpose = PanelPurpose::ArgEdition { arg_type };
+                    return new_panel_on_path(path, screen, tree_options, purpose);
                 }
             }
         }

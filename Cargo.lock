@@ -99,7 +99,7 @@ dependencies = [
  "clap 2.33.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "criterion 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "crossbeam 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "crossterm 0.17.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm 0.17.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "custom_error 1.7.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "directories 2.0.2 (registry+https://github.com/rust-lang/crates.io-index)",
  "git2 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -116,7 +116,7 @@ dependencies = [
  "secular 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "simplelog 0.7.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "strict 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "termimad 0.8.19 (registry+https://github.com/rust-lang/crates.io-index)",
+ "termimad 0.8.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "toml 0.5.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "umask 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "users 0.9.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -329,7 +329,7 @@ dependencies = [
 
 [[package]]
 name = "crossterm"
-version = "0.17.3"
+version = "0.17.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "bitflags 1.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1035,11 +1035,11 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.8.19"
+version = "0.8.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "crossbeam 0.7.2 (registry+https://github.com/rust-lang/crates.io-index)",
- "crossterm 0.17.3 (registry+https://github.com/rust-lang/crates.io-index)",
+ "crossterm 0.17.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "lazy_static 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "minimad 0.6.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "thiserror 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -1313,7 +1313,7 @@ dependencies = [
 "checksum crossbeam-queue 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)" = "dfd6515864a82d2f877b42813d4553292c6659498c9a2aa31bab5a15243c2700"
 "checksum crossbeam-utils 0.6.6 (registry+https://github.com/rust-lang/crates.io-index)" = "04973fa96e96579258a5091af6003abde64af786b860f18622b82e026cca60e6"
 "checksum crossbeam-utils 0.7.0 (registry+https://github.com/rust-lang/crates.io-index)" = "ce446db02cdc3165b94ae73111e570793400d0794e46125cc4056c81cbb039f4"
-"checksum crossterm 0.17.3 (registry+https://github.com/rust-lang/crates.io-index)" = "ccdd8ef63a44e821956c6a276eca0faaa889d6a067dfcdbd5bfe85dce3a1d250"
+"checksum crossterm 0.17.4 (registry+https://github.com/rust-lang/crates.io-index)" = "2a880035bfe4707e344da9acf50cc94d003fe337f50afd94c8722c1bb4e0a933"
 "checksum crossterm_winapi 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "057b7146d02fb50175fd7dbe5158f6097f33d02831f43b4ee8ae4ddf67b68f5c"
 "checksum csv 1.1.1 (registry+https://github.com/rust-lang/crates.io-index)" = "37519ccdfd73a75821cac9319d4fce15a81b9fcf75f951df5b9988aa3a0af87d"
 "checksum csv-core 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)" = "9b5cadb6b25c77aeff80ba701712494213f4a8418fcda2ee11b6560c3ad0bf4c"
@@ -1400,7 +1400,7 @@ dependencies = [
 "checksum syn 1.0.17 (registry+https://github.com/rust-lang/crates.io-index)" = "0df0eb663f387145cab623dea85b09c2c5b4b0aef44e945d928e682fce71bb03"
 "checksum synstructure 0.12.1 (registry+https://github.com/rust-lang/crates.io-index)" = "3f085a5855930c0441ca1288cf044ea4aecf4f43a91668abdb870b4ba546a203"
 "checksum term 0.6.1 (registry+https://github.com/rust-lang/crates.io-index)" = "c0863a3345e70f61d613eab32ee046ccd1bcc5f9105fe402c61fcd0c13eeb8b5"
-"checksum termimad 0.8.19 (registry+https://github.com/rust-lang/crates.io-index)" = "715adcd6034f522a07e5e27603e93e5e480dc71c154546b689eed41621960595"
+"checksum termimad 0.8.20 (registry+https://github.com/rust-lang/crates.io-index)" = "fa0f25cf322e39100bcb290c19f796803becec1f7bace240a53fd90296648000"
 "checksum textwrap 0.11.0 (registry+https://github.com/rust-lang/crates.io-index)" = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
 "checksum thiserror 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)" = "54b3d3d2ff68104100ab257bb6bb0cb26c901abe4bd4ba15961f3bf867924012"
 "checksum thiserror-impl 1.0.15 (registry+https://github.com/rust-lang/crates.io-index)" = "ca972988113b7715266f91250ddb98070d033c62a011fa0fcc57434a649310dd"

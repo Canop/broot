@@ -1,13 +1,37 @@
 use {regex::Regex, std::fmt};
 
-/// the verb and its arguments, making the invocation
-#[derive(Clone, Debug)]
+/// the verb and its arguments, making the invocation.
+/// When coming from parsing, the args is Some as soon
+/// as there's a separator (i.e. it's "" in "cp ")
+#[derive(Clone, Debug, PartialEq)]
 pub struct VerbInvocation {
     pub name: String,
     pub args: Option<String>,
     pub bang: bool,
 }
+
+impl fmt::Display for VerbInvocation {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, ":")?;
+        if self.bang {
+            write!(f, "!")?;
+        }
+        write!(f, "{}", &self.name)?;
+        if let Some(args) = &self.args {
+            write!(f, " {}", &args)?;
+        }
+        Ok(())
+    }
+}
+
 impl VerbInvocation {
+    pub fn new<T: Into<String>>(name: T, args: Option<T>, bang: bool) -> Self {
+        Self {
+            name: name.into(),
+            args: args.map(|s| s.into()),
+            bang,
+        }
+    }
     pub fn is_empty(&self) -> bool {
         self.name.is_empty()
     }
@@ -47,8 +71,7 @@ impl From<&str> for VerbInvocation {
                 (?P<bang_before>!)?
                 (?P<name>[^!\s]*)
                 (?P<bang_after>!)?
-                \s*
-                (?P<args>.+?)?
+                (?:[\s:]+(?P<args>.*))?
                 \s*
                 $
             "
@@ -64,17 +87,26 @@ impl From<&str> for VerbInvocation {
     }
 }
 
-impl fmt::Display for VerbInvocation {
-    /// format a number of bytes as a string, for example 247K
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, ":")?;
-        if self.bang {
-            write!(f, "!")?;
-        }
-        write!(f, "{}", &self.name)?;
-        if let Some(args) = &self.args {
-            write!(f, " {}", &args)?;
-        }
-        Ok(())
+#[cfg(test)]
+mod verb_invocation_tests {
+    use super::*;
+    #[test]
+    fn check_verb_invocation_parsing() {
+        assert_eq!(
+            VerbInvocation::from("!mv"),
+            VerbInvocation::new("mv", None, true),
+        );
+        assert_eq!(
+            VerbInvocation::from("mva!"),
+            VerbInvocation::new("mva", None, true),
+        );
+        assert_eq!(
+            VerbInvocation::from("cp "),
+            VerbInvocation::new("cp", Some(""), false),
+        );
+        assert_eq!(
+            VerbInvocation::from("cp ../"),
+            VerbInvocation::new("cp", Some("../"), false),
+        );
     }
 }

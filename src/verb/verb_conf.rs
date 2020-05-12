@@ -28,11 +28,6 @@ impl TryFrom<&VerbConf> for Verb {
                 let inv: &str = &inv;
                 VerbInvocation::from(inv).name.to_string()
             });
-            debug!(
-                "**** conf internal={:?} invocation={:?}",
-                internal_execution.internal.name(),
-                &verb_conf.invocation
-            );
             Verb::new(
                 name,
                 VerbExecution::Internal(internal_execution),

@@ -35,6 +35,7 @@ lazy_static! {
     static ref TS_CACHE_MX: Mutex<HashMap<PathBuf, Computation<TreeGitStatus>>> =
         Mutex::new(HashMap::new());
 }
+
 /// try to get the result of the computation of the tree git status.
 /// This may be immediate if a previous computation was finished.
 /// This may wait for the result of a new computation or of a previously
