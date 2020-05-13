@@ -361,9 +361,11 @@ impl AppState for BrowserState {
         panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let page_height = BrowserState::page_height(screen);
+        debug!("internal_exec: {:?}", internal_exec);
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
+        debug!("bang: {:?}", bang);
         Ok(match internal_exec.internal {
             Internal::back => {
                 if self.filtered_tree.is_some() {

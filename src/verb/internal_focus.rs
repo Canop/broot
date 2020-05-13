@@ -20,9 +20,9 @@ pub fn on_path(
     in_new_panel: bool,
 ) -> AppStateCmdResult {
     if in_new_panel {
-        new_state_on_path(path, screen, tree_options)
-    } else {
         new_panel_on_path(path, screen, tree_options, PanelPurpose::None)
+    } else {
+        new_state_on_path(path, screen, tree_options)
     }
 }
 
