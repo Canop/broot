@@ -3,7 +3,6 @@
 /// a string with TTY colors
 ///
 use {
-    super::*,
     crate::errors::InvalidSkinError,
     crossterm::style::{
         Attribute::{self, *},
@@ -12,6 +11,7 @@ use {
     },
     regex::Regex,
     std::result::Result,
+    super::*,
     termimad::CompoundStyle,
 };
 
@@ -29,7 +29,7 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         let value: &str = c.name("value").unwrap().as_str();
         let value = value.parse();
         if let Ok(value) = value {
-            return Ok(skin::ansi(value)); // all ANSI values are ok
+            return Ok(ansi(value)); // all ANSI values are ok
         } else {
             return Err(InvalidSkinError::InvalidColor { raw: s.to_owned() });
         }
@@ -42,7 +42,7 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
             if level > 23 {
                 return Err(InvalidSkinError::InvalidGreyLevel { level });
             }
-            return Ok(skin::gray(level));
+            return Ok(gray(level));
         } else {
             return Err(InvalidSkinError::InvalidColor { raw: s.to_owned() });
         }
@@ -53,14 +53,14 @@ fn parse_color(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         let g = c.name("g").unwrap().as_str().parse();
         let b = c.name("b").unwrap().as_str().parse();
         if let (Ok(r), Ok(g), Ok(b)) = (r, g, b) {
-            return Ok(skin::rgb(r, g, b));
+            return Ok(rgb(r, g, b));
         } else {
             return Err(InvalidSkinError::InvalidColor { raw: s.to_owned() });
         }
     }
 
     match s {
-        "black" => Ok(skin::rgb(0, 0, 0)), // crossterm black isn't black
+        "black" => Ok(rgb(0, 0, 0)), // crossterm black isn't black
         "blue" => Ok(Some(Blue)),
         "cyan" => Ok(Some(Cyan)),
         "darkblue" => Ok(Some(DarkBlue)),

@@ -1,9 +1,37 @@
-mod mad_skin;
-mod skin;
+mod app_skin;
+mod cli_mad_skin;
+mod help_mad_skin;
+mod panel_skin;
+mod style_map;
 mod skin_conf;
+mod skin_entry_conf;
+mod status_mad_skin;
 
 pub use {
-    mad_skin::{make_cli_mad_skin, make_help_mad_skin, StatusMadSkinSet},
-    skin::Skin,
+    app_skin::AppSkin,
+    cli_mad_skin::*,
+    help_mad_skin::*,
+    panel_skin::PanelSkin,
+    style_map::{StyleMap, StyleMaps},
     skin_conf::parse_object_style,
+    skin_entry_conf::SkinEntryConf,
+    status_mad_skin::StatusMadSkinSet,
 };
+
+use {
+    crossterm::style::{
+        Color::{self, *},
+    },
+};
+
+pub fn gray(level: u8) -> Option<Color> {
+    Some(AnsiValue(0xE8 + level))
+}
+
+pub fn rgb(r: u8, g: u8, b: u8) -> Option<Color> {
+    Some(Rgb { r, g, b })
+}
+
+pub fn ansi(v: u8) -> Option<Color> {
+    Some(AnsiValue(v))
+}

@@ -2,7 +2,7 @@ use {
     crate::{
         display::{DisplayableTree, Screen},
         errors::ProgramError,
-        skin::Skin,
+        skin::StyleMap,
         tree::Tree,
     },
     open,
@@ -20,7 +20,7 @@ pub enum Launchable {
     TreePrinter {
         // print the tree on end of broot
         tree: Box<Tree>,
-        skin: Box<Skin>,
+        skin: Box<StyleMap>,
         width: u16,
     },
     Program {
@@ -57,14 +57,14 @@ impl Launchable {
     pub fn printer(to_print: String) -> Launchable {
         Launchable::Printer { to_print }
     }
-    pub fn tree_printer(tree: &Tree, screen: &Screen, no_style: bool) -> Launchable {
+    pub fn tree_printer(
+        tree: &Tree,
+        screen: &Screen,
+        style_map: StyleMap,
+    ) -> Launchable {
         Launchable::TreePrinter {
             tree: Box::new(tree.clone()),
-            skin: Box::new(if no_style {
-                Skin::no_term()
-            } else {
-                screen.skin.clone()
-            }),
+            skin: Box::new(style_map),
             width: screen.width,
         }
     }

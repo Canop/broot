@@ -10,13 +10,10 @@ use {
         launchable::Launchable,
         print,
         selection_type::SelectionType,
+        skin::PanelSkin,
         task_sync::Dam,
         tree::TreeOptions,
         verb::*,
-    },
-    crossterm::{
-        terminal::{Clear, ClearType},
-        QueueableCommand,
     },
     std::path::Path,
     termimad::{Area, FmtText, TextView},
@@ -67,6 +64,7 @@ impl AppState for HelpState {
         w: &mut W,
         screen: &Screen,
         state_area: Area,
+        panel_skin: &PanelSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         if self.dirty {
@@ -78,7 +76,7 @@ impl AppState for HelpState {
         }
         let text = help_content::build_text(con);
         let fmt_text = FmtText::from_text(
-            &screen.help_skin,
+            &panel_skin.help_skin,
             text,
             Some((self.text_area.width - 1) as usize),
         );
@@ -119,24 +117,13 @@ impl AppState for HelpState {
         }
     }
 
-    /// there's no meaningful flags here
-    fn write_flags(
-        &self,
-        w: &mut W,
-        screen: &mut Screen,
-        _con: &AppContext,
-    ) -> Result<(), ProgramError> {
-        screen.skin.default.queue_bg(w)?;
-        w.queue(Clear(ClearType::UntilNewLine))?;
-        Ok(())
-    }
-
     fn on_internal(
         &mut self,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         _trigger_type: TriggerType,
         screen: &mut Screen,
+        _panel_skin: &PanelSkin,
         con: &AppContext,
         _purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {

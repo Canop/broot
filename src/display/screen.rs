@@ -1,9 +1,8 @@
 use {
     crate::{
         app::AppContext,
+        conf::Conf,
         errors::ProgramError,
-        skin::Skin,
-        skin::{self, StatusMadSkinSet},
     },
     crossterm::{
         cursor,
@@ -11,30 +10,19 @@ use {
         QueueableCommand,
     },
     super::W,
-    termimad::{
-        Area,
-        MadSkin,
-    },
+    termimad::Area,
 };
 
 pub struct Screen {
     pub width: u16,
     pub height: u16,
-    pub skin: Skin,
-    pub status_skin: StatusMadSkinSet,
-    pub help_skin: MadSkin,
 }
 
 impl Screen {
-    pub fn new(con: &AppContext, skin: Skin) -> Result<Screen, ProgramError> {
-        let status_skin = StatusMadSkinSet::from_skin(&skin);
-        let help_skin = skin::make_help_mad_skin(&skin);
+    pub fn new(con: &AppContext, _conf: &Conf) -> Result<Screen, ProgramError> {
         let mut screen = Screen {
             width: 0,
             height: 0,
-            skin,
-            status_skin,
-            help_skin,
         };
         screen.read_size(con)?;
         Ok(screen)

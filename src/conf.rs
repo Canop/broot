@@ -2,7 +2,12 @@
 //! initializing if if it doesn't yet exist
 
 use {
-    crate::{errors::ConfError, keys, skin, verb::VerbConf},
+    crate::{
+        errors::ConfError,
+        keys,
+        skin::{self, SkinEntryConf},
+        verb::VerbConf,
+    },
     crossterm::style::Attribute,
     directories::ProjectDirs,
     std::{
@@ -11,7 +16,6 @@ use {
         path::{Path, PathBuf},
         result::Result,
     },
-    termimad::CompoundStyle,
     toml::{self, Value},
 };
 
@@ -19,7 +23,7 @@ use {
 pub struct Conf {
     pub default_flags: String, // the flags to apply before cli ones
     pub verbs: Vec<VerbConf>,
-    pub skin: HashMap<String, CompoundStyle>,
+    pub skin: HashMap<String, SkinEntryConf>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -151,7 +155,9 @@ impl Conf {
                 if let Some(s) = v.as_str() {
                     match skin::parse_object_style(s) {
                         Ok(ske) => {
-                            self.skin.insert(k.to_string(), ske);
+                            // TODO read the unfocused part
+                            let sec = SkinEntryConf::new(ske, None);
+                            self.skin.insert(k.to_string(), sec);
                         }
                         Err(e) => {
                             eprintln!("{}", e);

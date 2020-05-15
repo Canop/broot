@@ -4,7 +4,7 @@ use {
         errors::ProgramError,
         file_sizes::FileSize,
         pattern::Pattern,
-        skin::Skin,
+        skin::StyleMap,
         task_sync::ComputationResult,
         tree::{Tree, TreeLine, TreeLineType},
     },
@@ -34,13 +34,13 @@ use {crate::permissions, std::os::unix::fs::MetadataExt, umask::*};
 ///  before would involve a visible flash on redraw)
 pub struct DisplayableTree<'s, 't> {
     pub tree: &'t Tree,
-    pub skin: &'s Skin,
+    pub skin: &'s StyleMap,
     pub area: termimad::Area,
     pub in_app: bool, // if true we show the selection and scrollbar
 }
 
 impl<'s, 't> DisplayableTree<'s, 't> {
-    pub fn out_of_app(tree: &'t Tree, skin: &'s Skin, width: u16) -> DisplayableTree<'s, 't> {
+    pub fn out_of_app(tree: &'t Tree, skin: &'s StyleMap, width: u16) -> DisplayableTree<'s, 't> {
         DisplayableTree {
             tree,
             skin,

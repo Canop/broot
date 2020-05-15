@@ -3,10 +3,12 @@ use {
     crate::{
         browser::BrowserState,
         command::{parse_command_sequence, Command},
+        conf::Conf,
         display::{Areas, Screen, W},
         errors::ProgramError,
         file_sizes, git,
         launchable::Launchable,
+        skin::*,
         task_sync::Dam,
     },
     crossterm::event::KeyModifiers,
@@ -25,7 +27,11 @@ pub struct App {
 }
 
 impl App {
-    pub fn new(con: &AppContext, screen: &Screen) -> Result<App, ProgramError> {
+
+    pub fn new(
+        con: &AppContext,
+        screen: &Screen,
+    ) -> Result<App, ProgramError> {
         let panel = Panel::new(
             PanelId::from(0),
             Box::new(
@@ -38,7 +44,6 @@ impl App {
                 .expect("Failed to create BrowserState"),
             ),
             Areas::create(&mut Vec::new(), 0, screen)?,
-            screen,
         );
         Ok(App {
             active_panel_idx: 0,
@@ -54,9 +59,8 @@ impl App {
         new_state: Box<dyn AppState>,
         purpose: PanelPurpose,
         areas: Areas,
-        screen: &Screen,
     ) {
-        let mut panel = Panel::new(self.created_panels_count.into(), new_state, areas, screen);
+        let mut panel = Panel::new(self.created_panels_count.into(), new_state, areas);
         panel.purpose = purpose;
         self.created_panels_count += 1;
         self.active_panel_idx = self.panels.len().get();
@@ -64,6 +68,9 @@ impl App {
     }
     fn mut_state(&mut self) -> &mut dyn AppState {
         self.panels[self.active_panel_idx].mut_state()
+    }
+    fn panel(&self) -> &Panel {
+        &self.panels[self.active_panel_idx]
     }
     fn mut_panel(&mut self) -> &mut Panel {
         unsafe {
@@ -92,10 +99,13 @@ impl App {
         &mut self,
         w: &mut W,
         screen: &mut Screen,
+        skin: &AppSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         for (idx, panel) in self.panels.as_mut_slice().iter_mut().enumerate() {
-            panel.display(w, idx == self.active_panel_idx, screen, con)?;
+            let focused = idx == self.active_panel_idx;
+            let skin = if focused { &skin.focused } else { &skin.unfocused };
+            panel.display(w, focused, screen, skin, con)?;
         }
         Ok(())
     }
@@ -107,12 +117,13 @@ impl App {
         &mut self,
         cmd: Command,
         screen: &mut Screen,
+        panel_skin: &PanelSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         use AppStateCmdResult::*;
         let mut error: Option<String> = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
-        match self.mut_panel().apply_command(&cmd, screen, con)? {
+        match self.mut_panel().apply_command(&cmd, screen, panel_skin, con)? {
             Quit => {
                 self.quitting = true;
             }
@@ -130,7 +141,7 @@ impl App {
                 let insertion_idx = self.panels.len().get();
                 match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
                     Ok(areas) => {
-                        self.add_panel(state, purpose, areas, screen);
+                        self.add_panel(state, purpose, areas);
                     }
                     Err(e) => {
                         error = Some(e.to_string());
@@ -167,7 +178,7 @@ impl App {
                     self.mut_panel().clear_input();
                 }
                 if self.remove_state(screen) {
-                    self.mut_panel().apply_command(&cmd, screen, con)?;
+                    self.mut_panel().apply_command(&cmd, screen, panel_skin, con)?;
                 } else {
                     self.quitting = true;
                 }
@@ -185,6 +196,9 @@ impl App {
                     self.mut_state().refresh(screen, con);
                     if let Some(new_arg) = new_arg {
                         self.mut_panel().set_input_arg(new_arg);
+                        let new_input = self.panel().get_input_content();
+                        let cmd = Command::from_raw(new_input, false);
+                        self.mut_panel().apply_command(&cmd, screen, panel_skin, con)?;
                     }
                 } else {
                     self.quitting = true;
@@ -215,6 +229,7 @@ impl App {
         w: &mut W,
         screen: &mut Screen,
         con: &AppContext,
+        conf: &Conf,
     ) -> Result<Option<Launchable>, ProgramError> {
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
@@ -222,24 +237,28 @@ impl App {
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
 
+        let skin = AppSkin::new(conf);
+
         // if some commands were passed to the application
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {
             for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
-                self.apply_command(arg_cmd, screen, con)?;
-                self.mut_panel().do_pending_tasks(w, screen, con, &mut dam)?;
+                self.apply_command(arg_cmd, screen, &skin.focused, con)?;
+                self.display_panels(w, screen, &skin, con)?;
+                w.flush()?;
+                self.mut_panel().do_pending_tasks(w, screen, &skin.focused, con, &mut dam)?;
                 if self.quitting {
                     return Ok(self.launch_at_end.take());
                 }
             }
         }
 
-        self.display_panels(w, screen, con)?;
+        self.display_panels(w, screen, &skin, con)?;
         w.flush()?;
 
         loop {
             if !self.quitting {
-                self.mut_panel().do_pending_tasks(w, screen, con, &mut dam)?;
+                self.mut_panel().do_pending_tasks(w, screen, &skin.focused, con, &mut dam)?;
             }
             let event = match dam.next_event() {
                 Some(event) => event,
@@ -269,10 +288,10 @@ impl App {
                     // event handled by the panel
                     let cmd = self.mut_panel().add_event(w, event, con)?;
                     debug!("command after add_event: {:?}", &cmd);
-                    self.apply_command(cmd, screen, con)?;
+                    self.apply_command(cmd, screen, &skin.focused, con)?;
                 }
             }
-            self.display_panels(w, screen, con)?;
+            self.display_panels(w, screen, &skin, con)?;
             w.flush()?;
             event_source.unblock(self.quitting);
         }

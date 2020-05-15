@@ -8,7 +8,6 @@ use {
         errors::{ProgramError, TreeBuildError},
         launchable::Launchable,
         shell_install::{ShellInstall, ShellInstallState},
-        skin,
         tree::TreeOptions,
         verb::VerbStore,
     },
@@ -190,15 +189,13 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     };
 
     let context = AppContext::from(launch_args, verb_store);
-    let skin = skin::Skin::create(config.skin);
-
     let mut w = display::writer();
-    let mut screen = Screen::new(&context, skin)?;
+    let mut screen = Screen::new(&context, &config)?;
     let app = App::new(&context, &screen)?;
     w.queue(EnterAlternateScreen)?;
     w.queue(cursor::Hide)?;
     w.queue(EnableMouseCapture)?;
-    let r = app.run(&mut w, &mut screen, &context);
+    let r = app.run(&mut w, &mut screen, &context, &config);
     w.queue(DisableMouseCapture)?;
     w.queue(cursor::Show)?;
     w.queue(LeaveAlternateScreen)?;

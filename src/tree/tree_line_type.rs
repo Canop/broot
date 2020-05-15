@@ -1,3 +1,6 @@
+
+/// The type of a line which can be displayed as
+/// part of a tree
 #[derive(Debug, Clone, PartialEq)]
 pub enum TreeLineType {
     File,

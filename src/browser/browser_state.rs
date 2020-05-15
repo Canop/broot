@@ -11,6 +11,7 @@ use {
         path,
         print,
         selection_type::SelectionType,
+        skin::PanelSkin,
         task_sync::Dam,
         tree::*,
         tree_build::TreeBuilder,
@@ -35,6 +36,7 @@ pub struct BrowserState {
 }
 
 impl BrowserState {
+
     /// build a new tree state if there's no error and there's no cancellation.
     ///
     /// In case of cancellation return `Ok(None)`. If dam is `unlimited()` then
@@ -68,6 +70,10 @@ impl BrowserState {
             BrowserState::new(tree.root().clone(), options, screen, &Dam::unlimited()),
             in_new_panel,
         )
+    }
+
+    pub fn root(&self) -> &Path {
+        self.tree.root()
     }
 
     pub fn page_height(screen: &Screen) -> i32 {
@@ -197,6 +203,30 @@ impl BrowserState {
                 }
             }
         }
+    }
+
+    /// draw the flags at the bottom right of the screen
+    fn write_flags(
+        &self,
+        w: &mut W,
+        screen: &mut Screen,
+        panel_skin: &PanelSkin,
+        _con: &AppContext,
+    ) -> Result<(), ProgramError> {
+        let tree = self.displayed_tree();
+        let total_char_size = FLAGS_AREA_WIDTH;
+        screen.goto_clear(w, screen.width - total_char_size - 1, screen.height - 1)?;
+        let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
+        let gi_value = if tree.options.respect_git_ignore {
+            'y'
+        } else {
+            'n'
+        };
+        panel_skin.styles.flag_label.queue_str(w, " h:")?;
+        panel_skin.styles.flag_value.queue(w, h_value)?;
+        panel_skin.styles.flag_label.queue_str(w, "   gi:")?;
+        panel_skin.styles.flag_value.queue(w, gi_value)?;
+        Ok(())
     }
 }
 
@@ -357,6 +387,7 @@ impl AppState for BrowserState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         screen: &mut Screen,
+        panel_skin: &PanelSkin,
         con: &AppContext,
         panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
@@ -441,12 +472,16 @@ impl AppState for BrowserState {
             }
             Internal::parent => self.go_to_parent(screen, bang),
             Internal::print_path => {
-                print::print_path(&self.displayed_tree().selected_line().target(), con)?
+                let path = &self.displayed_tree().selected_line().target();
+                print::print_path(path, con)?
             }
             Internal::print_relative_path => {
-                print::print_relative_path(&self.displayed_tree().selected_line().target(), con)?
+                let path = &self.displayed_tree().selected_line().target();
+                print::print_relative_path(path, con)?
             }
-            Internal::print_tree => print::print_tree(&self.displayed_tree(), screen, con)?,
+            Internal::print_tree => {
+                print::print_tree(&self.displayed_tree(), screen, panel_skin, con)?
+            }
             Internal::refresh => AppStateCmdResult::RefreshState { clear_cache: true },
             Internal::select_first => {
                 self.displayed_tree_mut().try_select_first();
@@ -468,11 +503,11 @@ impl AppState for BrowserState {
                     if let Some(input_invocation) = input_invocation {
                         // we'll go for input arg editing
                         let path = if let Some(input_arg) = &input_invocation.args {
-                            let path = self.selected_path().to_string_lossy();
+                            let path = self.root().to_string_lossy();
                             let path = path::path_from(&path, input_arg);
                             PathBuf::from(path)
                         } else {
-                            self.selected_path().to_path_buf()
+                            self.root().to_path_buf()
                         };
                         let arg_type = SelectionType::Any; // We might do better later
                         let purpose = PanelPurpose::ArgEdition { arg_type };
@@ -577,17 +612,19 @@ impl AppState for BrowserState {
     fn display(
         &mut self,
         w: &mut W,
-        screen: &Screen,
+        _screen: &Screen,
         area: Area,
+        panel_skin: &PanelSkin,
         _con: &AppContext,
     ) -> Result<(), ProgramError> {
         let dp = DisplayableTree {
             tree: &self.displayed_tree(),
-            skin: &screen.skin,
+            skin: &panel_skin.styles,
             area,
             in_app: true,
         };
         dp.write_on(w)
+        // TODO display flags here if panel active
     }
 
     fn refresh(&mut self, screen: &Screen, _con: &AppContext) -> Command {
@@ -606,28 +643,5 @@ impl AppState for BrowserState {
             }
             None => &self.tree.options.pattern,
         })
-    }
-
-    /// draw the flags at the bottom right of the screen
-    fn write_flags(
-        &self,
-        w: &mut W,
-        screen: &mut Screen,
-        _con: &AppContext,
-    ) -> Result<(), ProgramError> {
-        let tree = self.displayed_tree();
-        let total_char_size = FLAGS_AREA_WIDTH;
-        screen.goto_clear(w, screen.width - total_char_size - 1, screen.height - 1)?;
-        let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
-        let gi_value = if tree.options.respect_git_ignore {
-            'y'
-        } else {
-            'n'
-        };
-        screen.skin.flag_label.queue_str(w, " h:")?;
-        screen.skin.flag_value.queue(w, h_value)?;
-        screen.skin.flag_label.queue_str(w, "   gi:")?;
-        screen.skin.flag_value.queue(w, gi_value)?;
-        Ok(())
     }
 }

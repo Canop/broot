@@ -6,7 +6,7 @@ use {
         display::{DisplayableTree, Screen},
         errors::ProgramError,
         launchable::Launchable,
-        skin::Skin,
+        skin::{PanelSkin, StyleMap},
         tree::Tree,
     },
     pathdiff,
@@ -57,7 +57,7 @@ fn print_tree_to_file(
     screen: &mut Screen,
     file_path: &str,
 ) -> Result<AppStateCmdResult, ProgramError> {
-    let no_style_skin = Skin::no_term();
+    let no_style_skin = StyleMap::no_term();
     let dp = DisplayableTree::out_of_app(tree, &no_style_skin, screen.width);
     let mut f = OpenOptions::new()
         .create(true)
@@ -70,6 +70,7 @@ fn print_tree_to_file(
 pub fn print_tree(
     tree: &Tree,
     screen: &mut Screen,
+    panel_skin: &PanelSkin,
     con: &AppContext,
 ) -> Result<AppStateCmdResult, ProgramError> {
     if let Some(ref output_path) = con.launch_args.file_export_path {
@@ -78,10 +79,15 @@ pub fn print_tree(
     } else {
         // no output path provided. We write on stdout, but we must
         // do it after app closing to have the normal terminal
+        let styles = if con.launch_args.no_style {
+            StyleMap::no_term()
+        } else {
+            panel_skin.styles.clone()
+        };
         Ok(AppStateCmdResult::from(Launchable::tree_printer(
             tree,
             screen,
-            con.launch_args.no_style,
+            styles,
         )))
     }
 }

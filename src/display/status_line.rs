@@ -1,6 +1,10 @@
 use {
     super::{Screen, W},
-    crate::{app::Status, errors::ProgramError},
+    crate::{
+        app::Status,
+        errors::ProgramError,
+        skin::PanelSkin,
+    },
     minimad::{Alignment, Composite},
     termimad::{Area, StyledChar},
 };
@@ -11,6 +15,7 @@ pub fn write(
     task: Option<&str>,
     status: &Status,
     area: &Area,
+    panel_skin: &PanelSkin,
     screen: &Screen,
 ) -> Result<(), ProgramError> {
     let y = area.top;
@@ -19,17 +24,17 @@ pub fn write(
     if let Some(pending_task) = task {
         let pending_task = format!(" {}… ", pending_task);
         x += pending_task.chars().count() as u16;
-        screen.skin.status_job.queue(w, pending_task)?;
+        panel_skin.styles.status_job.queue(w, pending_task)?;
     }
     screen.goto(w, x, y)?;
-    let skin = if status.error {
-        &screen.status_skin.error
+    let style = if status.error {
+        &panel_skin.status_skin.error
     } else {
-        &screen.status_skin.normal
+        &panel_skin.status_skin.normal
     };
-    skin.write_inline_on(w, " ")?;
+    style.write_inline_on(w, " ")?;
     let remaining_width = (screen.width - x - 1) as usize;
-    skin.write_composite_fill(
+    style.write_composite_fill(
         w,
         Composite::from_inline(&status.message),
         remaining_width,
@@ -39,10 +44,15 @@ pub fn write(
 }
 
 /// erase the whole status line
-pub fn erase(w: &mut W, area: &Area, screen: &Screen) -> Result<(), ProgramError> {
+pub fn erase(
+    w: &mut W,
+    area: &Area,
+    panel_skin: &PanelSkin,
+    screen: &Screen,
+) -> Result<(), ProgramError> {
     screen.goto(w, area.left, area.top)?;
     let sc = StyledChar::new(
-        screen.status_skin.normal.paragraph.compound_style.clone(),
+        panel_skin.status_skin.normal.paragraph.compound_style.clone(),
         ' ',
     );
     sc.queue_repeat(w, area.width as usize)?;

@@ -28,6 +28,7 @@ pub struct Tree {
 }
 
 impl Tree {
+
     pub fn refresh(&mut self, page_height: usize) -> Result<(), errors::TreeBuildError> {
         let builder =
             TreeBuilder::from(self.root().to_path_buf(), self.options.clone(), page_height)?;
@@ -114,6 +115,7 @@ impl Tree {
             }
         }
     }
+
     pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {
         if line_index >= self.lines.len() {
             return false;
@@ -121,6 +123,7 @@ impl Tree {
         let line = &self.lines[line_index];
         depth < usize::from(line.depth) && line.left_branchs[depth]
     }
+
     /// select another line
     ///
     /// For example the following one if dy is 1.
@@ -156,10 +159,12 @@ impl Tree {
             }
         }
     }
+
     pub fn try_scroll(&mut self, dy: i32, page_height: i32) {
         self.scroll = (self.scroll + dy).max(0).min(self.lines.len() as i32 - 5);
         self.select_visible_line(page_height);
     }
+
     /// try to select a line (works if y+scroll falls on a selectable line)
     pub fn try_select_y(&mut self, y: i32) -> bool {
         let y = y + self.scroll;
@@ -186,6 +191,7 @@ impl Tree {
             }
         }
     }
+
     pub fn make_selection_visible(&mut self, page_height: i32) {
         let sel = self.selection as i32;
         let l = self.lines.len() as i32;

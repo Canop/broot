@@ -5,8 +5,9 @@ use {
         display::{Screen, W},
         errors::ProgramError,
         selection_type::SelectionType,
+        skin::PanelSkin,
         task_sync::Dam,
-        verb::{InternalExecution, PrefixSearchResult, VerbExecution, VerbInvocation},
+        verb::*,
     },
     std::path::Path,
     termimad::Area,
@@ -66,14 +67,17 @@ pub trait AppState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         screen: &mut Screen,
+        panel_skin: &PanelSkin,
         con: &AppContext,
         panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError>;
 
+    /// change the state, does no rendering
     fn on_command(
         &mut self,
         cmd: &Command,
         screen: &mut Screen,
+        panel_skin: &PanelSkin,
         con: &AppContext,
         panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
@@ -94,6 +98,7 @@ pub trait AppState {
                         input_invocation.as_ref(),
                         TriggerType::Other,
                         screen,
+                        panel_skin,
                         con,
                         panel_purpose,
                     ),
@@ -116,6 +121,7 @@ pub trait AppState {
                 input_invocation.as_ref(),
                 TriggerType::Other,
                 screen,
+                panel_skin,
                 con,
                 panel_purpose,
             ),
@@ -130,6 +136,7 @@ pub trait AppState {
                                 Some(invocation),
                                 TriggerType::Input,
                                 screen,
+                                panel_skin,
                                 con,
                                 panel_purpose,
                             ),
@@ -162,13 +169,7 @@ pub trait AppState {
         w: &mut W,
         screen: &Screen,
         state_area: Area,
-        con: &AppContext,
-    ) -> Result<(), ProgramError>;
-
-    fn write_flags(
-        &self,
-        w: &mut W,
-        screen: &mut Screen,
+        skin: &PanelSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError>;
 
