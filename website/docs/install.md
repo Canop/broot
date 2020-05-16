@@ -73,4 +73,20 @@ In order to do this, either remove all broot config files, or launch `broot --in
 
 When it's done, you can do just `br` to launch broot, and typing `<alt><enter>` will cd for you.
 
+# `br` alias for Nushell
 
+As a shortcut for [Nushell](https://www.nushell.sh/), define the following alias:
+
+    alias br [] { broot | trim | cd $it }
+
+When it's done, you can do just `br` to launch broot, and typing `:pp` will cd for you.
+
+You can bind this command to a key sequence (but currently not to `<alt><enter>`) in the [configuration file](../documentation/configuration/):
+
+```toml
+[[verbs]]
+invocation = "print_path"
+key = "alt-c"
+shortcut = "pp"
+execution = ":print_path"
+```
