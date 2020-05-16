@@ -66,6 +66,7 @@ impl App {
         self.active_panel_idx = self.panels.len().get();
         self.panels.push(panel);
     }
+
     fn mut_state(&mut self) -> &mut dyn AppState {
         self.panels[self.active_panel_idx].mut_state()
     }
@@ -91,6 +92,7 @@ impl App {
             false // there's no other panel to go to
         }
     }
+
     fn remove_state(&mut self, screen: &Screen) -> bool {
         self.panels[self.active_panel_idx].remove_state() || self.close_active_panel(screen)
     }
@@ -212,15 +214,12 @@ impl App {
         if let Some(text) = error {
             self.mut_panel().set_error(text);
         }
-        // FIXME flags
-        //self.state().write_flags(w, screen, con)?;
         Ok(())
     }
 
     fn clicked_panel_index(&self, x: u16, _y: u16, screen: &Screen) -> usize {
         let len = self.panels.len().get();
         (len * x as usize) / (screen.width as usize + 1)
-        //if idx < len { Some(idx) } else { None }
     }
 
     /// This is the main loop of the application
@@ -242,7 +241,8 @@ impl App {
         // if some commands were passed to the application
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {
-            for arg_cmd in parse_command_sequence(unparsed_commands, con)? {
+            for (input, arg_cmd) in parse_command_sequence(unparsed_commands, con)? {
+                self.mut_panel().set_input_content(input);
                 self.apply_command(arg_cmd, screen, &skin.focused, con)?;
                 self.display_panels(w, screen, &skin, con)?;
                 w.flush()?;

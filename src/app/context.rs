@@ -1,4 +1,8 @@
-use crate::{cli::AppLaunchArgs, conf::Conf, verb::VerbStore};
+use crate::{
+    cli::AppLaunchArgs,
+    conf::Conf,
+    verb::VerbStore,
+};
 
 /// The immutable container that can be passed around
 /// to provide the configuration things

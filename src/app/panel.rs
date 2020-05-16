@@ -38,10 +38,6 @@ impl Panel {
         }
     }
 
-    pub fn clear_input(&mut self) {
-        self.input_field.set_content("");
-    }
-
     pub fn set_error(&mut self, text: String) {
         self.status = Some(Status::from_error(text));
     }
@@ -100,6 +96,14 @@ impl Panel {
     }
     pub fn state(&self) -> &dyn AppState {
         self.states.last().unwrap().as_ref()
+    }
+
+    pub fn clear_input(&mut self) {
+        self.input_field.set_content("");
+    }
+
+    pub fn set_input_content(&mut self, content: &str) {
+        self.input_field.set_content(content);
     }
 
     pub fn set_input_arg(&mut self, arg: String) {

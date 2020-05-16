@@ -17,13 +17,7 @@ impl PartialEq for SortableBId {
 }
 impl Ord for SortableBId {
     fn cmp(&self, other: &SortableBId) -> Ordering {
-        if self.score == other.score {
-            Ordering::Equal
-        } else if self.score < other.score {
-            Ordering::Greater
-        } else {
-            Ordering::Less
-        }
+        other.score.cmp(&self.score)
     }
 }
 impl PartialOrd for SortableBId {

@@ -34,7 +34,6 @@ fn determine_arg_selection_type(args: &str) -> Option<SelectionType> {
     GROUP
         .find(args)
         .filter(|m| {
-            info!(" m: {:?}", m);
             m.start() == 0 && m.end() == args.len()
         })
         .map(|_| SelectionType::Any)
@@ -132,7 +131,7 @@ impl ExternalExecution {
         map.insert("file".to_string(), file_str.to_string());
         map.insert("parent".to_string(), parent_str.to_string());
         let dir_str = if file.is_dir() { file_str } else { parent_str };
-        map.insert("directory".to_string(), dir_str.to_string());
+        map.insert("directory".to_string(), dir_str);
         // then the ones computed from the user input
         let default_args;
         let args = match args {

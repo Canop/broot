@@ -19,6 +19,7 @@ use {
     toml::{self, Value},
 };
 
+/// The configuration read from conf.toml file(s)
 #[derive(Default)]
 pub struct Conf {
     pub default_flags: String, // the flags to apply before cli ones

@@ -26,7 +26,7 @@ impl TryFrom<&VerbConf> for Verb {
             let internal_execution = InternalExecution::try_from(s)?;
             let name = verb_conf.invocation.as_ref().map(|inv| {
                 let inv: &str = &inv;
-                VerbInvocation::from(inv).name.to_string()
+                VerbInvocation::from(inv).name
             });
             Verb::new(
                 name,

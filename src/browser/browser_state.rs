@@ -206,6 +206,7 @@ impl BrowserState {
     }
 
     /// draw the flags at the bottom right of the screen
+    /// TODO call this method
     fn write_flags(
         &self,
         w: &mut W,

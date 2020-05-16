@@ -24,10 +24,10 @@ use {
 macro_rules! StyleMap {
     (
         $(
-            $name:ident: $fg:expr, $bg:expr, {$($attr:expr)*} $( / $fgu:expr, $bgu:expr , {$($attru:expr)*} )*
+            $name:ident: $fg:expr, $bg:expr, [$($attr:expr)*] $( / $fgu:expr, $bgu:expr , [$($attru:expr)*] )*
         )*
     ) => {
-        /// a struct whose field are the styles to apply to various parts/cases
+        /// a struct whose fields are the styles to apply to various parts/cases
         pub struct StyleMap {
             $(pub $name: CompoundStyle,)*
         }
@@ -109,55 +109,55 @@ macro_rules! StyleMap {
 }
 
 // Default styles defined as
-//    name: forecolor, backcolor, {attributes}
+//    name: forecolor, backcolor, [attributes]
 // The optional part after a '/' is the style for unfocused panels
 // (if missing the style is the same than for focused panels)
 StyleMap! {
-    default: gray(22), gray(1), {} / gray(20), gray(1), {}
-    tree: gray(5), None, {} / gray(3), None, {}
-    file: gray(18), None, {} / gray(15), None, {}
-    directory: ansi(110), None, {Bold} / ansi(110), None, {}
-    exe: Some(Cyan), None, {}
-    link: Some(Magenta), None, {}
-    pruning: gray(12), None, {Italic}
-    perm__: gray(5), None, {}
-    perm_r: ansi(94), None, {}
-    perm_w: ansi(132), None, {}
-    perm_x: ansi(65), None, {}
-    owner: ansi(138), None, {}
-    group: ansi(131), None, {}
-    dates: ansi(66), None, {}
-    sparse: ansi(214), None, {}
-    git_branch: ansi(178), None, {}
-    git_insertions: ansi(28), None, {}
-    git_deletions: ansi(160), None, {}
-    git_status_current: gray(5), None, {}
-    git_status_modified: ansi(28), None, {}
-    git_status_new: ansi(94), None, {Bold}
-    git_status_ignored: gray(17), None, {}
-    git_status_conflicted: ansi(88), None, {}
-    git_status_other: ansi(88), None, {}
-    selected_line: None, gray(4), {} / None, gray(2), {}
-    char_match: Some(Green), None, {}
-    file_error: Some(Red), None, {}
-    flag_label: gray(15), None, {}
-    flag_value: ansi(178), None, {Bold}
-    input: Some(White), None, {} / gray(15), None, {}
-    status_error: gray(22), ansi(124), {}
-    status_job: ansi(220), gray(5), {}
-    status_normal: gray(20), gray(3), {} / gray(3), gray(3), {}
-    status_italic: ansi(178), gray(3), {} / gray(3), gray(3), {}
-    status_bold: ansi(178), gray(3), {Bold} / gray(3), gray(3), {}
-    status_code: ansi(229), gray(3), {} / gray(3), gray(3), {}
-    status_ellipsis: gray(19), gray(1), {} / gray(3), gray(3), {}
-    scrollbar_track: gray(7), None, {} / gray(4), None, {}
-    scrollbar_thumb: gray(22), None, {} / gray(14), None, {}
-    help_paragraph: gray(20), None, {}
-    help_bold: ansi(178), None, {Bold}
-    help_italic: ansi(229), None, {}
-    help_code: gray(21), gray(3), {}
-    help_headers: ansi(178), None, {}
-    help_table_border: ansi(239), None, {}
+    default: gray(22), gray(1), [] / gray(20), gray(1), []
+    tree: gray(5), None, [] / gray(3), None, []
+    file: gray(18), None, [] / gray(15), None, []
+    directory: ansi(110), None, [Bold] / ansi(110), None, []
+    exe: Some(Cyan), None, []
+    link: Some(Magenta), None, []
+    pruning: gray(12), None, [Italic]
+    perm__: gray(5), None, []
+    perm_r: ansi(94), None, []
+    perm_w: ansi(132), None, []
+    perm_x: ansi(65), None, []
+    owner: ansi(138), None, []
+    group: ansi(131), None, []
+    dates: ansi(66), None, []
+    sparse: ansi(214), None, []
+    git_branch: ansi(178), None, []
+    git_insertions: ansi(28), None, []
+    git_deletions: ansi(160), None, []
+    git_status_current: gray(5), None, []
+    git_status_modified: ansi(28), None, []
+    git_status_new: ansi(94), None, [Bold]
+    git_status_ignored: gray(17), None, []
+    git_status_conflicted: ansi(88), None, []
+    git_status_other: ansi(88), None, []
+    selected_line: None, gray(4), [] / None, gray(2), []
+    char_match: Some(Green), None, []
+    file_error: Some(Red), None, []
+    flag_label: gray(15), None, []
+    flag_value: ansi(178), None, [Bold]
+    input: Some(White), None, [] / gray(15), None, []
+    status_error: gray(22), ansi(124), []
+    status_job: ansi(220), gray(5), []
+    status_normal: gray(20), gray(3), [] / gray(3), gray(3), []
+    status_italic: ansi(178), gray(3), [] / gray(3), gray(3), []
+    status_bold: ansi(178), gray(3), [Bold] / gray(3), gray(3), []
+    status_code: ansi(229), gray(3), [] / gray(3), gray(3), []
+    status_ellipsis: gray(19), gray(1), [] / gray(3), gray(3), []
+    scrollbar_track: gray(7), None, [] / gray(4), None, []
+    scrollbar_thumb: gray(22), None, [] / gray(14), None, []
+    help_paragraph: gray(20), None, []
+    help_bold: ansi(178), None, [Bold]
+    help_italic: ansi(229), None, []
+    help_code: gray(21), gray(3), []
+    help_headers: ansi(178), None, []
+    help_table_border: ansi(239), None, []
 }
 
 impl fmt::Debug for StyleMap {

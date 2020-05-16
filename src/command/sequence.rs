@@ -3,7 +3,11 @@
 
 use {
     super::{Command, CommandParts},
-    crate::{app::AppContext, errors::ProgramError, verb::PrefixSearchResult},
+    crate::{
+        app::AppContext,
+        errors::ProgramError,
+        verb::PrefixSearchResult,
+    },
 };
 
 /// parse a string which is meant as a sequence of commands.
@@ -12,10 +16,10 @@ use {
 /// overriden in env variable BROOT_CMD_SEPARATOR.
 /// Verbs are verified, to ensure the command sequence has
 /// no unexpected holes.
-pub fn parse_command_sequence(
-    sequence: &str,
+pub fn parse_command_sequence<'a>(
+    sequence: &'a str,
     con: &AppContext,
-) -> Result<Vec<Command>, ProgramError> {
+) -> Result<Vec<(&'a str, Command)>, ProgramError> {
     let separator = match std::env::var("BROOT_CMD_SEPARATOR") {
         Ok(sep) if !sep.is_empty() => sep,
         _ => String::from(";"),
@@ -32,7 +36,7 @@ pub fn parse_command_sequence(
         let (pattern, verb_invocation) = CommandParts::split(input);
         if let Some(pattern) = pattern {
             debug!("adding pattern: {:?}", pattern);
-            commands.push(Command::from_raw(pattern, false));
+            commands.push((input, Command::from_raw(pattern, false)));
         }
         if let Some(verb_invocation) = verb_invocation {
             debug!("adding verb_invocation: {:?}", verb_invocation);
@@ -53,7 +57,7 @@ pub fn parse_command_sequence(
                     }
                     _ => {}
                 }
-                commands.push(command);
+                commands.push((input, command));
             }
         }
     }

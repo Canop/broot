@@ -4,6 +4,7 @@ use {
     termimad::Area,
 };
 
+/// the areas of the various parts of a panel
 #[derive(Debug, Clone)]
 pub struct Areas {
     pub state: Area,

@@ -5,7 +5,11 @@ use {
     broot::cli,
     log::LevelFilter,
     simplelog,
-    std::{env, fs::File, str::FromStr},
+    std::{
+        env,
+        fs::File,
+        str::FromStr,
+    },
 };
 
 /// configure the application log according to env variable.

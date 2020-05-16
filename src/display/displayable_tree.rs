@@ -30,8 +30,6 @@ use {crate::permissions, std::os::unix::fs::MetadataExt, umask::*};
 ///  - the selection is drawn
 ///  - a scrollbar may be drawn
 ///  - the empty lines will be erased
-/// (cleaning while printing isn't clean but cleaning
-///  before would involve a visible flash on redraw)
 pub struct DisplayableTree<'s, 't> {
     pub tree: &'t Tree,
     pub skin: &'s StyleMap,

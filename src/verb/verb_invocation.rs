@@ -45,7 +45,6 @@ impl VerbInvocation {
     }
     /// basically return the invocation but allow another name (the shortcut
     /// or a variant)
-    /// TODO add the ':' ?
     pub fn to_string_for_name(&self, name: &str) -> String {
         let mut s = String::new();
         if self.bang {

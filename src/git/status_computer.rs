@@ -63,7 +63,7 @@ pub fn get_tree_status(root_path: &Path, dam: &mut Dam) -> ComputationResult<Tre
                     // We do a select! to wait for either the dam
                     // or the receiver
                     debug!("start select on in progress computation");
-                    dam.select(comp_receiver.clone())
+                    dam.select(comp_receiver)
                 }
                 None => {
                     // not yet started. We launch the computation and store

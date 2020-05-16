@@ -1,3 +1,4 @@
+/// how a verb is described in the help screen
 #[derive(Debug, Clone)]
 pub struct VerbDescription {
     pub code: bool,

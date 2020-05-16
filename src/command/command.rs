@@ -12,26 +12,48 @@ use {
 /// given on launch.
 #[derive(Debug, Clone)]
 pub enum Command {
+
+    /// no command
     None,
-    VerbEdit(VerbInvocation),     // verb invocation, unfinished
-    VerbInvocate(VerbInvocation), // verb invocation, after the user hit enter
+
+    /// a verb invocation, unfinished
+    /// (user didn't hit enter)
+    VerbEdit(VerbInvocation),
+
+    /// verb invocation, finished
+    /// (coming from --cmd, or after the user hit enter)
+    VerbInvocate(VerbInvocation),
+
+    /// call of an internal done without the input
+    /// (using a trigger key for example)
     Internal {
-        // call without the input (using a trigger key)
         internal: Internal,
         input_invocation: Option<VerbInvocation>,
     },
+
+    /// call of a verb done without the input
+    /// (using a trigger key for example)
     VerbTrigger {
-        // verb call without the input (using a trigger key)
         index: usize,
         input_invocation: Option<VerbInvocation>,
     },
-    FuzzyPatternEdit(String),  // a pattern being edited
-    RegexEdit(String, String), // a regex being edited (core & flags)
-    Click(u16, u16),           // usually a mouse click
-    DoubleClick(u16, u16),     // always come after a simple click at same position
+
+    /// a pattern being edited
+    FuzzyPatternEdit(String),
+
+    /// a regex being edited (core & flags)
+    RegexEdit(String, String),
+
+    /// a mouse click
+    Click(u16, u16),
+
+    /// a mouse double-click
+    /// Always come after a simple click at same position
+    DoubleClick(u16, u16),
 }
 
 impl Command {
+
     pub fn empty() -> Command {
         Command::None
     }

@@ -23,7 +23,7 @@ impl LineGitStatus {
             .ok()
             .map(|status| LineGitStatus { status })
     }
-    pub fn is_interesting(&self) -> bool {
+    pub fn is_interesting(self) -> bool {
         self.status.intersects(INTERESTING)
     }
 }
