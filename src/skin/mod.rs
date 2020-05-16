@@ -2,6 +2,7 @@ mod app_skin;
 mod cli_mad_skin;
 mod help_mad_skin;
 mod panel_skin;
+mod purpose_mad_skin;
 mod style_map;
 mod skin_entry;
 mod status_mad_skin;
@@ -11,6 +12,7 @@ pub use {
     cli_mad_skin::*,
     help_mad_skin::*,
     panel_skin::PanelSkin,
+    purpose_mad_skin::*,
     style_map::{StyleMap, StyleMaps},
     skin_entry::SkinEntry,
     status_mad_skin::StatusMadSkinSet,

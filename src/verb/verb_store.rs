@@ -43,6 +43,7 @@ impl VerbStore {
         }
         self.verbs.extend(builtin_verbs());
     }
+
     pub fn search<'v>(&'v self, prefix: &str) -> PrefixSearchResult<'v, &Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
@@ -66,6 +67,7 @@ impl VerbStore {
             _ => PrefixSearchResult::TooManyMatches(completions),
         }
     }
+
     /// return the index of the verb which is triggered by the given keyboard key, if any
     pub fn index_of_key(&self, key: KeyEvent) -> Option<usize> {
         for i in 0..self.verbs.len() {
@@ -77,4 +79,5 @@ impl VerbStore {
         }
         None
     }
+
 }

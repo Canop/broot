@@ -4,9 +4,12 @@ use {
         command::*,
         display::{status_line, Areas, Screen, W},
         errors::ProgramError,
+        keys,
         skin::PanelSkin,
         task_sync::Dam,
+        verb::*,
     },
+    minimad::{Alignment, Composite},
     std::io::Write,
     termimad::{Event, InputField},
 };
@@ -27,13 +30,12 @@ impl Panel {
         areas: Areas,
     ) -> Self {
         let input_field = InputField::new(areas.input.clone());
-        let purpose = PanelPurpose::None;
         Self {
             id,
             states: vec![state],
             areas,
             status: None,
-            purpose,
+            purpose: PanelPurpose::None,
             input_field,
         }
     }
@@ -139,15 +141,19 @@ impl Panel {
     ) -> Result<(), ProgramError> {
         let state_area = self.areas.state.clone();
         self.mut_state().display(w, screen, state_area, panel_skin, con)?;
+        self.write_status(w, panel_skin, screen)?;
         self.input_field.set_normal_style(panel_skin.styles.input.clone());
         self.input_field.focused = active;
         self.input_field.area = self.areas.input.clone();
         self.input_field.display_on(w)?;
-        self.write_status(w, panel_skin, screen)?;
+        if active {
+            self.write_purpose(w, panel_skin, screen, con)?;
+        }
         Ok(())
     }
 
-    fn write_status(&self,
+    fn write_status(
+        &self,
         w: &mut W,
         panel_skin: &PanelSkin,
         screen: &Screen,
@@ -161,4 +167,40 @@ impl Panel {
         let status = self.status.as_ref().unwrap_or(&*DEFAULT_STATUS);
         status_line::write(w, task, status, &self.areas.status, panel_skin, screen)
     }
+
+    fn write_purpose(
+        &self,
+        w: &mut W,
+        panel_skin: &PanelSkin,
+        screen: &Screen,
+        con: &AppContext,
+    ) -> Result<(), ProgramError> {
+        if !self.purpose.is_arg_edition() {
+            return Ok(());
+        }
+        if let Some(area) = &self.areas.purpose {
+            let shortcut = con.verb_store.verbs
+                .iter()
+                .filter(|v| match &v.execution {
+                    VerbExecution::Internal(exec) => exec.internal == Internal::start_end_panel,
+                    _ => false,
+                })
+                .filter_map(|v| v.keys.first())
+                .map(|&k| keys::key_event_desc(k))
+                .next()
+                .unwrap_or(":start_end_panel".to_string());
+
+            let md = format!("hit *{}* to fill arg ", shortcut);
+            // Add verbindex in purpose ?
+            screen.goto(w, area.left, area.top)?;
+            panel_skin.purpose_skin.write_composite_fill(
+                w,
+                Composite::from_inline(&md),
+                area.width as usize,
+                Alignment::Right,
+            )?;
+        }
+        Ok(())
+    }
+
 }

@@ -10,6 +10,7 @@ pub struct Areas {
     pub state: Area,
     pub status: Area,
     pub input: Area,
+    pub purpose: Option<Area>,
     pub flags: Option<Area>,
 }
 
@@ -36,6 +37,7 @@ impl Areas {
             status: Area::uninitialized(),
             input: Area::uninitialized(),
             flags: None,
+            purpose: None,
         };
         let mut slots = Vec::with_capacity(present_panels.len() + 1);
         for i in 0..insertion_idx {
@@ -75,9 +77,17 @@ impl Areas {
                 Slot::Panel(panel_idx) => &mut panels[*panel_idx].areas,
                 Slot::New(areas) => areas,
             };
-            areas.state = Area::new(x, 0, panel_width, screen.height - 2);
-            areas.status = Area::new(x, screen.height - 2, panel_width, 1);
-            areas.input = Area::new(x, screen.height - 1, panel_width, 1);
+            let y = screen.height - 2;
+            areas.state = Area::new(x, 0, panel_width, y);
+            areas.status = Area::new(x, y, panel_width, 1);
+            let y = y + 1;
+            areas.input = Area::new(x, y, panel_width, 1);
+            areas.purpose = if slot_idx > 0 {
+                let area_width = panel_width / 2;
+                Some(Area::new(x - area_width, y, area_width, 1))
+            } else {
+                None
+            };
             x += panel_width;
         }
         Ok(())

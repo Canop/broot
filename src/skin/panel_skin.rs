@@ -10,6 +10,7 @@ use {
 /// and one is used for the other panels.
 pub struct PanelSkin {
     pub styles: StyleMap,
+    pub purpose_skin: MadSkin,
     pub status_skin: StatusMadSkinSet,
     pub help_skin: MadSkin,
 }
@@ -17,10 +18,12 @@ pub struct PanelSkin {
 
 impl PanelSkin {
     pub fn new(styles: StyleMap) -> Self {
+        let purpose_skin = make_purpose_mad_skin(&styles);
         let status_skin = StatusMadSkinSet::from_skin(&styles);
         let help_skin = make_help_mad_skin(&styles);
         Self {
             styles,
+            purpose_skin,
             status_skin,
             help_skin,
         }
