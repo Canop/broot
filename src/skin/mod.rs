@@ -3,8 +3,7 @@ mod cli_mad_skin;
 mod help_mad_skin;
 mod panel_skin;
 mod style_map;
-mod skin_conf;
-mod skin_entry_conf;
+mod skin_entry;
 mod status_mad_skin;
 
 pub use {
@@ -13,8 +12,7 @@ pub use {
     help_mad_skin::*,
     panel_skin::PanelSkin,
     style_map::{StyleMap, StyleMaps},
-    skin_conf::parse_object_style,
-    skin_entry_conf::SkinEntryConf,
+    skin_entry::SkinEntry,
     status_mad_skin::StatusMadSkinSet,
 };
 

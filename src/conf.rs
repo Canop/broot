@@ -5,7 +5,7 @@ use {
     crate::{
         errors::ConfError,
         keys,
-        skin::{self, SkinEntryConf},
+        skin::SkinEntry,
         verb::VerbConf,
     },
     crossterm::style::Attribute,
@@ -23,7 +23,7 @@ use {
 pub struct Conf {
     pub default_flags: String, // the flags to apply before cli ones
     pub verbs: Vec<VerbConf>,
-    pub skin: HashMap<String, SkinEntryConf>,
+    pub skin: HashMap<String, SkinEntry>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -56,6 +56,7 @@ pub fn dir() -> PathBuf {
 }
 
 impl Conf {
+
     pub fn default_location() -> &'static Path {
         lazy_static! {
             static ref CONF_PATH: PathBuf = dir().join("conf.toml");
@@ -153,10 +154,8 @@ impl Conf {
         if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
             for (k, v) in entries_tbl.iter() {
                 if let Some(s) = v.as_str() {
-                    match skin::parse_object_style(s) {
-                        Ok(ske) => {
-                            // TODO read the unfocused part
-                            let sec = SkinEntryConf::new(ske, None);
+                    match SkinEntry::parse(s) {
+                        Ok(sec) => {
                             self.skin.insert(k.to_string(), sec);
                         }
                         Err(e) => {

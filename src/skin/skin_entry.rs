@@ -1,7 +1,7 @@
 /// Manage conversion of a user provided string
 /// defining foreground and background colors into
 /// a string with TTY colors
-///
+
 use {
     crate::errors::InvalidSkinError,
     crossterm::style::{
@@ -14,6 +14,42 @@ use {
     super::*,
     termimad::CompoundStyle,
 };
+
+/// parsed content of a [skin] line of the conf.toml file
+pub struct SkinEntry {
+    focused: CompoundStyle,
+    unfocused: Option<CompoundStyle>,
+}
+
+impl SkinEntry {
+    pub fn new(focused: CompoundStyle, unfocused: Option<CompoundStyle>) -> Self {
+        Self { focused, unfocused }
+    }
+    pub fn get_focused(&self) -> &CompoundStyle {
+        &self.focused
+    }
+    pub fn get_unfocused(&self) -> &CompoundStyle {
+        self.unfocused.as_ref().unwrap_or(&self.focused)
+    }
+    /// parse a string representation of a skin entry.
+    ///
+    /// The general form is either "<focused>" or "<focused> / <unfocused>":
+    /// It may be just the focused compound_style, or both
+    /// the focused and the unfocused ones, in which case there's
+    /// a '/' as separator.
+    ///
+    /// Each part is "<foreground color> <background color> <attributes>"
+    /// where the attributes list may be empty.
+    pub fn parse(s: &str) -> Result<Self, InvalidSkinError> {
+        let mut parts = s.split('/');
+        let focused = parse_compound_style(parts.next().unwrap())?;
+        let unfocused = parts.next()
+            .map(|p| parse_compound_style(p))
+            .transpose()?;
+        Ok(Self { focused, unfocused })
+    }
+}
+
 
 /// read a color from a string.
 /// It may be either
@@ -97,15 +133,17 @@ fn parse_attributes(s: &str) -> Result<Vec<Attribute>, InvalidSkinError> {
     s.split_whitespace().map(|t| parse_attribute(t)).collect()
 }
 
-pub fn parse_object_style(s: &str) -> Result<CompoundStyle, InvalidSkinError> {
+fn parse_compound_style(s: &str) -> Result<CompoundStyle, InvalidSkinError> {
     let s = s.to_ascii_lowercase();
     let parts_rex = regex!(
         r"(?x)
         ^
+        \s*
         (?P<fg>\w+(\([\d,\s]+\))?)
         \s+
         (?P<bg>\w+(\([\d,\s]+\))?)
         (?P<attributes>.*)
+        \s*
         $
         "
     );
