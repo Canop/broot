@@ -22,7 +22,7 @@ pub fn write_flags(
     if flags.is_empty() {
         return Ok(());
     }
-    let mut width = flags.len() * 5 - 3;
+    let mut width = flags.len() * 2;
     for flag in flags {
         width += flag.name.len(); // we assume only ascii chars
         width += flag.value.len();

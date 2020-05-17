@@ -11,10 +11,10 @@ pub fn builtin_verbs() -> Vec<Verb> {
         #[cfg(unix)]
         Verb::external("chmod {args}", "chmod {args} {file}", StayInBroot).unwrap(),
         Verb::internal(complete).with_key(TAB),
-        Verb::internal(close_panel_ok)
-            //.with_key(BACK_TAB),
+        Verb::internal(close_panel_ok),
+        Verb::internal(close_panel_cancel)
+            .with_key(BACK_TAB)
             .with_control_key('w'),
-        Verb::internal(close_panel_cancel),
         Verb::external(
             "cp {newpath}",
             "/bin/cp -r {file} {newpath:path-from-parent}",
@@ -72,7 +72,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::internal(toggle_perm).with_shortcut("perm"),
         Verb::internal(toggle_sizes).with_shortcut("sizes"),
         Verb::internal(toggle_trim_root).with_shortcut("t"),
-        Verb::internal(total_search).with_key(CTRL_S),
+        Verb::internal(total_search).with_control_key('s'),
         Verb::internal(up_tree).with_shortcut("up"),
     ]
 }
