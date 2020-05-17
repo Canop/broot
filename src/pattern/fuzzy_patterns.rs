@@ -17,6 +17,7 @@ const BONUS_CANDIDATE_LENGTH: i32 = -1; // per char
 const BONUS_MATCH_LENGTH: i32 = -10; // per char of length of the match
 const BONUS_NB_HOLES: i32 = -30; // there's also a max on that number
 
+/// A pattern for fuzzy matching
 #[derive(Debug, Clone)]
 pub struct FuzzyPattern {
     chars: Box<[char]>, // secularized characters

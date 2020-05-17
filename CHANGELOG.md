@@ -1,3 +1,15 @@
+### next version
+#### Major feature: `:focus` verb
+This verb can be called, and parameterized, with a path as argument, which makes it possible to have a shortcut to a specific location.
+As a result, the specific `:focus_user_home` and `:focus_root` verbs have been removed (`:focus_user_home` works on all OS).
+#### Major feature: panels!
+There are two major ways to open a new panel:
+- when a verb is edited, by using ctrl-p, which opens a panel which on closure will fill the argument
+- by using any verb with a bang. For example `:!focus` or `:!help`
+Many new verbs and functions are related to panels but broot can still be used exactly as before without using panels.
+#### Bugs and regressions
+None spotted yet but I've rewritten almost everything for this new version so some are probably lurking.
+
 <a name="v0.13.6"></a>
 ### v0.13.6 - 2020-04-08
 - ignore diacritics in searches - Fix #216
