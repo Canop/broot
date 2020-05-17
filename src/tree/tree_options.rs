@@ -1,5 +1,6 @@
 use {crate::pattern::Pattern, clap::ArgMatches};
 
+/// Options defining how the tree should be build and|or displayed
 #[derive(Debug, Clone)]
 pub struct TreeOptions {
     pub show_hidden: bool, // whether files whose name starts with a dot should be shown
@@ -12,6 +13,7 @@ pub struct TreeOptions {
     pub respect_git_ignore: bool,   // hide files as requested by .gitignore ?
     pub filter_by_git_status: bool, // only show files whose git status is not nul
     pub pattern: Pattern,           // an optional filtering/scoring pattern
+    pub date_time_format: &'static str,
 }
 
 impl TreeOptions {
@@ -27,8 +29,15 @@ impl TreeOptions {
             show_git_file_info: self.show_git_file_info,
             trim_root: self.trim_root,
             pattern: Pattern::None,
+            date_time_format: self.date_time_format,
         }
     }
+    /// this method does not exist, you saw nothing
+    /// (at least don't call it other than with the config, once)
+    pub fn set_date_time_format(&mut self, format: String) {
+        self.date_time_format = Box::leak(format.into_boxed_str());
+    }
+    /// change tree options according to broot launch arguments
     pub fn apply(&mut self, cli_args: &ArgMatches<'_>) {
         if cli_args.is_present("sizes") {
             self.show_sizes = true;
@@ -90,6 +99,7 @@ impl Default for TreeOptions {
             respect_git_ignore: true,
             filter_by_git_status: false,
             pattern: Pattern::None,
+            date_time_format: "%Y/%m/%d %R ",
         }
     }
 }

@@ -164,6 +164,9 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         tree_options.apply(&conf_matches);
     }
     tree_options.apply(&cli_matches);
+    if let Some(format) = &config.date_time_format {
+        tree_options.set_date_time_format(format.clone());
+    }
 
     // verb store is completed from the config file(s)
     let mut verb_store = VerbStore::new();

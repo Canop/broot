@@ -23,6 +23,7 @@ use {
 #[derive(Default)]
 pub struct Conf {
     pub default_flags: String, // the flags to apply before cli ones
+    pub date_time_format: Option<String>,
     pub verbs: Vec<VerbConf>,
     pub skin: HashMap<String, SkinEntry>,
 }
@@ -105,8 +106,13 @@ impl Conf {
         let root: Value = data.parse::<Value>()?;
         // reading default flags
         if let Some(s) = string_field(&root, "default_flags") {
+            // it's additive because another config file may have
+            // been read before and we usually want all the flags
+            // (the last ones may reverse the first ones)
             self.default_flags.push_str(&s);
         }
+        // date/time format
+        self.date_time_format = string_field(&root, "date_time_format");
         // reading verbs
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {
@@ -192,6 +198,14 @@ const DEFAULT_CONF_FILE: &str = r#"
 # A popular flag is the `g` one which displays git related info.
 #
 default_flags = ""
+
+###############################################################
+# Date/Time format
+# If you want to change the format for date/time, uncomment the
+# following line and change it according to
+# https://docs.rs/chrono/0.4.11/chrono/format/strftime/index.html
+#
+# date_time_format = "%Y/%m/%d %R "
 
 ###############################################################
 # Verbs and shortcuts

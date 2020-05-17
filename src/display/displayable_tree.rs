@@ -38,6 +38,7 @@ pub struct DisplayableTree<'s, 't> {
 }
 
 impl<'s, 't> DisplayableTree<'s, 't> {
+
     pub fn out_of_app(tree: &'t Tree, skin: &'s StyleMap, width: u16) -> DisplayableTree<'s, 't> {
         DisplayableTree {
             tree,
@@ -123,7 +124,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     {
         let date_time: DateTime<Local> = system_time.into();
         cond_bg!(date_style, self, selected, self.skin.dates);
-        cw.queue_string(date_style, date_time.format("%Y/%m/%d %R ").to_string())
+        cw.queue_string(date_style, date_time.format(self.tree.options.date_time_format).to_string())
     }
 
     #[cfg(unix)]
