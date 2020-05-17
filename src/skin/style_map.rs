@@ -153,6 +153,7 @@ StyleMap! {
     purpose_normal: gray(20), gray(2), []
     purpose_italic: ansi(178), gray(2), []
     purpose_bold: ansi(178), gray(2), [Bold]
+    purpose_ellipsis: gray(20), gray(2), []
     scrollbar_track: gray(7), None, [] / gray(4), None, []
     scrollbar_thumb: gray(22), None, [] / gray(14), None, []
     help_paragraph: gray(20), None, []

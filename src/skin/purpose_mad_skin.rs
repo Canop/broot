@@ -14,6 +14,7 @@ pub fn make_purpose_mad_skin(skin: &StyleMap) -> MadSkin {
     };
     mad_skin.italic = skin.purpose_italic.clone();
     mad_skin.bold = skin.purpose_bold.clone();
+    mad_skin.ellipsis = skin.purpose_ellipsis.clone();
     mad_skin
 }
 
