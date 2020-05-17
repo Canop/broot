@@ -2,7 +2,7 @@ use {
     super::*,
     crate::{
         command::*,
-        display::{status_line, Areas, Screen, W},
+        display::{status_line, Areas, Screen, W, write_flags},
         errors::ProgramError,
         keys,
         skin::PanelSkin,
@@ -148,6 +148,9 @@ impl Panel {
         self.input_field.display_on(w)?;
         if active {
             self.write_purpose(w, panel_skin, screen, con)?;
+            let flags = self.state().get_flags();
+            let input_content_len = self.input_field.get_content().len() as u16;
+            write_flags(w, &flags, &self.areas.input, input_content_len, screen, panel_skin)?;
         }
         Ok(())
     }

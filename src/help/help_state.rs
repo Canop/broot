@@ -7,6 +7,7 @@ use {
         conf::{self, Conf},
         display::{Screen, W},
         errors::ProgramError,
+        flag::Flag,
         launchable::Launchable,
         print,
         selection_type::SelectionType,
@@ -179,5 +180,9 @@ impl AppState for HelpState {
             | toggle_trim_root => AppStateCmdResult::PopStateAndReapply,
             _ => AppStateCmdResult::Keep,
         })
+    }
+
+    fn get_flags(&self) -> Vec<Flag> {
+        vec![]
     }
 }

@@ -26,6 +26,7 @@ pub mod conf;
 pub mod errors;
 pub mod file_sizes;
 pub mod git;
+pub mod flag;
 pub mod help;
 pub mod keys;
 pub mod launchable;

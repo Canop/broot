@@ -4,6 +4,7 @@ use {
         command::{Command, TriggerType},
         display::{Screen, W},
         errors::ProgramError,
+        flag::Flag,
         selection_type::SelectionType,
         skin::PanelSkin,
         task_sync::Dam,
@@ -174,4 +175,7 @@ pub trait AppState {
     ) -> Result<(), ProgramError>;
 
     fn get_status(&self, cmd: &Command, con: &AppContext) -> Status;
+
+    /// return the flags to display
+    fn get_flags(&self) -> Vec<Flag>;
 }

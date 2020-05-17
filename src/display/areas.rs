@@ -1,6 +1,9 @@
 use {
     super::Screen,
-    crate::{app::Panel, errors::ProgramError},
+    crate::{
+        app::Panel,
+        errors::ProgramError,
+    },
     termimad::Area,
 };
 
@@ -11,7 +14,6 @@ pub struct Areas {
     pub status: Area,
     pub input: Area,
     pub purpose: Option<Area>,
-    pub flags: Option<Area>,
 }
 
 const MINIMAL_PANEL_HEIGHT: u16 = 10;
@@ -23,6 +25,7 @@ enum Slot<'a> {
 }
 
 impl Areas {
+
     /// compute an area for a new panel which will be inserted
     pub fn create(
         present_panels: &mut [Panel],
@@ -36,7 +39,6 @@ impl Areas {
             state: Area::uninitialized(),
             status: Area::uninitialized(),
             input: Area::uninitialized(),
-            flags: None,
             purpose: None,
         };
         let mut slots = Vec::with_capacity(present_panels.len() + 1);

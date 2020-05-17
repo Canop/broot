@@ -23,6 +23,7 @@ macro_rules! cond_bg {
 mod areas;
 mod crop_writer;
 mod displayable_tree;
+mod flags_display;
 mod git_status_display;
 mod screen;
 pub mod status_line;
@@ -30,11 +31,13 @@ pub mod status_line;
 use std::io::BufWriter;
 
 pub use {
-    areas::Areas, crop_writer::CropWriter, displayable_tree::DisplayableTree,
-    git_status_display::GitStatusDisplay, screen::Screen,
+    areas::Areas,
+    crop_writer::CropWriter,
+    displayable_tree::DisplayableTree,
+    flags_display::write_flags,
+    git_status_display::GitStatusDisplay,
+    screen::Screen,
 };
-
-pub static FLAGS_AREA_WIDTH: u16 = 10;
 
 /// the type used by all GUI writing functions
 pub type W = BufWriter<std::io::Stderr>;

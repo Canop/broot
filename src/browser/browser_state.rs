@@ -2,8 +2,9 @@ use {
     crate::{
         app::*,
         command::{Command, TriggerType},
-        display::{DisplayableTree, Screen, FLAGS_AREA_WIDTH, W},
+        display::{DisplayableTree, Screen, W},
         errors::{ProgramError, TreeBuildError},
+        flag::Flag,
         git,
         help::HelpState,
         launchable::Launchable,
@@ -205,30 +206,6 @@ impl BrowserState {
         }
     }
 
-    /// draw the flags at the bottom right of the screen
-    /// TODO call this method
-    fn write_flags(
-        &self,
-        w: &mut W,
-        screen: &mut Screen,
-        panel_skin: &PanelSkin,
-        _con: &AppContext,
-    ) -> Result<(), ProgramError> {
-        let tree = self.displayed_tree();
-        let total_char_size = FLAGS_AREA_WIDTH;
-        screen.goto_clear(w, screen.width - total_char_size - 1, screen.height - 1)?;
-        let h_value = if tree.options.show_hidden { 'y' } else { 'n' };
-        let gi_value = if tree.options.respect_git_ignore {
-            'y'
-        } else {
-            'n'
-        };
-        panel_skin.styles.flag_label.queue_str(w, " h:")?;
-        panel_skin.styles.flag_value.queue(w, h_value)?;
-        panel_skin.styles.flag_label.queue_str(w, "   gi:")?;
-        panel_skin.styles.flag_value.queue(w, gi_value)?;
-        Ok(())
-    }
 }
 
 /// build a AppStateCmdResult with a launchable which will be used to
@@ -625,7 +602,6 @@ impl AppState for BrowserState {
             in_app: true,
         };
         dp.write_on(w)
-        // TODO display flags here if panel active
     }
 
     fn refresh(&mut self, screen: &Screen, _con: &AppContext) -> Command {
@@ -645,4 +621,19 @@ impl AppState for BrowserState {
             None => &self.tree.options.pattern,
         })
     }
+
+    fn get_flags(&self) -> Vec<Flag> {
+        let options = &self.displayed_tree().options;
+        vec![
+            Flag {
+                name: "h",
+                value: if options.show_hidden { "y" } else { "n" },
+            },
+            Flag {
+                name: "gi",
+                value: if options.respect_git_ignore { "y" } else { "n" },
+            },
+        ]
+    }
+
 }
