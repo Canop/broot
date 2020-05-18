@@ -161,7 +161,12 @@ pub trait AppState {
 
     fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
 
-    fn do_pending_task(&mut self, screen: &mut Screen, dam: &mut Dam);
+    fn do_pending_task(
+        &mut self,
+        screen: &mut Screen,
+        con: &AppContext,
+        dam: &mut Dam,
+    );
 
     fn get_pending_task(&self) -> Option<&'static str>;
 

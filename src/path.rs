@@ -1,6 +1,6 @@
 use {
     directories::UserDirs,
-    regex::{self, Captures, Regex},
+    regex::{self, Captures},
     std::{
         collections::HashMap,
         path::{Path, PathBuf},

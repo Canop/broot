@@ -1,4 +1,6 @@
-use {regex::Regex, std::fmt};
+use {
+    std::fmt,
+};
 
 /// the verb and its arguments, making the invocation.
 /// When coming from parsing, the args is Some as soon

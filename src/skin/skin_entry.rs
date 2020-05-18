@@ -9,7 +9,6 @@ use {
         Attributes,
         Color::{self, *},
     },
-    regex::Regex,
     std::result::Result,
     super::*,
     termimad::CompoundStyle,

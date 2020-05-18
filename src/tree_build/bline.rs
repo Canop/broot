@@ -3,7 +3,7 @@ use {
     crate::{
         errors::TreeBuildError,
         git::GitIgnoreChain,
-        tree::{TreeLine, TreeLineType},
+        tree::*,
     },
     id_arena::Arena,
     std::{fs, path::PathBuf, result::Result},
@@ -24,6 +24,7 @@ pub struct BLine {
     pub score: i32,
     pub nb_kept_children: i32, // used during the trimming step
     pub git_ignore_chain: GitIgnoreChain,
+    pub special_handling: SpecialHandling,
 }
 
 impl BLine {
@@ -37,6 +38,7 @@ impl BLine {
             Some(name) => name.to_string_lossy().to_string(),
             None => String::from("???"), // should not happen
         };
+        let special_handling = SpecialHandling::None;
         if let Ok(md) = fs::metadata(&path) {
             let file_type = md.file_type();
             Ok(blines.alloc(BLine {
@@ -52,12 +54,41 @@ impl BLine {
                 score: 0,
                 nb_kept_children: 0,
                 git_ignore_chain,
+                special_handling,
             }))
         } else {
             Err(TreeBuildError::FileNotFound {
                 path: format!("{:?}", path),
             })
         }
+    }
+    /// tell whether we should list the childs of the present line
+    pub fn can_enter(&self) -> bool {
+        if self.file_type.is_dir() && self.special_handling != SpecialHandling::NoEnter {
+            return true;
+        }
+        if self.special_handling == SpecialHandling::Enter {
+            // we must chek we're a link to a directory
+            if self.file_type.is_symlink() {
+                if let Ok(target) = fs::read_link(&self.path) {
+                    let mut target_path = PathBuf::from(&target);
+                    if target_path.is_relative() {
+                        target_path = self.path.parent().unwrap().join(target_path)
+                    }
+                    if let Ok(target_metadata) = fs::symlink_metadata(&target_path) {
+                        if target_metadata.file_type().is_dir() {
+                            if self.path.starts_with(target_path) {
+                                debug!("not entering link because it's a parent"); // lets's not cycle
+                            } else {
+                                debug!("entering {:?} because of special path rule", &self.path);
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        false
     }
     pub fn to_tree_line(&self) -> std::io::Result<TreeLine> {
         let mut has_error = self.has_error;

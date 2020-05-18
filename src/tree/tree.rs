@@ -3,8 +3,13 @@
 use {
     super::*,
     crate::{
-        errors, file_sizes::FileSize, git::TreeGitStatus, task_sync::ComputationResult,
-        task_sync::Dam, tree_build::TreeBuilder,
+        app::AppContext,
+        errors,
+        file_sizes::FileSize,
+        git::TreeGitStatus,
+        task_sync::ComputationResult,
+        task_sync::Dam,
+        tree_build::TreeBuilder,
     },
     std::{
         cmp::Ord,
@@ -29,9 +34,17 @@ pub struct Tree {
 
 impl Tree {
 
-    pub fn refresh(&mut self, page_height: usize) -> Result<(), errors::TreeBuildError> {
-        let builder =
-            TreeBuilder::from(self.root().to_path_buf(), self.options.clone(), page_height)?;
+    pub fn refresh(
+        &mut self,
+        page_height: usize,
+        con: &AppContext,
+    ) -> Result<(), errors::TreeBuildError> {
+        let builder = TreeBuilder::from(
+            self.root().to_path_buf(),
+            self.options.clone(),
+            page_height,
+            con,
+        )?;
         let mut tree = builder
             .build(
                 false, // on refresh we always do a non total search

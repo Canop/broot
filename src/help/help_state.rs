@@ -56,7 +56,12 @@ impl AppState for HelpState {
         Command::empty()
     }
 
-    fn do_pending_task(&mut self, _screen: &mut Screen, _dam: &mut Dam) {
+    fn do_pending_task(
+        &mut self,
+        _screen: &mut Screen,
+        _con: &AppContext,
+        _dam: &mut Dam,
+    ) {
         unreachable!();
     }
 
@@ -139,6 +144,7 @@ impl AppState for HelpState {
                     conf::dir(),
                     TreeOptions::default(),
                     screen,
+                    con,
                     &Dam::unlimited(),
                 ),
                 bang,

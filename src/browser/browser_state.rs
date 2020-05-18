@@ -46,10 +46,16 @@ impl BrowserState {
         path: PathBuf,
         mut options: TreeOptions,
         screen: &Screen,
+        con: &AppContext,
         dam: &Dam,
     ) -> Result<Option<BrowserState>, TreeBuildError> {
         let pending_pattern = options.pattern.take();
-        let builder = TreeBuilder::from(path, options, BrowserState::page_height(screen) as usize)?;
+        let builder = TreeBuilder::from(
+            path,
+            options,
+            BrowserState::page_height(screen) as usize,
+            con,
+        )?;
         Ok(builder.build(false, dam).map(move |tree| BrowserState {
             tree,
             filtered_tree: None,
@@ -63,12 +69,13 @@ impl BrowserState {
         screen: &Screen,
         change_options: &dyn Fn(&mut TreeOptions),
         in_new_panel: bool,
+        con: &AppContext,
     ) -> AppStateCmdResult {
         let tree = self.displayed_tree();
         let mut options = tree.options.clone();
         change_options(&mut options);
         AppStateCmdResult::from_optional_state(
-            BrowserState::new(tree.root().clone(), options, screen, &Dam::unlimited()),
+            BrowserState::new(tree.root().clone(), options, screen, con, &Dam::unlimited()),
             in_new_panel,
         )
     }
@@ -96,7 +103,7 @@ impl BrowserState {
     pub fn open_selection_stay_in_broot(
         &mut self,
         screen: &mut Screen,
-        _con: &AppContext,
+        con: &AppContext,
         in_new_panel: bool,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let tree = self.displayed_tree();
@@ -120,7 +127,7 @@ impl BrowserState {
                 }
                 let dam = Dam::unlimited();
                 Ok(AppStateCmdResult::from_optional_state(
-                    BrowserState::new(target, tree.options.without_pattern(), screen, &dam),
+                    BrowserState::new(target, tree.options.without_pattern(), screen, con, &dam),
                     in_new_panel,
                 ))
             }
@@ -165,13 +172,19 @@ impl BrowserState {
         }
     }
 
-    pub fn go_to_parent(&mut self, screen: &mut Screen, in_new_panel: bool) -> AppStateCmdResult {
+    pub fn go_to_parent(
+        &mut self,
+        screen: &mut Screen,
+        con: &AppContext,
+        in_new_panel: bool,
+    ) -> AppStateCmdResult {
         match &self.displayed_tree().selected_line().path.parent() {
             Some(path) => AppStateCmdResult::from_optional_state(
                 BrowserState::new(
                     path.to_path_buf(),
                     self.displayed_tree().options.without_pattern(),
                     screen,
+                    con,
                     &Dam::unlimited(),
                 ),
                 in_new_panel,
@@ -411,6 +424,7 @@ impl AppState for BrowserState {
                     screen,
                     self.displayed_tree().options.clone(),
                     bang,
+                    con,
                 ),
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
@@ -448,7 +462,7 @@ impl AppState for BrowserState {
                 }
                 AppStateCmdResult::Keep
             }
-            Internal::parent => self.go_to_parent(screen, bang),
+            Internal::parent => self.go_to_parent(screen, con, bang),
             Internal::print_path => {
                 let path = &self.displayed_tree().selected_line().target();
                 print::print_path(path, con)?
@@ -489,7 +503,7 @@ impl AppState for BrowserState {
                         };
                         let arg_type = SelectionType::Any; // We might do better later
                         let purpose = PanelPurpose::ArgEdition { arg_type };
-                        internal_focus::new_panel_on_path(path, screen, tree_options, purpose)
+                        internal_focus::new_panel_on_path(path, screen, tree_options, purpose, con)
                     } else {
                         // we just open a new panel on the selected path,
                         // without purpose
@@ -498,36 +512,37 @@ impl AppState for BrowserState {
                             screen,
                             tree_options,
                             PanelPurpose::None,
+                            con,
                         )
                     }
                 }
             }
             Internal::toggle_dates => {
-                self.with_new_options(screen, &|o| o.show_dates ^= true, bang)
+                self.with_new_options(screen, &|o| o.show_dates ^= true, bang, con)
             }
             Internal::toggle_files => {
-                self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true, bang)
+                self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true, bang, con)
             }
             Internal::toggle_hidden => {
-                self.with_new_options(screen, &|o| o.show_hidden ^= true, bang)
+                self.with_new_options(screen, &|o| o.show_hidden ^= true, bang, con)
             }
             Internal::toggle_git_ignore => {
-                self.with_new_options(screen, &|o| o.respect_git_ignore ^= true, bang)
+                self.with_new_options(screen, &|o| o.respect_git_ignore ^= true, bang, con)
             }
             Internal::toggle_git_file_info => {
-                self.with_new_options(screen, &|o| o.show_git_file_info ^= true, bang)
+                self.with_new_options(screen, &|o| o.show_git_file_info ^= true, bang, con)
             }
             Internal::toggle_git_status => {
-                self.with_new_options(screen, &|o| o.filter_by_git_status ^= true, bang)
+                self.with_new_options(screen, &|o| o.filter_by_git_status ^= true, bang, con)
             }
             Internal::toggle_perm => {
-                self.with_new_options(screen, &|o| o.show_permissions ^= true, bang)
+                self.with_new_options(screen, &|o| o.show_permissions ^= true, bang, con)
             }
             Internal::toggle_sizes => {
-                self.with_new_options(screen, &|o| o.show_sizes ^= true, bang)
+                self.with_new_options(screen, &|o| o.show_sizes ^= true, bang, con)
             }
             Internal::toggle_trim_root => {
-                self.with_new_options(screen, &|o| o.trim_root ^= true, bang)
+                self.with_new_options(screen, &|o| o.trim_root ^= true, bang, con)
             }
             Internal::total_search => {
                 if let Some(tree) = &self.filtered_tree {
@@ -552,14 +567,19 @@ impl AppState for BrowserState {
 
     /// do some work, totally or partially, if there's some to do.
     /// Stop as soon as the dam asks for interruption
-    fn do_pending_task(&mut self, screen: &mut Screen, dam: &mut Dam) {
+    fn do_pending_task(
+        &mut self,
+        screen: &mut Screen,
+        con: &AppContext,
+        dam: &mut Dam,
+    ) {
         if self.pending_pattern.is_some() {
             let pattern_str = self.pending_pattern.to_string();
             let mut options = self.tree.options.clone();
             options.pattern = self.pending_pattern.take();
             let root = self.tree.root().clone();
             let len = self.tree.lines.len() as u16;
-            let builder = match TreeBuilder::from(root, options, len as usize) {
+            let builder = match TreeBuilder::from(root, options, len as usize, con) {
                 Ok(builder) => builder,
                 Err(e) => {
                     warn!("Error while preparing tree builder: {:?}", e);
@@ -604,16 +624,16 @@ impl AppState for BrowserState {
         dp.write_on(w)
     }
 
-    fn refresh(&mut self, screen: &Screen, _con: &AppContext) -> Command {
+    fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command {
         let page_height = BrowserState::page_height(screen) as usize;
         // refresh the base tree
-        if let Err(e) = self.tree.refresh(page_height) {
+        if let Err(e) = self.tree.refresh(page_height, con) {
             warn!("refreshing base tree failed : {:?}", e);
         }
         // refresh the filtered tree, if any
         Command::from_pattern(match self.filtered_tree {
             Some(ref mut tree) => {
-                if let Err(e) = tree.refresh(page_height) {
+                if let Err(e) = tree.refresh(page_height, con) {
                     warn!("refreshing filtered tree failed : {:?}", e);
                 }
                 &tree.options.pattern

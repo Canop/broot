@@ -6,6 +6,7 @@ use {
         errors::ConfError,
         keys,
         skin::SkinEntry,
+        tree::*,
         verb::VerbConf,
     },
     crossterm::style::Attribute,
@@ -26,6 +27,7 @@ pub struct Conf {
     pub date_time_format: Option<String>,
     pub verbs: Vec<VerbConf>,
     pub skin: HashMap<String, SkinEntry>,
+    pub special_paths: Vec<SpecialPath>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -38,6 +40,7 @@ fn string_field(value: &Value, field_name: &str) -> Option<String> {
     }
     None
 }
+
 fn bool_field(value: &Value, field_name: &str) -> Option<bool> {
     if let Value::Table(tbl) = value {
         if let Some(Value::Boolean(b)) = tbl.get(field_name) {
@@ -173,6 +176,23 @@ impl Conf {
             }
         }
 
+        // reading special paths
+        if let Some(Value::Table(paths_tbl)) = &root.get("special-paths") {
+            for (k, v) in paths_tbl.iter() {
+                if let Some(v) = v.as_str() {
+                    match SpecialPath::parse(k, v) {
+                        Ok(sp) => {
+                            debug!("Adding special path: {:?}", &sp);
+                            self.special_paths.push(sp);
+                        }
+                        Err(e) => {
+                            eprintln!("{}", e);
+                        }
+                    }
+                }
+            }
+        }
+
         Ok(())
     }
 }
@@ -206,6 +226,16 @@ default_flags = ""
 # https://docs.rs/chrono/0.4.11/chrono/format/strftime/index.html
 #
 # date_time_format = "%Y/%m/%d %R "
+
+###############################################################
+# Special paths
+# If some paths must be handled specially, uncomment (and change
+# this section as per the examples
+#
+# [special-paths]
+# "/media/slow-backup-disk" = "no-enter"
+# "/home/dys/useless" = "hide"
+# "/home/dys/my-link-I-want-to-explore" = "enter"
 
 ###############################################################
 # Verbs and shortcuts

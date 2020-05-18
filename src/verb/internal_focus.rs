@@ -18,11 +18,12 @@ pub fn on_path(
     screen: &mut Screen,
     tree_options: TreeOptions,
     in_new_panel: bool,
+    con: &AppContext,
 ) -> AppStateCmdResult {
     if in_new_panel {
-        new_panel_on_path(path, screen, tree_options, PanelPurpose::None)
+        new_panel_on_path(path, screen, tree_options, PanelPurpose::None, con)
     } else {
-        new_state_on_path(path, screen, tree_options)
+        new_state_on_path(path, screen, tree_options, con)
     }
 }
 
@@ -30,10 +31,11 @@ pub fn new_state_on_path(
     path: PathBuf,
     screen: &mut Screen,
     tree_options: TreeOptions,
+    con: &AppContext,
 ) -> AppStateCmdResult {
     let path = path::closest_dir(&path);
     AppStateCmdResult::from_optional_state(
-        BrowserState::new(path, tree_options, screen, &Dam::unlimited()),
+        BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()),
         false,
     )
 }
@@ -43,9 +45,10 @@ pub fn new_panel_on_path(
     screen: &mut Screen,
     tree_options: TreeOptions,
     purpose: PanelPurpose,
+    con: &AppContext,
 ) -> AppStateCmdResult {
     let path = path::closest_dir(&path);
-    match BrowserState::new(path, tree_options, screen, &Dam::unlimited()) {
+    match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
         Ok(Some(os)) => {
             AppStateCmdResult::NewPanel {
                 state: Box::new(os),
@@ -65,7 +68,7 @@ pub fn on_internal(
     trigger_type: TriggerType,
     selected_path: &Path,
     screen: &mut Screen,
-    _con: &AppContext,
+    con: &AppContext,
     tree_options: TreeOptions,
 ) -> AppStateCmdResult {
     if let Some(arg) = &internal_exec.arg {
@@ -80,7 +83,7 @@ pub fn on_internal(
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
-        return on_path(path, screen, tree_options, bang);
+        return on_path(path, screen, tree_options, bang, con);
     }
     if let Some(input_invocation) = &input_invocation {
         if let Some(input_arg) = &input_invocation.args {
@@ -94,7 +97,7 @@ pub fn on_internal(
                     let path = path::path_from(&base_dir, input_arg);
                     let path = PathBuf::from(path);
                     let bang = input_invocation.bang || internal_exec.bang;
-                    return on_path(path, screen, tree_options, bang);
+                    return on_path(path, screen, tree_options, bang, con);
                 }
                 _ => {
                     // the :focus internal was triggered by a key, which
@@ -105,7 +108,7 @@ pub fn on_internal(
                     let path = PathBuf::from(path);
                     let arg_type = SelectionType::Any; // We might do better later
                     let purpose = PanelPurpose::ArgEdition { arg_type };
-                    return new_panel_on_path(path, screen, tree_options, purpose);
+                    return new_panel_on_path(path, screen, tree_options, purpose, con);
                 }
             }
         }
@@ -115,5 +118,5 @@ pub fn on_internal(
     let bang = input_invocation
         .map(|inv| inv.bang)
         .unwrap_or(internal_exec.bang);
-    on_path(selected_path.to_path_buf(), screen, tree_options, bang)
+    on_path(selected_path.to_path_buf(), screen, tree_options, bang, con)
 }

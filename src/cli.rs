@@ -191,7 +191,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         no_style,
     };
 
-    let context = AppContext::from(launch_args, verb_store);
+    let context = AppContext::from(launch_args, verb_store, config.special_paths.clone());
     let mut w = display::writer();
     let mut screen = Screen::new(&context, &config)?;
     let app = App::new(&context, &screen)?;

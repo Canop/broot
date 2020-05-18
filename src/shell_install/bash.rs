@@ -11,10 +11,13 @@
 
 use {
     super::{util, ShellInstall},
-    crate::{conf, errors::ProgramError},
+    crate::{
+        conf,
+        errors::ProgramError,
+    },
     directories::UserDirs,
     minimad::*,
-    regex::{Captures, Regex},
+    regex::Captures,
     std::{env, fs::OpenOptions, io::Write, path::PathBuf},
     termimad::mad_print_inline,
 };

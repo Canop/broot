@@ -3,7 +3,6 @@
 use {
     git2, glob,
     id_arena::{Arena, Id},
-    regex::Regex,
     std::{
         fs::File,
         io::{BufRead, BufReader, Result},

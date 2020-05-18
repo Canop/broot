@@ -39,6 +39,7 @@ impl App {
                     con.launch_args.root.clone(),
                     con.launch_args.tree_options.clone(),
                     screen,
+                    con,
                     &Dam::unlimited(),
                 )?
                 .expect("Failed to create BrowserState"),

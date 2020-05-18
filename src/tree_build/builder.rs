@@ -4,11 +4,12 @@ use {
         bline::BLine,
     },
     crate::{
+        app::AppContext,
         errors::TreeBuildError,
         git::{GitIgnoreChain, GitIgnorer, LineStatusComputer},
         task_sync::ComputationResult,
         task_sync::Dam,
-        tree::{Tree, TreeLine, TreeOptions},
+        tree::*,
     },
     git2::Repository,
     id_arena::Arena,
@@ -31,6 +32,7 @@ enum BLineResult {
     Some(BId), // the only positive result
     FilteredOutAsHidden,
     FilteredOutByPattern,
+    FilteredOutBySpecialRule,
     FilteredOutAsNonFolder,
     GitIgnored,
     Invalid,
@@ -41,7 +43,7 @@ enum BLineResult {
 /// All BLines used during build are stored in the blines arena and kept until the end.
 /// Most operations and temporary data structures just deal with the ids of lines
 ///  the blines arena.
-pub struct TreeBuilder {
+pub struct TreeBuilder<'c> {
     pub options: TreeOptions,
     targeted_size: usize, // the number of lines we should fill (height of the screen)
     nb_gitignored: u32,   // number of times a gitignore pattern excluded a file
@@ -50,13 +52,16 @@ pub struct TreeBuilder {
     total_search: bool,
     git_ignorer: GitIgnorer,
     line_status_computer: Option<LineStatusComputer>,
+    con: &'c AppContext,
 }
-impl TreeBuilder {
+impl<'c> TreeBuilder<'c> {
+
     pub fn from(
         path: PathBuf,
         options: TreeOptions,
         targeted_size: usize,
-    ) -> Result<TreeBuilder, TreeBuildError> {
+        con: &'c AppContext,
+    ) -> Result<TreeBuilder<'c>, TreeBuildError> {
         let mut blines = Arena::new();
         let mut git_ignorer = time!(Debug, "GitIgnorer::new", GitIgnorer::new());
         let root_ignore_chain = git_ignorer.root_chain(&path);
@@ -81,10 +86,17 @@ impl TreeBuilder {
             total_search: true, // we'll set it to false if we don't look at all children
             git_ignorer,
             line_status_computer,
+            con,
         })
     }
+
     /// return a bline if the dir_entry directly matches the options and there's no error
-    fn make_line(&mut self, parent_id: BId, e: fs::DirEntry, depth: u16) -> BLineResult {
+    fn make_line(
+        &mut self,
+        parent_id: BId,
+        e: fs::DirEntry,
+        depth: u16,
+    ) -> BLineResult {
         let name = e.file_name();
         let name = match name.to_str() {
             Some(name) => name,
@@ -118,6 +130,11 @@ impl TreeBuilder {
                 return BLineResult::Invalid;
             }
         };
+        let special_handling = self.con.special_paths.find(&path);
+        if special_handling == SpecialHandling::Hide {
+            debug!("special_handling={:?} for {:?}", special_handling, &path);
+            return BLineResult::FilteredOutBySpecialRule;
+        }
         if file_type.is_file() || file_type.is_symlink() {
             if !has_match {
                 return BLineResult::FilteredOutByPattern;
@@ -155,6 +172,7 @@ impl TreeBuilder {
             score,
             nb_kept_children: 0,
             git_ignore_chain,
+            special_handling,
         }))
     }
 
@@ -236,10 +254,10 @@ impl TreeBuilder {
         self.load_children(self.root_id);
         open_dirs.push_back(self.root_id);
         loop {
-            if !total_search
-                && ((nb_lines_ok > optimal_size)
-                    || (nb_lines_ok >= self.targeted_size && start.elapsed() > NOT_LONG))
-            {
+            if !total_search && (
+                (nb_lines_ok > optimal_size)
+                || (nb_lines_ok >= self.targeted_size && start.elapsed() > NOT_LONG)
+            ) {
                 self.total_search = false;
                 break;
             }
@@ -250,7 +268,7 @@ impl TreeBuilder {
                     if child.has_match {
                         nb_lines_ok += 1;
                     }
-                    if child.file_type.is_dir() {
+                    if child.can_enter() {
                         next_level_dirs.push(child_id);
                     }
                     out_blines.push(child_id);

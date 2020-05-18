@@ -7,6 +7,8 @@ There are two major ways to open a new panel:
 - when a verb is edited, by using ctrl-p, which opens a panel which on closure will fill the argument
 - by using any verb with a bang. For example `:!focus` or `:!help`
 Many new verbs and functions are related to panels but broot can still be used exactly as before without using panels.
+#### Major feature: special paths
+Some paths can be handled in a specific way. Fix #205 and #208
 #### Minor changes:
 - date/time format configurable - Fix #229
 

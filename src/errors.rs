@@ -16,6 +16,8 @@ custom_error! {pub ProgramError
     UnknowShell {shell: String} = "Unknown shell: {shell}",
     InternalError {details: String} = "Internal error: {details}", // should not happen
     TerminalTooSmallError = "Terminal too small", // unable to open panel or app
+    InvalidGlobError {pattern: String} = "Invalid glob: {pattern}",
+    Unrecognized {token: String} = "Unrecognized: {token}",
 }
 
 custom_error! {pub TreeBuildError

@@ -1,6 +1,5 @@
 use {
     crate::verb::VerbInvocation,
-    regex::Regex,
     std::fmt,
 };
 

@@ -69,7 +69,7 @@ impl Panel {
         dam: &mut Dam,
     ) -> Result<(), ProgramError> {
         while self.mut_state().get_pending_task().is_some() & !dam.has_event() {
-            self.mut_state().do_pending_task(screen, dam);
+            self.mut_state().do_pending_task(screen, con, dam);
             let is_active = true; // or we wouldn't do pending tasks
             self.display(w, is_active, screen, skin, con)?;
             w.flush()?;
