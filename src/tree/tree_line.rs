@@ -22,7 +22,7 @@ use is_executable::IsExecutable;
 pub struct TreeLine {
     pub left_branchs: Box<[bool]>, // a depth-sized array telling whether a branch pass
     pub depth: u16,
-    pub name: String,
+    pub name: String, // a displayable name - some chars may have been stripped
     pub path: PathBuf,
     pub line_type: TreeLineType,
     pub has_error: bool,
@@ -35,6 +35,9 @@ pub struct TreeLine {
 }
 
 impl TreeLine {
+    pub fn make_displayable_name(name: &str) -> String {
+        name.replace('\n', "")
+    }
     pub fn is_selectable(&self) -> bool {
         match &self.line_type {
             TreeLineType::Pruning => false,

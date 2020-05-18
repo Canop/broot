@@ -46,3 +46,4 @@ pub type W = BufWriter<std::io::Stderr>;
 pub fn writer() -> W {
     BufWriter::new(std::io::stderr())
 }
+

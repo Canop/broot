@@ -97,7 +97,7 @@ impl BLine {
         Ok(TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
-            name: self.name.to_string(),
+            name: TreeLine::make_displayable_name(&self.name),
             path: self.path.clone(),
             line_type,
             has_error,
