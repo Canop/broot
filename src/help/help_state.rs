@@ -5,7 +5,7 @@ use {
         browser::BrowserState,
         command::{Command, TriggerType},
         conf::{self, Conf},
-        display::{Screen, W},
+        display::{Areas, Screen, W},
         errors::ProgramError,
         flag::Flag,
         launchable::Launchable,
@@ -74,7 +74,6 @@ impl AppState for HelpState {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         if self.dirty {
-            //screen.skin.default.queue_bg(w)?;
             screen.clear_area_to_right(w, &state_area)?;
             self.text_area = state_area;
             self.text_area.pad_for_max_width(110);
@@ -128,6 +127,7 @@ impl AppState for HelpState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         _trigger_type: TriggerType,
+        areas: &Areas,
         screen: &mut Screen,
         _panel_skin: &PanelSkin,
         con: &AppContext,

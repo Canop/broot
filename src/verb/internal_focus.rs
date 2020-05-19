@@ -21,7 +21,7 @@ pub fn on_path(
     con: &AppContext,
 ) -> AppStateCmdResult {
     if in_new_panel {
-        new_panel_on_path(path, screen, tree_options, PanelPurpose::None, con)
+        new_panel_on_path(path, screen, tree_options, PanelPurpose::None, con, HDir::Right)
     } else {
         new_state_on_path(path, screen, tree_options, con)
     }
@@ -46,6 +46,7 @@ pub fn new_panel_on_path(
     tree_options: TreeOptions,
     purpose: PanelPurpose,
     con: &AppContext,
+    direction: HDir,
 ) -> AppStateCmdResult {
     let path = path::closest_dir(&path);
     match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
@@ -53,6 +54,7 @@ pub fn new_panel_on_path(
             AppStateCmdResult::NewPanel {
                 state: Box::new(os),
                 purpose,
+                direction,
             }
         }
         Ok(None) => AppStateCmdResult::Keep, // this isn't supposed to happen
@@ -108,7 +110,7 @@ pub fn on_internal(
                     let path = PathBuf::from(path);
                     let arg_type = SelectionType::Any; // We might do better later
                     let purpose = PanelPurpose::ArgEdition { arg_type };
-                    return new_panel_on_path(path, screen, tree_options, purpose, con);
+                    return new_panel_on_path(path, screen, tree_options, purpose, con, HDir::Right);
                 }
             }
         }

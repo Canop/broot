@@ -65,4 +65,4 @@ harness = false
 # opener = { path = "../opener/opener" }
 # umask = { path = "../umask" }
 # secular = { path = "../secular" }
-# strict = { path = "../strict" }
+strict = { path = "../strict" }

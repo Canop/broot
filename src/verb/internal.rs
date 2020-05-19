@@ -55,6 +55,8 @@ Internals! {
     page_down: "scroll one page down",
     page_up: "scroll one page up",
     parent: "move to the parent directory",
+    panel_left: "focus the panel to the left",
+    panel_right: "focus the panel to the right",
     print_path: "print path and leaves broot",
     print_relative_path: "print relative path and leaves broot",
     print_tree: "print tree and leaves broot",

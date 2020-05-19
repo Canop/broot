@@ -9,7 +9,7 @@ mod status;
 
 pub use {
     app::App,
-    cmd_result::AppStateCmdResult,
+    cmd_result::*,
     context::AppContext,
     panel::Panel,
     panel_id::PanelId,

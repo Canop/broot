@@ -10,6 +10,7 @@ use {
         launchable::Launchable,
         skin::*,
         task_sync::Dam,
+        verb::Internal,
     },
     crossterm::event::KeyModifiers,
     std::io::Write,
@@ -53,19 +54,6 @@ impl App {
             launch_at_end: None,
             created_panels_count: 1,
         })
-    }
-
-    pub fn add_panel(
-        &mut self,
-        new_state: Box<dyn AppState>,
-        purpose: PanelPurpose,
-        areas: Areas,
-    ) {
-        let mut panel = Panel::new(self.created_panels_count.into(), new_state, areas);
-        panel.purpose = purpose;
-        self.created_panels_count += 1;
-        self.active_panel_idx = self.panels.len().get();
-        self.panels.push(panel);
     }
 
     fn mut_state(&mut self) -> &mut dyn AppState {
@@ -115,7 +103,6 @@ impl App {
 
     /// apply a command, and returns a command, which may be the same (modified or not)
     ///  or a new one.
-    /// This normally mutates self
     fn apply_command(
         &mut self,
         cmd: Command,
@@ -127,65 +114,6 @@ impl App {
         let mut error: Option<String> = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
         match self.mut_panel().apply_command(&cmd, screen, panel_skin, con)? {
-            Quit => {
-                self.quitting = true;
-            }
-            Launch(launchable) => {
-                self.launch_at_end = Some(*launchable);
-                self.quitting = true;
-            }
-            NewPanel {
-                state,
-                purpose,
-            } => {
-                if is_input_invocation {
-                    self.mut_panel().clear_input();
-                }
-                let insertion_idx = self.panels.len().get();
-                match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
-                    Ok(areas) => {
-                        self.add_panel(state, purpose, areas);
-                    }
-                    Err(e) => {
-                        error = Some(e.to_string());
-                    }
-                }
-            }
-            NewState(state) => {
-                self.mut_panel().clear_input();
-                self.mut_panel().push_state(state);
-            }
-            RefreshState { clear_cache } => {
-                if is_input_invocation {
-                    self.mut_panel().clear_input();
-                }
-                if clear_cache {
-                    clear_caches();
-                }
-                // should we set the cmd ?
-                self.mut_state().refresh(screen, con);
-            }
-            PopState => {
-                if is_input_invocation {
-                    self.mut_panel().clear_input();
-                }
-                if self.remove_state(screen) {
-                    // should we set the cmd ?
-                    self.mut_state().refresh(screen, con);
-                } else {
-                    self.quitting = true;
-                }
-            }
-            PopStateAndReapply => {
-                if is_input_invocation {
-                    self.mut_panel().clear_input();
-                }
-                if self.remove_state(screen) {
-                    self.mut_panel().apply_command(&cmd, screen, panel_skin, con)?;
-                } else {
-                    self.quitting = true;
-                }
-            }
             ClosePanel { validate_purpose } => {
                 let mut new_arg = None;
                 if validate_purpose {
@@ -211,6 +139,95 @@ impl App {
                 error = Some(txt);
             }
             Keep => {}
+            Launch(launchable) => {
+                self.launch_at_end = Some(*launchable);
+                self.quitting = true;
+            }
+            NewPanel {
+                state,
+                purpose,
+                direction,
+            } => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
+                let insertion_idx = if direction == HDir::Right {
+                    self.active_panel_idx + 1
+                } else {
+                    self.active_panel_idx
+                };
+                match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
+                    Ok(areas) => {
+                        let mut panel = Panel::new(self.created_panels_count.into(), state, areas);
+                        panel.purpose = purpose;
+                        self.created_panels_count += 1;
+                        self.panels.insert(insertion_idx, panel);
+                        self.active_panel_idx = insertion_idx;
+                    }
+                    Err(e) => {
+                        error = Some(e.to_string());
+                    }
+                }
+            }
+            NewState(state) => {
+                self.mut_panel().clear_input();
+                self.mut_panel().push_state(state);
+            }
+            PopState => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
+                if self.remove_state(screen) {
+                    // should we set the cmd ?
+                    self.mut_state().refresh(screen, con);
+                } else {
+                    self.quitting = true;
+                }
+            }
+            PopStateAndReapply => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
+                if self.remove_state(screen) {
+                    self.mut_panel().apply_command(&cmd, screen, panel_skin, con)?;
+                } else {
+                    self.quitting = true;
+                }
+            }
+            Propagate(internal) => {
+                match internal {
+                    Internal::panel_left
+                    if self.active_panel_idx > 0 => {
+                        if is_input_invocation {
+                            self.mut_panel().clear_input();
+                        }
+                        self.active_panel_idx -= 1;
+                    }
+                    Internal::panel_right
+                    if self.active_panel_idx + 1 < self.panels.len().get() => {
+                        if is_input_invocation {
+                            self.mut_panel().clear_input();
+                        }
+                        self.active_panel_idx += 1;
+                    }
+                    _ => {
+                        debug!("unhandled propagated internal. cmd={:?}", &cmd);
+                    }
+                }
+            }
+            Quit => {
+                self.quitting = true;
+            }
+            RefreshState { clear_cache } => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
+                if clear_cache {
+                    clear_caches();
+                }
+                // should we set the cmd ?
+                self.mut_state().refresh(screen, con);
+            }
         }
         if let Some(text) = error {
             self.mut_panel().set_error(text);

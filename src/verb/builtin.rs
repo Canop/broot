@@ -1,4 +1,8 @@
-use {super::Verb, crate::keys::*};
+use {
+    super::Verb,
+    crate::keys::*,
+    crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
+};
 
 /// declare the built_in verbs, the ones which are available
 /// in standard (they still may be overriden by configuration)
@@ -52,6 +56,16 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::internal(parent).with_shortcut("p"),
         Verb::internal(page_down).with_key(PAGE_DOWN),
         Verb::internal(page_up).with_key(PAGE_UP),
+        Verb::internal(panel_left)
+            .with_key(KeyEvent {
+                code: KeyCode::Left,
+                modifiers: KeyModifiers::CONTROL,
+            }),
+        Verb::internal(panel_right)
+            .with_key(KeyEvent {
+                code: KeyCode::Right,
+                modifiers: KeyModifiers::CONTROL,
+            }),
         Verb::internal(parent).with_shortcut("p"),
         Verb::internal(print_path).with_shortcut("pp"),
         Verb::internal(print_relative_path).with_shortcut("prp"),

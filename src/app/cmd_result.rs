@@ -4,26 +4,36 @@ use {
         browser::BrowserState,
         errors::TreeBuildError,
         launchable::Launchable,
+        verb::Internal,
     },
     std::fmt,
 };
 
+/// Either left or right
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum HDir {
+    Left,
+    Right,
+}
+
 /// Result of applying a command to a state
 pub enum AppStateCmdResult {
-    Quit,
+    ClosePanel {
+        validate_purpose: bool,
+    },
+    DisplayError(String),
     Keep,
     Launch(Box<Launchable>),
-    DisplayError(String),
     NewPanel {
         state: Box<dyn AppState>,
         purpose: PanelPurpose,
+        direction: HDir,
     },
     NewState(Box<dyn AppState>),
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
-    ClosePanel {
-        validate_purpose: bool,
-    },
+    Propagate(Internal), // command must be handled at a upper level
+    Quit,
     RefreshState {
         clear_cache: bool,
     },
@@ -43,6 +53,7 @@ impl AppStateCmdResult {
                     AppStateCmdResult::NewPanel {
                         state: Box::new(os),
                         purpose: PanelPurpose::None,
+                        direction: HDir::Right,
                     }
                 } else {
                     AppStateCmdResult::NewState(Box::new(os))
@@ -66,20 +77,21 @@ impl fmt::Debug for AppStateCmdResult {
             f,
             "{}",
             match self {
-                AppStateCmdResult::Quit => "Quit",
-                AppStateCmdResult::Keep => "Keep",
-                AppStateCmdResult::Launch(_) => "Launch",
-                AppStateCmdResult::DisplayError(_) => "DisplayError",
-                AppStateCmdResult::NewState { .. } => "NewState",
-                AppStateCmdResult::NewPanel { .. } => "NewPanel",
-                AppStateCmdResult::PopStateAndReapply => "PopStateAndReapply",
-                AppStateCmdResult::PopState => "PopState",
                 AppStateCmdResult::ClosePanel {
                     validate_purpose: false,
                 } => "CancelPanel",
                 AppStateCmdResult::ClosePanel {
                     validate_purpose: true,
                 } => "OkPanel",
+                AppStateCmdResult::DisplayError(_) => "DisplayError",
+                AppStateCmdResult::Keep => "Keep",
+                AppStateCmdResult::Launch(_) => "Launch",
+                AppStateCmdResult::NewState { .. } => "NewState",
+                AppStateCmdResult::NewPanel { .. } => "NewPanel",
+                AppStateCmdResult::PopStateAndReapply => "PopStateAndReapply",
+                AppStateCmdResult::PopState => "PopState",
+                AppStateCmdResult::Propagate(_) => "Propagate",
+                AppStateCmdResult::Quit => "Quit",
                 AppStateCmdResult::RefreshState { .. } => "RefreshState",
             }
         )

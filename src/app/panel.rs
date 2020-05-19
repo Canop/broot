@@ -52,7 +52,15 @@ impl Panel {
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let purpose = self.purpose;
-        let result = self.mut_state().on_command(cmd, screen, panel_skin, con, purpose);
+        let state_idx = self.states.len()-1;
+        let result = self.states[state_idx].on_command(
+            cmd,
+            &self.areas,
+            screen,
+            panel_skin,
+            con,
+            purpose,
+        );
         self.status = Some(self.state().get_status(cmd, con));
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
@@ -78,7 +86,7 @@ impl Panel {
     }
 
     /// return a new command
-    /// Update the input field but not the command of the panel.
+    /// Update the input field
     pub fn add_event(
         &mut self,
         w: &mut W,

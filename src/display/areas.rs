@@ -14,6 +14,8 @@ pub struct Areas {
     pub status: Area,
     pub input: Area,
     pub purpose: Option<Area>,
+    pub pos_idx: usize, // from left to right
+    pub nb_pos: usize, // number of displayed panels
 }
 
 const MINIMAL_PANEL_HEIGHT: u16 = 10;
@@ -40,13 +42,15 @@ impl Areas {
             status: Area::uninitialized(),
             input: Area::uninitialized(),
             purpose: None,
+            pos_idx: 0,
+            nb_pos: 1,
         };
         let mut slots = Vec::with_capacity(present_panels.len() + 1);
         for i in 0..insertion_idx {
             slots.push(Slot::Panel(i));
         }
         slots.push(Slot::New(&mut areas));
-        for i in insertion_idx + 1..present_panels.len() {
+        for i in insertion_idx..present_panels.len() {
             slots.push(Slot::Panel(i));
         }
         Self::compute_areas(present_panels, &mut slots, screen)?;
@@ -74,7 +78,8 @@ impl Areas {
             return Err(ProgramError::TerminalTooSmallError);
         }
         let mut x = 0;
-        for slot_idx in 0..slots.len() {
+        let nb_pos = slots.len();
+        for slot_idx in 0..nb_pos {
             let areas: &mut Areas = match &mut slots[slot_idx] {
                 Slot::Panel(panel_idx) => &mut panels[*panel_idx].areas,
                 Slot::New(areas) => areas,
@@ -90,8 +95,17 @@ impl Areas {
             } else {
                 None
             };
+            areas.pos_idx = slot_idx;
+            areas.nb_pos = nb_pos;
             x += panel_width;
         }
         Ok(())
+    }
+
+    pub fn is_first(&self) -> bool {
+        self.pos_idx == 0
+    }
+    pub fn is_last(&self) -> bool {
+        self.pos_idx + 1 == self.nb_pos
     }
 }

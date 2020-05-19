@@ -87,6 +87,7 @@ impl Command {
         }
     }
 
+
     /// tells whether this action is a verb being invocated on enter
     /// in the input field
     pub fn is_verb_invocated_from_input(&self) -> bool {

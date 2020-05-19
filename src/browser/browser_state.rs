@@ -2,7 +2,7 @@ use {
     crate::{
         app::*,
         command::{Command, TriggerType},
-        display::{DisplayableTree, Screen, W},
+        display::{Areas, DisplayableTree, Screen, W},
         errors::{ProgramError, TreeBuildError},
         flag::Flag,
         git,
@@ -377,17 +377,16 @@ impl AppState for BrowserState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        areas: &Areas,
         screen: &mut Screen,
         panel_skin: &PanelSkin,
         con: &AppContext,
         panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let page_height = BrowserState::page_height(screen);
-        debug!("internal_exec: {:?}", internal_exec);
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
-        debug!("bang: {:?}", bang);
         Ok(match internal_exec.internal {
             Internal::back => {
                 if self.filtered_tree.is_some() {
@@ -433,6 +432,7 @@ impl AppState for BrowserState {
                     AppStateCmdResult::NewPanel {
                         state: Box::new(HelpState::new(screen, con)),
                         purpose: PanelPurpose::None,
+                        direction: HDir::Right,
                     }
                 } else {
                     AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)))
@@ -461,6 +461,38 @@ impl AppState for BrowserState {
                     tree.try_scroll(-page_height, page_height);
                 }
                 AppStateCmdResult::Keep
+            }
+            Internal::panel_left => {
+                if areas.is_first() {
+                    // we ask for the creation of a panel to the left
+                    internal_focus::new_panel_on_path(
+                        self.selected_path().to_path_buf(),
+                        screen,
+                        self.tree.options.clone(),
+                        PanelPurpose::None,
+                        con,
+                        HDir::Left,
+                    )
+                } else {
+                    // we ask the app to focus the panel to the left
+                    AppStateCmdResult::Propagate(Internal::panel_left)
+                }
+            }
+            Internal::panel_right => {
+                if areas.is_last() {
+                    // we ask for the creation of a panel to the left
+                    internal_focus::new_panel_on_path(
+                        self.selected_path().to_path_buf(),
+                        screen,
+                        self.tree.options.clone(),
+                        PanelPurpose::None,
+                        con,
+                        HDir::Right,
+                    )
+                } else {
+                    // we ask the app to focus the panel to the left
+                    AppStateCmdResult::Propagate(Internal::panel_right)
+                }
             }
             Internal::parent => self.go_to_parent(screen, con, bang),
             Internal::print_path => {
@@ -503,7 +535,9 @@ impl AppState for BrowserState {
                         };
                         let arg_type = SelectionType::Any; // We might do better later
                         let purpose = PanelPurpose::ArgEdition { arg_type };
-                        internal_focus::new_panel_on_path(path, screen, tree_options, purpose, con)
+                        internal_focus::new_panel_on_path(
+                            path, screen, tree_options, purpose, con, HDir::Right,
+                        )
                     } else {
                         // we just open a new panel on the selected path,
                         // without purpose
@@ -513,6 +547,7 @@ impl AppState for BrowserState {
                             tree_options,
                             PanelPurpose::None,
                             con,
+                            HDir::Right,
                         )
                     }
                 }
