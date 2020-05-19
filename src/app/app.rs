@@ -264,7 +264,9 @@ impl App {
                 self.apply_command(arg_cmd, screen, &skin.focused, con)?;
                 self.display_panels(w, screen, &skin, con)?;
                 w.flush()?;
-                self.mut_panel().do_pending_tasks(w, screen, &skin.focused, con, &mut dam)?;
+                self.mut_panel().do_pending_tasks(screen, con, &mut dam)?;
+                self.display_panels(w, screen, &skin, con)?;
+                w.flush()?;
                 if self.quitting {
                     return Ok(self.launch_at_end.take());
                 }
@@ -276,7 +278,9 @@ impl App {
 
         loop {
             if !self.quitting {
-                self.mut_panel().do_pending_tasks(w, screen, &skin.focused, con, &mut dam)?;
+                self.mut_panel().do_pending_tasks(screen, con, &mut dam)?;
+                self.display_panels(w, screen, &skin, con)?;
+                w.flush()?;
             }
             let event = match dam.next_event() {
                 Some(event) => event,

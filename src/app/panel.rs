@@ -10,7 +10,6 @@ use {
         verb::*,
     },
     minimad::{Alignment, Composite},
-    std::io::Write,
     termimad::{Event, InputField},
 };
 
@@ -70,17 +69,12 @@ impl Panel {
     ///  the dam asks for interruption
     pub fn do_pending_tasks(
         &mut self,
-        w: &mut W,
         screen: &mut Screen,
-        skin: &PanelSkin,
         con: &AppContext,
         dam: &mut Dam,
     ) -> Result<(), ProgramError> {
         while self.mut_state().get_pending_task().is_some() & !dam.has_event() {
             self.mut_state().do_pending_task(screen, con, dam);
-            let is_active = true; // or we wouldn't do pending tasks
-            self.display(w, is_active, screen, skin, con)?;
-            w.flush()?;
         }
         Ok(())
     }

@@ -127,7 +127,7 @@ impl AppState for HelpState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         _trigger_type: TriggerType,
-        areas: &Areas,
+        _areas: &Areas,
         screen: &mut Screen,
         _panel_skin: &PanelSkin,
         con: &AppContext,

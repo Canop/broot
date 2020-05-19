@@ -22,7 +22,7 @@ pub fn write_flags(
     if flags.is_empty() {
         return Ok(());
     }
-    let mut width = flags.len() * 2;
+    let mut width = flags.len() * 2 + 1;
     for flag in flags {
         width += flag.name.len(); // we assume only ascii chars
         width += flag.value.len();
@@ -32,18 +32,11 @@ pub fn write_flags(
         debug!("not enough space to display flags");
         return Ok(());
     }
-    screen.goto(w, screen.width - 1 - width, screen.height - 1)?;
-    screen.clear_line(w)?;
-    for (i, flag) in flags.iter().enumerate() {
-        panel_skin.styles.flag_label.queue_str(
-            w,
-            &format!(
-                "{}{}:",
-                if i==0 { " " } else { "  " },
-                flag.name,
-            )
-        )?;
+    screen.goto(w, area.left + area.width - 1 - width, area.top)?;
+    for flag in flags {
+        panel_skin.styles.flag_label.queue_str(w, &format!( " {}:", flag.name))?;
         panel_skin.styles.flag_value.queue(w, flag.value)?;
+        panel_skin.styles.flag_label.queue(w, ' ')?;
     }
     Ok(())
 }
