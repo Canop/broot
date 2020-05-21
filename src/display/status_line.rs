@@ -33,7 +33,7 @@ pub fn write(
         &panel_skin.status_skin.normal
     };
     style.write_inline_on(w, " ")?;
-    let remaining_width = (screen.width - x - 1) as usize;
+    let remaining_width = (area.width - (x - area.left) - 1) as usize;
     style.write_composite_fill(
         w,
         Composite::from_inline(&status.message),
