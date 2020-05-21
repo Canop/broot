@@ -1,3 +1,11 @@
+//! Special groups:
+//! {file}
+//! {directory}
+//! {parent}
+//! {other-panel-file}
+//! {other-panel-directory}
+//! {other-panel-parent}
+
 use {
     super::{ExternalExecutionMode, VerbInvocation},
     crate::{
@@ -8,7 +16,12 @@ use {
         selection_type::SelectionType,
     },
     regex::{Captures, Regex},
-    std::{collections::HashMap, fs::OpenOptions, io::Write, path::Path},
+    std::{
+        collections::HashMap,
+        fs::OpenOptions,
+        io::Write,
+        path::{Path, PathBuf},
+    },
 };
 
 fn path_to_string(path: &Path, for_shell: bool) -> String {
@@ -21,22 +34,6 @@ fn path_to_string(path: &Path, for_shell: bool) -> String {
 
 lazy_static! {
     static ref GROUP: Regex = Regex::new(r"\{([^{}:]+)(?::([^{}:]+))?\}").unwrap();
-}
-
-fn make_invocation_args_regex(spec: &str) -> Result<Regex, ConfError> {
-    let spec = GROUP.replace_all(spec, r"(?P<$1>.+)");
-    let spec = format!("^{}$", spec);
-    Regex::new(&spec.to_string())
-        .or_else(|_| Err(ConfError::InvalidVerbInvocation { invocation: spec }))
-}
-
-fn determine_arg_selection_type(args: &str) -> Option<SelectionType> {
-    GROUP
-        .find(args)
-        .filter(|m| {
-            m.start() == 0 && m.end() == args.len()
-        })
-        .map(|_| SelectionType::Any)
 }
 
 /// Definition of how the user input should be interpreted
@@ -57,9 +54,13 @@ pub struct ExternalExecution {
     pub exec_mode: ExternalExecutionMode,
 
     /// contain the type of selection in case there's only one arg
-    /// and it's a path (when it's not None, the user can type Tab
+    /// and it's a path (when it's not None, the user can type ctrl-P
     /// to select the argument in another panel)
     pub arg_selection_type: Option<SelectionType>,
+
+    // /// whether we need to have a secondary panel for execution
+    // /// (which is the case when an invocation has {other-panel-file})
+    pub need_another_panel: bool,
 }
 
 impl ExternalExecution {
@@ -69,21 +70,36 @@ impl ExternalExecution {
         exec_mode: ExternalExecutionMode,
     ) -> Result<Self, ConfError> {
         let invocation_pattern = VerbInvocation::from(invocation_str);
-        let arg_selection_type = invocation_pattern
-            .args
-            .as_ref()
-            .and_then(|args| determine_arg_selection_type(&args));
-        let args_parser = invocation_pattern
-            .args
-            .as_ref()
-            .map(|args| make_invocation_args_regex(&args))
-            .transpose()?;
+        let mut args_parser = None;
+        let mut arg_selection_type = None;
+        let mut need_another_panel = false;
+        if let Some(args) = &invocation_pattern.args {
+            let spec = GROUP.replace_all(args, r"(?P<$1>.+)");
+            let spec = format!("^{}$", spec);
+            args_parser = match Regex::new(&spec.to_string()) {
+                Ok(regex) => Some(regex),
+                Err(_) => Err(ConfError::InvalidVerbInvocation { invocation: spec })?,
+            };
+            if let Some(group) = GROUP.find(args) {
+                if group.start() == 0 && group.end() == args.len() {
+                    // there's one group, covering the whole args
+                    arg_selection_type = Some(SelectionType::Any);
+                }
+            }
+        }
+        for group in GROUP.find_iter(execution_str) {
+            if group.as_str().starts_with("{other-panel-") {
+                need_another_panel = true;
+                debug!("NEED ANOTHER PANEL");
+            }
+        }
         Ok(Self {
             invocation_pattern,
             args_parser,
             exec_pattern: execution_str.to_string(),
             exec_mode,
             arg_selection_type,
+            need_another_panel,
         })
     }
 
@@ -94,7 +110,14 @@ impl ExternalExecution {
     /// Assuming the verb has been matched, check whether the arguments
     /// are OK according to the regex. Return none when there's no problem
     /// and return the error to display if arguments don't match
-    pub fn check_args(&self, invocation: &VerbInvocation) -> Option<String> {
+    pub fn check_args(
+        &self,
+        invocation: &VerbInvocation,
+        other_path: &Option<PathBuf>,
+    ) -> Option<String> {
+        if self.need_another_panel && other_path.is_none() {
+            return Some("This verb needs exactly two panels".to_string());
+        }
         match (&invocation.args, &self.args_parser) {
             (None, None) => None,
             (None, Some(ref regex)) => {
@@ -120,6 +143,7 @@ impl ExternalExecution {
     fn replacement_map(
         &self,
         file: &Path,
+        other_file: &Option<PathBuf>,
         args: &Option<String>,
         for_shell: bool,
     ) -> HashMap<String, String> {
@@ -132,6 +156,17 @@ impl ExternalExecution {
         map.insert("parent".to_string(), parent_str.to_string());
         let dir_str = if file.is_dir() { file_str } else { parent_str };
         map.insert("directory".to_string(), dir_str);
+        if self.need_another_panel {
+            if let Some(other_file) = other_file {
+                let other_parent = other_file.parent().unwrap_or(other_file);
+                let other_file_str = path_to_string(other_file, for_shell);
+                let other_parent_str = path_to_string(other_parent, for_shell);
+                map.insert("other-panel-file".to_string(), other_file_str.to_string());
+                map.insert("other-panel-parent".to_string(), other_parent_str.to_string());
+                let other_dir_str = if other_file.is_dir() { other_file_str } else { other_parent_str };
+                map.insert("other-panel-directory".to_string(), other_dir_str);
+            }
+        }
         // then the ones computed from the user input
         let default_args;
         let args = match args {
@@ -158,13 +193,14 @@ impl ExternalExecution {
     pub fn to_cmd_result(
         &self,
         file: &Path,
+        other_file: &Option<PathBuf>,
         args: &Option<String>,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         if self.exec_mode.from_shell() {
-            self.exec_from_shell_cmd_result(file, args, con)
+            self.exec_from_shell_cmd_result(file, other_file, args, con)
         } else {
-            self.exec_cmd_result(file, args)
+            self.exec_cmd_result(file, other_file, args)
         }
     }
 
@@ -172,6 +208,7 @@ impl ExternalExecution {
     fn exec_from_shell_cmd_result(
         &self,
         file: &Path,
+        other_file: &Option<PathBuf>,
         args: &Option<String>,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
@@ -179,7 +216,7 @@ impl ExternalExecution {
             // Broot was probably launched as br.
             // the whole command is exported in the passed file
             let f = OpenOptions::new().append(true).open(export_path)?;
-            writeln!(&f, "{}", self.shell_exec_string(file, args))?;
+            writeln!(&f, "{}", self.shell_exec_string(file, other_file, args))?;
             Ok(AppStateCmdResult::Quit)
         } else if let Some(ref export_path) = con.launch_args.file_export_path {
             // old version of the br function: only the file is exported
@@ -200,9 +237,10 @@ impl ExternalExecution {
     fn exec_cmd_result(
         &self,
         file: &Path,
+        other_file: &Option<PathBuf>,
         args: &Option<String>,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        let launchable = Launchable::program(self.exec_token(file, args))?;
+        let launchable = Launchable::program(self.exec_token(file, other_file, args))?;
         if self.exec_mode.leave_broot() {
             Ok(AppStateCmdResult::from(launchable))
         } else {
@@ -223,8 +261,13 @@ impl ExternalExecution {
 
     /// build the token which can be used to launch en executable.
     /// This doesn't make sense for a built-in.
-    fn exec_token(&self, file: &Path, args: &Option<String>) -> Vec<String> {
-        let map = self.replacement_map(file, args, false);
+    fn exec_token(
+        &self,
+        file: &Path,
+        other_file: &Option<PathBuf>,
+        args: &Option<String>,
+    ) -> Vec<String> {
+        let map = self.replacement_map(file, other_file, args, false);
         self.exec_pattern
             .split_whitespace()
             .map(|token| {
@@ -238,8 +281,13 @@ impl ExternalExecution {
     }
 
     /// build a shell compatible command, with escapings
-    pub fn shell_exec_string(&self, file: &Path, args: &Option<String>) -> String {
-        let map = self.replacement_map(file, args, true);
+    pub fn shell_exec_string(
+        &self,
+        file: &Path,
+        other_file: &Option<PathBuf>,
+        args: &Option<String>,
+    ) -> String {
+        let map = self.replacement_map(file, other_file, args, true);
         GROUP
             .replace_all(&self.exec_pattern, |ec: &Captures<'_>| {
                 path::do_exec_replacement(ec, &map)

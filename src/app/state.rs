@@ -10,7 +10,7 @@ use {
         task_sync::Dam,
         verb::*,
     },
-    std::path::Path,
+    std::path::{Path, PathBuf},
     termimad::Area,
 };
 
@@ -78,6 +78,7 @@ pub trait AppState {
     fn on_command(
         &mut self,
         cmd: &Command,
+        other_path: &Option<PathBuf>,
         areas: &Areas,
         screen: &mut Screen,
         panel_skin: &PanelSkin,
@@ -108,6 +109,7 @@ pub trait AppState {
                     ),
                     VerbExecution::External(external) => external.to_cmd_result(
                         self.selected_path(),
+                        other_path,
                         if let Some(inv) = &input_invocation {
                             &inv.args
                         } else {
@@ -132,7 +134,7 @@ pub trait AppState {
             ),
             Command::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::Match(verb) => {
-                    if let Some(err) = verb.check_args(invocation) {
+                    if let Some(err) = verb.check_args(invocation, other_path) {
                         Ok(AppStateCmdResult::DisplayError(err))
                     } else {
                         match &verb.execution {
@@ -147,7 +149,12 @@ pub trait AppState {
                                 panel_purpose,
                             ),
                             VerbExecution::External(external) => {
-                                external.to_cmd_result(self.selected_path(), &invocation.args, con)
+                                external.to_cmd_result(
+                                    self.selected_path(),
+                                    other_path,
+                                    &invocation.args,
+                                    con,
+                                )
                             }
                         }
                     }
@@ -184,7 +191,12 @@ pub trait AppState {
         con: &AppContext,
     ) -> Result<(), ProgramError>;
 
-    fn get_status(&self, cmd: &Command, con: &AppContext) -> Status;
+    fn get_status(
+        &self,
+        cmd: &Command,
+        other_path: &Option<PathBuf>,
+        con: &AppContext,
+    ) -> Status;
 
     /// return the flags to display
     fn get_flags(&self) -> Vec<Flag>;

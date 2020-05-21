@@ -1,4 +1,8 @@
-use {super::*, crate::errors::ConfError};
+use {
+    super::*,
+    crate::errors::ConfError,
+    std::path::PathBuf,
+};
 
 /// A verb execution definition based on an internal
 #[derive(Debug, Clone)]
@@ -23,7 +27,11 @@ impl InternalExecution {
             arg: None,
         }
     }
-    pub fn check_args(&self, invocation: &VerbInvocation) -> Option<String> {
+    pub fn check_args(
+        &self,
+        invocation: &VerbInvocation,
+        _other_path: &Option<PathBuf>,
+    ) -> Option<String> {
         if invocation.args.is_some() && !self.internal.accept_path() {
             Some(format!("{} doesn't take arguments", invocation.name))
         } else {

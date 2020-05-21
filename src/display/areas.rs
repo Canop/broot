@@ -7,7 +7,9 @@ use {
     termimad::Area,
 };
 
-/// the areas of the various parts of a panel
+/// the areas of the various parts of a panel. It's
+/// also where a state usually checks how many panels
+/// there are, and their respective positions
 #[derive(Debug, Clone)]
 pub struct Areas {
     pub state: Area,

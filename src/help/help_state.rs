@@ -16,7 +16,7 @@ use {
         tree::TreeOptions,
         verb::*,
     },
-    std::path::Path,
+    std::path::{Path, PathBuf},
     termimad::{Area, FmtText, TextView},
 };
 
@@ -90,7 +90,12 @@ impl AppState for HelpState {
         Ok(text_view.write_on(w)?)
     }
 
-    fn get_status(&self, cmd: &Command, con: &AppContext) -> Status {
+    fn get_status(
+        &self,
+        cmd: &Command,
+        other_path: &Option<PathBuf>,
+        con: &AppContext,
+    ) -> Status {
         match cmd {
             Command::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
@@ -101,7 +106,7 @@ impl AppState for HelpState {
                     match con.verb_store.search(&invocation.name) {
                         PrefixSearchResult::NoMatch => Status::from_error("No matching verb"),
                         PrefixSearchResult::Match(verb) => {
-                            verb.get_status(Conf::default_location(), invocation)
+                            verb.get_status(Conf::default_location(), other_path, invocation)
                         }
                         PrefixSearchResult::TooManyMatches(completions) => {
                             Status::from_message(format!(

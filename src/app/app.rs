@@ -13,7 +13,10 @@ use {
         verb::Internal,
     },
     crossterm::event::KeyModifiers,
-    std::io::Write,
+    std::{
+        io::Write,
+        path::PathBuf,
+    },
     strict::NonEmptyVec,
     termimad::{Event, EventSource},
 };
@@ -101,6 +104,17 @@ impl App {
         Ok(())
     }
 
+    /// if there are exactly two panels, return the selection
+    /// in the non focused panel
+    fn get_other_panel_path(&self) -> Option<PathBuf> {
+        if self.panels.len().get() == 2 {
+            let non_focused_panel_idx = if self.active_panel_idx == 0 { 1 } else { 0 };
+            Some(self.panels[non_focused_panel_idx].state().selected_path().to_path_buf())
+        } else {
+            None
+        }
+    }
+
     /// apply a command, and returns a command, which may be the same (modified or not)
     ///  or a new one.
     fn apply_command(
@@ -113,7 +127,14 @@ impl App {
         use AppStateCmdResult::*;
         let mut error: Option<String> = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
-        match self.mut_panel().apply_command(&cmd, screen, panel_skin, con)? {
+        let other_path = self.get_other_panel_path();
+        match self.mut_panel().apply_command(
+            &cmd,
+            &other_path,
+            screen,
+            panel_skin,
+            con,
+        )? {
             ClosePanel { validate_purpose } => {
                 let mut new_arg = None;
                 if validate_purpose {
@@ -129,7 +150,7 @@ impl App {
                         self.mut_panel().set_input_arg(new_arg);
                         let new_input = self.panel().get_input_content();
                         let cmd = Command::from_raw(new_input, false);
-                        self.mut_panel().apply_command(&cmd, screen, panel_skin, con)?;
+                        self.mut_panel().apply_command(&cmd, &other_path, screen, panel_skin, con)?;
                     }
                 } else {
                     self.quitting = true;
@@ -189,30 +210,31 @@ impl App {
                     self.mut_panel().clear_input();
                 }
                 if self.remove_state(screen) {
-                    self.mut_panel().apply_command(&cmd, screen, panel_skin, con)?;
+                    self.mut_panel().apply_command(&cmd, &other_path, screen, panel_skin, con)?;
                 } else {
                     self.quitting = true;
                 }
             }
             Propagate(internal) => {
-                match internal {
-                    Internal::panel_left
-                    if self.active_panel_idx > 0 => {
-                        if is_input_invocation {
-                            self.mut_panel().clear_input();
-                        }
-                        self.active_panel_idx -= 1;
+                let new_active_panel_idx = match internal {
+                    Internal::panel_left if self.active_panel_idx > 0 => {
+                        Some(self.active_panel_idx - 1)
                     }
-                    Internal::panel_right
-                    if self.active_panel_idx + 1 < self.panels.len().get() => {
-                        if is_input_invocation {
-                            self.mut_panel().clear_input();
-                        }
-                        self.active_panel_idx += 1;
+                    Internal::panel_right if self.active_panel_idx + 1 < self.panels.len().get() => {
+                        Some(self.active_panel_idx + 1)
                     }
                     _ => {
                         debug!("unhandled propagated internal. cmd={:?}", &cmd);
+                        None
                     }
+                };
+                if let Some(idx) = new_active_panel_idx {
+                    if is_input_invocation {
+                        self.mut_panel().clear_input();
+                    }
+                    self.active_panel_idx = idx;
+                    let other_path = self.get_other_panel_path();
+                    self.mut_panel().refresh_input_status(&other_path, con);
                 }
             }
             Quit => {
@@ -225,8 +247,9 @@ impl App {
                 if clear_cache {
                     clear_caches();
                 }
-                // should we set the cmd ?
-                self.mut_state().refresh(screen, con);
+                for i in 0..self.panels.len().get() {
+                    self.panels[i].mut_state().refresh(screen, con);
+                }
             }
         }
         if let Some(text) = error {

@@ -20,11 +20,19 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_key(BACK_TAB)
             .with_control_key('w'),
         Verb::external(
-            "cp {newpath}",
+            "copy {newpath}",
             "/bin/cp -r {file} {newpath:path-from-parent}",
             StayInBroot,
         )
-        .unwrap(),
+        .unwrap()
+        .with_shortcut("cp"),
+        Verb::external(
+            "copy_to_panel",
+            "/bin/cp -r {file} {other-panel-directory}",
+            StayInBroot,
+        )
+        .unwrap()
+        .with_shortcut("cpp"),
         Verb::internal(focus) // hardcoded Enter
             .with_shortcut("goto"),
         Verb::internal(help).with_key(F1).with_shortcut("?"),
@@ -38,11 +46,19 @@ pub fn builtin_verbs() -> Vec<Verb> {
         .unwrap()
         .with_shortcut("md"),
         Verb::external(
-            "mv {newpath}",
+            "move {newpath}",
             "/bin/mv {file} {newpath:path-from-parent}",
             StayInBroot,
         )
-        .unwrap(),
+        .unwrap()
+        .with_shortcut("mv"),
+        Verb::external(
+            "move_to_panel",
+            "/bin/mv {file} {other-panel-directory}",
+            StayInBroot,
+        )
+        .unwrap()
+        .with_shortcut("mvp"),
         Verb::internal_bang(focus)
             .with_control_key('t'),
         Verb::internal_bang(start_end_panel)

@@ -10,6 +10,7 @@ use {
         verb::*,
     },
     minimad::{Alignment, Composite},
+    std::path::PathBuf,
     termimad::{Event, InputField},
 };
 
@@ -23,6 +24,7 @@ pub struct Panel {
 }
 
 impl Panel {
+
     pub fn new(
         id: PanelId,
         state: Box<dyn AppState>,
@@ -46,6 +48,7 @@ impl Panel {
     pub fn apply_command(
         &mut self,
         cmd: &Command,
+        other_path: &Option<PathBuf>,
         screen: &mut Screen,
         panel_skin: &PanelSkin,
         con: &AppContext,
@@ -54,15 +57,27 @@ impl Panel {
         let state_idx = self.states.len()-1;
         let result = self.states[state_idx].on_command(
             cmd,
+            other_path,
             &self.areas,
             screen,
             panel_skin,
             con,
             purpose,
         );
-        self.status = Some(self.state().get_status(cmd, con));
+        self.status = Some(self.state().get_status(cmd, other_path, con));
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
+    }
+
+    /// called on focusing the panel and before the display,
+    /// this updates the status from the command read in the input
+    pub fn refresh_input_status(
+        &mut self,
+        other_path: &Option<PathBuf>,
+        con: &AppContext,
+    ) {
+        let cmd = Command::from_raw(self.input_field.get_content(), false);
+        self.status = Some(self.state().get_status(&cmd, other_path, con));
     }
 
     /// execute all the pending tasks until there's none remaining or

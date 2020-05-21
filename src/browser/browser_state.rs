@@ -152,7 +152,7 @@ impl BrowserState {
             TreeLineType::File => make_opener(line.path.clone(), line.is_exe(), con),
             TreeLineType::Dir | TreeLineType::SymLinkToDir(_) => {
                 Ok(if con.launch_args.cmd_export_path.is_some() {
-                    CD.to_cmd_result(&line.target(), &None, con)?
+                    CD.to_cmd_result(&line.target(), &None, &None, con)?
                 } else {
                     AppStateCmdResult::DisplayError(
                         "This feature needs broot to be launched with the `br` script".to_owned(),
@@ -245,6 +245,7 @@ fn make_opener(
 }
 
 impl AppState for BrowserState {
+
     fn get_pending_task(&self) -> Option<&'static str> {
         if self.pending_pattern.is_some() {
             Some("searching")
@@ -257,7 +258,12 @@ impl AppState for BrowserState {
         }
     }
 
-    fn get_status(&self, cmd: &Command, con: &AppContext) -> Status {
+    fn get_status(
+        &self,
+        cmd: &Command,
+        other_path: &Option<PathBuf>,
+        con: &AppContext,
+    ) -> Status {
         match cmd {
             Command::FuzzyPatternEdit(s) if !s.is_empty() => {
                 Status::new(self.normal_status_message(true), false)
@@ -278,7 +284,7 @@ impl AppState for BrowserState {
                         }
                         PrefixSearchResult::Match(verb) => {
                             let line = self.displayed_tree().selected_line();
-                            verb.get_status(&line.path, invocation)
+                            verb.get_status(&line.path, other_path, invocation)
                         }
                         PrefixSearchResult::TooManyMatches(completions) => Status::new(
                             format!(

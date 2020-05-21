@@ -1,8 +1,13 @@
 use {
     super::*,
-    crate::{app::Status, errors::ConfError, keys, selection_type::SelectionType},
+    crate::{
+        app::Status,
+        errors::ConfError,
+        keys,
+        selection_type::SelectionType,
+    },
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
-    std::path::Path,
+    std::path::{Path, PathBuf},
 };
 
 /// what makes a verb.
@@ -123,21 +128,30 @@ impl Verb {
 
     /// Assuming the verb has been matched, check whether the arguments
     /// are OK according to the regex. Return none when there's no problem
-    /// and return the error to display if arguments don't match
-    pub fn check_args(&self, invocation: &VerbInvocation) -> Option<String> {
+    /// and return the error to display if arguments don't match.
+    pub fn check_args(
+        &self,
+        invocation: &VerbInvocation,
+        other_path: &Option<PathBuf>,
+    ) -> Option<String> {
         match &self.execution {
-            VerbExecution::Internal(internal_exec) => internal_exec.check_args(invocation),
-            VerbExecution::External(external_exec) => external_exec.check_args(invocation),
+            VerbExecution::Internal(internal_exec) => internal_exec.check_args(invocation, other_path),
+            VerbExecution::External(external_exec) => external_exec.check_args(invocation, other_path),
         }
     }
 
-    pub fn get_status(&self, path: &Path, invocation: &VerbInvocation) -> Status {
-        if let Some(err) = self.check_args(invocation) {
+    pub fn get_status(
+        &self,
+        path: &Path,
+        other_path: &Option<PathBuf>,
+        invocation: &VerbInvocation,
+    ) -> Status {
+        if let Some(err) = self.check_args(invocation, other_path) {
             Status::new(err, true)
         } else {
             let name = self.names.get(0).unwrap_or(&invocation.name);
             let markdown = if let VerbExecution::External(external_exec) = &self.execution {
-                let exec_desc = external_exec.shell_exec_string(path, &invocation.args);
+                let exec_desc = external_exec.shell_exec_string(path, other_path, &invocation.args);
                 format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
             } else if self.description.code {
                 format!(
