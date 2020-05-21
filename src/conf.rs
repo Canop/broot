@@ -311,6 +311,18 @@ execution = "$PAGER {file}"
 # key = "ctrl-g"
 # execution = ":toggle_git_status"
 
+# You can reproduce the bindings of Norton Commander
+# on copying or moving to the other panel:
+#
+# [[verbs]]
+# key = "F5"
+# execution = ":copy_to_panel"
+#
+# [[verbs]]
+# key = "F6"
+# execution = ":move_to_panel"
+
+
 ###############################################################
 # Skin
 # If you want to change the colors of broot,

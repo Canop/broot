@@ -1,5 +1,8 @@
 use {
-    super::Screen,
+    super::{
+        Screen,
+        WIDE_STATUS,
+    },
     crate::{
         app::Panel,
         errors::ProgramError,
@@ -88,7 +91,11 @@ impl Areas {
             };
             let y = screen.height - 2;
             areas.state = Area::new(x, 0, panel_width, y);
-            areas.status = Area::new(x, y, panel_width, 1);
+            areas.status = if WIDE_STATUS {
+                Area::new(0, y, screen.width, 1)
+            } else {
+                Area::new(x, y, panel_width, 1)
+            };
             let y = y + 1;
             areas.input = Area::new(x, y, panel_width, 1);
             areas.purpose = if slot_idx > 0 {

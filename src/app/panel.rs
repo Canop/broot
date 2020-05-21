@@ -2,7 +2,7 @@ use {
     super::*,
     crate::{
         command::*,
-        display::{status_line, Areas, Screen, W, write_flags},
+        display::{status_line, Areas, Screen, W, WIDE_STATUS, write_flags},
         errors::ProgramError,
         keys,
         skin::PanelSkin,
@@ -158,7 +158,9 @@ impl Panel {
     ) -> Result<(), ProgramError> {
         let state_area = self.areas.state.clone();
         self.mut_state().display(w, screen, state_area, panel_skin, con)?;
-        self.write_status(w, panel_skin, screen)?;
+        if active || !WIDE_STATUS {
+            self.write_status(w, panel_skin, screen)?;
+        }
         self.input_field.set_normal_style(panel_skin.styles.input.clone());
         self.input_field.focused = active;
         self.input_field.area = self.areas.input.clone();

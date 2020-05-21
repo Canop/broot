@@ -39,6 +39,10 @@ pub use {
     screen::Screen,
 };
 
+/// if true then the status of a panel covers the whole width
+/// of the terminal (over the other panels)
+pub const WIDE_STATUS: bool = true;
+
 /// the type used by all GUI writing functions
 pub type W = BufWriter<std::io::Stderr>;
 
