@@ -3,14 +3,17 @@
 This verb can be called, and parameterized, with a path as argument, which makes it possible to have a shortcut to a specific location.
 As a result, the specific `:focus_user_home` and `:focus_root` verbs have been removed (`:focus_user_home` works on all OS).
 #### Major feature: panels!
-There are two major ways to open a new panel:
+There are three major ways to open a new panel:
+- by using ctrl-left or ctrl-right, which can also be used to navigate between panels
 - when a verb is edited, by using ctrl-p, which opens a panel which on closure will fill the argument
 - by using any verb with a bang. For example `:!focus` or `:!help`
+When you have two panels, you may use some new verbs like :copy_to_panel which copies the selection to the selected location in the other panel.
 Many new verbs and functions are related to panels but broot can still be used exactly as before without using panels.
 #### Major feature: special paths
 Some paths can be handled in a specific way. Fix #205 and #208
 #### Minor changes:
 - date/time format configurable - Fix #229
+- esc doesn't quit broot anymore (by popular demand)
 
 <a name="v0.13.6"></a>
 ### v0.13.6 - 2020-04-08

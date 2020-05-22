@@ -21,6 +21,8 @@ use {
     termimad::{Event, EventSource},
 };
 
+const ESCAPE_TO_QUIT: bool = false;
+
 /// The GUI
 pub struct App {
     panels: NonEmptyVec<Panel>,
@@ -201,7 +203,7 @@ impl App {
                 if self.remove_state(screen) {
                     // should we set the cmd ?
                     self.mut_state().refresh(screen, con);
-                } else {
+                } else if ESCAPE_TO_QUIT {
                     self.quitting = true;
                 }
             }
@@ -211,7 +213,7 @@ impl App {
                 }
                 if self.remove_state(screen) {
                     self.mut_panel().apply_command(&cmd, &other_path, screen, panel_skin, con)?;
-                } else {
+                } else if ESCAPE_TO_QUIT {
                     self.quitting = true;
                 }
             }
