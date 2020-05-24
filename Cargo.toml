@@ -57,6 +57,10 @@ codegen-units = 1 # this removes a few hundred bytes from the final exec size
 name = "fuzzy"
 harness = false
 
+[[bench]]
+name = "path_normalization"
+harness = false
+
 [patch.crates-io]
 # lazy-regex = { path = "../lazy-regex" }
 # minimad = { path = "../minimad" }

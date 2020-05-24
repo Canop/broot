@@ -11,7 +11,7 @@ use {
     },
     minimad::{Alignment, Composite},
     std::path::PathBuf,
-    termimad::{Event, InputField},
+    termimad::Event,
 };
 
 pub struct Panel {
@@ -20,7 +20,7 @@ pub struct Panel {
     pub areas: Areas,
     status: Option<Status>,
     pub purpose: PanelPurpose,
-    input_field: InputField,
+    input: PanelInput,
 }
 
 impl Panel {
@@ -30,14 +30,14 @@ impl Panel {
         state: Box<dyn AppState>,
         areas: Areas,
     ) -> Self {
-        let input_field = InputField::new(areas.input.clone());
+        let input = PanelInput::new(areas.input.clone());
         Self {
             id,
             states: vec![state],
             areas,
             status: None,
             purpose: PanelPurpose::None,
-            input_field,
+            input,
         }
     }
 
@@ -76,7 +76,7 @@ impl Panel {
         other_path: &Option<PathBuf>,
         con: &AppContext,
     ) {
-        let cmd = Command::from_raw(self.input_field.get_content(), false);
+        let cmd = Command::from_raw(self.input.get_content(), false);
         self.status = Some(self.state().get_status(&cmd, other_path, con));
     }
 
@@ -102,9 +102,7 @@ impl Panel {
         event: Event,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
-        let cmd = event::to_command(event, &mut self.input_field, con, &*self.states[self.states.len()-1]);
-        self.input_field.display_on(w)?;
-        Ok(cmd)
+        self.input.on_event(w, event, con, &*self.states[self.states.len()-1])
     }
 
     pub fn push_state(&mut self, new_state: Box<dyn AppState>) {
@@ -118,24 +116,24 @@ impl Panel {
     }
 
     pub fn clear_input(&mut self) {
-        self.input_field.set_content("");
+        self.input.set_content("");
     }
 
     pub fn set_input_content(&mut self, content: &str) {
-        self.input_field.set_content(content);
-    }
-
-    pub fn set_input_arg(&mut self, arg: String) {
-        let mut command_parts = CommandParts::from(&self.input_field.get_content());
-        if let Some(invocation) = &mut command_parts.verb_invocation {
-            invocation.args = Some(arg);
-            let new_input = format!("{}", command_parts);
-            self.input_field.set_content(&new_input);
-        }
+        self.input.set_content(content);
     }
 
     pub fn get_input_content(&self) -> String {
-        self.input_field.get_content()
+        self.input.get_content()
+    }
+
+    pub fn set_input_arg(&mut self, arg: String) {
+        let mut command_parts = CommandParts::from(&self.input.get_content());
+        if let Some(invocation) = &mut command_parts.verb_invocation {
+            invocation.args = Some(arg);
+            let new_input = format!("{}", command_parts);
+            self.input.set_content(&new_input);
+        }
     }
 
     /// return true when the element has been removed
@@ -161,14 +159,11 @@ impl Panel {
         if active || !WIDE_STATUS {
             self.write_status(w, panel_skin, screen)?;
         }
-        self.input_field.set_normal_style(panel_skin.styles.input.clone());
-        self.input_field.focused = active;
-        self.input_field.area = self.areas.input.clone();
-        self.input_field.display_on(w)?;
+        self.input.display(w, active, self.areas.input.clone(), panel_skin)?;
         if active {
             self.write_purpose(w, panel_skin, screen, con)?;
             let flags = self.state().get_flags();
-            let input_content_len = self.input_field.get_content().len() as u16;
+            let input_content_len = self.input.get_content().len() as u16;
             write_flags(w, &flags, &self.areas.input, input_content_len, screen, panel_skin)?;
         }
         Ok(())

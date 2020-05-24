@@ -282,11 +282,11 @@ impl AppState for BrowserState {
                         PrefixSearchResult::NoMatch => {
                             Status::new("No matching verb (*?* for the list of verbs)", true)
                         }
-                        PrefixSearchResult::Match(verb) => {
+                        PrefixSearchResult::Match(_, verb) => {
                             let line = self.displayed_tree().selected_line();
                             verb.get_status(&line.path, other_path, invocation)
                         }
-                        PrefixSearchResult::TooManyMatches(completions) => Status::new(
+                        PrefixSearchResult::Matches(completions) => Status::new(
                             format!(
                                 "Possible verbs: {}",
                                 completions
@@ -411,9 +411,6 @@ impl AppState for BrowserState {
             Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
                 validate_purpose: false,
             },
-            Internal::complete => {
-                AppStateCmdResult::DisplayError("not yet implemented".to_string())
-            }
             Internal::focus => internal_focus::on_internal(
                 internal_exec,
                 input_invocation,
@@ -533,8 +530,7 @@ impl AppState for BrowserState {
                     if let Some(input_invocation) = input_invocation {
                         // we'll go for input arg editing
                         let path = if let Some(input_arg) = &input_invocation.args {
-                            let path = self.root().to_string_lossy();
-                            let path = path::path_from(&path, input_arg);
+                            let path = path::path_from(self.root(), input_arg);
                             PathBuf::from(path)
                         } else {
                             self.root().to_path_buf()

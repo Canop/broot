@@ -9,8 +9,11 @@ There are three major ways to open a new panel:
 - by using any verb with a bang. For example `:focus! ~` or `:!help`
 When you have two panels, you may use some new verbs like :copy_to_panel which copies the selection to the selected location in the other panel.
 Many new verbs and functions are related to panels but broot can still be used exactly as before without using panels.
+#### Major feature: autocompletion
+Using the Tab key you can complete verbs or paths
 #### Major feature: special paths
 Some paths can be handled in a specific way. Fix #205 and #208
+You can for example decide that some slow disk shouldn't be entered automatically
 #### Minor changes:
 - date/time format configurable - Fix #229
 - esc doesn't quit broot anymore (by popular demand)

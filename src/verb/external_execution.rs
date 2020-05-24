@@ -90,7 +90,6 @@ impl ExternalExecution {
         for group in GROUP.find_iter(execution_str) {
             if group.as_str().starts_with("{other-panel-") {
                 need_another_panel = true;
-                debug!("NEED ANOTHER PANEL");
             }
         }
         Ok(Self {

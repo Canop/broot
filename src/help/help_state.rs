@@ -105,10 +105,10 @@ impl AppState for HelpState {
                 } else {
                     match con.verb_store.search(&invocation.name) {
                         PrefixSearchResult::NoMatch => Status::from_error("No matching verb"),
-                        PrefixSearchResult::Match(verb) => {
+                        PrefixSearchResult::Match(_, verb) => {
                             verb.get_status(Conf::default_location(), other_path, invocation)
                         }
-                        PrefixSearchResult::TooManyMatches(completions) => {
+                        PrefixSearchResult::Matches(completions) => {
                             Status::from_message(format!(
                                 "Possible completions: {}",
                                 completions

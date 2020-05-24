@@ -3,37 +3,43 @@ use {
     regex::{self, Captures},
     std::{
         collections::HashMap,
-        path::{Path, PathBuf},
+        path::{Component, Path, PathBuf},
     },
 };
 
-/// build a usable path from a user input
+/// build a usable path from a user input which may be absolute
+/// (if it starts with / or ~) or relative to the supplied base_dir.
+/// (we might want to try detect windows drives in the future, too)
 ///
-/// This function handles path starting with ~ or /.
-pub fn path_from(base_dir: &str, input: &str) -> String {
+pub fn path_from<P: AsRef<Path>>(base_dir: P, input: &str) -> PathBuf {
     let tilde = regex!(r"^~(/|$)");
     if input.starts_with('/') {
         // if the input starts with a `/`, we use it as is
-        input.to_string()
+        input.into()
     } else if tilde.is_match(input) {
         // if the input starts with `~` as first token, we replace
         // this `~` with the user home directory
-        tilde
-            .replace(input, |c: &Captures| {
-                if let Some(user_dirs) = UserDirs::new() {
-                    format!("{}{}", user_dirs.home_dir().to_string_lossy(), &c[1],)
-                } else {
-                    warn!("no user dirs found, no expansion of ~");
-                    c[0].to_string()
-                }
-            })
-            .to_string()
+        PathBuf::from(
+            &*tilde
+                .replace(input, |c: &Captures| {
+                    if let Some(user_dirs) = UserDirs::new() {
+                        format!("{}{}", user_dirs.home_dir().to_string_lossy(), &c[1],)
+                    } else {
+                        warn!("no user dirs found, no expansion of ~");
+                        c[0].to_string()
+                    }
+                })
+        )
     } else {
         // we put the input behind the source (the selected directory
         // or its parent) and we normalize so that the user can type
         // paths with `../`
-        normalize_path(format!("{}/{}", base_dir, input))
+        normalize_path(base_dir.as_ref().join(input))
     }
+}
+
+pub fn path_str_from<P: AsRef<Path>>(base_dir: P, input: &str) -> String {
+    path_from(base_dir, input).to_string_lossy().to_string()
 }
 
 /// return the closest enclosing directory
@@ -59,8 +65,8 @@ pub fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &HashMap<String, 
     if let Some(repl) = replacement_map.get(name) {
         if let Some(fmt) = ec.get(2) {
             match fmt.as_str() {
-                "path-from-directory" => path_from(replacement_map.get("directory").unwrap(), repl),
-                "path-from-parent" => path_from(replacement_map.get("parent").unwrap(), repl),
+                "path-from-directory" => path_str_from(replacement_map.get("directory").unwrap(), repl),
+                "path-from-parent" => path_str_from(replacement_map.get("parent").unwrap(), repl),
                 _ => format!("invalid format: {:?}", fmt.as_str()),
             }
         } else {
@@ -84,30 +90,60 @@ pub fn escape_for_shell(path: &Path) -> String {
     }
 }
 
-/// Improve the path to remove and solve .. token.
+/// Improve the path to try remove and solve .. token.
 ///
-/// This will be removed when this issue is solved: https://github.com/rust-lang/rfcs/issues/2208
+/// This assumes that `a/b/../c` is `a/c` which might be different from
+/// what the OS would have chosen when b is a link. This is OK
+/// for broot verb arguments but can't be generally used elsewhere
+/// (a more general solution would probably query the FS and just
+/// resolve b in case of links).
 ///
-/// Note that this operation might be a little too optimistic in some cases
-/// of aliases but it's probably OK in broot.
-pub fn normalize_path(mut path: String) -> String {
-    let mut len_before = path.len();
-    loop {
-        path = regex!(r"/[^/.\\]+/\.\.").replace(&path, "").to_string();
-        let len = path.len();
-        if len == len_before {
-            return path;
+/// This function ensures a given path ending with '/' still
+/// ends with '/' after normalization.
+pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
+    // PathBuf::from(
+    //     normalize_path_str(path.as_ref().to_string_lossy().to_string())
+    // )
+    let ends_with_slash = path.as_ref().to_str().map_or(false, |s| s.ends_with('/'));
+    let mut normalized = PathBuf::new();
+    for component in path.as_ref().components() {
+        match &component {
+            Component::ParentDir => {
+                if !normalized.pop() {
+                    normalized.push(component);
+                }
+            }
+            _ => {
+                normalized.push(component);
+            }
         }
-        len_before = len;
     }
+    if ends_with_slash {
+        normalized.push("");
+    }
+    normalized
 }
+
+// pub fn normalize_path_str(mut path: String) -> String {
+//     let mut len_before = path.len();
+//     loop {
+//         path = regex!(r"/[^/.\\]+/\.\.").replace(&path, "").to_string();
+//         let len = path.len();
+//         if len == len_before {
+//             return path;
+//         }
+//         len_before = len;
+//     }
+// }
+
 #[cfg(test)]
 mod path_normalize_tests {
 
     use super::normalize_path;
 
     fn check(before: &str, after: &str) {
-        assert_eq!(normalize_path(before.to_string()), after.to_string());
+        println!("-----------------\nnormalizing {:?}", before);
+        assert_eq!(normalize_path(before.to_string()).to_string_lossy(), after);
     }
 
     #[test]
@@ -115,11 +151,14 @@ mod path_normalize_tests {
         check("/abc/test/../thing.png", "/abc/thing.png");
         check("/abc/def/../../thing.png", "/thing.png");
         check("/home/dys/test", "/home/dys/test");
+        check("/home/dys", "/home/dys");
+        check("/home/dys/", "/home/dys/");
         check("/home/dys/..", "/home");
         check("/home/dys/../", "/home/");
         check("/..", "/..");
         check("../test", "../test");
         check("/home/dys/../../../test", "/../test");
+        check("π/2", "π/2");
         check(
             "/home/dys/dev/broot/../../../canop/test",
             "/home/canop/test",

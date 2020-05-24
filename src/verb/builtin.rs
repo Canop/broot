@@ -14,7 +14,6 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_description("change directory and quit (mapped to *alt*-*enter*)"),
         #[cfg(unix)]
         Verb::external("chmod {args}", "chmod {args} {file}", StayInBroot).unwrap(),
-        Verb::internal(complete).with_key(TAB),
         Verb::internal(close_panel_ok),
         Verb::internal(close_panel_cancel)
             .with_key(BACK_TAB)
@@ -59,8 +58,6 @@ pub fn builtin_verbs() -> Vec<Verb> {
         )
         .unwrap()
         .with_shortcut("mvp"),
-        Verb::internal_bang(focus)
-            .with_control_key('t'),
         Verb::internal_bang(start_end_panel)
             .with_control_key('p'),
         Verb::internal(open_stay)
@@ -82,7 +79,6 @@ pub fn builtin_verbs() -> Vec<Verb> {
                 code: KeyCode::Right,
                 modifiers: KeyModifiers::CONTROL,
             }),
-        Verb::internal(parent).with_shortcut("p"),
         Verb::internal(print_path).with_shortcut("pp"),
         Verb::internal(print_relative_path).with_shortcut("prp"),
         Verb::internal(print_tree).with_shortcut("pt"),
@@ -101,7 +97,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         #[cfg(unix)]
         Verb::internal(toggle_perm).with_shortcut("perm"),
         Verb::internal(toggle_sizes).with_shortcut("sizes"),
-        Verb::internal(toggle_trim_root).with_shortcut("t"),
+        Verb::internal(toggle_trim_root),
         Verb::internal(total_search).with_control_key('s'),
         Verb::internal(up_tree).with_shortcut("up"),
     ]

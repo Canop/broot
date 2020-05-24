@@ -19,8 +19,8 @@ pub struct VerbStore {
 #[derive(Debug, Clone, PartialEq)]
 pub enum PrefixSearchResult<'v, T> {
     NoMatch,
-    Match(T),
-    TooManyMatches(Vec<&'v str>),
+    Match(&'v str, T),
+    Matches(Vec<&'v str>),
 }
 
 impl VerbStore {
@@ -52,7 +52,7 @@ impl VerbStore {
             for name in &verb.names {
                 if name.starts_with(prefix) {
                     if name == prefix {
-                        return PrefixSearchResult::Match(&verb);
+                        return PrefixSearchResult::Match(name, &verb);
                     }
                     found_index = index;
                     nb_found += 1;
@@ -63,8 +63,8 @@ impl VerbStore {
         }
         match nb_found {
             0 => PrefixSearchResult::NoMatch,
-            1 => PrefixSearchResult::Match(&self.verbs[found_index]),
-            _ => PrefixSearchResult::TooManyMatches(completions),
+            1 => PrefixSearchResult::Match(completions[0], &self.verbs[found_index]),
+            _ => PrefixSearchResult::Matches(completions),
         }
     }
 

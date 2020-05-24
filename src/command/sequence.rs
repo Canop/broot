@@ -50,7 +50,7 @@ pub fn parse_command_sequence<'a>(
                             name: invocation.name.to_string(),
                         });
                     }
-                    PrefixSearchResult::TooManyMatches(_) => {
+                    PrefixSearchResult::Matches(_) => {
                         return Err(ProgramError::AmbiguousVerbName {
                             name: invocation.name.to_string(),
                         });

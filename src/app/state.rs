@@ -133,7 +133,7 @@ pub trait AppState {
                 panel_purpose,
             ),
             Command::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
-                PrefixSearchResult::Match(verb) => {
+                PrefixSearchResult::Match(_, verb) => {
                     if let Some(err) = verb.check_args(invocation, other_path) {
                         Ok(AppStateCmdResult::DisplayError(err))
                     } else {
