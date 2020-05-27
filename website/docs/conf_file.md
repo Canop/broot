@@ -104,8 +104,8 @@ Use shortcuts for verbs you frequently use.
 
 The main keys you can use are
 
-* The function keys (for example `"F3"`)
-* Ctrl and Alt keys (for example `"^T"` `"alt-a"`)
+* The function keys (for example <kbd>F3</kbd>)
+* Ctrl and Alt keys (for example <kbd>ctrl</kbd><kbd>T</kbd>  or <kbd>alt</kbd><kbd>a</kbd>)
 
 It's possible to define a verb just to add a trigger key to an internal verb.
 

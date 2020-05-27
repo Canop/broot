@@ -41,7 +41,6 @@ You may define other shortcuts, or your own bi-panels verbs.
 
 Assuming you started from just one panel and wanted to execute a command taking a path as argument. You may use tab-completion to type it faster but you may also hit <kbd>ctrl</kbd><kbd>P</kbd> to create a panel and select it. Here's the complete workflow.
 
-
 * Start with selecting a file and typing the verb of your choice:
 ![image](img/20200520-ctrlp-1.png)
 

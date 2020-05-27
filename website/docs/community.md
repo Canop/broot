@@ -30,7 +30,7 @@ When something looks like a bug, especially keyboard problems, we need both to k
 
 ## Contribute
 
-**Broot** is written in [rust](https://www.rust-lang.org/). The current focus is linux+mac but we try to support windows too (use PowerShell instead of the old cmd).
+**Broot** is written in [Rust](https://www.rust-lang.org/). The current focus is linux+mac but we try to support windows too (use PowerShell instead of the old cmd).
 
 Before starting working on a Pull Request, please join the Miaou room to coordinate the developement. There are frequently several feature branchs waiting to be merged and adding some wild ones may make the process painful.
 

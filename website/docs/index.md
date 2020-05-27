@@ -14,7 +14,7 @@ Notice the *unlisted*?
 
 That's what makes it usable where the old `tree` command would produce pages of output.
 
-`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](documentation/usage/#gitignore)).
+`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](../navigation/#toggles)).
 
 # Find a directory then `cd` to it
 
