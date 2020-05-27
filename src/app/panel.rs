@@ -30,7 +30,8 @@ impl Panel {
         state: Box<dyn AppState>,
         areas: Areas,
     ) -> Self {
-        let input = PanelInput::new(areas.input.clone());
+        let mut input = PanelInput::new(areas.input.clone());
+        input.set_content(&state.get_starting_input());
         Self {
             id,
             states: vec![state],
@@ -106,6 +107,7 @@ impl Panel {
     }
 
     pub fn push_state(&mut self, new_state: Box<dyn AppState>) {
+        self.input.set_content(&new_state.get_starting_input());
         self.states.push(new_state);
     }
     pub fn mut_state(&mut self) -> &mut dyn AppState {
@@ -140,6 +142,7 @@ impl Panel {
     pub fn remove_state(&mut self) -> bool {
         if self.states.len() > 1 {
             self.states.pop();
+            self.input.set_content(&self.state().get_starting_input());
             true
         } else {
             false

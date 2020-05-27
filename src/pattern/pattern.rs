@@ -59,6 +59,13 @@ impl Pattern {
             _ => true,
         }
     }
+    pub fn as_input(&self) -> String {
+        match self {
+            Pattern::Fuzzy(fp) => fp.to_string(),
+            Pattern::Regex(rp) => rp.to_string(),
+            Pattern::None => String::new(),
+        }
+    }
     /// empties the pattern and return it
     /// Similar to Option::take
     pub fn take(&mut self) -> Pattern {

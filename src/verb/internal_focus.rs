@@ -62,7 +62,7 @@ pub fn new_panel_on_path(
     }
 }
 
-/// general implementation  for verbs based on the :focus internal with optionally
+/// general implementation for verbs based on the :focus internal with optionally
 /// a bang or an argument.
 pub fn on_internal(
     internal_exec: &InternalExecution,

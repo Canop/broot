@@ -693,4 +693,13 @@ impl AppState for BrowserState {
         ]
     }
 
+    fn get_starting_input(&self) -> String {
+        if self.pending_pattern.is_some() {
+            self.pending_pattern.as_input()
+        } else {
+            self.filtered_tree.as_ref()
+                .map(|t| t.options.pattern.as_input())
+                .unwrap_or_else(|| String::new())
+        }
+    }
 }
