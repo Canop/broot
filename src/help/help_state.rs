@@ -76,7 +76,7 @@ impl AppState for HelpState {
         if self.dirty {
             screen.clear_area_to_right(w, &state_area)?;
             self.text_area = state_area;
-            self.text_area.pad_for_max_width(110);
+            self.text_area.pad_for_max_width(120);
             self.dirty = false;
         }
         let text = help_content::build_text(con);

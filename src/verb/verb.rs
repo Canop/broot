@@ -4,6 +4,7 @@ use {
         app::Status,
         errors::ConfError,
         keys,
+        path,
         selection_type::SelectionType,
     },
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
@@ -29,6 +30,7 @@ pub struct Verb {
     /// but this may change.
     pub names: Vec<String>,
 
+    /// key shortcuts
     pub keys: Vec<KeyEvent>,
 
     /// description of the optional keyboard key(s) triggering that verb
@@ -150,16 +152,27 @@ impl Verb {
             Status::new(err, true)
         } else {
             let name = self.names.get(0).unwrap_or(&invocation.name);
-            let markdown = if let VerbExecution::External(external_exec) = &self.execution {
-                let exec_desc = external_exec.shell_exec_string(path, other_path, &invocation.args);
-                format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
-            } else if self.description.code {
-                format!(
-                    "Hit *enter* to **{}**: `{}`",
-                    name, &self.description.content
-                )
-            } else {
-                format!("Hit *enter* to **{}**: {}", name, &self.description.content)
+            let markdown = match &self.execution {
+                VerbExecution::External(external_exec) => {
+                    let exec_desc = external_exec.shell_exec_string(path, other_path, &invocation.args);
+                    format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
+                }
+                VerbExecution::Internal(internal_exec) => {
+                    let pb;
+                    let arg_path = if let Some(arg) = invocation.args.as_ref().or(internal_exec.arg.as_ref()) {
+                        pb = path::path_from(path, arg);
+                        &pb
+                    } else {
+                        path
+                    };
+                    if let Some(special_desc) = internal_exec.internal.applied_description(arg_path) {
+                        format!("Hit *enter* to **{}**: {}", name, special_desc)
+                    } else if self.description.code {
+                        format!("Hit *enter* to **{}**: `{}`", name, &self.description.content)
+                    } else {
+                        format!("Hit *enter* to **{}**: {}", name, &self.description.content)
+                    }
+                }
             };
             Status::new(markdown, false)
         }

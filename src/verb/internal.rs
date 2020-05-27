@@ -4,7 +4,10 @@
 //! They can be called as ":some_name" from builtin verbs and
 //! from configured verbs.
 
-use crate::errors::ConfError;
+use {
+    crate::errors::ConfError,
+    std::path::Path,
+};
 
 macro_rules! Internals {
     (
@@ -25,16 +28,23 @@ macro_rules! Internals {
             }
         }
         impl Internal {
-            pub fn name(&self) -> &'static str {
+            pub fn name(self) -> &'static str {
                 use Internal::*;
                 match self {
                     $($name => stringify!($name),)*
                 }
             }
-            pub fn description(&self) -> &'static str {
+            pub fn description(self) -> &'static str {
                 use Internal::*;
                 match self {
                     $($name => $description,)*
+                }
+            }
+            pub fn applied_description(self, path: &Path) -> Option<String> {
+                if self == Internal::focus {
+                    Some(format!("focus `{}`", path.to_string_lossy()))
+                } else {
+                    None
                 }
             }
         }
@@ -43,14 +53,14 @@ macro_rules! Internals {
 
 Internals! {
     back: "revert to the previous state (mapped to *esc*)",
-    close_panel_ok: "close the current panel, validating the selected path",
-    close_panel_cancel: "close the current panel, not using the selected path",
+    close_panel_ok: "close the panel, validating the selected path",
+    close_panel_cancel: "close the panel, not using the selected path",
     focus: "display the directory (mapped to *enter*)",
     help: "display broot's help",
     line_down: "move one line down",
     line_up: "move one line up",
-    open_stay: "open file or directory according to OS settings (stay in broot)",
-    open_leave: "open file or directory according to OS settings (quit broot)",
+    open_stay: "open file or directory according to OS (stay in broot)",
+    open_leave: "open file or directory according to OS (quit broot)",
     page_down: "scroll one page down",
     page_up: "scroll one page up",
     parent: "move to the parent directory",

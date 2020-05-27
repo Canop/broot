@@ -32,8 +32,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         )
         .unwrap()
         .with_shortcut("cpp"),
-        Verb::internal(focus) // hardcoded Enter
-            .with_shortcut("goto"),
+        Verb::internal(focus), // hardcoded Enter
         Verb::internal(help).with_key(F1).with_shortcut("?"),
         Verb::internal(line_down).with_key(DOWN),
         Verb::internal(line_up).with_key(UP),

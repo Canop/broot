@@ -101,9 +101,6 @@ pub fn escape_for_shell(path: &Path) -> String {
 /// This function ensures a given path ending with '/' still
 /// ends with '/' after normalization.
 pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    // PathBuf::from(
-    //     normalize_path_str(path.as_ref().to_string_lossy().to_string())
-    // )
     let ends_with_slash = path.as_ref().to_str().map_or(false, |s| s.ends_with('/'));
     let mut normalized = PathBuf::new();
     for component in path.as_ref().components() {
@@ -123,18 +120,6 @@ pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
     }
     normalized
 }
-
-// pub fn normalize_path_str(mut path: String) -> String {
-//     let mut len_before = path.len();
-//     loop {
-//         path = regex!(r"/[^/.\\]+/\.\.").replace(&path, "").to_string();
-//         let len = path.len();
-//         if len == len_before {
-//             return path;
-//         }
-//         len_before = len;
-//     }
-// }
 
 #[cfg(test)]
 mod path_normalize_tests {
