@@ -27,23 +27,23 @@ broot is fast and never blocks, even when you make it search a big slow disk (an
 Most useful keys for this:
 
 * the letters of what you're looking for
-* `<enter>` to select a directory (staying in broot)
-* `<esc>` to get back to the previous state or clear your search
-* `<alt><enter>` to get back to the shell having `cd` to the selected directory
-* `:q` if you just want to quit (you can use `<ctrl><q>` if you prefer)
+* <kbd>enter</kbd> to select a directory (staying in broot)
+* <kbd>esc</kbd> to get back to the previous state or clear your search
+* <kbd>alt</kbd><kbd>enter</kbd> to get back to the shell having `cd` to the selected directory
+* `:q` if you just want to quit (you can use <kbd>ctrl</kbd><kbd>q</kbd> if you prefer)
 
 # Never lose track of file hierarchy while you search
 
 ![size](img/20191112-mycnf.png)
 
-broot tries to select the most relevant file. You can still go from one match to another one using `<tab>` or arrow keys.
+broot tries to select the most relevant file. You can still go from one match to another one using <kbd>tab</kbd> or arrow keys.
 
 You may also search with a regular expression. To do this, add a `/` before or after the pattern.
 
 Once the file you want is selected you can
 
-* hit `<enter>` (or double-click) to open it in your system's default program
-* hit `<alt><enter>` to open it in your system's default program and close broot
+* hit <kbd>enter</kbd> (or double-click) to open it in your system's default program
+* hit <kbd>alt</kbd><kbd>enter</kbd> to open it in your system's default program and close broot
 * type a verb. For example `:e` opens the file in your preferred editor (which may be a terminal one)
 
 # Manipulate your files
@@ -56,15 +56,29 @@ You can instead do it without losing the view of the file hierarchy.
 
 Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
+# Do it with panels
+
+Do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
+
+![custom colors tree](img/20200525-colored-panels.png)
+
+(yes, colors are fully customizable)
+
+Using two panels, you can for example copy or move elements between them:
+
+![cpp](img/20200525-cpp.png)
+
+If you like you may do it Norton Commander style by binding `:copy_to_panel` to <kbd>F5</kbd> and `:move_to_panel` to <kbd>F6</kbd>.
+
 # Apply a standard or personal shortcut to a file
 
 ![size](img/20191112-edit.png)
 
-Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>`.
+Just find the file you want to edit with a few keystrokes, type `:e`, then <kbd>enter</kbd>.
 
 You can add verbs or configure the existing ones; see [documentation](documentation/usage.md#verbs).
 
-And you can add shorcuts, for example a `ctrl` sequence or a function key
+And you can add shorcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
 # Replace `ls` (and its clones):
 
@@ -95,5 +109,5 @@ And if you want to see *only* the files which would be displayed by the `git sta
 
 # More...
 
-See the complete [Documentation](documentation/usage.md) and [how to install](install).
+See [how to install](install), [configure](conf_file), or [use](launch).
 

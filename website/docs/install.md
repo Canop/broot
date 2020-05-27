@@ -59,7 +59,7 @@ Ubuntu and Debian users may use this apt repository: [https://packages.azlux.fr/
 
 # Installation Completion : the `br` shell function
 
-broot is convenient to find a directory then `cd` to it, which is done using `<alt><enter>` or `:cd`.
+broot is convenient to find a directory then `cd` to it, which is done using <kbd>alt</kbd><kbd>enter</kbd> or `:cd`.
 
 But broot needs a companion function in the shell in order to be able to change directory.
 
@@ -71,7 +71,7 @@ If you have messed with the configuration files, you might want to have the shel
 
 In order to do this, either remove all broot config files, or launch `broot --install`.
 
-When it's done, you can do just `br` to launch broot, and typing `<alt><enter>` will cd for you.
+When it's done, you can do just `br` to launch broot, and typing <kbd>alt</kbd><kbd>enter</kbd> will cd for you.
 
 # `br` alias for Nushell
 

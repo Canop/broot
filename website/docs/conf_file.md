@@ -10,8 +10,11 @@ This file is called `conf.toml` and is in [TOML](https://github.com/toml-lang/to
 Currently, you can configure
 
 * default flags
+* special paths
 * verbs and shortcuts
 * style
+
+The default configuration file contains several example sections that you may uncomment and modify for your goals.
 
 # Default flags
 
@@ -29,6 +32,24 @@ Those flags can still be overriden at launch with the negating ones. For example
 
     br -H
 
+
+# Special Paths
+
+You may map special paths to specific behaviors. You may especially want
+
+- to have some link to a directory to always automatically be handled as a normal directory
+- to exclude some path because it's on a slow device or non relevant
+
+Example configuration:
+
+```toml
+[special-paths]
+"/media/slow-backup-disk" = "no-enter"
+"/home/dys/useless" = "hide"
+"/home/dys/my-link-I-want-to-explore" = "enter"
+```
+
+Be careful that those paths (globs, in fact) are checked a lot when broot builds trees and that defining a lot of paths will impact the overall speed.
 
 # Verbs, Shortcuts, and keys
 
@@ -67,9 +88,11 @@ from_shell | no | whether the verb must be executed from the parent shell (needs
 
 Knowing this algorithm, you may understand the point in the following definition:
 
-	[[verbs]]
-	invocation = "p"
-	execution = ":parent"
+```toml
+[[verbs]]
+invocation = "p"
+execution = ":parent"
+```
 
 This verb is an alias to the internal builtin already available if you type `:parent`.
 
@@ -88,41 +111,43 @@ It's possible to define a verb just to add a trigger key to an internal verb.
 
 For example you could add those mappings:
 
-	[[verbs]]
-	invocation = "root"
-	key = "F9"
-	execution = ":focus_root"
+```toml
+[[verbs]]
+invocation = "root"
+key = "F9"
+execution = ":focus_root"
 
-	[[verbs]]
-	invocation = "home"
-	key = "ctrl-H"
-	execution = ":focus_user_home"
+[[verbs]]
+invocation = "home"
+key = "ctrl-H"
+execution = ":focus_user_home"
 
-	[[verbs]]
-	key = "alt-j"
-	execution = ":line_down"
+[[verbs]]
+key = "alt-j"
+execution = ":line_down"
 
-	[[verbs]]
-	invocation = "top"
-	key = "F6"
-	execution = ":select_first"
+[[verbs]]
+invocation = "top"
+key = "F6"
+execution = ":select_first"
 
-	[[verbs]]
-	invocation = "bottom"
-	key = "F7"
-	execution = ":select_last"
+[[verbs]]
+invocation = "bottom"
+key = "F7"
+execution = ":select_last"
 
-	[[verbs]]
-	invocation = "open"
-	key = "crtl-O"
-	execution = ":open_stay"
+[[verbs]]
+invocation = "open"
+key = "crtl-O"
+execution = ":open_stay"
 
-	[[verbs]]
-	invocation = "edit"
-	key = "F2"
-	shortcut = "e"
-	execution = "$EDITOR {file}"
-	from_shell = true
+[[verbs]]
+invocation = "edit"
+key = "F2"
+shortcut = "e"
+execution = "$EDITOR {file}"
+from_shell = true
+```
 
 Then,
 
@@ -132,7 +157,7 @@ Then,
 * <kbd>F7</kbd> would select the last line of the tree,
 * and you'd switch to your favorite editor with <kbd>F2</kbd>
 
-Beware that consoles intercept some possible keys. Many keyboard shortcuts aren't available, depending on your configuration.
+Beware that consoles intercept some possible keys. Many keyboard shortcuts aren't available, depending on your configuration. Some keys are also reserved in broot for some uses, for example the <kbd>enter</kbd> key always validate an input command if there's some. The <kbd>Tab</kbd>, <kbd>delete</kbd>, <kbd>backspace</kbd>, <kbd>esc</kbd> keys are reserved too.
 
 ### Verbs not leaving broot
 
@@ -146,7 +171,7 @@ There's currently a  limitation: terminal based programs don't properly run if b
 
 The execution of a verb can take one or several arguments.
 
-For example it may be defined as `/usr/bin/vi {file}̀ .
+For example it may be defined as `/usr/bin/vi {file}̀`.
 
 Some arguments are predefined in broot and depends on the current selection:
 
@@ -155,15 +180,20 @@ name | expanded to
 `{file}` | the complete path of the current selection
 `{parent}` | the complete path of the current selection's parent
 `{directory}` | the closest directory, either `{file}` or `{parent}`
+`{other-panel-file}` | the complete path of the current selection in the other panel
+`{other-panel-parent}` | the complete path of the current selection's parent in the other panel
+`{other-panel-directory}` | the closest directory, either `{file}` or `{parent}` in the other panel
 
 !!!	Note
 	when you're in the help screen, `{file}` is the configuration file, while `{directory}` is the configuration directory.
 
 But you may also define some arguments in the invocation pattern. For example:
 
-	[[verbs]]
-	invocation = "mkdir {subpath}"
-	execution = "/bin/mkdir -p {directory}/{subpath}"
+```toml
+[[verbs]]
+invocation = "mkdir {subpath}"
+execution = "/bin/mkdir -p {directory}/{subpath}"
+```
 
 (this one has now been made standard so you don't have to write it in the configuration file)
 
@@ -179,10 +209,12 @@ It also normalizes the paths it finds which eases the use of relative paths:
 
 Here's another example, where the invocation pattern defines two arguments by destructuring:
 
-	[[verbs]]
-	invocation = "blop {name}\\.{type}"
-	execution = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
-	from_shell = true
+```toml
+[[verbs]]
+invocation = "blop {name}\\.{type}"
+execution = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
+from_shell = true
+```
 
 And here's how it would look like:
 
@@ -193,16 +225,18 @@ Notice the `\\.` ? That's because the invocation pattern is interpreted as a reg
 The whole regular expression syntax may be useful for more complex rules.
 Let's say we don't want the type to contain dots, then we do this:
 
-	[[verbs]]
-	invocation = "blop {name}\\.(?P<type>[^.]+)"
-	execution = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
-	from_shell = true
+```toml
+[[verbs]]
+invocation = "blop {name}\\.(?P<type>[^.]+)"
+execution = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
+from_shell = true
+```
 
 You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
 
 ## Built In Verbs
 
-Here's the list of actions you can add an alternate shortcut or keyboard key for:
+Here's a list of actions you can add an alternate shortcut or keyboard key for:
 
 invocation | default key | default shortcut | behavior / details
 -|-|-|-
@@ -212,8 +246,6 @@ invocation | default key | default shortcut | behavior / details
 :cp {newpath} | - | - | copy the file or directory to the provided name
 :help | <kbd>F1</kbd> | - | open the help page. Help page can also be open with <kbd>?</kbd>
 :focus | <kbd>enter</kbd> | - | set the selected directory the root of the displayed tree |
-:focus_user_home | - | - | focus the user's home (`~` on linux) |
-:focus_root | - | - | focus the root directory (`/` on linux)
 :line_down | <kbd>↓</kbd> | - | scroll one line down or select the next line
 :line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
 :mkdir {subpath} | - | md | create a directory
@@ -245,77 +277,27 @@ Note that
 
 - you can always call a verb with its default invocation, you don't *have* to define a shortcut
 - verbs whose invocation needs an argument (like `{newpath}`) can't be triggered with just a keyboard key.
-- many keyboard keys should be kept available for the input
 
-# Colors
 
-## Skin configuration
+## Focus
 
-You can change all colors by adding a `[skin]` section in your `conf.toml` file.
+The `:focus` internal has many uses.
 
-For example:
+It can be used without explicit argument in which case it takes the selection (for example `:!focus` is equivalent to <kbd>ctrl</kbd><kbd>→</kbd>).
 
-	[skin]
-	default = "gray(22) gray(1)"
-	tree = "rgb(89, 73, 101) none"
-	file = "gray(21) none"
-	directory = "rgb(255, 152, 0) none bold"
-	exe = "rgb(17, 164, 181) none"
-	link = "Magenta none"
-	pruning = "rgb(89, 73, 101) none Italic"
-	sparse = "ansi(214) None"
-	perm__ = "gray(5) None"
-	perm_r = "ansi(92) None"
-	perm_w = "ansi(192) None"
-	perm_x = "ansi(69) None"
-	selected_line = "none gray(3)"
-	char_match = "yellow none"
-	file_error = "Red none"
-	flag_label = "gray(16) none"
-	flag_value = "rgb(255, 152, 0) none bold"
-	input = "White none"
-	status_error = "Red gray(2)"
-	status_job = "ansi(220) gray(5)"
-	status_normal = "gray(20) gray(3)"
-	status_italic = "rgb(255, 152, 0) gray(3)"
-	status_bold = "rgb(255, 152, 0) gray(3) bold"
-	status_code = "ansi(229) gray(5)"
-	status_ellipsis = "gray(19) gray(1)"
-	scrollbar_track = "rgb(80, 50, 0) none"
-	scrollbar_thumb = "rgb(255, 187, 0) none"
-	help_paragraph = "gray(20) none"
-	help_bold = "rgb(255, 187, 0) none bold"
-	help_italic = "Magenta rgb(30, 30, 40) italic"
-	help_code = "gray(21) gray(3)"
-	help_headers = "rgb(255, 187, 0) none"
+It can be used with an argument, for example you can go to a specific place without leaving broot or navigating by typing ` fo /usr/bin` in the input then <kbd>enter</kbd>.
 
-which would look like this:
+It serves as base for several built-in commands, like `:home` whose execution is `:focus ~` (`~` is interpreted in broot as the user home even on Windows).
 
-![custom colors tree](../img/20191112-custom-colors-tree.png)
+And you can add your own ones:
 
-Each skin entry value is made of
+```toml
+[[verbs]]
+key = "ctrl-up"
+execution = ":focus .."
 
-* a foreground color
-* a background color (or `none`)
-* zero, one, or more *attributes*
+[[verbs]]
+key = "ctrl-d"
+execution = ":focus ~/dev"
+```
 
-A color can be
-
-* `none`
-* an [Ansi value](https://en.wikipedia.org/wiki/ANSI_escape_code), for example `ansi(160)`
-* a grayscale value, with a level between 0 and 23, for example `grey(3)`
-* a RGB color, for example `rgb(255, 187, 0)`
-
-Beware that many terminals aren't compatible with RGB 24 bits colors (or aren't usually configured for).
-
-Currently supported attributes are:
-
-* bold
-* italic
-* crossedout
-* underlined
-* overlined
-
-Note that some of them may be ignored by your terminal. Windows supports about none of them, for example.
-
-[Other Skin Examples](../skins.md)

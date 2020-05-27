@@ -1,4 +1,99 @@
-[reference on skin configuration](../documentation/configuration/#colors)
+
+# Skin configuration
+
+You can change all colors by adding a `[skin]` section in your `conf.toml` file.
+
+For example:
+
+```toml
+[skin]
+default = "gray(23) gray(1) / gray(20) gray(1)"
+tree = "ansi(94) None / gray(3) None"
+file = "gray(18) None / gray(15) None"
+directory = "ansi(208) None Bold / ansi(172) None bold"
+exe = "Cyan None"
+link = "Magenta None"
+pruning = "gray(12) None Italic"
+perm__ = "gray(5) None"
+perm_r = "ansi(94) None"
+perm_w = "ansi(132) None"
+perm_x = "ansi(65) None"
+owner = "ansi(138) None"
+group = "ansi(131) None"
+dates = "ansi(66) None"
+sparse = "ansi(214) None"
+git_branch = "ansi(229) None"
+git_insertions = "ansi(28) None"
+git_deletions = "ansi(160) None"
+git_status_current = "gray(5) None"
+git_status_modified = "ansi(28) None"
+git_status_new = "ansi(94) None Bold"
+git_status_ignored = "gray(17) None"
+git_status_conflicted = "ansi(88) None"
+git_status_other = "ansi(88) None"
+selected_line = "None gray(5) / None gray(4)"
+char_match = "Yellow None"
+file_error = "Red None"
+flag_label = "gray(15) None"
+flag_value = "ansi(208) None Bold"
+input = "White None / gray(15) gray(2)"
+status_error = "gray(22) ansi(124)"
+status_job = "ansi(220) gray(5)"
+status_normal = "gray(20) gray(3) / gray(2) gray(2)"
+status_italic = "ansi(208) gray(3) / gray(2) gray(2)"
+status_bold = "ansi(208) gray(3) Bold / gray(2) gray(2)"
+status_code = "ansi(229) gray(3) / gray(2) gray(2)"
+status_ellipsis = "gray(19) gray(1) / gray(2) gray(2)"
+purpose_normal = "gray(20) gray(2)"
+purpose_italic = "ansi(178) gray(2)"
+purpose_bold = "ansi(178) gray(2) Bold"
+purpose_ellipsis = "gray(20) gray(2)"
+scrollbar_track = "gray(7) None / gray(4) None"
+scrollbar_thumb = "gray(22) None / gray(14) None"
+help_paragraph = "gray(20) None"
+help_bold = "ansi(208) None Bold"
+help_italic = "ansi(166) None"
+help_code = "gray(21) gray(3)"
+help_headers = "ansi(208) None"
+help_table_border = "ansi(239) None"
+```
+
+which would look like this:
+
+![custom colors tree](../img/20200525-custom-colors-panels.png)
+
+Each skin entry value is made of
+
+* a foreground color
+* a background color (or `none`)
+* zero, one, or more *attributes*
+
+This tree parts can be repeatedi, after a `/`, to define the style to use in non focused panels (when more than one panel is used).
+
+Example:
+
+```toml
+directory = "ansi(208) None Bold / ansi(172) None"
+```
+
+A color can be
+
+* `none`
+* an [Ansi value](https://en.wikipedia.org/wiki/ANSI_escape_code), for example `ansi(160)`
+* a grayscale value, with a level between 0 and 23, for example `grey(3)`
+* a RGB color, for example `rgb(255, 187, 0)`
+
+Beware that many terminals aren't compatible with RGB 24 bits colors (or aren't usually configured for).
+
+Currently supported attributes are:
+
+* bold
+* italic
+* crossedout
+* underlined
+* overlined
+
+Note that some of them may be ignored by your terminal. Windows supports about none of them, for example.
 
 # White Background Skin
 
@@ -6,30 +101,47 @@ This skin is suitable if you're used to black on white:
 
 ```toml
 [skin]
-default = "gray(2) gray(23)"
-tree = "gray(17) none"
-file = "gray(1) none"
-directory = "ansi(20) none bold"
-exe = "ansi(178) none"
-link = "Magenta none"
-pruning = "gray(5) none Italic"
-perm__ = "gray(19) None"
-perm_r = "ansi(92) None"
-perm_w = "ansi(192) None"
-perm_x = "ansi(69) None"
-selected_line = "none gray(20)"
-char_match = "ansi(28) none"
-file_error = "Red none"
-flag_label = "gray(16) none"
-flag_value = "ansi(202) none bold"
-input = "ansi(0) none"
-status_error = "ansi(196) gray(22)"
-status_job = "ansi(220) gray(18)"
-status_normal = "gray(2) gray(22)"
-status_italic = "ansi(202) gray(22)"
-status_bold = "ansi(202) gray(22) bold"
-status_code = "ansi(17) gray(22)"
-status_ellipsis = "gray(1) white"
+default = "gray(1) white"
+tree = "gray(7) None / gray(18) None"
+file = "gray(3) None / gray(8) None"
+directory = "ansi(25) None Bold / ansi(25) None"
+exe = "ansi(130) None"
+link = "Magenta None"
+pruning = "gray(12) None Italic"
+perm__ = "gray(5) None"
+perm_r = "ansi(94) None"
+perm_w = "ansi(132) None"
+perm_x = "ansi(65) None"
+owner = "ansi(138) None"
+group = "ansi(131) None"
+dates = "ansi(66) None"
+sparse = "ansi(214) None"
+git_branch = "ansi(229) None"
+git_insertions = "ansi(28) None"
+git_deletions = "ansi(160) None"
+git_status_current = "gray(5) None"
+git_status_modified = "ansi(28) None"
+git_status_new = "ansi(94) None Bold"
+git_status_ignored = "gray(17) None"
+git_status_conflicted = "ansi(88) None"
+git_status_other = "ansi(88) None"
+selected_line = "None gray(19) / None gray(21)"
+char_match = "ansi(22) None"
+file_error = "Red None"
+flag_label = "gray(9) None"
+flag_value = "ansi(166) None Bold"
+input = "gray(1) None / gray(4) gray(20)"
+status_error = "gray(22) ansi(124)"
+status_normal = "gray(2) gray(20)"
+status_job = "ansi(220) gray(5)"
+status_italic = "ansi(166) gray(20)"
+status_bold = "ansi(166) gray(20)"
+status_code = "ansi(17) gray(20)"
+status_ellipsis = "gray(19) gray(15)"
+purpose_normal = "gray(20) gray(2)"
+purpose_italic = "ansi(178) gray(2)"
+purpose_bold = "ansi(178) gray(2) Bold"
+purpose_ellipsis = "gray(20) gray(2)"
 scrollbar_track = "gray(20) none"
 scrollbar_thumb = "ansi(238) none"
 help_paragraph = "gray(2) none"
@@ -37,9 +149,10 @@ help_bold = "ansi(202) none bold"
 help_italic = "ansi(202) none italic"
 help_code = "gray(5) gray(22)"
 help_headers = "ansi(202) none"
+help_table_border = "ansi(239) None"
 ```
 
-![light skin](../img/20191114-light-skin.png)
+![light skin](../img/20200526-light-skin.png)
 
 # Solarized Dark
 

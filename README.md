@@ -26,6 +26,7 @@ Table of Contents
     * [Find a directory then `cd` to it](#find-a-directory-then-cd-to-it)
     * [Never lose track of file hierarchy while you search](#never-lose-track-of-file-hierarchy-while-you-search)
     * [Manipulate your files](#manipulate-your-files)
+    * [Do it with panels](#do-it-with-panels)
     * [Apply a standard or personal shortcut to a file](#apply-a-standard-or-personal-shortcut-to-a-file)
     * [Replace `ls` (and its clones)](#replace-ls-and-its-clones)
     * [See what takes space](#see-what-takes-space)
@@ -86,6 +87,21 @@ Without broot you move your files in the blind. You do a few `ls` before, then y
 You can instead do it without losing the view of the file hierarchy.
 
 `mv`, `cp`, `rm`, `mkdir`, are built in and you can add your own shortcuts.
+
+### Do it with panels
+
+Do `<ctrl><right>` and you open another panel (you may open other ones, or navigate between them, with `<ctrl><left>` and `<ctrl><right>`).
+
+![custom colors tree](website/docs/img/20200525-colored-panels.png)
+
+(yes, colors are fully customizable)
+
+Using two panels, you can for example copy or move elements between them:
+
+![custom colors tree](website/docs/img/20200525-cpp.png)
+
+`:cpp` is an alias for `:copy_to_panel`. If you like you may do it Norton Commander style by binding `:copy_to_panel` to `<F5>` and `:move_to_panel` to `<F6>`.
+
 
 ### Apply a standard or personal shortcut to a file
 

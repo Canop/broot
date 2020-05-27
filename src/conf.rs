@@ -275,6 +275,7 @@ execution = "$EDITOR {directory}/{subpath}"
 [[verbs]]
 invocation = "git_diff"
 shortcut = "gd"
+leave_broot = false
 execution = "git diff {file}"
 
 # If $PAGER isn't set on your computer, you should either set it

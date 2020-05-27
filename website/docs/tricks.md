@@ -67,3 +67,5 @@ If you want to start navigating with a view of the files which changed, you may 
 Then just hitting the `esc` key will show you the normal unfiltered broot view.
 
 (note: this isn't equivalent to `git status`. Most notably, removed files aren't displayed)
+
+From there you may use the `:gd` verb (`:git_diff`) to open the selection into your favourite dif viewer.

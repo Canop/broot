@@ -1,5 +1,5 @@
 site_name: Broot
-site_description: 'Broot, a new way to navigate directory trees on linux, made in rust'
+site_description: 'Broot, a tree oriented file manager'
 site_url: https://dystroy.org/broot
 repo_url: https://github.com/Canop/broot
 edit_uri: ''
@@ -7,13 +7,18 @@ edit_uri: ''
 nav:
         - Why: index.md
         - Install: install.md
-        - Documentation:
-                - Usage: documentation/usage.md
-                - Configuration: documentation/configuration.md
-                - Tips & Tricks: documentation/tricks.md
-        # - Screens: screens/screenshots.md
+        - Usage:
+                - Launch: launch.md
+                - The input: input.md
+                - Navigation: navigation.md
+                - Verbs & Commands: verbs.md
+                - Panels: panels.md
+                - Tree Export: export.md
+                - Tips & Tricks: tricks.md
+        - Conf:
+                - Config File: conf_file.md
+                - Skins: skins.md
         - Community: community.md
-        - Skins: skins.md
 
 extra_css:
     - css/extra.css
