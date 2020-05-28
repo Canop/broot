@@ -114,7 +114,7 @@ macro_rules! StyleMap {
 // (if missing the style is the same than for focused panels)
 StyleMap! {
     default: gray(22), gray(1), [] / gray(20), gray(1), []
-    tree: gray(6), None, [] / gray(3), None, []
+    tree: gray(7), None, [] / gray(3), None, []
     file: gray(18), None, [] / gray(15), None, []
     directory: ansi(110), None, [Bold] / ansi(110), None, []
     exe: Some(Cyan), None, []

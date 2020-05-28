@@ -265,6 +265,23 @@ impl App {
         (len * x as usize) / (screen.width as usize + 1)
     }
 
+    fn do_pending_tasks(
+        &mut self,
+        screen: &mut Screen,
+        con: &AppContext,
+        dam: &mut Dam,
+    ) -> Result<(), ProgramError> {
+        // we start with the focused panel
+        self.mut_panel().do_pending_tasks(screen, con, dam)?;
+        // then the other ones
+        for idx in 0..self.panels.len().get() {
+            if idx != self.active_panel_idx {
+                self.panels[idx].do_pending_tasks(screen, con, dam)?;
+            }
+        }
+        Ok(())
+    }
+
     /// This is the main loop of the application
     pub fn run(
         mut self,
@@ -289,7 +306,7 @@ impl App {
                 self.apply_command(arg_cmd, screen, &skin.focused, con)?;
                 self.display_panels(w, screen, &skin, con)?;
                 w.flush()?;
-                self.mut_panel().do_pending_tasks(screen, con, &mut dam)?;
+                self.do_pending_tasks(screen, con, &mut dam)?;
                 self.display_panels(w, screen, &skin, con)?;
                 w.flush()?;
                 if self.quitting {
@@ -303,7 +320,7 @@ impl App {
 
         loop {
             if !self.quitting {
-                self.mut_panel().do_pending_tasks(screen, con, &mut dam)?;
+                self.do_pending_tasks(screen, con, &mut dam)?;
                 self.display_panels(w, screen, &skin, con)?;
                 w.flush()?;
             }
