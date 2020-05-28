@@ -1,7 +1,7 @@
 ### next version
 #### Major feature: `:focus` verb
 This verb can be called, and parameterized, with a path as argument, which makes it possible to have a shortcut to a specific location.
-As a result, the specific `:focus_user_home` and `:focus_root` verbs have been removed (`:focus_user_home` works on all OS).
+As a result, the specific `:focus_user_home` and `:focus_root` verbs have been removed (`:focus ~` works on all OS).
 #### Major feature: panels!
 There are three major ways to open a new panel:
 - by using ctrl-left or ctrl-right, which can also be used to navigate between panels
@@ -17,7 +17,7 @@ You can for example decide that some slow disk shouldn't be entered automaticall
 #### Minor changes:
 - date/time format configurable - Fix #229
 - esc doesn't quit broot anymore (by popular demand)
-I'd recommand to users to remove their existing conf.toml file so that broot creates a brand new one with suggestions of shortcuts.
+It's probably a good idea to remove your existing conf.toml file so that broot creates a brand new one with suggestions of shortcuts.
 
 <a name="v0.13.6"></a>
 ### v0.13.6 - 2020-04-08

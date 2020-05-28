@@ -393,7 +393,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             f.queue(SetBackgroundColor(Color::Reset))?;
             if self.in_app && y > 0 {
                 if let Some((sctop, scbottom)) = scrollbar {
-                    f.queue(cursor::MoveTo(self.area.width, y))?;
+                    f.queue(cursor::MoveTo(self.area.left + self.area.width - 1, y))?;
                     let style = if sctop <= y && y <= scbottom {
                         &self.skin.scrollbar_thumb
                     } else {

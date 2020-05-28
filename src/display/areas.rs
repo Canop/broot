@@ -78,13 +78,16 @@ impl Areas {
         if screen.height < MINIMAL_PANEL_HEIGHT {
             return Err(ProgramError::TerminalTooSmallError);
         }
-        let panel_width = screen.width / slots.len() as u16;
+        let mut panel_width = screen.width / slots.len() as u16;
         if panel_width < MINIMAL_PANEL_WIDTH {
             return Err(ProgramError::TerminalTooSmallError);
         }
         let mut x = 0;
         let nb_pos = slots.len();
         for slot_idx in 0..nb_pos {
+            if slot_idx==nb_pos-1 {
+                panel_width = screen.width - slot_idx as u16 * panel_width;
+            }
             let areas: &mut Areas = match &mut slots[slot_idx] {
                 Slot::Panel(panel_idx) => &mut panels[*panel_idx].areas,
                 Slot::New(areas) => areas,
