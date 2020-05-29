@@ -329,12 +329,9 @@ execution = "$PAGER {file}"
 # If you want to change the colors of broot,
 # uncomment the following bloc and start messing
 # with the various values.
-# Note that some of those colors might not correcly
-# render on terminals with low capabilities.
 #
-
 # [skin]
-# default = "gray(23) gray(1) / gray(20) gray(1)"
+# default = "gray(23) none / gray(20) none"
 # tree = "ansi(94) None / gray(3) None"
 # file = "gray(18) None / gray(15) None"
 # directory = "ansi(208) None Bold / ansi(172) None bold"
@@ -384,7 +381,7 @@ execution = "$PAGER {file}"
 # help_headers = "ansi(208) None"
 # help_table_border = "ansi(239) None"
 
-# You may find other skins on
+# You may find explanations and other skins on
 #  https://dystroy.org/broot/skins
 # for example a skin suitable for white backgrounds
 

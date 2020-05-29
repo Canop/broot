@@ -113,7 +113,7 @@ macro_rules! StyleMap {
 // The optional part after a '/' is the style for unfocused panels
 // (if missing the style is the same than for focused panels)
 StyleMap! {
-    default: gray(22), gray(1), [] / gray(20), gray(1), []
+    default: gray(22), gray(2), [] / gray(20), gray(2), []
     tree: gray(7), None, [] / gray(3), None, []
     file: gray(18), None, [] / gray(15), None, []
     directory: ansi(110), None, [Bold] / ansi(110), None, []
@@ -145,10 +145,10 @@ StyleMap! {
     input: Some(White), None, [] / gray(15), gray(2), []
     status_error: gray(22), ansi(124), []
     status_job: ansi(220), gray(5), []
-    status_normal: gray(20), gray(3), [] / gray(2), gray(2), []
-    status_italic: ansi(178), gray(3), [] / gray(2), gray(2), []
-    status_bold: ansi(178), gray(3), [Bold] / gray(2), gray(2), []
-    status_code: ansi(229), gray(3), [] / gray(2), gray(2), []
+    status_normal: gray(20), gray(4), [] / gray(2), gray(2), []
+    status_italic: ansi(178), gray(4), [] / gray(2), gray(2), []
+    status_bold: ansi(178), gray(4), [Bold] / gray(2), gray(2), []
+    status_code: ansi(229), gray(4), [] / gray(2), gray(2), []
     status_ellipsis: gray(19), gray(1), [] / gray(2), gray(2), []
     purpose_normal: gray(20), gray(2), []
     purpose_italic: ansi(178), gray(2), []

@@ -95,6 +95,16 @@ Currently supported attributes are:
 
 Note that some of them may be ignored by your terminal. Windows supports about none of them, for example.
 
+## Transparent background
+
+If you want to set the background of broot transparent (i.e. to be the background of your terminal), you can set the default style like this:
+
+```toml
+default = "gray(23) none / gray(20) none"
+```
+
+![transparent](../img/20200529-transparent-broot.png)
+
 # White Background Skin
 
 This skin is suitable if you're used to black on white:
