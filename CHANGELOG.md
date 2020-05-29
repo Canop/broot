@@ -1,3 +1,7 @@
+<a name="v0.14.1"></a>
+### v0.14.1 - 2020-05-29
+- fix uppercase letters ignored in input field
+
 <a name="v0.14.0"></a>
 ### v0.14.0 - 2020-05-29
 #### Major feature: `:focus` verb

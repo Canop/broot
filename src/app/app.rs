@@ -332,6 +332,7 @@ impl App {
                     break;
                 }
             };
+            debug!("event: {:?}", &event);
             match event {
                 Event::Click(x, y, KeyModifiers::NONE)
                     if self.clicked_panel_index(x, y, screen) != self.active_panel_idx =>
