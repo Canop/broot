@@ -1,4 +1,5 @@
-### next version
+<a name="v0.14.0"></a>
+### v0.14.0 - 2020-05-29
 #### Major feature: `:focus` verb
 This verb can be called, and parameterized, with a path as argument, which makes it possible to have a shortcut to a specific location.
 As a result, the specific `:focus_user_home` and `:focus_root` verbs have been removed (`:focus ~` works on all OS).
