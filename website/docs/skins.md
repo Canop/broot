@@ -243,6 +243,10 @@ help_table_border = "none none"                                                 
 
 ![default](img/skins/solarized_dark/sizes.png)
 
+**Panels**
+
+![default](img/skins/solarized_dark/panels.png)
+
 # Contribute your own skin
 
 Don't hesitate to contact me on Miaou if you have a skin to propose or to discuss an existing one.
