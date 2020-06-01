@@ -5,7 +5,11 @@
 
 use {
     super::{FuzzyPattern, RegexPattern},
-    crate::errors::RegexError,
+    crate::{
+        app::AppContext,
+        command::PatternParts,
+        errors::PatternError,
+    },
     std::{fmt, mem},
 };
 
@@ -27,12 +31,21 @@ impl fmt::Display for Pattern {
 }
 
 impl Pattern {
+    pub fn from_parts(parts: &PatternParts, con: &AppContext) -> Result<Pattern, PatternError> {
+        if parts.pattern.is_empty() {
+            Ok(Self::None)
+        } else if let Some(flags) = &parts.flags {
+            Self::regex(&parts.pattern, flags)
+        } else {
+            Ok(Self::fuzzy(&parts.pattern))
+        }
+    }
     /// create a new fuzzy pattern
     pub fn fuzzy(pat: &str) -> Pattern {
         Pattern::Fuzzy(FuzzyPattern::from(pat))
     }
     /// try to create a regex pattern
-    pub fn regex(pat: &str, flags: &str) -> Result<Pattern, RegexError> {
+    pub fn regex(pat: &str, flags: &str) -> Result<Pattern, PatternError> {
         Ok(Pattern::Regex(RegexPattern::from(pat, flags)?))
     }
     pub fn find(&self, candidate: &str) -> Option<Match> {

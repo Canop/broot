@@ -39,10 +39,7 @@ pub enum Command {
     },
 
     /// a pattern being edited
-    FuzzyPatternEdit(String),
-
-    /// a regex being edited (core & flags)
-    RegexEdit(String, String),
+    PatternEdit(PatternParts),
 
     /// a mouse click
     Click(u16, u16),
@@ -76,14 +73,9 @@ impl Command {
                 input_invocation: None,
             }
         } else if let Some(pattern) = &cp.pattern {
-            let pattern = String::from(pattern.as_str());
-            if let Some(regex_flags) = &cp.regex_flags {
-                Self::RegexEdit(pattern, String::from(regex_flags.as_str()))
-            } else {
-                Self::FuzzyPatternEdit(String::from(pattern.as_str()))
-            }
+            Self::PatternEdit(pattern.clone())
         } else {
-            Self::FuzzyPatternEdit(String::from(""))
+            Self::PatternEdit(PatternParts::default())
         }
     }
 

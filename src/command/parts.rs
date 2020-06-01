@@ -1,23 +1,20 @@
 use {
+    super::PatternParts,
     crate::verb::VerbInvocation,
     std::fmt,
 };
 
 /// An intermediate parsed representation of the raw string
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct CommandParts {
-    pub pattern: Option<String>, // either a fuzzy pattern or the core of a regex
-    pub regex_flags: Option<String>, // may be Some("") if user asked for a regex but specified no flag
+    pub pattern: Option<PatternParts>, //
     pub verb_invocation: Option<VerbInvocation>, // may be empty if user typed the separator but no char after
 }
 
 impl fmt::Display for CommandParts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         if let Some(pattern) = &self.pattern {
-            write!(f, "{}", pattern)?;
-            if let Some(flags) = &self.regex_flags {
-                write!(f, "/{}", flags)?;
-            }
+            pattern.fmt(f)?;
         }
         if let Some(invocation) = &self.verb_invocation {
             write!(f, "{}", invocation)?;
@@ -31,7 +28,6 @@ impl CommandParts {
     pub fn new() -> CommandParts {
         CommandParts {
             pattern: None,
-            regex_flags: None,
             verb_invocation: None,
         }
     }
@@ -41,9 +37,9 @@ impl CommandParts {
         let c = regex!(
             r"(?x)
                 ^
-                (?P<slash_before>/)?
+                (?:(?P<search_mode>\w*)/)?
                 (?P<pattern>[^\s/:]+)?
-                (?:/(?P<regex_flags>\w*))?
+                (?:/(?P<pattern_flags>\w*))?
                 (?:[\s:]+(?P<verb_invocation>.*))?
                 $
             "
@@ -51,21 +47,19 @@ impl CommandParts {
         .captures(raw);
         if let Some(c) = c {
             if let Some(pattern) = c.name("pattern") {
-                cp.pattern = Some(String::from(pattern.as_str()));
-                if let Some(rxf) = c.name("regex_flags") {
-                    cp.regex_flags = Some(String::from(rxf.as_str()));
-                } else if c.name("slash_before").is_some() {
-                    cp.regex_flags = Some("".into());
-                }
+                cp.pattern = Some(PatternParts {
+                    mode: c.name("search_mode").map(|c| c.as_str().to_string()),
+                    pattern: pattern.as_str().to_string(),
+                    flags: c.name("pattern_flags").map(|c| c.as_str().to_string()),
+                });
             }
             if let Some(verb) = c.name("verb_invocation") {
                 cp.verb_invocation = Some(VerbInvocation::from(verb.as_str()));
             }
         } else {
             // Non matching pattterns include "///"
-            // We decide the whole is a fuzzy search pattern, in this case
-            // (this will change when we release the new input syntax)
-            cp.pattern = Some(String::from(raw));
+            // We decide the whole is a search pattern, in this case
+            cp.pattern = Some(PatternParts::default())
         }
         cp
     }
@@ -73,28 +67,57 @@ impl CommandParts {
     /// split an input into its two possible parts, the pattern
     /// and the verb invocation. Each part, when defined, is
     /// suitable to create a command on its own.
-    pub fn split(raw: &str) -> (Option<String>, Option<String>) {
-        let captures = regex!(
-            r"(?x)
-                ^
-                (?P<pattern_part>/?[^\s/:]+/?\w*)?
-                (?P<verb_part>[\s:]+(.+))?
-                $
-            "
-        )
-        .captures(raw)
-        .unwrap(); // all parts optional : always captures
+    pub fn split(mut self) -> (Option<CommandParts>, Option<CommandParts>) {
         (
-            captures
-                .name("pattern_part")
-                .map(|c| c.as_str().to_string()),
-            captures.name("verb_part").map(|c| c.as_str().to_string()),
+            self.pattern.take().map(|p| CommandParts {
+                pattern: Some(p),
+                verb_invocation: None,
+            }),
+            self.verb_invocation.take().map(|inv| CommandParts {
+                pattern: None,
+                verb_invocation: Some(inv),
+            }),
         )
     }
+
 }
 
 impl Default for CommandParts {
     fn default() -> CommandParts {
         CommandParts::new()
+    }
+}
+
+#[cfg(test)]
+mod command_parsing_tests {
+    use super::*;
+    fn check(
+        raw: &str,
+        search_mode: Option<&str>,
+        pattern: Option<&str>,
+        pattern_flags: Option<&str>,
+        verb_invocation: Option<&str>,
+    ) {
+        println!("checking {:?}", raw);
+        let left = CommandParts::from(raw);
+        let right = CommandParts {
+            search_mode: search_mode.map(|c| c.to_string()),
+            pattern: pattern.map(|c| c.to_string()),
+            pattern_flags: pattern_flags.map(|c| c.to_string()),
+            verb_invocation: verb_invocation.map(|s| VerbInvocation::from(s)),
+        };
+        assert_eq!(left, right);
+    }
+    #[test]
+    fn test_command_parsing() {
+        check("pat", None, Some("pat"), None, None);
+        check("pat ", None, Some("pat"), None, Some(""));
+        check(" verb arg1 arg2", None, None, None, Some("verb arg1 arg2"));
+        check(" verb ", None, None, None, Some("verb "));
+        check("pat verb ", None, Some("pat"), None, Some("verb "));
+        check("/pat/i verb ", Some(""), Some("pat"), Some("i"), Some("verb "));
+        check("/pat/:verb ", Some(""), Some("pat"), Some(""), Some("verb "));
+        check("/pat", Some(""), Some("pat"), None, None);
+        check("p/pat", Some("p"), Some("pat"), None, None);
     }
 }

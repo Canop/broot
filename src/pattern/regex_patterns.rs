@@ -1,6 +1,10 @@
 //! a filename filtering pattern using a regular expression
 
-use {crate::errors::RegexError, regex, std::fmt};
+use {
+    crate::errors::PatternError,
+    regex,
+    std::fmt,
+};
 
 #[derive(Debug, Clone)]
 pub struct RegexPattern {
@@ -15,7 +19,7 @@ impl fmt::Display for RegexPattern {
 }
 
 impl RegexPattern {
-    pub fn from(pat: &str, flags: &str) -> Result<RegexPattern, RegexError> {
+    pub fn from(pat: &str, flags: &str) -> Result<RegexPattern, PatternError> {
         let mut builder = regex::RegexBuilder::new(pat);
         for c in flags.chars() {
             match c {
@@ -26,7 +30,7 @@ impl RegexPattern {
                     builder.swap_greed(true);
                 }
                 _ => {
-                    return Err(RegexError::UnknownFlag { bad: c });
+                    return Err(PatternError::UnknownRegexFlag { bad: c });
                 }
             }
         }

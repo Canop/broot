@@ -265,10 +265,7 @@ impl AppState for BrowserState {
         con: &AppContext,
     ) -> Status {
         match cmd {
-            Command::FuzzyPatternEdit(s) if !s.is_empty() => {
-                Status::new(self.normal_status_message(true), false)
-            }
-            Command::RegexEdit(s, _) if !s.is_empty() => {
+            Command::PatternEdit(_) => {
                 Status::new(self.normal_status_message(true), false)
             }
             Command::VerbEdit(invocation) => {
@@ -344,38 +341,17 @@ impl AppState for BrowserState {
         }
     }
 
-    fn on_fuzzy_pattern_edit(
-        &mut self,
-        pat: &str,
-        _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
-        match pat.len() {
-            0 => {
-                self.filtered_tree = None;
-            }
-            _ => {
-                self.pending_pattern = Pattern::fuzzy(pat);
-            }
-        }
-        Ok(AppStateCmdResult::Keep)
-    }
 
-    fn on_regex_pattern_edit(
+    fn on_pattern(
         &mut self,
-        pat: &str,
-        flags: &str,
+        pat: Pattern,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        Ok(match Pattern::regex(pat, flags) {
-            Ok(regex_pattern) => {
-                self.pending_pattern = regex_pattern;
-                AppStateCmdResult::Keep
-            }
-            Err(e) => {
-                // FIXME details
-                AppStateCmdResult::DisplayError(format!("{}", e))
-            }
-        })
+        if !pat.is_some() {
+            self.filtered_tree = None;
+        }
+        self.pending_pattern = pat;
+        Ok(AppStateCmdResult::Keep)
     }
 
     fn on_internal(

@@ -5,6 +5,7 @@ use {
         display::{Areas, Screen, W},
         errors::ProgramError,
         flag::Flag,
+        pattern::Pattern,
         selection_type::SelectionType,
         skin::PanelSkin,
         task_sync::Dam,
@@ -40,18 +41,9 @@ pub trait AppState {
         Ok(AppStateCmdResult::Keep)
     }
 
-    fn on_fuzzy_pattern_edit(
+    fn on_pattern(
         &mut self,
-        _pat: &str,
-        _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
-        Ok(AppStateCmdResult::Keep)
-    }
-
-    fn on_regex_pattern_edit(
-        &mut self,
-        _pat: &str,
-        _flags: &str,
+        _pat: Pattern,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         Ok(AppStateCmdResult::Keep)
@@ -89,8 +81,14 @@ pub trait AppState {
         match cmd {
             Command::Click(x, y) => self.on_click(*x, *y, screen, con),
             Command::DoubleClick(x, y) => self.on_double_click(*x, *y, screen, con),
-            Command::FuzzyPatternEdit(pat) => self.on_fuzzy_pattern_edit(pat, con),
-            Command::RegexEdit(pat, flags) => self.on_regex_pattern_edit(pat, flags, con),
+            Command::PatternEdit(parts) => {
+                match Pattern::from_parts(parts, con) {
+                    Ok(pattern) => self.on_pattern(pattern, con),
+                    Err(e) => Ok(AppStateCmdResult::DisplayError(format!("{}", e))),
+                }
+            }
+            // Command::FuzzyPatternEdit(pat) => self.on_fuzzy_pattern_edit(pat, con),
+            // Command::RegexEdit(pat, flags) => self.on_regex_pattern_edit(pat, flags, con),
             Command::VerbTrigger {
                 index,
                 input_invocation,

@@ -36,13 +36,12 @@ custom_error! {pub ConfError
     UnexpectedInternalArg { invocation: String}     = "unexpected argument for internal: {}",
 }
 
-// error which can be raised when parsing a regex the
-// user typed
-custom_error! {pub RegexError
-    Parsing {source: regex::Error} = @{
+// error which can be raised when parsing a pattern the user typed
+custom_error! {pub PatternError
+    InvalidRegex {source: regex::Error} = @{
         format!("Invalid Regular Expression: {}", source.to_string().lines().last().unwrap_or(""))
     },
-    UnknownFlag {bad: char} = "Unknown regular expression flag: {:?}",
+    UnknownRegexFlag {bad: char} = "Unknown regular expression flag: {:?}",
 }
 
 custom_error! {pub InvalidSkinError
