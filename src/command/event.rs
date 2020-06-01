@@ -171,17 +171,20 @@ impl PanelInput {
                     };
                 }
 
-
                 // we now check if the key is the trigger key of one of the verbs
-                if let Some(index) = con.verb_store.index_of_key(key) {
-                    let selection_type = state.selection_type();
-                    if selection_type.respects(con.verb_store.verbs[index].selection_condition) {
-                        return Command::VerbTrigger {
-                            index,
-                            input_invocation: parts.verb_invocation,
-                        };
-                    } else {
-                        debug!("verb not allowed on current selection");
+                let selection_type = state.selection_type();
+                for (index, verb) in con.verb_store.verbs.iter().enumerate() {
+                    for verb_key in &verb.keys {
+                        if *verb_key == key {
+                            if selection_type.respects(verb.selection_condition) {
+                                return Command::VerbTrigger {
+                                    index,
+                                    input_invocation: parts.verb_invocation,
+                                };
+                            } else {
+                                debug!("verb not allowed on current selection");
+                            }
+                        }
                     }
                 }
 

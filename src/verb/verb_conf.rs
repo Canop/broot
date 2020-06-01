@@ -1,4 +1,12 @@
-use {super::*, crate::errors::ConfError, crossterm::event::KeyEvent, std::convert::TryFrom};
+use {
+    super::*,
+    crate::{
+        errors::ConfError,
+        selection_type::SelectionType,
+    },
+    crossterm::event::KeyEvent,
+    std::convert::TryFrom,
+};
 
 /// what's needed to handle a verb
 #[derive(Debug)]
@@ -10,6 +18,7 @@ pub struct VerbConf {
     pub description: Option<String>,
     pub from_shell: Option<bool>,
     pub leave_broot: Option<bool>,
+    pub selection_condition: SelectionType,
 }
 
 impl TryFrom<&VerbConf> for Verb {
@@ -54,6 +63,7 @@ impl TryFrom<&VerbConf> for Verb {
         if let Some(description) = &verb_conf.description {
             verb.description = VerbDescription::from_text(description.to_string());
         }
+        verb.selection_condition = verb_conf.selection_condition;
         Ok(verb)
     }
 }

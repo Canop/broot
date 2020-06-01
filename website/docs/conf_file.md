@@ -57,11 +57,14 @@ Be careful that those paths (globs, in fact) are checked a lot when broot builds
 
 You can define a new verb in the TOML configuration file with a `[[verbs]]` section similar to this one:
 
-	[[verbs]]
-	invocation = "edit"
-	key = "F2"
-	shortcut = "e"
-	execution = "/usr/bin/nvim {file}"
+```toml
+[[verbs]]
+invocation = "edit"
+key = "F2"
+shortcut = "e"
+apply_to = "file"
+execution = "/usr/bin/nvim {file}"
+```
 
 The possible attributes are:
 
@@ -73,6 +76,7 @@ key | no | a keyboard key triggerring execution
 shorcut | no | an alternate way to call the verb (without the arguments part)
 leave_broot | no | whether to quit broot on execution (default: `true`)
 from_shell | no | whether the verb must be executed from the parent shell (needs `br`, default: `false`). As this is executed after broot closed, this isn't compatiple with `leave_broot = false`
+apply_to | no | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
 
 !!!	Note
 	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example `cd` is a shell builtin which must be executed in the parent shell.
