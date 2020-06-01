@@ -5,6 +5,7 @@ use {
     crate::{
         errors::ConfError,
         keys,
+        selection_type::SelectionType,
         skin::SkinEntry,
         tree::*,
         verb::VerbConf,
@@ -147,6 +148,17 @@ impl Conf {
                     );
                     continue;
                 }
+                let selection_condition = match string_field(verb_value, "apply_to").as_deref() {
+                    Some("file") => SelectionType::File,
+                    Some("directory") => SelectionType::Directory,
+                    Some("any") => SelectionType::Any,
+                    None => SelectionType::Any,
+                    Some(s) => {
+                        eprintln!("Invalid [[verbs]] entry in configuration");
+                        eprintln!("{:?} isn't a valid value of apply_to", s);
+                        continue;
+                    }
+                };
                 let verb_conf = VerbConf {
                     invocation,
                     execution,
@@ -155,6 +167,7 @@ impl Conf {
                     description: string_field(verb_value, "description"),
                     from_shell,
                     leave_broot,
+                    selection_condition,
                 };
 
                 self.verbs.push(verb_conf);

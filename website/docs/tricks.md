@@ -46,16 +46,21 @@ Or if you realize you want to match `tOo` too, then you make it case insensitive
 
 If your system is normally configured, just doing `alt`-`enter` on an executable will close broot and executes the file.
 
-## Open files without a windowing system
+## Change standard file opening
 
-If you're on a server linux without xdg-open or equivalent, you may want to redefine the way broot open files on `enter`.
+When you hit enter on a file, broot asks the system to open the file. It's usually OK but you might wish to change that, for example when you're on a server without xdg-open or equivalent.
 
-You may use such configuration:
+Here's an example of configuration changing the behaviour on open:
 
-    [[verbs]]
-    invocation = "edit"
-    key = "enter"
-    execution = "$EDITOR {file}"
+```toml
+[[verbs]]
+invocation = "edit"
+key = "enter"
+execution = "$EDITOR {file}"
+apply_to = "file"
+```
+
+(the `apply_to` line ensures this verb isn't called when the selected line is a directory)
 
 
 ## Git Status

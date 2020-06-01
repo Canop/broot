@@ -1,3 +1,7 @@
+<a name="v0.14.2"></a>
+### v0.14.2 - 2020-06-01
+- `apply_to` verb property - fix #237
+
 <a name="v0.14.1"></a>
 ### v0.14.1 - 2020-05-29
 - fix uppercase letters ignored in input field
