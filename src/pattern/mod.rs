@@ -3,6 +3,7 @@
 //!  by a regular expression (in which case there's no real
 //!  score)
 
+
 mod fuzzy_patterns;
 mod matched_string;
 mod pattern;

@@ -22,6 +22,24 @@ use {
     },
 };
 
+#[cfg(unix)]
+use std::os::unix::ffi::OsStrExt;
+
+#[cfg(target_os = "windows")]
+use std::ffi::OsStr;
+
+#[cfg(target_os = "windows")]
+trait OsStrWin {
+    fn as_bytes(&self) -> &[u8];
+}
+
+#[cfg(target_os = "windows")]
+impl OsStrWin for OsStr {
+    fn as_bytes(&self) -> &[u8] {
+        static INVALID_UTF8: &[u8] = b"invalid utf8";
+        self.to_str().map(|s| s.as_bytes()).unwrap_or(INVALID_UTF8)
+    }
+}
 /// If a search found enough results to fill the screen but didn't scan
 /// everything, we search a little more in case we find better matches
 /// but not after the NOT_LONG duration.
@@ -76,7 +94,7 @@ impl<'c> TreeBuilder<'c> {
         } else {
             None
         };
-        let root_id = BLine::from_root(&mut blines, path, root_ignore_chain)?;
+        let root_id = BLine::from_root(&mut blines, path, root_ignore_chain, &options)?;
         Ok(TreeBuilder {
             options,
             targeted_size,
@@ -98,18 +116,23 @@ impl<'c> TreeBuilder<'c> {
         depth: u16,
     ) -> BLineResult {
         let name = e.file_name();
-        let name = match name.to_str() {
-            Some(name) => name,
-            None => {
-                return BLineResult::Invalid;
-            }
-        };
-        if !self.options.show_hidden && name.starts_with('.') {
+        if name.is_empty() {
+            return BLineResult::Invalid;
+        }
+        if !self.options.show_hidden && name.as_bytes()[0] == b'.' {
             return BLineResult::FilteredOutAsHidden;
         }
+        let name = name.to_string_lossy();
+        let mut name = name.to_string();
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
         if self.options.pattern.is_some() {
+            if self.options.pattern.applies_to_path() {
+                let parent_name = &self.blines[parent_id].name;
+                if !parent_name.is_empty() {
+                    name = format!("{}/{}", parent_name, name);
+                }
+            }
             if let Some(pattern_score) = self.options.pattern.score_of(&name) {
                 score += pattern_score;
             } else {
@@ -163,7 +186,7 @@ impl<'c> TreeBuilder<'c> {
             parent_id: Some(parent_id),
             path,
             depth,
-            name: name.to_string(),
+            name,
             file_type,
             children: None,
             next_child_idx: 0,

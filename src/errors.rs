@@ -38,6 +38,7 @@ custom_error! {pub ConfError
 
 // error which can be raised when parsing a pattern the user typed
 custom_error! {pub PatternError
+    InvalidMode { mode: String } = "Invalid search mode: {:?}",
     InvalidRegex {source: regex::Error} = @{
         format!("Invalid Regular Expression: {}", source.to_string().lines().last().unwrap_or(""))
     },

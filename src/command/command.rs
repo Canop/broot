@@ -101,11 +101,7 @@ impl Command {
     /// build a non executed command from a pattern
     pub fn from_pattern(pattern: &Pattern) -> Self {
         Command::from_raw(
-            match pattern {
-                Pattern::Fuzzy(fp) => fp.to_string(),
-                Pattern::Regex(rp) => rp.to_string(),
-                Pattern::None => String::new(),
-            },
+            pattern.as_input(),
             false,
         )
     }

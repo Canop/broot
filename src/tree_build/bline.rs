@@ -33,10 +33,15 @@ impl BLine {
         blines: &mut Arena<BLine>,
         path: PathBuf,
         git_ignore_chain: GitIgnoreChain,
+        options: &TreeOptions,
     ) -> Result<BId, TreeBuildError> {
-        let name = match path.file_name() {
-            Some(name) => name.to_string_lossy().to_string(),
-            None => String::from("???"), // should not happen
+        let name = if options.pattern.applies_to_path() {
+            String::new()
+        } else {
+            match path.file_name() {
+                Some(name) => name.to_string_lossy().to_string(),
+                None => String::from("???"), // should not happen
+            }
         };
         let special_handling = SpecialHandling::None;
         if let Ok(md) = fs::metadata(&path) {

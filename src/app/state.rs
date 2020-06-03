@@ -87,8 +87,6 @@ pub trait AppState {
                     Err(e) => Ok(AppStateCmdResult::DisplayError(format!("{}", e))),
                 }
             }
-            // Command::FuzzyPatternEdit(pat) => self.on_fuzzy_pattern_edit(pat, con),
-            // Command::RegexEdit(pat, flags) => self.on_regex_pattern_edit(pat, flags, con),
             Command::VerbTrigger {
                 index,
                 input_invocation,

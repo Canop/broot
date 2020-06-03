@@ -38,7 +38,7 @@ impl CommandParts {
             r"(?x)
                 ^
                 (?:(?P<search_mode>\w*)/)?
-                (?P<pattern>[^\s/:]+)?
+                (?P<pattern>[^\s/:]*)?
                 (?:/(?P<pattern_flags>\w*))?
                 (?:[\s:]+(?P<verb_invocation>.*))?
                 $
@@ -47,11 +47,17 @@ impl CommandParts {
         .captures(raw);
         if let Some(c) = c {
             if let Some(pattern) = c.name("pattern") {
-                cp.pattern = Some(PatternParts {
-                    mode: c.name("search_mode").map(|c| c.as_str().to_string()),
-                    pattern: pattern.as_str().to_string(),
-                    flags: c.name("pattern_flags").map(|c| c.as_str().to_string()),
-                });
+                let pattern = pattern.as_str().to_string();
+                let mode_match = c.name("search_mode");
+                let has_pattern = !pattern.is_empty();
+                let has_mode = mode_match.map_or(false, |c| !c.as_str().is_empty());
+                if  has_pattern || has_mode {
+                    cp.pattern = Some(PatternParts {
+                        mode: c.name("search_mode").map(|c| c.as_str().to_string()),
+                        pattern: pattern.as_str().to_string(),
+                        flags: c.name("pattern_flags").map(|c| c.as_str().to_string()),
+                    });
+                }
             }
             if let Some(verb) = c.name("verb_invocation") {
                 cp.verb_invocation = Some(VerbInvocation::from(verb.as_str()));
@@ -93,31 +99,37 @@ mod command_parsing_tests {
     use super::*;
     fn check(
         raw: &str,
-        search_mode: Option<&str>,
+        mode: Option<&str>,
         pattern: Option<&str>,
-        pattern_flags: Option<&str>,
+        flags: Option<&str>,
         verb_invocation: Option<&str>,
     ) {
         println!("checking {:?}", raw);
         let left = CommandParts::from(raw);
         let right = CommandParts {
-            search_mode: search_mode.map(|c| c.to_string()),
-            pattern: pattern.map(|c| c.to_string()),
-            pattern_flags: pattern_flags.map(|c| c.to_string()),
+            pattern: pattern.map(|pattern| PatternParts {
+                mode: mode.map(|s| s.to_string()),
+                pattern: pattern.to_string(),
+                flags: flags.map(|s| s.to_string()),
+            }),
             verb_invocation: verb_invocation.map(|s| VerbInvocation::from(s)),
         };
         assert_eq!(left, right);
     }
     #[test]
     fn test_command_parsing() {
+        check("", None, None, None, None);
+        check(" ", None, None, None, Some(""));
         check("pat", None, Some("pat"), None, None);
         check("pat ", None, Some("pat"), None, Some(""));
         check(" verb arg1 arg2", None, None, None, Some("verb arg1 arg2"));
         check(" verb ", None, None, None, Some("verb "));
         check("pat verb ", None, Some("pat"), None, Some("verb "));
         check("/pat/i verb ", Some(""), Some("pat"), Some("i"), Some("verb "));
+        check("r/pat/i verb ", Some("r"), Some("pat"), Some("i"), Some("verb "));
         check("/pat/:verb ", Some(""), Some("pat"), Some(""), Some("verb "));
         check("/pat", Some(""), Some("pat"), None, None);
         check("p/pat", Some("p"), Some("pat"), None, None);
+        check("mode/", Some("mode"), Some(""), None, None);
     }
 }
