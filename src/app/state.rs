@@ -82,7 +82,8 @@ pub trait AppState {
             Command::Click(x, y) => self.on_click(*x, *y, screen, con),
             Command::DoubleClick(x, y) => self.on_double_click(*x, *y, screen, con),
             Command::PatternEdit(parts) => {
-                match Pattern::from_parts(parts, con) {
+                let search_mode = con.search_modes.search_mode(&parts.mode);
+                match search_mode.and_then(|sm| Pattern::new(sm, &parts.pattern, &parts.flags)) {
                     Ok(pattern) => self.on_pattern(pattern, con),
                     Err(e) => Ok(AppStateCmdResult::DisplayError(format!("{}", e))),
                 }

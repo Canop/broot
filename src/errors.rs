@@ -31,6 +31,7 @@ custom_error! {pub ConfError
     MissingField {txt: String}                      = "missing field in conf",
     InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: {}",
     UnknownInternal {verb: String}                  = "not a known internal: {}",
+    InvalidSearchMode {details: String}             = "invalid search mode: {}",
     InvalidKey {raw: String}                        = "not a valid key: {}",
     ReservedKey {key: String}                       = "reserved key: {}",
     UnexpectedInternalArg { invocation: String}     = "unexpected argument for internal: {}",

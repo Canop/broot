@@ -1,6 +1,7 @@
 use crate::{
     cli::AppLaunchArgs,
     conf::Conf,
+    pattern::SearchModeMap,
     tree::SpecialPath,
     verb::VerbStore,
 };
@@ -12,6 +13,7 @@ pub struct AppContext {
     pub launch_args: AppLaunchArgs,
     pub verb_store: VerbStore,
     pub special_paths: Vec<SpecialPath>,
+    pub search_modes: SearchModeMap,
 }
 
 impl AppContext {
@@ -19,6 +21,7 @@ impl AppContext {
         launch_args: AppLaunchArgs,
         verb_store: VerbStore,
         special_paths: Vec<SpecialPath>,
+        search_modes: SearchModeMap,
     ) -> Self {
         let config_path = Conf::default_location().to_string_lossy().to_string();
         Self {
@@ -26,6 +29,7 @@ impl AppContext {
             launch_args,
             verb_store,
             special_paths,
+            search_modes,
         }
     }
 }

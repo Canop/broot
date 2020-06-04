@@ -5,6 +5,7 @@ use {
     crate::{
         errors::ConfError,
         keys,
+        pattern::{SearchModeMap, SearchModeMapEntry},
         selection_type::SelectionType,
         skin::SkinEntry,
         tree::*,
@@ -29,6 +30,7 @@ pub struct Conf {
     pub verbs: Vec<VerbConf>,
     pub skin: HashMap<String, SkinEntry>,
     pub special_paths: Vec<SpecialPath>,
+    pub search_modes: SearchModeMap,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -188,7 +190,6 @@ impl Conf {
                 }
             }
         }
-
         // reading special paths
         if let Some(Value::Table(paths_tbl)) = &root.get("special-paths") {
             for (k, v) in paths_tbl.iter() {
@@ -204,6 +205,23 @@ impl Conf {
                     }
                 }
             }
+        }
+        // reading serch modes
+        if let Some(Value::Table(search_modes_tbl)) = &root.get("search-modes") {
+            for (k, v) in search_modes_tbl.iter() {
+                if let Some(v) = v.as_str() {
+                    match SearchModeMapEntry::parse(k, v) {
+                        Ok(entry) => {
+                            debug!("Adding search mode map entry: {:?}", &entry);
+                            self.search_modes.set(entry);
+                        }
+                        Err(e) => {
+                            eprintln!("{}", e);
+                        }
+                    }
+                }
+            }
+
         }
 
         Ok(())

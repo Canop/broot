@@ -3,6 +3,7 @@ use {
     super::{
         FuzzyPattern,
         RegexPattern,
+        SearchMode,
     },
     crate::{
         app::AppContext,
@@ -18,14 +19,15 @@ use {
 /// a pattern for filtering and sorting filenames.
 /// It's backed either by a fuzzy pattern matcher or
 ///  by a regular expression (in which case there's no real
-///  score)
+///  score).
+/// It applies either to the name, or to the sub-path.
 #[derive(Debug, Clone)]
 pub enum Pattern {
     None,
     NameFuzzy(FuzzyPattern),
     PathFuzzy(FuzzyPattern),
     NameRegex(RegexPattern),
-    //PathRegex(RegexPattern),
+    PathRegex(RegexPattern),
 }
 
 impl fmt::Display for Pattern {
@@ -34,26 +36,24 @@ impl fmt::Display for Pattern {
             Pattern::NameFuzzy(fp) => write!(f, "NameFuzzy({})", fp),
             Pattern::PathFuzzy(fp) => write!(f, "PathFuzzy({})", fp),
             Pattern::NameRegex(rp) => write!(f, "NameRegex({})", rp),
-            //Pattern::PathRegex(rp) => write!(f, "PathRegex({})", rp),
+            Pattern::PathRegex(rp) => write!(f, "PathRegex({})", rp),
             Pattern::None => write!(f, "None"),
         }
     }
 }
 
 impl Pattern {
-    pub fn from_parts(
-        parts: &PatternParts,
-        _con: &AppContext,
-    ) -> Result<Pattern, PatternError> {
-        match parts.mode.as_deref() {
-            None | Some("f") => Ok(Self::name_fuzzy(&parts.pattern)),
-            Some("p") => Ok(Self::path_fuzzy(&parts.pattern)),
-            Some("r") | Some("") => Self::regex(
-                &parts.pattern,
-                parts.flags.as_deref().unwrap_or(""),
-            ),
-            Some(mode) => Err(PatternError::InvalidMode { mode: mode.to_string() }),
-        }
+    pub fn new(mode: SearchMode, pat: &str, flags: &Option<String>) -> Result<Self, PatternError> {
+        Ok(if pat.is_empty() {
+            Pattern::None
+        } else {
+            match mode {
+                SearchMode::NameFuzzy => Self::NameFuzzy(FuzzyPattern::from(pat)),
+                SearchMode::PathFuzzy => Self::PathFuzzy(FuzzyPattern::from(pat)),
+                SearchMode::NameRegex => Self::NameRegex(RegexPattern::from(pat, flags.as_deref().unwrap_or(""))?),
+                SearchMode::PathRegex => Self::PathRegex(RegexPattern::from(pat, flags.as_deref().unwrap_or(""))?),
+            }
+        })
     }
     /// create a new fuzzy pattern
     pub fn name_fuzzy(pat: &str) -> Pattern {
@@ -81,7 +81,7 @@ impl Pattern {
     }
     pub fn applies_to_path(&self) -> bool {
         match self {
-            Self::PathFuzzy(_) => true,
+            Self::PathFuzzy(_) | Self::PathRegex(_) => true,
             _ => false,
         }
     }
@@ -90,6 +90,7 @@ impl Pattern {
             Self::NameFuzzy(fp) => fp.find(candidate),
             Self::PathFuzzy(fp) => fp.find(candidate),
             Self::NameRegex(rp) => rp.find(candidate),
+            Self::PathRegex(rp) => rp.find(candidate),
             Self::None => Some(Match {
                 // this isn't really supposed to be used
                 score: 1,
@@ -105,6 +106,7 @@ impl Pattern {
             Pattern::NameFuzzy(fp) => fp.score_of(candidate),
             Pattern::PathFuzzy(fp) => fp.score_of(candidate),
             Pattern::NameRegex(rp) => rp.find(candidate).map(|m| m.score),
+            Pattern::PathRegex(rp) => rp.find(candidate).map(|m| m.score),
             Pattern::None => None,
         }
     }
@@ -114,11 +116,13 @@ impl Pattern {
             _ => true,
         }
     }
+    // FIXME can't be reinjected if shortcuts are changed in conf
     pub fn as_input(&self) -> String {
         match self {
             Pattern::NameFuzzy(fp) => fp.to_string(),
             Pattern::PathFuzzy(fp) => format!("p/{}", fp),
-            Pattern::NameRegex(rp) => format!("rp/{}", rp),
+            Pattern::NameRegex(rp) => format!("/{}", rp),
+            Pattern::PathRegex(rp) => format!("rp/{}", rp),
             Pattern::None => String::new(),
         }
     }
@@ -134,6 +138,7 @@ impl Pattern {
             Pattern::NameFuzzy(fp) => fp.optimal_result_number(targeted_size),
             Pattern::PathFuzzy(fp) => fp.optimal_result_number(targeted_size),
             Pattern::NameRegex(rp) => rp.optimal_result_number(targeted_size),
+            Pattern::PathRegex(rp) => rp.optimal_result_number(targeted_size),
             Pattern::None => targeted_size,
         }
     }
