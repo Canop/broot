@@ -198,7 +198,7 @@ pub trait AppState {
     /// return the flags to display
     fn get_flags(&self) -> Vec<Flag>;
 
-    fn get_starting_input(&self) -> String {
+    fn get_starting_input(&self, _con: &AppContext) -> String {
         String::new()
     }
 }

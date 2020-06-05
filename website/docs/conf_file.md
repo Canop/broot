@@ -51,6 +51,17 @@ Example configuration:
 
 Be careful that those paths (globs, in fact) are checked a lot when broot builds trees and that defining a lot of paths will impact the overall speed.
 
+# Search Modes
+
+It's possible to redefine the mode mappings, for example if you usually prefer to do exact searches:
+
+```toml
+[search-modes]
+"<empty>" = "regex name"
+"/" = "fuzzy path"
+"z/" = "regex path"
+```
+
 # Verbs, Shortcuts, and keys
 
 ## Verb Definition Attributes

@@ -1,6 +1,7 @@
 use {
     super::*,
     crate::{
+        app::AppContext,
         pattern::Pattern,
         verb::{Internal, VerbInvocation},
     },
@@ -99,9 +100,9 @@ impl Command {
     }
 
     /// build a non executed command from a pattern
-    pub fn from_pattern(pattern: &Pattern) -> Self {
+    pub fn from_pattern(pattern: &Pattern, con: &AppContext) -> Self {
         Command::from_raw(
-            pattern.as_input(),
+            pattern.as_input(&con.search_modes),
             false,
         )
     }

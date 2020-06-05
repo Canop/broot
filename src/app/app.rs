@@ -51,6 +51,7 @@ impl App {
                 .expect("Failed to create BrowserState"),
             ),
             Areas::create(&mut Vec::new(), 0, screen)?,
+            con,
         );
         Ok(App {
             active_panel_idx: 0,
@@ -87,8 +88,8 @@ impl App {
         }
     }
 
-    fn remove_state(&mut self, screen: &Screen) -> bool {
-        self.panels[self.active_panel_idx].remove_state() || self.close_active_panel(screen)
+    fn remove_state(&mut self, screen: &Screen, con: &AppContext) -> bool {
+        self.panels[self.active_panel_idx].remove_state(con) || self.close_active_panel(screen)
     }
 
     fn display_panels(
@@ -181,7 +182,7 @@ impl App {
                 };
                 match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
                     Ok(areas) => {
-                        let mut panel = Panel::new(self.created_panels_count.into(), state, areas);
+                        let mut panel = Panel::new(self.created_panels_count.into(), state, areas, con);
                         panel.purpose = purpose;
                         self.created_panels_count += 1;
                         self.panels.insert(insertion_idx, panel);
@@ -194,13 +195,13 @@ impl App {
             }
             NewState(state) => {
                 self.mut_panel().clear_input();
-                self.mut_panel().push_state(state);
+                self.mut_panel().push_state(state, con);
             }
             PopState => {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
-                if self.remove_state(screen) {
+                if self.remove_state(screen, con) {
                     // should we set the cmd ?
                     self.mut_state().refresh(screen, con);
                 } else if ESCAPE_TO_QUIT {
@@ -211,7 +212,7 @@ impl App {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
-                if self.remove_state(screen) {
+                if self.remove_state(screen, con) {
                     self.mut_panel().apply_command(&cmd, &other_path, screen, panel_skin, con)?;
                 } else if ESCAPE_TO_QUIT {
                     self.quitting = true;

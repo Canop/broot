@@ -38,7 +38,7 @@ Most useful keys for this:
 
 broot tries to select the most relevant file. You can still go from one match to another one using <kbd>tab</kbd> or arrow keys.
 
-You may also search with a regular expression. To do this, add a `/` before or after the pattern.
+You may also search with a regular expression. To do this, add a `/` before the pattern.
 
 Once the file you want is selected you can
 

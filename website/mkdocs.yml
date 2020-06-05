@@ -9,12 +9,12 @@ nav:
         - Install: install.md
         - Usage:
                 - Launch: launch.md
-                - The input: input.md
                 - Navigation: navigation.md
                 - Verbs & Commands: verbs.md
                 - Panels: panels.md
                 - Tree Export: export.md
                 - Tips & Tricks: tricks.md
+                - Reference - The input: input.md
         - Conf:
                 - Config File: conf_file.md
                 - Skins: skins.md

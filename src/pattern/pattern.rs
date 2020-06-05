@@ -4,12 +4,13 @@ use {
         FuzzyPattern,
         RegexPattern,
         SearchMode,
+        SearchModeMap,
     },
     crate::{
         errors::PatternError,
     },
     std::{
-        fmt,
+        fmt::{self, Write},
         mem,
     },
 };
@@ -53,29 +54,14 @@ impl Pattern {
             }
         })
     }
-    /// create a new fuzzy pattern
-    pub fn name_fuzzy(pat: &str) -> Pattern {
-        if pat.is_empty() {
-            Pattern::None
-        } else {
-            Pattern::NameFuzzy(FuzzyPattern::from(pat))
+    pub fn mode(&self) -> Option<SearchMode> {
+        match self {
+            Self::NameFuzzy(_) => Some(SearchMode::NameFuzzy),
+            Self::PathFuzzy(_) => Some(SearchMode::PathFuzzy),
+            Self::NameRegex(_) => Some(SearchMode::NameRegex),
+            Self::PathRegex(_) => Some(SearchMode::PathRegex),
+            _ => None,
         }
-    }
-    /// create a new fuzzy pattern
-    pub fn path_fuzzy(pat: &str) -> Pattern {
-        if pat.is_empty() {
-            Pattern::None
-        } else {
-            Pattern::PathFuzzy(FuzzyPattern::from(pat))
-        }
-    }
-    /// try to create a regex pattern
-    pub fn regex(pat: &str, flags: &str) -> Result<Pattern, PatternError> {
-        Ok(if pat.is_empty() {
-            Pattern::None
-        } else {
-            Pattern::NameRegex(RegexPattern::from(pat, flags)?)
-        })
     }
     pub fn applies_to_path(&self) -> bool {
         match self {
@@ -114,15 +100,22 @@ impl Pattern {
             _ => true,
         }
     }
-    // FIXME can't be reinjected if shortcuts are changed in conf
-    pub fn as_input(&self) -> String {
-        match self {
-            Pattern::NameFuzzy(fp) => fp.to_string(),
-            Pattern::PathFuzzy(fp) => format!("p/{}", fp),
-            Pattern::NameRegex(rp) => format!("/{}", rp),
-            Pattern::PathRegex(rp) => format!("rp/{}", rp),
-            Pattern::None => String::new(),
+    pub fn as_input(&self, search_mode_map: &SearchModeMap) -> String {
+        let mut input = String::new();
+        if let Some(mode_key) = self.mode().and_then(|mode| search_mode_map.key(mode)) {
+            input.push_str(mode_key);
+            input.push('/');
         }
+        match self {
+            Pattern::NameFuzzy(fp) | Pattern::PathFuzzy(fp) => {
+                write!(input, "{}", &fp).unwrap();
+            }
+            Pattern::NameRegex(rp) | Pattern::PathRegex(rp) => {
+                write!(input, "{}", &rp).unwrap();
+            }
+            _ => {}
+        }
+        input
     }
     /// empties the pattern and return it
     /// Similar to Option::take

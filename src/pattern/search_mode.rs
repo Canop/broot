@@ -3,10 +3,9 @@ use {
     crate::{
         errors::{ConfError, PatternError},
     },
-    std::str::FromStr,
 };
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SearchMode {
     NameFuzzy,
     PathFuzzy,
@@ -83,11 +82,12 @@ impl Default for SearchModeMap {
         let mut smm = SearchModeMap {
             entries: Vec::new(),
         };
-        smm.set(SearchModeMapEntry { key: None, mode: SearchMode::NameFuzzy });
-        smm.setm(&["n", "nf", "fn"], SearchMode::NameFuzzy);
-        smm.setm(&["", "r", "nr", "rn"], SearchMode::NameRegex);
+        // the last keys are prefered
+        smm.setm(&["nf", "fn", "n"], SearchMode::NameFuzzy);
+        smm.setm(&["r", "nr", "rn", ""], SearchMode::NameRegex);
         smm.setm(&["pf", "fp", "p"], SearchMode::PathFuzzy);
         smm.setm(&["pr", "rp"], SearchMode::PathRegex);
+        smm.set(SearchModeMapEntry { key: None, mode: SearchMode::NameFuzzy });
         smm
     }
 }
@@ -120,40 +120,14 @@ impl SearchModeMap {
             },
         })
     }
-}
-
-impl FromStr for SearchMode {
-    type Err = ConfError;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let s = s.to_lowercase();
-        match s.as_ref() {
-            "n" | "f" | "nf" | "fn" => Ok(Self::NameFuzzy),
-            "r" | "nr" | "rn" => Ok(Self::NameRegex),
-            "p" | "fp" | "pf" => Ok(Self::PathFuzzy),
-            _ => {
-                let name = s.contains("name");
-                let path = s.contains("path");
-                let fuzzy = s.contains("fuzzy");
-                let regex = s.contains("regex");
-                match (name, path, fuzzy, regex) {
-                    (false, false, _, _ ) => Err(ConfError::InvalidSearchMode{
-                        details: "you need either \"name\" or \"path\"".to_string()
-                    }),
-                    (true, true, _, _ ) => Err(ConfError::InvalidSearchMode{
-                        details: "you can't simultaneously have \"name\" and \"path\"".to_string()
-                    }),
-                    (_, _, false, false) => Err(ConfError::InvalidSearchMode{
-                        details: "you need either \"fuzzy\" or \"regex\"".to_string()
-                    }),
-                    (_, _, true, true) => Err(ConfError::InvalidSearchMode{
-                        details: "you can't simultaneously have \"fuzzy\" and \"regex\"".to_string()
-                    }),
-                    (true, false, true, false) => Ok(Self::NameFuzzy),
-                    (true, false, false, true) => Ok(Self::NameRegex),
-                    (false, true, true, false) => Ok(Self::PathFuzzy),
-                    (false, true, false, true) => Ok(Self::PathRegex),
-                }
+    pub fn key(&self, search_mode: SearchMode) -> Option<&String> {
+        for entry in self.entries.iter().rev() {
+            if entry.mode == search_mode {
+                return entry.key.as_ref();
             }
         }
+        warn!("search mode key not found for {:?}", search_mode); // should not happen
+        None
     }
 }
+

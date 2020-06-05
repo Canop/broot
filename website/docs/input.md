@@ -7,13 +7,32 @@ The input is the area at the bottom of the focused panel, in which you can type 
 Its parts are
 
 * a filtering pattern
-* a command, starting with a space or a colon (`:`)
+* a verb invocation, starting with a space or a colon (`:`)
 
 Both parts are optional.
 
-Filtering patterns are detailled in the [Navigation](navigation.md) chapter.
+## The filtering pattern
 
-Commands are detailled in the [Verbs & Commands](verbs.md) chapter.
+The search syntax is globally
+
+    <mode><pattern>[/<flags>]
+
+mode | exemple query | example match | explanation
+-|-|-|-
+fuzzy name | `abc` | `abac.txt` | search for "abc" in a fuzzy way in filenames
+regex name | `/abc` | `abc.txt` | search for the regular expression `abc` in filenames ("exact search")
+regex name | `/[yz]{3}` | `fuzzy.rs` | search for the regular expression `[yz]{3}` in filenames
+regex name | `/abc/i` | `aBc.txt` | search for the regular expression `abc` with flag `i` in filenames
+fuzzy path | `p/abc` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-paths from current tree root
+regex path | `rp/abc` | `e/abac.txt` |  search for the "abc" regex  in sub-paths from current tree root
+
+The mode is either nothing (fuzzy name), just a slash (regex name) or some letters followed by a slash.
+
+It's also possible to [redefine those mode mappings](../conf_file/#search-modes).
+
+## The verb invocation
+
+Verbs are detailled in the [Verbs & Commands](verbs.md) chapter.
 
 ## Examples
 
@@ -25,9 +44,15 @@ Commands are detailled in the [Verbs & Commands](verbs.md) chapter.
 
 ### A regular expression based search:
 
-`re/` (which is equivalent to `/re/` or `/re`)
+`/re`
 
-![fuzzy](img/20200526-input-regex.png)
+![fuzzy](img/20200604-input-regex.png)
+
+### A fuzzy path search
+
+`p/coco`
+
+![fuzzy](img/20200604-fuzzy-path.png)
 
 ### A search followed by a command without arguments:
 
@@ -43,11 +68,3 @@ This is very natural: You use the search to select your element and you don't ne
 
 ![fuzzy](img/20200526-input-fuzzy-mv.png)
 
-## Tab completion
-
-When you type a verb, a few letters are often enough because broot just want enough of them to be sure there's no confusion.
-But sometimes there are a lot of verbs with the same start (especially if you add them liberally in the config file). You might want to have broot complete or propose the few possible completions. The <kbd>tab</kbd> key can be used for this purpose.
-
-Tab completion is probably more useful even with paths you provide to verbs. It works intuitively.
-
-Note: there's another solution to gain time when typing a path, especially when you're not sure of it: hitting <kbd>ctrl</kbd><kbd>p</kbd> will open a new panel in which you can navigate until you have your selection that you validate with another hit on <kbd>ctrl</kbd><kbd>p</kbd> (see [panels](panels.md)).

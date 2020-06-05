@@ -45,7 +45,11 @@ If there's a `/` before or after the patten, it's interpreted as a regular expre
 
 For example `/pat+ern` would match `"patern.zip"` or `"some_patttern.rar"` but not `"pATTern"`.
 
-If you want the regex to be case insensitive, add the `i` flag: `pat+ern/i`.
+If you want the regex to be case insensitive, add the `i` flag: `/pat+ern/i`.
+
+# Other kinds of searches
+
+Other types of searches are possible, see [reference](../input.md/#the-filtering-pattern).
 
 # Total Search
 

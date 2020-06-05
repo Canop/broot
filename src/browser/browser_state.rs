@@ -652,15 +652,18 @@ impl AppState for BrowserState {
             warn!("refreshing base tree failed : {:?}", e);
         }
         // refresh the filtered tree, if any
-        Command::from_pattern(match self.filtered_tree {
-            Some(ref mut tree) => {
-                if let Err(e) = tree.refresh(page_height, con) {
-                    warn!("refreshing filtered tree failed : {:?}", e);
+        Command::from_pattern(
+                match self.filtered_tree {
+                Some(ref mut tree) => {
+                    if let Err(e) = tree.refresh(page_height, con) {
+                        warn!("refreshing filtered tree failed : {:?}", e);
+                    }
+                    &tree.options.pattern
                 }
-                &tree.options.pattern
-            }
-            None => &self.tree.options.pattern,
-        })
+                None => &self.tree.options.pattern,
+            },
+            con,
+        )
     }
 
     fn get_flags(&self) -> Vec<Flag> {
@@ -677,12 +680,12 @@ impl AppState for BrowserState {
         ]
     }
 
-    fn get_starting_input(&self) -> String {
+    fn get_starting_input(&self, con: &AppContext) -> String {
         if self.pending_pattern.is_some() {
-            self.pending_pattern.as_input()
+            self.pending_pattern.as_input(&con.search_modes)
         } else {
             self.filtered_tree.as_ref()
-                .map(|t| t.options.pattern.as_input())
+                .map(|t| t.options.pattern.as_input(&con.search_modes))
                 .unwrap_or_else(|| String::new())
         }
     }

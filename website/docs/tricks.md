@@ -34,14 +34,6 @@ If you want to keep the filter, for example to search deeper, you may use `:focu
 
 Similarly, `:back` keeps can be used in place of `esc` to keep the filter when going to the previous state.
 
-## Going from a fixed search to an exact one
-
-Let's assume you type `too` to search for some files. You might have got too many matches including some where the letters aren't consecutive.
-
-You may switch to an exact search by just adding `/`, which changes the fuzzy pattern to a regular expression.
-
-Or if you realize you want to match `tOo` too, then you make it case insensitive by adding an i: `too/i`.
-
 ## Run an script or program from broot
 
 If your system is normally configured, just doing `alt`-`enter` on an executable will close broot and executes the file.
