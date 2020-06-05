@@ -134,7 +134,8 @@ impl<'c> TreeBuilder<'c> {
                 }
             }
             if let Some(pattern_score) = self.options.pattern.score_of(&name) {
-                score += pattern_score;
+                // we dope direct matchs to compensate for depth doping of parent folders
+                score += pattern_score + 10;
             } else {
                 has_match = false;
             }
@@ -212,7 +213,6 @@ impl<'c> TreeBuilder<'c> {
                         match bl {
                             BLineResult::Some(child_id) => {
                                 if self.blines[child_id].has_match {
-                                    // direct match
                                     self.blines[bid].has_match = true;
                                     has_child_match = true;
                                 }

@@ -6,8 +6,6 @@ use {
         SearchMode,
     },
     crate::{
-        app::AppContext,
-        command::PatternParts,
         errors::PatternError,
     },
     std::{

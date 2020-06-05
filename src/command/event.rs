@@ -117,41 +117,44 @@ impl PanelInput {
 
                 // tab completion
                 if key == keys::TAB {
-                    let parts_before_cycle;
-                    let completable_parts = if let Some(s) = &self.input_before_cycle {
-                        parts_before_cycle = CommandParts::from(s);
-                        &parts_before_cycle
-                    } else {
-                        &parts
-                    };
-                    let completions = Completions::for_input(completable_parts, con, state);
-                    let added = match completions {
-                        Completions::None => {
-                            debug!("nothing to complete!"); // where to tell this ? input field or status ?
-                            self.tab_cycle_count = 0;
-                            self.input_before_cycle = None;
-                            None
-                        }
-                        Completions::Common(completion) => {
-                            self.tab_cycle_count = 0;
-                            //self.input_before_cycle = Some(raw.to_string());
-                            Some(completion)
-                        }
-                        Completions::List(mut completions) => {
-                            let idx = self.tab_cycle_count % completions.len();
-                            if self.tab_cycle_count == 0 {
-                                self.input_before_cycle = Some(raw.to_string());
+                    if parts.verb_invocation.is_some() {
+                        let parts_before_cycle;
+                        let completable_parts = if let Some(s) = &self.input_before_cycle {
+                            parts_before_cycle = CommandParts::from(s);
+                            &parts_before_cycle
+                        } else {
+                            &parts
+                        };
+                        let completions = Completions::for_input(completable_parts, con, state);
+                        let added = match completions {
+                            Completions::None => {
+                                debug!("nothing to complete!"); // where to tell this ? input field or status ?
+                                self.tab_cycle_count = 0;
+                                self.input_before_cycle = None;
+                                None
                             }
-                            self.tab_cycle_count += 1;
-                            Some(completions.swap_remove(idx))
+                            Completions::Common(completion) => {
+                                self.tab_cycle_count = 0;
+                                Some(completion)
+                            }
+                            Completions::List(mut completions) => {
+                                let idx = self.tab_cycle_count % completions.len();
+                                if self.tab_cycle_count == 0 {
+                                    self.input_before_cycle = Some(raw.to_string());
+                                }
+                                self.tab_cycle_count += 1;
+                                Some(completions.swap_remove(idx))
+                            }
+                        };
+                        if let Some(added) = added {
+                            let mut raw = self.input_before_cycle.as_ref().map_or(raw, |s| s.to_string());
+                            raw.push_str(&added);
+                            self.input_field.set_content(&raw);
+                            let parts = CommandParts::from(&raw);
+                            return Command::from_parts(&parts, false);
+                        } else {
+                            return Command::None;
                         }
-                    };
-                    if let Some(added) = added {
-                        let mut raw = self.input_before_cycle.as_ref().map_or(raw, |s| s.to_string());
-                        raw.push_str(&added);
-                        self.input_field.set_content(&raw);
-                        let parts = CommandParts::from(&raw);
-                        return Command::from_parts(&parts, false);
                     }
                 } else {
                     self.tab_cycle_count = 0;

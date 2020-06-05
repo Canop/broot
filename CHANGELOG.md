@@ -1,4 +1,9 @@
 ### next version
+#### Major feature: new input syntax - Breaking Change
+- new search modes: fuzzy or regex on sub-paths (the path starting from the displayed root)
+- it's possible to configure how search modes are selected in config
+#### Minor changes:
+- tab goes to next direct match when there's no verb in input - Fix #234
 
 <a name="v0.14.2"></a>
 ### v0.14.2 - 2020-06-01

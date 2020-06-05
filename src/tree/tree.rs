@@ -146,6 +146,7 @@ impl Tree {
         loop {
             self.selection = (self.selection + ((l as i32) + dy) as usize) % l;
             if self.lines[self.selection].is_selectable() {
+                debug!("selected line score: {:?}", self.lines[self.selection].score);
                 break;
             }
         }

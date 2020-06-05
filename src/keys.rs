@@ -89,7 +89,7 @@ pub fn is_reserved(key: KeyEvent) -> bool {
         //RIGHT => true, // needed for the input field
         DELETE => true, // needed for the input field
         ESC => true,    // basic navigation
-        TAB => true,    // open tab/panel
+        //TAB => true,    // completion
         //UP => true, // basic navigation
         //DOWN => true, // basic navigation
         _ => false,

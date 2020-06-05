@@ -427,6 +427,14 @@ impl AppState for BrowserState {
                 self.displayed_tree_mut().move_selection(-1, page_height);
                 AppStateCmdResult::Keep
             }
+            Internal::previous_match => {
+                self.displayed_tree_mut().try_select_previous_match();
+                AppStateCmdResult::Keep
+            }
+            Internal::next_match => {
+                self.displayed_tree_mut().try_select_next_match();
+                AppStateCmdResult::Keep
+            }
             Internal::page_down => {
                 let tree = self.displayed_tree_mut();
                 if page_height < tree.lines.len() as i32 {

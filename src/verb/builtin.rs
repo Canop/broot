@@ -59,6 +59,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
         .with_shortcut("mvp"),
         Verb::internal_bang(start_end_panel)
             .with_control_key('p'),
+        Verb::internal(next_match)
+            .with_key(TAB),
         Verb::internal(open_stay)
             .with_key(ENTER)
             .with_shortcut("os"),

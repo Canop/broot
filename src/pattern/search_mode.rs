@@ -63,8 +63,9 @@ impl SearchModeMapEntry {
             (false, true, false, true) => SearchMode::PathRegex,
         };
         let key = if conf_key.is_empty() || conf_key == "<empty>" {
-            // serde toml parser don't handle correctly empty keys so we accept as
+            // serde toml parser doesn't handle correctly empty keys so we accept as
             // alternative the `"<empty>" = "fuzzy name"` solution.
+            // TODO look at issues and/or code in serde-toml
             None
         } else if regex!(r"^\w*/$").is_match(conf_key) {
             Some(conf_key[0..conf_key.len()-1].to_string())
@@ -106,14 +107,11 @@ impl SearchModeMap {
         self.entries.push(entry);
     }
     pub fn search_mode(&self, key: &Option<String>) -> Result<SearchMode, PatternError> {
-        debug!("searching mode with key {:?}", key);
         for entry in self.entries.iter().rev() {
             if entry.key == *key {
-                debug!("found mode {:?}", entry.mode);
                 return Ok(entry.mode);
             }
         }
-        debug!("map: {:?}", &self);
         Err(PatternError::InvalidMode {
             mode: if let Some(key) = key {
                 format!("{}/", key)
