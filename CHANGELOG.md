@@ -4,6 +4,7 @@
 - it's possible to configure how search modes are selected in config
 #### Minor changes:
 - tab goes to next direct match when there's no verb in input - Fix #234
+- a few fixes of relative paths and tab completion
 
 <a name="v0.14.2"></a>
 ### v0.14.2 - 2020-06-01
