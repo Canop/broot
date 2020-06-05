@@ -34,7 +34,8 @@ pub fn path_from<P: AsRef<Path>>(base_dir: P, input: &str) -> PathBuf {
         // we put the input behind the source (the selected directory
         // or its parent) and we normalize so that the user can type
         // paths with `../`
-        normalize_path(base_dir.as_ref().join(input))
+        let base_dir = closest_dir(base_dir.as_ref());
+        normalize_path(base_dir.join(input))
     }
 }
 
