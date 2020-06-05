@@ -9,11 +9,10 @@ use {
         path,
         verb::PrefixSearchResult,
     },
-    std::{
-        io,
-    },
+    std::io,
 };
 
+/// find the longest common start of a and b
 fn common_start<'l>(a: &'l str, b: &str) -> &'l str {
     for i in 0..a.len().min(b.len()) {
         if a.as_bytes()[i] != b.as_bytes()[i] {

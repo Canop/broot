@@ -20,7 +20,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_control_key('w'),
         Verb::external(
             "copy {newpath}",
-            "/bin/cp -r {file} {newpath:path-from-parent}",
+            "/bin/cp -r {file} {newpath:path-from-directory}",
             StayInBroot,
         )
         .unwrap()
@@ -45,7 +45,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         .with_shortcut("md"),
         Verb::external(
             "move {newpath}",
-            "/bin/mv {file} {newpath:path-from-parent}",
+            "/bin/mv {file} {newpath:path-from-directory}",
             StayInBroot,
         )
         .unwrap()
