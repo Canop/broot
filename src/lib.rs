@@ -24,6 +24,7 @@ pub mod clap;
 pub mod cli;
 pub mod command;
 pub mod conf;
+pub mod content_search;
 pub mod errors;
 pub mod file_sizes;
 pub mod git;

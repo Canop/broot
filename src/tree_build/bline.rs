@@ -3,6 +3,7 @@ use {
     crate::{
         errors::TreeBuildError,
         git::GitIgnoreChain,
+        pattern::PatternObject,
         tree::*,
     },
     id_arena::Arena,
@@ -21,6 +22,7 @@ pub struct BLine {
     pub next_child_idx: usize,      // index for iteration, among the children
     pub has_error: bool,
     pub has_match: bool,
+    pub direct_match: bool,
     pub score: i32,
     pub nb_kept_children: i32, // used during the trimming step
     pub git_ignore_chain: GitIgnoreChain,
@@ -35,7 +37,7 @@ impl BLine {
         git_ignore_chain: GitIgnoreChain,
         options: &TreeOptions,
     ) -> Result<BId, TreeBuildError> {
-        let name = if options.pattern.applies_to_path() {
+        let name = if options.pattern.object() == PatternObject::FileSubpath {
             String::new()
         } else {
             match path.file_name() {
@@ -56,6 +58,7 @@ impl BLine {
                 file_type,
                 has_error: false,
                 has_match: true,
+                direct_match: false,
                 score: 0,
                 nb_kept_children: 0,
                 git_ignore_chain,
@@ -140,6 +143,7 @@ impl BLine {
             nb_kept_children: self.nb_kept_children as usize,
             unlisted,
             score: self.score,
+            direct_match: self.direct_match,
             size: None,
             metadata,
             git_status: None,

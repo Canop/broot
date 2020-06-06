@@ -1,11 +1,6 @@
 
 use {
-    super::{
-        FuzzyPattern,
-        RegexPattern,
-        SearchMode,
-        SearchModeMap,
-    },
+    super::*,
     crate::{
         errors::PatternError,
     },
@@ -27,6 +22,7 @@ pub enum Pattern {
     PathFuzzy(FuzzyPattern),
     NameRegex(RegexPattern),
     PathRegex(RegexPattern),
+    Content(ContentPattern),
 }
 
 impl fmt::Display for Pattern {
@@ -36,6 +32,7 @@ impl fmt::Display for Pattern {
             Pattern::PathFuzzy(fp) => write!(f, "PathFuzzy({})", fp),
             Pattern::NameRegex(rp) => write!(f, "NameRegex({})", rp),
             Pattern::PathRegex(rp) => write!(f, "PathRegex({})", rp),
+            Pattern::Content(rp) => write!(f, "Content({})", rp),
             Pattern::None => write!(f, "None"),
         }
     }
@@ -51,6 +48,7 @@ impl Pattern {
                 SearchMode::PathFuzzy => Self::PathFuzzy(FuzzyPattern::from(pat)),
                 SearchMode::NameRegex => Self::NameRegex(RegexPattern::from(pat, flags.as_deref().unwrap_or(""))?),
                 SearchMode::PathRegex => Self::PathRegex(RegexPattern::from(pat, flags.as_deref().unwrap_or(""))?),
+                SearchMode::Content => Self::Content(ContentPattern::from(pat)),
             }
         })
     }
@@ -60,38 +58,39 @@ impl Pattern {
             Self::PathFuzzy(_) => Some(SearchMode::PathFuzzy),
             Self::NameRegex(_) => Some(SearchMode::NameRegex),
             Self::PathRegex(_) => Some(SearchMode::PathRegex),
+            Self::Content(_) => Some(SearchMode::Content),
             _ => None,
         }
     }
-    pub fn applies_to_path(&self) -> bool {
+    pub fn object(&self) -> PatternObject {
         match self {
-            Self::PathFuzzy(_) | Self::PathRegex(_) => true,
-            _ => false,
+            Self::PathFuzzy(_) | Self::PathRegex(_) => PatternObject::FileSubpath,
+            Self::Content(_) => PatternObject::FileContent,
+            _ => PatternObject::FileName,
         }
     }
+    /// find the position of the match, if possible
+    /// (makes sense for tree rendering)
     pub fn find(&self, candidate: &str) -> Option<Match> {
         match self {
             Self::NameFuzzy(fp) => fp.find(candidate),
             Self::PathFuzzy(fp) => fp.find(candidate),
             Self::NameRegex(rp) => rp.find(candidate),
             Self::PathRegex(rp) => rp.find(candidate),
-            Self::None => Some(Match {
-                // this isn't really supposed to be used
+            _ => Some(Match {
                 score: 1,
                 pos: Vec::with_capacity(0),
             }),
         }
     }
-    /// compute the score of a string
-    /// Caller is responsible of calling applies_to_path
-    /// and preparing and providing the relevant string.
-    pub fn score_of(&self, candidate: &str) -> Option<i32> {
+    pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
         match self {
-            Pattern::NameFuzzy(fp) => fp.score_of(candidate),
-            Pattern::PathFuzzy(fp) => fp.score_of(candidate),
-            Pattern::NameRegex(rp) => rp.find(candidate).map(|m| m.score),
-            Pattern::PathRegex(rp) => rp.find(candidate).map(|m| m.score),
-            Pattern::None => None,
+            Pattern::NameFuzzy(fp) => fp.score_of(&candidate.name),
+            Pattern::PathFuzzy(fp) => fp.score_of(&candidate.name),
+            Pattern::NameRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
+            Pattern::PathRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
+            Pattern::Content(cp) => cp.score_of(&candidate.path),
+            Pattern::None => Some(1),
         }
     }
     pub fn is_some(&self) -> bool {
@@ -130,6 +129,7 @@ impl Pattern {
             Pattern::PathFuzzy(fp) => fp.optimal_result_number(targeted_size),
             Pattern::NameRegex(rp) => rp.optimal_result_number(targeted_size),
             Pattern::PathRegex(rp) => rp.optimal_result_number(targeted_size),
+            Pattern::Content(cp) => cp.optimal_result_number(targeted_size),
             Pattern::None => targeted_size,
         }
     }

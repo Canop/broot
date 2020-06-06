@@ -281,11 +281,7 @@ impl Tree {
             if !line.is_selectable() {
                 continue;
             }
-            // Not very elegant
-            // If we implement several types of search (path, content),
-            // we'll rather store a direct_match boolean in the line.
-            if self.options.pattern.is_some() && self.options.pattern.score_of(&line.name).is_none()
-            {
+            if !line.direct_match {
                 continue;
             }
             if line.score > 0 {

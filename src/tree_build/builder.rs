@@ -7,6 +7,7 @@ use {
         app::AppContext,
         errors::TreeBuildError,
         git::{GitIgnoreChain, GitIgnorer, LineStatusComputer},
+        pattern::{Candidate, PatternObject},
         task_sync::ComputationResult,
         task_sync::Dam,
         tree::*,
@@ -126,21 +127,25 @@ impl<'c> TreeBuilder<'c> {
         let mut name = name.to_string();
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
-        if self.options.pattern.is_some() {
-            if self.options.pattern.applies_to_path() {
-                let parent_name = &self.blines[parent_id].name;
-                if !parent_name.is_empty() {
-                    name = format!("{}/{}", parent_name, name);
-                }
-            }
-            if let Some(pattern_score) = self.options.pattern.score_of(&name) {
-                // we dope direct matchs to compensate for depth doping of parent folders
-                score += pattern_score + 10;
-            } else {
-                has_match = false;
+        let path = e.path();
+        if self.options.pattern.object() == PatternObject::FileSubpath {
+            let parent_name = &self.blines[parent_id].name;
+            if !parent_name.is_empty() {
+                name = format!("{}/{}", parent_name, name);
             }
         }
-        let path = e.path();
+        let candidate = Candidate {
+            path: &path,
+            name: &name,
+        };
+        let direct_match = if let Some(pattern_score) = self.options.pattern.score_of(candidate) {
+            // we dope direct matchs to compensate for depth doping of parent folders
+            score += pattern_score + 10;
+            true
+        } else {
+            has_match = false;
+            false
+        };
         if has_match && self.options.filter_by_git_status {
             if let Some(line_status_computer) = &self.line_status_computer {
                 if !line_status_computer.is_interesting(&path) {
@@ -192,6 +197,7 @@ impl<'c> TreeBuilder<'c> {
             next_child_idx: 0,
             has_error: false,
             has_match,
+            direct_match,
             score,
             nb_kept_children: 0,
             git_ignore_chain,

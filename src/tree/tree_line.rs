@@ -29,6 +29,7 @@ pub struct TreeLine {
     pub nb_kept_children: usize,
     pub unlisted: usize, // number of not listed children (Dir) or brothers (Pruning)
     pub score: i32,      // 0 if there's no pattern
+    pub direct_match: bool,
     pub size: Option<FileSize>, // None when not measured
     pub metadata: fs::Metadata,
     pub git_status: Option<LineGitStatus>,

@@ -11,6 +11,7 @@ pub enum SearchMode {
     PathFuzzy,
     NameRegex,
     PathRegex,
+    Content,
 }
 
 /// define a mapping from a search mode which can be typed in
@@ -29,6 +30,7 @@ pub struct SearchModeMap {
 }
 
 impl SearchModeMapEntry {
+    // FIXME implement "content"
     pub fn parse(conf_key: &str, conf_mode: &str) -> Result<Self, ConfError> {
         let s = conf_mode.to_lowercase();
         let name = s.contains("name");
@@ -87,6 +89,7 @@ impl Default for SearchModeMap {
         smm.setm(&["r", "nr", "rn", ""], SearchMode::NameRegex);
         smm.setm(&["pf", "fp", "p"], SearchMode::PathFuzzy);
         smm.setm(&["pr", "rp"], SearchMode::PathRegex);
+        smm.setm(&["c"], SearchMode::Content);
         smm.set(SearchModeMapEntry { key: None, mode: SearchMode::NameFuzzy });
         smm
     }
