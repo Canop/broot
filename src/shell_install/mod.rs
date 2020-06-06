@@ -3,6 +3,7 @@ use {
     std::{
         fs, io, os,
         path::{Path, PathBuf},
+        str::FromStr,
     },
     termimad::{mad_print_inline, MadSkin},
 };
@@ -48,8 +49,9 @@ pub enum ShellInstallState {
     Refused,
     Installed,
 }
-impl ShellInstallState {
-    pub fn from_str(state: &str) -> Result<Self, ProgramError> {
+impl FromStr for ShellInstallState {
+    type Err = ProgramError;
+    fn from_str(state: &str) -> Result<Self, Self::Err> {
         match state {
             "undefined" => Ok(Self::Undefined),
             "refused" => Ok(Self::Refused),
@@ -60,6 +62,8 @@ impl ShellInstallState {
             }),
         }
     }
+}
+impl ShellInstallState {
     /// write either the "installed" or the "refused" file, or remove
     ///  those files.
     ///

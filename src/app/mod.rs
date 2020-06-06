@@ -1,4 +1,5 @@
 mod app;
+mod cmd_context;
 mod cmd_result;
 mod context;
 mod panel;
@@ -10,6 +11,7 @@ mod status;
 pub use {
     app::App,
     cmd_result::*,
+    cmd_context::CmdContext,
     context::AppContext,
     panel::Panel,
     panel_id::PanelId,

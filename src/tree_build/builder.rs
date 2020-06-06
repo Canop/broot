@@ -81,7 +81,7 @@ impl<'c> TreeBuilder<'c> {
         con: &'c AppContext,
     ) -> Result<TreeBuilder<'c>, TreeBuildError> {
         let mut blines = Arena::new();
-        let mut git_ignorer = time!(Debug, "GitIgnorer::new", GitIgnorer::new());
+        let mut git_ignorer = time!(Debug, "GitIgnorer::default", GitIgnorer::default());
         let root_ignore_chain = git_ignorer.root_chain(&path);
         let line_status_computer = if options.filter_by_git_status || options.show_git_file_info {
             time!(
@@ -154,11 +154,6 @@ impl<'c> TreeBuilder<'c> {
                 return BLineResult::Invalid;
             }
         };
-        let special_handling = self.con.special_paths.find(&path);
-        if special_handling == SpecialHandling::Hide {
-            debug!("special_handling={:?} for {:?}", special_handling, &path);
-            return BLineResult::FilteredOutBySpecialRule;
-        }
         if file_type.is_file() || file_type.is_symlink() {
             if !has_match {
                 return BLineResult::FilteredOutByPattern;
@@ -166,6 +161,10 @@ impl<'c> TreeBuilder<'c> {
             if self.options.only_folders {
                 return BLineResult::FilteredOutAsNonFolder;
             }
+        }
+        let special_handling = self.con.special_paths.find(&path);
+        if special_handling == SpecialHandling::Hide {
+            return BLineResult::FilteredOutBySpecialRule;
         }
         let git_ignore_chain = if self.options.respect_git_ignore {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;

@@ -83,6 +83,7 @@ impl fmt::Display for FileSize {
 }
 
 impl AddAssign for FileSize {
+    #[allow(clippy::suspicious_op_assign_impl)]
     fn add_assign(&mut self, other: Self) {
         *self = Self::new(self.real_size + other.real_size, self.sparse | other.sparse);
     }

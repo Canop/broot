@@ -56,7 +56,7 @@ pub fn get_tree_status(root_path: &Path, dam: &mut Dam) -> ComputationResult<Tre
             match comp {
                 Some(Computation::Finished(comp_res)) => {
                     // already computed
-                    comp_res.clone()
+                    comp_res
                 }
                 Some(Computation::InProgress(comp_receiver)) => {
                     // computation in progress

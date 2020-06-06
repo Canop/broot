@@ -2,7 +2,7 @@ use {
     crate::{
         app::*,
         command::{Command, TriggerType},
-        display::{Areas, DisplayableTree, Screen, W},
+        display::{DisplayableTree, Screen, W},
         errors::{ProgramError, TreeBuildError},
         flag::Flag,
         git,
@@ -359,12 +359,10 @@ impl AppState for BrowserState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
-        areas: &Areas,
+        cc: &CmdContext,
         screen: &mut Screen,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
-        panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
+        let con = &cc.con;
         let page_height = BrowserState::page_height(screen);
         let bang = input_invocation
             .map(|inv| inv.bang)
@@ -450,7 +448,7 @@ impl AppState for BrowserState {
                 AppStateCmdResult::Keep
             }
             Internal::panel_left => {
-                if areas.is_first() {
+                if cc.areas.is_first() {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),
@@ -466,7 +464,7 @@ impl AppState for BrowserState {
                 }
             }
             Internal::panel_right => {
-                if areas.is_last() {
+                if cc.areas.is_last() {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),
@@ -491,7 +489,7 @@ impl AppState for BrowserState {
                 print::print_relative_path(path, con)?
             }
             Internal::print_tree => {
-                print::print_tree(&self.displayed_tree(), screen, panel_skin, con)?
+                print::print_tree(&self.displayed_tree(), screen, &cc.panel_skin, con)?
             }
             Internal::refresh => AppStateCmdResult::RefreshState { clear_cache: true },
             Internal::select_first => {
@@ -503,7 +501,7 @@ impl AppState for BrowserState {
                 AppStateCmdResult::Keep
             }
             Internal::start_end_panel => {
-                if panel_purpose.is_arg_edition() {
+                if cc.panel_purpose.is_arg_edition() {
                     debug!("start_end understood as end");
                     AppStateCmdResult::ClosePanel {
                         validate_purpose: true,
@@ -514,8 +512,7 @@ impl AppState for BrowserState {
                     if let Some(input_invocation) = input_invocation {
                         // we'll go for input arg editing
                         let path = if let Some(input_arg) = &input_invocation.args {
-                            let path = path::path_from(self.root(), input_arg);
-                            PathBuf::from(path)
+                            path::path_from(self.root(), input_arg)
                         } else {
                             self.root().to_path_buf()
                         };
@@ -686,7 +683,7 @@ impl AppState for BrowserState {
         } else {
             self.filtered_tree.as_ref()
                 .map(|t| t.options.pattern.as_input(&con.search_modes))
-                .unwrap_or_else(|| String::new())
+                .unwrap_or_else(String::new)
         }
     }
 }

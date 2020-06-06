@@ -81,6 +81,7 @@ impl Dam {
         self.select(comp_receiver)
     }
 
+    #[allow(clippy::drop_copy, clippy::zero_ptr)]
     pub fn select<V>(
         &mut self,
         comp_receiver: Receiver<ComputationResult<V>>,
@@ -90,7 +91,6 @@ impl Dam {
             debug!("There's already an event in dam");
             ComputationResult::None
         } else {
-            //
             select! {
                 recv(self.receiver) -> event => {
                     // interruption

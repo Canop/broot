@@ -12,6 +12,7 @@ use {
 /// When the user types some keys, we select a verb
 /// - if the input exactly matches a shortcut or the name
 /// - if only one verb name starts with the input
+#[derive(Default)]
 pub struct VerbStore {
     pub verbs: Vec<Verb>,
 }
@@ -24,9 +25,6 @@ pub enum PrefixSearchResult<'v, T> {
 }
 
 impl VerbStore {
-    pub fn new() -> VerbStore {
-        VerbStore { verbs: Vec::new() }
-    }
     pub fn init(&mut self, conf: &Conf) {
         // we first add the verbs coming from configuration, as
         // we'll search in order. This way, a user can overload a

@@ -1,9 +1,6 @@
 use std::{collections::HashMap, sync::Mutex};
 
 #[cfg(unix)]
-use users;
-
-#[cfg(unix)]
 pub fn user_name(uid: u32) -> String {
     lazy_static! {
         static ref USERS_CACHE_MUTEX: Mutex<HashMap<u32, String>> = Mutex::new(HashMap::new());

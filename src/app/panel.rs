@@ -55,17 +55,16 @@ impl Panel {
         panel_skin: &PanelSkin,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        let purpose = self.purpose;
         let state_idx = self.states.len()-1;
-        let result = self.states[state_idx].on_command(
+        let cc = CmdContext {
             cmd,
             other_path,
-            &self.areas,
-            screen,
             panel_skin,
             con,
-            purpose,
-        );
+            areas: &self.areas,
+            panel_purpose: self.purpose,
+        };
+        let result = self.states[state_idx].on_command(&cc, screen);
         self.status = Some(self.state().get_status(cmd, other_path, con));
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
@@ -209,7 +208,7 @@ impl Panel {
                 .filter_map(|v| v.keys.first())
                 .map(|&k| keys::key_event_desc(k))
                 .next()
-                .unwrap_or(":start_end_panel".to_string());
+                .unwrap_or_else(|| ":start_end_panel".to_string());
 
             let md = format!("hit *{}* to fill arg ", shortcut);
             // Add verbindex in purpose ?

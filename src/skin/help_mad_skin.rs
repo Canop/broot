@@ -1,6 +1,6 @@
 use {
     super::StyleMap,
-    termimad::{Alignment, CompoundStyle, LineStyle, MadSkin},
+    termimad::{Alignment, LineStyle, MadSkin},
 };
 
 
@@ -28,10 +28,10 @@ pub fn make_help_mad_skin(skin: &StyleMap) -> MadSkin {
         .set_compound_style(ms.paragraph.compound_style.clone());
     ms.scrollbar
         .track
-        .set_compound_style(CompoundStyle::from(skin.scrollbar_track.clone()));
+        .set_compound_style(skin.scrollbar_track.clone());
     ms.scrollbar
         .thumb
-        .set_compound_style(CompoundStyle::from(skin.scrollbar_thumb.clone()));
+        .set_compound_style(skin.scrollbar_thumb.clone());
     ms
 }
 

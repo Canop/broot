@@ -5,7 +5,7 @@ use {
         browser::BrowserState,
         command::{Command, TriggerType},
         conf::{self, Conf},
-        display::{Areas, Screen, W},
+        display::{Screen, W},
         errors::ProgramError,
         flag::Flag,
         launchable::Launchable,
@@ -132,11 +132,8 @@ impl AppState for HelpState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         _trigger_type: TriggerType,
-        _areas: &Areas,
+        cc: &CmdContext,
         screen: &mut Screen,
-        _panel_skin: &PanelSkin,
-        con: &AppContext,
-        _purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
         use Internal::*;
         let bang = input_invocation
@@ -149,7 +146,7 @@ impl AppState for HelpState {
                     conf::dir(),
                     TreeOptions::default(),
                     screen,
-                    con,
+                    &cc.con,
                     &Dam::unlimited(),
                 ),
                 bang,
@@ -183,8 +180,8 @@ impl AppState for HelpState {
                 self.scroll -= self.text_area.height as i32;
                 AppStateCmdResult::Keep
             }
-            print_path => print::print_path(&Conf::default_location(), con)?,
-            print_relative_path => print::print_relative_path(&Conf::default_location(), con)?,
+            print_path => print::print_path(&Conf::default_location(), &cc.con)?,
+            print_relative_path => print::print_relative_path(&Conf::default_location(), &cc.con)?,
             quit => AppStateCmdResult::Quit,
             toggle_dates | toggle_files | toggle_hidden | toggle_git_ignore
             | toggle_git_file_info | toggle_git_status | toggle_perm | toggle_sizes

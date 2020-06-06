@@ -78,14 +78,13 @@ impl TreeGitStatus {
             .and_then(|head| head.shorthand().map(String::from));
         let stats = match repo.diff_index_to_workdir(None, None) {
             Ok(diff) => {
-                let stats = match diff.stats() {
+                match diff.stats() {
                     Ok(stats) => stats,
                     Err(e) => {
                         debug!("get stats failed : {:?}", e);
                         return None;
                     }
-                };
-                stats
+                }
             }
             Err(e) => {
                 debug!("get diff failed : {:?}", e);

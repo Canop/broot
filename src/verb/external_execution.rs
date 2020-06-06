@@ -76,9 +76,11 @@ impl ExternalExecution {
         if let Some(args) = &invocation_pattern.args {
             let spec = GROUP.replace_all(args, r"(?P<$1>.+)");
             let spec = format!("^{}$", spec);
-            args_parser = match Regex::new(&spec.to_string()) {
+            args_parser = match Regex::new(&spec) {
                 Ok(regex) => Some(regex),
-                Err(_) => Err(ConfError::InvalidVerbInvocation { invocation: spec })?,
+                Err(_) => {
+                    return Err(ConfError::InvalidVerbInvocation { invocation: spec });
+                }
             };
             if let Some(group) = GROUP.find(args) {
                 if group.start() == 0 && group.end() == args.len() {
@@ -196,7 +198,7 @@ impl ExternalExecution {
         args: &Option<String>,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        if self.exec_mode.from_shell() {
+        if self.exec_mode.is_from_shell() {
             self.exec_from_shell_cmd_result(file, other_file, args, con)
         } else {
             self.exec_cmd_result(file, other_file, args)
@@ -240,7 +242,7 @@ impl ExternalExecution {
         args: &Option<String>,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let launchable = Launchable::program(self.exec_token(file, other_file, args))?;
-        if self.exec_mode.leave_broot() {
+        if self.exec_mode.is_leave_broot() {
             Ok(AppStateCmdResult::from(launchable))
         } else {
             info!("Executing not leaving, launchable {:?}", launchable);

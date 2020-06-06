@@ -196,7 +196,7 @@ impl FuzzyPattern {
                             return Some(score + BONUS_START_WORD);
                         } else {
                             // looking for another match after a space
-                            while let Some(cand_chr) = cand_chars.next() {
+                            for cand_chr in cand_chars {
                                 if cand_chr == pat_chr && starts_word {
                                     return Some(score + BONUS_START_WORD);
                                 } else {

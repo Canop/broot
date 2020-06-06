@@ -22,6 +22,7 @@ use {
         env,
         io::{self, Write},
         path::{Path, PathBuf},
+        str::FromStr,
     },
 };
 
@@ -81,9 +82,9 @@ fn get_root_path(cli_args: &ArgMatches<'_>) -> Result<PathBuf, ProgramError> {
         .value_of("root")
         .map_or(env::current_dir()?, PathBuf::from);
     if !root.exists() {
-        Err(TreeBuildError::FileNotFound {
+        return Err(TreeBuildError::FileNotFound {
             path: format!("{:?}", &root),
-        })?;
+        }.into());
     }
     if !root.is_dir() {
         // we try to open the parent directory if the passed file isn't one
@@ -92,9 +93,9 @@ fn get_root_path(cli_args: &ArgMatches<'_>) -> Result<PathBuf, ProgramError> {
             root = parent.to_path_buf();
         } else {
             // let's give up
-            Err(TreeBuildError::NotADirectory {
+            return Err(TreeBuildError::NotADirectory {
                 path: format!("{:?}", &root),
-            })?;
+            }.into());
         }
     }
     Ok(canonicalize_root(&root)?)
@@ -169,7 +170,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     }
 
     // verb store is completed from the config file(s)
-    let mut verb_store = VerbStore::new();
+    let mut verb_store = VerbStore::default();
     verb_store.init(&config);
 
     // reading the other arguments
@@ -214,7 +215,7 @@ pub fn ask_authorization() -> Result<bool, ProgramError> {
     let mut answer = String::new();
     io::stdin().read_line(&mut answer)?;
     let answer = answer.trim();
-    Ok(match answer.as_ref() {
+    Ok(match answer {
         "n" | "N" => false,
         _ => true,
     })

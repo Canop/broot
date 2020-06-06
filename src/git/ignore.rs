@@ -115,8 +115,9 @@ pub struct GitIgnorer {
     files: Arena<GitIgnoreFile>,
     global_chain: GitIgnoreChain,
 }
-impl GitIgnorer {
-    pub fn new() -> Self {
+
+impl Default for GitIgnorer {
+    fn default() -> Self {
         let mut files = Arena::new();
         let mut global_chain = GitIgnoreChain::default();
         lazy_static! {
@@ -130,6 +131,8 @@ impl GitIgnorer {
             global_chain,
         }
     }
+}
+impl GitIgnorer {
     pub fn root_chain(&mut self, mut dir: &Path) -> GitIgnoreChain {
         let mut chain = self.global_chain.clone();
         loop {

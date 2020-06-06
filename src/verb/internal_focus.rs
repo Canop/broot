@@ -80,7 +80,6 @@ pub fn on_internal(
         // The given path may be relative hence the need for the
         // state's selection
         let path = path::path_from(selected_path, arg);
-        let path = PathBuf::from(path);
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
@@ -95,7 +94,6 @@ pub fn on_internal(
                     // input (which must be a kind of alias for :focus)
                     // so we do exactly what the input asks for
                     let path = path::path_from(selected_path, input_arg);
-                    let path = PathBuf::from(path);
                     let bang = input_invocation.bang || internal_exec.bang;
                     return on_path(path, screen, tree_options, bang, con);
                 }
@@ -105,7 +103,6 @@ pub fn on_internal(
                     // of selecting a path
                     let base_dir = selected_path.to_string_lossy();
                     let path = path::path_from(&*base_dir, input_arg);
-                    let path = PathBuf::from(path);
                     let arg_type = SelectionType::Any; // We might do better later
                     let purpose = PanelPurpose::ArgEdition { arg_type };
                     return new_panel_on_path(path, screen, tree_options, purpose, con, HDir::Right);

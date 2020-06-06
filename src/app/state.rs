@@ -2,7 +2,7 @@ use {
     super::*,
     crate::{
         command::{Command, TriggerType},
-        display::{Areas, Screen, W},
+        display::{Screen, W},
         errors::ProgramError,
         flag::Flag,
         pattern::Pattern,
@@ -59,26 +59,19 @@ pub trait AppState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
-        areas: &Areas,
+        cc: &CmdContext,
         screen: &mut Screen,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
-        panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError>;
 
     /// change the state, does no rendering
     fn on_command(
         &mut self,
-        cmd: &Command,
-        other_path: &Option<PathBuf>,
-        areas: &Areas,
+        cc: &CmdContext,
         screen: &mut Screen,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
-        panel_purpose: PanelPurpose,
     ) -> Result<AppStateCmdResult, ProgramError> {
         self.clear_pending();
-        match cmd {
+        let con = &cc.con;
+        match cc.cmd {
             Command::Click(x, y) => self.on_click(*x, *y, screen, con),
             Command::DoubleClick(x, y) => self.on_double_click(*x, *y, screen, con),
             Command::PatternEdit(parts) => {
@@ -98,15 +91,12 @@ pub trait AppState {
                         internal_exec,
                         input_invocation.as_ref(),
                         TriggerType::Other,
-                        areas,
+                        cc,
                         screen,
-                        panel_skin,
-                        con,
-                        panel_purpose,
                     ),
                     VerbExecution::External(external) => external.to_cmd_result(
                         self.selected_path(),
-                        other_path,
+                        &cc.other_path,
                         if let Some(inv) = &input_invocation {
                             &inv.args
                         } else {
@@ -123,15 +113,12 @@ pub trait AppState {
                 &InternalExecution::from_internal(*internal),
                 input_invocation.as_ref(),
                 TriggerType::Other,
-                areas,
+                cc,
                 screen,
-                panel_skin,
-                con,
-                panel_purpose,
             ),
             Command::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
                 PrefixSearchResult::Match(_, verb) => {
-                    if let Some(err) = verb.check_args(invocation, other_path) {
+                    if let Some(err) = verb.check_args(invocation, &cc.other_path) {
                         Ok(AppStateCmdResult::DisplayError(err))
                     } else {
                         match &verb.execution {
@@ -139,16 +126,13 @@ pub trait AppState {
                                 internal_exec,
                                 Some(invocation),
                                 TriggerType::Input,
-                                areas,
+                                cc,
                                 screen,
-                                panel_skin,
-                                con,
-                                panel_purpose,
                             ),
                             VerbExecution::External(external) => {
                                 external.to_cmd_result(
                                     self.selected_path(),
-                                    other_path,
+                                    &cc.other_path,
                                     &invocation.args,
                                     con,
                                 )

@@ -159,7 +159,8 @@ impl Verb {
                 }
                 VerbExecution::Internal(internal_exec) => {
                     let pb;
-                    let arg_path = if let Some(arg) = invocation.args.as_ref().or(internal_exec.arg.as_ref()) {
+                    let arg = invocation.args.as_ref().or_else(|| internal_exec.arg.as_ref());
+                    let arg_path = if let Some(arg) = arg {
                         pb = path::path_from(path, arg);
                         &pb
                     } else {
