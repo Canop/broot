@@ -1,6 +1,7 @@
 use {
     super::{CropWriter, GitStatusDisplay},
     crate::{
+        content_search::ContentMatch,
         errors::ProgramError,
         file_sizes::FileSize,
         pattern::Pattern,
@@ -245,6 +246,28 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         Ok(())
     }
 
+    fn write_content_extract<'w, W>(
+        &self,
+        cw: &mut CropWriter<'w, W>,
+        extract: ContentMatch,
+        selected: bool,
+    ) -> Result<(), ProgramError>
+    where
+        W: Write,
+    {
+        cond_bg!(extract_style, self, selected, self.skin.content_extract);
+        cond_bg!(match_style, self, selected, self.skin.content_match);
+        cw.queue_char(&extract_style, ' ')?;
+        if extract.needle_start > 0 {
+            cw.queue_str(&extract_style, &extract.extract[0..extract.needle_start])?;
+        }
+        cw.queue_str(&match_style, &extract.extract[extract.needle_start..extract.needle_end])?;
+        if extract.needle_end < extract.extract.len() {
+            cw.queue_str(&extract_style, &extract.extract[extract.needle_end..])?;
+        }
+        Ok(())
+    }
+
     pub fn write_root_line<'w, W>(
         &self,
         cw: &mut CropWriter<'w, W>,
@@ -388,6 +411,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     }
                 }
                 self.write_line_name(cw, line, &tree.options.pattern, selected)?;
+                if cw.allowed > 8 {
+                    let extract = tree.options.pattern.get_content_match(&line.path, cw.allowed - 2);
+                    if let Some(extract) = extract {
+                        self.write_content_extract(cw, extract, selected)?;
+                    }
+                }
             }
             self.extend_line_bg(cw, selected)?;
             f.queue(SetBackgroundColor(Color::Reset))?;

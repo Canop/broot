@@ -56,13 +56,14 @@ static SIGNATURES_6: [[u8;6];4] = [
 /// return true when the first bytes of the file aren't polite or match one
 /// of the known binary signatures.
 /// Signatures are taken in https://en.wikipedia.org/wiki/List_of_file_signatures
-/// All signatures starting with 00 or FF are ommited from list (general test)
+/// Some signatures are ommited from list because they would not go past the
+/// specific test of the first byte anyway.
 pub fn is_known_binary(hay: &Mmap) -> bool {
     if hay.len() < MIN_FILE_SIZE {
         return false;
     }
     let c = unsafe { *hay.get_unchecked(0) };
-    if c < 9 || (c > 13 && c < 32) || c >= 0xFE {
+    if c < 9 || (c > 13 && c < 32) || c >= 254 {
         // c < 9 include several signatures
         // 14 to 31 includes several signatures among them some variants of zip, gzip, etc.
         // FE is "þ", FF is "ÿ"

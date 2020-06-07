@@ -2,7 +2,7 @@
 use {
     super::*,
     crate::{
-        content_search::{ContentSearchResult, Needle},
+        content_search::*,
     },
     std::fmt,
 };
@@ -43,6 +43,14 @@ impl ContentPattern {
                 None
             }
         }
+    }
+
+    pub fn get_content_match(
+        &self,
+        path: &Path,
+        desired_len: usize,
+    ) -> Option<ContentMatch> {
+        self.needle.get_match(path, desired_len)
     }
 
     /// return the number of results we should find before starting to

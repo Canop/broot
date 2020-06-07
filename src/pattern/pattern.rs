@@ -2,6 +2,7 @@
 use {
     super::*,
     crate::{
+        content_search::ContentMatch,
         errors::PatternError,
     },
     std::{
@@ -10,11 +11,7 @@ use {
     },
 };
 
-/// a pattern for filtering and sorting filenames.
-/// It's backed either by a fuzzy pattern matcher or
-///  by a regular expression (in which case there's no real
-///  score).
-/// It applies either to the name, or to the sub-path.
+/// a pattern for filtering and sorting files.
 #[derive(Debug, Clone)]
 pub enum Pattern {
     None,
@@ -69,7 +66,7 @@ impl Pattern {
             _ => PatternObject::FileName,
         }
     }
-    /// find the position of the match, if possible
+    /// find the position of the match in the name, if possible
     /// (makes sense for tree rendering)
     pub fn find(&self, candidate: &str) -> Option<Match> {
         match self {
@@ -81,6 +78,16 @@ impl Pattern {
                 score: 1,
                 pos: Vec::with_capacity(0),
             }),
+        }
+    }
+    pub fn get_content_match(
+        &self,
+        path: &Path,
+        desired_len: usize,
+    ) -> Option<ContentMatch> {
+        match self {
+            Self::Content(cp) => cp.get_content_match(path, desired_len),
+            _ => None,
         }
     }
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {

@@ -13,7 +13,7 @@ where
     W: std::io::Write,
 {
     w: &'w mut W,
-    allowed: usize,
+    pub allowed: usize,
 }
 
 impl<'w, W> CropWriter<'w, W>
@@ -26,7 +26,6 @@ where
     pub fn is_full(&self) -> bool {
         self.allowed == 0
     }
-
     pub fn queue_str(&mut self, cs: &CompoundStyle, s: &str) -> Result<()> {
         if !self.is_full() {
             self.queue_string(cs, s.to_string())?;

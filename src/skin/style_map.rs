@@ -115,7 +115,7 @@ macro_rules! StyleMap {
 StyleMap! {
     default: gray(22), gray(2), [] / gray(20), gray(2), []
     tree: gray(7), None, [] / gray(3), None, []
-    file: gray(18), None, [] / gray(15), None, []
+    file: gray(22), None, [] / gray(15), None, []
     directory: ansi(110), None, [Bold] / ansi(110), None, []
     exe: Some(Cyan), None, []
     link: Some(Magenta), None, []
@@ -128,6 +128,8 @@ StyleMap! {
     group: ansi(131), None, []
     dates: ansi(66), None, []
     sparse: ansi(214), None, []
+    content_extract: gray(14), None, []
+    content_match: gray(20), None, []
     git_branch: ansi(178), None, []
     git_insertions: ansi(28), None, []
     git_deletions: ansi(160), None, []
