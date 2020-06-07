@@ -1,16 +1,10 @@
 use {
-    super::*,
     memmap::Mmap,
-    std::{
-        fs::File,
-        io,
-        path::{Path},
-    },
 };
-
 
 /// a displayable representation of where
 /// the needle was found, with some text around
+#[derive(Debug)]
 pub struct ContentMatch {
     pub extract: String,
     pub needle_start: usize, // position in the extract, in bytes
@@ -41,10 +35,10 @@ impl ContentMatch {
             extract_start += 1;
         }
         loop {
-            if extract_end == hay.len() - 2 || extract_end - extract_start >= desired_len {
+            if extract_end == hay.len() || extract_end - extract_start >= desired_len {
                 break;
             }
-            let c = hay[extract_end+1];
+            let c = hay[extract_end];
             if c < 32 {
                 break;
             }

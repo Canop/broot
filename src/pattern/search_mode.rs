@@ -30,38 +30,48 @@ pub struct SearchModeMap {
 }
 
 impl SearchModeMapEntry {
-    // FIXME implement "content"
     pub fn parse(conf_key: &str, conf_mode: &str) -> Result<Self, ConfError> {
         let s = conf_mode.to_lowercase();
-        let name = s.contains("name");
-        let path = s.contains("path");
-        let fuzzy = s.contains("fuzzy");
-        let regex = s.contains("regex");
-        let mode = match (name, path, fuzzy, regex) {
-            (false, false, _, _ ) => {
+        let s = s.trim();
+        let content = s.contains("content");
+        let mode = if content {
+            if s != "content" {
                 return Err(ConfError::InvalidSearchMode {
-                    details: "you need either \"name\" or \"path\"".to_string()
+                    details: "Content search mode can't be qualified".to_string()
                 });
             }
-            (true, true, _, _ ) => {
-                return Err(ConfError::InvalidSearchMode {
-                    details: "you can't simultaneously have \"name\" and \"path\"".to_string()
-                });
+            SearchMode::Content
+        } else {
+            let name = s.contains("name");
+            let path = s.contains("path");
+            let fuzzy = s.contains("fuzzy");
+            let regex = s.contains("regex");
+            match (name, path, fuzzy, regex) {
+                (false, false, _, _ ) => {
+                    return Err(ConfError::InvalidSearchMode {
+                        details: "you need either \"name\", \"path\" or \"content\"".to_string()
+                    });
+                }
+                (true, true, _, _ ) => {
+                    return Err(ConfError::InvalidSearchMode {
+                        details: "you can't simultaneously have \"name\" and \"path\"".to_string()
+                    });
+                }
+                (_, _, false, false) => {
+                    return Err(ConfError::InvalidSearchMode {
+                        details: "you need either \"fuzzy\" or \"regex\"".to_string()
+                    });
+                }
+                (_, _, true, true) => {
+                    return Err(ConfError::InvalidSearchMode {
+                        details: "you can't simultaneously have \"fuzzy\" and \"regex\"".to_string()
+                    });
+                }
+                (true, false, true, false) => SearchMode::NameFuzzy,
+                (true, false, false, true) => SearchMode::NameRegex,
+                (false, true, true, false) => SearchMode::PathFuzzy,
+                (false, true, false, true) => SearchMode::PathRegex,
             }
-            (_, _, false, false) => {
-                return Err(ConfError::InvalidSearchMode {
-                    details: "you need either \"fuzzy\" or \"regex\"".to_string()
-                });
-            }
-            (_, _, true, true) => {
-                return Err(ConfError::InvalidSearchMode {
-                    details: "you can't simultaneously have \"fuzzy\" and \"regex\"".to_string()
-                });
-            }
-            (true, false, true, false) => SearchMode::NameFuzzy,
-            (true, false, false, true) => SearchMode::NameRegex,
-            (false, true, true, false) => SearchMode::PathFuzzy,
-            (false, true, false, true) => SearchMode::PathRegex,
         };
         let key = if conf_key.is_empty() || conf_key == "<empty>" {
             // serde toml parser doesn't handle correctly empty keys so we accept as

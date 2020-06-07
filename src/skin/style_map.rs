@@ -128,7 +128,7 @@ StyleMap! {
     group: ansi(131), None, []
     dates: ansi(66), None, []
     sparse: ansi(214), None, []
-    content_extract: gray(14), None, []
+    content_extract: gray(15), None, []
     content_match: gray(20), None, []
     git_branch: ansi(178), None, []
     git_insertions: ansi(28), None, []

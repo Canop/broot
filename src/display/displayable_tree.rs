@@ -414,6 +414,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 if cw.allowed > 8 {
                     let extract = tree.options.pattern.get_content_match(&line.path, cw.allowed - 2);
                     if let Some(extract) = extract {
+                        debug!("extract: {:?}", extract);
                         self.write_content_extract(cw, extract, selected)?;
                     }
                 }
