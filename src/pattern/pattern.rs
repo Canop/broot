@@ -89,7 +89,7 @@ impl Pattern {
             Pattern::PathFuzzy(fp) => fp.score_of(&candidate.name),
             Pattern::NameRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
             Pattern::PathRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
-            Pattern::Content(cp) => cp.score_of(&candidate.path),
+            Pattern::Content(cp) => cp.score_of(candidate),
             Pattern::None => Some(1),
         }
     }

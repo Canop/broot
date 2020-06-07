@@ -1,13 +1,10 @@
 
 use {
-    super::Match,
+    super::*,
     crate::{
         content_search::{ContentSearchResult, Needle},
     },
-    std::{
-        fmt::{self, Write},
-        path::Path,
-    }
+    std::fmt,
 };
 
 /// A pattern for searching in file content
@@ -24,24 +21,25 @@ impl fmt::Display for ContentPattern {
 
 impl ContentPattern {
 
-    /// build a pattern which will later be usable for fuzzy search.
-    /// A pattern should be reused
     pub fn from(pat: &str) -> Self {
         Self {
             needle: Needle::new(pat),
         }
     }
 
-    pub fn score_of<P: AsRef<Path>>(&self, path: P) -> Option<i32> {
-        match self.needle.search(&path) {
+    pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
+        if !candidate.file_type.is_file() {
+            return None;
+        }
+        match self.needle.search(&candidate.path) {
             Ok(ContentSearchResult::Found { .. }) => Some(1),
             Ok(ContentSearchResult::NotFound) => None,
             Ok(ContentSearchResult::NotSuitable) => {
-                debug!("{:?} isn't suitable for search", path.as_ref());
+                // debug!("{:?} isn't suitable for search", &candidate.path);
                 None
             }
             Err(e) => {
-                info!("error while searching: {:?}", e);
+                info!("error while scanning {:?} : {:?}", &candidate.path, e);
                 None
             }
         }

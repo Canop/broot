@@ -128,6 +128,12 @@ impl<'c> TreeBuilder<'c> {
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
         let path = e.path();
+        let file_type = match e.file_type() {
+            Ok(ft) => ft,
+            Err(_) => {
+                return BLineResult::Invalid;
+            }
+        };
         if self.options.pattern.object() == PatternObject::FileSubpath {
             let parent_name = &self.blines[parent_id].name;
             if !parent_name.is_empty() {
@@ -137,6 +143,7 @@ impl<'c> TreeBuilder<'c> {
         let candidate = Candidate {
             path: &path,
             name: &name,
+            file_type,
         };
         let direct_match = if let Some(pattern_score) = self.options.pattern.score_of(candidate) {
             // we dope direct matchs to compensate for depth doping of parent folders
@@ -153,12 +160,6 @@ impl<'c> TreeBuilder<'c> {
                 }
             }
         }
-        let file_type = match e.file_type() {
-            Ok(ft) => ft,
-            Err(_) => {
-                return BLineResult::Invalid;
-            }
-        };
         if file_type.is_file() || file_type.is_symlink() {
             if !has_match {
                 return BLineResult::FilteredOutByPattern;
