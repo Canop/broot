@@ -25,12 +25,25 @@ regex name | `/[yz]{3}` | `fuzzy.rs` | search for the regular expression `[yz]{3
 regex name | `/abc/i` | `aBc.txt` | search for the regular expression `abc` with flag `i` in filenames
 fuzzy path | `p/abc` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-paths from current tree root
 regex path | `rp/abc` | `e/abac.txt` |  search for the "abc" regex  in sub-paths from current tree root
+content | `c/mask` | `umask = "1.0"` | search for the "umask" string in file contents
 
 The mode is either nothing (fuzzy name), just a slash (regex name) or some letters followed by a slash.
 
 It's also possible to [redefine those mode mappings](../conf_file/#search-modes).
 
+It's possible to escape characters (for example the space, colon or slash) in the pattern with a `\` (an antislash is `\\`).
+
 ## The verb invocation
+
+The verb invocation is
+
+    :<verb><arguments>
+
+or
+
+    <space><verb><arguments>
+
+where arguments can be empty, depending on the verb's behaviour and invocation pattern.
 
 Verbs are detailled in the [Verbs & Commands](verbs.md) chapter.
 
@@ -67,4 +80,12 @@ This is very natural: You use the search to select your element and you don't ne
 `re mv ../regex.rs`
 
 ![fuzzy](img/20200526-input-fuzzy-mv.png)
+
+### A full text search
+
+In this case with an escaped space:
+
+`c/two\ p`
+
+![content search](img/20200608-content-search.png)
 

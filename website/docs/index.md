@@ -40,6 +40,10 @@ broot tries to select the most relevant file. You can still go from one match to
 
 You may also search with a regular expression. To do this, add a `/` before the pattern.
 
+And you have other types of searches, for example searching on file content (start with `c/`):
+
+![content search](img/20200608-content-search.png)
+
 Once the file you want is selected you can
 
 * hit <kbd>enter</kbd> (or double-click) to open it in your system's default program

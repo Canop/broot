@@ -33,41 +33,59 @@ impl CommandParts {
     }
 
     pub fn from(raw: &str) -> Self {
-        let mut cp = CommandParts::new();
-        let c = regex!(
-            r"(?x)
-                ^
-                (?:(?P<search_mode>\w*)/)?
-                (?P<pattern>[^\s/:]*)?
-                (?:/(?P<pattern_flags>\w*))?
-                (?:[\s:]+(?P<verb_invocation>.*))?
-                $
-            "
-        )
-        .captures(raw);
-        if let Some(c) = c {
-            if let Some(pattern) = c.name("pattern") {
-                let pattern = pattern.as_str().to_string();
-                let mode_match = c.name("search_mode");
-                let has_pattern = !pattern.is_empty();
-                let has_mode = mode_match.map_or(false, |c| !c.as_str().is_empty());
-                if  has_pattern || has_mode {
-                    cp.pattern = Some(PatternParts {
-                        mode: c.name("search_mode").map(|c| c.as_str().to_string()),
-                        pattern: pattern.as_str().to_string(),
-                        flags: c.name("pattern_flags").map(|c| c.as_str().to_string()),
-                    });
+        let mut pattern_parts: Vec<String> = vec![String::new()];
+        let mut verb_invocation: Option<String> = None;
+        let mut escaping = false;
+        for c in raw.chars() {
+            if c == '\\' {
+                if escaping {
+                    escaping = false;
+                } else {
+                    escaping = true;
+                    continue;
                 }
             }
-            if let Some(verb) = c.name("verb_invocation") {
-                cp.verb_invocation = Some(VerbInvocation::from(verb.as_str()));
+            if let Some(ref mut verb_invocation) = verb_invocation {
+                verb_invocation.push(c);
+            } else {
+                if !escaping {
+                    if c == ' ' || c == ':' {
+                        verb_invocation = Some(String::new());
+                        continue;
+                    }
+                    if c == '/' {
+                        pattern_parts.push(String::new());
+                        continue;
+                    }
+                }
+                let idx = pattern_parts.len()-1;
+                pattern_parts[idx].push(c);
             }
-        } else {
-            // Non matching pattterns include "///"
-            // We decide the whole is a search pattern, in this case
-            cp.pattern = Some(PatternParts::default())
+            escaping = false;
         }
-        cp
+        let parts_len = pattern_parts.len();
+        let mut drain = pattern_parts.drain(..);
+        let mode = if parts_len > 1 {
+            drain.next()
+        } else {
+            None
+        };
+        let pattern = drain.next().unwrap();
+        let flags = drain.next();
+        let pattern = if pattern.is_empty() && mode.is_none() {
+            None
+        } else {
+            Some(PatternParts {
+                mode,
+                pattern,
+                flags,
+            })
+        };
+        let verb_invocation = verb_invocation.map(|s| VerbInvocation::from(&*s));
+        CommandParts {
+            pattern,
+            verb_invocation,
+        }
     }
 
     /// split an input into its two possible parts, the pattern
@@ -120,10 +138,13 @@ mod command_parsing_tests {
     fn test_command_parsing() {
         check("", None, None, None, None);
         check(" ", None, None, None, Some(""));
+        check(":", None, None, None, Some(""));
         check("pat", None, Some("pat"), None, None);
         check("pat ", None, Some("pat"), None, Some(""));
         check(" verb arg1 arg2", None, None, None, Some("verb arg1 arg2"));
         check(" verb ", None, None, None, Some("verb "));
+        check("/", Some(""), Some(""), None, None);
+        check("/ cp", Some(""), Some(""), None, Some("cp"));
         check("pat verb ", None, Some("pat"), None, Some("verb "));
         check("/pat/i verb ", Some(""), Some("pat"), Some("i"), Some("verb "));
         check("r/pat/i verb ", Some("r"), Some("pat"), Some("i"), Some("verb "));
@@ -131,5 +152,10 @@ mod command_parsing_tests {
         check("/pat", Some(""), Some("pat"), None, None);
         check("p/pat", Some("p"), Some("pat"), None, None);
         check("mode/", Some("mode"), Some(""), None, None);
+        check(r"c/two\ words verb /arg/u/ment", Some("c"), Some("two words"), None, Some("verb /arg/u/ment"));
+        check(r"a\/slash", None, Some("a/slash"), None, None);
+        check(r"p/i\/cd", Some("p"), Some("i/cd"), None, None);
+        check(r"c/\\b", Some("c"), Some(r"\b"), None, None);
+        check(r"c/\:\:H:cd", Some("c"), Some(r"::H"), None, Some("cd"));
     }
 }

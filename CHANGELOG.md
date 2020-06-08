@@ -1,8 +1,11 @@
 ### next version
 [documentation of this version](https://dystroy.org/broot-master/)
 #### Major feature: new input syntax - Breaking Change
-- new search modes: fuzzy or regex on sub-paths (the path starting from the displayed root), search in file content
+New search modes:
+	- fuzzy or regex on sub-paths (the path starting from the displayed root)
+	- search in file content
 - it's possible to configure how search modes are selected in config
+- search pattern characters can be escaped with a '\'
 #### Minor changes:
 - tab goes to next direct match when there's no verb in input - Fix #234
 - a few fixes of relative paths and tab completion

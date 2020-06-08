@@ -6,7 +6,7 @@ use {
         errors::PatternError,
     },
     std::{
-        fmt::{self, Write},
+        fmt::self,
         mem,
     },
 };
@@ -112,15 +112,13 @@ impl Pattern {
             input.push_str(mode_key);
             input.push('/');
         }
-        match self {
-            Pattern::NameFuzzy(fp) | Pattern::PathFuzzy(fp) => {
-                write!(input, "{}", &fp).unwrap();
-            }
-            Pattern::NameRegex(rp) | Pattern::PathRegex(rp) => {
-                write!(input, "{}", &rp).unwrap();
-            }
-            _ => {}
-        }
+        let unescaped = match self {
+            Pattern::NameFuzzy(fp) | Pattern::PathFuzzy(fp) => fp.to_string(),
+            Pattern::NameRegex(rp) | Pattern::PathRegex(rp) => rp.to_string(),
+            _ => "".to_string(),
+        };
+        let escaped = regex!(r"[/ \\:]").replace_all(&unescaped, r"\$0");
+        input.push_str(&escaped);
         input
     }
     /// empties the pattern and return it
