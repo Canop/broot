@@ -146,7 +146,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
         .arg(
             clap::Arg::with_name("no-style")
                 .long("no-style")
-                .help("Whether to remove all style and colors"),
+                .help("Whether to remove all style and colors from exported tree"),
         )
         .arg(
             clap::Arg::with_name("set-install-state")
