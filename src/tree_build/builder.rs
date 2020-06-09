@@ -14,6 +14,7 @@ use {
     },
     git2::Repository,
     id_arena::Arena,
+    rayon::prelude::*,
     std::{
         collections::{BinaryHeap, VecDeque},
         fs,
@@ -45,17 +46,6 @@ impl OsStrWin for OsStr {
 /// everything, we search a little more in case we find better matches
 /// but not after the NOT_LONG duration.
 static NOT_LONG: Duration = Duration::from_millis(900);
-
-/// the result of trying to build a bline
-enum BLineResult {
-    Some(BId), // the only positive result
-    FilteredOutAsHidden,
-    FilteredOutByPattern,
-    FilteredOutBySpecialRule,
-    FilteredOutAsNonFolder,
-    GitIgnored,
-    Invalid,
-}
 
 /// The TreeBuilder builds a Tree according to options (including an optional search pattern)
 /// Instead of the final TreeLine, the builder uses an internal structure: BLine.
@@ -111,17 +101,17 @@ impl<'c> TreeBuilder<'c> {
 
     /// return a bline if the dir_entry directly matches the options and there's no error
     fn make_line(
-        &mut self,
+        &self,
         parent_id: BId,
-        e: fs::DirEntry,
+        e: &fs::DirEntry,
         depth: u16,
-    ) -> BLineResult {
+    ) -> Option<BLine> {
         let name = e.file_name();
         if name.is_empty() {
-            return BLineResult::Invalid;
+            return None;
         }
         if !self.options.show_hidden && name.as_bytes()[0] == b'.' {
-            return BLineResult::FilteredOutAsHidden;
+            return None;
         }
         let name = name.to_string_lossy();
         let mut name = name.to_string();
@@ -131,7 +121,7 @@ impl<'c> TreeBuilder<'c> {
         let file_type = match e.file_type() {
             Ok(ft) => ft,
             Err(_) => {
-                return BLineResult::Invalid;
+                return None;
             }
         };
         if self.options.pattern.object() == PatternObject::FileSubpath {
@@ -162,33 +152,26 @@ impl<'c> TreeBuilder<'c> {
         }
         if file_type.is_file() || file_type.is_symlink() {
             if !has_match {
-                return BLineResult::FilteredOutByPattern;
+                return None;
             }
             if self.options.only_folders {
-                return BLineResult::FilteredOutAsNonFolder;
+                return None;
             }
         }
         let special_handling = self.con.special_paths.find(&path);
         if special_handling == SpecialHandling::Hide {
-            return BLineResult::FilteredOutBySpecialRule;
+            return None;
         }
-        let git_ignore_chain = if self.options.respect_git_ignore {
+        if self.options.respect_git_ignore {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
             if !self
                 .git_ignorer
                 .accepts(parent_chain, &path, &name, file_type.is_dir())
             {
-                return BLineResult::GitIgnored;
+                return None;
             }
-            if file_type.is_dir() {
-                self.git_ignorer.deeper_chain(parent_chain, &path)
-            } else {
-                parent_chain.clone()
-            }
-        } else {
-            GitIgnoreChain::default()
         };
-        BLineResult::Some(self.blines.alloc(BLine {
+        Some(BLine {
             parent_id: Some(parent_id),
             path,
             depth,
@@ -201,9 +184,9 @@ impl<'c> TreeBuilder<'c> {
             direct_match,
             score,
             nb_kept_children: 0,
-            git_ignore_chain,
+            git_ignore_chain: GitIgnoreChain::default(),
             special_handling,
-        }))
+        })
     }
 
     /// returns true when there are direct matches among children
@@ -213,25 +196,26 @@ impl<'c> TreeBuilder<'c> {
             Ok(entries) => {
                 let mut children: Vec<BId> = Vec::new();
                 let child_depth = self.blines[bid].depth + 1;
-                for e in entries {
-                    if let Ok(e) = e {
-                        let bl = self.make_line(bid, e, child_depth);
-                        match bl {
-                            BLineResult::Some(child_id) => {
-                                if self.blines[child_id].has_match {
-                                    self.blines[bid].has_match = true;
-                                    has_child_match = true;
-                                }
-                                children.push(child_id);
-                            }
-                            BLineResult::GitIgnored => {
-                                self.nb_gitignored += 1;
-                            }
-                            _ => {
-                                // other reason, we don't care
-                            }
-                        }
+                let entries: Vec<fs::DirEntry> = entries.filter_map(Result::ok).collect();
+                let lines: Vec<BLine> = entries
+                    .par_iter()
+                    .filter_map(|e| self.make_line(bid, e, child_depth))
+                    .collect();
+                for mut bl in lines {
+                    if self.options.respect_git_ignore {
+                        let parent_chain = &self.blines[bid].git_ignore_chain;
+                        bl.git_ignore_chain = if bl.file_type.is_dir() {
+                            self.git_ignorer.deeper_chain(parent_chain, &bl.path)
+                        } else {
+                            parent_chain.clone()
+                        };
                     }
+                    if bl.has_match {
+                        self.blines[bid].has_match = true;
+                        has_child_match = true;
+                    }
+                    let child_id = self.blines.alloc(bl);
+                    children.push(child_id);
                 }
                 children.sort_by(|&a, &b| {
                     self.blines[a]
