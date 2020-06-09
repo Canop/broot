@@ -257,7 +257,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     {
         cond_bg!(extract_style, self, selected, self.skin.content_extract);
         cond_bg!(match_style, self, selected, self.skin.content_match);
-        cw.queue_char(&extract_style, ' ')?;
+        cw.queue_str(&extract_style, "  ")?;
         if extract.needle_start > 0 {
             cw.queue_str(&extract_style, &extract.extract[0..extract.needle_start])?;
         }
@@ -414,7 +414,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 if cw.allowed > 8 {
                     let extract = tree.options.pattern.get_content_match(&line.path, cw.allowed - 2);
                     if let Some(extract) = extract {
-                        debug!("extract: {:?}", extract);
                         self.write_content_extract(cw, extract, selected)?;
                     }
                 }

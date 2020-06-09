@@ -15,11 +15,11 @@ impl ContentMatch {
     pub fn build(
         hay: &Mmap,
         pos: usize, // position in the hay
-        needle_len: usize, // in bytes
-        desired_len: usize, // max length of the extract
+        needle: &str,
+        desired_len: usize, // max length of the extract in bytes
     ) -> Self {
         let mut extract_start = pos;
-        let mut extract_end = pos + needle_len; // not included
+        let mut extract_end = pos + needle.len(); // not included
         loop {
             if extract_start == 0 || extract_end - extract_start >= desired_len / 2 {
                 break;
@@ -31,7 +31,7 @@ impl ContentMatch {
             extract_start -= 1;
         }
         // left trimming
-        while hay[extract_start]==32 && extract_start<pos {
+        while (hay[extract_start]==32) && extract_start<pos {
             extract_start += 1;
         }
         loop {
@@ -44,13 +44,14 @@ impl ContentMatch {
             }
             extract_end += 1;
         }
-        let extract = String::from_utf8((&hay[extract_start..extract_end]).to_vec())
-            .unwrap_or_else(|_| "invalid UTF8".to_string());
-        let needle_start = pos - extract_start;
+        // at this point we're unsure whether we start at a correct char boundary, hence
+        // the from_utf8_lossy
+        let extract = String::from_utf8_lossy(&hay[extract_start..extract_end]).to_string();
+        let needle_start = extract.find(needle).unwrap_or(0);
         Self {
             extract,
             needle_start,
-            needle_end: needle_start + needle_len,
+            needle_end: needle_start + needle.len(),
         }
     }
 }

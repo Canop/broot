@@ -1,25 +1,40 @@
+// Don't look here for search functions to reuse or even for
+// efficient or proven tricks. This is fast-made, mostly
+// experimental, and not fit for reuse out of broot.
+
 use {
     super::*,
     memmap::Mmap,
     std::{
+        convert::TryInto,
+        fmt,
         fs::File,
         io,
         path::{Path},
     },
 };
 
-
 /// a strict (non fuzzy, case sensitive) pattern which may
 /// be searched in file contents
-#[derive(Debug, Clone)]
+#[derive(Clone)]
 pub struct Needle {
 
     /// bytes of the searched string
     /// (guaranteed to be valid UTF8 by construct)
     bytes: Box<[u8]>,
+
+    boyer_moore: Option<boyer_moore::BoyerMoore>,
 }
 
-fn get_hay<P: AsRef<Path>>(hay_path: P) -> io::Result<Mmap> {
+impl fmt::Debug for Needle {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("Needle")
+         .field("bytes", &self.bytes)
+         .finish()
+    }
+}
+
+fn get_mmap<P: AsRef<Path>>(hay_path: P) -> io::Result<Mmap> {
     let file = File::open(hay_path.as_ref())?;
     let hay = unsafe { Mmap::map(&file)? };
     Ok(hay)
@@ -28,8 +43,15 @@ fn get_hay<P: AsRef<Path>>(hay_path: P) -> io::Result<Mmap> {
 impl Needle {
 
     pub fn new(pat: &str) -> Self {
+        let bytes = pat.as_bytes().to_vec().into_boxed_slice();
+        let boyer_moore = if bytes.len() < 10 {
+            None
+        } else {
+            Some(boyer_moore::BoyerMoore::new(&bytes))
+        };
         Self {
-            bytes: pat.as_bytes().to_vec().into_boxed_slice(),
+            bytes,
+            boyer_moore,
         }
     }
 
@@ -37,10 +59,75 @@ impl Needle {
         unsafe { std::str::from_utf8_unchecked(&self.bytes) }
     }
 
+    // no, it doesn't bring more than a few % in speed
+    fn find_naive_1(&self, hay: &Mmap) -> Option<usize> {
+        let n = self.bytes[0];
+        hay.iter().position(|&b| b==n)
+    }
+
+    fn find_naive_3(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+        let max_pos = hay.len() - 3;
+        let b0 = self.bytes[0];
+        let b1 = self.bytes[1];
+        let b2 = self.bytes[2];
+        unsafe {
+            while pos <= max_pos {
+                if *hay.get_unchecked(pos) == b0
+                    && *hay.get_unchecked(pos+1) == b1
+                    && *hay.get_unchecked(pos+2) == b2
+                {
+                    return Some(pos);
+                }
+                pos += 1;
+            }
+        }
+        None
+    }
+
+    fn find_naive_4(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+        use std::mem::transmute;
+        let max_pos = hay.len() - 4;
+        unsafe {
+            let needle: u32 = transmute::<[u8;4], u32>((&*self.bytes).try_into().unwrap());
+            while pos <= max_pos {
+                if transmute::<[u8;4], u32>((&hay[pos..pos+4]).try_into().unwrap()) == needle {
+                    return Some(pos);
+                }
+                pos += 1;
+            }
+        }
+        None
+    }
+
+    fn find_naive_6(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+        let max_pos = hay.len() - 6;
+        let b0 = self.bytes[0];
+        let b1 = self.bytes[1];
+        let b2 = self.bytes[2];
+        let b3 = self.bytes[3];
+        let b4 = self.bytes[4];
+        let b5 = self.bytes[5];
+        unsafe {
+            while pos <= max_pos {
+                if *hay.get_unchecked(pos) == b0
+                    && *hay.get_unchecked(pos+1) == b1
+                    && *hay.get_unchecked(pos+2) == b2
+                    && *hay.get_unchecked(pos+3) == b3
+                    && *hay.get_unchecked(pos+4) == b4
+                    && *hay.get_unchecked(pos+5) == b5
+                {
+                    return Some(pos);
+                }
+                pos += 1;
+            }
+        }
+        None
+    }
+
     fn is_at_pos(&self, hay_stack: &Mmap, pos: usize) -> bool {
         unsafe {
             for (i, b) in self.bytes.iter().enumerate() {
-                if *hay_stack.get_unchecked(i+pos) != *b {
+                if hay_stack.get_unchecked(i+pos) != b {
                     return false;
                 }
             }
@@ -48,31 +135,59 @@ impl Needle {
         true
     }
 
-    /// placeholder implementation. I'll do a faster one once I've solved
-    /// the other application problems related to content searches
-    fn search_hay(&self, hay: &Mmap) -> ContentSearchResult {
-        if hay.len() > MAX_FILE_SIZE {
-            return ContentSearchResult::NotSuitable;
+    fn find_naive(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+        let max_pos = hay.len() - self.bytes.len();
+        while pos <= max_pos {
+            if self.is_at_pos(&hay, pos) {
+                return Some(pos);
+            }
+            pos += 1;
         }
-        if magic_numbers::is_known_binary(&hay) {
-            return ContentSearchResult::NotSuitable;
-        }
+        None
+    }
+
+    /// search the mem map to find the first occurence of the needle.
+    ///
+    /// The exact search algorithm used here (for example Boyer-Moore)
+    /// and the optimizations (loop unrolling, etc.) don't really matter
+    /// as their impact is dwarfed by the whole mem map related set
+    /// of problems. An alternate implementation should probably focus
+    /// on avoiding mem maps.
+    fn search_mmap(&self, hay: &Mmap) -> ContentSearchResult {
         if hay.len() < self.bytes.len() {
             return ContentSearchResult::NotFound;
         }
-        let n = hay.len() - self.bytes.len();
-        for pos in 0..n {
-            if self.is_at_pos(&hay, pos) {
-                return ContentSearchResult::Found { pos };
+        let pos = if let Some(boyer_moore) = &self.boyer_moore {
+            unsafe {
+                boyer_moore.find(0, &hay, &self.bytes)
             }
-        }
-        ContentSearchResult::NotFound
+        } else if self.bytes.len() == 6 {
+            self.find_naive_6(0, &hay)
+        } else if self.bytes.len() == 4 {
+            self.find_naive_4(0, &hay)
+        } else if self.bytes.len() == 3 {
+            self.find_naive_3(0, &hay)
+        } else if self.bytes.len() == 1 {
+            self.find_naive_1(&hay)
+        } else {
+            self.find_naive(0, &hay)
+        };
+        pos.map_or(
+            ContentSearchResult::NotFound,
+            |pos| ContentSearchResult::Found { pos },
+        )
     }
 
     /// determine whether the file contains the needle
     pub fn search<P: AsRef<Path>>(&self, hay_path: P) -> io::Result<ContentSearchResult> {
-        let hay = get_hay(hay_path)?;
-        Ok(self.search_hay(&hay))
+        let hay = get_mmap(hay_path)?;
+        if hay.len() > MAX_FILE_SIZE {
+            return Ok(ContentSearchResult::NotSuitable);
+        }
+        if magic_numbers::is_known_binary(&hay) {
+            return Ok(ContentSearchResult::NotSuitable);
+        }
+        Ok(self.search_mmap(&hay))
     }
 
     /// this is supposed to be called only when it's known that there's
@@ -82,13 +197,13 @@ impl Needle {
         hay_path: P,
         desired_len: usize,
     ) -> Option<ContentMatch> {
-        let hay = match get_hay(hay_path) {
+        let hay = match get_mmap(hay_path) {
             Ok(hay) => hay,
             _ => { return None; }
         };
-        match self.search_hay(&hay) {
+        match self.search_mmap(&hay) {
             ContentSearchResult::Found { pos } => Some(ContentMatch::build(
-                &hay, pos, self.bytes.len(), desired_len,
+                &hay, pos, self.as_str(), desired_len,
             )),
             _ => None,
         }
