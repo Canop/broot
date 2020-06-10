@@ -1,5 +1,4 @@
 
-mod boyer_moore;
 mod content_match;
 mod content_search_result;
 mod magic_numbers;

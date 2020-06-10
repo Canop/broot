@@ -23,7 +23,6 @@ pub struct Needle {
     /// (guaranteed to be valid UTF8 by construct)
     bytes: Box<[u8]>,
 
-    boyer_moore: Option<boyer_moore::BoyerMoore>,
 }
 
 impl fmt::Debug for Needle {
@@ -44,14 +43,8 @@ impl Needle {
 
     pub fn new(pat: &str) -> Self {
         let bytes = pat.as_bytes().to_vec().into_boxed_slice();
-        let boyer_moore = if bytes.len() < 10 {
-            None
-        } else {
-            Some(boyer_moore::BoyerMoore::new(&bytes))
-        };
         Self {
             bytes,
-            boyer_moore,
         }
     }
 
@@ -148,7 +141,7 @@ impl Needle {
 
     /// search the mem map to find the first occurence of the needle.
     ///
-    /// The exact search algorithm used here (for example Boyer-Moore)
+    /// The exact search algorithm used here (I removed Boyer-Moore)
     /// and the optimizations (loop unrolling, etc.) don't really matter
     /// as their impact is dwarfed by the whole mem map related set
     /// of problems. An alternate implementation should probably focus
@@ -157,11 +150,7 @@ impl Needle {
         if hay.len() < self.bytes.len() {
             return ContentSearchResult::NotFound;
         }
-        let pos = if let Some(boyer_moore) = &self.boyer_moore {
-            unsafe {
-                boyer_moore.find(0, &hay, &self.bytes)
-            }
-        } else if self.bytes.len() == 6 {
+        let pos = if self.bytes.len() == 6 {
             self.find_naive_6(0, &hay)
         } else if self.bytes.len() == 4 {
             self.find_naive_4(0, &hay)
