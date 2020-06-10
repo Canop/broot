@@ -169,6 +169,12 @@ impl Needle {
 
     /// determine whether the file contains the needle
     pub fn search<P: AsRef<Path>>(&self, hay_path: P) -> io::Result<ContentSearchResult> {
+        if let Some(ext) = hay_path.as_ref().extension() {
+            let ext = ext.to_string_lossy().to_lowercase();
+            if extensions::is_known_binary(&ext) {
+                return Ok(ContentSearchResult::NotSuitable);
+            }
+        }
         let hay = get_mmap(hay_path)?;
         if hay.len() > MAX_FILE_SIZE {
             return Ok(ContentSearchResult::NotSuitable);

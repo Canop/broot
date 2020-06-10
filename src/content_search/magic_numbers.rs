@@ -40,10 +40,11 @@ static SIGNATURES_4: [[u8;4];22] = [
     [ 0x47, 0x49, 0x46, 0x38 ], // gif (common start of GIF87a and GIF89a )
 ];
 
-static SIGNATURES_5: [[u8;5];2] = [
-    [ 0x25, 0x50, 0x44, 0x46, 0x2d ], // pdf
-    [ 0x43, 0x44, 0x30, 0x30, 0x31 ], // iso (cd/dvd)
-];
+// those ones are now removed because of the extension and size filterings
+// static SIGNATURES_5: [[u8;5];2] = [
+//     [ 0x25, 0x50, 0x44, 0x46, 0x2d ], // pdf
+//     [ 0x43, 0x44, 0x30, 0x30, 0x31 ], // iso (cd/dvd)
+// ];
 
 static SIGNATURES_6: [[u8;6];4] = [
     [ 0x52, 0x61, 0x72, 0x21, 0x1A, 0x07 ], // rar
@@ -58,6 +59,9 @@ static SIGNATURES_6: [[u8;6];4] = [
 /// Signatures are taken in https://en.wikipedia.org/wiki/List_of_file_signatures
 /// Some signatures are ommited from list because they would not go past the
 /// specific test of the first byte anyway.
+///
+/// If you feel this list should maybe be changed, contact
+/// me on miaou or raise an issue.
 pub fn is_known_binary(hay: &Mmap) -> bool {
     if hay.len() < MIN_FILE_SIZE {
         return false;
@@ -86,11 +90,11 @@ pub fn is_known_binary(hay: &Mmap) -> bool {
             return true;
         }
     }
-    for signature in &SIGNATURES_5 {
-        if signature == &hay[0..5] {
-            return true;
-        }
-    }
+    // for signature in &SIGNATURES_5 {
+    //     if signature == &hay[0..5] {
+    //         return true;
+    //     }
+    // }
     for signature in &SIGNATURES_6 {
         if signature == &hay[0..6] {
             return true;

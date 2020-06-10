@@ -2,6 +2,7 @@
 mod content_match;
 mod content_search_result;
 mod magic_numbers;
+mod extensions;
 mod needle;
 
 pub use {
