@@ -58,6 +58,23 @@ impl Needle {
         hay.iter().position(|&b| b==n)
     }
 
+    fn find_naive_2(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+        let max_pos = hay.len() - 2;
+        let b0 = self.bytes[0];
+        let b1 = self.bytes[1];
+        unsafe {
+            while pos <= max_pos {
+                if *hay.get_unchecked(pos) == b0
+                    && *hay.get_unchecked(pos+1) == b1
+                {
+                    return Some(pos);
+                }
+                pos += 1;
+            }
+        }
+        None
+    }
+
     fn find_naive_3(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
         let max_pos = hay.len() - 3;
         let b0 = self.bytes[0];
@@ -141,6 +158,13 @@ impl Needle {
 
     /// search the mem map to find the first occurence of the needle.
     ///
+    /// Known limit: if the file has an encoding where the needle would
+    /// be represented in a way different than UTF-8, the needle won't
+    /// be found (I noticed the problem with other grepping tools, too,
+    /// which is understandable as detecting the encoding and translating
+    /// the needle would multiply the search time).
+    ///
+    ///
     /// The exact search algorithm used here (I removed Boyer-Moore)
     /// and the optimizations (loop unrolling, etc.) don't really matter
     /// as their impact is dwarfed by the whole mem map related set
@@ -150,16 +174,13 @@ impl Needle {
         if hay.len() < self.bytes.len() {
             return ContentSearchResult::NotFound;
         }
-        let pos = if self.bytes.len() == 6 {
-            self.find_naive_6(0, &hay)
-        } else if self.bytes.len() == 4 {
-            self.find_naive_4(0, &hay)
-        } else if self.bytes.len() == 3 {
-            self.find_naive_3(0, &hay)
-        } else if self.bytes.len() == 1 {
-            self.find_naive_1(&hay)
-        } else {
-            self.find_naive(0, &hay)
+        let pos = match self.bytes.len() {
+            1 => self.find_naive_1(&hay),
+            2 => self.find_naive_2(0, &hay),
+            3 => self.find_naive_3(0, &hay),
+            4 => self.find_naive_4(0, &hay),
+            6 => self.find_naive_6(0, &hay),
+            _ => self.find_naive(0, &hay),
         };
         pos.map_or(
             ContentSearchResult::NotFound,

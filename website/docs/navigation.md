@@ -9,6 +9,7 @@ The first line is called the root, and is currently selected.
 From here you may navigate using the following keys:
 
 * <kbd class=b>↓</kbd> or <kbd class=b>↑</kbd> : select the next or previous line
+* <kbd class=b>←</kbd> or <kbd class=b>→</kbd> : focus (or open) a panel to the left or to the right
 * <kbd class=b>⏎</kbd> on a file : open the file using xdg-open (or your OS equivalent)
 * <kbd>alt</kbd> + <kbd class=b>⏎</kbd> on a file : leave broot and open the file using xdg-open
 * <kbd class=b>⏎</kbd> on a directory : focus the directory (i.e. make it the new root)

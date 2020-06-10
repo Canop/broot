@@ -46,7 +46,7 @@ Notice the *unlisted*?
 
 That's what makes it usable where the old `tree` command would produce pages of output.
 
-`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](https://dystroy.org/broot/documentation/usage/#gitignore)).
+`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](../navigation/#toggles)).
 
 ### Find a directory then `cd` to it
 
@@ -59,38 +59,42 @@ broot is fast and never blocks, even when you make it search a big slow disk (an
 Most useful keys for this:
 
 * the letters of what you're looking for
-* `<enter>` to select a directory (staying in broot)
-* `<esc>` to get back to the previous state or clear your search
-* `<alt><enter>` to get back to the shell having `cd` to the selected directory
-* `:q` if you just want to quit (`<esc>`, or `<ctrl><q>` or `<ctrl><c>` work too)
+* <kbd>enter</kbd> to select a directory (staying in broot)
+* <kbd>esc</kbd> to get back to the previous state or clear your search
+* <kbd>alt</kbd><kbd>enter</kbd> to get back to the shell having `cd` to the selected directory
+* `:q` if you just want to quit (you can use <kbd>ctrl</kbd><kbd>q</kbd> if you prefer)
 
 ### Never lose track of file hierarchy while you search
 
 ![size](img/20191112-mycnf.png)
 
-broot tries to select the most relevant file. You can still go from one match to another one using `<tab>` or arrow keys.
+broot tries to select the most relevant file. You can still go from one match to another one using <kbd>tab</kbd> or arrow keys.
 
-You may also search with a regular expression. To do this, add a `/` before or after the pattern.
+You may also search with a regular expression. To do this, add a `/` before the pattern.
+
+And you have other types of searches, for example searching on file content (start with `c/`):
+
+![content search](website/docs/img/20200608-content-search.png)
 
 Once the file you want is selected you can
 
-* hit `<enter>` (or double-click) to open it in your system's default program
-* hit `<alt><enter>` to open it in your system's default program and close broot
+* hit <kbd>enter</kbd> (or double-click) to open it in your system's default program
+* hit <kbd>alt</kbd><kbd>enter</kbd> to open it in your system's default program and close broot
 * type a verb. For example `:e` opens the file in your preferred editor (which may be a terminal one)
 
 ### Manipulate your files
 
 ![mv](img/20191112-mv.png)
 
-Without broot you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
+Most often you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
 
 You can instead do it without losing the view of the file hierarchy.
 
-`mv`, `cp`, `rm`, `mkdir`, are built in and you can add your own shortcuts.
+Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
 ### Do it with panels
 
-Do `<ctrl><right>` and you open another panel (you may open other ones, or navigate between them, with `<ctrl><left>` and `<ctrl><right>`).
+Do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
 
 ![custom colors tree](website/docs/img/20200525-colored-panels.png)
 
@@ -98,20 +102,19 @@ Do `<ctrl><right>` and you open another panel (you may open other ones, or navig
 
 Using two panels, you can for example copy or move elements between them:
 
-![custom colors tree](website/docs/img/20200525-cpp.png)
+![cpp](website/docs/img/20200525-cpp.png)
 
-`:cpp` is an alias for `:copy_to_panel`. If you like you may do it Norton Commander style by binding `:copy_to_panel` to `<F5>` and `:move_to_panel` to `<F6>`.
-
+If you like you may do it Norton Commander style by binding `:copy_to_panel` to <kbd>F5</kbd> and `:move_to_panel` to <kbd>F6</kbd>.
 
 ### Apply a standard or personal shortcut to a file
 
 ![size](img/20191112-edit.png)
 
-Just find the file you want to edit with a few keystrokes, type `:e`, then `<enter>`.
+Just find the file you want to edit with a few keystrokes, type `:e`, then <kbd>enter</kbd>.
 
-You can add verbs or configure the existing ones; see [documentation](https://dystroy.org/broot/documentation/usage/#verbs).
+You can add verbs or configure the existing ones; see [documentation](documentation/usage.md#verbs).
 
-And you can add shortcuts, for example a `ctrl` sequence or a function key
+And you can add shorcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
 ### Replace `ls` (and its clones):
 
@@ -119,9 +122,7 @@ If you want to display *dates* and *permissions*, do `br -dp` which gets you thi
 
 ![replace ls](img/20191214-replace-ls.png)
 
-You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates.
-
-You still have all broot features, you can filter, navigate, create directories, copy files, etc.
+You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or a space, then `h` then enter and you see hidden files.
 
 ### See what takes space:
 
@@ -138,6 +139,8 @@ Sizes are computed in the background, you don't have to wait for them when you n
 ![size](img/20200203-git.png)
 
 Use `:gf` to display the statuses of files (what are the new ones, the modified ones, etc.), the current branch name and the change statistics.
+
+And if you want to see *only* the files which would be displayed by the `git status` command, do `:gs`.
 
 ## Further Reading
 See **[Broot's web site](https://dystroy.org/broot)** for instructions regarding installation and usage.
