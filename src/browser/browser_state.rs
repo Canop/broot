@@ -105,6 +105,7 @@ impl BrowserState {
         screen: &mut Screen,
         con: &AppContext,
         in_new_panel: bool,
+        keep_pattern: bool,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let tree = self.displayed_tree();
         let line = tree.selected_line();
@@ -127,7 +128,17 @@ impl BrowserState {
                 }
                 let dam = Dam::unlimited();
                 Ok(AppStateCmdResult::from_optional_state(
-                    BrowserState::new(target, tree.options.without_pattern(), screen, con, &dam),
+                    BrowserState::new(
+                        target,
+                        if keep_pattern {
+                            tree.options.clone()
+                        } else {
+                            tree.options.without_pattern()
+                        },
+                        screen,
+                        con,
+                        &dam,
+                    ),
                     in_new_panel,
                 ))
             }
@@ -332,7 +343,7 @@ impl AppState for BrowserState {
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         if self.displayed_tree().selection == y as usize {
-            self.open_selection_stay_in_broot(screen, con, false)
+            self.open_selection_stay_in_broot(screen, con, false, false)
         } else {
             // A double click always come after a simple click at
             // same position. If it's not the selected line, it means
@@ -415,7 +426,8 @@ impl AppState for BrowserState {
                     AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)))
                 }
             }
-            Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang)?,
+            Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang, false)?,
+            Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
             Internal::open_leave => self.open_selection_quit_broot(con)?,
             Internal::line_down => {
                 self.displayed_tree_mut().move_selection(1, page_height);

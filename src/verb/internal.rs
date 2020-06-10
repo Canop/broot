@@ -60,6 +60,7 @@ Internals! {
     line_down: "move one line down",
     line_up: "move one line up",
     open_stay: "open file or directory according to OS (stay in broot)",
+    open_stay_filter: "display the directory, keeping the current pattern",
     open_leave: "open file or directory according to OS (quit broot)",
     next_match: "select the next match",
     page_down: "scroll one page down",
