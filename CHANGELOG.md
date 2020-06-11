@@ -8,8 +8,9 @@ New search modes (see https://dystroy.org/broot/input/#the-filtering-pattern) :
 - search pattern characters can be escaped with a '\'
 #### Minor changes:
 - tab goes to next direct match when there's no verb in input - Fix #234
-- a few fixes of relative paths and tab completion
 - `:open_stay_filter` to be used if you want to keep the pattern when you navigate - Fix #240
+- mouse capture can be disabled with `capture_mouse = false` - Fix #238
+- several small fixes
 
 <a name="v0.14.2"></a>
 ### v0.14.2 - 2020-06-01

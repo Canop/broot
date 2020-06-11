@@ -74,6 +74,7 @@ impl AppState for HelpState {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         if self.dirty {
+            panel_skin.styles.default.queue_bg(w)?;
             screen.clear_area_to_right(w, &state_area)?;
             self.text_area = state_area;
             self.text_area.pad_for_max_width(120);
