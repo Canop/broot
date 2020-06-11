@@ -1,7 +1,7 @@
 ### next version
 [documentation of this version](https://dystroy.org/broot-master/)
 #### Major feature: new input syntax - Breaking Change
-New search modes:
+New search modes (see https://dystroy.org/broot/input/#the-filtering-pattern) :
 	- fuzzy or regex on sub-paths (the path starting from the displayed root)
 	- search in file content
 - it's possible to configure how search modes are selected in config
@@ -9,6 +9,7 @@ New search modes:
 #### Minor changes:
 - tab goes to next direct match when there's no verb in input - Fix #234
 - a few fixes of relative paths and tab completion
+- `:open_stay_filter` to be used if you want to keep the pattern when you navigate - Fix #240
 
 <a name="v0.14.2"></a>
 ### v0.14.2 - 2020-06-01

@@ -1,6 +1,6 @@
 // Don't look here for search functions to reuse or even for
-// efficient or proven tricks. This is fast-made, mostly
-// experimental, and not fit for reuse out of broot.
+// efficient or proven tricks. This is fast-made, and not fit
+// for reuse out of broot.
 
 use {
     super::*,
@@ -174,6 +174,20 @@ impl Needle {
         if hay.len() < self.bytes.len() {
             return ContentSearchResult::NotFound;
         }
+
+        // we tell the system how we intent to use the mmap
+        // to increase the likehod the memory is available
+        // for our loop
+        #[cfg(unix)]
+        unsafe {
+            libc::posix_madvise(
+                hay.as_ptr() as *mut std::ffi::c_void,
+                hay.len(),
+                libc::POSIX_MADV_SEQUENTIAL,
+            );
+            // TODO the Windows equivalent might be PrefetchVirtualMemory
+        }
+
         let pos = match self.bytes.len() {
             1 => self.find_naive_1(&hay),
             2 => self.find_naive_2(0, &hay),
@@ -190,17 +204,18 @@ impl Needle {
 
     /// determine whether the file contains the needle
     pub fn search<P: AsRef<Path>>(&self, hay_path: P) -> io::Result<ContentSearchResult> {
-        if let Some(ext) = hay_path.as_ref().extension() {
-            let ext = ext.to_string_lossy().to_lowercase();
+        if let Some(ext) = hay_path.as_ref().extension().and_then(|s| s.to_str()) {
             if extensions::is_known_binary(&ext) {
                 return Ok(ContentSearchResult::NotSuitable);
             }
         }
-        let hay = get_mmap(hay_path)?;
+        let hay = get_mmap(&hay_path)?;
         if hay.len() > MAX_FILE_SIZE {
+            // debug!("big file: {:?}", hay_path.as_ref());
             return Ok(ContentSearchResult::NotSuitable);
         }
         if magic_numbers::is_known_binary(&hay) {
+            // debug!("binary file: {:?}", hay_path.as_ref());
             return Ok(ContentSearchResult::NotSuitable);
         }
         Ok(self.search_mmap(&hay))

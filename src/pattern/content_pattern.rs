@@ -39,7 +39,8 @@ impl ContentPattern {
                 None
             }
             Err(e) => {
-                info!("error while scanning {:?} : {:?}", &candidate.path, e);
+                // today it mostly happens on empty files
+                debug!("error while scanning {:?} : {:?}", &candidate.path, e);
                 None
             }
         }

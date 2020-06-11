@@ -75,7 +75,7 @@ Then broot looks for a file whose name starts with "vache" and focus its parent.
 
 If you do
 
-    br --cmd "mucca$/;:cd"
+    br -c "/mucca$;:cd"
 
 then broot searches for a file whose name ends with "mucca", and `cd` to the closest directory, leaving you on the shell, in your new directory (you may not have the time to notice the broot GUI was displayed).
 

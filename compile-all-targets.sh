@@ -25,7 +25,7 @@ cp target/release/broot build/x86_64-linux/
 # (they're built as part of the normal compilation)
 echo "copying completion scripts"
 mkdir build/completion
-cp "$(broot -c ":gi;release :focus;broot.bash :parent;:pp" target)/"* build/completion
+cp "$(broot -c ":gi;release;:focus;broot.bash;:parent;:pp" target)/"* build/completion
 
 # build the windows version
 # You need first to install the proper cargo toolchain:
