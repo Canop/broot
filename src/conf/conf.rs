@@ -33,6 +33,7 @@ pub struct Conf {
     pub skin: HashMap<String, SkinEntry>,
     pub special_paths: Vec<SpecialPath>,
     pub search_modes: SearchModeMap,
+    pub disable_mouse_capture: bool,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -111,6 +112,10 @@ impl Conf {
         }
         // date/time format
         self.date_time_format = string_field(&root, "date_time_format");
+        // mouse capture
+        if let Some(mouse_capture) = bool_field(&root, "capture_mouse") {
+            self.disable_mouse_capture = !mouse_capture;
+        }
         // reading verbs
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {

@@ -200,9 +200,13 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     let app = App::new(&context, &screen)?;
     w.queue(EnterAlternateScreen)?;
     w.queue(cursor::Hide)?;
-    w.queue(EnableMouseCapture)?;
+    if !config.disable_mouse_capture {
+        w.queue(EnableMouseCapture)?;
+    }
     let r = app.run(&mut w, &mut screen, &context, &config);
-    w.queue(DisableMouseCapture)?;
+    if !config.disable_mouse_capture {
+        w.queue(DisableMouseCapture)?;
+    }
     w.queue(cursor::Show)?;
     w.queue(LeaveAlternateScreen)?;
     w.flush()?;

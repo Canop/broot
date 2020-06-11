@@ -32,6 +32,13 @@ Those flags can still be overriden at launch with the negating ones. For example
 
     br -H
 
+# Mouse Capture
+
+Broot usually captures the mouse so that you can click or double click on items. If you want to disable this capture, you may add this:
+
+```toml
+capture_mouse = false
+```
 
 # Special Paths
 
