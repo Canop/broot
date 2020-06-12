@@ -1,3 +1,7 @@
+<a name="v0.15.1"></a>
+### v0.15.1 - 2020-06-12
+- fix some problems related to relative paths in built in cp and mv
+
 <a name="v0.15.0"></a>
 ### v0.15.0 - 2020-06-12
 #### Major feature: new input syntax - Breaking Change
