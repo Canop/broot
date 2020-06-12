@@ -1,5 +1,5 @@
-### next version
-[documentation of this version](https://dystroy.org/broot-master/)
+<a name="v0.15.0"></a>
+### v0.15.0 - 2020-06-12
 #### Major feature: new input syntax - Breaking Change
 New search modes (see https://dystroy.org/broot/input/#the-filtering-pattern) :
 	- fuzzy or regex on sub-paths (the path starting from the displayed root)
