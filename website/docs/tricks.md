@@ -30,9 +30,7 @@ Example:
 
 When you hit `enter` on a directory, it's focused and the filter is reset.
 
-If you want to keep the filter, for example to search deeper, you may use `:focus` instead.
-
-Similarly, `:back` keeps can be used in place of `esc` to keep the filter when going to the previous state.
+If you want to keep the filter, for example to search deeper, you may use `:open_stay_filter` instead (and you can bind it to a key shortut).
 
 ## Run an script or program from broot
 

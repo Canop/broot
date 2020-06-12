@@ -1,7 +1,7 @@
 
 # Launch Broot
 
-When the installation is [complete](../../install/##installation-completion-the-br-shell-function), you may start broot with either
+When the installation is [complete](../install/#installation-completion-the-br-shell-function), you may start broot with either
 
 	broot
 

@@ -20,7 +20,7 @@ With the `--out` command, the tree is written in a given file. For example `br -
 
 You can also  redirect the output of broot in a standard unix way.
 
-You don't have to enter broot, you may also directly get the tree by using the [`--cmd` argument](#cmd). An additional parameter may come handy: `--height` which specifies the size of the virtual screen, which may be smaller or bigger than the real one (no problem if you want 10000 lines).
+You don't have to enter broot, you may also directly get the tree by using the [`--cmd` argument](../launch/#the-cmd-launch-argument). An additional parameter may come handy: `--height` which specifies the size of the virtual screen, which may be smaller or bigger than the real one (no problem if you want 10000 lines).
 
 For example
 

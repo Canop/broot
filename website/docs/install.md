@@ -82,7 +82,7 @@ As a shortcut for [Nushell](https://www.nushell.sh/), define the following alias
 
 When it's done, you can do just `br` to launch broot, and typing `:pp` will cd for you.
 
-You can bind this command to a key sequence in the [configuration file](../documentation/configuration/):
+You can bind this command to a key sequence in the [configuration file](../conf_file):
 
 ```toml
 [[verbs]]

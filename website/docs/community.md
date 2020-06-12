@@ -1,5 +1,5 @@
 
-**broot** is developped by [Denys Séguret](https://stackoverflow.com/users/263525), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
+**broot** is developped by [Denys Séguret](https://twitter.com/DenysSeguret), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
 
 ## Discuss Broot in a chat room
 
@@ -27,6 +27,16 @@ When something looks like a bug, especially keyboard problems, we need both to k
 2. do the action which seems not to properly work, and nothing else
 3. quit broot
 4. go to the chat (or the GitHub issue if you already made one) and paste the content of the `dev.log` file
+
+### Benchmark
+
+To get a precise idea of the time taken by operations in real broot use, it's often a good idea to run them with `--cmd`.
+
+For example full text search performances can be mesured (and compared to other tools) with
+
+```
+time broot -c "c/memmap;:pt" ~/code
+```
 
 ## Contribute
 

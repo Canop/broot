@@ -22,6 +22,8 @@ owner = "ansi(138) None"
 group = "ansi(131) None"
 dates = "ansi(66) None"
 sparse = "ansi(214) None"
+content_extract = "ansi(29) None"
+content_match = "ansi(34) None"
 git_branch = "ansi(229) None"
 git_insertions = "ansi(28) None"
 git_deletions = "ansi(160) None"
@@ -94,6 +96,8 @@ Currently supported attributes are:
 * overlined
 
 Note that some of them may be ignored by your terminal. Windows supports about none of them, for example.
+
+The mapping between keys and screen parts may not always be obvious. Don't hesitate to come ask for help on [Miaou](https://miaou.dystroy.org/3490?broot).
 
 ## Transparent background
 
@@ -249,6 +253,5 @@ help_table_border = "none none"                                                 
 
 # Contribute your own skin
 
-Don't hesitate to contact me on Miaou if you have a skin to propose or to discuss an existing one.
+Don't hesitate to contact me on [Miaou](https://miaou.dystroy.org/3490) if you have a skin to propose or to discuss an existing one.
 
-The white background one isn't very good IMO (I'm not used to such configuration mysel) so I'd be happy to replace it.

@@ -272,7 +272,8 @@ invocation | default key | default shortcut | behavior / details
 :line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
 :mkdir {subpath} | - | md | create a directory
 :mv {newpath} | - | - | move the file or directory to the provided path
-:open_stay | <kbd>enter</kbd> | - | open the selected file in the default OS opener
+:open_stay | <kbd>enter</kbd> | - | open the selected file in the default OS opener, or focus the directory
+:open_stay_filter | - | - | focus the directory but keeping the current filtering pattern
 :open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leave broot
 :page_down | <kbd>⇟</kbd> | - | scroll one page down
 :page_up | <kbd>⇞</kbd> | - | scroll one page up
@@ -307,7 +308,7 @@ The `:focus` internal has many uses.
 
 It can be used without explicit argument in which case it takes the selection (for example `:!focus` is equivalent to <kbd>ctrl</kbd><kbd>→</kbd>).
 
-It can be used with an argument, for example you can go to a specific place without leaving broot or navigating by typing ` fo /usr/bin` in the input then <kbd>enter</kbd>.
+It can be used with an argument, for example you can go to a specific place without leaving broot by typing ` fo /usr/bin` then <kbd>enter</kbd>.
 
 It serves as base for several built-in commands, like `:home` whose execution is `:focus ~` (`~` is interpreted in broot as the user home even on Windows).
 

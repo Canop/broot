@@ -50,7 +50,7 @@ If you want the regex to be case insensitive, add the `i` flag: `/pat+ern/i`.
 
 # Other kinds of searches
 
-Other types of searches are possible, see [reference](../input.md/#the-filtering-pattern).
+Other types of searches are possible, see [reference](../input/#the-filtering-pattern).
 
 # Total Search
 

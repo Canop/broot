@@ -84,7 +84,7 @@ Note: there's another solution to gain time when typing a path, especially when 
 
 ## Builtins & external commands, leaving or not
 
-There are two types of verbs, differing by their *execution* pattern (which will be covered in more details in the [configuration page](configuration.md#verbs)):
+There are two types of verbs, differing by their *execution* pattern (which will be covered in more details in the [configuration page](../conf_file/#verb-definition-attributes)):
 
 * buitin features, whose execution starts with `:`, apply internal functions, for example `:toggle_perm` to trigger computation and display of unix file permissions
 * external commands, whose execution implies calling an external program, for example `rm -rf {file}`
@@ -95,4 +95,4 @@ A command may leave broot (for example to start a program), or not (the tree wil
 
 You may start with the common set of verbs but you'll very quickly want to define how to edit or create files, and probably have a few personal commands.
 
-That's why should see [how to configure verbs](../conf_file/#verbs).
+That's why should see [how to configure verbs](../conf_file/#verbs-shortcuts-and-keys).

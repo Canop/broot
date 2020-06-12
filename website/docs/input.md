@@ -17,6 +17,8 @@ The search syntax is globally
 
     <mode><pattern>[/<flags>]
 
+The mode is either nothing (fuzzy name), just a slash (regex name) or some letters followed by a slash.
+
 mode | exemple query | example match | explanation
 -|-|-|-
 fuzzy name | `abc` | `abac.txt` | search for "abc" in a fuzzy way in filenames
@@ -27,11 +29,9 @@ fuzzy path | `p/abc` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-pat
 regex path | `rp/abc` | `e/abac.txt` |  search for the "abc" regex  in sub-paths from current tree root
 content | `c/mask` | `umask = "1.0"` | search for the "umask" string in file contents
 
-The mode is either nothing (fuzzy name), just a slash (regex name) or some letters followed by a slash.
-
 It's also possible to [redefine those mode mappings](../conf_file/#search-modes).
 
-It's possible to escape characters (for example the space, colon or slash) in the pattern with a `\` (an antislash is `\\`).
+To escape characters (for example the space, colon or slash) in the pattern, use a `\` (an antislash is `\\`).
 
 ## The verb invocation
 

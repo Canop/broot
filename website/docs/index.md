@@ -80,7 +80,7 @@ If you like you may do it Norton Commander style by binding `:copy_to_panel` to 
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then <kbd>enter</kbd>.
 
-You can add verbs or configure the existing ones; see [documentation](documentation/usage.md#verbs).
+You can add verbs or configure the existing ones; see [documentation](../conf_file/#verbs-shortcuts-and-keys).
 
 And you can add shorcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
