@@ -27,7 +27,7 @@ regex name | `/[yz]{3}` | `fuzzy.rs` | search for the regular expression `[yz]{3
 regex name | `/abc/i` | `aBc.txt` | search for the regular expression `abc` with flag `i` in filenames
 fuzzy path | `p/abc` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-paths from current tree root
 regex path | `rp/abc` | `e/abac.txt` |  search for the "abc" regex  in sub-paths from current tree root
-content | `c/mask` | `umask = "1.0"` | search for the "umask" string in file contents
+content | `c/mask` | `umask = "1.0"` | search for the "mask" string in file contents
 
 It's also possible to [redefine those mode mappings](../conf_file/#search-modes).
 
