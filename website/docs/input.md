@@ -19,7 +19,7 @@ The search syntax is globally
 
 The mode is either nothing (fuzzy name), just a slash (regex name) or some letters followed by a slash.
 
-mode | exemple query | example match | explanation
+mode | example query | example match | explanation
 -|-|-|-
 fuzzy name | `abc` | `abac.txt` | search for "abc" in a fuzzy way in filenames
 regex name | `/abc` | `abc.txt` | search for the regular expression `abc` in filenames ("exact search")
