@@ -3,7 +3,6 @@ use {
     crate::{
         errors::TreeBuildError,
         git::GitIgnoreChain,
-        pattern::PatternObject,
         tree::*,
     },
     id_arena::Arena,
@@ -16,6 +15,7 @@ pub struct BLine {
     pub parent_id: Option<BId>,
     pub path: PathBuf,
     pub depth: u16,
+    pub subpath: String,
     pub name: String,
     pub file_type: fs::FileType,
     pub children: Option<Vec<BId>>, // sorted and filtered
@@ -35,17 +35,12 @@ impl BLine {
         blines: &mut Arena<BLine>,
         path: PathBuf,
         git_ignore_chain: GitIgnoreChain,
-        options: &TreeOptions,
+        _options: &TreeOptions,
     ) -> Result<BId, TreeBuildError> {
-        let name = if options.pattern.object() == PatternObject::FileSubpath {
-            String::new()
-        } else {
-            match path.file_name() {
-                Some(name) => name.to_string_lossy().to_string(),
-                None => String::from("???"), // should not happen
-            }
+        let name = match path.file_name() {
+            Some(name) => name.to_string_lossy().to_string(),
+            None => String::from("???"), // should not happen
         };
-        let special_handling = SpecialHandling::None;
         if let Ok(md) = fs::metadata(&path) {
             let file_type = md.file_type();
             Ok(blines.alloc(BLine {
@@ -53,6 +48,7 @@ impl BLine {
                 path,
                 depth: 0,
                 name,
+                subpath: String::new(),
                 children: None,
                 next_child_idx: 0,
                 file_type,
@@ -62,7 +58,7 @@ impl BLine {
                 score: 0,
                 nb_kept_children: 0,
                 git_ignore_chain,
-                special_handling,
+                special_handling: SpecialHandling::None,
             }))
         } else {
             Err(TreeBuildError::FileNotFound {
@@ -133,10 +129,13 @@ impl BLine {
             0
         };
         let metadata = fs::symlink_metadata(&self.path)?;
+        let subpath = TreeLine::make_displayable_name(&self.subpath);
+        let name = TreeLine::make_displayable_name(&self.name);
         Ok(TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
-            name: TreeLine::make_displayable_name(&self.name),
+            name,
+            subpath,
             path: self.path.clone(),
             line_type,
             has_error,

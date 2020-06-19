@@ -1,21 +1,24 @@
 use {
     super::PatternParts,
-    crate::verb::VerbInvocation,
+    crate::{
+        pattern::*,
+        verb::VerbInvocation,
+    },
+    bet::BeTree,
     std::fmt,
 };
 
 /// An intermediate parsed representation of the raw string
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub struct CommandParts {
-    pub pattern: Option<PatternParts>, //
+    pub raw_pattern: String, // may be empty
+    pub pattern: BeTree<PatternOperator, PatternParts>, //
     pub verb_invocation: Option<VerbInvocation>, // may be empty if user typed the separator but no char after
 }
 
 impl fmt::Display for CommandParts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(pattern) = &self.pattern {
-            pattern.fmt(f)?;
-        }
+        write!(f, "{}", self.raw_pattern)?;
         if let Some(invocation) = &self.verb_invocation {
             write!(f, "{}", invocation)?;
         }
@@ -25,18 +28,14 @@ impl fmt::Display for CommandParts {
 
 impl CommandParts {
 
-    pub fn new() -> CommandParts {
-        CommandParts {
-            pattern: None,
-            verb_invocation: None,
-        }
-    }
-
-    pub fn from(raw: &str) -> Self {
-        let mut pattern_parts: Vec<String> = vec![String::new()];
-        let mut verb_invocation: Option<String> = None;
+    pub fn from(
+        mut raw: String,
+    ) -> Self {
+        //let mut verb_invocation: Option<String> = None;
+        let mut invocation_start_pos: Option<usize> = None;
         let mut escaping = false;
-        for c in raw.chars() {
+        let mut pt = BeTree::new();
+        for (pos, c) in raw.char_indices() {
             if c == '\\' {
                 if escaping {
                     escaping = false;
@@ -45,45 +44,56 @@ impl CommandParts {
                     continue;
                 }
             }
-            if let Some(ref mut verb_invocation) = verb_invocation {
-                verb_invocation.push(c);
-            } else {
-                if !escaping {
-                    if c == ' ' || c == ':' {
-                        verb_invocation = Some(String::new());
-                        continue;
-                    }
-                    if c == '/' {
-                        pattern_parts.push(String::new());
-                        continue;
+            if !escaping {
+                if c == ' ' || c == ':' {
+                    invocation_start_pos = Some(pos);
+                    break;
+                }
+                if c == '/' {
+                    pt.mutate_or_create_atom(PatternParts::new).add_part();
+                    continue;
+                }
+                let allow_inter_pattern_token = match pt.current_atom() {
+                    Some(pattern_parts) => pattern_parts.allow_inter_pattern_token(),
+                    None => true,
+                };
+                if allow_inter_pattern_token {
+                    match c {
+                        '|' => {
+                            pt.push_operator(PatternOperator::Or);
+                            continue;
+                        }
+                        '&' => {
+                            pt.push_operator(PatternOperator::And);
+                            continue;
+                        }
+                        '!' => {
+                            pt.push_operator(PatternOperator::Not);
+                            continue;
+                        }
+                        '(' => {
+                            pt.open_par();
+                            continue;
+                        }
+                        ')' => {
+                            pt.close_par();
+                            continue;
+                        }
+                        _ => {}
                     }
                 }
-                let idx = pattern_parts.len()-1;
-                pattern_parts[idx].push(c);
             }
+            pt.mutate_or_create_atom(PatternParts::new).push(c);
             escaping = false;
         }
-        let parts_len = pattern_parts.len();
-        let mut drain = pattern_parts.drain(..);
-        let mode = if parts_len > 1 {
-            drain.next()
-        } else {
-            None
-        };
-        let pattern = drain.next().unwrap();
-        let flags = drain.next();
-        let pattern = if pattern.is_empty() && mode.is_none() {
-            None
-        } else {
-            Some(PatternParts {
-                mode,
-                pattern,
-                flags,
-            })
-        };
-        let verb_invocation = verb_invocation.map(|s| VerbInvocation::from(&*s));
+        let mut verb_invocation = None;
+        if let Some(pos) = invocation_start_pos {
+            verb_invocation = Some(VerbInvocation::from(&raw[pos+1..]));
+            raw.truncate(pos);
+        }
         CommandParts {
-            pattern,
+            raw_pattern: raw,
+            pattern: pt,
             verb_invocation,
         }
     }
@@ -92,70 +102,24 @@ impl CommandParts {
     /// and the verb invocation. Each part, when defined, is
     /// suitable to create a command on its own.
     pub fn split(mut self) -> (Option<CommandParts>, Option<CommandParts>) {
+        let verb_invocation = self.verb_invocation.take();
         (
-            self.pattern.take().map(|p| CommandParts {
-                pattern: Some(p),
-                verb_invocation: None,
-            }),
-            self.verb_invocation.take().map(|inv| CommandParts {
-                pattern: None,
-                verb_invocation: Some(inv),
+            if self.raw_pattern.is_empty() {
+                None
+            } else {
+                Some(CommandParts {
+                    raw_pattern: self.raw_pattern,
+                    pattern: self.pattern,
+                    verb_invocation: None,
+                })
+            },
+            verb_invocation.map(|verb_invocation| CommandParts {
+                raw_pattern: String::new(),
+                pattern: BeTree::new(),
+                verb_invocation: Some(verb_invocation),
             }),
         )
     }
 
 }
 
-impl Default for CommandParts {
-    fn default() -> CommandParts {
-        CommandParts::new()
-    }
-}
-
-#[cfg(test)]
-mod command_parsing_tests {
-    use super::*;
-    fn check(
-        raw: &str,
-        mode: Option<&str>,
-        pattern: Option<&str>,
-        flags: Option<&str>,
-        verb_invocation: Option<&str>,
-    ) {
-        println!("checking {:?}", raw);
-        let left = CommandParts::from(raw);
-        let right = CommandParts {
-            pattern: pattern.map(|pattern| PatternParts {
-                mode: mode.map(|s| s.to_string()),
-                pattern: pattern.to_string(),
-                flags: flags.map(|s| s.to_string()),
-            }),
-            verb_invocation: verb_invocation.map(|s| VerbInvocation::from(s)),
-        };
-        assert_eq!(left, right);
-    }
-    #[test]
-    fn test_command_parsing() {
-        check("", None, None, None, None);
-        check(" ", None, None, None, Some(""));
-        check(":", None, None, None, Some(""));
-        check("pat", None, Some("pat"), None, None);
-        check("pat ", None, Some("pat"), None, Some(""));
-        check(" verb arg1 arg2", None, None, None, Some("verb arg1 arg2"));
-        check(" verb ", None, None, None, Some("verb "));
-        check("/", Some(""), Some(""), None, None);
-        check("/ cp", Some(""), Some(""), None, Some("cp"));
-        check("pat verb ", None, Some("pat"), None, Some("verb "));
-        check("/pat/i verb ", Some(""), Some("pat"), Some("i"), Some("verb "));
-        check("r/pat/i verb ", Some("r"), Some("pat"), Some("i"), Some("verb "));
-        check("/pat/:verb ", Some(""), Some("pat"), Some(""), Some("verb "));
-        check("/pat", Some(""), Some("pat"), None, None);
-        check("p/pat", Some("p"), Some("pat"), None, None);
-        check("mode/", Some("mode"), Some(""), None, None);
-        check(r"c/two\ words verb /arg/u/ment", Some("c"), Some("two words"), None, Some("verb /arg/u/ment"));
-        check(r"a\/slash", None, Some("a/slash"), None, None);
-        check(r"p/i\/cd", Some("p"), Some("i/cd"), None, None);
-        check(r"c/\\b", Some("c"), Some(r"\b"), None, None);
-        check(r"c/\:\:H:cd", Some("c"), Some(r"::H"), None, Some("cd"));
-    }
-}

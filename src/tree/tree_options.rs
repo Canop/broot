@@ -1,4 +1,7 @@
-use {crate::pattern::Pattern, clap::ArgMatches};
+use {
+    crate::pattern::*,
+    clap::ArgMatches,
+};
 
 /// Options defining how the tree should be build and|or displayed
 #[derive(Debug, Clone)]
@@ -12,7 +15,7 @@ pub struct TreeOptions {
     pub show_permissions: bool,     // show classic rwx unix permissions
     pub respect_git_ignore: bool,   // hide files as requested by .gitignore ?
     pub filter_by_git_status: bool, // only show files whose git status is not nul
-    pub pattern: Pattern,           // an optional filtering/scoring pattern
+    pub pattern: InputPattern,           // an optional filtering/scoring pattern
     pub date_time_format: &'static str,
 }
 
@@ -28,7 +31,7 @@ impl TreeOptions {
             filter_by_git_status: self.filter_by_git_status,
             show_git_file_info: self.show_git_file_info,
             trim_root: self.trim_root,
-            pattern: Pattern::None,
+            pattern: InputPattern::none(),
             date_time_format: self.date_time_format,
         }
     }
@@ -98,7 +101,7 @@ impl Default for TreeOptions {
             show_permissions: false,
             respect_git_ignore: true,
             filter_by_git_status: false,
-            pattern: Pattern::None,
+            pattern: InputPattern::none(),
             date_time_format: "%Y/%m/%d %R ",
         }
     }

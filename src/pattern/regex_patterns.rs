@@ -1,6 +1,7 @@
-//! a filename filtering pattern using a regular expression
+//! a filtering pattern using a regular expression
 
 use {
+    super::NameMatch,
     crate::errors::PatternError,
     regex,
     std::fmt,
@@ -40,7 +41,7 @@ impl RegexPattern {
         })
     }
     // return a match if the pattern can be found in the candidate string
-    pub fn find(&self, candidate: &str) -> Option<super::Match> {
+    pub fn find(&self, candidate: &str) -> Option<NameMatch> {
         // note that there's no significative cost related to using
         //  find over is_match
         self.rex.find(candidate).map(|rm| {
@@ -48,7 +49,7 @@ impl RegexPattern {
             for i in rm.start()..rm.end() {
                 pos.push(i);
             }
-            super::Match { score: 1, pos }
+            super::NameMatch { score: 1, pos }
         })
     }
     // return the number of results we should find before starting to

@@ -92,7 +92,7 @@ impl PanelInput {
             Event::Key(key) => {
                 // value of raw and parts before any key related change
                 let raw = self.input_field.get_content();
-                let parts = CommandParts::from(&raw);
+                let parts = CommandParts::from(raw.clone());
 
                 // we first handle the cases that MUST absolutely
                 // not be overriden by configuration
@@ -103,8 +103,7 @@ impl PanelInput {
                         // we cancel the tab cycling
                         self.input_field.set_content(&raw);
                         self.input_before_cycle = None;
-                        let parts = CommandParts::from(&raw);
-                        return Command::from_parts(&parts, false);
+                        return Command::from_raw(raw, false);
                     } else {
                         self.input_field.set_content("");
                         let internal = Internal::back;
@@ -120,7 +119,7 @@ impl PanelInput {
                     if parts.verb_invocation.is_some() {
                         let parts_before_cycle;
                         let completable_parts = if let Some(s) = &self.input_before_cycle {
-                            parts_before_cycle = CommandParts::from(s);
+                            parts_before_cycle = CommandParts::from(s.clone());
                             &parts_before_cycle
                         } else {
                             &parts
@@ -150,8 +149,7 @@ impl PanelInput {
                             let mut raw = self.input_before_cycle.as_ref().map_or(raw, |s| s.to_string());
                             raw.push_str(&added);
                             self.input_field.set_content(&raw);
-                            let parts = CommandParts::from(&raw);
-                            return Command::from_parts(&parts, false);
+                            return Command::from_raw(raw, false);
                         } else {
                             return Command::None;
                         }
@@ -162,7 +160,7 @@ impl PanelInput {
                 }
 
                 if key == keys::ENTER && parts.verb_invocation.is_some() {
-                    return Command::from_parts(&parts, true);
+                    return Command::from_parts(parts, true);
                 }
 
                 if key == keys::QUESTION && (raw.is_empty() || parts.verb_invocation.is_some()) {
@@ -208,9 +206,7 @@ impl PanelInput {
 
                 // input field management
                 if self.input_field.apply_event(&event) {
-                    let raw = self.input_field.get_content();
-                    let parts = CommandParts::from(&raw);
-                    return Command::from_parts(&parts, false);
+                    return Command::from_raw(self.input_field.get_content(), false);
                 }
             }
             Event::Wheel(lines_count) => {

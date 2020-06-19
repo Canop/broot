@@ -4,7 +4,7 @@ use {
 
 /// a displayable representation of where
 /// the needle was found, with some text around
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ContentMatch {
     pub extract: String,
     pub needle_start: usize, // position in the extract, in bytes

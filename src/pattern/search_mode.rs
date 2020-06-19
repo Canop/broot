@@ -119,9 +119,9 @@ impl SearchModeMap {
     pub fn set(&mut self, entry: SearchModeMapEntry) {
         self.entries.push(entry);
     }
-    pub fn search_mode(&self, key: &Option<String>) -> Result<SearchMode, PatternError> {
+    pub fn search_mode(&self, key: Option<&String>) -> Result<SearchMode, PatternError> {
         for entry in self.entries.iter().rev() {
-            if entry.key == *key {
+            if entry.key.as_ref() == key {
                 return Ok(entry.mode);
             }
         }

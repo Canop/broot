@@ -88,8 +88,8 @@ impl App {
         }
     }
 
-    fn remove_state(&mut self, screen: &Screen, con: &AppContext) -> bool {
-        self.panels[self.active_panel_idx].remove_state(con) || self.close_active_panel(screen)
+    fn remove_state(&mut self, screen: &Screen) -> bool {
+        self.panels[self.active_panel_idx].remove_state() || self.close_active_panel(screen)
     }
 
     fn display_panels(
@@ -195,13 +195,13 @@ impl App {
             }
             NewState(state) => {
                 self.mut_panel().clear_input();
-                self.mut_panel().push_state(state, con);
+                self.mut_panel().push_state(state);
             }
             PopState => {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
-                if self.remove_state(screen, con) {
+                if self.remove_state(screen) {
                     // should we set the cmd ?
                     self.mut_state().refresh(screen, con);
                 } else if ESCAPE_TO_QUIT {
@@ -212,7 +212,7 @@ impl App {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
-                if self.remove_state(screen, con) {
+                if self.remove_state(screen) {
                     self.mut_panel().apply_command(&cmd, &other_path, screen, panel_skin, con)?;
                 } else if ESCAPE_TO_QUIT {
                     self.quitting = true;

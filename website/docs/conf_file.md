@@ -69,6 +69,8 @@ It's possible to redefine the mode mappings, for example if you usually prefer t
 "z/" = "regex path"
 ```
 
+Note: I'd insist on you not overwriting default mode mappings before you master how broot is used and what those modes exactly work.
+
 # Verbs, Shortcuts, and keys
 
 ## Verb Definition Attributes

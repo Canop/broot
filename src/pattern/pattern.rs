@@ -2,12 +2,14 @@
 use {
     super::*,
     crate::{
+        app::AppContext,
+        command::PatternParts,
         content_search::ContentMatch,
         errors::PatternError,
     },
+    bet::BeTree,
     std::{
-        fmt::self,
-        mem,
+        path::Path,
     },
 };
 
@@ -20,112 +22,111 @@ pub enum Pattern {
     NameRegex(RegexPattern),
     PathRegex(RegexPattern),
     Content(ContentPattern),
-}
-
-impl fmt::Display for Pattern {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        match self {
-            Pattern::NameFuzzy(fp) => write!(f, "NameFuzzy({})", fp),
-            Pattern::PathFuzzy(fp) => write!(f, "PathFuzzy({})", fp),
-            Pattern::NameRegex(rp) => write!(f, "NameRegex({})", rp),
-            Pattern::PathRegex(rp) => write!(f, "PathRegex({})", rp),
-            Pattern::Content(rp) => write!(f, "Content({})", rp),
-            Pattern::None => write!(f, "None"),
-        }
-    }
+    Composite(CompositePattern),
 }
 
 impl Pattern {
-    pub fn new(mode: SearchMode, pat: &str, flags: &Option<String>) -> Result<Self, PatternError> {
-        Ok(if pat.is_empty() {
+
+    pub fn new(
+        raw_expr: &BeTree<PatternOperator, PatternParts>,
+        con: &AppContext,
+    ) -> Result<Self, PatternError> {
+        let expr: BeTree<PatternOperator, Pattern> = raw_expr
+            .try_map_atoms::<_, PatternError, _>(|pattern_parts| {
+                let core = pattern_parts.core();
+                Ok(
+                    if core.is_empty() {
+                        Pattern::None
+                    } else {
+                        let parts_mode = pattern_parts.mode();
+                        let mode = con.search_modes.search_mode(parts_mode)?;
+                        let flags = pattern_parts.flags();
+                        match mode {
+                            SearchMode::NameFuzzy => Self::NameFuzzy(FuzzyPattern::from(core)),
+                            SearchMode::PathFuzzy => Self::PathFuzzy(FuzzyPattern::from(core)),
+                            SearchMode::NameRegex => Self::NameRegex(RegexPattern::from(core, flags.as_deref().unwrap_or(""))?),
+                            SearchMode::PathRegex => Self::PathRegex(RegexPattern::from(core, flags.unwrap_or(""))?),
+                            SearchMode::Content => Self::Content(ContentPattern::from(core)),
+                        }
+                    }
+                )
+            })?;
+        Ok(if expr.is_empty() {
             Pattern::None
+        } else if expr.is_atomic() {
+            expr.atoms().pop().unwrap()
         } else {
-            match mode {
-                SearchMode::NameFuzzy => Self::NameFuzzy(FuzzyPattern::from(pat)),
-                SearchMode::PathFuzzy => Self::PathFuzzy(FuzzyPattern::from(pat)),
-                SearchMode::NameRegex => Self::NameRegex(RegexPattern::from(pat, flags.as_deref().unwrap_or(""))?),
-                SearchMode::PathRegex => Self::PathRegex(RegexPattern::from(pat, flags.as_deref().unwrap_or(""))?),
-                SearchMode::Content => Self::Content(ContentPattern::from(pat)),
-            }
+            Self::Composite(CompositePattern::new(expr))
         })
     }
-    pub fn mode(&self) -> Option<SearchMode> {
-        match self {
-            Self::NameFuzzy(_) => Some(SearchMode::NameFuzzy),
-            Self::PathFuzzy(_) => Some(SearchMode::PathFuzzy),
-            Self::NameRegex(_) => Some(SearchMode::NameRegex),
-            Self::PathRegex(_) => Some(SearchMode::PathRegex),
-            Self::Content(_) => Some(SearchMode::Content),
-            _ => None,
-        }
-    }
+
     pub fn object(&self) -> PatternObject {
+        let mut object = PatternObject::default();
         match self {
-            Self::PathFuzzy(_) | Self::PathRegex(_) => PatternObject::FileSubpath,
-            Self::Content(_) => PatternObject::FileContent,
-            _ => PatternObject::FileName,
+            Self::None => {}
+            Self::PathFuzzy(_) | Self::PathRegex(_) => {
+                object.subpath = true;
+            }
+            Self::NameFuzzy(_) | Self::NameRegex(_) => {
+                object.name = true;
+            }
+            Self::Content(_) => {
+                object.content = true;
+            }
+            Self::Composite(cp) => {
+                for atom in cp.expr.iter_atoms() {
+                    object |= atom.object();
+                }
+            }
         }
+        object
     }
-    /// find the position of the match in the name, if possible
-    /// (makes sense for tree rendering)
-    pub fn find(&self, candidate: &str) -> Option<Match> {
+
+    pub fn search_string(
+        &self,
+        candidate: &str,
+    ) -> Option<NameMatch> {
         match self {
             Self::NameFuzzy(fp) => fp.find(candidate),
-            Self::PathFuzzy(fp) => fp.find(candidate),
             Self::NameRegex(rp) => rp.find(candidate),
+            Self::PathFuzzy(fp) => fp.find(candidate),
             Self::PathRegex(rp) => rp.find(candidate),
-            _ => Some(Match {
-                score: 1,
-                pos: Vec::with_capacity(0),
-            }),
-        }
-    }
-    pub fn get_content_match(
-        &self,
-        path: &Path,
-        desired_len: usize,
-    ) -> Option<ContentMatch> {
-        match self {
-            Self::Content(cp) => cp.get_content_match(path, desired_len),
+            Self::Composite(cp) => cp.search_string(candidate),
             _ => None,
         }
     }
+
+    pub fn search_content(
+        &self,
+        candidate: &Path,
+        desired_len: usize, // available space for content match display
+    ) -> Option<ContentMatch> {
+        match self {
+            Self::Content(cp) => cp.get_content_match(candidate, desired_len),
+            Self::Composite(cp) => cp.search_content(candidate, desired_len),
+            _ => None,
+        }
+    }
+
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
         match self {
             Pattern::NameFuzzy(fp) => fp.score_of(&candidate.name),
-            Pattern::PathFuzzy(fp) => fp.score_of(&candidate.name),
+            Pattern::PathFuzzy(fp) => fp.score_of(&candidate.subpath),
             Pattern::NameRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
-            Pattern::PathRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
+            Pattern::PathRegex(rp) => rp.find(&candidate.subpath).map(|m| m.score),
             Pattern::Content(cp) => cp.score_of(candidate),
+            Pattern::Composite(cp) => cp.score_of(candidate),
             Pattern::None => Some(1),
         }
     }
+
     pub fn is_some(&self) -> bool {
         match self {
             Pattern::None => false,
             _ => true,
         }
     }
-    pub fn as_input(&self, search_mode_map: &SearchModeMap) -> String {
-        let mut input = String::new();
-        if let Some(mode_key) = self.mode().and_then(|mode| search_mode_map.key(mode)) {
-            input.push_str(mode_key);
-            input.push('/');
-        }
-        let unescaped = match self {
-            Pattern::NameFuzzy(fp) | Pattern::PathFuzzy(fp) => fp.to_string(),
-            Pattern::NameRegex(rp) | Pattern::PathRegex(rp) => rp.to_string(),
-            _ => "".to_string(),
-        };
-        let escaped = regex!(r"[/ \\:]").replace_all(&unescaped, r"\$0");
-        input.push_str(&escaped);
-        input
-    }
-    /// empties the pattern and return it
-    /// Similar to Option::take
-    pub fn take(&mut self) -> Pattern {
-        mem::replace(self, Pattern::None)
-    }
+
     /// return the number of results we should find before starting to
     ///  sort them (unless time is runing out).
     pub fn optimal_result_number(&self, targeted_size: usize) -> usize {
@@ -135,14 +136,8 @@ impl Pattern {
             Pattern::NameRegex(rp) => rp.optimal_result_number(targeted_size),
             Pattern::PathRegex(rp) => rp.optimal_result_number(targeted_size),
             Pattern::Content(cp) => cp.optimal_result_number(targeted_size),
-            Pattern::None => targeted_size,
+            _ => targeted_size,
         }
     }
 }
 
-/// A Match is a positive result of pattern matching
-#[derive(Debug, Clone)]
-pub struct Match {
-    pub score: i32, // score of the match, guaranteed strictly positive, bigger is better
-    pub pos: Vec<usize>, // positions of the matching chars
-}

@@ -3,22 +3,61 @@ use {
 };
 
 /// An intermediate parsed representation of the raw string
-#[derive(Debug, Clone, PartialEq, Default)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct PatternParts {
-    pub mode: Option<String>, // may be Some("") if the user typed `/pat`
-    pub pattern: String, // either a fuzzy pattern or the core of a regex
-    pub flags: Option<String>, // may be Some("") if user asked for a regex but specified no flag
+    /// can't be empty by construct
+    parts: Vec<String>,
 }
 
 impl fmt::Display for PatternParts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        if let Some(mode) = &self.mode {
-            write!(f, "{}/", mode)?;
+        match self.parts.len() {
+            1 => write!(f, "{}", &self.parts[0]),
+            2 => write!(f, "{}/{}", &self.parts[0], &self.parts[1]),
+            _ => write!(f, "{}/{}/{}", &self.parts[0], &self.parts[1], &self.parts[2]),
         }
-        write!(f, "{}", self.pattern)?;
-        if let Some(flags) = &self.flags {
-            write!(f, "/{}", flags)?;
-        }
-        Ok(())
     }
 }
+
+impl PatternParts {
+    pub fn new() -> Self {
+        Self {
+            parts: vec![String::new()],
+        }
+    }
+    pub fn push(&mut self, c: char) {
+        // self.parts can't be empty, by construct
+        self.parts.last_mut().unwrap().push(c);
+    }
+    pub fn add_part(&mut self) {
+        self.parts.push(String::new());
+    }
+    pub fn allow_inter_pattern_token(&self) -> bool {
+        self.parts.len() == 1 || self.parts.last().unwrap().is_empty()
+    }
+    pub fn is_empty(&self) -> bool {
+        self.core().is_empty()
+    }
+    pub fn core(&self) -> &str {
+        if self.parts.len() > 1 {
+            &self.parts[1]
+        } else {
+            &self.parts[0]
+        }
+    }
+    pub fn mode(&self) -> Option<&String> {
+        if self.parts.len() > 1 {
+            self.parts.get(0)
+        } else {
+            None
+        }
+    }
+    pub fn flags(&self) -> Option<&str> {
+        if self.parts.len() > 2 {
+            self.parts.get(2).map(|s| s.as_str())
+        } else {
+            None
+        }
+    }
+}
+

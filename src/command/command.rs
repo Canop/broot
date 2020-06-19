@@ -1,10 +1,10 @@
 use {
     super::*,
     crate::{
-        app::AppContext,
-        pattern::Pattern,
+        pattern::*,
         verb::{Internal, VerbInvocation},
     },
+    bet::BeTree,
 };
 
 /// a command which may result in a change in the application state.
@@ -40,7 +40,10 @@ pub enum Command {
     },
 
     /// a pattern being edited
-    PatternEdit(PatternParts),
+    PatternEdit {
+        raw: String,
+        expr: BeTree<PatternOperator, PatternParts>,
+    },
 
     /// a mouse click
     Click(u16, u16),
@@ -61,25 +64,25 @@ impl Command {
     /// The command being finished is the difference between
     /// a command being edited and a command launched (which
     /// happens on enter in the input).
-    pub fn from_parts(cp: &CommandParts, finished: bool) -> Self {
-        if let Some(verb_invocation) = &cp.verb_invocation {
+    pub fn from_parts(mut cp: CommandParts, finished: bool) -> Self {
+        if let Some(verb_invocation) = cp.verb_invocation.take() {
             if finished {
-                Self::VerbInvocate(verb_invocation.clone())
+                Self::VerbInvocate(verb_invocation)
             } else {
-                Self::VerbEdit(verb_invocation.clone())
+                Self::VerbEdit(verb_invocation)
             }
         } else if finished {
             Self::Internal {
                 internal: Internal::open_stay,
                 input_invocation: None,
             }
-        } else if let Some(pattern) = &cp.pattern {
-            Self::PatternEdit(pattern.clone())
         } else {
-            Self::PatternEdit(PatternParts::default())
+            Self::PatternEdit {
+                raw: cp.raw_pattern,
+                expr: cp.pattern,
+            }
         }
     }
-
 
     /// tells whether this action is a verb being invocated on enter
     /// in the input field
@@ -95,16 +98,13 @@ impl Command {
     /// `finished` makes the command an executed form,
     /// it's equivalent to using the Enter key in the Gui.
     pub fn from_raw(raw: String, finished: bool) -> Self {
-        let parts = CommandParts::from(&raw);
-        Self::from_parts(&parts, finished)
+        let parts = CommandParts::from(raw);
+        Self::from_parts(parts, finished)
     }
 
     /// build a non executed command from a pattern
-    pub fn from_pattern(pattern: &Pattern, con: &AppContext) -> Self {
-        Command::from_raw(
-            pattern.as_input(&con.search_modes),
-            false,
-        )
+    pub fn from_pattern(pattern: &InputPattern) -> Self {
+        Command::from_raw(pattern.raw.clone(), false)
     }
 }
 

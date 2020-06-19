@@ -4,7 +4,10 @@ use {
     crate::{
         content_search::*,
     },
-    std::fmt,
+    std::{
+        fmt,
+        path::Path,
+    },
 };
 
 /// A pattern for searching in file content
@@ -28,7 +31,7 @@ impl ContentPattern {
     }
 
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
-        if !candidate.file_type.is_file() {
+        if !candidate.regular_file {
             return None;
         }
         match self.needle.search(&candidate.path) {

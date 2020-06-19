@@ -22,8 +22,9 @@ use is_executable::IsExecutable;
 pub struct TreeLine {
     pub left_branchs: Box<[bool]>, // a depth-sized array telling whether a branch pass
     pub depth: u16,
-    pub name: String, // a displayable name - some chars may have been stripped
     pub path: PathBuf,
+    pub subpath: String,
+    pub name: String, // a displayable name - some chars may have been stripped
     pub line_type: TreeLineType,
     pub has_error: bool,
     pub nb_kept_children: usize,

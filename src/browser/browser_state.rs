@@ -8,7 +8,7 @@ use {
         git,
         help::HelpState,
         launchable::Launchable,
-        pattern::Pattern,
+        pattern::*,
         path,
         print,
         selection_type::SelectionType,
@@ -32,7 +32,7 @@ use {
 pub struct BrowserState {
     pub tree: Tree,
     pub filtered_tree: Option<Tree>,
-    pub pending_pattern: Pattern, // a pattern (or not) which has not yet be applied
+    pub pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     pub total_search_required: bool, // whether the pending pattern should be in total search mode
 }
 
@@ -276,7 +276,7 @@ impl AppState for BrowserState {
         con: &AppContext,
     ) -> Status {
         match cmd {
-            Command::PatternEdit(_) => {
+            Command::PatternEdit{ .. } => {
                 Status::new(self.normal_status_message(true), false)
             }
             Command::VerbEdit(invocation) => {
@@ -321,7 +321,7 @@ impl AppState for BrowserState {
     }
 
     fn clear_pending(&mut self) {
-        self.pending_pattern = Pattern::None;
+        self.pending_pattern = InputPattern::none();
     }
 
     fn on_click(
@@ -355,7 +355,7 @@ impl AppState for BrowserState {
 
     fn on_pattern(
         &mut self,
-        pat: Pattern,
+        pat: InputPattern,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         if !pat.is_some() {
@@ -604,7 +604,7 @@ impl AppState for BrowserState {
         dam: &mut Dam,
     ) {
         if self.pending_pattern.is_some() {
-            let pattern_str = self.pending_pattern.to_string();
+            let pattern_str = self.pending_pattern.raw.clone();
             let mut options = self.tree.options.clone();
             options.pattern = self.pending_pattern.take();
             let root = self.tree.root().clone();
@@ -619,7 +619,7 @@ impl AppState for BrowserState {
             let mut filtered_tree = time!(
                 Info,
                 "tree filtering",
-                pattern_str,
+                &pattern_str,
                 builder.build(self.total_search_required, dam),
             ); // can be None if a cancellation was required
             self.total_search_required = false;
@@ -662,7 +662,7 @@ impl AppState for BrowserState {
         }
         // refresh the filtered tree, if any
         Command::from_pattern(
-                match self.filtered_tree {
+            match self.filtered_tree {
                 Some(ref mut tree) => {
                     if let Err(e) = tree.refresh(page_height, con) {
                         warn!("refreshing filtered tree failed : {:?}", e);
@@ -671,7 +671,6 @@ impl AppState for BrowserState {
                 }
                 None => &self.tree.options.pattern,
             },
-            con,
         )
     }
 
@@ -689,13 +688,11 @@ impl AppState for BrowserState {
         ]
     }
 
-    fn get_starting_input(&self, con: &AppContext) -> String {
+    fn get_starting_input(&self) -> String {
         if self.pending_pattern.is_some() {
-            self.pending_pattern.as_input(&con.search_modes)
+            self.pending_pattern.raw.clone()
         } else {
-            self.filtered_tree.as_ref()
-                .map(|t| t.options.pattern.as_input(&con.search_modes))
-                .unwrap_or_else(String::new)
+            self.displayed_tree().options.pattern.raw.clone()
         }
     }
 }

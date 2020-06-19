@@ -1,6 +1,10 @@
 //! Definitions of custom errors used in broot
 
-use {custom_error::custom_error, regex, std::io};
+use {
+    custom_error::custom_error,
+    regex,
+    std::io,
+};
 
 custom_error! {pub ProgramError
     Io {source: io::Error} = "IO Error : {:?}",

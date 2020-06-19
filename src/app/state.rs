@@ -5,7 +5,7 @@ use {
         display::{Screen, W},
         errors::ProgramError,
         flag::Flag,
-        pattern::Pattern,
+        pattern::*,
         selection_type::SelectionType,
         skin::PanelSkin,
         task_sync::Dam,
@@ -43,7 +43,7 @@ pub trait AppState {
 
     fn on_pattern(
         &mut self,
-        _pat: Pattern,
+        _pat: InputPattern,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         Ok(AppStateCmdResult::Keep)
@@ -74,9 +74,8 @@ pub trait AppState {
         match cc.cmd {
             Command::Click(x, y) => self.on_click(*x, *y, screen, con),
             Command::DoubleClick(x, y) => self.on_double_click(*x, *y, screen, con),
-            Command::PatternEdit(parts) => {
-                let search_mode = con.search_modes.search_mode(&parts.mode);
-                match search_mode.and_then(|sm| Pattern::new(sm, &parts.pattern, &parts.flags)) {
+            Command::PatternEdit { raw, expr } => {
+                match InputPattern::new(raw.clone(), expr, &cc.con) {
                     Ok(pattern) => self.on_pattern(pattern, con),
                     Err(e) => Ok(AppStateCmdResult::DisplayError(format!("{}", e))),
                 }
@@ -182,7 +181,7 @@ pub trait AppState {
     /// return the flags to display
     fn get_flags(&self) -> Vec<Flag>;
 
-    fn get_starting_input(&self, _con: &AppContext) -> String {
+    fn get_starting_input(&self) -> String {
         String::new()
     }
 }

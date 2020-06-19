@@ -25,8 +25,9 @@ mod crop_writer;
 mod displayable_tree;
 mod flags_display;
 mod git_status_display;
-mod screen;
 pub mod status_line;
+mod matched_string;
+mod screen;
 
 use std::io::BufWriter;
 
@@ -36,6 +37,7 @@ pub use {
     displayable_tree::DisplayableTree,
     flags_display::write_flags,
     git_status_display::GitStatusDisplay,
+    matched_string::MatchedString,
     screen::Screen,
 };
 

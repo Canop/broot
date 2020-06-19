@@ -29,10 +29,10 @@ impl Panel {
         id: PanelId,
         state: Box<dyn AppState>,
         areas: Areas,
-        con: &AppContext,
+        _con: &AppContext,
     ) -> Self {
         let mut input = PanelInput::new(areas.input.clone());
-        input.set_content(&state.get_starting_input(con));
+        input.set_content(&state.get_starting_input());
         Self {
             id,
             states: vec![state],
@@ -106,8 +106,8 @@ impl Panel {
         self.input.on_event(w, event, con, &*self.states[self.states.len()-1])
     }
 
-    pub fn push_state(&mut self, new_state: Box<dyn AppState>, con: &AppContext) {
-        self.input.set_content(&new_state.get_starting_input(con));
+    pub fn push_state(&mut self, new_state: Box<dyn AppState>) {
+        self.input.set_content(&new_state.get_starting_input());
         self.states.push(new_state);
     }
     pub fn mut_state(&mut self) -> &mut dyn AppState {
@@ -130,7 +130,7 @@ impl Panel {
     }
 
     pub fn set_input_arg(&mut self, arg: String) {
-        let mut command_parts = CommandParts::from(&self.input.get_content());
+        let mut command_parts = CommandParts::from(self.input.get_content());
         if let Some(invocation) = &mut command_parts.verb_invocation {
             invocation.args = Some(arg);
             let new_input = format!("{}", command_parts);
@@ -139,10 +139,10 @@ impl Panel {
     }
 
     /// return true when the element has been removed
-    pub fn remove_state(&mut self, con: &AppContext) -> bool {
+    pub fn remove_state(&mut self) -> bool {
         if self.states.len() > 1 {
             self.states.pop();
-            self.input.set_content(&self.state().get_starting_input(con));
+            self.input.set_content(&self.state().get_starting_input());
             true
         } else {
             false

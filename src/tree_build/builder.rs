@@ -7,7 +7,7 @@ use {
         app::AppContext,
         errors::TreeBuildError,
         git::{GitIgnoreChain, GitIgnorer, LineStatusComputer},
-        pattern::{Candidate, PatternObject},
+        pattern::Candidate,
         task_sync::ComputationResult,
         task_sync::Dam,
         tree::*,
@@ -114,7 +114,7 @@ impl<'c> TreeBuilder<'c> {
             return None;
         }
         let name = name.to_string_lossy();
-        let mut name = name.to_string();
+        let name = name.to_string();
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
         let path = e.path();
@@ -124,18 +124,19 @@ impl<'c> TreeBuilder<'c> {
                 return None;
             }
         };
-        if self.options.pattern.object() == PatternObject::FileSubpath {
-            let parent_name = &self.blines[parent_id].name;
-            if !parent_name.is_empty() {
-                name = format!("{}/{}", parent_name, name);
-            }
-        }
-        let candidate = Candidate {
-            path: &path,
-            name: &name,
-            file_type,
+        let parent_subpath = &self.blines[parent_id].subpath;
+        let subpath = if !parent_subpath.is_empty() {
+            format!("{}/{}", parent_subpath, &name)
+        } else {
+            name.to_string()
         };
-        let direct_match = if let Some(pattern_score) = self.options.pattern.score_of(candidate) {
+        let candidate = Candidate {
+            name: &name,
+            subpath: &subpath,
+            path: &path,
+            regular_file: file_type.is_file(),
+        };
+        let direct_match = if let Some(pattern_score) = self.options.pattern.pattern.score_of(candidate) {
             // we dope direct matchs to compensate for depth doping of parent folders
             score += pattern_score + 10;
             true
@@ -175,6 +176,7 @@ impl<'c> TreeBuilder<'c> {
             parent_id: Some(parent_id),
             path,
             depth,
+            subpath,
             name,
             file_type,
             children: None,
@@ -258,6 +260,7 @@ impl<'c> TreeBuilder<'c> {
         let mut out_blines: Vec<BId> = Vec::new(); // the blines we want to display
         let optimal_size = self
             .options
+            .pattern
             .pattern
             .optimal_result_number(self.targeted_size);
         out_blines.push(self.root_id);

@@ -3,7 +3,7 @@
 //!  such as file names.
 
 use {
-    super::Match,
+    super::NameMatch,
     secular,
     std::fmt::{self, Write},
 };
@@ -34,8 +34,8 @@ impl fmt::Display for FuzzyPattern {
 }
 
 enum MatchSearchResult {
-    Perfect(Match), // no need to test other positions
-    Some(Match),
+    Perfect(NameMatch), // no need to test other positions
+    Some(NameMatch),
     None,
 }
 enum ScoreSearchResult {
@@ -121,24 +121,24 @@ impl FuzzyPattern {
             score += BONUS_START + BONUS_START_WORD;
             if cand_chars.len() == self.chars.len() {
                 score += BONUS_EXACT;
-                return MatchSearchResult::Perfect(Match { score, pos });
+                return MatchSearchResult::Perfect(NameMatch { score, pos });
             }
         } else {
             let previous = cand_chars[start_idx - 1];
             if is_word_separator(previous) {
                 score += BONUS_START_WORD;
                 if cand_chars.len() - start_idx == self.chars.len() {
-                    return MatchSearchResult::Perfect(Match { score, pos });
+                    return MatchSearchResult::Perfect(NameMatch { score, pos });
                 }
             }
         }
-        MatchSearchResult::Some(Match { score, pos })
+        MatchSearchResult::Some(NameMatch { score, pos })
     }
 
     /// return a match if the pattern can be found in the candidate string.
     /// The algorithm tries to return the best one. For example if you search
     /// "abc" in "ababca-abc", the returned match would be at the end.
-    pub fn find(&self, candidate: &str) -> Option<Match> {
+    pub fn find(&self, candidate: &str) -> Option<NameMatch> {
         if candidate.len() < self.chars.len() {
             return None;
         }
@@ -148,7 +148,7 @@ impl FuzzyPattern {
             return None;
         }
         let mut best_score = 0;
-        let mut best_match: Option<Match> = None;
+        let mut best_match: Option<NameMatch> = None;
         let n = cand_chars.len() - self.chars.len();
         for start_idx in 0..=n {
             match self.match_starting_at_index(&cand_chars, start_idx) {

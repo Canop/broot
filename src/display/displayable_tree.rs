@@ -1,10 +1,14 @@
 use {
-    super::{CropWriter, GitStatusDisplay},
+    super::{
+        CropWriter,
+        GitStatusDisplay,
+        MatchedString,
+    },
     crate::{
         content_search::ContentMatch,
         errors::ProgramError,
         file_sizes::FileSize,
-        pattern::Pattern,
+        pattern::PatternObject,
         skin::StyleMap,
         task_sync::ComputationResult,
         tree::{Tree, TreeLine, TreeLineType},
@@ -194,11 +198,13 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         Ok(())
     }
 
-    fn write_line_name<'w, W>(
+
+    /// write the name or subpath, depending on the pattern_object
+    fn write_line_label<'w, W>(
         &self,
         cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
-        pattern: &Pattern,
+        pattern_object: PatternObject,
         selected: bool,
     ) -> Result<(), ProgramError>
     where
@@ -218,9 +224,19 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         };
         cond_bg!(style, self, selected, style);
         cond_bg!(char_match_style, self, selected, self.skin.char_match);
-        pattern
-            .style(&line.name, &style, &char_match_style)
-            .write_on(cw)?;
+        let label = if pattern_object.subpath {
+            &line.subpath
+        } else {
+            &line.name
+        };
+        let name_match = self.tree.options.pattern.pattern.search_string(label);
+        let matched_string = MatchedString {
+            name_match,
+            string: label,
+            base_style: &style,
+            match_style: &char_match_style,
+        };
+        matched_string.queue_on(cw)?;
         match &line.line_type {
             TreeLineType::Dir => {
                 if line.unlisted > 0 {
@@ -335,6 +351,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             f.queue(cursor::MoveTo(self.area.left, self.area.top))?;
         }
         let mut cw = CropWriter::new(f, self.area.width as usize);
+        let pattern_object = tree.options.pattern.pattern.object();
         self.write_root_line(&mut cw, tree.selection == 0)?;
         f.queue(SetBackgroundColor(Color::Reset))?;
         for y in 1..self.area.height {
@@ -353,6 +370,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
+                //let pattern_match = tree.options.pattern.pattern.find(Candidate.from(line));
                 if !tree.git_status.is_none() {
                     self.write_line_git_status(cw, line)?;
                 }
@@ -410,9 +428,9 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                         cw.queue_str(&self.skin.tree, "─────────────────")?;
                     }
                 }
-                self.write_line_name(cw, line, &tree.options.pattern, selected)?;
-                if cw.allowed > 8 {
-                    let extract = tree.options.pattern.get_content_match(&line.path, cw.allowed - 2);
+                self.write_line_label(cw, line, pattern_object, selected)?;
+                if cw.allowed > 8 && pattern_object.content {
+                    let extract = tree.options.pattern.pattern.search_content(&line.path, cw.allowed - 2);
                     if let Some(extract) = extract {
                         self.write_content_extract(cw, extract, selected)?;
                     }

@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "0.15.0"
+version = "0.15.2-beta"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -14,7 +14,8 @@ build = "build.rs"
 exclude = ["website", "broot*.zip"]
 
 [dependencies]
-clap = "2.33"
+bet = "0.3.2"
+clap = { version="2.33", default-features=false, features=["suggestions"] }
 chrono = "0.4"
 crossbeam = "0.7"
 crossterm = "0.17.5"
@@ -67,6 +68,7 @@ name = "path_normalization"
 harness = false
 
 [patch.crates-io]
+# bet = { path = "../bet" }
 # lazy-regex = { path = "../lazy-regex" }
 # minimad = { path = "../minimad" }
 # termimad = { path = "../termimad" }
