@@ -5,6 +5,7 @@ use {
         errors::ConfError,
         keys,
         path,
+        path_anchor::PathAnchor,
         selection_type::SelectionType,
     },
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
@@ -161,7 +162,7 @@ impl Verb {
                     let pb;
                     let arg = invocation.args.as_ref().or_else(|| internal_exec.arg.as_ref());
                     let arg_path = if let Some(arg) = arg {
-                        pb = path::path_from(path, arg);
+                        pb = path::path_from(path, PathAnchor::Unspecified, arg);
                         &pb
                     } else {
                         path
@@ -185,6 +186,13 @@ impl Verb {
         match &self.execution {
             VerbExecution::External(external) => external.arg_selection_type,
             _ => None,
+        }
+    }
+
+    pub fn get_arg_anchor(&self) -> PathAnchor {
+        match &self.execution {
+            VerbExecution::External(external) => external.arg_anchor,
+            _ => PathAnchor::Unspecified,
         }
     }
 }

@@ -34,6 +34,7 @@ pub mod help;
 pub mod keys;
 pub mod launchable;
 pub mod path;
+pub mod path_anchor;
 pub mod pattern;
 pub mod permissions;
 pub mod print;

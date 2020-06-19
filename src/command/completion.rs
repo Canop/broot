@@ -7,6 +7,7 @@ use {
             AppState,
         },
         path,
+        path_anchor::PathAnchor,
         verb::PrefixSearchResult,
     },
     std::io,
@@ -101,6 +102,7 @@ impl Completions {
     }
 
     fn for_path(
+        anchor: PathAnchor,
         arg: &str,
         _con: &AppContext,
         state: &dyn AppState,
@@ -108,7 +110,7 @@ impl Completions {
         let c = regex!(r"^(.*?)([^/]*)$").captures(arg).unwrap();
         let parent_part = &c[1];
         let child_part = &c[2];
-        let parent = path::path_from(state.selected_path(), parent_part);
+        let parent = path::path_from(state.selected_path(), anchor, parent_part);
         if !parent.exists() {
             debug!("no path completion possible because {:?} doesn't exist", &parent);
             return Ok(Self::None);
@@ -133,6 +135,7 @@ impl Completions {
     }
 
     fn for_arg(
+        verb_name: &str,
         arg: &str,
         con: &AppContext,
         state: &dyn AppState,
@@ -143,7 +146,11 @@ impl Completions {
         if arg.contains(' ') {
             Self::None
         } else {
-            match Self::for_path(arg, con, state) {
+            let anchor = match con.verb_store.search(verb_name) {
+                PrefixSearchResult::Match(_, verb) => verb.get_arg_anchor(),
+                _ => PathAnchor::Unspecified,
+            };
+            match Self::for_path(anchor, arg, con, state) {
                 Ok(c) => c,
                 Err(e) => {
                     warn!("Error while trying to complete path: {:?}", e);
@@ -167,7 +174,7 @@ impl Completions {
                     }
                     Some(args) if !args.is_empty() => {
                         // looking into arg completion
-                        Self::for_arg(args, con, state)
+                        Self::for_arg(&invocation.name, args, con, state)
                     }
                     _ => {
                         // nothing possible

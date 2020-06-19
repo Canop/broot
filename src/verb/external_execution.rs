@@ -13,6 +13,7 @@ use {
         errors::{ConfError, ProgramError},
         launchable::Launchable,
         path,
+        path_anchor::PathAnchor,
         selection_type::SelectionType,
     },
     regex::{Captures, Regex},
@@ -58,6 +59,8 @@ pub struct ExternalExecution {
     /// to select the argument in another panel)
     pub arg_selection_type: Option<SelectionType>,
 
+    pub arg_anchor: PathAnchor,
+
     // /// whether we need to have a secondary panel for execution
     // /// (which is the case when an invocation has {other-panel-file})
     pub need_another_panel: bool,
@@ -72,6 +75,7 @@ impl ExternalExecution {
         let invocation_pattern = VerbInvocation::from(invocation_str);
         let mut args_parser = None;
         let mut arg_selection_type = None;
+        let mut arg_anchor = PathAnchor::Unspecified;
         let mut need_another_panel = false;
         if let Some(args) = &invocation_pattern.args {
             let spec = GROUP.replace_all(args, r"(?P<$1>.+)");
@@ -86,6 +90,12 @@ impl ExternalExecution {
                 if group.start() == 0 && group.end() == args.len() {
                     // there's one group, covering the whole args
                     arg_selection_type = Some(SelectionType::Any);
+                    let group_str = group.as_str();
+                    if group_str.ends_with("path-from-parent}") {
+                        arg_anchor = PathAnchor::Parent;
+                    } else if group_str.ends_with("path-from-directory}") {
+                        arg_anchor = PathAnchor::Directory;
+                    }
                 }
             }
         }
@@ -100,6 +110,7 @@ impl ExternalExecution {
             exec_pattern: execution_str.to_string(),
             exec_mode,
             arg_selection_type,
+            arg_anchor,
             need_another_panel,
         })
     }

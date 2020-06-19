@@ -1,4 +1,7 @@
 use {
+    crate::{
+        path_anchor::PathAnchor,
+    },
     directories::UserDirs,
     regex::{self, Captures},
     std::{
@@ -11,7 +14,7 @@ use {
 /// (if it starts with / or ~) or relative to the supplied base_dir.
 /// (we might want to try detect windows drives in the future, too)
 ///
-pub fn path_from<P: AsRef<Path>>(base_dir: P, input: &str) -> PathBuf {
+pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -> PathBuf {
     let tilde = regex!(r"^~(/|$)");
     if input.starts_with('/') {
         // if the input starts with a `/`, we use it as is
@@ -34,13 +37,16 @@ pub fn path_from<P: AsRef<Path>>(base_dir: P, input: &str) -> PathBuf {
         // we put the input behind the source (the selected directory
         // or its parent) and we normalize so that the user can type
         // paths with `../`
-        let base_dir = closest_dir(base_dir.as_ref());
+        let base_dir = match anchor {
+            PathAnchor::Parent => base_dir.as_ref().parent().unwrap_or(base_dir.as_ref()).to_path_buf(),
+            _ => closest_dir(base_dir.as_ref()),
+        };
         normalize_path(base_dir.join(input))
     }
 }
 
 pub fn path_str_from<P: AsRef<Path>>(base_dir: P, input: &str) -> String {
-    path_from(base_dir, input).to_string_lossy().to_string()
+    path_from(base_dir, PathAnchor::Unspecified, input).to_string_lossy().to_string()
 }
 
 /// return the closest enclosing directory

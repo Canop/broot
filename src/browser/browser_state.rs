@@ -10,6 +10,7 @@ use {
         launchable::Launchable,
         pattern::*,
         path,
+        path_anchor::PathAnchor,
         print,
         selection_type::SelectionType,
         skin::PanelSkin,
@@ -524,7 +525,7 @@ impl AppState for BrowserState {
                     if let Some(input_invocation) = input_invocation {
                         // we'll go for input arg editing
                         let path = if let Some(input_arg) = &input_invocation.args {
-                            path::path_from(self.root(), input_arg)
+                            path::path_from(self.root(), PathAnchor::Unspecified, input_arg)
                         } else {
                             self.root().to_path_buf()
                         };
