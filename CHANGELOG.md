@@ -1,3 +1,11 @@
+### Next version
+#### Major feature: composite patterns
+It's now possible to use logical operators on patterns.
+For example:
+`!/txt$/` : files whose name doesn't end in "txt"
+`carg|c/carg` : files whose name or content has "carg"
+`(json|xml)&c/test` : files containing "test" and whose name fuzzily contains either "json" or "xml"
+
 <a name="v0.15.1"></a>
 ### v0.15.1 - 2020-06-12
 - fix some problems related to relative paths in built in cp and mv
