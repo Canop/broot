@@ -44,6 +44,8 @@ And you have other types of searches, for example searching on file content (sta
 
 ![content search](img/20200608-content-search.png)
 
+You may also apply logical operators or combine patterns, for example searching `test` in all files except txt ones could be `!/txt$/&c/test` and searching `carg` both in file names and file contents would be `carg|c/carg`.
+
 Once the file you want is selected you can
 
 * hit <kbd>enter</kbd> (or double-click) to open it in your system's default program
