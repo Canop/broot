@@ -3,7 +3,6 @@ use {
     super::*,
     crate::{
         app::AppContext,
-        command::PatternParts,
         content_search::ContentMatch,
         errors::PatternError,
     },

@@ -2,9 +2,8 @@ use {
     super::*,
     crate::{
         app::AppContext,
-        command::PatternParts,
         errors::PatternError,
-        pattern::Pattern,
+        pattern::{Pattern, PatternParts},
     },
     bet::BeTree,
 };

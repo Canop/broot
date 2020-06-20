@@ -7,14 +7,3 @@ pub struct NameMatch {
     pub pos: Vec<usize>, // positions of the matching chars
 }
 
-impl Default for NameMatch {
-    /// default implementation is for example useful to negate an
-    /// absence of match
-    fn default() -> Self {
-        Self {
-            score: 1,
-            pos: Vec::new(),
-        }
-    }
-}
-

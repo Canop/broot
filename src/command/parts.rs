@@ -1,5 +1,4 @@
 use {
-    super::PatternParts,
     crate::{
         pattern::*,
         verb::VerbInvocation,
