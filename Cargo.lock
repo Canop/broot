@@ -61,7 +61,9 @@ checksum = "b41b7ea54a0c9d92199de89e20e58d49f02f8e699814ef3fdf266f6f748d15c7"
 
 [[package]]
 name = "bet"
-version = "0.3.3"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "717a3e881f801bb9379813577ffe11e6b97662f1d81155cdc61e8f5271a4feb4"
 
 [[package]]
 name = "bitflags"
@@ -82,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "0.15.2-beta"
+version = "0.16.0"
 dependencies = [
  "bet",
  "chrono",
