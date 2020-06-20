@@ -13,7 +13,9 @@ Both parts are optional.
 
 ## The filtering pattern
 
-The search syntax is globally
+A search pattern is made of 1 to 3 parts separated by the `/` character but you rarely need the two `/`.
+
+The syntax is globally
 
     <mode><pattern>[/<flags>]
 
@@ -21,17 +23,35 @@ The mode is either nothing (fuzzy name), just a slash (regex name) or some lette
 
 mode | example query | example match | explanation
 -|-|-|-
-fuzzy name | `abc` | `abac.txt` | search for "abc" in a fuzzy way in filenames
-regex name | `/abc` | `abc.txt` | search for the regular expression `abc` in filenames ("exact search")
-regex name | `/[yz]{3}` | `fuzzy.rs` | search for the regular expression `[yz]{3}` in filenames
+fuzzy name | `abc` or `nf/abc` | `abac.txt` | search for "abc" in a fuzzy way in filenames
+regex name | `/abc` or `/abc/` | `abc.txt` | search for the regular expression `abc` in filenames ("exact search")
+regex name | `/[yz]{3}` or `/[yz]{3}/` | `fuzzy.rs` | search for the regular expression `[yz]{3}` in filenames
+regex name | `/(json|xml)$/i` | `thing.XML` | find files whose name ends in `json` or `xml`, case insensitive
 regex name | `/abc/i` | `aBc.txt` | search for the regular expression `abc` with flag `i` in filenames
-fuzzy path | `p/abc` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-paths from current tree root
+fuzzy path | `p/abc`  or `p/abc/` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-paths from current tree root
 regex path | `rp/abc` | `e/abac.txt` |  search for the "abc" regex  in sub-paths from current tree root
-content | `c/mask` | `umask = "1.0"` | search for the "mask" string in file contents
+content | `c/mask` or `c/mask/` | `umask = "1.0"` | search for the "mask" string in file contents
 
 It's also possible to [redefine those mode mappings](../conf_file/#search-modes).
 
 To escape characters (for example the space, colon or slash) in the pattern, use a `\` (an antislash is `\\`).
+
+## Combining filtering patterns
+
+Patterns can be combined with the `!` (not), `&` (and) and `|` (or) operators, and parentheses if necessary.
+
+You can for example display non `json` files containing either `isize` or `i32` with
+
+    !/json$/&(c/isize/|c/i32/)
+
+### Subtleties
+
+The caracters you use as operators and the parenthesis can be useful in patterns too, either because you want to search for them in fuzzy patterns or in file contents, or because you write non trivial regular expressions.
+
+Most often you'll just type what feels natural and broot will select the interpretation which makes sense but you might be interested in a few rules:
+
+* parenthesis and operators in the second pattern part (parts being separated by `/`) are part of the patternC, which explains why `/(json|xml)` is interpreted as a regular expression. If you want to do a fuzzy search for a `|` in the name of your files, you'll need to have an explicit pattern mode : `nf/a|b` because `a|b` would search for files whose name contains either `a` or `b`. And to ensure an operator or closing parenthesis isn't interpreted as part of your pattern, just close it with a `/`.
+* broot interprets the left operand before the right one and don't interpret the second one if it looks useless. So if you want to search your whole disk for json files containing `abcd`, it will be faster to use `/json$/&c/abcd` rather than `c/abcd/&/json$/` which would look at the file name only after having scanned the content.
 
 ## The verb invocation
 
@@ -89,3 +109,12 @@ In this case with an escaped space:
 
 ![content search](img/20200608-content-search.png)
 
+### A complex composite search
+
+Here we search for `"carg"` both in file names and file contents, and we exclude `"lock"` files:
+
+`!lock&(carg|c/carg/)`
+
+![complex composite](img/20200620-complex-composite.png)
+
+note: the `/` at the end of `c/carg/` is necessary to tell broot that the following parenthesis isn't part of the pattern.

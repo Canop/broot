@@ -14,7 +14,7 @@ build = "build.rs"
 exclude = ["website", "broot*.zip"]
 
 [dependencies]
-bet = "0.3.3"
+bet = "0.3.4"
 clap = { version="2.33", default-features=false, features=["suggestions"] }
 chrono = "0.4"
 crossbeam = "0.7"

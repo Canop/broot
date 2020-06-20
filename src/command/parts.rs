@@ -58,23 +58,23 @@ impl CommandParts {
                 };
                 if allow_inter_pattern_token {
                     match c {
-                        '|' => {
+                        '|' if pt.accept_binary_operator() => {
                             pt.push_operator(PatternOperator::Or);
                             continue;
                         }
-                        '&' => {
+                        '&' if pt.accept_binary_operator() => {
                             pt.push_operator(PatternOperator::And);
                             continue;
                         }
-                        '!' => {
+                        '!' if pt.accept_unary_operator() => {
                             pt.push_operator(PatternOperator::Not);
                             continue;
                         }
-                        '(' => {
+                        '(' if pt.accept_opening_par() => {
                             pt.open_par();
                             continue;
                         }
-                        ')' => {
+                        ')' if pt.accept_closing_par() => {
                             pt.close_par();
                             continue;
                         }

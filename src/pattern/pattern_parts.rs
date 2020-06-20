@@ -33,7 +33,7 @@ impl PatternParts {
         self.parts.push(String::new());
     }
     pub fn allow_inter_pattern_token(&self) -> bool {
-        self.parts.len() != 2 || self.parts.last().unwrap().is_empty()
+        self.parts.len() != 2
     }
     pub fn is_empty(&self) -> bool {
         self.core().is_empty()

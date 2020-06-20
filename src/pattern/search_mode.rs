@@ -95,7 +95,7 @@ impl Default for SearchModeMap {
             entries: Vec::new(),
         };
         // the last keys are prefered
-        smm.setm(&["nf", "fn", "n"], SearchMode::NameFuzzy);
+        smm.setm(&["nf", "fn", "n", "f"], SearchMode::NameFuzzy);
         smm.setm(&["r", "nr", "rn", ""], SearchMode::NameRegex);
         smm.setm(&["pf", "fp", "p"], SearchMode::PathFuzzy);
         smm.setm(&["pr", "rp"], SearchMode::PathRegex);

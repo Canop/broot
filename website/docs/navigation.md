@@ -48,9 +48,27 @@ For example `/pat+ern` would match `"patern.zip"` or `"some_patttern.rar"` but n
 
 If you want the regex to be case insensitive, add the `i` flag: `/pat+ern/i`.
 
-# Other kinds of searches
+# File content searches
 
-Other types of searches are possible, see [reference](../input/#the-filtering-pattern).
+To display only files containing `"memmap"`, type `c/memmap`:
+
+![content](../img/20200620-content-search.png)
+
+(as the search is displayed in real time you'll usually stop as soon as you have the right matches)
+
+# Composite patterns
+
+Simple patterns can be composed with the `!`, `&` and `|` operators.
+
+For example, if you don't want to see files whose name ends in `"rs"`, you may type `!/rs$` (it's the negation of the `/rs$` regular expression).
+
+And if you want to see all files containing `"pattern"` but not the rust ones, you'll type `!rs&c/pattern`:
+
+![composite](../img/20200620-composite-notrs.png)
+
+# More about searches
+
+If you want to know more about the exact pattern syntax, see [reference](../input/#the-filtering-pattern).
 
 # Total Search
 

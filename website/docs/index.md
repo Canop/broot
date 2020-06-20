@@ -42,7 +42,7 @@ You may also search with a regular expression. To do this, add a `/` before the 
 
 And you have other types of searches, for example searching on file content (start with `c/`):
 
-![content search](img/20200608-content-search.png)
+![content search](img/20200620-content-memm.png)
 
 You may also apply logical operators or combine patterns, for example searching `test` in all files except json ones could be `!/json$/&c/test` and searching `carg` both in file names and file contents would be `carg|c/carg`.
 
