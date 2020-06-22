@@ -62,7 +62,7 @@ help_table_border = "ansi(239) None"
 
 which would look like this:
 
-![custom colors tree](../img/20200525-custom-colors-panels.png)
+![custom colors tree](img/20200525-custom-colors-panels.png)
 
 Each skin entry value is made of
 
@@ -107,7 +107,7 @@ If you want to set the background of broot transparent (i.e. to be the backgroun
 default = "gray(23) none / gray(20) none"
 ```
 
-![transparent](../img/20200529-transparent-broot.png)
+![transparent](img/20200529-transparent-broot.png)
 
 # White Background Skin
 
@@ -166,7 +166,7 @@ help_headers = "ansi(202) none"
 help_table_border = "ansi(239) None"
 ```
 
-![light skin](../img/20200526-light-skin.png)
+![light skin](img/20200526-light-skin.png)
 
 # Solarized Dark
 

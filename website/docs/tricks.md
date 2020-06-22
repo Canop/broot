@@ -24,9 +24,9 @@ This is the *"I'm feeling lucky"* of broot, you can use it to directly jump to d
 
 Example:
 
-![dcd ruleset](../img/20190122-dcd_rulset.png)
+![dcd ruleset](img/20190122-dcd_rulset.png)
 
-## focus a new directory but keep the current filter
+## Focus a new directory but keep the current filter
 
 When you hit `enter` on a directory, it's focused and the filter is reset.
 
@@ -38,7 +38,9 @@ If your system is normally configured, just doing `alt`-`enter` on an executable
 
 ## Change standard file opening
 
-When you hit enter on a file, broot asks the system to open the file. It's usually OK but you might wish to change that, for example when you're on a server without xdg-open or equivalent.
+When you hit enter on a file, broot asks the system to open the file. It's usually the best solution as it selects the program according to the file's type following settings you set system wide.
+
+You might still wish to change that, for example when you're on a server without xdg-open or equivalent.
 
 Here's an example of configuration changing the behaviour on open:
 

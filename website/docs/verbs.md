@@ -36,7 +36,7 @@ execution = "/bin/cp -r {file} {other-panel-directory}"
 
 When you type a verb, the execution pattern is completed using the selection(s), the exact command is displayed in the status line:
 
-![rm](../img/20190305-rm.png)
+![rm](img/20190305-rm.png)
 
 As for filters, hitting <kbd>esc</kbd> clears the command.
 
@@ -60,11 +60,11 @@ Example:
 
 Before you type a subpath, broot tells you, in red, the argument is missing:
 
-![md](../img/20191112-md-missing-subpath.png)
+![md](img/20191112-md-missing-subpath.png)
 
 If you type an argument, the command to execute is computed and shown:
 
-![md](../img/20191112-md-list.png)
+![md](img/20191112-md-list.png)
 
 In this screenshot, you didn't type `mkdir` or its start but `md`. That's because the complete definition of this verb includes this line:
 

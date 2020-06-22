@@ -9,7 +9,7 @@ use {
         errors::ProgramError,
         keys,
         skin::PanelSkin,
-        verb::Internal,
+        verb::{Internal, Verb, VerbExecution},
     },
     termimad::{Area, Event, InputField},
 };
@@ -67,6 +67,33 @@ impl PanelInput {
         let cmd = self.get_command(event, con, state);
         self.input_field.display_on(w)?;
         Ok(cmd)
+    }
+
+    /// check whether the verb is an action on the input (like
+    /// deleting a word) and if it's the case, applies it and
+    /// return true
+    fn handle_input_related_verb(
+        &mut self,
+        verb: &Verb,
+        _con: &AppContext,
+    ) -> bool {
+        if let VerbExecution::Internal(internal_exec) = &verb.execution {
+            match internal_exec.internal {
+                Internal::input_del_char_left => self.input_field.del_char_left(),
+                Internal::input_del_char_below => self.input_field.del_char_below(),
+                Internal::input_del_word_left => self.input_field.del_word_left(),
+                Internal::input_del_word_right => self.input_field.del_word_right(),
+                Internal::input_go_left => self.input_field.move_left(),
+                Internal::input_go_right => self.input_field.move_right(),
+                Internal::input_go_word_left => self.input_field.move_word_left(),
+                Internal::input_go_word_right => self.input_field.move_word_right(),
+                Internal::input_go_to_start => self.input_field.move_to_start(),
+                Internal::input_go_to_end => self.input_field.move_to_end(),
+                _ => false,
+            }
+        } else {
+            false
+        }
     }
 
     /// consume the event to
@@ -177,6 +204,9 @@ impl PanelInput {
                 for (index, verb) in con.verb_store.verbs.iter().enumerate() {
                     for verb_key in &verb.keys {
                         if *verb_key == key {
+                            if self.handle_input_related_verb(verb, con) {
+                                return Command::from_raw(self.input_field.get_content(), false);
+                            }
                             if selection_type.respects(verb.selection_condition) {
                                 return Command::VerbTrigger {
                                     index,

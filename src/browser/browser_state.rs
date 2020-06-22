@@ -593,6 +593,7 @@ impl AppState for BrowserState {
                 }
             }
             Internal::quit => AppStateCmdResult::Quit,
+            _ => AppStateCmdResult::Keep,
         })
     }
 

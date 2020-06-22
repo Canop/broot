@@ -1,3 +1,6 @@
+### next version
+- it's possible to define input edition shortcuts - Fix #235
+
 <a name="v0.16.0"></a>
 ### v0.16.0 - 2020-06-20
 #### Major feature: composite patterns

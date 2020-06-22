@@ -223,13 +223,13 @@ execution = "/bin/mkdir -p {directory}/{subpath}"
 
 In this case the subpath is read from what you type:
 
-![md sub](../img/20190306-md.png)
+![md sub](img/20190306-md.png)
 
 As you see, there's a space in this path, but it works. **broot** tries to determine when to wrap path in quotes and when to escape so that such a command correctly works.
 
 It also normalizes the paths it finds which eases the use of relative paths:
 
-![mv](../img/20190306-mv.png)
+![mv](img/20190306-mv.png)
 
 Here's another example, where the invocation pattern defines two arguments by destructuring:
 
@@ -242,7 +242,7 @@ from_shell = true
 
 And here's how it would look like:
 
-![blop](../img/20190306-blop.png)
+![blop](img/20190306-blop.png)
 
 Notice the `\\.` ? That's because the invocation pattern is interpreted as a regular expression
 (with just a shortcut for the easy case, enabling `{name}`).
@@ -302,6 +302,43 @@ Note that
 
 - you can always call a verb with its default invocation, you don't *have* to define a shortcut
 - verbs whose invocation needs an argument (like `{newpath}`) can't be triggered with just a keyboard key.
+
+## Input related verbs
+
+Some internal actions can be bound to a key shortcut but can't be called explicitely because they directly act on the input field:
+
+name | default binding | behavior
+-|-|-
+:input_del_char_left | <kbd>del</kbd> | "delete the char left of the cursor",
+:input_del_char_below | <kbd>suppr</kbd> | "delete the char left at the cursor's position",
+:input_del_word_left | - | "delete the word left of the cursor",
+:input_del_word_right | - | "delete the word right of the cursor",
+:input_go_to_end | <kbd>end</kbd> | "move the cursor to the end of input",
+:input_go_left | <kbd>←</kbd> | "move the cursor to the left",
+:input_go_right | <kbd>→</kbd> | "move the cursor to the right",
+:input_go_to_start | <kbd>home</kbd> | "move the cursor to the start of input",
+:input_go_word_left | - | "move the cursor one word to the left",
+:input_go_word_right | - | "move the cursor one word to the right",
+
+You may add this kind of shortcuts:
+
+```toml
+[[verbs]]
+key = "alt-b"
+execution = ":input_go_word_left"
+
+[[verbs]]
+key = "alt-f"
+execution = ":input_go_word_right"
+
+[[verbs]]
+key = "alt-l"
+execution = ":input_del_word_left"
+
+[[verbs]]
+key = "alt-r"
+execution = ":input_del_word_right"
+```
 
 
 ## Focus

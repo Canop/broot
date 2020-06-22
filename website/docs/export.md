@@ -8,11 +8,11 @@ The easiest is to just execute it from inside the application (the verb is also 
 
 Example with a filter:
 
-![exported styled tree](../img/20190321-cmd-pt-styled.png)
+![exported styled tree](img/20190321-cmd-pt-styled.png)
 
 Example without style or color, thanks to `--no-style`:
 
-![exported unstyled tree](../img/20190321-cmd-pt-unstyled.png)
+![exported unstyled tree](img/20190321-cmd-pt-unstyled.png)
 
 This is also how would look the tree directly exported into a file.
 

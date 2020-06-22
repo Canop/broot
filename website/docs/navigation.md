@@ -9,11 +9,11 @@ The first line is called the root, and is currently selected.
 From here you may navigate using the following keys:
 
 * <kbd class=b>↓</kbd> or <kbd class=b>↑</kbd> : select the next or previous line
-* <kbd class=b>←</kbd> or <kbd class=b>→</kbd> : focus (or open) a panel to the left or to the right
+* <kbd>ctrl</kbd><kbd class=b>←</kbd> or <kbd>ctrl</kbd><kbd class=b>→</kbd> : focus (or open) a panel to the left or to the right
 * <kbd class=b>⏎</kbd> on a file : open the file using xdg-open (or your OS equivalent)
-* <kbd>alt</kbd> + <kbd class=b>⏎</kbd> on a file : leave broot and open the file using xdg-open
+* <kbd>alt</kbd><kbd class=b>⏎</kbd> on a file : leave broot and open the file using xdg-open
 * <kbd class=b>⏎</kbd> on a directory : focus the directory (i.e. make it the new root)
-* <kbd>alt</kbd> + <kbd class=b>⏎</kbd> on a directory : leave broot and `cd` the shell to that directory.
+* <kbd>alt</kbd><kbd class=b>⏎</kbd> on a directory : leave broot and `cd` the shell to that directory.
 * <kbd class=b>⏎</kbd> on the first line : goes up one level (focus the parent directory)
 * <kbd>esc</kbd> gets you back to the previous state (or leave broot if there's none)
 * <kbd>?</kbd> brings you to the help screen
@@ -36,7 +36,7 @@ The pattern filters the tree while you type. It's interpreted in a fuzzy way so 
 
 For example:
 
-![search hel](../img/20190305-search-hel.png)
+![search hel](img/20190305-search-hel.png)
 
 Hitting <kbd>esc</kbd> clears the current pattern.
 
@@ -52,7 +52,7 @@ If you want the regex to be case insensitive, add the `i` flag: `/pat+ern/i`.
 
 To display only files containing `"memmap"`, type `c/memmap`:
 
-![content](../img/20200620-content-search.png)
+![content](img/20200620-content-search.png)
 
 (as the search is displayed in real time you'll usually stop as soon as you have the right matches)
 
@@ -64,7 +64,7 @@ For example, if you don't want to see files whose name ends in `"rs"`, you may t
 
 And if you want to see all files containing `"pattern"` but not the rust ones, you'll type `!rs&c/pattern`:
 
-![composite](../img/20200620-composite-notrs.png)
+![composite](img/20200620-composite-notrs.png)
 
 # More about searches
 
@@ -82,7 +82,7 @@ As for other searches, it's interrupted as soon as you type anything.
 
 Flags are displayed at the bottom right of the panel, showing the settings regarding hidden files and .gitignore rules.
 
-![flags](../img/20190101-flags.png)
+![flags](img/20190101-flags.png)
 
 # Toggles
 
@@ -104,7 +104,7 @@ To apply one, just type a space (or `:`), then the start of its shortcut, then h
 
 For example typing `:s` then enter will show file and directory sizes:
 
-![dev sizes](../img/20191030-dev-sizes.png)
+![dev sizes](img/20191030-dev-sizes.png)
 
 You may notice a scrollbar on this screenshot. The first level of the tree is always uncut when you display sizes (you're in a special "whale hunt" mode).
 

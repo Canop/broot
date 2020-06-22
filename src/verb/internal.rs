@@ -51,12 +51,23 @@ macro_rules! Internals {
     }
 }
 
+
 Internals! {
     back: "revert to the previous state (mapped to *esc*)",
     close_panel_ok: "close the panel, validating the selected path",
     close_panel_cancel: "close the panel, not using the selected path",
     focus: "display the directory (mapped to *enter*)",
     help: "display broot's help",
+    input_del_char_left: "delete the char left of the cursor",
+    input_del_char_below: "delete the char left at the cursor's position",
+    input_del_word_left: "delete the word left of the cursor",
+    input_del_word_right: "delete the word right of the cursor",
+    input_go_to_end: "move the cursor to the end of input",
+    input_go_left: "move the cursor to the left",
+    input_go_right: "move the cursor to the right",
+    input_go_to_start: "move the cursor to the start of input",
+    input_go_word_left: "move the cursor one word to the left",
+    input_go_word_right: "move the cursor one word to the right",
     line_down: "move one line down",
     line_up: "move one line up",
     open_stay: "open file or directory according to OS (stay in broot)",
