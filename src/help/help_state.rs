@@ -144,7 +144,7 @@ impl AppState for HelpState {
             back => AppStateCmdResult::PopState,
             focus | parent => AppStateCmdResult::from_optional_state(
                 BrowserState::new(
-                    conf::dir(),
+                    conf::dir().to_path_buf(),
                     TreeOptions::default(),
                     screen,
                     &cc.con,

@@ -11,6 +11,7 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 # - change the shortcut or triggering keys of built-in verbs
 # - change the colors
 # - set default values for flags
+# - set special behaviors on specific paths
 #
 # Configuration documentation is available at
 #     https://dystroy.org/broot

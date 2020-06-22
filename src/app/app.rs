@@ -196,6 +196,8 @@ impl App {
             NewState(state) => {
                 self.mut_panel().clear_input();
                 self.mut_panel().push_state(state);
+                let other_path = self.get_other_panel_path();
+                self.mut_panel().refresh_input_status(&other_path, con);
             }
             PopState => {
                 if is_input_invocation {

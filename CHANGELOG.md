@@ -1,5 +1,6 @@
 ### next version
 - it's possible to define input edition shortcuts - Fix #235
+- MacOS: config directory for new install is ~/.config/broot - Fix #103
 
 <a name="v0.16.0"></a>
 ### v0.16.0 - 2020-06-20

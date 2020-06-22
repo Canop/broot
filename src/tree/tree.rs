@@ -18,9 +18,6 @@ use {
     },
 };
 
-#[cfg(windows)]
-use is_executable::IsExecutable;
-
 #[derive(Debug, Clone)]
 pub struct Tree {
     pub lines: Box<[TreeLine]>,
