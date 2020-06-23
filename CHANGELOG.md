@@ -1,7 +1,8 @@
-### next version
+<a name="v0.17.0"></a>
+### v0.17.0 - 2020-06-21
 #### Major feature: keep broot open behind terminal editors
 If you now open vi or emacs from broot with `leave_broot = false` you should
-be back in broot after you quit the editor. Fix
+be back in broot after you quit the editor - Fix #34 - Fix #144 - Fix #158
 #### Minor changes:
 - it's possible to define input edition shortcuts - Fix #235
 - MacOS: config directory for new install is ~/.config/broot - Fix #103

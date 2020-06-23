@@ -84,6 +84,7 @@ key = "F2"
 shortcut = "e"
 apply_to = "file"
 execution = "/usr/bin/nvim {file}"
+leave_broot = false
 ```
 
 The possible attributes are:
@@ -188,8 +189,6 @@ Beware that consoles intercept some possible keys. Many keyboard shortcuts aren'
 If you set `leave_broot = false`, broot won't quit when executing your command, but it will update the tree.
 
 This is useful for commands modifying the tree (like creating or moving files).
-
-There's currently a  limitation: terminal based programs don't properly run if broot isn't closed before. It means you can't for example set `leave_broot = false` in verbs launching `vi` or `emacs`.
 
 ## Verb Arguments
 

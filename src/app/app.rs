@@ -206,8 +206,9 @@ impl App {
                     self.mut_panel().clear_input();
                 }
                 if self.remove_state(screen) {
-                    // should we set the cmd ?
                     self.mut_state().refresh(screen, con);
+                    let other_path = self.get_other_panel_path();
+                    self.mut_panel().refresh_input_status(&other_path, con);
                 } else if ESCAPE_TO_QUIT {
                     self.quitting = true;
                 }
