@@ -156,6 +156,7 @@ impl BrowserState {
 
     pub fn open_selection_quit_broot(
         &mut self,
+        w: &mut W,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let tree = self.displayed_tree();
@@ -164,7 +165,7 @@ impl BrowserState {
             TreeLineType::File => make_opener(line.path.clone(), line.is_exe(), con),
             TreeLineType::Dir | TreeLineType::SymLinkToDir(_) => {
                 Ok(if con.launch_args.cmd_export_path.is_some() {
-                    CD.to_cmd_result(&line.target(), &None, &None, con)?
+                    CD.to_cmd_result(w, &line.target(), &None, &None, con)?
                 } else {
                     AppStateCmdResult::DisplayError(
                         "This feature needs broot to be launched with the `br` script".to_owned(),
@@ -368,6 +369,7 @@ impl AppState for BrowserState {
 
     fn on_internal(
         &mut self,
+        w: &mut W,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
@@ -429,7 +431,7 @@ impl AppState for BrowserState {
             }
             Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang, false)?,
             Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
-            Internal::open_leave => self.open_selection_quit_broot(con)?,
+            Internal::open_leave => self.open_selection_quit_broot(w, con)?,
             Internal::line_down => {
                 self.displayed_tree_mut().move_selection(1, page_height);
                 AppStateCmdResult::Keep

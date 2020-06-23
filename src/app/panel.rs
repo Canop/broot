@@ -49,6 +49,7 @@ impl Panel {
 
     pub fn apply_command(
         &mut self,
+        w: &mut W,
         cmd: &Command,
         other_path: &Option<PathBuf>,
         screen: &mut Screen,
@@ -64,7 +65,7 @@ impl Panel {
             areas: &self.areas,
             panel_purpose: self.purpose,
         };
-        let result = self.states[state_idx].on_command(&cc, screen);
+        let result = self.states[state_idx].on_command(w, &cc, screen);
         self.status = Some(self.state().get_status(cmd, other_path, con));
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result

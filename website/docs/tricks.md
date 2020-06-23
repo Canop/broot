@@ -49,6 +49,7 @@ Here's an example of configuration changing the behaviour on open:
 invocation = "edit"
 key = "enter"
 execution = "$EDITOR {file}"
+leave_broot = false
 apply_to = "file"
 ```
 

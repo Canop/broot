@@ -56,6 +56,7 @@ pub trait AppState {
     /// by a key shorctut)
     fn on_internal(
         &mut self,
+        w: &mut W,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
@@ -66,6 +67,7 @@ pub trait AppState {
     /// change the state, does no rendering
     fn on_command(
         &mut self,
+        w: &mut W,
         cc: &CmdContext,
         screen: &mut Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
@@ -87,6 +89,7 @@ pub trait AppState {
                 let verb = &con.verb_store.verbs[*index];
                 match &verb.execution {
                     VerbExecution::Internal(internal_exec) => self.on_internal(
+                        w,
                         internal_exec,
                         input_invocation.as_ref(),
                         TriggerType::Other,
@@ -94,6 +97,7 @@ pub trait AppState {
                         screen,
                     ),
                     VerbExecution::External(external) => external.to_cmd_result(
+                        w,
                         self.selected_path(),
                         &cc.other_path,
                         if let Some(inv) = &input_invocation {
@@ -109,6 +113,7 @@ pub trait AppState {
                 internal,
                 input_invocation,
             } => self.on_internal(
+                w,
                 &InternalExecution::from_internal(*internal),
                 input_invocation.as_ref(),
                 TriggerType::Other,
@@ -122,6 +127,7 @@ pub trait AppState {
                     } else {
                         match &verb.execution {
                             VerbExecution::Internal(internal_exec) => self.on_internal(
+                                w,
                                 internal_exec,
                                 Some(invocation),
                                 TriggerType::Input,
@@ -130,6 +136,7 @@ pub trait AppState {
                             ),
                             VerbExecution::External(external) => {
                                 external.to_cmd_result(
+                                    w,
                                     self.selected_path(),
                                     &cc.other_path,
                                     &invocation.args,

@@ -122,6 +122,7 @@ impl App {
     ///  or a new one.
     fn apply_command(
         &mut self,
+        w: &mut W,
         cmd: Command,
         screen: &mut Screen,
         panel_skin: &PanelSkin,
@@ -132,6 +133,7 @@ impl App {
         let is_input_invocation = cmd.is_verb_invocated_from_input();
         let other_path = self.get_other_panel_path();
         match self.mut_panel().apply_command(
+            w,
             &cmd,
             &other_path,
             screen,
@@ -153,7 +155,7 @@ impl App {
                         self.mut_panel().set_input_arg(new_arg);
                         let new_input = self.panel().get_input_content();
                         let cmd = Command::from_raw(new_input, false);
-                        self.mut_panel().apply_command(&cmd, &other_path, screen, panel_skin, con)?;
+                        self.mut_panel().apply_command(w, &cmd, &other_path, screen, panel_skin, con)?;
                     }
                 } else {
                     self.quitting = true;
@@ -215,7 +217,7 @@ impl App {
                     self.mut_panel().clear_input();
                 }
                 if self.remove_state(screen) {
-                    self.mut_panel().apply_command(&cmd, &other_path, screen, panel_skin, con)?;
+                    self.mut_panel().apply_command(w, &cmd, &other_path, screen, panel_skin, con)?;
                 } else if ESCAPE_TO_QUIT {
                     self.quitting = true;
                 }
@@ -306,7 +308,7 @@ impl App {
         if let Some(unparsed_commands) = &con.launch_args.commands {
             for (input, arg_cmd) in parse_command_sequence(unparsed_commands, con)? {
                 self.mut_panel().set_input_content(input);
-                self.apply_command(arg_cmd, screen, &skin.focused, con)?;
+                self.apply_command(w, arg_cmd, screen, &skin.focused, con)?;
                 self.display_panels(w, screen, &skin, con)?;
                 w.flush()?;
                 self.do_pending_tasks(screen, con, &mut dam)?;
@@ -356,7 +358,7 @@ impl App {
                     // event handled by the panel
                     let cmd = self.mut_panel().add_event(w, event, con)?;
                     debug!("command after add_event: {:?}", &cmd);
-                    self.apply_command(cmd, screen, &skin.focused, con)?;
+                    self.apply_command(w, cmd, screen, &skin.focused, con)?;
                 }
             }
             self.display_panels(w, screen, &skin, con)?;

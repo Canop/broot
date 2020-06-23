@@ -10,6 +10,7 @@ use {
     super::{ExternalExecutionMode, VerbInvocation},
     crate::{
         app::*,
+        display::W,
         errors::{ConfError, ProgramError},
         launchable::Launchable,
         path,
@@ -204,6 +205,7 @@ impl ExternalExecution {
 
     pub fn to_cmd_result(
         &self,
+        w: &mut W,
         file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
@@ -212,7 +214,7 @@ impl ExternalExecution {
         if self.exec_mode.is_from_shell() {
             self.exec_from_shell_cmd_result(file, other_file, args, con)
         } else {
-            self.exec_cmd_result(file, other_file, args)
+            self.exec_cmd_result(w, file, other_file, args)
         }
     }
 
@@ -248,6 +250,7 @@ impl ExternalExecution {
     /// launched by broot
     fn exec_cmd_result(
         &self,
+        w: &mut W,
         file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
@@ -257,7 +260,7 @@ impl ExternalExecution {
             Ok(AppStateCmdResult::from(launchable))
         } else {
             info!("Executing not leaving, launchable {:?}", launchable);
-            let execution = launchable.execute();
+            let execution = launchable.execute(Some(w));
             match execution {
                 Ok(()) => {
                     debug!("ok");

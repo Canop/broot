@@ -44,7 +44,7 @@ fn main() {
     configure_log();
     match cli::run() {
         Ok(Some(launchable)) => {
-            if let Err(e) = launchable.execute() {
+            if let Err(e) = launchable.execute(None) {
                 warn!("Failed to launch {:?}", &launchable);
                 warn!("Error: {:?}", e);
                 eprintln!("{}", e);

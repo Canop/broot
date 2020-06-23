@@ -1,12 +1,21 @@
 use {
     crate::{
-        display::{DisplayableTree, Screen},
+        display::{DisplayableTree, Screen, W},
         errors::ProgramError,
         skin::StyleMap,
         tree::Tree,
     },
+    crossterm::{
+        terminal::{EnterAlternateScreen, LeaveAlternateScreen},
+        QueueableCommand,
+    },
     open,
-    std::{env, io, path::PathBuf, process::Command},
+    std::{
+        env,
+        io::{self, Write},
+        path::PathBuf,
+        process::Command,
+    },
 };
 
 /// description of a possible launch of an external program
@@ -80,7 +89,7 @@ impl Launchable {
         }
     }
 
-    pub fn execute(&self) -> Result<(), ProgramError> {
+    pub fn execute(&self, mut w: Option<&mut W>) -> Result<(), ProgramError> {
         match self {
             Launchable::Printer { to_print } => {
                 println!("{}", to_print);
@@ -91,6 +100,13 @@ impl Launchable {
                 dp.write_on(&mut std::io::stdout())
             }
             Launchable::Program { exe, args } => {
+                // we restore the normal terminal in case the executable
+                // is a terminal application, and we'll switch back to
+                // broot's alternate terminal when we're back to broot
+                if let Some(ref mut w) = &mut w {
+                    w.queue(LeaveAlternateScreen).unwrap();
+                    w.flush().unwrap();
+                }
                 Command::new(&exe)
                     .args(args.iter())
                     .spawn()
@@ -99,6 +115,10 @@ impl Launchable {
                         program: exe.clone(),
                         source,
                     })?;
+                if let Some(ref mut w) = &mut w {
+                    w.queue(EnterAlternateScreen).unwrap();
+                    w.flush().unwrap();
+                }
                 Ok(())
             }
             Launchable::SystemOpen { path } => {

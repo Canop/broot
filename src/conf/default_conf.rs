@@ -75,10 +75,12 @@ invocation = "edit"
 key = "F2"
 shortcut = "e"
 execution = "$EDITOR {file}"
+leave_broot = false
 
 [[verbs]]
 invocation = "create {subpath}"
 execution = "$EDITOR {directory}/{subpath}"
+leave_broot = false
 
 [[verbs]]
 invocation = "git_diff"
@@ -95,6 +97,7 @@ execution = "git diff {file}"
 name = "view"
 invocation = "view"
 execution = "$PAGER {file}"
+leave_broot = false
 
 # A popular set of shorctuts for going up and down:
 #

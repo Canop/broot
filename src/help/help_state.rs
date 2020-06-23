@@ -130,6 +130,7 @@ impl AppState for HelpState {
 
     fn on_internal(
         &mut self,
+        _w: &mut W,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         _trigger_type: TriggerType,
