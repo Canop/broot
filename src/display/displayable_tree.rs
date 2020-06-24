@@ -77,6 +77,25 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         &self,
         cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
+        selected: bool,
+    ) -> Result<(), termimad::Error>
+    where
+        W: Write,
+    {
+        if let Some(s) = line.size {
+            cond_bg!(size_style, self, selected, self.name_style(&line));
+            cw.queue_string(&size_style, format!("{} ", s))
+        } else {
+            cw.queue_str(&self.skin.tree, "───────")
+        }
+    }
+
+    /// only makes sense when there's only one level
+    /// (so in sort mode)
+    fn write_line_size_with_bar<'w, W>(
+        &self,
+        cw: &mut CropWriter<'w, W>,
+        line: &TreeLine,
         total_size: FileSize,
         selected: bool,
     ) -> Result<(), termimad::Error>
@@ -393,7 +412,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     )?;
                 }
                 if tree.options.show_sizes {
-                    self.write_line_size(cw, line, total_size, selected)?;
+                    if tree.options.sort.is_some() {
+                        // as soon as there's only one level displayed we can show the size bars
+                        self.write_line_size_with_bar(cw, line, total_size, selected)?;
+                    } else {
+                        self.write_line_size(cw, line, selected)?;
+                    }
                 }
                 #[cfg(unix)]
                 {

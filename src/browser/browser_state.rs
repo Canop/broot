@@ -550,6 +550,39 @@ impl AppState for BrowserState {
                     }
                 }
             }
+            Internal::sort_by_date => {
+                self.with_new_options(
+                    screen, &|o| {
+                        if o.sort.is_date() {
+                            o.sort = Sort::None;
+                            o.show_dates = false;
+                        } else {
+                            o.sort = Sort::Date;
+                            o.show_dates = true;
+                        }
+                    },
+                    bang,
+                    con,
+                )
+            }
+            Internal::sort_by_size => {
+                self.with_new_options(
+                    screen, &|o| {
+                        if o.sort.is_size() {
+                            o.sort = Sort::None;
+                            o.show_sizes = false;
+                        } else {
+                            o.sort = Sort::Size;
+                            o.show_sizes = true;
+                        }
+                    },
+                    bang,
+                    con,
+                )
+            }
+            Internal::no_sort => {
+                self.with_new_options(screen, &|o| o.sort = Sort::None, bang, con)
+            }
             Internal::toggle_dates => {
                 self.with_new_options(screen, &|o| o.show_dates ^= true, bang, con)
             }

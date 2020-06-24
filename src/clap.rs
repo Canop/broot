@@ -94,6 +94,22 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("Don't show sizes"),
         )
         .arg(
+            clap::Arg::with_name("sort-by-dates")
+                .long("sort-by-dates")
+                .help("Sort by date (only show one level of the tree)"),
+        )
+        .arg(
+            clap::Arg::with_name("sort-by-sizes")
+                .short("w")
+                .long("sort-by-sizes")
+                .help("Sort by size (\"whale hunt\" mode)"),
+        )
+        .arg(
+            clap::Arg::with_name("no-sort")
+                .long("no-sort")
+                .help("Don't sort"),
+        )
+        .arg(
             clap::Arg::with_name("trim-root")
                 .short("t")
                 .long("trim-root")

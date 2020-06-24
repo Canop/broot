@@ -61,6 +61,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_control_key('p'),
         Verb::internal(next_match)
             .with_key(TAB),
+        Verb::internal(no_sort)
+            .with_shortcut("ns"),
         Verb::internal(open_stay)
             .with_key(ENTER)
             .with_shortcut("os"),
@@ -88,6 +90,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_control_key('q')
             .with_shortcut("q"),
         Verb::internal(refresh).with_key(F5),
+        Verb::internal(sort_by_date).with_shortcut("sd"),
+        Verb::internal(sort_by_size).with_shortcut("ss"),
         Verb::external("rm", "/bin/rm -rf {file}", StayInBroot).unwrap(),
         Verb::internal(toggle_dates).with_shortcut("dates"),
         Verb::internal(toggle_files).with_shortcut("files"),

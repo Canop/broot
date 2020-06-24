@@ -7,7 +7,7 @@ use {
         cmp::{self, Ord, Ordering, PartialOrd},
         fs,
         path::PathBuf,
-        time::SystemTime,
+        time::{SystemTime, UNIX_EPOCH},
     },
 };
 
@@ -109,6 +109,14 @@ impl TreeLine {
             TreeLineType::Pruning => None,
             _ => self.metadata.modified().ok(),
         }
+    }
+    /// return the number of seconds between Epoch and the
+    /// last modification, or 0 when we were unable to
+    /// determine it. This is used for computations and
+    /// sortings.
+    pub fn modified_as_secs(&self) -> u64 {
+        self.modified()
+            .map_or(0, |st| st.duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs()))
     }
 }
 impl PartialEq for TreeLine {

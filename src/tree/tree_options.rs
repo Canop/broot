@@ -1,4 +1,5 @@
 use {
+    super::Sort,
     crate::pattern::*,
     clap::ArgMatches,
 };
@@ -8,7 +9,7 @@ use {
 pub struct TreeOptions {
     pub show_hidden: bool, // whether files whose name starts with a dot should be shown
     pub only_folders: bool, // whether to hide normal files and links
-    pub show_sizes: bool,  // whether to compute and show sizes of files and dirs
+    pub show_sizes: bool,  // whether to show sizes of files and dirs
     pub show_dates: bool,  // whether to show the last modified date
     pub show_git_file_info: bool,
     pub trim_root: bool,            // whether to cut out direct children of root
@@ -17,9 +18,11 @@ pub struct TreeOptions {
     pub filter_by_git_status: bool, // only show files whose git status is not nul
     pub pattern: InputPattern,           // an optional filtering/scoring pattern
     pub date_time_format: &'static str,
+    pub sort: Sort,
 }
 
 impl TreeOptions {
+    /// clone self but without the pattern (if any)
     pub fn without_pattern(&self) -> Self {
         TreeOptions {
             show_hidden: self.show_hidden,
@@ -33,7 +36,16 @@ impl TreeOptions {
             trim_root: self.trim_root,
             pattern: InputPattern::none(),
             date_time_format: self.date_time_format,
+            sort: self.sort,
         }
+    }
+    /// sizes must be computed, either for sorting or just for display
+    pub fn needs_sizes(&self) -> bool {
+        self.show_sizes || self.sort.is_size()
+    }
+    /// dates must be computed, either for sorting or just for display
+    pub fn needs_dates(&self) -> bool {
+        self.show_dates || self.sort.is_date()
     }
     /// this method does not exist, you saw nothing
     /// (at least don't call it other than with the config, once)
@@ -81,6 +93,17 @@ impl TreeOptions {
         } else if cli_args.is_present("no-show-git-info") {
             self.show_git_file_info = false;
         }
+        if cli_args.is_present("sort-by-dates") {
+            self.sort = Sort::Date;
+            self.show_dates = true;
+        }
+        if cli_args.is_present("sort-by-sizes") {
+            self.sort = Sort::Size;
+            self.show_sizes = true;
+        }
+        if cli_args.is_present("no-sort") {
+            self.sort = Sort::None;
+        }
         if cli_args.is_present("trim-root") {
             self.trim_root = true;
         } else if cli_args.is_present("no-trim-root") {
@@ -103,6 +126,7 @@ impl Default for TreeOptions {
             filter_by_git_status: false,
             pattern: InputPattern::none(),
             date_time_format: "%Y/%m/%d %R ",
+            sort: Sort::None,
         }
     }
 }

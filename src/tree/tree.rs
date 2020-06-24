@@ -124,6 +124,11 @@ impl Tree {
                 self.lines[i].left_branchs[depth] = true;
             }
         }
+        // we fetch non trivial additional columns
+        if self.options.needs_sizes(){
+            time!(Debug, "fetch_file_sizes", self.fetch_file_sizes()); // not the dirs, only simple files
+        }
+        self.sort_siblings(); // does nothing when sort mode is None
     }
 
     pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {
@@ -304,7 +309,7 @@ impl Tree {
     }
 
     pub fn has_dir_missing_size(&self) -> bool {
-        self.options.show_sizes
+        self.options.needs_sizes()
             && self
                 .lines
                 .iter()
@@ -322,7 +327,7 @@ impl Tree {
                 self.lines[i].size = Some(FileSize::from_file(&self.lines[i].path));
             }
         }
-        self.sort_siblings_by_size();
+        self.sort_siblings();
     }
 
     /// compute the size of one directory
@@ -333,25 +338,42 @@ impl Tree {
         for i in 1..self.lines.len() {
             if self.lines[i].size.is_none() && self.lines[i].line_type == TreeLineType::Dir {
                 self.lines[i].size = FileSize::from_dir(&self.lines[i].path, dam);
-                self.sort_siblings_by_size();
+                self.sort_siblings();
                 return;
             }
         }
     }
-    /// Sort files according to their size
+
+    /// Sort files according to the sort option
+    /// (does nothing if there's none)
     ///
-    /// Warning: must not be called if there's more than one level displayed!
-    /// (a better sort should be devised but it's unsure whether it would be
-    /// readable enough)
-    fn sort_siblings_by_size(&mut self) {
-        // we'll try to keep the same path selected
-        let selected_path = self.selected_line().path.to_path_buf();
-        self.lines[1..].sort_by(|a, b| {
-            let asize = a.size.map_or(0, |s| s.into());
-            let bsize = b.size.map_or(0, |s| s.into());
-            bsize.cmp(&asize)
-        });
-        self.try_select_path(&selected_path);
+    fn sort_siblings(&mut self) {
+        if !self.options.sort.is_some() {
+            return;
+        }
+        match self.options.sort {
+            Sort::Date => {
+                // we'll try to keep the same path selected
+                let selected_path = self.selected_line().path.to_path_buf();
+                self.lines[1..].sort_by(|a, b| {
+                    let adate = a.modified_as_secs();
+                    let bdate = b.modified_as_secs();
+                    bdate.cmp(&adate)
+                });
+                self.try_select_path(&selected_path);
+            }
+            Sort::Size => {
+                let selected_path = self.selected_line().path.to_path_buf();
+                self.lines[1..].sort_by(|a, b| {
+                    let asize = a.size.map_or(0, |s| s.into());
+                    let bsize = b.size.map_or(0, |s| s.into());
+                    bsize.cmp(&asize)
+                });
+                self.try_select_path(&selected_path);
+            }
+            Sort::None => {
+            }
+        }
     }
 
     /// compute and return the size of the root

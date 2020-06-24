@@ -291,10 +291,8 @@ impl<'c> TreeBuilder<'c> {
                 }
             } else {
                 // this depth is finished, we must go deeper
-                if self.options.show_sizes {
-                    // both for technical reasons (bad sort) and ergonomics
-                    //  ones (it proved to be hard to read), we don't want
-                    //  a deep tree when looking at sizes.
+                if self.options.sort.is_some() {
+                    // in sort mode, only one level is displayed
                     break;
                 }
                 if next_level_dirs.is_empty() {
@@ -328,7 +326,7 @@ impl<'c> TreeBuilder<'c> {
                 next_level_dirs.clear();
             }
         }
-        if self.options.show_sizes || !self.options.trim_root {
+        if self.options.sort.is_some() || !self.options.trim_root {
             // if the root directory isn't totally read, we finished it even
             // it it goes past the bottom of the screen
             while let Some(child_id) = self.next_child(self.root_id) {
@@ -345,7 +343,7 @@ impl<'c> TreeBuilder<'c> {
     ///  removing a parent before its children.
     fn trim_excess(&mut self, out_blines: &[BId]) {
         let mut count = 1;
-        let trim_root = self.options.trim_root && !self.options.show_sizes;
+        let trim_root = self.options.trim_root && self.options.sort.is_some();
         for id in out_blines[1..].iter() {
             if self.blines[*id].has_match {
                 //debug!("bline before trimming: {:?}", &self.blines[*idx].path);
@@ -420,9 +418,6 @@ impl<'c> TreeBuilder<'c> {
             git_status: ComputationResult::None,
         };
         tree.after_lines_changed();
-        if self.options.show_sizes {
-            time!(Debug, "fetch_file_sizes", tree.fetch_file_sizes()); // not the dirs, only simple files
-        }
         if let Some(computer) = self.line_status_computer {
             // tree git status is slow to compute, we just mark it should be
             // done (later on)
