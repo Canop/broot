@@ -6,7 +6,7 @@ use {
         conf::Conf,
         display::{Areas, Screen, W},
         errors::ProgramError,
-        file_sizes, git,
+        file_sum, git,
         launchable::Launchable,
         skin::*,
         task_sync::Dam,
@@ -375,6 +375,6 @@ impl App {
 /// This should be done on Refresh actions and after any external
 /// command.
 fn clear_caches() {
-    file_sizes::clear_cache();
+    file_sum::clear_cache();
     git::clear_status_computer_cache();
 }

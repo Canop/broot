@@ -143,7 +143,7 @@ impl BLine {
             unlisted,
             score: self.score,
             direct_match: self.direct_match,
-            size: None,
+            sum: None,
             metadata,
             git_status: None,
         })

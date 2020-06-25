@@ -1,13 +1,19 @@
 ### Next version
+#### Major change: Recursive date computation
+The date of directories is now the modification date of the last modified inner file, whatever its depth. This is computed in the background and doesn't slow your navigation.
 #### Major change: Sort mode
 Size can now be displayed out of sort mode, which concerns either size or dates.
-There are two new launch arguments:
-`--sort-by-dates` : sort by... dates
-`--sort-by-sizes` or `-w` : "whale hunt" mode, the equivalent of what was previously `-s`
+There are new launch arguments:
+`--sort-by-count` : sort by number of files in directories
+`--sort-by-date` : sort by dates, taking content into account (make it easy to find deep recent files)
+`--sort-by-size` or `-w` : "whale spotting" mode, the equivalent of what was previously `-s`
 The `-s` launch argument now works similarly to -d or -p : it doesn't activate a sort mode but activates showing the sizes.
-Similarly three new verbs have been defined:
-`:sort_by_dates` has for shortcut `sd`
-`:sort_by_sizes` has `ss` as shortcut
+Similarly new verbs have been defined:
+`:toggle_counts`, with shortcut `counts` shows the number of files in directories
+`:toggle_sizes`, with shortcut `sizes` shows the sizes of files and directories
+`:sort_by_count` has for shortcut `sc`
+`:sort_by_date` has for shortcut `sd`
+`:sort_by_size` has `ss` as shortcut
 `:no_sort` removes the current sort mode, if any
 
 <a name="v0.17.0"></a>

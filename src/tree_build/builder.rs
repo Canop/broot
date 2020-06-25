@@ -343,7 +343,7 @@ impl<'c> TreeBuilder<'c> {
     ///  removing a parent before its children.
     fn trim_excess(&mut self, out_blines: &[BId]) {
         let mut count = 1;
-        let trim_root = self.options.trim_root && self.options.sort.is_some();
+        let trim_root = self.options.trim_root && !self.options.sort.is_some();
         for id in out_blines[1..].iter() {
             if self.blines[*id].has_match {
                 //debug!("bline before trimming: {:?}", &self.blines[*idx].path);

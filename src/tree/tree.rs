@@ -5,7 +5,7 @@ use {
     crate::{
         app::AppContext,
         errors,
-        file_sizes::FileSize,
+        file_sum::FileSum,
         git::TreeGitStatus,
         task_sync::ComputationResult,
         task_sync::Dam,
@@ -124,11 +124,10 @@ impl Tree {
                 self.lines[i].left_branchs[depth] = true;
             }
         }
-        // we fetch non trivial additional columns
-        if self.options.needs_sizes(){
-            time!(Debug, "fetch_file_sizes", self.fetch_file_sizes()); // not the dirs, only simple files
+        if self.options.needs_sum() {
+            time!(Debug, "fetch_file_sum", self.fetch_regular_file_sums()); // not the dirs, only simple files
+            self.sort_siblings(); // does nothing when sort mode is None
         }
-        self.sort_siblings(); // does nothing when sort mode is None
     }
 
     pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {
@@ -308,36 +307,38 @@ impl Tree {
         false
     }
 
-    pub fn has_dir_missing_size(&self) -> bool {
-        self.options.needs_sizes()
+    pub fn has_dir_missing_sum(&self) -> bool {
+        self.options.needs_sum()
             && self
                 .lines
                 .iter()
                 .skip(1)
-                .any(|line| line.line_type == TreeLineType::Dir && line.size.is_none())
+                .any(|line| line.line_type == TreeLineType::Dir && line.sum.is_none())
     }
 
     pub fn is_missing_git_status_computation(&self) -> bool {
         self.git_status.is_not_computed()
     }
 
-    pub fn fetch_file_sizes(&mut self) {
+    /// fetches the file_sums of regular files (thus avoiding the
+    /// long computation which is needed for directories)
+    pub fn fetch_regular_file_sums(&mut self) {
         for i in 1..self.lines.len() {
             if self.lines[i].is_file() {
-                self.lines[i].size = Some(FileSize::from_file(&self.lines[i].path));
+                self.lines[i].sum = Some(FileSum::from_file(&self.lines[i].path));
             }
         }
         self.sort_siblings();
     }
 
-    /// compute the size of one directory
+    /// compute the file_sum of one directory
     ///
     /// To compute the size of all of them, this should be called until
-    ///  has_dir_missing_size returns false
-    pub fn fetch_some_missing_dir_size(&mut self, dam: &Dam) {
+    ///  has_dir_missing_sum returns false
+    pub fn fetch_some_missing_dir_sum(&mut self, dam: &Dam) {
         for i in 1..self.lines.len() {
-            if self.lines[i].size.is_none() && self.lines[i].line_type == TreeLineType::Dir {
-                self.lines[i].size = FileSize::from_dir(&self.lines[i].path, dam);
+            if self.lines[i].sum.is_none() && self.lines[i].line_type == TreeLineType::Dir {
+                self.lines[i].sum = FileSum::from_dir(&self.lines[i].path, dam);
                 self.sort_siblings();
                 return;
             }
@@ -352,12 +353,21 @@ impl Tree {
             return;
         }
         match self.options.sort {
-            Sort::Date => {
+            Sort::Count => {
                 // we'll try to keep the same path selected
                 let selected_path = self.selected_line().path.to_path_buf();
                 self.lines[1..].sort_by(|a, b| {
-                    let adate = a.modified_as_secs();
-                    let bdate = b.modified_as_secs();
+                    let acount = a.sum.map_or(0, |s| s.to_count());
+                    let bcount = b.sum.map_or(0, |s| s.to_count());
+                    bcount.cmp(&acount)
+                });
+                self.try_select_path(&selected_path);
+            }
+            Sort::Date => {
+                let selected_path = self.selected_line().path.to_path_buf();
+                self.lines[1..].sort_by(|a, b| {
+                    let adate = a.sum.map_or(0, |s| s.to_seconds());
+                    let bdate = b.sum.map_or(0, |s| s.to_seconds());
                     bdate.cmp(&adate)
                 });
                 self.try_select_path(&selected_path);
@@ -365,8 +375,8 @@ impl Tree {
             Sort::Size => {
                 let selected_path = self.selected_line().path.to_path_buf();
                 self.lines[1..].sort_by(|a, b| {
-                    let asize = a.size.map_or(0, |s| s.into());
-                    let bsize = b.size.map_or(0, |s| s.into());
+                    let asize = a.sum.map_or(0, |s| s.to_size());
+                    let bsize = b.sum.map_or(0, |s| s.to_size());
                     bsize.cmp(&asize)
                 });
                 self.try_select_path(&selected_path);
@@ -377,18 +387,18 @@ impl Tree {
     }
 
     /// compute and return the size of the root
-    pub fn total_size(&self) -> FileSize {
-        if let Some(size) = self.lines[0].size {
-            // if the real total size is computed, it's in the root line
-            size
+    pub fn total_sum(&self) -> FileSum {
+        if let Some(sum) = self.lines[0].sum {
+            // if the real total sum is computed, it's in the root line
+            sum
         } else {
-            // if we don't have the size in root, the nearest estimate is
-            // the sum of sizes of lines at depth 1
-            let mut sum = FileSize::new(0, false);
+            // if we don't have the sum in root, the nearest estimate is
+            // the sum of sums of lines at depth 1
+            let mut sum = FileSum::zero();
             for i in 1..self.lines.len() {
                 if self.lines[i].depth == 1 {
-                    if let Some(size) = self.lines[i].size {
-                        sum += size;
+                    if let Some(line_sum) = self.lines[i].sum {
+                        sum += line_sum;
                     }
                 }
             }

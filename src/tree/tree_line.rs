@@ -2,12 +2,15 @@
 //!  no link from a child to its parent or from a parent to its children.
 use {
     super::*,
-    crate::{file_sizes::FileSize, git::LineGitStatus, selection_type::SelectionType},
+    crate::{
+        file_sum::FileSum,
+        git::LineGitStatus,
+        selection_type::SelectionType,
+    },
     std::{
         cmp::{self, Ord, Ordering, PartialOrd},
         fs,
         path::PathBuf,
-        time::{SystemTime, UNIX_EPOCH},
     },
 };
 
@@ -31,7 +34,7 @@ pub struct TreeLine {
     pub unlisted: usize, // number of not listed children (Dir) or brothers (Pruning)
     pub score: i32,      // 0 if there's no pattern
     pub direct_match: bool,
-    pub size: Option<FileSize>, // None when not measured
+    pub sum: Option<FileSum>, // None when not measured
     pub metadata: fs::Metadata,
     pub git_status: Option<LineGitStatus>,
 }
@@ -102,21 +105,6 @@ impl TreeLine {
             }
             _ => self.path.clone(),
         }
-    }
-    /// return the last modification date, if it makes sense
-    pub fn modified(&self) -> Option<SystemTime> {
-        match &self.line_type {
-            TreeLineType::Pruning => None,
-            _ => self.metadata.modified().ok(),
-        }
-    }
-    /// return the number of seconds between Epoch and the
-    /// last modification, or 0 when we were unable to
-    /// determine it. This is used for computations and
-    /// sortings.
-    pub fn modified_as_secs(&self) -> u64 {
-        self.modified()
-            .map_or(0, |st| st.duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs()))
     }
 }
 impl PartialEq for TreeLine {

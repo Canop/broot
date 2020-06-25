@@ -9,8 +9,9 @@ use {
 pub struct TreeOptions {
     pub show_hidden: bool, // whether files whose name starts with a dot should be shown
     pub only_folders: bool, // whether to hide normal files and links
-    pub show_sizes: bool,  // whether to show sizes of files and dirs
+    pub show_counts: bool,  // whether to show the number of files (> 1 only for dirs)
     pub show_dates: bool,  // whether to show the last modified date
+    pub show_sizes: bool,  // whether to show sizes of files and dirs
     pub show_git_file_info: bool,
     pub trim_root: bool,            // whether to cut out direct children of root
     pub show_permissions: bool,     // show classic rwx unix permissions
@@ -27,8 +28,9 @@ impl TreeOptions {
         TreeOptions {
             show_hidden: self.show_hidden,
             only_folders: self.only_folders,
-            show_sizes: self.show_sizes,
+            show_counts: self.show_counts,
             show_dates: self.show_dates,
+            show_sizes: self.show_sizes,
             show_permissions: self.show_permissions,
             respect_git_ignore: self.respect_git_ignore,
             filter_by_git_status: self.filter_by_git_status,
@@ -39,13 +41,20 @@ impl TreeOptions {
             sort: self.sort,
         }
     }
-    /// sizes must be computed, either for sorting or just for display
-    pub fn needs_sizes(&self) -> bool {
-        self.show_sizes || self.sort.is_size()
+    /// counts must be computed, either for sorting or just for display
+    pub fn needs_counts(&self) -> bool {
+        self.show_counts || self.sort == Sort::Count
     }
     /// dates must be computed, either for sorting or just for display
     pub fn needs_dates(&self) -> bool {
-        self.show_dates || self.sort.is_date()
+        self.show_dates || self.sort == Sort::Date
+    }
+    /// sizes must be computed, either for sorting or just for display
+    pub fn needs_sizes(&self) -> bool {
+        self.show_sizes || self.sort == Sort::Size
+    }
+    pub fn needs_sum(&self) -> bool {
+        self.needs_counts() || self.needs_dates() || self.needs_sizes()
     }
     /// this method does not exist, you saw nothing
     /// (at least don't call it other than with the config, once)
@@ -93,11 +102,15 @@ impl TreeOptions {
         } else if cli_args.is_present("no-show-git-info") {
             self.show_git_file_info = false;
         }
-        if cli_args.is_present("sort-by-dates") {
+        if cli_args.is_present("sort-by-count") {
+            self.sort = Sort::Count;
+            self.show_counts = true;
+        }
+        if cli_args.is_present("sort-by-date") {
             self.sort = Sort::Date;
             self.show_dates = true;
         }
-        if cli_args.is_present("sort-by-sizes") {
+        if cli_args.is_present("sort-by-size") {
             self.sort = Sort::Size;
             self.show_sizes = true;
         }
@@ -117,8 +130,9 @@ impl Default for TreeOptions {
         Self {
             show_hidden: false,
             only_folders: false,
-            show_sizes: false,
+            show_counts: false,
             show_dates: false,
+            show_sizes: false,
             show_git_file_info: false,
             trim_root: true,
             show_permissions: false,

@@ -27,7 +27,7 @@ pub mod command;
 pub mod conf;
 pub mod content_search;
 pub mod errors;
-pub mod file_sizes;
+pub mod file_sum;
 pub mod git;
 pub mod flag;
 pub mod help;

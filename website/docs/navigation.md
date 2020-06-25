@@ -106,7 +106,7 @@ For example typing `:s` then enter will show file and directory sizes:
 
 ![dev sizes](img/20191030-dev-sizes.png)
 
-You may notice a scrollbar on this screenshot. The first level of the tree is always uncut when you display sizes (you're in a special "whale hunt" mode).
+You may notice a scrollbar on this screenshot. The first level of the tree is always uncut when you display sizes (you're in a special "whale spotting" mode).
 
 Not trimming the root is also possible in normal mode by using the `toggle_trim_root` toggle.
 

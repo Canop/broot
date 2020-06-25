@@ -262,8 +262,8 @@ impl AppState for BrowserState {
     fn get_pending_task(&self) -> Option<&'static str> {
         if self.pending_pattern.is_some() {
             Some("searching")
-        } else if self.displayed_tree().has_dir_missing_size() {
-            Some("computing sizes")
+        } else if self.displayed_tree().has_dir_missing_sum() {
+            Some("computing stats")
         } else if self.displayed_tree().is_missing_git_status_computation() {
             Some("computing git status")
         } else {
@@ -550,10 +550,25 @@ impl AppState for BrowserState {
                     }
                 }
             }
+            Internal::sort_by_count => {
+                self.with_new_options(
+                    screen, &|o| {
+                        if o.sort == Sort::Count {
+                            o.sort = Sort::None;
+                            o.show_counts = false;
+                        } else {
+                            o.sort = Sort::Count;
+                            o.show_counts = true;
+                        }
+                    },
+                    bang,
+                    con,
+                )
+            }
             Internal::sort_by_date => {
                 self.with_new_options(
                     screen, &|o| {
-                        if o.sort.is_date() {
+                        if o.sort == Sort::Date {
                             o.sort = Sort::None;
                             o.show_dates = false;
                         } else {
@@ -568,7 +583,7 @@ impl AppState for BrowserState {
             Internal::sort_by_size => {
                 self.with_new_options(
                     screen, &|o| {
-                        if o.sort.is_size() {
+                        if o.sort == Sort::Size {
                             o.sort = Sort::None;
                             o.show_sizes = false;
                         } else {
@@ -582,6 +597,9 @@ impl AppState for BrowserState {
             }
             Internal::no_sort => {
                 self.with_new_options(screen, &|o| o.sort = Sort::None, bang, con)
+            }
+            Internal::toggle_counts => {
+                self.with_new_options(screen, &|o| o.show_counts ^= true, bang, con)
             }
             Internal::toggle_dates => {
                 self.with_new_options(screen, &|o| o.show_dates ^= true, bang, con)
@@ -670,7 +688,7 @@ impl AppState for BrowserState {
             let git_status = git::get_tree_status(root_path, dam);
             self.displayed_tree_mut().git_status = git_status;
         } else {
-            self.displayed_tree_mut().fetch_some_missing_dir_size(dam);
+            self.displayed_tree_mut().fetch_some_missing_dir_sum(dam);
         }
     }
 

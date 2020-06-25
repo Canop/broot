@@ -2,9 +2,10 @@
 /// A non None sort mode implies only one level of the tree
 /// is displayed.
 /// When in None mode, paths are alpha sorted
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Sort {
     None,
+    Count,
     Date,
     Size,
 }
@@ -14,18 +15,6 @@ impl Sort {
         match self {
             Sort::None => false,
             _ => true,
-        }
-    }
-    pub fn is_date(self) -> bool {
-        match self {
-            Sort::Date => true,
-            _ => false,
-        }
-    }
-    pub fn is_size(self) -> bool {
-        match self {
-            Sort::Size => true,
-            _ => false,
         }
     }
 }

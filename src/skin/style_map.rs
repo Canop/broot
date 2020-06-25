@@ -126,6 +126,7 @@ StyleMap! {
     perm_x: ansi(65), None, []
     owner: ansi(138), None, []
     group: ansi(131), None, []
+    count: ansi(138), gray(4), []
     dates: ansi(66), None, []
     sparse: ansi(214), None, []
     content_extract: ansi(29), None, []

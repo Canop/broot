@@ -7,13 +7,13 @@ use {
     crate::{
         content_search::ContentMatch,
         errors::ProgramError,
-        file_sizes::FileSize,
+        file_sum::FileSum,
         pattern::PatternObject,
         skin::StyleMap,
         task_sync::ComputationResult,
         tree::{Tree, TreeLine, TreeLineType},
     },
-    chrono::{offset::Local, DateTime},
+    chrono::{Local, DateTime, TimeZone},
     crossterm::{
         cursor,
         style::{Color, SetBackgroundColor},
@@ -21,7 +21,7 @@ use {
         QueueableCommand,
     },
     git2::Status,
-    std::{io::Write, time::SystemTime},
+    std::io::Write,
     termimad::{CompoundStyle, ProgressBar},
 };
 
@@ -73,6 +73,24 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         }
     }
 
+    fn write_line_count<'w, W>(
+        &self,
+        cw: &mut CropWriter<'w, W>,
+        line: &TreeLine,
+        selected: bool,
+    ) -> Result<(), termimad::Error>
+    where
+        W: Write,
+    {
+        if let Some(s) = line.sum {
+            cond_bg!(count_style, self, selected, self.skin.count);
+            cw.queue_string(&count_style, format!("{:>8}", s.to_count()))?;
+            cw.queue_char(&self.skin.default, ' ')
+        } else {
+            cw.queue_str(&self.skin.tree, "─────────")
+        }
+    }
+
     fn write_line_size<'w, W>(
         &self,
         cw: &mut CropWriter<'w, W>,
@@ -82,11 +100,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     where
         W: Write,
     {
-        if let Some(s) = line.size {
+        if let Some(s) = line.sum {
             cond_bg!(size_style, self, selected, self.name_style(&line));
-            cw.queue_string(&size_style, format!("{} ", s))
+            cw.queue_string(&size_style, s.to_size_string())?;
+            cw.queue_char(&self.skin.default, ' ')
         } else {
-            cw.queue_str(&self.skin.tree, "───────")
+            cw.queue_str(&self.skin.tree, "─────")
         }
     }
 
@@ -96,21 +115,21 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         &self,
         cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
-        total_size: FileSize,
+        total_size: FileSum,
         selected: bool,
     ) -> Result<(), termimad::Error>
     where
         W: Write,
     {
-        if let Some(s) = line.size {
-            let pb = ProgressBar::new(s.part_of(total_size), 10);
+        if let Some(s) = line.sum {
+            let pb = ProgressBar::new(s.part_of_size(total_size), 10);
             cond_bg!(size_style, self, selected, self.name_style(&line));
             cond_bg!(sparse_style, self, selected, self.skin.sparse);
-            cw.queue_string(&size_style, format!("{:>5}", s.to_string()))?;
-            cw.queue_char(&sparse_style, if s.sparse { 's' } else { ' ' })?;
+            cw.queue_string(&size_style, format!("{:>5}", s.to_size_string()))?;
+            cw.queue_char(&sparse_style, if s.is_sparse() { 's' } else { ' ' })?;
             cw.queue_string(&size_style, format!("{:<10} ", pb))
         } else {
-            cw.queue_str(&self.skin.tree, "──────────────── ")
+            cw.queue_str(&self.skin.tree, "─────────────────")
         }
     }
 
@@ -140,13 +159,13 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     fn write_date<'w, W>(
         &self,
         cw: &mut CropWriter<'w, W>,
-        system_time: SystemTime,
+        seconds: i64,
         selected: bool,
     ) -> Result<(), termimad::Error>
     where
         W: Write,
     {
-        let date_time: DateTime<Local> = system_time.into();
+        let date_time: DateTime<Local> = Local.timestamp(seconds, 0);
         cond_bg!(date_style, self, selected, self.skin.dates);
         cw.queue_string(date_style, date_time.format(self.tree.options.date_time_format).to_string())
     }
@@ -359,7 +378,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         let tree = self.tree;
         #[cfg(unix)]
         let user_group_max_lengths = user_group_max_lengths(&tree);
-        let total_size = tree.total_size();
+        let total_size = tree.total_sum();
         let scrollbar = if self.in_app {
             self.area
                 .scrollbar(tree.scroll, tree.lines.len() as i32 - 1)
@@ -389,7 +408,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
-                //let pattern_match = tree.options.pattern.pattern.find(Candidate.from(line));
                 if !tree.git_status.is_none() {
                     self.write_line_git_status(cw, line)?;
                 }
@@ -410,14 +428,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             "   "
                         },
                     )?;
-                }
-                if tree.options.show_sizes {
-                    if tree.options.sort.is_some() {
-                        // as soon as there's only one level displayed we can show the size bars
-                        self.write_line_size_with_bar(cw, line, total_size, selected)?;
-                    } else {
-                        self.write_line_size(cw, line, selected)?;
-                    }
                 }
                 #[cfg(unix)]
                 {
@@ -446,11 +456,22 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     }
                 }
                 if tree.options.show_dates {
-                    if let Some(date) = line.modified() {
-                        self.write_date(cw, date, selected)?;
+                    if let Some(seconds) = line.sum.and_then(|sum| sum.to_valid_seconds()) {
+                        self.write_date(cw, seconds, selected)?;
                     } else {
                         cw.queue_str(&self.skin.tree, "─────────────────")?;
                     }
+                }
+                if tree.options.show_sizes {
+                    if tree.options.sort.is_some() {
+                        // as soon as there's only one level displayed we can show the size bars
+                        self.write_line_size_with_bar(cw, line, total_size, selected)?;
+                    } else {
+                        self.write_line_size(cw, line, selected)?;
+                    }
+                }
+                if tree.options.show_counts {
+                    self.write_line_count(cw, line, selected)?;
                 }
                 self.write_line_label(cw, line, pattern_object, selected)?;
                 if cw.allowed > 8 && pattern_object.content {

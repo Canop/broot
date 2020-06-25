@@ -94,15 +94,20 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("Don't show sizes"),
         )
         .arg(
-            clap::Arg::with_name("sort-by-dates")
-                .long("sort-by-dates")
+            clap::Arg::with_name("sort-by-count")
+                .long("sort-by-count")
+                .help("Sort by count (only show one level of the tree)"),
+        )
+        .arg(
+            clap::Arg::with_name("sort-by-date")
+                .long("sort-by-date")
                 .help("Sort by date (only show one level of the tree)"),
         )
         .arg(
-            clap::Arg::with_name("sort-by-sizes")
+            clap::Arg::with_name("sort-by-size")
                 .short("w")
-                .long("sort-by-sizes")
-                .help("Sort by size (\"whale hunt\" mode)"),
+                .long("sort-by-size")
+                .help("Sort by size (\"whale spotting\" mode)"),
         )
         .arg(
             clap::Arg::with_name("no-sort")
