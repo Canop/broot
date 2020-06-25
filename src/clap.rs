@@ -105,9 +105,14 @@ pub fn clap_app() -> clap::App<'static, 'static> {
         )
         .arg(
             clap::Arg::with_name("sort-by-size")
-                .short("w")
                 .long("sort-by-size")
-                .help("Sort by size (\"whale spotting\" mode)"),
+                .help("Sort by size (only show one level of the tree)"),
+        )
+        .arg(
+            clap::Arg::with_name("whale-spotting")
+                .short("w")
+                .long("whale-spotting")
+                .help("Sort by size, show ignored and hidden files"),
         )
         .arg(
             clap::Arg::with_name("no-sort")

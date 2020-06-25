@@ -2,6 +2,7 @@ use {
     super::FileSum,
     crate::task_sync::Dam,
     crossbeam::channel,
+    rayon::{ThreadPool, ThreadPoolBuilder},
     std::{
         convert::TryInto,
         fs,
@@ -10,8 +11,6 @@ use {
             atomic::{AtomicIsize, Ordering},
             Arc,
         },
-        thread,
-
     },
 };
 
@@ -24,7 +23,8 @@ use {
     },
 };
 
-const THREADS_COUNT: usize = 4;
+// threads used by one computation
+const THREADS_COUNT: usize = 6;
 
 /// compute the consolidated numbers for a directory, with implementation
 /// varying depending on the OS:
@@ -32,6 +32,10 @@ const THREADS_COUNT: usize = 4;
 /// see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
 pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
     //debug!("compute size of dir {:?} --------------- ", path);
+
+    lazy_static! {
+        static ref THREAD_POOL: ThreadPool = ThreadPoolBuilder::new().num_threads(THREADS_COUNT*2).build().unwrap();
+    }
 
     // to avoid counting twice an inode, we store them in a set
     #[cfg(unix)]
@@ -61,7 +65,7 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
 
         let observer = dam.observer();
         let thread_sum_sender = thread_sum_sender.clone();
-        thread::spawn(move || {
+        THREAD_POOL.spawn(move || {
             let mut thread_sum = FileSum::zero();
             loop {
                 let o = dirs_receiver.recv();

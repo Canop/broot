@@ -6,8 +6,9 @@ Size can now be displayed out of sort mode, which concerns either size or dates.
 There are new launch arguments:
 `--sort-by-count` : sort by number of files in directories
 `--sort-by-date` : sort by dates, taking content into account (make it easy to find deep recent files)
-`--sort-by-size` or `-w` : "whale spotting" mode, the equivalent of what was previously `-s`
-The `-s` launch argument now works similarly to -d or -p : it doesn't activate a sort mode but activates showing the sizes.
+`--sort-by-size` : sort by size
+`--whale-spotting` or `-w` : "whale spotting" mode (sort by size and show all files)
+The `-s` launch argument now works similarly to -d or -p : it doesn't activate a sort mode but activates showing the sizes. `-s` has been replaced with `-w`.
 Similarly new verbs have been defined:
 `:toggle_counts`, with shortcut `counts` shows the number of files in directories
 `:toggle_sizes`, with shortcut `sizes` shows the sizes of files and directories

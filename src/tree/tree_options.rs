@@ -65,12 +65,14 @@ impl TreeOptions {
     pub fn apply(&mut self, cli_args: &ArgMatches<'_>) {
         if cli_args.is_present("sizes") {
             self.show_sizes = true;
-            // by default, if we're asked to show the size, we show
-            // all files. This may be overriden by other settings
-            self.show_hidden = true;
-            self.respect_git_ignore = false;
         } else if cli_args.is_present("no-sizes") {
             self.show_sizes = false;
+        }
+        if cli_args.is_present("whale-spotting") {
+            self.show_hidden = true;
+            self.respect_git_ignore = false;
+            self.sort = Sort::Size;
+            self.show_sizes = true;
         }
         if cli_args.is_present("only-folders") {
             self.only_folders = true;
