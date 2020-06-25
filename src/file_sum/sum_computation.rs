@@ -1,23 +1,30 @@
 use {
-    super::{extract_seconds, FileSum},
+    super::FileSum,
     crate::task_sync::Dam,
     crossbeam::channel,
     std::{
-        collections::HashSet,
+        convert::TryInto,
         fs,
         path::{Path, PathBuf},
         sync::{
             atomic::{AtomicIsize, Ordering},
-            Arc, Mutex,
+            Arc,
         },
         thread,
+
     },
 };
 
 #[cfg(unix)]
-use std::os::unix::fs::MetadataExt;
+use {
+    std::{
+        collections::HashSet,
+        os::unix::fs::MetadataExt,
+        sync::Mutex,
+    },
+};
 
-const THREADS_COUNT: usize = 8;
+const THREADS_COUNT: usize = 4;
 
 /// compute the consolidated numbers for a directory, with implementation
 /// varying depending on the OS:
@@ -150,3 +157,21 @@ pub fn compute_file_sum(path: &Path) -> FileSum {
         Err(_) => FileSum::new(0, false, 1, 0),
     }
 }
+
+#[cfg(unix)]
+fn extract_seconds(md: &fs::Metadata) -> u32 {
+    md.mtime().try_into().unwrap_or(0)
+}
+
+#[cfg(not(unix))]
+fn extract_seconds(md: &fs::Metadata) -> u32 {
+    if let Ok(st) = md.modified() {
+        if let Ok(d) = st.duration_since(std::time::UNIX_EPOCH) {
+            if let Ok(secs) = d.as_secs().try_into() {
+                return secs
+            }
+        }
+    }
+    0
+}
+

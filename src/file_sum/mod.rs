@@ -11,15 +11,13 @@ use {
     crate::task_sync::Dam,
     std::{
         collections::HashMap,
-        fs::Metadata,
         ops::AddAssign,
         path::{Path, PathBuf},
         sync::Mutex,
-        time::UNIX_EPOCH,
     },
 };
 
-const SUM_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"];
+const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"];
 
 lazy_static! {
     static ref SUM_CACHE_MUTEX: Mutex<HashMap<PathBuf, FileSum>> = Mutex::new(HashMap::new());
@@ -30,19 +28,13 @@ pub fn clear_cache() {
     sum_cache.clear();
 }
 
-pub fn extract_seconds(md: &Metadata) -> u64 {
-    md.modified().map_or(
-        0,
-        |st| st.duration_since(UNIX_EPOCH).map_or(0, |d| d.as_secs())
-    )
-}
-
+/// Reduction of counts, dates and sizes on a file or directory
 #[derive(Debug, Copy, Clone)]
 pub struct FileSum {
-    real_size: u64,   // bytes, the space it takes on disk
-    sparse: bool, // only for non directories: tells whether the file is sparse
+    real_size: u64, // bytes, the space it takes on disk
     count: usize, // number of files
-    modified: u64, // seconds from Epoch to last modification, or 0 if there was an error
+    modified: u32, // seconds from Epoch to last modification, or 0 if there was an error
+    sparse: bool, // only for non directories: tells whether the file is sparse
 }
 
 impl FileSum {
@@ -50,7 +42,7 @@ impl FileSum {
         real_size: u64,
         sparse: bool,
         count: usize,
-        modified: u64,
+        modified: u32,
     ) -> Self {
         Self { real_size, sparse, count, modified }
     }
@@ -102,11 +94,11 @@ impl FileSum {
     pub fn to_size_string(self) -> String {
         let mut v = self.real_size;
         let mut i = 0;
-        while v >= 5000 && i < SUM_NAMES.len() - 1 {
+        while v >= 5000 && i < SIZE_NAMES.len() - 1 {
             v /= 1000;
             i += 1;
         }
-        format!("{}{}", v, &SUM_NAMES[i])
+        format!("{}{}", v, &SIZE_NAMES[i])
     }
     /// return the number of files (normally at least 1)
     pub fn to_count(self) -> usize {
@@ -114,7 +106,7 @@ impl FileSum {
     }
     /// return the number of seconds from Epoch to last modification,
     /// or 0 if the computation failed
-    pub fn to_seconds(self) -> u64 {
+    pub fn to_seconds(self) -> u32 {
         self.modified
     }
     /// return the size in bytes
