@@ -450,7 +450,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             let length =
                                 9 + 1 + user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1;
                             for _ in 0..length {
-                                cw.queue_char(&self.skin.tree, ' ')?;
+                                cw.queue_char(&self.skin.tree, '─')?;
                             }
                         }
                     }

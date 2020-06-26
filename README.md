@@ -126,15 +126,19 @@ If you want to display *dates* and *permissions*, do `br -dp` which gets you thi
 
 You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or a space, then `h` then enter and you see hidden files.
 
-### See what takes space:
+### Sort, see what takes space:
+
+You can toggle sorts from inside broot, or start broot with `--sort-by-size` or `--sort-by-date`.
+
+When sorting, the whole content of directories is taken into account. So if you want to find on monday morning the most recently modified files, just launch `br --sort-by-date ~`.
+
+If you start broot with the `--whale-spotting` option (or its shorcut `-w`), you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
 
 ![size](img/20191112-sizes.png)
 
-If you start broot with the `--sizes` option, or if you type `:s` while in broot, you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
-
 And you keep all broot tools, like filtering or the ability to delete or open files and directories.
 
-Sizes are computed in the background, you don't have to wait for them when you navigate.
+Sizes, dates, files counts, are computed in the background, you don't have to wait for them when you navigate.
 
 ### check git statuses:
 

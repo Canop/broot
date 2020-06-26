@@ -287,7 +287,11 @@ invocation | default key | default shortcut | behavior / details
 :rm | - | - | remove the selected file or directory. To stay safe, don't define a keyboard key for this action
 :select_first | - | - | select the first line
 :select_last | - | - | select the last line
-:toggle_dates | - | - | toggle display of last modified dates
+:sort_by_count | - | - | sort by count (only one level of the tree is displayed)
+:sort_by_date | - | - | sort by date
+:sort_by_size | - | - | sort by size
+:toggle_counts | - | - | toggle display of total counts of files per directory
+:toggle_dates | - | - | toggle display of last modified dates (looking for the most recently changed file, even deep)
 :toggle_files | - | - | toggle showing files (or just folders)
 :toggle_git_ignore | - | - | toggle git hignore handling (auto, no or yes)
 :toggle_git_file_info | - | - | toggle display of git file information
@@ -296,6 +300,7 @@ invocation | default key | default shortcut | behavior / details
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_sizes | - | - | toggle the size mode
 :toggle_trim_root | - | - | toggle trimming of top level files in tree display
+:up_tree | - | - | focus the parent of the current root
 
 Note that
 
