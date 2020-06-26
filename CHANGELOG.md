@@ -1,5 +1,6 @@
-### Next version
-#### Major change: Recursive date computation
+<a name="v0.18.0"></a>
+### v0.18.0 - 2020-06-26
+#### Major change: Recursive last modified date computation
 The date of directories is now the modification date of the last modified inner file, whatever its depth. This is computed in the background and doesn't slow your navigation.
 #### Major change: Sort mode
 Size can now be displayed out of sort mode, which concerns either size or dates.

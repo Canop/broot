@@ -84,7 +84,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "0.18.0-dev"
+version = "0.18.0"
 dependencies = [
  "bet",
  "chrono",
