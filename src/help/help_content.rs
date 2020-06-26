@@ -13,7 +13,8 @@ See **https://dystroy.org/broot** for a complete guide.
 
 The *esc* key gets you back to the previous state.
 Typing some letters searches the tree and selects the most relevant file.
-To use a regular expression, use a slash at start or end eg `/j(ava|s)$`.
+To use a regular expression, prefix with a slash eg `/j(ava|s)$`.
+To search by file content, prefix with `c/` eg `c/TODO`.
 The *↑* and *↓* arrow keys can be used to change selection.
 The mouse can be used to select (on click) or open (on double-click).
 
@@ -36,17 +37,16 @@ Verbs and skin can be configured in **${config-path}**.
 
 Some options can be set on launch:
 * `-h` or `--hidden` : show hidden files
-* `-f` or `--only-folders` : only show folders
-* `-s` or `--sizes` : display sizes
+* `-i` : show files which are normally hidden due to .gitignore rules
 * `-d` or `--dates` : display last modified dates
+* `-w` : whale-spotting mode
  (for the complete list, run `broot --help`)
 
 ## Flags
 
 Flags are displayed at bottom right:
 * `h:y` or `h:n` : whether hidden files are shown
-* `gi:a`, `gi:y`, `gi:n` : whether gitignore is on `auto`, `yes` or `no`
- When gitignore is auto, .gitignore rules are respected if the displayed root is a git repository or in one.
+* `gi:y`, `gi:n` : whether gitignore rules are active or not
 "#;
 
 /// build the markdown which will be displayed in the help page
