@@ -137,8 +137,7 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
         }
     };
     let mut modifiers = KeyModifiers::empty();
-    for i in 0..tokens.len() - 1 {
-        let token = tokens[i];
+    for token in tokens.iter().take(tokens.len() - 1) {
         match token.to_ascii_lowercase().as_ref() {
             "ctrl" => {
                 modifiers.insert(KeyModifiers::CONTROL);

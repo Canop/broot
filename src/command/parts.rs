@@ -49,7 +49,7 @@ impl CommandParts {
                     break;
                 }
                 if c == '/' {
-                    pt.mutate_or_create_atom(PatternParts::new).add_part();
+                    pt.mutate_or_create_atom(PatternParts::default).add_part();
                     continue;
                 }
                 let allow_inter_pattern_token = match pt.current_atom() {
@@ -82,7 +82,7 @@ impl CommandParts {
                     }
                 }
             }
-            pt.mutate_or_create_atom(PatternParts::new).push(c);
+            pt.mutate_or_create_atom(PatternParts::default).push(c);
             escaping = false;
         }
         let mut verb_invocation = None;

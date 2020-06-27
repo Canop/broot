@@ -19,12 +19,15 @@ impl fmt::Display for PatternParts {
     }
 }
 
-impl PatternParts {
-    pub fn new() -> Self {
+impl Default for PatternParts {
+    fn default() -> Self {
         Self {
             parts: vec![String::new()],
         }
     }
+}
+
+impl PatternParts {
     pub fn push(&mut self, c: char) {
         // self.parts can't be empty, by construct
         self.parts.last_mut().unwrap().push(c);

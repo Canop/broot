@@ -98,7 +98,7 @@ fn get_sourcing_paths() -> Vec<PathBuf> {
         .map(|name| {
             regex!(r#"\$(\w+)"#)
                 .replace(name, |c: &Captures<'_>| {
-                    env::var(&c[1]).unwrap_or((*name).to_string())
+                    env::var(&c[1]).unwrap_or_else(|_| (*name).to_string())
                 })
                 .to_string()
         })

@@ -34,10 +34,9 @@ impl<'a, 's> GitStatusDisplay<'a, 's> {
             width += stats_width;
             show_stats = true;
         }
-        let mut show_wide = false;
-        if width + 3 < available_width {
+        let show_wide = width + 3 < available_width;
+        if show_wide {
             width += 3; // difference between compact and wide format widths
-            show_wide = true;
         }
         Self {
             status,

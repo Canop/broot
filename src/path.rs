@@ -38,7 +38,9 @@ pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -
         // or its parent) and we normalize so that the user can type
         // paths with `../`
         let base_dir = match anchor {
-            PathAnchor::Parent => base_dir.as_ref().parent().unwrap_or(base_dir.as_ref()).to_path_buf(),
+            PathAnchor::Parent => base_dir.as_ref()
+                .parent().unwrap_or_else(||base_dir.as_ref())
+                .to_path_buf(),
             _ => closest_dir(base_dir.as_ref()),
         };
         normalize_path(base_dir.join(input))
