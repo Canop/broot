@@ -1,3 +1,7 @@
+<a name="v0.18.1"></a>
+### v0.18.1 - 2020-06-28
+- column order configurable - Fix #127
+
 <a name="v0.18.0"></a>
 ### v0.18.0 - 2020-06-26
 #### Major change: Recursive last modified date computation

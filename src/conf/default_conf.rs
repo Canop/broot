@@ -28,14 +28,6 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 default_flags = ""
 
 ###############################################################
-# Date/Time format
-# If you want to change the format for date/time, uncomment the
-# following line and change it according to
-# https://docs.rs/chrono/0.4.11/chrono/format/strftime/index.html
-#
-# date_time_format = "%Y/%m/%d %R "
-
-###############################################################
 # Special paths
 # If some paths must be handled specially, uncomment (and change
 # this section as per the examples
@@ -44,6 +36,28 @@ default_flags = ""
 # "/media/slow-backup-disk" = "no-enter"
 # "/home/dys/useless" = "hide"
 # "/home/dys/my-link-I-want-to-explore" = "enter"
+
+###############################################################
+# Date/Time format
+# If you want to change the format for date/time, uncomment the
+# following line and change it according to
+# https://docs.rs/chrono/0.4.11/chrono/format/strftime/index.html
+#
+# date_time_format = "%Y/%m/%d %R"
+
+###############################################################
+# Column order
+# cols_order, if specified, must be a permutation of "gbpdscn"
+# where every char denotes a column:
+#  g : Git file info
+#  b : branch (shows the depth and parent in the tree)
+#  p : permissions (mode, user, group)
+#  d : last modification date
+#  s : size (with size bar when sorting)
+#  c : count, number of files in directories
+#  n : file name
+#
+# cols_order = "gbdscn"
 
 ###############################################################
 # Verbs and shortcuts

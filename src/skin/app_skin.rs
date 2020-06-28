@@ -15,18 +15,15 @@ pub struct AppSkin {
 
     /// the skin used in unfocused panels
     pub unfocused: PanelSkin,
-
 }
 
 impl AppSkin {
 
     pub fn new(conf: &Conf) -> Self {
         let StyleMaps { focused, unfocused } = StyleMaps::create(&conf.skin);
-        let focused = PanelSkin::new(focused);
-        let unfocused = PanelSkin::new(unfocused);
         Self {
-            focused,
-            unfocused,
+            focused: PanelSkin::new(focused),
+            unfocused: PanelSkin::new(unfocused),
         }
     }
 

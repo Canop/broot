@@ -12,11 +12,12 @@ nav:
                 - Navigation: navigation.md
                 - Verbs & Commands: verbs.md
                 - Panels: panels.md
-                - Tree Export: export.md
-                - Tips & Tricks: tricks.md
+                - Tree export: export.md
+                - Tips & tricks: tricks.md
                 - Reference - The input: input.md
         - Conf:
-                - Config File: conf_file.md
+                - Config file: conf_file.md
+                - Verbs and shortcuts: conf_verbs.md
                 - Skins: skins.md
         - Community: community.md
 

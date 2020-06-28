@@ -6,6 +6,7 @@ use {
         default_conf::DEFAULT_CONF_FILE,
     },
     crate::{
+        display::{Col, Cols},
         errors::ConfError,
         keys,
         pattern::{SearchModeMap, SearchModeMapEntry},
@@ -34,6 +35,7 @@ pub struct Conf {
     pub special_paths: Vec<SpecialPath>,
     pub search_modes: SearchModeMap,
     pub disable_mouse_capture: bool,
+    pub cols_order: Option<Cols>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -116,6 +118,10 @@ impl Conf {
         if let Some(mouse_capture) = bool_field(&root, "capture_mouse") {
             self.disable_mouse_capture = !mouse_capture;
         }
+        // cols order
+        self.cols_order = string_field(&root, "cols_order")
+            .map(|s| Col::parse_cols(&s))
+            .transpose()?;
         // reading verbs
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {

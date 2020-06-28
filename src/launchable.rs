@@ -1,6 +1,6 @@
 use {
     crate::{
-        display::{DisplayableTree, Screen, W},
+        display::{Cols, DisplayableTree, Screen, W},
         errors::ProgramError,
         skin::StyleMap,
         tree::Tree,
@@ -30,6 +30,7 @@ pub enum Launchable {
         // print the tree on end of broot
         tree: Box<Tree>,
         skin: Box<StyleMap>,
+        cols: Cols,
         width: u16,
     },
     Program {
@@ -70,10 +71,12 @@ impl Launchable {
         tree: &Tree,
         screen: &Screen,
         style_map: StyleMap,
+        cols: Cols,
     ) -> Launchable {
         Launchable::TreePrinter {
             tree: Box::new(tree.clone()),
             skin: Box::new(style_map),
+            cols,
             width: screen.width,
         }
     }
@@ -95,8 +98,8 @@ impl Launchable {
                 println!("{}", to_print);
                 Ok(())
             }
-            Launchable::TreePrinter { tree, skin, width } => {
-                let dp = DisplayableTree::out_of_app(&tree, &skin, *width);
+            Launchable::TreePrinter { tree, skin, cols, width } => {
+                let dp = DisplayableTree::out_of_app(&tree, &skin, &cols, *width);
                 dp.write_on(&mut std::io::stdout())
             }
             Launchable::Program { exe, args } => {

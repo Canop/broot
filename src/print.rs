@@ -3,7 +3,7 @@
 use {
     crate::{
         app::{AppContext, AppStateCmdResult},
-        display::{DisplayableTree, Screen},
+        display::{Cols, DisplayableTree, Screen},
         errors::ProgramError,
         launchable::Launchable,
         skin::{PanelSkin, StyleMap},
@@ -56,9 +56,10 @@ fn print_tree_to_file(
     tree: &Tree,
     screen: &mut Screen,
     file_path: &str,
+    cols: &Cols,
 ) -> Result<AppStateCmdResult, ProgramError> {
     let no_style_skin = StyleMap::no_term();
-    let dp = DisplayableTree::out_of_app(tree, &no_style_skin, screen.width);
+    let dp = DisplayableTree::out_of_app(tree, &no_style_skin, cols, screen.width);
     let mut f = OpenOptions::new()
         .create(true)
         .append(true)
@@ -75,7 +76,7 @@ pub fn print_tree(
 ) -> Result<AppStateCmdResult, ProgramError> {
     if let Some(ref output_path) = con.launch_args.file_export_path {
         // an output path was provided, we write to it
-        print_tree_to_file(tree, screen, output_path)
+        print_tree_to_file(tree, screen, output_path, &con.cols)
     } else {
         // no output path provided. We write on stdout, but we must
         // do it after app closing to have the normal terminal
@@ -88,6 +89,7 @@ pub fn print_tree(
             tree,
             screen,
             styles,
+            con.cols.clone(),
         )))
     }
 }

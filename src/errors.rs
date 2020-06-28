@@ -38,7 +38,8 @@ custom_error! {pub ConfError
     InvalidSearchMode {details: String}             = "invalid search mode: {}",
     InvalidKey {raw: String}                        = "not a valid key: {}",
     ReservedKey {key: String}                       = "reserved key: {}",
-    UnexpectedInternalArg { invocation: String}     = "unexpected argument for internal: {}",
+    UnexpectedInternalArg {invocation: String}      = "unexpected argument for internal: {}",
+    InvalidCols {details: String}                   = "invalid cols definition: {}",
 }
 
 // error which can be raised when parsing a pattern the user typed

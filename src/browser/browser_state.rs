@@ -698,11 +698,12 @@ impl AppState for BrowserState {
         _screen: &Screen,
         area: Area,
         panel_skin: &PanelSkin,
-        _con: &AppContext,
+        con: &AppContext,
     ) -> Result<(), ProgramError> {
         let dp = DisplayableTree {
             tree: &self.displayed_tree(),
             skin: &panel_skin.styles,
+            cols: &con.cols,
             area,
             in_app: true,
         };

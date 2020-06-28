@@ -14,7 +14,7 @@ pub struct TreeOptions {
     pub show_sizes: bool,  // whether to show sizes of files and dirs
     pub show_git_file_info: bool,
     pub trim_root: bool,            // whether to cut out direct children of root
-    pub show_permissions: bool,     // show classic rwx unix permissions
+    pub show_permissions: bool,     // show classic rwx unix permissions (only on unix)
     pub respect_git_ignore: bool,   // hide files as requested by .gitignore ?
     pub filter_by_git_status: bool, // only show files whose git status is not nul
     pub pattern: InputPattern,           // an optional filtering/scoring pattern
@@ -141,7 +141,7 @@ impl Default for TreeOptions {
             respect_git_ignore: true,
             filter_by_git_status: false,
             pattern: InputPattern::none(),
-            date_time_format: "%Y/%m/%d %R ",
+            date_time_format: "%Y/%m/%d %R",
             sort: Sort::None,
         }
     }

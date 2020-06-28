@@ -21,6 +21,7 @@ macro_rules! cond_bg {
 }
 
 mod areas;
+mod col;
 mod crop_writer;
 mod displayable_tree;
 mod flags_display;
@@ -33,6 +34,7 @@ use std::io::BufWriter;
 
 pub use {
     areas::Areas,
+    col::{Col, Cols, DEFAULT_COLS},
     crop_writer::CropWriter,
     displayable_tree::DisplayableTree,
     flags_display::write_flags,
