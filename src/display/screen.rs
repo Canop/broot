@@ -39,19 +39,9 @@ impl Screen {
         self.set_terminal_size(w, h, con);
         Ok(())
     }
-    /// move the cursor to x,y and clears the line.
-    pub fn goto_clear(&self, w: &mut W, x: u16, y: u16) -> Result<(), ProgramError> {
-        self.goto(w, x, y)?;
-        self.clear_line(w)
-    }
     /// move the cursor to x,y
     pub fn goto(&self, w: &mut W, x: u16, y: u16) -> Result<(), ProgramError> {
         w.queue(cursor::MoveTo(x, y))?;
-        Ok(())
-    }
-    /// clear the whole screen
-    pub fn clear(&self, w: &mut W) -> Result<(), ProgramError> {
-        w.queue(Clear(ClearType::All))?;
         Ok(())
     }
     /// clear from the cursor to the end of line
@@ -59,6 +49,8 @@ impl Screen {
         w.queue(Clear(ClearType::UntilNewLine))?;
         Ok(())
     }
+    /// clear the area and everything to the right.
+    /// Should be used with parcimony as it could lead to flickering.
     pub fn clear_area_to_right(&self, w: &mut W, area: &Area)  -> Result<(), ProgramError> {
         for y in area.top..area.top+area.height {
             self.goto(w, area.left, y)?;

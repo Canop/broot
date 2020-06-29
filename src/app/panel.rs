@@ -2,7 +2,14 @@ use {
     super::*,
     crate::{
         command::*,
-        display::{status_line, Areas, Screen, W, WIDE_STATUS, write_flags},
+        display::{
+            status_line,
+            Areas,
+            Screen,
+            W,
+            WIDE_STATUS,
+            flags_display,
+        },
         errors::ProgramError,
         keys,
         skin::PanelSkin,
@@ -89,11 +96,13 @@ impl Panel {
         screen: &mut Screen,
         con: &AppContext,
         dam: &mut Dam,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<bool, ProgramError> {
+        let mut did_something = false;
         while self.mut_state().get_pending_task().is_some() & !dam.has_event() {
             self.mut_state().do_pending_task(screen, con, dam);
+            did_something = true;
         }
-        Ok(())
+        Ok(did_something)
     }
 
     /// return a new command
@@ -163,13 +172,19 @@ impl Panel {
         if active || !WIDE_STATUS {
             self.write_status(w, panel_skin, screen)?;
         }
-        self.input.display(w, active, self.areas.input.clone(), panel_skin)?;
+        let mut input_area = self.areas.input.clone();
         if active {
             self.write_purpose(w, panel_skin, screen, con)?;
             let flags = self.state().get_flags();
             let input_content_len = self.input.get_content().len() as u16;
-            write_flags(w, &flags, &self.areas.input, input_content_len, screen, panel_skin)?;
+            let flags_len = flags_display::visible_width(&flags);
+            if input_area.width > input_content_len + 1 + flags_len {
+                input_area.width -= flags_len + 1;
+                screen.goto(w, input_area.left + input_area.width - 1, input_area.top)?;
+                flags_display::write(w, &flags, panel_skin)?;
+            }
         }
+        self.input.display(w, active, input_area, panel_skin)?;
         Ok(())
     }
 

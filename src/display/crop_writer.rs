@@ -1,8 +1,4 @@
 use {
-    crossterm::{
-        terminal::{Clear, ClearType},
-        QueueableCommand,
-    },
     termimad::{CompoundStyle, Result},
 };
 
@@ -39,6 +35,13 @@ where
         }
         Ok(())
     }
+    pub fn fill(&mut self, cs: &CompoundStyle, c: char) -> Result<()> {
+        while !self.is_full() {
+            self.allowed -= 1;
+            cs.queue(self.w, c)?;
+        }
+        Ok(())
+    }
     pub fn queue_string(&mut self, cs: &CompoundStyle, s: String) -> Result<()> {
         if !self.is_full() {
             let len = s.chars().count();
@@ -56,9 +59,5 @@ where
     }
     pub fn queue_bg(&mut self, cs: &CompoundStyle) -> Result<()> {
         cs.queue_bg(self.w)
-    }
-    pub fn clear(&mut self, clear_type: ClearType) -> Result<()> {
-        self.w.queue(Clear(clear_type))?;
-        Ok(())
     }
 }

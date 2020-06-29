@@ -19,7 +19,6 @@ use {
     crossterm::{
         cursor,
         style::{Color, SetBackgroundColor},
-        terminal::ClearType,
         QueueableCommand,
     },
     git2::Status,
@@ -402,12 +401,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         selected: bool,
     ) -> Result<(), ProgramError> {
         if self.in_app {
-            if selected {
-                cw.queue_bg(&self.skin.selected_line)?;
+            let style = if selected {
+                &self.skin.selected_line
             } else {
-                cw.queue_bg(&self.skin.default)?;
-            }
-            cw.clear(ClearType::UntilNewLine)?;
+                &self.skin.default
+            };
+            cw.fill(style, ' ')?;
         }
         Ok(())
     }
@@ -419,8 +418,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         let user_group_max_lengths = user_group_max_lengths(&tree);
         let total_size = tree.total_sum();
         let scrollbar = if self.in_app {
-            self.area
-                .scrollbar(tree.scroll, tree.lines.len() as i32 - 1)
+            self.area.scrollbar(tree.scroll, tree.lines.len() as i32 - 1)
         } else {
             None
         };

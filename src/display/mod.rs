@@ -24,7 +24,7 @@ mod areas;
 mod col;
 mod crop_writer;
 mod displayable_tree;
-mod flags_display;
+pub mod flags_display;
 mod git_status_display;
 pub mod status_line;
 mod matched_string;
@@ -37,7 +37,6 @@ pub use {
     col::{Col, Cols, DEFAULT_COLS},
     crop_writer::CropWriter,
     displayable_tree::DisplayableTree,
-    flags_display::write_flags,
     git_status_display::GitStatusDisplay,
     matched_string::MatchedString,
     screen::Screen,

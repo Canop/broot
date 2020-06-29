@@ -276,16 +276,16 @@ impl App {
         screen: &mut Screen,
         con: &AppContext,
         dam: &mut Dam,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<bool, ProgramError> {
         // we start with the focused panel
-        self.mut_panel().do_pending_tasks(screen, con, dam)?;
+        let mut did_something = self.mut_panel().do_pending_tasks(screen, con, dam)?;
         // then the other ones
         for idx in 0..self.panels.len().get() {
             if idx != self.active_panel_idx {
-                self.panels[idx].do_pending_tasks(screen, con, dam)?;
+                did_something |= self.panels[idx].do_pending_tasks(screen, con, dam)?;
             }
         }
-        Ok(())
+        Ok(did_something)
     }
 
     /// This is the main loop of the application
@@ -321,14 +321,14 @@ impl App {
             }
         }
 
-        self.display_panels(w, screen, &skin, con)?;
-        w.flush()?;
-
         loop {
             if !self.quitting {
-                self.do_pending_tasks(screen, con, &mut dam)?;
                 self.display_panels(w, screen, &skin, con)?;
                 w.flush()?;
+                if self.do_pending_tasks(screen, con, &mut dam)? {
+                    self.display_panels(w, screen, &skin, con)?;
+                    w.flush()?;
+                }
             }
             let event = match dam.next_event() {
                 Some(event) => event,
@@ -362,8 +362,6 @@ impl App {
                     self.apply_command(w, cmd, screen, &skin.focused, con)?;
                 }
             }
-            self.display_panels(w, screen, &skin, con)?;
-            w.flush()?;
             event_source.unblock(self.quitting);
         }
 

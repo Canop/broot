@@ -1,3 +1,7 @@
+<a name="v0.18.2"></a>
+### v0.18.2 - 2020-06-29
+Remove flickering
+
 <a name="v0.18.1"></a>
 ### v0.18.1 - 2020-06-28
 Column order is now configurable - Fix #127
