@@ -1,26 +1,31 @@
 <a name="v0.18.1"></a>
 ### v0.18.1 - 2020-06-28
-- column order configurable - Fix #127
+Column order is now configurable - Fix #127
 
 <a name="v0.18.0"></a>
 ### v0.18.0 - 2020-06-26
+
 #### Major change: Recursive last modified date computation
 The date of directories is now the modification date of the last modified inner file, whatever its depth. This is computed in the background and doesn't slow your navigation.
+
 #### Major change: Sort mode
 Size can now be displayed out of sort mode, which concerns either size or dates.
+
 There are new launch arguments:
-`--sort-by-count` : sort by number of files in directories
-`--sort-by-date` : sort by dates, taking content into account (make it easy to find deep recent files)
-`--sort-by-size` : sort by size
-`--whale-spotting` or `-w` : "whale spotting" mode (sort by size and show all files)
+* `--sort-by-count` : sort by number of files in directories
+* `--sort-by-date` : sort by dates, taking content into account (make it easy to find deep recent files)
+* `--sort-by-size` : sort by size
+* `--whale-spotting` or `-w` : "whale spotting" mode (sort by size and show all files)
+
 The `-s` launch argument now works similarly to -d or -p : it doesn't activate a sort mode but activates showing the sizes. `-s` has been replaced with `-w`.
+
 Similarly new verbs have been defined:
-`:toggle_counts`, with shortcut `counts` shows the number of files in directories
-`:toggle_sizes`, with shortcut `sizes` shows the sizes of files and directories
-`:sort_by_count` has for shortcut `sc`
-`:sort_by_date` has for shortcut `sd`
-`:sort_by_size` has `ss` as shortcut
-`:no_sort` removes the current sort mode, if any
+* `:toggle_counts`, with shortcut `counts` shows the number of files in directories
+* `:toggle_sizes`, with shortcut `sizes` shows the sizes of files and directories
+* `:sort_by_count` has for shortcut `sc`
+* `:sort_by_date` has for shortcut `sd`
+* `:sort_by_size` has `ss` as shortcut
+* `:no_sort` removes the current sort mode, if any
 
 <a name="v0.17.0"></a>
 ### v0.17.0 - 2020-06-21
@@ -35,10 +40,11 @@ be back in broot after you quit the editor - Fix #34 - Fix #144 - Fix #158
 ### v0.16.0 - 2020-06-20
 #### Major feature: composite patterns
 It's now possible to use logical operators on patterns.
+
 For example:
-`!/txt$/` : files whose name doesn't end in "txt"
-`carg|c/carg` : files whose name or content has "carg"
-`(json|xml)&c/test` : files containing "test" and whose name fuzzily contains either "json" or "xml"
+* `!/txt$/` : files whose name doesn't end in "txt"
+* `carg|c/carg` : files whose name or content has "carg"
+* `(json|xml)&c/test` : files containing "test" and whose name fuzzily contains either "json" or "xml"
 The document contains other examples and precisions.
 
 <a name="v0.15.1"></a>

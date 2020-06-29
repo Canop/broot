@@ -8,7 +8,9 @@
 
 # Get an overview of a directory, even a big one
 
-![overview](img/20191112-overview.png)
+`br -s`
+
+![overview](img/20200629-overview.png)
 
 Notice the *unlisted*?
 
