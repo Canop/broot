@@ -1,3 +1,7 @@
+<a name="v0.18.3"></a>
+### v0.18.3 - 2020-06-30
+Faster rendering (0.18.2 made it slower on some terminals)
+
 <a name="v0.18.2"></a>
 ### v0.18.2 - 2020-06-29
 Remove flickering
