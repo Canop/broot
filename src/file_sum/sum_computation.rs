@@ -108,11 +108,12 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
                     }
                     busy.fetch_sub(1, Ordering::Relaxed);
                 }
-                if busy.load(Ordering::Relaxed) < 1 {
+                if observer.has_event() {
                     dirs_sender.send(None).unwrap(); // to unlock the next waiting thread
                     break;
                 }
-                if observer.has_event() {
+                if busy.load(Ordering::Relaxed) < 1 {
+                    dirs_sender.send(None).unwrap(); // to unlock the next waiting thread
                     break;
                 }
             }
