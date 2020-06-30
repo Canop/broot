@@ -28,21 +28,15 @@ mkdir build/completion
 cp "$(broot -c ":gi;release;:focus;broot.bash;:parent;:pp" target)/"* build/completion
 
 # build the windows version
-# You need first to install the proper cargo toolchain:
-#  rustup target add x86_64-pc-windows-gnu
-#  sudo apt install mingw-w64
+# use cargo cross
 echo "compiling the Windows version"
-cargo build --target x86_64-pc-windows-gnu --release
-mkdir build/x86_64-pc-windows-gnu/
+cross build --target x86_64-pc-windows-gnu --release
+mkdir build/x86_64-pc-windows-gnu
 cp target/x86_64-pc-windows-gnu/release/broot.exe build/x86_64-pc-windows-gnu/
 
-# build the Raspberry version
-# In order for this to work, you need to install the proper cargo toolchain
-# and a linker:
-#  rustup target add armv7-unknown-linux-gnueabihf 
-#  sudo apt-get install gcc-8-multilib-arm-linux-gnueabihf
-echo "compiling the Raspberry version"
-cargo build --target armv7-unknown-linux-gnueabihf --release
+# build the Raspberry version
+# use cargo cross
+cross build --target armv7-unknown-linux-gnueabihf --release
 mkdir build/armv7-unknown-linux-gnueabihf
 cp target/armv7-unknown-linux-gnueabihf/release/broot build/armv7-unknown-linux-gnueabihf/
 
