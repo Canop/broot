@@ -1,5 +1,8 @@
 use {
-    termimad::{CompoundStyle, Result},
+    termimad::{
+        CompoundStyle,
+        Result,
+    },
 };
 
 /// wrap a writer to ensure that at most `allowed` chars are
@@ -8,7 +11,7 @@ pub struct CropWriter<'w, W>
 where
     W: std::io::Write,
 {
-    w: &'w mut W,
+    pub w: &'w mut W,
     pub allowed: usize,
 }
 
@@ -35,10 +38,18 @@ where
         }
         Ok(())
     }
-    pub fn fill(&mut self, cs: &CompoundStyle, c: char) -> Result<()> {
-        while !self.is_full() {
-            self.allowed -= 1;
-            cs.queue(self.w, c)?;
+    pub fn fill(&mut self, cs: &CompoundStyle, filling: &'static str) -> Result<()> {
+        self.repeat(cs, filling, self.allowed)
+    }
+    pub fn repeat(&mut self, cs: &CompoundStyle, filling: &'static str, mut len: usize) -> Result<()> {
+        loop {
+            let slice_len = len.min(self.allowed).min(filling.len());
+            if slice_len == 0 {
+                break;
+            }
+            cs.queue_str(self.w, &filling[0..slice_len])?;
+            self.allowed -= slice_len;
+            len -= slice_len;
         }
         Ok(())
     }

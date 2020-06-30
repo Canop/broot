@@ -29,6 +29,27 @@ use {
 #[cfg(unix)]
 use {crate::permissions, std::os::unix::fs::MetadataExt, umask::*};
 
+static LONG_SPACE: &str = "                                                                                                                                                                                                                                                                                                                                           ";
+static LONG_BRANCH: &str = "───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────";
+
+//fn repeat<'w, W: Write>(
+//    w: W,
+//    lg: &'static str,
+//    style:
+//    len: usize,
+//) -> Result<(), ProgramError> {
+//
+//    if self.in_app {
+//        let style = if selected {
+//            &self.skin.selected_line
+//        } else {
+//            &self.skin.default
+//        };
+//        cw.fill(style, ' ')?;
+//    }
+//    Ok(())
+//}
+
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
 /// - or to write in a file or an exported string.
@@ -400,13 +421,13 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         cw: &mut CropWriter<'w, W>,
         selected: bool,
     ) -> Result<(), ProgramError> {
-        if self.in_app {
+        if self.in_app && !cw.is_full() {
             let style = if selected {
                 &self.skin.selected_line
             } else {
                 &self.skin.default
             };
-            cw.fill(style, ' ')?;
+            cw.fill(style, LONG_SPACE)?;
         }
         Ok(())
     }
@@ -503,15 +524,13 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                         }
                     };
                     // void: intercol & replacing missing cells
-                    let (void_base_style, void_char) = if in_branch && void_len > 2 {
-                        (&self.skin.tree, '─')
+                    let (void_base_style, void) = if in_branch && void_len > 2 {
+                        (&self.skin.tree, LONG_BRANCH)
                     } else {
-                        (&self.skin.default, ' ')
+                        (&self.skin.default, LONG_SPACE)
                     };
                     cond_bg!(void_style, self, selected, void_base_style);
-                    for _ in 0..void_len {
-                        cw.queue_char(void_style, void_char)?;
-                    }
+                    cw.repeat(void_style, void, void_len)?;
                 }
 
                 if cw.allowed > 8 && pattern_object.content {
