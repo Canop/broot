@@ -91,10 +91,11 @@ Beware that many terminals aren't compatible with RGB 24 bits colors (or aren't 
 Currently supported attributes are:
 
 * bold
-* italic
 * crossedout
-* underlined
+* italic
 * overlined
+* reverse
+* underlined
 
 Note that some of them may be ignored by your terminal. Windows supports about none of them, for example.
 

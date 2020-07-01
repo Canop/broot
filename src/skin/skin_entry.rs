@@ -121,8 +121,14 @@ fn parse_attribute(s: &str) -> Result<Attribute, InvalidSkinError> {
         "crossedout" => Ok(CrossedOut),
         "dim" => Ok(Dim), // does it do anything ?
         "italic" => Ok(Italic),
+        "reverse" => Ok(Reverse),
         "underlined" => Ok(Underlined),
         "overlined" => Ok(OverLined),
+        // following ones aren't supported by crossterm yet
+        // "defaultforegroundcolor" => Ok(DefaultForegroundColor),
+        // "defaultbackgroundcolor" => Ok(DefaultBackgroundColor),
+        "slowblink" => Ok(SlowBlink),
+        "rapidblink" => Ok(RapidBlink),
         _ => Err(InvalidSkinError::InvalidAttribute { raw: s.to_owned() }),
     }
 }
