@@ -18,7 +18,7 @@ Can I install it now? [**Y** n]
 "#;
 
 const MD_INSTALL_DONE: &str = r#"
-The **br** function has been installed.
+The **br** function has been successfully installed.
 You may have to restart your shell or source your shell init files.
 Afterwards, you should start broot with `br` in order to use its full power.
 "#;

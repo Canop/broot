@@ -40,3 +40,7 @@ cross build --target armv7-unknown-linux-gnueabihf --release
 mkdir build/armv7-unknown-linux-gnueabihf
 cp target/armv7-unknown-linux-gnueabihf/release/broot build/armv7-unknown-linux-gnueabihf/
 
+# build a musl version
+cross build --release --target x86_64-unknown-linux-musl
+mkdir build/x86_64-unknown-linux-musl
+cp target/x86_64-unknown-linux-musl/release/broot build/x86_64-unknown-linux-musl
