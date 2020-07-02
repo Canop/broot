@@ -46,6 +46,11 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("Don't show git statuses on files"),
         )
         .arg(
+            clap::Arg::with_name("git-status")
+                .long("git-status")
+                .help("Only show files having an interesting git status, including hidden ones"),
+        )
+        .arg(
             clap::Arg::with_name("hidden")
                 .short("h")
                 .long("hidden")

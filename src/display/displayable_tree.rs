@@ -399,7 +399,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         let title = self.tree.lines[0].path.to_string_lossy();
         cw.queue_str(&style, &title)?;
         if self.in_app {
-            self.extend_line_bg(cw, selected)?;
             let title_len = title.chars().count();
             if title_len < self.area.width as usize {
                 if let ComputationResult::Done(git_status) = &self.tree.git_status {
@@ -411,6 +410,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     git_status_display.write(cw, selected)?;
                 }
             }
+            self.extend_line_bg(cw, selected)?;
         }
         Ok(())
     }

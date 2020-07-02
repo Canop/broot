@@ -617,7 +617,16 @@ impl AppState for BrowserState {
                 self.with_new_options(screen, &|o| o.show_git_file_info ^= true, bang, con)
             }
             Internal::toggle_git_status => {
-                self.with_new_options(screen, &|o| o.filter_by_git_status ^= true, bang, con)
+                self.with_new_options(
+                    screen, &|o| {
+                        if o.filter_by_git_status {
+                            o.filter_by_git_status = false;
+                        } else {
+                            o.filter_by_git_status = true;
+                            o.show_hidden = true;
+                        }
+                    }, bang, con
+                )
             }
             Internal::toggle_perm => {
                 self.with_new_options(screen, &|o| o.show_permissions ^= true, bang, con)

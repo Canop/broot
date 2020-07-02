@@ -97,7 +97,12 @@ Currently supported attributes are:
 * reverse
 * underlined
 
-Note that some of them may be ignored by your terminal. Windows supports about none of them, for example.
+and also...
+
+* slowblink
+* rapidblink
+
+Note that some of them may be ignored by your terminal especially if you're not on a unix system.
 
 The mapping between keys and screen parts may not always be obvious. Don't hesitate to come ask for help on [Miaou](https://miaou.dystroy.org/3490?broot).
 

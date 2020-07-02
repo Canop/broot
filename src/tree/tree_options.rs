@@ -79,6 +79,10 @@ impl TreeOptions {
         } else if cli_args.is_present("no-only-folders") {
             self.only_folders = false;
         }
+        if cli_args.is_present("git-status") {
+            self.filter_by_git_status = true;
+            self.show_hidden = true;
+        }
         if cli_args.is_present("hidden") {
             self.show_hidden = true;
         } else if cli_args.is_present("no-hidden") {

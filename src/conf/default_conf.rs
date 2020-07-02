@@ -100,7 +100,7 @@ leave_broot = false
 invocation = "git_diff"
 shortcut = "gd"
 leave_broot = false
-execution = "git diff {file}"
+execution = "git difftool -y {file}"
 
 # If $PAGER isn't set on your computer, you should either set it
 #  or just replace it with your viewer of choice in the 'execution'

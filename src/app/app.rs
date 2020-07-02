@@ -102,7 +102,11 @@ impl App {
         for (idx, panel) in self.panels.as_mut_slice().iter_mut().enumerate() {
             let focused = idx == self.active_panel_idx;
             let skin = if focused { &skin.focused } else { &skin.unfocused };
-            panel.display(w, focused, screen, skin, con)?;
+            time!(
+                Debug,
+                "display panel",
+                panel.display(w, focused, screen, skin, con)?,
+            );
         }
         Ok(())
     }
