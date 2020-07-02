@@ -32,24 +32,6 @@ use {crate::permissions, std::os::unix::fs::MetadataExt, umask::*};
 static LONG_SPACE: &str = "                                                                                                                                                                                                                                                                                                                                           ";
 static LONG_BRANCH: &str = "───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────";
 
-//fn repeat<'w, W: Write>(
-//    w: W,
-//    lg: &'static str,
-//    style:
-//    len: usize,
-//) -> Result<(), ProgramError> {
-//
-//    if self.in_app {
-//        let style = if selected {
-//            &self.skin.selected_line
-//        } else {
-//            &self.skin.default
-//        };
-//        cw.fill(style, ' ')?;
-//    }
-//    Ok(())
-//}
-
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
 /// - or to write in a file or an exported string.
@@ -290,9 +272,9 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         selected: bool,
     ) -> Result<usize, ProgramError> {
         cond_bg!(branch_style, self, selected, self.skin.tree);
+        let mut branch = String::new();
         for depth in 0..line.depth {
-            cw.queue_str(
-                &branch_style,
+            branch.push_str(
                 if line.left_branchs[depth as usize] {
                     if self.tree.has_branch(line_index + 1, depth as usize) {
                         if depth == line.depth - 1 {
@@ -306,7 +288,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 } else {
                     "   "
                 },
-            )?;
+            );
+        }
+        if !branch.is_empty() {
+            cw.queue_string(&branch_style, branch)?;
         }
         Ok(0)
     }

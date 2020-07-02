@@ -1,5 +1,7 @@
-### next version
+<a name="v0.18.4"></a>
+### v0.18.4 - 2020-07-02
 - `--git-status` launch option
+- fix rendering on windows
 
 <a name="v0.18.3"></a>
 ### v0.18.3 - 2020-06-30
