@@ -20,11 +20,15 @@ That's what makes it usable where the old `tree` command would produce pages of 
 
 # Find a directory then `cd` to it
 
+just type a few letters
+
 ![cd](img/20191112-cd.png)
+
+Hit <kbd>alt</kbd><kbd>enter</kbd> and you're done.
 
 This way, you can navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
-broot is fast and never blocks, even when you make it search a big slow disk (any keystroke interrupts the current search to start the next one).
+broot is fast and doesn't block (any keystroke interrupts the current search to start the next one).
 
 Most useful keys for this:
 

@@ -1,6 +1,6 @@
 /// the status contains information written on the grey line
 ///  near the bottom of the screen
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Status {
     pub message: String, // markdown
     pub error: bool,     // is the current message an error?

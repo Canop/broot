@@ -1,3 +1,6 @@
+### next version
+- git status takes into accout overloading of enter and alt-enter
+
 <a name="v0.18.4"></a>
 ### v0.18.4 - 2020-07-02
 - `--git-status` launch option

@@ -7,6 +7,7 @@ mod panel_id;
 mod panel_purpose;
 mod state;
 mod status;
+mod standard_status;
 
 pub use {
     app::App,
@@ -18,4 +19,5 @@ pub use {
     panel_purpose::PanelPurpose,
     state::AppState,
     status::Status,
+    standard_status::StandardStatus,
 };

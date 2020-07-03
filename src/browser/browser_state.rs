@@ -7,6 +7,7 @@ use {
         flag::Flag,
         git,
         help::HelpState,
+        keys,
         launchable::Launchable,
         pattern::*,
         path,
@@ -206,28 +207,24 @@ impl BrowserState {
         }
     }
 
-    fn normal_status_message(&self, has_pattern: bool) -> &'static str {
-        let tree = self.displayed_tree();
-        if tree.selection == 0 {
+    fn no_verb_status(&self, has_pattern: bool, con: &AppContext) -> Status {
+        if self.displayed_tree().selection == 0 {
             if has_pattern {
-                "Hit *esc* to remove the filter, *enter* to go up, '?' for help"
+                con.standard_status.root_pat.clone()
             } else {
-                "Hit *esc* to go back, *enter* to go up, *?* for help, or a few letters to search"
+                con.standard_status.root_no_pat.clone()
+            }
+        } else if self.selection_type() == SelectionType::Directory {
+            if has_pattern {
+                con.standard_status.dir_pat.clone()
+            } else {
+                con.standard_status.dir_no_pat.clone()
             }
         } else {
-            let line = &tree.lines[tree.selection];
             if has_pattern {
-                if line.is_dir() {
-                    "Hit *enter* to focus, *alt*-*enter* to cd, *esc* to clear filter, or a space then a verb"
-                } else {
-                    "Hit *enter* to open, *alt*-*enter* to open and quit, *esc* to clear filter, or *:* + verb"
-                }
+                con.standard_status.file_pat.clone()
             } else {
-                if line.is_dir() {
-                    "Hit *enter* to focus, *alt*-*enter* to cd, or a space then a verb"
-                } else {
-                    "Hit *enter* to open the file, *alt*-*enter* to open and quit, or a space then a verb"
-                }
+                con.standard_status.file_no_pat.clone()
             }
         }
     }
@@ -278,9 +275,7 @@ impl AppState for BrowserState {
         con: &AppContext,
     ) -> Status {
         match cmd {
-            Command::PatternEdit{ .. } => {
-                Status::new(self.normal_status_message(true), false)
-            }
+            Command::PatternEdit{ .. } => self.no_verb_status(true, con),
             Command::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
                     Status::new(
@@ -310,7 +305,7 @@ impl AppState for BrowserState {
                     }
                 }
             }
-            _ => Status::new(self.normal_status_message(false), false),
+            _ => self.no_verb_status(false, con),
         }
     }
 
@@ -761,3 +756,4 @@ impl AppState for BrowserState {
         }
     }
 }
+

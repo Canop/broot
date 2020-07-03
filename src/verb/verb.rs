@@ -195,4 +195,11 @@ impl Verb {
             _ => PathAnchor::Unspecified,
         }
     }
+
+    pub fn get_internal(&self) -> Option<Internal> {
+        match &self.execution {
+            VerbExecution::Internal(internal_exec) => Some(internal_exec.internal),
+            _ => None,
+        }
+    }
 }
