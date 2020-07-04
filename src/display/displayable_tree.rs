@@ -3,6 +3,7 @@ use {
         Col,
         Cols,
         CropWriter,
+        file_size,
         GitStatusDisplay,
         MatchedString,
     },
@@ -107,10 +108,13 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
             cond_bg!(size_style, self, selected, self.name_style(&line));
-            cw.queue_string(&size_style, format!("{:>5}", s.to_size_string()))?;
+            cw.queue_string(
+                &size_style,
+                format!("{:>4}", file_size::fit_4(s.to_size())),
+            )?;
             1
         } else {
-            6
+            5
         })
     }
 
@@ -127,12 +131,15 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             let pb = ProgressBar::new(s.part_of_size(total_size), 10);
             cond_bg!(size_style, self, selected, self.name_style(&line));
             cond_bg!(sparse_style, self, selected, self.skin.sparse);
-            cw.queue_string(&size_style, format!("{:>5}", s.to_size_string()))?;
+            cw.queue_string(
+                &size_style,
+                format!("{:>4}", file_size::fit_4(s.to_size())),
+            )?;
             cw.queue_char(&sparse_style, if s.is_sparse() { 's' } else { ' ' })?;
             cw.queue_string(&size_style, format!("{:<10}", pb))?;
             1
         } else {
-            17
+            16
         })
     }
 
@@ -461,6 +468,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
                 let mut in_branch = false;
+                cw.queue_char(&self.skin.default, ' ')?;
                 for col in self.cols {
                     let void_len = match col {
 

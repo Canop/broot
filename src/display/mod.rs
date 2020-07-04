@@ -24,6 +24,7 @@ mod areas;
 mod col;
 mod crop_writer;
 mod displayable_tree;
+mod file_size;
 pub mod flags_display;
 mod git_status_display;
 pub mod status_line;

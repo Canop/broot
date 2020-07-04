@@ -17,8 +17,6 @@ use {
     },
 };
 
-const SIZE_NAMES: &[&str] = &["", "K", "M", "G", "T", "P", "E", "Z", "Y"];
-
 lazy_static! {
     static ref SUM_CACHE_MUTEX: Mutex<HashMap<PathBuf, FileSum>> = Mutex::new(HashMap::new());
 }
@@ -89,16 +87,6 @@ impl FileSum {
         } else {
             self.real_size as f32 / total.real_size as f32
         }
-    }
-    /// format a number of bytes as a string, for example 247K
-    pub fn to_size_string(self) -> String {
-        let mut v = self.real_size;
-        let mut i = 0;
-        while v >= 5000 && i < SIZE_NAMES.len() - 1 {
-            v /= 1000;
-            i += 1;
-        }
-        format!("{}{}", v, &SIZE_NAMES[i])
     }
     /// return the number of files (normally at least 1)
     pub fn to_count(self) -> usize {
