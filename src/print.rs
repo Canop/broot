@@ -89,7 +89,7 @@ pub fn print_tree(
             tree,
             screen,
             styles,
-            con.cols.clone(),
+            con.cols,
         )))
     }
 }

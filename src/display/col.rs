@@ -26,7 +26,9 @@ impl Col {
             's' => Self::Size,
             'c' => Self::Count,
             'n' => Self::Name,
-            _ => Err(ConfError::InvalidCols { details: format!("column not recognized : {}", c) })?,
+            _ => {
+                return Err(ConfError::InvalidCols { details: format!("column not recognized : {}", c) });
+            }
         })
     }
     pub fn index_in(self, cols: &Cols) -> Option<usize> {
@@ -40,7 +42,7 @@ impl Col {
     /// return a Cols which tries to take the s setting into account
     /// but is guaranteed to have every Col exactly once.
     pub fn parse_cols(s: &str) -> Result<Cols, ConfError> {
-        let mut cols = DEFAULT_COLS.clone();
+        let mut cols = DEFAULT_COLS;
         for (idx, c) in s.chars().enumerate() {
             if idx >= COLS_COUNT {
                 return Err(ConfError::InvalidCols { details: format!("too long: {:?}", s) });

@@ -49,7 +49,7 @@ impl AppContext {
             verb_store,
             special_paths: config.special_paths.clone(),
             search_modes: config.search_modes.clone(),
-            cols: config.cols_order.unwrap_or(DEFAULT_COLS).clone(),
+            cols: config.cols_order.unwrap_or(DEFAULT_COLS),
             standard_status,
         }
     }

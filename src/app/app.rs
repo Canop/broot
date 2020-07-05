@@ -254,7 +254,7 @@ impl App {
             }
             RefreshState { clear_cache } => {
                 if is_input_invocation {
-                    self.mut_panel().clear_input();
+                    self.mut_panel().clear_input_invocation();
                 }
                 if clear_cache {
                     clear_caches();
