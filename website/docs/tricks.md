@@ -15,7 +15,7 @@ As broot can be driven by commands, you can define this function:
 
 	# deep fuzzy cd
 	function dcd {
-		br --only-folders --cmd "$1 :cd"
+		br --only-folders --cmd "$1;:cd"
 	}
 
 (paste this for example in your .bashrc)

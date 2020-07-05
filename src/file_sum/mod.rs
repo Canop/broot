@@ -1,9 +1,6 @@
-/// compute the summed sum of directories.
-/// A cache is used to avoid recomputing the
-///  same directories again and again.
-/// Hard links are checked to avoid counting
-///  twice an inode.
-///
+/// compute consolidated data for directories: modified date, size, and count.
+/// A cache is used to avoid recomputing the same directories again and again.
+/// On unix, hard links are checked to avoid counting twice an inode.
 
 mod sum_computation;
 
