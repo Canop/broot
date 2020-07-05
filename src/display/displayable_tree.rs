@@ -135,7 +135,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 &size_style,
                 format!("{:>4}", file_size::fit_4(s.to_size())),
             )?;
-            cw.queue_char(&sparse_style, if s.is_sparse() { 's' } else { ' ' })?;
+            cw.queue_char(
+                &sparse_style,
+                if s.is_sparse() && line.is_file() { 's' } else { ' ' },
+            )?;
             cw.queue_string(&size_style, format!("{:<10}", pb))?;
             1
         } else {
@@ -468,7 +471,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
                 let mut in_branch = false;
-                cw.queue_char(&self.skin.default, ' ')?;
+                let space_style = if selected {
+                    &self.skin.selected_line
+                } else {
+                    &self.skin.default
+                };
+                cw.queue_char(space_style, ' ')?;
                 for col in self.cols {
                     let void_len = match col {
 
