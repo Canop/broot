@@ -180,7 +180,7 @@ impl Panel {
             let flags_len = flags_display::visible_width(&flags);
             if input_area.width > input_content_len + 1 + flags_len {
                 input_area.width -= flags_len + 1;
-                screen.goto(w, input_area.left + input_area.width - 1, input_area.top)?;
+                screen.goto(w, input_area.left + input_area.width, input_area.top)?;
                 flags_display::write(w, &flags, panel_skin)?;
             }
         }

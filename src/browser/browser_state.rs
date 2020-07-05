@@ -7,7 +7,6 @@ use {
         flag::Flag,
         git,
         help::HelpState,
-        keys,
         launchable::Launchable,
         pattern::*,
         path,

@@ -3,6 +3,21 @@
 
 You can change all colors by adding a `[skin]` section in your `conf.toml` file.
 
+To start with, you might want broot to use more of your terminal colors.
+
+Try adding this in your [config file](../conf_file):
+
+```toml
+[skin]
+default = "none none"
+```
+
+The first `none` sets the terminal default foreground color as broot's default one, and the second one is for the background.
+
+Depending on your default colors, the result might be good or not.
+
+From there, keeping or not the default colors, you may define a whole skin.
+
 For example:
 
 ```toml

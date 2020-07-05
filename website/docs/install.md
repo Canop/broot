@@ -75,6 +75,13 @@ In order to do this, either remove all broot config files, or launch `broot --in
 
 When it's done, you can do just `br` to launch broot, and typing <kbd>alt</kbd><kbd>enter</kbd> will cd for you.
 
+# Fix the colors
+
+Broot's initial colors ensure that everything is readable whathever your settings.
+But you may want to have something more similar to your usual terminal colors, or maybe to define the whole skin.
+
+You should probably have a look at [changing the skin](../skins) as your next step.
+
 # `br` alias for Nushell
 
 As a shortcut for [Nushell](https://www.nushell.sh/), define the following alias:
