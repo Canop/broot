@@ -102,6 +102,11 @@ impl Areas {
             };
             let y = y + 1;
             areas.input = Area::new(x, y, panel_width, 1);
+            if slot_idx==nb_pos-1 {
+                // the char at the bottom right of the terminal should not be touched
+                // (it makes some terminals flicker) so the input area is one char shorter
+                areas.input.width -= 1;
+            }
             areas.purpose = if slot_idx > 0 {
                 let area_width = panel_width / 2;
                 Some(Area::new(x - area_width, y, area_width, 1))

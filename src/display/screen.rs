@@ -3,6 +3,7 @@ use {
         app::AppContext,
         conf::Conf,
         errors::ProgramError,
+        skin::PanelSkin,
     },
     crossterm::{
         cursor,
@@ -56,6 +57,19 @@ impl Screen {
             self.goto(w, area.left, y)?;
             self.clear_line(w)?;
         }
+        Ok(())
+    }
+    /// just clears the char at the bottom right.
+    /// (any redraw of this position makes the whole terminal flicker on some
+    /// terminals like win/conemu, so we draw it only once at start of the
+    /// app)
+    pub fn clear_bottom_right_char(
+        &self,
+        w: &mut W,
+        panel_skin: &PanelSkin,
+    ) -> Result<(), ProgramError> {
+        self.goto(w, self.width, self.height)?;
+        panel_skin.styles.default.queue(w, ' ')?;
         Ok(())
     }
 }

@@ -308,6 +308,8 @@ impl App {
 
         let skin = AppSkin::new(conf);
 
+        screen.clear_bottom_right_char(w, &skin.focused)?;
+
         // if some commands were passed to the application
         //  we execute them before even starting listening for events
         if let Some(unparsed_commands) = &con.launch_args.commands {

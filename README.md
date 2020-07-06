@@ -117,7 +117,7 @@ And you can add shorcuts, for example a <kbd>ctrl</kbd> sequence or a function k
 
 If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which gets you this:
 
-![replace ls](website/docs/img/20200628-sdp.png)
+![replace ls](website/docs/img/20200704-sdp.png)
 
 You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or a space, then `h` then enter and you see hidden files.
 
@@ -129,7 +129,7 @@ When sorting, the whole content of directories is taken into account. So if you 
 
 If you start broot with the `--whale-spotting` option (or its shorcut `-w`), you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
 
-![size](website/docs/img/20200628-whale-spotting.png)
+![size](website/docs/img/20200704-whale-spotting.png)
 
 And you keep all broot tools, like filtering or the ability to delete or open files and directories.
 
