@@ -13,14 +13,28 @@ mod fish;
 mod util;
 
 const MD_INSTALL_REQUEST: &str = r#"
-**Broot** should be launched using a shell function (see *https://github.com/Canop/broot* for explanations).
+**Broot** should be launched using a shell function.
+This function most notably makes it possible to `cd` from inside broot
+(see *https://dystoy.org/broot/install* for explanations).
+
 Can I install it now? [**Y** n]
+"#;
+
+const MD_INSTALL_CANCELLED: &str = r#"
+You refused the installation (for now).
+You can still used `broot` but some features won't be available.
+If you want the `br` shell function, you may either
+* do `broot --install`
+* install the various pieces yourself
+(see *https://dystoy.org/broot/install* for details).
+
 "#;
 
 const MD_INSTALL_DONE: &str = r#"
 The **br** function has been successfully installed.
 You may have to restart your shell or source your shell init files.
 Afterwards, you should start broot with `br` in order to use its full power.
+
 "#;
 
 const REFUSED_FILE_CONTENT: &str = r#"
@@ -188,9 +202,7 @@ impl ShellInstall {
         self.authorization = Some(proceed);
         if !proceed {
             ShellInstallState::Refused.write_file()?;
-            self.skin.print_text(
-                "**Installation cancelled**. If you change your mind, run `broot --install`.",
-            );
+            self.skin.print_text(MD_INSTALL_CANCELLED);
         }
         Ok(proceed)
     }
