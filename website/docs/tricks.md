@@ -60,10 +60,34 @@ apply_to = "file"
 
 If you want to start navigating with a view of the files which changed, you may do
 
-    br -gc :gs
+    br -ghc :gs
 
 Then just hitting the `esc` key will show you the normal unfiltered broot view.
 
 (note: this isn't equivalent to `git status`. Most notably, removed files aren't displayed)
 
 From there you may use the `:gd` verb (`:git_diff`) to open the selection into your favourite dif viewer.
+
+If you want more: [Use broot and meld to diff before commit](https://dystroy.org/blog/gg/).
+
+## Use negative filters
+
+Here's a (real) example of how negative filters and combination can help you navigate.
+
+Here's the initial view of a directory in which you land:
+
+![initial view](img/20200709-combneg-1.png)
+
+Type `!txt` to hide unwanted files:
+
+![without txt](img/20200709-combneg-2.png)
+
+(it's filtered as you type so you stop at `!tx`, it's enough)
+
+Now let's add `&` then some letters of what we want.
+
+![on target](img/20200709-combneg-3.png)
+
+We can also select the desired file with arrow keys at this point.
+
+When you grasped the basic logic of [combined filters](../input/#combining-filtering-patterns), navigation is incredibly efficient.
