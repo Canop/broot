@@ -97,3 +97,17 @@ cols_order = "gbpdscn"
 ```
 
 The `n` column should be kept at end as it's the only one with a variable size.
+
+# Colors by file extension
+
+broot doesn't support `LS_COLORS` which isn't available on all systems and is limited to 16 system dependant colors.
+
+But you can still give a color to files by extension:
+
+```toml
+[ext-colors]
+png = "rgb(255, 128, 75)"
+rs = "yellow"
+toml = "ansi(105)"
+```
+

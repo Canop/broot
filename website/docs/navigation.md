@@ -30,7 +30,7 @@ and you can define your own [shorcuts](../conf_file/#shortcuts-and-verb-search) 
 
 The best way to navigate is by filtering the tree.
 
-This is done simply by typing a few letters.
+This is done by typing a few letters.
 
 The pattern filters the tree while you type. It's interpreted in a fuzzy way so that you don't have to type all the letters or even consecutive letters. The best match is automatically selected.
 
@@ -100,7 +100,7 @@ This behavior is tuned with several toggles.
  | toggle_sizes         | sizes    | toggle showing sizes
  | toggle_trim_root     | t        | toggle removing nodes at first level too (default)
 
-To apply one, just type a space (or `:`), then the start of its shortcut, then hit <kbd class=b>⏎</kbd>.
+To apply one, type a space (or `:`), then the start of its shortcut, then hit <kbd class=b>⏎</kbd>.
 
 For example typing `:s` then enter will show file and directory sizes:
 

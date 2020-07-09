@@ -34,7 +34,7 @@ If you want to keep the filter, for example to search deeper, you may use `:open
 
 ## Run an script or program from broot
 
-If your system is normally configured, just doing `alt`-`enter` on an executable will close broot and executes the file.
+If your system is normally configured, doing `alt`-`enter` on an executable will close broot and executes the file.
 
 ## Change standard file opening
 

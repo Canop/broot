@@ -1,8 +1,16 @@
 use {
     crate::{
-        display::{Cols, DisplayableTree, Screen, W},
+        display::{
+            Cols,
+            DisplayableTree,
+            Screen,
+            W,
+        },
         errors::ProgramError,
-        skin::StyleMap,
+        skin::{
+            ExtColorMap,
+            StyleMap,
+        },
         tree::Tree,
     },
     crossterm::{
@@ -31,6 +39,7 @@ pub enum Launchable {
         tree: Box<Tree>,
         skin: Box<StyleMap>,
         cols: Cols,
+        ext_colors: ExtColorMap,
         width: u16,
     },
     Program {
@@ -72,11 +81,13 @@ impl Launchable {
         screen: &Screen,
         style_map: StyleMap,
         cols: Cols,
+        ext_colors: ExtColorMap,
     ) -> Launchable {
         Launchable::TreePrinter {
             tree: Box::new(tree.clone()),
             skin: Box::new(style_map),
             cols,
+            ext_colors,
             width: screen.width,
         }
     }
@@ -98,8 +109,8 @@ impl Launchable {
                 println!("{}", to_print);
                 Ok(())
             }
-            Launchable::TreePrinter { tree, skin, cols, width } => {
-                let dp = DisplayableTree::out_of_app(&tree, &skin, &cols, *width);
+            Launchable::TreePrinter { tree, skin, cols, ext_colors, width } => {
+                let dp = DisplayableTree::out_of_app(&tree, &skin, &cols, &ext_colors, *width);
                 dp.write_on(&mut std::io::stdout())
             }
             Launchable::Program { exe, args } => {

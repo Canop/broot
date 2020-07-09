@@ -12,7 +12,7 @@ use {
         errors::ProgramError,
         file_sum::FileSum,
         pattern::PatternObject,
-        skin::StyleMap,
+        skin::{ExtColorMap, StyleMap},
         task_sync::ComputationResult,
         tree::{Tree, TreeLine, TreeLineType},
     },
@@ -46,6 +46,7 @@ pub struct DisplayableTree<'s, 't> {
     pub area: termimad::Area,
     pub in_app: bool, // if true we show the selection and scrollbar
     pub cols: &'s Cols,
+    pub ext_colors: &'s ExtColorMap,
 }
 
 impl<'s, 't> DisplayableTree<'s, 't> {
@@ -54,12 +55,14 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         tree: &'t Tree,
         skin: &'s StyleMap,
         cols: &'s Cols,
+        ext_colors: &'s ExtColorMap,
         width: u16,
     ) -> DisplayableTree<'s, 't> {
         DisplayableTree {
             tree,
             skin,
             cols,
+            ext_colors,
             area: termimad::Area {
                 left: 0,
                 top: 0,
@@ -314,7 +317,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         pattern_object: PatternObject,
         selected: bool,
     ) -> Result<usize, ProgramError> {
-        let style = match &line.line_type {
+        let mut style = match &line.line_type {
             TreeLineType::Dir => &self.skin.directory,
             TreeLineType::File => {
                 if line.is_exe() {
@@ -326,6 +329,13 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             TreeLineType::SymLinkToFile(_) | TreeLineType::SymLinkToDir(_) => &self.skin.link,
             TreeLineType::Pruning => &self.skin.pruning,
         };
+        let mut cloned_style;
+        if let Some(ext_color) = line.extension().and_then(|ext| self.ext_colors.get(ext)) {
+            debug!("extension: {:?}", ext_color);
+            cloned_style = style.clone();
+            cloned_style.set_fg(ext_color);
+            style = &cloned_style;
+        }
         cond_bg!(style, self, selected, style);
         cond_bg!(char_match_style, self, selected, self.skin.char_match);
         let label = if pattern_object.subpath {

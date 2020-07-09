@@ -1,3 +1,6 @@
+### next version
+- `[ext-colors]` section in config
+
 <a name="v0.18.5"></a>
 ### v0.18.5 - 2020-07-05
 - git status takes into accout overloading of enter and alt-enter

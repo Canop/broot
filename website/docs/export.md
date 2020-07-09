@@ -3,7 +3,7 @@ If you want to use the pruned tree out of broot (for example for a documentation
 
 It can be used in several ways.
 
-The easiest is to just execute it from inside the application (the verb is also accessible with the `:pt` shortcut). This quits broot and you find the tree on your console, without the status line and the input, but with the same filtering state as when you were browsing.
+The easiest is to execute it from inside the application (the verb is also accessible with the `:pt` shortcut). This quits broot and you find the tree on your console, without the status line and the input, but with the same filtering state as when you were browsing.
 
 
 Example with a filter:
@@ -28,7 +28,7 @@ For example
 
 will export the local tree to the `my_file.txt` file.
 
-Or just
+Or
 
     broot --no-style > tree.txt
 

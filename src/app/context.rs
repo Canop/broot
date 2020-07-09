@@ -5,6 +5,7 @@ use {
         conf::Conf,
         display::{Cols, DEFAULT_COLS},
         pattern::SearchModeMap,
+        skin::ExtColorMap,
         tree::SpecialPath,
         verb::VerbStore,
     },
@@ -23,7 +24,7 @@ pub struct AppContext {
     /// the verbs in use (builtins and configured ones)
     pub verb_store: VerbStore,
 
-    /// the paths for which there's a special behavior to follow (come from conf)
+    /// the paths for which there's a special behavior to follow (comes from conf)
     pub special_paths: Vec<SpecialPath>,
 
     /// the map between search prefixes and the search mode to apply
@@ -31,6 +32,9 @@ pub struct AppContext {
 
     /// order of columns in tree display
     pub cols: Cols,
+
+    /// mapping from file extension to colors (comes from conf)
+    pub ext_colors: ExtColorMap,
 
     pub standard_status: StandardStatus,
 }
@@ -50,6 +54,7 @@ impl AppContext {
             special_paths: config.special_paths.clone(),
             search_modes: config.search_modes.clone(),
             cols: config.cols_order.unwrap_or(DEFAULT_COLS),
+            ext_colors: config.ext_colors.clone(),
             standard_status,
         }
     }

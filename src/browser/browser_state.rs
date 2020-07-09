@@ -707,6 +707,7 @@ impl AppState for BrowserState {
             tree: &self.displayed_tree(),
             skin: &panel_skin.styles,
             cols: &con.cols,
+            ext_colors: &con.ext_colors,
             area,
             in_app: true,
         };

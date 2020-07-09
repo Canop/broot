@@ -73,7 +73,7 @@ When you start broot, it checks whether the `br` shell function seems to have be
 to have been refused). If needed, and if the used shell seems compatible (supported shells today are bash, zsh and fish),
 then broot asks the permission to register this shell function.
 
-When it's done, you can do just `br` to launch broot, and typing <kbd>alt</kbd><kbd>enter</kbd> will cd for you.
+When it's done, you can do `br` to launch broot, and typing <kbd>alt</kbd><kbd>enter</kbd> will cd for you.
 
 ## Retry the automatic installation
 
@@ -96,8 +96,6 @@ If you prefer to manage the function sourcing yourself, or to automate the insta
 As a shortcut for [Nushell](https://www.nushell.sh/), define the following alias:
 
     alias br [] { broot | trim | cd $it }
-
-When it's done, you can do just `br` to launch broot, and typing `:pp` will cd for you.
 
 You can bind this command to a key sequence in the [configuration file](../conf_file):
 

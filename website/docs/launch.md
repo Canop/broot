@@ -65,7 +65,7 @@ For example if you launch
 
     br --cmd cow /
 
-Then broot is launched in the `/` directory and there's simply a filter typed for you.
+Then broot is launched in the `/` directory and there's a filter typed for you.
 
 If you do
 

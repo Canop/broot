@@ -69,6 +69,12 @@ impl TreeLine {
             SelectionType::Directory => self.is_dir(),
         }
     }
+    pub fn extension(&self) -> Option<&str> {
+        regex!(r"\.([^.]+)$")
+            .captures(&self.name)
+            .and_then(|c| c.get(1))
+            .map(|e| e.as_str())
+    }
     pub fn selection_type(&self) -> SelectionType {
         use TreeLineType::*;
         match &self.line_type {

@@ -20,7 +20,7 @@ That's what makes it usable where the old `tree` command would produce pages of 
 
 # Find a directory then `cd` to it
 
-just type a few letters
+type a few letters
 
 ![cd](img/20191112-cd.png)
 
@@ -103,9 +103,9 @@ You may also toggle options with a few keystrokes while inside broot. For exampl
 
 # Sort, see what takes space:
 
-You may sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, just type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
+You may sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
 
-When sorting, the whole content of directories is taken into account. So if you want to find on monday morning the most recently modified files, just launch `br --sort-by-date ~`.
+When sorting, the whole content of directories is taken into account. So if you want to find on monday morning the most recently modified files, launch `br --sort-by-date ~`.
 
 If you start broot with the `--whale-spotting` option (or its shorcut `-w`), you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
 

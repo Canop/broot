@@ -11,7 +11,7 @@ use {
         keys,
         pattern::{SearchModeMap, SearchModeMapEntry},
         selection_type::SelectionType,
-        skin::SkinEntry,
+        skin::{ExtColorMap, SkinEntry},
         tree::*,
         verb::VerbConf,
     },
@@ -20,7 +20,6 @@ use {
         collections::HashMap,
         fs, io,
         path::{Path, PathBuf},
-        result::Result,
     },
     toml::{self, Value},
 };
@@ -36,6 +35,7 @@ pub struct Conf {
     pub search_modes: SearchModeMap,
     pub disable_mouse_capture: bool,
     pub cols_order: Option<Cols>,
+    pub ext_colors: ExtColorMap,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -224,7 +224,16 @@ impl Conf {
                     }
                 }
             }
-
+        }
+        // reading the ext_colors map
+        if let Some(Value::Table(ext_colors_tbl)) = &root.get("ext-colors") {
+            for (k, v) in ext_colors_tbl.iter() {
+                if let Some(v) = v.as_str() {
+                    if let Err(e) = self.ext_colors.set(k.to_string(), v) {
+                        eprintln!("{}", e);
+                    }
+                }
+            }
         }
 
         Ok(())
