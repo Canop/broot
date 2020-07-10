@@ -66,6 +66,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::internal(open_stay)
             .with_key(ENTER)
             .with_shortcut("os"),
+        Verb::internal(open_stay_filter)
+            .with_shortcut("osf"),
         Verb::internal(open_leave)
             .with_key(ALT_ENTER)
             .with_shortcut("ol"),

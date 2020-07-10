@@ -213,4 +213,16 @@ leave_broot = false
 #  https://dystroy.org/broot/skins
 # for example a skin suitable for white backgrounds
 
+
+###############################################################
+# File Extension Colors
+#
+# uncomment and modify the next section if you want to color
+# file name depending on their extension
+#
+# [ext-colors]
+# png = "rgb(255, 128, 75)"
+# rs = "yellow"
+
+
 "#;

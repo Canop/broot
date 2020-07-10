@@ -53,4 +53,4 @@ Even Microsoft doesn't support them anymore. If you have a cheap solution it's w
 
 # Broot doesn't seem as fast or feature complete on Windows
 
-It isn't. I'm not a Windows programmer and I don't even have a machine to test. A programmer with the relevant competences and the will to improve broot would be welcome.
+It isn't. I'm not a Windows programmer and I don't even have a machine to test. I'd welcome the help of a programmer with the relevant competences and the will to improve broot.
