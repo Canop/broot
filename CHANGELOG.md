@@ -1,5 +1,7 @@
-### next version
+<a name="v0.18.6"></a>
+### v0.18.6 - 2020-07-10
 - `[ext-colors]` section in config
+- a few minor fixes and changes
 
 <a name="v0.18.5"></a>
 ### v0.18.5 - 2020-07-05
