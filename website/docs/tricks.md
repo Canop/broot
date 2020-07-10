@@ -1,3 +1,8 @@
+## Replace tree
+
+If you alias `tree` to `br -c :pt`, then
+
+![tree](../img/20200710-alias-tree.png)
 
 ## `dcd` : Deep fuzzy cd
 
@@ -30,9 +35,9 @@ Example:
 
 When you hit `enter` on a directory, it's focused and the filter is reset.
 
-If you want to keep the filter, for example to search deeper, you may use `:open_stay_filter` instead (and you can bind it to a key shortut).
+If you want to keep the filter, for example to search deeper, you may use `:open_stay_filter` instead (or its shortcut `:osf` and you can bind it to a key shortcut).
 
-## Run an script or program from broot
+## Run a script or program from broot
 
 If your system is normally configured, doing `alt`-`enter` on an executable will close broot and executes the file.
 
@@ -91,3 +96,4 @@ Now let's add `&` then some letters of what we want.
 We can also select the desired file with arrow keys at this point.
 
 When you grasped the basic logic of [combined filters](../input/#combining-filtering-patterns), navigation is incredibly efficient.
+
