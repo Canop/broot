@@ -62,6 +62,9 @@ impl App {
         })
     }
 
+    fn state(&self) -> &dyn AppState {
+        self.panels[self.active_panel_idx].state()
+    }
     fn mut_state(&mut self) -> &mut dyn AppState {
         self.panels[self.active_panel_idx].mut_state()
     }
@@ -188,11 +191,14 @@ impl App {
                 };
                 match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
                     Ok(areas) => {
+                        let activate = !state.is_file_preview();
                         let mut panel = Panel::new(self.created_panels_count.into(), state, areas, con);
                         panel.purpose = purpose;
                         self.created_panels_count += 1;
                         self.panels.insert(insertion_idx, panel);
-                        self.active_panel_idx = insertion_idx;
+                        if activate {
+                            self.active_panel_idx = insertion_idx;
+                        }
                     }
                     Err(e) => {
                         error = Some(e.to_string());
@@ -266,6 +272,17 @@ impl App {
         }
         if let Some(text) = error {
             self.mut_panel().set_error(text);
+        }
+        if self.active_panel_idx + 1 < self.panels.len().get() {
+            let r_idx = self.active_panel_idx+1;
+            if self.panels[r_idx].state().is_file_preview() {
+                let path = self.state().selected_path();
+                let old_path = self.panels[r_idx].state().selected_path();
+                if path != old_path && path.is_file() {
+                    let path = path.to_path_buf();
+                    self.panels[r_idx].mut_state().set_selected_path(path);
+                }
+            }
         }
         Ok(())
     }

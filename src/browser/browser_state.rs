@@ -474,7 +474,7 @@ impl AppState for BrowserState {
             }
             Internal::panel_right => {
                 if cc.areas.is_last() {
-                    // we ask for the creation of a panel to the left
+                    // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),
                         screen,

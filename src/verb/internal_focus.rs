@@ -7,6 +7,7 @@ use {
         display::Screen,
         path,
         path_anchor::PathAnchor,
+        preview::PreviewState,
         selection_type::SelectionType,
         task_sync::Dam,
         tree::TreeOptions,
@@ -49,17 +50,24 @@ pub fn new_panel_on_path(
     con: &AppContext,
     direction: HDir,
 ) -> AppStateCmdResult {
-    let path = path::closest_dir(&path);
-    match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
-        Ok(Some(os)) => {
-            AppStateCmdResult::NewPanel {
-                state: Box::new(os),
-                purpose,
-                direction,
+    if path.is_dir() {
+        match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
+            Ok(Some(os)) => {
+                AppStateCmdResult::NewPanel {
+                    state: Box::new(os),
+                    purpose,
+                    direction,
+                }
             }
+            Ok(None) => AppStateCmdResult::Keep, // this isn't supposed to happen
+            Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
         }
-        Ok(None) => AppStateCmdResult::Keep, // this isn't supposed to happen
-        Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
+    } else {
+        AppStateCmdResult::NewPanel {
+            state: Box::new(PreviewState::new(path, con)),
+            purpose,
+            direction,
+        }
     }
 }
 

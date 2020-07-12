@@ -26,10 +26,18 @@ where
         self.allowed == 0
     }
     pub fn queue_str(&mut self, cs: &CompoundStyle, s: &str) -> Result<()> {
-        if !self.is_full() {
-            self.queue_string(cs, s.to_string())?;
+        if self.is_full() {
+            return Ok(());
         }
-        Ok(())
+        let mut len = s.chars().count();
+        let string = if len > self.allowed {
+            len = self.allowed;
+            s.chars().take(self.allowed).collect()
+        } else {
+            s.to_string()
+        };
+        self.allowed -= len;
+        cs.queue(self.w, string)
     }
     pub fn queue_char(&mut self, cs: &CompoundStyle, c: char) -> Result<()> {
         if !self.is_full() {
@@ -37,6 +45,25 @@ where
             cs.queue(self.w, c)?;
         }
         Ok(())
+    }
+    pub fn queue_string(&mut self, cs: &CompoundStyle, mut s: String) -> Result<()> {
+        if self.is_full() {
+            return Ok(());
+        }
+        let mut len = 0;
+        for (idx, _) in s.char_indices() {
+            len += 1;
+            if len > self.allowed {
+                s.truncate(idx);
+                self.allowed = 0;
+                return cs.queue(self.w, s)
+            }
+        }
+        self.allowed -= len;
+        cs.queue(self.w, s)
+    }
+    pub fn queue_bg(&mut self, cs: &CompoundStyle) -> Result<()> {
+        cs.queue_bg(self.w)
     }
     pub fn fill(&mut self, cs: &CompoundStyle, filling: &'static str) -> Result<()> {
         self.repeat(cs, filling, self.allowed)
@@ -52,23 +79,5 @@ where
             len -= slice_len;
         }
         Ok(())
-    }
-    pub fn queue_string(&mut self, cs: &CompoundStyle, s: String) -> Result<()> {
-        if !self.is_full() {
-            let len = s.chars().count();
-            if len > self.allowed {
-                for c in s.chars().take(self.allowed) {
-                    cs.queue(self.w, c)?;
-                }
-                self.allowed = 0;
-            } else {
-                cs.queue(self.w, s)?;
-                self.allowed -= len;
-            }
-        }
-        Ok(())
-    }
-    pub fn queue_bg(&mut self, cs: &CompoundStyle) -> Result<()> {
-        cs.queue_bg(self.w)
     }
 }

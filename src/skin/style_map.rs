@@ -165,6 +165,11 @@ StyleMap! {
     help_code: gray(21), gray(3), []
     help_headers: ansi(178), None, []
     help_table_border: ansi(239), None, []
+    hex_null: gray(8), None, []
+    hex_ascii_graphic: gray(18), None, []
+    hex_ascii_whitespace: ansi(143), None, []
+    hex_ascii_other: ansi(215), None, []
+    hex_non_ascii: ansi(167), None, []
 }
 
 impl fmt::Debug for StyleMap {

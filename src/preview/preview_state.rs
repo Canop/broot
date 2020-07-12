@@ -1,12 +1,13 @@
 use {
-    super::help_content,
+    super::*,
     crate::{
         app::*,
         browser::BrowserState,
         command::{Command, TriggerType},
         conf::{self, Conf},
-        display::{Screen, W},
+        display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
+        flag::Flag,
         launchable::Launchable,
         print,
         selection_type::SelectionType,
@@ -15,36 +16,63 @@ use {
         tree::TreeOptions,
         verb::*,
     },
+    crossterm::{
+        cursor,
+        QueueableCommand,
+    },
     std::path::{Path, PathBuf},
-    termimad::{Area, FmtText, TextView},
+    termimad::{Area},
 };
 
-/// an application state dedicated to help
-pub struct HelpState {
+/// an application state dedicated to previewing files
+pub struct PreviewState {
     pub scroll: i32, // scroll position
-    pub text_area: Area,
+    pub preview_area: Area,
     dirty: bool, // background must be cleared
+    file_name: String,
+    path: PathBuf, // path to the previewed file
+    preview: Preview,
 }
 
-impl HelpState {
-    pub fn new(_screen: &Screen, _con: &AppContext) -> HelpState {
-        let text_area = Area::uninitialized(); // will be fixed at drawing time
-        HelpState {
-            text_area,
+impl PreviewState {
+    pub fn new(path: PathBuf, _con: &AppContext) -> PreviewState {
+        let preview_area = Area::uninitialized(); // will be fixed at drawing time
+        let preview = Preview::from_path(&path);
+        let file_name = path.file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| "???".to_string());
+        PreviewState {
+            preview_area,
             scroll: 0,
             dirty: true,
+            file_name,
+            path,
+            preview,
         }
     }
 }
 
-impl AppState for HelpState {
+impl AppState for PreviewState {
 
     fn selected_path(&self) -> &Path {
-        Conf::default_location()
+        &self.path
+    }
+
+    fn is_file_preview(&self) -> bool {
+        true
+    }
+
+    fn set_selected_path(&mut self, path: PathBuf) {
+        // this is only called when the path really changed
+        self.preview = Preview::from_path(&path);
+        self.file_name = path.file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| "???".to_string());
+        self.scroll = 0;
     }
 
     fn selection_type(&self) -> SelectionType {
-        SelectionType::Any
+        SelectionType::File
     }
 
     fn refresh(&mut self, _screen: &Screen, _con: &AppContext) -> Command {
@@ -58,24 +86,28 @@ impl AppState for HelpState {
         screen: &Screen,
         state_area: Area,
         panel_skin: &PanelSkin,
-        con: &AppContext,
+        _con: &AppContext,
     ) -> Result<(), ProgramError> {
+        if state_area.height < 8 {
+            warn!("area too small for preview");
+            return Ok(());
+        }
         if self.dirty {
             panel_skin.styles.default.queue_bg(w)?;
             screen.clear_area_to_right(w, &state_area)?;
-            self.text_area = state_area;
-            self.text_area.pad_for_max_width(120);
+            self.preview_area = state_area.clone();
+            self.preview_area.height -= 3;
+            self.preview_area.top += 2;
             self.dirty = false;
         }
-        let text = help_content::build_text(con);
-        let fmt_text = FmtText::from_text(
-            &panel_skin.help_skin,
-            text,
-            Some((self.text_area.width - 1) as usize),
-        );
-        let mut text_view = TextView::from(&self.text_area, &fmt_text);
-        self.scroll = text_view.set_scroll(self.scroll);
-        Ok(text_view.write_on(w)?)
+        let styles = &panel_skin.styles;
+        w.queue(cursor::MoveTo(state_area.left, 0))?;
+        let mut cw = CropWriter::new(w, state_area.width as usize);
+        cw.queue_str(&styles.file, &self.file_name)?;
+        cw.fill(&styles.file, LONG_SPACE)?;
+
+        debug!("display preview on {:?}", &self.path);
+        self.preview.display(w, screen, panel_skin, &self.preview_area)
     }
 
     fn get_status(
@@ -94,7 +126,7 @@ impl AppState for HelpState {
                     match con.verb_store.search(&invocation.name) {
                         PrefixSearchResult::NoMatch => Status::from_error("No matching verb"),
                         PrefixSearchResult::Match(_, verb) => {
-                            verb.get_status(Conf::default_location(), other_path, invocation)
+                            verb.get_status(&self.path, other_path, invocation)
                         }
                         PrefixSearchResult::Matches(completions) => {
                             Status::from_message(format!(
@@ -163,16 +195,14 @@ impl AppState for HelpState {
                 Err(e) => AppStateCmdResult::DisplayError(format!("{:?}", e)),
             },
             open_leave => {
-                AppStateCmdResult::from(Launchable::opener(
-                    Conf::default_location().to_path_buf()
-                ))
+                AppStateCmdResult::from(Launchable::opener(self.path.clone()))
             }
             page_down => {
-                self.scroll += self.text_area.height as i32;
+                self.scroll += self.preview_area.height as i32;
                 AppStateCmdResult::Keep
             }
             page_up => {
-                self.scroll -= self.text_area.height as i32;
+                self.scroll -= self.preview_area.height as i32;
                 AppStateCmdResult::Keep
             }
             Internal::panel_left => {
@@ -194,11 +224,13 @@ impl AppState for HelpState {
             print_path => print::print_path(&Conf::default_location(), &cc.con)?,
             print_relative_path => print::print_relative_path(&Conf::default_location(), &cc.con)?,
             quit => AppStateCmdResult::Quit,
-            toggle_dates | toggle_files | toggle_hidden | toggle_git_ignore
-            | toggle_git_file_info | toggle_git_status | toggle_perm | toggle_sizes
-            | toggle_trim_root => AppStateCmdResult::PopStateAndReapply,
             _ => AppStateCmdResult::Keep,
         })
+    }
+
+    // TODO put the hex/txt view here
+    fn get_flags(&self) -> Vec<Flag> {
+        vec![]
     }
 
 }

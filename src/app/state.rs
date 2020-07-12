@@ -162,12 +162,17 @@ pub trait AppState {
 
     fn do_pending_task(
         &mut self,
-        screen: &mut Screen,
-        con: &AppContext,
-        dam: &mut Dam,
-    );
+        _screen: &mut Screen,
+        _con: &AppContext,
+        _dam: &mut Dam,
+    ) {
+        // no pending task in default impl
+        unreachable!();
+    }
 
-    fn get_pending_task(&self) -> Option<&'static str>;
+    fn get_pending_task(&self) -> Option<&'static str> {
+        None
+    }
 
     fn display(
         &mut self,
@@ -186,9 +191,21 @@ pub trait AppState {
     ) -> Status;
 
     /// return the flags to display
-    fn get_flags(&self) -> Vec<Flag>;
+    fn get_flags(&self) -> Vec<Flag> {
+        vec![]
+    }
 
     fn get_starting_input(&self) -> String {
         String::new()
+    }
+
+    /// tells whether the state should take its selection in the panel
+    /// to its  left
+    fn is_file_preview(&self) -> bool {
+        false
+    }
+
+    fn set_selected_path(&mut self, _path: PathBuf) {
+        unreachable!(); // is_file_preview is tested before
     }
 }

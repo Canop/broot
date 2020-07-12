@@ -5,6 +5,7 @@ use {
         CropWriter,
         file_size,
         GitStatusDisplay,
+        LONG_SPACE, LONG_BRANCH,
         MatchedString,
     },
     crate::{
@@ -29,9 +30,6 @@ use {
 
 #[cfg(unix)]
 use {crate::permissions, std::os::unix::fs::MetadataExt, umask::*};
-
-static LONG_SPACE: &str = "                                                                                                                                                                                                                                                                                                                                           ";
-static LONG_BRANCH: &str = "───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────";
 
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
