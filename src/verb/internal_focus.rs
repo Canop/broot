@@ -50,7 +50,14 @@ pub fn new_panel_on_path(
     con: &AppContext,
     direction: HDir,
 ) -> AppStateCmdResult {
-    if path.is_dir() {
+    if purpose.is_preview() {
+        AppStateCmdResult::NewPanel {
+            state: Box::new(PreviewState::new(path, con)),
+            purpose,
+            direction,
+        }
+    } else {
+        let path = path::closest_dir(&path);
         match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
             Ok(Some(os)) => {
                 AppStateCmdResult::NewPanel {
@@ -61,12 +68,6 @@ pub fn new_panel_on_path(
             }
             Ok(None) => AppStateCmdResult::Keep, // this isn't supposed to happen
             Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
-        }
-    } else {
-        AppStateCmdResult::NewPanel {
-            state: Box::new(PreviewState::new(path, con)),
-            purpose,
-            direction,
         }
     }
 }

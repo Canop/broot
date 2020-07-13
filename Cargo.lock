@@ -719,9 +719,9 @@ dependencies = [
 
 [[package]]
 name = "minimad"
-version = "0.6.4"
+version = "0.6.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8a208cf4e8311b21538dd3fd63218ffcb102bf1ef1ce6fabbfb44e2237763ce5"
+checksum = "5a28c96fe347542be63d1f7e25d943526f68956c86421ad9fbf3ce3d0acb149c"
 dependencies = [
  "lazy_static",
 ]
@@ -1254,9 +1254,9 @@ checksum = "c7cb5678e1615754284ec264d9bb5b4c27d2018577fd90ac0ceb578591ed5ee4"
 
 [[package]]
 name = "strict"
-version = "0.1.3"
+version = "0.1.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "82fc12ec45fcf3459919fb1e565374c00fc055f643922b87c7d9a5ee6fee4d53"
+checksum = "991af58f8bd0512b0c76abc87f8f6a8a492c314ebcd13189b426c00c95f6f0ee"
 
 [[package]]
 name = "strsim"
@@ -1309,9 +1309,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.8.24"
+version = "0.8.25"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1c6e38d5fad7e4fd43909c4f8bee316de259fc756dd8c470c5afa4fa9069a7bb"
+checksum = "81560f6e790fb234116362f14525e4aedf6b614e15464aeb99f772956ef9ae86"
 dependencies = [
  "crossbeam",
  "crossterm",

@@ -389,9 +389,11 @@ impl AppState for BrowserState {
             }
             Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
                 validate_purpose: true,
+                id: None, // close current panel
             },
             Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
                 validate_purpose: false,
+                id: None, // close current panel
             },
             Internal::focus => internal_focus::on_internal(
                 internal_exec,
@@ -458,15 +460,22 @@ impl AppState for BrowserState {
             }
             Internal::panel_left => {
                 if cc.areas.is_first() {
-                    // we ask for the creation of a panel to the left
-                    internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
-                        screen,
-                        self.tree.options.clone(),
-                        PanelPurpose::None,
-                        con,
-                        HDir::Left,
-                    )
+                    if cc.preview.is_some() && cc.areas.nb_pos == 2 {
+                        AppStateCmdResult::ClosePanel {
+                            validate_purpose: false,
+                            id: cc.preview,
+                        }
+                    } else {
+                        // we ask for the creation of a panel to the left
+                        internal_focus::new_panel_on_path(
+                            self.selected_path().to_path_buf(),
+                            screen,
+                            self.tree.options.clone(),
+                            PanelPurpose::None,
+                            con,
+                            HDir::Left,
+                        )
+                    }
                 } else {
                     // we ask the app to focus the panel to the left
                     AppStateCmdResult::Propagate(Internal::panel_left)
@@ -474,12 +483,17 @@ impl AppState for BrowserState {
             }
             Internal::panel_right => {
                 if cc.areas.is_last() {
+                    let purpose = if self.selected_path().is_file() && cc.preview.is_none() {
+                        PanelPurpose::Preview
+                    } else {
+                        PanelPurpose::None
+                    };
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),
                         screen,
                         self.tree.options.clone(),
-                        PanelPurpose::None,
+                        purpose,
                         con,
                         HDir::Right,
                     )
@@ -514,6 +528,7 @@ impl AppState for BrowserState {
                     debug!("start_end understood as end");
                     AppStateCmdResult::ClosePanel {
                         validate_purpose: true,
+                        id: None,
                     }
                 } else {
                     debug!("start_end understood as start");

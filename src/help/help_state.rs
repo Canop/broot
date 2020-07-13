@@ -142,9 +142,11 @@ impl AppState for HelpState {
             ),
             Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
                 validate_purpose: true,
+                id: None,
             },
             Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
                 validate_purpose: false,
+                id: None,
             },
             help => AppStateCmdResult::Keep,
             line_down => {

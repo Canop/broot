@@ -12,8 +12,8 @@ use {
 };
 
 pub enum Preview {
-    Hex(HexView),
     Syntactic(SyntacticView),
+    Hex(HexView),
     IOError,
 }
 
@@ -40,7 +40,11 @@ impl Preview {
         match self {
             Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
-            _ => Ok(()),
+            Self::IOError => {
+                debug!("nothing to display: IOError");
+                // FIXME clear area
+                Ok(())
+            }
         }
     }
 }

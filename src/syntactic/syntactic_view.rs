@@ -1,5 +1,6 @@
 
 use {
+    super::Syntaxer,
     crate::{
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
@@ -7,7 +8,7 @@ use {
     },
     crossterm::{
         cursor,
-        style::{Color},
+        style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
     std::{
@@ -16,16 +17,28 @@ use {
         path::Path,
     },
     syntect::{
-        parsing::SyntaxSet,
-        highlighting::{ThemeSet, Style},
+        highlighting::Style,
         easy::HighlightFile,
     },
-    termimad::{Area, CompoundStyle},
+    termimad::Area,
 };
 
+#[derive(Debug)]
 pub struct SyntacticRegion {
-    pub style: CompoundStyle,
+    pub fg: Color,
     pub string: String,
+}
+
+impl SyntacticRegion {
+    pub fn from_syntect(region: &(Style, &str)) -> Self {
+        let fg = Color::Rgb {
+            r: region.0.foreground.r,
+            g: region.0.foreground.g,
+            b: region.0.foreground.b,
+        };
+        let string = str::replace(region.1, '\t', "    ");
+        Self { fg, string }
+    }
 }
 
 pub struct SyntacticLine {
@@ -33,27 +46,30 @@ pub struct SyntacticLine {
 }
 
 pub struct SyntacticView {
-    pub scroll: usize,
-    pub lines: Vec<SyntacticLine>,
-}
-
-/// converts a syntect region to one easier to use with crossterm
-fn convert_region(region: &(Style, &str)) -> SyntacticRegion {
-    let style = CompoundStyle::with_fg(Color::Rgb {
-            r: region.0.foreground.r,
-            g: region.0.foreground.g,
-            b: region.0.foreground.b,
-        });
-    let string = region.1.to_string();
-    SyntacticRegion { style, string }
+    pub scroll: i32,
+    lines: Vec<SyntacticLine>,
 }
 
 impl SyntacticView {
-    pub fn new(path: &Path) -> io::Result<Option<Self>> {
-        let syntax_set = SyntaxSet::load_defaults_nonewlines();
-        let theme_set = ThemeSet::load_defaults();
-        let theme = &theme_set.themes["base16-ocean.dark"];
-        let mut highlighter = match HighlightFile::new(path, &syntax_set, theme) {
+    pub fn new(
+        path: &Path,
+    ) -> io::Result<Option<Self>> {
+        lazy_static! {
+            static ref SYNTAXER: Syntaxer = Syntaxer::new();
+        }
+        //let theme_key = "base16-ocean.dark";
+        //let theme_key = "Solarized (dark)";
+        //let theme_key = "base16-eighties.dark";
+        let theme_key = "base16-mocha.dark";
+        let theme = match SYNTAXER.theme_set.themes.get(theme_key) {
+            Some(theme) => theme,
+            None => {
+                warn!("theme not found : {:?}", theme_key);
+                return Ok(None);
+            }
+        };
+        let syntax_set = &SYNTAXER.syntax_set;
+        let mut highlighter = match HighlightFile::new(path, syntax_set, theme) {
             Ok(h) => h,
             Err(e) => {
                 warn!("failed to hightlight file {:?} : {:?}", path, e);
@@ -67,7 +83,7 @@ impl SyntacticView {
             let contents = highlighter.highlight_lines
                 .highlight(&line, &syntax_set)
                 .iter()
-                .map(convert_region)
+                .map(|r| SyntacticRegion::from_syntect(r))
                 .collect();
             lines.push(SyntacticLine { contents });
         }
@@ -85,17 +101,56 @@ impl SyntacticView {
     ) -> Result<(), ProgramError> {
         let line_count = area.height as usize;
         let styles = &panel_skin.styles;
+        let bg: Option<Color> = styles.preview.get_bg();
+        if bg.is_none() {
+            w.queue(ResetColor)?;
+        }
+        // code is thiner than the area:
+        // * 1 char margin at left
+        // * space for the scrollbar at right
+        let code_width = area.width as usize - 2;
+        let scrollbar = area.scrollbar(self.scroll, self.lines.len() as i32);
+        let scrollbar_fg = styles.scrollbar_thumb.get_fg()
+            .or(styles.preview.get_fg())
+            .unwrap_or_else(|| Color::White);
         for y in 0..line_count {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
-            let mut cw = CropWriter::new(w, area.width as usize);
+            if let Some(bg) = bg {
+                w.queue(SetBackgroundColor(bg))?;
+            }
+            w.queue(Print(' '))?;
+            let mut cw = CropWriter::new(w, code_width);
             let cw = &mut cw;
             if y < self.lines.len() {
                 for content in &self.lines[y].contents {
-                    cw.queue_str(&content.style, &content.string)?;
+                    cw.w.queue(SetForegroundColor(content.fg))?;
+                    cw.queue_unstyled_str(&content.string)?;
                 }
             }
-            cw.fill(&styles.default, LONG_SPACE)?;
+            cw.fill(&styles.preview, LONG_SPACE)?;
+            if let Some(bg) = bg {
+                // this should not be needed, so there's a
+                // bug somewhere
+                w.queue(SetBackgroundColor(bg))?;
+            }
+            if is_thumb(y, scrollbar) {
+                w.queue(SetForegroundColor(scrollbar_fg))?;
+                w.queue(Print('▐'))?;
+            } else {
+                w.queue(Print(' '))?;
+            }
         }
         Ok(())
     }
 }
+
+fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
+    if let Some((sctop, scbottom)) = scrollbar {
+        let y = y as u16;
+        if sctop <= y && y <= scbottom {
+            return true;
+        }
+    }
+    false
+}
+

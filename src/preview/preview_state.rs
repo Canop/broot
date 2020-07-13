@@ -58,10 +58,6 @@ impl AppState for PreviewState {
         &self.path
     }
 
-    fn is_file_preview(&self) -> bool {
-        true
-    }
-
     fn set_selected_path(&mut self, path: PathBuf) {
         // this is only called when the path really changed
         self.preview = Preview::from_path(&path);
@@ -69,6 +65,7 @@ impl AppState for PreviewState {
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
         self.scroll = 0;
+        self.path = path;
     }
 
     fn selection_type(&self) -> SelectionType {
@@ -96,7 +93,7 @@ impl AppState for PreviewState {
             panel_skin.styles.default.queue_bg(w)?;
             screen.clear_area_to_right(w, &state_area)?;
             self.preview_area = state_area.clone();
-            self.preview_area.height -= 3;
+            self.preview_area.height -= 2;
             self.preview_area.top += 2;
             self.dirty = false;
         }
@@ -174,9 +171,11 @@ impl AppState for PreviewState {
             ),
             Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
                 validate_purpose: true,
+                id: None,
             },
             Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
                 validate_purpose: false,
+                id: None,
             },
             help => AppStateCmdResult::Keep,
             line_down => {

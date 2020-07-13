@@ -1,4 +1,8 @@
 use {
+    crossterm::{
+        QueueableCommand,
+        style::Print,
+    },
     termimad::{
         CompoundStyle,
         Result,
@@ -24,6 +28,21 @@ where
     }
     pub fn is_full(&self) -> bool {
         self.allowed == 0
+    }
+    pub fn queue_unstyled_str(&mut self, s: &str) -> Result<()> {
+        if self.is_full() {
+            return Ok(());
+        }
+        let mut len = s.chars().count();
+        let string = if len > self.allowed {
+            len = self.allowed;
+            s.chars().take(self.allowed).collect()
+        } else {
+            s.to_string()
+        };
+        self.allowed -= len;
+        self.w.queue(Print(string))?;
+        Ok(())
     }
     pub fn queue_str(&mut self, cs: &CompoundStyle, s: &str) -> Result<()> {
         if self.is_full() {

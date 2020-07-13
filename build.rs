@@ -1,5 +1,5 @@
 // This file is executed during broot compilation.
-// It build shell completion scripts.
+// It builds shell completion scripts.
 
 use {
     clap::Shell,

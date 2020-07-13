@@ -22,7 +22,7 @@ use {
 };
 
 pub struct Panel {
-    id: PanelId,
+    pub id: PanelId,
     states: Vec<Box<dyn AppState>>, // stack: the last one is current
     pub areas: Areas,
     status: Option<Status>,
@@ -61,6 +61,7 @@ impl Panel {
         other_path: &Option<PathBuf>,
         screen: &mut Screen,
         panel_skin: &PanelSkin,
+        preview: Option<PanelId>,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let state_idx = self.states.len()-1;
@@ -71,6 +72,7 @@ impl Panel {
             con,
             areas: &self.areas,
             panel_purpose: self.purpose,
+            preview,
         };
         let result = self.states[state_idx].on_command(w, &cc, screen);
         self.status = Some(self.state().get_status(cmd, other_path, con));

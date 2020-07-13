@@ -28,7 +28,7 @@ lazy-regex = "0.1.3"
 lazy_static = "1.4"
 libc = "0.2"
 log = "0.4"
-minimad = "=0.6.4"
+minimad = "=0.6.5"
 open = "1.4"
 memmap = "0.7"
 pathdiff = "0.1.0"
@@ -37,9 +37,9 @@ rayon = "1.3"
 regex = "1.3"
 secular = "0.2"
 simplelog = "0.7"
-strict = "0.1.3"
+strict = "0.1.4"
 syntect = "4.2"
-termimad = "0.8.24"
+termimad = "0.8.25"
 toml = "0.5"
 umask = "1.0"
 
@@ -77,4 +77,4 @@ harness = false
 # opener = { path = "../opener/opener" }
 # umask = { path = "../umask" }
 # secular = { path = "../secular" }
-# strict = { path = "../strict" }
+# strict = { path = "../strict" }

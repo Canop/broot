@@ -199,12 +199,6 @@ pub trait AppState {
         String::new()
     }
 
-    /// tells whether the state should take its selection in the panel
-    /// to its  left
-    fn is_file_preview(&self) -> bool {
-        false
-    }
-
     fn set_selected_path(&mut self, _path: PathBuf) {
         unreachable!(); // is_file_preview is tested before
     }

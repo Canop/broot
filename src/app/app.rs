@@ -30,6 +30,7 @@ pub struct App {
     quitting: bool,
     launch_at_end: Option<Launchable>, // what must be launched after end
     created_panels_count: usize,
+    preview: Option<PanelId>, // the panel dedicated to preview, if any
 }
 
 impl App {
@@ -59,7 +60,13 @@ impl App {
             quitting: false,
             launch_at_end: None,
             created_panels_count: 1,
+            preview: None,
         })
+    }
+
+    /// return the current index of the panel whith given id
+    fn panel_idx(&self, id: PanelId) -> Option<usize> {
+        self.panels.iter().position(|panel| panel.id==id)
     }
 
     fn state(&self) -> &dyn AppState {
@@ -80,11 +87,20 @@ impl App {
     }
 
     /// return true when the panel has been removed (ie it wasn't the last one)
-    fn close_active_panel(&mut self, screen: &Screen) -> bool {
-        if let Ok(_removed_panel) = self.panels.swap_remove(self.active_panel_idx) {
-            self.active_panel_idx = self.panels.len().get() - 1;
+    fn close_panel(&mut self, panel_idx: usize, screen: &Screen) -> bool {
+        let active_panel_id = self.panels[self.active_panel_idx].id;
+        if let Ok(removed_panel) = self.panels.remove(panel_idx) {
             Areas::resize_all(self.panels.as_mut_slice(), screen)
                 .expect("removing a panel should be easy");
+            if self.preview == Some(removed_panel.id) {
+                self.preview = None;
+            } else if self.panels.has_len(1) && self.preview.is_some() {
+                info!("closing because only the preview panel is left");
+                return false;
+            }
+            self.active_panel_idx = self.panels.iter()
+                .position(|p| p.id == active_panel_id)
+                .unwrap_or(self.panels.len().get()-1);
             true
         } else {
             false // there's no other panel to go to
@@ -92,7 +108,8 @@ impl App {
     }
 
     fn remove_state(&mut self, screen: &Screen) -> bool {
-        self.panels[self.active_panel_idx].remove_state() || self.close_active_panel(screen)
+        self.panels[self.active_panel_idx].remove_state()
+            || self.close_panel(self.active_panel_idx, screen)
     }
 
     fn display_panels(
@@ -139,30 +156,44 @@ impl App {
         let mut error: Option<String> = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
         let other_path = self.get_other_panel_path();
+        let preview = self.preview;
         match self.mut_panel().apply_command(
             w,
             &cmd,
             &other_path,
             screen,
             panel_skin,
+            preview,
             con,
         )? {
-            ClosePanel { validate_purpose } => {
+            ClosePanel { validate_purpose, id } => {
+                let close_idx = id
+                    .and_then(|id| self.panel_idx(id))
+                    .unwrap_or(self.active_panel_idx);
                 let mut new_arg = None;
                 if validate_purpose {
-                    let purpose = &self.panels[self.active_panel_idx].purpose;
+                    let purpose = &self.panels[close_idx].purpose;
                     if let PanelPurpose::ArgEdition { .. } = purpose {
-                        let path = self.panels[self.active_panel_idx].state().selected_path();
+                        let path = self.panels[close_idx].state().selected_path();
                         new_arg = Some(path.to_string_lossy().to_string());
                     }
                 }
-                if self.close_active_panel(screen) {
+                if self.close_panel(close_idx, screen) {
                     self.mut_state().refresh(screen, con);
                     if let Some(new_arg) = new_arg {
                         self.mut_panel().set_input_arg(new_arg);
                         let new_input = self.panel().get_input_content();
                         let cmd = Command::from_raw(new_input, false);
-                        self.mut_panel().apply_command(w, &cmd, &other_path, screen, panel_skin, con)?;
+                        let preview = self.preview;
+                        self.mut_panel().apply_command(
+                            w,
+                            &cmd,
+                            &other_path,
+                            screen,
+                            panel_skin,
+                            preview,
+                            con,
+                        )?;
                     }
                 } else {
                     self.quitting = true;
@@ -191,12 +222,15 @@ impl App {
                 };
                 match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
                     Ok(areas) => {
-                        let activate = !state.is_file_preview();
-                        let mut panel = Panel::new(self.created_panels_count.into(), state, areas, con);
+                        let panel_id = self.created_panels_count.into();
+                        let mut panel = Panel::new(panel_id, state, areas, con);
                         panel.purpose = purpose;
                         self.created_panels_count += 1;
                         self.panels.insert(insertion_idx, panel);
-                        if activate {
+                        if purpose.is_preview() {
+                            debug_assert!(self.preview.is_none());
+                            self.preview = Some(panel_id);
+                        } else {
                             self.active_panel_idx = insertion_idx;
                         }
                     }
@@ -228,7 +262,16 @@ impl App {
                     self.mut_panel().clear_input();
                 }
                 if self.remove_state(screen) {
-                    self.mut_panel().apply_command(w, &cmd, &other_path, screen, panel_skin, con)?;
+                    let preview = self.preview;
+                    self.mut_panel().apply_command(
+                        w,
+                        &cmd,
+                        &other_path,
+                        screen,
+                        panel_skin,
+                        preview,
+                        con,
+                    )?;
                 } else if ESCAPE_TO_QUIT {
                     self.quitting = true;
                 }
@@ -273,18 +316,20 @@ impl App {
         if let Some(text) = error {
             self.mut_panel().set_error(text);
         }
-        if self.active_panel_idx + 1 < self.panels.len().get() {
-            let r_idx = self.active_panel_idx+1;
-            if self.panels[r_idx].state().is_file_preview() {
-                let path = self.state().selected_path();
-                let old_path = self.panels[r_idx].state().selected_path();
-                if path != old_path && path.is_file() {
-                    let path = path.to_path_buf();
-                    self.panels[r_idx].mut_state().set_selected_path(path);
-                }
+        self.update_preview();
+        Ok(())
+    }
+
+    fn update_preview(&mut self) {
+        let preview_idx = self.preview.and_then(|id| self.panel_idx(id));
+        if let Some(preview_idx) = preview_idx {
+            let path = self.state().selected_path();
+            let old_path = self.panels[preview_idx].state().selected_path();
+            if path != old_path && path.is_file() {
+                let path = path.to_path_buf();
+                self.panels[preview_idx].mut_state().set_selected_path(path);
             }
         }
-        Ok(())
     }
 
     fn clicked_panel_index(&self, x: u16, _y: u16, screen: &Screen) -> usize {
@@ -306,6 +351,7 @@ impl App {
                 did_something |= self.panels[idx].do_pending_tasks(screen, con, dam)?;
             }
         }
+        self.update_preview(); // the selection may have changed
         Ok(did_something)
     }
 

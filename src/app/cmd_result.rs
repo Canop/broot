@@ -20,6 +20,7 @@ pub enum HDir {
 pub enum AppStateCmdResult {
     ClosePanel {
         validate_purpose: bool,
+        id: Option<PanelId>, // None if current panel
     },
     DisplayError(String),
     Keep,
@@ -78,10 +79,10 @@ impl fmt::Debug for AppStateCmdResult {
             "{}",
             match self {
                 AppStateCmdResult::ClosePanel {
-                    validate_purpose: false,
+                    validate_purpose: false, ..
                 } => "CancelPanel",
                 AppStateCmdResult::ClosePanel {
-                    validate_purpose: true,
+                    validate_purpose: true, ..
                 } => "OkPanel",
                 AppStateCmdResult::DisplayError(_) => "DisplayError",
                 AppStateCmdResult::Keep => "Keep",
