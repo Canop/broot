@@ -51,7 +51,7 @@ impl App {
                 )?
                 .expect("Failed to create BrowserState"),
             ),
-            Areas::create(&mut Vec::new(), 0, screen)?,
+            Areas::create(&mut Vec::new(), 0, screen, false)?,
             con,
         );
         Ok(App {
@@ -90,14 +90,14 @@ impl App {
     fn close_panel(&mut self, panel_idx: usize, screen: &Screen) -> bool {
         let active_panel_id = self.panels[self.active_panel_idx].id;
         if let Ok(removed_panel) = self.panels.remove(panel_idx) {
-            Areas::resize_all(self.panels.as_mut_slice(), screen)
-                .expect("removing a panel should be easy");
             if self.preview == Some(removed_panel.id) {
                 self.preview = None;
             } else if self.panels.has_len(1) && self.preview.is_some() {
                 info!("closing because only the preview panel is left");
                 return false;
             }
+            Areas::resize_all(self.panels.as_mut_slice(), screen, self.preview.is_some())
+                .expect("removing a panel should be easy");
             self.active_panel_idx = self.panels.iter()
                 .position(|p| p.id == active_panel_id)
                 .unwrap_or(self.panels.len().get()-1);
@@ -220,7 +220,8 @@ impl App {
                 } else {
                     self.active_panel_idx
                 };
-                match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen) {
+                let with_preview = purpose.is_preview() || self.preview.is_some();
+                match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen, with_preview) {
                     Ok(areas) => {
                         let panel_id = self.created_panels_count.into();
                         let mut panel = Panel::new(panel_id, state, areas, con);
@@ -419,7 +420,7 @@ impl App {
                 }
                 Event::Resize(w, h) => {
                     screen.set_terminal_size(w, h, con);
-                    Areas::resize_all(self.panels.as_mut_slice(), screen)?;
+                    Areas::resize_all(self.panels.as_mut_slice(), screen, self.preview.is_some())?;
                     for panel in &mut self.panels {
                         panel.mut_state().refresh(screen, con);
                     }

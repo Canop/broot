@@ -460,7 +460,8 @@ impl AppState for BrowserState {
             }
             Internal::panel_left => {
                 if cc.areas.is_first() {
-                    if cc.preview.is_some() && cc.areas.nb_pos == 2 {
+                    //if cc.preview.is_some() && cc.areas.nb_pos == 2 {
+                    if cc.preview.is_some() && self.selected_path().is_file() {
                         AppStateCmdResult::ClosePanel {
                             validate_purpose: false,
                             id: cc.preview,

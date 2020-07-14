@@ -31,7 +31,8 @@ pub mod status_line;
 mod matched_string;
 mod screen;
 
-use std::io::BufWriter;
+#[cfg(unix)]
+mod permissions;
 
 pub use {
     areas::Areas,
@@ -43,6 +44,11 @@ pub use {
     screen::Screen,
 };
 
+#[cfg(unix)]
+pub use {
+    permissions::PermWriter,
+};
+
 pub static LONG_SPACE: &str = "                                                                                                                                                                                                                                                                                                                                           ";
 pub static LONG_BRANCH: &str = "───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────";
 
@@ -52,10 +58,10 @@ pub static LONG_BRANCH: &str = "────────────────
 pub const WIDE_STATUS: bool = true;
 
 /// the type used by all GUI writing functions
-pub type W = BufWriter<std::io::Stderr>;
+pub type W = std::io::BufWriter<std::io::Stderr>;
 
 /// return the writer used by the application
 pub fn writer() -> W {
-    BufWriter::new(std::io::stderr())
+    std::io::BufWriter::new(std::io::stderr())
 }
 

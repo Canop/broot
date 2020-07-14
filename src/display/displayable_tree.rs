@@ -7,6 +7,7 @@ use {
         GitStatusDisplay,
         LONG_SPACE, LONG_BRANCH,
         MatchedString,
+        PermWriter,
     },
     crate::{
         content_search::ContentMatch,
@@ -27,9 +28,6 @@ use {
     std::io::Write,
     termimad::{CompoundStyle, ProgressBar},
 };
-
-#[cfg(unix)]
-use {crate::permissions, std::os::unix::fs::MetadataExt, umask::*};
 
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
@@ -184,97 +182,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         Ok(1)
     }
 
-    #[cfg(unix)]
-    fn write_mode<'w, W: Write>(
-        &self,
-        cw: &mut CropWriter<'w, W>,
-        mode: Mode,
-        selected: bool,
-    ) -> Result<(), termimad::Error> {
-        cond_bg!(n_style, self, selected, self.skin.perm__);
-        cond_bg!(r_style, self, selected, self.skin.perm_r);
-        cond_bg!(w_style, self, selected, self.skin.perm_w);
-        cond_bg!(x_style, self, selected, self.skin.perm_x);
-
-        if mode.has(USER_READ) {
-            cw.queue_char(r_style, 'r')?;
-        } else {
-            cw.queue_char(n_style, '_')?;
-        }
-        if mode.has(USER_WRITE) {
-            cw.queue_char(w_style, 'w')?;
-        } else {
-            cw.queue_char(n_style, '_')?;
-        }
-        if mode.has(USER_EXEC) {
-            cw.queue_char(x_style, 'x')?;
-        } else {
-            cw.queue_char(n_style, '_')?;
-        }
-
-        if mode.has(GROUP_READ) {
-            cw.queue_char(r_style, 'r')?;
-        } else {
-            cw.queue_char(n_style, '_')?;
-        }
-        if mode.has(GROUP_WRITE) {
-            cw.queue_char(w_style, 'w')?;
-        } else {
-            cw.queue_char(n_style, '_')?;
-        }
-        if mode.has(GROUP_EXEC) {
-            cw.queue_char(x_style, 'x')?;
-        } else {
-            cw.queue_char(n_style, '_')?;
-        }
-
-        if mode.has(OTHERS_READ) {
-            cw.queue_char(r_style, 'r')?;
-        } else {
-            cw.queue_char(n_style, '_')?;
-        }
-        if mode.has(OTHERS_WRITE) {
-            cw.queue_char(w_style, 'w')?;
-        } else {
-            cw.queue_char(n_style, '_')?;
-        }
-        if mode.has(OTHERS_EXEC) {
-            cw.queue_char(x_style, 'x')?;
-        } else {
-            cw.queue_char(n_style, '_')?;
-        }
-
-        Ok(())
-    }
-
-    #[cfg(unix)]
-    fn write_permissions<'w, W: Write>(
-        &self,
-        cw: &mut CropWriter<'w, W>,
-        line: &TreeLine,
-        user_group_max_lengths: (usize, usize),
-        selected: bool,
-    ) -> Result<usize, ProgramError> {
-        Ok(if line.is_selectable() {
-            self.write_mode(cw, line.mode(), selected)?;
-            let owner = permissions::user_name(line.metadata.uid());
-            cond_bg!(owner_style, self, selected, self.skin.owner);
-            cw.queue_string(
-                &owner_style,
-                format!(" {:w$}", &owner, w = user_group_max_lengths.0),
-            )?;
-            let group = permissions::group_name(line.metadata.gid());
-            cond_bg!(group_style, self, selected, self.skin.group);
-            cw.queue_string(
-                &group_style,
-                format!(" {:w$}", &group, w = user_group_max_lengths.1),
-            )?;
-            1
-        } else {
-            9 + 1 + user_group_max_lengths.0 + 1 + user_group_max_lengths.1 + 1
-        })
-    }
-
     fn write_branch<'w, W: Write>(
         &self,
         cw: &mut CropWriter<'w, W>,
@@ -329,7 +236,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         };
         let mut cloned_style;
         if let Some(ext_color) = line.extension().and_then(|ext| self.ext_colors.get(ext)) {
-            debug!("extension: {:?}", ext_color);
             cloned_style = style.clone();
             cloned_style.set_fg(ext_color);
             style = &cloned_style;
@@ -437,9 +343,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
 
     /// write the whole tree on the given `W`
     pub fn write_on<W: Write>(&self, f: &mut W) -> Result<(), ProgramError> {
-        let tree = self.tree;
         #[cfg(unix)]
-        let user_group_max_lengths = user_group_max_lengths(&tree);
+        let perm_writer = PermWriter::for_tree(&self.skin, &self.tree);
+
+        let tree = self.tree;
         let total_size = tree.total_sum();
         let scrollbar = if self.in_app {
             self.area.scrollbar(tree.scroll, tree.lines.len() as i32 - 1)
@@ -499,7 +406,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
 
                         #[cfg(unix)]
                         Col::Permission if tree.options.show_permissions => {
-                            self.write_permissions(cw, line, user_group_max_lengths, selected)?
+                            perm_writer.write_permissions(cw, line, selected)?
                         }
 
                         Col::Date if tree.options.show_dates => {
@@ -570,18 +477,3 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     }
 }
 
-#[cfg(unix)]
-fn user_group_max_lengths(tree: &Tree) -> (usize, usize) {
-    let mut max_user_len = 0;
-    let mut max_group_len = 0;
-    if tree.options.show_permissions {
-        for i in 1..tree.lines.len() {
-            let line = &tree.lines[i];
-            let user = permissions::user_name(line.metadata.uid());
-            max_user_len = max_user_len.max(user.len());
-            let group = permissions::group_name(line.metadata.gid());
-            max_group_len = max_group_len.max(group.len());
-        }
-    }
-    (max_user_len, max_group_len)
-}

@@ -38,6 +38,7 @@ impl Areas {
         present_panels: &mut [Panel],
         mut insertion_idx: usize,
         screen: &Screen,
+        with_preview: bool, // slightly larger last panel
     ) -> Result<Self, ProgramError> {
         if insertion_idx > present_panels.len() {
             insertion_idx = present_panels.len();
@@ -58,27 +59,37 @@ impl Areas {
         for i in insertion_idx..present_panels.len() {
             slots.push(Slot::Panel(i));
         }
-        Self::compute_areas(present_panels, &mut slots, screen)?;
+        Self::compute_areas(present_panels, &mut slots, screen, with_preview)?;
         Ok(areas)
     }
 
-    pub fn resize_all(panels: &mut [Panel], screen: &Screen) -> Result<(), ProgramError> {
+    pub fn resize_all(
+        panels: &mut [Panel],
+        screen: &Screen,
+        with_preview: bool, // slightly larger last panel
+    ) -> Result<(), ProgramError> {
         let mut slots = Vec::new();
         for i in 0..panels.len() {
             slots.push(Slot::Panel(i));
         }
-        Self::compute_areas(panels, &mut slots, screen)
+        Self::compute_areas(panels, &mut slots, screen, with_preview)
     }
 
     fn compute_areas(
         panels: &mut [Panel],
         slots: &mut Vec<Slot>,
         screen: &Screen,
+        with_preview: bool, // slightly larger last panel
     ) -> Result<(), ProgramError> {
         if screen.height < MINIMAL_PANEL_HEIGHT {
             return Err(ProgramError::TerminalTooSmallError);
         }
-        let mut panel_width = screen.width / slots.len() as u16;
+        let n = slots.len() as u16;
+        let mut panel_width = if with_preview {
+            4 * screen.width / (4 * n + 1)
+        } else {
+            screen.width / n
+        };
         if panel_width < MINIMAL_PANEL_WIDTH {
             return Err(ProgramError::TerminalTooSmallError);
         }

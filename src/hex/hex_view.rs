@@ -11,7 +11,7 @@ use {
     },
     crossterm::{
         cursor,
-        style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
+        style::{Color, Print, SetForegroundColor},
         QueueableCommand,
     },
     memmap::Mmap,
@@ -92,9 +92,31 @@ impl HexView {
         self.page_height = area.height as i32;
         let page = self.get_page(self.scroll as usize, line_count)?;
         let styles = &panel_skin.styles;
-        let mut show_middle_space = false;
-        if area.width > 50 {
-            show_middle_space = true;
+        let mut left_margin = false;
+        let mut hex_middle_space = false;
+        let mut chars_middle_space = false;
+        let mut inter_hex = false;
+        let mut chars = false;
+        let mut rem = area.width as i32 - 32; // 32: minimum, tight
+        if rem > 17 {
+            chars = true;
+            rem -= 17;
+        }
+        if rem > 16 {
+            inter_hex = true;
+            rem -= 16;
+        }
+        if rem > 1 {
+            hex_middle_space = true;
+            rem -= 1;
+        }
+        if rem > 1 {
+            left_margin = true;
+            rem -= 1;
+        }
+        if rem > 1 {
+            chars_middle_space = true;
+            //rem -= 1;
         }
         let scrollbar = area.scrollbar(self.scroll, self.line_count() as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
@@ -105,16 +127,35 @@ impl HexView {
             let mut cw = CropWriter::new(w, area.width as usize - 1); // -1 for scrollbar
             let cw = &mut cw;
             if y < page.len() {
+                if left_margin {
+                    cw.queue_char(&styles.default, ' ')?;
+                }
                 let line = &page[y];
                 for x in 0..16 {
-                    if x==8 && show_middle_space {
+                    if x==8 && hex_middle_space {
                         cw.queue_char(&styles.default, ' ')?;
                     }
                     if let Some(b) = line.bytes.get(x) {
                         let byte = Byte::from(*b);
-                        cw.queue_string(byte.style(styles), format!(" {:02x}", b))?;
+                        if inter_hex {
+                            cw.queue_string(byte.style(styles), format!("{:02x} ", b))?;
+                        } else {
+                            cw.queue_string(byte.style(styles), format!("{:02x}", b))?;
+                        }
                     } else {
-                        cw.queue_str(&styles.default, "   ")?;
+                        cw.queue_str(&styles.default, if inter_hex { "   " } else { "  " })?;
+                    }
+                }
+                if chars {
+                    cw.queue_char(&styles.default, ' ')?;
+                    for x in 0..16 {
+                        if x==8 && chars_middle_space {
+                            cw.queue_char(&styles.default, ' ')?;
+                        }
+                        if let Some(b) = line.bytes.get(x) {
+                            let byte = Byte::from(*b);
+                            cw.queue_char(byte.style(styles), byte.as_char())?;
+                        }
                     }
                 }
                 cw.fill(&styles.default, LONG_SPACE)?;

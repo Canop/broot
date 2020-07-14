@@ -140,7 +140,7 @@ StyleMap! {
     git_status_ignored: gray(17), None, []
     git_status_conflicted: ansi(88), None, []
     git_status_other: ansi(88), None, []
-    selected_line: None, gray(5), [] / None, gray(4), []
+    selected_line: None, gray(6), [] / None, gray(4), []
     char_match: Some(Green), None, []
     file_error: Some(Red), None, []
     flag_label: gray(15), gray(2), []

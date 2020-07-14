@@ -90,17 +90,15 @@ impl AppState for PreviewState {
             panel_skin.styles.default.queue_bg(w)?;
             screen.clear_area_to_right(w, &state_area)?;
             self.preview_area = state_area.clone();
-            self.preview_area.height -= 2;
-            self.preview_area.top += 2;
+            self.preview_area.height -= 1;
+            self.preview_area.top += 1;
             self.dirty = false;
         }
         let styles = &panel_skin.styles;
         w.queue(cursor::MoveTo(state_area.left, 0))?;
         let mut cw = CropWriter::new(w, state_area.width as usize);
-        cw.queue_str(&styles.file, &self.file_name)?;
-        cw.fill(&styles.file, LONG_SPACE)?;
-
-        debug!("display preview on {:?}", &self.path);
+        cw.queue_str(&styles.default, &self.file_name)?;
+        cw.fill(&styles.default, LONG_SPACE)?;
         self.preview.display(w, screen, panel_skin, &self.preview_area)
     }
 
