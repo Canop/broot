@@ -20,7 +20,7 @@ pub enum Preview {
 
 impl Preview {
     pub fn from_path(path: &Path) -> Self {
-        if let Ok(Some(view)) = time!(Debug, "new syntactic_view", SyntacticView::new(path)) {
+        if let Ok(view) = time!(Debug, "new syntactic_view", SyntacticView::new(path)) {
             return Self::Syntactic(view);
         }
         match HexView::new(path.to_path_buf()) {

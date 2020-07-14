@@ -13,9 +13,8 @@ use {
         QueueableCommand,
     },
     std::{
-        fs::File,
         io::{self, BufRead},
-        path::Path,
+        path::{Path, PathBuf},
     },
     syntect::{
         highlighting::Style,
@@ -29,6 +28,11 @@ pub struct SyntacticRegion {
     pub fg: Color,
     pub string: String,
 }
+
+/// number of lines initially parsed (and shown before scroll).
+/// It's best to have this greater than the screen height to
+/// avoid two initial parsings.
+const INITIAL_HEIGHT: usize = 150;
 
 impl SyntacticRegion {
     pub fn from_syntect(region: &(Style, &str)) -> Self {
@@ -46,16 +50,21 @@ pub struct SyntacticLine {
     pub contents: Vec<SyntacticRegion>,
 }
 
+
 pub struct SyntacticView {
+    path: PathBuf,
     lines: Vec<SyntacticLine>,
+    content_height: usize, // bigger than lines.len() if not fully loaded
     scroll: i32,
     page_height: i32,
 }
 
 impl SyntacticView {
-    pub fn new(
-        path: &Path,
-    ) -> io::Result<Option<Self>> {
+    /// try to load and parse the content or part of it.
+    /// Check the correct encoding of the whole file
+    ///  even when `full` is false
+    /// Return false if preparation failed.
+    fn prepare(&mut self, full: bool) -> io::Result<()> {
         lazy_static! {
             static ref SYNTAXER: Syntaxer = Syntaxer::new();
         }
@@ -67,33 +76,44 @@ impl SyntacticView {
             Some(theme) => theme,
             None => {
                 warn!("theme not found : {:?}", theme_key);
-                return Ok(None);
+                SYNTAXER.theme_set.themes.iter().next().unwrap().1
             }
         };
         let syntax_set = &SYNTAXER.syntax_set;
-        let mut highlighter = match HighlightFile::new(path, syntax_set, theme) {
-            Ok(h) => h,
-            Err(e) => {
-                warn!("failed to hightlight file {:?} : {:?}", path, e);
-                return Ok(None);
-            }
-        };
-        let mut lines = Vec::new();
-        let reader = io::BufReader::new(File::open(path)?);
-        for line in reader.lines() {
+        let mut highlighter = HighlightFile::new(&self.path, syntax_set, theme)?;
+        self.lines.clear();
+        self.content_height = 0;
+        for line in highlighter.reader.lines() {
             let line = line?;
-            let contents = highlighter.highlight_lines
-                .highlight(&line, &syntax_set)
-                .iter()
-                .map(|r| SyntacticRegion::from_syntect(r))
-                .collect();
-            lines.push(SyntacticLine { contents });
+            self.content_height += 1;
+            if full || self.content_height < INITIAL_HEIGHT {
+                let contents = highlighter.highlight_lines
+                    .highlight(&line, &syntax_set)
+                    .iter()
+                    .map(|r| SyntacticRegion::from_syntect(r))
+                    .collect();
+                self.lines.push(SyntacticLine { contents });
+            }
         }
-        Ok(Some(Self {
-            lines,
+        Ok(())
+    }
+
+    pub fn new(
+        path: &Path,
+    ) -> io::Result<Self> {
+        let mut sv = Self {
+            path: path.to_path_buf(),
+            lines: Vec::new(),
+            content_height: 0,
             scroll: 0,
             page_height: 0,
-        }))
+        };
+        sv.prepare(false)?;
+        Ok(sv)
+    }
+
+    pub fn is_fully_loaded(&self) -> bool {
+        self.content_height == self.lines.len()
     }
 
     pub fn try_scroll(
@@ -102,7 +122,7 @@ impl SyntacticView {
     ) -> bool {
         let old_scroll = self.scroll;
         self.scroll = (self.scroll + cmd.to_lines(self.page_height))
-            .min(self.lines.len() as i32 - self.page_height + 1)
+            .min(self.content_height as i32 - self.page_height + 1)
             .max(0);
         self.scroll != old_scroll
     }
@@ -114,8 +134,12 @@ impl SyntacticView {
         panel_skin: &PanelSkin,
         area: &Area,
     ) -> Result<(), ProgramError> {
-        let line_count = area.height as usize;
         self.page_height = area.height as i32;
+        if !self.is_fully_loaded() && self.scroll + self.page_height > self.lines.len() as i32 {
+            debug!("now fully loading");
+            self.prepare(true)?;
+        }
+        let line_count = area.height as usize;
         let styles = &panel_skin.styles;
         let bg: Option<Color> = styles.preview.get_bg();
         if bg.is_none() {
@@ -125,7 +149,7 @@ impl SyntacticView {
         // * 1 char margin at left
         // * space for the scrollbar at right
         let code_width = area.width as usize - 2;
-        let scrollbar = area.scrollbar(self.scroll, self.lines.len() as i32);
+        let scrollbar = area.scrollbar(self.scroll, self.content_height as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
             .or(styles.preview.get_fg())
             .unwrap_or_else(|| Color::White);
