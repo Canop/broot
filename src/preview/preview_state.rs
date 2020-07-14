@@ -3,7 +3,7 @@ use {
     crate::{
         app::*,
         browser::BrowserState,
-        command::{Command, TriggerType},
+        command::{Command, ScrollCommand, TriggerType},
         conf::{self, Conf},
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
@@ -26,7 +26,6 @@ use {
 
 /// an application state dedicated to previewing files
 pub struct PreviewState {
-    pub scroll: i32, // scroll position
     pub preview_area: Area,
     dirty: bool, // background must be cleared
     file_name: String,
@@ -43,7 +42,6 @@ impl PreviewState {
             .unwrap_or_else(|| "???".to_string());
         PreviewState {
             preview_area,
-            scroll: 0,
             dirty: true,
             file_name,
             path,
@@ -64,7 +62,6 @@ impl AppState for PreviewState {
         self.file_name = path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
-        self.scroll = 0;
         self.path = path;
     }
 
@@ -179,11 +176,11 @@ impl AppState for PreviewState {
             },
             help => AppStateCmdResult::Keep,
             line_down => {
-                self.scroll += 1;
+                self.preview.try_scroll(ScrollCommand::Lines(1));
                 AppStateCmdResult::Keep
             }
             line_up => {
-                self.scroll -= 1;
+                self.preview.try_scroll(ScrollCommand::Lines(-1));
                 AppStateCmdResult::Keep
             }
             open_stay => match open::that(&Conf::default_location()) {
@@ -197,11 +194,11 @@ impl AppState for PreviewState {
                 AppStateCmdResult::from(Launchable::opener(self.path.clone()))
             }
             page_down => {
-                self.scroll += self.preview_area.height as i32;
+                self.preview.try_scroll(ScrollCommand::Pages(1));
                 AppStateCmdResult::Keep
             }
             page_up => {
-                self.scroll -= self.preview_area.height as i32;
+                self.preview.try_scroll(ScrollCommand::Pages(-1));
                 AppStateCmdResult::Keep
             }
             Internal::panel_left => {

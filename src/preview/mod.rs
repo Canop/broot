@@ -6,7 +6,6 @@ pub use {
     preview_state::PreviewState,
 };
 
-
 pub enum PreviewMode {
     Hex,
     Text,

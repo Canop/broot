@@ -1,6 +1,7 @@
 
 use {
     crate::{
+        command::{ScrollCommand},
         display::{Screen, W},
         errors::ProgramError,
         hex::HexView,
@@ -28,6 +29,16 @@ impl Preview {
                 warn!("error while previewing {:?} : {:?}", path, e);
                 Self::IOError
             }
+        }
+    }
+    pub fn try_scroll(
+        &mut self,
+        cmd: ScrollCommand,
+    ) -> bool {
+        match self {
+            Self::Syntactic(sv) => sv.try_scroll(cmd),
+            Self::Hex(hv) => hv.try_scroll(cmd),
+            _ => false,
         }
     }
     pub fn display(

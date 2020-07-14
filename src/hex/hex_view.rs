@@ -4,12 +4,14 @@ use {
         byte::Byte,
     },
     crate::{
+        command::{ScrollCommand},
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
         skin::PanelSkin,
     },
     crossterm::{
         cursor,
+        style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
     memmap::Mmap,
@@ -27,9 +29,10 @@ pub struct HexLine {
 }
 
 pub struct HexView {
-    pub path: PathBuf,
-    pub scroll: usize,
-    pub len: usize,
+    path: PathBuf,
+    len: usize,
+    scroll: i32,
+    page_height: i32,
 }
 
 impl HexView {
@@ -37,12 +40,23 @@ impl HexView {
         let len = path.metadata()?.len() as usize;
         Ok(Self {
             path,
-            scroll: 0,
             len,
+            scroll: 0,
+            page_height: 0,
         })
     }
     pub fn line_count(&self) -> usize {
         self.len / 16
+    }
+    pub fn try_scroll(
+        &mut self,
+        cmd: ScrollCommand,
+    ) -> bool {
+        let old_scroll = self.scroll;
+        self.scroll = (self.scroll + cmd.to_lines(self.page_height))
+            .min(self.line_count() as i32 - self.page_height + 1)
+            .max(0);
+        self.scroll != old_scroll
     }
     pub fn get_page(&mut self, start_line_idx: usize, line_count: usize) -> io::Result<Vec<HexLine>> {
         // I'm not sure a memmap is the best solution here but at least it's easy
@@ -75,15 +89,20 @@ impl HexView {
         area: &Area,
     ) -> Result<(), ProgramError> {
         let line_count = area.height as usize;
-        let page = self.get_page(self.scroll, line_count)?;
+        self.page_height = area.height as i32;
+        let page = self.get_page(self.scroll as usize, line_count)?;
         let styles = &panel_skin.styles;
         let mut show_middle_space = false;
         if area.width > 50 {
             show_middle_space = true;
         }
+        let scrollbar = area.scrollbar(self.scroll, self.line_count() as i32);
+        let scrollbar_fg = styles.scrollbar_thumb.get_fg()
+            .or(styles.preview.get_fg())
+            .unwrap_or_else(|| Color::White);
         for y in 0..line_count {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
-            let mut cw = CropWriter::new(w, area.width as usize);
+            let mut cw = CropWriter::new(w, area.width as usize - 1); // -1 for scrollbar
             let cw = &mut cw;
             if y < page.len() {
                 let line = &page[y];
@@ -99,8 +118,24 @@ impl HexView {
                     }
                 }
                 cw.fill(&styles.default, LONG_SPACE)?;
+                if is_thumb(y, scrollbar) {
+                    w.queue(SetForegroundColor(scrollbar_fg))?;
+                    w.queue(Print('▐'))?;
+                } else {
+                    w.queue(Print(' '))?;
+                }
             }
         }
         Ok(())
     }
+}
+
+fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
+    if let Some((sctop, scbottom)) = scrollbar {
+        let y = y as u16;
+        if sctop <= y && y <= scbottom {
+            return true;
+        }
+    }
+    false
 }

@@ -2,6 +2,7 @@
 use {
     super::Syntaxer,
     crate::{
+        command::{ScrollCommand},
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
         skin::PanelSkin,
@@ -46,8 +47,9 @@ pub struct SyntacticLine {
 }
 
 pub struct SyntacticView {
-    pub scroll: i32,
     lines: Vec<SyntacticLine>,
+    scroll: i32,
+    page_height: i32,
 }
 
 impl SyntacticView {
@@ -88,10 +90,23 @@ impl SyntacticView {
             lines.push(SyntacticLine { contents });
         }
         Ok(Some(Self {
-            scroll: 0,
             lines,
+            scroll: 0,
+            page_height: 0,
         }))
     }
+
+    pub fn try_scroll(
+        &mut self,
+        cmd: ScrollCommand,
+    ) -> bool {
+        let old_scroll = self.scroll;
+        self.scroll = (self.scroll + cmd.to_lines(self.page_height))
+            .min(self.lines.len() as i32 - self.page_height + 1)
+            .max(0);
+        self.scroll != old_scroll
+    }
+
     pub fn display(
         &mut self,
         w: &mut W,
@@ -100,6 +115,7 @@ impl SyntacticView {
         area: &Area,
     ) -> Result<(), ProgramError> {
         let line_count = area.height as usize;
+        self.page_height = area.height as i32;
         let styles = &panel_skin.styles;
         let bg: Option<Color> = styles.preview.get_bg();
         if bg.is_none() {
@@ -121,8 +137,8 @@ impl SyntacticView {
             w.queue(Print(' '))?;
             let mut cw = CropWriter::new(w, code_width);
             let cw = &mut cw;
-            if y < self.lines.len() {
-                for content in &self.lines[y].contents {
+            if let Some(line) = self.lines.get(self.scroll as usize + y) {
+                for content in &line.contents {
                     cw.w.queue(SetForegroundColor(content.fg))?;
                     cw.queue_unstyled_str(&content.string)?;
                 }
