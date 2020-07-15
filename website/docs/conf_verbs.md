@@ -194,6 +194,7 @@ invocation | default key | default shortcut | behavior / details
 :back | <kbd>Esc</kbd> | - | back to previous app state (see Usage page) |
 :cd | <kbd>alt</kbd><kbd>enter</kbd> | - | leave broot and cd to the selected directory (needs the br shell function)
 :chmod {args} | - | - | execute a chmod
+:close_preview | - | - | close the preview panel
 :cp {newpath} | - | - | copy the file or directory to the provided name
 :help | <kbd>F1</kbd> | - | open the help page. Help page can also be open with <kbd>?</kbd>
 :focus | <kbd>enter</kbd> | - | set the selected directory the root of the displayed tree |
@@ -202,8 +203,9 @@ invocation | default key | default shortcut | behavior / details
 :mkdir {subpath} | - | md | create a directory
 :mv {newpath} | - | - | move the file or directory to the provided path
 :open_stay | <kbd>enter</kbd> | - | open the selected file in the default OS opener, or focus the directory
-:open_stay_filter | - | - | focus the directory but keeping the current filtering pattern
+:open_preview | - | - | open the preview panel
 :open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leave broot
+:open_stay_filter | - | - | focus the directory but keeping the current filtering pattern
 :page_down | <kbd>⇟</kbd> | - | scroll one page down
 :page_up | <kbd>⇞</kbd> | - | scroll one page up
 :parent | - | - | focus the parent directory
@@ -226,6 +228,7 @@ invocation | default key | default shortcut | behavior / details
 :toggle_git_status | - | - | toggle showing only the file which would show up on `git status`
 :toggle_hidden | - | - | toggle display of hidden files (the ones whose name starts with a dot on linux)
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
+:toggle_preview | - | - | toggle display of the preview panel
 :toggle_sizes | - | - | toggle the size mode
 :toggle_trim_root | - | - | toggle trimming of top level files in tree display
 :up_tree | - | - | focus the parent of the current root

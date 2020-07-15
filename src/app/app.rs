@@ -167,6 +167,9 @@ impl App {
             con,
         )? {
             ClosePanel { validate_purpose, id } => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input_invocation();
+                }
                 let close_idx = id
                     .and_then(|id| self.panel_idx(id))
                     .unwrap_or(self.active_panel_idx);
@@ -213,9 +216,11 @@ impl App {
                 direction,
             } => {
                 if is_input_invocation {
-                    self.mut_panel().clear_input();
+                    self.mut_panel().clear_input_invocation();
                 }
-                let insertion_idx = if direction == HDir::Right {
+                let insertion_idx = if purpose.is_preview() {
+                    self.panels.len().get()
+                } else if direction == HDir::Right {
                     self.active_panel_idx + 1
                 } else {
                     self.active_panel_idx

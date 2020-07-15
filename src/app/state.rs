@@ -5,7 +5,10 @@ use {
         display::{Screen, W},
         errors::ProgramError,
         flag::Flag,
+        help::HelpState,
         pattern::*,
+        preview::PreviewState,
+        print,
         selection_type::SelectionType,
         skin::PanelSkin,
         task_sync::Dam,
@@ -63,6 +66,120 @@ pub trait AppState {
         cc: &CmdContext,
         screen: &mut Screen,
     ) -> Result<AppStateCmdResult, ProgramError>;
+
+    /// a generic implementation of on_internal which may be
+    /// called by states when they don't have a specific
+    /// behavior to execute
+    fn on_internal_generic(
+        &mut self,
+        _w: &mut W,
+        internal_exec: &InternalExecution,
+        input_invocation: Option<&VerbInvocation>,
+        _trigger_type: TriggerType,
+        cc: &CmdContext,
+        screen: &mut Screen,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        let con = &cc.con;
+        Ok(match internal_exec.internal {
+            Internal::back => AppStateCmdResult::PopState,
+            Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
+                validate_purpose: true,
+                id: None,
+            },
+            Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
+                validate_purpose: false,
+                id: None,
+            },
+            Internal::help => {
+                let bang = input_invocation
+                    .map(|inv| inv.bang)
+                    .unwrap_or(internal_exec.bang);
+                if bang && cc.preview.is_none() {
+                    AppStateCmdResult::NewPanel {
+                        state: Box::new(HelpState::new(screen, con)),
+                        purpose: PanelPurpose::None,
+                        direction: HDir::Right,
+                    }
+                } else {
+                    AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)))
+                }
+            }
+            Internal::open_preview => {
+                if cc.preview.is_some() {
+                    AppStateCmdResult::Keep
+                } else {
+                    let path = self.selected_path();
+                    if path.is_file() {
+                        AppStateCmdResult::NewPanel {
+                            state: Box::new(PreviewState::new(path.to_path_buf(), con)),
+                            purpose: PanelPurpose::Preview,
+                            direction: HDir::Right,
+                        }
+                    } else {
+                        AppStateCmdResult::DisplayError(
+                            "only regular files can be previewed".to_string()
+                        )
+                    }
+                }
+            }
+            Internal::close_preview => {
+                if let Some(id) = cc.preview {
+                    AppStateCmdResult::ClosePanel {
+                        validate_purpose: false,
+                        id: Some(id),
+                    }
+                } else {
+                    AppStateCmdResult::Keep
+                }
+            }
+            Internal::toggle_preview => {
+                if let Some(id) = cc.preview {
+                    AppStateCmdResult::ClosePanel {
+                        validate_purpose: false,
+                        id: Some(id),
+                    }
+                } else {
+                    let path = self.selected_path();
+                    if path.is_file() {
+                        AppStateCmdResult::NewPanel {
+                            state: Box::new(PreviewState::new(path.to_path_buf(), con)),
+                            purpose: PanelPurpose::Preview,
+                            direction: HDir::Right,
+                        }
+                    } else {
+                        AppStateCmdResult::DisplayError(
+                            "only regular files can be previewed".to_string()
+                        )
+                    }
+                }
+            }
+            Internal::panel_left => {
+                if cc.areas.is_first() {
+                    AppStateCmdResult::Keep
+                } else {
+                    // we ask the app to focus the panel to the left
+                    AppStateCmdResult::Propagate(Internal::panel_left)
+                }
+            }
+            Internal::panel_right => {
+                if cc.areas.is_last() {
+                    AppStateCmdResult::Keep
+                } else {
+                    // we ask the app to focus the panel to the left
+                    AppStateCmdResult::Propagate(Internal::panel_right)
+                }
+            }
+            Internal::print_path => {
+                print::print_path(self.selected_path(), con)?
+            }
+            Internal::print_relative_path => {
+                print::print_relative_path(self.selected_path(), con)?
+            }
+            Internal::refresh => AppStateCmdResult::RefreshState { clear_cache: true },
+            Internal::quit => AppStateCmdResult::Quit,
+            _ => AppStateCmdResult::Keep,
+        })
+    }
 
     /// change the state, does no rendering
     fn on_command(

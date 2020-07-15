@@ -14,6 +14,9 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_description("change directory and quit (mapped to *alt*-*enter*)"),
         #[cfg(unix)]
         Verb::external("chmod {args}", "chmod {args} {file}", StayInBroot).unwrap(),
+        Verb::internal(open_preview),
+        Verb::internal(close_preview),
+        Verb::internal(toggle_preview),
         Verb::internal(close_panel_ok),
         Verb::internal(close_panel_cancel)
             .with_key(BACK_TAB)

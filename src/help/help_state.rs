@@ -2,17 +2,13 @@ use {
     super::help_content,
     crate::{
         app::*,
-        browser::BrowserState,
         command::{Command, TriggerType},
-        conf::{self, Conf},
+        conf::Conf,
         display::{Screen, W},
         errors::ProgramError,
         launchable::Launchable,
-        print,
         selection_type::SelectionType,
         skin::PanelSkin,
-        task_sync::Dam,
-        tree::TreeOptions,
         verb::*,
     },
     std::path::{Path, PathBuf},
@@ -60,11 +56,15 @@ impl AppState for HelpState {
         panel_skin: &PanelSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
+        let mut text_area = state_area.clone();
+        text_area.pad_for_max_width(120);
+        if text_area != self.text_area {
+            self.dirty = true;
+            self.text_area = text_area;
+        }
         if self.dirty {
             panel_skin.styles.default.queue_bg(w)?;
             screen.clear_area_to_right(w, &state_area)?;
-            self.text_area = state_area;
-            self.text_area.pad_for_max_width(120);
             self.dirty = false;
         }
         let text = help_content::build_text(con);
@@ -117,37 +117,15 @@ impl AppState for HelpState {
 
     fn on_internal(
         &mut self,
-        _w: &mut W,
+        w: &mut W,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
-        _trigger_type: TriggerType,
+        trigger_type: TriggerType,
         cc: &CmdContext,
         screen: &mut Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
         use Internal::*;
-        let bang = input_invocation
-            .map(|inv| inv.bang)
-            .unwrap_or(internal_exec.bang);
         Ok(match internal_exec.internal {
-            back => AppStateCmdResult::PopState,
-            focus | parent => AppStateCmdResult::from_optional_state(
-                BrowserState::new(
-                    conf::dir().to_path_buf(),
-                    TreeOptions::default(),
-                    screen,
-                    &cc.con,
-                    &Dam::unlimited(),
-                ),
-                bang,
-            ),
-            Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
-                validate_purpose: true,
-                id: None,
-            },
-            Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
-                validate_purpose: false,
-                id: None,
-            },
             help => AppStateCmdResult::Keep,
             line_down => {
                 self.scroll += 1;
@@ -177,29 +155,17 @@ impl AppState for HelpState {
                 self.scroll -= self.text_area.height as i32;
                 AppStateCmdResult::Keep
             }
-            Internal::panel_left => {
-                if cc.areas.is_first() {
-                    AppStateCmdResult::Keep
-                } else {
-                    // we ask the app to focus the panel to the left
-                    AppStateCmdResult::Propagate(Internal::panel_left)
-                }
-            }
-            Internal::panel_right => {
-                if cc.areas.is_last() {
-                    AppStateCmdResult::Keep
-                } else {
-                    // we ask the app to focus the panel to the left
-                    AppStateCmdResult::Propagate(Internal::panel_right)
-                }
-            }
-            print_path => print::print_path(&Conf::default_location(), &cc.con)?,
-            print_relative_path => print::print_relative_path(&Conf::default_location(), &cc.con)?,
-            quit => AppStateCmdResult::Quit,
             toggle_dates | toggle_files | toggle_hidden | toggle_git_ignore
             | toggle_git_file_info | toggle_git_status | toggle_perm | toggle_sizes
             | toggle_trim_root => AppStateCmdResult::PopStateAndReapply,
-            _ => AppStateCmdResult::Keep,
+            _ => self.on_internal_generic(
+                w,
+                internal_exec,
+                input_invocation,
+                trigger_type,
+                cc,
+                screen,
+            )?,
         })
     }
 

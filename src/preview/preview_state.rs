@@ -2,18 +2,12 @@ use {
     super::*,
     crate::{
         app::*,
-        browser::BrowserState,
         command::{Command, ScrollCommand, TriggerType},
-        conf::{self, Conf},
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
         flag::Flag,
-        launchable::Launchable,
-        print,
         selection_type::SelectionType,
         skin::PanelSkin,
-        task_sync::Dam,
-        tree::TreeOptions,
         verb::*,
     },
     crossterm::{
@@ -82,16 +76,20 @@ impl AppState for PreviewState {
         panel_skin: &PanelSkin,
         _con: &AppContext,
     ) -> Result<(), ProgramError> {
-        if state_area.height < 8 {
+        if state_area.height < 3 {
             warn!("area too small for preview");
             return Ok(());
+        }
+        let mut preview_area = state_area.clone();
+        preview_area.height -= 1;
+        preview_area.top += 1;
+        if preview_area != self.preview_area {
+            self.dirty = true;
+            self.preview_area = preview_area;
         }
         if self.dirty {
             panel_skin.styles.default.queue_bg(w)?;
             screen.clear_area_to_right(w, &state_area)?;
-            self.preview_area = state_area.clone();
-            self.preview_area.height -= 1;
-            self.preview_area.top += 1;
             self.dirty = false;
         }
         let styles = &panel_skin.styles;
@@ -141,85 +139,39 @@ impl AppState for PreviewState {
 
     fn on_internal(
         &mut self,
-        _w: &mut W,
+        w: &mut W,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
-        _trigger_type: TriggerType,
+        trigger_type: TriggerType,
         cc: &CmdContext,
         screen: &mut Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        use Internal::*;
-        let bang = input_invocation
-            .map(|inv| inv.bang)
-            .unwrap_or(internal_exec.bang);
-        Ok(match internal_exec.internal {
-            back => AppStateCmdResult::PopState,
-            focus | parent => AppStateCmdResult::from_optional_state(
-                BrowserState::new(
-                    conf::dir().to_path_buf(),
-                    TreeOptions::default(),
-                    screen,
-                    &cc.con,
-                    &Dam::unlimited(),
-                ),
-                bang,
-            ),
-            Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
-                validate_purpose: true,
-                id: None,
-            },
-            Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
-                validate_purpose: false,
-                id: None,
-            },
-            help => AppStateCmdResult::Keep,
-            line_down => {
+        match internal_exec.internal {
+            Internal::line_down => {
                 self.preview.try_scroll(ScrollCommand::Lines(1));
-                AppStateCmdResult::Keep
+                Ok(AppStateCmdResult::Keep)
             }
-            line_up => {
+            Internal::line_up => {
                 self.preview.try_scroll(ScrollCommand::Lines(-1));
-                AppStateCmdResult::Keep
+                Ok(AppStateCmdResult::Keep)
             }
-            open_stay => match open::that(&Conf::default_location()) {
-                Ok(exit_status) => {
-                    info!("open returned with exit_status {:?}", exit_status);
-                    AppStateCmdResult::Keep
-                }
-                Err(e) => AppStateCmdResult::DisplayError(format!("{:?}", e)),
-            },
-            open_leave => {
-                AppStateCmdResult::from(Launchable::opener(self.path.clone()))
-            }
-            page_down => {
+            Internal::page_down => {
                 self.preview.try_scroll(ScrollCommand::Pages(1));
-                AppStateCmdResult::Keep
+                Ok(AppStateCmdResult::Keep)
             }
-            page_up => {
+            Internal::page_up => {
                 self.preview.try_scroll(ScrollCommand::Pages(-1));
-                AppStateCmdResult::Keep
+                Ok(AppStateCmdResult::Keep)
             }
-            Internal::panel_left => {
-                if cc.areas.is_first() {
-                    AppStateCmdResult::Keep
-                } else {
-                    // we ask the app to focus the panel to the left
-                    AppStateCmdResult::Propagate(Internal::panel_left)
-                }
-            }
-            Internal::panel_right => {
-                if cc.areas.is_last() {
-                    AppStateCmdResult::Keep
-                } else {
-                    // we ask the app to focus the panel to the left
-                    AppStateCmdResult::Propagate(Internal::panel_right)
-                }
-            }
-            print_path => print::print_path(&Conf::default_location(), &cc.con)?,
-            print_relative_path => print::print_relative_path(&Conf::default_location(), &cc.con)?,
-            quit => AppStateCmdResult::Quit,
-            _ => AppStateCmdResult::Keep,
-        })
+            _ => self.on_internal_generic(
+                w,
+                internal_exec,
+                input_invocation,
+                trigger_type,
+                cc,
+                screen,
+            ),
+        }
     }
 
     // TODO put the hex/txt view here

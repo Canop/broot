@@ -6,7 +6,6 @@ use {
         errors::{ProgramError, TreeBuildError},
         flag::Flag,
         git,
-        help::HelpState,
         launchable::Launchable,
         pattern::*,
         path,
@@ -387,14 +386,6 @@ impl AppState for BrowserState {
                     AppStateCmdResult::PopState
                 }
             }
-            Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
-                validate_purpose: true,
-                id: None, // close current panel
-            },
-            Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
-                validate_purpose: false,
-                id: None, // close current panel
-            },
             Internal::focus => internal_focus::on_internal(
                 internal_exec,
                 input_invocation,
@@ -414,17 +405,6 @@ impl AppState for BrowserState {
                 ),
                 None => AppStateCmdResult::DisplayError("no parent found".to_string()),
             },
-            Internal::help => {
-                if bang {
-                    AppStateCmdResult::NewPanel {
-                        state: Box::new(HelpState::new(screen, con)),
-                        purpose: PanelPurpose::None,
-                        direction: HDir::Right,
-                    }
-                } else {
-                    AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)))
-                }
-            }
             Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang, false)?,
             Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
             Internal::open_leave => self.open_selection_quit_broot(w, con)?,
@@ -515,7 +495,6 @@ impl AppState for BrowserState {
             Internal::print_tree => {
                 print::print_tree(&self.displayed_tree(), screen, &cc.panel_skin, con)?
             }
-            Internal::refresh => AppStateCmdResult::RefreshState { clear_cache: true },
             Internal::select_first => {
                 self.displayed_tree_mut().try_select_first();
                 AppStateCmdResult::Keep
@@ -665,7 +644,14 @@ impl AppState for BrowserState {
                 }
             }
             Internal::quit => AppStateCmdResult::Quit,
-            _ => AppStateCmdResult::Keep,
+            _ => self.on_internal_generic(
+                w,
+                internal_exec,
+                input_invocation,
+                trigger_type,
+                cc,
+                screen,
+            )?,
         })
     }
 
