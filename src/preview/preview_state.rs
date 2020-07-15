@@ -65,6 +65,7 @@ impl AppState for PreviewState {
 
     fn refresh(&mut self, _screen: &Screen, _con: &AppContext) -> Command {
         self.dirty = true;
+        self.set_selected_path(self.path.clone());
         Command::empty()
     }
 
