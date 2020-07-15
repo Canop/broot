@@ -7,6 +7,7 @@ use {
         CompoundStyle,
         Result,
     },
+    unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
 };
 
 /// wrap a writer to ensure that at most `allowed` chars are
@@ -29,17 +30,30 @@ where
     pub fn is_full(&self) -> bool {
         self.allowed == 0
     }
+    pub fn cropped_str(&self, s: &str) -> (String, usize) {
+        let mut len = UnicodeWidthStr::width(s);
+        let string = if len > self.allowed {
+            len = 0;
+            let mut ns = String::new();
+            for c in s.chars() {
+                let char_width = UnicodeWidthChar::width(c).unwrap_or(0);
+                if char_width + len > self.allowed {
+                    break;
+                }
+                ns.push(c);
+                len += char_width;
+            }
+            ns
+        } else {
+            s.to_string()
+        };
+        (string, len)
+    }
     pub fn queue_unstyled_str(&mut self, s: &str) -> Result<()> {
         if self.is_full() {
             return Ok(());
         }
-        let mut len = s.chars().count();
-        let string = if len > self.allowed {
-            len = self.allowed;
-            s.chars().take(self.allowed).collect()
-        } else {
-            s.to_string()
-        };
+        let (string, len) = self.cropped_str(s);
         self.allowed -= len;
         self.w.queue(Print(string))?;
         Ok(())
@@ -48,24 +62,21 @@ where
         if self.is_full() {
             return Ok(());
         }
-        let mut len = s.chars().count();
-        let string = if len > self.allowed {
-            len = self.allowed;
-            s.chars().take(self.allowed).collect()
-        } else {
-            s.to_string()
-        };
+        let (string, len) = self.cropped_str(s);
         self.allowed -= len;
         cs.queue(self.w, string)
     }
     pub fn queue_char(&mut self, cs: &CompoundStyle, c: char) -> Result<()> {
-        if !self.is_full() {
-            self.allowed -= 1;
+        let width = UnicodeWidthChar::width(c).unwrap_or(0);
+        if width < self.allowed {
+            self.allowed -= width;
             cs.queue(self.w, c)?;
         }
         Ok(())
     }
-    pub fn queue_string(&mut self, cs: &CompoundStyle, mut s: String) -> Result<()> {
+    /// a "g_string" is a "gentle" one: each char takes one column on screen.
+    /// This function must thus not used for unknown strings.
+    pub fn queue_g_string(&mut self, cs: &CompoundStyle, mut s: String) -> Result<()> {
         if self.is_full() {
             return Ok(());
         }

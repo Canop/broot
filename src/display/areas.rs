@@ -98,7 +98,7 @@ impl Areas {
         #[allow(clippy::needless_range_loop)]
         for slot_idx in 0..nb_pos {
             if slot_idx==nb_pos-1 {
-                panel_width = screen.width - slot_idx as u16 * panel_width;
+                panel_width = screen.width - x;
             }
             let areas: &mut Areas = match &mut slots[slot_idx] {
                 Slot::Panel(panel_idx) => &mut panels[*panel_idx].areas,

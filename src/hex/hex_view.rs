@@ -138,9 +138,9 @@ impl HexView {
                     if let Some(b) = line.bytes.get(x) {
                         let byte = Byte::from(*b);
                         if inter_hex {
-                            cw.queue_string(byte.style(styles), format!("{:02x} ", b))?;
+                            cw.queue_g_string(byte.style(styles), format!("{:02x} ", b))?;
                         } else {
-                            cw.queue_string(byte.style(styles), format!("{:02x}", b))?;
+                            cw.queue_g_string(byte.style(styles), format!("{:02x}", b))?;
                         }
                     } else {
                         cw.queue_str(&styles.default, if inter_hex { "   " } else { "  " })?;

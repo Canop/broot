@@ -42,6 +42,7 @@ syntect = "4.2"
 termimad = "0.8.25"
 toml = "0.5"
 umask = "1.0"
+unicode-width = "0.1.8"
 
 
 [dev-dependencies]

@@ -92,7 +92,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
             cond_bg!(count_style, self, selected, self.skin.count);
-            cw.queue_string(&count_style, format!("{:>8}", s.to_count()))?;
+            cw.queue_g_string(&count_style, format!("{:>8}", s.to_count()))?;
             1
         } else {
             9
@@ -107,7 +107,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
             cond_bg!(size_style, self, selected, self.name_style(&line));
-            cw.queue_string(
+            cw.queue_g_string(
                 &size_style,
                 format!("{:>4}", file_size::fit_4(s.to_size())),
             )?;
@@ -130,7 +130,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             let pb = ProgressBar::new(s.part_of_size(total_size), 10);
             cond_bg!(size_style, self, selected, self.name_style(&line));
             cond_bg!(sparse_style, self, selected, self.skin.sparse);
-            cw.queue_string(
+            cw.queue_g_string(
                 &size_style,
                 format!("{:>4}", file_size::fit_4(s.to_size())),
             )?;
@@ -138,7 +138,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 &sparse_style,
                 if s.is_sparse() && line.is_file() { 's' } else { ' ' },
             )?;
-            cw.queue_string(&size_style, format!("{:<10}", pb))?;
+            cw.queue_g_string(&size_style, format!("{:<10}", pb))?;
             1
         } else {
             16
@@ -178,7 +178,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     ) -> Result<usize, termimad::Error> {
         let date_time: DateTime<Local> = Local.timestamp(seconds, 0);
         cond_bg!(date_style, self, selected, self.skin.dates);
-        cw.queue_string(date_style, date_time.format(self.tree.options.date_time_format).to_string())?;
+        cw.queue_g_string(date_style, date_time.format(self.tree.options.date_time_format).to_string())?;
         Ok(1)
     }
 
@@ -209,7 +209,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             );
         }
         if !branch.is_empty() {
-            cw.queue_string(&branch_style, branch)?;
+            cw.queue_g_string(&branch_style, branch)?;
         }
         Ok(0)
     }
