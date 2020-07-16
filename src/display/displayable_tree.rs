@@ -358,7 +358,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         }
         let mut cw = CropWriter::new(f, self.area.width as usize);
         let pattern_object = tree.options.pattern.pattern.object();
-        self.write_root_line(&mut cw, tree.selection == 0)?;
+        self.write_root_line(&mut cw, self.in_app && tree.selection == 0)?;
         f.queue(SetBackgroundColor(Color::Reset))?;
 
         // we compute the length of the dates, depending on the format

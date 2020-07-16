@@ -2,7 +2,7 @@
 
 If you alias `tree` to `br -c :pt`, then
 
-![tree](../img/20200710-alias-tree.png)
+![tree](img/20200710-alias-tree.png)
 
 ## `dcd` : Deep fuzzy cd
 
