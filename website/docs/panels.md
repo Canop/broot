@@ -19,14 +19,14 @@ The `:close_panel` closes the current panel and is bound to <kbd>ctrl</kbd><kbd>
 
 # The preview panel
 
-![preview](img/201200716-preview.png)
+![preview](img/20200716-preview.png)
 
 It's not immediately focused on creation, because most often you'll want to preview a few files and it's conveninient to stay in the tree to navigate.
 To focus it, for example to scroll it, do <kbd>ctrl</kbd><kbd>→</kbd> again.
 
 Files that can't be interpreted as text are shown as binary:
 
-![binary](img/201200716-binary.png)
+![binary](img/20200716-binary.png)
 
 # Copy, move between panels... or more
 

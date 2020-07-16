@@ -7,7 +7,6 @@ use {
         GitStatusDisplay,
         LONG_SPACE, LONG_BRANCH,
         MatchedString,
-        PermWriter,
     },
     crate::{
         content_search::ContentMatch,
@@ -344,7 +343,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     /// write the whole tree on the given `W`
     pub fn write_on<W: Write>(&self, f: &mut W) -> Result<(), ProgramError> {
         #[cfg(unix)]
-        let perm_writer = PermWriter::for_tree(&self.skin, &self.tree);
+        let perm_writer = super::PermWriter::for_tree(&self.skin, &self.tree);
 
         let tree = self.tree;
         let total_size = tree.total_sum();

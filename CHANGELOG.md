@@ -1,4 +1,5 @@
-### next version
+<a name="v0.19.0"></a>
+### v0.19.0 - 2020-07-16
 #### Major feature: the preview panel
 Hit ctrl-right when a file is selected and you get the preview.
 

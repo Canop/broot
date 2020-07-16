@@ -22,7 +22,7 @@ That's what makes it usable where the old `tree` command would produce pages of 
 
 Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel appears.
 
-![preview](img/201200716-preview.png)
+![preview](img/20200716-preview.png)
 
 The preview panel stays synchronized with the selection in tree panels.
 

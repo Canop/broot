@@ -175,6 +175,13 @@ impl AppState for PreviewState {
         screen: &mut Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
         match internal_exec.internal {
+            Internal::back => {
+                if self.filtered_preview.is_some() {
+                    self.on_pattern(InputPattern::none(), &cc.con)
+                } else {
+                    Ok(AppStateCmdResult::PopState)
+                }
+            }
             Internal::line_down => {
                 self.mut_preview().try_scroll(ScrollCommand::Lines(1));
                 Ok(AppStateCmdResult::Keep)

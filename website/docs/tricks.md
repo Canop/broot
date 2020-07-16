@@ -97,3 +97,11 @@ We can also select the desired file with arrow keys at this point.
 
 When you grasped the basic logic of [combined filters](../input/#combining-filtering-patterns), navigation is incredibly efficient.
 
+
+## Use composite searches in preview
+
+You can apply composition and negation to searches in the preview panel which is convenient when filtering, for example, a log file.
+
+In this example I show lines containing "youtube" but not "txt" nor " 0 ms".
+
+![search log](img/20200716-search-log.png)
