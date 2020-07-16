@@ -5,6 +5,7 @@ use {
         display::{Screen, W},
         errors::ProgramError,
         hex::HexView,
+        pattern::Pattern,
         skin::PanelSkin,
         syntactic::SyntacticView,
     },
@@ -19,8 +20,8 @@ pub enum Preview {
 }
 
 impl Preview {
-    pub fn from_path(path: &Path) -> Self {
-        if let Ok(view) = time!(Debug, "new syntactic_view", SyntacticView::new(path)) {
+    pub fn new(path: &Path, pattern: Pattern) -> Self {
+        if let Ok(view) = time!(Debug, "new syntactic_view", SyntacticView::new(path, pattern)) {
             return Self::Syntactic(view);
         }
         match HexView::new(path.to_path_buf()) {
@@ -38,6 +39,12 @@ impl Preview {
         match self {
             Self::Syntactic(sv) => sv.try_scroll(cmd),
             Self::Hex(hv) => hv.try_scroll(cmd),
+            _ => false,
+        }
+    }
+    pub fn is_filterable(&self) -> bool {
+        match self {
+            Self::Syntactic(_) => true,
             _ => false,
         }
     }

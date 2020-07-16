@@ -6,6 +6,7 @@ use {
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
         flag::Flag,
+        pattern::{InputPattern, Pattern},
         selection_type::SelectionType,
         skin::PanelSkin,
         verb::*,
@@ -25,12 +26,13 @@ pub struct PreviewState {
     file_name: String,
     path: PathBuf, // path to the previewed file
     preview: Preview,
+    filtered_preview: Option<Preview>,
 }
 
 impl PreviewState {
     pub fn new(path: PathBuf, _con: &AppContext) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
-        let preview = Preview::from_path(&path);
+        let preview = Preview::new(&path, Pattern::None);
         let file_name = path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
@@ -40,8 +42,13 @@ impl PreviewState {
             file_name,
             path,
             preview,
+            filtered_preview: None,
         }
     }
+    fn mut_preview(&mut self) -> &mut Preview {
+        self.filtered_preview.as_mut().unwrap_or(&mut self.preview)
+    }
+
 }
 
 impl AppState for PreviewState {
@@ -52,7 +59,7 @@ impl AppState for PreviewState {
 
     fn set_selected_path(&mut self, path: PathBuf) {
         // this is only called when the path really changed
-        self.preview = Preview::from_path(&path);
+        self.preview = Preview::new(&path, Pattern::None); // TODO keep the pattern ?
         self.file_name = path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
@@ -67,6 +74,25 @@ impl AppState for PreviewState {
         self.dirty = true;
         self.set_selected_path(self.path.clone());
         Command::empty()
+    }
+
+    fn on_pattern(
+        &mut self,
+        pat: InputPattern,
+        _con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        debug!("preview pattern: {:?}", &pat);
+        if pat.is_some() {
+            if !self.preview.is_filterable() {
+                return Ok(AppStateCmdResult::DisplayError(
+                    "this preview can't be searched".to_string()
+                ));
+            }
+            self.filtered_preview = Some(Preview::new(&self.path, pat.pattern));
+        } else {
+            self.filtered_preview = None;
+        }
+        Ok(AppStateCmdResult::Keep)
     }
 
     fn display(
@@ -98,7 +124,8 @@ impl AppState for PreviewState {
         let mut cw = CropWriter::new(w, state_area.width as usize);
         cw.queue_str(&styles.default, &self.file_name)?;
         cw.fill(&styles.default, LONG_SPACE)?;
-        self.preview.display(w, screen, panel_skin, &self.preview_area)
+        self.filtered_preview.as_mut().unwrap_or(&mut self.preview)
+            .display(w, screen, panel_skin, &self.preview_area)
     }
 
     fn get_status(
@@ -149,19 +176,19 @@ impl AppState for PreviewState {
     ) -> Result<AppStateCmdResult, ProgramError> {
         match internal_exec.internal {
             Internal::line_down => {
-                self.preview.try_scroll(ScrollCommand::Lines(1));
+                self.mut_preview().try_scroll(ScrollCommand::Lines(1));
                 Ok(AppStateCmdResult::Keep)
             }
             Internal::line_up => {
-                self.preview.try_scroll(ScrollCommand::Lines(-1));
+                self.mut_preview().try_scroll(ScrollCommand::Lines(-1));
                 Ok(AppStateCmdResult::Keep)
             }
             Internal::page_down => {
-                self.preview.try_scroll(ScrollCommand::Pages(1));
+                self.mut_preview().try_scroll(ScrollCommand::Pages(1));
                 Ok(AppStateCmdResult::Keep)
             }
             Internal::page_up => {
-                self.preview.try_scroll(ScrollCommand::Pages(-1));
+                self.mut_preview().try_scroll(ScrollCommand::Pages(-1));
                 Ok(AppStateCmdResult::Keep)
             }
             _ => self.on_internal_generic(

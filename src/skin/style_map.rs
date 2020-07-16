@@ -166,6 +166,8 @@ StyleMap! {
     help_headers: ansi(178), None, []
     help_table_border: ansi(239), None, []
     preview: None, gray(1), [] / None, gray(2), []
+    preview_line_number: gray(12), gray(3), []
+    preview_match: None, ansi(29), [Underlined]
     hex_null: gray(8), None, []
     hex_ascii_graphic: gray(18), None, []
     hex_ascii_whitespace: ansi(143), None, []

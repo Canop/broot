@@ -4,11 +4,12 @@ use {
         command::{ScrollCommand},
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
+        pattern::{NameMatch, Pattern},
         skin::PanelSkin,
     },
     crossterm::{
         cursor,
-        style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor},
+        style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
     std::{
@@ -46,11 +47,14 @@ impl SyntacticRegion {
 }
 
 pub struct SyntacticLine {
+    pub number: usize, // starting at 1
     pub contents: Vec<SyntacticRegion>,
+    pub name_match: Option<NameMatch>,
 }
 
 pub struct SyntacticView {
     path: PathBuf,
+    pattern: Pattern,
     lines: Vec<SyntacticLine>,
     content_height: usize, // bigger than lines.len() if not fully loaded
     scroll: i32,
@@ -58,6 +62,23 @@ pub struct SyntacticView {
 }
 
 impl SyntacticView {
+
+    pub fn new(
+        path: &Path,
+        pattern: Pattern,
+    ) -> io::Result<Self> {
+        let mut sv = Self {
+            path: path.to_path_buf(),
+            pattern,
+            lines: Vec::new(),
+            content_height: 0,
+            scroll: 0,
+            page_height: 0,
+        };
+        sv.prepare(false)?;
+        Ok(sv)
+    }
+
     /// try to load and parse the content or part of it.
     /// Check the correct encoding of the whole file
     ///  even when `full` is false.
@@ -80,33 +101,29 @@ impl SyntacticView {
         let mut highlighter = HighlightFile::new(&self.path, syntax_set, theme)?;
         self.lines.clear();
         self.content_height = 0;
+        let mut number = 0;
         for line in highlighter.reader.lines() {
             let line = line?;
+            number += 1;
+            if self.pattern.is_some() && self.pattern.score_of_string(&line).is_none() {
+                continue;
+            }
             self.content_height += 1;
-            if full || self.content_height < INITIAL_HEIGHT {
+            if full || self.lines.len() < INITIAL_HEIGHT {
+                let name_match = self.pattern.search_string(&line);
                 let contents = highlighter.highlight_lines
                     .highlight(&line, &syntax_set)
                     .iter()
                     .map(|r| SyntacticRegion::from_syntect(r))
                     .collect();
-                self.lines.push(SyntacticLine { contents });
+                self.lines.push(SyntacticLine {
+                    contents,
+                    name_match,
+                    number,
+                });
             }
         }
         Ok(())
-    }
-
-    pub fn new(
-        path: &Path,
-    ) -> io::Result<Self> {
-        let mut sv = Self {
-            path: path.to_path_buf(),
-            lines: Vec::new(),
-            content_height: 0,
-            scroll: 0,
-            page_height: 0,
-        };
-        sv.prepare(false)?;
-        Ok(sv)
     }
 
     pub fn is_fully_loaded(&self) -> bool {
@@ -136,40 +153,64 @@ impl SyntacticView {
             debug!("now fully loading");
             self.prepare(true)?;
         }
+        let max_number_len = self.lines.last().map_or(0, |l|l.number).to_string().len();
+        let show_line_number = area.width > 55 || ( self.pattern.is_some() && area.width > 8 );
         let line_count = area.height as usize;
         let styles = &panel_skin.styles;
-        let bg: Option<Color> = styles.preview.get_bg();
-        if bg.is_none() {
-            w.queue(ResetColor)?;
-        }
-        // code is thiner than the area:
-        // * 1 char margin at left
-        // * space for the scrollbar at right
-        let code_width = area.width as usize - 2;
+        let bg = styles.preview.get_bg().or(styles.default.get_bg()).unwrap_or(Color::AnsiValue(238));
+        let match_bg = styles.preview_match.get_bg().unwrap_or(Color::AnsiValue(28));
+        let code_width = area.width as usize - 1; // 1 char left for scrollbar
         let scrollbar = area.scrollbar(self.scroll, self.content_height as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
             .or(styles.preview.get_fg())
             .unwrap_or_else(|| Color::White);
         for y in 0..line_count {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
-            if let Some(bg) = bg {
-                w.queue(SetBackgroundColor(bg))?;
-            }
-            w.queue(Print(' '))?;
             let mut cw = CropWriter::new(w, code_width);
-            let cw = &mut cw;
             if let Some(line) = self.lines.get(self.scroll as usize + y) {
-                for content in &line.contents {
-                    cw.w.queue(SetForegroundColor(content.fg))?;
-                    cw.queue_unstyled_str(&content.string)?;
+                if show_line_number {
+                    cw.queue_g_string(
+                        &styles.preview_line_number,
+                        format!(" {:w$} ", line.number, w = max_number_len),
+                    )?;
+                    cw.w.queue(SetBackgroundColor(bg))?;
+                } else {
+                    cw.w.queue(SetBackgroundColor(bg))?;
+                    cw.queue_unstyled_str(" ")?;
+                }
+                if let Some(nm) = &line.name_match {
+                    let mut dec = 0;
+                    let mut nci = 0; // next char index
+                    for content in &line.contents {
+                        let s = &content.string;
+                        let pos = &nm.pos;
+                        let mut x = 0;
+                        cw.w.queue(SetForegroundColor(content.fg))?;
+                        while nci < pos.len() && pos[nci]>=dec && pos[nci]<dec+s.len() {
+                            let i = pos[nci]-dec;
+                            if i > x {
+                                cw.queue_unstyled_str(&s[x..i])?;
+                            }
+                            cw.w.queue(SetBackgroundColor(match_bg))?;
+                            cw.queue_unstyled_str(&s[i..i+1])?;
+                            cw.w.queue(SetBackgroundColor(bg))?;
+                            nci += 1;
+                            x = i+1;
+                        }
+                        if x < s.len() {
+                            cw.queue_unstyled_str(&s[x..])?;
+                        }
+                        dec += content.string.len();
+                    }
+                } else {
+                    for content in &line.contents {
+                        cw.w.queue(SetForegroundColor(content.fg))?;
+                        cw.queue_unstyled_str(&content.string)?;
+                    }
                 }
             }
             cw.fill(&styles.preview, LONG_SPACE)?;
-            if let Some(bg) = bg {
-                // this should not be needed, so there's a
-                // bug somewhere
-                w.queue(SetBackgroundColor(bg))?;
-            }
+            w.queue(SetBackgroundColor(bg))?;
             if is_thumb(y, scrollbar) {
                 w.queue(SetForegroundColor(scrollbar_fg))?;
                 w.queue(Print('▐'))?;

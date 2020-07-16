@@ -119,6 +119,18 @@ impl Pattern {
         }
     }
 
+    pub fn score_of_string(&self, candidate: &str) -> Option<i32> {
+        match self {
+            Pattern::NameFuzzy(fp) => fp.score_of(&candidate),
+            Pattern::PathFuzzy(fp) => fp.score_of(&candidate),
+            Pattern::NameRegex(rp) => rp.find(&candidate).map(|m| m.score),
+            Pattern::PathRegex(rp) => rp.find(&candidate).map(|m| m.score),
+            Pattern::Content(_) => None, // this isn't suitable
+            Pattern::Composite(cp) => cp.score_of_string(candidate),
+            Pattern::None => Some(1),
+        }
+    }
+
     pub fn is_some(&self) -> bool {
         match self {
             Pattern::None => false,

@@ -74,6 +74,14 @@ where
         }
         Ok(())
     }
+    pub fn queue_unstyled_char(&mut self, c: char) -> Result<()> {
+        let width = UnicodeWidthChar::width(c).unwrap_or(0);
+        if width < self.allowed {
+            self.allowed -= width;
+            self.w.queue(Print(c))?;
+        }
+        Ok(())
+    }
     /// a "g_string" is a "gentle" one: each char takes one column on screen.
     /// This function must thus not used for unknown strings.
     pub fn queue_g_string(&mut self, cs: &CompoundStyle, mut s: String) -> Result<()> {

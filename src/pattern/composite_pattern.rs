@@ -23,6 +23,42 @@ impl CompositePattern {
         }
     }
 
+    pub fn score_of_string(&self, candidate: &str) -> Option<i32> {
+        use PatternOperator::*;
+        let composite_result: Result<Option<Option<i32>>, PatternError> = self.expr.eval(
+            // score evaluation
+            |pat| Ok(pat.score_of_string(candidate)),
+            // operator
+            |op, a, b| Ok(match (op, a, b) {
+                (And, None, _) => None, // normally not called due to short-circuit
+                (And, Some(sa), Some(Some(sb))) => Some(sa+sb),
+                (Or, None, Some(Some(sb))) => Some(sb),
+                (Or, Some(sa), Some(None)) => Some(sa),
+                (Or, Some(sa), Some(Some(sb))) => Some(sa+sb),
+                (Not, Some(_), _) => None,
+                (Not, None, _) => Some(1),
+                _ => None,
+            }),
+            // short-circuit. We don't short circuit on 'or' because
+            // we want to use both scores
+            |op, a| match (op, a) {
+                (And, None) => true,
+                _ => false,
+            }
+        );
+        match composite_result {
+            Err(e) => {
+                warn!("unexpected error while evaluating composite: {:?}", e);
+                None
+            }
+            Ok(Some(r)) => r,
+            Ok(None) => {
+                warn!("unexpectedly missing result ");
+                None
+            }
+        }
+    }
+
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
         use PatternOperator::*;
         let composite_result: Result<Option<Option<i32>>, PatternError> = self.expr.eval(
