@@ -140,7 +140,7 @@ impl Default for TreeOptions {
             show_dates: false,
             show_sizes: false,
             show_git_file_info: false,
-            trim_root: true,
+            trim_root: false,
             show_permissions: false,
             respect_git_ignore: true,
             filter_by_git_status: false,

@@ -33,9 +33,11 @@ Table of Contents
     * [Check git statuses](#check-git-statuses)
   * [Further Reading](#further-reading)
 
-### Get an overview of a directory, even a big one
+# Get an overview of a directory, even a big one
 
-![overview](website/docs/img/20191112-overview.png)
+`br -s`
+
+![overview](website/docs/img/20200629-overview.png)
 
 Notice the *unlisted*?
 
@@ -43,23 +45,36 @@ That's what makes it usable where the old `tree` command would produce pages of 
 
 `.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](../navigation/#toggles)).
 
-### Find a directory then `cd` to it
+# Preview files
+
+Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel appears.
+
+![preview](website/docs/img/201200716-preview.png)
+
+The preview panel stays synchronized with the selection in tree panels.
+
+# Find a directory then `cd` to it
+
+type a few letters
 
 ![cd](website/docs/img/20191112-cd.png)
 
+Hit <kbd>alt</kbd><kbd>enter</kbd> and you're done.
+
 This way, you can navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
-broot is fast and never blocks, even when you make it search a big slow disk (any keystroke interrupts the current search to start the next one).
+broot is fast and doesn't block (any keystroke interrupts the current search to start the next one).
 
 Most useful keys for this:
 
 * the letters of what you're looking for
 * <kbd>enter</kbd> to select a directory (staying in broot)
 * <kbd>esc</kbd> to get back to the previous state or clear your search
+* <kbd class=b>↓</kbd> and <kbd class=b>↑</kbd> may be used to move the selection
 * <kbd>alt</kbd><kbd>enter</kbd> to get back to the shell having `cd` to the selected directory
 * `:q` if you just want to quit (you can use <kbd>ctrl</kbd><kbd>q</kbd> if you prefer)
 
-### Never lose track of file hierarchy while you search
+# Never lose track of file hierarchy while you search
 
 ![size](website/docs/img/20191112-mycnf.png)
 
@@ -79,7 +94,7 @@ Once the file you want is selected you can
 * hit <kbd>alt</kbd><kbd>enter</kbd> to open it in your system's default program and close broot
 * type a verb. For example `:e` opens the file in your preferred editor (which may be a terminal one)
 
-### Manipulate your files
+# Manipulate your files
 
 ![mv](website/docs/img/20191112-mv.png)
 
@@ -89,9 +104,9 @@ You can instead do it without losing the view of the file hierarchy.
 
 Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
-### Do it with panels
+# Do it with panels
 
-Do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
+When a directory is selected, do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
 
 ![custom colors tree](website/docs/img/20200525-colored-panels.png)
 
@@ -103,7 +118,7 @@ Using two panels, you can for example copy or move elements between them:
 
 If you like you may do it Norton Commander style by binding `:copy_to_panel` to <kbd>F5</kbd> and `:move_to_panel` to <kbd>F6</kbd>.
 
-### Apply a standard or personal shortcut to a file
+# Apply a standard or personal shortcut to a file
 
 ![size](website/docs/img/20191112-edit.png)
 
@@ -113,7 +128,7 @@ You can add verbs or configure the existing ones; see [documentation](../conf_fi
 
 And you can add shorcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
-### Replace `ls` (and its clones):
+# Replace `ls` (and its clones):
 
 If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which gets you this:
 
@@ -121,11 +136,11 @@ If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which ge
 
 You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or a space, then `h` then enter and you see hidden files.
 
-### Sort, see what takes space:
+# Sort, see what takes space:
 
-You may sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, just type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
+You may sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
 
-When sorting, the whole content of directories is taken into account. So if you want to find on monday morning the most recently modified files, just launch `br --sort-by-date ~`.
+When sorting, the whole content of directories is taken into account. So if you want to find on monday morning the most recently modified files, launch `br --sort-by-date ~`.
 
 If you start broot with the `--whale-spotting` option (or its shorcut `-w`), you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
 
@@ -135,7 +150,7 @@ And you keep all broot tools, like filtering or the ability to delete or open fi
 
 Sizes, dates, files counts, are computed in the background, you don't have to wait for them when you navigate.
 
-### check git statuses:
+# check git statuses:
 
 ![size](website/docs/img/20200203-git.png)
 

@@ -18,13 +18,21 @@ That's what makes it usable where the old `tree` command would produce pages of 
 
 `.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](../navigation/#toggles)).
 
+# Preview files
+
+Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel appears.
+
+![preview](img/201200716-preview.png)
+
+The preview panel stays synchronized with the selection in tree panels.
+
 # Find a directory then `cd` to it
 
 type a few letters
 
 ![cd](img/20191112-cd.png)
 
-Hit <kbd>alt</kbd><kbd>enter</kbd> and you're done.
+Hit <kbd>alt</kbd><kbd>enter</kbd> and you're back to the terminal in the desired location.
 
 This way, you can navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
@@ -69,9 +77,9 @@ You can instead do it without losing the view of the file hierarchy.
 
 Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
-# Do it with panels
+# Manage files with panels
 
-Do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
+When a directory is selected, do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
 
 ![custom colors tree](img/20200525-colored-panels.png)
 

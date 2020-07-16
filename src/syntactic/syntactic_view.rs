@@ -1,4 +1,3 @@
-
 use {
     super::Syntaxer,
     crate::{
@@ -50,7 +49,6 @@ pub struct SyntacticLine {
     pub contents: Vec<SyntacticRegion>,
 }
 
-
 pub struct SyntacticView {
     path: PathBuf,
     lines: Vec<SyntacticLine>,
@@ -62,8 +60,7 @@ pub struct SyntacticView {
 impl SyntacticView {
     /// try to load and parse the content or part of it.
     /// Check the correct encoding of the whole file
-    ///  even when `full` is false
-    /// Return false if preparation failed.
+    ///  even when `full` is false.
     fn prepare(&mut self, full: bool) -> io::Result<()> {
         lazy_static! {
             static ref SYNTAXER: Syntaxer = Syntaxer::new();

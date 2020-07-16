@@ -4,14 +4,29 @@
 
 To focus a panel when several are displayed, you may click on the desired one, or use the `:panel_left` and `:panel_right` verbs which are, in standard, bound to <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>.
 
-When there's no panel in that direction, a new one is created and its root is the selected line. This makes those shorcuts the easiest way to create a panel.
+When there's no panel in that direction, a new one is created:
+
+* if the current selection is a regular file and you've hit <kbd>ctrl</kbd><kbd>→</kbd>, you get the preview panel
+* in other cases you get a new tree whose root is the selected line.
+
+This makes those shorcuts the easiest way to create a panel.
 
 Another way is to add a bang (`!`) to a verb. It tells broot to show the result in a new panel.
 
 For example, while `:focus ~` navigates to your home directory in the current panel, you can use `:!focus ~` or `:focus! ~` to open a new panel on your home.
 
-
 The `:close_panel` closes the current panel and is bound to <kbd>ctrl</kbd><kbd>W</kbd> (remember: you can [change all bindings](../conf_file/#verbs-shortcuts-and-keys)).
+
+# The preview panel
+
+![preview](img/201200716-preview.png)
+
+It's not immediately focused on creation, because most often you'll want to preview a few files and it's conveninient to stay in the tree to navigate.
+To focus it, for example to scroll it, do <kbd>ctrl</kbd><kbd>→</kbd> again.
+
+Files that can't be interpreted as text are shown as binary:
+
+![binary](img/201200716-binary.png)
 
 # Copy, move between panels... or more
 

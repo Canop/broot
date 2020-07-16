@@ -1,3 +1,7 @@
+### next version
+#### Major feature: the preview panel
+Hit ctrl-right when a file is selected and you get the preview.
+
 <a name="v0.18.6"></a>
 ### v0.18.6 - 2020-07-10
 - `[ext-colors]` section in config
