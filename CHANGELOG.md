@@ -1,3 +1,7 @@
+<a name="v0.19.1"></a>
+### v0.19.1 - 2020-07-17
+Force trimming root when searching (trimming root when not searching is no longer the default)
+
 <a name="v0.19.0"></a>
 ### v0.19.0 - 2020-07-16
 #### Major feature: the preview panel
