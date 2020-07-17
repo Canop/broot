@@ -1,3 +1,6 @@
+### next version
+- preview's pattern is kept when changing file
+
 <a name="v0.19.1"></a>
 ### v0.19.1 - 2020-07-17
 Force trimming root when searching (trimming root when not searching is no longer the default)

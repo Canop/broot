@@ -91,20 +91,20 @@ Initially, broot doesn't show files whose name starts with a dot, or files decla
 This behavior is tuned with several toggles.
 
  | name                 | shortcut | description
- |----------------------|----------|--------------------------------------------------
+ |----------------------|----------|----------------------------------------------------
+ | toggle_counts        | counts   | toggle showing deep counts of files in directories
+ | toggle_dates         | dates    | toggle showing last modified dates (deep computed)
  | toggle_files         | files    | toggle showing files (or just folders)
  | toggle_git_file_info | gf       | toggle display of git file information
  | toggle_git_ignore    | gi       | toggle use of .gitignore
  | toggle_hidden        | h        | toggle showing hidden files
- | toggle_perm          | perm     | toggle showing file permissions
+ | toggle_perm          | perm     | toggle showing file permissions (unix only)
  | toggle_sizes         | sizes    | toggle showing sizes
  | toggle_trim_root     | t        | toggle removing nodes at first level too (default)
 
 To apply one, type a space (or `:`), then the start of its shortcut, then hit <kbd class=b>⏎</kbd>.
 
-For example typing `:s` then enter will show file and directory sizes:
-
-![dev sizes](img/20191030-dev-sizes.png)
+For example typing `:s` then enter will show file and directory sizes.
 
 You may notice a scrollbar on this screenshot. The first level of the tree is always uncut when you display sizes (you're in a special "whale spotting" mode).
 

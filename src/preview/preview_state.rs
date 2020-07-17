@@ -26,6 +26,7 @@ pub struct PreviewState {
     file_name: String,
     path: PathBuf, // path to the previewed file
     preview: Preview,
+    pattern: InputPattern, // kept but not applied when the preview isn't filterable
     filtered_preview: Option<Preview>,
 }
 
@@ -42,13 +43,13 @@ impl PreviewState {
             file_name,
             path,
             preview,
+            pattern: InputPattern::none(),
             filtered_preview: None,
         }
     }
     fn mut_preview(&mut self) -> &mut Preview {
         self.filtered_preview.as_mut().unwrap_or(&mut self.preview)
     }
-
 }
 
 impl AppState for PreviewState {
@@ -58,11 +59,15 @@ impl AppState for PreviewState {
     }
 
     fn set_selected_path(&mut self, path: PathBuf) {
-        // this is only called when the path really changed
-        self.preview = Preview::new(&path, Pattern::None); // TODO keep the pattern ?
+        self.preview = Preview::new(&path, Pattern::None);
         self.file_name = path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
+        if self.pattern.is_some() && self.preview.is_filterable() {
+            self.filtered_preview = Some(Preview::new(&path, self.pattern.pattern.clone()));
+        } else {
+            self.filtered_preview = None;
+        }
         self.path = path;
     }
 
@@ -82,6 +87,7 @@ impl AppState for PreviewState {
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         debug!("preview pattern: {:?}", &pat);
+        self.pattern = pat.clone();
         if pat.is_some() {
             if !self.preview.is_filterable() {
                 return Ok(AppStateCmdResult::DisplayError(

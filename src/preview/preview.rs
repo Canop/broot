@@ -48,6 +48,7 @@ impl Preview {
             _ => false,
         }
     }
+
     pub fn display(
         &mut self,
         w: &mut W,
