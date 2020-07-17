@@ -41,7 +41,8 @@ broot is fast and doesn't block (any keystroke interrupts the current search to 
 Most useful keys for this:
 
 * the letters of what you're looking for
-* <kbd>enter</kbd> to select a directory (staying in broot)
+* <kbd>enter</kbd> on the root line to go up to the parent (staying in broot)
+* <kbd>enter</kbd> to focus a directory (staying in broot)
 * <kbd>esc</kbd> to get back to the previous state or clear your search
 * <kbd class=b>↓</kbd> and <kbd class=b>↑</kbd> may be used to move the selection
 * <kbd>alt</kbd><kbd>enter</kbd> to get back to the shell having `cd` to the selected directory

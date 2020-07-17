@@ -62,6 +62,7 @@ pub struct TreeBuilder<'c> {
     git_ignorer: GitIgnorer,
     line_status_computer: Option<LineStatusComputer>,
     con: &'c AppContext,
+    trim_root: bool,
 }
 impl<'c> TreeBuilder<'c> {
 
@@ -86,6 +87,8 @@ impl<'c> TreeBuilder<'c> {
             None
         };
         let root_id = BLine::from_root(&mut blines, path, root_ignore_chain, &options)?;
+        let trim_root = options.pattern.is_some()
+            || (options.trim_root && !options.sort.is_some());
         Ok(TreeBuilder {
             options,
             targeted_size,
@@ -96,6 +99,7 @@ impl<'c> TreeBuilder<'c> {
             git_ignorer,
             line_status_computer,
             con,
+            trim_root,
         })
     }
 
@@ -326,7 +330,7 @@ impl<'c> TreeBuilder<'c> {
                 next_level_dirs.clear();
             }
         }
-        if self.options.sort.is_some() || !self.options.trim_root {
+        if !self.trim_root {
             // if the root directory isn't totally read, we finished it even
             // it it goes past the bottom of the screen
             while let Some(child_id) = self.next_child(self.root_id) {
@@ -343,7 +347,6 @@ impl<'c> TreeBuilder<'c> {
     ///  removing a parent before its children.
     fn trim_excess(&mut self, out_blines: &[BId]) {
         let mut count = 1;
-        let trim_root = self.options.trim_root && !self.options.sort.is_some();
         for id in out_blines[1..].iter() {
             if self.blines[*id].has_match {
                 //debug!("bline before trimming: {:?}", &self.blines[*idx].path);
@@ -356,8 +359,7 @@ impl<'c> TreeBuilder<'c> {
         let mut remove_queue: BinaryHeap<SortableBId> = BinaryHeap::new();
         for id in out_blines[1..].iter() {
             let bline = &self.blines[*id];
-            if bline.has_match && bline.nb_kept_children == 0 && (bline.depth > 1 || trim_root)
-            // keep the complete first level when showing sizes
+            if bline.has_match && bline.nb_kept_children == 0 && (bline.depth > 1 || self.trim_root)
             {
                 //debug!("in list: {:?} score: {}",  &bline.path, bline.score);
                 remove_queue.push(SortableBId {
@@ -368,7 +370,6 @@ impl<'c> TreeBuilder<'c> {
         }
         while count > self.targeted_size {
             if let Some(sli) = remove_queue.pop() {
-                //debug!("removing {:?}", &self.blines[sli.idx].path);
                 self.blines[sli.id].has_match = false;
                 let parent_id = self.blines[sli.id].parent_id.unwrap();
                 let mut parent = &mut self.blines[parent_id];

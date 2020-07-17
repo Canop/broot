@@ -668,8 +668,8 @@ impl AppState for BrowserState {
             let mut options = self.tree.options.clone();
             options.pattern = self.pending_pattern.take();
             let root = self.tree.root().clone();
-            let len = self.tree.lines.len() as u16;
-            let builder = match TreeBuilder::from(root, options, len as usize, con) {
+            let page_height = BrowserState::page_height(screen) as usize;
+            let builder = match TreeBuilder::from(root, options, page_height, con) {
                 Ok(builder) => builder,
                 Err(e) => {
                     warn!("Error while preparing tree builder: {:?}", e);
