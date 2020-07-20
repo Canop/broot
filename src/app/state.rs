@@ -317,6 +317,6 @@ pub trait AppState {
     }
 
     fn set_selected_path(&mut self, _path: PathBuf) {
-        unreachable!(); // is_file_preview is tested before
+        // this function is useful for preview states
     }
 }
