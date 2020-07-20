@@ -26,6 +26,7 @@ use {
     },
 };
 
+
 /// launch arguments related to installation
 /// (not used by the application after the first step)
 struct InstallLaunchArgs {
@@ -56,11 +57,14 @@ impl InstallLaunchArgs {
 pub struct AppLaunchArgs {
     pub root: PathBuf,                    // what should be the initial root
     pub file_export_path: Option<String>, // where to write the produced path (if required with --out)
-    pub cmd_export_path: Option<String>, // where to write the produced command (if required with --outcmd)
-    pub tree_options: TreeOptions,       // initial tree options
-    pub commands: Option<String>,        // commands passed as cli argument, still unparsed
-    pub height: Option<u16>,             // an optional height to replace the screen's one
-    pub no_style: bool,                  // whether to remove all styles (including colors)
+    pub cmd_export_path: Option<String>,  // where to write the produced command (if required with --outcmd)
+    pub tree_options: TreeOptions,        // initial tree options
+    pub commands: Option<String>,         // commands passed as cli argument, still unparsed
+    pub height: Option<u16>,              // an optional height to replace the screen's one
+    pub no_style: bool,                   // whether to remove all styles (including colors)
+
+    #[cfg(feature="client-server")]
+    pub listen: Option<String>,
 }
 
 #[cfg(not(windows))]
@@ -182,6 +186,23 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     let root = get_root_path(&cli_matches)?;
 
+    #[cfg(feature="client-server")]
+    if let Some(server_name) = cli_matches.value_of("send") {
+        use crate::{
+            command::Sequence,
+            net::{Client, Message},
+        };
+        let message = if let Some(seq) = &commands {
+            Message::Sequence(Sequence::new_local(seq.to_string()))
+        } else {
+            Message::Command(format!(":focus {}", root.to_string_lossy()))
+        };
+        let client = Client::new(server_name);
+        debug!("sending {:?}", &message);
+        client.send(&message)?;
+        return Ok(None);
+    }
+
     let launch_args = AppLaunchArgs {
         root,
         file_export_path,
@@ -190,6 +211,9 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         commands,
         height,
         no_style,
+
+        #[cfg(feature="client-server")]
+        listen: cli_matches.value_of("listen").map(str::to_string),
     };
 
     let context = AppContext::from(launch_args, verb_store, &config);

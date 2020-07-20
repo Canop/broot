@@ -3,7 +3,7 @@
 
 /// declare the possible CLI arguments
 pub fn clap_app() -> clap::App<'static, 'static> {
-    clap::App::new("broot")
+    let app = clap::App::new("broot")
         .version(env!("CARGO_PKG_VERSION"))
         .author("dystroy <denys.seguret@gmail.com>")
         .about("A tree explorer and a customizable launcher")
@@ -194,5 +194,20 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .value_name("shell")
                 .help("Print to stdout the br function for a given shell"),
         )
-        .setting(clap::AppSettings::DeriveDisplayOrder)
+        .setting(clap::AppSettings::DeriveDisplayOrder);
+    #[cfg(feature="client-server")]
+    let app = app
+        .arg(
+            clap::Arg::with_name("listen")
+            .long("listen")
+            .takes_value(true)
+            .help("Listen for commands")
+        )
+        .arg(
+            clap::Arg::with_name("send")
+            .long("send")
+            .takes_value(true)
+            .help("send command and quits")
+        );
+    app
 }

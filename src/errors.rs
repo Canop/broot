@@ -22,6 +22,7 @@ custom_error! {pub ProgramError
     TerminalTooSmallError = "Terminal too small", // unable to open panel or app
     InvalidGlobError {pattern: String} = "Invalid glob: {pattern}",
     Unrecognized {token: String} = "Unrecognized: {token}",
+    NetError {source: NetError} = "{}",
 }
 
 custom_error! {pub TreeBuildError
@@ -30,7 +31,7 @@ custom_error! {pub TreeBuildError
 }
 
 custom_error! {pub ConfError
-    Io {source: io::Error}                          = "unable to read from the file",
+    Io {source: io::Error}                          = "unable to read from the file: {}",
     Toml {source: toml::de::Error}                  = "unable to parse TOML",
     MissingField {txt: String}                      = "missing field in conf",
     InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: {}",
@@ -57,3 +58,10 @@ custom_error! {pub InvalidSkinError
     InvalidGreyLevel { level: u8 } = "grey level must be between 0 and 23 (got {})",
     InvalidStyle {style: String}   = "Invalid skin style : {}",
 }
+
+custom_error! {pub NetError
+    SocketNotAvailable { path : String }  = "Can't open socket: {} already exists - consider removing it",
+    Io {source: io::Error}                = "error on the socket: {}",
+    InvalidMessage                        = "invalid message received",
+}
+

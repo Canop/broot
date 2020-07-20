@@ -34,6 +34,10 @@ pub mod flag;
 pub mod help;
 pub mod keys;
 pub mod launchable;
+
+#[cfg(feature="client-server")]
+pub mod net;
+
 pub mod path;
 pub mod path_anchor;
 pub mod pattern;

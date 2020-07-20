@@ -11,7 +11,7 @@ pub use {
     completion::Completions,
     event::PanelInput,
     parts::CommandParts,
-    sequence::parse_command_sequence,
+    sequence::Sequence,
     scroll::ScrollCommand,
     trigger_type::TriggerType,
 };

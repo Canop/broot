@@ -2,16 +2,17 @@ use {
     super::*,
     crate::{
         browser::BrowserState,
-        command::{parse_command_sequence, Command},
+        command::{Command, Sequence},
         conf::Conf,
         display::{Areas, Screen, W},
         errors::ProgramError,
         file_sum, git,
         launchable::Launchable,
         skin::*,
-        task_sync::Dam,
+        task_sync::{Dam, Either},
         verb::Internal,
     },
+    crossbeam::channel::unbounded,
     crossterm::event::KeyModifiers,
     std::{
         io::Write,
@@ -379,22 +380,18 @@ impl App {
 
         screen.clear_bottom_right_char(w, &skin.focused)?;
 
-        // if some commands were passed to the application
-        //  we execute them before even starting listening for events
-        if let Some(unparsed_commands) = &con.launch_args.commands {
-            for (input, arg_cmd) in parse_command_sequence(unparsed_commands, con)? {
-                self.mut_panel().set_input_content(input);
-                self.apply_command(w, arg_cmd, screen, &skin.focused, con)?;
-                self.display_panels(w, screen, &skin, con)?;
-                w.flush()?;
-                self.do_pending_tasks(screen, con, &mut dam)?;
-                self.display_panels(w, screen, &skin, con)?;
-                w.flush()?;
-                if self.quitting {
-                    return Ok(self.launch_at_end.take());
-                }
-            }
+        // we create a channel for unparsed raw sequence which may come
+        // from the --cmd argument or from the server module
+        let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
+
+        if let Some(raw_sequence) = &con.launch_args.commands {
+            tx_seqs.send(Sequence::new_local(raw_sequence.to_string())).unwrap();
         }
+
+        #[cfg(feature="client-server")]
+        let _server = con.launch_args.listen.as_ref()
+            .map(|server_name| crate::net::Server::new(&server_name, tx_seqs.clone()))
+            .transpose()?;
 
         loop {
             if !self.quitting {
@@ -405,39 +402,60 @@ impl App {
                     w.flush()?;
                 }
             }
-            let event = match dam.next_event() {
-                Some(event) => event,
-                None => {
+
+            match dam.next(&rx_seqs) {
+                Either::First(Some(event)) => {
+                    debug!("event: {:?}", &event);
+                    match event {
+                        Event::Click(x, y, KeyModifiers::NONE)
+                            if self.clicked_panel_index(x, y, screen) != self.active_panel_idx =>
+                        {
+                            // panel activation click
+                            // this will be cleaner when if let will be allowed in match guards with
+                            // chaining (currently experimental)
+                            self.active_panel_idx = self.clicked_panel_index(x, y, screen);
+                        }
+                        Event::Resize(w, h) => {
+                            screen.set_terminal_size(w, h, con);
+                            Areas::resize_all(self.panels.as_mut_slice(), screen, self.preview.is_some())?;
+                            for panel in &mut self.panels {
+                                panel.mut_state().refresh(screen, con);
+                            }
+                        }
+                        _ => {
+                            // event handled by the panel
+                            let cmd = self.mut_panel().add_event(w, event, con)?;
+                            debug!("command after add_event: {:?}", &cmd);
+                            self.apply_command(w, cmd, screen, &skin.focused, con)?;
+                        }
+                    }
+                    event_source.unblock(self.quitting);
+                }
+                Either::First(None) => {
                     // this is how we quit the application,
                     // when the input thread is properly closed
                     break;
                 }
-            };
-            debug!("event: {:?}", &event);
-            match event {
-                Event::Click(x, y, KeyModifiers::NONE)
-                    if self.clicked_panel_index(x, y, screen) != self.active_panel_idx =>
-                {
-                    // panel activation clic
-                    // this will be cleaner when if let will be allowed in match guards with
-                    // chaining (currently experimental)
-                    self.active_panel_idx = self.clicked_panel_index(x, y, screen);
-                }
-                Event::Resize(w, h) => {
-                    screen.set_terminal_size(w, h, con);
-                    Areas::resize_all(self.panels.as_mut_slice(), screen, self.preview.is_some())?;
-                    for panel in &mut self.panels {
-                        panel.mut_state().refresh(screen, con);
+                Either::Second(Some(raw_sequence)) => {
+                    debug!("got sequence: {:?}", &raw_sequence);
+                    for (input, arg_cmd) in raw_sequence.parse(con)? {
+                        self.mut_panel().set_input_content(&input);
+                        self.apply_command(w, arg_cmd, screen, &skin.focused, con)?;
+                        self.display_panels(w, screen, &skin, con)?;
+                        w.flush()?;
+                        self.do_pending_tasks(screen, con, &mut dam)?;
+                        self.display_panels(w, screen, &skin, con)?;
+                        w.flush()?;
+                        if self.quitting {
+                            // is that a 100% safe way of quitting ?
+                            return Ok(self.launch_at_end.take());
+                        }
                     }
                 }
-                _ => {
-                    // event handled by the panel
-                    let cmd = self.mut_panel().add_event(w, event, con)?;
-                    debug!("command after add_event: {:?}", &cmd);
-                    self.apply_command(w, cmd, screen, &skin.focused, con)?;
+                Either::Second(None) => {
+                    warn!("I didn't expect a None to occur here");
                 }
             }
-            event_source.unblock(self.quitting);
         }
 
         Ok(self.launch_at_end.take())
