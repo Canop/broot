@@ -13,6 +13,10 @@ readme = "README.md"
 build = "build.rs"
 exclude = ["website", "broot*.zip"]
 
+[features]
+default = []
+client-server = []
+
 [dependencies]
 bet = "0.3.4"
 clap = { version="2.33", default-features=false, features=["suggestions"] }

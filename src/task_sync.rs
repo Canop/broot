@@ -4,6 +4,11 @@ use {
     termimad::Event,
 };
 
+pub enum Either<A, B> {
+    First(A),
+    Second(B),
+}
+
 #[derive(Debug, Clone)]
 pub enum ComputationResult<V> {
     NotComputed, // not computed but will probably be
@@ -126,6 +131,30 @@ impl Dam {
                     debug!("dead dam"); // should be logged once
                     None
                 }
+            }
+        }
+    }
+
+    // or maybed return either Option<Event> or Option<T> ?
+    pub fn next<T>(&mut self, other: &Receiver<T>) -> Either<Option<Event>, Option<T>> {
+        if self.in_dam.is_some() {
+            Either::First(self.in_dam.take())
+        } else {
+            select! {
+                recv(self.receiver) -> event => Either::First(match event {
+                    Ok(event) => Some(event),
+                    Err(_) => {
+                        debug!("dead dam"); // should be logged once
+                        None
+                    }
+                }),
+                recv(other) -> o => Either::Second(match o {
+                    Ok(o) => Some(o),
+                    Err(_) => {
+                        debug!("dead other");
+                        None
+                    }
+                }),
             }
         }
     }
