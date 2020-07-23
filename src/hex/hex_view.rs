@@ -31,8 +31,8 @@ pub struct HexLine {
 pub struct HexView {
     path: PathBuf,
     len: usize,
-    scroll: i32,
-    page_height: i32,
+    scroll: usize,
+    page_height: usize,
 }
 
 impl HexView {
@@ -53,12 +53,14 @@ impl HexView {
         cmd: ScrollCommand,
     ) -> bool {
         let old_scroll = self.scroll;
-        self.scroll = (self.scroll + cmd.to_lines(self.page_height))
-            .min(self.line_count() as i32 - self.page_height + 1)
-            .max(0);
+        self.scroll = cmd.apply(self.scroll, self.line_count(), self.page_height);
         self.scroll != old_scroll
     }
-    pub fn get_page(&mut self, start_line_idx: usize, line_count: usize) -> io::Result<Vec<HexLine>> {
+    pub fn get_page(
+        &mut self,
+        start_line_idx: usize,
+        line_count: usize,
+    ) -> io::Result<Vec<HexLine>> {
         // I'm not sure a memmap is the best solution here but at least it's easy
         let file = File::open(&self.path)?;
         let mmap = unsafe { Mmap::map(&file)? };
@@ -89,8 +91,8 @@ impl HexView {
         area: &Area,
     ) -> Result<(), ProgramError> {
         let line_count = area.height as usize;
-        self.page_height = area.height as i32;
-        let page = self.get_page(self.scroll as usize, line_count)?;
+        self.page_height = area.height as usize;
+        let page = self.get_page(self.scroll, line_count)?;
         let styles = &panel_skin.styles;
         let mut left_margin = false;
         let mut hex_middle_space = false;
@@ -118,7 +120,7 @@ impl HexView {
             chars_middle_space = true;
             //rem -= 1;
         }
-        let scrollbar = area.scrollbar(self.scroll, self.line_count() as i32);
+        let scrollbar = area.scrollbar(self.scroll as i32, self.line_count() as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
             .or(styles.preview.get_fg())
             .unwrap_or_else(|| Color::White);

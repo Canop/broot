@@ -1,6 +1,7 @@
 ### next version
 - preview's pattern is kept when changing file
 - "client-server" feature (see client-server.md)
+- selected line in preview, interesting when removing the pattern (to see what's around a match)
 
 <a name="v0.19.1"></a>
 ### v0.19.1 - 2020-07-17

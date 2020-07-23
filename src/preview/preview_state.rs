@@ -33,7 +33,7 @@ pub struct PreviewState {
 impl PreviewState {
     pub fn new(path: PathBuf, _con: &AppContext) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
-        let preview = Preview::new(&path, Pattern::None);
+        let preview = Preview::new(&path, Pattern::None, None);
         let file_name = path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
@@ -59,12 +59,16 @@ impl AppState for PreviewState {
     }
 
     fn set_selected_path(&mut self, path: PathBuf) {
-        self.preview = Preview::new(&path, Pattern::None);
+        self.preview = Preview::new(&path, Pattern::None, None);
         self.file_name = path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
         if self.pattern.is_some() && self.preview.is_filterable() {
-            self.filtered_preview = Some(Preview::new(&path, self.pattern.pattern.clone()));
+            self.filtered_preview = Some(Preview::new(
+                &path,
+                self.pattern.pattern.clone(),
+                None,
+            ));
         } else {
             self.filtered_preview = None;
         }
@@ -81,6 +85,20 @@ impl AppState for PreviewState {
         Command::empty()
     }
 
+    fn on_click(
+        &mut self,
+        _x: u16,
+        y: u16,
+        _screen: &mut Screen,
+        _con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        if y >= self.preview_area.top  && y < self.preview_area.top + self.preview_area.height {
+            let y = y - self.preview_area.top;
+            self.mut_preview().try_select_y(y)?;
+        }
+        Ok(AppStateCmdResult::Keep)
+    }
+
     fn on_pattern(
         &mut self,
         pat: InputPattern,
@@ -88,15 +106,25 @@ impl AppState for PreviewState {
     ) -> Result<AppStateCmdResult, ProgramError> {
         debug!("preview pattern: {:?}", &pat);
         self.pattern = pat.clone();
+        let old_selection = self
+            .filtered_preview.as_ref().and_then(|p| p.get_selected_line_number())
+            .or(self.preview.get_selected_line_number());
         if pat.is_some() {
             if !self.preview.is_filterable() {
                 return Ok(AppStateCmdResult::DisplayError(
                     "this preview can't be searched".to_string()
                 ));
             }
-            self.filtered_preview = Some(Preview::new(&self.path, pat.pattern));
+            self.filtered_preview = Some(Preview::new(
+                &self.path,
+                pat.pattern,
+                old_selection,
+            ));
         } else {
             self.filtered_preview = None;
+            if let Some(number) = old_selection {
+                self.preview.try_select_line_number(number)?;
+            }
         }
         Ok(AppStateCmdResult::Keep)
     }
@@ -184,16 +212,19 @@ impl AppState for PreviewState {
             Internal::back => {
                 if self.filtered_preview.is_some() {
                     self.on_pattern(InputPattern::none(), &cc.con)
+                } else if self.mut_preview().get_selected_line_number().is_some() {
+                    self.mut_preview().unselect();
+                    Ok(AppStateCmdResult::Keep)
                 } else {
                     Ok(AppStateCmdResult::PopState)
                 }
             }
             Internal::line_down => {
-                self.mut_preview().try_scroll(ScrollCommand::Lines(1));
+                self.mut_preview().select_next_line()?;
                 Ok(AppStateCmdResult::Keep)
             }
             Internal::line_up => {
-                self.mut_preview().try_scroll(ScrollCommand::Lines(-1));
+                self.mut_preview().select_previous_line()?;
                 Ok(AppStateCmdResult::Keep)
             }
             Internal::page_down => {

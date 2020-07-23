@@ -9,7 +9,10 @@ use {
         skin::PanelSkin,
         syntactic::SyntacticView,
     },
-    std::path::{Path},
+    std::{
+        io,
+        path::{Path},
+    },
     termimad::{Area},
 };
 
@@ -20,8 +23,12 @@ pub enum Preview {
 }
 
 impl Preview {
-    pub fn new(path: &Path, pattern: Pattern) -> Self {
-        if let Ok(view) = time!(Debug, "new syntactic_view", SyntacticView::new(path, pattern)) {
+    pub fn new(
+        path: &Path,
+        pattern: Pattern,
+        desired_selection: Option<usize>,
+    ) -> Self {
+        if let Ok(view) = SyntacticView::new(path, pattern, desired_selection) {
             return Self::Syntactic(view);
         }
         match HexView::new(path.to_path_buf()) {
@@ -49,6 +56,42 @@ impl Preview {
         }
     }
 
+    pub fn get_selected_line_number(&self) -> Option<usize> {
+        match self {
+            Self::Syntactic(sv) => sv.get_selected_line_number(),
+            _ => None,
+        }
+    }
+    pub fn try_select_line_number(&mut self, number: usize) -> io::Result<bool> {
+        match self {
+            Self::Syntactic(sv) => sv.try_select_line_number(number),
+            _ => Ok(false),
+        }
+    }
+    pub fn unselect(&mut self) {
+        match self {
+            Self::Syntactic(sv) => sv.unselect(),
+            _ => {}
+        }
+    }
+    pub fn try_select_y(&mut self, y: u16) -> io::Result<bool> {
+        match self {
+            Self::Syntactic(sv) => sv.try_select_y(y),
+            _ => Ok(false),
+        }
+    }
+    pub fn select_previous_line(&mut self) -> io::Result<()> {
+        if let Self::Syntactic(sv) = self {
+            sv.select_previous_line()?;
+        }
+        Ok(())
+    }
+    pub fn select_next_line(&mut self) -> io::Result<()> {
+        if let Self::Syntactic(sv) = self {
+            sv.select_next_line()?;
+        }
+        Ok(())
+    }
     pub fn display(
         &mut self,
         w: &mut W,

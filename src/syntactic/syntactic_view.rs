@@ -57,8 +57,9 @@ pub struct SyntacticView {
     pattern: Pattern,
     lines: Vec<SyntacticLine>,
     content_height: usize, // bigger than lines.len() if not fully loaded
-    scroll: i32,
-    page_height: i32,
+    scroll: usize,
+    page_height: usize,
+    selection_idx: Option<usize>, // index in lines of the selection, if any
 }
 
 impl SyntacticView {
@@ -66,6 +67,7 @@ impl SyntacticView {
     pub fn new(
         path: &Path,
         pattern: Pattern,
+        desired_selection: Option<usize>,
     ) -> io::Result<Self> {
         let mut sv = Self {
             path: path.to_path_buf(),
@@ -74,8 +76,12 @@ impl SyntacticView {
             content_height: 0,
             scroll: 0,
             page_height: 0,
+            selection_idx: None,
         };
-        sv.prepare(false)?;
+        sv.prepare(desired_selection.is_some())?;
+        if let Some(number) = desired_selection {
+            sv.try_select_line_number(number)?;
+        }
         Ok(sv)
     }
 
@@ -125,9 +131,93 @@ impl SyntacticView {
         }
         Ok(())
     }
+    fn ensure_selection_is_visible(&mut self) {
+        if let Some(idx) = self.selection_idx {
+            debug_assert!(self.is_fully_loaded()); // mandatory when there's a selection
+            let padding = self.padding();
+            if idx < self.scroll + padding || idx + padding > self.scroll + self.page_height {
+                if idx <= padding {
+                    self.scroll = 0;
+                } else if idx + padding > self.content_height {
+                    self.scroll = self.content_height - self.page_height;
+                } else if idx < self.scroll + self.page_height / 2 {
+                    self.scroll = idx - padding;
+                } else {
+                    self.scroll = idx + padding - self.page_height;
+                }
+            }
+        }
+    }
+    fn padding(&self) -> usize {
+        (self.page_height / 4).min(4)
+    }
+    pub fn get_selected_line_number(&self) -> Option<usize> {
+        self.selection_idx
+            .map(|idx| self.lines[idx].number)
+    }
+    pub fn unselect(&mut self) {
+        self.selection_idx = None;
+    }
+    pub fn try_select_y(&mut self, y: u16) -> io::Result<bool> {
+        self.ensure_loaded()?;
+        let idx = y as usize + self.scroll;
+        if idx < self.lines.len() {
+            self.selection_idx = Some(idx);
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+    pub fn try_select_line_number(&mut self, number: usize) -> io::Result<bool> {
+        self.ensure_loaded()?;
+        // this could obviously be optimized
+        for (idx, line) in self.lines.iter().enumerate() {
+            if line.number == number {
+                self.selection_idx = Some(idx);
+                self.ensure_selection_is_visible();
+                return Ok(true);
+            }
+        }
+        Ok(false)
+    }
+    pub fn select_previous_line(&mut self) -> io::Result<()> {
+        self.ensure_loaded()?;
+        if let Some(idx) = self.selection_idx {
+            if idx > 0 {
+                self.selection_idx = Some(idx - 1);
+            } else {
+                self.selection_idx = Some(self.lines.len()-1);
+            }
+        } else if self.lines.len() > 0 {
+            self.selection_idx = Some(self.lines.len()-1);
+        }
+        self.ensure_selection_is_visible();
+        Ok(())
+    }
+    pub fn select_next_line(&mut self) -> io::Result<()> {
+        self.ensure_loaded()?;
+        if let Some(idx) = self.selection_idx {
+            if idx < self.lines.len() - 1 {
+                self.selection_idx = Some(idx + 1);
+            } else {
+                self.selection_idx = Some(0);
+            }
+        } else if self.lines.len() > 0 {
+            self.selection_idx = Some(0);
+        }
+        self.ensure_selection_is_visible();
+        Ok(())
+    }
 
     pub fn is_fully_loaded(&self) -> bool {
         self.content_height == self.lines.len()
+    }
+
+    fn ensure_loaded(&mut self) -> io::Result<()> {
+        if self.content_height != self.lines.len() {
+            self.prepare(true)?;
+        }
+        Ok(())
     }
 
     pub fn try_scroll(
@@ -135,9 +225,12 @@ impl SyntacticView {
         cmd: ScrollCommand,
     ) -> bool {
         let old_scroll = self.scroll;
-        self.scroll = (self.scroll + cmd.to_lines(self.page_height))
-            .min(self.content_height as i32 - self.page_height + 1)
-            .max(0);
+        self.scroll = cmd.apply(self.scroll, self.content_height, self.page_height);
+        if let Some(idx) = self.selection_idx {
+            if self.scroll != old_scroll && idx >= old_scroll && idx < old_scroll + self.page_height {
+                self.selection_idx = Some(idx + self.scroll - old_scroll);
+            }
+        }
         self.scroll != old_scroll
     }
 
@@ -148,8 +241,11 @@ impl SyntacticView {
         panel_skin: &PanelSkin,
         area: &Area,
     ) -> Result<(), ProgramError> {
-        self.page_height = area.height as i32;
-        if !self.is_fully_loaded() && self.scroll + self.page_height > self.lines.len() as i32 {
+        if area.height as usize != self.page_height {
+            self.page_height = area.height as usize;
+            self.ensure_selection_is_visible();
+        }
+        if !self.is_fully_loaded() && self.scroll + self.page_height > self.lines.len() {
             debug!("now fully loading");
             self.prepare(true)?;
         }
@@ -157,17 +253,28 @@ impl SyntacticView {
         let show_line_number = area.width > 55 || ( self.pattern.is_some() && area.width > 8 );
         let line_count = area.height as usize;
         let styles = &panel_skin.styles;
-        let bg = styles.preview.get_bg().or(styles.default.get_bg()).unwrap_or(Color::AnsiValue(238));
+        let normal_bg = styles.preview.get_bg()
+            .or(styles.default.get_bg())
+            .unwrap_or(Color::AnsiValue(238));
+        let selection_bg = styles.selected_line.get_bg()
+            .unwrap_or(Color::AnsiValue(240));
         let match_bg = styles.preview_match.get_bg().unwrap_or(Color::AnsiValue(28));
         let code_width = area.width as usize - 1; // 1 char left for scrollbar
-        let scrollbar = area.scrollbar(self.scroll, self.content_height as i32);
+        let scrollbar = area.scrollbar(self.scroll as i32, self.content_height as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
             .or(styles.preview.get_fg())
             .unwrap_or_else(|| Color::White);
         for y in 0..line_count {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
             let mut cw = CropWriter::new(w, code_width);
-            if let Some(line) = self.lines.get(self.scroll as usize + y) {
+            let line_idx = self.scroll as usize + y;
+            let selected = self.selection_idx == Some(line_idx);
+            let bg = if selected {
+                selection_bg
+            } else {
+                normal_bg
+            };
+            if let Some(line) = self.lines.get(line_idx) {
                 if show_line_number {
                     cw.queue_g_string(
                         &styles.preview_line_number,
@@ -209,7 +316,10 @@ impl SyntacticView {
                     }
                 }
             }
-            cw.fill(&styles.preview, LONG_SPACE)?;
+            cw.fill(
+                if selected { &styles.selected_line } else { &styles.preview },
+                LONG_SPACE,
+            )?;
             w.queue(SetBackgroundColor(bg))?;
             if is_thumb(y, scrollbar) {
                 w.queue(SetForegroundColor(scrollbar_fg))?;
