@@ -130,6 +130,12 @@ leave_broot = false
 # [[verbs]]
 # key = "ctrl-u"
 # execution = ":page_up"
+# [[verbs]]
+# key = "home"
+# execution = ":select_first"
+# [[verbs]]
+# key = "end"
+# execution = ":select_last"
 
 # If you develop using git, you might like to often switch
 # to the "git status" filter:

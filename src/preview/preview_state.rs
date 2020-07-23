@@ -235,6 +235,14 @@ impl AppState for PreviewState {
                 self.mut_preview().try_scroll(ScrollCommand::Pages(-1));
                 Ok(AppStateCmdResult::Keep)
             }
+            Internal::select_first => {
+                self.mut_preview().select_first()?;
+                Ok(AppStateCmdResult::Keep)
+            }
+            Internal::select_last => {
+                self.mut_preview().select_last()?;
+                Ok(AppStateCmdResult::Keep)
+            }
             _ => self.on_internal_generic(
                 w,
                 internal_exec,

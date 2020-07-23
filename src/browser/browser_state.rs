@@ -500,7 +500,8 @@ impl AppState for BrowserState {
                 AppStateCmdResult::Keep
             }
             Internal::select_last => {
-                self.displayed_tree_mut().try_select_last();
+                let page_height = BrowserState::page_height(screen);
+                self.displayed_tree_mut().try_select_last(page_height);
                 AppStateCmdResult::Keep
             }
             Internal::start_end_panel => {

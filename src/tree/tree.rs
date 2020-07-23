@@ -259,16 +259,18 @@ impl Tree {
             let line = &self.lines[idx];
             if line.is_selectable() {
                 self.selection = idx;
+                self.scroll = 0;
                 return true;
             }
         }
         false
     }
-    pub fn try_select_last(&mut self) -> bool {
+    pub fn try_select_last(&mut self, page_height: i32) -> bool {
         for idx in (0..self.lines.len()).rev() {
             let line = &self.lines[idx];
             if line.is_selectable() {
                 self.selection = idx;
+                self.make_selection_visible(page_height);
                 return true;
             }
         }

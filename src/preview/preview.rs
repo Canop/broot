@@ -81,16 +81,38 @@ impl Preview {
         }
     }
     pub fn select_previous_line(&mut self) -> io::Result<()> {
-        if let Self::Syntactic(sv) = self {
-            sv.select_previous_line()?;
+        match self {
+            Self::Syntactic(sv) => sv.select_previous_line(),
+            Self::Hex(hv) => {
+                hv.try_scroll(ScrollCommand::Lines(-1));
+                Ok(())
+            }
+            _ => Ok(()),
         }
-        Ok(())
     }
     pub fn select_next_line(&mut self) -> io::Result<()> {
-        if let Self::Syntactic(sv) = self {
-            sv.select_next_line()?;
+        match self {
+            Self::Syntactic(sv) => sv.select_next_line(),
+            Self::Hex(hv) => {
+                hv.try_scroll(ScrollCommand::Lines(1));
+                Ok(())
+            }
+            _ => Ok(()),
         }
-        Ok(())
+    }
+    pub fn select_first(&mut self) -> io::Result<()> {
+        match self {
+            Self::Syntactic(sv) => sv.select_first(),
+            Self::Hex(hv) => Ok(hv.select_first()),
+            _ => Ok(()),
+        }
+    }
+    pub fn select_last(&mut self) -> io::Result<()> {
+        match self {
+            Self::Syntactic(sv) => sv.select_last(),
+            Self::Hex(hv) => Ok(hv.select_last()),
+            _ => Ok(()),
+        }
     }
     pub fn display(
         &mut self,

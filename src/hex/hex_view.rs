@@ -46,7 +46,7 @@ impl HexView {
         })
     }
     pub fn line_count(&self) -> usize {
-        self.len / 16
+        self.len / 16 + if self.len % 16 != 0 { 1 } else { 0 }
     }
     pub fn try_scroll(
         &mut self,
@@ -55,6 +55,14 @@ impl HexView {
         let old_scroll = self.scroll;
         self.scroll = cmd.apply(self.scroll, self.line_count(), self.page_height);
         self.scroll != old_scroll
+    }
+    pub fn select_first(&mut self) {
+        self.scroll = 0;
+    }
+    pub fn select_last(&mut self) {
+        if self.page_height < self.line_count() {
+            self.scroll = self.line_count() - self.page_height;
+        }
     }
     pub fn get_page(
         &mut self,

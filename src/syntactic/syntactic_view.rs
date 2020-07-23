@@ -168,6 +168,20 @@ impl SyntacticView {
             Ok(false)
         }
     }
+    pub fn select_first(&mut self) -> io::Result<()> {
+        self.ensure_loaded()?;
+        self.selection_idx = Some(0);
+        self.scroll = 0;
+        Ok(())
+    }
+    pub fn select_last(&mut self) -> io::Result<()> {
+        self.ensure_loaded()?;
+        self.selection_idx = Some(self.content_height-1);
+        if self.page_height < self.content_height {
+            self.scroll = self.content_height - self.page_height;
+        }
+        Ok(())
+    }
     pub fn try_select_line_number(&mut self, number: usize) -> io::Result<bool> {
         self.ensure_loaded()?;
         // this could obviously be optimized
