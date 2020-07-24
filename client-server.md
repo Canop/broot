@@ -46,6 +46,12 @@ This feature started here: https://github.com/Canop/broot/issues/225
 
 and is being discussed and developped between @Canop (@dystroy on Miaou) and @SRGOM (@fiAtcBr on Miaou) and you're welcome to contribute on [Miaou](https://miaou.dystroy.org/3490).
 
+# Possible use cases (for users to utilize this). 
+
+## Auto-updating file viewer
+
+You can start an instance of broot with `broot --listen global_file_viewer` and add a hook in your shell to update this upon directory change. A hook for zsh would involve adding the following code in your init file `chpwd(){ ( broot --send global_file_viewer "$PWD" & ) > /dev/null 2>&1 }`
+
 # TODO:
 
 - [ ] merge in master ?
