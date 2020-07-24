@@ -1,5 +1,5 @@
 use {
-    super::Syntaxer,
+    super::*,
     crate::{
         command::{ScrollCommand},
         display::{CropWriter, LONG_SPACE, Screen, W},
@@ -12,29 +12,34 @@ use {
         style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
+    memmap::Mmap,
     std::{
-        io::{self, BufRead},
+        fs::File,
+        io::{self, BufRead, BufReader},
         path::{Path, PathBuf},
+        str,
     },
     syntect::{
         highlighting::Style,
-        easy::HighlightFile,
     },
     termimad::Area,
 };
 
 #[derive(Debug)]
-pub struct SyntacticRegion {
+pub struct Region {
     pub fg: Color,
     pub string: String,
 }
 
-/// number of lines initially parsed (and shown before scroll).
-/// It's best to have this greater than the screen height to
-/// avoid two initial parsings.
-const INITIAL_HEIGHT: usize = 150;
+/// the id of the line, starting at 1 and displayed next to it
+pub type LineNumber = usize;
 
-impl SyntacticRegion {
+/// when the file is bigger, we don't style it and we don't keep
+/// it in memory: we just keep the offsets of the lines in the
+/// file.
+const MAX_SIZE_FOR_STYLING: u64 = 2_000_000;
+
+impl Region {
     pub fn from_syntect(region: &(Style, &str)) -> Self {
         let fg = Color::Rgb {
             r: region.0.foreground.r,
@@ -46,17 +51,19 @@ impl SyntacticRegion {
     }
 }
 
-pub struct SyntacticLine {
-    pub number: usize, // starting at 1
-    pub contents: Vec<SyntacticRegion>,
+#[derive(Debug)]
+pub struct Line {
+    pub number: LineNumber, // starting at 1
+    pub start: usize, // offset in the file, in bytes
+    pub len: usize, // len in bytes
+    pub regions: Vec<Region>, // not always computed
     pub name_match: Option<NameMatch>,
 }
 
 pub struct SyntacticView {
     path: PathBuf,
     pattern: Pattern,
-    lines: Vec<SyntacticLine>,
-    content_height: usize, // bigger than lines.len() if not fully loaded
+    lines: Vec<Line>,
     scroll: usize,
     page_height: usize,
     selection_idx: Option<usize>, // index in lines of the selection, if any
@@ -73,73 +80,72 @@ impl SyntacticView {
             path: path.to_path_buf(),
             pattern,
             lines: Vec::new(),
-            content_height: 0,
             scroll: 0,
             page_height: 0,
             selection_idx: None,
         };
-        sv.prepare(desired_selection.is_some())?;
+        sv.read_lines()?;
         if let Some(number) = desired_selection {
             sv.try_select_line_number(number)?;
         }
         Ok(sv)
     }
 
-    /// try to load and parse the content or part of it.
-    /// Check the correct encoding of the whole file
-    ///  even when `full` is false.
-    fn prepare(&mut self, full: bool) -> io::Result<()> {
+    fn read_lines(&mut self) -> io::Result<()> {
+        let f = File::open(&self.path)?;
+        let with_style = f.metadata()?.len() < MAX_SIZE_FOR_STYLING;
+        let mut reader = BufReader::new(f);
+        self.lines.clear();
+        let mut line = String::new();
+        let mut offset = 0;
+        let mut number = 0;
         lazy_static! {
             static ref SYNTAXER: Syntaxer = Syntaxer::new();
         }
-        //let theme_key = "base16-ocean.dark";
-        //let theme_key = "Solarized (dark)";
-        //let theme_key = "base16-eighties.dark";
-        let theme_key = "base16-mocha.dark";
-        let theme = match SYNTAXER.theme_set.themes.get(theme_key) {
-            Some(theme) => theme,
-            None => {
-                warn!("theme not found : {:?}", theme_key);
-                SYNTAXER.theme_set.themes.iter().next().unwrap().1
-            }
+        let mut highlighter = if with_style {
+             SYNTAXER.highlighter_for(&self.path)
+        } else {
+            None
         };
-        let syntax_set = &SYNTAXER.syntax_set;
-        let mut highlighter = HighlightFile::new(&self.path, syntax_set, theme)?;
-        self.lines.clear();
-        self.content_height = 0;
-        let mut number = 0;
-        for line in highlighter.reader.lines() {
-            let line = line?;
+        while reader.read_line(&mut line)? > 0 {
             number += 1;
-            if self.pattern.is_some() && self.pattern.score_of_string(&line).is_none() {
-                continue;
+            let start = offset;
+            offset += line.len();
+            while line.ends_with('\n') || line.ends_with('\r') {
+                line.pop();
             }
-            self.content_height += 1;
-            if full || self.lines.len() < INITIAL_HEIGHT {
+            if self.pattern.is_none() || self.pattern.score_of_string(&line).is_some() {
                 let name_match = self.pattern.search_string(&line);
-                let contents = highlighter.highlight_lines
-                    .highlight(&line, &syntax_set)
-                    .iter()
-                    .map(|r| SyntacticRegion::from_syntect(r))
-                    .collect();
-                self.lines.push(SyntacticLine {
-                    contents,
+                let regions = if let Some(highlighter) = highlighter.as_mut() {
+                    highlighter
+                         .highlight(&line, &SYNTAXER.syntax_set)
+                         .iter()
+                         .map(|r| Region::from_syntect(r))
+                         .collect()
+                } else {
+                    Vec::new()
+                };
+                self.lines.push(Line {
+                    regions,
+                    start,
+                    len: line.len(),
                     name_match,
                     number,
                 });
             }
+            line.clear();
         }
         Ok(())
     }
+
     fn ensure_selection_is_visible(&mut self) {
         if let Some(idx) = self.selection_idx {
-            debug_assert!(self.is_fully_loaded()); // mandatory when there's a selection
             let padding = self.padding();
             if idx < self.scroll + padding || idx + padding > self.scroll + self.page_height {
                 if idx <= padding {
                     self.scroll = 0;
-                } else if idx + padding > self.content_height {
-                    self.scroll = self.content_height - self.page_height;
+                } else if idx + padding > self.lines.len() {
+                    self.scroll = self.lines.len() - self.page_height;
                 } else if idx < self.scroll + self.page_height / 2 {
                     self.scroll = idx - padding;
                 } else {
@@ -148,9 +154,11 @@ impl SyntacticView {
             }
         }
     }
+
     fn padding(&self) -> usize {
         (self.page_height / 4).min(4)
     }
+
     pub fn get_selected_line_number(&self) -> Option<usize> {
         self.selection_idx
             .map(|idx| self.lines[idx].number)
@@ -159,7 +167,6 @@ impl SyntacticView {
         self.selection_idx = None;
     }
     pub fn try_select_y(&mut self, y: u16) -> io::Result<bool> {
-        self.ensure_loaded()?;
         let idx = y as usize + self.scroll;
         if idx < self.lines.len() {
             self.selection_idx = Some(idx);
@@ -168,22 +175,21 @@ impl SyntacticView {
             Ok(false)
         }
     }
+
     pub fn select_first(&mut self) -> io::Result<()> {
-        self.ensure_loaded()?;
         self.selection_idx = Some(0);
         self.scroll = 0;
         Ok(())
     }
     pub fn select_last(&mut self) -> io::Result<()> {
-        self.ensure_loaded()?;
-        self.selection_idx = Some(self.content_height-1);
-        if self.page_height < self.content_height {
-            self.scroll = self.content_height - self.page_height;
+        self.selection_idx = Some(self.lines.len()-1);
+        if self.page_height < self.lines.len() {
+            self.scroll = self.lines.len() - self.page_height;
         }
         Ok(())
     }
-    pub fn try_select_line_number(&mut self, number: usize) -> io::Result<bool> {
-        self.ensure_loaded()?;
+
+    pub fn try_select_line_number(&mut self, number: LineNumber) -> io::Result<bool> {
         // this could obviously be optimized
         for (idx, line) in self.lines.iter().enumerate() {
             if line.number == number {
@@ -194,8 +200,8 @@ impl SyntacticView {
         }
         Ok(false)
     }
+
     pub fn select_previous_line(&mut self) -> io::Result<()> {
-        self.ensure_loaded()?;
         if let Some(idx) = self.selection_idx {
             if idx > 0 {
                 self.selection_idx = Some(idx - 1);
@@ -208,8 +214,8 @@ impl SyntacticView {
         self.ensure_selection_is_visible();
         Ok(())
     }
+
     pub fn select_next_line(&mut self) -> io::Result<()> {
-        self.ensure_loaded()?;
         if let Some(idx) = self.selection_idx {
             if idx < self.lines.len() - 1 {
                 self.selection_idx = Some(idx + 1);
@@ -223,23 +229,12 @@ impl SyntacticView {
         Ok(())
     }
 
-    pub fn is_fully_loaded(&self) -> bool {
-        self.content_height == self.lines.len()
-    }
-
-    fn ensure_loaded(&mut self) -> io::Result<()> {
-        if self.content_height != self.lines.len() {
-            self.prepare(true)?;
-        }
-        Ok(())
-    }
-
     pub fn try_scroll(
         &mut self,
         cmd: ScrollCommand,
     ) -> bool {
         let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.content_height, self.page_height);
+        self.scroll = cmd.apply(self.scroll, self.lines.len(), self.page_height);
         if let Some(idx) = self.selection_idx {
             if self.scroll != old_scroll && idx >= old_scroll && idx < old_scroll + self.page_height {
                 self.selection_idx = Some(idx + self.scroll - old_scroll);
@@ -259,14 +254,13 @@ impl SyntacticView {
             self.page_height = area.height as usize;
             self.ensure_selection_is_visible();
         }
-        if !self.is_fully_loaded() && self.scroll + self.page_height > self.lines.len() {
-            debug!("now fully loading");
-            self.prepare(true)?;
-        }
         let max_number_len = self.lines.last().map_or(0, |l|l.number).to_string().len();
         let show_line_number = area.width > 55 || ( self.pattern.is_some() && area.width > 8 );
         let line_count = area.height as usize;
         let styles = &panel_skin.styles;
+        let normal_fg  = styles.preview.get_fg()
+            .or(styles.default.get_fg())
+            .unwrap_or(Color::AnsiValue(252));
         let normal_bg = styles.preview.get_bg()
             .or(styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
@@ -274,7 +268,7 @@ impl SyntacticView {
             .unwrap_or(Color::AnsiValue(240));
         let match_bg = styles.preview_match.get_bg().unwrap_or(Color::AnsiValue(28));
         let code_width = area.width as usize - 1; // 1 char left for scrollbar
-        let scrollbar = area.scrollbar(self.scroll as i32, self.content_height as i32);
+        let scrollbar = area.scrollbar(self.scroll as i32, self.lines.len() as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
             .or(styles.preview.get_fg())
             .unwrap_or_else(|| Color::White);
@@ -288,7 +282,33 @@ impl SyntacticView {
             } else {
                 normal_bg
             };
+            let mut op_mmap: Option<Mmap> = None;
             if let Some(line) = self.lines.get(line_idx) {
+                let mut regions = &line.regions;
+                let regions_ur;
+                if regions.is_empty() && line.len > 0 {
+                    debug!("loading line {:?}", &line);
+                    if op_mmap.is_none() {
+                        let file = File::open(&self.path)?;
+                        let mmap = unsafe { Mmap::map(&file)? };
+                        op_mmap = Some(mmap);
+                    }
+                    if op_mmap.as_ref().unwrap().len() < line.start + line.len {
+                        warn!("file truncated since parsing");
+                    } else {
+                        // an UTF8 error can only happen if file modified during display
+                        let string = String::from_utf8(
+                            // we copy the memmap slice, as it's not immutable
+                            (&op_mmap.unwrap()[line.start..line.start+line.len]).to_vec()
+                        ).unwrap_or_else(|_| "Bad UTF8".to_string());
+                        debug!("string: {:?}", &string);
+                        regions_ur = vec![Region {
+                            fg: normal_fg,
+                            string,
+                        }];
+                        regions = &regions_ur;
+                    }
+                }
                 if show_line_number {
                     cw.queue_g_string(
                         &styles.preview_line_number,
@@ -302,7 +322,7 @@ impl SyntacticView {
                 if let Some(nm) = &line.name_match {
                     let mut dec = 0;
                     let mut nci = 0; // next char index
-                    for content in &line.contents {
+                    for content in regions {
                         let s = &content.string;
                         let pos = &nm.pos;
                         let mut x = 0;
@@ -324,7 +344,7 @@ impl SyntacticView {
                         dec += content.string.len();
                     }
                 } else {
-                    for content in &line.contents {
+                    for content in regions {
                         cw.w.queue(SetForegroundColor(content.fg))?;
                         cw.queue_unstyled_str(&content.string)?;
                     }

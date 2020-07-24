@@ -165,7 +165,7 @@ StyleMap! {
     help_code: gray(21), gray(3), []
     help_headers: ansi(178), None, []
     help_table_border: ansi(239), None, []
-    preview: None, gray(1), [] / None, gray(2), []
+    preview: gray(20), gray(1), [] / gray(18), gray(2), []
     preview_line_number: gray(12), gray(3), []
     preview_match: None, ansi(29), [Underlined]
     hex_null: gray(8), None, []

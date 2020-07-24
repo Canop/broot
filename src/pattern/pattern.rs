@@ -138,6 +138,13 @@ impl Pattern {
         }
     }
 
+    pub fn is_none(&self) -> bool {
+        match self {
+            Pattern::None => true,
+            _ => false,
+        }
+    }
+
     /// return the number of results we should find before starting to
     ///  sort them (unless time is runing out).
     pub fn optimal_result_number(&self, targeted_size: usize) -> usize {

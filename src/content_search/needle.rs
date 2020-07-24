@@ -28,8 +28,8 @@ pub struct Needle {
 impl fmt::Debug for Needle {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Needle")
-         .field("bytes", &self.bytes)
-         .finish()
+            .field("bytes", &self.bytes)
+            .finish()
     }
 }
 
