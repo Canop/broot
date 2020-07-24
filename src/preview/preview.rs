@@ -131,4 +131,17 @@ impl Preview {
             }
         }
     }
+    pub fn display_info(
+        &mut self,
+        w: &mut W,
+        screen: &Screen,
+        panel_skin: &PanelSkin,
+        area: &Area,
+    ) -> Result<(), ProgramError> {
+        match self {
+            Self::Syntactic(sv) => sv.display_info(w, screen, panel_skin, area),
+            //Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
+            _ => Ok(()),
+        }
+    }
 }

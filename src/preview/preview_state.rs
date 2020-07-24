@@ -157,9 +157,17 @@ impl AppState for PreviewState {
         w.queue(cursor::MoveTo(state_area.left, 0))?;
         let mut cw = CropWriter::new(w, state_area.width as usize);
         cw.queue_str(&styles.default, &self.file_name)?;
+        let info_area = Area::new(
+            state_area.left + state_area.width - cw.allowed as u16,
+            state_area.top,
+            cw.allowed as u16,
+            1,
+        );
+        debug!("info_area: {:?}", &info_area);
         cw.fill(&styles.default, LONG_SPACE)?;
-        self.filtered_preview.as_mut().unwrap_or(&mut self.preview)
-            .display(w, screen, panel_skin, &self.preview_area)
+        let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
+        preview.display_info(w, screen, panel_skin, &info_area)?;
+        preview.display(w, screen, panel_skin, &self.preview_area)
     }
 
     fn get_status(

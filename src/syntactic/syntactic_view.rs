@@ -67,6 +67,7 @@ pub struct SyntacticView {
     scroll: usize,
     page_height: usize,
     selection_idx: Option<usize>, // index in lines of the selection, if any
+    total_lines_count: usize, // including lines not filtered out
 }
 
 impl SyntacticView {
@@ -83,6 +84,7 @@ impl SyntacticView {
             scroll: 0,
             page_height: 0,
             selection_idx: None,
+            total_lines_count: 0,
         };
         sv.read_lines()?;
         if let Some(number) = desired_selection {
@@ -97,6 +99,7 @@ impl SyntacticView {
         let mut reader = BufReader::new(f);
         self.lines.clear();
         let mut line = String::new();
+        self.total_lines_count = 0;
         let mut offset = 0;
         let mut number = 0;
         lazy_static! {
@@ -109,6 +112,7 @@ impl SyntacticView {
         };
         while reader.read_line(&mut line)? > 0 {
             number += 1;
+            self.total_lines_count += 1;
             let start = offset;
             offset += line.len();
             while line.ends_with('\n') || line.ends_with('\r') {
@@ -136,6 +140,12 @@ impl SyntacticView {
             line.clear();
         }
         Ok(())
+    }
+
+    /// (count of lines which can be seen when scrolling,
+    /// total count including filtered ones)
+    pub fn line_counts(&self) -> (usize, usize) {
+        (self.lines.len(), self.total_lines_count)
     }
 
     fn ensure_selection_is_visible(&mut self) {
@@ -362,6 +372,33 @@ impl SyntacticView {
                 w.queue(Print(' '))?;
             }
         }
+        Ok(())
+    }
+
+    pub fn display_info(
+        &mut self,
+        w: &mut W,
+        _screen: &Screen,
+        panel_skin: &PanelSkin,
+        area: &Area,
+    ) -> Result<(), ProgramError> {
+        let width = area.width as usize;
+        let mut s = if self.pattern.is_some() {
+            format!("{}/{}", self.lines.len(), self.total_lines_count)
+        } else {
+            format!("{}", self.total_lines_count)
+        };
+        if s.len() > width {
+            return Ok(());
+        }
+        if s.len() + "lines: ".len() < width {
+            s = format!("lines: {}", s);
+        }
+        w.queue(cursor::MoveTo(
+            area.left + area.width - s.len() as u16,
+            area.top,
+        ))?;
+        panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }
 }

@@ -168,13 +168,13 @@ impl HexView {
                         }
                     }
                 }
-                cw.fill(&styles.default, LONG_SPACE)?;
-                if is_thumb(y, scrollbar) {
-                    w.queue(SetForegroundColor(scrollbar_fg))?;
-                    w.queue(Print('▐'))?;
-                } else {
-                    w.queue(Print(' '))?;
-                }
+            }
+            cw.fill(&styles.default, LONG_SPACE)?;
+            if is_thumb(y, scrollbar) {
+                w.queue(SetForegroundColor(scrollbar_fg))?;
+                w.queue(Print('▐'))?;
+            } else {
+                w.queue(Print(' '))?;
             }
         }
         Ok(())
