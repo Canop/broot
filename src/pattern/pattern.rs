@@ -43,8 +43,12 @@ impl Pattern {
                         match mode {
                             SearchMode::NameFuzzy => Self::NameFuzzy(FuzzyPattern::from(core)),
                             SearchMode::PathFuzzy => Self::PathFuzzy(FuzzyPattern::from(core)),
-                            SearchMode::NameRegex => Self::NameRegex(RegexPattern::from(core, flags.as_deref().unwrap_or(""))?),
-                            SearchMode::PathRegex => Self::PathRegex(RegexPattern::from(core, flags.unwrap_or(""))?),
+                            SearchMode::NameRegex => {
+                                Self::NameRegex(RegexPattern::from(core, flags.as_deref().unwrap_or(""))?)
+                            }
+                            SearchMode::PathRegex => {
+                                Self::PathRegex(RegexPattern::from(core, flags.unwrap_or(""))?)
+                            }
                             SearchMode::Content => Self::Content(ContentPattern::from(core)),
                         }
                     }
@@ -155,6 +159,15 @@ impl Pattern {
             Pattern::PathRegex(rp) => rp.optimal_result_number(targeted_size),
             Pattern::Content(cp) => cp.optimal_result_number(targeted_size),
             _ => targeted_size,
+        }
+    }
+
+    ///
+    pub fn get_content_pattern(&self) -> Option<&ContentPattern> {
+        match self {
+            Pattern::Content(cp) => Some(cp),
+            Pattern::Composite(cp) => cp.get_content_pattern(),
+            _ => None,
         }
     }
 }

@@ -33,7 +33,11 @@ pub struct PreviewState {
 }
 
 impl PreviewState {
-    pub fn new(path: PathBuf, _con: &AppContext) -> PreviewState {
+    pub fn new(
+        path: PathBuf,
+        pending_pattern: InputPattern,
+        _con: &AppContext,
+    ) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
         let preview = Preview::unfiltered(&path);
         let file_name = path.file_name()
@@ -45,7 +49,7 @@ impl PreviewState {
             file_name,
             path,
             preview,
-            pending_pattern: InputPattern::none(),
+            pending_pattern,
             filtered_preview: None,
         }
     }
@@ -69,7 +73,6 @@ impl AppState for PreviewState {
         pat: InputPattern,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        debug!("preview pattern: {:?}", &pat);
         if pat.is_none() {
             if let Some(filtered_preview) = self.filtered_preview.take() {
                 let old_selection = filtered_preview.get_selected_line_number();
@@ -98,7 +101,7 @@ impl AppState for PreviewState {
             let old_selection = self
                 .filtered_preview.as_ref().and_then(|p| p.get_selected_line_number())
                 .or(self.preview.get_selected_line_number());
-            let pattern = self.pending_pattern.take().pattern;
+            let pattern = self.pending_pattern.take();
             self.filtered_preview = time!(
                 Info,
                 "preview filtering",
@@ -117,20 +120,13 @@ impl AppState for PreviewState {
     }
 
     fn set_selected_path(&mut self, path: PathBuf) {
+        if let Some(fp) = &self.filtered_preview {
+            self.pending_pattern = fp.pattern();
+        };
         self.preview = Preview::unfiltered(&path);
         self.file_name = path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
-        self.pending_pattern = InputPattern::none();
-        // if self.pattern.is_some() && self.preview.is_filterable() {
-        //     self.filtered_preview = Some(Preview::filtered(
-        //         &path,
-        //         self.pattern.pattern.clone(),
-        //         None,
-        //     ));
-        // } else {
-        //     self.filtered_preview = None;
-        // }
         self.path = path;
     }
 
@@ -192,7 +188,6 @@ impl AppState for PreviewState {
             cw.allowed as u16,
             1,
         );
-        debug!("info_area: {:?}", &info_area);
         cw.fill(&styles.default, LONG_SPACE)?;
         let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
         preview.display_info(w, screen, panel_skin, &info_area)?;
@@ -294,6 +289,14 @@ impl AppState for PreviewState {
     // TODO put the hex/txt view here
     fn get_flags(&self) -> Vec<Flag> {
         vec![]
+    }
+
+    fn get_starting_input(&self) -> String {
+        if let Some(preview) = &self.filtered_preview {
+            preview.pattern().raw
+        } else {
+            self.pending_pattern.raw.clone()
+        }
     }
 
 }

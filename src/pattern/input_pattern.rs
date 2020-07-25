@@ -44,4 +44,15 @@ impl InputPattern {
     pub fn take(&mut self) -> Self {
         std::mem::replace(self, Self::none())
     }
+    /// from a pattern used to filter a tree, build a pattern
+    /// which would make sense to filter a previewed file
+    pub fn tree_to_preview(&self) -> Self {
+        self.pattern.get_content_pattern()
+            .and_then(|cp| RegexPattern::from(&cp.to_string(), "").ok())
+            .map(|rp| InputPattern {
+                raw: rp.to_string(),
+                pattern: Pattern::NameRegex(rp),
+            })
+            .unwrap_or_else(|| InputPattern::none())
+    }
 }

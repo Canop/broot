@@ -450,7 +450,7 @@ impl AppState for BrowserState {
                         internal_focus::new_panel_on_path(
                             self.selected_path().to_path_buf(),
                             screen,
-                            self.tree.options.clone(),
+                            self.displayed_tree().options.clone(),
                             PanelPurpose::None,
                             con,
                             HDir::Left,
@@ -472,7 +472,7 @@ impl AppState for BrowserState {
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),
                         screen,
-                        self.tree.options.clone(),
+                        self.displayed_tree().options.clone(),
                         purpose,
                         con,
                         HDir::Right,

@@ -5,7 +5,7 @@ use {
         display::{Screen, W},
         errors::ProgramError,
         hex::HexView,
-        pattern::Pattern,
+        pattern::InputPattern,
         skin::PanelSkin,
         syntactic::SyntacticView,
         task_sync::Dam,
@@ -29,7 +29,7 @@ impl Preview {
     pub fn unfiltered(
         path: &Path,
     ) -> Self {
-        match SyntacticView::new(path, Pattern::None, &mut Dam::unlimited()) {
+        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited()) {
             Ok(Some(sv)) => Self::Syntactic(sv),
             // not previewable as UTF8 text
             // we'll try reading it as binary
@@ -40,7 +40,7 @@ impl Preview {
     /// the dam gets an event before it's built
     pub fn filtered(
         path: &Path,
-        pattern: Pattern,
+        pattern: InputPattern,
         dam: &mut Dam,
     ) -> Option<Self> {
         match SyntacticView::new(path, pattern, dam) {
@@ -65,6 +65,12 @@ impl Preview {
                 warn!("error while previewing {:?} : {:?}", path, e);
                 Self::IOError
             }
+        }
+    }
+    pub fn pattern(&self) -> InputPattern {
+        match self {
+            Self::Syntactic(sv) => sv.pattern.clone(),
+            _ => InputPattern::none(),
         }
     }
     pub fn try_scroll(

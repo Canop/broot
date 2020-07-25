@@ -165,5 +165,15 @@ impl CompositePattern {
         }
     }
 
+    ///
+    pub fn get_content_pattern(&self) -> Option<&ContentPattern> {
+        for pattern in self.expr.iter_atoms() {
+            match pattern {
+                Pattern::Content(cp) => { return Some(&cp); }
+                _ => {}
+            }
+        }
+        return None;
+    }
 
 }

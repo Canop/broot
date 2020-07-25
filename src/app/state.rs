@@ -111,7 +111,11 @@ pub trait AppState {
                     let path = self.selected_path();
                     if path.is_file() {
                         AppStateCmdResult::NewPanel {
-                            state: Box::new(PreviewState::new(path.to_path_buf(), con)),
+                            state: Box::new(PreviewState::new(
+                                path.to_path_buf(),
+                                InputPattern::none(),
+                                con,
+                            )),
                             purpose: PanelPurpose::Preview,
                             direction: HDir::Right,
                         }
@@ -142,7 +146,11 @@ pub trait AppState {
                     let path = self.selected_path();
                     if path.is_file() {
                         AppStateCmdResult::NewPanel {
-                            state: Box::new(PreviewState::new(path.to_path_buf(), con)),
+                            state: Box::new(PreviewState::new(
+                                path.to_path_buf(),
+                                InputPattern::none(),
+                                con,
+                            )),
                             purpose: PanelPurpose::Preview,
                             direction: HDir::Right,
                         }

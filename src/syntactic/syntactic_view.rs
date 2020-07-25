@@ -4,7 +4,7 @@ use {
         command::{ScrollCommand},
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
-        pattern::{NameMatch, Pattern},
+        pattern::{InputPattern, NameMatch},
         skin::PanelSkin,
         task_sync::Dam,
     },
@@ -63,7 +63,7 @@ pub struct Line {
 
 pub struct SyntacticView {
     path: PathBuf,
-    pattern: Pattern,
+    pub pattern: InputPattern,
     lines: Vec<Line>,
     scroll: usize,
     page_height: usize,
@@ -75,7 +75,7 @@ impl SyntacticView {
 
     pub fn new(
         path: &Path,
-        pattern: Pattern,
+        pattern: InputPattern,
         dam: &mut Dam,
     ) -> io::Result<Option<Self>> {
         let mut sv = Self {
@@ -112,6 +112,7 @@ impl SyntacticView {
         } else {
             None
         };
+        let pattern = &self.pattern.pattern;
         while reader.read_line(&mut line)? > 0 {
             number += 1;
             self.total_lines_count += 1;
@@ -120,8 +121,8 @@ impl SyntacticView {
             while line.ends_with('\n') || line.ends_with('\r') {
                 line.pop();
             }
-            if self.pattern.is_none() || self.pattern.score_of_string(&line).is_some() {
-                let name_match = self.pattern.search_string(&line);
+            if pattern.is_none() || pattern.score_of_string(&line).is_some() {
+                let name_match = pattern.search_string(&line);
                 let regions = if let Some(highlighter) = highlighter.as_mut() {
                     highlighter
                          .highlight(&line, &SYNTAXER.syntax_set)
@@ -299,7 +300,6 @@ impl SyntacticView {
                 let mut regions = &line.regions;
                 let regions_ur;
                 if regions.is_empty() && line.len > 0 {
-                    debug!("loading line {:?}", &line);
                     if op_mmap.is_none() {
                         let file = File::open(&self.path)?;
                         let mmap = unsafe { Mmap::map(&file)? };
@@ -313,7 +313,6 @@ impl SyntacticView {
                             // we copy the memmap slice, as it's not immutable
                             (&op_mmap.unwrap()[line.start..line.start+line.len]).to_vec()
                         ).unwrap_or_else(|_| "Bad UTF8".to_string());
-                        debug!("string: {:?}", &string);
                         regions_ur = vec![Region {
                             fg: normal_fg,
                             string,
