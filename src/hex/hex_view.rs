@@ -101,8 +101,17 @@ impl HexView {
         let line_count = area.height as usize;
         self.page_height = area.height as usize;
         let page = self.get_page(self.scroll, line_count)?;
+        let addresses_len = if self.len < 0xffff {
+            4
+        } else if self.len < 0xffffff {
+            6
+        } else {
+            8
+        };
+        let mut margin_around_adresses = false;
         let styles = &panel_skin.styles;
         let mut left_margin = false;
+        let mut addresses = false;
         let mut hex_middle_space = false;
         let mut chars_middle_space = false;
         let mut inter_hex = false;
@@ -116,6 +125,10 @@ impl HexView {
             inter_hex = true;
             rem -= 16;
         }
+        if rem > addresses_len {
+            addresses = true;
+            rem -= addresses_len;
+        }
         if rem > 1 {
             hex_middle_space = true;
             rem -= 1;
@@ -126,7 +139,11 @@ impl HexView {
         }
         if rem > 1 {
             chars_middle_space = true;
-            //rem -= 1;
+            rem -= 1;
+        }
+        if addresses && rem >= 2 {
+            margin_around_adresses = true;
+            //rem -= 2;
         }
         let scrollbar = area.scrollbar(self.scroll as i32, self.line_count() as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
@@ -137,6 +154,20 @@ impl HexView {
             let mut cw = CropWriter::new(w, area.width as usize - 1); // -1 for scrollbar
             let cw = &mut cw;
             if y < page.len() {
+                if addresses {
+                    let addr = (self.scroll + y) * 16;
+                    cw.queue_g_string(
+                        &styles.preview_line_number,
+                        match (addresses_len, margin_around_adresses) {
+                            (4, false) => format!("{:04x}", addr),
+                            (6, false) => format!("{:06x}", addr),
+                            (_, false) => format!("{:08x}", addr),
+                            (4, true) => format!(" {:04x} ", addr),
+                            (6, true) => format!(" {:06x} ", addr),
+                            (_, true) => format!(" {:08x} ", addr),
+                        },
+                    )?;
+                }
                 if left_margin {
                     cw.queue_char(&styles.default, ' ')?;
                 }
@@ -177,6 +208,31 @@ impl HexView {
                 w.queue(Print(' '))?;
             }
         }
+        Ok(())
+    }
+
+    pub fn display_info(
+        &mut self,
+        w: &mut W,
+        _screen: &Screen,
+        panel_skin: &PanelSkin,
+        area: &Area,
+    ) -> Result<(), ProgramError> {
+        let width = area.width as usize;
+        let mut s = format!("{}", self.len);
+        if s.len() > width {
+            return Ok(());
+        }
+        if s.len() + " bytes".len() < width {
+            s = format!("{} bytes", s);
+        } else if s.len() + 1 < width {
+            s = format!("{}b", s);
+        }
+        w.queue(cursor::MoveTo(
+            area.left + area.width - s.len() as u16,
+            area.top,
+        ))?;
+        panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }
 }

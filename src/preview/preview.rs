@@ -172,7 +172,7 @@ impl Preview {
     ) -> Result<(), ProgramError> {
         match self {
             Self::Syntactic(sv) => sv.display_info(w, screen, panel_skin, area),
-            //Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
+            Self::Hex(hv) => hv.display_info(w, screen, panel_skin, area),
             _ => Ok(()),
         }
     }

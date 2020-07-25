@@ -22,9 +22,9 @@ For example:
 
 ```toml
 [skin]
-default = "gray(23) gray(1) / gray(20) gray(1)"
+default = "gray(23) none / gray(20) none"
 tree = "ansi(94) None / gray(3) None"
-file = "gray(18) None / gray(15) None"
+file = "gray(20) None / gray(15) None"
 directory = "ansi(208) None Bold / ansi(172) None bold"
 exe = "Cyan None"
 link = "Magenta None"
@@ -74,6 +74,14 @@ help_italic = "ansi(166) None"
 help_code = "gray(21) gray(3)"
 help_headers = "ansi(208) None"
 help_table_border = "ansi(239) None"
+preview = "gray(20) gray(1) / gray(18) gray(2)"
+preview_line_number = "gray(12) gray(3)"
+preview_match = "None ansi(29) Underlined"
+hex_null = "gray(10) None"
+hex_ascii_graphic = "gray(18) None"
+hex_ascii_whitespace = "ansi(143) None"
+hex_ascii_other = "ansi(215) None"
+hex_non_ascii = "ansi(167) None"
 ```
 
 which would look like this:
@@ -181,6 +189,14 @@ help_italic = "ansi(202) none italic"
 help_code = "gray(5) gray(22)"
 help_headers = "ansi(202) none"
 help_table_border = "ansi(239) None"
+preview = "gray(5) gray(24) / gray(7) gray(23)"
+preview_line_number = "gray(6) gray(20)"
+preview_match = "None ansi(29) Underlined"
+hex_null = "gray(15) None"
+hex_ascii_graphic = "gray(2) None"
+hex_ascii_whitespace = "ansi(143) None"
+hex_ascii_other = "ansi(215) None"
+hex_non_ascii = "ansi(167) None"
 ```
 
 ![light skin](img/20200526-light-skin.png)
