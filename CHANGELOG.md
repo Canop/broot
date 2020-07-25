@@ -3,6 +3,7 @@
 - "client-server" feature (see client-server.md)
 - selected line in preview, interesting when removing the pattern (to see what's around a match)
 - faster availability of huge files in preview
+- search in preview now interrupted by key events (just like the trees)
 
 <a name="v0.19.1"></a>
 ### v0.19.1 - 2020-07-17

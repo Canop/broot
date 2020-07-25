@@ -6,6 +6,7 @@ use {
         errors::ProgramError,
         pattern::{NameMatch, Pattern},
         skin::PanelSkin,
+        task_sync::Dam,
     },
     crossterm::{
         cursor,
@@ -75,8 +76,8 @@ impl SyntacticView {
     pub fn new(
         path: &Path,
         pattern: Pattern,
-        desired_selection: Option<usize>,
-    ) -> io::Result<Self> {
+        dam: &mut Dam,
+    ) -> io::Result<Option<Self>> {
         let mut sv = Self {
             path: path.to_path_buf(),
             pattern,
@@ -86,14 +87,15 @@ impl SyntacticView {
             selection_idx: None,
             total_lines_count: 0,
         };
-        sv.read_lines()?;
-        if let Some(number) = desired_selection {
-            sv.try_select_line_number(number)?;
+        if sv.read_lines(dam)? {
+            Ok(Some(sv))
+        } else {
+            Ok(None)
         }
-        Ok(sv)
     }
 
-    fn read_lines(&mut self) -> io::Result<()> {
+    /// return true when there was no interruption
+    fn read_lines(&mut self, dam: &mut Dam) -> io::Result<bool> {
         let f = File::open(&self.path)?;
         let with_style = f.metadata()?.len() < MAX_SIZE_FOR_STYLING;
         let mut reader = BufReader::new(f);
@@ -138,8 +140,12 @@ impl SyntacticView {
                 });
             }
             line.clear();
+            if dam.has_event() {
+                info!("event interrupted preview filtering");
+                return Ok(false);
+            }
         }
-        Ok(())
+        Ok(true)
     }
 
     /// (count of lines which can be seen when scrolling,
@@ -176,42 +182,40 @@ impl SyntacticView {
     pub fn unselect(&mut self) {
         self.selection_idx = None;
     }
-    pub fn try_select_y(&mut self, y: u16) -> io::Result<bool> {
+    pub fn try_select_y(&mut self, y: u16) -> bool {
         let idx = y as usize + self.scroll;
         if idx < self.lines.len() {
             self.selection_idx = Some(idx);
-            Ok(true)
+            true
         } else {
-            Ok(false)
+            false
         }
     }
 
-    pub fn select_first(&mut self) -> io::Result<()> {
+    pub fn select_first(&mut self) {
         self.selection_idx = Some(0);
         self.scroll = 0;
-        Ok(())
     }
-    pub fn select_last(&mut self) -> io::Result<()> {
+    pub fn select_last(&mut self) {
         self.selection_idx = Some(self.lines.len()-1);
         if self.page_height < self.lines.len() {
             self.scroll = self.lines.len() - self.page_height;
         }
-        Ok(())
     }
 
-    pub fn try_select_line_number(&mut self, number: LineNumber) -> io::Result<bool> {
+    pub fn try_select_line_number(&mut self, number: LineNumber) -> bool {
         // this could obviously be optimized
         for (idx, line) in self.lines.iter().enumerate() {
             if line.number == number {
                 self.selection_idx = Some(idx);
                 self.ensure_selection_is_visible();
-                return Ok(true);
+                return true;
             }
         }
-        Ok(false)
+        false
     }
 
-    pub fn select_previous_line(&mut self) -> io::Result<()> {
+    pub fn select_previous_line(&mut self) {
         if let Some(idx) = self.selection_idx {
             if idx > 0 {
                 self.selection_idx = Some(idx - 1);
@@ -222,10 +226,9 @@ impl SyntacticView {
             self.selection_idx = Some(self.lines.len()-1);
         }
         self.ensure_selection_is_visible();
-        Ok(())
     }
 
-    pub fn select_next_line(&mut self) -> io::Result<()> {
+    pub fn select_next_line(&mut self) {
         if let Some(idx) = self.selection_idx {
             if idx < self.lines.len() - 1 {
                 self.selection_idx = Some(idx + 1);
@@ -236,7 +239,6 @@ impl SyntacticView {
             self.selection_idx = Some(0);
         }
         self.ensure_selection_is_visible();
-        Ok(())
     }
 
     pub fn try_scroll(

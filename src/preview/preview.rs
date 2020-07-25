@@ -8,9 +8,9 @@ use {
         pattern::Pattern,
         skin::PanelSkin,
         syntactic::SyntacticView,
+        task_sync::Dam,
     },
     std::{
-        io,
         path::{Path},
     },
     termimad::{Area},
@@ -23,14 +23,42 @@ pub enum Preview {
 }
 
 impl Preview {
-    pub fn new(
+    /// build a text preview (maybe with syntaxic coloring) if possible,
+    /// a hex (binary) view if content isnt't UTF8, or a IOError when
+    /// there's a IO problem
+    pub fn unfiltered(
+        path: &Path,
+    ) -> Self {
+        match SyntacticView::new(path, Pattern::None, &mut Dam::unlimited()) {
+            Ok(Some(sv)) => Self::Syntactic(sv),
+            // not previewable as UTF8 text
+            // we'll try reading it as binary
+            _ => Self::hex(path),
+        }
+    }
+    /// try to build a filtered text view. Will return None if
+    /// the dam gets an event before it's built
+    pub fn filtered(
         path: &Path,
         pattern: Pattern,
-        desired_selection: Option<usize>,
-    ) -> Self {
-        if let Ok(view) = SyntacticView::new(path, pattern, desired_selection) {
-            return Self::Syntactic(view);
+        dam: &mut Dam,
+    ) -> Option<Self> {
+        match SyntacticView::new(path, pattern, dam) {
+
+            // normal finished loading
+            Ok(Some(sv)) => Some(Self::Syntactic(sv)),
+
+            // interrupted search
+            Ok(None) => None,
+
+            // not previewable as UTF8 text
+            // we'll try reading it as binary
+            Err(_) => Some(Self::hex(path)),
         }
+    }
+    /// return a hex_view, suitable for binary, or Self::IOError
+    /// if there was an error
+    pub fn hex(path: &Path) -> Self {
         match HexView::new(path.to_path_buf()) {
             Ok(reader) => Self::Hex(reader),
             Err(e) => {
@@ -62,10 +90,10 @@ impl Preview {
             _ => None,
         }
     }
-    pub fn try_select_line_number(&mut self, number: usize) -> io::Result<bool> {
+    pub fn try_select_line_number(&mut self, number: usize) -> bool {
         match self {
             Self::Syntactic(sv) => sv.try_select_line_number(number),
-            _ => Ok(false),
+            _ => false,
         }
     }
     pub fn unselect(&mut self) {
@@ -74,44 +102,42 @@ impl Preview {
             _ => {}
         }
     }
-    pub fn try_select_y(&mut self, y: u16) -> io::Result<bool> {
+    pub fn try_select_y(&mut self, y: u16) -> bool {
         match self {
             Self::Syntactic(sv) => sv.try_select_y(y),
-            _ => Ok(false),
+            _ => false,
         }
     }
-    pub fn select_previous_line(&mut self) -> io::Result<()> {
+    pub fn select_previous_line(&mut self) {
         match self {
             Self::Syntactic(sv) => sv.select_previous_line(),
             Self::Hex(hv) => {
                 hv.try_scroll(ScrollCommand::Lines(-1));
-                Ok(())
             }
-            _ => Ok(()),
+            _ => {}
         }
     }
-    pub fn select_next_line(&mut self) -> io::Result<()> {
+    pub fn select_next_line(&mut self) {
         match self {
             Self::Syntactic(sv) => sv.select_next_line(),
             Self::Hex(hv) => {
                 hv.try_scroll(ScrollCommand::Lines(1));
-                Ok(())
             }
-            _ => Ok(()),
+            _ => {}
         }
     }
-    pub fn select_first(&mut self) -> io::Result<()> {
+    pub fn select_first(&mut self) {
         match self {
             Self::Syntactic(sv) => sv.select_first(),
-            Self::Hex(hv) => Ok(hv.select_first()),
-            _ => Ok(()),
+            Self::Hex(hv) => hv.select_first(),
+            _ => {}
         }
     }
-    pub fn select_last(&mut self) -> io::Result<()> {
+    pub fn select_last(&mut self) {
         match self {
             Self::Syntactic(sv) => sv.select_last(),
-            Self::Hex(hv) => Ok(hv.select_last()),
-            _ => Ok(()),
+            Self::Hex(hv) => hv.select_last(),
+            _ => {}
         }
     }
     pub fn display(

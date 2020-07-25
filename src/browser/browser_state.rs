@@ -347,13 +347,12 @@ impl AppState for BrowserState {
         }
     }
 
-
     fn on_pattern(
         &mut self,
         pat: InputPattern,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        if !pat.is_some() {
+        if pat.is_none() {
             self.filtered_tree = None;
         }
         self.pending_pattern = pat;
