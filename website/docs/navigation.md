@@ -24,7 +24,7 @@ There are also a few more shortcuts:
 * you can select a line with a mouse click
 * you can open a line with a mouse double-click
 
-and you can define your own [shorcuts](../conf_file/#shortcuts-and-verb-search) or triggering [keyboard keys](../conf_file/#keyboard-key).
+and you can define your own [shortcuts](../conf_file/#shortcuts-and-verb-search) or triggering [keyboard keys](../conf_file/#keyboard-key).
 
 # Fuzzy Patterns
 
@@ -42,7 +42,7 @@ Hitting <kbd>esc</kbd> clears the current pattern.
 
 # Regular Expressions
 
-If there's a `/` before or after the patten, it's interpreted as a regular expression.
+If there's a `/` before or after the pattern, it's interpreted as a regular expression.
 
 For example `/pat+ern` would match `"patern.zip"` or `"some_patttern.rar"` but not `"pATTern"`.
 
@@ -98,7 +98,7 @@ This behavior is tuned with several toggles.
  | toggle_git_file_info | gf       | toggle display of git file information
  | toggle_git_ignore    | gi       | toggle use of .gitignore
  | toggle_hidden        | h        | toggle showing hidden files
- | toggle_perm          | perm     | toggle showing file permissions (unix only)
+ | toggle_perm          | perm     | toggle showing file permissions (Unix only)
  | toggle_sizes         | sizes    | toggle showing sizes
  | toggle_trim_root     | t        | toggle removing nodes at first level too (default)
 
@@ -111,7 +111,7 @@ You may notice a scrollbar on this screenshot. The first level of the tree is al
 Not trimming the root is also possible in normal mode by using the `toggle_trim_root` toggle.
 
 !!!	Note
-	The displayed size on unix is the space the file takes on disk, that is the number of blocks multiplied by the size of a block. If a file is sparse, a little 's' is displayed next to the size.
+	The displayed size on Unix is the space the file takes on disk, that is the number of blocks multiplied by the size of a block. If a file is sparse, a little 's' is displayed next to the size.
 
 Those toggles may also be defined with [launch options](../launch) and the [default_flags preference](../conf_file/#default-flags).
 

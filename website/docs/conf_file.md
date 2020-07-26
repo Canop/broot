@@ -5,7 +5,7 @@ The configuration file is called `conf.toml` and is in [TOML](https://github.com
 
 This file's location follows the XDG convention, which depends on your system settings. This location in your case can be found on the help screen (use <kbd>?</kbd>).
 
-From this screen you can directly open the configuration file in your system's editor by typing `:os` (shorcut for `:open_stay`).
+From this screen you can directly open the configuration file in your system's editor by typing `:os` (shortcut for `:open_stay`).
 
 Currently, you can configure
 
@@ -28,7 +28,7 @@ If you almost always want those flags, you may define them as default in the `co
 
     default_flags = "gh"
 
-Those flags can still be overriden at launch with the negating ones. For example if you don't want to see hidden files at a specific launch, do
+Those flags can still be overridden at launch with the negating ones. For example if you don't want to see hidden files at a specific launch, do
 
     br -H
 
@@ -90,7 +90,7 @@ The default value is
 ```toml
 cols_order = "gscpdbn"
 ```
-If you prefer to have the branchs left of the tree (as was the default in broot prior 0.18.1) you can use
+If you prefer to have the branches left of the tree (as was the default in broot prior 0.18.1) you can use
 
 ```toml
 cols_order = "gbpdscn"

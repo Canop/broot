@@ -4,7 +4,7 @@ Please come to [miaou](https://miaou.dystroy.org/3490?broot) if something isn't 
 
 # Those aren't my colors
 
-Broot's initial colors ensure that everything is readable whathever your settings.
+Broot's initial colors ensure that everything is readable whatever your settings.
 But you may want to have something more similar to your usual terminal colors, or maybe to define the whole skin.
 
 * [changing the skin](../skins/)
@@ -21,9 +21,9 @@ A workaround is to create a skin (for example by uncommenting the one in `conf.t
 
 # alt-enter (or other shortcut) isn't available
 
-Most terminals intercept a few keybaord shorctut for their own features.
+Most terminals intercept a few keyboard shortcut for their own features.
 
-If a shorcut isn't available for broot and you can't or don't want to remap the one of your terminal, the solution is to change the shortcut in broot.
+If a shortcut isn't available for broot and you can't or don't want to remap the one of your terminal, the solution is to change the shortcut in broot.
 
 * [specific solution for alt-enter](https://github.com/Canop/broot/issues/86#issuecomment-635974557)
 * [general shortcut configuration](../conf_verbs/#keyboard-key)

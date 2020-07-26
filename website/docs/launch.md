@@ -15,11 +15,11 @@ You can pass as argument the path you want to see, for example
 
 	br ~
 
-Broot renders on `stderr` and can be ran in a subshell, which means you can also (on unix) do things like
+Broot renders on `stderr` and can be ran in a subshell, which means you can also (on Unix) do things like
 
 	my_unix_command "$(broot some_dir)"
 
-and quit broot with `:pp` on the selected path. But most often you'll more conveniently simply add your command (and maybe a shorcut) to the [config file](../conf_file/#verbs-shortcuts-and-keys).
+and quit broot with `:pp` on the selected path. But most often you'll more conveniently simply add your command (and maybe a shortcut) to the [config file](../conf_file/#verbs-shortcuts-and-keys).
 
 
 # Launch Arguments
@@ -42,7 +42,7 @@ The trick to enable broot to `cd` your shell when you do `alt-enter` is the foll
 
 * **br** is a shell function. It creates a temp file whose path it gives as argument to **broot** using `--outcmd`
 * when you do `alt-enter`, **broot** writes `cd your-selected-path` in this file, then quits
-* **br** reads the file, deletes it, then evals the command
+* **br** reads the file, deletes it, then evaluates the command
 
 Most users have no reason to use `--outcmd` on their own, but it can still be used to write an alternative to **br** or to port it to shells which aren't currently supported.
 
@@ -50,7 +50,7 @@ Most users have no reason to use `--outcmd` on their own, but it can still be us
 
 If you provide a path to broot with `--out`, then a few commands won't execute anything directly but will instead write the relevant path as a line in the given file.
 
-This may be used by shell functions or other programs calling broot, in a similar way to `--outcmd`, for example in conjonction with ̀ --cmd`.
+This may be used by shell functions or other programs calling broot, in a similar way to `--outcmd`, for example in conjunction with ̀ --cmd`.
 
 <a name=cmd></a>
 ## the `--cmd` launch argument

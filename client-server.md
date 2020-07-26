@@ -44,7 +44,7 @@ If you don't pass the `--cmd` (shortened in `-c`) argument, then the server is t
 
 This feature started here: https://github.com/Canop/broot/issues/225
 
-and is being discussed and developped between @Canop (@dystroy on Miaou) and @SRGOM (@fiAtcBr on Miaou) and you're welcome to contribute on [Miaou](https://miaou.dystroy.org/3490).
+and is being discussed and developed between @Canop (@dystroy on Miaou) and @SRGOM (@fiAtcBr on Miaou) and you're welcome to contribute on [Miaou](https://miaou.dystroy.org/3490).
 
 # Possible use cases (for users to utilize this).
 
@@ -58,6 +58,6 @@ You can start an instance of broot with `broot --listen global_file_viewer` and 
 - [ ] implement a command "GetRoot" to
 - [ ] have convincing use cases implemented
 - [ ] make available with TCP localhost sockets on windows ?
-- [ ] stop hiding behing a compilation flag
+- [ ] stop hiding behind a compilation flag
 
 
