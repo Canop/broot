@@ -1,5 +1,5 @@
 use {
-    crate::selection_type::SelectionType,
+    super::SelectionType,
 };
 
 /// the possible special reason the panel was open

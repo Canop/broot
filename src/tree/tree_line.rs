@@ -3,9 +3,9 @@
 use {
     super::*,
     crate::{
+        app::{Selection, SelectionType},
         file_sum::FileSum,
         git::LineGitStatus,
-        selection_type::SelectionType,
     },
     std::{
         cmp::{self, Ord, Ordering, PartialOrd},
@@ -81,6 +81,13 @@ impl TreeLine {
             File | SymLinkToFile(_) => SelectionType::File,
             Dir | SymLinkToDir(_) => SelectionType::Directory,
             Pruning => SelectionType::Any, // should not happen today
+        }
+    }
+    pub fn as_selection(&self) -> Selection<'_> {
+        Selection {
+            path: &self.path,
+            stype: self.selection_type(),
+            line: 0,
         }
     }
     #[cfg(unix)]

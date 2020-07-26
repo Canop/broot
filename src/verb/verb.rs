@@ -1,15 +1,14 @@
 use {
     super::*,
     crate::{
-        app::Status,
+        app::{Selection, SelectionType, Status},
         errors::ConfError,
         keys,
         path,
         path_anchor::PathAnchor,
-        selection_type::SelectionType,
     },
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
-    std::path::{Path, PathBuf},
+    std::path::PathBuf,
 };
 
 /// what makes a verb.
@@ -145,7 +144,7 @@ impl Verb {
 
     pub fn get_status(
         &self,
-        path: &Path,
+        sel: Selection<'_>,
         other_path: &Option<PathBuf>,
         invocation: &VerbInvocation,
     ) -> Status {
@@ -155,17 +154,17 @@ impl Verb {
             let name = self.names.get(0).unwrap_or(&invocation.name);
             let markdown = match &self.execution {
                 VerbExecution::External(external_exec) => {
-                    let exec_desc = external_exec.shell_exec_string(path, other_path, &invocation.args);
+                    let exec_desc = external_exec.shell_exec_string(sel, other_path, &invocation.args);
                     format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
                 }
                 VerbExecution::Internal(internal_exec) => {
                     let pb;
                     let arg = invocation.args.as_ref().or_else(|| internal_exec.arg.as_ref());
                     let arg_path = if let Some(arg) = arg {
-                        pb = path::path_from(path, PathAnchor::Unspecified, arg);
+                        pb = path::path_from(sel.path, PathAnchor::Unspecified, arg);
                         &pb
                     } else {
-                        path
+                        sel.path
                     };
                     if let Some(special_desc) = internal_exec.internal.applied_description(arg_path) {
                         format!("Hit *enter* to **{}**: {}", name, special_desc)

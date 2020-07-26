@@ -7,11 +7,10 @@ use {
         display::{Screen, W},
         errors::ProgramError,
         launchable::Launchable,
-        selection_type::SelectionType,
         skin::PanelSkin,
         verb::*,
     },
-    std::path::{Path, PathBuf},
+    std::path::Path,
     termimad::{Area, FmtText, TextView},
 };
 
@@ -39,8 +38,12 @@ impl AppState for HelpState {
         Conf::default_location()
     }
 
-    fn selection_type(&self) -> SelectionType {
-        SelectionType::Any
+    fn selection(&self) -> Selection<'_> {
+        Selection {
+            path: Conf::default_location(),
+            stype: SelectionType::File,
+            line: 0,
+        }
     }
 
     fn refresh(&mut self, _screen: &Screen, _con: &AppContext) -> Command {
@@ -78,41 +81,10 @@ impl AppState for HelpState {
         Ok(text_view.write_on(w)?)
     }
 
-    fn get_status(
-        &self,
-        cmd: &Command,
-        other_path: &Option<PathBuf>,
-        con: &AppContext,
-    ) -> Status {
-        match cmd {
-            Command::VerbEdit(invocation) => {
-                if invocation.name.is_empty() {
-                    Status::from_message(
-                        "Type a verb then *enter* to execute it (*?* for the list of verbs)",
-                    )
-                } else {
-                    match con.verb_store.search(&invocation.name) {
-                        PrefixSearchResult::NoMatch => Status::from_error("No matching verb"),
-                        PrefixSearchResult::Match(_, verb) => {
-                            verb.get_status(Conf::default_location(), other_path, invocation)
-                        }
-                        PrefixSearchResult::Matches(completions) => {
-                            Status::from_message(format!(
-                                "Possible completions: {}",
-                                completions
-                                    .iter()
-                                    .map(|c| format!("*{}*", c))
-                                    .collect::<Vec<String>>()
-                                    .join(", "),
-                            ))
-                        }
-                    }
-                }
-            }
-            _ => Status::from_message(
-                "Hit *esc* to get back to the tree, or a space to start a verb",
-            ),
-        }
+    fn no_verb_status(&self, _has_pattern: bool, _con: &AppContext) -> Status {
+        Status::from_message(
+            "Hit *esc* to get back to the tree, or a space to start a verb"
+        )
     }
 
     fn on_internal(

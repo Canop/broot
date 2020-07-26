@@ -82,8 +82,11 @@ default_flags = ""
 #   export EDITOR=/usr/bin/nvim
 #  or just replace it with your editor of choice in the 'execution'
 #  pattern.
+#  If your editor is able to open a file on a specific line, use {line}
+#   so that you may jump directly at the right line from a preview.
 # Example:
-#  execution = "/usr/bin/nvim {file}"
+#  execution = "/usr/bin/nvim +{line} {file}"
+
 [[verbs]]
 invocation = "edit"
 key = "F2"

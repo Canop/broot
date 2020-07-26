@@ -7,7 +7,6 @@ use {
         errors::ProgramError,
         flag::Flag,
         pattern::InputPattern,
-        selection_type::SelectionType,
         skin::PanelSkin,
         task_sync::Dam,
         verb::*,
@@ -122,8 +121,12 @@ impl AppState for PreviewState {
         self.path = path;
     }
 
-    fn selection_type(&self) -> SelectionType {
-        SelectionType::File
+    fn selection(&self) -> Selection<'_> {
+        Selection {
+            path: &self.path,
+            stype: SelectionType::File,
+            line: self.preview.get_selected_line_number().unwrap_or(0),
+        }
     }
 
     fn refresh(&mut self, _screen: &Screen, con: &AppContext) -> Command {
@@ -189,40 +192,21 @@ impl AppState for PreviewState {
         preview.display(w, screen, panel_skin, &self.preview_area)
     }
 
-    fn get_status(
-        &self,
-        cmd: &Command,
-        other_path: &Option<PathBuf>,
-        con: &AppContext,
-    ) -> Status {
-        match cmd {
-            Command::VerbEdit(invocation) => {
-                if invocation.name.is_empty() {
-                    Status::from_message(
-                        "Type a verb then *enter* to execute it (*?* for the list of verbs)",
-                    )
-                } else {
-                    match con.verb_store.search(&invocation.name) {
-                        PrefixSearchResult::NoMatch => Status::from_error("No matching verb"),
-                        PrefixSearchResult::Match(_, verb) => {
-                            verb.get_status(&self.path, other_path, invocation)
-                        }
-                        PrefixSearchResult::Matches(completions) => {
-                            Status::from_message(format!(
-                                "Possible completions: {}",
-                                completions
-                                    .iter()
-                                    .map(|c| format!("*{}*", c))
-                                    .collect::<Vec<String>>()
-                                    .join(", "),
-                            ))
-                        }
-                    }
-                }
-            }
-            _ => Status::from_message(
-                "Hit *esc* to get back to the tree, or a space to start a verb",
-            ),
+    fn no_verb_status(&self, has_pattern: bool, _con: &AppContext) -> Status {
+        // TODO mention ctrl-left if shortcut unchanged
+        if has_pattern {
+            Status::from_message(
+                "Hit *esc* to remove the filter, or a space to start a verb",
+            )
+        } else if self.preview.is_filterable() {
+            Status::from_message(
+                // TODO push towards regexes
+                "Type a few letters to filter, or a space to start a verb",
+            )
+        } else {
+            Status::from_message(
+                "Hit `:` or a space to start a verb",
+            )
         }
     }
 

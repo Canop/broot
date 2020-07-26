@@ -3,7 +3,7 @@ use {
     crate::{
         app::{
             AppContext,
-            AppState,
+            Selection,
         },
         display::W,
         errors::ProgramError,
@@ -62,9 +62,9 @@ impl PanelInput {
         w: &mut W,
         event: Event,
         con: &AppContext,
-        state: &dyn AppState,
+        sel: Selection<'_>,
     ) -> Result<Command, ProgramError> {
-        let cmd = self.get_command(event, con, state);
+        let cmd = self.get_command(event, con, sel);
         self.input_field.display_on(w)?;
         Ok(cmd)
     }
@@ -103,7 +103,7 @@ impl PanelInput {
         &mut self,
         event: Event,
         con: &AppContext,
-        state: &dyn AppState,
+        sel: Selection<'_>,
     ) -> Command {
         match event {
             Event::Click(x, y, ..) => {
@@ -151,7 +151,7 @@ impl PanelInput {
                         } else {
                             &parts
                         };
-                        let completions = Completions::for_input(completable_parts, con, state);
+                        let completions = Completions::for_input(completable_parts, con, sel);
                         let added = match completions {
                             Completions::None => {
                                 debug!("nothing to complete!"); // where to tell this ? input field or status ?
@@ -200,14 +200,13 @@ impl PanelInput {
                 }
 
                 // we now check if the key is the trigger key of one of the verbs
-                let selection_type = state.selection_type();
                 for (index, verb) in con.verb_store.verbs.iter().enumerate() {
                     for verb_key in &verb.keys {
                         if *verb_key == key {
                             if self.handle_input_related_verb(verb, con) {
                                 return Command::from_raw(self.input_field.get_content(), false);
                             }
-                            if selection_type.respects(verb.selection_condition) {
+                            if sel.stype.respects(verb.selection_condition) {
                                 return Command::VerbTrigger {
                                     index,
                                     input_invocation: parts.verb_invocation,

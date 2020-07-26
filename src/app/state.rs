@@ -9,7 +9,6 @@ use {
         pattern::*,
         preview::PreviewState,
         print,
-        selection_type::SelectionType,
         skin::PanelSkin,
         task_sync::Dam,
         verb::*,
@@ -223,7 +222,7 @@ pub trait AppState {
                     ),
                     VerbExecution::External(external) => external.to_cmd_result(
                         w,
-                        self.selected_path(),
+                        self.selection(),
                         &cc.other_path,
                         if let Some(inv) = &input_invocation {
                             &inv.args
@@ -262,7 +261,7 @@ pub trait AppState {
                             VerbExecution::External(external) => {
                                 external.to_cmd_result(
                                     w,
-                                    self.selected_path(),
+                                    self.selection(),
                                     &cc.other_path,
                                     &invocation.args,
                                     con,
@@ -281,7 +280,8 @@ pub trait AppState {
     }
 
     fn selected_path(&self) -> &Path;
-    fn selection_type(&self) -> SelectionType;
+
+    fn selection(&self) -> Selection<'_>;
 
     fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
 
@@ -308,13 +308,6 @@ pub trait AppState {
         con: &AppContext,
     ) -> Result<(), ProgramError>;
 
-    fn get_status(
-        &self,
-        cmd: &Command,
-        other_path: &Option<PathBuf>,
-        con: &AppContext,
-    ) -> Status;
-
     /// return the flags to display
     fn get_flags(&self) -> Vec<Flag> {
         vec![]
@@ -326,5 +319,49 @@ pub trait AppState {
 
     fn set_selected_path(&mut self, _path: PathBuf, _con: &AppContext) {
         // this function is useful for preview states
+    }
+
+    /// return the status which should be used when there's no verb edited
+    fn no_verb_status(&self, has_pattern: bool, con: &AppContext) -> Status;
+
+    fn get_status(
+        &self,
+        cmd: &Command,
+        other_path: &Option<PathBuf>,
+        con: &AppContext,
+    ) -> Status {
+        match cmd {
+            Command::PatternEdit{ .. } => self.no_verb_status(true, con),
+            Command::VerbEdit(invocation) => {
+                if invocation.name.is_empty() {
+                    Status::new(
+                        "Type a verb then *enter* to execute it (*?* for the list of verbs)",
+                        false,
+                    )
+                } else {
+                    match con.verb_store.search(&invocation.name) {
+                        PrefixSearchResult::NoMatch => {
+                            Status::new("No matching verb (*?* for the list of verbs)", true)
+                        }
+                        PrefixSearchResult::Match(_, verb) => {
+                            let selection = self.selection();
+                            verb.get_status(selection, other_path, invocation)
+                        }
+                        PrefixSearchResult::Matches(completions) => Status::new(
+                            format!(
+                                "Possible verbs: {}",
+                                completions
+                                    .iter()
+                                    .map(|c| format!("*{}*", c))
+                                    .collect::<Vec<String>>()
+                                    .join(", "),
+                            ),
+                            false,
+                        ),
+                    }
+                }
+            }
+            _ => self.no_verb_status(false, con),
+        }
     }
 }

@@ -2,7 +2,6 @@ use {
     super::*,
     crate::{
         keys,
-        selection_type::SelectionType,
         verb::{
             Internal,
             VerbStore,

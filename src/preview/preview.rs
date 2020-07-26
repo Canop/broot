@@ -1,7 +1,7 @@
 
 use {
     crate::{
-        app::AppContext,
+        app::{AppContext, LineNumber},
         command::{ScrollCommand},
         display::{Screen, W},
         errors::ProgramError,
@@ -93,7 +93,7 @@ impl Preview {
         }
     }
 
-    pub fn get_selected_line_number(&self) -> Option<usize> {
+    pub fn get_selected_line_number(&self) -> Option<LineNumber> {
         match self {
             Self::Syntactic(sv) => sv.get_selected_line_number(),
             _ => None,

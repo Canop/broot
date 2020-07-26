@@ -11,7 +11,6 @@ use {
         path,
         path_anchor::PathAnchor,
         print,
-        selection_type::SelectionType,
         skin::PanelSkin,
         task_sync::Dam,
         tree::*,
@@ -82,6 +81,10 @@ impl BrowserState {
 
     pub fn root(&self) -> &Path {
         self.tree.root()
+    }
+
+    fn selection_type(&self) -> SelectionType {
+        self.displayed_tree().selected_line().selection_type()
     }
 
     pub fn page_height(screen: &Screen) -> i32 {
@@ -164,7 +167,7 @@ impl BrowserState {
             TreeLineType::File => make_opener(line.path.clone(), line.is_exe(), con),
             TreeLineType::Dir | TreeLineType::SymLinkToDir(_) => {
                 Ok(if con.launch_args.cmd_export_path.is_some() {
-                    CD.to_cmd_result(w, &line.target(), &None, &None, con)?
+                    CD.to_cmd_result(w, line.as_selection(), &None, &None, con)?
                 } else {
                     AppStateCmdResult::DisplayError(
                         "This feature needs broot to be launched with the `br` script".to_owned(),
@@ -202,28 +205,6 @@ impl BrowserState {
                 in_new_panel,
             ),
             None => AppStateCmdResult::DisplayError("no parent found".to_string()),
-        }
-    }
-
-    fn no_verb_status(&self, has_pattern: bool, con: &AppContext) -> Status {
-        if self.displayed_tree().selection == 0 {
-            if has_pattern {
-                con.standard_status.root_pat.clone()
-            } else {
-                con.standard_status.root_no_pat.clone()
-            }
-        } else if self.selection_type() == SelectionType::Directory {
-            if has_pattern {
-                con.standard_status.dir_pat.clone()
-            } else {
-                con.standard_status.dir_no_pat.clone()
-            }
-        } else {
-            if has_pattern {
-                con.standard_status.file_pat.clone()
-            } else {
-                con.standard_status.file_no_pat.clone()
-            }
         }
     }
 
@@ -266,53 +247,14 @@ impl AppState for BrowserState {
         }
     }
 
-    fn get_status(
-        &self,
-        cmd: &Command,
-        other_path: &Option<PathBuf>,
-        con: &AppContext,
-    ) -> Status {
-        match cmd {
-            Command::PatternEdit{ .. } => self.no_verb_status(true, con),
-            Command::VerbEdit(invocation) => {
-                if invocation.name.is_empty() {
-                    Status::new(
-                        "Type a verb then *enter* to execute it (*?* for the list of verbs)",
-                        false,
-                    )
-                } else {
-                    match con.verb_store.search(&invocation.name) {
-                        PrefixSearchResult::NoMatch => {
-                            Status::new("No matching verb (*?* for the list of verbs)", true)
-                        }
-                        PrefixSearchResult::Match(_, verb) => {
-                            let line = self.displayed_tree().selected_line();
-                            verb.get_status(&line.path, other_path, invocation)
-                        }
-                        PrefixSearchResult::Matches(completions) => Status::new(
-                            format!(
-                                "Possible verbs: {}",
-                                completions
-                                    .iter()
-                                    .map(|c| format!("*{}*", c))
-                                    .collect::<Vec<String>>()
-                                    .join(", "),
-                            ),
-                            false,
-                        ),
-                    }
-                }
-            }
-            _ => self.no_verb_status(false, con),
-        }
-    }
 
     fn selected_path(&self) -> &Path {
         &self.displayed_tree().selected_line().path
     }
 
-    fn selection_type(&self) -> SelectionType {
-        self.displayed_tree().selected_line().selection_type()
+
+    fn selection(&self) -> Selection<'_> {
+        self.displayed_tree().selected_line().as_selection()
     }
 
     fn clear_pending(&mut self) {
@@ -653,6 +595,28 @@ impl AppState for BrowserState {
                 screen,
             )?,
         })
+    }
+
+    fn no_verb_status(&self, has_pattern: bool, con: &AppContext) -> Status {
+        if self.displayed_tree().selection == 0 {
+            if has_pattern {
+                con.standard_status.root_pat.clone()
+            } else {
+                con.standard_status.root_no_pat.clone()
+            }
+        } else if self.selection_type() == SelectionType::Directory {
+            if has_pattern {
+                con.standard_status.dir_pat.clone()
+            } else {
+                con.standard_status.dir_no_pat.clone()
+            }
+        } else {
+            if has_pattern {
+                con.standard_status.file_pat.clone()
+            } else {
+                con.standard_status.file_no_pat.clone()
+            }
+        }
     }
 
     /// do some work, totally or partially, if there's some to do.

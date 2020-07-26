@@ -46,7 +46,7 @@ This feature started here: https://github.com/Canop/broot/issues/225
 
 and is being discussed and developped between @Canop (@dystroy on Miaou) and @SRGOM (@fiAtcBr on Miaou) and you're welcome to contribute on [Miaou](https://miaou.dystroy.org/3490).
 
-# Possible use cases (for users to utilize this). 
+# Possible use cases (for users to utilize this).
 
 ## Auto-updating file viewer
 
@@ -54,8 +54,7 @@ You can start an instance of broot with `broot --listen global_file_viewer` and 
 
 # TODO:
 
-- [ ] merge in master ?
-- [ ] have convincing use cases described
+- [x] have convincing use cases described
 - [ ] implement a command "GetRoot" to
 - [ ] have convincing use cases implemented
 - [ ] make available with TCP localhost sockets on windows ?

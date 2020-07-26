@@ -98,7 +98,7 @@ execution = ":open_stay"
 invocation = "edit"
 key = "F2"
 shortcut = "e"
-execution = "$EDITOR {file}"
+execution = "$EDITOR +{line} {file}"
 from_shell = true
 ```
 
@@ -129,6 +129,7 @@ Some arguments are predefined in broot and depends on the current selection:
 name | expanded to
 -|-
 `{file}` | the complete path of the current selection
+`{line}` | number of the selected line in the previewed file
 `{parent}` | the complete path of the current selection's parent
 `{directory}` | the closest directory, either `{file}` or `{parent}`
 `{other-panel-file}` | the complete path of the current selection in the other panel

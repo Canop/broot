@@ -44,7 +44,6 @@ pub mod pattern;
 pub mod permissions;
 pub mod preview;
 pub mod print;
-pub mod selection_type;
 pub mod shell_install;
 pub mod skin;
 pub mod syntactic;

@@ -8,7 +8,6 @@ use {
         path,
         path_anchor::PathAnchor,
         preview::PreviewState,
-        selection_type::SelectionType,
         task_sync::Dam,
         tree::TreeOptions,
     },

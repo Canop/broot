@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        app::AppContext,
+        app::{AppContext, LineNumber},
         command::{ScrollCommand},
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
@@ -33,9 +33,6 @@ pub struct Region {
     pub fg: Color,
     pub string: String,
 }
-
-/// the id of the line, starting at 1 and displayed next to it
-pub type LineNumber = usize;
 
 /// when the file is bigger, we don't style it and we don't keep
 /// it in memory: we just keep the offsets of the lines in the
@@ -179,7 +176,7 @@ impl SyntacticView {
         (self.page_height / 4).min(4)
     }
 
-    pub fn get_selected_line_number(&self) -> Option<usize> {
+    pub fn get_selected_line_number(&self) -> Option<LineNumber> {
         self.selection_idx
             .map(|idx| self.lines[idx].number)
     }

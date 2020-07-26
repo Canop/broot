@@ -6,11 +6,11 @@ use {
         default_conf::DEFAULT_CONF_FILE,
     },
     crate::{
+        app::SelectionType,
         display::{Col, Cols},
         errors::ConfError,
         keys,
         pattern::{SearchModeMap, SearchModeMapEntry},
-        selection_type::SelectionType,
         skin::{ExtColorMap, SkinEntry},
         tree::*,
         verb::VerbConf,

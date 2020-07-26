@@ -15,7 +15,6 @@ use {
         launchable::Launchable,
         path,
         path_anchor::PathAnchor,
-        selection_type::SelectionType,
     },
     regex::{Captures, Regex},
     std::{
@@ -155,16 +154,18 @@ impl ExternalExecution {
     /// the execution pattern
     fn replacement_map(
         &self,
-        file: &Path,
+        sel: Selection<'_>,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
         for_shell: bool,
     ) -> HashMap<String, String> {
         let mut map = HashMap::new();
+        let file = sel.path;
         // first we add the replacements computed from the given path
         let parent = file.parent().unwrap_or(file); // when there's no parent... we take file
         let file_str = path_to_string(file, for_shell);
         let parent_str = path_to_string(parent, for_shell);
+        map.insert("line".to_string(), sel.line.to_string());
         map.insert("file".to_string(), file_str.to_string());
         map.insert("parent".to_string(), parent_str.to_string());
         let dir_str = if file.is_dir() { file_str } else { parent_str };
@@ -206,22 +207,24 @@ impl ExternalExecution {
     pub fn to_cmd_result(
         &self,
         w: &mut W,
-        file: &Path,
+        sel: Selection<'_>,
+        //file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         if self.exec_mode.is_from_shell() {
-            self.exec_from_shell_cmd_result(file, other_file, args, con)
+            self.exec_from_shell_cmd_result(sel, other_file, args, con)
         } else {
-            self.exec_cmd_result(w, file, other_file, args)
+            self.exec_cmd_result(w, sel, other_file, args)
         }
     }
 
     /// build the cmd result as an executable which will be called from shell
     fn exec_from_shell_cmd_result(
         &self,
-        file: &Path,
+        //file: &Path,
+        sel: Selection<'_>,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
         con: &AppContext,
@@ -230,13 +233,13 @@ impl ExternalExecution {
             // Broot was probably launched as br.
             // the whole command is exported in the passed file
             let f = OpenOptions::new().append(true).open(export_path)?;
-            writeln!(&f, "{}", self.shell_exec_string(file, other_file, args))?;
+            writeln!(&f, "{}", self.shell_exec_string(sel, other_file, args))?;
             Ok(AppStateCmdResult::Quit)
         } else if let Some(ref export_path) = con.launch_args.file_export_path {
             // old version of the br function: only the file is exported
             // in the passed file
             let f = OpenOptions::new().append(true).open(export_path)?;
-            writeln!(&f, "{}", file.to_string_lossy())?;
+            writeln!(&f, "{}", sel.path.to_string_lossy())?;
             Ok(AppStateCmdResult::Quit)
         } else {
             Ok(AppStateCmdResult::DisplayError(
@@ -251,11 +254,12 @@ impl ExternalExecution {
     fn exec_cmd_result(
         &self,
         w: &mut W,
-        file: &Path,
+        sel: Selection<'_>,
+        //file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        let launchable = Launchable::program(self.exec_token(file, other_file, args))?;
+        let launchable = Launchable::program(self.exec_token(sel, other_file, args))?;
         if self.exec_mode.is_leave_broot() {
             Ok(AppStateCmdResult::from(launchable))
         } else {
@@ -278,11 +282,12 @@ impl ExternalExecution {
     /// This doesn't make sense for a built-in.
     fn exec_token(
         &self,
-        file: &Path,
+        sel: Selection<'_>,
+        //file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
     ) -> Vec<String> {
-        let map = self.replacement_map(file, other_file, args, false);
+        let map = self.replacement_map(sel, other_file, args, false);
         self.exec_pattern
             .split_whitespace()
             .map(|token| {
@@ -298,11 +303,12 @@ impl ExternalExecution {
     /// build a shell compatible command, with escapings
     pub fn shell_exec_string(
         &self,
-        file: &Path,
+        sel: Selection<'_>,
+        //file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
     ) -> String {
-        let map = self.replacement_map(file, other_file, args, true);
+        let map = self.replacement_map(sel, other_file, args, true);
         GROUP
             .replace_all(&self.exec_pattern, |ec: &Captures<'_>| {
                 path::do_exec_replacement(ec, &map)

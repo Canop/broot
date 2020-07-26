@@ -115,7 +115,8 @@ impl Panel {
         event: Event,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
-        self.input.on_event(w, event, con, &*self.states[self.states.len()-1])
+        let sel = self.states[self.states.len()-1].selection();
+        self.input.on_event(w, event, con, sel)
     }
 
     pub fn push_state(&mut self, new_state: Box<dyn AppState>) {

@@ -1,8 +1,8 @@
 use {
     super::*,
     crate::{
+        app::SelectionType,
         errors::ConfError,
-        selection_type::SelectionType,
     },
     crossterm::event::KeyEvent,
     std::convert::TryFrom,
