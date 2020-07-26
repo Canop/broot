@@ -111,3 +111,21 @@ rs = "yellow"
 toml = "ansi(105)"
 ```
 
+# Syntax Theme
+
+Broot uses [syntect](https://github.com/trishume/syntect) for syntax coloring of previewed files.
+
+It's possible to choose any of the standard themes listed [here](https://docs.rs/syntect/4.2.0/syntect/highlighting/struct.ThemeSet.html#impl):
+
+* base16-ocean.dark
+* base16-eighties.dark
+* base16-mocha.dark
+* base16-ocean.light
+* InspiredGitHub
+* Solarized (dark)
+* Solarized (light)
+
+```toml
+syntax_theme = "base16-ocean.light"
+```
+

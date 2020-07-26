@@ -324,7 +324,7 @@ pub trait AppState {
         String::new()
     }
 
-    fn set_selected_path(&mut self, _path: PathBuf) {
+    fn set_selected_path(&mut self, _path: PathBuf, _con: &AppContext) {
         // this function is useful for preview states
     }
 }

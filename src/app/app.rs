@@ -323,18 +323,18 @@ impl App {
         if let Some(text) = error {
             self.mut_panel().set_error(text);
         }
-        self.update_preview();
+        self.update_preview(con);
         Ok(())
     }
 
-    fn update_preview(&mut self) {
+    fn update_preview(&mut self, con: &AppContext) {
         let preview_idx = self.preview.and_then(|id| self.panel_idx(id));
         if let Some(preview_idx) = preview_idx {
             let path = self.state().selected_path();
             let old_path = self.panels[preview_idx].state().selected_path();
             if path != old_path && path.is_file() {
                 let path = path.to_path_buf();
-                self.panels[preview_idx].mut_state().set_selected_path(path);
+                self.panels[preview_idx].mut_state().set_selected_path(path, con);
             }
         }
     }
@@ -358,7 +358,7 @@ impl App {
                 did_something |= self.panels[idx].do_pending_tasks(screen, con, dam)?;
             }
         }
-        self.update_preview(); // the selection may have changed
+        self.update_preview(con); // the selection may have changed
         Ok(did_something)
     }
 

@@ -36,6 +36,8 @@ pub struct AppContext {
     /// mapping from file extension to colors (comes from conf)
     pub ext_colors: ExtColorMap,
 
+    pub syntax_theme: Option<String>,
+
     pub standard_status: StandardStatus,
 }
 
@@ -55,6 +57,7 @@ impl AppContext {
             search_modes: config.search_modes.clone(),
             cols: config.cols_order.unwrap_or(DEFAULT_COLS),
             ext_colors: config.ext_colors.clone(),
+            syntax_theme: config.syntax_theme.clone(),
             standard_status,
         }
     }

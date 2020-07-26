@@ -1,4 +1,7 @@
 use {
+    crate::{
+        app::AppContext,
+    },
     std::path::Path,
     syntect::{
         easy::HighlightLines,
@@ -22,22 +25,21 @@ impl Syntaxer {
     pub fn highlighter_for<'s, 'p>(
         &'s self,
         path: &'p Path,
+        con: &AppContext,
     ) -> Option<HighlightLines<'s>> {
         path.extension()
             .and_then(|e|e.to_str())
             .and_then(|ext| self.syntax_set.find_syntax_by_extension(ext))
             .map(|syntax| {
-                //let theme_key = "base16-ocean.dark";
-                //let theme_key = "Solarized (dark)";
-                //let theme_key = "base16-eighties.dark";
-                let theme_key = "base16-mocha.dark";
-                let theme = match self.theme_set.themes.get(theme_key) {
-                    Some(theme) => theme,
-                    None => {
-                        warn!("theme not found : {:?}", theme_key);
-                        self.theme_set.themes.iter().next().unwrap().1
-                    }
-                };
+                // some OK themes:
+                //  "base16-ocean.dark"
+                //  "Solarized (dark)"
+                //  "base16-eighties.dark"
+                //  "base16-mocha.dark"
+                let theme = con.syntax_theme.as_ref()
+                    .and_then(|key| self.theme_set.themes.get(key))
+                    .or_else(|| self.theme_set.themes.get("base16-mocha.dark"))
+                    .unwrap_or_else(|| self.theme_set.themes.iter().next().unwrap().1);
                 HighlightLines::new(syntax, &theme)
             })
     }

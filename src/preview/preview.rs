@@ -1,6 +1,7 @@
 
 use {
     crate::{
+        app::AppContext,
         command::{ScrollCommand},
         display::{Screen, W},
         errors::ProgramError,
@@ -28,8 +29,9 @@ impl Preview {
     /// there's a IO problem
     pub fn unfiltered(
         path: &Path,
+        con: &AppContext,
     ) -> Self {
-        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited()) {
+        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con) {
             Ok(Some(sv)) => Self::Syntactic(sv),
             // not previewable as UTF8 text
             // we'll try reading it as binary
@@ -42,8 +44,9 @@ impl Preview {
         path: &Path,
         pattern: InputPattern,
         dam: &mut Dam,
+        con: &AppContext,
     ) -> Option<Self> {
-        match SyntacticView::new(path, pattern, dam) {
+        match SyntacticView::new(path, pattern, dam, con) {
 
             // normal finished loading
             Ok(Some(sv)) => Some(Self::Syntactic(sv)),

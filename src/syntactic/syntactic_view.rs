@@ -1,6 +1,7 @@
 use {
     super::*,
     crate::{
+        app::AppContext,
         command::{ScrollCommand},
         display::{CropWriter, LONG_SPACE, Screen, W},
         errors::ProgramError,
@@ -77,6 +78,7 @@ impl SyntacticView {
         path: &Path,
         pattern: InputPattern,
         dam: &mut Dam,
+        con: &AppContext,
     ) -> io::Result<Option<Self>> {
         let mut sv = Self {
             path: path.to_path_buf(),
@@ -87,7 +89,7 @@ impl SyntacticView {
             selection_idx: None,
             total_lines_count: 0,
         };
-        if sv.read_lines(dam)? {
+        if sv.read_lines(dam, con)? {
             Ok(Some(sv))
         } else {
             Ok(None)
@@ -95,7 +97,7 @@ impl SyntacticView {
     }
 
     /// return true when there was no interruption
-    fn read_lines(&mut self, dam: &mut Dam) -> io::Result<bool> {
+    fn read_lines(&mut self, dam: &mut Dam, con: &AppContext) -> io::Result<bool> {
         let f = File::open(&self.path)?;
         let with_style = f.metadata()?.len() < MAX_SIZE_FOR_STYLING;
         let mut reader = BufReader::new(f);
@@ -108,7 +110,7 @@ impl SyntacticView {
             static ref SYNTAXER: Syntaxer = Syntaxer::new();
         }
         let mut highlighter = if with_style {
-             SYNTAXER.highlighter_for(&self.path)
+             SYNTAXER.highlighter_for(&self.path, con)
         } else {
             None
         };

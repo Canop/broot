@@ -36,6 +36,7 @@ pub struct Conf {
     pub disable_mouse_capture: bool,
     pub cols_order: Option<Cols>,
     pub ext_colors: ExtColorMap,
+    pub syntax_theme: Option<String>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -114,6 +115,8 @@ impl Conf {
         }
         // date/time format
         self.date_time_format = string_field(&root, "date_time_format");
+        // reading the optional theme for syntect
+        self.syntax_theme = string_field(&root, "syntax_theme");
         // mouse capture
         if let Some(mouse_capture) = bool_field(&root, "capture_mouse") {
             self.disable_mouse_capture = !mouse_capture;

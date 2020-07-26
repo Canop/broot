@@ -36,10 +36,10 @@ impl PreviewState {
     pub fn new(
         path: PathBuf,
         pending_pattern: InputPattern,
-        _con: &AppContext,
+        con: &AppContext,
     ) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
-        let preview = Preview::unfiltered(&path);
+        let preview = Preview::unfiltered(&path, con);
         let file_name = path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
@@ -94,7 +94,7 @@ impl AppState for PreviewState {
     fn do_pending_task(
         &mut self,
         _screen: &mut Screen,
-        _con: &AppContext,
+        con: &AppContext,
         dam: &mut Dam,
     ) {
         if self.pending_pattern.is_some() {
@@ -105,7 +105,7 @@ impl AppState for PreviewState {
             self.filtered_preview = time!(
                 Info,
                 "preview filtering",
-                Preview::filtered(&self.path, pattern, dam),
+                Preview::filtered(&self.path, pattern, dam, con),
             ); // can be None if a cancellation was required
             if let Some(ref mut filtered_preview) = self.filtered_preview {
                 if let Some(number) = old_selection {
@@ -119,11 +119,11 @@ impl AppState for PreviewState {
         &self.path
     }
 
-    fn set_selected_path(&mut self, path: PathBuf) {
+    fn set_selected_path(&mut self, path: PathBuf, con: &AppContext) {
         if let Some(fp) = &self.filtered_preview {
             self.pending_pattern = fp.pattern();
         };
-        self.preview = Preview::unfiltered(&path);
+        self.preview = Preview::unfiltered(&path, con);
         self.file_name = path.file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
@@ -134,9 +134,9 @@ impl AppState for PreviewState {
         SelectionType::File
     }
 
-    fn refresh(&mut self, _screen: &Screen, _con: &AppContext) -> Command {
+    fn refresh(&mut self, _screen: &Screen, con: &AppContext) -> Command {
         self.dirty = true;
-        self.set_selected_path(self.path.clone());
+        self.set_selected_path(self.path.clone(), con);
         Command::empty()
     }
 
