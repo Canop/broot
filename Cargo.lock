@@ -106,7 +106,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "0.19.2-alpha"
+version = "0.19.2"
 dependencies = [
  "bet",
  "chrono",
