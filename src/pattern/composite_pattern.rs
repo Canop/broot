@@ -165,15 +165,14 @@ impl CompositePattern {
         }
     }
 
-    ///
+    /// return the first content pattern found among atomic patterns
     pub fn get_content_pattern(&self) -> Option<&ContentPattern> {
         for pattern in self.expr.iter_atoms() {
-            match pattern {
-                Pattern::Content(cp) => { return Some(&cp); }
-                _ => {}
+            if let Pattern::Content(cp)  = pattern {
+                return Some(&cp);
             }
         }
-        return None;
+        None
     }
 
 }

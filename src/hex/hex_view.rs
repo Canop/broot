@@ -147,7 +147,7 @@ impl HexView {
         }
         let scrollbar = area.scrollbar(self.scroll as i32, self.line_count() as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
-            .or(styles.preview.get_fg())
+            .or_else(|| styles.preview.get_fg())
             .unwrap_or_else(|| Color::White);
         for y in 0..line_count {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;

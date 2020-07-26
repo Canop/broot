@@ -106,9 +106,8 @@ impl Preview {
         }
     }
     pub fn unselect(&mut self) {
-        match self {
-            Self::Syntactic(sv) => sv.unselect(),
-            _ => {}
+        if let Self::Syntactic(sv) = self {
+            sv.unselect();
         }
     }
     pub fn try_select_y(&mut self, y: u16) -> bool {

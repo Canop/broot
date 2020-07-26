@@ -162,7 +162,7 @@ impl Pattern {
         }
     }
 
-    ///
+    /// return the first found content pattern
     pub fn get_content_pattern(&self) -> Option<&ContentPattern> {
         match self {
             Pattern::Content(cp) => Some(cp),

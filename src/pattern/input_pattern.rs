@@ -53,6 +53,6 @@ impl InputPattern {
                 raw: rp.to_string(),
                 pattern: Pattern::NameRegex(rp),
             })
-            .unwrap_or_else(|| InputPattern::none())
+            .unwrap_or_else(InputPattern::none)
     }
 }

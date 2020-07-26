@@ -86,7 +86,7 @@ impl Areas {
         }
         let n = slots.len() as u16;
         let mut panel_width = if with_preview {
-            4 * screen.width / (4 * n + 1)
+            3 * screen.width / (3 * n + 1)
         } else {
             screen.width / n
         };

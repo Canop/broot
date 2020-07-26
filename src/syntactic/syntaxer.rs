@@ -15,13 +15,16 @@ pub struct Syntaxer {
     pub syntax_set: SyntaxSet,
     pub theme_set: ThemeSet,
 }
-impl Syntaxer {
-    pub fn new() -> Self {
+impl Default for Syntaxer {
+    fn default() -> Self {
         Self {
             syntax_set: SyntaxSet::load_defaults_nonewlines(),
             theme_set: ThemeSet::load_defaults(),
         }
     }
+}
+
+impl Syntaxer {
     pub fn highlighter_for<'s, 'p>(
         &'s self,
         path: &'p Path,

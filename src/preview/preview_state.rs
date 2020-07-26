@@ -23,11 +23,9 @@ use {
 /// an application state dedicated to previewing files
 pub struct PreviewState {
     pub preview_area: Area,
-    dirty: bool, // background must be cleared
-    file_name: String,
+    dirty: bool, // true when background must be cleared
     path: PathBuf, // path to the previewed file
     preview: Preview,
-    //pattern: InputPattern, // kept but not applied when the preview isn't filterable
     pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     filtered_preview: Option<Preview>,
 }
@@ -40,13 +38,9 @@ impl PreviewState {
     ) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
         let preview = Preview::unfiltered(&path, con);
-        let file_name = path.file_name()
-            .map(|n| n.to_string_lossy().to_string())
-            .unwrap_or_else(|| "???".to_string());
         PreviewState {
             preview_area,
             dirty: true,
-            file_name,
             path,
             preview,
             pending_pattern,
@@ -87,10 +81,11 @@ impl AppState for PreviewState {
                 ));
             }
         }
-        self.pending_pattern = pat.clone();
+        self.pending_pattern = pat;
         Ok(AppStateCmdResult::Keep)
     }
 
+    /// do the preview filtering if required and not yet done
     fn do_pending_task(
         &mut self,
         _screen: &mut Screen,
@@ -100,7 +95,7 @@ impl AppState for PreviewState {
         if self.pending_pattern.is_some() {
             let old_selection = self
                 .filtered_preview.as_ref().and_then(|p| p.get_selected_line_number())
-                .or(self.preview.get_selected_line_number());
+                .or_else(|| self.preview.get_selected_line_number());
             let pattern = self.pending_pattern.take();
             self.filtered_preview = time!(
                 Info,
@@ -124,9 +119,6 @@ impl AppState for PreviewState {
             self.pending_pattern = fp.pattern();
         };
         self.preview = Preview::unfiltered(&path, con);
-        self.file_name = path.file_name()
-            .map(|n| n.to_string_lossy().to_string())
-            .unwrap_or_else(|| "???".to_string());
         self.path = path;
     }
 
@@ -181,7 +173,10 @@ impl AppState for PreviewState {
         let styles = &panel_skin.styles;
         w.queue(cursor::MoveTo(state_area.left, 0))?;
         let mut cw = CropWriter::new(w, state_area.width as usize);
-        cw.queue_str(&styles.default, &self.file_name)?;
+        let file_name = self.path.file_name()
+            .map(|n| n.to_string_lossy().to_string())
+            .unwrap_or_else(|| "???".to_string());
+        cw.queue_str(&styles.default, &file_name)?;
         let info_area = Area::new(
             state_area.left + state_area.width - cw.allowed as u16,
             state_area.top,

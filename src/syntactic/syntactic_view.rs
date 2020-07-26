@@ -27,6 +27,7 @@ use {
     termimad::Area,
 };
 
+/// a homogeneously colored piece of a line
 #[derive(Debug)]
 pub struct Region {
     pub fg: Color,
@@ -107,7 +108,7 @@ impl SyntacticView {
         let mut offset = 0;
         let mut number = 0;
         lazy_static! {
-            static ref SYNTAXER: Syntaxer = Syntaxer::new();
+            static ref SYNTAXER: Syntaxer = Syntaxer::default();
         }
         let mut highlighter = if with_style {
              SYNTAXER.highlighter_for(&self.path, con)
@@ -225,7 +226,7 @@ impl SyntacticView {
             } else {
                 self.selection_idx = Some(self.lines.len()-1);
             }
-        } else if self.lines.len() > 0 {
+        } else if !self.lines.is_empty() {
             self.selection_idx = Some(self.lines.len()-1);
         }
         self.ensure_selection_is_visible();
@@ -238,7 +239,7 @@ impl SyntacticView {
             } else {
                 self.selection_idx = Some(0);
             }
-        } else if self.lines.len() > 0 {
+        } else if !self.lines.is_empty() {
             self.selection_idx = Some(0);
         }
         self.ensure_selection_is_visible();
@@ -274,10 +275,10 @@ impl SyntacticView {
         let line_count = area.height as usize;
         let styles = &panel_skin.styles;
         let normal_fg  = styles.preview.get_fg()
-            .or(styles.default.get_fg())
+            .or_else(|| styles.default.get_fg())
             .unwrap_or(Color::AnsiValue(252));
         let normal_bg = styles.preview.get_bg()
-            .or(styles.default.get_bg())
+            .or_else(|| styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
         let selection_bg = styles.selected_line.get_bg()
             .unwrap_or(Color::AnsiValue(240));
@@ -285,7 +286,7 @@ impl SyntacticView {
         let code_width = area.width as usize - 1; // 1 char left for scrollbar
         let scrollbar = area.scrollbar(self.scroll as i32, self.lines.len() as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
-            .or(styles.preview.get_fg())
+            .or_else(|| styles.preview.get_fg())
             .unwrap_or_else(|| Color::White);
         for y in 0..line_count {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
