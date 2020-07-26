@@ -21,10 +21,10 @@ name | mandatory | role
 -|-|-
 invocation | no | how the verb is called by the user, with placeholders for arguments
 execution | yes | how the verb is executed
-key | no | a keyboard key triggerring execution
-shorcut | no | an alternate way to call the verb (without the arguments part)
+key | no | a keyboard key triggering execution
+shortcut | no | an alternate way to call the verb (without the arguments part)
 leave_broot | no | whether to quit broot on execution (default: `true`)
-from_shell | no | whether the verb must be executed from the parent shell (needs `br`, default: `false`). As this is executed after broot closed, this isn't compatiple with `leave_broot = false`
+from_shell | no | whether the verb must be executed from the parent shell (needs `br`, default: `false`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
 apply_to | no | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
 
 !!!	Note
@@ -34,7 +34,7 @@ apply_to | no | the type of selection this verb applies to, may be `"file"`, `"d
 
 **broot** looks for the first token following a space or `:` and tries to find the verb you want.
 
-* If what you typed is exactly the shorcut or name of a verb, then this verb is selected: broot explains you what it would do if you were to type `enter`
+* If what you typed is exactly the shortcut or name of a verb, then this verb is selected: broot explains you what it would do if you were to type `enter`
 * If there's exactly one verb whose name or shortcut starts with the characters you typed, then it's selected
 * if there are several verbs whose name or shortcut start with the characters you typed, then broot waits for more
 * if no verb has a name or shortcut starting with those characters, broot tells you there's a problem
@@ -224,7 +224,7 @@ invocation | default key | default shortcut | behavior / details
 :toggle_counts | - | - | toggle display of total counts of files per directory
 :toggle_dates | - | - | toggle display of last modified dates (looking for the most recently changed file, even deep)
 :toggle_files | - | - | toggle showing files (or just folders)
-:toggle_git_ignore | - | - | toggle git hignore handling (auto, no or yes)
+:toggle_git_ignore | - | - | toggle git ignore handling (auto, no or yes)
 :toggle_git_file_info | - | - | toggle display of git file information
 :toggle_git_status | - | - | toggle showing only the file which would show up on `git status`
 :toggle_hidden | - | - | toggle display of hidden files (the ones whose name starts with a dot on linux)
@@ -241,7 +241,7 @@ Note that
 
 ## Input related verbs
 
-Some internal actions can be bound to a key shortcut but can't be called explicitely because they directly act on the input field:
+Some internal actions can be bound to a key shortcut but can't be called explicitly because they directly act on the input field:
 
 name | default binding | behavior
 -|-|-

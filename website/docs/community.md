@@ -1,5 +1,5 @@
 
-**broot** is developped by [Denys Séguret](https://twitter.com/DenysSeguret), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
+**broot** is developed by [Denys Séguret](https://twitter.com/DenysSeguret), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
 
 ## Discuss Broot in a chat room
 
@@ -32,7 +32,7 @@ When something looks like a bug, especially keyboard problems, we need both to k
 
 To get a precise idea of the time taken by operations in real broot use, it's often a good idea to run them with `--cmd`.
 
-For example full text search performances can be mesured (and compared to other tools) with
+For example full text search performances can be measured (and compared to other tools) with
 
 ```
 time broot -c "c/memmap;:pt" ~/code
@@ -42,7 +42,7 @@ time broot -c "c/memmap;:pt" ~/code
 
 **Broot** is written in [Rust](https://www.rust-lang.org/). The current focus is linux+mac but we try to support windows too (use PowerShell instead of the old cmd).
 
-Before starting working on a Pull Request, please join the Miaou room to coordinate the developement. There are frequently several feature branchs waiting to be merged and adding some wild ones may make the process painful.
+Before starting working on a Pull Request, please join the Miaou room to coordinate the development. There are frequently several feature branches waiting to be merged and adding some wild ones may make the process painful.
 
 A PR must be also be *focused*. Don't touch other code and don't refactor or reformat without discussion.
 

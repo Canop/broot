@@ -1,5 +1,5 @@
 
-When you used a toggle, you executed a command in it simplest form: without argument and independant from the current selection.
+When you used a toggle, you executed a command in it simplest form: without argument and independent from the current selection.
 
 The simplest verbs are just executed by typing a space (or `:`), then its first letters, then enter.
 
@@ -86,7 +86,7 @@ Note: there's another solution to gain time when typing a path, especially when 
 
 There are two types of verbs, differing by their *execution* pattern (which will be covered in more details in the [configuration page](../conf_file/#verb-definition-attributes)):
 
-* buitin features, whose execution starts with `:`, apply internal functions, for example `:toggle_perm` to trigger computation and display of unix file permissions
+* builtin features, whose execution starts with `:`, apply internal functions, for example `:toggle_perm` to trigger computation and display of Unix file permissions
 * external commands, whose execution implies calling an external program, for example `rm -rf {file}`
 
 A command may leave broot (for example to start a program), or not (the tree will be refreshed).

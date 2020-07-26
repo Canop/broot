@@ -100,7 +100,7 @@ Just find the file you want to edit with a few keystrokes, type `:e`, then <kbd>
 
 You can add verbs or configure the existing ones; see [documentation](../conf_file/#verbs-shortcuts-and-keys).
 
-And you can add shorcuts, for example a <kbd>ctrl</kbd> sequence or a function key
+And you can add shortcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
 # Replace `ls` (and its clones):
 
@@ -114,9 +114,9 @@ You may also toggle options with a few keystrokes while inside broot. For exampl
 
 You may sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
 
-When sorting, the whole content of directories is taken into account. So if you want to find on monday morning the most recently modified files, launch `br --sort-by-date ~`.
+When sorting, the whole content of directories is taken into account. So if you want to find on Monday morning the most recently modified files, launch `br --sort-by-date ~`.
 
-If you start broot with the `--whale-spotting` option (or its shorcut `-w`), you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
+If you start broot with the `--whale-spotting` option (or its shortcut `-w`), you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
 
 ![size](img/20200704-whale-spotting.png)
 

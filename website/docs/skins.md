@@ -94,7 +94,7 @@ Each skin entry value is made of
 * a background color (or `none`)
 * zero, one, or more *attributes*
 
-This tree parts can be repeatedi, after a `/`, to define the style to use in non focused panels (when more than one panel is used).
+This tree parts can be repeated, after a `/`, to define the style to use in non focused panels (when more than one panel is used).
 
 Example:
 
@@ -120,7 +120,7 @@ Currently supported attributes are:
 * reverse
 * underlined
 
-Note that some of them may be ignored by your terminal especially if you're not on a unix system.
+Note that some of them may be ignored by your terminal especially if you're not on a Unix system.
 
 The mapping between keys and screen parts may not always be obvious. Don't hesitate to come ask for help on [Miaou](https://miaou.dystroy.org/3490?broot).
 

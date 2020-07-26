@@ -46,7 +46,7 @@ You can for example display non `json` files containing either `isize` or `i32` 
 
 ### Subtleties
 
-The caracters you use as operators and the parenthesis can be useful in patterns too, either because you want to search for them in fuzzy patterns or in file contents, or because you write non trivial regular expressions.
+The characters you use as operators and the parenthesis can be useful in patterns too, either because you want to search for them in fuzzy patterns or in file contents, or because you write non trivial regular expressions.
 
 Most often you'll just type what feels natural and broot will select the interpretation which makes sense but you might be interested in a few rules:
 
@@ -65,7 +65,7 @@ or
 
 where arguments can be empty, depending on the verb's behaviour and invocation pattern.
 
-Verbs are detailled in the [Verbs & Commands](verbs.md) chapter.
+Verbs are detailed in the [Verbs & Commands](verbs.md) chapter.
 
 ## Examples
 
