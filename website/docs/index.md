@@ -66,6 +66,7 @@ Once the file you want is selected you can
 
 * hit <kbd>enter</kbd> (or double-click) to open it in your system's default program
 * hit <kbd>alt</kbd><kbd>enter</kbd> to open it in your system's default program and close broot
+* hit <kbd>ctrl</kbd><kbd>→</kbd> to preview it (and then a second time to go inside the preview)
 * type a verb. For example `:e` opens the file in your preferred editor (which may be a terminal one)
 
 # Manipulate your files

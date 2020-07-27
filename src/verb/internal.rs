@@ -90,6 +90,7 @@ Internals! {
     start_end_panel: "either open or close an additional panel",
     quit: "quit Broot",
     refresh: "refresh tree and clear size cache",
+    //restore_pattern: "restore a pattern which was just removed",
     select_first: "select the first file",
     select_last: "select the last file",
     sort_by_count: "sort by count",

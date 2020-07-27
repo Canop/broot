@@ -88,6 +88,7 @@ impl SyntacticView {
             total_lines_count: 0,
         };
         if sv.read_lines(dam, con)? {
+            sv.select_first();
             Ok(Some(sv))
         } else {
             Ok(None)
@@ -194,8 +195,10 @@ impl SyntacticView {
     }
 
     pub fn select_first(&mut self) {
-        self.selection_idx = Some(0);
-        self.scroll = 0;
+        if self.lines.len() > 0 {
+            self.selection_idx = Some(0);
+            self.scroll = 0;
+        }
     }
     pub fn select_last(&mut self) {
         self.selection_idx = Some(self.lines.len()-1);

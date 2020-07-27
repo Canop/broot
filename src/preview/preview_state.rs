@@ -27,6 +27,7 @@ pub struct PreviewState {
     preview: Preview,
     pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     filtered_preview: Option<Preview>,
+    removed_pattern: InputPattern,
 }
 
 impl PreviewState {
@@ -44,6 +45,7 @@ impl PreviewState {
             preview,
             pending_pattern,
             filtered_preview: None,
+            removed_pattern: InputPattern::none(),
         }
     }
     fn mut_preview(&mut self) -> &mut Preview {
@@ -72,6 +74,7 @@ impl AppState for PreviewState {
                 if let Some(number) = old_selection {
                     self.preview.try_select_line_number(number);
                 }
+                self.removed_pattern = filtered_preview.pattern();
             }
         } else {
             if !self.preview.is_filterable() {
@@ -221,9 +224,7 @@ impl AppState for PreviewState {
     ) -> Result<AppStateCmdResult, ProgramError> {
         match internal_exec.internal {
             Internal::back => {
-                if self.filtered_preview.is_some() {
-                    self.on_pattern(InputPattern::none(), &cc.con)
-                } else if self.mut_preview().get_selected_line_number().is_some() {
+                if self.mut_preview().get_selected_line_number().is_some() {
                     self.mut_preview().unselect();
                     Ok(AppStateCmdResult::Keep)
                 } else {
@@ -245,6 +246,19 @@ impl AppState for PreviewState {
             Internal::page_up => {
                 self.mut_preview().try_scroll(ScrollCommand::Pages(-1));
                 Ok(AppStateCmdResult::Keep)
+            }
+            //Internal::restore_pattern => {
+            //    debug!("restore_pattern");
+            //    self.pending_pattern = self.removed_pattern.take();
+            //    Ok(AppStateCmdResult::Keep)
+            //}
+            Internal::panel_left if self.removed_pattern.is_some() => {
+                debug!("restoring pattern");
+                self.pending_pattern = self.removed_pattern.take();
+                Ok(AppStateCmdResult::Keep)
+            }
+            Internal::panel_right if self.filtered_preview.is_some() => {
+                self.on_pattern(InputPattern::none(), &cc.con)
             }
             Internal::select_first => {
                 self.mut_preview().select_first();

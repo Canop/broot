@@ -1,3 +1,7 @@
+<a name="v0.19.3"></a>
+### v0.19.3 - 2020-07-27
+- refined search in preview interaction (see blog https://dystroy.org/blog/broot-c-search/)
+
 <a name="v0.19.2"></a>
 ### v0.19.2 - 2020-07-26
 - "client-server" feature (see client-server.md)

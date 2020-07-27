@@ -28,6 +28,15 @@ Files that can't be interpreted as text are shown as binary:
 
 ![binary](img/20200716-binary.png)
 
+You can search with fuzzy patterns or regular expressions inside a preview panel:
+
+![search-preview](img/20200727-search-preview.png)
+
+You can go from the selected matched line to the unfiltered text, at the right place, with <kbd>ctrl</kbd><kbd>→</kbd> (and then back to the list of matching lines with <kbd>ctrl</kbd><kbd>←</kbd>).
+
+Hopefully [this blog post](https://dystroy.org/blog/broot-c-search/) should make the complete search workflow look natural.
+
+
 # Copy, move between panels... or more
 
 When exactly two panels are displayed, `{other-panel-file}` `{other-panel-directory}`, and `{other-panel-parent}` are available for verbs.
@@ -52,7 +61,6 @@ The default configuration file contains this that you may uncomment to add <kbd>
 You may define other shortcuts, or your own bi-panels verbs.
 
 # Use a panel to edit a verb argument
-
 
 Assuming you started from just one panel and wanted to execute a command taking a path as argument. You may use tab-completion to type it faster but you may also hit <kbd>ctrl</kbd><kbd>P</kbd> to create a panel and select it. Here's the complete workflow.
 

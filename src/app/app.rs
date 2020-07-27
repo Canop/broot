@@ -90,12 +90,15 @@ impl App {
     /// return true when the panel has been removed (ie it wasn't the last one)
     fn close_panel(&mut self, panel_idx: usize, screen: &Screen) -> bool {
         let active_panel_id = self.panels[self.active_panel_idx].id;
+        if let Some(preview_id) = self.preview {
+            if self.panels.has_len(2) && self.panels[panel_idx].id != preview_id {
+                // we don't want to stay with just the preview
+                return false;
+            }
+        }
         if let Ok(removed_panel) = self.panels.remove(panel_idx) {
             if self.preview == Some(removed_panel.id) {
                 self.preview = None;
-            } else if self.panels.has_len(1) && self.preview.is_some() {
-                info!("closing because only the preview panel is left");
-                return false;
             }
             Areas::resize_all(self.panels.as_mut_slice(), screen, self.preview.is_some())
                 .expect("removing a panel should be easy");
