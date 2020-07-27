@@ -83,7 +83,7 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
 
 fn get_root_path(cli_args: &ArgMatches<'_>) -> Result<PathBuf, ProgramError> {
     let mut root = cli_args
-        .value_of("root")
+        .value_of("ROOT")
         .map_or(env::current_dir()?, PathBuf::from);
     if !root.exists() {
         return Err(TreeBuildError::FileNotFound {
