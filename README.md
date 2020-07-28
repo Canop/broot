@@ -16,22 +16,7 @@
 
 A better way to navigate directories
 
-
-Table of Contents
-=================
-
-  * [Installation](#installation)
-  * [Feature Showcase](#feature-showcase)
-    * [Get an overview of a directory, even a big one](#get-an-overview-of-a-directory-even-a-big-one)
-    * [Find a directory then `cd` to it](#find-a-directory-then-cd-to-it)
-    * [Never lose track of file hierarchy while you search](#never-lose-track-of-file-hierarchy-while-you-search)
-    * [Manipulate your files](#manipulate-your-files)
-    * [Do it with panels](#do-it-with-panels)
-    * [Apply a standard or personal shortcut to a file](#apply-a-standard-or-personal-shortcut-to-a-file)
-    * [Replace `ls` (and its clones)](#replace-ls-and-its-clones)
-    * [See what takes space](#see-what-takes-space)
-    * [Check git statuses](#check-git-statuses)
-  * [Further Reading](#further-reading)
+[Install Broot](https://dystroy.org/broot/install/)
 
 # Get an overview of a directory, even a big one
 
