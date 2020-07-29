@@ -28,12 +28,13 @@ pub mod conf;
 pub mod content_search;
 pub mod errors;
 pub mod file_sum;
+pub mod flag;
 pub mod git;
 pub mod hex;
-pub mod flag;
 pub mod help;
 pub mod keys;
 pub mod launchable;
+pub mod logic;
 
 #[cfg(feature="client-server")]
 pub mod net;

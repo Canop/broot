@@ -17,7 +17,7 @@ const MD_INSTALL_REQUEST: &str = r#"
 This function most notably makes it possible to `cd` from inside broot
 (see *https://dystroy.org/broot/install* for explanations).
 
-Can I install it now? [**Y** n]
+Can I install it now? [**Y**/n]
 "#;
 
 const MD_INSTALL_CANCELLED: &str = r#"
