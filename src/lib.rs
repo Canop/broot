@@ -34,7 +34,6 @@ pub mod hex;
 pub mod help;
 pub mod keys;
 pub mod launchable;
-pub mod logic;
 
 #[cfg(feature="client-server")]
 pub mod net;

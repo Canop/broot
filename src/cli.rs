@@ -7,7 +7,6 @@ use {
         display::{self, Screen},
         errors::{ProgramError, TreeBuildError},
         launchable::Launchable,
-        logic::Trilean,
         shell_install::{ShellInstall, ShellInstallState},
         tree::TreeOptions,
         verb::VerbStore,
@@ -31,27 +30,27 @@ use {
 /// launch arguments related to installation
 /// (not used by the application after the first step)
 struct InstallLaunchArgs {
-    install: Trilean,                                // installation is required
+    install: Option<bool>,                        // installation is required
     set_install_state: Option<ShellInstallState>, // the state to set
     print_shell_function: Option<String>,         // shell function to print on stdout
 }
 impl InstallLaunchArgs {
     fn from(cli_args: &ArgMatches<'_>) -> Result<Self, ProgramError> {
-        let mut install = Trilean::Unknown;
+        let mut install = None;
         if let Ok(s) = env::var("BR_INSTALL") {
             if s == "yes" {
-                install = Trilean::True;
+                install = Some(true);
             } else if s == "no" {
-                install = Trilean::False;
+                install = Some(false);
             } else {
                 warn!("Unexpected value of BR_INSTALL: {:?}", s);
             }
         }
         // the cli arguments may override the env var value
         if cli_args.is_present("install") {
-            install = Trilean::True;
+            install = Some(true);
         } else if cli_args.value_of("cmd-export-path").is_some() {
-            install = Trilean::False;
+            install = Some(false);
         }
         let print_shell_function = cli_args
             .value_of("print-shell-function")
@@ -153,8 +152,8 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     // if we don't run on a specific config file, we check the
     // configuration
-    if specific_conf.is_none() && !install_args.install.is_false() {
-        let mut shell_install = ShellInstall::new(install_args.install.is_true());
+    if specific_conf.is_none() && install_args.install != Some(false) {
+        let mut shell_install = ShellInstall::new(install_args.install == Some(true));
         shell_install.check()?;
         if shell_install.should_quit {
             return Ok(None);
