@@ -116,6 +116,13 @@ invocation = "view"
 execution = "$PAGER {file}"
 leave_broot = false
 
+# uncomment if you want to launch a terminal on ctrl-T
+# (on exit you'll be back in broot)
+# [[verbs]]
+# key = "ctrl-t"
+# execution = "$SHELL"
+# leave_broot = false
+
 # A popular set of shorctuts for going up and down:
 #
 # [[verbs]]

@@ -13,7 +13,8 @@ use {
     },
     clap::{self, ArgMatches},
     crossterm::{
-        self, cursor,
+        self,
+        cursor,
         event::{DisableMouseCapture, EnableMouseCapture},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,

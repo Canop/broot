@@ -14,7 +14,8 @@ use {
         tree::Tree,
     },
     crossterm::{
-        terminal::{EnterAlternateScreen, LeaveAlternateScreen},
+        cursor,
+        terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
     },
     open,
@@ -117,8 +118,12 @@ impl Launchable {
                 // we restore the normal terminal in case the executable
                 // is a terminal application, and we'll switch back to
                 // broot's alternate terminal when we're back to broot
+                // (and this part of the code should be cleaned...)
                 if let Some(ref mut w) = &mut w {
+                    w.queue(cursor::Show).unwrap();
+                    w.queue(cursor::EnableBlinking).unwrap();
                     w.queue(LeaveAlternateScreen).unwrap();
+                    terminal::disable_raw_mode().unwrap();
                     w.flush().unwrap();
                 }
                 Command::new(&exe)
@@ -130,7 +135,10 @@ impl Launchable {
                         source,
                     })?;
                 if let Some(ref mut w) = &mut w {
+                    terminal::enable_raw_mode().unwrap();
                     w.queue(EnterAlternateScreen).unwrap();
+                    w.queue(cursor::DisableBlinking).unwrap();
+                    w.queue(cursor::Hide).unwrap();
                     w.flush().unwrap();
                 }
                 Ok(())
