@@ -81,7 +81,11 @@ impl AppState for HelpState {
         Ok(text_view.write_on(w)?)
     }
 
-    fn no_verb_status(&self, _has_pattern: bool, _con: &AppContext) -> Status {
+    fn no_verb_status(
+        &self,
+        _has_previous_state: bool,
+        _con: &AppContext,
+    ) -> Status {
         Status::from_message(
             "Hit *esc* to get back to the tree, or a space to start a verb"
         )

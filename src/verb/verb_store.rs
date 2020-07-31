@@ -1,6 +1,14 @@
 use {
-    super::{builtin::builtin_verbs, Verb},
-    crate::conf::Conf,
+    super::{
+        builtin::builtin_verbs,
+        internal::Internal,
+        Verb,
+    },
+    crate::{
+        app::SelectionType,
+        conf::Conf,
+        keys,
+    },
     crossterm::event::KeyEvent,
     std::convert::TryFrom,
 };
@@ -73,6 +81,31 @@ impl VerbStore {
                 if *verb_key == key {
                     return Some(i);
                 }
+            }
+        }
+        None
+    }
+
+    pub fn key_desc_of_internal_stype(
+        &self,
+        internal: Internal,
+        stype: SelectionType,
+    ) -> Option<String> {
+        for verb in &self.verbs {
+            if verb.get_internal() == Some(internal) && stype.respects(verb.selection_condition) {
+                return verb.keys.get(0).map(|&k| keys::key_event_desc(k));
+            }
+        }
+        None
+    }
+
+    pub fn key_desc_of_internal(
+        &self,
+        internal: Internal,
+    ) -> Option<String> {
+        for verb in &self.verbs {
+            if verb.get_internal() == Some(internal) {
+                return verb.keys.get(0).map(|&k| keys::key_event_desc(k));
             }
         }
         None

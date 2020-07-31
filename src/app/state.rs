@@ -322,16 +322,21 @@ pub trait AppState {
     }
 
     /// return the status which should be used when there's no verb edited
-    fn no_verb_status(&self, has_pattern: bool, con: &AppContext) -> Status;
+    fn no_verb_status(
+        &self,
+        has_previous_state: bool,
+        con: &AppContext,
+    ) -> Status;
 
     fn get_status(
         &self,
         cmd: &Command,
         other_path: &Option<PathBuf>,
+        has_previous_state: bool,
         con: &AppContext,
     ) -> Status {
         match cmd {
-            Command::PatternEdit{ .. } => self.no_verb_status(true, con),
+            Command::PatternEdit{ .. } => self.no_verb_status(has_previous_state, con),
             Command::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
                     Status::new(
@@ -361,7 +366,7 @@ pub trait AppState {
                     }
                 }
             }
-            _ => self.no_verb_status(false, con),
+            _ => self.no_verb_status(has_previous_state, con),
         }
     }
 }

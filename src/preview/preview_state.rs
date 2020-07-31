@@ -195,22 +195,19 @@ impl AppState for PreviewState {
         preview.display(w, screen, panel_skin, &self.preview_area)
     }
 
-    fn no_verb_status(&self, has_pattern: bool, _con: &AppContext) -> Status {
-        // TODO mention ctrl-left if shortcut unchanged
-        if has_pattern {
-            Status::from_message(
-                "Hit *esc* to remove the filter, or a space to start a verb",
-            )
-        } else if self.preview.is_filterable() {
-            Status::from_message(
-                // TODO push towards regexes
-                "Type a few letters to filter, or a space to start a verb",
-            )
-        } else {
-            Status::from_message(
-                "Hit `:` or a space to start a verb",
-            )
-        }
+    fn no_verb_status(
+        &self,
+        has_previous_state: bool,
+        con: &AppContext,
+    ) -> Status {
+        let mut ssb = con.standard_status.builder(
+            AppStateType::Preview,
+            self.selection(),
+        );
+        ssb.has_previous_state = has_previous_state;
+        ssb.is_filtered = self.filtered_preview.is_some();
+        ssb.has_removed_pattern = self.removed_pattern.is_some();
+        ssb.status()
     }
 
     fn on_internal(

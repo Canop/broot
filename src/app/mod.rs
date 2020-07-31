@@ -7,6 +7,7 @@ mod panel_id;
 mod panel_purpose;
 mod selection;
 mod state;
+mod state_type;
 mod status;
 mod standard_status;
 
@@ -20,6 +21,7 @@ pub use {
     panel_purpose::PanelPurpose,
     selection::{LineNumber, Selection, SelectionType},
     state::AppState,
+    state_type::AppStateType,
     status::Status,
     standard_status::StandardStatus,
 };

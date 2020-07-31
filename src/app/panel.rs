@@ -25,7 +25,7 @@ pub struct Panel {
     pub id: PanelId,
     states: Vec<Box<dyn AppState>>, // stack: the last one is current
     pub areas: Areas,
-    status: Option<Status>,
+    status: Status,
     pub purpose: PanelPurpose,
     input: PanelInput,
 }
@@ -36,22 +36,23 @@ impl Panel {
         id: PanelId,
         state: Box<dyn AppState>,
         areas: Areas,
-        _con: &AppContext,
+        con: &AppContext,
     ) -> Self {
         let mut input = PanelInput::new(areas.input.clone());
         input.set_content(&state.get_starting_input());
+        let status = state.no_verb_status(false, con);
         Self {
             id,
             states: vec![state],
             areas,
-            status: None,
+            status,
             purpose: PanelPurpose::None,
             input,
         }
     }
 
     pub fn set_error(&mut self, text: String) {
-        self.status = Some(Status::from_error(text));
+        self.status = Status::from_error(text);
     }
 
     pub fn apply_command(
@@ -75,7 +76,8 @@ impl Panel {
             preview,
         };
         let result = self.states[state_idx].on_command(w, &cc, screen);
-        self.status = Some(self.state().get_status(cmd, other_path, con));
+        let has_previous_state = self.states.len() > 1;
+        self.status = self.state().get_status(cmd, other_path, has_previous_state, con);
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
     }
@@ -88,7 +90,8 @@ impl Panel {
         con: &AppContext,
     ) {
         let cmd = Command::from_raw(self.input.get_content(), false);
-        self.status = Some(self.state().get_status(&cmd, other_path, con));
+        let has_previous_state = self.states.len() > 1;
+        self.status = self.state().get_status(&cmd, other_path, has_previous_state, con);
     }
 
     /// execute all the pending tasks until there's none remaining or
@@ -208,13 +211,7 @@ impl Panel {
         screen: &Screen,
     ) -> Result<(), ProgramError> {
         let task = self.state().get_pending_task();
-        lazy_static! {
-            static ref DEFAULT_STATUS: Status = Status::from_message(
-                "Hit *esc* to go back, *enter* to go up, *?* for help, or a few letters to search"
-            );
-        }
-        let status = self.status.as_ref().unwrap_or(&*DEFAULT_STATUS);
-        status_line::write(w, task, status, &self.areas.status, panel_skin, screen)
+        status_line::write(w, task, &self.status, &self.areas.status, panel_skin, screen)
     }
 
     fn write_purpose(

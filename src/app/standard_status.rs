@@ -10,91 +10,181 @@ use {
     crossterm::event::KeyEvent,
 };
 
-/// the standard status that will be used when no verb is typed
 pub struct StandardStatus {
-    pub root_pat: Status,
-    pub root_no_pat: Status,
-    pub dir_pat: Status,
-    pub dir_no_pat: Status,
-    pub file_pat: Status,
-    pub file_no_pat: Status,
+    tree_top_focus: String, // go up (if not at root)
+    tree_dir_focus: String,
+    tree_dir_cd: Option<String>, // TODO check outcmd
+    tree_file_open_stay: Option<String>,
+    tree_file_open_leave: Option<String>,
+    tree_file_enter: Option<String>, // defined if enter doesn't do open or alt-open
+    tree_unfiltered: String,
+    tree_filtered: String,
+    preview_unfiltered: String, // ctrl-left to close, or a pattern to filter
+    preview_filtered: Option<String>,
+    preview_restorable_filter: Option<String>,
+    not_first_state: String, // "esc to go back"
+    help: String,
+    no_verb: String,
 }
 
 impl StandardStatus {
     pub fn new(verb_store: &VerbStore) -> Self {
+        let dir_focus_key = verb_store.key_desc_of_internal_stype(Internal::focus, SelectionType::Directory);
+        let tree_top_focus = "*enter* to go up".to_string(); // enter is hardcoded on focus
+        let tree_dir_focus = "*enter* to focus".to_string();
+        let tree_dir_cd = verb_store.key_desc_of_internal_stype(Internal::open_leave, SelectionType::Directory)
+            .map(|k| format!("*{}* to cd", k));
+        let tree_file_open_stay = verb_store.key_desc_of_internal_stype(Internal::open_stay, SelectionType::File)
+            .map(|k| format!("*{}* to open the file", k));
+        let tree_file_open_leave = verb_store.key_desc_of_internal_stype(Internal::open_leave, SelectionType::File)
+            .map(|k| format!("*{}* to open and quit", k));
+        let tree_file_enter = None; // TODO (for when enter is customized)
+        let tree_unfiltered = "a few letters to search".to_string();
+        let tree_filtered = "*esc* to clear the filter".to_string();
+        let preview_unfiltered = "a pattern to filter".to_string();
+        let preview_filtered = verb_store.key_desc_of_internal(Internal::panel_right)
+            .map(|k| format!("*{}* to reveal the text", k));
+        let preview_restorable_filter = verb_store.key_desc_of_internal(Internal::panel_left)
+            .map(|k| format!("*{}* to restore the filter", k));
+        let not_first_state = "*esc* to go back".to_string();
+        let help = "*?* for help".to_string();
+        let no_verb = "a space then a verb".to_string();
         Self {
-            root_pat: Status::from_message(
-                "Hit *esc* to remove the filter, *enter* to go up, '?' for help"
-            ),
-            root_no_pat: Status::from_message(
-                "Hit *esc* to go back, *enter* to go up, *?* for help, or a few letters to search"
-            ),
-            dir_pat: compose_status(true, SelectionType::Directory, verb_store),
-            dir_no_pat: compose_status(false, SelectionType::Directory, verb_store),
-            file_pat: compose_status(true, SelectionType::File, verb_store),
-            file_no_pat: compose_status(false, SelectionType::File, verb_store),
+            tree_top_focus,
+            tree_dir_focus,
+            tree_dir_cd,
+            tree_file_open_stay,
+            tree_file_open_leave,
+            tree_file_enter,
+            tree_unfiltered,
+            tree_filtered,
+            preview_unfiltered,
+            preview_filtered,
+            preview_restorable_filter,
+            not_first_state,
+            help,
+            no_verb,
         }
+    }
+    pub fn builder<'s>(
+        &'s self,
+        state_type: AppStateType,
+        selection: Selection<'s>,
+    ) -> StandardStatusBuilder<'s> {
+        StandardStatusBuilder::new(&self, state_type, selection)
     }
 }
 
-fn status_for(
-    key: KeyEvent,
-    selection_type: SelectionType,
-    verb_store: &VerbStore,
-) -> Option<String> {
-    for verb in &verb_store.verbs {
-        for verb_key in &verb.keys {
-            if *verb_key == key {
-                // add a 'input_related' property to internals & verbs ?
-                if selection_type.respects(verb.selection_condition) {
-                    let kd = keys::key_event_desc(key);
-                    let s;
-                    let action = match (verb.get_internal(), selection_type) {
-                        (Some(Internal::open_stay), SelectionType::Directory) => "focus",
-                        (Some(Internal::open_stay), SelectionType::File) => "open the file",
-                        (Some(Internal::open_leave), SelectionType::Directory) => "cd",
-                        (Some(Internal::open_leave), SelectionType::File) => "open and quit",
-                        _ => {
-                            if let Some(name) = verb.names.get(0) {
-                                name
-                            } else if verb.description.code {
-                                s = format!("`{}`", &verb.description.content);
-                                &s
-                            } else {
-                                &verb.description.content
-                            }
-                        }
-                    };
-                    return Some(format!("*{}* to {}", kd, action));
+#[derive(Default)]
+struct StatusParts<'b> {
+    md_parts: Vec<&'b String>,
+}
+impl<'b> StatusParts<'b> {
+    fn add(&mut self, md: &'b String) {
+        self.md_parts.push(md);
+    }
+    fn addo(&mut self, md: &'b Option<String>) {
+        if let Some(md) = md {
+            self.md_parts.push(md);
+        }
+    }
+    fn len(&self) -> usize {
+        self.md_parts.len()
+    }
+    fn to_status(self) -> Status {
+        let mut md = String::new();
+        for (i, p) in self.md_parts.iter().enumerate() {
+            md.push_str(
+                if i==0 {
+                    "Hit "
+                } else if i == self.md_parts.len() - 1 {
+                    ", or "
+                } else {
+                    ", "
+            });
+            md.push_str(p);
+        }
+        Status::from_message(md)
+    }
+}
 
+pub struct StandardStatusBuilder<'s> {
+    ss: &'s StandardStatus,
+    state_type: AppStateType,
+    selection: Selection<'s>,
+    pub has_previous_state: bool,
+    pub is_filtered: bool,
+    pub has_removed_pattern: bool,
+    pub on_tree_root: bool, // should this be part of the Selection struct ?
+}
+impl<'s> StandardStatusBuilder<'s> {
+    fn new(
+        ss: &'s StandardStatus,
+        state_type: AppStateType,
+        selection: Selection<'s>,
+    ) -> Self {
+        Self {
+            ss,
+            state_type,
+            selection,
+            has_previous_state: true,
+            is_filtered: false,
+            has_removed_pattern: false,
+            on_tree_root: false,
+        }
+    }
+    pub fn status(self) -> Status {
+        let ss = &self.ss;
+        let mut parts = StatusParts::default();
+        if self.has_previous_state && !self.is_filtered {
+            parts.add(&ss.not_first_state);
+        }
+        match self.state_type {
+            AppStateType::Tree => {
+                if self.on_tree_root {
+                    if self.selection.path.file_name().is_some() { // it's not '/'
+                        parts.add(&ss.tree_top_focus);
+                    }
+                } else if self.selection.stype == SelectionType::Directory {
+                    parts.add(&ss.tree_dir_focus);
+                    parts.addo(&ss.tree_dir_cd);
+                } else if self.selection.stype == SelectionType::File {
+                    // maybe add "ctrl-right to preview" ? Or just sometimes ?
+                    //  (need check no preview)
+                    parts.addo(&ss.tree_file_open_stay);
+                    parts.addo(&ss.tree_file_open_leave);
+                }
+                if self.is_filtered {
+                    parts.add(&ss.tree_filtered);
+                }
+                if parts.len() < 3 {
+                    parts.add(&ss.help);
+                }
+                if parts.len() < 4 {
+                    if self.on_tree_root && !self.is_filtered {
+                        parts.add(&ss.tree_unfiltered);
+                    } else {
+                        parts.add(&ss.no_verb);
+                    }
+                }
+            }
+            AppStateType::Preview => {
+                if self.is_filtered {
+                    parts.addo(&ss.preview_filtered);
+                } else if self.has_removed_pattern {
+                    parts.addo(&ss.preview_restorable_filter);
+                } else {
+                    parts.add(&ss.preview_unfiltered);
+                }
+                parts.add(&ss.no_verb);
+            }
+            AppStateType::Help => {
+                // not yet used, help_state has its own hard status
+                if parts.len() < 4 {
+                    parts.add(&ss.no_verb);
                 }
             }
         }
+        parts.to_status()
     }
-    None
 }
-
-fn compose_status(
-    has_pattern: bool,
-    selection_type: SelectionType,
-    verb_store: &VerbStore,
-) ->  Status {
-    let mut parts = Vec::new();
-    if let Some(md) = status_for(keys::ENTER, selection_type, verb_store) {
-        parts.push(md);
-    }
-    if let Some(md) = status_for(keys::ALT_ENTER, selection_type, verb_store) {
-        parts.push(md);
-    }
-    if has_pattern {
-        parts.push("*esc* to clear the filter".to_string());
-    } else if parts.len() < 2 {
-        parts.push("a few letters to search".to_string());
-    }
-    if parts.len() < 4 {
-        parts.push("or a space then a verb".to_string());
-    }
-    Status::from_message(format!("Hit {}", parts.join(", ")))
-}
-
-

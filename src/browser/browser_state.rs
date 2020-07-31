@@ -382,7 +382,6 @@ impl AppState for BrowserState {
             Internal::panel_left => {
                 if cc.areas.is_first() {
                     if cc.preview.is_some() && cc.areas.nb_pos == 2 {
-                    //if cc.preview.is_some() && self.selected_path().is_file() {
                         AppStateCmdResult::ClosePanel {
                             validate_purpose: false,
                             id: cc.preview,
@@ -597,26 +596,20 @@ impl AppState for BrowserState {
         })
     }
 
-    fn no_verb_status(&self, has_pattern: bool, con: &AppContext) -> Status {
-        if self.displayed_tree().selection == 0 {
-            if has_pattern {
-                con.standard_status.root_pat.clone()
-            } else {
-                con.standard_status.root_no_pat.clone()
-            }
-        } else if self.selection_type() == SelectionType::Directory {
-            if has_pattern {
-                con.standard_status.dir_pat.clone()
-            } else {
-                con.standard_status.dir_no_pat.clone()
-            }
-        } else {
-            if has_pattern {
-                con.standard_status.file_pat.clone()
-            } else {
-                con.standard_status.file_no_pat.clone()
-            }
-        }
+    fn no_verb_status(
+        &self,
+        has_previous_state: bool,
+        con: &AppContext,
+    ) -> Status {
+        let mut ssb = con.standard_status.builder(
+            AppStateType::Tree,
+            self.selection(),
+        );
+        ssb.has_previous_state = has_previous_state;
+        ssb.is_filtered = self.filtered_tree.is_some();
+        ssb.has_removed_pattern = false;
+        ssb.on_tree_root = self.displayed_tree().selection == 0;
+        ssb.status()
     }
 
     /// do some work, totally or partially, if there's some to do.
