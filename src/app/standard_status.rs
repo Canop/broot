@@ -1,13 +1,11 @@
 use {
     super::*,
     crate::{
-        keys,
         verb::{
             Internal,
             VerbStore,
         },
     },
-    crossterm::event::KeyEvent,
 };
 
 pub struct StandardStatus {
@@ -16,7 +14,7 @@ pub struct StandardStatus {
     tree_dir_cd: Option<String>, // TODO check outcmd
     tree_file_open_stay: Option<String>,
     tree_file_open_leave: Option<String>,
-    tree_file_enter: Option<String>, // defined if enter doesn't do open or alt-open
+    // tree_file_enter: Option<String>, // defined if enter doesn't do open or alt-open
     tree_unfiltered: String,
     tree_filtered: String,
     preview_unfiltered: String, // ctrl-left to close, or a pattern to filter
@@ -29,7 +27,6 @@ pub struct StandardStatus {
 
 impl StandardStatus {
     pub fn new(verb_store: &VerbStore) -> Self {
-        let dir_focus_key = verb_store.key_desc_of_internal_stype(Internal::focus, SelectionType::Directory);
         let tree_top_focus = "*enter* to go up".to_string(); // enter is hardcoded on focus
         let tree_dir_focus = "*enter* to focus".to_string();
         let tree_dir_cd = verb_store.key_desc_of_internal_stype(Internal::open_leave, SelectionType::Directory)
@@ -38,7 +35,7 @@ impl StandardStatus {
             .map(|k| format!("*{}* to open the file", k));
         let tree_file_open_leave = verb_store.key_desc_of_internal_stype(Internal::open_leave, SelectionType::File)
             .map(|k| format!("*{}* to open and quit", k));
-        let tree_file_enter = None; // TODO (for when enter is customized)
+        //let tree_file_enter = None; // TODO (for when enter is customized)
         let tree_unfiltered = "a few letters to search".to_string();
         let tree_filtered = "*esc* to clear the filter".to_string();
         let preview_unfiltered = "a pattern to filter".to_string();
@@ -55,7 +52,7 @@ impl StandardStatus {
             tree_dir_cd,
             tree_file_open_stay,
             tree_file_open_leave,
-            tree_file_enter,
+            //tree_file_enter,
             tree_unfiltered,
             tree_filtered,
             preview_unfiltered,
@@ -91,7 +88,7 @@ impl<'b> StatusParts<'b> {
     fn len(&self) -> usize {
         self.md_parts.len()
     }
-    fn to_status(self) -> Status {
+    fn to_status(&self) -> Status {
         let mut md = String::new();
         for (i, p) in self.md_parts.iter().enumerate() {
             md.push_str(

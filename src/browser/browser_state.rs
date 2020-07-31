@@ -83,10 +83,6 @@ impl BrowserState {
         self.tree.root()
     }
 
-    fn selection_type(&self) -> SelectionType {
-        self.displayed_tree().selected_line().selection_type()
-    }
-
     pub fn page_height(screen: &Screen) -> i32 {
         i32::from(screen.height) - 2
     }

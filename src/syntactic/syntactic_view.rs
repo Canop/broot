@@ -195,7 +195,7 @@ impl SyntacticView {
     }
 
     pub fn select_first(&mut self) {
-        if self.lines.len() > 0 {
+        if !self.lines.is_empty() {
             self.selection_idx = Some(0);
             self.scroll = 0;
         }

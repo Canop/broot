@@ -1,3 +1,8 @@
+<a name="v0.19.4"></a>
+### v0.19.4 - 2020-07-31
+- don't install the br shell function when --outcmd is set or $BR_INSTALL is "no" - Fix #265
+- more relevant status hints - Fix #261
+
 <a name="v0.19.3"></a>
 ### v0.19.3 - 2020-07-27
 - refined search in preview interaction (see blog https://dystroy.org/blog/broot-c-search/)

@@ -401,6 +401,8 @@ impl App {
                 self.display_panels(w, screen, &skin, con)?;
                 w.flush()?;
                 if self.do_pending_tasks(screen, con, &mut dam)? {
+                    let other_path = self.get_other_panel_path();
+                    self.mut_panel().refresh_input_status(&other_path, con);
                     self.display_panels(w, screen, &skin, con)?;
                     w.flush()?;
                 }
