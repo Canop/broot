@@ -215,6 +215,7 @@ fn make_opener(
     con: &AppContext,
 ) -> Result<AppStateCmdResult, ProgramError> {
     Ok(if is_exe {
+        let working_dir = path::closest_dir(&path);
         let path = path.to_string_lossy().to_string();
         if let Some(export_path) = &con.launch_args.cmd_export_path {
             // broot was launched as br, we can launch the executable from the shell
@@ -222,7 +223,7 @@ fn make_opener(
             writeln!(&f, "{}", path)?;
             AppStateCmdResult::Quit
         } else {
-            AppStateCmdResult::from(Launchable::program(vec![path])?)
+            AppStateCmdResult::from(Launchable::program(vec![path], working_dir)?)
         }
     } else {
         AppStateCmdResult::from(Launchable::opener(path))

@@ -31,25 +31,30 @@ use {
 /// A launchable can only be executed on end of life of broot.
 #[derive(Debug)]
 pub enum Launchable {
+
+    /// just print something on stdout on end of broot
     Printer {
-        // just print something on stdout on end of broot
         to_print: String,
     },
+
+    /// print the tree on end of broot
     TreePrinter {
-        // print the tree on end of broot
         tree: Box<Tree>,
         skin: Box<StyleMap>,
         cols: Cols,
         ext_colors: ExtColorMap,
         width: u16,
     },
+
+    /// execute an external program
     Program {
-        // execute an external program
         exe: String,
         args: Vec<String>,
+        working_dir: PathBuf,
     },
+
+    /// open a path
     SystemOpen {
-        // open a path
         path: PathBuf,
     },
 }
@@ -93,12 +98,16 @@ impl Launchable {
         }
     }
 
-    pub fn program(parts: Vec<String>) -> io::Result<Launchable> {
+    pub fn program(
+        parts: Vec<String>,
+        working_dir: PathBuf,
+    ) -> io::Result<Launchable> {
         let mut parts = resolve_env_variables(parts).into_iter();
         match parts.next() {
             Some(exe) => Ok(Launchable::Program {
                 exe,
                 args: parts.collect(),
+                working_dir,
             }),
             None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
         }
@@ -114,7 +123,9 @@ impl Launchable {
                 let dp = DisplayableTree::out_of_app(&tree, &skin, &cols, &ext_colors, *width);
                 dp.write_on(&mut std::io::stdout())
             }
-            Launchable::Program { exe, args } => {
+            Launchable::Program { working_dir, exe, args } => {
+                // saving the working dir (not sure it's really needed)
+                let old_working_dir = std::env::current_dir().ok();
                 // we restore the normal terminal in case the executable
                 // is a terminal application, and we'll switch back to
                 // broot's alternate terminal when we're back to broot
@@ -126,6 +137,7 @@ impl Launchable {
                     terminal::disable_raw_mode().unwrap();
                     w.flush().unwrap();
                 }
+                std::env::set_current_dir(working_dir).unwrap();
                 Command::new(&exe)
                     .args(args.iter())
                     .spawn()
@@ -140,6 +152,9 @@ impl Launchable {
                     w.queue(cursor::DisableBlinking).unwrap();
                     w.queue(cursor::Hide).unwrap();
                     w.flush().unwrap();
+                }
+                if let Some(old_working_dir) = old_working_dir {
+                    std::env::set_current_dir(old_working_dir).unwrap();
                 }
                 Ok(())
             }

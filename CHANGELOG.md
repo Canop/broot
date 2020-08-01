@@ -1,3 +1,7 @@
+### next
+- it's now possible to launch a terminal as sub process from broot
+- the selected directory is now the working dir for subprocess launched from broot
+
 <a name="v0.19.4"></a>
 ### v0.19.4 - 2020-07-31
 - don't install the br shell function when --outcmd is set or $BR_INSTALL is "no" - Fix #265

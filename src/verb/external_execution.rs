@@ -208,7 +208,6 @@ impl ExternalExecution {
         &self,
         w: &mut W,
         sel: Selection<'_>,
-        //file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
         con: &AppContext,
@@ -223,7 +222,6 @@ impl ExternalExecution {
     /// build the cmd result as an executable which will be called from shell
     fn exec_from_shell_cmd_result(
         &self,
-        //file: &Path,
         sel: Selection<'_>,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
@@ -255,11 +253,13 @@ impl ExternalExecution {
         &self,
         w: &mut W,
         sel: Selection<'_>,
-        //file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        let launchable = Launchable::program(self.exec_token(sel, other_file, args))?;
+        let launchable = Launchable::program(
+            self.exec_token(sel, other_file, args),
+            path::closest_dir(sel.path),
+        )?;
         if self.exec_mode.is_leave_broot() {
             Ok(AppStateCmdResult::from(launchable))
         } else {
