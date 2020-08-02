@@ -33,6 +33,7 @@ pub mod git;
 pub mod hex;
 pub mod help;
 pub mod keys;
+pub mod image;
 pub mod launchable;
 
 #[cfg(feature="client-server")]

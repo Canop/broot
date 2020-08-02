@@ -43,6 +43,19 @@ pub use {
     matched_string::MatchedString,
     screen::Screen,
 };
+use {
+    crate::{
+        errors::ProgramError,
+    },
+    crossterm::{
+        style::{
+            Color,
+            Print,
+            SetBackgroundColor,
+        },
+        QueueableCommand,
+    },
+};
 
 #[cfg(unix)]
 pub use {
@@ -65,3 +78,20 @@ pub fn writer() -> W {
     std::io::BufWriter::new(std::io::stderr())
 }
 
+
+pub fn fill_bg(
+    w: &mut W,
+    mut len: usize,
+    bg: Color,
+) -> Result<(), ProgramError> {
+    w.queue(SetBackgroundColor(bg))?;
+    loop {
+        let slice_len = len.min(len).min(LONG_SPACE.len());
+        if slice_len == 0 {
+            break;
+        }
+        w.queue(Print(&LONG_SPACE[0..slice_len]))?;
+        len -= slice_len;
+    }
+    Ok(())
+}

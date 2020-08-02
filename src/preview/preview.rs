@@ -6,6 +6,7 @@ use {
         display::{Screen, W},
         errors::ProgramError,
         hex::HexView,
+        image::ImageView,
         pattern::InputPattern,
         skin::PanelSkin,
         syntactic::SyntacticView,
@@ -18,6 +19,7 @@ use {
 };
 
 pub enum Preview {
+    Image(ImageView),
     Syntactic(SyntacticView),
     Hex(HexView),
     IOError,
@@ -31,11 +33,21 @@ impl Preview {
         path: &Path,
         con: &AppContext,
     ) -> Self {
-        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con) {
-            Ok(Some(sv)) => Self::Syntactic(sv),
-            // not previewable as UTF8 text
-            // we'll try reading it as binary
-            _ => Self::hex(path),
+        let img_view = ImageView::new(path);
+        match img_view {
+            Ok(img_view) => {
+                debug!("loaded as image!");
+                Self::Image(img_view)
+            }
+            Err(e) => {
+                debug!("not loaded as image because {:?}", e);
+                match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con) {
+                    Ok(Some(sv)) => Self::Syntactic(sv),
+                    // not previewable as UTF8 text
+                    // we'll try reading it as binary
+                    _ => Self::hex(path),
+                }
+            }
         }
     }
     /// try to build a filtered text view. Will return None if
@@ -156,6 +168,7 @@ impl Preview {
         area: &Area,
     ) -> Result<(), ProgramError> {
         match self {
+            Self::Image(iv) => iv.display(w, screen, panel_skin, area),
             Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
             Self::IOError => {

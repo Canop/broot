@@ -2,6 +2,7 @@
 
 use {
     custom_error::custom_error,
+    image::error::ImageError,
     regex,
     std::io,
 };
@@ -23,6 +24,7 @@ custom_error! {pub ProgramError
     InvalidGlobError {pattern: String} = "Invalid glob: {pattern}",
     Unrecognized {token: String} = "Unrecognized: {token}",
     NetError {source: NetError} = "{}",
+    ImageError {source: ImageError } = "{}",
 }
 
 custom_error! {pub TreeBuildError

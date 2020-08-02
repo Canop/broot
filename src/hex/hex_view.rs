@@ -28,6 +28,7 @@ pub struct HexLine {
     pub bytes: Vec<u8>, // from 1 to 16 bytes
 }
 
+/// a preview showing the content of a file in hexa
 pub struct HexView {
     path: PathBuf,
     len: usize,
