@@ -114,7 +114,7 @@ impl ImageView {
         debug!("img view area: {:?}", area);
         let img = self.img.resize(
             area.width as u32,
-            area.height as u32,
+            (area.height*2) as u32,
             FilterType::Triangle,
             //FilterType::Nearest,
         );
