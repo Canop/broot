@@ -186,6 +186,7 @@ impl Preview {
         area: &Area,
     ) -> Result<(), ProgramError> {
         match self {
+            Self::Image(iv) => iv.display_info(w, screen, panel_skin, area),
             Self::Syntactic(sv) => sv.display_info(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display_info(w, screen, panel_skin, area),
             _ => Ok(()),
