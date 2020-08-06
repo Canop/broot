@@ -17,6 +17,9 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::internal(open_preview),
         Verb::internal(close_preview),
         Verb::internal(toggle_preview),
+        Verb::internal(preview_image),
+        Verb::internal(preview_text),
+        Verb::internal(preview_binary),
         Verb::internal(close_panel_ok),
         Verb::internal(close_panel_cancel)
             .with_key(BACK_TAB)

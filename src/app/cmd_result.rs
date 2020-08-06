@@ -18,11 +18,15 @@ pub enum HDir {
 
 /// Result of applying a command to a state
 pub enum AppStateCmdResult {
+    ApplyOnPanel {
+        id: PanelId,
+    },
     ClosePanel {
         validate_purpose: bool,
         id: Option<PanelId>, // None if current panel
     },
     DisplayError(String),
+    HandleInApp(Internal), // command must be handled at the app level
     Keep,
     Launch(Box<Launchable>),
     NewPanel {
@@ -33,7 +37,6 @@ pub enum AppStateCmdResult {
     NewState(Box<dyn AppState>),
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
-    Propagate(Internal), // command must be handled at a upper level
     Quit,
     RefreshState {
         clear_cache: bool,
@@ -78,6 +81,7 @@ impl fmt::Debug for AppStateCmdResult {
             f,
             "{}",
             match self {
+                AppStateCmdResult::ApplyOnPanel { .. } => "ApplyOnPanel",
                 AppStateCmdResult::ClosePanel {
                     validate_purpose: false, ..
                 } => "CancelPanel",
@@ -91,7 +95,7 @@ impl fmt::Debug for AppStateCmdResult {
                 AppStateCmdResult::NewPanel { .. } => "NewPanel",
                 AppStateCmdResult::PopStateAndReapply => "PopStateAndReapply",
                 AppStateCmdResult::PopState => "PopState",
-                AppStateCmdResult::Propagate(_) => "Propagate",
+                AppStateCmdResult::HandleInApp(_) => "HandleInApp",
                 AppStateCmdResult::Quit => "Quit",
                 AppStateCmdResult::RefreshState { .. } => "RefreshState",
             }

@@ -1,5 +1,6 @@
 
 use {
+    super::PreviewMode,
     crate::{
         app::{AppContext, LineNumber},
         command::{ScrollCommand},
@@ -26,49 +27,96 @@ pub enum Preview {
 }
 
 impl Preview {
+    /// build a preview, never failing (but the preview can be Preview::IOError).
+    /// If the prefered mode can't be applied, an other mode is chosen.
+    pub fn new(
+        path: &Path,
+        prefered_mode: Option<PreviewMode>,
+        con: &AppContext,
+    ) -> Self {
+        match prefered_mode {
+            Some(PreviewMode::Hex) => Self::hex(path),
+            Some(PreviewMode::Image) => Self::image(path),
+            Some(PreviewMode::Text) => Self::unfiltered_text(path, con),
+            None => {
+                // automatic behavior: image, text, hex
+                ImageView::new(path)
+                    .map(|iv| Self::Image(iv))
+                    .unwrap_or_else(|_| Self::unfiltered_text(path, con))
+
+            }
+        }
+    }
+    /// try to build a preview with the designed mode, return an error
+    /// if that wasn't possible
+    pub fn with_mode(
+        path: &Path,
+        mode: PreviewMode,
+        con: &AppContext,
+    ) -> Result<Self, ProgramError> {
+        match mode {
+            PreviewMode::Hex => {
+                Ok(HexView::new(path.to_path_buf()).map(|reader| Self::Hex(reader))?)
+            }
+            PreviewMode::Image => {
+                ImageView::new(path)
+                    .map(|iv|Self::Image(iv))
+            }
+            PreviewMode::Text => {
+                Ok(SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con)
+                    .transpose()
+                    .expect("syntactic view without pattern shouldn't be none")
+                    .map(|sv| Self::Syntactic(sv))?)
+            }
+        }
+    }
+    /// build an image view, unless the file can't be interpreted
+    /// as an image, in which case a hex view is used
+    pub fn image(path: &Path) -> Self {
+        ImageView::new(path).ok()
+            .map(|iv|Self::Image(iv))
+            .unwrap_or_else(|| Self::hex(path))
+
+    }
     /// build a text preview (maybe with syntaxic coloring) if possible,
     /// a hex (binary) view if content isnt't UTF8, or a IOError when
     /// there's a IO problem
-    pub fn unfiltered(
+    pub fn unfiltered_text(
         path: &Path,
         con: &AppContext,
     ) -> Self {
-        let img_view = ImageView::new(path);
-        match img_view {
-            Ok(img_view) => {
-                debug!("loaded as image!");
-                Self::Image(img_view)
-            }
-            Err(e) => {
-                debug!("not loaded as image because {:?}", e);
-                match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con) {
-                    Ok(Some(sv)) => Self::Syntactic(sv),
-                    // not previewable as UTF8 text
-                    // we'll try reading it as binary
-                    _ => Self::hex(path),
-                }
-            }
+        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con) {
+            Ok(Some(sv)) => Self::Syntactic(sv),
+            // not previewable as UTF8 text
+            // we'll try reading it as binary
+            _ => Self::hex(path),
         }
     }
     /// try to build a filtered text view. Will return None if
     /// the dam gets an event before it's built
     pub fn filtered(
+        &self,
         path: &Path,
         pattern: InputPattern,
         dam: &mut Dam,
         con: &AppContext,
     ) -> Option<Self> {
-        match SyntacticView::new(path, pattern, dam, con) {
+        match self {
+            Self::Syntactic(_) => {
+                match SyntacticView::new(path, pattern, dam, con) {
 
-            // normal finished loading
-            Ok(Some(sv)) => Some(Self::Syntactic(sv)),
+                    // normal finished loading
+                    Ok(Some(sv)) => Some(Self::Syntactic(sv)),
 
-            // interrupted search
-            Ok(None) => None,
+                    // interrupted search
+                    Ok(None) => None,
 
-            // not previewable as UTF8 text
-            // we'll try reading it as binary
-            Err(_) => Some(Self::hex(path)),
+                    // not previewable as UTF8 text
+                    // we'll try reading it as binary
+                    Err(_) => Some(Self::hex(path)),
+                }
+            }
+            _ => None, // not filterable
         }
     }
     /// return a hex_view, suitable for binary, or Self::IOError
@@ -80,6 +128,14 @@ impl Preview {
                 warn!("error while previewing {:?} : {:?}", path, e);
                 Self::IOError
             }
+        }
+    }
+    pub fn get_mode(&self) -> Option<PreviewMode> {
+        match self {
+            Self::Image(_) => Some(PreviewMode::Image),
+            Self::Syntactic(_) => Some(PreviewMode::Text),
+            Self::Hex(_) => Some(PreviewMode::Hex),
+            Self::IOError => None,
         }
     }
     pub fn pattern(&self) -> InputPattern {

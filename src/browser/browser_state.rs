@@ -396,7 +396,7 @@ impl AppState for BrowserState {
                     }
                 } else {
                     // we ask the app to focus the panel to the left
-                    AppStateCmdResult::Propagate(Internal::panel_left)
+                    AppStateCmdResult::HandleInApp(Internal::panel_left)
                 }
             }
             Internal::panel_right => {
@@ -417,7 +417,7 @@ impl AppState for BrowserState {
                     )
                 } else {
                     // we ask the app to focus the panel to the left
-                    AppStateCmdResult::Propagate(Internal::panel_right)
+                    AppStateCmdResult::HandleInApp(Internal::panel_right)
                 }
             }
             Internal::parent => self.go_to_parent(screen, con, bang),

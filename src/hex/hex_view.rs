@@ -70,15 +70,17 @@ impl HexView {
         start_line_idx: usize,
         line_count: usize,
     ) -> io::Result<Vec<HexLine>> {
-        // I'm not sure a memmap is the best solution here but at least it's easy
         let file = File::open(&self.path)?;
+        let mut lines = Vec::new();
+        if self.len == 0 {
+            return Ok(lines);
+        }
         let mmap = unsafe { Mmap::map(&file)? };
         let new_len = mmap.len();
         if new_len != self.len {
             warn!("previewed file len changed from {} to {}", self.len, new_len);
             self.len = new_len;
         }
-        let mut lines = Vec::new();
         let mut start_idx = 16 * start_line_idx;
         while start_idx < self.len {
             let line_len = 16.min(self.len - start_idx);

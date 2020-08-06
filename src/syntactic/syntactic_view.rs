@@ -61,7 +61,7 @@ pub struct Line {
 }
 
 pub struct SyntacticView {
-    path: PathBuf,
+    pub path: PathBuf,
     pub pattern: InputPattern,
     lines: Vec<Line>,
     scroll: usize,
@@ -72,6 +72,9 @@ pub struct SyntacticView {
 
 impl SyntacticView {
 
+    /// return a prepared text view with syntax coloring if possible.
+    /// May return Ok(None) only when a pattern is given and there
+    /// was an event before the end of filtering.
     pub fn new(
         path: &Path,
         pattern: InputPattern,

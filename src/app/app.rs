@@ -170,6 +170,26 @@ impl App {
             preview,
             con,
         )? {
+            ApplyOnPanel { id } => {
+                if let Some(idx) = self.panel_idx(id) {
+                    if let DisplayError(txt) = self.panels[idx].apply_command(
+                        w,
+                        &cmd,
+                        &other_path, // unsure...
+                        screen,
+                        panel_skin,
+                        preview,
+                        con,
+                    )? { // we should probably handle other results
+                        // which implies the possibility of a recursion
+                        error = Some(txt);
+                    } else if is_input_invocation {
+                        self.mut_panel().clear_input();
+                    }
+                } else {
+                    warn!("no panel found for ApplyOnPanel");
+                }
+            }
             ClosePanel { validate_purpose, id } => {
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation();
@@ -208,6 +228,28 @@ impl App {
             }
             DisplayError(txt) => {
                 error = Some(txt);
+            }
+            HandleInApp(internal) => {
+                let new_active_panel_idx = match internal {
+                    Internal::panel_left if self.active_panel_idx > 0 => {
+                        Some(self.active_panel_idx - 1)
+                    }
+                    Internal::panel_right if self.active_panel_idx + 1 < self.panels.len().get() => {
+                        Some(self.active_panel_idx + 1)
+                    }
+                    _ => {
+                        debug!("unhandled propagated internal. cmd={:?}", &cmd);
+                        None
+                    }
+                };
+                if let Some(idx) = new_active_panel_idx {
+                    if is_input_invocation {
+                        self.mut_panel().clear_input();
+                    }
+                    self.active_panel_idx = idx;
+                    let other_path = self.get_other_panel_path();
+                    self.mut_panel().refresh_input_status(&other_path, con);
+                }
             }
             Keep => {}
             Launch(launchable) => {
@@ -284,28 +326,6 @@ impl App {
                     )?;
                 } else if ESCAPE_TO_QUIT {
                     self.quitting = true;
-                }
-            }
-            Propagate(internal) => {
-                let new_active_panel_idx = match internal {
-                    Internal::panel_left if self.active_panel_idx > 0 => {
-                        Some(self.active_panel_idx - 1)
-                    }
-                    Internal::panel_right if self.active_panel_idx + 1 < self.panels.len().get() => {
-                        Some(self.active_panel_idx + 1)
-                    }
-                    _ => {
-                        debug!("unhandled propagated internal. cmd={:?}", &cmd);
-                        None
-                    }
-                };
-                if let Some(idx) = new_active_panel_idx {
-                    if is_input_invocation {
-                        self.mut_panel().clear_input();
-                    }
-                    self.active_panel_idx = idx;
-                    let other_path = self.get_other_panel_path();
-                    self.mut_panel().refresh_input_status(&other_path, con);
                 }
             }
             Quit => {

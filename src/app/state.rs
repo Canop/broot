@@ -7,7 +7,7 @@ use {
         flag::Flag,
         help::HelpState,
         pattern::*,
-        preview::PreviewState,
+        preview::{PreviewMode, PreviewState},
         print,
         skin::PanelSkin,
         task_sync::Dam,
@@ -103,28 +103,11 @@ pub trait AppState {
                     AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)))
                 }
             }
-            Internal::open_preview => {
-                if cc.preview.is_some() {
-                    AppStateCmdResult::Keep
-                } else {
-                    let path = self.selected_path();
-                    if path.is_file() {
-                        AppStateCmdResult::NewPanel {
-                            state: Box::new(PreviewState::new(
-                                path.to_path_buf(),
-                                InputPattern::none(),
-                                con,
-                            )),
-                            purpose: PanelPurpose::Preview,
-                            direction: HDir::Right,
-                        }
-                    } else {
-                        AppStateCmdResult::DisplayError(
-                            "only regular files can be previewed".to_string()
-                        )
-                    }
-                }
-            }
+            Internal::open_preview => self.open_preview(None, false, cc),
+            Internal::preview_image => self.open_preview(Some(PreviewMode::Image), false, cc),
+            Internal::preview_text => self.open_preview(Some(PreviewMode::Text), false, cc),
+            Internal::preview_binary => self.open_preview(Some(PreviewMode::Hex), false, cc),
+            Internal::toggle_preview => self.open_preview(None, true, cc),
             Internal::close_preview => {
                 if let Some(id) = cc.preview {
                     AppStateCmdResult::ClosePanel {
@@ -135,37 +118,12 @@ pub trait AppState {
                     AppStateCmdResult::Keep
                 }
             }
-            Internal::toggle_preview => {
-                if let Some(id) = cc.preview {
-                    AppStateCmdResult::ClosePanel {
-                        validate_purpose: false,
-                        id: Some(id),
-                    }
-                } else {
-                    let path = self.selected_path();
-                    if path.is_file() {
-                        AppStateCmdResult::NewPanel {
-                            state: Box::new(PreviewState::new(
-                                path.to_path_buf(),
-                                InputPattern::none(),
-                                con,
-                            )),
-                            purpose: PanelPurpose::Preview,
-                            direction: HDir::Right,
-                        }
-                    } else {
-                        AppStateCmdResult::DisplayError(
-                            "only regular files can be previewed".to_string()
-                        )
-                    }
-                }
-            }
             Internal::panel_left => {
                 if cc.areas.is_first() {
                     AppStateCmdResult::Keep
                 } else {
                     // we ask the app to focus the panel to the left
-                    AppStateCmdResult::Propagate(Internal::panel_left)
+                    AppStateCmdResult::HandleInApp(Internal::panel_left)
                 }
             }
             Internal::panel_right => {
@@ -173,7 +131,7 @@ pub trait AppState {
                     AppStateCmdResult::Keep
                 } else {
                     // we ask the app to focus the panel to the left
-                    AppStateCmdResult::Propagate(Internal::panel_right)
+                    AppStateCmdResult::HandleInApp(Internal::panel_right)
                 }
             }
             Internal::print_path => {
@@ -275,6 +233,48 @@ pub trait AppState {
             Command::None | Command::VerbEdit(_) => {
                 // we do nothing here, the real job is done in get_status
                 Ok(AppStateCmdResult::Keep)
+            }
+        }
+    }
+
+    fn open_preview(
+        &mut self,
+        prefered_mode: Option<PreviewMode>,
+        close_if_open: bool,
+        cc: &CmdContext,
+    ) -> AppStateCmdResult {
+        if let Some(id) = cc.preview {
+            if close_if_open {
+                AppStateCmdResult::ClosePanel {
+                    validate_purpose: false,
+                    id: Some(id),
+                }
+            } else {
+                if prefered_mode.is_some() {
+                    // we'll make the preview mode change be
+                    // applied on the preview panel
+                    AppStateCmdResult::ApplyOnPanel { id }
+                } else {
+                    AppStateCmdResult::Keep
+                }
+            }
+        } else {
+            let path = self.selected_path();
+            if path.is_file() {
+                AppStateCmdResult::NewPanel {
+                    state: Box::new(PreviewState::new(
+                        path.to_path_buf(),
+                        InputPattern::none(),
+                        prefered_mode,
+                        &cc.con,
+                    )),
+                    purpose: PanelPurpose::Preview,
+                    direction: HDir::Right,
+                }
+            } else {
+                AppStateCmdResult::DisplayError(
+                    "only regular files can be previewed".to_string()
+                )
             }
         }
     }

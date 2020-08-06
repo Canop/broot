@@ -28,16 +28,18 @@ pub struct PreviewState {
     pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     filtered_preview: Option<Preview>,
     removed_pattern: InputPattern,
+    prefered_mode: Option<PreviewMode>,
 }
 
 impl PreviewState {
     pub fn new(
         path: PathBuf,
         pending_pattern: InputPattern,
+        prefered_mode: Option<PreviewMode>,
         con: &AppContext,
     ) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
-        let preview = Preview::unfiltered(&path, con);
+        let preview = Preview::new(&path, prefered_mode, con);
         PreviewState {
             preview_area,
             dirty: true,
@@ -46,11 +48,34 @@ impl PreviewState {
             pending_pattern,
             filtered_preview: None,
             removed_pattern: InputPattern::none(),
+            prefered_mode,
         }
     }
     fn mut_preview(&mut self) -> &mut Preview {
         self.filtered_preview.as_mut().unwrap_or(&mut self.preview)
     }
+    fn set_mode(
+        &mut self,
+        mode: PreviewMode,
+        con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        if self.preview.get_mode() == Some(mode) {
+            return Ok(AppStateCmdResult::Keep);
+        }
+        Ok(match Preview::with_mode(&self.path, mode, con) {
+            Ok(preview) => {
+                self.preview = preview;
+                self.prefered_mode = Some(mode);
+                AppStateCmdResult::Keep
+            }
+            Err(e) => {
+                AppStateCmdResult::DisplayError(
+                    format!("Can't display as {:?} : {:?}", mode, e)
+                )
+            }
+        })
+    }
+
 }
 
 impl AppState for PreviewState {
@@ -102,7 +127,7 @@ impl AppState for PreviewState {
             self.filtered_preview = time!(
                 Info,
                 "preview filtering",
-                Preview::filtered(&self.path, pattern, dam, con),
+                self.preview.filtered(&self.path, pattern, dam, con),
             ); // can be None if a cancellation was required
             if let Some(ref mut filtered_preview) = self.filtered_preview {
                 if let Some(number) = old_selection {
@@ -120,7 +145,7 @@ impl AppState for PreviewState {
         if let Some(fp) = &self.filtered_preview {
             self.pending_pattern = fp.pattern();
         };
-        self.preview = Preview::unfiltered(&path, con);
+        self.preview = Preview::new(&path, self.prefered_mode, con);
         self.path = path;
     }
 
@@ -265,6 +290,9 @@ impl AppState for PreviewState {
                 self.mut_preview().select_last();
                 Ok(AppStateCmdResult::Keep)
             }
+            Internal::preview_image => self.set_mode(PreviewMode::Image, cc.con),
+            Internal::preview_text => self.set_mode(PreviewMode::Text, cc.con),
+            Internal::preview_binary => self.set_mode(PreviewMode::Hex, cc.con),
             _ => self.on_internal_generic(
                 w,
                 internal_exec,
@@ -276,7 +304,6 @@ impl AppState for PreviewState {
         }
     }
 
-    // TODO put the hex/txt view here
     fn get_flags(&self) -> Vec<Flag> {
         vec![]
     }

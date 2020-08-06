@@ -52,7 +52,7 @@ pub fn new_panel_on_path(
     if purpose.is_preview() {
         let pattern = tree_options.pattern.tree_to_preview();
         AppStateCmdResult::NewPanel {
-            state: Box::new(PreviewState::new(path, pattern, con)),
+            state: Box::new(PreviewState::new(path, pattern, None, con)),
             purpose,
             direction,
         }
