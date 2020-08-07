@@ -37,6 +37,7 @@ pub struct Conf {
     pub cols_order: Option<Cols>,
     pub ext_colors: ExtColorMap,
     pub syntax_theme: Option<String>,
+    pub true_colors: Option<bool>,
 }
 
 fn string_field(value: &Value, field_name: &str) -> Option<String> {
@@ -237,6 +238,10 @@ impl Conf {
                     }
                 }
             }
+        }
+        // true_colors ?
+        if let Some(b) = bool_field(&root, "true_colors") {
+            self.true_colors = Some(b);
         }
 
         Ok(())

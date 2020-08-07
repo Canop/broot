@@ -39,6 +39,9 @@ pub struct AppContext {
     pub syntax_theme: Option<String>,
 
     pub standard_status: StandardStatus,
+
+    /// whether we can use 24 bits colors for previewed images
+    pub true_colors: bool,
 }
 
 impl AppContext {
@@ -49,6 +52,11 @@ impl AppContext {
     ) -> Self {
         let config_path = Conf::default_location().to_string_lossy().to_string();
         let standard_status = StandardStatus::new(&verb_store);
+        let true_colors = if let Some(value) = config.true_colors {
+            value
+        } else {
+            are_true_colors_available()
+        };
         Self {
             config_path,
             launch_args,
@@ -59,6 +67,29 @@ impl AppContext {
             ext_colors: config.ext_colors.clone(),
             syntax_theme: config.syntax_theme.clone(),
             standard_status,
+            true_colors,
         }
+    }
+}
+
+/// try to determine whether the terminal supports true
+/// colors. This doesn't work well, hence the use of an
+/// optional config setting.
+/// Based on https://gist.github.com/XVilka/8346728#true-color-detection
+fn are_true_colors_available() -> bool {
+    if let Ok(colorterm) = std::env::var("COLORTERM") {
+        debug!("COLORTERM env variable = {:?}", colorterm);
+        if colorterm.contains("truecolor") || colorterm.contains("24bit") {
+            debug!("true colors are available!");
+            true
+        } else {
+            false
+        }
+    } else {
+        // this is debatable... I've found some terminals with COLORTERM
+        // unset but supporting true colors. As it's easy to determine
+        // that true colors aren't supported when looking at previewed
+        // images I prefer this value
+        true
     }
 }

@@ -16,10 +16,13 @@ use {
         QueueableCommand,
     },
     std::path::{Path, PathBuf},
-    termimad::{Area},
+    termimad::Area,
 };
 
-/// an application state dedicated to previewing files
+/// an application state dedicated to previewing files.
+/// It's usually the only state in its panel and is kept when
+/// the selection changes (other panels indirectly call
+/// set_selected_path).
 pub struct PreviewState {
     pub preview_area: Area,
     dirty: bool, // true when background must be cleared
@@ -75,7 +78,6 @@ impl PreviewState {
             }
         })
     }
-
 }
 
 impl AppState for PreviewState {
@@ -183,7 +185,7 @@ impl AppState for PreviewState {
         screen: &Screen,
         state_area: Area,
         panel_skin: &PanelSkin,
-        _con: &AppContext,
+        con: &AppContext,
     ) -> Result<(), ProgramError> {
         if state_area.height < 3 {
             warn!("area too small for preview");
@@ -217,7 +219,7 @@ impl AppState for PreviewState {
         cw.fill(&styles.default, LONG_SPACE)?;
         let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
         preview.display_info(w, screen, panel_skin, &info_area)?;
-        preview.display(w, screen, panel_skin, &self.preview_area)
+        preview.display(w, screen, panel_skin, &self.preview_area, con)
     }
 
     fn no_verb_status(

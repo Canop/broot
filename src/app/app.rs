@@ -381,7 +381,9 @@ impl App {
                 did_something |= self.panels[idx].do_pending_tasks(screen, con, dam)?;
             }
         }
-        self.update_preview(con); // the selection may have changed
+        if did_something {
+            self.update_preview(con); // the selection may have changed
+        }
         Ok(did_something)
     }
 

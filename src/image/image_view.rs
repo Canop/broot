@@ -1,6 +1,7 @@
 use {
     super::double_line::DoubleLine,
     crate::{
+        app::AppContext,
         display::{fill_bg, Screen, W},
         errors::ProgramError,
         skin::PanelSkin,
@@ -19,9 +20,7 @@ use {
         GenericImageView,
         imageops::FilterType,
     },
-    std::{
-        path::Path,
-    },
+    std::path::Path,
     termimad::{Area},
 };
 
@@ -50,6 +49,7 @@ impl ImageView {
         _screen: &Screen,
         panel_skin: &PanelSkin,
         area: &Area,
+        con: &AppContext,
     ) -> Result<(), ProgramError> {
         let img = time!(
             Debug,
@@ -58,7 +58,6 @@ impl ImageView {
                 area.width as u32,
                 (area.height*2) as u32,
                 FilterType::Triangle,
-                //FilterType::Nearest,
             ),
         );
         let (width, height) = img.dimensions();
@@ -68,7 +67,8 @@ impl ImageView {
         let bg = styles.preview.get_bg()
             .or_else(|| styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
-        let mut double_line = DoubleLine::new(width as usize);
+        debug!("true colors: {:?}", con.true_colors);
+        let mut double_line = DoubleLine::new(width as usize, con.true_colors);
         let mut y = area.top;
         let margin = area.width as usize - width as usize;
         let left_margin = margin / 2;

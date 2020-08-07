@@ -13,10 +13,8 @@ use {
         syntactic::SyntacticView,
         task_sync::Dam,
     },
-    std::{
-        path::{Path},
-    },
-    termimad::{Area},
+    std::path::Path,
+    termimad::Area,
 };
 
 pub enum Preview {
@@ -41,7 +39,7 @@ impl Preview {
             None => {
                 // automatic behavior: image, text, hex
                 ImageView::new(path)
-                    .map(|iv| Self::Image(iv))
+                    .map(Self::Image)
                     .unwrap_or_else(|_| Self::unfiltered_text(path, con))
 
             }
@@ -56,17 +54,16 @@ impl Preview {
     ) -> Result<Self, ProgramError> {
         match mode {
             PreviewMode::Hex => {
-                Ok(HexView::new(path.to_path_buf()).map(|reader| Self::Hex(reader))?)
+                Ok(HexView::new(path.to_path_buf()).map(Self::Hex)?)
             }
             PreviewMode::Image => {
-                ImageView::new(path)
-                    .map(|iv|Self::Image(iv))
+                ImageView::new(path).map(Self::Image)
             }
             PreviewMode::Text => {
                 Ok(SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con)
                     .transpose()
                     .expect("syntactic view without pattern shouldn't be none")
-                    .map(|sv| Self::Syntactic(sv))?)
+                    .map(Self::Syntactic)?)
             }
         }
     }
@@ -74,7 +71,7 @@ impl Preview {
     /// as an image, in which case a hex view is used
     pub fn image(path: &Path) -> Self {
         ImageView::new(path).ok()
-            .map(|iv|Self::Image(iv))
+            .map(Self::Image)
             .unwrap_or_else(|| Self::hex(path))
 
     }
@@ -130,6 +127,7 @@ impl Preview {
             }
         }
     }
+    /// return the preview_mode, or None if we're on IOError
     pub fn get_mode(&self) -> Option<PreviewMode> {
         match self {
             Self::Image(_) => Some(PreviewMode::Image),
@@ -222,14 +220,15 @@ impl Preview {
         screen: &Screen,
         panel_skin: &PanelSkin,
         area: &Area,
+        con: &AppContext,
     ) -> Result<(), ProgramError> {
         match self {
-            Self::Image(iv) => iv.display(w, screen, panel_skin, area),
+            Self::Image(iv) => iv.display(w, screen, panel_skin, area, con),
             Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
             Self::IOError => {
                 debug!("nothing to display: IOError");
-                // FIXME clear area
+                // FIXME clear area - but it's hard to fall on that case
                 Ok(())
             }
         }

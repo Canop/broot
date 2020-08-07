@@ -60,6 +60,15 @@ default_flags = ""
 # cols_order = "gbdscn"
 
 ###############################################################
+# True Colors
+# If this parameter isn't set, broot tries to automatically
+# determine whether true colors (24 bits) are available.
+# As this process is unreliable, you may uncomment this setting
+# and set it to false or true if you notice the colors in
+# previewed images are too off.
+# true_colors = false
+
+###############################################################
 # Verbs and shortcuts
 # You can define your own commands which would be applied to
 # the selection.

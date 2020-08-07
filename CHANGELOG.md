@@ -1,6 +1,8 @@
 ### next
-- it's now possible to launch a terminal as sub process from broot
+- it's now possible to launch a terminal as sub process from broot (and be back to broot on exit)
 - the selected directory is now the working dir for subprocess launched from broot
+- images are previewed as such
+- :preview_binay, :preview_text, and :preview_image verbs allow the choice of previewing mode
 
 <a name="v0.19.4"></a>
 ### v0.19.4 - 2020-07-31

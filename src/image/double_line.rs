@@ -3,19 +3,18 @@ use {
         display::{fill_bg, W},
         errors::ProgramError,
     },
+    ansi_colours::self,
     crossterm::{
         style::{
-            Attributes,
             Color,
-            ContentStyle,
-            PrintStyledContent,
-            StyledContent,
+            Colors,
+            Print,
+            SetColors,
         },
         QueueableCommand,
     },
     image::Rgba,
 };
-
 
 const UPPER_HALF_BLOCK: char = '▀';
 
@@ -28,21 +27,29 @@ const UPPER_HALF_BLOCK: char = '▀';
 pub struct DoubleLine {
     img_width: usize,
     pixels: Vec<Color>, // size twice img_width
+    true_colors: bool,
 }
 
 impl DoubleLine {
-    pub fn new(img_width: usize) -> Self {
+    pub fn new(img_width: usize, true_colors: bool) -> Self {
         Self {
             img_width,
             pixels: Vec::with_capacity(2 * img_width),
+            true_colors,
         }
     }
     pub fn push(&mut self, rgba: Rgba<u8>) {
-        self.pixels.push(Color::Rgb{
-            r: rgba[0],
-            g: rgba[1],
-            b: rgba[2],
-        });
+        self.pixels.push(
+            if self.true_colors {
+                Color::Rgb {
+                    r: rgba[0],
+                    g: rgba[1],
+                    b: rgba[2],
+                }
+            } else {
+                Color::AnsiValue(ansi_colours::ansi256_from_rgb((rgba[0], rgba[1], rgba[2])))
+            }
+        );
     }
     pub fn is_empty(&self) -> bool {
         self.pixels.is_empty()
@@ -62,20 +69,17 @@ impl DoubleLine {
         let simple = self.pixels.len() < 2 * self.img_width;
         fill_bg(w, left_margin, bg)?;
         for i in 0..self.img_width {
-            let foreground_color = Some(self.pixels[i]);
+            let foreground_color =self.pixels[i];
             let background_color = if simple {
-                None
+                bg
             } else {
-                Some(self.pixels[i + self.img_width])
+                self.pixels[i + self.img_width]
             };
-            w.queue(PrintStyledContent(StyledContent::new(
-                ContentStyle {
-                    foreground_color,
-                    background_color,
-                    attributes: Attributes::default(),
-                },
-                UPPER_HALF_BLOCK,
+            w.queue(SetColors(Colors::new(
+                foreground_color,
+                background_color,
             )))?;
+            w.queue(Print(UPPER_HALF_BLOCK))?;
         }
         fill_bg(w, right_margin, bg)?;
         self.pixels.clear();
