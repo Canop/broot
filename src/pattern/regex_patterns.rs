@@ -40,7 +40,7 @@ impl RegexPattern {
             flags: flags.to_string(),
         })
     }
-    // return a match if the pattern can be found in the candidate string
+    /// return a match if the pattern can be found in the candidate string
     pub fn find(&self, candidate: &str) -> Option<NameMatch> {
         // note that there's no significative cost related to using
         //  find over is_match
@@ -52,10 +52,10 @@ impl RegexPattern {
             super::NameMatch { score: 1, pos }
         })
     }
-    // return the number of results we should find before starting to
-    //  sort them (unless time is runing out).
-    // In the case of regexes, there's no need to find more results, as
-    //  their score is always 1
+    /// return the number of results we should find before starting to
+    ///  sort them (unless time is runing out).
+    /// In the case of regexes, there's no need to find more results, as
+    ///  their score is always 1
     pub fn optimal_result_number(&self, targeted_size: usize) -> usize {
         targeted_size
     }

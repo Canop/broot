@@ -3,6 +3,7 @@
 - the selected directory is now the working dir for subprocess launched from broot
 - images are previewed as such
 - :preview_binay, :preview_text, and :preview_image verbs allow the choice of previewing mode
+- fix a possible crash in previewed files on displaying fuzzy pattern matches
 
 <a name="v0.19.4"></a>
 ### v0.19.4 - 2020-07-31

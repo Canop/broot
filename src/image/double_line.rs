@@ -47,7 +47,11 @@ impl DoubleLine {
                     b: rgba[2],
                 }
             } else {
-                Color::AnsiValue(ansi_colours::ansi256_from_rgb((rgba[0], rgba[1], rgba[2])))
+                Color::AnsiValue(ansi_colours::ansi256_from_rgb((
+                    rgba[0],
+                    rgba[1],
+                    rgba[2],
+                )))
             }
         );
     }
@@ -69,7 +73,7 @@ impl DoubleLine {
         let simple = self.pixels.len() < 2 * self.img_width;
         fill_bg(w, left_margin, bg)?;
         for i in 0..self.img_width {
-            let foreground_color =self.pixels[i];
+            let foreground_color = self.pixels[i];
             let background_color = if simple {
                 bg
             } else {

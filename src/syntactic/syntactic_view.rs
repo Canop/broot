@@ -338,27 +338,26 @@ impl SyntacticView {
                 }
                 if let Some(nm) = &line.name_match {
                     let mut dec = 0;
-                    let mut nci = 0; // next char index
+                    let pos = &nm.pos;
+                    let mut pos_idx: usize = 0;
                     for content in regions {
                         let s = &content.string;
-                        let pos = &nm.pos;
-                        let mut x = 0;
                         cw.w.queue(SetForegroundColor(content.fg))?;
-                        while nci < pos.len() && pos[nci]>=dec && pos[nci]<dec+s.len() {
-                            let i = pos[nci]-dec;
-                            if i > x {
-                                cw.queue_unstyled_str(&s[x..i])?;
+                        if pos_idx < pos.len() {
+                            for (cand_idx, cand_char) in s.chars().enumerate() {
+                                if pos_idx < pos.len() && pos[pos_idx] == cand_idx + dec {
+                                    cw.w.queue(SetBackgroundColor(match_bg))?;
+                                    cw.queue_unstyled_char(cand_char)?;
+                                    cw.w.queue(SetBackgroundColor(bg))?;
+                                    pos_idx += 1;
+                                } else {
+                                    cw.queue_unstyled_char(cand_char)?;
+                                }
                             }
-                            cw.w.queue(SetBackgroundColor(match_bg))?;
-                            cw.queue_unstyled_str(&s[i..i+1])?;
-                            cw.w.queue(SetBackgroundColor(bg))?;
-                            nci += 1;
-                            x = i+1;
+                            dec += s.chars().count();
+                        } else {
+                            cw.queue_unstyled_str(s)?;
                         }
-                        if x < s.len() {
-                            cw.queue_unstyled_str(&s[x..])?;
-                        }
-                        dec += content.string.len();
                     }
                 } else {
                     for content in regions {
