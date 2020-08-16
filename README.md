@@ -30,21 +30,13 @@ That's what makes it usable where the old `tree` command would produce pages of 
 
 `.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](../navigation/#toggles)).
 
-# Preview files
-
-Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel appears.
-
-![preview](website/docs/img/20200716-preview.png)
-
-The preview panel stays synchronized with the selection in tree panels.
-
 # Find a directory then `cd` to it
 
 type a few letters
 
 ![cd](website/docs/img/20191112-cd.png)
 
-Hit <kbd>alt</kbd><kbd>enter</kbd> and you're done.
+Hit <kbd>alt</kbd><kbd>enter</kbd> and you're back to the terminal in the desired location.
 
 This way, you can navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
@@ -53,7 +45,8 @@ broot is fast and doesn't block (any keystroke interrupts the current search to 
 Most useful keys for this:
 
 * the letters of what you're looking for
-* <kbd>enter</kbd> to select a directory (staying in broot)
+* <kbd>enter</kbd> on the root line to go up to the parent (staying in broot)
+* <kbd>enter</kbd> to focus a directory (staying in broot)
 * <kbd>esc</kbd> to get back to the previous state or clear your search
 * <kbd class=b>↓</kbd> and <kbd class=b>↑</kbd> may be used to move the selection
 * <kbd>alt</kbd><kbd>enter</kbd> to get back to the shell having `cd` to the selected directory
@@ -77,7 +70,10 @@ Once the file you want is selected you can
 
 * hit <kbd>enter</kbd> (or double-click) to open it in your system's default program
 * hit <kbd>alt</kbd><kbd>enter</kbd> to open it in your system's default program and close broot
+* hit <kbd>ctrl</kbd><kbd>→</kbd> to preview it (and then a second time to go inside the preview)
 * type a verb. For example `:e` opens the file in your preferred editor (which may be a terminal one)
+
+[blog: a broot content search workflow](https://dystroy.org/blog/broot-c-search/)
 
 # Manipulate your files
 
@@ -89,7 +85,7 @@ You can instead do it without losing the view of the file hierarchy.
 
 Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
-# Do it with panels
+# Manage files with panels
 
 When a directory is selected, do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
 
@@ -102,6 +98,16 @@ Using two panels, you can for example copy or move elements between them:
 ![cpp](website/docs/img/20200525-cpp.png)
 
 If you like you may do it Norton Commander style by binding `:copy_to_panel` to <kbd>F5</kbd> and `:move_to_panel` to <kbd>F6</kbd>.
+
+# Preview files
+
+Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel appears.
+
+![preview](website/docs/img/20200716-preview.png)
+
+![preview](website/docs/img/2020081609-preview-image.png)
+
+The preview panel stays synchronized with the selection in tree panels.
 
 # Apply a standard or personal shortcut to a file
 
@@ -142,6 +148,8 @@ Sizes, dates, files counts, are computed in the background, you don't have to wa
 Use `:gf` to display the statuses of files (what are the new ones, the modified ones, etc.), the current branch name and the change statistics.
 
 And if you want to see *only* the files which would be displayed by the `git status` command, do `:gs`. From there it's easy to edit, or diff, selected files.
+
+[blog: use broot and meld to diff before commit](https://dystroy.org/blog/gg/)
 
 ## Further Reading
 See **[Broot's web site](https://dystroy.org/broot)** for instructions regarding installation and usage.

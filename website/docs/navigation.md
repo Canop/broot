@@ -24,7 +24,7 @@ There are also a few more shortcuts:
 * you can select a line with a mouse click
 * you can open a line with a mouse double-click
 
-and you can define your own [shortcuts](../conf_file/#shortcuts-and-verb-search) or triggering [keyboard keys](../conf_file/#keyboard-key).
+and you can define your own [shortcuts](../conf_verbs/#shortcuts-and-verb-search) or triggering [keyboard keys](../conf_verbs/#keyboard-key).
 
 # Fuzzy Patterns
 
@@ -105,10 +105,6 @@ This behavior is tuned with several toggles.
 To apply one, type a space (or `:`), then the start of its shortcut, then hit <kbd class=b>⏎</kbd>.
 
 For example typing `:s` then enter will show file and directory sizes.
-
-You may notice a scrollbar on this screenshot. The first level of the tree is always uncut when you display sizes (you're in a special "whale spotting" mode).
-
-Not trimming the root is also possible in normal mode by using the `toggle_trim_root` toggle.
 
 !!!	Note
 	The displayed size on Unix is the space the file takes on disk, that is the number of blocks multiplied by the size of a block. If a file is sparse, a little 's' is displayed next to the size.

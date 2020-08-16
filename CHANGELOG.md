@@ -1,4 +1,5 @@
-### next
+<a name="v0.20.0"></a>
+### v0.20.0 - 2020-08-16
 - it's now possible to launch a terminal as sub process from broot (and be back to broot on exit)
 - the selected directory is now the working dir for subprocess launched from broot
 - images are previewed as such

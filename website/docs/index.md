@@ -18,14 +18,6 @@ That's what makes it usable where the old `tree` command would produce pages of 
 
 `.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](../navigation/#toggles)).
 
-# Preview files
-
-Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel appears.
-
-![preview](img/20200716-preview.png)
-
-The preview panel stays synchronized with the selection in tree panels.
-
 # Find a directory then `cd` to it
 
 type a few letters
@@ -69,6 +61,8 @@ Once the file you want is selected you can
 * hit <kbd>ctrl</kbd><kbd>→</kbd> to preview it (and then a second time to go inside the preview)
 * type a verb. For example `:e` opens the file in your preferred editor (which may be a terminal one)
 
+[blog: a broot content search workflow](https://dystroy.org/blog/broot-c-search/)
+
 # Manipulate your files
 
 ![mv](img/20191112-mv.png)
@@ -92,6 +86,16 @@ Using two panels, you can for example copy or move elements between them:
 ![cpp](img/20200525-cpp.png)
 
 If you like you may do it Norton Commander style by binding `:copy_to_panel` to <kbd>F5</kbd> and `:move_to_panel` to <kbd>F6</kbd>.
+
+# Preview files
+
+Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel appears.
+
+![preview](img/20200716-preview.png)
+
+![preview](img/2020081609-preview-image.png)
+
+The preview panel stays synchronized with the selection in tree panels.
 
 # Apply a standard or personal shortcut to a file
 
@@ -133,6 +137,7 @@ Use `:gf` to display the statuses of files (what are the new ones, the modified 
 
 And if you want to see *only* the files which would be displayed by the `git status` command, do `:gs`. From there it's easy to edit, or diff, selected files.
 
+[blog: use broot and meld to diff before commit](https://dystroy.org/blog/gg/)
 
 # More...
 

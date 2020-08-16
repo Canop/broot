@@ -11,7 +11,7 @@ But you may want to have something more similar to your usual terminal colors, o
 * [set a transparent background](../skins/#transparent-background)
 * [set file extension dependent colors](../conf_file/#colors-by-file-extension)
 
-# There are artifacts on tmux or screen
+# There are artifacts on tmux
 
 Most problems with terminal multiplexers seem related to their bad proxying of some style related codes.
 

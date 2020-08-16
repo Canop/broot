@@ -15,7 +15,7 @@ Another way is to add a bang (`!`) to a verb. It tells broot to show the result 
 
 For example, while `:focus ~` navigates to your home directory in the current panel, you can use `:!focus ~` or `:focus! ~` to open a new panel on your home.
 
-The `:close_panel` closes the current panel and is bound to <kbd>ctrl</kbd><kbd>W</kbd> (remember: you can [change all bindings](../conf_file/#verbs-shortcuts-and-keys)).
+The `:close_panel` closes the current panel and is bound to <kbd>ctrl</kbd><kbd>W</kbd> (remember: you can [change all bindings](../conf_verbs/#keyboard-key)).
 
 # The preview panel
 
@@ -24,11 +24,11 @@ The `:close_panel` closes the current panel and is bound to <kbd>ctrl</kbd><kbd>
 It's not immediately focused on creation, because most often you'll want to preview a few files and it's convenient to stay in the tree to navigate.
 To focus it, for example to scroll it, do <kbd>ctrl</kbd><kbd>→</kbd> again.
 
-Files that can't be interpreted as text are shown as binary:
+Files that can't be interpreted as text or image are shown as binary:
 
-![binary](img/20200716-binary.png)
+![binary](img/2020081609-preview-binary.png)
 
-You can search with fuzzy patterns or regular expressions inside a preview panel:
+You can search with fuzzy patterns or regular expressions inside a text preview panel:
 
 ![search-preview](img/20200727-search-preview.png)
 
