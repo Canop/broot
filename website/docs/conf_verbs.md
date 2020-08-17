@@ -172,8 +172,10 @@ And here's how it would look like:
 
 ![blop](img/20190306-blop.png)
 
-Notice the `\\.` ? That's because the invocation pattern is interpreted as a regular expression
+Notice the `\\.` in the invocation pattern ? That's because it is interpreted as a regular expression
 (with just a shortcut for the easy case, enabling `{name}`).
+
+
 The whole regular expression syntax may be useful for more complex rules.
 Let's say we don't want the type to contain dots, then we do this:
 
