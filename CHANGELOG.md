@@ -1,3 +1,6 @@
+### next version
+- completion of the "client-server" feature (see client-server.md)
+
 <a name="v0.20.0"></a>
 ### v0.20.0 - 2020-08-16
 - it's now possible to launch a terminal as sub process from broot (and be back to broot on exit)

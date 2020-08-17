@@ -208,14 +208,17 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
             command::Sequence,
             net::{Client, Message},
         };
-        let message = if let Some(seq) = &commands {
-            Message::Sequence(Sequence::new_local(seq.to_string()))
-        } else {
-            Message::Command(format!(":focus {}", root.to_string_lossy()))
-        };
         let client = Client::new(server_name);
-        debug!("sending {:?}", &message);
-        client.send(&message)?;
+        if let Some(seq) = &commands {
+            let message = Message::Sequence(Sequence::new_local(seq.to_string()));
+            client.send(&message)?;
+        } else if !cli_matches.is_present("get-root") {
+            let message = Message::Command(format!(":focus {}", root.to_string_lossy()));
+            client.send(&message)?;
+        };
+        if cli_matches.is_present("get-root") {
+            client.send(&Message::GetRoot)?;
+        }
         return Ok(None);
     }
 

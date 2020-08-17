@@ -12,12 +12,13 @@ use {
     },
 };
 
-/// A message which may be sent by a
+/// A message which may be sent by a client or server to the other part
 #[derive(Debug)]
 pub enum Message {
     Command(String),
     Hi,
-    //GetRoot
+    GetRoot,
+    Root(String),
     Sequence(Sequence),
 }
 
@@ -38,6 +39,10 @@ impl Message {
             "CMD" => Ok(Self::Command(
                 read_line(r)?,
             )),
+            "GET_ROOT" => Ok(Self::GetRoot),
+            "ROOT" => Ok(Self::Root(
+                read_line(r)?,
+            )),
             "SEQ" => Ok(Self::Sequence(Sequence::new(
                 read_line(r)?,
                 read_line(r)?,
@@ -51,8 +56,15 @@ impl Message {
                 writeln!(w, "CMD")?;
                 writeln!(w, "{}", c)
             }
+            Self::GetRoot => {
+                writeln!(w, "GET_ROOT")
+            }
             Self::Hi => {
                 writeln!(w, "HI")
+            }
+            Self::Root(path) => {
+                writeln!(w, "ROOT")?;
+                writeln!(w, "{}", path)
             }
             Self::Sequence(Sequence { separator, raw }) => {
                 writeln!(w, "SEQ")?;

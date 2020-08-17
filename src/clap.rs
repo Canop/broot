@@ -204,6 +204,11 @@ pub fn clap_app() -> clap::App<'static, 'static> {
             .help("Listen for commands")
         )
         .arg(
+            clap::Arg::with_name("get-root")
+            .long("get-root")
+            .help("Ask for the current root of the remote broot")
+        )
+        .arg(
             clap::Arg::with_name("send")
             .long("send")
             .takes_value(true)

@@ -24,6 +24,9 @@ use {
 
 const ESCAPE_TO_QUIT: bool = false;
 
+#[cfg(feature="client-server")]
+use std::sync::{Arc, Mutex};
+
 /// The GUI
 pub struct App {
     panels: NonEmptyVec<Panel>,
@@ -32,6 +35,9 @@ pub struct App {
     launch_at_end: Option<Launchable>, // what must be launched after end
     created_panels_count: usize,
     preview: Option<PanelId>, // the panel dedicated to preview, if any
+
+    #[cfg(feature="client-server")]
+    root: Arc<Mutex<PathBuf>>,
 }
 
 impl App {
@@ -62,6 +68,9 @@ impl App {
             launch_at_end: None,
             created_panels_count: 1,
             preview: None,
+
+            #[cfg(feature="client-server")]
+            root: Arc::new(Mutex::new(con.launch_args.root.clone())),
         })
     }
 
@@ -347,6 +356,12 @@ impl App {
             self.mut_panel().set_error(text);
         }
         self.update_preview(con);
+
+        #[cfg(feature="client-server")]
+        if let Ok(mut root) = self.root.lock() { // when does this not work ?
+            *root = self.state().selected_path().to_path_buf();
+        }
+
         Ok(())
     }
 
@@ -415,7 +430,11 @@ impl App {
 
         #[cfg(feature="client-server")]
         let _server = con.launch_args.listen.as_ref()
-            .map(|server_name| crate::net::Server::new(&server_name, tx_seqs.clone()))
+            .map(|server_name| crate::net::Server::new(
+                &server_name,
+                tx_seqs.clone(),
+                Arc::clone(&self.root),
+            ))
             .transpose()?;
 
         loop {

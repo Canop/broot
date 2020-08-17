@@ -7,6 +7,7 @@ use {
         errors::NetError,
     },
     std::{
+        io::BufReader,
         os::unix::net::{
             UnixStream,
         },
@@ -27,6 +28,21 @@ impl Client {
         debug!("try connecting {:?}", &self.path);
         let mut stream = UnixStream::connect(&self.path)?;
         message.write(&mut stream)?;
+        if let Message::GetRoot = message {
+            // we wait for the answer
+            let mut br = BufReader::new(&stream);
+            match Message::read(&mut br) {
+                Ok(answer) => {
+                    debug!("got an answer: {:?}", &answer);
+                    if let Message::Root(root) = answer {
+                        println!("{}", root);
+                    }
+                }
+                Err(e) => {
+                    warn!("got no answer but error {:?}", e);
+                }
+            }
+        }
         Ok(())
     }
 }

@@ -13,7 +13,7 @@ To run in debug mode with the feature, do
 
     cargo run --features "client-server" --
 
-This feature add 2 launch arguments that you can see with
+This feature add 3 launch arguments that you can see with
 
     cargo run --features "client-server" -- --help
 
@@ -21,6 +21,7 @@ Those arguments are:
 
 * `--listen <instance_name>` : listen on a specific socket
 * `--send <instance_name>`: send the command(s) to the given server and quit
+* `--get-root`: ask the server for its current root (in the active panel)
 
 For example if you start broot with
 
@@ -38,7 +39,13 @@ Now that the "server" is running, try
 
 this will make the running "server" search for something like "img" and focus its parent.
 
-If you don't pass the `--cmd` (shortened in `-c`) argument, then the server is told to focus the current directory or the path given as argument.
+If you run
+
+    br --send my_broot --get-root
+
+then the server's current root is printed on stdout.
+
+If you pass neither the `--get-root` nor the `--cmd` (shortened in `-c`) argument, then the server is told to focus the current directory or the path given as argument.
 
 # Development
 
@@ -54,10 +61,8 @@ You can start an instance of broot with `broot --listen global_file_viewer` and 
 
 # TODO:
 
-- [x] have convincing use cases described
-- [ ] implement a command "GetRoot" to
 - [ ] have convincing use cases implemented
 - [ ] make available with TCP localhost sockets on windows ?
-- [ ] stop hiding behind a compilation flag
+- [ ] stop hiding behind a compilation flag (migth want to optimize before)
 
 
