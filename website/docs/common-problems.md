@@ -19,6 +19,8 @@ Most problems with terminal multiplexers seem related to their bad proxying of s
 
 A workaround is to create a skin (for example by uncommenting the one in `conf.toml`) and to remove all `Italic` and `Bold`.
 
+Additionaly, if backgrounds can't be properly displayed, you may consider [marking selected lines](../conf_file/#selection-mark).
+
 # alt-enter (or other shortcut) isn't available
 
 Most terminals intercept a few keyboard shortcut for their own features.

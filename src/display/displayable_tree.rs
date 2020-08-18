@@ -41,6 +41,7 @@ pub struct DisplayableTree<'s, 't> {
     pub area: termimad::Area,
     pub in_app: bool, // if true we show the selection and scrollbar
     pub cols: &'s Cols,
+    pub show_selection_mark: bool,
     pub ext_colors: &'s ExtColorMap,
 }
 
@@ -57,6 +58,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             tree,
             skin,
             cols,
+            show_selection_mark: false,
             ext_colors,
             area: termimad::Area {
                 left: 0,
@@ -68,8 +70,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         }
     }
 
-    fn name_style(&self, line: &TreeLine) -> &CompoundStyle {
-        match &line.line_type {
+    fn label_style(
+        &self,
+        line: &TreeLine,
+        selected: bool,
+    ) -> CompoundStyle {
+        let style = match &line.line_type {
             TreeLineType::Dir => &self.skin.directory,
             TreeLineType::File => {
                 if line.is_exe() {
@@ -80,7 +86,17 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             }
             TreeLineType::SymLinkToFile(_) | TreeLineType::SymLinkToDir(_) => &self.skin.link,
             TreeLineType::Pruning => &self.skin.pruning,
+        };
+        let mut style = style.clone();
+        if let Some(ext_color) = line.extension().and_then(|ext| self.ext_colors.get(ext)) {
+            style.set_fg(ext_color);
         }
+        if selected {
+            if let Some(c) = self.skin.selected_line.get_bg() {
+                style.set_bg(c);
+            }
+        }
+        style
     }
 
     fn write_line_count<'w, W: Write>(
@@ -98,16 +114,30 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         })
     }
 
+    fn write_line_selection_mark<'w, W: Write>(
+        &self,
+        cw: &mut CropWriter<'w, W>,
+        style: &CompoundStyle,
+        selected: bool,
+    ) -> Result<usize, termimad::Error> {
+        Ok(if selected {
+            cw.queue_char(&style, '▶')?;
+            0
+        } else {
+            1
+        })
+    }
+
     fn write_line_size<'w, W: Write>(
         &self,
         cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
-        selected: bool,
+        style: &CompoundStyle,
+        _selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
-            cond_bg!(size_style, self, selected, self.name_style(&line));
             cw.queue_g_string(
-                &size_style,
+                style,
                 format!("{:>4}", file_size::fit_4(s.to_size())),
             )?;
             1
@@ -122,22 +152,22 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         &self,
         cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
+        label_style: &CompoundStyle,
         total_size: FileSum,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
             let pb = ProgressBar::new(s.part_of_size(total_size), 10);
-            cond_bg!(size_style, self, selected, self.name_style(&line));
             cond_bg!(sparse_style, self, selected, self.skin.sparse);
             cw.queue_g_string(
-                &size_style,
+                label_style,
                 format!("{:>4}", file_size::fit_4(s.to_size())),
             )?;
             cw.queue_char(
                 &sparse_style,
                 if s.is_sparse() && line.is_file() { 's' } else { ' ' },
             )?;
-            cw.queue_g_string(&size_style, format!("{:<10}", pb))?;
+            cw.queue_g_string(label_style, format!("{:<10}", pb))?;
             1
         } else {
             16
@@ -218,28 +248,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         &self,
         cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
+        style: &CompoundStyle,
         pattern_object: PatternObject,
         selected: bool,
     ) -> Result<usize, ProgramError> {
-        let mut style = match &line.line_type {
-            TreeLineType::Dir => &self.skin.directory,
-            TreeLineType::File => {
-                if line.is_exe() {
-                    &self.skin.exe
-                } else {
-                    &self.skin.file
-                }
-            }
-            TreeLineType::SymLinkToFile(_) | TreeLineType::SymLinkToDir(_) => &self.skin.link,
-            TreeLineType::Pruning => &self.skin.pruning,
-        };
-        let mut cloned_style;
-        if let Some(ext_color) = line.extension().and_then(|ext| self.ext_colors.get(ext)) {
-            cloned_style = style.clone();
-            cloned_style.set_fg(ext_color);
-            style = &cloned_style;
-        }
-        cond_bg!(style, self, selected, style);
         cond_bg!(char_match_style, self, selected, self.skin.char_match);
         let label = if pattern_object.subpath {
             &line.subpath
@@ -384,15 +396,23 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
+                let label_style = self.label_style(line, selected);
                 let mut in_branch = false;
                 let space_style = if selected {
                     &self.skin.selected_line
                 } else {
                     &self.skin.default
                 };
-                cw.queue_char(space_style, ' ')?;
+
+                if self.cols[0] != Col::Mark {
+                    cw.queue_char(space_style, ' ')?;
+                }
                 for col in self.cols {
                     let void_len = match col {
+
+                        Col::Mark if self.show_selection_mark => {
+                            self.write_line_selection_mark(cw, &label_style, selected)?
+                        }
 
                         Col::Git if !tree.git_status.is_none() => {
                             self.write_line_git_status(cw, line, selected)?
@@ -419,9 +439,9 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                         Col::Size if tree.options.show_sizes => {
                             if tree.options.sort.is_some() {
                                 // as soon as there's only one level displayed we can show the size bars
-                                self.write_line_size_with_bar(cw, line, total_size, selected)?
+                                self.write_line_size_with_bar(cw, line, &label_style, total_size, selected)?
                             } else {
-                                self.write_line_size(cw, line, selected)?
+                                self.write_line_size(cw, line, &label_style, selected)?
                             }
                         }
 
@@ -431,7 +451,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
 
                         Col::Name => {
                             in_branch = false;
-                            self.write_line_label(cw, line, pattern_object, selected)?
+                            self.write_line_label(cw, line, &label_style, pattern_object, selected)?
                         }
 
                         _ => {

@@ -5,21 +5,40 @@ use {
 };
 
 // number of columns in enum
-const COLS_COUNT: usize = 7;
+const COLS_COUNT: usize = 8;
 
+/// One of the "columns" of the tree view
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum Col {
+    /// selection mark, typically a triangle on the selected line
+    Mark,
+
+    /// Git file status
     Git,
+
+    /// the branch showing filliation
     Branch,
+
+    /// file mode and ownership
     Permission,
+
+    /// last modified date
     Date,
-    Size, // includes the size bar in sort mode
+
+    /// file size, including size bar in sort_by_size mode
+    Size,
+
+    /// number of files in the directory
     Count,
-    Name, // name or subpath, depending on sort
+
+    /// name of the file, or subpath if relevant due to filtering mode
+    Name,
 }
+
 impl Col {
     pub fn parse(c: char) -> Result<Self, ConfError> {
         Ok(match c {
+            'm' => Self::Mark,
             'g' => Self::Git,
             'b' => Self::Branch,
             'd' => Self::Date,
@@ -27,7 +46,9 @@ impl Col {
             'c' => Self::Count,
             'n' => Self::Name,
             _ => {
-                return Err(ConfError::InvalidCols { details: format!("column not recognized : {}", c) });
+                return Err(ConfError::InvalidCols {
+                    details: format!("column not recognized : {}", c),
+                });
             }
         })
     }
@@ -45,7 +66,9 @@ impl Col {
         let mut cols = DEFAULT_COLS;
         for (idx, c) in s.chars().enumerate() {
             if idx >= COLS_COUNT {
-                return Err(ConfError::InvalidCols { details: format!("too long: {:?}", s) });
+                return Err(ConfError::InvalidCols {
+                    details: format!("too long: {:?}", s),
+                });
             }
             // we swap the cols, to ensure both keeps being present
             let col = Col::parse(c)?;
@@ -61,6 +84,7 @@ pub type Cols = [Col;COLS_COUNT];
 
 /// Default column order
 pub static DEFAULT_COLS: Cols = [
+    Col::Mark,
     Col::Git,
     Col::Size,
     Col::Count,

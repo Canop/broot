@@ -268,6 +268,7 @@ impl SyntacticView {
         _screen: &Screen,
         panel_skin: &PanelSkin,
         area: &Area,
+        con: &AppContext,
     ) -> Result<(), ProgramError> {
         if area.height as usize != self.page_height {
             self.page_height = area.height as usize;
@@ -335,6 +336,9 @@ impl SyntacticView {
                 } else {
                     cw.w.queue(SetBackgroundColor(bg))?;
                     cw.queue_unstyled_str(" ")?;
+                }
+                if con.show_selection_mark {
+                    cw.queue_unstyled_char(if selected { '▶' } else { ' ' })?;
                 }
                 if let Some(nm) = &line.name_match {
                     let mut dec = 0;

@@ -224,7 +224,7 @@ impl Preview {
     ) -> Result<(), ProgramError> {
         match self {
             Self::Image(iv) => iv.display(w, screen, panel_skin, area, con),
-            Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area),
+            Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area, con),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
             Self::IOError => {
                 debug!("nothing to display: IOError");

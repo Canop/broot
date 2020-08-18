@@ -33,11 +33,16 @@ pub struct AppContext {
     /// order of columns in tree display
     pub cols: Cols,
 
+    pub show_selection_mark: bool,
+
     /// mapping from file extension to colors (comes from conf)
     pub ext_colors: ExtColorMap,
 
+    /// the syntect theme to use for text files previewing
     pub syntax_theme: Option<String>,
 
+    /// precomputed status to display in standard cases
+    /// (ie when no verb is involved)
     pub standard_status: StandardStatus,
 
     /// whether we can use 24 bits colors for previewed images
@@ -64,6 +69,7 @@ impl AppContext {
             special_paths: config.special_paths.clone(),
             search_modes: config.search_modes.clone(),
             cols: config.cols_order.unwrap_or(DEFAULT_COLS),
+            show_selection_mark: config.show_selection_mark.unwrap_or(false),
             ext_colors: config.ext_colors.clone(),
             syntax_theme: config.syntax_theme.clone(),
             standard_status,

@@ -46,6 +46,11 @@ default_flags = ""
 # date_time_format = "%Y/%m/%d %R"
 
 ###############################################################
+# Whether to mark the selected line with a triangle
+#
+# show_selection_mark = true
+
+###############################################################
 # Column order
 # cols_order, if specified, must be a permutation of "gbpdscn"
 # where every char denotes a column:

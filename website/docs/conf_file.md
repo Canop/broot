@@ -71,6 +71,14 @@ It's possible to redefine the mode mappings, for example if you usually prefer t
 
 Note: I'd insist on you not overwriting default mode mappings before you master how broot is used and what those modes exactly work.
 
+# Selection Mark
+
+When the background colors aren't rendered in your terminal, aren't visible enough, or just aren't clear enough for you, you may have the selected lines marked with triangles with
+
+```toml
+show_selection_mark = true
+```
+
 # Columns order
 
 You may change the order of file attributes in file lists.

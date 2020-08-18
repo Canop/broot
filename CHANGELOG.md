@@ -2,6 +2,7 @@
 - completion of the "client-server" feature (see client-server.md)
 - removing a filter using the esc key on a tree tries to keep the selection
 - :focus now has a shortcut for when a file is selected too: ctrl-f
+- show_selection_mark preference in config (mostly for cases the background isn't clear enough)
 
 <a name="v0.20.0"></a>
 ### v0.20.0 - 2020-08-16
