@@ -1,10 +1,10 @@
-### next version
+<a name="v0.20.1"></a>
+### v0.20.1 - 2020-08-18
 - completion of the "client-server" feature (see client-server.md)
-- removing a filter using the esc key on a tree tries to keep the selection
+- the tree tries to keep the selection when you remove a filter using the esc key
 - :focus now has a shortcut for when a file is selected too: ctrl-f
 - show_selection_mark preference in config (mostly for cases the background isn't clear enough)
-#### breaking change
-The working directory of external processes launched by broot isn't set anymore by default.
+- **breaking change:** The working directory of external processes launched by broot isn't set anymore by default.
 If you want it to be changed, add `set_working_dir = true` to the verb definition.
 
 <a name="v0.20.0"></a>
