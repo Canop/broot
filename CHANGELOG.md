@@ -1,5 +1,6 @@
 ### next version
 - completion of the "client-server" feature (see client-server.md)
+- removing a filter using the esc key on a tree tries to keep the selection
 
 <a name="v0.20.0"></a>
 ### v0.20.0 - 2020-08-16

@@ -314,7 +314,9 @@ impl AppState for BrowserState {
             .unwrap_or(internal_exec.bang);
         Ok(match internal_exec.internal {
             Internal::back => {
-                if self.filtered_tree.is_some() {
+                if let Some(filtered_tree) = &self.filtered_tree {
+                    let filtered_selection = &filtered_tree.selected_line().path;
+                    self.tree.try_select_path(filtered_selection);
                     self.filtered_tree = None;
                     AppStateCmdResult::Keep
                 } else if self.tree.selection > 0 {
