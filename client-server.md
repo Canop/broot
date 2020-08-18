@@ -57,7 +57,26 @@ and is being discussed and developed between @Canop (@dystroy on Miaou) and @SRG
 
 ## Auto-updating file viewer
 
-You can start an instance of broot with `broot --listen global_file_viewer` and add a hook in your shell to update this upon directory change. A hook for zsh would involve adding the following code in your init file `chpwd(){ ( broot --send global_file_viewer "$PWD" & ) > /dev/null 2>&1 }`
+You can start an instance of broot with `broot --listen global_file_viewer` and add a hook in your shell to update this upon directory change. 
+
+### Hooks
+
+Here are hooks for some popular shells:
+
+#### zsh
+
+`chpwd(){ ( broot --send global_file_viewer "$PWD" & ) > /dev/null 2>&1 }`
+
+#### PowerShell
+
+`
+Remove-Alias cd
+function cd()
+{
+	Set-Location @args
+	~/workspace/git/broot/target/release/broot --send global (Get-Location)
+}
+`
 
 # TODO:
 
