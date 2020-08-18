@@ -61,8 +61,12 @@ pub struct ExternalExecution {
 
     pub arg_anchor: PathAnchor,
 
-    // /// whether we need to have a secondary panel for execution
-    // /// (which is the case when an invocation has {other-panel-file})
+    /// whether the working dir of the external process must be set
+    /// to the current directory
+    pub set_working_dir: bool,
+
+    /// whether we need to have a secondary panel for execution
+    /// (which is the case when an invocation has {other-panel-file})
     pub need_another_panel: bool,
 }
 
@@ -112,6 +116,7 @@ impl ExternalExecution {
             arg_selection_type,
             arg_anchor,
             need_another_panel,
+            set_working_dir: false,
         })
     }
 
@@ -258,7 +263,11 @@ impl ExternalExecution {
     ) -> Result<AppStateCmdResult, ProgramError> {
         let launchable = Launchable::program(
             self.exec_token(sel, other_file, args),
-            path::closest_dir(sel.path),
+            if self.set_working_dir {
+                Some(path::closest_dir(sel.path))
+            } else {
+                None
+            },
         )?;
         if self.exec_mode.is_leave_broot() {
             Ok(AppStateCmdResult::from(launchable))

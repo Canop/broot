@@ -169,6 +169,7 @@ impl Conf {
                         continue;
                     }
                 };
+                let set_working_dir = bool_field(verb_value, "set_working_dir");
                 let verb_conf = VerbConf {
                     invocation,
                     execution,
@@ -178,6 +179,7 @@ impl Conf {
                     from_shell,
                     leave_broot,
                     selection_condition,
+                    set_working_dir,
                 };
 
                 self.verbs.push(verb_conf);

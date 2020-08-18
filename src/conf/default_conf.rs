@@ -135,6 +135,7 @@ leave_broot = false
 # [[verbs]]
 # key = "ctrl-t"
 # execution = "$SHELL"
+# set_working_dir = true
 # leave_broot = false
 
 # A popular set of shorctuts for going up and down:

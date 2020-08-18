@@ -13,7 +13,11 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::from(super::cd::CD.clone())
             .with_description("change directory and quit (mapped to *alt*-*enter*)"),
         #[cfg(unix)]
-        Verb::external("chmod {args}", "chmod {args} {file}", StayInBroot).unwrap(),
+        Verb::external(
+            "chmod {args}",
+            "chmod {args} {file}",
+            StayInBroot,
+        ).unwrap(),
         Verb::internal(open_preview),
         Verb::internal(close_preview),
         Verb::internal(toggle_preview),
@@ -105,7 +109,11 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::internal(sort_by_count).with_shortcut("sc"),
         Verb::internal(sort_by_date).with_shortcut("sd"),
         Verb::internal(sort_by_size).with_shortcut("ss"),
-        Verb::external("rm", "/bin/rm -rf {file}", StayInBroot).unwrap(),
+        Verb::external(
+            "rm",
+            "/bin/rm -rf {file}",
+            StayInBroot,
+        ).unwrap(),
         Verb::internal(toggle_counts).with_shortcut("counts"),
         Verb::internal(toggle_dates).with_shortcut("dates"),
         Verb::internal(toggle_files).with_shortcut("files"),

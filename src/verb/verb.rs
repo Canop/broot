@@ -201,4 +201,10 @@ impl Verb {
             _ => None,
         }
     }
+
+    pub fn set_working_dir(&mut self, b: bool) {
+        if let VerbExecution::External(external) = &mut self.execution {
+            external.set_working_dir = b;
+        }
+    }
 }

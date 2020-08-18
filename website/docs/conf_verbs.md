@@ -26,6 +26,7 @@ shortcut | no | an alternate way to call the verb (without the arguments part)
 leave_broot | no | whether to quit broot on execution (default: `true`)
 from_shell | no | whether the verb must be executed from the parent shell (needs `br`, default: `false`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
 apply_to | no | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
+set_working_dir | no | whether the working dir of the process must be set to the currenly selected directory (default to false)
 
 !!!	Note
 	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example `cd` is a shell builtin which must be executed in the parent shell.

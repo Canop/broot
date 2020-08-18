@@ -18,6 +18,7 @@ pub struct VerbConf {
     pub description: Option<String>,
     pub from_shell: Option<bool>,
     pub leave_broot: Option<bool>,
+    pub set_working_dir: Option<bool>,
     pub selection_condition: SelectionType,
 }
 
@@ -51,7 +52,10 @@ impl TryFrom<&VerbConf> for Verb {
                     ""
                 },
                 &verb_conf.execution,
-                ExternalExecutionMode::from_conf(verb_conf.from_shell, verb_conf.leave_broot),
+                ExternalExecutionMode::from_conf(
+                    verb_conf.from_shell,
+                    verb_conf.leave_broot,
+                ),
             )?
         };
         if let Some(key) = verb_conf.key {
@@ -62,6 +66,9 @@ impl TryFrom<&VerbConf> for Verb {
         }
         if let Some(description) = &verb_conf.description {
             verb.description = VerbDescription::from_text(description.to_string());
+        }
+        if let Some(b) = verb_conf.set_working_dir {
+            verb.set_working_dir(b);
         }
         verb.selection_condition = verb_conf.selection_condition;
         Ok(verb)

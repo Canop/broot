@@ -50,7 +50,7 @@ pub enum Launchable {
     Program {
         exe: String,
         args: Vec<String>,
-        working_dir: PathBuf,
+        working_dir: Option<PathBuf>,
     },
 
     /// open a path
@@ -100,7 +100,7 @@ impl Launchable {
 
     pub fn program(
         parts: Vec<String>,
-        working_dir: PathBuf,
+        working_dir: Option<PathBuf>,
     ) -> io::Result<Launchable> {
         let mut parts = resolve_env_variables(parts).into_iter();
         match parts.next() {
@@ -124,8 +124,6 @@ impl Launchable {
                 dp.write_on(&mut std::io::stdout())
             }
             Launchable::Program { working_dir, exe, args } => {
-                // saving the working dir (not sure it's really needed)
-                let old_working_dir = std::env::current_dir().ok();
                 // we restore the normal terminal in case the executable
                 // is a terminal application, and we'll switch back to
                 // broot's alternate terminal when we're back to broot
@@ -137,7 +135,11 @@ impl Launchable {
                     terminal::disable_raw_mode().unwrap();
                     w.flush().unwrap();
                 }
-                std::env::set_current_dir(working_dir).unwrap();
+                let mut old_working_dir = None;
+                if let Some(working_dir) = working_dir {
+                    old_working_dir = std::env::current_dir().ok();
+                    std::env::set_current_dir(working_dir).unwrap();
+                }
                 Command::new(&exe)
                     .args(args.iter())
                     .spawn()
