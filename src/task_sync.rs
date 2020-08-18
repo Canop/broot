@@ -71,7 +71,12 @@ impl Dam {
 
     /// launch the computation on a new thread and return
     /// when it finishes or when a new event appears on
-    /// the channel
+    /// the channel.
+    /// Note that the task itself isn't interrupted so that
+    /// this should not be used when many tasks are expected
+    /// to be launched (or it would result in many working
+    /// threads uselessly working in the background) : use
+    /// dam.has_event from inside the task whenever possible.
     pub fn try_compute<V: Send + 'static, F: Send + 'static + FnOnce() -> ComputationResult<V>>(
         &mut self,
         f: F,

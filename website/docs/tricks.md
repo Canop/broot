@@ -37,6 +37,12 @@ When you hit `enter` on a directory, it's focused and the filter is reset.
 
 If you want to keep the filter, for example to search deeper, you may use `:open_stay_filter` instead (or its shortcut `:osf` and you can bind it to a key shortcut).
 
+## Go to the directory containing the selected file
+
+Suppose you filter to find a file, and it's in a deeper directory, you may want to see it "more closely", that is, keeping the filter, to make its parent directory the current root.
+
+This can be done with the `:focus` verb which can be called with <kbd>ctrl</kbd><kbd>f</kbd>.
+
 ## Run a script or program from broot
 
 If your system is normally configured, doing `alt`-`enter` on an executable will close broot and executes the file.

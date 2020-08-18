@@ -35,6 +35,7 @@ impl ImageView {
         let img = time!(
             Debug,
             "decode image",
+            path,
             Reader::open(&path)?.decode()?
         );
         let (width, height) = img.dimensions();
