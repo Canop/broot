@@ -1,4 +1,5 @@
-### next version
+<a name="v0.20.2"></a>
+### v0.20.2 - 2020-08-18
 - fix esc key not removing the filter in text preview
 
 <a name="v0.20.1"></a>
