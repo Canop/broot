@@ -81,7 +81,7 @@ When a directory is selected, do <kbd>ctrl</kbd><kbd>→</kbd> and you open anot
 
 (yes, colors are fully customizable)
 
-Using two panels, you can for example copy or move elements between them:
+You can for example copy or move elements between panels:
 
 ![cpp](img/20200525-cpp.png)
 

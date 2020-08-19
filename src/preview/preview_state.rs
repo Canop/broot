@@ -248,9 +248,8 @@ impl AppState for PreviewState {
     ) -> Result<AppStateCmdResult, ProgramError> {
         match internal_exec.internal {
             Internal::back => {
-                if self.mut_preview().get_selected_line_number().is_some() {
-                    self.mut_preview().unselect();
-                    Ok(AppStateCmdResult::Keep)
+                if self.filtered_preview.is_some() {
+                    self.on_pattern(InputPattern::none(), &cc.con)
                 } else {
                     Ok(AppStateCmdResult::PopState)
                 }

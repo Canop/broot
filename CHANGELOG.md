@@ -1,3 +1,6 @@
+### next version
+- fix esc key not removing the filter in text preview
+
 <a name="v0.20.1"></a>
 ### v0.20.1 - 2020-08-18
 - completion of the "client-server" feature (see client-server.md)
