@@ -1,7 +1,8 @@
 //! Implements parsing and applying .gitignore files.
 
 use {
-    git2, glob,
+    git2,
+    glob,
     id_arena::{Arena, Id},
     std::{
         fs::File,

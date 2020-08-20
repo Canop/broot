@@ -11,15 +11,17 @@ But you may want to have something more similar to your usual terminal colors, o
 * [set a transparent background](../skins/#transparent-background)
 * [set file extension dependent colors](../conf_file/#colors-by-file-extension)
 
-# There are artifacts on tmux
+# I have trouble with tmux
 
-Most problems with terminal multiplexers seem related to their bad proxying of some style related codes.
+The first problem you might see is the presence of artifacts. This may happen in other terminal multiplexers too and it seems related to their bad proxying of some style related codes.
 
 * [relevant issue](https://github.com/Canop/broot/issues/248)
 
 A workaround is to create a skin (for example by uncommenting the one in `conf.toml`) and to remove all `Italic` and `Bold`.
 
 Additionaly, if backgrounds can't be properly displayed, you may consider [marking selected lines](../conf_file/#selection-mark).
+
+Another problem is the fact the `br` function doesn't set a proper pane name (you'll probably see the name of your shell instead of broot). This may be [solved with a modified shell function](https://github.com/Canop/broot/issues/270).
 
 # alt-enter (or other shortcut) isn't available
 
