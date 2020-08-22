@@ -83,7 +83,7 @@ where
         Ok(())
     }
     /// a "g_string" is a "gentle" one: each char takes one column on screen.
-    /// This function must thus not used for unknown strings.
+    /// This function must thus not be used for unknown strings.
     pub fn queue_g_string(&mut self, cs: &CompoundStyle, mut s: String) -> Result<()> {
         if self.is_full() {
             return Ok(());
