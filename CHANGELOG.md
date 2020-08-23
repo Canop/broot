@@ -1,5 +1,7 @@
-### next
+<a name="v0.20.3"></a>
+### v0.20.3 - 2020-08-23
 - fix a few problems with tabulation rendering
+- fix a few cases of files being called "huge" while they're only very big
 
 <a name="v0.20.2"></a>
 ### v0.20.2 - 2020-08-18
