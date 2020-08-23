@@ -480,9 +480,9 @@ checksum = "cd56b59865bce947ac5958779cfa508f6c3b9497cc762b7e24a12d11ccde2c4f"
 
 [[package]]
 name = "file-size"
-version = "1.0.0"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0c74c05ee0836af26cb531054534e36210442dbc6cd682b16e4a586641dc5864"
+checksum = "df0ad0cf6fa7d594a629e816ff4a9683da4b1f85ff16739885cce3724baa72a0"
 
 [[package]]
 name = "flate2"
