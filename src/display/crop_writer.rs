@@ -10,8 +10,11 @@ use {
     unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
 };
 
+static TAB_REPLACEMENT: &'static str = "  ";
+
 /// wrap a writer to ensure that at most `allowed` chars are
 /// written.
+/// Note: tab replacement managment is only half designed/coded
 pub struct CropWriter<'w, W>
 where
     W: std::io::Write,
@@ -31,11 +34,12 @@ where
         self.allowed == 0
     }
     pub fn cropped_str(&self, s: &str) -> (String, usize) {
-        let mut len = UnicodeWidthStr::width(s);
-        let string = if len > self.allowed {
+        let mut string = s.replace('\t', TAB_REPLACEMENT);
+        let mut len = UnicodeWidthStr::width(&*string);
+        if len > self.allowed {
             len = 0;
             let mut ns = String::new();
-            for c in s.chars() {
+            for c in string.chars() {
                 let char_width = UnicodeWidthChar::width(c).unwrap_or(0);
                 if char_width + len > self.allowed {
                     break;
@@ -43,10 +47,8 @@ where
                 ns.push(c);
                 len += char_width;
             }
-            ns
-        } else {
-            s.to_string()
-        };
+            string = ns
+        }
         (string, len)
     }
     pub fn queue_unstyled_str(&mut self, s: &str) -> Result<()> {
@@ -75,6 +77,9 @@ where
         Ok(())
     }
     pub fn queue_unstyled_char(&mut self, c: char) -> Result<()> {
+        if c == '\t' {
+            return self.queue_unstyled_str(TAB_REPLACEMENT);
+        }
         let width = UnicodeWidthChar::width(c).unwrap_or(0);
         if width < self.allowed {
             self.allowed -= width;

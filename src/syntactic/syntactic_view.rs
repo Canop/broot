@@ -46,7 +46,7 @@ impl Region {
             g: region.0.foreground.g,
             b: region.0.foreground.b,
         };
-        let string = str::replace(region.1, '\t', "    ");
+        let string = region.1.to_string();
         Self { fg, string }
     }
 }

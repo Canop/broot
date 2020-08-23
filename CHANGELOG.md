@@ -1,3 +1,6 @@
+### next
+- fix a few problems with tabulation rendering
+
 <a name="v0.20.2"></a>
 ### v0.20.2 - 2020-08-18
 - fix esc key not removing the filter in text preview
