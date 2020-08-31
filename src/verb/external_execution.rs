@@ -292,7 +292,6 @@ impl ExternalExecution {
     fn exec_token(
         &self,
         sel: Selection<'_>,
-        //file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
     ) -> Vec<String> {
@@ -313,7 +312,6 @@ impl ExternalExecution {
     pub fn shell_exec_string(
         &self,
         sel: Selection<'_>,
-        //file: &Path,
         other_file: &Option<PathBuf>,
         args: &Option<String>,
     ) -> String {

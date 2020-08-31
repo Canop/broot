@@ -8,13 +8,13 @@ use {
     },
 };
 
+/// all the precomputed status which don't involve a verb
 pub struct StandardStatus {
     tree_top_focus: String, // go up (if not at root)
     tree_dir_focus: String,
     tree_dir_cd: Option<String>, // TODO check outcmd
     tree_file_open_stay: Option<String>,
     tree_file_open_leave: Option<String>,
-    // tree_file_enter: Option<String>, // defined if enter doesn't do open or alt-open
     tree_unfiltered: String,
     tree_filtered: String,
     preview_unfiltered: String, // ctrl-left to close, or a pattern to filter

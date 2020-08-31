@@ -12,7 +12,8 @@ use {
 };
 
 /// The immutable container that can be passed around
-/// to provide the configuration things
+/// to provide the configuration things for the whole
+/// life of the App
 pub struct AppContext {
 
     /// where's the config file we're using
@@ -86,7 +87,7 @@ fn are_true_colors_available() -> bool {
     if let Ok(colorterm) = std::env::var("COLORTERM") {
         debug!("COLORTERM env variable = {:?}", colorterm);
         if colorterm.contains("truecolor") || colorterm.contains("24bit") {
-            debug!("true colors are available!");
+            debug!("true colors are available");
             true
         } else {
             false

@@ -63,6 +63,9 @@ impl BrowserState {
         }))
     }
 
+    /// build a cmdResult asking for the addition of a new state
+    /// being a browser state similar to the current one but with
+    /// different options
     pub fn with_new_options(
         &self,
         screen: &Screen,

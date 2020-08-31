@@ -96,7 +96,9 @@ impl App {
         }
     }
 
-    /// return true when the panel has been removed (ie it wasn't the last one)
+    /// close the panel if it's not the last one
+    ///
+    /// Return true when the panel has been removed (ie it wasn't the last one)
     fn close_panel(&mut self, panel_idx: usize, screen: &Screen) -> bool {
         let active_panel_id = self.panels[self.active_panel_idx].id;
         if let Some(preview_id) = self.preview {
@@ -120,6 +122,11 @@ impl App {
         }
     }
 
+    /// remove the top state of the current panel
+    ///
+    /// Close the panel too if that was its only state.
+    /// Close nothing and return false if there's not
+    /// at least two states in the app.
     fn remove_state(&mut self, screen: &Screen) -> bool {
         self.panels[self.active_panel_idx].remove_state()
             || self.close_panel(self.active_panel_idx, screen)
@@ -155,8 +162,7 @@ impl App {
         }
     }
 
-    /// apply a command, and returns a command, which may be the same (modified or not)
-    ///  or a new one.
+    /// apply a command. Change the states but don't redraw on screen.
     fn apply_command(
         &mut self,
         w: &mut W,
@@ -365,6 +371,7 @@ impl App {
         Ok(())
     }
 
+    /// update the state of the preview, if there's some
     fn update_preview(&mut self, con: &AppContext) {
         let preview_idx = self.preview.and_then(|id| self.panel_idx(id));
         if let Some(preview_idx) = preview_idx {
@@ -377,6 +384,7 @@ impl App {
         }
     }
 
+    /// get the index of the panel at x
     fn clicked_panel_index(&self, x: u16, _y: u16, screen: &Screen) -> usize {
         let len = self.panels.len().get();
         (len * x as usize) / (screen.width as usize + 1)

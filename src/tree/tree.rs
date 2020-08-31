@@ -1,5 +1,3 @@
-//! In the tree structure, every "node" is just a line, there's
-//!  no link from a child to its parent or from a parent to its children.
 use {
     super::*,
     crate::{
@@ -18,6 +16,10 @@ use {
     },
 };
 
+/// The tree which may be displayed, with onle line per visible line of the panel.
+///
+/// In the tree structure, every "node" is just a line, there's
+///  no link from a child to its parent or from a parent to its children.
 #[derive(Debug, Clone)]
 pub struct Tree {
     pub lines: Box<[TreeLine]>,
@@ -31,6 +33,7 @@ pub struct Tree {
 
 impl Tree {
 
+    /// rebuild the tree with the same root, height, and options
     pub fn refresh(
         &mut self,
         page_height: usize,
@@ -221,7 +224,7 @@ impl Tree {
     pub fn root(&self) -> &PathBuf {
         &self.lines[0].path
     }
-    // select the line with the best matching score
+    /// select the line with the best matching score
     pub fn try_select_best_match(&mut self) {
         let mut best_score = 0;
         for (idx, line) in self.lines.iter().enumerate() {
@@ -321,7 +324,7 @@ impl Tree {
         self.git_status.is_not_computed()
     }
 
-    /// fetches the file_sums of regular files (thus avoiding the
+    /// fetch the file_sums of regular files (thus avoiding the
     /// long computation which is needed for directories)
     pub fn fetch_regular_file_sums(&mut self) {
         for i in 1..self.lines.len() {
@@ -347,8 +350,8 @@ impl Tree {
     }
 
     /// Sort files according to the sort option
-    /// (does nothing if there's none)
     ///
+    /// (does nothing if it's None)
     fn sort_siblings(&mut self) {
         if !self.options.sort.is_some() {
             return;

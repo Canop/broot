@@ -21,6 +21,8 @@ use {
     termimad::Event,
 };
 
+/// A colon on screen containing a stack of states, the top
+/// one being visible
 pub struct Panel {
     pub id: PanelId,
     states: Vec<Box<dyn AppState>>, // stack: the last one is current
@@ -55,6 +57,8 @@ impl Panel {
         self.status = Status::from_error(text);
     }
 
+    /// apply a command on the current state, with no
+    /// effect on screen
     pub fn apply_command(
         &mut self,
         w: &mut W,
@@ -155,6 +159,7 @@ impl Panel {
         self.input.get_content()
     }
 
+    /// change the argument of the verb in the input, if there's one
     pub fn set_input_arg(&mut self, arg: String) {
         let mut command_parts = CommandParts::from(self.input.get_content());
         if let Some(invocation) = &mut command_parts.verb_invocation {
@@ -175,6 +180,7 @@ impl Panel {
         }
     }
 
+    /// render the whole panel (state, status, purpose, input, flags)
     pub fn display(
         &mut self,
         w: &mut W,
@@ -214,6 +220,9 @@ impl Panel {
         status_line::write(w, task, &self.status, &self.areas.status, panel_skin, screen)
     }
 
+    /// if a panel has a specific purpose (i.e. is here for
+    /// editing of the verb argument on another panel), render
+    /// a hint of that purpose on screen
     fn write_purpose(
         &self,
         w: &mut W,

@@ -7,8 +7,16 @@ use {
 /// A verb execution definition based on an internal
 #[derive(Debug, Clone)]
 pub struct InternalExecution {
+
+    /// the internal to use
     pub internal: Internal,
+
+    /// whether to open the resulting state in a new panel
+    /// instead of the current ones
     pub bang: bool,
+
+    /// arguments
+    /// (for example `"~"` when a verb execution is `:!focus ~`)
     pub arg: Option<String>,
 }
 

@@ -1,5 +1,3 @@
-//! In the tree structure, every "node" is just a line, there's
-//!  no link from a child to its parent or from a parent to its children.
 use {
     super::*,
     crate::{

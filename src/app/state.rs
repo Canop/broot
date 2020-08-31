@@ -17,7 +17,7 @@ use {
     termimad::Area,
 };
 
-/// a whole application state, stackable to allow reverting
+/// a panel state, stackable to allow reverting
 ///  to a previous one
 pub trait AppState {
     /// called on start of on_command
@@ -237,6 +237,7 @@ pub trait AppState {
         }
     }
 
+    /// return a cmdresult asking for the opening of a preview
     fn open_preview(
         &mut self,
         prefered_mode: Option<PreviewMode>,

@@ -10,7 +10,7 @@ use {
     unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
 };
 
-static TAB_REPLACEMENT: &'static str = "  ";
+static TAB_REPLACEMENT: &str = "  ";
 
 /// wrap a writer to ensure that at most `allowed` chars are
 /// written.

@@ -6,7 +6,10 @@ pub fn clap_app() -> clap::App<'static, 'static> {
     let app = clap::App::new("broot")
         .version(env!("CARGO_PKG_VERSION"))
         .author("dystroy <denys.seguret@gmail.com>")
-        .about("A tree explorer and a customizable launcher")
+        .about(
+            "A tree explorer and a customizable launcher\n\
+            Complete documentation lives at https://dystroy.org/broot"
+        )
         .arg(clap::Arg::with_name("ROOT").help("sets the root directory"))
         // tree flags
         .arg(

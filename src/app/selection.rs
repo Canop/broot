@@ -7,7 +7,6 @@ use {
 /// (0 if not specified)
 pub type LineNumber = usize;
 
-
 /// light information about the currently selected
 /// file and maybe line number
 #[derive(Debug, Clone, Copy)]

@@ -1,3 +1,7 @@
+<a name="v1.0.0"></a>
+### v1.0.0 - 2020-09-01
+- nothing new, which is better when you want to call your software stable
+
 <a name="v0.20.3"></a>
 ### v0.20.3 - 2020-08-23
 - fix a few problems with tabulation rendering

@@ -1,3 +1,5 @@
+//! utility functions to help handle the `:focus` internal
+
 use {
     super::*,
     crate::{

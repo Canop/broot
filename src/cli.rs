@@ -256,8 +256,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     r
 }
 
-/// wait for user input, return `true` if she
-/// didn't answer 'n'
+/// wait for user input, return `true` if they didn't answer 'n'
 pub fn ask_authorization() -> Result<bool, ProgramError> {
     let mut answer = String::new();
     io::stdin().read_line(&mut answer)?;
