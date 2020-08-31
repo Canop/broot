@@ -39,7 +39,7 @@ You can bind this command to a key sequence in the [configuration file](../conf_
 
 ```toml
 [[verbs]]
-key = "alt-c"
+key = "alt-p"
 shortcut = "pp"
 execution = ":print_path"
 ```

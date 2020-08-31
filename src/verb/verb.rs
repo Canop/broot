@@ -113,6 +113,12 @@ impl Verb {
             .join(", ");
         self
     }
+    pub fn with_alt_key(self, chr: char) -> Self {
+        self.with_key(KeyEvent {
+            code: KeyCode::Char(chr),
+            modifiers: KeyModifiers::ALT,
+        })
+    }
     pub fn with_control_key(self, chr: char) -> Self {
         self.with_key(KeyEvent {
             code: KeyCode::Char(chr),

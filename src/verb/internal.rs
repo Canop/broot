@@ -56,6 +56,7 @@ Internals! {
     back: "revert to the previous state (mapped to *esc*)",
     close_panel_ok: "close the panel, validating the selected path",
     close_panel_cancel: "close the panel, not using the selected path",
+    copy_path: "copy path to system clipboard (mapped to *alt-c*)",
     focus: "display the directory (mapped to *enter*)",
     help: "display broot's help",
     input_del_char_left: "delete the char left of the cursor",

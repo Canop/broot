@@ -328,6 +328,14 @@ impl AppState for BrowserState {
                     AppStateCmdResult::PopState
                 }
             }
+            Internal::copy_path => {
+                let path = &self.displayed_tree().selected_line().target();
+                cli_clipboard::set_contents( path.to_string_lossy().into_owned() )
+                    .map_err( |_| ProgramError::ClipboardError )?
+                ;
+
+                AppStateCmdResult::Keep
+            }
             Internal::focus => internal_focus::on_internal(
                 internal_exec,
                 input_invocation,

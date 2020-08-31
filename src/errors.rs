@@ -11,6 +11,7 @@ custom_error! {pub ProgramError
     Io {source: io::Error} = "IO Error : {:?}",
     Crossterm {source: crossterm::ErrorKind} = "Crossterm Error : {:?}",
     Termimad {source: termimad::Error} = "Termimad Error : {:?}",
+	ClipboardError = "Clipboard handler error: unable to copy to clipboard",
     Conf {source: ConfError} = "Bad configuration: {}",
     ArgParse {bad: String, valid: String} = "{:?} can't be parsed (valid values: {:?})",
     UnknownVerb {name: String} = "No verb matches {:?}",
