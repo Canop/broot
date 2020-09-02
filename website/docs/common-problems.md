@@ -45,7 +45,7 @@ The solution is to tell broot not to automatically enter the directory. It will 
 
 In such a case, which isn't rare in server systems, you can rebind <kbd>enter</kbd> to the program of your choice.
 
-* [change standard file opening](../tricks/#change-standard-file-opening)
+* [change standard file opening](tricks.md/#change-standard-file-opening)
 
 # Broot doesn't seem to work on msysgit or git bash
 
