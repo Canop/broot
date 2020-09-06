@@ -23,6 +23,24 @@ use {
     },
 };
 
+/// a node id, taking the device into account to be sure to discriminate
+/// nodes with the same inode but on different devices
+#[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
+struct NodeId {
+    /// inode number
+    inode: u64,
+    /// device number
+    dev: u64,
+}
+impl NodeId {
+    fn from(m: &fs::Metadata) -> Self {
+        Self {
+            inode: m.ino(),
+            dev: m.dev(),
+        }
+    }
+}
+
 // threads used by one computation
 const THREADS_COUNT: usize = 6;
 
@@ -38,9 +56,9 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
             .num_threads(THREADS_COUNT*2).build().unwrap();
     }
 
-    // to avoid counting twice an inode, we store them in a set
+    // to avoid counting twice a node, we store their id in a set
     #[cfg(unix)]
-    let inodes = Arc::new(Mutex::new(HashSet::<u64>::default()));
+    let nodes = Arc::new(Mutex::new(HashSet::<NodeId>::default()));
 
     // this MPMC channel contains the directory paths which must be handled.
     // A None means there's nothing left and the thread may send its result and stop
@@ -62,7 +80,7 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
         let (dirs_sender, dirs_receiver) = (dirs_sender.clone(), dirs_receiver.clone());
 
         #[cfg(unix)]
-        let inodes = inodes.clone();
+        let nodes = nodes.clone();
 
         let observer = dam.observer();
         let thread_sum_sender = thread_sum_sender.clone();
@@ -83,8 +101,8 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
 
                                     #[cfg(unix)]
                                     if md.nlink() > 1 {
-                                        let mut inodes = inodes.lock().unwrap();
-                                        if !inodes.insert(md.ino()) {
+                                        let mut nodes = nodes.lock().unwrap();
+                                        if !nodes.insert(NodeId::from(&md)) {
                                             // it was already in the set
                                             continue;
                                         }
