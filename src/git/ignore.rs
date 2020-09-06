@@ -105,6 +105,7 @@ pub fn find_global_ignore() -> Option<GitIgnoreFile> {
 
 #[derive(Debug, Clone, Default)]
 pub struct GitIgnoreChain {
+    in_repo: bool,
     file_ids: Vec<Id<GitIgnoreFile>>,
 }
 impl GitIgnoreChain {
@@ -142,6 +143,7 @@ impl GitIgnorer {
                 chain.push(self.files.alloc(gif));
             }
             if is_repo(dir) {
+                chain.in_repo = true;
                 break;
             }
             if let Some(parent) = dir.parent() {
@@ -158,16 +160,21 @@ impl GitIgnorer {
         // we don't want the .gitignore files of super repositories
         // (see https://github.com/Canop/broot/issues/160)
         let mut chain = if is_repo(dir) {
-            self.global_chain.clone()
+            let mut chain = self.global_chain.clone();
+            chain.in_repo = true;
+            chain
         } else {
             parent_chain.clone()
         };
-        let ignore_file = dir.join(".gitignore");
-        if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
-            chain.push(self.files.alloc(gif));
+        if chain.in_repo {
+            let ignore_file = dir.join(".gitignore");
+            if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
+                chain.push(self.files.alloc(gif));
+            }
         }
         chain
     }
+    /// return true if the given path should not be ignored
     pub fn accepts(
         &self,
         chain: &GitIgnoreChain,
@@ -175,6 +182,11 @@ impl GitIgnorer {
         filename: &str,
         directory: bool,
     ) -> bool {
+        if !chain.in_repo {
+            // if we're not in a git repository, then .gitignore files, including
+            // the global ones, are irrelevant
+            return true;
+        }
         // we start with deeper files: deeper rules have a bigger priority
         for id in chain.file_ids.iter().rev() {
             let file = &self.files[*id];

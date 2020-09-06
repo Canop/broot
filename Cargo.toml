@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.0.0"
+version = "1.0.1-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -50,7 +50,6 @@ termimad = "0.8.26"
 toml = "0.5"
 umask = "1.0"
 unicode-width = "0.1.8"
-
 
 [dev-dependencies]
 criterion = "0.3.1"

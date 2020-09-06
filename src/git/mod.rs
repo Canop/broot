@@ -10,8 +10,7 @@ pub use {
 
 use std::path::{Path, PathBuf};
 
-/// return the closest parent (or self) containing a
-/// .git file
+/// return the closest parent (or self) containing a .git file
 pub fn closest_repo_dir(mut path: &Path) -> Option<PathBuf> {
     loop {
         let c = path.join(".git");

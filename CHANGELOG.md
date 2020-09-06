@@ -1,3 +1,6 @@
+### next
+- ignore .gitignore files (including the global one) when not in a git repository - Fix #274
+
 <a name="v1.0.0"></a>
 ### v1.0.0 - 2020-09-01
 - nothing new, which is better when you want to call your software stable

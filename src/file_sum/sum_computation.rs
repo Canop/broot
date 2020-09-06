@@ -34,7 +34,8 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
     //debug!("compute size of dir {:?} --------------- ", path);
 
     lazy_static! {
-        static ref THREAD_POOL: ThreadPool = ThreadPoolBuilder::new().num_threads(THREADS_COUNT*2).build().unwrap();
+        static ref THREAD_POOL: ThreadPool = ThreadPoolBuilder::new()
+            .num_threads(THREADS_COUNT*2).build().unwrap();
     }
 
     // to avoid counting twice an inode, we store them in a set
