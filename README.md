@@ -18,6 +18,8 @@ A better way to navigate directories
 
 [Install Broot](https://dystroy.org/broot/install/)
 
+
+
 # Get an overview of a directory, even a big one
 
 `br -s`

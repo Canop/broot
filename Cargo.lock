@@ -274,6 +274,8 @@ dependencies = [
 [[package]]
 name = "cli-clipboard"
 version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c806d0d69ff99a6802438a2f2fb39af1bc3d3e0e72f100c3ee91cd7c63822e93"
 dependencies = [
  "anyhow",
  "clipboard-win",

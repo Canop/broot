@@ -266,7 +266,11 @@ impl App {
                     self.mut_panel().refresh_input_status(&other_path, con);
                 }
             }
-            Keep => {}
+            Keep => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input_invocation();
+                }
+            }
             Launch(launchable) => {
                 self.launch_at_end = Some(*launchable);
                 self.quitting = true;
