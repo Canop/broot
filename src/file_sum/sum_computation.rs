@@ -32,14 +32,6 @@ struct NodeId {
     /// device number
     dev: u64,
 }
-impl NodeId {
-    fn from(m: &fs::Metadata) -> Self {
-        Self {
-            inode: m.ino(),
-            dev: m.dev(),
-        }
-    }
-}
 
 // threads used by one computation
 const THREADS_COUNT: usize = 6;
@@ -102,7 +94,11 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
                                     #[cfg(unix)]
                                     if md.nlink() > 1 {
                                         let mut nodes = nodes.lock().unwrap();
-                                        if !nodes.insert(NodeId::from(&md)) {
+                                        let node_id = NodeId {
+                                            inode: md.ino(),
+                                            dev: md.dev(),
+                                        };
+                                        if !nodes.insert(node_id) {
                                             // it was already in the set
                                             continue;
                                         }
