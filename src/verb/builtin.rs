@@ -33,15 +33,17 @@ pub fn builtin_verbs() -> Vec<Verb> {
             "/bin/cp -r {file} {newpath:path-from-parent}",
             StayInBroot,
         )
-        .unwrap()
-        .with_shortcut("cp"),
+            .unwrap()
+            .with_shortcut("cp"),
+        Verb::internal(copy_path)
+            .with_alt_key( 'c' ),
         Verb::external(
             "copy_to_panel",
             "/bin/cp -r {file} {other-panel-directory}",
             StayInBroot,
         )
-        .unwrap()
-        .with_shortcut("cpp"),
+            .unwrap()
+            .with_shortcut("cpp"),
         // :focus is also hardcoded on Enter on directories
         // but ctrl-f is useful for focusing on a file's parent
         // (and keep the filter)

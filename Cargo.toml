@@ -21,6 +21,7 @@ client-server = []
 ansi_colours = "1.0"
 bet = "0.3.4"
 clap = { version="2.33", default-features=false, features=["suggestions"] }
+cli-clipboard = {path="/home/zx/workspace/git/cli-clipboard"}
 chrono = "0.4"
 crossbeam = "0.7"
 crossterm = "0.17.7"

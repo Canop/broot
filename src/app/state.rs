@@ -81,6 +81,13 @@ pub trait AppState {
         let con = &cc.con;
         Ok(match internal_exec.internal {
             Internal::back => AppStateCmdResult::PopState,
+            Internal::copy_path => {
+                cli_clipboard::set_contents( self.selected_path().to_string_lossy().into_owned() )
+                    .map_err( |_| ProgramError::ClipboardError )?
+                ;
+
+                AppStateCmdResult::Keep
+            }
             Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
                 validate_purpose: true,
                 id: None,
