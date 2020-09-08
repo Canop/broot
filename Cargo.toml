@@ -16,12 +16,12 @@ exclude = ["website", "broot*.zip"]
 [features]
 default = []
 client-server = []
+clipboard = ["terminal-clipboard"]
 
 [dependencies]
 ansi_colours = "1.0"
 bet = "0.3.4"
 clap = { version="2.33", default-features=false, features=["suggestions"] }
-cli-clipboard = "0.2"
 chrono = "0.4"
 crossbeam = "0.7"
 crossterm = "0.17.7"
@@ -51,6 +51,8 @@ termimad = "0.8.26"
 toml = "0.5"
 umask = "1.0"
 unicode-width = "0.1.8"
+
+terminal-clipboard = { version = "0.1.1", optional = true }
 
 [dev-dependencies]
 criterion = "0.3.1"

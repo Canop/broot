@@ -82,12 +82,21 @@ pub trait AppState {
         Ok(match internal_exec.internal {
             Internal::back => AppStateCmdResult::PopState,
             Internal::copy_path => {
-                let path = self.selected_path().to_string_lossy().to_string();
-                match cli_clipboard::set_contents(path) {
-                    Ok(()) => AppStateCmdResult::Keep,
-                    Err(_) => AppStateCmdResult::DisplayError(
-                        "Clipboard error while copying path".to_string()
-                    ),
+                #[cfg(not(feature="clipboard"))]
+                {
+                    AppStateCmdResult::DisplayError(
+                        "Clipboard feature not enabled at compilation".to_string()
+                    )
+                }
+                #[cfg(feature="clipboard")]
+                {
+                    let path = self.selected_path().to_string_lossy().to_string();
+                    match terminal_clipboard::set_string(path) {
+                        Ok(()) => AppStateCmdResult::Keep,
+                        Err(_) => AppStateCmdResult::DisplayError(
+                            "Clipboard error while copying path".to_string()
+                        ),
+                    }
                 }
             }
             Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
