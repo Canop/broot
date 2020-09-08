@@ -32,17 +32,16 @@ pub fn builtin_verbs() -> Vec<Verb> {
             "copy {newpath:path-from-parent}",
             "/bin/cp -r {file} {newpath:path-from-parent}",
             StayInBroot,
-        )
-            .unwrap()
+        ).unwrap()
             .with_shortcut("cp"),
+        #[cfg(feature="clipboard")]
         Verb::internal(copy_path)
             .with_alt_key( 'c' ),
         Verb::external(
             "copy_to_panel",
             "/bin/cp -r {file} {other-panel-directory}",
             StayInBroot,
-        )
-            .unwrap()
+        ).unwrap()
             .with_shortcut("cpp"),
         // :focus is also hardcoded on Enter on directories
         // but ctrl-f is useful for focusing on a file's parent
@@ -56,23 +55,20 @@ pub fn builtin_verbs() -> Vec<Verb> {
             "mkdir {subpath}",
             "/bin/mkdir -p {subpath:path-from-directory}",
             StayInBroot,
-        )
-        .unwrap()
-        .with_shortcut("md"),
+        ).unwrap()
+            .with_shortcut("md"),
         Verb::external(
             "move {newpath:path-from-parent}",
             "/bin/mv {file} {newpath:path-from-parent}",
             StayInBroot,
-        )
-        .unwrap()
-        .with_shortcut("mv"),
+        ).unwrap()
+            .with_shortcut("mv"),
         Verb::external(
             "move_to_panel",
             "/bin/mv {file} {other-panel-directory}",
             StayInBroot,
-        )
-        .unwrap()
-        .with_shortcut("mvp"),
+        ).unwrap()
+            .with_shortcut("mvp"),
         Verb::internal_bang(start_end_panel)
             .with_control_key('p'),
         Verb::internal(next_match)
