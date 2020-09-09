@@ -69,6 +69,7 @@ Internals! {
     input_go_to_start: "move the cursor to the start of input",
     input_go_word_left: "move the cursor one word to the left",
     input_go_word_right: "move the cursor one word to the right",
+    input_paste: "paste the clipboard content into the input",
     line_down: "move one line down",
     line_up: "move one line up",
     open_stay: "open file or directory according to OS (stay in broot)",

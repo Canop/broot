@@ -36,7 +36,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_shortcut("cp"),
         #[cfg(feature="clipboard")]
         Verb::internal(copy_path)
-            .with_alt_key( 'c' ),
+            .with_alt_key('c'),
         Verb::external(
             "copy_to_panel",
             "/bin/cp -r {file} {other-panel-directory}",
@@ -49,6 +49,9 @@ pub fn builtin_verbs() -> Vec<Verb> {
         Verb::internal(focus)
             .with_control_key('f'),
         Verb::internal(help).with_key(F1).with_shortcut("?"),
+        #[cfg(feature="clipboard")]
+        Verb::internal(input_paste)
+            .with_control_key('v'),
         Verb::internal(line_down).with_key(DOWN),
         Verb::internal(line_up).with_key(UP),
         Verb::external(

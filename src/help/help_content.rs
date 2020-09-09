@@ -83,7 +83,7 @@ pub fn build_text(con: &AppContext) -> Text<'_> {
             sub.set("description", "");
             sub.set("execution", &verb.description.content);
         } else {
-            sub.set("description", &verb.description.content);
+            sub.set_md("description", &verb.description.content);
             sub.set("execution", "");
         }
     }

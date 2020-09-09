@@ -1,6 +1,6 @@
 mod command;
 mod completion;
-mod event;
+mod panel_input;
 mod parts;
 mod sequence;
 mod scroll;
@@ -9,7 +9,7 @@ mod trigger_type;
 pub use {
     command::Command,
     completion::Completions,
-    event::PanelInput,
+    panel_input::PanelInput,
     parts::CommandParts,
     sequence::Sequence,
     scroll::ScrollCommand,

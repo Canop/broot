@@ -29,13 +29,25 @@ use std::sync::{Arc, Mutex};
 
 /// The GUI
 pub struct App {
+    /// the panels of the application, at least one
     panels: NonEmptyVec<Panel>,
-    active_panel_idx: usize,
-    quitting: bool,
-    launch_at_end: Option<Launchable>, // what must be launched after end
-    created_panels_count: usize,
-    preview: Option<PanelId>, // the panel dedicated to preview, if any
 
+    /// index of the currently focused panel
+    active_panel_idx: usize,
+
+    /// whether the app is in the (uncancellable) process of quitting
+    quitting: bool,
+
+    /// what must be done after having closed the TUI
+    launch_at_end: Option<Launchable>,
+
+    /// a count of all panels created
+    created_panels_count: usize,
+
+    /// the panel dedicated to preview, if any
+    preview: Option<PanelId>,
+
+    /// the root of the active panel
     #[cfg(feature="client-server")]
     root: Arc<Mutex<PathBuf>>,
 }

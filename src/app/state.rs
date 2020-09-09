@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        command::{Command, TriggerType},
+        command::*,
         display::{Screen, W},
         errors::ProgramError,
         flag::Flag,

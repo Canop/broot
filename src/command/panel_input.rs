@@ -89,6 +89,22 @@ impl PanelInput {
                 Internal::input_go_word_right => self.input_field.move_word_right(),
                 Internal::input_go_to_start => self.input_field.move_to_start(),
                 Internal::input_go_to_end => self.input_field.move_to_end(),
+                #[cfg(feature="clipboard")]
+                Internal::input_paste => {
+                    match terminal_clipboard::get_string() {
+                        Ok(pasted) => {
+                            for c in pasted.chars()
+                                .filter(|c| c.is_alphanumeric() || c.is_ascii_punctuation())
+                            {
+                                self.input_field.put_char(c);
+                            }
+                        }
+                        Err(e) => {
+                            warn!("Error in reading clipboard: {:?}", e);
+                        }
+                    }
+                    true
+                }
                 _ => false,
             }
         } else {

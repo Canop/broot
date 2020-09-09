@@ -1,6 +1,9 @@
 ### next
-- ignore .gitignore files (including the global one) when not in a git repository - Fix #274
-- the "clipboard" optional feature adds the `:copy_path` verb which copies the selected path to the clipboard (I need return on compilation and usage from users before making this feature a little more standard)
+* ignore .gitignore files (including the global one) when not in a git repository - Fix #274
+* the "clipboard" optional feature adds:
+- the `:copy_path` verb which copies the selected path to the clipboard (mapped to alt-c)
+- the `:input_paste` verb which inserts the clipboard content in the input (mapped to ctrl-v)
+(I need user/dev feedback on compilation and usage before making this feature default)
 
 <a name="v1.0.0"></a>
 ### v1.0.0 - 2020-09-01
