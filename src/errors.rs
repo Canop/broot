@@ -7,6 +7,10 @@ use {
     std::io,
 };
 
+custom_error! { pub ClipboardError 
+	SystemClipboard{ source: Box<dyn std::error::Error> } = "Clipboard error: {}"
+}
+
 custom_error! {pub ProgramError
     Io {source: io::Error} = "IO Error : {:?}",
     Crossterm {source: crossterm::ErrorKind} = "Crossterm Error : {:?}",

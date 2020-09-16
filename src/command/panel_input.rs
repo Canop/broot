@@ -5,6 +5,7 @@ use {
             AppContext,
             Selection,
         },
+		clipboard,
         display::W,
         errors::ProgramError,
         keys,
@@ -91,7 +92,7 @@ impl PanelInput {
                 Internal::input_go_to_end => self.input_field.move_to_end(),
                 #[cfg(feature="clipboard")]
                 Internal::input_paste => {
-                    match terminal_clipboard::get_string() {
+                    match clipboard::get_string() {
                         Ok(pasted) => {
                             for c in pasted.chars()
                                 .filter(|c| c.is_alphanumeric() || c.is_ascii_punctuation())

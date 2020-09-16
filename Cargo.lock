@@ -114,6 +114,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "block"
+version = "0.1.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
+
+[[package]]
 name = "broot"
 version = "1.0.1-dev"
 dependencies = [
@@ -121,6 +127,7 @@ dependencies = [
  "bet",
  "chrono",
  "clap",
+ "copypasta",
  "criterion",
  "crossbeam",
  "crossterm",
@@ -148,7 +155,6 @@ dependencies = [
  "strict",
  "syntect",
  "termimad",
- "terminal-clipboard",
  "toml",
  "umask",
  "unicode-width",
@@ -237,12 +243,10 @@ dependencies = [
 
 [[package]]
 name = "clipboard-win"
-version = "4.0.3"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5123c6b97286809fea9e38d2c9bf530edbcb9fc0d8f8272c28b0c95f067fa92d"
+checksum = "e3a093d6fed558e5fe24c3dfc85a68bb68f1c824f440d3ba5aca189e2998786b"
 dependencies = [
- "error-code",
- "str-buf",
  "winapi",
 ]
 
@@ -266,6 +270,20 @@ name = "constant_time_eq"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "245097e9a4535ee1e3e3931fcfcd55a796a44c643e8596ff6566d68f09b87bbc"
+
+[[package]]
+name = "copypasta"
+version = "0.7.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cbc2322d35c17d340f7017e4c1be24c6f0d6e09423adb51d182d7a9c122f2e6c"
+dependencies = [
+ "clipboard-win",
+ "objc",
+ "objc-foundation",
+ "objc_id",
+ "smithay-clipboard",
+ "x11-clipboard",
+]
 
 [[package]]
 name = "crc32fast"
@@ -479,20 +497,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "dlib"
+version = "0.4.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b11f15d1e3268f140f68d390637d5e76d849782d971ae7063e0da69fe9709a76"
+dependencies = [
+ "libloading",
+]
+
+[[package]]
+name = "downcast-rs"
+version = "1.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9ea835d29036a4087793836fa931b08837ad5e957da9e23886b29586fb9b6650"
+
+[[package]]
 name = "either"
 version = "1.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cd56b59865bce947ac5958779cfa508f6c3b9497cc762b7e24a12d11ccde2c4f"
-
-[[package]]
-name = "error-code"
-version = "2.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56551f6cdadfbb3279fbb8d17693591e49c599dacf22b40088ef321571ae53ee"
-dependencies = [
- "libc",
- "str-buf",
-]
 
 [[package]]
 name = "file-size"
@@ -719,6 +742,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "libloading"
+version = "0.6.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2443d8f0478b16759158b2f66d525991a05491138bc05814ef52a250148ef4f9"
+dependencies = [
+ "cfg-if",
+ "winapi",
+]
+
+[[package]]
 name = "libz-sys"
 version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -768,6 +801,15 @@ name = "lzw"
 version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7d947cbb889ed21c2a84be6ffbaebf5b4e0f4340638cba0444907e38b56be084"
+
+[[package]]
+name = "malloc_buf"
+version = "0.0.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "62bb907fe88d54d8d9ce32a3cceab4218ed2f6b7d35617cafe9adf84e43919cb"
+dependencies = [
+ "libc",
+]
 
 [[package]]
 name = "matches"
@@ -858,6 +900,41 @@ dependencies = [
 ]
 
 [[package]]
+name = "nix"
+version = "0.17.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "50e4785f2c3b7589a0d0c1dd60285e1188adac4006e8abd6dd578e1567027363"
+dependencies = [
+ "bitflags",
+ "cc",
+ "cfg-if",
+ "libc",
+ "void",
+]
+
+[[package]]
+name = "nix"
+version = "0.18.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "83450fe6a6142ddd95fb064b746083fc4ef1705fe81f64a64e1d4b39f54a1055"
+dependencies = [
+ "bitflags",
+ "cc",
+ "cfg-if",
+ "libc",
+]
+
+[[package]]
+name = "nom"
+version = "5.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ffb4262d26ed83a1c0a33a38fe2bb15797329c85770da05e6b828ddb782627af"
+dependencies = [
+ "memchr",
+ "version_check",
+]
+
+[[package]]
 name = "ntapi"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -922,6 +999,41 @@ name = "numtoa"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b8f8bdf33df195859076e54ab11ee78a1b208382d3a26ec40d142ffc1ecc49ef"
+
+[[package]]
+name = "objc"
+version = "0.2.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "915b1b472bc21c53464d6c8461c9d3af805ba1ef837e1cac254428f4a77177b1"
+dependencies = [
+ "malloc_buf",
+]
+
+[[package]]
+name = "objc-foundation"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1add1b659e36c9607c7aab864a76c7a4c2760cd0cd2e120f3fb8b952c7e22bf9"
+dependencies = [
+ "block",
+ "objc",
+ "objc_id",
+]
+
+[[package]]
+name = "objc_id"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c92d4ddb4bd7b50d730c215ff871754d0da6b2178849f8a2a2ab69712d0c073b"
+dependencies = [
+ "objc",
+]
+
+[[package]]
+name = "once_cell"
+version = "1.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "260e51e7efe62b592207e9e13a68e43692a7a279171d6ba57abd208bf23645ad"
 
 [[package]]
 name = "onig"
@@ -1286,6 +1398,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "scoped-tls"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ea6a9290e3c9cf0f18145ef7ffa62d68ee0bf5fcd651017e586dc7fd5da448c2"
+
+[[package]]
 name = "scoped_threadpool"
 version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1401,6 +1519,34 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fbee7696b84bbf3d89a1c2eccff0850e3047ed46bfcd2e92c29a2d074d57e252"
 
 [[package]]
+name = "smithay-client-toolkit"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "562da6f2f0836e144f2e92118b35add58368280556af94f399666ebfd7d1e731"
+dependencies = [
+ "bitflags",
+ "byteorder",
+ "dlib",
+ "lazy_static",
+ "log",
+ "memmap",
+ "nix 0.18.0",
+ "wayland-client",
+ "wayland-cursor",
+ "wayland-protocols",
+]
+
+[[package]]
+name = "smithay-clipboard"
+version = "0.5.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b9e9db50a9b272938b767b731a1291f22f407315def4049db93871e8828034d5"
+dependencies = [
+ "smithay-client-toolkit",
+ "wayland-client",
+]
+
+[[package]]
 name = "socket2"
 version = "0.3.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1411,12 +1557,6 @@ dependencies = [
  "redox_syscall",
  "winapi",
 ]
-
-[[package]]
-name = "str-buf"
-version = "1.0.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cec4d70d0ed9214ae8d642a13bafe4fdfe45a4c611d27a9fb4d4c1a3b02a12e3"
 
 [[package]]
 name = "strict"
@@ -1484,16 +1624,6 @@ dependencies = [
  "lazy_static",
  "minimad",
  "thiserror",
-]
-
-[[package]]
-name = "terminal-clipboard"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7d0bd72c5576dacccc02c15f7aa568e8ef46286b489eebe09de7c4451d493a4"
-dependencies = [
- "clipboard-win",
- "x11-clipboard",
 ]
 
 [[package]]
@@ -1662,6 +1792,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
 
 [[package]]
+name = "version_check"
+version = "0.9.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b5a972e5669d67ba988ce3dc826706fb0a8b01471c088cb0b6110b805cc36aed"
+
+[[package]]
+name = "void"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6a02e4885ed3bc0f2de90ea6dd45ebcbb66dacffe03547fadbb0eeae2770887d"
+
+[[package]]
 name = "walkdir"
 version = "2.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1739,6 +1881,79 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "93b162580e34310e5931c4b792560108b10fd14d64915d7fff8ff00180e70092"
 
 [[package]]
+name = "wayland-client"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab702fefbcd6d6f67fb5816e3a89a3b5a42a94290abbc015311c9a30d1068ae4"
+dependencies = [
+ "bitflags",
+ "downcast-rs",
+ "libc",
+ "nix 0.17.0",
+ "scoped-tls",
+ "wayland-commons",
+ "wayland-scanner",
+ "wayland-sys",
+]
+
+[[package]]
+name = "wayland-commons"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e972e9336ad5a9dd861b4e21ff35ad71d3e5c6b4803d65c39913612f851b95f1"
+dependencies = [
+ "nix 0.17.0",
+ "once_cell",
+ "smallvec",
+ "wayland-sys",
+]
+
+[[package]]
+name = "wayland-cursor"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "539f346e1a3f706f38c8ccbe1196001e2fb1c9b3e6b605c27d665db2f5b60d41"
+dependencies = [
+ "nix 0.17.0",
+ "wayland-client",
+ "xcursor",
+]
+
+[[package]]
+name = "wayland-protocols"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f3d6fc54b17b98b5083bc21ae3a30e6d75cb4b01647360e4c3a04648bcf8781d"
+dependencies = [
+ "bitflags",
+ "wayland-client",
+ "wayland-commons",
+ "wayland-scanner",
+]
+
+[[package]]
+name = "wayland-scanner"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "030f56009d932bd9400bb472764fea8109be1b0fc482d9cd75496c943ac30328"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "xml-rs",
+]
+
+[[package]]
+name = "wayland-sys"
+version = "0.27.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8bdeffbbb474477dfa2acb45ac7479e5fe8f741c64ab032c5d11b94d07edc269"
+dependencies = [
+ "dlib",
+ "lazy_static",
+ "pkg-config",
+]
+
+[[package]]
 name = "web-sys"
 version = "0.3.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1796,6 +2011,15 @@ checksum = "62056f63138b39116f82a540c983cc11f1c90cd70b3d492a70c25eaa50bd22a6"
 dependencies = [
  "libc",
  "log",
+]
+
+[[package]]
+name = "xcursor"
+version = "0.3.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d3a481cfdefd35e1c50073ae33a8000d695c98039544659f5dc5dd71311b0d01"
+dependencies = [
+ "nom",
 ]
 
 [[package]]

@@ -23,6 +23,7 @@ pub mod app;
 pub mod browser;
 pub mod clap;
 pub mod cli;
+pub mod clipboard;
 pub mod command;
 pub mod conf;
 pub mod content_search;

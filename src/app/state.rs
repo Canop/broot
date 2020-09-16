@@ -1,6 +1,7 @@
 use {
     super::*,
     crate::{
+		clipboard,
         command::*,
         display::{Screen, W},
         errors::ProgramError,
@@ -91,10 +92,10 @@ pub trait AppState {
                 #[cfg(feature="clipboard")]
                 {
                     let path = self.selected_path().to_string_lossy().to_string();
-                    match terminal_clipboard::set_string(path) {
+                    match clipboard::set_string(path) {
                         Ok(()) => AppStateCmdResult::Keep,
-                        Err(_) => AppStateCmdResult::DisplayError(
-                            "Clipboard error while copying path".to_string()
+                        Err( e ) => AppStateCmdResult::DisplayError(
+							format!( "{}", e ) 
                         ),
                     }
                 }

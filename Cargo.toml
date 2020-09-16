@@ -16,7 +16,7 @@ exclude = ["website", "broot*.zip"]
 [features]
 default = []
 client-server = []
-clipboard = ["terminal-clipboard"]
+clipboard = [ "copypasta" ]
 
 [dependencies]
 ansi_colours = "1.0"
@@ -52,7 +52,7 @@ toml = "0.5"
 umask = "1.0"
 unicode-width = "0.1.8"
 
-terminal-clipboard = { version = "0.1.1", optional = true }
+copypasta = { version = "0.7", optional = true }
 
 [dev-dependencies]
 criterion = "0.3.1"
