@@ -6,7 +6,6 @@
 
 use {
     crate::errors::ConfError,
-    std::path::Path,
 };
 
 macro_rules! Internals {
@@ -38,13 +37,6 @@ macro_rules! Internals {
                 use Internal::*;
                 match self {
                     $($name => $description,)*
-                }
-            }
-            pub fn applied_description(self, path: &Path) -> Option<String> {
-                if self == Internal::focus {
-                    Some(format!("focus `{}`", path.to_string_lossy()))
-                } else {
-                    None
                 }
             }
         }
@@ -116,11 +108,16 @@ Internals! {
 }
 
 impl Internal {
-    /// whether this internal accept a path as (optional) argument
-    pub fn accept_path(self) -> bool {
+    pub fn invocation_pattern(self) -> &'static str {
         match self {
-            Internal::focus => true,
-            _ => false,
+            Internal::focus => r"focus (?P<path>.*)?",
+            _ => self.name(),
+        }
+    }
+    pub fn exec_pattern(self) -> &'static str {
+        match self {
+            Internal::focus => r"focus {path}",
+            _ => self.name(),
         }
     }
 }

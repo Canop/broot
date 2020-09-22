@@ -85,6 +85,7 @@ impl TreeLine {
         Selection {
             path: &self.path,
             stype: self.selection_type(),
+            is_exe: self.is_exe(),
             line: 0,
         }
     }

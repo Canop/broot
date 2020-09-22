@@ -31,41 +31,33 @@ impl TryFrom<&VerbConf> for Verb {
         // future. In such cases we'll check among previously
         // added externals if no internal is found with the name)
         let mut s: &str = &verb_conf.execution;
-        let mut verb = if s.starts_with(':') || s.starts_with(' ') {
+        let execution = if s.starts_with(':') || s.starts_with(' ') {
             s = &s[1..];
-            let internal_execution = InternalExecution::try_from(s)?;
-            let name = verb_conf.invocation.as_ref().map(|inv| {
-                let inv: &str = &inv;
-                VerbInvocation::from(inv).name
-            });
-            Verb::new(
-                name,
-                VerbExecution::Internal(internal_execution),
-                VerbDescription::from_code(verb_conf.execution.to_string()),
-            )
+            VerbExecution::Internal(InternalExecution::try_from(s)?)
         } else {
-            Verb::external(
-                if let Some(inv) = &verb_conf.invocation {
-                    inv
-                } else {
-                    // can we really accept externals without invocation ? Is this supported ?
-                    ""
-                },
+            VerbExecution::External(ExternalExecution::new(
                 &verb_conf.execution,
                 ExternalExecutionMode::from_conf(
                     verb_conf.from_shell,
                     verb_conf.leave_broot,
                 ),
-            )?
+            ))
         };
+        let description = if let Some(description) = &verb_conf.description {
+            VerbDescription::from_text(description.to_string())
+        } else {
+            VerbDescription::from_code(verb_conf.execution.to_string())
+        };
+        let mut verb = Verb::new(
+            verb_conf.invocation.as_deref(),
+            execution,
+            description,
+        )?;
         if let Some(key) = verb_conf.key {
             verb = verb.with_key(key);
         }
         if let Some(shortcut) = &verb_conf.shortcut {
             verb.names.push(shortcut.to_string());
-        }
-        if let Some(description) = &verb_conf.description {
-            verb.description = VerbDescription::from_text(description.to_string());
         }
         if let Some(b) = verb_conf.set_working_dir {
             verb.set_working_dir(b);

@@ -42,6 +42,7 @@ impl AppState for HelpState {
         Selection {
             path: Conf::default_location(),
             stype: SelectionType::File,
+            is_exe: false,
             line: 0,
         }
     }

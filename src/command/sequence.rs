@@ -75,11 +75,9 @@ fn add_commands(
     let raw_parts = CommandParts::from(input.to_string());
     let (pattern, verb_invocation) = raw_parts.split();
     if let Some(pattern) = pattern {
-        debug!("adding pattern: {:?}", pattern);
         commands.push((input.to_string(), Command::from_parts(pattern, false)));
     }
     if let Some(verb_invocation) = verb_invocation {
-        debug!("adding verb_invocation: {:?}", verb_invocation);
         let command = Command::from_parts(verb_invocation, true);
         if let Command::VerbInvocate(invocation) = &command {
             // we check that the verb exists to avoid running a sequence

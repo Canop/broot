@@ -6,7 +6,6 @@ use {
         errors::{ProgramError, TreeBuildError},
         flag::Flag,
         git,
-        launchable::Launchable,
         pattern::*,
         path,
         path_anchor::PathAnchor,
@@ -19,8 +18,6 @@ use {
     },
     open,
     std::{
-        fs::OpenOptions,
-        io::Write,
         path::{Path, PathBuf},
     },
     termimad::Area,
@@ -155,37 +152,6 @@ impl BrowserState {
         }
     }
 
-    pub fn open_selection_quit_broot(
-        &mut self,
-        w: &mut W,
-        con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
-        let tree = self.displayed_tree();
-        let line = tree.selected_line();
-        match &line.line_type {
-            TreeLineType::File => make_opener(line.path.clone(), line.is_exe(), con),
-            TreeLineType::Dir | TreeLineType::SymLinkToDir(_) => {
-                Ok(if con.launch_args.cmd_export_path.is_some() {
-                    CD.to_cmd_result(w, line.as_selection(), &None, &None, con)?
-                } else {
-                    AppStateCmdResult::DisplayError(
-                        "This feature needs broot to be launched with the `br` script".to_owned(),
-                    )
-                })
-            }
-            TreeLineType::SymLinkToFile(target) => {
-                make_opener(
-                    PathBuf::from(target),
-                    line.is_exe(), // today this always return false
-                    con,
-                )
-            }
-            _ => {
-                unreachable!();
-            }
-        }
-    }
-
     pub fn go_to_parent(
         &mut self,
         screen: &mut Screen,
@@ -209,32 +175,6 @@ impl BrowserState {
 
 }
 
-/// build a AppStateCmdResult with a launchable which will be used to
-///  1/ quit broot
-///  2/ open the relevant file the best possible way
-fn make_opener(
-    path: PathBuf,
-    is_exe: bool,
-    con: &AppContext,
-) -> Result<AppStateCmdResult, ProgramError> {
-    Ok(if is_exe {
-        let path = path.to_string_lossy().to_string();
-        if let Some(export_path) = &con.launch_args.cmd_export_path {
-            // broot was launched as br, we can launch the executable from the shell
-            let f = OpenOptions::new().append(true).open(export_path)?;
-            writeln!(&f, "{}", path)?;
-            AppStateCmdResult::Quit
-        } else {
-            AppStateCmdResult::from(Launchable::program(
-                vec![path],
-                None, // we don't set the working directory
-            )?)
-        }
-    } else {
-        AppStateCmdResult::from(Launchable::opener(path))
-    })
-}
-
 impl AppState for BrowserState {
 
     fn get_pending_task(&self) -> Option<&'static str> {
@@ -248,7 +188,6 @@ impl AppState for BrowserState {
             None
         }
     }
-
 
     fn selected_path(&self) -> &Path {
         &self.displayed_tree().selected_line().path
@@ -352,7 +291,6 @@ impl AppState for BrowserState {
             },
             Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang, false)?,
             Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
-            Internal::open_leave => self.open_selection_quit_broot(w, con)?,
             Internal::line_down => {
                 self.displayed_tree_mut().move_selection(1, page_height);
                 AppStateCmdResult::Keep

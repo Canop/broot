@@ -68,7 +68,6 @@ impl ImageView {
         let bg = styles.preview.get_bg()
             .or_else(|| styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
-        debug!("true colors: {:?}", con.true_colors);
         let mut double_line = DoubleLine::new(width as usize, con.true_colors);
         let mut y = area.top;
         let margin = area.width as usize - width as usize;

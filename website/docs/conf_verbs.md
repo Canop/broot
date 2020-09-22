@@ -148,7 +148,7 @@ invocation = "mkdir {subpath}"
 execution = "/bin/mkdir -p {directory}/{subpath}"
 ```
 
-(this one has now been made standard so you don't have to write it in the configuration file)
+(the `mkdir` verb is standard so you don't have to write it in the configuration file)
 
 In this case the subpath is read from what you type:
 

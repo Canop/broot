@@ -1,20 +1,23 @@
 
 use {
-    std::path::Path,
+    super::{
+        AppContext,
+        AppStateCmdResult,
+    },
+    crate::{
+        errors::ProgramError,
+        launchable::Launchable,
+    },
+    std::{
+        fs::OpenOptions,
+        io::Write,
+        path::Path,
+    },
 };
 
 /// the id of a line, starting at 1
 /// (0 if not specified)
 pub type LineNumber = usize;
-
-/// light information about the currently selected
-/// file and maybe line number
-#[derive(Debug, Clone, Copy)]
-pub struct Selection<'s> {
-    pub path: &'s Path,
-    pub line: LineNumber, // the line number in the file (0 if none selected)
-    pub stype: SelectionType,
-}
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum SelectionType {
@@ -28,3 +31,43 @@ impl SelectionType {
         constraint == Self::Any || self == constraint
     }
 }
+
+/// light information about the currently selected
+/// file and maybe line number
+#[derive(Debug, Clone, Copy)]
+pub struct Selection<'s> {
+    pub path: &'s Path,
+    pub line: LineNumber, // the line number in the file (0 if none selected)
+    pub stype: SelectionType,
+    pub is_exe: bool,
+}
+
+impl Selection<'_> {
+
+    /// build a AppStateCmdResult with a launchable which will be used to
+    ///  1/ quit broot
+    ///  2/ open the relevant file the best possible way
+    pub fn to_opener(
+        self,
+        con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        Ok(if self.is_exe {
+            let path = self.path.to_string_lossy().to_string();
+            if let Some(export_path) = &con.launch_args.cmd_export_path {
+                // broot was launched as br, we can launch the executable from the shell
+                let f = OpenOptions::new().append(true).open(export_path)?;
+                writeln!(&f, "{}", path)?;
+                AppStateCmdResult::Quit
+            } else {
+                AppStateCmdResult::from(Launchable::program(
+                    vec![path],
+                    None, // we don't set the working directory
+                )?)
+            }
+        } else {
+            AppStateCmdResult::from(Launchable::opener(self.path.to_path_buf()))
+        })
+    }
+
+}
+
