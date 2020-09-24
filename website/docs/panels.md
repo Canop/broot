@@ -51,11 +51,11 @@ The default configuration file contains this that you may uncomment to add <kbd>
 ```toml
 # [[verbs]]
 # key = "F5"
-# execution = ":copy_to_panel"
+# internal = ":copy_to_panel"
 #
 # [[verbs]]
 # key = "F6"
-# execution = ":move_to_panel"
+# internal = ":move_to_panel"
 ```
 
 You may define other shortcuts, or your own bi-panels verbs.

@@ -2,6 +2,7 @@ use {
     super::*,
     crate::{
         browser::BrowserState,
+        command::Sequence,
         errors::TreeBuildError,
         launchable::Launchable,
         verb::Internal,
@@ -26,6 +27,9 @@ pub enum AppStateCmdResult {
         id: Option<PanelId>, // None if current panel
     },
     DisplayError(String),
+    ExecuteSequence {
+        sequence: Sequence,
+    },
     HandleInApp(Internal), // command must be handled at the app level
     Keep,
     Launch(Box<Launchable>),
@@ -89,6 +93,7 @@ impl fmt::Debug for AppStateCmdResult {
                     validate_purpose: true, ..
                 } => "OkPanel",
                 AppStateCmdResult::DisplayError(_) => "DisplayError",
+                AppStateCmdResult::ExecuteSequence{ .. } => "ExecuteSequence",
                 AppStateCmdResult::Keep => "Keep",
                 AppStateCmdResult::Launch(_) => "Launch",
                 AppStateCmdResult::NewState { .. } => "NewState",

@@ -133,10 +133,17 @@ leave_broot = false
 # uncomment if you want to launch a terminal on ctrl-T
 # (on exit you'll be back in broot)
 # [[verbs]]
+# invocation = "terminal"
 # key = "ctrl-t"
 # execution = "$SHELL"
 # set_working_dir = true
 # leave_broot = false
+
+# Here's an example of a shorctut bringing you to your home directory
+# [[verbs]]
+# invocation = "home"
+# key = "ctrl-home"
+# execution = ":focus ~"
 
 # A popular set of shorctuts for going up and down:
 #

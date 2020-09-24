@@ -27,7 +27,6 @@ use {
     },
 };
 
-
 /// launch arguments related to installation
 /// (not used by the application after the first step)
 struct InstallLaunchArgs {

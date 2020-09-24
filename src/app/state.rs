@@ -13,7 +13,9 @@ use {
         task_sync::Dam,
         verb::*,
     },
-    std::path::{Path, PathBuf},
+    std::{
+        path::{Path, PathBuf},
+    },
     termimad::Area,
 };
 
@@ -63,7 +65,7 @@ pub trait AppState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: &mut Screen,
+        screen: &mut Screen, // TODO remove (seeems to be used only for page_height)
     ) -> Result<AppStateCmdResult, ProgramError>;
 
     /// a generic implementation of on_internal which may be
@@ -121,6 +123,7 @@ pub trait AppState {
                     AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)))
                 }
             }
+            Internal::open_leave => self.selection().to_opener(con)?,
             Internal::open_preview => self.open_preview(None, false, cc),
             Internal::preview_image => self.open_preview(Some(PreviewMode::Image), false, cc),
             Internal::preview_text => self.open_preview(Some(PreviewMode::Text), false, cc),
@@ -164,6 +167,55 @@ pub trait AppState {
         })
     }
 
+    fn execute_verb(
+        &mut self,
+        w: &mut W, // needed because we may want to switch from alternate in some externals
+        verb: &Verb,
+        invocation: Option<&VerbInvocation>,
+        trigger_type: TriggerType,
+        cc: &CmdContext,
+        screen: &mut Screen,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        let exec_builder = || {
+            ExecutionStringBuilder::from_invocation(
+                &verb.invocation_parser,
+                self.selection(),
+                &cc.other_path,
+                if let Some(inv) = invocation {
+                    &inv.args
+                } else {
+                    &None
+                },
+            )
+        };
+        match &verb.execution {
+            VerbExecution::Internal(internal_exec) => self.on_internal(
+                w,
+                internal_exec,
+                invocation,
+                trigger_type,
+                cc,
+                screen,
+            ),
+            VerbExecution::External(external) => {
+                external.to_cmd_result(
+                    w,
+                    exec_builder(),
+                    &cc.con,
+                )
+            }
+            VerbExecution::Sequence(seq_ex) => {
+                let sequence = Sequence {
+                    raw: exec_builder().shell_exec_string(&seq_ex.sequence.raw),
+                    separator: seq_ex.sequence.separator.clone(),
+                };
+                Ok(AppStateCmdResult::ExecuteSequence {
+                    sequence,
+                })
+            }
+        }
+    }
+
     /// change the state, does no rendering
     fn on_command(
         &mut self,
@@ -185,30 +237,14 @@ pub trait AppState {
             Command::VerbTrigger {
                 index,
                 input_invocation,
-            } => {
-                let verb = &con.verb_store.verbs[*index];
-                match &verb.execution {
-                    VerbExecution::Internal(internal_exec) => self.on_internal(
-                        w,
-                        internal_exec,
-                        input_invocation.as_ref(),
-                        TriggerType::Other,
-                        cc,
-                        screen,
-                    ),
-                    VerbExecution::External(external) => external.to_cmd_result(
-                        w,
-                        self.selection(),
-                        &cc.other_path,
-                        if let Some(inv) = &input_invocation {
-                            &inv.args
-                        } else {
-                            &None
-                        },
-                        con,
-                    ),
-                }
-            }
+            } => self.execute_verb(
+                w,
+                &con.verb_store.verbs[*index],
+                input_invocation.as_ref(),
+                TriggerType::Other,
+                cc,
+                screen,
+            ),
             Command::Internal {
                 internal,
                 input_invocation,
@@ -220,30 +256,22 @@ pub trait AppState {
                 cc,
                 screen,
             ),
-            Command::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
+            Command::VerbInvocate(invocation) => match con.verb_store.search(
+                &invocation.name,
+                Some(self.selection().stype), // TODO avoid recomputing selection
+            ) {
                 PrefixSearchResult::Match(_, verb) => {
                     if let Some(err) = verb.check_args(invocation, &cc.other_path) {
                         Ok(AppStateCmdResult::DisplayError(err))
                     } else {
-                        match &verb.execution {
-                            VerbExecution::Internal(internal_exec) => self.on_internal(
-                                w,
-                                internal_exec,
-                                Some(invocation),
-                                TriggerType::Input,
-                                cc,
-                                screen,
-                            ),
-                            VerbExecution::External(external) => {
-                                external.to_cmd_result(
-                                    w,
-                                    self.selection(),
-                                    &cc.other_path,
-                                    &invocation.args,
-                                    con,
-                                )
-                            }
-                        }
+                        self.execute_verb(
+                            w,
+                            verb,
+                            Some(invocation),
+                            TriggerType::Input,
+                            cc,
+                            screen,
+                        )
                     }
                 }
                 _ => Ok(AppStateCmdResult::verb_not_found(&invocation.name)),
@@ -363,7 +391,10 @@ pub trait AppState {
                         false,
                     )
                 } else {
-                    match con.verb_store.search(&invocation.name) {
+                    match con.verb_store.search(
+                        &invocation.name,
+                        Some(self.selection().stype),
+                    ) {
                         PrefixSearchResult::NoMatch => {
                             Status::new("No matching verb (*?* for the list of verbs)", true)
                         }

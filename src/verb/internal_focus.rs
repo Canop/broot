@@ -110,8 +110,8 @@ pub fn on_internal(
                     return on_path(path, screen, tree_options, bang, con);
                 }
                 _ => {
-                    // the :focus internal was triggered by a key, which
-                    // means the user wants to explore the arg with purpose
+                    // the :focus internal was triggered by a key, and without internal arg,
+                    // which means the user wants to explore the arg with purpose
                     // of selecting a path
                     let base_dir = selected_path.to_string_lossy();
                     let path = path::path_from(&*base_dir, PathAnchor::Unspecified, input_arg);

@@ -21,7 +21,7 @@ use {
 /// - internal behaviors (focusing a path, going back, showing the help, etc.)
 /// Some verbs are builtins, some other ones are created by configuration.
 /// Both builtins and configured vers can be internal or external based.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct Verb {
     /// names (like "cd", "focus", "focus_tab", "c") by which
     /// a verb can be called.
@@ -36,7 +36,11 @@ pub struct Verb {
     /// description of the optional keyboard key(s) triggering that verb
     pub keys_desc: String,
 
-    /// How the verb will be executed
+    /// how the input must be checked and interpreted
+    /// Can be empty if the verb is only called with a key shortcut.
+    pub invocation_parser: Option<InvocationParser>,
+
+    /// how the verb will be executed
     pub execution: VerbExecution,
 
     /// a description
@@ -44,63 +48,42 @@ pub struct Verb {
 
     /// the type of selection this verb applies to
     pub selection_condition: SelectionType,
-}
 
-impl From<ExternalExecution> for Verb {
-    fn from(external_exec: ExternalExecution) -> Self {
-        let name = Some(external_exec.name().to_string());
-        let description = VerbDescription::from_code(external_exec.exec_pattern.to_string());
-        let execution = VerbExecution::External(external_exec);
-        Self::new(name, execution, description)
-    }
+    /// whether we need to have a secondary panel for execution
+    /// (which is the case when the execution pattern has {other-panel-file})
+    pub need_another_panel: bool,
 }
 
 impl Verb {
 
     pub fn new(
-        name: Option<String>,
+        invocation_str: Option<&str>,
         execution: VerbExecution,
         description: VerbDescription,
-    ) -> Self {
+    ) -> Result<Self, ConfError> {
+        let invocation_parser = invocation_str.map(InvocationParser::new).transpose()?;
         let mut names = Vec::new();
-        if let Some(name) = name {
-            names.push(name);
+        if let Some(ref invocation_parser) = invocation_parser {
+            names.push(invocation_parser.name().to_string());
         }
-        Self {
+        let mut need_another_panel = false;
+        if let VerbExecution::External(ref external) = execution {
+            for group in GROUP.find_iter(&external.exec_pattern) {
+                if group.as_str().starts_with("{other-panel-") {
+                    need_another_panel = true;
+                }
+            }
+        }
+        Ok(Self {
             names,
             keys: Vec::new(),
             keys_desc: "".to_string(),
+            invocation_parser,
             execution,
             description,
             selection_condition: SelectionType::Any,
-        }
-    }
-
-    pub fn internal(internal: Internal) -> Self {
-        let name = Some(internal.name().to_string());
-        let execution = VerbExecution::Internal(InternalExecution::from_internal(internal));
-        let description = VerbDescription::from_text(internal.description().to_string());
-        Self::new(name, execution, description)
-    }
-
-    pub fn internal_bang(internal: Internal) -> Self {
-        let name = None;
-        let execution =
-            VerbExecution::Internal(InternalExecution::from_internal_bang(internal, true));
-        let description = VerbDescription::from_text(internal.description().to_string());
-        Self::new(name, execution, description)
-    }
-
-    pub fn external(
-        invocation_str: &str,
-        execution_str: &str,
-        exec_mode: ExternalExecutionMode,
-    ) -> Result<Self, ConfError> {
-        Ok(Self::from(ExternalExecution::new(
-            invocation_str,
-            execution_str,
-            exec_mode,
-        )?))
+            need_another_panel,
+        })
     }
 
     pub fn with_key(mut self, key: KeyEvent) -> Self {
@@ -133,6 +116,14 @@ impl Verb {
         self.names.push(shortcut.to_string());
         self
     }
+    pub fn with_stype(mut self, stype: SelectionType) -> Self {
+        self.selection_condition = stype;
+        self
+    }
+    pub fn needing_another_panel(mut self) -> Self {
+        self.need_another_panel = true;
+        self
+    }
 
     /// Assuming the verb has been matched, check whether the arguments
     /// are OK according to the regex. Return none when there's no problem
@@ -142,9 +133,60 @@ impl Verb {
         invocation: &VerbInvocation,
         other_path: &Option<PathBuf>,
     ) -> Option<String> {
-        match &self.execution {
-            VerbExecution::Internal(internal_exec) => internal_exec.check_args(invocation, other_path),
-            VerbExecution::External(external_exec) => external_exec.check_args(invocation, other_path),
+        if self.need_another_panel && other_path.is_none() {
+            Some("This verb needs exactly two panels".to_string())
+        } else if let Some(ref parser) = self.invocation_parser {
+            parser.check_args(invocation, other_path)
+        } else if invocation.args.is_some() {
+            Some("This verb doesn't take arguments".to_string())
+        } else {
+            None
+        }
+    }
+
+    fn get_status_markdown(
+        &self,
+        sel: Selection<'_>,
+        other_path: &Option<PathBuf>,
+        invocation: &VerbInvocation,
+    ) -> String {
+        let name = self.names.get(0).unwrap_or(&invocation.name);
+
+        // there's one special case: the ̀ :focus` internal. As long
+        // as no other internal takes args, and no other verb can
+        // have an optional argument, I don't try to build a
+        // generic behavior for internal optionaly taking args and
+        // thus I hardcode the test here.
+        if let VerbExecution::Internal(internal_exec) = &self.execution {
+            if internal_exec.internal == Internal::focus {
+                let arg = invocation.args.as_ref().or_else(|| internal_exec.arg.as_ref());
+                let pb;
+                let arg_path = if let Some(arg) = arg {
+                    pb = path::path_from(sel.path, PathAnchor::Unspecified, arg);
+                    &pb
+                } else {
+                    sel.path
+                };
+                return format!("Hit *enter* to {} `{}`", name, arg_path.to_string_lossy());
+            }
+        }
+
+        let builder = || ExecutionStringBuilder::from_invocation(
+            &self.invocation_parser,
+            sel,
+            other_path,
+            &invocation.args,
+        );
+        if let VerbExecution::Sequence(seq_ex) = &self.execution {
+            let exec_desc = builder().shell_exec_string(&seq_ex.sequence.raw);
+            format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
+        } else if let VerbExecution::External(external_exec) = &self.execution {
+            let exec_desc = builder().shell_exec_string(&external_exec.exec_pattern);
+            format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
+        } else if self.description.code {
+            format!("Hit *enter* to **{}**: `{}`", name, &self.description.content)
+        } else {
+            format!("Hit *enter* to **{}**: {}", name, &self.description.content)
         }
     }
 
@@ -157,48 +199,27 @@ impl Verb {
         if let Some(err) = self.check_args(invocation, other_path) {
             Status::new(err, true)
         } else {
-            let name = self.names.get(0).unwrap_or(&invocation.name);
-            let markdown = match &self.execution {
-                VerbExecution::External(external_exec) => {
-                    let exec_desc = external_exec.shell_exec_string(sel, other_path, &invocation.args);
-                    format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
-                }
-                VerbExecution::Internal(internal_exec) => {
-                    let pb;
-                    let arg = invocation.args.as_ref().or_else(|| internal_exec.arg.as_ref());
-                    let arg_path = if let Some(arg) = arg {
-                        pb = path::path_from(sel.path, PathAnchor::Unspecified, arg);
-                        &pb
-                    } else {
-                        sel.path
-                    };
-                    if let Some(special_desc) = internal_exec.internal.applied_description(arg_path) {
-                        format!("Hit *enter* to **{}**: {}", name, special_desc)
-                    } else if self.description.code {
-                        format!("Hit *enter* to **{}**: `{}`", name, &self.description.content)
-                    } else {
-                        format!("Hit *enter* to **{}**: {}", name, &self.description.content)
-                    }
-                }
-            };
-            Status::new(markdown, false)
+            Status::new(
+                self.get_status_markdown(
+                    sel,
+                    other_path,
+                    invocation,
+                ),
+                false,
+            )
         }
     }
 
     /// in case the verb take only one argument of type path, return
     /// the selection type of this unique argument
     pub fn get_arg_selection_type(&self) -> Option<SelectionType> {
-        match &self.execution {
-            VerbExecution::External(external) => external.arg_selection_type,
-            _ => None,
-        }
+        self.invocation_parser.as_ref()
+            .and_then(|parser| parser.arg_selection_type)
     }
 
     pub fn get_arg_anchor(&self) -> PathAnchor {
-        match &self.execution {
-            VerbExecution::External(external) => external.arg_anchor,
-            _ => PathAnchor::Unspecified,
-        }
+        self.invocation_parser.as_ref()
+            .map_or(PathAnchor::Unspecified, |parser| parser.arg_anchor)
     }
 
     pub fn get_internal(&self) -> Option<Internal> {
@@ -213,4 +234,5 @@ impl Verb {
             external.set_working_dir = b;
         }
     }
+
 }

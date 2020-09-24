@@ -2,13 +2,26 @@ use {
     super::*,
     crate::{
         app::SelectionType,
+        command::Sequence,
         errors::ConfError,
     },
     crossterm::event::KeyEvent,
     std::convert::TryFrom,
 };
 
+#[derive(Debug)]
+pub enum VerbExecutionType {
+    Internal,
+    External,
+    Sequence,
+}
+
+
 /// what's needed to handle a verb
+///
+/// A verb must contain either a `cmd` (a sequence)
+/// or an `execution` (call to an internal or external
+/// definition)
 #[derive(Debug)]
 pub struct VerbConf {
     pub shortcut: Option<String>,
@@ -20,52 +33,54 @@ pub struct VerbConf {
     pub leave_broot: Option<bool>,
     pub set_working_dir: Option<bool>,
     pub selection_condition: SelectionType,
+
+    pub execution_type: VerbExecutionType,
+
+    /// the separator to use when splitting the sequence
+    /// (only makes sense when the execution is a sequence)
+    pub cmd_separator: Option<String>,
 }
 
 impl TryFrom<&VerbConf> for Verb {
     type Error = ConfError;
     fn try_from(verb_conf: &VerbConf) -> Result<Self, Self::Error> {
-        // if there's a ':' or ' ' at starts, it's an internal.
-        // In other cases it's an external.
-        // (we might support adding aliases to externals in the
-        // future. In such cases we'll check among previously
-        // added externals if no internal is found with the name)
-        let mut s: &str = &verb_conf.execution;
-        let mut verb = if s.starts_with(':') || s.starts_with(' ') {
-            s = &s[1..];
-            let internal_execution = InternalExecution::try_from(s)?;
-            let name = verb_conf.invocation.as_ref().map(|inv| {
-                let inv: &str = &inv;
-                VerbInvocation::from(inv).name
-            });
-            Verb::new(
-                name,
-                VerbExecution::Internal(internal_execution),
-                VerbDescription::from_code(verb_conf.execution.to_string()),
-            )
-        } else {
-            Verb::external(
-                if let Some(inv) = &verb_conf.invocation {
-                    inv
-                } else {
-                    // can we really accept externals without invocation ? Is this supported ?
-                    ""
-                },
-                &verb_conf.execution,
-                ExternalExecutionMode::from_conf(
-                    verb_conf.from_shell,
-                    verb_conf.leave_broot,
-                ),
-            )?
+        let execution = match verb_conf.execution_type {
+            VerbExecutionType::Internal => VerbExecution::Internal(
+                InternalExecution::try_from(&verb_conf.execution[1..])?
+            ),
+            VerbExecutionType::External => VerbExecution::External(
+                ExternalExecution::new(
+                    &verb_conf.execution,
+                    ExternalExecutionMode::from_conf(
+                        verb_conf.from_shell,
+                        verb_conf.leave_broot,
+                    ),
+                )
+            ),
+            VerbExecutionType::Sequence => VerbExecution::Sequence(
+                SequenceExecution {
+                    sequence: Sequence::new(
+                        verb_conf.execution.to_string(),
+                        verb_conf.cmd_separator.clone(),
+                    )
+                }
+            ),
         };
+        let description = if let Some(description) = &verb_conf.description {
+            VerbDescription::from_text(description.to_string())
+        } else {
+            VerbDescription::from_code(verb_conf.execution.to_string())
+        };
+        let mut verb = Verb::new(
+            verb_conf.invocation.as_deref(),
+            execution,
+            description,
+        )?;
         if let Some(key) = verb_conf.key {
             verb = verb.with_key(key);
         }
         if let Some(shortcut) = &verb_conf.shortcut {
             verb.names.push(shortcut.to_string());
-        }
-        if let Some(description) = &verb_conf.description {
-            verb.description = VerbDescription::from_text(description.to_string());
         }
         if let Some(b) = verb_conf.set_working_dir {
             verb.set_working_dir(b);

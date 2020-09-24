@@ -11,22 +11,26 @@ invocation = "edit"
 key = "F2"
 shortcut = "e"
 apply_to = "file"
-execution = "/usr/bin/nvim {file}"
+external = "/usr/bin/nvim {file}"
 leave_broot = false
 ```
 
 The possible attributes are:
 
-name | mandatory | role
--|-|-
-invocation | no | how the verb is called by the user, with placeholders for arguments
-execution | yes | how the verb is executed
-key | no | a keyboard key triggering execution
-shortcut | no | an alternate way to call the verb (without the arguments part)
-leave_broot | no | whether to quit broot on execution (default: `true`)
-from_shell | no | whether the verb must be executed from the parent shell (needs `br`, default: `false`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
-apply_to | no | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
-set_working_dir | no | whether the working dir of the process must be set to the currenly selected directory (default to false)
+name  | role
+-|-
+invocation | how the verb is called by the user, with placeholders for arguments
+internal | execution, when your verb is based on a predefined broot verb
+external | execution, when your verb is based on an external command
+cmd | a semicolon sequence to execute, similar to an argument you pass to `--cmd`
+key | a keyboard key triggering execution
+shortcut | an alternate way to call the verb (without the arguments part)
+leave_broot | whether to quit broot on execution (default: `true`)
+from_shell | whether the verb must be executed from the parent shell (needs `br`, default: `false`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
+apply_to | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
+set_working_dir | whether the working dir of the process must be set to the currenly selected directory (default to false)
+
+The execution is defined either by `internal`, `external` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
 
 !!!	Note
 	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example `cd` is a shell builtin which must be executed in the parent shell.
@@ -45,7 +49,7 @@ Knowing this algorithm, you may understand the point in the following definition
 ```toml
 [[verbs]]
 invocation = "p"
-execution = ":parent"
+internal = ":parent"
 ```
 
 This verb is an alias to the internal builtin already available if you type `:parent`.
@@ -69,37 +73,37 @@ For example you could add those mappings:
 [[verbs]]
 invocation = "root"
 key = "F9"
-execution = ":focus_root"
+internal = ":focus /"
 
 [[verbs]]
 invocation = "home"
 key = "ctrl-H"
-execution = ":focus_user_home"
+internal = ":focus ~"
 
 [[verbs]]
 key = "alt-j"
-execution = ":line_down"
+internal = ":line_down"
 
 [[verbs]]
 invocation = "top"
 key = "F6"
-execution = ":select_first"
+internal = ":select_first"
 
 [[verbs]]
 invocation = "bottom"
 key = "F7"
-execution = ":select_last"
+internal = ":select_last"
 
 [[verbs]]
 invocation = "open"
 key = "crtl-O"
-execution = ":open_stay"
+internal = ":open_stay"
 
 [[verbs]]
 invocation = "edit"
 key = "F2"
 shortcut = "e"
-execution = "$EDITOR +{line} {file}"
+external = "$EDITOR +{line} {file}"
 from_shell = true
 ```
 
@@ -145,10 +149,10 @@ But you may also define some arguments in the invocation pattern. For example:
 ```toml
 [[verbs]]
 invocation = "mkdir {subpath}"
-execution = "/bin/mkdir -p {directory}/{subpath}"
+external = "/bin/mkdir -p {directory}/{subpath}"
 ```
 
-(this one has now been made standard so you don't have to write it in the configuration file)
+(the `mkdir` verb is standard so you don't have to write it in the configuration file)
 
 In this case the subpath is read from what you type:
 
@@ -165,7 +169,7 @@ Here's another example, where the invocation pattern defines two arguments by de
 ```toml
 [[verbs]]
 invocation = "blop {name}\\.{type}"
-execution = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
+external = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
 from_shell = true
 ```
 
@@ -183,15 +187,15 @@ Let's say we don't want the type to contain dots, then we do this:
 ```toml
 [[verbs]]
 invocation = "blop {name}\\.(?P<type>[^.]+)"
-execution = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
+external = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
 from_shell = true
 ```
 
 You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
 
-## Built In Verbs
+## Internals
 
-Here's a list of actions you can add an alternate shortcut or keyboard key for:
+Here's a list of internals: builtin actions you can add an alternate shortcut or keyboard key for:
 
 invocation | default key | default shortcut | behavior / details
 -|-|-|-
@@ -265,21 +269,20 @@ You may add this kind of shortcuts:
 ```toml
 [[verbs]]
 key = "alt-b"
-execution = ":input_go_word_left"
+internal = ":input_go_word_left"
 
 [[verbs]]
 key = "alt-f"
-execution = ":input_go_word_right"
+internal = ":input_go_word_right"
 
 [[verbs]]
 key = "alt-l"
-execution = ":input_del_word_left"
+internal = ":input_del_word_left"
 
 [[verbs]]
 key = "alt-r"
-execution = ":input_del_word_right"
+internal = ":input_del_word_right"
 ```
-
 
 ## Focus
 
@@ -296,10 +299,33 @@ And you can add your own ones:
 ```toml
 [[verbs]]
 key = "ctrl-up"
-execution = ":focus .."
+internal = ":focus .."
 
 [[verbs]]
 key = "ctrl-d"
-execution = ":focus ~/dev"
+internal = ":focus ~/dev"
 ```
+
+## cmd execution
+
+The `cmd` argument lets you define a sequence, just like the one you give to broot with [the `--cmd` argument](../launch/#the-cmd-launch-argument).
+
+Such a sequence can contain some searches, some calls to internals, some calls to already defined external based verbs.
+
+For example:
+
+```
+[[verbs]]
+name = "backup"
+invocation = "bu {name}"
+cmd = ":cp {file}-back_{name};:!focus {file}-back_{name}"
+apply_to = "directory"
+```
+
+This verb, which is only available when a directory is selected, copies this directory with a name partially composed from the command and focus the new directory in a new panel
+
+!!!	Note
+	The `cmd` execution type is still experimental in verbs and the precise behavior may change in future minor versions of broot
+
+
 

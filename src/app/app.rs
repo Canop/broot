@@ -12,7 +12,11 @@ use {
         task_sync::{Dam, Either},
         verb::Internal,
     },
-    crossbeam::channel::unbounded,
+    crossbeam::channel::{
+        Receiver,
+        Sender,
+        unbounded,
+    },
     crossterm::event::KeyModifiers,
     std::{
         io::Write,
@@ -50,6 +54,12 @@ pub struct App {
     /// the root of the active panel
     #[cfg(feature="client-server")]
     root: Arc<Mutex<PathBuf>>,
+
+    /// sender to the sequence channel
+    tx_seqs: Sender<Sequence>,
+
+    /// receiver to listen to the sequence channel
+    rx_seqs: Receiver<Sequence>,
 }
 
 impl App {
@@ -73,6 +83,7 @@ impl App {
             Areas::create(&mut Vec::new(), 0, screen, false)?,
             con,
         );
+        let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
         Ok(App {
             active_panel_idx: 0,
             panels: panel.into(),
@@ -83,6 +94,8 @@ impl App {
 
             #[cfg(feature="client-server")]
             root: Arc::new(Mutex::new(con.launch_args.root.clone())),
+            tx_seqs,
+            rx_seqs,
         })
     }
 
@@ -207,7 +220,8 @@ impl App {
                         panel_skin,
                         preview,
                         con,
-                    )? { // we should probably handle other results
+                    )? {
+                        // we should probably handle other results
                         // which implies the possibility of a recursion
                         error = Some(txt);
                     } else if is_input_invocation {
@@ -255,6 +269,9 @@ impl App {
             }
             DisplayError(txt) => {
                 error = Some(txt);
+            }
+            ExecuteSequence { sequence } => {
+                self.tx_seqs.send(sequence).unwrap();
             }
             HandleInApp(internal) => {
                 let new_active_panel_idx = match internal {
@@ -444,19 +461,15 @@ impl App {
 
         screen.clear_bottom_right_char(w, &skin.focused)?;
 
-        // we create a channel for unparsed raw sequence which may come
-        // from the --cmd argument or from the server module
-        let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
-
         if let Some(raw_sequence) = &con.launch_args.commands {
-            tx_seqs.send(Sequence::new_local(raw_sequence.to_string())).unwrap();
+            self.tx_seqs.send(Sequence::new_local(raw_sequence.to_string())).unwrap();
         }
 
         #[cfg(feature="client-server")]
         let _server = con.launch_args.listen.as_ref()
             .map(|server_name| crate::net::Server::new(
                 &server_name,
-                tx_seqs.clone(),
+                self.tx_seqs.clone(),
                 Arc::clone(&self.root),
             ))
             .transpose()?;
@@ -473,7 +486,7 @@ impl App {
                 }
             }
 
-            match dam.next(&rx_seqs) {
+            match dam.next(&self.rx_seqs) {
                 Either::First(Some(event)) => {
                     debug!("event: {:?}", &event);
                     match event {

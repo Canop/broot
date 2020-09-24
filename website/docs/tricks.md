@@ -59,7 +59,7 @@ Here's an example of configuration changing the behaviour on open:
 [[verbs]]
 invocation = "edit"
 key = "enter"
-execution = "$EDITOR {file}"
+external = "$EDITOR {file}"
 leave_broot = false
 apply_to = "file"
 ```

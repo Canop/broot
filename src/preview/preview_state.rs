@@ -155,6 +155,7 @@ impl AppState for PreviewState {
         Selection {
             path: &self.path,
             stype: SelectionType::File,
+            is_exe: false, // not always true. It means :open_leave won't execute it
             line: self.preview.get_selected_line_number().unwrap_or(0),
         }
     }

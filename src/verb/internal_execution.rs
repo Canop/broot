@@ -1,7 +1,6 @@
 use {
     super::*,
     crate::errors::ConfError,
-    std::path::PathBuf,
 };
 
 /// A verb execution definition based on an internal
@@ -35,25 +34,9 @@ impl InternalExecution {
             arg: None,
         }
     }
-    pub fn check_args(
-        &self,
-        invocation: &VerbInvocation,
-        _other_path: &Option<PathBuf>,
-    ) -> Option<String> {
-        if invocation.args.is_some() && !self.internal.accept_path() {
-            Some(format!("{} doesn't take arguments", invocation.name))
-        } else {
-            None
-        }
-    }
     pub fn try_from(invocation_str: &str) -> Result<Self, ConfError> {
         let invocation = VerbInvocation::from(invocation_str);
         let internal = Internal::try_from(&invocation.name)?;
-        if invocation.args.is_some() && !internal.accept_path() {
-            return Err(ConfError::UnexpectedInternalArg {
-                invocation: invocation_str.to_string(),
-            });
-        }
         Ok(Self {
             internal,
             bang: invocation.bang,

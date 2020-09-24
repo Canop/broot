@@ -9,11 +9,11 @@ A verb can be related to the current selection. For example typing `:p` will exe
 
 The `rm` verb executes the standard `rm` command.
 
-It's defined by this couple (invocation, execution):
+It's defined by this couple (invocation, external):
 
 ```toml
 invocation = "rm"
-execution = "/bin/rm -rf {file}"
+external = "/bin/rm -rf {file}"
 ```
 
 Selection based arguments:
@@ -31,7 +31,7 @@ Several selection based arguments can be used. For example the (built-in) `:copy
 
 ```toml
 invocation = "copy_to_panel"
-execution = "/bin/cp -r {file} {other-panel-directory}"
+external = "/bin/cp -r {file} {other-panel-directory}"
 ```
 
 When you type a verb, the execution pattern is completed using the selection(s), the exact command is displayed in the status line:
@@ -49,7 +49,7 @@ For example mkdir is defined as
 
 ```toml
 invocation = "mkdir {subpath}"
-execution = "/bin/mkdir -p {directory}/{subpath}"
+external = "/bin/mkdir -p {directory}/{subpath}"
 ```
 
 (it's now a built-in, you won't see it in the config file)
@@ -84,10 +84,11 @@ Note: there's another solution to gain time when typing a path, especially when 
 
 ## Builtins & external commands, leaving or not
 
-There are two types of verbs, differing by their *execution* pattern (which will be covered in more details in the [configuration page](../conf_file/#verb-definition-attributes)):
+There are three types of verbs (they will be covered in more details in the [configuration page](../conf_file/#verb-definition-attributes)):
 
-* builtin features, whose execution starts with `:`, apply internal functions, for example `:toggle_perm` to trigger computation and display of Unix file permissions
+* builtin features apply internal functions, for example `:toggle_perm` to trigger computation and display of Unix file permissions
 * external commands, whose execution implies calling an external program, for example `rm -rf {file}`
+* sequences of commands
 
 A command may leave broot (for example to start a program), or not (the tree will be refreshed).
 
