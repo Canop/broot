@@ -1,4 +1,4 @@
-use super::{ExternalExecution, InternalExecution};
+use super::*;
 
 /// how a verb must be executed
 #[derive(Debug, Clone)]
@@ -10,4 +10,8 @@ pub enum VerbExecution {
     /// the verb execution refers to a command that will be executed by the system,
     /// outside of broot.
     External(ExternalExecution),
+
+    /// the execution is a sequence similar to what can be given
+    /// to broot with --cmd
+    Sequence(SequenceExecution),
 }

@@ -171,14 +171,17 @@ impl Verb {
             }
         }
 
-        if let VerbExecution::External(external_exec) = &self.execution {
-            let builder = ExecutionStringBuilder::from_invocation(
-                &self.invocation_parser,
-                sel,
-                other_path,
-                &invocation.args,
-            );
-            let exec_desc = builder.shell_exec_string(&external_exec.exec_pattern);
+        let builder = || ExecutionStringBuilder::from_invocation(
+            &self.invocation_parser,
+            sel,
+            other_path,
+            &invocation.args,
+        );
+        if let VerbExecution::Sequence(seq_ex) = &self.execution {
+            let exec_desc = builder().shell_exec_string(&seq_ex.sequence.raw);
+            format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
+        } else if let VerbExecution::External(external_exec) = &self.execution {
+            let exec_desc = builder().shell_exec_string(&external_exec.exec_pattern);
             format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
         } else if self.description.code {
             format!("Hit *enter* to **{}**: `{}`", name, &self.description.content)

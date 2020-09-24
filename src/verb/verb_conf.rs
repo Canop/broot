@@ -2,13 +2,26 @@ use {
     super::*,
     crate::{
         app::SelectionType,
+        command::Sequence,
         errors::ConfError,
     },
     crossterm::event::KeyEvent,
     std::convert::TryFrom,
 };
 
+#[derive(Debug)]
+pub enum VerbExecutionType {
+    Internal,
+    External,
+    Sequence,
+}
+
+
 /// what's needed to handle a verb
+///
+/// A verb must contain either a `cmd` (a sequence)
+/// or an `execution` (call to an internal or external
+/// definition)
 #[derive(Debug)]
 pub struct VerbConf {
     pub shortcut: Option<String>,
@@ -20,28 +33,38 @@ pub struct VerbConf {
     pub leave_broot: Option<bool>,
     pub set_working_dir: Option<bool>,
     pub selection_condition: SelectionType,
+
+    pub execution_type: VerbExecutionType,
+
+    /// the separator to use when splitting the sequence
+    /// (only makes sense when the execution is a sequence)
+    pub cmd_separator: Option<String>,
 }
 
 impl TryFrom<&VerbConf> for Verb {
     type Error = ConfError;
     fn try_from(verb_conf: &VerbConf) -> Result<Self, Self::Error> {
-        // if there's a ':' or ' ' at starts, it's an internal.
-        // In other cases it's an external.
-        // (we might support adding aliases to externals in the
-        // future. In such cases we'll check among previously
-        // added externals if no internal is found with the name)
-        let mut s: &str = &verb_conf.execution;
-        let execution = if s.starts_with(':') || s.starts_with(' ') {
-            s = &s[1..];
-            VerbExecution::Internal(InternalExecution::try_from(s)?)
-        } else {
-            VerbExecution::External(ExternalExecution::new(
-                &verb_conf.execution,
-                ExternalExecutionMode::from_conf(
-                    verb_conf.from_shell,
-                    verb_conf.leave_broot,
-                ),
-            ))
+        let execution = match verb_conf.execution_type {
+            VerbExecutionType::Internal => VerbExecution::Internal(
+                InternalExecution::try_from(&verb_conf.execution[1..])?
+            ),
+            VerbExecutionType::External => VerbExecution::External(
+                ExternalExecution::new(
+                    &verb_conf.execution,
+                    ExternalExecutionMode::from_conf(
+                        verb_conf.from_shell,
+                        verb_conf.leave_broot,
+                    ),
+                )
+            ),
+            VerbExecutionType::Sequence => VerbExecution::Sequence(
+                SequenceExecution {
+                    sequence: Sequence::new(
+                        verb_conf.execution.to_string(),
+                        verb_conf.cmd_separator.clone(),
+                    )
+                }
+            ),
         };
         let description = if let Some(description) = &verb_conf.description {
             VerbDescription::from_text(description.to_string())

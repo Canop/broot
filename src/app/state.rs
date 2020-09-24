@@ -176,6 +176,18 @@ pub trait AppState {
         cc: &CmdContext,
         screen: &mut Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
+        let exec_builder = || {
+            ExecutionStringBuilder::from_invocation(
+                &verb.invocation_parser,
+                self.selection(),
+                &cc.other_path,
+                if let Some(inv) = invocation {
+                    &inv.args
+                } else {
+                    &None
+                },
+            )
+        };
         match &verb.execution {
             VerbExecution::Internal(internal_exec) => self.on_internal(
                 w,
@@ -186,21 +198,20 @@ pub trait AppState {
                 screen,
             ),
             VerbExecution::External(external) => {
-                let exec_builder = ExecutionStringBuilder::from_invocation(
-                    &verb.invocation_parser,
-                    self.selection(),
-                    &cc.other_path,
-                    if let Some(inv) = invocation {
-                        &inv.args
-                    } else {
-                        &None
-                    },
-                );
                 external.to_cmd_result(
                     w,
-                    exec_builder,
+                    exec_builder(),
                     &cc.con,
                 )
+            }
+            VerbExecution::Sequence(seq_ex) => {
+                let sequence = Sequence {
+                    raw: exec_builder().shell_exec_string(&seq_ex.sequence.raw),
+                    separator: seq_ex.sequence.separator.clone(),
+                };
+                Ok(AppStateCmdResult::ExecuteSequence {
+                    sequence,
+                })
             }
         }
     }
@@ -245,7 +256,10 @@ pub trait AppState {
                 cc,
                 screen,
             ),
-            Command::VerbInvocate(invocation) => match con.verb_store.search(&invocation.name) {
+            Command::VerbInvocate(invocation) => match con.verb_store.search(
+                &invocation.name,
+                Some(self.selection().stype), // TODO avoid recomputing selection
+            ) {
                 PrefixSearchResult::Match(_, verb) => {
                     if let Some(err) = verb.check_args(invocation, &cc.other_path) {
                         Ok(AppStateCmdResult::DisplayError(err))
@@ -377,7 +391,10 @@ pub trait AppState {
                         false,
                     )
                 } else {
-                    match con.verb_store.search(&invocation.name) {
+                    match con.verb_store.search(
+                        &invocation.name,
+                        Some(self.selection().stype),
+                    ) {
                         PrefixSearchResult::NoMatch => {
                             Status::new("No matching verb (*?* for the list of verbs)", true)
                         }

@@ -81,8 +81,9 @@ impl Completions {
     fn for_verb(
         start: &str,
         con: &AppContext,
+        sel: Selection<'_>,
     ) -> Self {
-        match con.verb_store.search(start) {
+        match con.verb_store.search(start, Some(sel.stype)) {
             PrefixSearchResult::NoMatch => {
                 Self::None
             }
@@ -146,7 +147,7 @@ impl Completions {
         if arg.contains(' ') {
             Self::None
         } else {
-            let anchor = match con.verb_store.search(verb_name) {
+            let anchor = match con.verb_store.search(verb_name, Some(sel.stype)) {
                 PrefixSearchResult::Match(_, verb) => verb.get_arg_anchor(),
                 _ => PathAnchor::Unspecified,
             };
@@ -170,7 +171,7 @@ impl Completions {
                 match &invocation.args {
                     None => {
                         // looking into verb completion
-                        Self::for_verb(&invocation.name, con)
+                        Self::for_verb(&invocation.name, con, sel)
                     }
                     Some(args) if !args.is_empty() => {
                         // looking into arg completion

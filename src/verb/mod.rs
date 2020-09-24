@@ -6,6 +6,7 @@ mod internal;
 mod internal_execution;
 pub mod internal_focus;
 mod invocation_parser;
+mod sequence_execution;
 mod verb;
 mod verb_conf;
 mod verb_description;
@@ -20,8 +21,9 @@ pub use {
     internal::Internal,
     internal_execution::InternalExecution,
     invocation_parser::InvocationParser,
+    sequence_execution::SequenceExecution,
     verb::Verb,
-    verb_conf::VerbConf,
+    verb_conf::{VerbConf, VerbExecutionType},
     verb_description::VerbDescription,
     verb_execution::VerbExecution,
     verb_invocation::VerbInvocation,

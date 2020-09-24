@@ -50,11 +50,20 @@ impl VerbStore {
         self.verbs.extend(builtin_verbs());
     }
 
-    pub fn search<'v>(&'v self, prefix: &str) -> PrefixSearchResult<'v, &Verb> {
+    pub fn search<'v>(
+        &'v self,
+        prefix: &str,
+        stype: Option<SelectionType>,
+    ) -> PrefixSearchResult<'v, &Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
         let mut completions: Vec<&str> = Vec::new();
         for (index, verb) in self.verbs.iter().enumerate() {
+            if let Some(stype) = stype {
+                if !stype.respects(verb.selection_condition) {
+                    continue;
+                }
+            }
             for name in &verb.names {
                 if name.starts_with(prefix) {
                     if name == prefix {

@@ -12,10 +12,10 @@ use {
 
 /// an unparsed sequence with its separator (which may be
 /// different from the one provided by local_separator())
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Sequence {
-    pub separator: String,
     pub raw: String,
+    pub separator: String,
 }
 
 impl Sequence {
@@ -26,10 +26,10 @@ impl Sequence {
             _ => String::from(";"),
         }
     }
-    pub fn new(separator: String, raw: String) -> Self {
+    pub fn new(raw: String, separator: Option<String>) -> Self {
         Self {
-            separator,
             raw,
+            separator: separator.unwrap_or_else(|| Sequence::local_separator()),
         }
     }
     pub fn new_single(cmd: String) -> Self {
@@ -82,7 +82,7 @@ fn add_commands(
         if let Command::VerbInvocate(invocation) = &command {
             // we check that the verb exists to avoid running a sequence
             // of actions with some missing
-            match con.verb_store.search(&invocation.name) {
+            match con.verb_store.search(&invocation.name, None) {
                 PrefixSearchResult::NoMatch => {
                     return Err(ProgramError::UnknownVerb {
                         name: invocation.name.to_string(),
