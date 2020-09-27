@@ -108,46 +108,37 @@ impl BrowserState {
     ) -> Result<AppStateCmdResult, ProgramError> {
         let tree = self.displayed_tree();
         let line = tree.selected_line();
-        match &line.line_type {
-            TreeLineType::File => match open::that(&line.path) {
+        let mut target = line.target().to_path_buf();
+        if line.is_dir() {
+            if tree.selection == 0 {
+                // opening the root would be going to where we already are.
+                // We go up one level instead
+                if let Some(parent) = target.parent() {
+                    target = PathBuf::from(parent);
+                }
+            }
+            let dam = Dam::unlimited();
+            Ok(AppStateCmdResult::from_optional_state(
+                BrowserState::new(
+                    target,
+                    if keep_pattern {
+                        tree.options.clone()
+                    } else {
+                        tree.options.without_pattern()
+                    },
+                    screen,
+                    con,
+                    &dam,
+                ),
+                in_new_panel,
+            ))
+        } else {
+            match open::that(&target) {
                 Ok(exit_status) => {
                     info!("open returned with exit_status {:?}", exit_status);
                     Ok(AppStateCmdResult::Keep)
                 }
                 Err(e) => Ok(AppStateCmdResult::DisplayError(format!("{:?}", e))),
-            },
-            TreeLineType::Dir | TreeLineType::SymLinkToDir(_) => {
-                let mut target = line.target();
-                if tree.selection == 0 {
-                    // opening the root would be going to where we already are.
-                    // We go up one level instead
-                    if let Some(parent) = target.parent() {
-                        target = PathBuf::from(parent);
-                    }
-                }
-                let dam = Dam::unlimited();
-                Ok(AppStateCmdResult::from_optional_state(
-                    BrowserState::new(
-                        target,
-                        if keep_pattern {
-                            tree.options.clone()
-                        } else {
-                            tree.options.without_pattern()
-                        },
-                        screen,
-                        con,
-                        &dam,
-                    ),
-                    in_new_panel,
-                ))
-            }
-            TreeLineType::SymLinkToFile(target) => {
-                let path = PathBuf::from(target);
-                open::that(&path)?;
-                Ok(AppStateCmdResult::Keep)
-            }
-            _ => {
-                unreachable!();
             }
         }
     }

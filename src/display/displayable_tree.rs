@@ -84,7 +84,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     &self.skin.file
                 }
             }
-            TreeLineType::SymLinkToFile(_) | TreeLineType::SymLinkToDir(_) => &self.skin.link,
+            TreeLineType::BrokenSymLink(_) | TreeLineType::SymLink { .. } => &self.skin.link,
             TreeLineType::Pruning => &self.skin.pruning,
         };
         let mut style = style.clone();
@@ -272,19 +272,23 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     cw.queue_str(style, " …")?;
                 }
             }
-            TreeLineType::SymLinkToFile(target) | TreeLineType::SymLinkToDir(target) => {
+            TreeLineType::BrokenSymLink(direct_path) => {
                 cw.queue_str(style, " -> ")?;
-                if line.has_error {
-                    cw.queue_str(&self.skin.file_error, &target)?;
+                cw.queue_str(&self.skin.file_error, &direct_path)?;
+            }
+            TreeLineType::SymLink {
+                final_is_dir,
+                direct_target,
+                ..
+            } => {
+                cw.queue_str(style, " -> ")?;
+                let target_style = if *final_is_dir {
+                    &self.skin.directory
                 } else {
-                    let target_style = if line.is_dir() {
-                        &self.skin.directory
-                    } else {
-                        &self.skin.file
-                    };
-                    cond_bg!(target_style, self, selected, target_style);
-                    cw.queue_str(target_style, &target)?;
-                }
+                    &self.skin.file
+                };
+                cond_bg!(target_style, self, selected, target_style);
+                cw.queue_str(target_style, &direct_target)?;
             }
             _ => {}
         }

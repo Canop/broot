@@ -5,6 +5,7 @@
 - the `:input_paste` verb which inserts the clipboard content in the input (mapped to ctrl-v)
 (I need user/dev feedback on compilation and usage before making this feature default)
 * it's now possible to define verbs executing sequences of commands - Fix #277
+* fix opening of link of link - Fix #280
 
 <a name="v1.0.0"></a>
 ### v1.0.0 - 2020-09-01

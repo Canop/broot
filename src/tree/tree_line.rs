@@ -8,7 +8,7 @@ use {
     std::{
         cmp::{self, Ord, Ordering, PartialOrd},
         fs,
-        path::PathBuf,
+        path::{Path, PathBuf},
     },
 };
 
@@ -50,7 +50,7 @@ impl TreeLine {
     pub fn is_dir(&self) -> bool {
         match &self.line_type {
             TreeLineType::Dir => true,
-            TreeLineType::SymLinkToDir(_) => true,
+            TreeLineType::SymLink { final_is_dir, ..} if *final_is_dir => true,
             _ => false,
         }
     }
@@ -76,8 +76,15 @@ impl TreeLine {
     pub fn selection_type(&self) -> SelectionType {
         use TreeLineType::*;
         match &self.line_type {
-            File | SymLinkToFile(_) => SelectionType::File,
-            Dir | SymLinkToDir(_) => SelectionType::Directory,
+            File => SelectionType::File,
+            Dir | BrokenSymLink(_) => SelectionType::Directory,
+            SymLink { final_is_dir, .. } => {
+                if *final_is_dir {
+                    SelectionType::Directory
+                } else {
+                    SelectionType::File
+                }
+            }
             Pruning => SelectionType::Any, // should not happen today
         }
     }
@@ -102,20 +109,10 @@ impl TreeLine {
     }
     /// build and return the absolute targeted path: either self.path or the
     ///  solved canonicalized symlink
-    /// (the path may be invalid if the symlink is)
-    pub fn target(&self) -> PathBuf {
+    pub fn target(&self) -> &Path {
         match &self.line_type {
-            TreeLineType::SymLinkToFile(target) | TreeLineType::SymLinkToDir(target) => {
-                let mut target_path = PathBuf::from(target);
-                if target_path.is_relative() {
-                    target_path = self.path.parent().unwrap().join(target_path);
-                }
-                if let Ok(canonic) = fs::canonicalize(&target_path) {
-                    target_path = canonic;
-                }
-                target_path
-            }
-            _ => self.path.clone(),
+            TreeLineType::SymLink { final_target, .. } => final_target,
+            _ => &self.path,
         }
     }
 }

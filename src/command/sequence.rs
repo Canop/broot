@@ -29,7 +29,7 @@ impl Sequence {
     pub fn new(raw: String, separator: Option<String>) -> Self {
         Self {
             raw,
-            separator: separator.unwrap_or_else(|| Sequence::local_separator()),
+            separator: separator.unwrap_or_else(Sequence::local_separator),
         }
     }
     pub fn new_single(cmd: String) -> Self {

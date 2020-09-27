@@ -95,33 +95,8 @@ impl BLine {
         false
     }
     pub fn to_tree_line(&self) -> std::io::Result<TreeLine> {
-        let mut has_error = self.has_error;
-        let line_type = if self.file_type.is_dir() {
-            TreeLineType::Dir
-        } else if self.file_type.is_symlink() {
-            if let Ok(target) = fs::read_link(&self.path) {
-                let target = target.to_string_lossy().into_owned();
-                let mut target_path = PathBuf::from(&target);
-                if target_path.is_relative() {
-                    target_path = self.path.parent().unwrap().join(target_path)
-                }
-                if let Ok(target_metadata) = fs::symlink_metadata(&target_path) {
-                    if target_metadata.file_type().is_dir() {
-                        TreeLineType::SymLinkToDir(target)
-                    } else {
-                        TreeLineType::SymLinkToFile(target)
-                    }
-                } else {
-                    has_error = true;
-                    TreeLineType::SymLinkToFile(target)
-                }
-            } else {
-                has_error = true;
-                TreeLineType::SymLinkToFile(String::from("????"))
-            }
-        } else {
-            TreeLineType::File
-        };
+        let has_error = self.has_error;
+        let line_type = TreeLineType::new(&self.path, &self.file_type);
         let unlisted = if let Some(children) = &self.children {
             // number of not listed children
             children.len() - self.next_child_idx
