@@ -3,9 +3,10 @@
 * the "clipboard" optional feature adds:
 - the `:copy_path` verb which copies the selected path to the clipboard (mapped to alt-c)
 - the `:input_paste` verb which inserts the clipboard content in the input (mapped to ctrl-v)
-(I need user/dev feedback on compilation and usage before making this feature default)
 * it's now possible to define verbs executing sequences of commands - Fix #277
 * fix opening of link of link - Fix #280
+* broot is now compatible with Android, you can use it on Termux for example
+* help page lists all optional features enabled at compilation
 
 <a name="v1.0.0"></a>
 ### v1.0.0 - 2020-09-01

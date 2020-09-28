@@ -47,7 +47,35 @@ Some options can be set on launch:
 Flags are displayed at bottom right:
 * `h:y` or `h:n` : whether hidden files are shown
 * `gi:y`, `gi:n` : whether gitignore rules are active or not
+
+## Special Features
+
+${features-text}
+${features
+* **${feature-name}:** ${feature-description}
+}
 "#;
+
+fn determine_features() -> Vec<(&'static str, &'static str)> {
+    let mut features: Vec<(&'static str, &'static str)> = Vec::new();
+
+    #[cfg(not(any(target_family="windows",target_os="android")))]
+    features.push(("permissions", "allow showing file mode, owner and group"));
+
+    #[cfg(feature="client-server")]
+    features.push((
+        "client-server",
+        "see https://github.com/Canop/broot/blob/master/client-server.md"
+    ));
+
+    #[cfg(feature="clipboard")]
+    features.push((
+        "clipboard",
+        ":copy_path (copying the current path), and :input_paste (pasting into the input)"
+    ));
+
+    features
+}
 
 /// build the markdown which will be displayed in the help page
 pub fn build_text(con: &AppContext) -> Text<'_> {
@@ -86,6 +114,20 @@ pub fn build_text(con: &AppContext) -> Text<'_> {
             sub.set_md("description", &verb.description.content);
             sub.set("execution", "");
         }
+    }
+    let features = determine_features();
+    expander.set(
+        "features-text",
+        if features.is_empty() {
+            "This release was compiled with no optional feature enabled."
+        } else {
+            "This release was compiled with those optional features enabled:"
+        },
+    );
+    for feature in &features {
+        expander.sub("features")
+            .set("feature-name", feature.0)
+            .set("feature-description", feature.1);
     }
     expander.expand()
 }

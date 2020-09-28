@@ -45,7 +45,7 @@ impl Message {
             )),
             "SEQ" => Ok(Self::Sequence(Sequence::new(
                 read_line(r)?,
-                read_line(r)?,
+                Some(read_line(r)?),
             ))),
             _ => Err(NetError::InvalidMessage),
         }
