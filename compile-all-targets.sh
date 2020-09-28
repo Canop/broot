@@ -18,9 +18,9 @@ rm -rf build
 mkdir build
 echo "   build cleaned"
 
-# build the linux version
+# build the linux version (with the "clipboard" feature) 
 echo -e "${H2}Compiling the linux version${EH}"
-cargo build --release
+cargo build --release --features "clipboard"
 strip target/release/broot
 mkdir build/x86_64-linux/
 cp target/release/broot build/x86_64-linux/
@@ -32,10 +32,10 @@ mkdir build/completion
 cp "$(broot -c ":gi;release;:focus;broot.bash;:parent;:pp" target)/"* build/completion
 echo "   Done"
 
-# build the windows version
+# build the windows version (with the "clipboard" feature) 
 # use cargo cross
 echo -e "${H2}Compiling the Windows version${EH}"
-cross build --target x86_64-pc-windows-gnu --release
+cross build --target x86_64-pc-windows-gnu --release --features "clipboard"
 mkdir build/x86_64-pc-windows-gnu
 cp target/x86_64-pc-windows-gnu/release/broot.exe build/x86_64-pc-windows-gnu/
 
