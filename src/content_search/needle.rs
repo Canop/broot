@@ -178,7 +178,7 @@ impl Needle {
         // we tell the system how we intent to use the mmap
         // to increase the likehod the memory is available
         // for our loop
-        #[cfg(unix)]
+        #[cfg(not(any(target_family="windows",target_os="android")))]
         unsafe {
             libc::posix_madvise(
                 hay.as_ptr() as *mut std::ffi::c_void,

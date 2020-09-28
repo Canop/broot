@@ -46,6 +46,13 @@ cross build --target armv7-unknown-linux-gnueabihf --release
 mkdir build/armv7-unknown-linux-gnueabihf
 cp target/armv7-unknown-linux-gnueabihf/release/broot build/armv7-unknown-linux-gnueabihf/
 
+# build the Android version
+# use cargo cross
+echo -e "${H2}Compiling the Android version${EH}"
+cross build --target aarch64-linux-android --release
+mkdir build/aarch64-linux-android
+cp target/aarch64-linux-android/release/broot build/aarch64-linux-android/
+
 # build a musl version
 echo -e "${H2}Compiling the MUSL version${EH}"
 cross build --release --target x86_64-unknown-linux-musl

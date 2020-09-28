@@ -18,12 +18,12 @@ pub fn app_dirs() -> directories::ProjectDirs {
         .expect("Unable to find configuration directories")
 }
 
-#[cfg(not(target_os = "macos"))]
+#[cfg(not(target_os="macos"))]
 fn find_conf_dir() -> PathBuf {
     app_dirs().config_dir().to_path_buf()
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(target_os="macos")]
 fn find_conf_dir() -> PathBuf {
     if let Some(user_dirs) = directories::UserDirs::new() {
         // We first search in ~/.config/broot which should be the prefered solution

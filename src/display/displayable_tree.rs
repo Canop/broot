@@ -358,7 +358,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
 
     /// write the whole tree on the given `W`
     pub fn write_on<W: Write>(&self, f: &mut W) -> Result<(), ProgramError> {
-        #[cfg(unix)]
+        #[cfg(not(any(target_family="windows",target_os="android")))]
         let perm_writer = super::PermWriter::for_tree(&self.skin, &self.tree);
 
         let tree = self.tree;
@@ -427,7 +427,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             self.write_branch(cw, line_index, line, selected)?
                         }
 
-                        #[cfg(unix)]
+                        #[cfg(not(any(target_family="windows",target_os="android")))]
                         Col::Permission if tree.options.show_permissions => {
                             perm_writer.write_permissions(cw, line, selected)?
                         }

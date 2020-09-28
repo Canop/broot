@@ -102,7 +102,7 @@ impl<'s> PermWriter<'s> {
         Ok(())
     }
 
-    #[cfg(unix)]
+    #[cfg(not(any(target_family="windows",target_os="android")))]
     pub fn write_permissions<'w, W: Write>(
         &self,
         cw: &mut CropWriter<'w, W>,

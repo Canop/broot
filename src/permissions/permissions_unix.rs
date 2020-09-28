@@ -1,6 +1,12 @@
-use std::{collections::HashMap, sync::Mutex};
+use std::{
+    collections::HashMap,
+    sync::Mutex,
+};
 
-#[cfg(unix)]
+pub fn supported() -> bool {
+    true
+}
+
 pub fn user_name(uid: u32) -> String {
     lazy_static! {
         static ref USERS_CACHE_MUTEX: Mutex<HashMap<u32, String>> = Mutex::new(HashMap::new());
@@ -17,7 +23,6 @@ pub fn user_name(uid: u32) -> String {
     (*name).to_string()
 }
 
-#[cfg(unix)]
 pub fn group_name(gid: u32) -> String {
     lazy_static! {
         static ref USERS_CACHE_MUTEX: Mutex<HashMap<u32, String>> = Mutex::new(HashMap::new());

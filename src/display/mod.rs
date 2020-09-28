@@ -30,7 +30,7 @@ pub mod status_line;
 mod matched_string;
 mod screen;
 
-#[cfg(unix)]
+#[cfg(not(any(target_family="windows",target_os="android")))]
 mod permissions;
 
 pub use {
@@ -56,7 +56,7 @@ use {
     },
 };
 
-#[cfg(unix)]
+#[cfg(not(any(target_family="windows",target_os="android")))]
 pub use {
     permissions::PermWriter,
 };
