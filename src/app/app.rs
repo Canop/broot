@@ -176,10 +176,20 @@ impl App {
         Ok(())
     }
 
-    /// if there are exactly two panels, return the selection
+    /// if there are exactly two non preview panels, return the selection
     /// in the non focused panel
     fn get_other_panel_path(&self) -> Option<PathBuf> {
-        if self.panels.len().get() == 2 {
+        let len = self.panels.len().get();
+        if len == 3 {
+            if let Some(preview_id) = self.preview {
+                for (idx, panel) in self.panels.iter().enumerate() {
+                    if self.active_panel_idx!=idx && panel.id != preview_id {
+                        return Some(panel.state().selected_path().to_path_buf());
+                    }
+                }
+            }
+            None
+        } else if self.panels.len().get() == 2 && self.preview.is_none() {
             let non_focused_panel_idx = if self.active_panel_idx == 0 { 1 } else { 0 };
             Some(self.panels[non_focused_panel_idx].state().selected_path().to_path_buf())
         } else {
