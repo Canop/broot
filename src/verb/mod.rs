@@ -23,7 +23,6 @@ pub use {
     invocation_parser::InvocationParser,
     sequence_execution::SequenceExecution,
     verb::Verb,
-    verb_conf::{VerbConf, VerbExecutionType},
     verb_description::VerbDescription,
     verb_execution::VerbExecution,
     verb_invocation::VerbInvocation,

@@ -4,20 +4,20 @@
 use {
     super::{
         default_conf::DEFAULT_CONF_FILE,
+        toml::*,
     },
     crate::{
-        app::SelectionType,
+        verb::Verb,
         display::{Col, Cols},
         errors::ConfError,
-        keys,
         pattern::{SearchModeMap, SearchModeMapEntry},
         skin::{ExtColorMap, SkinEntry},
         tree::*,
-        verb::{VerbConf, VerbExecutionType},
     },
     crossterm::style::Attribute,
     std::{
         collections::HashMap,
+        convert::TryFrom,
         fs, io,
         path::{Path, PathBuf},
     },
@@ -29,7 +29,7 @@ use {
 pub struct Conf {
     pub default_flags: String, // the flags to apply before cli ones
     pub date_time_format: Option<String>,
-    pub verbs: Vec<VerbConf>,
+    pub verbs: Vec<Verb>,
     pub skin: HashMap<String, SkinEntry>,
     pub special_paths: Vec<SpecialPath>,
     pub search_modes: SearchModeMap,
@@ -39,102 +39,6 @@ pub struct Conf {
     pub ext_colors: ExtColorMap,
     pub syntax_theme: Option<String>,
     pub true_colors: Option<bool>,
-}
-
-fn string_field(value: &Value, field_name: &str) -> Option<String> {
-    if let Value::Table(tbl) = value {
-        if let Some(fv) = tbl.get(field_name) {
-            if let Some(s) = fv.as_str() {
-                return Some(s.to_string());
-            }
-        }
-    }
-    None
-}
-
-fn bool_field(value: &Value, field_name: &str) -> Option<bool> {
-    if let Value::Table(tbl) = value {
-        if let Some(Value::Boolean(b)) = tbl.get(field_name) {
-            return Some(*b);
-        }
-    }
-    None
-}
-
-
-/// read a TOML parsed value into a VerbConf element,
-/// checking a few basic things in the process
-fn verb_conf(verb_value: &Value) -> Result<VerbConf, String> {
-    let invocation = string_field(verb_value, "invocation");
-    let key = string_field(verb_value, "key")
-        .map(|s| keys::parse_key(&s))
-        .transpose()
-        .map_err(|e| e.to_string())?;
-    if let Some(key) = key {
-        if keys::is_reserved(key) {
-            return Err(format!("The {} key is reserved", keys::key_event_desc(key)));
-        }
-    }
-    let execution = string_field(verb_value, "execution");
-    let internal = string_field(verb_value, "internal");
-    let external = string_field(verb_value, "external");
-    let cmd = string_field(verb_value, "cmd");
-    let (execution, execution_type) = match (execution, internal, external, cmd) {
-        // old definition with "execution": we guess whether it's an internal or
-        // an external
-        (Some(s), None, None, None) => if s.starts_with(':') || s.starts_with(' ') {
-            (s, VerbExecutionType::Internal)
-        } else {
-            (s, VerbExecutionType::External)
-        }
-        // "internal": the leading `:` or ` ` is optional, we add it if it's missing
-        (None, Some(s), None, None) => (
-            if s.starts_with(':') || s.starts_with(' ') {
-                s
-            } else {
-                format!(":{}", s)
-            },
-            VerbExecutionType::Internal,
-        ),
-        // "external": it can be about any form
-        (None, None, Some(s), None) => (s, VerbExecutionType::External),
-        // "cmd": it's a sequence
-        (None, None, None, Some(s)) => (s, VerbExecutionType::Sequence),
-        _ => {
-            return Err("You must define either internal, external or cmd".to_string());
-        }
-    };
-    let cmd_separator = string_field(verb_value, "cmd_separator");
-    let from_shell = bool_field(verb_value, "from_shell");
-    let leave_broot = bool_field(verb_value, "leave_broot");
-    if leave_broot == Some(false) && from_shell == Some(true) {
-        return Err(
-            "You can't simultaneously have leave_broot=false and from_shell=true".to_string()
-        );
-    }
-    let selection_condition = match string_field(verb_value, "apply_to").as_deref() {
-        Some("file") => SelectionType::File,
-        Some("directory") => SelectionType::Directory,
-        Some("any") => SelectionType::Any,
-        None => SelectionType::Any,
-        Some(s) => {
-            return Err(format!("{:?} isn't a valid value of apply_to", s));
-        }
-    };
-    let set_working_dir = bool_field(verb_value, "set_working_dir");
-    Ok(VerbConf {
-        invocation,
-        execution,
-        key,
-        shortcut: string_field(verb_value, "shortcut"),
-        description: string_field(verb_value, "description"),
-        from_shell,
-        leave_broot,
-        selection_condition,
-        set_working_dir,
-        execution_type,
-        cmd_separator,
-    })
 }
 
 impl Conf {
@@ -206,12 +110,12 @@ impl Conf {
         // reading verbs
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {
-                match verb_conf(verb_value) {
-                    Ok(verb_conf) => {
-                        self.verbs.push(verb_conf);
+                match Verb::try_from(verb_value) {
+                    Ok(verb) => {
+                        self.verbs.push(verb);
                     }
-                    Err(s) => {
-                        eprintln!("Invalid [[verbs]] entry in configuration: {:?}", s);
+                    Err(e) => {
+                        eprintln!("Invalid [[verbs]] entry in configuration: {:?}", e);
                     }
                 }
             }

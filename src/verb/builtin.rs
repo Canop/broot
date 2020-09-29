@@ -37,7 +37,7 @@ fn external(
     exec_mode: ExternalExecutionMode,
 ) -> Verb {
     let execution = VerbExecution::External(ExternalExecution::new(
-        execution_str,
+        execution_str.to_string(),
         exec_mode,
     ));
     Verb::new(

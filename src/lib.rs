@@ -10,8 +10,6 @@ extern crate lazy_static;
 extern crate log;
 #[macro_use]
 extern crate lazy_regex;
-// #[macro_use]
-// extern crate phf;
 
 #[macro_use]
 mod time;

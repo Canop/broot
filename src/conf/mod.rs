@@ -7,6 +7,7 @@ use {
 
 mod conf;
 mod default_conf;
+pub mod toml;
 
 pub use {
     conf::Conf,

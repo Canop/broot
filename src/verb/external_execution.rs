@@ -37,19 +37,25 @@ pub struct ExternalExecution {
     /// whether the working dir of the external process must be set
     /// to the current directory
     pub set_working_dir: bool,
-
 }
 
 impl ExternalExecution {
     pub fn new(
-        execution_str: &str,
+        exec_pattern: String,
         exec_mode: ExternalExecutionMode,
     ) -> Self {
         Self {
-            exec_pattern: execution_str.to_string(),
+            exec_pattern,
             exec_mode,
             set_working_dir: false,
         }
+    }
+
+    pub fn with_set_working_dir(mut self, b: Option<bool>) -> Self {
+        if let Some(b) = b {
+            self.set_working_dir = b;
+        }
+        self
     }
 
     pub fn to_cmd_result(
