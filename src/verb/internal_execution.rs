@@ -1,6 +1,7 @@
 use {
     super::*,
     crate::errors::ConfError,
+    std::fmt,
 };
 
 /// A verb execution definition based on an internal
@@ -43,14 +44,16 @@ impl InternalExecution {
             arg: invocation.args,
         })
     }
-    pub fn as_desc_code(&self) -> Option<String> {
-        self.arg.as_ref().map(|arg| {
-            format!(
-                ":{}{} {}",
-                self.internal.name(),
-                if self.bang { "!" } else { "" },
-                arg
-            )
-        })
+}
+impl fmt::Display for InternalExecution {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, ":{}", self.internal.name())?;
+        if self.bang {
+            write!(f, "!")?;
+        }
+        if let Some(arg) = &self.arg {
+            write!(f, " {}", arg)?;
+        }
+        Ok(())
     }
 }

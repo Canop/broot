@@ -162,7 +162,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     // read the configuration file(s): either the standard one
     // or the ones required by the launch args
-    let config = match &specific_conf {
+    let mut config = match &specific_conf {
         Some(conf_paths) => {
             let mut conf = Conf::default();
             for path in conf_paths {
@@ -190,7 +190,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     // verb store is completed from the config file(s)
     let mut verb_store = VerbStore::default();
-    verb_store.init(&config);
+    verb_store.init(&mut config);
 
     // reading the other arguments
     let file_export_path = cli_matches.value_of("file-export-path").map(str::to_string);

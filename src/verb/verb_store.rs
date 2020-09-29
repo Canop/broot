@@ -1,7 +1,7 @@
 use {
     super::{
         builtin::builtin_verbs,
-        internal::Internal,
+        Internal,
         Verb,
     },
     crate::{
@@ -10,7 +10,6 @@ use {
         keys,
     },
     crossterm::event::KeyEvent,
-    std::convert::TryFrom,
 };
 
 /// Provide access to the verbs:
@@ -33,20 +32,11 @@ pub enum PrefixSearchResult<'v, T> {
 }
 
 impl VerbStore {
-    pub fn init(&mut self, conf: &Conf) {
-        // we first add the verbs coming from configuration, as
-        // we'll search in order. This way, a user can overload a
-        // standard verb.
-        for verb_conf in &conf.verbs {
-            match Verb::try_from(verb_conf) {
-                Ok(v) => {
-                    self.verbs.push(v);
-                }
-                Err(e) => {
-                    eprintln!("Verb error: {:?}", e);
-                }
-            }
-        }
+    pub fn init(&mut self, conf: &mut Conf) {
+        // We first add the verbs coming from configuration, as we'll search in order.
+        // This way, a user can overload a standard verb.
+        // Note that we remove the verbs from conf, assuming they won't be needed anymore.
+        self.verbs.extend(conf.verbs.drain(..));
         self.verbs.extend(builtin_verbs());
     }
 
