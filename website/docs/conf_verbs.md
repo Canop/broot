@@ -17,18 +17,18 @@ leave_broot = false
 
 The possible attributes are:
 
-name  | role
--|-
-invocation | how the verb is called by the user, with placeholders for arguments
-internal | execution, when your verb is based on a predefined broot verb
-external | execution, when your verb is based on an external command
-cmd | a semicolon sequence to execute, similar to an argument you pass to `--cmd`
-key | a keyboard key triggering execution
-shortcut | an alternate way to call the verb (without the arguments part)
-leave_broot | whether to quit broot on execution (default: `true`)
-from_shell | whether the verb must be executed from the parent shell (needs `br`, default: `false`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
-apply_to | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
-set_working_dir | whether the working dir of the process must be set to the currenly selected directory (default to false)
+name  | default | role
+-|-|-
+invocation | | how the verb is called by the user, with placeholders for arguments
+internal | | execution, when your verb is based on a predefined broot verb
+external | | execution, when your verb is based on an external command
+cmd | | a semicolon sequence to execute, similar to an argument you pass to `--cmd`
+key | | a keyboard key triggering execution
+shortcut | | an alternate way to call the verb (without the arguments part)
+leave_broot | `true` | whether to quit broot on execution
+from_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
+apply_to | | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
+set_working_dir | `false` | whether the working dir of the process must be set to the currenly selected directory
 
 The execution is defined either by `internal`, `external` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
 

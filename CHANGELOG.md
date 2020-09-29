@@ -7,6 +7,7 @@
 * fix opening of link of link - Fix #280
 * broot is now compatible with Android, you can use it on Termux for example
 * help page lists all optional features enabled at compilation
+* list of verbs in help page is searchable
 
 <a name="v1.0.0"></a>
 ### v1.0.0 - 2020-09-01

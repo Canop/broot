@@ -7,6 +7,7 @@ use {
         display::{Screen, W},
         errors::ProgramError,
         launchable::Launchable,
+        pattern::*,
         skin::PanelSkin,
         verb::*,
     },
@@ -19,6 +20,7 @@ pub struct HelpState {
     pub scroll: i32, // scroll position
     pub text_area: Area,
     dirty: bool, // background must be cleared
+    pattern: Pattern,
 }
 
 impl HelpState {
@@ -28,6 +30,7 @@ impl HelpState {
             text_area,
             scroll: 0,
             dirty: true,
+            pattern: Pattern::None,
         }
     }
 }
@@ -52,6 +55,15 @@ impl AppState for HelpState {
         Command::empty()
     }
 
+    fn on_pattern(
+        &mut self,
+        pat: InputPattern,
+        _con: &AppContext,
+    ) -> Result<AppStateCmdResult, ProgramError> {
+        self.pattern = pat.pattern;
+        Ok(AppStateCmdResult::Keep)
+    }
+
     fn display(
         &mut self,
         w: &mut W,
@@ -71,7 +83,40 @@ impl AppState for HelpState {
             screen.clear_area_to_right(w, &state_area)?;
             self.dirty = false;
         }
-        let text = help_content::build_text(con);
+        let mut expander = help_content::expander();
+        expander
+            .set("version", env!("CARGO_PKG_VERSION"))
+            .set("config-path", &con.config_path);
+        let verb_rows = help_content::matching_verb_rows(&self.pattern, con);
+        for row in &verb_rows {
+            let sub = expander
+                .sub("verb-rows")
+                .set_md("name", row.name())
+                .set_md("shortcut", row.shortcut())
+                .set("key", &row.verb.keys_desc);
+            if row.verb.description.code {
+                sub.set("description", "");
+                sub.set("execution", &row.verb.description.content);
+            } else {
+                sub.set_md("description", &row.verb.description.content);
+                sub.set("execution", "");
+            }
+        }
+        let features = help_content::determine_features();
+        expander.set(
+            "features-text",
+            if features.is_empty() {
+                "This release was compiled with no optional feature enabled."
+            } else {
+                "This release was compiled with those optional features enabled:"
+            },
+        );
+        for feature in &features {
+            expander.sub("features")
+                .set("feature-name", feature.0)
+                .set("feature-description", feature.1);
+        }
+        let text = expander.expand();
         let fmt_text = FmtText::from_text(
             &panel_skin.help_skin,
             text,
@@ -145,5 +190,5 @@ impl AppState for HelpState {
             )?,
         })
     }
-
 }
+

@@ -1,6 +1,10 @@
 use {
-    crate::app::AppContext,
-    minimad::{Text, TextTemplate},
+    crate::{
+        app::AppContext,
+        pattern::*,
+        verb::*,
+    },
+    minimad::{TextTemplate, TextTemplateExpander},
 };
 
 static MD: &str = r#"
@@ -56,7 +60,8 @@ ${features
 }
 "#;
 
-fn determine_features() -> Vec<(&'static str, &'static str)> {
+/// find the list of optional features which are enabled
+pub fn determine_features() -> Vec<(&'static str, &'static str)> {
     let mut features: Vec<(&'static str, &'static str)> = Vec::new();
 
     #[cfg(not(any(target_family="windows",target_os="android")))]
@@ -77,57 +82,74 @@ fn determine_features() -> Vec<(&'static str, &'static str)> {
     features
 }
 
-/// build the markdown which will be displayed in the help page
-pub fn build_text(con: &AppContext) -> Text<'_> {
+pub fn expander() -> TextTemplateExpander<'static, 'static> {
     lazy_static! {
         // this doesn't really matter, only half a ms is spared
         static ref TEMPLATE: TextTemplate<'static> = TextTemplate::from(MD);
     }
-    let mut expander = TEMPLATE.expander();
-    expander
-        .set("version", env!("CARGO_PKG_VERSION"))
-        .set("config-path", &con.config_path);
+    TEMPLATE.expander()
+}
+
+/// what should be shown for a verb in the help screen, after
+/// filtering
+pub struct MatchingVerbRow<'v> {
+    name: Option<String>,
+    shortcut: Option<String>,
+    pub verb: &'v Verb,
+}
+
+pub fn matching_verb_rows<'v>(
+    pat: &Pattern,
+    con: &'v AppContext,
+) -> Vec<MatchingVerbRow<'v>> {
+    let mut rows = Vec::new();
     for verb in &con.verb_store.verbs {
-        let sub = expander
-            .sub("verb-rows")
-            .set(
-                "name",
-                if let Some(name) = verb.names.get(0) {
-                    &name
-                } else {
-                    ""
-                },
-            )
-            .set(
-                "shortcut",
-                if let Some(shortcut) = verb.names.get(1) {
-                    &shortcut
-                } else {
-                    ""
-                },
-            )
-            .set("key", &verb.keys_desc);
-        if verb.description.code {
-            sub.set("description", "");
-            sub.set("execution", &verb.description.content);
-        } else {
-            sub.set_md("description", &verb.description.content);
-            sub.set("execution", "");
+        let mut name = None;
+        let mut shortcut = None;
+        if pat.is_some() {
+            let mut ok = false;
+            name = verb.names.get(0)
+                .and_then(|s|
+                    pat.search_string(s).map(|nm| {
+                        ok = true;
+                        nm.wrap(s, "**", "**")
+                    })
+                );
+            shortcut = verb.names.get(1)
+                .and_then(|s|
+                    pat.search_string(s).map(|nm| {
+                        ok = true;
+                        nm.wrap(s, "**", "**")
+                    })
+                );
+            if !ok {
+                continue;
+            }
         }
+        rows.push(MatchingVerbRow {
+            name,
+            shortcut,
+            verb,
+        });
     }
-    let features = determine_features();
-    expander.set(
-        "features-text",
-        if features.is_empty() {
-            "This release was compiled with no optional feature enabled."
-        } else {
-            "This release was compiled with those optional features enabled:"
-        },
-    );
-    for feature in &features {
-        expander.sub("features")
-            .set("feature-name", feature.0)
-            .set("feature-description", feature.1);
+    rows
+}
+
+impl MatchingVerbRow<'_> {
+    /// the name in markdown (with matching chars in bold if
+    /// some filtering occured)
+    pub fn name(&self) -> &str {
+        // there should be a better way to write this
+        self.name.as_deref().unwrap_or_else(|| match self.verb.names.get(0) {
+            Some(s) => &s.as_str(),
+            _ => " ",
+        })
     }
-    expander.expand()
+    pub fn shortcut(&self) -> &str {
+        // there should be a better way to write this
+        self.shortcut.as_deref().unwrap_or_else(|| match self.verb.names.get(1) {
+            Some(s) => &s.as_str(),
+            _ => " ",
+        })
+    }
 }
