@@ -62,6 +62,7 @@ ${features
 
 /// find the list of optional features which are enabled
 pub fn determine_features() -> Vec<(&'static str, &'static str)> {
+    #[allow(unused_mut)]
     let mut features: Vec<(&'static str, &'static str)> = Vec::new();
 
     #[cfg(not(any(target_family="windows",target_os="android")))]
@@ -82,6 +83,9 @@ pub fn determine_features() -> Vec<(&'static str, &'static str)> {
     features
 }
 
+/// build a markdown expander which will need to be
+/// completed with data and which then would be used to
+/// produce the markdown of the help page
 pub fn expander() -> TextTemplateExpander<'static, 'static> {
     lazy_static! {
         // this doesn't really matter, only half a ms is spared
@@ -96,6 +100,25 @@ pub struct MatchingVerbRow<'v> {
     name: Option<String>,
     shortcut: Option<String>,
     pub verb: &'v Verb,
+}
+
+impl MatchingVerbRow<'_> {
+    /// the name in markdown (with matching chars in bold if
+    /// some filtering occured)
+    pub fn name(&self) -> &str {
+        // there should be a better way to write this
+        self.name.as_deref().unwrap_or_else(|| match self.verb.names.get(0) {
+            Some(s) => &s.as_str(),
+            _ => " ",
+        })
+    }
+    pub fn shortcut(&self) -> &str {
+        // there should be a better way to write this
+        self.shortcut.as_deref().unwrap_or_else(|| match self.verb.names.get(1) {
+            Some(s) => &s.as_str(),
+            _ => " ",
+        })
+    }
 }
 
 pub fn matching_verb_rows<'v>(
@@ -133,23 +156,4 @@ pub fn matching_verb_rows<'v>(
         });
     }
     rows
-}
-
-impl MatchingVerbRow<'_> {
-    /// the name in markdown (with matching chars in bold if
-    /// some filtering occured)
-    pub fn name(&self) -> &str {
-        // there should be a better way to write this
-        self.name.as_deref().unwrap_or_else(|| match self.verb.names.get(0) {
-            Some(s) => &s.as_str(),
-            _ => " ",
-        })
-    }
-    pub fn shortcut(&self) -> &str {
-        // there should be a better way to write this
-        self.shortcut.as_deref().unwrap_or_else(|| match self.verb.names.get(1) {
-            Some(s) => &s.as_str(),
-            _ => " ",
-        })
-    }
 }

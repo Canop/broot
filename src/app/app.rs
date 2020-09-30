@@ -247,7 +247,14 @@ impl App {
                 }
                 let close_idx = id
                     .and_then(|id| self.panel_idx(id))
-                    .unwrap_or(self.active_panel_idx);
+                    .unwrap_or_else(||
+                        // when there's a preview panel, we close it rather than the app
+                        if self.panels.len().get()==2 && self.preview.is_some() {
+                            1
+                        } else {
+                            self.active_panel_idx
+                        }
+                    );
                 let mut new_arg = None;
                 if validate_purpose {
                     let purpose = &self.panels[close_idx].purpose;

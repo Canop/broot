@@ -74,10 +74,10 @@ impl StandardStatus {
 
 #[derive(Default)]
 struct StatusParts<'b> {
-    md_parts: Vec<&'b String>,
+    md_parts: Vec<&'b str>,
 }
 impl<'b> StatusParts<'b> {
-    fn add(&mut self, md: &'b String) {
+    fn add(&mut self, md: &'b str) {
         self.md_parts.push(md);
     }
     fn addo(&mut self, md: &'b Option<String>) {
