@@ -24,24 +24,34 @@ use {
     termimad::{Area},
 };
 
-/// an imageview can display an image in the terminal with
-/// a ration of one pixel per char in width.
-pub struct ImageView {
+
+/// an already resized image, with the dimensions it
+/// was computed for (which may be different from the
+/// dimensions we got)
+struct CachedImage {
     img: DynamicImage,
+    target_width: u32,
+    target_height: u32,
+}
+
+/// an imageview can display an image in the terminal with
+/// a ratio of one pixel per char in width.
+pub struct ImageView {
+    source_img: DynamicImage,
+    display_img: Option<CachedImage>,
 }
 
 impl ImageView {
     pub fn new(path: &Path) -> Result<Self, ProgramError> {
-        let img = time!(
+        let source_img = time!(
             Debug,
             "decode image",
             path,
             Reader::open(&path)?.decode()?
         );
-        let (width, height) = img.dimensions();
-        debug!("image dimensions: {},{}", width, height);
         Ok(Self {
-            img,
+            source_img,
+            display_img: None,
         })
     }
     pub fn display(
@@ -52,15 +62,30 @@ impl ImageView {
         area: &Area,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
-        let img = time!(
-            Debug,
-            "resize image",
-            self.img.resize(
-                area.width as u32,
-                (area.height*2) as u32,
-                FilterType::Triangle,
-            ),
-        );
+        let target_width = area.width as u32;
+        let target_height = (area.height*2) as u32;
+        let cached = self.display_img.as_ref()
+            .filter(|ci| ci.target_width==target_width && ci.target_height==target_height);
+        let img = match cached {
+            Some(ci) => &ci.img,
+            None => {
+                let img = time!(
+                    Debug,
+                    "resize image",
+                    self.source_img.resize(
+                        area.width as u32,
+                        (area.height*2) as u32,
+                        FilterType::Triangle,
+                    ),
+                );
+                self.display_img = Some(CachedImage {
+                    target_width,
+                    target_height,
+                    img,
+                });
+                &self.display_img.as_ref().unwrap().img
+            }
+        };
         let (width, height) = img.dimensions();
         debug!("resized image dimensions: {},{}", width, height);
         debug_assert!(width <= area.width as u32);
@@ -100,7 +125,7 @@ impl ImageView {
         panel_skin: &PanelSkin,
         area: &Area,
     ) -> Result<(), ProgramError> {
-        let dim = self.img.dimensions();
+        let dim = self.source_img.dimensions();
         let s = format!("{} x {}", dim.0, dim.1);
         if s.len() > area.width as usize {
             return Ok(());
@@ -113,5 +138,4 @@ impl ImageView {
         Ok(())
     }
 }
-
 
