@@ -543,14 +543,16 @@ impl App {
                     for (input, arg_cmd) in raw_sequence.parse(con)? {
                         self.mut_panel().set_input_content(&input);
                         self.apply_command(w, arg_cmd, &skin.focused, con)?;
-                        self.display_panels(w, &skin, con)?;
-                        w.flush()?;
-                        self.do_pending_tasks(con, &mut dam)?;
-                        self.display_panels(w, &skin, con)?;
-                        w.flush()?;
                         if self.quitting {
                             // is that a 100% safe way of quitting ?
                             return Ok(self.launch_at_end.take());
+                        } else {
+                            self.display_panels(w, &skin, con)?;
+                            w.flush()?;
+                            if self.do_pending_tasks(con, &mut dam)? {
+                                self.display_panels(w, &skin, con)?;
+                                w.flush()?;
+                            }
                         }
                     }
                 }
