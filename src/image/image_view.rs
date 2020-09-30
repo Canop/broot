@@ -24,7 +24,6 @@ use {
     termimad::{Area},
 };
 
-
 /// an already resized image, with the dimensions it
 /// was computed for (which may be different from the
 /// dimensions we got)
@@ -72,11 +71,7 @@ impl ImageView {
                 let img = time!(
                     Debug,
                     "resize image",
-                    self.source_img.resize(
-                        area.width as u32,
-                        (area.height*2) as u32,
-                        FilterType::Triangle,
-                    ),
+                    self.source_img.resize(target_width, target_height, FilterType::Triangle),
                 );
                 self.display_img = Some(CachedImage {
                     target_width,

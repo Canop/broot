@@ -1,4 +1,5 @@
-### next
+<a name="v1.0.1"></a>
+### v1.0.1 - 2020-09-30
 * don't apply .gitignore files (including the global one) when not in a git repository - Fix #274
 * the "clipboard" optional feature adds:
 	* the `:copy_path` verb which copies the selected path to the clipboard (mapped to alt-c)
