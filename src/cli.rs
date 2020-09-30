@@ -4,7 +4,7 @@ use {
     crate::{
         app::{App, AppContext},
         conf::Conf,
-        display::{self, Screen},
+        display,
         errors::{ProgramError, TreeBuildError},
         launchable::Launchable,
         shell_install::{ShellInstall, ShellInstallState},
@@ -236,15 +236,14 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     let context = AppContext::from(launch_args, verb_store, &config);
     let mut w = display::writer();
-    let mut screen = Screen::new(&context, &config)?;
-    let app = App::new(&context, &screen)?;
+    let app = App::new(&context)?;
     w.queue(EnterAlternateScreen)?;
     w.queue(cursor::DisableBlinking)?;
     w.queue(cursor::Hide)?;
     if !config.disable_mouse_capture {
         w.queue(EnableMouseCapture)?;
     }
-    let r = app.run(&mut w, &mut screen, &context, &config);
+    let r = app.run(&mut w, &context, &config);
     if !config.disable_mouse_capture {
         w.queue(DisableMouseCapture)?;
     }

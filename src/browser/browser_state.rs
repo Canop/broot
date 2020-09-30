@@ -41,7 +41,7 @@ impl BrowserState {
     pub fn new(
         path: PathBuf,
         mut options: TreeOptions,
-        screen: &Screen,
+        screen: Screen,
         con: &AppContext,
         dam: &Dam,
     ) -> Result<Option<BrowserState>, TreeBuildError> {
@@ -65,7 +65,7 @@ impl BrowserState {
     /// different options
     pub fn with_new_options(
         &self,
-        screen: &Screen,
+        screen: Screen,
         change_options: &dyn Fn(&mut TreeOptions),
         in_new_panel: bool,
         con: &AppContext,
@@ -83,7 +83,7 @@ impl BrowserState {
         self.tree.root()
     }
 
-    pub fn page_height(screen: &Screen) -> i32 {
+    pub fn page_height(screen: Screen) -> i32 {
         i32::from(screen.height) - 2
     }
 
@@ -101,7 +101,7 @@ impl BrowserState {
 
     pub fn open_selection_stay_in_broot(
         &mut self,
-        screen: &mut Screen,
+        screen: Screen,
         con: &AppContext,
         in_new_panel: bool,
         keep_pattern: bool,
@@ -145,7 +145,7 @@ impl BrowserState {
 
     pub fn go_to_parent(
         &mut self,
-        screen: &mut Screen,
+        screen: Screen,
         con: &AppContext,
         in_new_panel: bool,
     ) -> AppStateCmdResult {
@@ -197,7 +197,7 @@ impl AppState for BrowserState {
         &mut self,
         _x: u16,
         y: u16,
-        _screen: &mut Screen,
+        _screen: Screen,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         self.displayed_tree_mut().try_select_y(y as i32);
@@ -208,7 +208,7 @@ impl AppState for BrowserState {
         &mut self,
         _x: u16,
         y: u16,
-        screen: &mut Screen,
+        screen: Screen,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         if self.displayed_tree().selection == y as usize {
@@ -240,7 +240,7 @@ impl AppState for BrowserState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: &mut Screen,
+        screen: Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let con = &cc.con;
         let page_height = BrowserState::page_height(screen);
@@ -549,7 +549,7 @@ impl AppState for BrowserState {
     /// Stop as soon as the dam asks for interruption
     fn do_pending_task(
         &mut self,
-        screen: &mut Screen,
+        screen: Screen,
         con: &AppContext,
         dam: &mut Dam,
     ) {
@@ -590,7 +590,7 @@ impl AppState for BrowserState {
     fn display(
         &mut self,
         w: &mut W,
-        _screen: &Screen,
+        _screen: Screen,
         area: Area,
         panel_skin: &PanelSkin,
         con: &AppContext,
@@ -607,7 +607,7 @@ impl AppState for BrowserState {
         dp.write_on(w)
     }
 
-    fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command {
+    fn refresh(&mut self, screen: Screen, con: &AppContext) -> Command {
         let page_height = BrowserState::page_height(screen) as usize;
         // refresh the base tree
         if let Err(e) = self.tree.refresh(page_height, con) {

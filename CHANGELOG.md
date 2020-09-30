@@ -1,8 +1,8 @@
 ### next
-* ignore .gitignore files (including the global one) when not in a git repository - Fix #274
+* don't apply .gitignore files (including the global one) when not in a git repository - Fix #274
 * the "clipboard" optional feature adds:
-- the `:copy_path` verb which copies the selected path to the clipboard (mapped to alt-c)
-- the `:input_paste` verb which inserts the clipboard content in the input (mapped to ctrl-v)
+	* the `:copy_path` verb which copies the selected path to the clipboard (mapped to alt-c)
+	* the `:input_paste` verb which inserts the clipboard content in the input (mapped to ctrl-v)
 * it's now possible to define verbs executing sequences of commands - Fix #277
 * fix opening of link of link - Fix #280
 * broot is now compatible with Android, you can use it on Termux for example

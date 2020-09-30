@@ -54,7 +54,7 @@ pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<AppState
 
 fn print_tree_to_file(
     tree: &Tree,
-    screen: &mut Screen,
+    screen: Screen,
     file_path: &str,
     cols: &Cols,
     ext_colors: &ExtColorMap,
@@ -71,7 +71,7 @@ fn print_tree_to_file(
 
 pub fn print_tree(
     tree: &Tree,
-    screen: &mut Screen,
+    screen: Screen,
     panel_skin: &PanelSkin,
     con: &AppContext,
 ) -> Result<AppStateCmdResult, ProgramError> {

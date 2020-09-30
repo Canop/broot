@@ -16,7 +16,7 @@ pub fn write(
     status: &Status,
     area: &Area,
     panel_skin: &PanelSkin,
-    screen: &Screen,
+    screen: Screen,
 ) -> Result<(), ProgramError> {
     let y = area.top;
     screen.goto(w, area.left, y)?;
@@ -48,7 +48,7 @@ pub fn erase(
     w: &mut W,
     area: &Area,
     panel_skin: &PanelSkin,
-    screen: &Screen,
+    screen: Screen,
 ) -> Result<(), ProgramError> {
     screen.goto(w, area.left, area.top)?;
     let sc = StyledChar::new(

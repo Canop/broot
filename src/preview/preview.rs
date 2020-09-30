@@ -217,7 +217,7 @@ impl Preview {
     pub fn display(
         &mut self,
         w: &mut W,
-        screen: &Screen,
+        screen: Screen,
         panel_skin: &PanelSkin,
         area: &Area,
         con: &AppContext,
@@ -236,7 +236,7 @@ impl Preview {
     pub fn display_info(
         &mut self,
         w: &mut W,
-        screen: &Screen,
+        screen: Screen,
         panel_skin: &PanelSkin,
         area: &Area,
     ) -> Result<(), ProgramError> {

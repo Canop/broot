@@ -117,7 +117,7 @@ impl AppState for PreviewState {
     /// do the preview filtering if required and not yet done
     fn do_pending_task(
         &mut self,
-        _screen: &mut Screen,
+        _screen: Screen,
         con: &AppContext,
         dam: &mut Dam,
     ) {
@@ -160,7 +160,7 @@ impl AppState for PreviewState {
         }
     }
 
-    fn refresh(&mut self, _screen: &Screen, con: &AppContext) -> Command {
+    fn refresh(&mut self, _screen: Screen, con: &AppContext) -> Command {
         self.dirty = true;
         self.set_selected_path(self.path.clone(), con);
         Command::empty()
@@ -170,7 +170,7 @@ impl AppState for PreviewState {
         &mut self,
         _x: u16,
         y: u16,
-        _screen: &mut Screen,
+        _screen: Screen,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         if y >= self.preview_area.top  && y < self.preview_area.top + self.preview_area.height {
@@ -183,7 +183,7 @@ impl AppState for PreviewState {
     fn display(
         &mut self,
         w: &mut W,
-        screen: &Screen,
+        screen: Screen,
         state_area: Area,
         panel_skin: &PanelSkin,
         con: &AppContext,
@@ -245,7 +245,7 @@ impl AppState for PreviewState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: &mut Screen,
+        screen: Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
         match internal_exec.internal {
             Internal::back => {

@@ -24,7 +24,7 @@ pub struct HelpState {
 }
 
 impl HelpState {
-    pub fn new(_screen: &Screen, _con: &AppContext) -> HelpState {
+    pub fn new(_screen: Screen, _con: &AppContext) -> HelpState {
         let text_area = Area::uninitialized(); // will be fixed at drawing time
         HelpState {
             text_area,
@@ -50,7 +50,7 @@ impl AppState for HelpState {
         }
     }
 
-    fn refresh(&mut self, _screen: &Screen, _con: &AppContext) -> Command {
+    fn refresh(&mut self, _screen: Screen, _con: &AppContext) -> Command {
         self.dirty = true;
         Command::empty()
     }
@@ -67,7 +67,7 @@ impl AppState for HelpState {
     fn display(
         &mut self,
         w: &mut W,
-        screen: &Screen,
+        screen: Screen,
         state_area: Area,
         panel_skin: &PanelSkin,
         con: &AppContext,
@@ -144,7 +144,7 @@ impl AppState for HelpState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: &mut Screen,
+        screen: Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
         use Internal::*;
         Ok(match internal_exec.internal {

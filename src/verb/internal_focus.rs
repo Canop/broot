@@ -18,7 +18,7 @@ use {
 
 pub fn on_path(
     path: PathBuf,
-    screen: &mut Screen,
+    screen: Screen,
     tree_options: TreeOptions,
     in_new_panel: bool,
     con: &AppContext,
@@ -32,7 +32,7 @@ pub fn on_path(
 
 pub fn new_state_on_path(
     path: PathBuf,
-    screen: &mut Screen,
+    screen: Screen,
     tree_options: TreeOptions,
     con: &AppContext,
 ) -> AppStateCmdResult {
@@ -45,7 +45,7 @@ pub fn new_state_on_path(
 
 pub fn new_panel_on_path(
     path: PathBuf,
-    screen: &mut Screen,
+    screen: Screen,
     tree_options: TreeOptions,
     purpose: PanelPurpose,
     con: &AppContext,
@@ -81,7 +81,7 @@ pub fn on_internal(
     input_invocation: Option<&VerbInvocation>,
     trigger_type: TriggerType,
     selected_path: &Path,
-    screen: &mut Screen,
+    screen: Screen,
     con: &AppContext,
     tree_options: TreeOptions,
 ) -> AppStateCmdResult {

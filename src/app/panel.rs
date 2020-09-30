@@ -64,7 +64,7 @@ impl Panel {
         w: &mut W,
         cmd: &Command,
         other_path: &Option<PathBuf>,
-        screen: &mut Screen,
+        screen: Screen,
         panel_skin: &PanelSkin,
         preview: Option<PanelId>,
         con: &AppContext,
@@ -102,7 +102,7 @@ impl Panel {
     ///  the dam asks for interruption
     pub fn do_pending_tasks(
         &mut self,
-        screen: &mut Screen,
+        screen: Screen,
         con: &AppContext,
         dam: &mut Dam,
     ) -> Result<bool, ProgramError> {
@@ -185,7 +185,7 @@ impl Panel {
         &mut self,
         w: &mut W,
         active: bool,
-        screen: &mut Screen,
+        screen: Screen,
         panel_skin: &PanelSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
@@ -214,7 +214,7 @@ impl Panel {
         &self,
         w: &mut W,
         panel_skin: &PanelSkin,
-        screen: &Screen,
+        screen: Screen,
     ) -> Result<(), ProgramError> {
         let task = self.state().get_pending_task();
         status_line::write(w, task, &self.status, &self.areas.status, panel_skin, screen)
@@ -227,7 +227,7 @@ impl Panel {
         &self,
         w: &mut W,
         panel_skin: &PanelSkin,
-        screen: &Screen,
+        screen: Screen,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         if !self.purpose.is_arg_edition() {

@@ -97,7 +97,7 @@ impl HexView {
     pub fn display(
         &mut self,
         w: &mut W,
-        _screen: &Screen,
+        _screen: Screen,
         panel_skin: &PanelSkin,
         area: &Area,
     ) -> Result<(), ProgramError> {
@@ -217,7 +217,7 @@ impl HexView {
     pub fn display_info(
         &mut self,
         w: &mut W,
-        _screen: &Screen,
+        _screen: Screen,
         panel_skin: &PanelSkin,
         area: &Area,
     ) -> Result<(), ProgramError> {

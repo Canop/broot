@@ -37,7 +37,7 @@ impl Areas {
     pub fn create(
         present_panels: &mut [Panel],
         mut insertion_idx: usize,
-        screen: &Screen,
+        screen: Screen,
         with_preview: bool, // slightly larger last panel
     ) -> Result<Self, ProgramError> {
         if insertion_idx > present_panels.len() {
@@ -65,7 +65,7 @@ impl Areas {
 
     pub fn resize_all(
         panels: &mut [Panel],
-        screen: &Screen,
+        screen: Screen,
         with_preview: bool, // slightly larger last panel
     ) -> Result<(), ProgramError> {
         let mut slots = Vec::new();
@@ -78,7 +78,7 @@ impl Areas {
     fn compute_areas(
         panels: &mut [Panel],
         slots: &mut Vec<Slot>,
-        screen: &Screen,
+        screen: Screen,
         with_preview: bool, // slightly larger last panel
     ) -> Result<(), ProgramError> {
         if screen.height < MINIMAL_PANEL_HEIGHT {

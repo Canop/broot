@@ -84,7 +84,7 @@ impl Launchable {
     }
     pub fn tree_printer(
         tree: &Tree,
-        screen: &Screen,
+        screen: Screen,
         style_map: StyleMap,
         cols: Cols,
         ext_colors: ExtColorMap,

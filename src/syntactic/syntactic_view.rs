@@ -265,7 +265,7 @@ impl SyntacticView {
     pub fn display(
         &mut self,
         w: &mut W,
-        _screen: &Screen,
+        _screen: Screen,
         panel_skin: &PanelSkin,
         area: &Area,
         con: &AppContext,
@@ -388,7 +388,7 @@ impl SyntacticView {
     pub fn display_info(
         &mut self,
         w: &mut W,
-        _screen: &Screen,
+        _screen: Screen,
         panel_skin: &PanelSkin,
         area: &Area,
     ) -> Result<(), ProgramError> {

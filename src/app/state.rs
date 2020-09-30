@@ -29,7 +29,7 @@ pub trait AppState {
         &mut self,
         _x: u16,
         _y: u16,
-        _screen: &mut Screen,
+        _screen: Screen,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         Ok(AppStateCmdResult::Keep)
@@ -39,7 +39,7 @@ pub trait AppState {
         &mut self,
         _x: u16,
         _y: u16,
-        _screen: &mut Screen,
+        _screen: Screen,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         Ok(AppStateCmdResult::Keep)
@@ -65,7 +65,7 @@ pub trait AppState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: &mut Screen, // TODO remove (seeems to be used only for page_height)
+        screen: Screen,
     ) -> Result<AppStateCmdResult, ProgramError>;
 
     /// a generic implementation of on_internal which may be
@@ -78,7 +78,7 @@ pub trait AppState {
         input_invocation: Option<&VerbInvocation>,
         _trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: &mut Screen,
+        screen: Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let con = &cc.con;
         Ok(match internal_exec.internal {
@@ -174,7 +174,7 @@ pub trait AppState {
         invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: &mut Screen,
+        screen: Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let exec_builder = || {
             ExecutionStringBuilder::from_invocation(
@@ -221,7 +221,7 @@ pub trait AppState {
         &mut self,
         w: &mut W,
         cc: &CmdContext,
-        screen: &mut Screen,
+        screen: Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
         self.clear_pending();
         let con = &cc.con;
@@ -330,11 +330,11 @@ pub trait AppState {
 
     fn selection(&self) -> Selection<'_>;
 
-    fn refresh(&mut self, screen: &Screen, con: &AppContext) -> Command;
+    fn refresh(&mut self, screen: Screen, con: &AppContext) -> Command;
 
     fn do_pending_task(
         &mut self,
-        _screen: &mut Screen,
+        _screen: Screen,
         _con: &AppContext,
         _dam: &mut Dam,
     ) {
@@ -349,7 +349,7 @@ pub trait AppState {
     fn display(
         &mut self,
         w: &mut W,
-        screen: &Screen,
+        screen: Screen,
         state_area: Area,
         skin: &PanelSkin,
         con: &AppContext,

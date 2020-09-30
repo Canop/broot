@@ -33,6 +33,9 @@ use std::sync::{Arc, Mutex};
 
 /// The GUI
 pub struct App {
+    /// dimensions of the screen
+    screen: Screen,
+
     /// the panels of the application, at least one
     panels: NonEmptyVec<Panel>,
 
@@ -66,8 +69,8 @@ impl App {
 
     pub fn new(
         con: &AppContext,
-        screen: &Screen,
     ) -> Result<App, ProgramError> {
+        let screen = Screen::new(con)?;
         let panel = Panel::new(
             PanelId::from(0),
             Box::new(
@@ -85,6 +88,7 @@ impl App {
         );
         let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
         Ok(App {
+            screen,
             active_panel_idx: 0,
             panels: panel.into(),
             quitting: false,
@@ -124,7 +128,7 @@ impl App {
     /// close the panel if it's not the last one
     ///
     /// Return true when the panel has been removed (ie it wasn't the last one)
-    fn close_panel(&mut self, panel_idx: usize, screen: &Screen) -> bool {
+    fn close_panel(&mut self, panel_idx: usize) -> bool {
         let active_panel_id = self.panels[self.active_panel_idx].id;
         if let Some(preview_id) = self.preview {
             if self.panels.has_len(2) && self.panels[panel_idx].id != preview_id {
@@ -136,7 +140,7 @@ impl App {
             if self.preview == Some(removed_panel.id) {
                 self.preview = None;
             }
-            Areas::resize_all(self.panels.as_mut_slice(), screen, self.preview.is_some())
+            Areas::resize_all(self.panels.as_mut_slice(), self.screen, self.preview.is_some())
                 .expect("removing a panel should be easy");
             self.active_panel_idx = self.panels.iter()
                 .position(|p| p.id == active_panel_id)
@@ -152,15 +156,14 @@ impl App {
     /// Close the panel too if that was its only state.
     /// Close nothing and return false if there's not
     /// at least two states in the app.
-    fn remove_state(&mut self, screen: &Screen) -> bool {
+    fn remove_state(&mut self) -> bool {
         self.panels[self.active_panel_idx].remove_state()
-            || self.close_panel(self.active_panel_idx, screen)
+            || self.close_panel(self.active_panel_idx)
     }
 
     fn display_panels(
         &mut self,
         w: &mut W,
-        screen: &mut Screen,
         skin: &AppSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
@@ -170,7 +173,7 @@ impl App {
             time!(
                 Debug,
                 "display panel",
-                panel.display(w, focused, screen, skin, con)?,
+                panel.display(w, focused, self.screen, skin, con)?,
             );
         }
         Ok(())
@@ -202,7 +205,6 @@ impl App {
         &mut self,
         w: &mut W,
         cmd: Command,
-        screen: &mut Screen,
         panel_skin: &PanelSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
@@ -211,6 +213,7 @@ impl App {
         let is_input_invocation = cmd.is_verb_invocated_from_input();
         let other_path = self.get_other_panel_path();
         let preview = self.preview;
+        let screen = self.screen; // it can't change in this function
         match self.mut_panel().apply_command(
             w,
             &cmd,
@@ -263,7 +266,7 @@ impl App {
                         new_arg = Some(path.to_string_lossy().to_string());
                     }
                 }
-                if self.close_panel(close_idx, screen) {
+                if self.close_panel(close_idx) {
                     self.mut_state().refresh(screen, con);
                     if let Some(new_arg) = new_arg {
                         self.mut_panel().set_input_arg(new_arg);
@@ -366,7 +369,7 @@ impl App {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
-                if self.remove_state(screen) {
+                if self.remove_state() {
                     self.mut_state().refresh(screen, con);
                     let other_path = self.get_other_panel_path();
                     self.mut_panel().refresh_input_status(&other_path, con);
@@ -378,7 +381,7 @@ impl App {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
-                if self.remove_state(screen) {
+                if self.remove_state() {
                     let preview = self.preview;
                     self.mut_panel().apply_command(
                         w,
@@ -435,17 +438,17 @@ impl App {
     }
 
     /// get the index of the panel at x
-    fn clicked_panel_index(&self, x: u16, _y: u16, screen: &Screen) -> usize {
+    fn clicked_panel_index(&self, x: u16, _y: u16) -> usize {
         let len = self.panels.len().get();
-        (len * x as usize) / (screen.width as usize + 1)
+        (len * x as usize) / (self.screen.width as usize + 1)
     }
 
     fn do_pending_tasks(
         &mut self,
-        screen: &mut Screen,
         con: &AppContext,
         dam: &mut Dam,
     ) -> Result<bool, ProgramError> {
+        let screen = self.screen;
         // we start with the focused panel
         let mut did_something = self.mut_panel().do_pending_tasks(screen, con, dam)?;
         // then the other ones
@@ -464,7 +467,6 @@ impl App {
     pub fn run(
         mut self,
         w: &mut W,
-        screen: &mut Screen,
         con: &AppContext,
         conf: &Conf,
     ) -> Result<Option<Launchable>, ProgramError> {
@@ -476,7 +478,7 @@ impl App {
 
         let skin = AppSkin::new(conf);
 
-        screen.clear_bottom_right_char(w, &skin.focused)?;
+        self.screen.clear_bottom_right_char(w, &skin.focused)?;
 
         if let Some(raw_sequence) = &con.launch_args.commands {
             self.tx_seqs.send(Sequence::new_local(raw_sequence.to_string())).unwrap();
@@ -493,12 +495,12 @@ impl App {
 
         loop {
             if !self.quitting {
-                self.display_panels(w, screen, &skin, con)?;
+                self.display_panels(w, &skin, con)?;
                 w.flush()?;
-                if self.do_pending_tasks(screen, con, &mut dam)? {
+                if self.do_pending_tasks(con, &mut dam)? {
                     let other_path = self.get_other_panel_path();
                     self.mut_panel().refresh_input_status(&other_path, con);
-                    self.display_panels(w, screen, &skin, con)?;
+                    self.display_panels(w, &skin, con)?;
                     w.flush()?;
                 }
             }
@@ -508,25 +510,25 @@ impl App {
                     debug!("event: {:?}", &event);
                     match event {
                         Event::Click(x, y, KeyModifiers::NONE)
-                            if self.clicked_panel_index(x, y, screen) != self.active_panel_idx =>
+                            if self.clicked_panel_index(x, y) != self.active_panel_idx =>
                         {
                             // panel activation click
                             // this will be cleaner when if let will be allowed in match guards with
                             // chaining (currently experimental)
-                            self.active_panel_idx = self.clicked_panel_index(x, y, screen);
+                            self.active_panel_idx = self.clicked_panel_index(x, y);
                         }
                         Event::Resize(w, h) => {
-                            screen.set_terminal_size(w, h, con);
-                            Areas::resize_all(self.panels.as_mut_slice(), screen, self.preview.is_some())?;
+                            self.screen.set_terminal_size(w, h, con);
+                            Areas::resize_all(self.panels.as_mut_slice(), self.screen, self.preview.is_some())?;
                             for panel in &mut self.panels {
-                                panel.mut_state().refresh(screen, con);
+                                panel.mut_state().refresh(self.screen, con);
                             }
                         }
                         _ => {
                             // event handled by the panel
                             let cmd = self.mut_panel().add_event(w, event, con)?;
                             debug!("command after add_event: {:?}", &cmd);
-                            self.apply_command(w, cmd, screen, &skin.focused, con)?;
+                            self.apply_command(w, cmd, &skin.focused, con)?;
                         }
                     }
                     event_source.unblock(self.quitting);
@@ -540,11 +542,11 @@ impl App {
                     debug!("got sequence: {:?}", &raw_sequence);
                     for (input, arg_cmd) in raw_sequence.parse(con)? {
                         self.mut_panel().set_input_content(&input);
-                        self.apply_command(w, arg_cmd, screen, &skin.focused, con)?;
-                        self.display_panels(w, screen, &skin, con)?;
+                        self.apply_command(w, arg_cmd, &skin.focused, con)?;
+                        self.display_panels(w, &skin, con)?;
                         w.flush()?;
-                        self.do_pending_tasks(screen, con, &mut dam)?;
-                        self.display_panels(w, screen, &skin, con)?;
+                        self.do_pending_tasks(con, &mut dam)?;
+                        self.display_panels(w, &skin, con)?;
                         w.flush()?;
                         if self.quitting {
                             // is that a 100% safe way of quitting ?
