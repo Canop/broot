@@ -5,13 +5,57 @@ use {
     },
 };
 
+/// where to search
+enum SearchObject {
+    Name,
+    Path,
+    Content,
+}
+/// how to search
+enum SearchKind {
+    Exact,
+    Fuzzy,
+    Regex,
+    Unspecified,
+}
+
+/// a valid combination of SearchObject and SearchKind,
+/// determine how a pattern will be used
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SearchMode {
+    NameExact,
     NameFuzzy,
-    PathFuzzy,
     NameRegex,
+    PathExact,
+    PathFuzzy,
     PathRegex,
-    Content,
+    ContentExact,
+    ContentRegex,
+}
+
+impl SearchMode {
+    fn new(search_object: SearchObject, search_kind: SearchKind) -> Option<Self> {
+        use {
+            SearchObject::*,
+            SearchKind::*,
+        };
+        match (search_object, search_kind) {
+            (Name, Unspecified) => Some(Self::NameFuzzy),
+            (Name, Exact) => Some(Self::NameExact),
+            (Name, Fuzzy) => Some(Self::NameFuzzy),
+            (Name, Regex) => Some(Self::NameRegex),
+
+            (Path, Unspecified) => Some(Self::PathFuzzy),
+            (Path, Exact) => Some(Self::PathExact),
+            (Path, Fuzzy) => Some(Self::PathFuzzy),
+            (Path, Regex) => Some(Self::PathRegex),
+
+            (Content, Unspecified) => Some(Self::ContentExact),
+            (Content, Exact) => Some(Self::ContentExact),
+            (Content, Fuzzy) => None, // unsupported for now - could be but why ?
+            (Content, Regex) => Some(Self::ContentRegex),
+        }
+    }
 }
 
 /// define a mapping from a search mode which can be typed in
@@ -33,46 +77,46 @@ impl SearchModeMapEntry {
     pub fn parse(conf_key: &str, conf_mode: &str) -> Result<Self, ConfError> {
         let s = conf_mode.to_lowercase();
         let s = s.trim();
+
+        let name = s.contains("name");
+        let path = s.contains("path");
         let content = s.contains("content");
-        let mode = if content {
-            if s != "content" {
+        let search_object = match (name, path, content) {
+            //(false, false, false) => SearchObject::Unspecified,
+            (true, false, false) => SearchObject::Name,
+            (false, true, false) => SearchObject::Path,
+            (false, false, true) => SearchObject::Content,
+            _ => {
                 return Err(ConfError::InvalidSearchMode {
-                    details: "Content search mode can't be qualified".to_string()
+                    details: "you must have exactly one of \"name\", \"path\" or \"content".to_string()
                 });
             }
-            SearchMode::Content
-        } else {
-            let name = s.contains("name");
-            let path = s.contains("path");
-            let fuzzy = s.contains("fuzzy");
-            let regex = s.contains("regex");
-            match (name, path, fuzzy, regex) {
-                (false, false, _, _ ) => {
-                    return Err(ConfError::InvalidSearchMode {
-                        details: "you need either \"name\", \"path\" or \"content\"".to_string()
-                    });
-                }
-                (true, true, _, _ ) => {
-                    return Err(ConfError::InvalidSearchMode {
-                        details: "you can't simultaneously have \"name\" and \"path\"".to_string()
-                    });
-                }
-                (_, _, false, false) => {
-                    return Err(ConfError::InvalidSearchMode {
-                        details: "you need either \"fuzzy\" or \"regex\"".to_string()
-                    });
-                }
-                (_, _, true, true) => {
-                    return Err(ConfError::InvalidSearchMode {
-                        details: "you can't simultaneously have \"fuzzy\" and \"regex\"".to_string()
-                    });
-                }
-                (true, false, true, false) => SearchMode::NameFuzzy,
-                (true, false, false, true) => SearchMode::NameRegex,
-                (false, true, true, false) => SearchMode::PathFuzzy,
-                (false, true, false, true) => SearchMode::PathRegex,
+        };
+
+        let exact = s.contains("exact");
+        let fuzzy = s.contains("fuzzy");
+        let regex = s.contains("regex");
+        let search_kind = match (exact, fuzzy, regex) {
+            (false, false, false) => SearchKind::Unspecified,
+            (true, false, false) => SearchKind::Exact,
+            (false, true, false) => SearchKind::Fuzzy,
+            (false, false, true) => SearchKind::Regex,
+            _ => {
+                return Err(ConfError::InvalidSearchMode {
+                    details: "you may have at most one of \"exact\", \"fuzzy\" or \"regex\"".to_string()
+                });
             }
         };
+
+        let mode = match SearchMode::new(search_object, search_kind) {
+            Some(mode) => mode,
+            None => {
+                return Err(ConfError::InvalidSearchMode {
+                    details: "Unsupported combination of search object and kind".to_string()
+                });
+            },
+        };
+
         let key = if conf_key.is_empty() || conf_key == "<empty>" {
             // serde toml parser doesn't handle correctly empty keys so we accept as
             // alternative the `"<empty>" = "fuzzy name"` solution.
@@ -95,11 +139,14 @@ impl Default for SearchModeMap {
             entries: Vec::new(),
         };
         // the last keys are prefered
+        smm.setm(&["ne", "en", "e"], SearchMode::NameExact);
         smm.setm(&["nf", "fn", "n", "f"], SearchMode::NameFuzzy);
         smm.setm(&["r", "nr", "rn", ""], SearchMode::NameRegex);
+        smm.setm(&["pe", "ep"], SearchMode::PathExact);
         smm.setm(&["pf", "fp", "p"], SearchMode::PathFuzzy);
         smm.setm(&["pr", "rp"], SearchMode::PathRegex);
-        smm.setm(&["c"], SearchMode::Content);
+        smm.setm(&["ce", "ec", "c"], SearchMode::ContentExact);
+        smm.setm(&["rx", "cr"], SearchMode::ContentRegex);
         smm.set(SearchModeMapEntry { key: None, mode: SearchMode::NameFuzzy });
         smm
     }

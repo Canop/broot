@@ -3,6 +3,8 @@ use {
 };
 
 /// on what the search applies
+/// (a composite pattern may apply to several topic
+/// hence the bools)
 #[derive(Debug, Clone, Copy, PartialEq, Default)]
 pub struct PatternObject {
     pub name: bool,

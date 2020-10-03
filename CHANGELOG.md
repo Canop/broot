@@ -1,3 +1,6 @@
+### next version
+* cr/ patterns search on file content with regular expressions
+
 <a name="v1.0.1"></a>
 ### v1.0.1 - 2020-09-30
 * don't apply .gitignore files (including the global one) when not in a git repository - Fix #274

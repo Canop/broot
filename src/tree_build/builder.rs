@@ -262,11 +262,11 @@ impl<'c> TreeBuilder<'c> {
     fn gather_lines(&mut self, total_search: bool, dam: &Dam) -> Option<Vec<BId>> {
         let start = Instant::now();
         let mut out_blines: Vec<BId> = Vec::new(); // the blines we want to display
-        let optimal_size = self
-            .options
-            .pattern
-            .pattern
-            .optimal_result_number(self.targeted_size);
+        let optimal_size = if self.options.pattern.pattern.has_real_scores() {
+            10 * self.targeted_size
+        } else {
+            self.targeted_size
+        };
         out_blines.push(self.root_id);
         let mut nb_lines_ok = 1; // in out_blines
         let mut open_dirs: VecDeque<BId> = VecDeque::new();

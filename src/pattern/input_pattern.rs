@@ -47,8 +47,20 @@ impl InputPattern {
     /// from a pattern used to filter a tree, build a pattern
     /// which would make sense to filter a previewed file
     pub fn tree_to_preview(&self) -> Self {
-        self.pattern.get_content_pattern()
-            .and_then(|cp| RegexPattern::from(&cp.to_string(), "").ok())
+        let regex_parts: Option<(String, String)> = match &self.pattern {
+            Pattern::ContentExact(cp) => Some(cp.to_regex_parts()),
+            Pattern::ContentRegex(cp) => Some(cp.to_regex_parts()),
+            Pattern::Composite(cp) => cp.expr
+                .iter_atoms()
+                .find_map(|p| match p {
+                    Pattern::ContentExact(cp) => Some(cp.to_regex_parts()),
+                    Pattern::ContentRegex(cp) => Some(cp.to_regex_parts()),
+                    _ => None
+                }),
+            _ => None,
+        };
+        regex_parts
+            .and_then(|rp| RegexPattern::from(&rp.0, &rp.1).ok())
             .map(|rp| InputPattern {
                 raw: rp.to_string(),
                 pattern: Pattern::NameRegex(rp),

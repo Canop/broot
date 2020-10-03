@@ -1,6 +1,3 @@
-use {
-    memmap::Mmap,
-};
 
 /// a displayable representation of where
 /// the needle was found, with some text around
@@ -13,7 +10,7 @@ pub struct ContentMatch {
 
 impl ContentMatch {
     pub fn build(
-        hay: &Mmap,
+        hay: &[u8],
         pos: usize, // position in the hay
         needle: &str,
         desired_len: usize, // max length of the extract in bytes

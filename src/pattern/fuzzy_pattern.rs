@@ -55,7 +55,7 @@ fn is_word_separator(c: char) -> bool {
 impl FuzzyPattern {
     /// build a pattern which will later be usable for fuzzy search.
     /// A pattern should be reused
-    pub fn from(pat: &str) -> FuzzyPattern {
+    pub fn from(pat: &str) -> Self {
         let chars = pat
             .chars()
             .map(secular::lower_lay_char)
@@ -312,12 +312,6 @@ impl FuzzyPattern {
             1 => self.score_1_char(candidate, self.chars[0]),
             _ => self.score_n_chars(candidate),
         }
-    }
-
-    /// return the number of results we should find before starting to
-    ///  sort them (unless time is runing out).
-    pub const fn optimal_result_number(&self, targeted_size: usize) -> usize {
-        10 * targeted_size
     }
 }
 
