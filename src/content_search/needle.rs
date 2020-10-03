@@ -8,7 +8,6 @@ use {
     std::{
         convert::TryInto,
         fmt,
-        fs::File,
         io,
         path::{Path},
     },
@@ -33,11 +32,6 @@ impl fmt::Debug for Needle {
     }
 }
 
-fn get_mmap<P: AsRef<Path>>(hay_path: P) -> io::Result<Mmap> {
-    let file = File::open(hay_path.as_ref())?;
-    let hay = unsafe { Mmap::map(&file)? };
-    Ok(hay)
-}
 
 impl Needle {
 
@@ -204,21 +198,11 @@ impl Needle {
 
     /// determine whether the file contains the needle
     pub fn search<P: AsRef<Path>>(&self, hay_path: P) -> io::Result<ContentSearchResult> {
-        if let Some(ext) = hay_path.as_ref().extension().and_then(|s| s.to_str()) {
-            if extensions::is_known_binary(&ext) {
-                return Ok(ContentSearchResult::NotSuitable);
-            }
-        }
-        let hay = get_mmap(&hay_path)?;
-        if hay.len() > MAX_FILE_SIZE {
-            // debug!("big file: {:?}", hay_path.as_ref());
-            return Ok(ContentSearchResult::NotSuitable);
-        }
-        if magic_numbers::is_known_binary(&hay) {
-            // debug!("binary file: {:?}", hay_path.as_ref());
-            return Ok(ContentSearchResult::NotSuitable);
-        }
-        Ok(self.search_mmap(&hay))
+        super::get_mmap_if_not_binary(hay_path)
+            .map(|om| om.map_or(
+                ContentSearchResult::NotSuitable,
+                |hay| self.search_mmap(&hay),
+            ))
     }
 
     /// this is supposed to be called only when it's known that there's
@@ -243,7 +227,6 @@ impl Needle {
 
 #[cfg(test)]
 mod content_search_tests {
-
     use super::*;
 
     #[test]

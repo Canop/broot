@@ -12,22 +12,30 @@ use {
 
 /// A pattern for searching in file content
 #[derive(Debug, Clone)]
-pub struct ContentPattern {
+pub struct ContentExactPattern {
     needle: Needle,
 }
 
-impl fmt::Display for ContentPattern {
+impl fmt::Display for ContentExactPattern {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.write_str(self.needle.as_str())
+        f.write_str(self.as_str())
     }
 }
 
-impl ContentPattern {
+impl ContentExactPattern {
 
     pub fn from(pat: &str) -> Self {
         Self {
             needle: Needle::new(pat),
         }
+    }
+
+    pub fn as_str(&self) -> &str {
+        self.needle.as_str()
+    }
+
+    pub fn to_regex_parts(&self) -> (String, String) {
+        (self.as_str().to_string(), "".to_string())
     }
 
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
@@ -55,12 +63,6 @@ impl ContentPattern {
         desired_len: usize,
     ) -> Option<ContentMatch> {
         self.needle.get_match(path, desired_len)
-    }
-
-    /// return the number of results we should find before starting to
-    ///  sort them (unless time is runing out).
-    pub const fn optimal_result_number(&self, targeted_size: usize) -> usize {
-        targeted_size
     }
 }
 

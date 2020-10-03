@@ -1,4 +1,3 @@
-
 use {
     super::*,
     crate::{
@@ -16,11 +15,14 @@ use {
 #[derive(Debug, Clone)]
 pub enum Pattern {
     None,
+    NameExact(ExactPattern),
     NameFuzzy(FuzzyPattern),
-    PathFuzzy(FuzzyPattern),
     NameRegex(RegexPattern),
+    PathExact(ExactPattern),
+    PathFuzzy(FuzzyPattern),
     PathRegex(RegexPattern),
-    Content(ContentPattern),
+    ContentExact(ContentExactPattern),
+    ContentRegex(ContentRegexPattern),
     Composite(CompositePattern),
 }
 
@@ -41,15 +43,30 @@ impl Pattern {
                         let mode = con.search_modes.search_mode(parts_mode)?;
                         let flags = pattern_parts.flags();
                         match mode {
-                            SearchMode::NameFuzzy => Self::NameFuzzy(FuzzyPattern::from(core)),
-                            SearchMode::PathFuzzy => Self::PathFuzzy(FuzzyPattern::from(core)),
-                            SearchMode::NameRegex => {
-                                Self::NameRegex(RegexPattern::from(core, flags.as_deref().unwrap_or(""))?)
-                            }
-                            SearchMode::PathRegex => {
-                                Self::PathRegex(RegexPattern::from(core, flags.unwrap_or(""))?)
-                            }
-                            SearchMode::Content => Self::Content(ContentPattern::from(core)),
+                            SearchMode::NameExact => Self::NameExact(
+                                ExactPattern::from(core)
+                            ),
+                            SearchMode::NameFuzzy => Self::NameFuzzy(
+                                FuzzyPattern::from(core)
+                            ),
+                            SearchMode::NameRegex => Self::NameRegex(
+                                RegexPattern::from(core, flags.unwrap_or(""))?
+                            ),
+                            SearchMode::PathExact => Self::PathExact(
+                                ExactPattern::from(core)
+                            ),
+                            SearchMode::PathFuzzy => Self::PathFuzzy(
+                                FuzzyPattern::from(core)
+                            ),
+                            SearchMode::PathRegex => Self::PathRegex(
+                                RegexPattern::from(core, flags.unwrap_or(""))?
+                            ),
+                            SearchMode::ContentExact => Self::ContentExact(
+                                ContentExactPattern::from(core)
+                            ),
+                            SearchMode::ContentRegex => Self::ContentRegex(
+                                ContentRegexPattern::from(core, flags.unwrap_or(""))?
+                            ),
                         }
                     }
                 )
@@ -67,13 +84,13 @@ impl Pattern {
         let mut object = PatternObject::default();
         match self {
             Self::None => {}
-            Self::PathFuzzy(_) | Self::PathRegex(_) => {
-                object.subpath = true;
-            }
-            Self::NameFuzzy(_) | Self::NameRegex(_) => {
+            Self::NameExact(_) | Self::NameFuzzy(_) | Self::NameRegex(_) => {
                 object.name = true;
             }
-            Self::Content(_) => {
+            Self::PathExact(_) | Self::PathFuzzy(_) | Self::PathRegex(_) => {
+                object.subpath = true;
+            }
+            Self::ContentExact(_) | Self::ContentRegex(_) => {
                 object.content = true;
             }
             Self::Composite(cp) => {
@@ -90,8 +107,10 @@ impl Pattern {
         candidate: &str,
     ) -> Option<NameMatch> {
         match self {
+            Self::NameExact(ep) => ep.find(candidate),
             Self::NameFuzzy(fp) => fp.find(candidate),
             Self::NameRegex(rp) => rp.find(candidate),
+            Self::PathExact(ep) => ep.find(candidate),
             Self::PathFuzzy(fp) => fp.find(candidate),
             Self::PathRegex(rp) => rp.find(candidate),
             Self::Composite(cp) => cp.search_string(candidate),
@@ -99,13 +118,16 @@ impl Pattern {
         }
     }
 
+    /// find the content to show next to the name of the file
+    /// when the search involved a content filtering
     pub fn search_content(
         &self,
         candidate: &Path,
         desired_len: usize, // available space for content match display
     ) -> Option<ContentMatch> {
         match self {
-            Self::Content(cp) => cp.get_content_match(candidate, desired_len),
+            Self::ContentExact(cp) => cp.get_content_match(candidate, desired_len),
+            Self::ContentRegex(cp) => cp.get_content_match(candidate, desired_len),
             Self::Composite(cp) => cp.search_content(candidate, desired_len),
             _ => None,
         }
@@ -113,25 +135,31 @@ impl Pattern {
 
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
         match self {
-            Pattern::NameFuzzy(fp) => fp.score_of(&candidate.name),
-            Pattern::PathFuzzy(fp) => fp.score_of(&candidate.subpath),
-            Pattern::NameRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
-            Pattern::PathRegex(rp) => rp.find(&candidate.subpath).map(|m| m.score),
-            Pattern::Content(cp) => cp.score_of(candidate),
-            Pattern::Composite(cp) => cp.score_of(candidate),
-            Pattern::None => Some(1),
+            Self::NameExact(ep) => ep.score_of(&candidate.name),
+            Self::NameFuzzy(fp) => fp.score_of(&candidate.name),
+            Self::NameRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
+            Self::PathExact(ep) => ep.score_of(&candidate.subpath),
+            Self::PathFuzzy(fp) => fp.score_of(&candidate.subpath),
+            Self::PathRegex(rp) => rp.find(&candidate.subpath).map(|m| m.score),
+            Self::ContentExact(cp) => cp.score_of(candidate),
+            Self::ContentRegex(cp) => cp.score_of(candidate),
+            Self::Composite(cp) => cp.score_of(candidate),
+            Self::None => Some(1),
         }
     }
 
     pub fn score_of_string(&self, candidate: &str) -> Option<i32> {
         match self {
-            Pattern::NameFuzzy(fp) => fp.score_of(&candidate),
-            Pattern::PathFuzzy(fp) => fp.score_of(&candidate),
-            Pattern::NameRegex(rp) => rp.find(&candidate).map(|m| m.score),
-            Pattern::PathRegex(rp) => rp.find(&candidate).map(|m| m.score),
-            Pattern::Content(_) => None, // this isn't suitable
-            Pattern::Composite(cp) => cp.score_of_string(candidate),
-            Pattern::None => Some(1),
+            Self::NameExact(ep) => ep.score_of(&candidate),
+            Self::NameFuzzy(fp) => fp.score_of(&candidate),
+            Self::NameRegex(rp) => rp.find(&candidate).map(|m| m.score),
+            Self::PathExact(ep) => ep.score_of(&candidate),
+            Self::PathFuzzy(fp) => fp.score_of(&candidate),
+            Self::PathRegex(rp) => rp.find(&candidate).map(|m| m.score),
+            Self::ContentExact(_) => None, // this isn't suitable
+            Self::ContentRegex(_) => None, // this isn't suitable
+            Self::Composite(cp) => cp.score_of_string(candidate),
+            Self::None => Some(1),
         }
     }
 
@@ -149,26 +177,17 @@ impl Pattern {
         }
     }
 
-    /// return the number of results we should find before starting to
-    ///  sort them (unless time is runing out).
-    pub fn optimal_result_number(&self, targeted_size: usize) -> usize {
+    /// whether the scores are more than just 0 or 1.
+    /// When it's the case, the tree builder will look for more matching results
+    /// in order to select the best ones.
+    pub fn has_real_scores(&self) -> bool {
         match self {
-            Pattern::NameFuzzy(fp) => fp.optimal_result_number(targeted_size),
-            Pattern::PathFuzzy(fp) => fp.optimal_result_number(targeted_size),
-            Pattern::NameRegex(rp) => rp.optimal_result_number(targeted_size),
-            Pattern::PathRegex(rp) => rp.optimal_result_number(targeted_size),
-            Pattern::Content(cp) => cp.optimal_result_number(targeted_size),
-            _ => targeted_size,
+            Self::NameExact(_) | Self::NameFuzzy(_) => true,
+            Self::PathExact(_) | Self::PathFuzzy(_) => true,
+            Self::Composite(cp) => cp.has_real_scores(),
+            _ => false,
         }
     }
 
-    /// return the first found content pattern
-    pub fn get_content_pattern(&self) -> Option<&ContentPattern> {
-        match self {
-            Pattern::Content(cp) => Some(cp),
-            Pattern::Composite(cp) => cp.get_content_pattern(),
-            _ => None,
-        }
-    }
 }
 

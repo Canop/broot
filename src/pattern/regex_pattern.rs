@@ -10,7 +10,7 @@ use {
 #[derive(Debug, Clone)]
 pub struct RegexPattern {
     rex: regex::Regex,
-    flags: String, // kept only because we may need to build the pattern using to_string()
+    flags: String,
 }
 
 impl fmt::Display for RegexPattern {
@@ -20,23 +20,9 @@ impl fmt::Display for RegexPattern {
 }
 
 impl RegexPattern {
-    pub fn from(pat: &str, flags: &str) -> Result<RegexPattern, PatternError> {
-        let mut builder = regex::RegexBuilder::new(pat);
-        for c in flags.chars() {
-            match c {
-                'i' => {
-                    builder.case_insensitive(true);
-                }
-                'U' => {
-                    builder.swap_greed(true);
-                }
-                _ => {
-                    return Err(PatternError::UnknownRegexFlag { bad: c });
-                }
-            }
-        }
+    pub fn from(pat: &str, flags: &str) -> Result<Self, PatternError> {
         Ok(RegexPattern {
-            rex: builder.build()?,
+            rex: super::build_regex(pat, flags)?,
             flags: flags.to_string(),
         })
     }
@@ -51,12 +37,5 @@ impl RegexPattern {
             }
             super::NameMatch { score: 1, pos }
         })
-    }
-    /// return the number of results we should find before starting to
-    ///  sort them (unless time is runing out).
-    /// In the case of regexes, there's no need to find more results, as
-    ///  their score is always 1
-    pub fn optimal_result_number(&self, targeted_size: usize) -> usize {
-        targeted_size
     }
 }

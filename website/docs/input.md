@@ -24,13 +24,15 @@ The mode is either nothing (fuzzy name), just a slash (regex name) or some lette
 mode | example query | example match | explanation
 -|-|-|-
 fuzzy name | `abc` or `nf/abc` | `abac.txt` | search for "abc" in a fuzzy way in filenames
-regex name | `/abc` or `/abc/` | `abc.txt` | search for the regular expression `abc` in filenames ("exact search")
+exact name | `e/Bac` or `en/Bac` | `ABac.txt` | search for the string "Bac" in filenames
 regex name | `/[yz]{3}` or `/[yz]{3}/` | `fuzzy.rs` | search for the regular expression `[yz]{3}` in filenames
 regex name | `/(json|xml)$/i` | `thing.XML` | find files whose name ends in `json` or `xml`, case insensitive
 regex name | `/abc/i` | `aBc.txt` | search for the regular expression `abc` with flag `i` in filenames
 fuzzy path | `p/abc`  or `p/abc/` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-paths from current tree root
-regex path | `rp/abc` | `e/abac.txt` |  search for the "abc" regex  in sub-paths from current tree root
-content | `c/mask` or `c/mask/` | `umask = "1.0"` | search for the "mask" string in file contents
+exact path | `ep/te\/d`  or `pe/te\/d/` | `website/docs` |  search for "te/d" in sub-paths from current tree root
+regex path | `rp/\\d{3}.*txt` | `dir/a256/abc.txt` |  search for the `\d{3}.*txt` regex  in sub-paths from current tree root
+exact content | `c/mask` or `c/mask/` | `umask = "1.0"` | search for the "mask" string in file contents
+regex content | `rc/[abc]{5}/i` | `bAAAc` | search with a regular expression in file contents - `i` making it case insensitive
 
 It's also possible to [redefine those mode mappings](../conf_file/#search-modes).
 
@@ -108,6 +110,10 @@ In this case with an escaped space:
 `c/two\ p`
 
 ![content search](img/20200608-content-search.png)
+
+### A regular expression based full text search
+
+![content regex search](img/20201002-cr-search.png)
 
 ### A complex composite search
 

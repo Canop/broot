@@ -165,14 +165,12 @@ impl CompositePattern {
         }
     }
 
-    /// return the first content pattern found among atomic patterns
-    pub fn get_content_pattern(&self) -> Option<&ContentPattern> {
-        for pattern in self.expr.iter_atoms() {
-            if let Pattern::Content(cp)  = pattern {
-                return Some(&cp);
-            }
-        }
-        None
+    pub fn has_real_scores(&self) -> bool {
+        self.expr.iter_atoms()
+            .fold(false, |r, p| match p {
+                Pattern::NameFuzzy(_) | Pattern::PathFuzzy(_) => true,
+                _ => r,
+            })
     }
 
 }
