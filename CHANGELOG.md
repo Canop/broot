@@ -1,5 +1,7 @@
-### next version
-* cr/ patterns search on file content with regular expressions
+<a name="v1.0.2"></a>
+### v1.0.2 - 2020-10-04
+* `cr/` patterns search on file content with regular expressions
+* search modes and their prefixes listed in help
 
 <a name="v1.0.1"></a>
 ### v1.0.1 - 2020-09-30

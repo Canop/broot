@@ -21,6 +21,7 @@ Verbs, skin, and more, can be configured in **${config-path}**.
 ## Verbs
 
 To execute a verb, type a space or `:` then start of its name or shortcut.
+This table is searchable. Hit a few letters to filter it.
 |:-:|:-:|:-:|:-:
 |**name**|**shortcut**|**key**|**description**
 |-:|:-:|:-:|:-
