@@ -28,7 +28,7 @@ pub use {
     pattern_parts::PatternParts,
     operator::PatternOperator,
     regex_pattern::RegexPattern,
-    search_mode::{SearchMode, SearchModeMap, SearchModeMapEntry},
+    search_mode::*,
 };
 
 use crate::errors::PatternError;

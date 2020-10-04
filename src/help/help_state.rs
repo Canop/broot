@@ -87,7 +87,7 @@ impl AppState for HelpState {
         expander
             .set("version", env!("CARGO_PKG_VERSION"))
             .set("config-path", &con.config_path);
-        let verb_rows = help_content::matching_verb_rows(&self.pattern, con);
+        let verb_rows = super::help_verbs::matching_verb_rows(&self.pattern, con);
         for row in &verb_rows {
             let sub = expander
                 .sub("verb-rows")
@@ -102,7 +102,14 @@ impl AppState for HelpState {
                 sub.set("execution", "");
             }
         }
-        let features = help_content::determine_features();
+        let search_rows = super::help_search_modes::search_mode_rows(con);
+        for row in &search_rows {
+            expander
+                .sub("search-mode-rows")
+                .set("search-prefix", &row.prefix)
+                .set("search-type", &row.description);
+        }
+        let features = super::help_features::list();
         expander.set(
             "features-text",
             if features.is_empty() {
