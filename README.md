@@ -22,7 +22,7 @@ A better way to navigate directories
 
 :warning: Hacktoberfest participants, please note the rules of this repo:
 
-|  The change | How it its received |
+|  The change | How it is received |
 |:---|:---
 | Real typo or documentation fix | :thumbsup: Welcome
 | Verified code fix| :thumbsup: Welcome
