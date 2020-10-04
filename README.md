@@ -32,7 +32,6 @@ A better way to navigate directories
 
 In case of doubt, **come discuss in the chat** before everything.
 
-
 # Get an overview of a directory, even a big one
 
 `br -s`
