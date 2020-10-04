@@ -6,13 +6,15 @@ use {
 };
 
 /// where to search
-enum SearchObject {
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum SearchObject {
     Name,
     Path,
     Content,
 }
 /// how to search
-enum SearchKind {
+#[derive(Debug, Clone, Copy, PartialEq)]
+pub enum SearchKind {
     Exact,
     Fuzzy,
     Regex,
@@ -21,7 +23,7 @@ enum SearchKind {
 
 /// a valid combination of SearchObject and SearchKind,
 /// determine how a pattern will be used
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum SearchMode {
     NameExact,
     NameFuzzy,
@@ -32,6 +34,17 @@ pub enum SearchMode {
     ContentExact,
     ContentRegex,
 }
+
+pub static SEARCH_MODES: &[SearchMode] = &[
+    SearchMode::NameFuzzy,
+    SearchMode::NameRegex,
+    SearchMode::NameExact,
+    SearchMode::PathFuzzy,
+    SearchMode::PathExact,
+    SearchMode::PathRegex,
+    SearchMode::ContentExact,
+    SearchMode::ContentRegex,
+];
 
 impl SearchMode {
     fn new(search_object: SearchObject, search_kind: SearchKind) -> Option<Self> {
@@ -56,21 +69,40 @@ impl SearchMode {
             (Content, Regex) => Some(Self::ContentRegex),
         }
     }
+    pub fn object(&self) -> SearchObject {
+        match self {
+            Self::NameExact | Self::NameFuzzy | Self::NameRegex => SearchObject::Name,
+            Self::PathExact | Self::PathFuzzy | Self::PathRegex => SearchObject::Path,
+            Self::ContentExact | Self::ContentRegex => SearchObject::Content,
+        }
+    }
+    pub fn kind(&self) -> SearchKind {
+        match self {
+            Self::NameExact => SearchKind::Exact,
+            Self::NameFuzzy => SearchKind::Fuzzy,
+            Self::NameRegex => SearchKind::Regex,
+            Self::PathExact => SearchKind::Exact,
+            Self::PathFuzzy => SearchKind::Fuzzy,
+            Self::PathRegex => SearchKind::Regex,
+            Self::ContentExact => SearchKind::Exact,
+            Self::ContentRegex => SearchKind::Regex,
+        }
+    }
 }
 
 /// define a mapping from a search mode which can be typed in
 /// the input to a SearchMode value
 #[derive(Debug, Clone)]
 pub struct SearchModeMapEntry {
-    key: Option<String>,
-    mode: SearchMode,
+    pub key: Option<String>,
+    pub mode: SearchMode,
 }
 
 /// manage how to find the search mode to apply to a
 /// pattern taking the config in account.
 #[derive(Debug, Clone)]
 pub struct SearchModeMap {
-    entries: Vec<SearchModeMapEntry>,
+    pub entries: Vec<SearchModeMapEntry>,
 }
 
 impl SearchModeMapEntry {
