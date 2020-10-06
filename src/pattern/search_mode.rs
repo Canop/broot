@@ -40,8 +40,8 @@ pub static SEARCH_MODES: &[SearchMode] = &[
     SearchMode::NameRegex,
     SearchMode::NameExact,
     SearchMode::PathFuzzy,
-    SearchMode::PathExact,
     SearchMode::PathRegex,
+    SearchMode::PathExact,
     SearchMode::ContentExact,
     SearchMode::ContentRegex,
 ];

@@ -1,6 +1,6 @@
 ## Replace tree
 
-If you alias `tree` to `br -c :pt`, then
+If you alias `tree` to `br -c :pt`, then you have a better tree optimizing for the height of the screen:
 
 ![tree](img/20200710-alias-tree.png)
 
