@@ -115,7 +115,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "1.0.2"
+version = "1.0.3"
 dependencies = [
  "ansi_colours",
  "bet",
@@ -1459,7 +1459,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.8.26"
+version = "0.8.27"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a707f0af038b1f112dcd46e846ec207be7e61f2389df9338830d1d547656bd43"
 dependencies = [
  "crossbeam",
  "crossterm",

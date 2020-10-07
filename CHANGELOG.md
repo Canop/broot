@@ -1,3 +1,8 @@
+<a name="v1.0.3"></a>
+### v1.0.3 - 2020-10-07
+* change the syntax of cols_order in conf
+* fix left key moving the cursor to start of input (instead of just one char left)
+
 <a name="v1.0.2"></a>
 ### v1.0.2 - 2020-10-04
 * `cr/` patterns search on file content with regular expressions
