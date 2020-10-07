@@ -4,7 +4,7 @@ use {
         Cols,
         CropWriter,
         GitStatusDisplay,
-        LONG_SPACE, LONG_BRANCH,
+        SPACE_FILLING, BRANCH_FILLING,
         MatchedString,
     },
     crate::{
@@ -351,7 +351,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             } else {
                 &self.skin.default
             };
-            cw.fill(style, LONG_SPACE)?;
+            cw.fill(style, &SPACE_FILLING)?;
         }
         Ok(())
     }
@@ -463,13 +463,13 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                         }
                     };
                     // void: intercol & replacing missing cells
-                    let (void_base_style, void) = if in_branch && void_len > 2 {
-                        (&self.skin.tree, LONG_BRANCH)
+                    if in_branch && void_len > 2 {
+                        cond_bg!(void_style, self, selected, &self.skin.tree);
+                        cw.repeat(void_style, &BRANCH_FILLING, void_len)?;
                     } else {
-                        (&self.skin.default, LONG_SPACE)
-                    };
-                    cond_bg!(void_style, self, selected, void_base_style);
-                    cw.repeat(void_style, void, void_len)?;
+                        cond_bg!(void_style, self, selected, &self.skin.default);
+                        cw.repeat(void_style, &SPACE_FILLING, void_len)?;
+                    }
                 }
 
                 if cw.allowed > 8 && pattern_object.content {

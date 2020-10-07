@@ -52,17 +52,20 @@ default_flags = ""
 
 ###############################################################
 # Column order
-# cols_order, if specified, must be a permutation of "gbpdscn"
-# where every char denotes a column:
-#  g : Git file info
-#  b : branch (shows the depth and parent in the tree)
-#  p : permissions (mode, user, group)
-#  d : last modification date
-#  s : size (with size bar when sorting)
-#  c : count, number of files in directories
-#  n : file name
+# cols_order, if specified, must be a permutation of the following
+# array. You should keep the name at the end as it has a variable
+# length.
 #
-# cols_order = "gbdscn"
+# cols_order = [
+# 	"mark",
+# 	"git",
+# 	"branch",
+# 	"permission",
+# 	"date",
+# 	"size",
+# 	"count",
+# 	"name",
+# ]
 
 ###############################################################
 # True Colors

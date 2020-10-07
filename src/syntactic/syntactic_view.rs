@@ -3,7 +3,7 @@ use {
     crate::{
         app::{AppContext, LineNumber},
         command::{ScrollCommand},
-        display::{CropWriter, LONG_SPACE, Screen, W},
+        display::{CropWriter, SPACE_FILLING, Screen, W},
         errors::ProgramError,
         pattern::{InputPattern, NameMatch},
         skin::PanelSkin,
@@ -372,7 +372,7 @@ impl SyntacticView {
             }
             cw.fill(
                 if selected { &styles.selected_line } else { &styles.preview },
-                LONG_SPACE,
+                &SPACE_FILLING,
             )?;
             w.queue(SetBackgroundColor(bg))?;
             if is_thumb(y, scrollbar) {

@@ -3,7 +3,7 @@ use {
     crate::{
         app::*,
         command::{Command, ScrollCommand, TriggerType},
-        display::{CropWriter, LONG_SPACE, Screen, W},
+        display::{CropWriter, SPACE_FILLING, Screen, W},
         errors::ProgramError,
         flag::Flag,
         pattern::InputPattern,
@@ -217,7 +217,7 @@ impl AppState for PreviewState {
             cw.allowed as u16,
             1,
         );
-        cw.fill(&styles.default, LONG_SPACE)?;
+        cw.fill(&styles.default, &SPACE_FILLING)?;
         let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
         preview.display_info(w, screen, panel_skin, &info_area)?;
         preview.display(w, screen, panel_skin, &self.preview_area, con)

@@ -5,7 +5,7 @@ use {
     },
     crate::{
         command::{ScrollCommand},
-        display::{CropWriter, LONG_SPACE, Screen, W},
+        display::{CropWriter, SPACE_FILLING, Screen, W},
         errors::ProgramError,
         skin::PanelSkin,
     },
@@ -203,7 +203,7 @@ impl HexView {
                     }
                 }
             }
-            cw.fill(&styles.default, LONG_SPACE)?;
+            cw.fill(&styles.default, &SPACE_FILLING)?;
             if is_thumb(y, scrollbar) {
                 w.queue(SetForegroundColor(scrollbar_fg))?;
                 w.queue(Print('▐'))?;

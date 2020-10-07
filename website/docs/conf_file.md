@@ -81,30 +81,33 @@ show_selection_mark = true
 
 # Columns order
 
-You may change the order of file attributes in file lists.
+You may change the order of file attributes in file lists:
 
-The `cols_order` property, if specified, must be a permutation of `"gbpdscn"` where every char denotes a column:
+*  mark: a small triangle flagging the selected line
+*  git : Git file info
+*  branch : shows the depth and parent in the tree
+*  permission : mode, user, group
+*  date : last modification date
+*  size : ISO size (and size bar when sorting)
+*  count : number of files in directories
+*  name : file name
 
-*  g : Git file info
-*  b : branch (shows the depth and parent in the tree)
-*  p : permissions (mode, user, group)
-*  d : last modification date
-*  s : size (with size bar when sorting)
-*  c : count, number of files in directories
-*  n : file name
-
-The default value is
-
-```toml
-cols_order = "gscpdbn"
-```
-If you prefer to have the branches left of the tree (as was the default in broot prior 0.18.1) you can use
+For example, if you prefer to have the branches left of the tree (as was the default in broot prior 0.18.1) you can use
 
 ```toml
-cols_order = "gbpdscn"
+cols_order = [
+	"mark",
+	"git",
+	"branch",
+	"permission",
+	"date",
+	"size",
+	"count",
+	"name",
+]
 ```
 
-The `n` column should be kept at end as it's the only one with a variable size.
+The name should be kept at end as it's the only one with a variable size.
 
 # Colors by file extension
 

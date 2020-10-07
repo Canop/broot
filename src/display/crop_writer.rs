@@ -1,4 +1,5 @@
 use {
+    super::Filling,
     crossterm::{
         QueueableCommand,
         style::Print,
@@ -108,19 +109,12 @@ where
     pub fn queue_bg(&mut self, cs: &CompoundStyle) -> Result<()> {
         cs.queue_bg(self.w)
     }
-    pub fn fill(&mut self, cs: &CompoundStyle, filling: &'static str) -> Result<()> {
+    pub fn fill(&mut self, cs: &CompoundStyle, filling: &'static Filling) -> Result<()> {
         self.repeat(cs, filling, self.allowed)
     }
-    pub fn repeat(&mut self, cs: &CompoundStyle, filling: &'static str, mut len: usize) -> Result<()> {
-        loop {
-            let slice_len = len.min(self.allowed).min(filling.len());
-            if slice_len == 0 {
-                break;
-            }
-            cs.queue_str(self.w, &filling[0..slice_len])?;
-            self.allowed -= slice_len;
-            len -= slice_len;
-        }
-        Ok(())
+    pub fn repeat(&mut self, cs: &CompoundStyle, filling: &'static Filling, mut len: usize) -> Result<()> {
+        len = len.min(self.allowed);
+        self.allowed -= len;
+        filling.queue_styled(self.w, cs, len)
     }
 }

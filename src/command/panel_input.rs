@@ -57,6 +57,7 @@ impl PanelInput {
     /// consume the event to
     /// - maybe change the input
     /// - build a command
+    /// then redraw the input field
     pub fn on_event(
         &mut self,
         w: &mut W,

@@ -16,6 +16,14 @@ use {
 impl TryFrom<&Value> for Verb {
     type Error = ConfError;
     fn try_from(verb_value: &Value) -> Result<Self, Self::Error> {
+        let verb_value = match verb_value {
+            Value::Table(tbl) => tbl,
+            _ => {
+                return Err(ConfError::InvalidVerbConf {
+                    details: "unexpected verb conf structure".to_string(),
+                });
+            }
+        };
         let invocation = string_field(verb_value, "invocation");
         let key = string_field(verb_value, "key")
             .map(|s| keys::parse_key(&s))

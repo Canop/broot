@@ -24,8 +24,9 @@ mod areas;
 mod col;
 mod crop_writer;
 mod displayable_tree;
-pub mod flags_display;
+mod filling;
 mod git_status_display;
+pub mod flags_display;
 pub mod status_line;
 mod matched_string;
 mod screen;
@@ -38,6 +39,7 @@ pub use {
     col::{Col, Cols, DEFAULT_COLS},
     crop_writer::CropWriter,
     displayable_tree::DisplayableTree,
+    filling::*,
     git_status_display::GitStatusDisplay,
     matched_string::MatchedString,
     screen::Screen,
@@ -49,7 +51,6 @@ use {
     crossterm::{
         style::{
             Color,
-            Print,
             SetBackgroundColor,
         },
         QueueableCommand,
@@ -61,9 +62,11 @@ pub use {
     permissions::PermWriter,
 };
 
-pub static LONG_SPACE: &str = "                                                                                                                                                                                                                                                                                                                                           ";
-pub static LONG_BRANCH: &str = "───────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────";
 
+lazy_static! {
+    pub static ref SPACE_FILLING: Filling = Filling::from_char(' ');
+    pub static ref BRANCH_FILLING: Filling = Filling::from_char('─');
+}
 
 /// if true then the status of a panel covers the whole width
 /// of the terminal (over the other panels)
@@ -80,17 +83,10 @@ pub fn writer() -> W {
 
 pub fn fill_bg(
     w: &mut W,
-    mut len: usize,
+    len: usize,
     bg: Color,
 ) -> Result<(), ProgramError> {
     w.queue(SetBackgroundColor(bg))?;
-    loop {
-        let slice_len = len.min(len).min(LONG_SPACE.len());
-        if slice_len == 0 {
-            break;
-        }
-        w.queue(Print(&LONG_SPACE[0..slice_len]))?;
-        len -= slice_len;
-    }
+    SPACE_FILLING.queue_unstyled(w, len)?;
     Ok(())
 }

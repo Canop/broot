@@ -87,7 +87,12 @@ impl Conf {
     /// (i.e. this function is called before or after the terminal alternation)
     pub fn read_file(&mut self, filepath: &Path) -> Result<(), ConfError> {
         let data = fs::read_to_string(filepath)?;
-        let root: Value = data.parse::<Value>()?;
+        let root: toml::value::Table = match data.parse::<Value>()? {
+            Value::Table(tbl) => tbl,
+            _ => {
+                return Err(ConfError::Invalid {});
+            }
+        };
         // reading default flags
         if let Some(s) = string_field(&root, "default_flags") {
             // it's additive because another config file may have
@@ -104,9 +109,15 @@ impl Conf {
             self.disable_mouse_capture = !mouse_capture;
         }
         // cols order
-        self.cols_order = string_field(&root, "cols_order")
-            .map(|s| Col::parse_cols(&s))
-            .transpose()?;
+        if let Some(s) = string_field(&root, "cols_order") {
+            // old format, with each char being a col, for example
+            // `cols_order = "gbpdscn"`
+            self.cols_order = Some(Col::parse_cols_single_str(&s)?);
+        } else if let Some(arr) = string_array_field(&root, "cols_order") {
+            // new format, where each col is a string, for example
+            // `cols_order = ["branch", "size" ..., "name"]`
+            self.cols_order = Some(Col::parse_cols(&arr)?);
+        }
         // reading verbs
         if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
             for verb_value in verbs_value.iter() {

@@ -35,6 +35,7 @@ custom_error! {pub TreeBuildError
 custom_error! {pub ConfError
     Io {source: io::Error}                          = "unable to read from the file: {}",
     Toml {source: toml::de::Error}                  = "unable to parse TOML: {}",
+    Invalid                                         = "unexpected conf structure", // not expected
     MissingField {txt: String}                      = "missing field in conf",
     InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: {}",
     InvalidVerbConf {details: String}               = "invalid verb conf: {}",
