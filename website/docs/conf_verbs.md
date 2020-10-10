@@ -11,7 +11,7 @@ invocation = "edit"
 key = "F2"
 shortcut = "e"
 apply_to = "file"
-external = "/usr/bin/nvim {file}"
+external = "nvim {file}"
 leave_broot = false
 ```
 
@@ -127,7 +127,7 @@ This is useful for commands modifying the tree (like creating or moving files).
 
 The execution of a verb can take one or several arguments.
 
-For example it may be defined as `/usr/bin/vi {file}̀`.
+For example it may be defined as `vi {file}̀`.
 
 Some arguments are predefined in broot and depends on the current selection:
 
@@ -149,7 +149,7 @@ But you may also define some arguments in the invocation pattern. For example:
 ```toml
 [[verbs]]
 invocation = "mkdir {subpath}"
-external = "/bin/mkdir -p {directory}/{subpath}"
+external = "mkdir -p {directory}/{subpath}"
 ```
 
 (the `mkdir` verb is standard so you don't have to write it in the configuration file)
@@ -169,7 +169,7 @@ Here's another example, where the invocation pattern defines two arguments by de
 ```toml
 [[verbs]]
 invocation = "blop {name}\\.{type}"
-external = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
+external = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
 from_shell = true
 ```
 
@@ -187,7 +187,7 @@ Let's say we don't want the type to contain dots, then we do this:
 ```toml
 [[verbs]]
 invocation = "blop {name}\\.(?P<type>[^.]+)"
-external = "/bin/mkdir {parent}/{type} && /usr/bin/nvim {parent}/{type}/{name}.{type}"
+external = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
 from_shell = true
 ```
 

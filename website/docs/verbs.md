@@ -13,7 +13,7 @@ It's defined by this couple (invocation, external):
 
 ```toml
 invocation = "rm"
-external = "/bin/rm -rf {file}"
+external = "rm -rf {file}"
 ```
 
 Selection based arguments:
@@ -31,7 +31,7 @@ Several selection based arguments can be used. For example the (built-in) `:copy
 
 ```toml
 invocation = "copy_to_panel"
-external = "/bin/cp -r {file} {other-panel-directory}"
+external = "cp -r {file} {other-panel-directory}"
 ```
 
 When you type a verb, the execution pattern is completed using the selection(s), the exact command is displayed in the status line:
@@ -49,7 +49,7 @@ For example mkdir is defined as
 
 ```toml
 invocation = "mkdir {subpath}"
-external = "/bin/mkdir -p {directory}/{subpath}"
+external = "mkdir -p {directory}/{subpath}"
 ```
 
 (it's now a built-in, you won't see it in the config file)

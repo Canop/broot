@@ -86,7 +86,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_control_key('w'),
         external(
             "copy {newpath:path-from-parent}",
-            "/bin/cp -r {file} {newpath:path-from-parent}",
+            "cp -r {file} {newpath:path-from-parent}",
             StayInBroot,
         )
             .with_shortcut("cp"),
@@ -95,7 +95,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_alt_key('c'),
         external(
             "copy_to_panel",
-            "/bin/cp -r {file} {other-panel-directory}",
+            "cp -r {file} {other-panel-directory}",
             StayInBroot,
         )
             .with_shortcut("cpp"),
@@ -112,19 +112,19 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(line_up).with_key(UP),
         external(
             "mkdir {subpath}",
-            "/bin/mkdir -p {subpath:path-from-directory}",
+            "mkdir -p {subpath:path-from-directory}",
             StayInBroot,
         )
             .with_shortcut("md"),
         external(
             "move {newpath:path-from-parent}",
-            "/bin/mv {file} {newpath:path-from-parent}",
+            "mv {file} {newpath:path-from-parent}",
             StayInBroot,
         )
             .with_shortcut("mv"),
         external(
             "move_to_panel",
-            "/bin/mv {file} {other-panel-directory}",
+            "mv {file} {other-panel-directory}",
             StayInBroot,
         )
             .with_shortcut("mvp"),
@@ -165,7 +165,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(sort_by_size).with_shortcut("ss"),
         external(
             "rm",
-            "/bin/rm -rf {file}",
+            "rm -rf {file}",
             StayInBroot,
         ),
         internal(toggle_counts).with_shortcut("counts"),
