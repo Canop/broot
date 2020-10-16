@@ -109,6 +109,26 @@ pub trait AppState {
                 validate_purpose: false,
                 id: None,
             },
+            #[cfg(target_os="linux")]
+            Internal::filesystems => {
+                match crate::filesystems::FilesystemState::new(con) {
+                    Ok(state) => {
+                        let bang = input_invocation
+                            .map(|inv| inv.bang)
+                            .unwrap_or(internal_exec.bang);
+                        if bang && cc.preview.is_none() {
+                            AppStateCmdResult::NewPanel {
+                                state: Box::new(state),
+                                purpose: PanelPurpose::None,
+                                direction: HDir::Right,
+                            }
+                        } else {
+                            AppStateCmdResult::NewState(Box::new(state))
+                        }
+                    }
+                    Err(e) => AppStateCmdResult::DisplayError(format!("{}", e)),
+                }
+            }
             Internal::help => {
                 let bang = input_invocation
                     .map(|inv| inv.bang)
@@ -371,9 +391,13 @@ pub trait AppState {
     /// return the status which should be used when there's no verb edited
     fn no_verb_status(
         &self,
-        has_previous_state: bool,
-        con: &AppContext,
-    ) -> Status;
+        _has_previous_state: bool,
+        _con: &AppContext,
+    ) -> Status {
+        Status::from_message(
+            "Hit *esc* to get back, or a space to start a verb"
+        )
+    }
 
     fn get_status(
         &self,

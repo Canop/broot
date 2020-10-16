@@ -134,16 +134,6 @@ impl AppState for HelpState {
         Ok(text_view.write_on(w)?)
     }
 
-    fn no_verb_status(
-        &self,
-        _has_previous_state: bool,
-        _con: &AppContext,
-    ) -> Status {
-        Status::from_message(
-            "Hit *esc* to get back to the tree, or a space to start a verb"
-        )
-    }
-
     fn on_internal(
         &mut self,
         w: &mut W,
@@ -171,6 +161,7 @@ impl AppState for HelpState {
                 }
                 Err(e) => AppStateCmdResult::DisplayError(format!("{:?}", e)),
             },
+            // FIXME check we can't use the generic one
             open_leave => {
                 AppStateCmdResult::from(Launchable::opener(
                     Conf::default_location().to_path_buf()

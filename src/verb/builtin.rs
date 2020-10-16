@@ -99,12 +99,16 @@ pub fn builtin_verbs() -> Vec<Verb> {
             StayInBroot,
         )
             .with_shortcut("cpp"),
+        #[cfg(target_os="linux")]
+        internal(filesystems)
+            .with_shortcut("fs"),
         // :focus is also hardcoded on Enter on directories
         // but ctrl-f is useful for focusing on a file's parent
         // (and keep the filter)
         internal(focus)
             .with_control_key('f'),
-        internal(help).with_key(F1).with_shortcut("?"),
+        internal(help)
+            .with_key(F1).with_shortcut("?"),
         #[cfg(feature="clipboard")]
         internal(input_paste)
             .with_control_key('v'),

@@ -25,6 +25,7 @@ custom_error! {pub ProgramError
     Unrecognized {token: String} = "Unrecognized: {token}",
     NetError {source: NetError} = "{}",
     ImageError {source: ImageError } = "{}",
+    Lfs {details: String} = "Failed to fetch mounts: {}",
 }
 
 custom_error! {pub TreeBuildError
