@@ -99,7 +99,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             StayInBroot,
         )
             .with_shortcut("cpp"),
-        #[cfg(target_os="linux")]
+        #[cfg(unix)]
         internal(filesystems)
             .with_shortcut("fs"),
         // :focus is also hardcoded on Enter on directories
@@ -178,6 +178,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(toggle_git_ignore).with_shortcut("gi"),
         internal(toggle_git_file_info).with_shortcut("gf"),
         internal(toggle_git_status).with_shortcut("gs"),
+        internal(toggle_root_fs).with_shortcut("rfs"),
         internal(toggle_hidden).with_shortcut("h"),
         #[cfg(unix)]
         internal(toggle_perm).with_shortcut("perm"),

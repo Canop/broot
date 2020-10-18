@@ -1,11 +1,13 @@
-//! The whole module is only available on linux now
+//! The whole module is only available on unix now
 
 mod filesystems_state;
 mod mount_list;
+mod mount_space_display;
 
 pub use {
     filesystems_state::FilesystemState,
     mount_list::MountList,
+    mount_space_display::MountSpaceDisplay,
 };
 
 use {
@@ -16,7 +18,12 @@ use {
 };
 
 lazy_static! {
-    static ref MOUNTS: Mutex<MountList> = Mutex::new(MountList::new());
+    pub static ref MOUNTS: Mutex<MountList> = Mutex::new(MountList::new());
+}
+
+pub fn clear_cache() {
+    let mut mount_list = MOUNTS.lock().unwrap();
+    mount_list.clear_cache();
 }
 
 static SHARE_COLORS: &[Color] = &[

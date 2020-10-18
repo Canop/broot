@@ -100,6 +100,7 @@ Internals! {
     toggle_git_ignore: "toggle use of .gitignore",
     toggle_git_file_info: "toggle display of git file information",
     toggle_git_status: "toggle showing only files relevant for git status",
+    toggle_root_fs: "toggle showing filesystem info on top",
     toggle_hidden: "toggle showing hidden files",
     toggle_perm: "toggle showing file permissions",
     toggle_sizes: "toggle showing sizes",

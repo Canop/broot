@@ -1,16 +1,15 @@
-
 use {
     super::*,
     crate::{
         app::*,
+        browser::BrowserState,
         command::{Command, ScrollCommand, TriggerType},
-        conf::Conf,
         display::{CropWriter, BRANCH_FILLING, SPACE_FILLING, Screen, W},
         errors::ProgramError,
-        filesystems,
-        launchable::Launchable,
         pattern::*,
         skin::PanelSkin,
+        task_sync::Dam,
+        tree::TreeOptions,
         verb::*,
     },
     crossterm::{
@@ -19,17 +18,17 @@ use {
         QueueableCommand,
     },
     lfs_core::{
-        self,
         Mount,
     },
     std::{
         convert::TryInto,
+        fs,
+        os::unix::fs::MetadataExt,
         path::Path,
     },
     strict::NonEmptyVec,
     termimad::{
-        ansi, Alignment, Area, CompoundStyle, ListView, ListViewCell, ListViewColumn, MadSkin,
-        ProgressBar,
+        Area, ProgressBar,
     },
 };
 
@@ -42,7 +41,7 @@ pub struct FilesystemState {
 }
 
 impl FilesystemState {
-    pub fn new(_con: &AppContext) -> Result<FilesystemState, ProgramError> {
+    pub fn new(path: &Path, _con: &AppContext) -> Result<FilesystemState, ProgramError> {
         let mut mount_list = MOUNTS.lock().unwrap();
         let show_only_disks = false;
         let mounts = mount_list
@@ -57,15 +56,19 @@ impl FilesystemState {
             )
             .cloned()
             .collect::<Vec<Mount>>();
-        let mounts = match mounts.try_into() {
+        let mounts: NonEmptyVec<Mount> = match mounts.try_into() {
             Ok(nev) => nev,
             _ => {
                 return Err(ProgramError::Lfs{details: "no disk in lfs-core list".to_string()});
             }
         };
+        let device_id = fs::metadata(path)?.dev().into();
+        let selection_idx = mounts.iter()
+            .position(|m| m.info.dev == device_id)
+            .unwrap_or(0);
         Ok(FilesystemState {
             mounts,
-            selection_idx: 0,
+            selection_idx,
             scroll: 0,
             page_height: 0,
         })
@@ -79,7 +82,6 @@ impl FilesystemState {
     ) -> bool {
         let old_scroll = self.scroll;
         self.scroll = cmd.apply(self.scroll, self.count(), self.page_height);
-        debug!("try scroll old={:?} new={:?}", old_scroll, self.scroll);
         self.scroll != old_scroll
     }
 }
@@ -87,12 +89,12 @@ impl FilesystemState {
 impl AppState for FilesystemState {
 
     fn selected_path(&self) -> &Path {
-        &self.mounts.first().info.mount_point
+        &self.mounts[self.selection_idx].info.mount_point
     }
 
     fn selection(&self) -> Selection<'_> {
         Selection {
-            path: &self.mounts.first().info.mount_point,
+            path: self.selected_path(),
             stype: SelectionType::Directory,
             is_exe: false,
             line: 0,
@@ -123,7 +125,6 @@ impl AppState for FilesystemState {
         self.page_height = area.height as usize;
         let scrollbar = area.scrollbar(self.scroll as i32, self.count() as i32);
         //- style preparation
-        // green: Ansi(65)
         let styles = &panel_skin.styles;
         let normal_bg = styles.default.get_bg()
             .or_else(|| styles.preview.get_bg())
@@ -201,7 +202,6 @@ impl AppState for FilesystemState {
                 w_use_bar += incr;
                 wc_use += incr;
             }
-            debug!("rem={}", rem);
         }
         //- titles
         w.queue(cursor::MoveTo(area.left, area.top))?;
@@ -356,6 +356,22 @@ impl AppState for FilesystemState {
                     self.selection_idx -= 1;
                 }
                 AppStateCmdResult::Keep
+            }
+            Internal::open_stay => {
+                let in_new_panel = input_invocation
+                    .map(|inv| inv.bang)
+                    .unwrap_or(internal_exec.bang);
+                let dam = Dam::unlimited();
+                AppStateCmdResult::from_optional_state(
+                    BrowserState::new(
+                        self.selected_path().to_path_buf(),
+                        TreeOptions::default(),
+                        screen,
+                        &cc.con,
+                        &dam,
+                    ),
+                    in_new_panel,
+                )
             }
             Internal::page_down => {
                 self.try_scroll(ScrollCommand::Pages(1));

@@ -702,9 +702,9 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "lfs-core"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "81b007af6a931c2b3948efaef47a72ef9eedc0c3d20656f024eae9a7d82e5277"
+checksum = "f74e84d029af0a4327dd19368cf3783052faaadf1e71bd70bae8796487c95caa"
 dependencies = [
  "libc",
  "thiserror",

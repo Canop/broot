@@ -37,6 +37,11 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("Show folders and files alike"),
         )
         .arg(
+            clap::Arg::with_name("show-root-fs")
+                .long("show-root-fs")
+                .help("Show filesystem info on top"),
+        )
+        .arg(
             clap::Arg::with_name("show-git-info")
                 .short("g")
                 .long("show-git-info")

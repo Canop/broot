@@ -109,9 +109,9 @@ pub trait AppState {
                 validate_purpose: false,
                 id: None,
             },
-            #[cfg(target_os="linux")]
+            #[cfg(unix)]
             Internal::filesystems => {
-                match crate::filesystems::FilesystemState::new(con) {
+                match crate::filesystems::FilesystemState::new(self.selected_path(), con) {
                     Ok(state) => {
                         let bang = input_invocation
                             .map(|inv| inv.bang)

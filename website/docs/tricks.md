@@ -1,6 +1,10 @@
 ## Replace tree
 
-If you alias `tree` to `br -c :pt`, then you have a better tree optimizing for the height of the screen:
+This bash function gives you a better `tree` optimizing for the height of the screen:
+
+	function tree {
+	     br -c :pt "$@"
+	}
 
 ![tree](img/20200710-alias-tree.png)
 
@@ -35,7 +39,7 @@ Example:
 
 When you hit `enter` on a directory, it's focused and the filter is reset.
 
-If you want to keep the filter, for example to search deeper, you may use `:open_stay_filter` instead (or its shortcut `:osf` and you can bind it to a key shortcut).
+If you want to keep the filter, for example to search deeper, you may use `:focus` instead (or  you can bind it to a key shortcut).
 
 ## Go to the directory containing the selected file
 
@@ -103,7 +107,6 @@ We can also select the desired file with arrow keys at this point.
 
 When you grasped the basic logic of [combined filters](../input/#combining-filtering-patterns), navigation is incredibly efficient.
 
-
 ## Use composite searches in preview
 
 You can apply composition and negation to searches in the preview panel which is convenient when filtering, for example, a log file.
@@ -111,3 +114,10 @@ You can apply composition and negation to searches in the preview panel which is
 In this example I show lines containing "youtube" but not "txt" nor " 0 ms".
 
 ![search log](img/20200716-search-log.png)
+
+## Escpape key
+
+Broot usage, just like vim, relies a lot on the <kbd>esc</kbd> key. If you're a frequent user of the terminal, you may want to remap an easy to reach and otherwise useless key (for example caps-lock) to <kbd>esc</kbd>.
+
+This brings a lot of comfort, not just in broot.
+

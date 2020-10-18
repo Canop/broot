@@ -322,16 +322,24 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         cond_bg!(style, self, selected, self.skin.directory);
         let title = self.tree.lines[0].path.to_string_lossy();
         cw.queue_str(&style, &title)?;
-        if self.in_app {
-            let title_len = title.chars().count();
-            if title_len < self.area.width as usize {
-                if let ComputationResult::Done(git_status) = &self.tree.git_status {
-                    let git_status_display = GitStatusDisplay::from(
-                        git_status,
+        if self.in_app && !cw.is_full() {
+            if let ComputationResult::Done(git_status) = &self.tree.git_status {
+                let git_status_display = GitStatusDisplay::from(
+                    git_status,
+                    &self.skin,
+                    cw.allowed,
+                );
+                git_status_display.write(cw, selected)?;
+            }
+            #[cfg(unix)]
+            if self.tree.options.show_root_fs {
+                if let Some(mount) = self.tree.lines[0].mount() {
+                    let fs_space_display = crate::filesystems::MountSpaceDisplay::from(
+                        &mount,
                         &self.skin,
-                        self.area.width as usize - title_len,
+                        cw.allowed,
                     );
-                    git_status_display.write(cw, selected)?;
+                    fs_space_display.write(cw, selected)?;
                 }
             }
             self.extend_line_bg(cw, selected)?;

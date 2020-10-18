@@ -1,4 +1,4 @@
-#![ allow( dead_code, unused_imports ) ]
+// #![ allow( dead_code, unused_imports ) ]
 
 #[macro_use]
 extern crate crossbeam;
@@ -47,7 +47,7 @@ pub mod tree;
 pub mod tree_build;
 pub mod verb;
 
-#[cfg(target_os="linux")]
+#[cfg(unix)]
 pub mod filesystems;
 
 #[cfg(feature="client-server")]

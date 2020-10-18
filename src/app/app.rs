@@ -572,4 +572,6 @@ impl App {
 fn clear_caches() {
     file_sum::clear_cache();
     git::clear_status_computer_cache();
+    #[cfg(unix)]
+    crate::filesystems::clear_cache();
 }

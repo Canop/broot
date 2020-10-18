@@ -100,6 +100,16 @@ impl TreeLine {
     pub fn mode(&self) -> Mode {
         Mode::from(self.metadata.mode())
     }
+    #[cfg(unix)]
+    pub fn mount(&self) -> Option<lfs_core::Mount> {
+        use crate::filesystems::*;
+        let mut mount_list = MOUNTS.lock().unwrap();
+        if mount_list.load().is_ok() {
+            mount_list.get_by_device_id(self.metadata.dev().into()).cloned()
+        } else {
+            None
+        }
+    }
     pub fn is_exe(&self) -> bool {
         #[cfg(unix)]
         return self.mode().is_exe();

@@ -473,6 +473,9 @@ impl AppState for BrowserState {
             Internal::toggle_hidden => {
                 self.with_new_options(screen, &|o| o.show_hidden ^= true, bang, con)
             }
+            Internal::toggle_root_fs => {
+                self.with_new_options(screen, &|o| o.show_root_fs ^= true, bang, con)
+            }
             Internal::toggle_git_ignore => {
                 self.with_new_options(screen, &|o| o.respect_git_ignore ^= true, bang, con)
             }

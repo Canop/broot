@@ -13,6 +13,7 @@ pub struct TreeOptions {
     pub show_dates: bool,  // whether to show the last modified date
     pub show_sizes: bool,  // whether to show sizes of files and dirs
     pub show_git_file_info: bool,
+    pub show_root_fs: bool, // show information relative to the fs of the root
     pub trim_root: bool,            // whether to cut out direct children of root
     pub show_permissions: bool,     // show classic rwx unix permissions (only on unix)
     pub respect_git_ignore: bool,   // hide files as requested by .gitignore ?
@@ -35,6 +36,7 @@ impl TreeOptions {
             respect_git_ignore: self.respect_git_ignore,
             filter_by_git_status: self.filter_by_git_status,
             show_git_file_info: self.show_git_file_info,
+            show_root_fs: self.show_root_fs,
             trim_root: self.trim_root,
             pattern: InputPattern::none(),
             date_time_format: self.date_time_format,
@@ -73,6 +75,7 @@ impl TreeOptions {
             self.respect_git_ignore = false;
             self.sort = Sort::Size;
             self.show_sizes = true;
+            self.show_root_fs = true;
         }
         if cli_args.is_present("only-folders") {
             self.only_folders = true;
@@ -97,6 +100,9 @@ impl TreeOptions {
             self.show_permissions = true;
         } else if cli_args.is_present("no-permissions") {
             self.show_permissions = false;
+        }
+        if cli_args.is_present("show-root-fs") {
+            self.show_root_fs = true;
         }
         if cli_args.is_present("show-gitignored") {
             self.respect_git_ignore = false;
@@ -140,6 +146,7 @@ impl Default for TreeOptions {
             show_dates: false,
             show_sizes: false,
             show_git_file_info: false,
+            show_root_fs: false,
             trim_root: false,
             show_permissions: false,
             respect_git_ignore: true,

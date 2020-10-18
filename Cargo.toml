@@ -58,10 +58,8 @@ terminal-clipboard = { version = "0.1.1", optional = true }
 criterion = "0.3.1"
 
 [target.'cfg(unix)'.dependencies]
+lfs-core = "0.3.1"
 users = "0.10"
-
-[target.'cfg(target_os="linux")'.dependencies]
-lfs-core = "0.3"
 
 [target.'cfg(windows)'.dependencies]
 is_executable = "0.1"
