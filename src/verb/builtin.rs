@@ -73,7 +73,15 @@ pub fn builtin_verbs() -> Vec<Verb> {
             "chmod {args}",
             "chmod {args} {file}",
             StayInBroot,
-        ),
+        )
+            .with_stype(SelectionType::File),
+        #[cfg(unix)]
+        external(
+            "chmod {args}",
+            "chmod -R {args} {file}",
+            StayInBroot,
+        )
+            .with_stype(SelectionType::Directory),
         internal(open_preview),
         internal(close_preview),
         internal(toggle_preview),
