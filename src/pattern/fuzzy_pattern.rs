@@ -46,10 +46,7 @@ enum ScoreSearchResult {
 }
 
 fn is_word_separator(c: char) -> bool {
-    match c {
-        '_' | ' ' | '-' => true,
-        _ => false,
-    }
+    matches!(c, '_' | ' ' | '-')
 }
 
 impl FuzzyPattern {

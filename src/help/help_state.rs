@@ -9,6 +9,7 @@ use {
         launchable::Launchable,
         pattern::*,
         skin::PanelSkin,
+        tree::TreeOptions,
         verb::*,
     },
     std::path::Path,
@@ -21,16 +22,22 @@ pub struct HelpState {
     pub text_area: Area,
     dirty: bool, // background must be cleared
     pattern: Pattern,
+    tree_options: TreeOptions,
 }
 
 impl HelpState {
-    pub fn new(_screen: Screen, _con: &AppContext) -> HelpState {
+    pub fn new(
+        tree_options: TreeOptions,
+        _screen: Screen,
+        _con: &AppContext,
+    ) -> HelpState {
         let text_area = Area::uninitialized(); // will be fixed at drawing time
         HelpState {
             text_area,
             scroll: 0,
             dirty: true,
             pattern: Pattern::None,
+            tree_options,
         }
     }
 }
@@ -39,6 +46,21 @@ impl AppState for HelpState {
 
     fn selected_path(&self) -> &Path {
         Conf::default_location()
+    }
+
+    fn tree_options(&self) -> TreeOptions {
+        self.tree_options.clone()
+    }
+
+    fn with_new_options(
+        &mut self,
+        _screen: Screen,
+        change_options: &dyn Fn(&mut TreeOptions),
+        _in_new_panel: bool, // TODO open a tree if true
+        _con: &AppContext,
+    ) -> AppStateCmdResult {
+        change_options(&mut self.tree_options);
+        AppStateCmdResult::Keep
     }
 
     fn selection(&self) -> Selection<'_> {
@@ -175,9 +197,6 @@ impl AppState for HelpState {
                 self.scroll -= self.text_area.height as i32;
                 AppStateCmdResult::Keep
             }
-            toggle_dates | toggle_files | toggle_hidden | toggle_git_ignore
-            | toggle_git_file_info | toggle_git_status | toggle_perm | toggle_sizes
-            | toggle_trim_root => AppStateCmdResult::PopStateAndReapply,
             _ => self.on_internal_generic(
                 w,
                 internal_exec,

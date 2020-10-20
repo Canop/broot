@@ -13,9 +13,6 @@ pub enum Sort {
 
 impl Sort {
     pub fn is_some(self) -> bool {
-        match self {
-            Sort::None => false,
-            _ => true,
-        }
+        !matches!(self, Sort::None)
     }
 }

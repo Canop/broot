@@ -14,15 +14,9 @@ pub enum PanelPurpose {
 
 impl PanelPurpose {
     pub fn is_arg_edition(self) -> bool {
-        match self {
-            PanelPurpose::ArgEdition { .. } => true,
-            _ => false,
-        }
+        matches!(self, PanelPurpose::ArgEdition { .. })
     }
     pub fn is_preview(self) -> bool {
-        match self {
-            PanelPurpose::Preview => true,
-            _ => false,
-        }
+        matches!(self, PanelPurpose::Preview)
     }
 }

@@ -60,25 +60,6 @@ impl BrowserState {
         }))
     }
 
-    /// build a cmdResult asking for the addition of a new state
-    /// being a browser state similar to the current one but with
-    /// different options
-    pub fn with_new_options(
-        &self,
-        screen: Screen,
-        change_options: &dyn Fn(&mut TreeOptions),
-        in_new_panel: bool,
-        con: &AppContext,
-    ) -> AppStateCmdResult {
-        let tree = self.displayed_tree();
-        let mut options = tree.options.clone();
-        change_options(&mut options);
-        AppStateCmdResult::from_optional_state(
-            BrowserState::new(tree.root().clone(), options, screen, con, &Dam::unlimited()),
-            in_new_panel,
-        )
-    }
-
     pub fn root(&self) -> &Path {
         self.tree.root()
     }
@@ -184,9 +165,31 @@ impl AppState for BrowserState {
         &self.displayed_tree().selected_line().path
     }
 
-
     fn selection(&self) -> Selection<'_> {
         self.displayed_tree().selected_line().as_selection()
+    }
+
+    fn tree_options(&self) -> TreeOptions {
+        self.displayed_tree().options.clone()
+    }
+
+    /// build a cmdResult asking for the addition of a new state
+    /// being a browser state similar to the current one but with
+    /// different options
+    fn with_new_options(
+        &mut self,
+        screen: Screen,
+        change_options: &dyn Fn(&mut TreeOptions),
+        in_new_panel: bool,
+        con: &AppContext,
+    ) -> AppStateCmdResult {
+        let tree = self.displayed_tree();
+        let mut options = tree.options.clone();
+        change_options(&mut options);
+        AppStateCmdResult::from_optional_state(
+            BrowserState::new(tree.root().clone(), options, screen, con, &Dam::unlimited()),
+            in_new_panel,
+        )
     }
 
     fn clear_pending(&mut self) {
@@ -412,96 +415,6 @@ impl AppState for BrowserState {
                         )
                     }
                 }
-            }
-            Internal::sort_by_count => {
-                self.with_new_options(
-                    screen, &|o| {
-                        if o.sort == Sort::Count {
-                            o.sort = Sort::None;
-                            o.show_counts = false;
-                        } else {
-                            o.sort = Sort::Count;
-                            o.show_counts = true;
-                        }
-                    },
-                    bang,
-                    con,
-                )
-            }
-            Internal::sort_by_date => {
-                self.with_new_options(
-                    screen, &|o| {
-                        if o.sort == Sort::Date {
-                            o.sort = Sort::None;
-                            o.show_dates = false;
-                        } else {
-                            o.sort = Sort::Date;
-                            o.show_dates = true;
-                        }
-                    },
-                    bang,
-                    con,
-                )
-            }
-            Internal::sort_by_size => {
-                self.with_new_options(
-                    screen, &|o| {
-                        if o.sort == Sort::Size {
-                            o.sort = Sort::None;
-                            o.show_sizes = false;
-                        } else {
-                            o.sort = Sort::Size;
-                            o.show_sizes = true;
-                        }
-                    },
-                    bang,
-                    con,
-                )
-            }
-            Internal::no_sort => {
-                self.with_new_options(screen, &|o| o.sort = Sort::None, bang, con)
-            }
-            Internal::toggle_counts => {
-                self.with_new_options(screen, &|o| o.show_counts ^= true, bang, con)
-            }
-            Internal::toggle_dates => {
-                self.with_new_options(screen, &|o| o.show_dates ^= true, bang, con)
-            }
-            Internal::toggle_files => {
-                self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true, bang, con)
-            }
-            Internal::toggle_hidden => {
-                self.with_new_options(screen, &|o| o.show_hidden ^= true, bang, con)
-            }
-            Internal::toggle_root_fs => {
-                self.with_new_options(screen, &|o| o.show_root_fs ^= true, bang, con)
-            }
-            Internal::toggle_git_ignore => {
-                self.with_new_options(screen, &|o| o.respect_git_ignore ^= true, bang, con)
-            }
-            Internal::toggle_git_file_info => {
-                self.with_new_options(screen, &|o| o.show_git_file_info ^= true, bang, con)
-            }
-            Internal::toggle_git_status => {
-                self.with_new_options(
-                    screen, &|o| {
-                        if o.filter_by_git_status {
-                            o.filter_by_git_status = false;
-                        } else {
-                            o.filter_by_git_status = true;
-                            o.show_hidden = true;
-                        }
-                    }, bang, con
-                )
-            }
-            Internal::toggle_perm => {
-                self.with_new_options(screen, &|o| o.show_permissions ^= true, bang, con)
-            }
-            Internal::toggle_sizes => {
-                self.with_new_options(screen, &|o| o.show_sizes ^= true, bang, con)
-            }
-            Internal::toggle_trim_root => {
-                self.with_new_options(screen, &|o| o.trim_root ^= true, bang, con)
             }
             Internal::total_search => {
                 if let Some(tree) = &self.filtered_tree {

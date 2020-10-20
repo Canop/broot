@@ -73,6 +73,10 @@ You can instead do it without losing the view of the file hierarchy.
 
 Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
+Here's chmod:
+
+![chmod](img/20201020-chmod.png)
+
 # Manage files with panels
 
 When a directory is selected, do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
@@ -123,9 +127,13 @@ When sorting, the whole content of directories is taken into account. So if you 
 
 If you start broot with the `--whale-spotting` option (or its shortcut `-w`), you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
 
-![size](img/20200704-whale-spotting.png)
+![size](img/20201020-whale-spotting.png)
 
 And you keep all broot tools, like filtering or the ability to delete or open files and directories.
+
+If you hit `:fs`, you can check the usage of all filesystems, so that you focus on cleaning the full ones.
+
+![fs](img/20201020-fs.png)
 
 Sizes, dates, files counts, are computed in the background, you don't have to wait for them when you navigate.
 

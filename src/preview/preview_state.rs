@@ -9,6 +9,7 @@ use {
         pattern::InputPattern,
         skin::PanelSkin,
         task_sync::Dam,
+        tree::TreeOptions,
         verb::*,
     },
     crossterm::{
@@ -32,6 +33,7 @@ pub struct PreviewState {
     filtered_preview: Option<Preview>,
     removed_pattern: InputPattern,
     prefered_mode: Option<PreviewMode>,
+    tree_options: TreeOptions,
 }
 
 impl PreviewState {
@@ -39,6 +41,7 @@ impl PreviewState {
         path: PathBuf,
         pending_pattern: InputPattern,
         prefered_mode: Option<PreviewMode>,
+        tree_options: TreeOptions,
         con: &AppContext,
     ) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
@@ -52,6 +55,7 @@ impl PreviewState {
             filtered_preview: None,
             removed_pattern: InputPattern::none(),
             prefered_mode,
+            tree_options,
         }
     }
     fn mut_preview(&mut self) -> &mut Preview {
@@ -158,6 +162,21 @@ impl AppState for PreviewState {
             is_exe: false, // not always true. It means :open_leave won't execute it
             line: self.preview.get_selected_line_number().unwrap_or(0),
         }
+    }
+
+    fn tree_options(&self) -> TreeOptions {
+        self.tree_options.clone()
+    }
+
+    fn with_new_options(
+        &mut self,
+        _screen: Screen,
+        change_options: &dyn Fn(&mut TreeOptions),
+        _in_new_panel: bool, // TODO open tree if true
+        _con: &AppContext,
+    ) -> AppStateCmdResult {
+        change_options(&mut self.tree_options);
+        AppStateCmdResult::Keep
     }
 
     fn refresh(&mut self, _screen: Screen, con: &AppContext) -> Command {

@@ -12,16 +12,10 @@ pub enum ExternalExecutionMode {
 
 impl ExternalExecutionMode {
     pub fn is_from_shell(self) -> bool {
-        match self {
-            Self::FromParentShell => true,
-            _ => false,
-        }
+        matches!(self, Self::FromParentShell)
     }
     pub fn is_leave_broot(self) -> bool {
-        match self {
-            Self::StayInBroot => false,
-            _ => true,
-        }
+        !matches!(self, Self::StayInBroot)
     }
 
     pub fn from_conf(

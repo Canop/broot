@@ -259,8 +259,5 @@ pub fn ask_authorization() -> Result<bool, ProgramError> {
     let mut answer = String::new();
     io::stdin().read_line(&mut answer)?;
     let answer = answer.trim();
-    Ok(match answer {
-        "n" | "N" => false,
-        _ => true,
-    })
+    Ok(!matches!(answer, "n" | "N"))
 }

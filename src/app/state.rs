@@ -11,6 +11,7 @@ use {
         print,
         skin::PanelSkin,
         task_sync::Dam,
+        tree::*,
         verb::*,
     },
     std::{
@@ -81,6 +82,9 @@ pub trait AppState {
         screen: Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let con = &cc.con;
+        let bang = input_invocation
+            .map(|inv| inv.bang)
+            .unwrap_or(internal_exec.bang);
         Ok(match internal_exec.internal {
             Internal::back => AppStateCmdResult::PopState,
             Internal::copy_path => {
@@ -111,7 +115,12 @@ pub trait AppState {
             },
             #[cfg(unix)]
             Internal::filesystems => {
-                match crate::filesystems::FilesystemState::new(self.selected_path(), con) {
+                let fs_state = crate::filesystems::FilesystemState::new(
+                    self.selected_path(),
+                    self.tree_options(),
+                    con,
+                );
+                match fs_state {
                     Ok(state) => {
                         let bang = input_invocation
                             .map(|inv| inv.bang)
@@ -135,12 +144,14 @@ pub trait AppState {
                     .unwrap_or(internal_exec.bang);
                 if bang && cc.preview.is_none() {
                     AppStateCmdResult::NewPanel {
-                        state: Box::new(HelpState::new(screen, con)),
+                        state: Box::new(HelpState::new(self.tree_options(), screen, con)),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
                     }
                 } else {
-                    AppStateCmdResult::NewState(Box::new(HelpState::new(screen, con)))
+                    AppStateCmdResult::NewState(Box::new(
+                        HelpState::new(self.tree_options(), screen, con)
+                    ))
                 }
             }
             Internal::open_leave => self.selection().to_opener(con)?,
@@ -149,6 +160,96 @@ pub trait AppState {
             Internal::preview_text => self.open_preview(Some(PreviewMode::Text), false, cc),
             Internal::preview_binary => self.open_preview(Some(PreviewMode::Hex), false, cc),
             Internal::toggle_preview => self.open_preview(None, true, cc),
+            Internal::sort_by_count => {
+                self.with_new_options(
+                    screen, &|o| {
+                        if o.sort == Sort::Count {
+                            o.sort = Sort::None;
+                            o.show_counts = false;
+                        } else {
+                            o.sort = Sort::Count;
+                            o.show_counts = true;
+                        }
+                    },
+                    bang,
+                    con,
+                )
+            }
+            Internal::sort_by_date => {
+                self.with_new_options(
+                    screen, &|o| {
+                        if o.sort == Sort::Date {
+                            o.sort = Sort::None;
+                            o.show_dates = false;
+                        } else {
+                            o.sort = Sort::Date;
+                            o.show_dates = true;
+                        }
+                    },
+                    bang,
+                    con,
+                )
+            }
+            Internal::sort_by_size => {
+                self.with_new_options(
+                    screen, &|o| {
+                        if o.sort == Sort::Size {
+                            o.sort = Sort::None;
+                            o.show_sizes = false;
+                        } else {
+                            o.sort = Sort::Size;
+                            o.show_sizes = true;
+                        }
+                    },
+                    bang,
+                    con,
+                )
+            }
+            Internal::no_sort => {
+                self.with_new_options(screen, &|o| o.sort = Sort::None, bang, con)
+            }
+            Internal::toggle_counts => {
+                self.with_new_options(screen, &|o| o.show_counts ^= true, bang, con)
+            }
+            Internal::toggle_dates => {
+                self.with_new_options(screen, &|o| o.show_dates ^= true, bang, con)
+            }
+            Internal::toggle_files => {
+                self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true, bang, con)
+            }
+            Internal::toggle_hidden => {
+                self.with_new_options(screen, &|o| o.show_hidden ^= true, bang, con)
+            }
+            Internal::toggle_root_fs => {
+                self.with_new_options(screen, &|o| o.show_root_fs ^= true, bang, con)
+            }
+            Internal::toggle_git_ignore => {
+                self.with_new_options(screen, &|o| o.respect_git_ignore ^= true, bang, con)
+            }
+            Internal::toggle_git_file_info => {
+                self.with_new_options(screen, &|o| o.show_git_file_info ^= true, bang, con)
+            }
+            Internal::toggle_git_status => {
+                self.with_new_options(
+                    screen, &|o| {
+                        if o.filter_by_git_status {
+                            o.filter_by_git_status = false;
+                        } else {
+                            o.filter_by_git_status = true;
+                            o.show_hidden = true;
+                        }
+                    }, bang, con
+                )
+            }
+            Internal::toggle_perm => {
+                self.with_new_options(screen, &|o| o.show_permissions ^= true, bang, con)
+            }
+            Internal::toggle_sizes => {
+                self.with_new_options(screen, &|o| o.show_sizes ^= true, bang, con)
+            }
+            Internal::toggle_trim_root => {
+                self.with_new_options(screen, &|o| o.trim_root ^= true, bang, con)
+            }
             Internal::close_preview => {
                 if let Some(id) = cc.preview {
                     AppStateCmdResult::ClosePanel {
@@ -333,6 +434,7 @@ pub trait AppState {
                         path.to_path_buf(),
                         InputPattern::none(),
                         prefered_mode,
+                        self.tree_options(),
                         &cc.con,
                     )),
                     purpose: PanelPurpose::Preview,
@@ -351,6 +453,18 @@ pub trait AppState {
     fn selection(&self) -> Selection<'_>;
 
     fn refresh(&mut self, screen: Screen, con: &AppContext) -> Command;
+
+    fn tree_options(&self) -> TreeOptions;
+
+    /// build a cmdResult in response to a command being a change of
+    /// tree options. This may or not be a new state
+    fn with_new_options(
+        &mut self,
+        screen: Screen,
+        change_options: &dyn Fn(&mut TreeOptions),
+        in_new_panel: bool,
+        con: &AppContext,
+    ) -> AppStateCmdResult;
 
     fn do_pending_task(
         &mut self,

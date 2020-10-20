@@ -42,10 +42,7 @@ impl TreeLine {
         name.replace('\n', "")
     }
     pub fn is_selectable(&self) -> bool {
-        match &self.line_type {
-            TreeLineType::Pruning => false,
-            _ => true,
-        }
+        !matches!(&self.line_type, TreeLineType::Pruning)
     }
     pub fn is_dir(&self) -> bool {
         match &self.line_type {
@@ -55,10 +52,7 @@ impl TreeLine {
         }
     }
     pub fn is_file(&self) -> bool {
-        match &self.line_type {
-            TreeLineType::File => true,
-            _ => false,
-        }
+        matches!(&self.line_type, TreeLineType::File)
     }
     pub fn is_of(&self, selection_type: SelectionType) -> bool {
         match selection_type {

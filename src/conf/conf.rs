@@ -126,7 +126,7 @@ impl Conf {
                         self.verbs.push(verb);
                     }
                     Err(e) => {
-                        eprintln!("Invalid [[verbs]] entry in configuration: {:?}", e);
+                        eprintln!("Invalid [[verbs]] entry in configuration: {}", e);
                     }
                 }
             }

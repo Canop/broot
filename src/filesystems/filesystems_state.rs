@@ -17,9 +17,7 @@ use {
         style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
-    lfs_core::{
-        Mount,
-    },
+    lfs_core::Mount,
     std::{
         convert::TryInto,
         fs,
@@ -27,9 +25,7 @@ use {
         path::Path,
     },
     strict::NonEmptyVec,
-    termimad::{
-        Area, ProgressBar,
-    },
+    termimad::{Area, ProgressBar},
 };
 
 /// an application state showing the currently mounted filesystems
@@ -38,10 +34,19 @@ pub struct FilesystemState {
     selection_idx: usize,
     scroll: usize,
     page_height: usize,
+    tree_options: TreeOptions,
 }
 
 impl FilesystemState {
-    pub fn new(path: &Path, _con: &AppContext) -> Result<FilesystemState, ProgramError> {
+    /// create a state listing the filesystem, trying to select
+    /// the one containing the path given in argument.
+    /// Not finding any filesystem is considered an error and prevents
+    /// the opening of this state.
+    pub fn new(
+        path: &Path,
+        tree_options: TreeOptions,
+        _con: &AppContext,
+    ) -> Result<FilesystemState, ProgramError> {
         let mut mount_list = MOUNTS.lock().unwrap();
         let show_only_disks = false;
         let mounts = mount_list
@@ -71,6 +76,7 @@ impl FilesystemState {
             selection_idx,
             scroll: 0,
             page_height: 0,
+            tree_options,
         })
     }
     pub fn count(&self) -> usize {
@@ -90,6 +96,21 @@ impl AppState for FilesystemState {
 
     fn selected_path(&self) -> &Path {
         &self.mounts[self.selection_idx].info.mount_point
+    }
+
+    fn tree_options(&self) -> TreeOptions {
+        self.tree_options.clone()
+    }
+
+    fn with_new_options(
+        &mut self,
+        _screen: Screen,
+        change_options: &dyn Fn(&mut TreeOptions),
+        _in_new_panel: bool, // TODO open tree if true
+        _con: &AppContext,
+    ) -> AppStateCmdResult {
+        change_options(&mut self.tree_options);
+        AppStateCmdResult::Keep
     }
 
     fn selection(&self) -> Selection<'_> {
@@ -159,9 +180,9 @@ impl AppState for FilesystemState {
             .max("type".len());
         let w_size = 4;
         let w_use = 4;
-        let mut w_use_bar = 3; // min size, may grow if space available
+        let mut w_use_bar = 1; // min size, may grow if space available
         let w_use_share = 4;
-        let mut wc_use = w_use; // sum of all the parts of the "used" column
+        let mut wc_use = w_use; // sum of all the parts of the usage column
         let w_free = 4;
         let w_mount_point = self.mounts.iter()
             .map(|m| m.info.mount_point.to_string_lossy().chars().count())
@@ -198,7 +219,7 @@ impl AppState for FilesystemState {
                 e_type = true;
             }
             if e_use_bar && rem > 0 {
-                let incr = rem.min(7);
+                let incr = rem.min(9);
                 w_use_bar += incr;
                 wc_use += incr;
             }
@@ -221,7 +242,7 @@ impl AppState for FilesystemState {
         text(cw, "size".to_string())?;
         border(cw)?;
         if e_use {
-            text(cw, format!("{:^width$}", "used", width = wc_use))?;
+            text(cw, format!("{:^width$}", if wc_use > 4 { "usage" } else { "use" }, width = wc_use))?;
             border(cw)?;
         }
         text(cw, "free".to_string())?;
@@ -362,10 +383,12 @@ impl AppState for FilesystemState {
                     .map(|inv| inv.bang)
                     .unwrap_or(internal_exec.bang);
                 let dam = Dam::unlimited();
+                let mut tree_options = self.tree_options();
+                tree_options.show_root_fs = true;
                 AppStateCmdResult::from_optional_state(
                     BrowserState::new(
                         self.selected_path().to_path_buf(),
-                        TreeOptions::default(),
+                        tree_options,
                         screen,
                         &cc.con,
                         &dam,
@@ -381,9 +404,7 @@ impl AppState for FilesystemState {
                 self.try_scroll(ScrollCommand::Pages(-1));
                 AppStateCmdResult::Keep
             }
-            open_leave | toggle_dates | toggle_files | toggle_hidden | toggle_git_ignore
-            | toggle_git_file_info | toggle_git_status | toggle_perm | toggle_sizes
-            | toggle_trim_root => AppStateCmdResult::PopStateAndReapply,
+            open_leave => AppStateCmdResult::PopStateAndReapply,
             _ => self.on_internal_generic(
                 w,
                 internal_exec,

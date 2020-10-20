@@ -17,22 +17,13 @@ pub enum ComputationResult<V> {
 }
 impl<V> ComputationResult<V> {
     pub fn is_done(&self) -> bool {
-        match &self {
-            Self::Done(_) => true,
-            _ => false,
-        }
+        matches!(&self, Self::Done(_))
     }
     pub fn is_not_computed(&self) -> bool {
-        match &self {
-            Self::NotComputed => true,
-            _ => false,
-        }
+        matches!(&self, Self::NotComputed)
     }
     pub fn is_none(&self) -> bool {
-        match &self {
-            Self::None => true,
-            _ => false,
-        }
+        matches!(&self, Self::None)
     }
 }
 

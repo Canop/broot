@@ -87,7 +87,7 @@ impl Col {
     /// return a Cols which tries to take the s setting into account
     /// but is guaranteed to have every Col exactly once.
     pub fn parse_cols_single_str(s: &str) -> Result<Cols, ConfError> {
-        Self::parse_cols(&s.chars().map(|c| String::from(c)).collect())
+        Self::parse_cols(&s.chars().map(String::from).collect())
     }
 }
 

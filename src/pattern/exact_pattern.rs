@@ -30,10 +30,7 @@ impl fmt::Display for ExactPattern {
 }
 
 fn is_word_separator(c: u8) -> bool {
-    match c {
-        b'_' | b' ' | b'-' | b'/' => true,
-        _ => false,
-    }
+    matches!(c, b'_' | b' ' | b'-' | b'/')
 }
 
 impl ExactPattern {
