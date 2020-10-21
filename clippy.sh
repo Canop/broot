@@ -23,4 +23,4 @@ cargo build
 
 
 # do the clippy
-cargo clippy -- -A clippy::regex_macro -A clippy::collapsible_if -A clippy::module_inception
+cargo clippy -- -A clippy::match_like_matches_macro -A clippy::collapsible_if -A clippy::module_inception
