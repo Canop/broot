@@ -18,9 +18,6 @@ pub enum ContentSearchResult {
 
 impl ContentSearchResult {
     pub fn is_found(self) -> bool {
-        match self {
-            Self::Found {..} => true,
-            _ => false,
-        }
+        matches!(self, Self::Found {..})
     }
 }

@@ -164,17 +164,11 @@ impl Pattern {
     }
 
     pub fn is_some(&self) -> bool {
-        match self {
-            Pattern::None => false,
-            _ => true,
-        }
+        !matches!(&self, Pattern::None)
     }
 
     pub fn is_none(&self) -> bool {
-        match self {
-            Pattern::None => true,
-            _ => false,
-        }
+        matches!(&self, Pattern::None)
     }
 
     /// whether the scores are more than just 0 or 1.

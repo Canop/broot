@@ -153,10 +153,7 @@ impl Preview {
         }
     }
     pub fn is_filterable(&self) -> bool {
-        match self {
-            Self::Syntactic(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::Syntactic(_))
     }
 
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {

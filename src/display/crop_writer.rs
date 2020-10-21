@@ -1,5 +1,5 @@
 use {
-    super::Filling,
+    super::{TAB_REPLACEMENT, Filling, crop},
     crossterm::{
         QueueableCommand,
         style::Print,
@@ -8,10 +8,9 @@ use {
         CompoundStyle,
         Result,
     },
-    unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
+    unicode_width::UnicodeWidthChar,
 };
 
-static TAB_REPLACEMENT: &str = "  ";
 
 /// wrap a writer to ensure that at most `allowed` chars are
 /// written.
@@ -36,21 +35,9 @@ where
     }
     pub fn cropped_str(&self, s: &str) -> (String, usize) {
         let mut string = s.replace('\t', TAB_REPLACEMENT);
-        let mut len = UnicodeWidthStr::width(&*string);
-        if len > self.allowed {
-            len = 0;
-            let mut ns = String::new();
-            for c in string.chars() {
-                let char_width = UnicodeWidthChar::width(c).unwrap_or(0);
-                if char_width + len > self.allowed {
-                    break;
-                }
-                ns.push(c);
-                len += char_width;
-            }
-            string = ns
-        }
-        (string, len)
+        let (count_bytes, count_chars) = crop::count_fitting(&string, self.allowed);
+        string.truncate(count_bytes);
+        (string, count_chars)
     }
     pub fn queue_unstyled_str(&mut self, s: &str) -> Result<()> {
         if self.is_full() {

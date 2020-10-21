@@ -22,6 +22,7 @@ macro_rules! cond_bg {
 
 mod areas;
 mod col;
+mod crop;
 mod crop_writer;
 mod displayable_tree;
 mod filling;
@@ -62,6 +63,7 @@ pub use {
     permissions::PermWriter,
 };
 
+pub static TAB_REPLACEMENT: &str = "  ";
 
 lazy_static! {
     pub static ref SPACE_FILLING: Filling = Filling::from_char(' ');

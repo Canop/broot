@@ -87,10 +87,7 @@ impl Command {
     /// tells whether this action is a verb being invocated on enter
     /// in the input field
     pub fn is_verb_invocated_from_input(&self) -> bool {
-        match self {
-            Self::VerbInvocate(_) => true,
-            _ => false,
-        }
+        matches!(self, Self::VerbInvocate(_))
     }
 
     /// create a command from a raw input.

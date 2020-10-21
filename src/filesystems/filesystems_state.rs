@@ -4,7 +4,7 @@ use {
         app::*,
         browser::BrowserState,
         command::{Command, ScrollCommand, TriggerType},
-        display::{CropWriter, BRANCH_FILLING, SPACE_FILLING, Screen, W},
+        display::*,
         errors::ProgramError,
         pattern::*,
         skin::PanelSkin,
@@ -14,10 +14,11 @@ use {
     },
     crossterm::{
         cursor,
-        style::{Color, Print, SetBackgroundColor, SetForegroundColor},
+        style::Color,
         QueueableCommand,
     },
     lfs_core::Mount,
+    minimad::Alignment,
     std::{
         convert::TryInto,
         fs,
@@ -28,6 +29,12 @@ use {
     termimad::{Area, ProgressBar},
 };
 
+struct FilteredContent {
+    pattern: Pattern,
+    mounts: Vec<Mount>, // may be empty
+    selection_idx: usize,
+}
+
 /// an application state showing the currently mounted filesystems
 pub struct FilesystemState {
     mounts: NonEmptyVec<Mount>,
@@ -35,6 +42,7 @@ pub struct FilesystemState {
     scroll: usize,
     page_height: usize,
     tree_options: TreeOptions,
+    filtered: Option<FilteredContent>,
 }
 
 impl FilesystemState {
@@ -77,10 +85,13 @@ impl FilesystemState {
             scroll: 0,
             page_height: 0,
             tree_options,
+            filtered: None,
         })
     }
     pub fn count(&self) -> usize {
-        self.mounts.len().into()
+        self.filtered.as_ref()
+            .map(|f| f.mounts.len())
+            .unwrap_or_else(|| self.mounts.len().into())
     }
     pub fn try_scroll(
         &mut self,
@@ -128,10 +139,32 @@ impl AppState for FilesystemState {
 
     fn on_pattern(
         &mut self,
-        _pat: InputPattern,
+        pattern: InputPattern,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        //self.pattern = pat.pattern;
+        if pattern.is_none() {
+            self.filtered = None;
+        } else {
+            let mut selection_idx = 0;
+            let mut mounts = Vec::new();
+            let pattern = pattern.pattern;
+            for (idx, mount) in self.mounts.iter().enumerate() {
+                if pattern.score_of_string(&mount.info.fs).is_none()
+                    && mount.disk.as_ref().and_then(|d| pattern.score_of_string(d.disk_type())).is_none()
+                    && pattern.score_of_string(&mount.info.fs_type).is_none()
+                    && pattern.score_of_string(&mount.info.mount_point.to_string_lossy()).is_none()
+                { continue; }
+                if idx <= self.selection_idx {
+                    selection_idx = mounts.len();
+                }
+                mounts.push(mount.clone());
+            }
+            self.filtered = Some(FilteredContent {
+                pattern,
+                mounts,
+                selection_idx,
+            });
+        }
         Ok(AppStateCmdResult::Keep)
     }
 
@@ -144,39 +177,36 @@ impl AppState for FilesystemState {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         self.page_height = area.height as usize;
-        let scrollbar = area.scrollbar(self.scroll as i32, self.count() as i32);
+        let (mounts, selection_idx) = if let Some(filtered) = &self.filtered {
+            (filtered.mounts.as_slice(), filtered.selection_idx)
+        } else {
+            (self.mounts.as_slice(), self.selection_idx)
+        };
+        let scrollbar = area.scrollbar(self.scroll as i32, mounts.len() as i32);
         //- style preparation
         let styles = &panel_skin.styles;
-        let normal_bg = styles.default.get_bg()
-            .or_else(|| styles.preview.get_bg())
-            .unwrap_or(Color::AnsiValue(238));
         let selection_bg = styles.selected_line.get_bg()
             .unwrap_or(Color::AnsiValue(240));
-        let text = |cw: &mut CropWriter<W>, s: String| {
-            cw.queue_fg(&styles.default)?;
-            cw.queue_unstyled_g_string(s)
-        };
-        let border = |cw: &mut CropWriter<W>| {
-            cw.queue_fg(&styles.help_table_border)?;
-            cw.queue_unstyled_char('│')
-        };
-        let scrollbar_fg = styles.scrollbar_thumb.get_fg()
-            .or_else(|| styles.preview.get_fg())
-            .unwrap_or_else(|| Color::White);
+        let match_style = &styles.char_match;
+        let mut selected_match_style = styles.char_match.clone();
+        selected_match_style.set_bg(selection_bg);
+        let border_style = &styles.help_table_border;
+        let mut selected_border_style = styles.help_table_border.clone();
+        selected_border_style.set_bg(selection_bg);
         //- width computations and selection of columns to display
         let width = area.width as usize;
-        let w_fs = self.mounts.iter()
+        let w_fs = mounts.iter()
             .map(|m| m.info.fs.chars().count())
-            .max().unwrap() // unwrap is safe because mounts is a nonEmptyVec
+            .max().unwrap_or(0)
             .max("filesystem".len());
         let mut wc_fs = w_fs; // width of the column (may include selection mark)
         if con.show_selection_mark {
             wc_fs += 1;
         }
         let w_dsk = 3;
-        let w_type = self.mounts.iter()
+        let w_type = mounts.iter()
             .map(|m| m.info.fs_type.chars().count())
-            .max().unwrap()
+            .max().unwrap_or(0)
             .max("type".len());
         let w_size = 4;
         let w_use = 4;
@@ -184,9 +214,9 @@ impl AppState for FilesystemState {
         let w_use_share = 4;
         let mut wc_use = w_use; // sum of all the parts of the usage column
         let w_free = 4;
-        let w_mount_point = self.mounts.iter()
+        let w_mount_point = mounts.iter()
             .map(|m| m.info.mount_point.to_string_lossy().chars().count())
-            .max().unwrap()
+            .max().unwrap_or(0)
             .max("mount point".len());
         let w_mandatory = wc_fs + 1 + w_size + 1 + w_free + 1 + w_mount_point;
         let mut e_dsk = false;
@@ -226,131 +256,156 @@ impl AppState for FilesystemState {
         }
         //- titles
         w.queue(cursor::MoveTo(area.left, area.top))?;
-        w.queue(SetBackgroundColor(normal_bg))?;
         let mut cw = CropWriter::new(w, width);
-        let cw = &mut cw;
-        text(cw, format!("{:width$}", "filesystem", width = wc_fs))?;
-        border(cw)?;
+        cw.queue_g_string(&styles.default, format!("{:width$}", "filesystem", width = wc_fs))?;
+        cw.queue_char(border_style, '│')?;
         if e_dsk {
-            text(cw, "dsk".to_string())?;
-            border(cw)?;
+            cw.queue_g_string(&styles.default, "dsk".to_string())?;
+            cw.queue_char(border_style, '│')?;
         }
         if e_type {
-            text(cw, format!("{:^width$}", "type", width = w_type))?;
-            border(cw)?;
+            cw.queue_g_string(&styles.default, format!("{:^width$}", "type", width = w_type))?;
+            cw.queue_char(border_style, '│')?;
         }
-        text(cw, "size".to_string())?;
-        border(cw)?;
+        cw.queue_g_string(&styles.default, "size".to_string())?;
+        cw.queue_char(border_style, '│')?;
         if e_use {
-            text(cw, format!("{:^width$}", if wc_use > 4 { "usage" } else { "use" }, width = wc_use))?;
-            border(cw)?;
+            cw.queue_g_string(&styles.default, format!(
+                "{:^width$}", if wc_use > 4 { "usage" } else { "use" }, width = wc_use
+            ))?;
+            cw.queue_char(border_style, '│')?;
         }
-        text(cw, "free".to_string())?;
-        border(cw)?;
-        text(cw, "mount point".to_string())?;
-        cw.fill(&styles.help_table_border, &SPACE_FILLING)?;
+        cw.queue_g_string(&styles.default, "free".to_string())?;
+        cw.queue_char(border_style, '│')?;
+        cw.queue_g_string(&styles.default, "mount point".to_string())?;
+        cw.fill(border_style, &SPACE_FILLING)?;
         //- horizontal line
         w.queue(cursor::MoveTo(area.left, 1 + area.top))?;
-        w.queue(SetBackgroundColor(normal_bg))?;
         let mut cw = CropWriter::new(w, width);
-        let cw = &mut cw;
-        cw.queue_fg(&styles.help_table_border)?;
-        cw.queue_unstyled_g_string(format!("{:─>width$}", '┼', width = wc_fs+1))?;
+        cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = wc_fs+1))?;
         if e_dsk {
-            cw.queue_unstyled_g_string(format!("{:─>width$}", '┼', width = w_dsk+1))?;
+            cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_dsk+1))?;
         }
         if e_type {
-            cw.queue_unstyled_g_string(format!("{:─>width$}", '┼', width = w_type+1))?;
+            cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_type+1))?;
         }
-        cw.queue_unstyled_g_string(format!("{:─>width$}", '┼', width = w_size+1))?;
+        cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_size+1))?;
         if e_use {
-            cw.queue_unstyled_g_string(format!("{:─>width$}", '┼', width = wc_use+1))?;
+            cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = wc_use+1))?;
         }
-        cw.queue_unstyled_g_string(format!("{:─>width$}", '┼', width = w_free+1))?;
-        cw.fill(&styles.help_table_border, &BRANCH_FILLING)?;
+        cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_free+1))?;
+        cw.fill(border_style, &BRANCH_FILLING)?;
         //- content
         let mut idx = self.scroll as usize;
         for y in 2..area.height {
             w.queue(cursor::MoveTo(area.left, y + area.top))?;
-            let selected = self.selection_idx == idx;
-            let bg = if selected {
-                selection_bg
-            } else {
-                normal_bg
-            };
+            let selected = selection_idx == idx;
             let mut cw = CropWriter::new(w, width - 1);
-            let cw = &mut cw;
-            cw.w.queue(SetBackgroundColor(bg))?;
-            if let Some(mount) = self.mounts.get(idx) {
+            let txt_style = if selected { &styles.selected_line } else { &styles.default };
+            if let Some(mount) = mounts.get(idx) {
+                let match_style = if selected { &selected_match_style } else { &match_style };
+                let border_style = if selected { &selected_border_style } else { &border_style };
                 if con.show_selection_mark {
-                    cw.queue_unstyled_char(if selected { '▶' } else { ' ' })?;
+                    cw.queue_char(&txt_style, if selected { '▶' } else { ' ' })?;
                 }
                 // fs
-                text(cw, format!("{:width$}", &mount.info.fs, width = w_fs))?;
-                border(cw)?;
+                let s = &mount.info.fs;
+                let mut matched_string = MatchedString::new(
+                    self.filtered.as_ref().and_then(|f| f.pattern.search_string(s)),
+                    s,
+                    txt_style,
+                    match_style,
+                );
+                matched_string.fill(w_fs, Alignment::Left);
+                matched_string.queue_on(&mut cw)?;
+                cw.queue_char(border_style, '│')?;
                 // dsk
                 if e_dsk {
-                    text(cw, mount.disk.as_ref().map_or_else(
-                        || "   ".to_string(),
-                        |d| format!("{:>3}", d.disk_type()),
-                    ))?;
-                    border(cw)?;
+                    if let Some(disk) = mount.disk.as_ref() {
+                        let s = disk.disk_type();
+                        let mut matched_string = MatchedString::new(
+                            self.filtered.as_ref().and_then(|f| f.pattern.search_string(s)),
+                            s,
+                            txt_style,
+                            match_style,
+                        );
+                        matched_string.fill(3, Alignment::Left);
+                        matched_string.queue_on(&mut cw)?;
+                    } else {
+                        cw.queue_g_string(txt_style, "   ".to_string())?;
+                    }
+                    cw.queue_char(border_style, '│')?;
                 }
                 // type
                 if e_type {
-                    text(cw, format!("{:^width$}", &mount.info.fs_type, width = w_type))?;
-                    border(cw)?;
+                    let s = &mount.info.fs_type;
+                    let mut matched_string = MatchedString::new(
+                        self.filtered.as_ref().and_then(|f| f.pattern.search_string(s)),
+                        s,
+                        txt_style,
+                        match_style,
+                    );
+                    matched_string.fill(w_type, Alignment::Left);
+                    matched_string.queue_on(&mut cw)?;
+                    cw.queue_char(border_style, '│')?;
                 }
                 // size, used, free
                 if let Some(stats) = mount.stats.as_ref().filter(|s|s.size()>0) {
                     // size
-                    text(cw, format!("{:>4}", file_size::fit_4(mount.size())))?;
-                    border(cw)?;
+                    cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(mount.size())))?;
+                    cw.queue_char(border_style, '│')?;
                     // used
                     if e_use {
-                        text(cw, format!("{:>4}", file_size::fit_4(stats.used())))?;
+                        cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(stats.used())))?;
                         let share_color = super::share_color(stats.use_share());
                         if e_use_bar {
+                            cw.queue_char(txt_style, ' ')?;
                             let pb = ProgressBar::new(stats.use_share() as f32, w_use_bar);
-                            cw.queue_unstyled_char(' ')?;
-                            cw.w.queue(SetBackgroundColor(share_color))?;
-                            text(cw, format!("{:<width$}", pb, width=w_use_bar))?;
-                            cw.w.queue(SetBackgroundColor(bg))?;
+                            let mut bar_style = styles.default.clone();
+                            bar_style.set_bg(share_color);
+                            cw.queue_g_string(&bar_style, format!("{:<width$}", pb, width=w_use_bar))?;
                         }
                         if e_use_share {
-                            cw.w.queue(SetForegroundColor(share_color))?;
-                            cw.queue_unstyled_g_string(format!("{:>3.0}%", 100.0*stats.use_share()))?;
+                            let mut share_style = txt_style.clone();
+                            share_style.set_fg(share_color);
+                            cw.queue_g_string(&share_style, format!("{:>3.0}%", 100.0*stats.use_share()))?;
                         }
-                        border(cw)?;
+                        cw.queue_char(border_style, '│')?;
                     }
                     // free
-                    text(cw, format!("{:>4}", file_size::fit_4(stats.available())))?;
-                    border(cw)?;
+                    cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(stats.available())))?;
+                    cw.queue_char(border_style, '│')?;
                 } else {
                     // size
-                    cw.repeat_unstyled(&SPACE_FILLING, w_size)?;
-                    border(cw)?;
+                    cw.repeat(txt_style, &SPACE_FILLING, w_size)?;
+                    cw.queue_char(border_style, '│')?;
                     // used
                     if e_use {
-                        cw.repeat_unstyled(&SPACE_FILLING, wc_use)?;
-                        border(cw)?;
+                        cw.repeat(txt_style, &SPACE_FILLING, wc_use)?;
+                        cw.queue_char(border_style, '│')?;
                     }
                     // free
-                    cw.repeat_unstyled(&SPACE_FILLING, w_free)?;
-                    border(cw)?;
+                    cw.repeat(txt_style, &SPACE_FILLING, w_free)?;
+                    cw.queue_char(border_style, '│')?;
                 }
                 // mount point
-                text(cw, mount.info.mount_point.to_string_lossy().to_string())?;
+                let s = &mount.info.mount_point.to_string_lossy();
+                let matched_string = MatchedString::new(
+                    self.filtered.as_ref().and_then(|f| f.pattern.search_string(s)),
+                    s,
+                    txt_style,
+                    match_style,
+                );
+                matched_string.queue_on(&mut cw)?;
                 idx += 1;
             }
-            cw.fill_unstyled(&SPACE_FILLING)?;
-            w.queue(SetBackgroundColor(bg))?;
-            if is_thumb(y, scrollbar) {
-                w.queue(SetForegroundColor(scrollbar_fg))?;
-                w.queue(Print('▐'))?;
+            cw.fill(txt_style, &SPACE_FILLING)?;
+            let scrollbar_style = if is_thumb(y, scrollbar) {
+                &styles.scrollbar_thumb
             } else {
-                w.queue(Print(' '))?;
-            }
+                &styles.scrollbar_track
+            };
+            scrollbar_style.queue_str(w, "▐")?;
         }
         Ok(())
     }
@@ -366,15 +421,39 @@ impl AppState for FilesystemState {
     ) -> Result<AppStateCmdResult, ProgramError> {
         use Internal::*;
         Ok(match internal_exec.internal {
+            Internal::back => {
+                if let Some(f) = self.filtered.take() {
+                    if !f.mounts.is_empty() {
+                        self.selection_idx = self.mounts.iter()
+                            .position(|m| m.info.id == f.mounts[f.selection_idx].info.id)
+                            .unwrap(); // all filtered mounts come from self.mounts
+                    }
+                    AppStateCmdResult::Keep
+                } else {
+                    AppStateCmdResult::PopState
+                }
+            }
             Internal::line_down => {
-                if self.selection_idx + 1 < self.count() {
-                    self.selection_idx += 1;
+                if let Some(f) = self.filtered.as_mut() {
+                    if f.selection_idx + 1 < f.mounts.len() {
+                        f.selection_idx += 1;
+                    }
+                } else {
+                    if self.selection_idx + 1 < self.count() {
+                        self.selection_idx += 1;
+                    }
                 }
                 AppStateCmdResult::Keep
             }
             Internal::line_up => {
-                if self.selection_idx > 0 {
-                    self.selection_idx -= 1;
+                if let Some(f) = self.filtered.as_mut() {
+                    if f.selection_idx > 0 {
+                        f.selection_idx -= 1;
+                    }
+                } else {
+                    if self.selection_idx > 0 {
+                        self.selection_idx -= 1;
+                    }
                 }
                 AppStateCmdResult::Keep
             }

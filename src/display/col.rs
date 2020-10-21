@@ -65,6 +65,8 @@ impl Col {
         }
         None
     }
+    // warning: don't change the type of argument of this function or
+    // it won't compile on some platforms
     /// return a Cols which tries to take the s setting into account
     /// but is guaranteed to have every Col exactly once.
     pub fn parse_cols(arr: &Vec<String>) -> Result<Cols, ConfError> {

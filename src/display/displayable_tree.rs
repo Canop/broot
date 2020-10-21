@@ -259,12 +259,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             &line.name
         };
         let name_match = self.tree.options.pattern.pattern.search_string(label);
-        let matched_string = MatchedString {
+        let matched_string = MatchedString::new(
             name_match,
-            string: label,
-            base_style: &style,
-            match_style: &char_match_style,
-        };
+            label,
+            &style,
+            &char_match_style,
+        );
         matched_string.queue_on(cw)?;
         match &line.line_type {
             TreeLineType::Dir => {
