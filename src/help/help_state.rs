@@ -167,6 +167,14 @@ impl AppState for HelpState {
     ) -> Result<AppStateCmdResult, ProgramError> {
         use Internal::*;
         Ok(match internal_exec.internal {
+            Internal::back => {
+                if self.pattern.is_some() {
+                    self.pattern = Pattern::None;
+                    AppStateCmdResult::Keep
+                } else {
+                    AppStateCmdResult::PopState
+                }
+            }
             help => AppStateCmdResult::Keep,
             line_down => {
                 self.scroll += 1;
