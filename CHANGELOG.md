@@ -1,6 +1,10 @@
-### next version
+<a name="v1.0.4"></a>
+### v1.0.4 - 2020-10-22
 * don't use absolute paths for built-in verbs
-- fix freeze on circular symlink chains
+* fix freeze on circular symlink chains
+* `:filesystems` (alias `:fs`) display all mounted filesystems in a filtrable view. You can enter to browse at the mount point (unix only for now)
+* `:toggle_root_fs` (alias `:rfs`) toogles showing information on the filesystem of the current directory
+* filesystem information (mainly size and usage) related to the current filesystem displayed in whale-spotting mode
 
 <a name="v1.0.3"></a>
 ### v1.0.3 - 2020-10-07
