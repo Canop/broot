@@ -274,7 +274,8 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             }
             TreeLineType::BrokenSymLink(direct_path) => {
                 cw.queue_str(style, " -> ")?;
-                cw.queue_str(&self.skin.file_error, &direct_path)?;
+                cond_bg!(error_style, self, selected, self.skin.file_error);
+                cw.queue_str(error_style, &direct_path)?;
             }
             TreeLineType::SymLink {
                 final_is_dir,
