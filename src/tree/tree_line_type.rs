@@ -6,6 +6,9 @@ use {
     },
 };
 
+/// longer link chains are probably cyclic
+const MAX_LINK_CHAIN_LENGTH: usize = 10;
+
 /// The type of a line which can be displayed as
 /// part of a tree
 #[derive(Debug, Clone, PartialEq)]
@@ -36,11 +39,17 @@ impl TreeLineType {
         let mut final_metadata = fs::symlink_metadata(&final_target)?;
         let mut final_ft = final_metadata.file_type();
         let mut final_is_dir = final_ft.is_dir();
+        let mut link_chain_length = 1;
         while final_ft.is_symlink() {
             final_target = read_link(&final_target)?;
             final_metadata = fs::symlink_metadata(&final_target)?;
             final_ft = final_metadata.file_type();
             final_is_dir = final_ft.is_dir();
+            link_chain_length += 1;
+            if link_chain_length > MAX_LINK_CHAIN_LENGTH {
+                info!("too long link chain (maybe cyclic) at {:?}", &direct_target);
+                return Ok(Self::BrokenSymLink(direct_target.to_string_lossy().into_owned()))
+            }
         }
         let direct_target = direct_target.to_string_lossy().into_owned();
         Ok(Self::SymLink {
