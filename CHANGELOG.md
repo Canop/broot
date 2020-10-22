@@ -1,5 +1,6 @@
 ### next version
 - don't use absolute paths for built-in verbs
+- fix freeze on circular symlink chains
 
 <a name="v1.0.3"></a>
 ### v1.0.3 - 2020-10-07
