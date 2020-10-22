@@ -475,6 +475,38 @@ impl AppState for FilesystemState {
                     in_new_panel,
                 )
             }
+            Internal::panel_left => {
+                if cc.areas.is_first() {
+                    // we ask for the creation of a panel to the left
+                    internal_focus::new_panel_on_path(
+                        self.selected_path().to_path_buf(),
+                        screen,
+                        self.tree_options(),
+                        PanelPurpose::None,
+                        &cc.con,
+                        HDir::Left,
+                    )
+                } else {
+                    // we ask the app to focus the panel to the left
+                    AppStateCmdResult::HandleInApp(Internal::panel_left)
+                }
+            }
+            Internal::panel_right => {
+                if cc.areas.is_last() {
+                    // we ask for the creation of a panel to the right
+                    internal_focus::new_panel_on_path(
+                        self.selected_path().to_path_buf(),
+                        screen,
+                        self.tree_options(),
+                        PanelPurpose::None,
+                        &cc.con,
+                        HDir::Right,
+                    )
+                } else {
+                    // we ask the app to focus the panel to the right
+                    AppStateCmdResult::HandleInApp(Internal::panel_right)
+                }
+            }
             Internal::page_down => {
                 self.try_scroll(ScrollCommand::Pages(1));
                 AppStateCmdResult::Keep

@@ -355,7 +355,7 @@ impl AppState for BrowserState {
                         HDir::Right,
                     )
                 } else {
-                    // we ask the app to focus the panel to the left
+                    // we ask the app to focus the panel to the right
                     AppStateCmdResult::HandleInApp(Internal::panel_right)
                 }
             }
