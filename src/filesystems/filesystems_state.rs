@@ -345,7 +345,7 @@ impl AppState for FilesystemState {
                         txt_style,
                         match_style,
                     );
-                    matched_string.fill(w_type, Alignment::Left);
+                    matched_string.fill(w_type, Alignment::Center);
                     matched_string.queue_on(&mut cw)?;
                     cw.queue_char(border_style, '│')?;
                 }

@@ -52,7 +52,18 @@ impl<'a, 'w> MatchedString<'a> {
                     let (count_bytes, _) = crop::count_fitting(s, dw);
                     s = &s[0..count_bytes];
                 } else if w < dw {
-                    right_filling = dw - w;
+                    match self.align {
+                        Alignment::Right => {
+                            cw.repeat(&self.base_style, &SPACE_FILLING, dw - w)?;
+                        }
+                        Alignment::Center => {
+                            right_filling = (dw - w) / 2;
+                            cw.repeat(&self.base_style, &SPACE_FILLING, dw - w - right_filling)?;
+                        }
+                        _ => {
+                            right_filling = dw - w;
+                        }
+                    }
                 }
             }
             // we might call queue_char more than allowed but that's okay
@@ -66,7 +77,7 @@ impl<'a, 'w> MatchedString<'a> {
                 }
             }
             if right_filling > 0 {
-                SPACE_FILLING.queue_styled(&mut cw.w, &self.base_style, right_filling)?;
+                cw.repeat(&self.base_style, &SPACE_FILLING, right_filling)?;
             }
         } else if let Some(w) = self.display_width {
             match self.align {
