@@ -4,7 +4,7 @@ use {
     crate::{
         app::{AppContext, LineNumber},
         command::{ScrollCommand},
-        display::{Screen, W},
+        display::*,
         errors::ProgramError,
         hex::HexView,
         image::ImageView,
@@ -13,7 +13,11 @@ use {
         syntactic::SyntacticView,
         task_sync::Dam,
     },
-    std::path::Path,
+    crossterm::{cursor, QueueableCommand},
+    std::{
+        io,
+        path::Path,
+    },
     termimad::Area,
 };
 
@@ -21,7 +25,7 @@ pub enum Preview {
     Image(ImageView),
     Syntactic(SyntacticView),
     Hex(HexView),
-    IOError,
+    IOError(io::Error),
 }
 
 impl Preview {
@@ -41,7 +45,6 @@ impl Preview {
                 ImageView::new(path)
                     .map(Self::Image)
                     .unwrap_or_else(|_| Self::unfiltered_text(path, con))
-
             }
         }
     }
@@ -122,8 +125,9 @@ impl Preview {
         match HexView::new(path.to_path_buf()) {
             Ok(reader) => Self::Hex(reader),
             Err(e) => {
+                // it's unlikely as the file isn't open at this point
                 warn!("error while previewing {:?} : {:?}", path, e);
-                Self::IOError
+                Self::IOError(e)
             }
         }
     }
@@ -133,7 +137,7 @@ impl Preview {
             Self::Image(_) => Some(PreviewMode::Image),
             Self::Syntactic(_) => Some(PreviewMode::Text),
             Self::Hex(_) => Some(PreviewMode::Hex),
-            Self::IOError => None,
+            Self::IOError(_) => None,
         }
     }
     pub fn pattern(&self) -> InputPattern {
@@ -223,9 +227,24 @@ impl Preview {
             Self::Image(iv) => iv.display(w, screen, panel_skin, area, con),
             Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area, con),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
-            Self::IOError => {
-                debug!("nothing to display: IOError");
-                // FIXME clear area - but it's hard to fall on that case
+            Self::IOError(err) => {
+                let mut y = area.top;
+                w.queue(cursor::MoveTo(area.left, y))?;
+                let mut cw = CropWriter::new(w, area.width as usize);
+                cw.queue_str(&panel_skin.styles.default, "An error prevents the preview:")?;
+                cw.fill(&panel_skin.styles.default, &SPACE_FILLING)?;
+                y += 1;
+                w.queue(cursor::MoveTo(area.left, y))?;
+                let mut cw = CropWriter::new(w, area.width as usize);
+                cw.queue_g_string(&panel_skin.styles.status_error, err.to_string())?;
+                cw.fill(&panel_skin.styles.default, &SPACE_FILLING)?;
+                y += 1;
+                while y < area.top + area.height {
+                    w.queue(cursor::MoveTo(area.left, y))?;
+                    let mut cw = CropWriter::new(w, area.width as usize);
+                    cw.fill(&panel_skin.styles.default, &SPACE_FILLING)?;
+                    y += 1;
+                }
                 Ok(())
             }
         }

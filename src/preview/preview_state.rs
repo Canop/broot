@@ -239,7 +239,18 @@ impl AppState for PreviewState {
         cw.fill(&styles.default, &SPACE_FILLING)?;
         let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
         preview.display_info(w, screen, panel_skin, &info_area)?;
-        preview.display(w, screen, panel_skin, &self.preview_area, con)
+        if let Err(err) = preview.display(w, screen, panel_skin, &self.preview_area, con) {
+            warn!("error while displaying file: {:?}", &err);
+            if preview.get_mode().is_some() { // means it's not an error already
+                if let ProgramError::Io{source} = err {
+                    // we mutate the preview to Preview::IOError
+                    self.preview = Preview::IOError(source);
+                    return self.display(w, screen, state_area, panel_skin, con);
+                }
+            }
+            return Err(err);
+        }
+        Ok(())
     }
 
     fn no_verb_status(

@@ -300,7 +300,7 @@ impl AppState for FilesystemState {
         for y in 2..area.height {
             w.queue(cursor::MoveTo(area.left, y + area.top))?;
             let selected = selection_idx == idx;
-            let mut cw = CropWriter::new(w, width - 1);
+            let mut cw = CropWriter::new(w, width - 1); // -1 for scrollbar
             let txt_style = if selected { &styles.selected_line } else { &styles.default };
             if let Some(mount) = mounts.get(idx) {
                 let match_style = if selected { &selected_match_style } else { &match_style };
