@@ -45,10 +45,14 @@ impl TreeLineType {
         while final_ft.is_symlink() {
             final_target = read_link(&final_target)?;
             if visited.contains(&final_target) {
-                info!("circular symlink opened by {} and closed by {}", direct_target.display(), final_target.display());
+                info!(
+                    "circular symlink opened by {} and closed by {}",
+                    direct_target.display(),
+                    final_target.display(),
+                );
                 return Ok(Self::BrokenSymLink(direct_target.to_string_lossy().into_owned()))
             }
-            let _ = visited.insert(final_target.clone());
+            visited.insert(final_target.clone());
             final_metadata = fs::symlink_metadata(&final_target)?;
             final_ft = final_metadata.file_type();
             final_is_dir = final_ft.is_dir();
@@ -73,8 +77,7 @@ impl TreeLineType {
             if let Ok(direct_target) = read_link(path) {
                 Self::resolve(&direct_target)
                     .unwrap_or_else(|_| {
-                        Self::BrokenSymLink(
-                            direct_target.to_string_lossy().to_string()
+                        Self::BrokenSymLink(direct_target.to_string_lossy().to_string()
                     )})
             } else {
                 Self::BrokenSymLink("???".to_string())
