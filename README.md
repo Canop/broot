@@ -18,20 +18,6 @@ A better way to navigate directories
 
 [Install Broot](https://dystroy.org/broot/install/)
 
-# Hacktoberfest Guidelines
-
-:warning: Hacktoberfest participants, please note the rules of this repo:
-
-|  The change | How it is received |
-|:---|:---
-| Real typo or documentation fix | :thumbsup: Welcome
-| Verified code fix| :thumbsup: Welcome
-| Useless change in documentation or code| :x: Marked as **spam**
-| Any refactoring or reformating of the code| :x: Marked as **spam**
-| New feature or feature change when there was no discussion before| :x: Marked as **spam**
-
-In case of doubt, **come discuss in the chat** before everything.
-
 # Get an overview of a directory, even a big one
 
 `br -s`
