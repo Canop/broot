@@ -155,7 +155,7 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
 
 /// compute the sum for a regular file (not a folder)
 pub fn compute_file_sum(path: &Path) -> FileSum {
-    match fs::metadata(path) {
+    match fs::symlink_metadata(path) {
         Ok(md) => {
             let seconds = extract_seconds(&md);
 

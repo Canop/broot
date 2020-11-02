@@ -3,7 +3,7 @@ use {
     crate::{
         app::*,
         errors::ConfError,
-        path_anchor::PathAnchor,
+        path::PathAnchor,
     },
     regex::Regex,
     std::{

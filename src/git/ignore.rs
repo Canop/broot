@@ -26,6 +26,7 @@ struct GitIgnoreRule {
 }
 
 impl GitIgnoreRule {
+    /// parse a line of a .gitignore file
     fn from(line: &str, dir: &Path) -> Option<GitIgnoreRule> {
         if line.starts_with('#') {
             return None; // comment line
@@ -48,7 +49,7 @@ impl GitIgnoreRule {
                 }
                 if let Ok(pattern) = glob::Pattern::new(&p) {
                     let pattern_options = glob::MatchOptions {
-                        case_sensitive: true, // not really sure about this one
+                        case_sensitive: true,
                         require_literal_leading_dot: false,
                         require_literal_separator: has_separator,
                     };

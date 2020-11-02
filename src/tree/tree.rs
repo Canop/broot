@@ -328,8 +328,11 @@ impl Tree {
     /// long computation which is needed for directories)
     pub fn fetch_regular_file_sums(&mut self) {
         for i in 1..self.lines.len() {
-            if self.lines[i].is_file() {
-                self.lines[i].sum = Some(FileSum::from_file(&self.lines[i].path));
+            match self.lines[i].line_type {
+                TreeLineType::Dir | TreeLineType::Pruning => {}
+                _ => {
+                    self.lines[i].sum = Some(FileSum::from_file(&self.lines[i].path));
+                },
             }
         }
         self.sort_siblings();

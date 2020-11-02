@@ -34,7 +34,6 @@ pub mod keys;
 pub mod image;
 pub mod launchable;
 pub mod path;
-pub mod path_anchor;
 pub mod pattern;
 pub mod permissions;
 pub mod preview;
