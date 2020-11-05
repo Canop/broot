@@ -4,7 +4,7 @@ use {
         app::{AppContext, LineNumber},
         command::{ScrollCommand},
         display::{CropWriter, SPACE_FILLING, Screen, W},
-        errors::ProgramError,
+        errors::*,
         pattern::{InputPattern, NameMatch},
         skin::PanelSkin,
         task_sync::Dam,
@@ -17,7 +17,7 @@ use {
     memmap::Mmap,
     std::{
         fs::File,
-        io::{self, BufRead, BufReader},
+        io::{BufRead, BufReader},
         path::{Path, PathBuf},
         str,
     },
@@ -80,7 +80,7 @@ impl SyntacticView {
         pattern: InputPattern,
         dam: &mut Dam,
         con: &AppContext,
-    ) -> io::Result<Option<Self>> {
+    ) -> Result<Option<Self>, ProgramError> {
         let mut sv = Self {
             path: path.to_path_buf(),
             pattern,
@@ -99,9 +99,17 @@ impl SyntacticView {
     }
 
     /// return true when there was no interruption
-    fn read_lines(&mut self, dam: &mut Dam, con: &AppContext) -> io::Result<bool> {
+    fn read_lines(
+        &mut self,
+        dam: &mut Dam,
+        con: &AppContext,
+    ) -> Result<bool, ProgramError> {
         let f = File::open(&self.path)?;
-        let with_style = f.metadata()?.len() < MAX_SIZE_FOR_STYLING;
+        let md = f.metadata()?;
+        if md.len() == 0 {
+            return Err(ProgramError::ZeroLenFile);
+        }
+        let with_style = md.len() < MAX_SIZE_FOR_STYLING;
         let mut reader = BufReader::new(f);
         self.lines.clear();
         let mut line = String::new();
@@ -414,12 +422,9 @@ impl SyntacticView {
 }
 
 fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
-    if let Some((sctop, scbottom)) = scrollbar {
+    scrollbar.map_or(false, |(sctop, scbottom)| {
         let y = y as u16;
-        if sctop <= y && y <= scbottom {
-            return true;
-        }
-    }
-    false
+        sctop <= y && y <= scbottom
+    })
 }
 

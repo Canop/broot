@@ -12,14 +12,14 @@ use {
 };
 
 
-/// wrap a writer to ensure that at most `allowed` chars are
+/// wrap a writer to ensure that at most `allowed` columns are
 /// written.
-/// Note: tab replacement managment is only half designed/coded
 pub struct CropWriter<'w, W>
 where
     W: std::io::Write,
 {
     pub w: &'w mut W,
+    /// number of screen columns which may be covered
     pub allowed: usize,
 }
 
@@ -33,11 +33,10 @@ where
     pub fn is_full(&self) -> bool {
         self.allowed == 0
     }
+    /// return a tuple containing a string containing either the given &str
+    /// or the part fitting the remaining width, and the width of this string)
     pub fn cropped_str(&self, s: &str) -> (String, usize) {
-        let mut string = s.replace('\t', TAB_REPLACEMENT);
-        let (count_bytes, count_chars) = crop::count_fitting(&string, self.allowed);
-        string.truncate(count_bytes);
-        (string, count_chars)
+        crop::make_string(s, self.allowed)
     }
     pub fn queue_unstyled_str(&mut self, s: &str) -> Result<()> {
         if self.is_full() {

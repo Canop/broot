@@ -1,6 +1,5 @@
-
 use {
-    super::PreviewMode,
+    super::*,
     crate::{
         app::{AppContext, LineNumber},
         command::{ScrollCommand},
@@ -25,6 +24,7 @@ pub enum Preview {
     Image(ImageView),
     Syntactic(SyntacticView),
     Hex(HexView),
+    ZeroLen(ZeroLenFileView),
     IOError(io::Error),
 }
 
@@ -87,6 +87,10 @@ impl Preview {
     ) -> Self {
         match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con) {
             Ok(Some(sv)) => Self::Syntactic(sv),
+            Err(ProgramError::ZeroLenFile) => {
+                debug!("zero len file - check if system file");
+                Self::ZeroLen(ZeroLenFileView::new(path.to_path_buf()))
+            }
             // not previewable as UTF8 text
             // we'll try reading it as binary
             _ => Self::hex(path),
@@ -136,6 +140,7 @@ impl Preview {
         match self {
             Self::Image(_) => Some(PreviewMode::Image),
             Self::Syntactic(_) => Some(PreviewMode::Text),
+            Self::ZeroLen(_) => Some(PreviewMode::Text),
             Self::Hex(_) => Some(PreviewMode::Hex),
             Self::IOError(_) => None,
         }
@@ -226,6 +231,7 @@ impl Preview {
         match self {
             Self::Image(iv) => iv.display(w, screen, panel_skin, area, con),
             Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area, con),
+            Self::ZeroLen(zlv) => zlv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
             Self::IOError(err) => {
                 let mut y = area.top;

@@ -26,6 +26,7 @@ custom_error! {pub ProgramError
     NetError {source: NetError} = "{}",
     ImageError {source: ImageError } = "{}",
     Lfs {details: String} = "Failed to fetch mounts: {}",
+    ZeroLenFile = "File seems empty",
 }
 
 custom_error! {pub TreeBuildError

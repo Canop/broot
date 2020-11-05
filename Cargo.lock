@@ -119,6 +119,7 @@ version = "1.0.5-dev"
 dependencies = [
  "ansi_colours",
  "bet",
+ "char_reader",
  "chrono",
  "clap",
  "criterion",
@@ -209,6 +210,12 @@ name = "cfg-if"
 version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4785bdd1c96b2a846b2bd7cc02e86b6b3dbf14e7e53446c4f54c92a361040822"
+
+[[package]]
+name = "char_reader"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2daa67493227adb60f22eb6dca4dc94d7a2a526b38eab5c1831d617944eb1a07"
 
 [[package]]
 name = "chrono"

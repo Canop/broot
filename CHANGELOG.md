@@ -1,6 +1,7 @@
 ### next version
 * in case of IO error when previewing a file, display the error instead of quitting
 * fix regression related to display of texts with characters taking several columns
+* preview now supports opening system files with size 0 (eg /proc "files")
 
 <a name="v1.0.4"></a>
 ### v1.0.4 - 2020-10-22

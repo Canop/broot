@@ -21,6 +21,7 @@ clipboard = ["terminal-clipboard"]
 [dependencies]
 ansi_colours = "1.0"
 bet = "0.3.4"
+char_reader = "0.1"
 clap = { version="2.33", default-features=false, features=["suggestions"] }
 chrono = "0.4"
 crossbeam = "0.7"

@@ -1,9 +1,11 @@
 mod preview;
 mod preview_state;
+mod zero_len_file_view;
 
 pub use {
     preview::Preview,
     preview_state::PreviewState,
+    zero_len_file_view::ZeroLenFileView,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq)]
