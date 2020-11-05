@@ -1,4 +1,5 @@
-### next version
+<a name="v1.0.5"></a>
+### v1.0.5 - 2020-11-05
 * in case of IO error when previewing a file, display the error instead of quitting
 * fix regression related to display of texts with characters taking several columns
 * preview now supports opening system files with size 0 (eg /proc "files")
