@@ -1,6 +1,7 @@
 mod app;
 mod cmd_context;
 mod cmd_result;
+mod icon_plugins;
 mod context;
 mod panel;
 mod panel_id;
