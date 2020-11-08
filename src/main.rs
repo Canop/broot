@@ -41,6 +41,7 @@ fn configure_log() {
 }
 
 fn main() {
+    println!( "{}]2;Broot{}", (0x1b as char), (0x07 as char) );
     configure_log();
     match cli::run() {
         Ok(Some(launchable)) => {
