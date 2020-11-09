@@ -1,4 +1,4 @@
-// Tips on editing this file in vi, use C-n and C-y in edit mode
+// SEE ./README on how to edit this file
 [
 	
 	( "rs"     , "file_type_rust"           ),
@@ -9,4 +9,9 @@
 	( "ttf"    , "file_type_font"           ),
 	( "yml"    , "file_type_yaml"           ),
 	( "yaml"   , "file_type_yaml"           ),
+	( "c"      , "file_type_c"              ),
+	( "gz"     , "file_type_zip2"           ),
+	( "7z"     , "file_type_zip2"           ),
+	( "svg"    , "file_type_svg"            ),
+	( "lock"   , "emoji_type_lock"          ),
 ]

@@ -1,4 +1,6 @@
 [
+( "emoji_type_lock", 0x1F512 ),
+( "emoji_type_link", 0x1F517 ),
 ( "default_file", 0x100000 ),
 ( "default_folder_opened", 0x100001 ),
 ( "default_folder", 0x100002 ),

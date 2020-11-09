@@ -1,6 +1,6 @@
 Tips on editing these files in vi
 
-1. Open file_name_to_icon_name_map.rs 
+1. Open ./icon_name_to_icon_code_point_map.rs
    then in the same session, switch to file you want to edit
    use C-n and C-y in edit mode
 

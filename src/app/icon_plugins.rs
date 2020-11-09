@@ -123,12 +123,14 @@ impl IconPlugin for IconPluginVSCode
 		let icon_name = match tree_line_type
 		{
 			TreeLineType::Dir			=> "default_folder",
-			TreeLineType::SymLink{ .. } => "file_type_kite", //bad but nothing better
-			TreeLineType::File			=> self.handle_file( 
-									      		&name.to_ascii_lowercase(),
-									      		double_ext.map( |de| de.to_ascii_lowercase() ),
-									      		ext.map( |e| e.to_ascii_lowercase() ),
-									    	),
+			TreeLineType::SymLink{ .. } => "emoji_type_link", //bad but nothing better
+			TreeLineType::File			=> {
+				self.handle_file( 
+					&name.to_ascii_lowercase(),
+					double_ext.map( |de| de.to_ascii_lowercase() ),
+					ext.map( |e| e.to_ascii_lowercase() ),
+				)
+			},
 			TreeLineType::Pruning		=> "file_type_kite", //irrelevant
 			_							=> "default_file",
 		};
