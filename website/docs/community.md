@@ -26,7 +26,7 @@ When something looks like a bug, especially keyboard problems, we need both to k
 1. start broot with `BROOT_LOG=debug br`
 2. do the action which seems not to properly work, and nothing else
 3. quit broot
-4. go to the chat (or the GitHub issue if you already made one) and paste the content of the `dev.log` file
+4. go to the chat (or the GitHub issue if you already made one) and paste the content of the `broot.log` file
 
 ### Benchmark
 

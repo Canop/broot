@@ -19,7 +19,7 @@ use {
 ///  a valid log level (trace, debug, info, warn, error, off)
 /// Example:
 ///      BROOT_LOG=info broot
-/// As broot is a terminal application, we only log to a file (dev.log)
+/// As broot is a terminal application, we only log to a file (broot.log)
 fn configure_log() {
     let level = env::var("BROOT_LOG").unwrap_or_else(|_| "off".to_string());
     if level == "off" {
@@ -29,7 +29,7 @@ fn configure_log() {
         simplelog::WriteLogger::init(
             level,
             simplelog::Config::default(),
-            File::create("dev.log").expect("Log file can't be created"),
+            File::create("broot.log").expect("Log file can't be created"),
         )
         .expect("log initialization failed");
         info!(
