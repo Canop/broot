@@ -238,7 +238,6 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     let mut w = display::writer();
     let app = App::new(&context)?;
     w.queue(EnterAlternateScreen)?;
-    w.queue(cursor::DisableBlinking)?;
     w.queue(cursor::Hide)?;
     if !config.disable_mouse_capture {
         w.queue(EnableMouseCapture)?;
@@ -248,7 +247,6 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         w.queue(DisableMouseCapture)?;
     }
     w.queue(cursor::Show)?;
-    w.queue(cursor::EnableBlinking)?;
     w.queue(LeaveAlternateScreen)?;
     w.flush()?;
     r

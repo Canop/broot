@@ -1,3 +1,6 @@
+### next
+* dev.log renamed into broot.log
+
 <a name="v1.0.5"></a>
 ### v1.0.5 - 2020-11-05
 * in case of IO error when previewing a file, display the error instead of quitting
