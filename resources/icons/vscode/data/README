@@ -5,3 +5,7 @@ Tips on editing these files in vi
    use C-n and C-y in edit mode
 
 2. This plugin currently searches for lowercase, make everything so
+
+3. Remember to run :Tabularize over ')' and ','
+
+4. :'<,'>!sort

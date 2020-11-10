@@ -28,6 +28,38 @@ struct IconPluginVSCode{
 
 impl IconPluginVSCode
 {
+	fn sanity_check( 
+		part_to_icon_name_map: &HashMap<&str, &str>,
+		icon_name_to_icon_codepoint_map: &HashMap<&str, u32>,
+	)
+	{
+		if cfg!(debug_assertions) 
+		{
+			let offending_entries = 
+				part_to_icon_name_map
+					.iter()
+					.map( 
+						| ( _k, icon_name ) | 
+						(icon_name, icon_name_to_icon_codepoint_map.contains_key( icon_name ) )
+					)
+					// Find if any entry is not present
+					.filter( | (entry, entry_present ) | ! entry_present )
+					.collect::<Vec<_>>();
+			;
+
+			for oe in &offending_entries
+			{
+				println!( "{} is not a valid icon name", oe.0  );
+			}
+
+			if offending_entries.len() > 0 
+			{
+				println!( "Terminating execution" );
+				std::process::exit( 53 );
+			}
+		}
+	}
+
 	fn new() -> Self
 	{
 		let icon_name_to_icon_codepoint_map: HashMap<&'static str, u32> 
@@ -45,6 +77,10 @@ impl IconPluginVSCode
 		let file_name_to_icon_name_map       : HashMap<&'static str, &'static str>
 			= ( include!( "../../resources/icons/vscode/data/file_name_to_icon_name_map.rs" ) ).iter().cloned().collect()
 		;
+
+		Self::sanity_check( &file_name_to_icon_name_map        , &icon_name_to_icon_codepoint_map );
+		Self::sanity_check( &double_extension_to_icon_name_map , &icon_name_to_icon_codepoint_map );
+		Self::sanity_check( &extension_to_icon_name_map        , &icon_name_to_icon_codepoint_map );
 
 		let default_icon_point				  = *icon_name_to_icon_codepoint_map.get( "default_file" ).unwrap();
 		Self{
