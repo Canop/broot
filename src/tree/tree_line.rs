@@ -54,11 +54,13 @@ impl TreeLine {
             Some( icon_plugin ) => 
             {
                 let extension = Self::extension_from_name( name );
+                let double_extension = Self::double_extension_from_name( name );
+
                 let icon = &icon_plugin.get_icon( 
                     tree_line_type,
                     path,
                     &name,
-                    Some( "" ),
+                    double_extension,
                     extension,
                 );
 
@@ -66,6 +68,13 @@ impl TreeLine {
                     + &icon.to_string() + "  " + &newline_replaced_name 
             }
         }
+    }
+
+    pub fn double_extension_from_name( name: &str ) -> Option<&str> {
+        regex!( r"\.([^.]+\.[^.]+)" )
+            .captures(&name)
+            .and_then(|c| c.get(1))
+            .map(|e| e.as_str())
     }
 
     pub fn extension_from_name( name: &str ) -> Option<&str> {

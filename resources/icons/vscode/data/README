@@ -9,3 +9,5 @@ Tips on editing these files in vi
 3. Remember to run :Tabularize over ')' and ','
 
 4. :'<,'>!sort
+
+5. `cargo run` in debug mode should figure out if some problems.

@@ -43,8 +43,8 @@ impl IconPluginVSCode
 						(icon_name, icon_name_to_icon_codepoint_map.contains_key( icon_name ) )
 					)
 					// Find if any entry is not present
-					.filter( | (entry, entry_present ) | ! entry_present )
-					.collect::<Vec<_>>();
+					.filter( | ( _entry, entry_present ) | ! entry_present )
+					.collect::<Vec<_>>()
 			;
 
 			for oe in &offending_entries
