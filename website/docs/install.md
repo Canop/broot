@@ -29,7 +29,7 @@ When you download executable files, you'll have to ensure the shell can find the
 
 # From crates.io
 
-You'll need to have the [Rust development environment](https://www.rust-lang.org/tools/install) installed.
+You'll need to have the [Rust development environment](https://www.rust-lang.org/tools/install) installed and up to date.
 
 Once it's installed, use cargo to install broot:
 
@@ -41,24 +41,27 @@ You'll need to have the [Rust development environment](https://www.rust-lang.org
 
 Fetch the [Canop/broot](https://github.com/Canop/broot) repository, move to the broot directory, then run
 
-    cargo install --path .
+```bash
+cargo install --path .
+```
 
 If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/features.md).
 
-# Homebrew
+# Third party repositories
 
-If you're using [homebrew](https://brew.sh/), you can use the `brew install` command:
+*note: those packages are maintained by third parties and may be less up to date.*
+
+## Homebrew
 
     brew install broot
 
-*note: the brew formula is maintained by a third party and may be less up to date.*
-
-# APT / Deb
+## APT / Deb
 
 Ubuntu and Debian users may use this apt repository: [https://packages.azlux.fr/](https://packages.azlux.fr/)
 
-*note: this repository is also maintained by a third party.*
+## NetBSD
 
+    pkgin install broot
 
 -----------------------------------
 
