@@ -5,11 +5,7 @@
 ///
 /// Examples:
 /// ```
-/// let sum = time!(
-///     Debug,
-///     "summing",
-///     2 + 2 // this is super hard
-/// );
+/// let sum = time!(Debug, "summing", 2 + 2);
 /// let mult = time!(Info, 3 * 4);
 /// ```
 macro_rules! time {

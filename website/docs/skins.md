@@ -136,11 +136,13 @@ default = "gray(23) none / gray(20) none"
 
 # White Background Skin
 
-This skin is suitable if you're used to black on white:
+This skin has a transparent main background and dark foreground colors.
+
+It is suitable if your terminal has a clear background.
 
 ```toml
 [skin]
-default = "gray(1) white"
+default = "gray(1) None"
 tree = "gray(7) None / gray(18) None"
 file = "gray(3) None / gray(8) None"
 directory = "ansi(25) None Bold / ansi(25) None"
@@ -189,7 +191,7 @@ help_italic = "ansi(202) none italic"
 help_code = "gray(5) gray(22)"
 help_headers = "ansi(202) none"
 help_table_border = "ansi(239) None"
-preview = "gray(5) gray(24) / gray(7) gray(23)"
+preview = "gray(5) gray(23) / gray(7) gray(23)"
 preview_line_number = "gray(6) gray(20)"
 preview_match = "None ansi(29) Underlined"
 hex_null = "gray(15) None"
@@ -200,6 +202,13 @@ hex_non_ascii = "ansi(167) None"
 ```
 
 ![light skin](img/20200526-light-skin.png)
+
+When using this skin in a light terminal, it's recommended to also use a light syntax theme, which can be done by uncommenting this line at the top of the config file:
+
+```
+syntax_theme = "base16-ocean.light"
+```
+
 
 # Solarized Dark
 
