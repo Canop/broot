@@ -145,7 +145,7 @@ impl Tree {
     ///
     /// For example the following one if dy is 1.
     pub fn move_selection(&mut self, dy: i32, page_height: i32) {
-        // only work for +1 or -1
+        // FIXME may not work well if dy is too big
         let l = self.lines.len();
         loop {
             self.selection = (self.selection + ((l as i32) + dy) as usize) % l;
@@ -158,7 +158,6 @@ impl Tree {
         let sel = self.selection as i32;
         if l > page_height {
             if dy < 0 {
-                // -1
                 if sel == l - 1 {
                     // cycling
                     self.scroll = l - page_height;
@@ -166,7 +165,6 @@ impl Tree {
                     self.scroll = (self.scroll + 2 * dy).max(0);
                 }
             } else {
-                // +1
                 if sel == 0 {
                     // cycling brought us back to top
                     self.scroll = 0;

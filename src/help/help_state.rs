@@ -177,11 +177,11 @@ impl AppState for HelpState {
             }
             help => AppStateCmdResult::Keep,
             line_down => {
-                self.scroll += 1;
+                self.scroll += get_arg(input_invocation, internal_exec, 1);
                 AppStateCmdResult::Keep
             }
             line_up => {
-                self.scroll -= 1;
+                self.scroll -= get_arg(input_invocation, internal_exec, 1);
                 AppStateCmdResult::Keep
             }
             open_stay => match open::that(&Conf::default_location()) {

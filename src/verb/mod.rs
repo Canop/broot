@@ -25,7 +25,7 @@ pub use {
     verb::Verb,
     verb_description::VerbDescription,
     verb_execution::VerbExecution,
-    verb_invocation::VerbInvocation,
+    verb_invocation::*,
     verb_store::{PrefixSearchResult, VerbStore},
 };
 

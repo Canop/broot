@@ -188,20 +188,11 @@ impl Preview {
             _ => false,
         }
     }
-    pub fn select_previous_line(&mut self) {
+    pub fn move_selection(&mut self, dy: i32) {
         match self {
-            Self::Syntactic(sv) => sv.select_previous_line(),
+            Self::Syntactic(sv) => sv.move_selection(dy),
             Self::Hex(hv) => {
-                hv.try_scroll(ScrollCommand::Lines(-1));
-            }
-            _ => {}
-        }
-    }
-    pub fn select_next_line(&mut self) {
-        match self {
-            Self::Syntactic(sv) => sv.select_next_line(),
-            Self::Hex(hv) => {
-                hv.try_scroll(ScrollCommand::Lines(1));
+                hv.try_scroll(ScrollCommand::Lines(dy));
             }
             _ => {}
         }

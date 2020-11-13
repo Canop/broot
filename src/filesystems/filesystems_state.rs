@@ -434,25 +434,27 @@ impl AppState for FilesystemState {
                 }
             }
             Internal::line_down => {
+                let count = get_arg(input_invocation, internal_exec, 1);
                 if let Some(f) = self.filtered.as_mut() {
                     if f.selection_idx + 1 < f.mounts.len() {
-                        f.selection_idx += 1;
+                        f.selection_idx += count.min(f.mounts.len()-f.selection_idx);
                     }
                 } else {
                     if self.selection_idx + 1 < self.count() {
-                        self.selection_idx += 1;
+                        self.selection_idx += count.min(self.mounts.len().get()-self.selection_idx);
                     }
                 }
                 AppStateCmdResult::Keep
             }
             Internal::line_up => {
+                let count = get_arg(input_invocation, internal_exec, 1);
                 if let Some(f) = self.filtered.as_mut() {
                     if f.selection_idx > 0 {
-                        f.selection_idx -= 1;
+                        f.selection_idx -= count.min(f.selection_idx);
                     }
                 } else {
                     if self.selection_idx > 0 {
-                        self.selection_idx -= 1;
+                        self.selection_idx -= count.min(self.selection_idx);
                     }
                 }
                 AppStateCmdResult::Keep

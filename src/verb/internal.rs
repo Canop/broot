@@ -113,12 +113,16 @@ impl Internal {
     pub fn invocation_pattern(self) -> &'static str {
         match self {
             Internal::focus => r"focus (?P<path>.*)?",
+            Internal::line_down => r"line_down (?P<count>\d*)?",
+            Internal::line_up => r"line_up (?P<count>\d*)?",
             _ => self.name(),
         }
     }
     pub fn exec_pattern(self) -> &'static str {
         match self {
             Internal::focus => r"focus {path}",
+            Internal::line_down => r"line_down {count}",
+            Internal::line_up => r"line_up {count}",
             _ => self.name(),
         }
     }

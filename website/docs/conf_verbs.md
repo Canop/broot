@@ -207,7 +207,7 @@ invocation | default key | default shortcut | behavior / details
 :cp {newpath} | - | - | copy the file or directory to the provided name
 :help | <kbd>F1</kbd> | - | open the help page. Help page can also be open with <kbd>?</kbd>
 :focus | <kbd>enter</kbd> | - | set the selected directory the root of the displayed tree |
-:line_down | <kbd>↓</kbd> | - | scroll one line down or select the next line
+:line_down | <kbd>↓</kbd> | - | scroll one line down or select the next line (can be used with an argument eg `:line_down 4`)
 :line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
 :mkdir {subpath} | - | md | create a directory
 :mv {newpath} | - | - | move the file or directory to the provided path

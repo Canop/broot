@@ -20,7 +20,7 @@ pub use {
     panel_id::PanelId,
     panel_purpose::PanelPurpose,
     selection::{LineNumber, Selection, SelectionType},
-    state::AppState,
+    state::*,
     state_type::AppStateType,
     status::Status,
     standard_status::StandardStatus,
