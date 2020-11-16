@@ -1,16 +1,17 @@
 use {
-    super::{TAB_REPLACEMENT, Filling, crop},
+    super::{TAB_REPLACEMENT, Filling},
     crossterm::{
         QueueableCommand,
         style::Print,
     },
+    std::borrow::Cow,
     termimad::{
         CompoundStyle,
         Result,
+        StrFit,
     },
     unicode_width::UnicodeWidthChar,
 };
-
 
 /// wrap a writer to ensure that at most `allowed` columns are
 /// written.
@@ -35,8 +36,8 @@ where
     }
     /// return a tuple containing a string containing either the given &str
     /// or the part fitting the remaining width, and the width of this string)
-    pub fn cropped_str(&self, s: &str) -> (String, usize) {
-        crop::make_string(s, self.allowed)
+    pub fn cropped_str<'a>(&self, s: &'a str) -> (Cow<'a, str>, usize) {
+        StrFit::make_cow(s, self.allowed)
     }
     pub fn queue_unstyled_str(&mut self, s: &str) -> Result<()> {
         if self.is_full() {

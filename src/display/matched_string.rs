@@ -1,10 +1,10 @@
 use {
-    super::{crop, CropWriter, SPACE_FILLING},
+    super::{CropWriter, SPACE_FILLING},
     crate::{
         pattern::NameMatch,
     },
     minimad::Alignment,
-    termimad::CompoundStyle,
+    termimad::{CompoundStyle, StrFit},
 };
 
 pub struct MatchedString<'a> {
@@ -49,7 +49,7 @@ impl<'a, 'w> MatchedString<'a> {
             if let Some(dw) = self.display_width {
                 let w = unicode_width::UnicodeWidthStr::width(s);
                 if w > dw {
-                    let (count_bytes, _) = crop::count_fitting(s, dw);
+                    let (count_bytes, _) = StrFit::count_fitting(s, dw);
                     s = &s[0..count_bytes];
                 } else if w < dw {
                     match self.align {

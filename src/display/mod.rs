@@ -22,7 +22,6 @@ macro_rules! cond_bg {
 
 mod areas;
 mod col;
-mod crop;
 mod crop_writer;
 mod displayable_tree;
 mod filling;
