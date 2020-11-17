@@ -398,7 +398,7 @@ impl<'c> TreeBuilder<'c> {
                 if self.blines[*id].file_type.is_dir() && self.blines[*id].children.is_none() {
                     self.load_children(*id);
                 }
-                if let Ok(tree_line) = self.blines[*id].to_tree_line() {
+                if let Ok(tree_line) = self.blines[*id].to_tree_line( self.con ) {
                     lines.push(tree_line);
                 } else {
                     // I guess the file went missing during tree computation
