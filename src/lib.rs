@@ -29,6 +29,7 @@ pub mod git;
 pub mod hex;
 pub mod help;
 pub mod keys;
+pub mod icon;
 pub mod image;
 pub mod launchable;
 pub mod path;

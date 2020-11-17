@@ -40,44 +40,38 @@ pub struct TreeLine {
 
 impl TreeLine {
     pub fn make_displayable_name(
-        name: &str, 
+        name: &str,
         path: &std::path::PathBuf,
         tree_line_type: &TreeLineType,
         con: &AppContext,
-
     ) -> String {
         let newline_replaced_name = name.replace('\n', "");
-
-        match &con.icon_plugin
-        {
+        match &con.icons {
             None => newline_replaced_name,
-            Some( icon_plugin ) => 
-            {
-                let extension = Self::extension_from_name( name );
-                let double_extension = Self::double_extension_from_name( name );
-
-                let icon = &icon_plugin.get_icon( 
+            Some(icon_plugin) => {
+                // FIXME compile both in one regex
+                let extension = Self::extension_from_name(name);
+                let double_extension = Self::double_extension_from_name(name);
+                let icon = icon_plugin.get_icon(
                     tree_line_type,
                     path,
                     &name,
                     double_extension,
                     extension,
                 );
-
-                String::with_capacity( name.len() + 2 )
-                    + &icon.to_string() + "  " + &newline_replaced_name 
+                format!("{}  {}", icon, newline_replaced_name)
             }
         }
     }
 
-    pub fn double_extension_from_name( name: &str ) -> Option<&str> {
+    pub fn double_extension_from_name(name: &str) -> Option<&str> {
         regex!( r"\.([^.]+\.[^.]+)" )
             .captures(&name)
             .and_then(|c| c.get(1))
             .map(|e| e.as_str())
     }
 
-    pub fn extension_from_name( name: &str ) -> Option<&str> {
+    pub fn extension_from_name(name: &str) -> Option<&str> {
         regex!(r"\.([^.]+)$")
             .captures(&name)
             .and_then(|c| c.get(1))

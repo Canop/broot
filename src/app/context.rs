@@ -4,6 +4,7 @@ use {
         cli::AppLaunchArgs,
         conf::Conf,
         display::{Cols, DEFAULT_COLS},
+        icon::*,
         pattern::SearchModeMap,
         skin::ExtColorMap,
         tree::SpecialPath,
@@ -49,9 +50,9 @@ pub struct AppContext {
     /// whether we can use 24 bits colors for previewed images
     pub true_colors: bool,
 
-    // Map extensions to icons, icon set chosen based on config
-    // Send, Sync safely beause once created, everything is immutable
-    pub icon_plugin: Option<Box<dyn icon_plugins::IconPlugin + Send + Sync >>,
+    /// map extensions to icons, icon set chosen based on config
+    /// Send, Sync safely beause once created, everything is immutable
+    pub icons: Option<Box<dyn IconPlugin + Send + Sync >>,
 }
 
 impl AppContext {
@@ -67,12 +68,8 @@ impl AppContext {
         } else {
             are_true_colors_available()
         };
-
-        let icon_plugin = config.icon_theme.as_ref().and_then( 
-            |ref itn| 
-                super::icon_plugins::icon_plugin( &itn )
-        );
-
+        let icons = config.icon_theme.as_ref()
+            .and_then(|itn| icon_plugin(itn));
         Self {
             config_path,
             launch_args,
@@ -85,7 +82,7 @@ impl AppContext {
             syntax_theme: config.syntax_theme.clone(),
             standard_status,
             true_colors,
-            icon_plugin,
+            icons,
         }
     }
 }
