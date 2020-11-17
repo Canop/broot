@@ -77,6 +77,13 @@ default_flags = ""
 # true_colors = false
 
 ###############################################################
+# Icons
+# If you want to display icons in broot, uncomment this line
+# (see https://dystroy.org/broot/icons for installation and
+# troubleshooting)
+# icon_theme = "vscode"
+
+###############################################################
 # Verbs and shortcuts
 # You can define your own commands which would be applied to
 # the selection.
