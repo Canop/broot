@@ -15,6 +15,9 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 #
 # Configuration documentation is available at
 #     https://dystroy.org/broot
+#
+# Note about the TOML format: single value properties must be
+# before arrays (skins, verbs)
 ###############################################################
 
 ###############################################################
