@@ -49,9 +49,12 @@ impl TreeLine {
         match &con.icons {
             None => newline_replaced_name,
             Some(icon_plugin) => {
-                // FIXME compile both in one regex
                 let extension = Self::extension_from_name(name);
-                let double_extension = Self::double_extension_from_name(name);
+                let double_extension = if extension.is_some() {
+                    Self::double_extension_from_name(name)
+                } else {
+                    None
+                };
                 let icon = icon_plugin.get_icon(
                     tree_line_type,
                     path,
