@@ -51,7 +51,7 @@ pub fn parse(s: &str) -> Result<Option<Color>, InvalidSkinError> {
     }
 
     match s {
-        "black" => Ok(rgb(0, 0, 0)), // crossterm black isn't black
+        "black" => Ok(Some(AnsiValue(16))),
         "blue" => Ok(Some(Blue)),
         "cyan" => Ok(Some(Cyan)),
         "darkblue" => Ok(Some(DarkBlue)),
@@ -65,7 +65,7 @@ pub fn parse(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         "red" => Ok(Some(Red)),
         "yellow" => Ok(Some(Yellow)),
         "darkyellow" => Ok(Some(DarkYellow)),
-        "white" => Ok(Some(White)),
+        "white" => Ok(Some(AnsiValue(231))),
         "none" => Ok(None),
         _ => Err(InvalidSkinError::InvalidColor { raw: s.to_owned() }),
     }
