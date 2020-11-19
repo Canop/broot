@@ -1,7 +1,8 @@
-### next
+<a name="v1.0.6"></a>
+### v1.0.6 - 2020-11-19
+* optional icons, thanks to @asdf8dfafjk (@fiAtcBr on Miaou) - See https://dystroy.org/broot/icons
 * dev.log renamed into broot.log
 * `:line_up` and `:line_down` accept an optional count as argument - Fix #301
-* optional icons, thanks to @asdf8dfafjk (@fiAtcBr on Miaou) - See https://dystroy.org/broot/icons
 
 <a name="v1.0.5"></a>
 ### v1.0.5 - 2020-11-05

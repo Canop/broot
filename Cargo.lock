@@ -115,7 +115,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "1.0.6-dev"
+version = "1.0.6"
 dependencies = [
  "ansi_colours",
  "bet",
