@@ -1,14 +1,14 @@
 # Icons
 
-Since version 1.0.6 of broot (not yet released, only on "icons" branch), you may configure broot to display icons:
+Since version 1.0.6 of broot, you may configure broot to display icons:
 
 ![Broot with icons](img/20201117-icons.png)
 
 ## Checking the font
 
-This feature needs the [vscode](https://github.com/vscode-icons/vscode-icons/) font to be installed and available on your system.
+This feature needs the vscode font to be installed and available on your system.
 
-It's possible it's already there, either because you use it for another software or because broot came packaged with it.
+It's possible the font was installed with broot's package, depending on the chosen package.
 
 Here's how you can check its presence:
 
@@ -22,12 +22,15 @@ echo -e "file_type_rust looks like \U001002D2"
 ```powershell
 echo "Rust is `u{1002D2}"
 ```
-
 If you see a rust gear icon, your terminal is displaying the correct font.
 
 ## Setting up the font
 
-If the font isn't installed, you need to either take it in the `resources/icons/vscode` directory of the broot repository or download it from [https://github.com/vscode-icons/vscode-icons/](https://github.com/vscode-icons/vscode-icons/).
+If the font isn't installed, you may
+
+* take it in `/resources/icons/vscode/vscode.ttf` if you have broot sources
+* download it from [https://github.com/Canop/broot/tree/resources/icons/vscode/vscode.ttf](https://github.com/Canop/broot/tree/resources/icons/vscode/vscode.ttf),
+* or take it in the release archive if you installed broot from its zipped archive.
 
 ### Installation on linux:
 
@@ -39,7 +42,7 @@ Double click  the `vscode.ttf` file icon and click on "Install font".
 
 ## Setting up your broot config
 
-In broot's [config file](../conf_file), add or uncomment the `icon_theme="vscode"` line before the `[[verbs]]` section (it won't work if it's after the verbs or skin in the toml file).
+In broot's [config file](../conf_file), add or uncomment the `icon_theme = "vscode"` line (it won't work if it's after the verbs or skin in the toml file).
 
 
 ## FAQ
