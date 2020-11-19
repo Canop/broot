@@ -224,6 +224,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             branch.push_str(
                 if line.left_branchs[depth as usize] {
                     if self.tree.has_branch(line_index + 1, depth as usize) {
+                        // TODO: If a theme is on, remove the horizontal lines
                         if depth == line.depth - 1 {
                             "├──"
                         } else {

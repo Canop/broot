@@ -22,6 +22,7 @@ nav:
                 - Config file: conf_file.md
                 - Verbs and shortcuts: conf_verbs.md
                 - Skins: skins.md
+                - Icons: icons.md
         - Community: community.md
 
 extra_css:

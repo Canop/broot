@@ -39,6 +39,7 @@ pub struct Conf {
     pub ext_colors: ExtColorMap,
     pub syntax_theme: Option<String>,
     pub true_colors: Option<bool>,
+    pub icon_theme: Option<String>,
 }
 
 impl Conf {
@@ -102,6 +103,8 @@ impl Conf {
         }
         // date/time format
         self.date_time_format = string_field(&root, "date_time_format");
+        // Icon theme
+        self.icon_theme = string_field(&root, "icon_theme");
         // reading the optional theme for syntect
         self.syntax_theme = string_field(&root, "syntax_theme");
         // mouse capture

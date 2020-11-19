@@ -32,6 +32,13 @@ mkdir build/completion
 cp "$(broot -c ":gi;release;:focus;broot.bash;:parent;:pp" target)/"* build/completion
 echo "   Done"
 
+# add the resource (the icons font)
+echo -e "${H2}copying resources${EH}"
+mkdir build/resources
+cp resources/icons/vscode/vscode.ttf build/resources
+echo "the font file comes from https://github.com/vscode-icons/vscode-icons/ and is licensed as MIT" > build/resources/README.md
+echo "   Done"
+
 # build the windows version (with the "clipboard" feature) 
 # use cargo cross
 echo -e "${H2}Compiling the Windows version${EH}"
