@@ -12,6 +12,7 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 # - change the colors
 # - set default values for flags
 # - set special behaviors on specific paths
+# - and more...
 #
 # Configuration documentation is available at
 #     https://dystroy.org/broot
@@ -275,6 +276,5 @@ leave_broot = false
 # [ext-colors]
 # png = "rgb(255, 128, 75)"
 # rs = "yellow"
-
 
 "#;
