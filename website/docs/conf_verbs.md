@@ -211,6 +211,7 @@ invocation | default key | default shortcut | behavior / details
 :line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
 :mkdir {subpath} | - | md | create a directory
 :mv {newpath} | - | - | move the file or directory to the provided path
+:next_match | <kbd>tab</kbd> | - | select the next matching file
 :open_stay | <kbd>enter</kbd> | - | open the selected file in the default OS opener, or focus the directory
 :open_preview | - | - | open the preview panel
 :open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leave broot
