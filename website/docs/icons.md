@@ -29,7 +29,7 @@ If you see a rust gear icon, your terminal is displaying the correct font.
 If the font isn't installed, you may
 
 * take it in `/resources/icons/vscode/vscode.ttf` if you have broot sources
-* download it from [https://github.com/Canop/broot/tree/resources/icons/vscode/vscode.ttf](https://github.com/Canop/broot/tree/resources/icons/vscode/vscode.ttf),
+* download it from [https://github.com/Canop/broot/blob/master/resources/icons/vscode/vscode.ttf](https://github.com/Canop/broot/blob/master/resources/icons/vscode/vscode.ttf),
 * or take it in the release archive if you installed broot from its zipped archive.
 
 ### Installation on linux:
