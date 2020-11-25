@@ -45,4 +45,7 @@ execution = ":print_path"
 ```
 
 
+## `br` alias for Xonsh shell
+
+The shortcut for [xonsh](https://xon.sh/) shell can be installed with using [xontrib-broot](https://github.com/jnoortheen/xontrib-broot)
 
