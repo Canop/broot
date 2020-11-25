@@ -4,6 +4,7 @@ use {
         app::AppContext,
         display::{fill_bg, Screen, W},
         errors::ProgramError,
+        kitty,
         skin::PanelSkin,
     },
     crossterm::{
@@ -20,7 +21,7 @@ use {
         GenericImageView,
         imageops::FilterType,
     },
-    std::path::Path,
+    std::path::{Path, PathBuf},
     termimad::{Area},
 };
 
@@ -36,6 +37,7 @@ struct CachedImage {
 /// an imageview can display an image in the terminal with
 /// a ratio of one pixel per char in width.
 pub struct ImageView {
+    path: PathBuf,
     source_img: DynamicImage,
     display_img: Option<CachedImage>,
 }
@@ -49,9 +51,16 @@ impl ImageView {
             Reader::open(&path)?.decode()?
         );
         Ok(Self {
+            path: path.to_path_buf(),
             source_img,
             display_img: None,
         })
+    }
+    pub fn is_png(&self) -> bool {
+        match self.path.extension() {
+            Some(ext) => ext == "png" || ext == "PNG",
+            None => false,
+        }
     }
     pub fn display(
         &mut self,
@@ -61,6 +70,21 @@ impl ImageView {
         area: &Area,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
+
+        #[cfg(unix)]
+        if let Some(renderer) = kitty::image_renderer() {
+            let mut renderer = renderer.lock().unwrap();
+            w.queue(cursor::MoveTo(area.left, area.top))?;
+            renderer.print_with_chunks(
+                w,
+                &self.source_img,
+                area.width,
+                area.height,
+            )?;
+            // TODO clean area below (using z-index?)
+            return Ok(());
+        }
+
         let target_width = area.width as u32;
         let target_height = (area.height*2) as u32;
         let cached = self.display_img.as_ref()

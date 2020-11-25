@@ -6,6 +6,7 @@ use {
         conf::Conf,
         display::{Areas, Screen, W},
         errors::ProgramError,
+        kitty,
         file_sum, git,
         launchable::Launchable,
         skin::*,
@@ -161,12 +162,19 @@ impl App {
             || self.close_panel(self.active_panel_idx)
     }
 
+    /// redraw the whole screen. All drawing
+    /// are supposed to happen here, and only here.
     fn display_panels(
         &mut self,
         w: &mut W,
         skin: &AppSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
+        #[cfg(unix)]
+        if let Some(renderer) = kitty::image_renderer() {
+            let mut renderer = renderer.lock().unwrap();
+            renderer.erase_images(w)?;
+        }
         for (idx, panel) in self.panels.as_mut_slice().iter_mut().enumerate() {
             let focused = idx == self.active_panel_idx;
             let skin = if focused { &skin.focused } else { &skin.unfocused };
