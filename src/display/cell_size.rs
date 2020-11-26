@@ -8,7 +8,11 @@ use {
     std::io,
 };
 
-
+/// find and return the size of a cell (a char location) in pixels
+/// as (width, height).
+/// Many terminals don't fill this information correctly, so an
+/// error is expected (it works on kitty, where I use the data
+/// to compute the rendering dimensions of images)
 #[cfg(unix)]
 pub fn cell_size_in_pixels() -> io::Result<(u32, u32)> {
     // see http://www.delorie.com/djgpp/doc/libc/libc_495.html

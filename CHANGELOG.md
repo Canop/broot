@@ -1,3 +1,6 @@
+### next
+* in kitty terminal, image preview is high definition
+
 <a name="v1.0.6"></a>
 ### v1.0.6 - 2020-11-19
 * optional icons, thanks to @asdf8dfafjk (@fiAtcBr on Miaou) - See https://dystroy.org/broot/icons

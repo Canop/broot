@@ -1,6 +1,6 @@
-mod kitty_image;
+mod image_renderer;
 
-pub use kitty_image::*;
+pub use image_renderer::*;
 
 use {
     std::sync::Mutex,
@@ -12,7 +12,8 @@ lazy_static! {
 }
 
 // TODO try to find another way (making app_context mut ?) to pass this
-// around without the mutex gymnastic
+// around without the mutex gymnastic, and also to make it really lazy
+// (ie only initialized when an image must be rendered)
 pub fn image_renderer() -> &'static Option<Mutex<KittyImageRenderer>> {
     &*RENDERER
 }

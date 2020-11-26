@@ -30,7 +30,7 @@ pub mod flags_display;
 pub mod status_line;
 mod matched_string;
 mod screen;
-mod terminal_dimensions;
+mod cell_size;
 
 #[cfg(not(any(target_family="windows",target_os="android")))]
 mod permissions;
@@ -44,7 +44,7 @@ pub use {
     git_status_display::GitStatusDisplay,
     matched_string::MatchedString,
     screen::Screen,
-    terminal_dimensions::*,
+    cell_size::*,
 };
 use {
     crate::{
@@ -83,16 +83,6 @@ pub type W = std::io::BufWriter<std::io::Stderr>;
 pub fn writer() -> W {
     std::io::BufWriter::new(std::io::stderr())
 }
-
-// /// the type used by all GUI writing functions
-// //pub type W = std::io::BufWriter<std::io::Stderr>;
-// pub type W = std::io::Stdout;
-//
-// /// return the writer used by the application
-// pub fn writer() -> W {
-//     std::io::stdout()
-// }
-
 
 pub fn fill_bg(
     w: &mut W,

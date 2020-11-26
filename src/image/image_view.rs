@@ -70,18 +70,25 @@ impl ImageView {
         area: &Area,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
+        let styles = &panel_skin.styles;
+        let bg = styles.preview.get_bg()
+            .or_else(|| styles.default.get_bg())
+            .unwrap_or(Color::AnsiValue(238));
 
         #[cfg(unix)]
         if let Some(renderer) = kitty::image_renderer() {
             let mut renderer = renderer.lock().unwrap();
             w.queue(cursor::MoveTo(area.left, area.top))?;
-            renderer.print_with_chunks(
+            renderer.print_with_temp_file(
                 w,
                 &self.source_img,
                 area.width,
                 area.height,
             )?;
-            // TODO clean area below (using z-index?)
+            for y in area.top..area.top+area.height {
+                w.queue(cursor::MoveTo(area.left, y))?;
+                fill_bg(w, area.width as usize, bg)?;
+            }
             return Ok(());
         }
 
@@ -108,10 +115,6 @@ impl ImageView {
         let (width, height) = img.dimensions();
         debug!("resized image dimensions: {},{}", width, height);
         debug_assert!(width <= area.width as u32);
-        let styles = &panel_skin.styles;
-        let bg = styles.preview.get_bg()
-            .or_else(|| styles.default.get_bg())
-            .unwrap_or(Color::AnsiValue(238));
         let mut double_line = DoubleLine::new(width as usize, con.true_colors);
         let mut y = area.top;
         let margin = area.width as usize - width as usize;
@@ -133,7 +136,7 @@ impl ImageView {
         w.queue(SetBackgroundColor(bg))?;
         for y in y..area.top+area.height {
             w.queue(cursor::MoveTo(area.left, y))?;
-            fill_bg(w,area.width as usize, bg)?;
+            fill_bg(w, area.width as usize, bg)?;
         }
         Ok(())
     }
