@@ -514,9 +514,8 @@ impl App {
             ))
             .transpose()?;
 
-        let mut skip_redraw = false;
         loop {
-            if !self.quitting && !skip_redraw {
+            if !self.quitting {
                 self.display_panels(w, &skin, con)?;
                 if self.do_pending_tasks(con, &mut dam)? {
                     let other_path = self.get_other_panel_path();
@@ -524,18 +523,10 @@ impl App {
                     self.display_panels(w, &skin, con)?;
                 }
             }
-
-            skip_redraw = false;
             match dam.next(&self.rx_seqs) {
                 Either::First(Some(event)) => {
                     info!("event: {:?}", &event);
                     match event {
-                        Event::EscapeSequence(escape_sequence) => {
-                            debug!("received escape sequence {}", escape_sequence);
-                            // this escape sequence may be the result of a drawing
-                            // operation so we must avoid redrawing now
-                            skip_redraw = true;
-                        }
                         Event::Click(x, y, KeyModifiers::NONE)
                             if self.clicked_panel_index(x, y) != self.active_panel_idx =>
                         {

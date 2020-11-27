@@ -115,6 +115,12 @@ impl ImageView {
         debug_assert!(width <= area.width as u32);
         let mut double_line = DoubleLine::new(width as usize, con.true_colors);
         let mut y = area.top;
+        let img_top_offset = (area.height - (height/2) as u16)/2;
+        for _ in 0..img_top_offset {
+            w.queue(cursor::MoveTo(area.left, y))?;
+            fill_bg(w, area.width as usize, bg)?;
+            y += 1;
+        }
         let margin = area.width as usize - width as usize;
         let left_margin = margin / 2;
         let right_margin = margin - left_margin;

@@ -33,11 +33,14 @@ pub type KittyImageSet = Vec<usize>;
 /// solution offered by kitty.
 pub enum TransmissionMedium {
     /// write a temp file, then give its path to kitty
-    /// in the payload of the escape sequence
+    /// in the payload of the escape sequence. It's quite
+    /// fast on SSD but a big downside is that it doesn't
+    /// work if you're distant
     TempFile,
     /// send the whole rgb or rgba data, encoded in base64,
     /// in the payloads of several escape sequence (each one
-    /// containing at most 4096 bytes)
+    /// containing at most 4096 bytes). Works if broot runs
+    /// on remote.
     Chunks,
 }
 
@@ -218,7 +221,7 @@ impl KittyImageRenderer {
                 cell_height,
                 current_images: None,
                 next_id: 1,
-                transmission_medium: TransmissionMedium::TempFile,
+                transmission_medium: TransmissionMedium::Chunks,
             })
     }
     pub fn take_current_images(&mut self) -> Option<KittyImageSet> {

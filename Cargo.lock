@@ -1503,9 +1503,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.9.0"
+version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce90ec8d6335f3e49b7599ffeb1fe6c780b7d92b4c92ff25bb825e9770c95a72"
+checksum = "fe9709f7deb2582e81b8bffd71ddc33ca46857c30fee361bcf6c0fd63caf8146"
 dependencies = [
  "crossbeam",
  "crossterm",
