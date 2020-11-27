@@ -161,12 +161,24 @@ impl App {
             || self.close_panel(self.active_panel_idx)
     }
 
+    /// redraw the whole screen. All drawing
+    /// are supposed to happen here, and only here.
     fn display_panels(
         &mut self,
         w: &mut W,
         skin: &AppSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
+        // if some images are displayed by kitty, we'll erase it,
+        // but only after having displayed the new ones (if any)
+        // to prevent some flickerings
+        #[cfg(unix)]
+        let previous_images = crate::kitty::image_renderer()
+            .as_ref()
+            .and_then(|renderer| {
+                let mut renderer = renderer.lock().unwrap();
+                renderer.take_current_images()
+            });
         for (idx, panel) in self.panels.as_mut_slice().iter_mut().enumerate() {
             let focused = idx == self.active_panel_idx;
             let skin = if focused { &skin.focused } else { &skin.unfocused };
@@ -176,6 +188,14 @@ impl App {
                 panel.display(w, focused, self.screen, skin, con)?,
             );
         }
+        #[cfg(unix)]
+        if let Some(previous_images) = previous_images {
+            if let Some(renderer) = crate::kitty::image_renderer().as_ref() {
+                let mut renderer = renderer.lock().unwrap();
+                renderer.erase(w, previous_images)?;
+            }
+        }
+        w.flush()?;
         Ok(())
     }
 
@@ -496,18 +516,15 @@ impl App {
         loop {
             if !self.quitting {
                 self.display_panels(w, &skin, con)?;
-                w.flush()?;
                 if self.do_pending_tasks(con, &mut dam)? {
                     let other_path = self.get_other_panel_path();
                     self.mut_panel().refresh_input_status(&other_path, con);
                     self.display_panels(w, &skin, con)?;
-                    w.flush()?;
                 }
             }
-
             match dam.next(&self.rx_seqs) {
                 Either::First(Some(event)) => {
-                    debug!("event: {:?}", &event);
+                    info!("event: {:?}", &event);
                     match event {
                         Event::Click(x, y, KeyModifiers::NONE)
                             if self.clicked_panel_index(x, y) != self.active_panel_idx =>
@@ -539,7 +556,7 @@ impl App {
                     break;
                 }
                 Either::Second(Some(raw_sequence)) => {
-                    debug!("got sequence: {:?}", &raw_sequence);
+                    debug!("got command sequence: {:?}", &raw_sequence);
                     for (input, arg_cmd) in raw_sequence.parse(con)? {
                         self.mut_panel().set_input_content(&input);
                         self.apply_command(w, arg_cmd, &skin.focused, con)?;
@@ -548,10 +565,8 @@ impl App {
                             return Ok(self.launch_at_end.take());
                         } else {
                             self.display_panels(w, &skin, con)?;
-                            w.flush()?;
                             if self.do_pending_tasks(con, &mut dam)? {
                                 self.display_panels(w, &skin, con)?;
-                                w.flush()?;
                             }
                         }
                     }

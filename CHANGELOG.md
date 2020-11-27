@@ -1,5 +1,7 @@
-### next
+<a name="v1.0.7"></a>
+### v1.0.7 - 2020-11-27
 * :previous_same_depth and :next_same_depth internals
+* in kitty terminal, image preview is high definition
 
 <a name="v1.0.6"></a>
 ### v1.0.6 - 2020-11-19

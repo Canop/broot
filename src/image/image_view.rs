@@ -20,7 +20,7 @@ use {
         GenericImageView,
         imageops::FilterType,
     },
-    std::path::Path,
+    std::path::{Path, PathBuf},
     termimad::{Area},
 };
 
@@ -36,6 +36,7 @@ struct CachedImage {
 /// an imageview can display an image in the terminal with
 /// a ratio of one pixel per char in width.
 pub struct ImageView {
+    path: PathBuf,
     source_img: DynamicImage,
     display_img: Option<CachedImage>,
 }
@@ -49,9 +50,16 @@ impl ImageView {
             Reader::open(&path)?.decode()?
         );
         Ok(Self {
+            path: path.to_path_buf(),
             source_img,
             display_img: None,
         })
+    }
+    pub fn is_png(&self) -> bool {
+        match self.path.extension() {
+            Some(ext) => ext == "png" || ext == "PNG",
+            None => false,
+        }
     }
     pub fn display(
         &mut self,
@@ -61,6 +69,26 @@ impl ImageView {
         area: &Area,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
+        let styles = &panel_skin.styles;
+        let bg = styles.preview.get_bg()
+            .or_else(|| styles.default.get_bg())
+            .unwrap_or(Color::AnsiValue(238));
+
+        #[cfg(unix)]
+        if let Some(renderer) = crate::kitty::image_renderer() {
+            let mut renderer = renderer.lock().unwrap();
+            renderer.print(
+                w,
+                &self.source_img,
+                area,
+            )?;
+            for y in area.top..area.top+area.height {
+                w.queue(cursor::MoveTo(area.left, y))?;
+                fill_bg(w, area.width as usize, bg)?;
+            }
+            return Ok(());
+        }
+
         let target_width = area.width as u32;
         let target_height = (area.height*2) as u32;
         let cached = self.display_img.as_ref()
@@ -84,12 +112,14 @@ impl ImageView {
         let (width, height) = img.dimensions();
         debug!("resized image dimensions: {},{}", width, height);
         debug_assert!(width <= area.width as u32);
-        let styles = &panel_skin.styles;
-        let bg = styles.preview.get_bg()
-            .or_else(|| styles.default.get_bg())
-            .unwrap_or(Color::AnsiValue(238));
         let mut double_line = DoubleLine::new(width as usize, con.true_colors);
         let mut y = area.top;
+        let img_top_offset = (area.height - (height/2) as u16)/2;
+        for _ in 0..img_top_offset {
+            w.queue(cursor::MoveTo(area.left, y))?;
+            fill_bg(w, area.width as usize, bg)?;
+            y += 1;
+        }
         let margin = area.width as usize - width as usize;
         let left_margin = margin / 2;
         let right_margin = margin - left_margin;
@@ -109,7 +139,7 @@ impl ImageView {
         w.queue(SetBackgroundColor(bg))?;
         for y in y..area.top+area.height {
             w.queue(cursor::MoveTo(area.left, y))?;
-            fill_bg(w,area.width as usize, bg)?;
+            fill_bg(w, area.width as usize, bg)?;
         }
         Ok(())
     }

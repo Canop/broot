@@ -48,5 +48,8 @@ pub mod verb;
 #[cfg(unix)]
 pub mod filesystems;
 
+#[cfg(unix)]
+pub mod kitty;
+
 #[cfg(feature="client-server")]
 pub mod net;
