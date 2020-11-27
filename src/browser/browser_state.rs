@@ -302,6 +302,14 @@ impl AppState for BrowserState {
                 self.displayed_tree_mut().try_select_next_match();
                 AppStateCmdResult::Keep
             }
+            Internal::previous_same_depth => {
+                self.displayed_tree_mut().try_select_previous_same_depth();
+                AppStateCmdResult::Keep
+            }
+            Internal::next_same_depth => {
+                self.displayed_tree_mut().try_select_next_same_depth();
+                AppStateCmdResult::Keep
+            }
             Internal::page_down => {
                 let tree = self.displayed_tree_mut();
                 if page_height < tree.lines.len() as i32 {

@@ -294,6 +294,32 @@ impl Tree {
         }
         false
     }
+    pub fn try_select_previous_same_depth(&mut self) -> bool {
+        let depth = self.lines[self.selection].depth;
+        for di in (0..self.lines.len()).rev() {
+            let idx = (self.selection + di) % self.lines.len();
+            let line = &self.lines[idx];
+            if !line.is_selectable() || line.depth != depth {
+                continue;
+            }
+            self.selection = idx;
+            return true;
+        }
+        false
+    }
+    pub fn try_select_next_same_depth(&mut self) -> bool {
+        let depth = self.lines[self.selection].depth;
+        for di in 0..self.lines.len() {
+            let idx = (self.selection + di + 1) % self.lines.len();
+            let line = &self.lines[idx];
+            if !line.is_selectable() || line.depth != depth {
+                continue;
+            }
+            self.selection = idx;
+            return true;
+        }
+        false
+    }
     pub fn try_select_previous_match(&mut self) -> bool {
         for di in (0..self.lines.len()).rev() {
             let idx = (self.selection + di) % self.lines.len();
