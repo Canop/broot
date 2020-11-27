@@ -109,6 +109,10 @@ Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel 
 
 The preview panel stays synchronized with the selection in tree panels.
 
+If your terminal is [kitty](https://sw.kovidgoyal.net/kitty/index.html), then the image preview is high definition:
+
+![kitty preview](website/docs/img/20201127-kitty-preview.png)
+
 # Apply a standard or personal shortcut to a file
 
 ![size](website/docs/img/20191112-edit.png)
