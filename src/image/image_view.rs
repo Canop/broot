@@ -78,12 +78,10 @@ impl ImageView {
         #[cfg(unix)]
         if let Some(renderer) = kitty::image_renderer() {
             let mut renderer = renderer.lock().unwrap();
-            w.queue(cursor::MoveTo(area.left, area.top))?;
-            renderer.print_with_temp_file(
+            renderer.print(
                 w,
                 &self.source_img,
-                area.width,
-                area.height,
+                area,
             )?;
             for y in area.top..area.top+area.height {
                 w.queue(cursor::MoveTo(area.left, y))?;
