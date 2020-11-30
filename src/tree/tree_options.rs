@@ -67,6 +67,7 @@ impl TreeOptions {
     pub fn apply(&mut self, cli_args: &ArgMatches<'_>) {
         if cli_args.is_present("sizes") {
             self.show_sizes = true;
+            self.show_root_fs = true;
         } else if cli_args.is_present("no-sizes") {
             self.show_sizes = false;
         }

@@ -322,7 +322,16 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         selected: bool,
     ) -> Result<(), ProgramError> {
         cond_bg!(style, self, selected, self.skin.directory);
-        let title = self.tree.lines[0].path.to_string_lossy();
+        let line = &self.tree.lines[0];
+        if self.tree.options.show_sizes {
+            if let Some(s) = line.sum {
+                cw.queue_g_string(
+                    style,
+                    format!("{:>4} ", file_size::fit_4(s.to_size())),
+                )?;
+            }
+        }
+        let title = line.path.to_string_lossy();
         cw.queue_str(&style, &title)?;
         if self.in_app && !cw.is_full() {
             if let ComputationResult::Done(git_status) = &self.tree.git_status {
@@ -335,7 +344,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             }
             #[cfg(unix)]
             if self.tree.options.show_root_fs {
-                if let Some(mount) = self.tree.lines[0].mount() {
+                if let Some(mount) = line.mount() {
                     let fs_space_display = crate::filesystems::MountSpaceDisplay::from(
                         &mount,
                         &self.skin,

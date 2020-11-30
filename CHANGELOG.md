@@ -1,3 +1,6 @@
+### next
+- when sizes are displayed (eg on `br -s`) show size of root line and root filesystem info
+
 <a name="v1.0.7"></a>
 ### v1.0.7 - 2020-11-27
 * :previous_same_depth and :next_same_depth internals

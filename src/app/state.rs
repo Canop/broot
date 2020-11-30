@@ -200,6 +200,7 @@ pub trait AppState {
                         } else {
                             o.sort = Sort::Size;
                             o.show_sizes = true;
+                            o.show_root_fs = true;
                         }
                     },
                     bang,
@@ -246,7 +247,20 @@ pub trait AppState {
                 self.with_new_options(screen, &|o| o.show_permissions ^= true, bang, con)
             }
             Internal::toggle_sizes => {
-                self.with_new_options(screen, &|o| o.show_sizes ^= true, bang, con)
+                self.with_new_options(
+                    screen,
+                    &|o| {
+                        if o.show_sizes {
+                            o.show_sizes = false;
+                            o.show_root_fs = false;
+                        } else {
+                            o.show_sizes = true;
+                            o.show_root_fs = true;
+                        }
+                    },
+                    bang,
+                    con,
+                )
             }
             Internal::toggle_trim_root => {
                 self.with_new_options(screen, &|o| o.trim_root ^= true, bang, con)

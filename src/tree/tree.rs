@@ -340,7 +340,6 @@ impl Tree {
             && self
                 .lines
                 .iter()
-                .skip(1)
                 .any(|line| line.line_type == TreeLineType::Dir && line.sum.is_none())
     }
 
@@ -367,7 +366,7 @@ impl Tree {
     /// To compute the size of all of them, this should be called until
     ///  has_dir_missing_sum returns false
     pub fn fetch_some_missing_dir_sum(&mut self, dam: &Dam) {
-        for i in 1..self.lines.len() {
+        for i in (0..self.lines.len()).rev() {
             if self.lines[i].sum.is_none() && self.lines[i].line_type == TreeLineType::Dir {
                 self.lines[i].sum = FileSum::from_dir(&self.lines[i].path, dam);
                 self.sort_siblings();
