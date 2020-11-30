@@ -4,6 +4,7 @@ use {
     crossbeam::channel,
     rayon::{ThreadPool, ThreadPoolBuilder},
     std::{
+        collections::HashMap,
         convert::TryInto,
         fs,
         path::{Path, PathBuf},
@@ -40,7 +41,7 @@ const THREADS_COUNT: usize = 6;
 /// varying depending on the OS:
 /// On unix, the computation is done on blocks of 512 bytes
 /// see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
-pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
+pub fn compute_dir_sum(path: &Path, cache: &mut HashMap<PathBuf, FileSum>, dam: &Dam) -> Option<FileSum> {
     //debug!("compute size of dir {:?} --------------- ", path);
 
     lazy_static! {
@@ -52,18 +53,64 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
     #[cfg(unix)]
     let nodes = Arc::new(Mutex::new(HashSet::<NodeId>::default()));
 
+    // busy is the number of directories which are either being processed or queued
+    // We use this count to determine when threads can stop waiting for tasks
+    let mut busy = 0;
+    let mut sum = compute_file_sum(path);
+
     // this MPMC channel contains the directory paths which must be handled.
     // A None means there's nothing left and the thread may send its result and stop
     let (dirs_sender, dirs_receiver) = channel::unbounded();
+
+    // the first level is managed a little differently: we look at the cache
+    // before adding. This enables faster computations in two cases:
+    // - for the root line (assuming it's computed after the content)
+    // - when we navigate up the tree
+    if let Ok(entries) = fs::read_dir(path) {
+        for e in entries.flatten() {
+            if let Ok(md) = e.metadata() {
+                if md.is_dir() {
+                    let entry_path = e.path();
+                    // we check the cache
+                    if let Some(entry_sum) = cache.get(&entry_path) {
+                        sum += *entry_sum;
+                        continue;
+                    }
+                    // we add the directory to the channel of dirs needing
+                    // processing
+                    busy += 1;
+                    dirs_sender.send(Some(entry_path)).unwrap();
+                } else {
+
+                    #[cfg(unix)]
+                    if md.nlink() > 1 {
+                        let mut nodes = nodes.lock().unwrap();
+                        let node_id = NodeId {
+                            inode: md.ino(),
+                            dev: md.dev(),
+                        };
+                        if !nodes.insert(node_id) {
+                            // it was already in the set
+                            continue;
+                        }
+                    }
+
+                }
+                sum += md_sum(&md);
+            }
+        }
+    }
+
+    if busy == 0 {
+        return Some(sum);
+    }
+
+    let busy = Arc::new(AtomicIsize::new(busy));
 
     // this MPMC channel is here for the threads to send their results
     // at end of computation
     let (thread_sum_sender, thread_sum_receiver) = channel::bounded(THREADS_COUNT);
 
-    // busy is the number of directories which are either being processed or queued
-    // We use this count to determine when threads can stop waiting for tasks
-    let busy = Arc::new(AtomicIsize::new(1));
-    dirs_sender.send(Some(PathBuf::from(path))).unwrap();
 
     // Each  thread does a summation without merge and the data are merged
     // at the end (this avoids waiting for a mutex during computation)
@@ -105,16 +152,7 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
                                     }
 
                                 }
-
-                                #[cfg(unix)]
-                                let size = md.blocks() * 512;
-
-                                #[cfg(not(unix))]
-                                let size = md.len();
-
-                                let seconds = extract_seconds(&md);
-                                let entry_sum = FileSum::new(size, false, 1, seconds);
-                                thread_sum += entry_sum;
+                                thread_sum += md_sum(&md);
                             } else {
                                 // we can't measure much but we can count the file
                                 thread_sum.incr();
@@ -136,7 +174,6 @@ pub fn compute_dir_sum(path: &Path, dam: &Dam) -> Option<FileSum> {
         });
     }
     // Wait for the threads to finish and consolidate their results
-    let mut sum = compute_file_sum(path);
     for _ in 0..THREADS_COUNT {
         match thread_sum_receiver.recv() {
             Ok(thread_sum) => {
@@ -179,11 +216,13 @@ pub fn compute_file_sum(path: &Path) -> FileSum {
 }
 
 #[cfg(unix)]
+#[inline(always)]
 fn extract_seconds(md: &fs::Metadata) -> u32 {
     md.mtime().try_into().unwrap_or(0)
 }
 
 #[cfg(not(unix))]
+#[inline(always)]
 fn extract_seconds(md: &fs::Metadata) -> u32 {
     if let Ok(st) = md.modified() {
         if let Ok(d) = st.duration_since(std::time::UNIX_EPOCH) {
@@ -195,3 +234,15 @@ fn extract_seconds(md: &fs::Metadata) -> u32 {
     0
 }
 
+
+#[inline(always)]
+fn md_sum(md: &fs::Metadata) -> FileSum {
+    #[cfg(unix)]
+    let size = md.blocks() * 512;
+
+    #[cfg(not(unix))]
+    let size = md.len();
+
+    let seconds = extract_seconds(&md);
+    FileSum::new(size, false, 1, seconds)
+}

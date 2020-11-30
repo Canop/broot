@@ -13,6 +13,7 @@ pub struct VSCodeIconPlugin {
 }
 
 impl VSCodeIconPlugin {
+    #[allow(dead_code)]
     fn sanity_check(
         part_to_icon_name_map: &HashMap<&str, &str>,
         icon_name_to_icon_codepoint_map: &HashMap<&str, u32>,

@@ -127,7 +127,7 @@ And you can add shortcuts, for example a <kbd>ctrl</kbd> sequence or a function 
 
 If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which gets you this:
 
-![replace ls](website/docs/img/20200704-sdp.png)
+![replace ls](website/docs/img/20201130-sdp.png)
 
 You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or a space, then `h` then enter and you see hidden files.
 

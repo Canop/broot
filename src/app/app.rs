@@ -516,7 +516,7 @@ impl App {
         loop {
             if !self.quitting {
                 self.display_panels(w, &skin, con)?;
-                if self.do_pending_tasks(con, &mut dam)? {
+                if time!(Debug, "pending_tasks", self.do_pending_tasks(con, &mut dam)?) {
                     let other_path = self.get_other_panel_path();
                     self.mut_panel().refresh_input_status(&other_path, con);
                     self.display_panels(w, &skin, con)?;

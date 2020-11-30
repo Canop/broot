@@ -68,7 +68,7 @@ impl FileSum {
                     Debug,
                     "sum computation",
                     path,
-                    sum_computation::compute_dir_sum(path, dam),
+                    sum_computation::compute_dir_sum(path, &mut sum_cache, dam),
                 );
                 if let Some(sum) = sum {
                     sum_cache.insert(PathBuf::from(path), sum);
