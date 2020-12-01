@@ -2,8 +2,8 @@ use {
     super::*,
     directories::UserDirs,
     regex::{self, Captures},
+    fnv::FnvHashMap,
     std::{
-        collections::HashMap,
         path::{Path, PathBuf},
     },
 };
@@ -51,7 +51,7 @@ pub fn path_str_from<P: AsRef<Path>>(base_dir: P, input: &str) -> String {
 
 /// replace a group in the execution string, using
 ///  data from the user input and from the selected line
-pub fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &HashMap<String, String>) -> String {
+pub fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &FnvHashMap<String, String>) -> String {
     let name = ec.get(1).unwrap().as_str();
     if let Some(repl) = replacement_map.get(name) {
         if let Some(fmt) = ec.get(2) {

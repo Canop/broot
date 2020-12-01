@@ -3,8 +3,8 @@ use {
     crate::task_sync::Dam,
     crossbeam::channel,
     rayon::{ThreadPool, ThreadPoolBuilder},
+    fnv::FnvHashMap,
     std::{
-        collections::HashMap,
         convert::TryInto,
         fs,
         path::{Path, PathBuf},
@@ -17,8 +17,8 @@ use {
 
 #[cfg(unix)]
 use {
+    fnv::FnvHashSet,
     std::{
-        collections::HashSet,
         os::unix::fs::MetadataExt,
         sync::Mutex,
     },
@@ -41,7 +41,7 @@ const THREADS_COUNT: usize = 6;
 /// varying depending on the OS:
 /// On unix, the computation is done on blocks of 512 bytes
 /// see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
-pub fn compute_dir_sum(path: &Path, cache: &mut HashMap<PathBuf, FileSum>, dam: &Dam) -> Option<FileSum> {
+pub fn compute_dir_sum(path: &Path, cache: &mut FnvHashMap<PathBuf, FileSum>, dam: &Dam) -> Option<FileSum> {
     //debug!("compute size of dir {:?} --------------- ", path);
 
     lazy_static! {
@@ -51,7 +51,7 @@ pub fn compute_dir_sum(path: &Path, cache: &mut HashMap<PathBuf, FileSum>, dam: 
 
     // to avoid counting twice a node, we store their id in a set
     #[cfg(unix)]
-    let nodes = Arc::new(Mutex::new(HashSet::<NodeId>::default()));
+    let nodes = Arc::new(Mutex::new(FnvHashSet::<NodeId>::default()));
 
     // busy is the number of directories which are either being processed or queued
     // We use this count to determine when threads can stop waiting for tasks

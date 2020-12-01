@@ -1,6 +1,6 @@
-use std::{
-    collections::HashMap,
-    sync::Mutex,
+use {
+    fnv::FnvHashMap,
+    std::sync::Mutex,
 };
 
 pub fn supported() -> bool {
@@ -9,7 +9,7 @@ pub fn supported() -> bool {
 
 pub fn user_name(uid: u32) -> String {
     lazy_static! {
-        static ref USERS_CACHE_MUTEX: Mutex<HashMap<u32, String>> = Mutex::new(HashMap::new());
+        static ref USERS_CACHE_MUTEX: Mutex<FnvHashMap<u32, String>> = Mutex::new(FnvHashMap::default());
     }
     let mut users_cache = USERS_CACHE_MUTEX.lock().unwrap();
     let name = users_cache
@@ -25,7 +25,7 @@ pub fn user_name(uid: u32) -> String {
 
 pub fn group_name(gid: u32) -> String {
     lazy_static! {
-        static ref USERS_CACHE_MUTEX: Mutex<HashMap<u32, String>> = Mutex::new(HashMap::new());
+        static ref USERS_CACHE_MUTEX: Mutex<FnvHashMap<u32, String>> = Mutex::new(FnvHashMap::default());
     }
     let mut groups_cache = USERS_CACHE_MUTEX.lock().unwrap();
     let name = groups_cache

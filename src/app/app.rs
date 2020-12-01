@@ -463,24 +463,55 @@ impl App {
         (len * x as usize) / (self.screen.width as usize + 1)
     }
 
+    /// do the pending tasks, if any, and refresh the screen accordingly
     fn do_pending_tasks(
+        &mut self,
+        w: &mut W,
+        skin: &AppSkin,
+        dam: &mut Dam,
+        con: &AppContext,
+    ) -> Result<(), ProgramError> {
+        while self.has_pending_task() && !dam.has_event() {
+            if self.do_pending_task(con, dam) {
+                self.update_preview(con); // the selection may have changed
+                let other_path = self.get_other_panel_path();
+                self.mut_panel().refresh_input_status(&other_path, con);
+                self.display_panels(w, &skin, con)?;
+            } else {
+                warn!("unexpected lack of update on do_pending_task");
+                return Ok(());
+            }
+        }
+        Ok(())
+    }
+
+    /// do the next pending task
+    fn do_pending_task(
         &mut self,
         con: &AppContext,
         dam: &mut Dam,
-    ) -> Result<bool, ProgramError> {
+    ) -> bool {
         let screen = self.screen;
         // we start with the focused panel
-        let mut did_something = self.mut_panel().do_pending_tasks(screen, con, dam)?;
+        if self.panel().has_pending_task() {
+            self.mut_panel().do_pending_task(screen, con, dam);
+            return true;
+        }
         // then the other ones
         for idx in 0..self.panels.len().get() {
             if idx != self.active_panel_idx {
-                did_something |= self.panels[idx].do_pending_tasks(screen, con, dam)?;
+                let panel = &mut self.panels[idx];
+                if panel.has_pending_task() {
+                    panel.do_pending_task(screen, con, dam);
+                    return true;
+                }
             }
         }
-        if did_something {
-            self.update_preview(con); // the selection may have changed
-        }
-        Ok(did_something)
+        false
+    }
+
+    fn has_pending_task(&mut self) -> bool {
+        self.panels.iter().any(|p| p.has_pending_task())
     }
 
     /// This is the main loop of the application
@@ -516,11 +547,11 @@ impl App {
         loop {
             if !self.quitting {
                 self.display_panels(w, &skin, con)?;
-                if time!(Debug, "pending_tasks", self.do_pending_tasks(con, &mut dam)?) {
-                    let other_path = self.get_other_panel_path();
-                    self.mut_panel().refresh_input_status(&other_path, con);
-                    self.display_panels(w, &skin, con)?;
-                }
+                time!(
+                    Debug,
+                    "pending_tasks",
+                    self.do_pending_tasks(w, &skin, &mut dam, con)?,
+                );
             }
             match dam.next(&self.rx_seqs) {
                 Either::First(Some(event)) => {
@@ -565,9 +596,11 @@ impl App {
                             return Ok(self.launch_at_end.take());
                         } else {
                             self.display_panels(w, &skin, con)?;
-                            if self.do_pending_tasks(con, &mut dam)? {
-                                self.display_panels(w, &skin, con)?;
-                            }
+                            time!(
+                                Debug,
+                                "sequence pending tasks",
+                                self.do_pending_tasks(w, &skin, &mut dam, con)?,
+                            );
                         }
                     }
                 }

@@ -1,6 +1,7 @@
 ### next
 - when sizes are displayed (eg on `br -s`) show size of root line and root filesystem info
 - modified size cache management makes some size computations faster
+- sizes (and dates and counts) are progressively displayed
 
 <a name="v1.0.7"></a>
 ### v1.0.7 - 2020-11-27

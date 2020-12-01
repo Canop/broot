@@ -1,6 +1,6 @@
 use {
+    fnv::FnvHashSet,
     std::{
-        collections::HashSet,
         fs,
         io,
         path::{Path, PathBuf},
@@ -41,7 +41,7 @@ impl TreeLineType {
         let mut final_ft = final_metadata.file_type();
         let mut final_is_dir = final_ft.is_dir();
         let mut link_chain_length = 0;
-        let mut visited = HashSet::new();
+        let mut visited = FnvHashSet::default();
         while final_ft.is_symlink() {
             final_target = read_link(&final_target)?;
             if visited.contains(&final_target) {

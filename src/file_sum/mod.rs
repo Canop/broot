@@ -6,8 +6,8 @@ mod sum_computation;
 
 use {
     crate::task_sync::Dam,
+    fnv::FnvHashMap,
     std::{
-        collections::HashMap,
         ops::AddAssign,
         path::{Path, PathBuf},
         sync::Mutex,
@@ -15,7 +15,7 @@ use {
 };
 
 lazy_static! {
-    static ref SUM_CACHE_MUTEX: Mutex<HashMap<PathBuf, FileSum>> = Mutex::new(HashMap::new());
+    static ref SUM_CACHE_MUTEX: Mutex<FnvHashMap<PathBuf, FileSum>> = Mutex::new(FnvHashMap::default());
 }
 
 pub fn clear_cache() {

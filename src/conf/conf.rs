@@ -15,8 +15,8 @@ use {
         tree::*,
     },
     crossterm::style::Attribute,
+    fnv::FnvHashMap,
     std::{
-        collections::HashMap,
         convert::TryFrom,
         fs, io,
         path::{Path, PathBuf},
@@ -30,7 +30,7 @@ pub struct Conf {
     pub default_flags: String, // the flags to apply before cli ones
     pub date_time_format: Option<String>,
     pub verbs: Vec<Verb>,
-    pub skin: HashMap<String, SkinEntry>,
+    pub skin: FnvHashMap<String, SkinEntry>,
     pub special_paths: Vec<SpecialPath>,
     pub search_modes: SearchModeMap,
     pub disable_mouse_capture: bool,

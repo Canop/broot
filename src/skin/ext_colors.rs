@@ -5,9 +5,7 @@ use {
         errors::InvalidSkinError,
     },
     crossterm::style::Color,
-    std::{
-        collections::HashMap,
-    },
+    fnv::FnvHashMap,
 };
 
 
@@ -15,7 +13,7 @@ use {
 /// color to use when drawing the tree
 #[derive(Debug, Clone, Default)]
 pub struct ExtColorMap {
-    map: HashMap<String, Color>,
+    map: FnvHashMap<String, Color>,
 }
 
 impl ExtColorMap {

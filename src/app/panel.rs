@@ -114,6 +114,21 @@ impl Panel {
         Ok(did_something)
     }
 
+    /// do the next pending task stopping as soon as there's an event
+    /// in the dam
+    pub fn do_pending_task(
+        &mut self,
+        screen: Screen,
+        con: &AppContext,
+        dam: &mut Dam,
+    ) {
+        self.mut_state().do_pending_task(screen, con, dam)
+    }
+
+    pub fn has_pending_task(&self) -> bool {
+        self.state().get_pending_task().is_some()
+    }
+
     /// return a new command
     /// Update the input field
     pub fn add_event(

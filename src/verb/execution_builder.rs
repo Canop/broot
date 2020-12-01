@@ -9,8 +9,8 @@ use {
         path,
     },
     regex::{Captures},
+    fnv::FnvHashMap,
     std::{
-        collections::HashMap,
         path::{Path, PathBuf},
     },
 };
@@ -26,7 +26,7 @@ pub struct ExecutionStringBuilder<'b> {
     other_file: Option<&'b PathBuf>,
 
     /// parsed arguments
-    invocation_values: Option<HashMap<String, String>>,
+    invocation_values: Option<FnvHashMap<String, String>>,
 }
 
 impl<'b> ExecutionStringBuilder<'b> {

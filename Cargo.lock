@@ -135,6 +135,7 @@ dependencies = [
  "custom_error",
  "directories",
  "file-size",
+ "fnv",
  "git2",
  "glob",
  "id-arena",
