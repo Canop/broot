@@ -121,3 +121,8 @@ Broot usage, just like vim, relies a lot on the <kbd>esc</kbd> key. If you're a 
 
 This brings a lot of comfort, not just in broot.
 
+## Vim integration/plugin
+
+In case you want to use broot for opening files fuzzily in vim (and potentially
+replace netrw), check out: [broot.vim](https://gitlab.com/lstwn/broot.vim)
+
