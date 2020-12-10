@@ -99,9 +99,9 @@ pub type Cols = [Col;COLS_COUNT];
 pub static DEFAULT_COLS: Cols = [
     Col::Mark,
     Col::Git,
+    Col::Size,
     Col::Date,
     Col::Permission,
-    Col::Size,
     Col::Count,
     Col::Branch,
     Col::Name,

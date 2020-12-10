@@ -416,6 +416,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             let mut selected = false;
             let mut cw = CropWriter::new(f, self.area.width as usize);
             let cw = &mut cw;
+            let add_left_margin = self.cols[0] != Col::Mark || !self.show_selection_mark;
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
@@ -426,8 +427,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 } else {
                     &self.skin.default
                 };
-
-                if self.cols[0] != Col::Mark {
+                if add_left_margin {
                     cw.queue_char(space_style, ' ')?;
                 }
                 for col in self.cols {
