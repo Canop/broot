@@ -32,16 +32,6 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 default_flags = ""
 
 ###############################################################
-# Special paths
-# If some paths must be handled specially, uncomment (and change
-# this section as per the examples
-#
-# [special-paths]
-# "/media/slow-backup-disk" = "no-enter"
-# "/home/dys/useless" = "hide"
-# "/home/dys/my-link-I-want-to-explore" = "enter"
-
-###############################################################
 # Date/Time format
 # If you want to change the format for date/time, uncomment the
 # following line and change it according to
@@ -86,6 +76,16 @@ default_flags = ""
 # (see https://dystroy.org/broot/icons for installation and
 # troubleshooting)
 # icon_theme = "vscode"
+
+###############################################################
+# Special paths
+# If some paths must be handled specially, uncomment (and change
+# this section as per the examples
+#
+# [special-paths]
+# "/media/slow-backup-disk" = "no-enter"
+# "/home/dys/useless" = "hide"
+# "/home/dys/my-link-I-want-to-explore" = "enter"
 
 ###############################################################
 # Verbs and shortcuts
