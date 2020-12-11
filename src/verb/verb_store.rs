@@ -7,9 +7,11 @@ use {
     crate::{
         app::SelectionType,
         conf::Conf,
+        errors::ConfError,
         keys,
     },
     crossterm::event::KeyEvent,
+    std::convert::TryFrom,
 };
 
 /// Provide access to the verbs:
@@ -32,12 +34,14 @@ pub enum PrefixSearchResult<'v, T> {
 }
 
 impl VerbStore {
-    pub fn init(&mut self, conf: &mut Conf) {
+    pub fn init(&mut self, conf: &mut Conf) -> Result<(), ConfError> {
         // We first add the verbs coming from configuration, as we'll search in order.
         // This way, a user can overload a standard verb.
-        // Note that we remove the verbs from conf, assuming they won't be needed anymore.
-        self.verbs.extend(conf.verbs.drain(..));
+        for vc in &conf.verbs {
+            self.verbs.push(Verb::try_from(vc)?);
+        }
         self.verbs.extend(builtin_verbs());
+        Ok(())
     }
 
     pub fn search<'v>(

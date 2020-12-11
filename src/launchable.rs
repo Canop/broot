@@ -64,8 +64,8 @@ pub enum Launchable {
 fn resolve_env_variables(parts: Vec<String>) -> Vec<String> {
     let mut resolved = Vec::new();
     for part in parts.into_iter() {
-        if part.starts_with('$') {
-            if let Ok(val) = env::var(&part[1..]) {
+        if let Some(var_name) = part.strip_prefix('$') {
+            if let Ok(val) = env::var(var_name) {
                 resolved.extend(val.split(' ').map(|s| s.to_string()));
                 continue;
             }

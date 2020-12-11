@@ -9,10 +9,12 @@ use {
         Attribute::{self, *},
         Attributes,
     },
+    serde::{de::Error, Deserialize, Deserializer},
     termimad::CompoundStyle,
 };
 
 /// parsed content of a [skin] line of the conf.toml file
+#[derive(Clone)]
 pub struct SkinEntry {
     focused: CompoundStyle,
     unfocused: Option<CompoundStyle>,
@@ -44,6 +46,16 @@ impl SkinEntry {
             .map(|p| parse_compound_style(p))
             .transpose()?;
         Ok(Self { focused, unfocused })
+    }
+}
+
+impl<'de> Deserialize<'de> for SkinEntry {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de>
+    {
+        let s = String::deserialize(deserializer)?;
+        SkinEntry::parse(&s)
+            .map_err(|e| D::Error::custom(e.to_string()))
     }
 }
 

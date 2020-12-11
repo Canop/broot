@@ -298,7 +298,7 @@ impl SyntacticView {
         let scrollbar = area.scrollbar(self.scroll as i32, self.lines.len() as i32);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
             .or_else(|| styles.preview.get_fg())
-            .unwrap_or_else(|| Color::White);
+            .unwrap_or(Color::White);
         for y in 0..line_count {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
             let mut cw = CropWriter::new(w, code_width);

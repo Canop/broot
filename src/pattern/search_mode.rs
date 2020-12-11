@@ -3,6 +3,8 @@ use {
     crate::{
         errors::{ConfError, PatternError},
     },
+    fnv::FnvHashMap,
+    std::convert::TryFrom,
 };
 
 /// where to search
@@ -181,6 +183,17 @@ impl Default for SearchModeMap {
         smm.setm(&["rx", "cr"], SearchMode::ContentRegex);
         smm.set(SearchModeMapEntry { key: None, mode: SearchMode::NameFuzzy });
         smm
+    }
+}
+
+impl TryFrom<&FnvHashMap<String, String>> for SearchModeMap {
+    type Error = ConfError;
+    fn try_from(map: &FnvHashMap<String, String>) -> Result<Self, Self::Error> {
+        let mut entries = Vec::with_capacity(map.len());
+        for (k, v) in map {
+            entries.push(SearchModeMapEntry::parse(k, v)?);
+        }
+        Ok(Self { entries })
     }
 }
 

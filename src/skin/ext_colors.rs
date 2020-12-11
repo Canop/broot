@@ -1,4 +1,3 @@
-
 use {
     super::colors,
     crate::{
@@ -6,6 +5,7 @@ use {
     },
     crossterm::style::Color,
     fnv::FnvHashMap,
+    std::convert::TryFrom,
 };
 
 
@@ -29,3 +29,15 @@ impl ExtColorMap {
         Ok(())
     }
 }
+
+impl TryFrom<&FnvHashMap<String, String>> for ExtColorMap {
+    type Error = InvalidSkinError;
+    fn try_from(raw_map: &FnvHashMap<String, String>) -> Result<Self, Self::Error> {
+        let mut map = ExtColorMap::default();
+        for (k, v) in raw_map {
+            map.set(k.to_string(), v)?;
+        }
+        Ok(map)
+    }
+}
+

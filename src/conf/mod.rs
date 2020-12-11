@@ -7,10 +7,12 @@ use {
 
 mod conf;
 mod default_conf;
-pub mod toml;
+mod verb_conf;
 
 pub use {
     conf::Conf,
+    default_conf::*,
+    verb_conf::VerbConf,
 };
 
 /// return the instance of ProjectDirs holding broot's specific paths

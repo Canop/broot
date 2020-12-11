@@ -64,8 +64,8 @@ impl Completions {
     ) -> Self {
         let completions = wholes.iter()
             .map(|w|
-                if w.starts_with(start) {
-                    &w[start.len()..]
+                if let Some(stripped) = w.strip_prefix(start) {
+                    stripped
                 } else {
                     // this might become a feature but right now it's a bug
                     warn!("unexpected non completing whole: {:?}", w);

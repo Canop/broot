@@ -1,11 +1,13 @@
-
 use {
-    crate::{
-        errors::ProgramError,
-    },
     glob,
+    serde::{de::Error, Deserialize, Deserializer},
     std::path::Path,
 };
+
+#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+pub struct Glob {
+    pattern: glob::Pattern,
+}
 
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub enum SpecialHandling {
@@ -20,35 +22,55 @@ pub struct SpecialPath {
     pub pattern: glob::Pattern,
     pub handling: SpecialHandling,
 }
-impl SpecialPath {
-    /// parse a "glob"="handling" representation as could be found in conf
-    pub fn parse(name: &str, value: &str) -> Result<Self, ProgramError> {
-        let pattern = match glob::Pattern::new(name) {
-            Ok(pattern) => pattern,
-            Err(_) => {
-                return Err(ProgramError::InvalidGlobError { pattern: name.to_string() })
-            }
-        };
-        let value = value.to_lowercase();
-        let value = regex!(r"\W+").replace_all(&value, "");
-        let handling = match value.as_ref() {
-            "none" => SpecialHandling::None,
-            "enter" => SpecialHandling::Enter,
-            "noenter" => SpecialHandling::NoEnter,
-            "hide" => SpecialHandling::Hide,
-            _ => {
-                return Err(ProgramError::Unrecognized { token: value.to_string() })
-            }
-        };
-        Ok(Self { pattern, handling })
-    }
-}
 
 pub trait SpecialPathList {
     fn find(
         self,
         path: &Path,
     ) -> SpecialHandling;
+}
+
+
+impl<'de> Deserialize<'de> for SpecialHandling {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de>
+    {
+        let s = String::deserialize(deserializer)?;
+        let s = s.to_lowercase();
+        // we remove non letters so to accept eg "no-enter"
+        let s = regex!(r"\W+").replace_all(&s, "");
+        match s.as_ref() {
+            "none" => Ok(SpecialHandling::None),
+            "enter" => Ok(SpecialHandling::Enter),
+            "noenter" => Ok(SpecialHandling::NoEnter),
+            "hide" => Ok(SpecialHandling::Hide),
+            _ => Err(D::Error::custom(
+                format!("unrecognized special handling: {:?}", s)
+            )),
+        }
+
+    }
+}
+
+impl<'de> Deserialize<'de> for Glob {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+        where D: Deserializer<'de>
+    {
+    let s = String::deserialize(deserializer)?;
+    glob::Pattern::new(&s)
+        .map_err(|e| D::Error::custom(format!("invalid glob pattern {:?} : {:?}", s, e)))
+        .map(|pattern| Glob { pattern })
+    }
+
+}
+
+impl SpecialPath {
+    pub fn new(glob: Glob, handling: SpecialHandling) -> Self {
+        Self {
+            pattern: glob.pattern,
+            handling,
+        }
+    }
 }
 
 impl SpecialPathList for &[SpecialPath] {

@@ -7,8 +7,7 @@ use {
 };
 
 lazy_static! {
-    static ref RENDERER: Option<Mutex<KittyImageRenderer>> = KittyImageRenderer::new()
-        .map(|r| Mutex::new(r));
+    static ref RENDERER: Option<Mutex<KittyImageRenderer>> = KittyImageRenderer::new().map(Mutex::new);
 }
 
 // TODO try to find another way (making app_context mut ?) to pass this

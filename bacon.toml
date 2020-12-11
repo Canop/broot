@@ -11,7 +11,15 @@ command = ["cargo", "check", "--color", "always"]
 need_stdout = false
 
 [jobs.clippy]
-command = ["cargo", "clippy", "--color", "always"]
+command = [
+	"cargo", "clippy",
+	"--color", "always",
+	"--",
+	"-A", "clippy::match_like_matches_macro",
+	"-A", "clippy::collapsible_if",
+	"-A", "clippy::module_inception",
+	"-A", "clippy::comparison_chain",
+]
 need_stdout = false
 
 [jobs.test]

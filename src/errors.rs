@@ -12,6 +12,7 @@ custom_error! {pub ProgramError
     Crossterm {source: crossterm::ErrorKind} = "Crossterm Error : {:?}",
     Termimad {source: termimad::Error} = "Termimad Error : {:?}",
     Conf {source: ConfError} = "Bad configuration: {}",
+    ConfFile {path:String, details: ConfError} = "Bad configuration file {:?} : {}",
     ArgParse {bad: String, valid: String} = "{:?} can't be parsed (valid values: {:?})",
     UnknownVerb {name: String} = "No verb matches {:?}",
     AmbiguousVerbName {name: String} = "Ambiguous name: More than one verb matches {:?}",
@@ -47,6 +48,7 @@ custom_error! {pub ConfError
     ReservedKey {key: String}                       = "reserved key: {}",
     UnexpectedInternalArg {invocation: String}      = "unexpected argument for internal: {}",
     InvalidCols {details: String}                   = "invalid cols definition: {}",
+    InvalidSkin {source: InvalidSkinError}          = "invalid skin: {}",
 }
 
 // error which can be raised when parsing a pattern the user typed

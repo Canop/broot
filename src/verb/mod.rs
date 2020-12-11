@@ -8,7 +8,6 @@ pub mod internal_focus;
 mod invocation_parser;
 mod sequence_execution;
 mod verb;
-mod verb_conf;
 mod verb_description;
 mod verb_execution;
 mod verb_invocation;

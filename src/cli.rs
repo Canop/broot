@@ -177,9 +177,9 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     // found in the config file(s) (if any) then overriden
     // by the cli args
     let mut tree_options = TreeOptions::default();
-    if !config.default_flags.is_empty() {
+    if let Some(default_flags) = &config.default_flags {
         let clap_app = crate::clap::clap_app().setting(clap::AppSettings::NoBinaryName);
-        let flags_args = format!("-{}", &config.default_flags);
+        let flags_args = format!("-{}", default_flags);
         let conf_matches = clap_app.get_matches_from(vec![&flags_args]);
         tree_options.apply(&conf_matches);
     }
@@ -190,7 +190,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     // verb store is completed from the config file(s)
     let mut verb_store = VerbStore::default();
-    verb_store.init(&mut config);
+    verb_store.init(&mut config)?;
 
     // reading the other arguments
     let file_export_path = cli_matches.value_of("file-export-path").map(str::to_string);
@@ -234,16 +234,17 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         listen: cli_matches.value_of("listen").map(str::to_string),
     };
 
-    let context = AppContext::from(launch_args, verb_store, &config);
+    let context = AppContext::from(launch_args, verb_store, &config)?;
     let mut w = display::writer();
     let app = App::new(&context)?;
     w.queue(EnterAlternateScreen)?;
     w.queue(cursor::Hide)?;
-    if !config.disable_mouse_capture {
+    let capture_mouse = config.disable_mouse_capture != Some(true);
+    if capture_mouse {
         w.queue(EnableMouseCapture)?;
     }
     let r = app.run(&mut w, &context, &config);
-    if !config.disable_mouse_capture {
+    if capture_mouse {
         w.queue(DisableMouseCapture)?;
     }
     w.queue(cursor::Show)?;

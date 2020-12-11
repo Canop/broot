@@ -3,13 +3,15 @@ use {
     crate::{
         cli::AppLaunchArgs,
         conf::Conf,
-        display::{Cols, DEFAULT_COLS},
+        display::*,
+        errors::ConfError,
         icon::*,
         pattern::SearchModeMap,
         skin::ExtColorMap,
         tree::SpecialPath,
         verb::VerbStore,
     },
+    std::convert::{TryFrom, TryInto},
 };
 
 /// The immutable container that can be passed around
@@ -35,6 +37,7 @@ pub struct AppContext {
     /// order of columns in tree display
     pub cols: Cols,
 
+    /// whether to show a triangle left to selected lines
     pub show_selection_mark: bool,
 
     /// mapping from file extension to colors (comes from conf)
@@ -60,7 +63,7 @@ impl AppContext {
         launch_args: AppLaunchArgs,
         verb_store: VerbStore,
         config: &Conf,
-    ) -> Self {
+    ) -> Result<Self, ConfError> {
         let config_path = Conf::default_location().to_string_lossy().to_string();
         let standard_status = StandardStatus::new(&verb_store);
         let true_colors = if let Some(value) = config.true_colors {
@@ -70,20 +73,33 @@ impl AppContext {
         };
         let icons = config.icon_theme.as_ref()
             .and_then(|itn| icon_plugin(itn));
-        Self {
+        let special_paths = config.special_paths
+            .iter()
+            .map(|(k, v)| SpecialPath::new(k.clone(), *v))
+            .collect();
+        let search_modes = config.search_modes.as_ref()
+            .map(|map| map.try_into())
+            .transpose()?
+            .unwrap_or_default();
+        let cols = config.cols_order.as_ref()
+            .map(Cols::try_from)
+            .transpose()?
+            .unwrap_or(DEFAULT_COLS);
+        let ext_colors = ExtColorMap::try_from(&config.ext_colors)?;
+        Ok(Self {
             config_path,
             launch_args,
             verb_store,
-            special_paths: config.special_paths.clone(),
-            search_modes: config.search_modes.clone(),
-            cols: config.cols_order.unwrap_or(DEFAULT_COLS),
+            special_paths,
+            search_modes,
+            cols,
             show_selection_mark: config.show_selection_mark.unwrap_or(false),
-            ext_colors: config.ext_colors.clone(),
+            ext_colors,
             syntax_theme: config.syntax_theme.clone(),
             standard_status,
             true_colors,
             icons,
-        }
+        })
     }
 }
 

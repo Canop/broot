@@ -26,10 +26,10 @@ impl Sequence {
             _ => String::from(";"),
         }
     }
-    pub fn new(raw: String, separator: Option<String>) -> Self {
+    pub fn new<S: Into<String>>(raw: S, separator: Option<S>) -> Self {
         Self {
-            raw,
-            separator: separator.unwrap_or_else(Sequence::local_separator),
+            raw: raw.into(),
+            separator: separator.map_or_else(Sequence::local_separator, |s| s.into()),
         }
     }
     pub fn new_single(cmd: String) -> Self {

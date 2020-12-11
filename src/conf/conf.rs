@@ -2,41 +2,55 @@
 //! initializing if if it doesn't yet exist
 
 use {
-    super::{
-        default_conf::DEFAULT_CONF_FILE,
-        toml::*,
-    },
+    super::*,
     crate::{
-        verb::Verb,
-        display::{Col, Cols},
-        errors::ConfError,
-        pattern::{SearchModeMap, SearchModeMapEntry},
-        skin::{ExtColorMap, SkinEntry},
+        display::ColsConf,
+        errors::ProgramError,
+        skin::SkinEntry,
         tree::*,
     },
     crossterm::style::Attribute,
     fnv::FnvHashMap,
+    serde::Deserialize,
     std::{
-        convert::TryFrom,
         fs, io,
         path::{Path, PathBuf},
     },
-    toml::{self, Value},
+    toml,
 };
 
+macro_rules! overwrite {
+    ($dst: ident, $prop: ident, $src: ident) => {
+        if $src.$prop.is_some() {
+            $dst.$prop = $src.$prop.take();
+        }
+    }
+}
+
+macro_rules! overwrite_map {
+    ($dst: ident, $prop: ident, $src: ident) => {
+        for (k, v) in $src.$prop {
+            $dst.$prop.insert(k, v);
+        }
+    }
+}
+
 /// The configuration read from conf.toml file(s)
-#[derive(Default)]
+/// TODO merge confs
+#[derive(Default, Clone, Deserialize)]
 pub struct Conf {
-    pub default_flags: String, // the flags to apply before cli ones
+    pub default_flags: Option<String>, // the flags to apply before cli ones
     pub date_time_format: Option<String>,
-    pub verbs: Vec<Verb>,
-    pub skin: FnvHashMap<String, SkinEntry>,
-    pub special_paths: Vec<SpecialPath>,
-    pub search_modes: SearchModeMap,
-    pub disable_mouse_capture: bool,
-    pub cols_order: Option<Cols>,
+    pub verbs: Vec<VerbConf>,
+    pub skin: Option<FnvHashMap<String, SkinEntry>>,
+    #[serde(default)]
+    pub special_paths: FnvHashMap<Glob, SpecialHandling>,
+    pub search_modes: Option<FnvHashMap<String, String>>,
+    pub disable_mouse_capture: Option<bool>,
+    pub cols_order: Option<ColsConf>,
     pub show_selection_mark: Option<bool>,
-    pub ext_colors: ExtColorMap,
+    #[serde(default)]
+    pub ext_colors: FnvHashMap<String, String>,
     pub syntax_theme: Option<String>,
     pub true_colors: Option<bool>,
     pub icon_theme: Option<String>,
@@ -53,7 +67,7 @@ impl Conf {
 
     /// read the configuration file from the default OS specific location.
     /// Create it if it doesn't exist
-    pub fn from_default_location() -> Result<Conf, ConfError> {
+    pub fn from_default_location() -> Result<Conf, ProgramError> {
         let conf_filepath = Conf::default_location();
         if !conf_filepath.exists() {
             Conf::write_sample(&conf_filepath)?;
@@ -84,122 +98,31 @@ impl Conf {
     }
 
     /// read the configuration from a given path. Assume it exists.
-    /// stderr is supposed to be a valid solution for displaying errors
-    /// (i.e. this function is called before or after the terminal alternation)
-    pub fn read_file(&mut self, filepath: &Path) -> Result<(), ConfError> {
-        let data = fs::read_to_string(filepath)?;
-        let root: toml::value::Table = match data.parse::<Value>()? {
-            Value::Table(tbl) => tbl,
-            _ => {
-                return Err(ConfError::Invalid {});
-            }
-        };
-        // reading default flags
-        if let Some(s) = string_field(&root, "default_flags") {
-            // it's additive because another config file may have
-            // been read before and we usually want all the flags
-            // (the last ones may reverse the first ones)
-            self.default_flags.push_str(&s);
-        }
-        // date/time format
-        self.date_time_format = string_field(&root, "date_time_format");
-        // Icon theme
-        self.icon_theme = string_field(&root, "icon_theme");
-        // reading the optional theme for syntect
-        self.syntax_theme = string_field(&root, "syntax_theme");
-        // mouse capture
-        if let Some(mouse_capture) = bool_field(&root, "capture_mouse") {
-            self.disable_mouse_capture = !mouse_capture;
-        }
-        // cols order
-        if let Some(s) = string_field(&root, "cols_order") {
-            // old format, with each char being a col, for example
-            // `cols_order = "gbpdscn"`
-            self.cols_order = Some(Col::parse_cols_single_str(&s)?);
-        } else if let Some(arr) = string_array_field(&root, "cols_order") {
-            // new format, where each col is a string, for example
-            // `cols_order = ["branch", "size" ..., "name"]`
-            self.cols_order = Some(Col::parse_cols(&arr)?);
-        }
-        // reading verbs
-        if let Some(Value::Array(verbs_value)) = &root.get("verbs") {
-            for verb_value in verbs_value.iter() {
-                match Verb::try_from(verb_value) {
-                    Ok(verb) => {
-                        self.verbs.push(verb);
-                    }
-                    Err(e) => {
-                        eprintln!("Invalid [[verbs]] entry in configuration: {}", e);
-                    }
-                }
-            }
-        }
-        // reading the skin
-        if let Some(Value::Table(entries_tbl)) = &root.get("skin") {
-            for (k, v) in entries_tbl.iter() {
-                if let Some(s) = v.as_str() {
-                    match SkinEntry::parse(s) {
-                        Ok(sec) => {
-                            self.skin.insert(k.to_string(), sec);
-                        }
-                        Err(e) => {
-                            eprintln!("{}", e);
-                        }
-                    }
-                }
-            }
-        }
-        // reading special paths
-        if let Some(Value::Table(paths_tbl)) = &root.get("special-paths") {
-            for (k, v) in paths_tbl.iter() {
-                if let Some(v) = v.as_str() {
-                    match SpecialPath::parse(k, v) {
-                        Ok(sp) => {
-                            debug!("Adding special path: {:?}", &sp);
-                            self.special_paths.push(sp);
-                        }
-                        Err(e) => {
-                            eprintln!("{}", e);
-                        }
-                    }
-                }
-            }
-        }
-        // reading serch modes
-        if let Some(Value::Table(search_modes_tbl)) = &root.get("search-modes") {
-            for (k, v) in search_modes_tbl.iter() {
-                if let Some(v) = v.as_str() {
-                    match SearchModeMapEntry::parse(k, v) {
-                        Ok(entry) => {
-                            debug!("Adding search mode map entry: {:?}", &entry);
-                            self.search_modes.set(entry);
-                        }
-                        Err(e) => {
-                            eprintln!("{}", e);
-                        }
-                    }
-                }
-            }
-        }
-        // reading the ext_colors map
-        if let Some(Value::Table(ext_colors_tbl)) = &root.get("ext-colors") {
-            for (k, v) in ext_colors_tbl.iter() {
-                if let Some(v) = v.as_str() {
-                    if let Err(e) = self.ext_colors.set(k.to_string(), v) {
-                        eprintln!("{}", e);
-                    }
-                }
-            }
-        }
-        // true_colors ?
-        if let Some(b) = bool_field(&root, "true_colors") {
-            self.true_colors = Some(b);
-        }
-        // show selection mark
-        if let Some(b) = bool_field(&root, "show_selection_mark") {
-            self.show_selection_mark = Some(b);
-        }
-
+    /// Values set in the read file replace the ones of self.
+    /// Errors are printed on stderr (assuming this function is called
+    /// before terminal alternation).
+    pub fn read_file(&mut self, path: &Path) -> Result<(), ProgramError> {
+        let file_content = fs::read_to_string(path)?;
+        let mut conf = toml::from_str::<Conf>(&file_content)
+            .map_err(|e| ProgramError::ConfFile {
+                path: path.to_string_lossy().to_string(),
+                details: e.into(),
+            })?;
+        overwrite!(self, default_flags, conf);
+        overwrite!(self, date_time_format, conf);
+        overwrite!(self, icon_theme, conf);
+        overwrite!(self, syntax_theme, conf);
+        overwrite!(self, disable_mouse_capture, conf);
+        overwrite!(self, true_colors, conf);
+        overwrite!(self, show_selection_mark, conf);
+        overwrite!(self, cols_order, conf);
+        overwrite!(self, skin, conf);
+        overwrite!(self, search_modes, conf);
+        self.verbs.append(&mut conf.verbs);
+        // the following maps are "additive": we can add entries from several
+        // config files and they still make sense
+        overwrite_map!(self, special_paths, conf);
+        overwrite_map!(self, ext_colors, conf);
         Ok(())
     }
 }

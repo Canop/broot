@@ -37,7 +37,7 @@ mod permissions;
 
 pub use {
     areas::Areas,
-    col::{Col, Cols, DEFAULT_COLS},
+    col::*,
     crop_writer::CropWriter,
     displayable_tree::DisplayableTree,
     filling::*,

@@ -580,7 +580,7 @@ pub fn get_arg<T: Copy + FromStr>(
     default: T,
 ) -> T {
     verb_invocation.and_then(|vi| vi.args.as_ref())
-        .or(internal_exec.arg.as_ref())
+        .or_else(|| internal_exec.arg.as_ref())
         .and_then(|s| s.parse::<T>().ok())
         .unwrap_or(default)
 }
