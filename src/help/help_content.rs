@@ -16,7 +16,11 @@ The mouse can be used to select (on click) or open (on double-click).
 
 ## Configuration
 
-Verbs, skin, and more, can be configured in **${config-path}**.
+Verbs, skin, and more, are configured in
+${config-files
+* **${path}**
+}
+(hit *enter* to open)
 
 ## Verbs
 

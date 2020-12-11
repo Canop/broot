@@ -36,9 +36,11 @@ macro_rules! overwrite_map {
 }
 
 /// The configuration read from conf.toml file(s)
-/// TODO merge confs
 #[derive(Default, Clone, Deserialize)]
 pub struct Conf {
+    /// the files used to load this configuration
+    #[serde(skip)]
+    pub files: Vec<PathBuf>,
     pub default_flags: Option<String>, // the flags to apply before cli ones
     pub date_time_format: Option<String>,
     pub verbs: Vec<VerbConf>,
@@ -58,11 +60,11 @@ pub struct Conf {
 
 impl Conf {
 
-    pub fn default_location() -> &'static Path {
-        lazy_static! {
-            static ref CONF_PATH: PathBuf = super::dir().join("conf.toml");
-        }
-        &*CONF_PATH
+    /// return the path to the default conf.toml file.
+    /// If there's no conf.hjson file in the default conf directory,
+    /// and if there's a toml file, return this toml file.
+    pub fn default_location() -> PathBuf {
+        super::dir() .join("conf.toml")
     }
 
     /// read the configuration file from the default OS specific location.
@@ -80,9 +82,9 @@ impl Conf {
             println!("You should have a look at it.");
         }
         let mut conf = Conf::default();
-        match conf.read_file(&conf_filepath) {
+        match conf.read_file(conf_filepath) {
             Err(e) => {
-                println!("Failed to read configuration in {:?}.", &conf_filepath);
+                println!("{:?}", e);
                 println!("Please delete or fix this file.");
                 Err(e)
             }
@@ -101,8 +103,8 @@ impl Conf {
     /// Values set in the read file replace the ones of self.
     /// Errors are printed on stderr (assuming this function is called
     /// before terminal alternation).
-    pub fn read_file(&mut self, path: &Path) -> Result<(), ProgramError> {
-        let file_content = fs::read_to_string(path)?;
+    pub fn read_file(&mut self, path: PathBuf) -> Result<(), ProgramError> {
+        let file_content = fs::read_to_string(&path)?;
         let mut conf = toml::from_str::<Conf>(&file_content)
             .map_err(|e| ProgramError::ConfFile {
                 path: path.to_string_lossy().to_string(),
@@ -123,6 +125,7 @@ impl Conf {
         // config files and they still make sense
         overwrite_map!(self, special_paths, conf);
         overwrite_map!(self, ext_colors, conf);
+        self.files.push(path);
         Ok(())
     }
 }

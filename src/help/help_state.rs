@@ -12,7 +12,7 @@ use {
         tree::TreeOptions,
         verb::*,
     },
-    std::path::Path,
+    std::path::{Path, PathBuf},
     termimad::{Area, FmtText, TextView},
 };
 
@@ -23,21 +23,27 @@ pub struct HelpState {
     dirty: bool, // background must be cleared
     pattern: Pattern,
     tree_options: TreeOptions,
+    config_path: PathBuf, // the last config path when several were used
 }
 
 impl HelpState {
     pub fn new(
         tree_options: TreeOptions,
         _screen: Screen,
-        _con: &AppContext,
+        con: &AppContext,
     ) -> HelpState {
         let text_area = Area::uninitialized(); // will be fixed at drawing time
+        let config_path = con.config_paths
+            .last()
+            .cloned()
+            .unwrap_or_else(||Conf::default_location());
         HelpState {
             text_area,
             scroll: 0,
             dirty: true,
             pattern: Pattern::None,
             tree_options,
+            config_path,
         }
     }
 }
@@ -45,7 +51,7 @@ impl HelpState {
 impl AppState for HelpState {
 
     fn selected_path(&self) -> &Path {
-        Conf::default_location()
+        &self.config_path
     }
 
     fn tree_options(&self) -> TreeOptions {
@@ -65,7 +71,7 @@ impl AppState for HelpState {
 
     fn selection(&self) -> Selection<'_> {
         Selection {
-            path: Conf::default_location(),
+            path: &self.config_path,
             stype: SelectionType::File,
             is_exe: false,
             line: 0,
@@ -107,8 +113,14 @@ impl AppState for HelpState {
         }
         let mut expander = help_content::expander();
         expander
-            .set("version", env!("CARGO_PKG_VERSION"))
-            .set("config-path", &con.config_path);
+            .set("version", env!("CARGO_PKG_VERSION"));
+        let config_paths: Vec<String> = con.config_paths.iter()
+            .map(|p| p.to_string_lossy().to_string())
+            .collect();
+        for path in &config_paths {
+            expander.sub("config-files")
+                .set("path", path);
+        }
         let verb_rows = super::help_verbs::matching_verb_rows(&self.pattern, con);
         for row in &verb_rows {
             let sub = expander

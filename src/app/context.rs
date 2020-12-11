@@ -11,7 +11,10 @@ use {
         tree::SpecialPath,
         verb::VerbStore,
     },
-    std::convert::{TryFrom, TryInto},
+    std::{
+        convert::{TryFrom, TryInto},
+        path::PathBuf,
+    },
 };
 
 /// The immutable container that can be passed around
@@ -20,7 +23,8 @@ use {
 pub struct AppContext {
 
     /// where's the config file we're using
-    pub config_path: String,
+    /// This vec can't be empty
+    pub config_paths: Vec<PathBuf>,
 
     /// all the arguments specified at launch
     pub launch_args: AppLaunchArgs,
@@ -64,7 +68,7 @@ impl AppContext {
         verb_store: VerbStore,
         config: &Conf,
     ) -> Result<Self, ConfError> {
-        let config_path = Conf::default_location().to_string_lossy().to_string();
+        let config_paths = config.files.clone();
         let standard_status = StandardStatus::new(&verb_store);
         let true_colors = if let Some(value) = config.true_colors {
             value
@@ -87,7 +91,7 @@ impl AppContext {
             .unwrap_or(DEFAULT_COLS);
         let ext_colors = ExtColorMap::try_from(&config.ext_colors)?;
         Ok(Self {
-            config_path,
+            config_paths,
             launch_args,
             verb_store,
             special_paths,

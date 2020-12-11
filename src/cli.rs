@@ -166,11 +166,11 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         Some(conf_paths) => {
             let mut conf = Conf::default();
             for path in conf_paths {
-                conf.read_file(path)?;
+                conf.read_file(path.to_path_buf())?;
             }
             conf
         }
-        _ => Conf::from_default_location()?,
+        _ => time!(Debug, "read conf", Conf::from_default_location()?),
     };
 
     // tree options are built from the default_flags
