@@ -55,6 +55,12 @@ If you want a custom compilation, have a look at the [optional features document
 
     brew install broot
 
+## Alpine Linux
+
+    apk add broot
+
+*note: broot package is available in Alpine 3.13 and newer*
+
 ## APT / Deb
 
 Ubuntu and Debian users may use this apt repository: [https://packages.azlux.fr/](https://packages.azlux.fr/)
