@@ -16,9 +16,7 @@ use {
         verb::*,
     },
     open,
-    std::{
-        path::{Path, PathBuf},
-    },
+    std::path::{Path, PathBuf},
     termimad::Area,
 };
 
@@ -28,7 +26,7 @@ pub struct BrowserState {
     pub tree: Tree,
     pub filtered_tree: Option<Tree>,
     pub pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
-    pub total_search_required: bool, // whether the pending pattern should be in total search mode
+    pub total_search_required: bool,   // whether the pending pattern should be in total search mode
 }
 
 impl BrowserState {
@@ -253,7 +251,9 @@ impl AppState for BrowserState {
             Internal::back => {
                 if let Some(filtered_tree) = &self.filtered_tree {
                     let filtered_selection = &filtered_tree.selected_line().path;
-                    self.tree.try_select_path(filtered_selection);
+                    if self.tree.try_select_path(filtered_selection) {
+                        self.tree.make_selection_visible(page_height);
+                    }
                     self.filtered_tree = None;
                     AppStateCmdResult::Keep
                 } else if self.tree.selection > 0 {
@@ -539,17 +539,15 @@ impl AppState for BrowserState {
             warn!("refreshing base tree failed : {:?}", e);
         }
         // refresh the filtered tree, if any
-        Command::from_pattern(
-            match self.filtered_tree {
-                Some(ref mut tree) => {
-                    if let Err(e) = tree.refresh(page_height, con) {
-                        warn!("refreshing filtered tree failed : {:?}", e);
-                    }
-                    &tree.options.pattern
+        Command::from_pattern(match self.filtered_tree {
+            Some(ref mut tree) => {
+                if let Err(e) = tree.refresh(page_height, con) {
+                    warn!("refreshing filtered tree failed : {:?}", e);
                 }
-                None => &self.tree.options.pattern,
-            },
-        )
+                &tree.options.pattern
+            }
+            None => &self.tree.options.pattern,
+        })
     }
 
     fn get_flags(&self) -> Vec<Flag> {

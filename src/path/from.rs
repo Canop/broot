@@ -1,11 +1,9 @@
 use {
     super::*,
     directories::UserDirs,
-    regex::{self, Captures},
     fnv::FnvHashMap,
-    std::{
-        path::{Path, PathBuf},
-    },
+    regex::{self, Captures},
+    std::path::{Path, PathBuf},
 };
 
 /// build a usable path from a user input which may be absolute
@@ -36,8 +34,10 @@ pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -
         // or its parent) and we normalize so that the user can type
         // paths with `../`
         let base_dir = match anchor {
-            PathAnchor::Parent => base_dir.as_ref()
-                .parent().unwrap_or_else(||base_dir.as_ref())
+            PathAnchor::Parent => base_dir
+                .as_ref()
+                .parent()
+                .unwrap_or_else(|| base_dir.as_ref())
                 .to_path_buf(),
             _ => closest_dir(base_dir.as_ref()),
         };
@@ -46,12 +46,17 @@ pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -
 }
 
 pub fn path_str_from<P: AsRef<Path>>(base_dir: P, input: &str) -> String {
-    path_from(base_dir, PathAnchor::Unspecified, input).to_string_lossy().to_string()
+    path_from(base_dir, PathAnchor::Unspecified, input)
+        .to_string_lossy()
+        .to_string()
 }
 
 /// replace a group in the execution string, using
 ///  data from the user input and from the selected line
-pub fn do_exec_replacement(ec: &Captures<'_>, replacement_map: &FnvHashMap<String, String>) -> String {
+pub fn do_exec_replacement(
+    ec: &Captures<'_>,
+    replacement_map: &FnvHashMap<String, String>,
+) -> String {
     let name = ec.get(1).unwrap().as_str();
     if let Some(repl) = replacement_map.get(name) {
         if let Some(fmt) = ec.get(2) {

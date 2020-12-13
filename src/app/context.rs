@@ -59,7 +59,7 @@ pub struct AppContext {
 
     /// map extensions to icons, icon set chosen based on config
     /// Send, Sync safely beause once created, everything is immutable
-    pub icons: Option<Box<dyn IconPlugin + Send + Sync >>,
+    pub icons: Option<Box<dyn IconPlugin + Send + Sync>>,
 }
 
 impl AppContext {
@@ -81,11 +81,15 @@ impl AppContext {
             .iter()
             .map(|(k, v)| SpecialPath::new(k.clone(), *v))
             .collect();
-        let search_modes = config.search_modes.as_ref()
+        let search_modes = config
+            .search_modes
+            .as_ref()
             .map(|map| map.try_into())
             .transpose()?
             .unwrap_or_default();
-        let cols = config.cols_order.as_ref()
+        let cols = config
+            .cols_order
+            .as_ref()
             .map(Cols::try_from)
             .transpose()?
             .unwrap_or(DEFAULT_COLS);

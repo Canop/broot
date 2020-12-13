@@ -24,7 +24,7 @@ macro_rules! overwrite {
         if $src.$prop.is_some() {
             $dst.$prop = $src.$prop.take();
         }
-    }
+    };
 }
 
 macro_rules! overwrite_map {
@@ -32,7 +32,7 @@ macro_rules! overwrite_map {
         for (k, v) in $src.$prop {
             $dst.$prop.insert(k, v);
         }
-    }
+    };
 }
 
 /// The configuration read from conf.toml file(s)
@@ -64,7 +64,7 @@ impl Conf {
     /// If there's no conf.hjson file in the default conf directory,
     /// and if there's a toml file, return this toml file.
     pub fn default_location() -> PathBuf {
-        super::dir() .join("conf.toml")
+        super::dir().join("conf.toml")
     }
 
     /// read the configuration file from the default OS specific location.
@@ -83,11 +83,7 @@ impl Conf {
         }
         let mut conf = Conf::default();
         match conf.read_file(conf_filepath) {
-            Err(e) => {
-                println!("{:?}", e);
-                println!("Please delete or fix this file.");
-                Err(e)
-            }
+            Err(e) => Err(e),
             _ => Ok(conf),
         }
     }

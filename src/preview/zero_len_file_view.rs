@@ -1,6 +1,6 @@
 use {
     crate::{
-        display::{CropWriter, SPACE_FILLING, Screen, W},
+        display::{CropWriter, Screen, SPACE_FILLING, W},
         errors::ProgramError,
         skin::PanelSkin,
     },
@@ -24,9 +24,7 @@ pub struct ZeroLenFileView {
 
 impl ZeroLenFileView {
     pub fn new(path: PathBuf) -> Self {
-        Self {
-            path,
-        }
+        Self { path }
     }
     pub fn display(
         &mut self,

@@ -21,7 +21,7 @@ use {
         imageops::FilterType,
     },
     std::path::{Path, PathBuf},
-    termimad::{Area},
+    termimad::Area,
 };
 
 /// an already resized image, with the dimensions it
@@ -77,12 +77,8 @@ impl ImageView {
         #[cfg(unix)]
         if let Some(renderer) = crate::kitty::image_renderer() {
             let mut renderer = renderer.lock().unwrap();
-            renderer.print(
-                w,
-                &self.source_img,
-                area,
-            )?;
-            for y in area.top..area.top+area.height {
+            renderer.print(w, &self.source_img, area)?;
+            for y in area.top..area.top + area.height {
                 w.queue(cursor::MoveTo(area.left, y))?;
                 fill_bg(w, area.width as usize, bg)?;
             }
@@ -90,9 +86,11 @@ impl ImageView {
         }
 
         let target_width = area.width as u32;
-        let target_height = (area.height*2) as u32;
-        let cached = self.display_img.as_ref()
-            .filter(|ci| ci.target_width==target_width && ci.target_height==target_height);
+        let target_height = (area.height * 2) as u32;
+        let cached = self
+            .display_img
+            .as_ref()
+            .filter(|ci| ci.target_width == target_width && ci.target_height == target_height);
         let img = match cached {
             Some(ci) => &ci.img,
             None => {
@@ -114,7 +112,7 @@ impl ImageView {
         debug_assert!(width <= area.width as u32);
         let mut double_line = DoubleLine::new(width as usize, con.true_colors);
         let mut y = area.top;
-        let img_top_offset = (area.height - (height/2) as u16)/2;
+        let img_top_offset = (area.height - (height / 2) as u16) / 2;
         for _ in 0..img_top_offset {
             w.queue(cursor::MoveTo(area.left, y))?;
             fill_bg(w, area.width as usize, bg)?;
@@ -137,7 +135,7 @@ impl ImageView {
             y += 1;
         }
         w.queue(SetBackgroundColor(bg))?;
-        for y in y..area.top+area.height {
+        for y in y..area.top + area.height {
             w.queue(cursor::MoveTo(area.left, y))?;
             fill_bg(w, area.width as usize, bg)?;
         }

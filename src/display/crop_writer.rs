@@ -1,9 +1,6 @@
 use {
-    super::{TAB_REPLACEMENT, Filling},
-    crossterm::{
-        QueueableCommand,
-        style::Print,
-    },
+    super::{Filling, TAB_REPLACEMENT},
+    crossterm::{style::Print, QueueableCommand},
     std::borrow::Cow,
     termimad::{
         CompoundStyle,
@@ -107,7 +104,7 @@ where
             if len > self.allowed {
                 s.truncate(idx);
                 self.allowed = 0;
-                return cs.queue(self.w, s)
+                return cs.queue(self.w, s);
             }
         }
         self.allowed -= len;
@@ -125,7 +122,12 @@ where
     pub fn fill_unstyled(&mut self, filling: &'static Filling) -> Result<()> {
         self.repeat_unstyled(filling, self.allowed)
     }
-    pub fn repeat(&mut self, cs: &CompoundStyle, filling: &'static Filling, mut len: usize) -> Result<()> {
+    pub fn repeat(
+        &mut self,
+        cs: &CompoundStyle,
+        filling: &'static Filling,
+        mut len: usize,
+    ) -> Result<()> {
         len = len.min(self.allowed);
         self.allowed -= len;
         filling.queue_styled(self.w, cs, len)

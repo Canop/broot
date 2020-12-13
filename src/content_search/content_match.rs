@@ -5,7 +5,7 @@
 pub struct ContentMatch {
     pub extract: String,
     pub needle_start: usize, // position in the extract, in bytes
-    pub needle_end: usize, // length in bytes
+    pub needle_end: usize,   // length in bytes
 }
 
 impl ContentMatch {
@@ -21,14 +21,14 @@ impl ContentMatch {
             if extract_start == 0 || extract_end - extract_start >= desired_len / 2 {
                 break;
             }
-            let c = hay[extract_start-1];
+            let c = hay[extract_start - 1];
             if c < 32 {
                 break;
             }
             extract_start -= 1;
         }
         // left trimming
-        while (hay[extract_start]==32) && extract_start<pos {
+        while (hay[extract_start] == 32) && extract_start < pos {
             extract_start += 1;
         }
         loop {

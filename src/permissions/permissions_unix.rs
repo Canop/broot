@@ -9,7 +9,8 @@ pub fn supported() -> bool {
 
 pub fn user_name(uid: u32) -> String {
     lazy_static! {
-        static ref USERS_CACHE_MUTEX: Mutex<FnvHashMap<u32, String>> = Mutex::new(FnvHashMap::default());
+        static ref USERS_CACHE_MUTEX: Mutex<FnvHashMap<u32, String>> =
+            Mutex::new(FnvHashMap::default());
     }
     let mut users_cache = USERS_CACHE_MUTEX.lock().unwrap();
     let name = users_cache

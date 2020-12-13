@@ -1,4 +1,3 @@
-
 /// The unique identifiant of a panel
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct PanelId(usize);

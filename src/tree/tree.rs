@@ -355,7 +355,7 @@ impl Tree {
                 TreeLineType::Dir | TreeLineType::Pruning => {}
                 _ => {
                     self.lines[i].sum = Some(FileSum::from_file(&self.lines[i].path));
-                },
+                }
             }
         }
         self.sort_siblings();
@@ -413,8 +413,7 @@ impl Tree {
                 });
                 self.try_select_path(&selected_path);
             }
-            Sort::None => {
-            }
+            Sort::None => {}
         }
     }
 

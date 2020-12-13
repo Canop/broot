@@ -1,10 +1,7 @@
 use {
     super::*,
     crate::{
-        app::{
-            AppContext,
-            Selection,
-        },
+        app::{AppContext, Selection},
         display::W,
         errors::ProgramError,
         keys,
@@ -90,11 +87,12 @@ impl PanelInput {
                 Internal::input_go_word_right => self.input_field.move_word_right(),
                 Internal::input_go_to_start => self.input_field.move_to_start(),
                 Internal::input_go_to_end => self.input_field.move_to_end(),
-                #[cfg(feature="clipboard")]
+                #[cfg(feature = "clipboard")]
                 Internal::input_paste => {
                     match terminal_clipboard::get_string() {
                         Ok(pasted) => {
-                            for c in pasted.chars()
+                            for c in pasted
+                                .chars()
                                 .filter(|c| c.is_alphanumeric() || c.is_ascii_punctuation())
                             {
                                 self.input_field.put_char(c);
@@ -190,7 +188,10 @@ impl PanelInput {
                             }
                         };
                         if let Some(added) = added {
-                            let mut raw = self.input_before_cycle.as_ref().map_or(raw, |s| s.to_string());
+                            let mut raw = self
+                                .input_before_cycle
+                                .as_ref()
+                                .map_or(raw, |s| s.to_string());
                             raw.push_str(&added);
                             self.input_field.set_content(&raw);
                             return Command::from_raw(raw, false);

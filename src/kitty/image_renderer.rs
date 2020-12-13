@@ -147,7 +147,8 @@ impl<'i> KittyImage<'i> {
         let mut pos = 0;
         loop {
             if pos + CHUNK_SIZE < encoded.len() {
-                write!(w,
+                write!(
+                    w,
                     "\u{1b}_Ga=T,f={},t=d,i={},s={},v={},c={},r={},m=1;{}\u{1b}\\",
                     self.data.kitty_format(),
                     self.id,
@@ -155,15 +156,12 @@ impl<'i> KittyImage<'i> {
                     self.img_height,
                     self.area.width,
                     self.area.height,
-                    &encoded[pos..pos+CHUNK_SIZE],
+                    &encoded[pos..pos + CHUNK_SIZE],
                 )?;
                 pos += CHUNK_SIZE;
             } else {
                 // last chunk
-                write!(w,
-                    "\u{1b}_Gm=0;{}\u{1b}\\",
-                    &encoded[pos..encoded.len()],
-                )?;
+                write!(w, "\u{1b}_Gm=0;{}\u{1b}\\", &encoded[pos..encoded.len()],)?;
                 break;
             }
         }
@@ -194,7 +192,8 @@ impl<'i> KittyImage<'i> {
         let encoded_path = base64::encode(path);
         debug!("temp file written: {:?}", path);
         w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
-        write!(w,
+        write!(
+            w,
             "\u{1b}_Ga=T,f={},t=t,i={},s={},v={},c={},r={};{}\u{1b}\\",
             self.data.kitty_format(),
             self.id,
@@ -309,7 +308,4 @@ impl KittyImageRenderer {
         }
     }
 }
-
-
-
 

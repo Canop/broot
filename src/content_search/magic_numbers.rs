@@ -20,7 +20,7 @@ pub const MIN_FILE_SIZE: usize = 100;
 
 // signatures starting with 00, FF or FE don't need to be put here
 // note: the phf_set macro doesn't seem to allow u32 litterals like 0x504B0304
-static SIGNATURES_4: Set<[u8;4]> = phf_set! {
+static SIGNATURES_4: Set<[u8; 4]> = phf_set! {
     [ 0x50, 0x4B, 0x03, 0x04 ], // zip file format and formats based on it, such as EPUB, JAR, ODF, OOXML
     [ 0x50, 0x4B, 0x05, 0x06 ], // zip file format and formats based on it, such as EPUB, JAR, ODF, OOXML
     [ 0x50, 0x4B, 0x07, 0x08 ], // zip file format and formats based on it, such as EPUB, JAR, ODF, OOXML

@@ -60,23 +60,26 @@ impl FilesystemState {
         let mounts = mount_list
             .load()?
             .iter()
-            .filter(|mount|
+            .filter(|mount| {
                 if show_only_disks {
                     mount.disk.is_some()
                 } else {
                     mount.stats.is_some()
                 }
-            )
+            })
             .cloned()
             .collect::<Vec<Mount>>();
         let mounts: NonEmptyVec<Mount> = match mounts.try_into() {
             Ok(nev) => nev,
             _ => {
-                return Err(ProgramError::Lfs{details: "no disk in lfs-core list".to_string()});
+                return Err(ProgramError::Lfs {
+                    details: "no disk in lfs-core list".to_string(),
+                });
             }
         };
         let device_id = fs::metadata(path)?.dev().into();
-        let selection_idx = mounts.iter()
+        let selection_idx = mounts
+            .iter()
             .position(|m| m.info.dev == device_id)
             .unwrap_or(0);
         Ok(FilesystemState {
@@ -89,7 +92,8 @@ impl FilesystemState {
         })
     }
     pub fn count(&self) -> usize {
-        self.filtered.as_ref()
+        self.filtered
+            .as_ref()
             .map(|f| f.mounts.len())
             .unwrap_or_else(|| self.mounts.len().into())
     }
@@ -282,9 +286,9 @@ impl AppState for FilesystemState {
         //- horizontal line
         w.queue(cursor::MoveTo(area.left, 1 + area.top))?;
         let mut cw = CropWriter::new(w, width);
-        cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = wc_fs+1))?;
+        cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = wc_fs + 1))?;
         if e_dsk {
-            cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_dsk+1))?;
+            cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_dsk + 1))?;
         }
         if e_type {
             cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_type+1))?;
@@ -350,7 +354,7 @@ impl AppState for FilesystemState {
                     cw.queue_char(border_style, '│')?;
                 }
                 // size, used, free
-                if let Some(stats) = mount.stats.as_ref().filter(|s|s.size()>0) {
+                if let Some(stats) = mount.stats.as_ref().filter(|s| s.size() > 0) {
                     // size
                     cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(mount.size())))?;
                     cw.queue_char(border_style, '│')?;
@@ -437,11 +441,12 @@ impl AppState for FilesystemState {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 if let Some(f) = self.filtered.as_mut() {
                     if f.selection_idx + 1 < f.mounts.len() {
-                        f.selection_idx += count.min(f.mounts.len()-f.selection_idx);
+                        f.selection_idx += count.min(f.mounts.len() - f.selection_idx);
                     }
                 } else {
                     if self.selection_idx + 1 < self.count() {
-                        self.selection_idx += count.min(self.mounts.len().get()-self.selection_idx);
+                        self.selection_idx +=
+                            count.min(self.mounts.len().get() - self.selection_idx);
                     }
                 }
                 AppStateCmdResult::Keep

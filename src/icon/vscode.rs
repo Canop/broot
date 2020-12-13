@@ -36,23 +36,44 @@ impl VSCodeIconPlugin {
     }
 
     pub fn new() -> Self {
-        let icon_name_to_icon_codepoint_map: FnvHashMap<&'static str, u32>
-            = ( include!( "../../resources/icons/vscode/data/icon_name_to_icon_code_point_map.rs" ) ).iter().cloned().collect();
+        let icon_name_to_icon_codepoint_map: FnvHashMap<&'static str, u32> =
+            (include!("../../resources/icons/vscode/data/icon_name_to_icon_code_point_map.rs"))
+                .iter()
+                .cloned()
+                .collect();
 
-        let double_extension_to_icon_name_map: FnvHashMap<&'static str, &'static str>
-            = ( include!( "../../resources/icons/vscode/data/double_extension_to_icon_name_map.rs" ) ).iter().cloned().collect();
+        let double_extension_to_icon_name_map: FnvHashMap<&'static str, &'static str> =
+            (include!("../../resources/icons/vscode/data/double_extension_to_icon_name_map.rs"))
+                .iter()
+                .cloned()
+                .collect();
 
-        let extension_to_icon_name_map: FnvHashMap<&'static str, &'static str>
-            = ( include!( "../../resources/icons/vscode/data/extension_to_icon_name_map.rs" ) ).iter().cloned().collect();
+        let extension_to_icon_name_map: FnvHashMap<&'static str, &'static str> =
+            (include!("../../resources/icons/vscode/data/extension_to_icon_name_map.rs"))
+                .iter()
+                .cloned()
+                .collect();
 
-        let file_name_to_icon_name_map: FnvHashMap<&'static str, &'static str>
-            = ( include!( "../../resources/icons/vscode/data/file_name_to_icon_name_map.rs" ) ).iter().cloned().collect();
+        let file_name_to_icon_name_map: FnvHashMap<&'static str, &'static str> =
+            (include!("../../resources/icons/vscode/data/file_name_to_icon_name_map.rs"))
+                .iter()
+                .cloned()
+                .collect();
 
         #[cfg(debug_assertions)]
         {
-            Self::sanity_check( &file_name_to_icon_name_map        , &icon_name_to_icon_codepoint_map );
-            Self::sanity_check( &double_extension_to_icon_name_map , &icon_name_to_icon_codepoint_map );
-            Self::sanity_check( &extension_to_icon_name_map        , &icon_name_to_icon_codepoint_map );
+            Self::sanity_check(
+                &file_name_to_icon_name_map,
+                &icon_name_to_icon_codepoint_map,
+            );
+            Self::sanity_check(
+                &double_extension_to_icon_name_map,
+                &icon_name_to_icon_codepoint_map,
+            );
+            Self::sanity_check(
+                &extension_to_icon_name_map,
+                &icon_name_to_icon_codepoint_map,
+            );
         }
 
         let default_icon_point = *icon_name_to_icon_codepoint_map.get("default_file").unwrap();
@@ -65,18 +86,13 @@ impl VSCodeIconPlugin {
         }
     }
 
-    fn handle_single_extension(
-        &self,
-        ext: Option<String>
-    ) -> &'static str {
+    fn handle_single_extension(&self, ext: Option<String>) -> &'static str {
         match ext {
             None => "default_file",
-            Some(ref e) => {
-                match self.extension_to_icon_name_map.get(e as &str) {
-                    None => "default_file",
-                    Some(icon_name) => icon_name,
-                }
-            }
+            Some(ref e) => match self.extension_to_icon_name_map.get(e as &str) {
+                None => "default_file",
+                Some(icon_name) => icon_name,
+            },
         }
     }
 
@@ -99,12 +115,10 @@ impl VSCodeIconPlugin {
     ) -> &'static str {
         match double_ext {
             None => self.handle_single_extension(ext),
-            Some(ref de) => {
-                match self.double_extension_to_icon_name_map.get(de as &str) {
-                    None => self.handle_single_extension(ext),
-                    Some(icon_name) => icon_name,
-                }
-            }
+            Some(ref de) => match self.double_extension_to_icon_name_map.get(de as &str) {
+                None => self.handle_single_extension(ext),
+                Some(icon_name) => icon_name,
+            },
         }
     }
 }
@@ -120,23 +134,22 @@ impl IconPlugin for VSCodeIconPlugin {
     ) -> char {
         let icon_name = match tree_line_type {
             TreeLineType::Dir => "default_folder",
-            TreeLineType::SymLink{ .. } => "emoji_type_link", //bad but nothing better
-            TreeLineType::File  => {
-                self.handle_file(
-                    &name.to_ascii_lowercase(),
-                    double_ext.map(|de| de.to_ascii_lowercase()),
-                    ext.map(|e| e.to_ascii_lowercase()),
-                )
-            },
+            TreeLineType::SymLink { .. } => "emoji_type_link", //bad but nothing better
+            TreeLineType::File => self.handle_file(
+                &name.to_ascii_lowercase(),
+                double_ext.map(|de| de.to_ascii_lowercase()),
+                ext.map(|e| e.to_ascii_lowercase()),
+            ),
             TreeLineType::Pruning => "file_type_kite", //irrelevant
             _ => "default_file",
         };
 
         let entry_icon = unsafe {
             std::char::from_u32_unchecked(
-                *self.icon_name_to_icon_codepoint_map
-                    .get( icon_name )
-                    .unwrap_or(&self.default_icon_point)
+                *self
+                    .icon_name_to_icon_codepoint_map
+                    .get(icon_name)
+                    .unwrap_or(&self.default_icon_point),
             )
         };
 

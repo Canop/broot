@@ -15,7 +15,8 @@ use {
 };
 
 lazy_static! {
-    static ref SUM_CACHE_MUTEX: Mutex<FnvHashMap<PathBuf, FileSum>> = Mutex::new(FnvHashMap::default());
+    static ref SUM_CACHE_MUTEX: Mutex<FnvHashMap<PathBuf, FileSum>> =
+        Mutex::new(FnvHashMap::default());
 }
 
 pub fn clear_cache() {
@@ -27,9 +28,9 @@ pub fn clear_cache() {
 #[derive(Debug, Copy, Clone)]
 pub struct FileSum {
     real_size: u64, // bytes, the space it takes on disk
-    count: usize, // number of files
-    modified: u32, // seconds from Epoch to last modification, or 0 if there was an error
-    sparse: bool, // only for non directories: tells whether the file is sparse
+    count: usize,   // number of files
+    modified: u32,  // seconds from Epoch to last modification, or 0 if there was an error
+    sparse: bool,   // only for non directories: tells whether the file is sparse
 }
 
 impl FileSum {

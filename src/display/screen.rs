@@ -1,4 +1,5 @@
 use {
+    super::W,
     crate::{
         app::AppContext,
         errors::ProgramError,
@@ -9,7 +10,6 @@ use {
         terminal::{Clear, ClearType},
         QueueableCommand,
     },
-    super::W,
     termimad::Area,
 };
 
@@ -53,8 +53,8 @@ impl Screen {
     }
     /// clear the area and everything to the right.
     /// Should be used with parcimony as it could lead to flickering.
-    pub fn clear_area_to_right(self, w: &mut W, area: &Area)  -> Result<(), ProgramError> {
-        for y in area.top..area.top+area.height {
+    pub fn clear_area_to_right(self, w: &mut W, area: &Area) -> Result<(), ProgramError> {
+        for y in area.top..area.top + area.height {
             self.goto(w, area.left, y)?;
             self.clear_line(w)?;
         }

@@ -56,11 +56,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
 
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
-        external(
-            "cd",
-            "cd {directory}",
-            FromParentShell,
-        )
+        external("cd", "cd {directory}", FromParentShell)
             .with_stype(SelectionType::Directory)
             .with_key(ALT_ENTER)
             .with_description("change directory and quit"),
@@ -69,18 +65,10 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_shortcut("ol"),
 
         #[cfg(unix)]
-        external(
-            "chmod {args}",
-            "chmod {args} {file}",
-            StayInBroot,
-        )
+        external("chmod {args}", "chmod {args} {file}", StayInBroot)
             .with_stype(SelectionType::File),
         #[cfg(unix)]
-        external(
-            "chmod {args}",
-            "chmod -R {args} {file}",
-            StayInBroot,
-        )
+        external("chmod {args}", "chmod -R {args} {file}", StayInBroot)
             .with_stype(SelectionType::Directory),
         internal(open_preview),
         internal(close_preview),
@@ -98,7 +86,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             StayInBroot,
         )
             .with_shortcut("cp"),
-        #[cfg(feature="clipboard")]
+        #[cfg(feature = "clipboard")]
         internal(copy_path)
             .with_alt_key('c'),
         external(
@@ -175,11 +163,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(sort_by_count).with_shortcut("sc"),
         internal(sort_by_date).with_shortcut("sd"),
         internal(sort_by_size).with_shortcut("ss"),
-        external(
-            "rm",
-            "rm -rf {file}",
-            StayInBroot,
-        ),
+        external("rm", "rm -rf {file}", StayInBroot),
         internal(toggle_counts).with_shortcut("counts"),
         internal(toggle_dates).with_shortcut("dates"),
         internal(toggle_files).with_shortcut("files"),

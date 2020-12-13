@@ -16,7 +16,7 @@ use {
         task_sync::ComputationResult,
         tree::{Tree, TreeLine, TreeLineType},
     },
-    chrono::{Local, DateTime, TimeZone},
+    chrono::{DateTime, Local, TimeZone},
     crossterm::{
         cursor,
         style::{Color, SetBackgroundColor},
@@ -180,8 +180,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         line: &TreeLine,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
-        let (style, char) =
-        if !line.is_selectable() {
+        let (style, char) = if !line.is_selectable() {
             (&self.skin.tree, ' ')
         } else {
             match line.git_status.map(|s| s.status) {
@@ -207,7 +206,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     ) -> Result<usize, termimad::Error> {
         let date_time: DateTime<Local> = Local.timestamp(seconds, 0);
         cond_bg!(date_style, self, selected, self.skin.dates);
-        cw.queue_g_string(date_style, date_time.format(self.tree.options.date_time_format).to_string())?;
+        cw.queue_g_string(
+            date_style,
+            date_time
+                .format(self.tree.options.date_time_format)
+                .to_string(),
+        )?;
         Ok(1)
     }
 
@@ -309,7 +313,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         if extract.needle_start > 0 {
             cw.queue_str(&extract_style, &extract.extract[0..extract.needle_start])?;
         }
-        cw.queue_str(&match_style, &extract.extract[extract.needle_start..extract.needle_end])?;
+        cw.queue_str(
+            &match_style,
+            &extract.extract[extract.needle_start..extract.needle_end],
+        )?;
         if extract.needle_end < extract.extract.len() {
             cw.queue_str(&extract_style, &extract.extract[extract.needle_end..])?;
         }
@@ -377,7 +384,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
 
     /// write the whole tree on the given `W`
     pub fn write_on<W: Write>(&self, f: &mut W) -> Result<(), ProgramError> {
-        #[cfg(not(any(target_family="windows",target_os="android")))]
+        #[cfg(not(any(target_family = "windows", target_os = "android")))]
         let perm_writer = super::PermWriter::for_tree(&self.skin, &self.tree);
 
         let tree = self.tree;
@@ -446,7 +453,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             self.write_branch(cw, line_index, line, selected)?
                         }
 
-                        #[cfg(not(any(target_family="windows",target_os="android")))]
+                        #[cfg(not(any(target_family = "windows", target_os = "android")))]
                         Col::Permission if tree.options.show_permissions => {
                             perm_writer.write_permissions(cw, line, selected)?
                         }

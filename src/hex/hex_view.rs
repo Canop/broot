@@ -1,10 +1,8 @@
 use {
-    super::{
-        byte::Byte,
-    },
+    super::byte::Byte,
     crate::{
-        command::{ScrollCommand},
-        display::{CropWriter, SPACE_FILLING, Screen, W},
+        command::ScrollCommand,
+        display::{CropWriter, Screen, SPACE_FILLING, W},
         errors::ProgramError,
         skin::PanelSkin,
     },
@@ -84,8 +82,8 @@ impl HexView {
         while start_idx < self.len {
             let line_len = 16.min(self.len - start_idx);
             let mut bytes: Vec<u8> = vec![0; line_len];
-            bytes[0..line_len].copy_from_slice(&mmap[start_idx..start_idx+line_len]);
-            lines.push(HexLine{bytes});
+            bytes[0..line_len].copy_from_slice(&mmap[start_idx..start_idx + line_len]);
+            lines.push(HexLine { bytes });
             if lines.len() >= line_count {
                 break;
             }
@@ -175,7 +173,7 @@ impl HexView {
                 }
                 let line = &page[y];
                 for x in 0..16 {
-                    if x==8 && hex_middle_space {
+                    if x == 8 && hex_middle_space {
                         cw.queue_char(&styles.default, ' ')?;
                     }
                     if let Some(b) = line.bytes.get(x) {
@@ -192,7 +190,7 @@ impl HexView {
                 if chars {
                     cw.queue_char(&styles.default, ' ')?;
                     for x in 0..16 {
-                        if x==8 && chars_middle_space {
+                        if x == 8 && chars_middle_space {
                             cw.queue_char(&styles.default, ' ')?;
                         }
                         if let Some(b) = line.bytes.get(x) {

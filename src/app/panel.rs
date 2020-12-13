@@ -70,7 +70,7 @@ impl Panel {
         preview: Option<PanelId>,
         con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        let state_idx = self.states.len()-1;
+        let state_idx = self.states.len() - 1;
         let cc = CmdContext {
             cmd,
             other_path,
@@ -82,7 +82,9 @@ impl Panel {
         };
         let result = self.states[state_idx].on_command(w, &cc, screen);
         let has_previous_state = self.states.len() > 1;
-        self.status = self.state().get_status(cmd, other_path, has_previous_state, con);
+        self.status = self
+            .state()
+            .get_status(cmd, other_path, has_previous_state, con);
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
     }
@@ -96,7 +98,9 @@ impl Panel {
     ) {
         let cmd = Command::from_raw(self.input.get_content(), false);
         let has_previous_state = self.states.len() > 1;
-        self.status = self.state().get_status(&cmd, other_path, has_previous_state, con);
+        self.status = self
+            .state()
+            .get_status(&cmd, other_path, has_previous_state, con);
     }
 
     /// execute all the pending tasks until there's none remaining or
@@ -138,7 +142,7 @@ impl Panel {
         event: Event,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
-        let sel = self.states[self.states.len()-1].selection();
+        let sel = self.states[self.states.len() - 1].selection();
         self.input.on_event(w, event, con, sel)
     }
 
@@ -206,7 +210,8 @@ impl Panel {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         let state_area = self.areas.state.clone();
-        self.mut_state().display(w, screen, state_area, panel_skin, con)?;
+        self.mut_state()
+            .display(w, screen, state_area, panel_skin, con)?;
         if active || !WIDE_STATUS {
             self.write_status(w, panel_skin, screen)?;
         }
@@ -233,7 +238,14 @@ impl Panel {
         screen: Screen,
     ) -> Result<(), ProgramError> {
         let task = self.state().get_pending_task();
-        status_line::write(w, task, &self.status, &self.areas.status, panel_skin, screen)
+        status_line::write(
+            w,
+            task,
+            &self.status,
+            &self.areas.status,
+            panel_skin,
+            screen,
+        )
     }
 
     /// if a panel has a specific purpose (i.e. is here for
@@ -250,7 +262,9 @@ impl Panel {
             return Ok(());
         }
         if let Some(area) = &self.areas.purpose {
-            let shortcut = con.verb_store.verbs
+            let shortcut = con
+                .verb_store
+                .verbs
                 .iter()
                 .filter(|v| match &v.execution {
                     VerbExecution::Internal(exec) => exec.internal == Internal::start_end_panel,

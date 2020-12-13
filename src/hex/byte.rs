@@ -37,7 +37,7 @@ impl Byte {
         }
     }
 
-    pub fn style(self, styles: & StyleMap) -> & CompoundStyle {
+    pub fn style(self, styles: &StyleMap) -> &CompoundStyle {
         match self.category() {
             ByteCategory::Null => &styles.hex_null,
             ByteCategory::AsciiGraphic => &styles.hex_ascii_graphic,

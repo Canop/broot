@@ -9,16 +9,16 @@ use {
 pub struct TreeOptions {
     pub show_hidden: bool, // whether files whose name starts with a dot should be shown
     pub only_folders: bool, // whether to hide normal files and links
-    pub show_counts: bool,  // whether to show the number of files (> 1 only for dirs)
+    pub show_counts: bool, // whether to show the number of files (> 1 only for dirs)
     pub show_dates: bool,  // whether to show the last modified date
     pub show_sizes: bool,  // whether to show sizes of files and dirs
     pub show_git_file_info: bool,
     pub show_root_fs: bool, // show information relative to the fs of the root
-    pub trim_root: bool,            // whether to cut out direct children of root
-    pub show_permissions: bool,     // show classic rwx unix permissions (only on unix)
-    pub respect_git_ignore: bool,   // hide files as requested by .gitignore ?
+    pub trim_root: bool,    // whether to cut out direct children of root
+    pub show_permissions: bool, // show classic rwx unix permissions (only on unix)
+    pub respect_git_ignore: bool, // hide files as requested by .gitignore ?
     pub filter_by_git_status: bool, // only show files whose git status is not nul
-    pub pattern: InputPattern,           // an optional filtering/scoring pattern
+    pub pattern: InputPattern, // an optional filtering/scoring pattern
     pub date_time_format: &'static str,
     pub sort: Sort,
 }

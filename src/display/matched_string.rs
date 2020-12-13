@@ -1,8 +1,6 @@
 use {
     super::{CropWriter, SPACE_FILLING},
-    crate::{
-        pattern::NameMatch,
-    },
+    crate::pattern::NameMatch,
     minimad::Alignment,
     termimad::{CompoundStyle, StrFit},
 };
@@ -82,13 +80,13 @@ impl<'a, 'w> MatchedString<'a> {
         } else if let Some(w) = self.display_width {
             match self.align {
                 Alignment::Center => {
-                    cw.queue_str(&self.base_style, &format!("{:^w$}", self.string, w=w))?;
+                    cw.queue_str(&self.base_style, &format!("{:^w$}", self.string, w = w))?;
                 }
                 Alignment::Right => {
-                    cw.queue_str(&self.base_style, &format!("{:>w$}", self.string, w=w))?;
+                    cw.queue_str(&self.base_style, &format!("{:>w$}", self.string, w = w))?;
                 }
                 _ => {
-                    cw.queue_str(&self.base_style, &format!("{:<w$}", self.string, w=w))?;
+                    cw.queue_str(&self.base_style, &format!("{:<w$}", self.string, w = w))?;
                 }
             }
         } else {

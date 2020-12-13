@@ -31,7 +31,7 @@ impl Syntaxer {
         con: &AppContext,
     ) -> Option<HighlightLines<'s>> {
         path.extension()
-            .and_then(|e|e.to_str())
+            .and_then(|e| e.to_str())
             .and_then(|ext| self.syntax_set.find_syntax_by_extension(ext))
             .map(|syntax| {
                 // some OK themes:

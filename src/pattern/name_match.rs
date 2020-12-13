@@ -13,7 +13,7 @@ impl NameMatch {
         let mut index_in_pos = 0;
         let mut wrapped = false;
         for (idx, c) in name.chars().enumerate() {
-            if index_in_pos<self.pos.len() && self.pos[index_in_pos]==idx {
+            if index_in_pos < self.pos.len() && self.pos[index_in_pos] == idx {
                 index_in_pos += 1;
                 if !wrapped {
                     result.push_str(match_start);

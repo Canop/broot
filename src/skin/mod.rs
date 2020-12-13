@@ -5,8 +5,8 @@ mod ext_colors;
 mod help_mad_skin;
 mod panel_skin;
 mod purpose_mad_skin;
-mod style_map;
 mod skin_entry;
+mod style_map;
 mod status_mad_skin;
 
 pub use {
@@ -16,16 +16,12 @@ pub use {
     help_mad_skin::*,
     panel_skin::PanelSkin,
     purpose_mad_skin::*,
-    style_map::{StyleMap, StyleMaps},
     skin_entry::SkinEntry,
+    style_map::{StyleMap, StyleMaps},
     status_mad_skin::StatusMadSkinSet,
 };
 
-use {
-    crossterm::style::{
-        Color::{self, *},
-    },
-};
+use crossterm::style::Color::{self, *};
 
 pub fn gray(level: u8) -> Option<Color> {
     Some(AnsiValue(0xE8 + level))

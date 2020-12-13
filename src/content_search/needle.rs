@@ -37,9 +37,7 @@ impl Needle {
 
     pub fn new(pat: &str) -> Self {
         let bytes = pat.as_bytes().to_vec().into_boxed_slice();
-        Self {
-            bytes,
-        }
+        Self { bytes }
     }
 
     pub fn as_str(&self) -> &str {
@@ -49,7 +47,7 @@ impl Needle {
     // no, it doesn't bring more than a few % in speed
     fn find_naive_1(&self, hay: &Mmap) -> Option<usize> {
         let n = self.bytes[0];
-        hay.iter().position(|&b| b==n)
+        hay.iter().position(|&b| b == n)
     }
 
     fn find_naive_2(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
@@ -58,9 +56,7 @@ impl Needle {
         let b1 = self.bytes[1];
         unsafe {
             while pos <= max_pos {
-                if *hay.get_unchecked(pos) == b0
-                    && *hay.get_unchecked(pos+1) == b1
-                {
+                if *hay.get_unchecked(pos) == b0 && *hay.get_unchecked(pos + 1) == b1 {
                     return Some(pos);
                 }
                 pos += 1;
@@ -77,8 +73,8 @@ impl Needle {
         unsafe {
             while pos <= max_pos {
                 if *hay.get_unchecked(pos) == b0
-                    && *hay.get_unchecked(pos+1) == b1
-                    && *hay.get_unchecked(pos+2) == b2
+                    && *hay.get_unchecked(pos + 1) == b1
+                    && *hay.get_unchecked(pos + 2) == b2
                 {
                     return Some(pos);
                 }
@@ -92,9 +88,9 @@ impl Needle {
         use std::mem::transmute;
         let max_pos = hay.len() - 4;
         unsafe {
-            let needle: u32 = transmute::<[u8;4], u32>((&*self.bytes).try_into().unwrap());
+            let needle: u32 = transmute::<[u8; 4], u32>((&*self.bytes).try_into().unwrap());
             while pos <= max_pos {
-                if transmute::<[u8;4], u32>((&hay[pos..pos+4]).try_into().unwrap()) == needle {
+                if transmute::<[u8; 4], u32>((&hay[pos..pos + 4]).try_into().unwrap()) == needle {
                     return Some(pos);
                 }
                 pos += 1;
@@ -114,11 +110,11 @@ impl Needle {
         unsafe {
             while pos <= max_pos {
                 if *hay.get_unchecked(pos) == b0
-                    && *hay.get_unchecked(pos+1) == b1
-                    && *hay.get_unchecked(pos+2) == b2
-                    && *hay.get_unchecked(pos+3) == b3
-                    && *hay.get_unchecked(pos+4) == b4
-                    && *hay.get_unchecked(pos+5) == b5
+                    && *hay.get_unchecked(pos + 1) == b1
+                    && *hay.get_unchecked(pos + 2) == b2
+                    && *hay.get_unchecked(pos + 3) == b3
+                    && *hay.get_unchecked(pos + 4) == b4
+                    && *hay.get_unchecked(pos + 5) == b5
                 {
                     return Some(pos);
                 }
@@ -131,7 +127,7 @@ impl Needle {
     fn is_at_pos(&self, hay_stack: &Mmap, pos: usize) -> bool {
         unsafe {
             for (i, b) in self.bytes.iter().enumerate() {
-                if hay_stack.get_unchecked(i+pos) != b {
+                if hay_stack.get_unchecked(i + pos) != b {
                     return false;
                 }
             }
@@ -172,7 +168,7 @@ impl Needle {
         // we tell the system how we intent to use the mmap
         // to increase the likehod the memory is available
         // for our loop
-        #[cfg(not(any(target_family="windows",target_os="android")))]
+        #[cfg(not(any(target_family = "windows", target_os = "android")))]
         unsafe {
             libc::posix_madvise(
                 hay.as_ptr() as *mut std::ffi::c_void,
@@ -217,9 +213,9 @@ impl Needle {
             _ => { return None; }
         };
         match self.search_mmap(&hay) {
-            ContentSearchResult::Found { pos } => Some(ContentMatch::build(
-                &hay, pos, self.as_str(), desired_len,
-            )),
+            ContentSearchResult::Found { pos } => {
+                Some(ContentMatch::build(&hay, pos, self.as_str(), desired_len))
+            }
             _ => None,
         }
     }

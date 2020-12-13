@@ -36,7 +36,7 @@ impl HelpState {
         let config_path = con.config_paths
             .last()
             .cloned()
-            .unwrap_or_else(||Conf::default_location());
+            .unwrap_or_else(|| Conf::default_location());
         HelpState {
             text_area,
             scroll: 0,
@@ -153,7 +153,8 @@ impl AppState for HelpState {
             },
         );
         for feature in &features {
-            expander.sub("features")
+            expander
+                .sub("features")
                 .set("feature-name", feature.0)
                 .set("feature-description", feature.1);
         }

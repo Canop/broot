@@ -3,7 +3,7 @@ use {
     crate::{
         app::*,
         command::{Command, ScrollCommand, TriggerType},
-        display::{CropWriter, SPACE_FILLING, Screen, W},
+        display::{CropWriter, Screen, SPACE_FILLING, W},
         errors::ProgramError,
         flag::Flag,
         pattern::InputPattern,
@@ -26,7 +26,7 @@ use {
 /// set_selected_path).
 pub struct PreviewState {
     pub preview_area: Area,
-    dirty: bool, // true when background must be cleared
+    dirty: bool,   // true when background must be cleared
     path: PathBuf, // path to the previewed file
     preview: Preview,
     pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
@@ -110,7 +110,7 @@ impl AppState for PreviewState {
         } else {
             if !self.preview.is_filterable() {
                 return Ok(AppStateCmdResult::DisplayError(
-                    "this preview can't be searched".to_string()
+                    "this preview can't be searched".to_string(),
                 ));
             }
         }
@@ -127,7 +127,9 @@ impl AppState for PreviewState {
     ) {
         if self.pending_pattern.is_some() {
             let old_selection = self
-                .filtered_preview.as_ref().and_then(|p| p.get_selected_line_number())
+                .filtered_preview
+                .as_ref()
+                .and_then(|p| p.get_selected_line_number())
                 .or_else(|| self.preview.get_selected_line_number());
             let pattern = self.pending_pattern.take();
             self.filtered_preview = time!(
@@ -192,7 +194,7 @@ impl AppState for PreviewState {
         _screen: Screen,
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
-        if y >= self.preview_area.top  && y < self.preview_area.top + self.preview_area.height {
+        if y >= self.preview_area.top && y < self.preview_area.top + self.preview_area.height {
             let y = y - self.preview_area.top;
             self.mut_preview().try_select_y(y);
         }
@@ -226,7 +228,9 @@ impl AppState for PreviewState {
         let styles = &panel_skin.styles;
         w.queue(cursor::MoveTo(state_area.left, 0))?;
         let mut cw = CropWriter::new(w, state_area.width as usize);
-        let file_name = self.path.file_name()
+        let file_name = self
+            .path
+            .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
         cw.queue_str(&styles.default, &file_name)?;
@@ -241,8 +245,9 @@ impl AppState for PreviewState {
         preview.display_info(w, screen, panel_skin, &info_area)?;
         if let Err(err) = preview.display(w, screen, panel_skin, &self.preview_area, con) {
             warn!("error while displaying file: {:?}", &err);
-            if preview.get_mode().is_some() { // means it's not an error already
-                if let ProgramError::Io{source} = err {
+            if preview.get_mode().is_some() {
+                // means it's not an error already
+                if let ProgramError::Io { source } = err {
                     // we mutate the preview to Preview::IOError
                     self.preview = Preview::IOError(source);
                     return self.display(w, screen, state_area, panel_skin, con);

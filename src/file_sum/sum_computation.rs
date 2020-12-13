@@ -2,8 +2,8 @@ use {
     super::FileSum,
     crate::task_sync::Dam,
     crossbeam::channel,
-    rayon::{ThreadPool, ThreadPoolBuilder},
     fnv::FnvHashMap,
+    rayon::{ThreadPool, ThreadPoolBuilder},
     std::{
         convert::TryInto,
         fs,
@@ -41,12 +41,18 @@ const THREADS_COUNT: usize = 6;
 /// varying depending on the OS:
 /// On unix, the computation is done on blocks of 512 bytes
 /// see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
-pub fn compute_dir_sum(path: &Path, cache: &mut FnvHashMap<PathBuf, FileSum>, dam: &Dam) -> Option<FileSum> {
+pub fn compute_dir_sum(
+    path: &Path,
+    cache: &mut FnvHashMap<PathBuf, FileSum>,
+    dam: &Dam,
+) -> Option<FileSum> {
     //debug!("compute size of dir {:?} --------------- ", path);
 
     lazy_static! {
         static ref THREAD_POOL: ThreadPool = ThreadPoolBuilder::new()
-            .num_threads(THREADS_COUNT*2).build().unwrap();
+            .num_threads(THREADS_COUNT * 2)
+            .build()
+            .unwrap();
     }
 
     // to avoid counting twice a node, we store their id in a set
@@ -227,7 +233,7 @@ fn extract_seconds(md: &fs::Metadata) -> u32 {
     if let Ok(st) = md.modified() {
         if let Ok(d) = st.duration_since(std::time::UNIX_EPOCH) {
             if let Ok(secs) = d.as_secs().try_into() {
-                return secs
+                return secs;
             }
         }
     }

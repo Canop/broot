@@ -11,7 +11,7 @@ use {
 #[derive(Debug, Clone)]
 pub struct CommandParts {
     pub raw_pattern: String, // may be empty
-    pub pattern: BeTree<PatternOperator, PatternParts>, //
+    pub pattern: BeTree<PatternOperator, PatternParts>,
     pub verb_invocation: Option<VerbInvocation>, // may be empty if user typed the separator but no char after
 }
 
@@ -26,10 +26,7 @@ impl fmt::Display for CommandParts {
 }
 
 impl CommandParts {
-
-    pub fn from(
-        mut raw: String,
-    ) -> Self {
+    pub fn from(mut raw: String) -> Self {
         //let mut verb_invocation: Option<String> = None;
         let mut invocation_start_pos: Option<usize> = None;
         let mut escaping = false;
@@ -87,7 +84,7 @@ impl CommandParts {
         }
         let mut verb_invocation = None;
         if let Some(pos) = invocation_start_pos {
-            verb_invocation = Some(VerbInvocation::from(&raw[pos+1..]));
+            verb_invocation = Some(VerbInvocation::from(&raw[pos + 1..]));
             raw.truncate(pos);
         }
         CommandParts {

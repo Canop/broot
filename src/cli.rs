@@ -78,7 +78,7 @@ pub struct AppLaunchArgs {
     pub height: Option<u16>,              // an optional height to replace the screen's one
     pub no_style: bool,                   // whether to remove all styles (including colors)
 
-    #[cfg(feature="client-server")]
+    #[cfg(feature = "client-server")]
     pub listen: Option<String>,
 }
 
@@ -201,7 +201,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     let root = get_root_path(&cli_matches)?;
 
-    #[cfg(feature="client-server")]
+    #[cfg(feature = "client-server")]
     if let Some(server_name) = cli_matches.value_of("send") {
         use crate::{
             command::Sequence,
@@ -230,7 +230,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         height,
         no_style,
 
-        #[cfg(feature="client-server")]
+        #[cfg(feature = "client-server")]
         listen: cli_matches.value_of("listen").map(str::to_string),
     };
 

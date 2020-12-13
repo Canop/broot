@@ -157,7 +157,7 @@ impl SearchModeMapEntry {
             // TODO look at issues and/or code in serde-toml
             None
         } else if regex!(r"^\w*/$").is_match(conf_key) {
-            Some(conf_key[0..conf_key.len()-1].to_string())
+            Some(conf_key[0..conf_key.len() - 1].to_string())
         } else {
             return Err(ConfError::InvalidKey {
                 raw: conf_key.to_string(),

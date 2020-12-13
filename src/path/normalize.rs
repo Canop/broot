@@ -1,6 +1,4 @@
-use {
-    std::path::{Component, Path, PathBuf},
-};
+use std::path::{Component, Path, PathBuf};
 
 /// Improve the path to try remove and solve .. token.
 ///

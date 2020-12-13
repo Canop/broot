@@ -24,10 +24,7 @@ pub struct SpecialPath {
 }
 
 pub trait SpecialPathList {
-    fn find(
-        self,
-        path: &Path,
-    ) -> SpecialHandling;
+    fn find(self, path: &Path) -> SpecialHandling;
 }
 
 
@@ -44,9 +41,10 @@ impl<'de> Deserialize<'de> for SpecialHandling {
             "enter" => Ok(SpecialHandling::Enter),
             "noenter" => Ok(SpecialHandling::NoEnter),
             "hide" => Ok(SpecialHandling::Hide),
-            _ => Err(D::Error::custom(
-                format!("unrecognized special handling: {:?}", s)
-            )),
+            _ => Err(D::Error::custom(format!(
+                "unrecognized special handling: {:?}",
+                s
+            ))),
         }
 
     }
@@ -74,10 +72,7 @@ impl SpecialPath {
 }
 
 impl SpecialPathList for &[SpecialPath] {
-    fn find(
-        self,
-        path: &Path,
-    ) -> SpecialHandling {
+    fn find(self, path: &Path) -> SpecialHandling {
         for sp in self {
             if sp.pattern.matches_path(path) {
                 return sp.handling;

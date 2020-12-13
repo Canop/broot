@@ -10,7 +10,7 @@ pub enum ContentSearchResult {
     },
 
     /// the needle hasn't been found
-    NotFound,    // no match
+    NotFound, // no match
 
     /// the file wasn't searched because it's binary or too big
     NotSuitable,

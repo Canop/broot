@@ -3,7 +3,7 @@ use {
         display::{fill_bg, W},
         errors::ProgramError,
     },
-    ansi_colours::self,
+    ansi_colours,
     crossterm::{
         style::{
             Color,
@@ -68,7 +68,9 @@ impl DoubleLine {
         right_margin: usize,
         bg: Color,
     ) -> Result<(), ProgramError> {
-        debug_assert!(self.pixels.len()==self.img_width || self.pixels.len() == 2*self.img_width);
+        debug_assert!(
+            self.pixels.len() == self.img_width || self.pixels.len() == 2 * self.img_width
+        );
         // we may have either one or two lines
         let simple = self.pixels.len() < 2 * self.img_width;
         fill_bg(w, left_margin, bg)?;

@@ -22,7 +22,7 @@ impl Filling {
     // to allow normal static fillings
     pub fn from_char(filling_char: char) -> Self {
         let char_size = String::from(filling_char).len();
-        let mut filling_string = String::with_capacity(char_size*FILLING_STRING_CHAR_LEN);
+        let mut filling_string = String::with_capacity(char_size * FILLING_STRING_CHAR_LEN);
         for _ in 0..FILLING_STRING_CHAR_LEN {
             filling_string.push(filling_char);
         }
@@ -40,7 +40,7 @@ impl Filling {
     {
         while len > 0 {
             let sl = len.min(FILLING_STRING_CHAR_LEN);
-            w.queue(Print(&self.filling_string[0..sl*self.char_size]))?;
+            w.queue(Print(&self.filling_string[0..sl * self.char_size]))?;
             len -= sl;
         }
         Ok(())
@@ -55,7 +55,7 @@ impl Filling {
     {
         while len > 0 {
             let sl = len.min(FILLING_STRING_CHAR_LEN);
-            cs.queue_str(w, &self.filling_string[0..sl*self.char_size])?;
+            cs.queue_str(w, &self.filling_string[0..sl * self.char_size])?;
             len -= sl;
         }
         Ok(())

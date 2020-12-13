@@ -95,7 +95,7 @@ impl BLine {
         }
         false
     }
-    pub fn to_tree_line(&self, con: &AppContext ) -> std::io::Result<TreeLine> {
+    pub fn to_tree_line(&self, con: &AppContext) -> std::io::Result<TreeLine> {
         let has_error = self.has_error;
         let line_type = TreeLineType::new(&self.path, &self.file_type);
         let unlisted = if let Some(children) = &self.children {
@@ -105,8 +105,8 @@ impl BLine {
             0
         };
         let metadata = fs::symlink_metadata(&self.path)?;
-        let subpath = TreeLine::make_displayable_name( &self.subpath, &self.path, &line_type, con, );
-        let name    = TreeLine::make_displayable_name( &self.name   , &self.path, &line_type, con, );
+        let subpath = TreeLine::make_displayable_name(&self.subpath, &self.path, &line_type, con);
+        let name = TreeLine::make_displayable_name(&self.name, &self.path, &line_type, con);
 
         Ok(TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),

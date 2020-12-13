@@ -52,7 +52,7 @@ impl ExactPattern {
                 score += BONUS_EXACT;
             }
         } else {
-            if is_word_separator(candidate.as_bytes()[start-1]) {
+            if is_word_separator(candidate.as_bytes()[start - 1]) {
                 score += BONUS_START_WORD;
             }
             score += BONUS_DISTANCE_FROM_START * start as i32;
@@ -84,7 +84,8 @@ impl ExactPattern {
 
     /// compute the score of the best match
     pub fn score_of(&self, candidate: &str) -> Option<i32> {
-        candidate.find(&self.pattern)
+        candidate
+            .find(&self.pattern)
             .map(|start| self.score(start, candidate))
     }
 }

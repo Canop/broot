@@ -9,12 +9,8 @@ use {
         style::{ResetColor, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
-    lfs_core::{
-        Mount,
-    },
-    termimad::{
-        ProgressBar,
-    },
+    lfs_core::Mount,
+    termimad::ProgressBar,
 };
 
 /// an abstract of the space info relative to a block device.
@@ -101,7 +97,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
                 if let Some(bg_color) = bg {
                     cw.w.queue(SetBackgroundColor(bg_color))?;
                 } else {
-                    cw.w.queue(ResetColor{})?;
+                    cw.w.queue(ResetColor {})?;
                 }
                 cw.w.queue(SetForegroundColor(share_color))?;
                 cw.queue_unstyled_char(' ')?;
@@ -113,19 +109,19 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
                 if let Some(bg_color) = bg {
                     cw.w.queue(SetBackgroundColor(bg_color))?;
                 } else {
-                    cw.w.queue(ResetColor{})?;
+                    cw.w.queue(ResetColor {})?;
                 }
                 cw.queue_unstyled_char(' ')?;
                 cw.w.queue(SetBackgroundColor(share_color))?;
-                cw.queue_unstyled_g_string(format!("{:<width$}", pb, width=w_bar))?;
+                cw.queue_unstyled_g_string(format!("{:<width$}", pb, width = w_bar))?;
             }
             if let Some(bg_color) = bg {
                 cw.w.queue(SetBackgroundColor(bg_color))?;
             } else {
-                cw.w.queue(ResetColor{})?;
+                cw.w.queue(ResetColor {})?;
             }
             cw.w.queue(SetForegroundColor(share_color))?;
-            cw.queue_unstyled_g_string(format!("{:>3.0}%", 100.0*s.use_share()))?;
+            cw.queue_unstyled_g_string(format!("{:>3.0}%", 100.0 * s.use_share()))?;
         } else {
             // there's not much to print if there's no size info
             cw.queue_g_string(&txt_style, format!(" {}", &self.mount.info.fs))?;

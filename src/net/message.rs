@@ -36,13 +36,9 @@ impl Message {
     pub fn read<BR: BufRead>(r: &mut BR) -> Result<Self, NetError> {
         // the first line gives the type of message
         match read_line(r)?.as_ref() {
-            "CMD" => Ok(Self::Command(
-                read_line(r)?,
-            )),
+            "CMD" => Ok(Self::Command(read_line(r)?)),
             "GET_ROOT" => Ok(Self::GetRoot),
-            "ROOT" => Ok(Self::Root(
-                read_line(r)?,
-            )),
+            "ROOT" => Ok(Self::Root(read_line(r)?)),
             "SEQ" => Ok(Self::Sequence(Sequence::new(
                 read_line(r)?,
                 Some(read_line(r)?),

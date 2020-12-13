@@ -5,8 +5,8 @@ use {
         task_sync::{Computation, ComputationResult, Dam},
     },
     crossbeam::channel::bounded,
-    git2::Repository,
     fnv::FnvHashMap,
+    git2::Repository,
     std::{
         path::{Path, PathBuf},
         sync::Mutex,

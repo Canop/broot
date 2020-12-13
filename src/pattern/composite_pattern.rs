@@ -5,9 +5,7 @@ use {
         errors::PatternError,
     },
     bet::*,
-    std::{
-        path::Path,
-    },
+    std::path::Path,
 };
 
 /// A pattern composing other ones with operators
@@ -18,9 +16,7 @@ pub struct CompositePattern {
 
 impl CompositePattern {
     pub fn new(expr: BeTree<PatternOperator, Pattern>) -> Self {
-        Self {
-            expr
-        }
+        Self { expr }
     }
 
     pub fn score_of_string(&self, candidate: &str) -> Option<i32> {
@@ -29,22 +25,24 @@ impl CompositePattern {
             // score evaluation
             |pat| Ok(pat.score_of_string(candidate)),
             // operator
-            |op, a, b| Ok(match (op, a, b) {
-                (And, None, _) => None, // normally not called due to short-circuit
-                (And, Some(sa), Some(Some(sb))) => Some(sa+sb),
-                (Or, None, Some(Some(sb))) => Some(sb),
-                (Or, Some(sa), Some(None)) => Some(sa),
-                (Or, Some(sa), Some(Some(sb))) => Some(sa+sb),
-                (Not, Some(_), _) => None,
-                (Not, None, _) => Some(1),
-                _ => None,
-            }),
+            |op, a, b| {
+                Ok(match (op, a, b) {
+                    (And, None, _) => None, // normally not called due to short-circuit
+                    (And, Some(sa), Some(Some(sb))) => Some(sa + sb),
+                    (Or, None, Some(Some(sb))) => Some(sb),
+                    (Or, Some(sa), Some(None)) => Some(sa),
+                    (Or, Some(sa), Some(Some(sb))) => Some(sa + sb),
+                    (Not, Some(_), _) => None,
+                    (Not, None, _) => Some(1),
+                    _ => None,
+                })
+            },
             // short-circuit. We don't short circuit on 'or' because
             // we want to use both scores
             |op, a| match (op, a) {
                 (And, None) => true,
                 _ => false,
-            }
+            },
         );
         match composite_result {
             Err(e) => {
@@ -65,22 +63,24 @@ impl CompositePattern {
             // score evaluation
             |pat| Ok(pat.score_of(candidate)),
             // operator
-            |op, a, b| Ok(match (op, a, b) {
-                (And, None, _) => None, // normally not called due to short-circuit
-                (And, Some(sa), Some(Some(sb))) => Some(sa+sb),
-                (Or, None, Some(Some(sb))) => Some(sb),
-                (Or, Some(sa), Some(None)) => Some(sa),
-                (Or, Some(sa), Some(Some(sb))) => Some(sa+sb),
-                (Not, Some(_), _) => None,
-                (Not, None, _) => Some(1),
-                _ => None,
-            }),
+            |op, a, b| {
+                Ok(match (op, a, b) {
+                    (And, None, _) => None, // normally not called due to short-circuit
+                    (And, Some(sa), Some(Some(sb))) => Some(sa + sb),
+                    (Or, None, Some(Some(sb))) => Some(sb),
+                    (Or, Some(sa), Some(None)) => Some(sa),
+                    (Or, Some(sa), Some(Some(sb))) => Some(sa + sb),
+                    (Not, Some(_), _) => None,
+                    (Not, None, _) => Some(1),
+                    _ => None,
+                })
+            },
             // short-circuit. We don't short circuit on 'or' because
             // we want to use both scores
             |op, a| match (op, a) {
                 (And, None) => true,
                 _ => false,
-            }
+            },
         );
         match composite_result {
             Err(e) => {
@@ -95,10 +95,7 @@ impl CompositePattern {
         }
     }
 
-    pub fn search_string(
-        &self,
-        candidate: &str,
-    ) -> Option<NameMatch> {
+    pub fn search_string(&self, candidate: &str) -> Option<NameMatch> {
         // an ideal algorithm would call score_of on patterns when the object is different
         // to deal with exclusions but I'll start today with something simpler
         use PatternOperator::*;
@@ -115,7 +112,7 @@ impl CompositePattern {
             |op, a| match (op, a) {
                 (Or, Some(_)) => true,
                 _ => false,
-            }
+            },
         );
         // it's possible we didn't find a result because the composition
         match composite_result {
@@ -150,7 +147,7 @@ impl CompositePattern {
             |op, a| match (op, a) {
                 (Or, Some(_)) => true,
                 _ => false,
-            }
+            },
         );
         match composite_result {
             Err(e) => {

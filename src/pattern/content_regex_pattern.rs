@@ -6,9 +6,9 @@ use {
     },
     regex,
     std::{
-        io::{self, BufReader, BufRead},
         fmt,
         fs::File,
+        io::{self, BufReader, BufRead},
         path::Path,
     },
 };

@@ -22,7 +22,7 @@ pub enum TreeLineType {
         final_is_dir: bool,
         final_target: PathBuf,
     },
-    Pruning,               // a "xxx unlisted" line
+    Pruning, // a "xxx unlisted" line
 }
 
 pub fn read_link(path: &Path) -> io::Result<PathBuf> {
@@ -50,7 +50,9 @@ impl TreeLineType {
                     direct_target.display(),
                     final_target.display(),
                 );
-                return Ok(Self::BrokenSymLink(direct_target.to_string_lossy().into_owned()))
+                return Ok(Self::BrokenSymLink(
+                    direct_target.to_string_lossy().into_owned(),
+                ));
             }
             visited.insert(final_target.clone());
             final_metadata = fs::symlink_metadata(&final_target)?;
@@ -59,7 +61,9 @@ impl TreeLineType {
             link_chain_length += 1;
             if link_chain_length > MAX_LINK_CHAIN_LENGTH {
                 info!("too long link chain at {}", direct_target.display());
-                return Ok(Self::BrokenSymLink(direct_target.to_string_lossy().into_owned()))
+                return Ok(Self::BrokenSymLink(
+                    direct_target.to_string_lossy().into_owned(),
+                ));
             }
         }
         let direct_target = direct_target.to_string_lossy().into_owned();

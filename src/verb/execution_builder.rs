@@ -1,18 +1,10 @@
 
 use {
-    super::{
-        GROUP,
-        InvocationParser,
-    },
-    crate::{
-        app::{Selection},
-        path,
-    },
-    regex::{Captures},
+    super::{InvocationParser, GROUP},
+    crate::{app::Selection, path},
     fnv::FnvHashMap,
-    std::{
-        path::{Path, PathBuf},
-    },
+    regex::Captures,
+    std::path::{Path, PathBuf},
 };
 
 /// a temporary structure gathering selection and invocation
@@ -43,9 +35,11 @@ impl<'b> ExecutionStringBuilder<'b> {
         invocation_parser: &Option<InvocationParser>,
         sel: Selection<'b>,
         other_file: &'b Option<PathBuf>,
-        invocation_args: & Option<String>,
+        invocation_args: &Option<String>,
     ) -> Self {
-        let invocation_values = invocation_parser.as_ref().zip(invocation_args.as_ref())
+        let invocation_values = invocation_parser
+            .as_ref()
+            .zip(invocation_args.as_ref())
             .and_then(|(parser, args)| parser.parse(args));
         Self {
             sel,
@@ -78,17 +72,15 @@ impl<'b> ExecutionStringBuilder<'b> {
             "directory" => Some(self.path_to_string(&self.get_directory(), escape)),
             "parent" => Some(self.path_to_string(self.get_parent(), escape)),
             "other-panel-file" => self.other_file.map(|p| self.path_to_string(p, escape)),
-            "other-panel-directory" => {
-                self.other_file
-                    .map(|p| path::closest_dir(p))
-                    .as_ref()
-                    .map(|p| self.path_to_string(p, escape))
-            }
-            "other-panel-parent" => {
-                self.other_file
-                    .and_then(|p| p.parent())
-                    .map(|p| self.path_to_string(p, escape))
-            }
+            "other-panel-directory" => self
+                .other_file
+                .map(|p| path::closest_dir(p))
+                .as_ref()
+                .map(|p| self.path_to_string(p, escape)),
+            "other-panel-parent" => self
+                .other_file
+                .and_then(|p| p.parent())
+                .map(|p| self.path_to_string(p, escape)),
             _ => {
                 // it's not one of the standard group names, so we'll look
                 // into the ones provided by the invocation pattern

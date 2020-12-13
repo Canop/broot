@@ -23,7 +23,14 @@ pub fn on_path(
     con: &AppContext,
 ) -> AppStateCmdResult {
     if in_new_panel {
-        new_panel_on_path(path, screen, tree_options, PanelPurpose::None, con, HDir::Right)
+        new_panel_on_path(
+            path,
+            screen,
+            tree_options,
+            PanelPurpose::None,
+            con,
+            HDir::Right,
+        )
     } else {
         new_state_on_path(path, screen, tree_options, con)
     }
@@ -60,13 +67,11 @@ pub fn new_panel_on_path(
     } else {
         let path = path::closest_dir(&path);
         match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
-            Ok(Some(os)) => {
-                AppStateCmdResult::NewPanel {
-                    state: Box::new(os),
-                    purpose,
-                    direction,
-                }
-            }
+            Ok(Some(os)) => AppStateCmdResult::NewPanel {
+                state: Box::new(os),
+                purpose,
+                direction,
+            },
             Ok(None) => AppStateCmdResult::Keep, // this isn't supposed to happen
             Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
         }

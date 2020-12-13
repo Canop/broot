@@ -20,7 +20,7 @@ pub struct Areas {
     pub input: Area,
     pub purpose: Option<Area>,
     pub pos_idx: usize, // from left to right
-    pub nb_pos: usize, // number of displayed panels
+    pub nb_pos: usize,  // number of displayed panels
 }
 
 const MINIMAL_PANEL_HEIGHT: u16 = 10;
@@ -97,7 +97,7 @@ impl Areas {
         let nb_pos = slots.len();
         #[allow(clippy::needless_range_loop)]
         for slot_idx in 0..nb_pos {
-            if slot_idx==nb_pos-1 {
+            if slot_idx == nb_pos - 1 {
                 panel_width = screen.width - x;
             }
             let areas: &mut Areas = match &mut slots[slot_idx] {
@@ -113,7 +113,7 @@ impl Areas {
             };
             let y = y + 1;
             areas.input = Area::new(x, y, panel_width, 1);
-            if slot_idx==nb_pos-1 {
+            if slot_idx == nb_pos - 1 {
                 // the char at the bottom right of the terminal should not be touched
                 // (it makes some terminals flicker) so the input area is one char shorter
                 areas.input.width -= 1;

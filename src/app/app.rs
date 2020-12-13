@@ -28,7 +28,7 @@ use {
 
 const ESCAPE_TO_QUIT: bool = false;
 
-#[cfg(feature="client-server")]
+#[cfg(feature = "client-server")]
 use std::sync::{Arc, Mutex};
 
 /// The GUI
@@ -55,7 +55,7 @@ pub struct App {
     preview: Option<PanelId>,
 
     /// the root of the active panel
-    #[cfg(feature="client-server")]
+    #[cfg(feature = "client-server")]
     root: Arc<Mutex<PathBuf>>,
 
     /// sender to the sequence channel
@@ -96,7 +96,7 @@ impl App {
             created_panels_count: 1,
             preview: None,
 
-            #[cfg(feature="client-server")]
+            #[cfg(feature = "client-server")]
             root: Arc::new(Mutex::new(con.launch_args.root.clone())),
             tx_seqs,
             rx_seqs,
@@ -105,7 +105,7 @@ impl App {
 
     /// return the current index of the panel whith given id
     fn panel_idx(&self, id: PanelId) -> Option<usize> {
-        self.panels.iter().position(|panel| panel.id==id)
+        self.panels.iter().position(|panel| panel.id == id)
     }
 
     fn state(&self) -> &dyn AppState {
@@ -140,11 +140,17 @@ impl App {
             if self.preview == Some(removed_panel.id) {
                 self.preview = None;
             }
-            Areas::resize_all(self.panels.as_mut_slice(), self.screen, self.preview.is_some())
-                .expect("removing a panel should be easy");
-            self.active_panel_idx = self.panels.iter()
+            Areas::resize_all(
+                self.panels.as_mut_slice(),
+                self.screen,
+                self.preview.is_some(),
+            )
+            .expect("removing a panel should be easy");
+            self.active_panel_idx = self
+                .panels
+                .iter()
                 .position(|p| p.id == active_panel_id)
-                .unwrap_or(self.panels.len().get()-1);
+                .unwrap_or(self.panels.len().get() - 1);
             true
         } else {
             false // there's no other panel to go to
@@ -206,7 +212,7 @@ impl App {
         if len == 3 {
             if let Some(preview_id) = self.preview {
                 for (idx, panel) in self.panels.iter().enumerate() {
-                    if self.active_panel_idx!=idx && panel.id != preview_id {
+                    if self.active_panel_idx != idx && panel.id != preview_id {
                         return Some(panel.state().selected_path().to_path_buf());
                     }
                 }
@@ -360,7 +366,12 @@ impl App {
                     self.active_panel_idx
                 };
                 let with_preview = purpose.is_preview() || self.preview.is_some();
-                match Areas::create(self.panels.as_mut_slice(), insertion_idx, screen, with_preview) {
+                match Areas::create(
+                    self.panels.as_mut_slice(),
+                    insertion_idx,
+                    screen,
+                    with_preview,
+                ) {
                     Ok(areas) => {
                         let panel_id = self.created_panels_count.into();
                         let mut panel = Panel::new(panel_id, state, areas, con);
@@ -532,7 +543,9 @@ impl App {
         self.screen.clear_bottom_right_char(w, &skin.focused)?;
 
         if let Some(raw_sequence) = &con.launch_args.commands {
-            self.tx_seqs.send(Sequence::new_local(raw_sequence.to_string())).unwrap();
+            self.tx_seqs
+                .send(Sequence::new_local(raw_sequence.to_string()))
+                .unwrap();
         }
 
         #[cfg(feature="client-server")]
@@ -567,7 +580,11 @@ impl App {
                         }
                         Event::Resize(w, h) => {
                             self.screen.set_terminal_size(w, h, con);
-                            Areas::resize_all(self.panels.as_mut_slice(), self.screen, self.preview.is_some())?;
+                            Areas::resize_all(
+                                self.panels.as_mut_slice(),
+                                self.screen,
+                                self.preview.is_some(),
+                            )?;
                             for panel in &mut self.panels {
                                 panel.mut_state().refresh(self.screen, con);
                             }

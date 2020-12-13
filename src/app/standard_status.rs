@@ -29,19 +29,24 @@ impl StandardStatus {
     pub fn new(verb_store: &VerbStore) -> Self {
         let tree_top_focus = "*enter* to go up".to_string(); // enter is hardcoded on focus
         let tree_dir_focus = "*enter* to focus".to_string();
-        let tree_dir_cd = verb_store.key_desc_of_internal_stype(Internal::open_leave, SelectionType::Directory)
+        let tree_dir_cd = verb_store
+            .key_desc_of_internal_stype(Internal::open_leave, SelectionType::Directory)
             .map(|k| format!("*{}* to cd", k));
-        let tree_file_open_stay = verb_store.key_desc_of_internal_stype(Internal::open_stay, SelectionType::File)
+        let tree_file_open_stay = verb_store
+            .key_desc_of_internal_stype(Internal::open_stay, SelectionType::File)
             .map(|k| format!("*{}* to open the file", k));
-        let tree_file_open_leave = verb_store.key_desc_of_internal_stype(Internal::open_leave, SelectionType::File)
+        let tree_file_open_leave = verb_store
+            .key_desc_of_internal_stype(Internal::open_leave, SelectionType::File)
             .map(|k| format!("*{}* to open and quit", k));
         //let tree_file_enter = None; // TODO (for when enter is customized)
         let tree_unfiltered = "a few letters to search".to_string();
         let tree_filtered = "*esc* to clear the filter".to_string();
         let preview_unfiltered = "a pattern to filter".to_string();
-        let preview_filtered = verb_store.key_desc_of_internal(Internal::panel_right)
+        let preview_filtered = verb_store
+            .key_desc_of_internal(Internal::panel_right)
             .map(|k| format!("*{}* to reveal the text", k));
-        let preview_restorable_filter = verb_store.key_desc_of_internal(Internal::panel_left)
+        let preview_restorable_filter = verb_store
+            .key_desc_of_internal(Internal::panel_left)
             .map(|k| format!("*{}* to restore the filter", k));
         let not_first_state = "*esc* to go back".to_string();
         let help = "*?* for help".to_string();
@@ -91,13 +96,12 @@ impl<'b> StatusParts<'b> {
     fn to_status(&self) -> Status {
         let mut md = String::new();
         for (i, p) in self.md_parts.iter().enumerate() {
-            md.push_str(
-                if i==0 {
-                    "Hit "
-                } else if i == self.md_parts.len() - 1 {
-                    ", or "
-                } else {
-                    ", "
+            md.push_str(if i == 0 {
+                "Hit "
+            } else if i == self.md_parts.len() - 1 {
+                ", or "
+            } else {
+                ", "
             });
             md.push_str(p);
         }

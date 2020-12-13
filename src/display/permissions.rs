@@ -1,7 +1,5 @@
 use {
-    super::{
-        CropWriter,
-    },
+    super::CropWriter,
     crate::{
         errors::ProgramError,
         permissions,
@@ -102,7 +100,7 @@ impl<'s> PermWriter<'s> {
         Ok(())
     }
 
-    #[cfg(not(any(target_family="windows",target_os="android")))]
+    #[cfg(not(any(target_family = "windows", target_os = "android")))]
     pub fn write_permissions<'w, W: Write>(
         &self,
         cw: &mut CropWriter<'w, W>,

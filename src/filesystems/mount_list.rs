@@ -16,9 +16,7 @@ pub struct MountList {
 
 impl MountList {
     pub const fn new() -> Self {
-        Self {
-            mounts: None,
-        }
+        Self { mounts: None }
     }
     pub fn clear_cache(&mut self) {
         self.mounts = None;
@@ -29,12 +27,14 @@ impl MountList {
             match read_mounts() {
                 Ok(mut vec) => {
                     debug!("{} mounts loaded", vec.len());
-                    vec.sort_by_key(|m| u64::MAX-m.size());
+                    vec.sort_by_key(|m| u64::MAX - m.size());
                     self.mounts = Some(vec);
                 }
                 Err(e) => {
                     warn!("Failed to load mounts: {:?}", e);
-                    return Err(ProgramError::Lfs{details: e.to_string()});
+                    return Err(ProgramError::Lfs {
+                        details: e.to_string(),
+                    });
                 }
             }
         }

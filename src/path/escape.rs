@@ -1,6 +1,4 @@
-use {
-    std::path::Path,
-};
+use std::path::Path;
 
 /// from a path, build a string usable in a shell command, wrapping
 ///  it in quotes if necessary (and then escaping internal quotes).

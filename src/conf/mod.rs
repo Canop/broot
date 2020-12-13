@@ -1,8 +1,6 @@
 use {
     directories,
-    std::{
-        path::{Path, PathBuf},
-    },
+    std::path::{Path, PathBuf},
 };
 
 mod conf;
@@ -21,12 +19,12 @@ pub fn app_dirs() -> directories::ProjectDirs {
         .expect("Unable to find configuration directories")
 }
 
-#[cfg(not(target_os="macos"))]
+#[cfg(not(target_os = "macos"))]
 fn find_conf_dir() -> PathBuf {
     app_dirs().config_dir().to_path_buf()
 }
 
-#[cfg(target_os="macos")]
+#[cfg(target_os = "macos")]
 fn find_conf_dir() -> PathBuf {
     if let Some(user_dirs) = directories::UserDirs::new() {
         // We first search in ~/.config/broot which should be the prefered solution
@@ -40,9 +38,9 @@ fn find_conf_dir() -> PathBuf {
         // See https://github.com/Canop/broot/issues/103
         let second_choice = app_dirs().config_dir().to_path_buf();
         if second_choice.exists() {
-                // An older version of broot was used to write the
-                // config, we don't want to lose it.
-                return second_choice;
+            // An older version of broot was used to write the
+            // config, we don't want to lose it.
+            return second_choice;
         }
         // Either the config has been scraped or it's a new installation
         return prefered;

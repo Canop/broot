@@ -2,7 +2,7 @@ use {
     super::*,
     crate::{
         app::{AppContext, LineNumber},
-        command::{ScrollCommand},
+        command::ScrollCommand,
         display::*,
         errors::ProgramError,
         hex::HexView,
@@ -63,17 +63,20 @@ impl Preview {
                 ImageView::new(path).map(Self::Image)
             }
             PreviewMode::Text => {
-                Ok(SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con)
-                    .transpose()
-                    .expect("syntactic view without pattern shouldn't be none")
-                    .map(Self::Syntactic)?)
+                Ok(
+                    SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con)
+                        .transpose()
+                        .expect("syntactic view without pattern shouldn't be none")
+                        .map(Self::Syntactic)?,
+                )
             }
         }
     }
     /// build an image view, unless the file can't be interpreted
     /// as an image, in which case a hex view is used
     pub fn image(path: &Path) -> Self {
-        ImageView::new(path).ok()
+        ImageView::new(path)
+            .ok()
             .map(Self::Image)
             .unwrap_or_else(|| Self::hex(path))
 

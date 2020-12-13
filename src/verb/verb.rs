@@ -170,12 +170,14 @@ impl Verb {
             }
         }
 
-        let builder = || ExecutionStringBuilder::from_invocation(
-            &self.invocation_parser,
-            sel,
-            other_path,
-            &invocation.args,
-        );
+        let builder = || {
+            ExecutionStringBuilder::from_invocation(
+                &self.invocation_parser,
+                sel,
+                other_path,
+                &invocation.args,
+            )
+        };
         if let VerbExecution::Sequence(seq_ex) = &self.execution {
             let exec_desc = builder().shell_exec_string(&seq_ex.sequence.raw);
             format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
@@ -212,12 +214,14 @@ impl Verb {
     /// in case the verb take only one argument of type path, return
     /// the selection type of this unique argument
     pub fn get_arg_selection_type(&self) -> Option<SelectionType> {
-        self.invocation_parser.as_ref()
+        self.invocation_parser
+            .as_ref()
             .and_then(|parser| parser.arg_selection_type)
     }
 
     pub fn get_arg_anchor(&self) -> PathAnchor {
-        self.invocation_parser.as_ref()
+        self.invocation_parser
+            .as_ref()
             .map_or(PathAnchor::Unspecified, |parser| parser.arg_anchor)
     }
 

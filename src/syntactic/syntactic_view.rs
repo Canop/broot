@@ -2,8 +2,8 @@ use {
     super::*,
     crate::{
         app::{AppContext, LineNumber},
-        command::{ScrollCommand},
-        display::{CropWriter, SPACE_FILLING, Screen, W},
+        command::ScrollCommand,
+        display::{CropWriter, Screen, SPACE_FILLING, W},
         errors::*,
         pattern::{InputPattern, NameMatch},
         skin::PanelSkin,
@@ -21,9 +21,7 @@ use {
         path::{Path, PathBuf},
         str,
     },
-    syntect::{
-        highlighting::Style,
-    },
+    syntect::highlighting::Style,
     termimad::Area,
 };
 
@@ -53,9 +51,9 @@ impl Region {
 
 #[derive(Debug)]
 pub struct Line {
-    pub number: LineNumber, // starting at 1
-    pub start: usize, // offset in the file, in bytes
-    pub len: usize, // len in bytes
+    pub number: LineNumber,   // starting at 1
+    pub start: usize,         // offset in the file, in bytes
+    pub len: usize,           // len in bytes
     pub regions: Vec<Region>, // not always computed
     pub name_match: Option<NameMatch>,
 }
@@ -67,7 +65,7 @@ pub struct SyntacticView {
     scroll: usize,
     page_height: usize,
     selection_idx: Option<usize>, // index in lines of the selection, if any
-    total_lines_count: usize, // including lines not filtered out
+    total_lines_count: usize,     // including lines not filtered out
 }
 
 impl SyntacticView {
@@ -120,7 +118,7 @@ impl SyntacticView {
             static ref SYNTAXER: Syntaxer = Syntaxer::default();
         }
         let mut highlighter = if with_style {
-             SYNTAXER.highlighter_for(&self.path, con)
+            SYNTAXER.highlighter_for(&self.path, con)
         } else {
             None
         };
@@ -137,10 +135,10 @@ impl SyntacticView {
                 let name_match = pattern.search_string(&line);
                 let regions = if let Some(highlighter) = highlighter.as_mut() {
                     highlighter
-                         .highlight(&line, &SYNTAXER.syntax_set)
-                         .iter()
-                         .map(|r| Region::from_syntect(r))
-                         .collect()
+                        .highlight(&line, &SYNTAXER.syntax_set)
+                        .iter()
+                        .map(|r| Region::from_syntect(r))
+                        .collect()
                 } else {
                     Vec::new()
                 };
@@ -212,7 +210,7 @@ impl SyntacticView {
         }
     }
     pub fn select_last(&mut self) {
-        self.selection_idx = Some(self.lines.len()-1);
+        self.selection_idx = Some(self.lines.len() - 1);
         if self.page_height < self.lines.len() {
             self.scroll = self.lines.len() - self.page_height;
         }
@@ -234,7 +232,8 @@ impl SyntacticView {
         if dy > 0 {
             if let Some(idx) = self.selection_idx {
                 if idx < self.lines.len() - 1 {
-                    self.selection_idx = Some(idx + dy.min(self.lines.len() as i32 - 1 - dy) as usize);
+                    self.selection_idx =
+                        Some(idx + dy.min(self.lines.len() as i32 - 1 - dy) as usize);
                 } else {
                     self.selection_idx = Some(0);
                 }
@@ -246,10 +245,10 @@ impl SyntacticView {
                 if idx > 0 {
                     self.selection_idx = Some(idx - (-dy).min(idx as i32) as usize);
                 } else {
-                    self.selection_idx = Some(self.lines.len()-1);
+                    self.selection_idx = Some(self.lines.len() - 1);
                 }
             } else if !self.lines.is_empty() {
-                self.selection_idx = Some(self.lines.len()-1);
+                self.selection_idx = Some(self.lines.len() - 1);
             }
         }
         self.ensure_selection_is_visible();
@@ -304,11 +303,7 @@ impl SyntacticView {
             let mut cw = CropWriter::new(w, code_width);
             let line_idx = self.scroll as usize + y;
             let selected = self.selection_idx == Some(line_idx);
-            let bg = if selected {
-                selection_bg
-            } else {
-                normal_bg
-            };
+            let bg = if selected { selection_bg } else { normal_bg };
             let mut op_mmap: Option<Mmap> = None;
             if let Some(line) = self.lines.get(line_idx) {
                 let mut regions = &line.regions;
@@ -325,8 +320,9 @@ impl SyntacticView {
                         // an UTF8 error can only happen if file modified during display
                         let string = String::from_utf8(
                             // we copy the memmap slice, as it's not immutable
-                            (&op_mmap.unwrap()[line.start..line.start+line.len]).to_vec()
-                        ).unwrap_or_else(|_| "Bad UTF8".to_string());
+                            (&op_mmap.unwrap()[line.start..line.start + line.len]).to_vec(),
+                        )
+                        .unwrap_or_else(|_| "Bad UTF8".to_string());
                         regions_ur = vec![Region {
                             fg: normal_fg,
                             string,

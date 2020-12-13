@@ -1,9 +1,9 @@
 use {
+    super::*,
     crate::errors::InvalidSkinError,
     crossterm::style::{
         Color::{self, *},
     },
-    super::*,
 };
 
 /// read a color from a string.

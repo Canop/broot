@@ -68,7 +68,7 @@ impl TreeLine {
     }
 
     pub fn double_extension_from_name(name: &str) -> Option<&str> {
-        regex!( r"\.([^.]+\.[^.]+)" )
+        regex!(r"\.([^.]+\.[^.]+)")
             .captures(&name)
             .and_then(|c| c.get(1))
             .map(|e| e.as_str())
@@ -87,7 +87,7 @@ impl TreeLine {
     pub fn is_dir(&self) -> bool {
         match &self.line_type {
             TreeLineType::Dir => true,
-            TreeLineType::SymLink { final_is_dir, ..} if *final_is_dir => true,
+            TreeLineType::SymLink { final_is_dir, .. } if *final_is_dir => true,
             _ => false,
         }
     }
@@ -102,7 +102,7 @@ impl TreeLine {
         }
     }
     pub fn extension(&self) -> Option<&str> {
-        Self::extension_from_name( &self.name )
+        Self::extension_from_name(&self.name)
     }
     pub fn selection_type(&self) -> SelectionType {
         use TreeLineType::*;
@@ -136,7 +136,9 @@ impl TreeLine {
         use crate::filesystems::*;
         let mut mount_list = MOUNTS.lock().unwrap();
         if mount_list.load().is_ok() {
-            mount_list.get_by_device_id(self.metadata.dev().into()).cloned()
+            mount_list
+                .get_by_device_id(self.metadata.dev().into())
+                .cloned()
         } else {
             None
         }

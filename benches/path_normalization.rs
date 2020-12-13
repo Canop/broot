@@ -20,7 +20,6 @@ static PATHS: &[&str] = &[
     "π/2",
 ];
 
-
 fn normalization_benchmark(c: &mut Criterion) {
     c.bench_function("normalize_path", |b| {
         b.iter(|| {
@@ -33,4 +32,3 @@ fn normalization_benchmark(c: &mut Criterion) {
 
 criterion_group!(benches, normalization_benchmark);
 criterion_main!(benches);
-

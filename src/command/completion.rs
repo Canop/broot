@@ -37,10 +37,7 @@ pub enum Completions {
 }
 
 impl Completions {
-
-    fn from_list(
-        completions: Vec<String>,
-    ) -> Self {
+    fn from_list(completions: Vec<String>) -> Self {
         let mut iter = completions.iter();
         let mut common: &str = match iter.next() {
             Some(s) => &s,
@@ -83,9 +80,7 @@ impl Completions {
         sel: Selection<'_>,
     ) -> Self {
         match con.verb_store.search(start, Some(sel.stype)) {
-            PrefixSearchResult::NoMatch => {
-                Self::None
-            }
+            PrefixSearchResult::NoMatch => Self::None,
             PrefixSearchResult::Match(name, _) => {
                 if start.len() >= name.len() {
                     debug_assert!(name == start);
@@ -123,7 +118,7 @@ impl Completions {
                 if !name.starts_with(child_part) {
                     continue;
                 }
-                if name==child_part && entry.file_type()?.is_dir() {
+                if name == child_part && entry.file_type()?.is_dir() {
                     name = "/".to_string();
                 } else {
                     name.drain(0..child_part.len());

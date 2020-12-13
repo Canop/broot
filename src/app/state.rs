@@ -89,19 +89,19 @@ pub trait AppState {
         Ok(match internal_exec.internal {
             Internal::back => AppStateCmdResult::PopState,
             Internal::copy_path => {
-                #[cfg(not(feature="clipboard"))]
+                #[cfg(not(feature = "clipboard"))]
                 {
                     AppStateCmdResult::DisplayError(
-                        "Clipboard feature not enabled at compilation".to_string()
+                        "Clipboard feature not enabled at compilation".to_string(),
                     )
                 }
-                #[cfg(feature="clipboard")]
+                #[cfg(feature = "clipboard")]
                 {
                     let path = self.selected_path().to_string_lossy().to_string();
                     match terminal_clipboard::set_string(path) {
                         Ok(()) => AppStateCmdResult::Keep,
                         Err(_) => AppStateCmdResult::DisplayError(
-                            "Clipboard error while copying path".to_string()
+                            "Clipboard error while copying path".to_string(),
                         ),
                     }
                 }
@@ -161,55 +161,50 @@ pub trait AppState {
             Internal::preview_text => self.open_preview(Some(PreviewMode::Text), false, cc),
             Internal::preview_binary => self.open_preview(Some(PreviewMode::Hex), false, cc),
             Internal::toggle_preview => self.open_preview(None, true, cc),
-            Internal::sort_by_count => {
-                self.with_new_options(
-                    screen, &|o| {
-                        if o.sort == Sort::Count {
-                            o.sort = Sort::None;
-                            o.show_counts = false;
-                        } else {
-                            o.sort = Sort::Count;
-                            o.show_counts = true;
-                        }
-                    },
-                    bang,
-                    con,
-                )
-            }
-            Internal::sort_by_date => {
-                self.with_new_options(
-                    screen, &|o| {
-                        if o.sort == Sort::Date {
-                            o.sort = Sort::None;
-                            o.show_dates = false;
-                        } else {
-                            o.sort = Sort::Date;
-                            o.show_dates = true;
-                        }
-                    },
-                    bang,
-                    con,
-                )
-            }
-            Internal::sort_by_size => {
-                self.with_new_options(
-                    screen, &|o| {
-                        if o.sort == Sort::Size {
-                            o.sort = Sort::None;
-                            o.show_sizes = false;
-                        } else {
-                            o.sort = Sort::Size;
-                            o.show_sizes = true;
-                            o.show_root_fs = true;
-                        }
-                    },
-                    bang,
-                    con,
-                )
-            }
-            Internal::no_sort => {
-                self.with_new_options(screen, &|o| o.sort = Sort::None, bang, con)
-            }
+            Internal::sort_by_count => self.with_new_options(
+                screen,
+                &|o| {
+                    if o.sort == Sort::Count {
+                        o.sort = Sort::None;
+                        o.show_counts = false;
+                    } else {
+                        o.sort = Sort::Count;
+                        o.show_counts = true;
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::sort_by_date => self.with_new_options(
+                screen,
+                &|o| {
+                    if o.sort == Sort::Date {
+                        o.sort = Sort::None;
+                        o.show_dates = false;
+                    } else {
+                        o.sort = Sort::Date;
+                        o.show_dates = true;
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::sort_by_size => self.with_new_options(
+                screen,
+                &|o| {
+                    if o.sort == Sort::Size {
+                        o.sort = Sort::None;
+                        o.show_sizes = false;
+                    } else {
+                        o.sort = Sort::Size;
+                        o.show_sizes = true;
+                        o.show_root_fs = true;
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::no_sort => self.with_new_options(screen, &|o| o.sort = Sort::None, bang, con),
             Internal::toggle_counts => {
                 self.with_new_options(screen, &|o| o.show_counts ^= true, bang, con)
             }
@@ -246,22 +241,20 @@ pub trait AppState {
             Internal::toggle_perm => {
                 self.with_new_options(screen, &|o| o.show_permissions ^= true, bang, con)
             }
-            Internal::toggle_sizes => {
-                self.with_new_options(
-                    screen,
-                    &|o| {
-                        if o.show_sizes {
-                            o.show_sizes = false;
-                            o.show_root_fs = false;
-                        } else {
-                            o.show_sizes = true;
-                            o.show_root_fs = true;
-                        }
-                    },
-                    bang,
-                    con,
-                )
-            }
+            Internal::toggle_sizes => self.with_new_options(
+                screen,
+                &|o| {
+                    if o.show_sizes {
+                        o.show_sizes = false;
+                        o.show_root_fs = false;
+                    } else {
+                        o.show_sizes = true;
+                        o.show_root_fs = true;
+                    }
+                },
+                bang,
+                con,
+            ),
             Internal::toggle_trim_root => {
                 self.with_new_options(screen, &|o| o.trim_root ^= true, bang, con)
             }
@@ -325,29 +318,16 @@ pub trait AppState {
             )
         };
         match &verb.execution {
-            VerbExecution::Internal(internal_exec) => self.on_internal(
-                w,
-                internal_exec,
-                invocation,
-                trigger_type,
-                cc,
-                screen,
-            ),
-            VerbExecution::External(external) => {
-                external.to_cmd_result(
-                    w,
-                    exec_builder(),
-                    &cc.con,
-                )
+            VerbExecution::Internal(internal_exec) => {
+                self.on_internal(w, internal_exec, invocation, trigger_type, cc, screen)
             }
+            VerbExecution::External(external) => external.to_cmd_result(w, exec_builder(), &cc.con),
             VerbExecution::Sequence(seq_ex) => {
                 let sequence = Sequence {
                     raw: exec_builder().shell_exec_string(&seq_ex.sequence.raw),
                     separator: seq_ex.sequence.separator.clone(),
                 };
-                Ok(AppStateCmdResult::ExecuteSequence {
-                    sequence,
-                })
+                Ok(AppStateCmdResult::ExecuteSequence { sequence })
             }
         }
     }
@@ -536,7 +516,7 @@ pub trait AppState {
         con: &AppContext,
     ) -> Status {
         match cmd {
-            Command::PatternEdit{ .. } => self.no_verb_status(has_previous_state, con),
+            Command::PatternEdit { .. } => self.no_verb_status(has_previous_state, con),
             Command::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
                     Status::new(
@@ -579,9 +559,9 @@ pub fn get_arg<T: Copy + FromStr>(
     internal_exec: &InternalExecution,
     default: T,
 ) -> T {
-    verb_invocation.and_then(|vi| vi.args.as_ref())
+    verb_invocation
+        .and_then(|vi| vi.args.as_ref())
         .or_else(|| internal_exec.arg.as_ref())
         .and_then(|s| s.parse::<T>().ok())
         .unwrap_or(default)
 }
-
