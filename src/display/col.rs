@@ -1,5 +1,8 @@
 use {
-    crate::errors::ConfError,
+    crate::{
+        errors::ConfError,
+        tree::Tree,
+    },
     serde::Deserialize,
     std::{
         convert::TryFrom,
@@ -38,7 +41,7 @@ pub enum Col {
     Name,
 }
 
-pub type Cols = [Col;COLS_COUNT];
+pub type Cols = [Col; COLS_COUNT];
 
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
@@ -67,8 +70,8 @@ impl FromStr for Col {
         let s = s.to_lowercase();
         match s.as_ref() {
             "m" | "mark" => Ok(Self::Mark),
-            "g" | "git"  => Ok(Self::Git),
-            "b" | "branch" =>  Ok(Self::Branch),
+            "g" | "git" => Ok(Self::Git),
+            "b" | "branch" => Ok(Self::Branch),
             "p" | "permission" => Ok(Self::Permission),
             "d" | "date" => Ok(Self::Date),
             "s" | "size" => Ok(Self::Size),
@@ -76,19 +79,47 @@ impl FromStr for Col {
             "n" | "name" => Ok(Self::Name),
             _ => Err(ConfError::InvalidCols {
                 details: format!("column not recognized : {}", s),
-            })
+            }),
         }
     }
 }
 
 impl Col {
+    /// return the index of the column among the complete Cols ordered list
     pub fn index_in(self, cols: &Cols) -> Option<usize> {
         for (idx, col) in cols.iter().enumerate() {
-            if *col==self {
+            if *col == self {
                 return Some(idx);
             }
         }
         None
+    }
+    /// tell whether this column should have an empty character left
+    pub fn needs_left_margin(self) -> bool {
+        match self {
+            Col::Mark => false,
+            Col::Git => false,
+            Col::Size => true,
+            Col::Date => true,
+            Col::Permission => true,
+            Col::Count => false,
+            Col::Branch => false,
+            Col::Name => false,
+        }
+    }
+    pub fn is_visible(self, tree: &Tree) -> bool {
+        let tree_options = &tree.options;
+        match self {
+            Col::Mark => tree_options.show_selection_mark,
+            Col::Git => tree.git_status.is_some(),
+            Col::Size => tree_options.show_sizes,
+            Col::Date => tree_options.show_dates,
+            Col::Permission => tree_options.show_permissions,
+            Col::Count => tree_options.show_counts,
+            Col::Branch => true,
+            Col::Name => true,
+        }
+
     }
 }
 

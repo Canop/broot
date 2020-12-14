@@ -523,8 +523,6 @@ impl AppState for BrowserState {
         let dp = DisplayableTree {
             tree: &self.displayed_tree(),
             skin: &panel_skin.styles,
-            cols: &con.cols,
-            show_selection_mark: con.show_selection_mark,
             ext_colors: &con.ext_colors,
             area,
             in_app: true,

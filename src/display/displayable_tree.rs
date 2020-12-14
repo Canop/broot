@@ -1,7 +1,6 @@
 use {
     super::{
         Col,
-        Cols,
         CropWriter,
         GitStatusDisplay,
         SPACE_FILLING, BRANCH_FILLING,
@@ -40,8 +39,6 @@ pub struct DisplayableTree<'s, 't> {
     pub skin: &'s StyleMap,
     pub area: termimad::Area,
     pub in_app: bool, // if true we show the selection and scrollbar
-    pub cols: &'s Cols,
-    pub show_selection_mark: bool,
     pub ext_colors: &'s ExtColorMap,
 }
 
@@ -50,15 +47,12 @@ impl<'s, 't> DisplayableTree<'s, 't> {
     pub fn out_of_app(
         tree: &'t Tree,
         skin: &'s StyleMap,
-        cols: &'s Cols,
         ext_colors: &'s ExtColorMap,
         width: u16,
     ) -> DisplayableTree<'s, 't> {
         DisplayableTree {
             tree,
             skin,
-            cols,
-            show_selection_mark: false,
             ext_colors,
             area: termimad::Area {
                 left: 0,
@@ -402,6 +396,8 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         self.write_root_line(&mut cw, self.in_app && tree.selection == 0)?;
         f.queue(SetBackgroundColor(Color::Reset))?;
 
+        let visible_cols = tree.visible_cols();
+
         // we compute the length of the dates, depending on the format
         let date_len = if tree.options.show_dates {
             let date_time: DateTime<Local> = Local::now();
@@ -423,7 +419,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             let mut selected = false;
             let mut cw = CropWriter::new(f, self.area.width as usize);
             let cw = &mut cw;
-            let add_left_margin = self.cols[0] != Col::Mark || !self.show_selection_mark;
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
@@ -434,17 +429,17 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 } else {
                     &self.skin.default
                 };
-                if add_left_margin {
+                if visible_cols[0].needs_left_margin() {
                     cw.queue_char(space_style, ' ')?;
                 }
-                for col in self.cols {
+                for col in &visible_cols {
                     let void_len = match col {
 
-                        Col::Mark if self.show_selection_mark => {
+                        Col::Mark => {
                             self.write_line_selection_mark(cw, &label_style, selected)?
                         }
 
-                        Col::Git if !tree.git_status.is_none() => {
+                        Col::Git => {
                             self.write_line_git_status(cw, line, selected)?
                         }
 
@@ -454,11 +449,11 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                         }
 
                         #[cfg(not(any(target_family = "windows", target_os = "android")))]
-                        Col::Permission if tree.options.show_permissions => {
+                        Col::Permission => {
                             perm_writer.write_permissions(cw, line, selected)?
                         }
 
-                        Col::Date if tree.options.show_dates => {
+                        Col::Date => {
                             if let Some(seconds) = line.sum.and_then(|sum| sum.to_valid_seconds()) {
                                 self.write_date(cw, seconds, selected)?
                             } else {
@@ -466,7 +461,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             }
                         }
 
-                        Col::Size if tree.options.show_sizes => {
+                        Col::Size => {
                             if tree.options.sort.is_some() {
                                 // as soon as there's only one level displayed we can show the size bars
                                 self.write_line_size_with_bar(cw, line, &label_style, total_size, selected)?
@@ -475,7 +470,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             }
                         }
 
-                        Col::Count if tree.options.show_counts => {
+                        Col::Count => {
                             self.write_line_count(cw, line, selected)?
                         }
 
@@ -484,9 +479,6 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             self.write_line_label(cw, line, &label_style, pattern_object, selected)?
                         }
 
-                        _ => {
-                            0 // we don't write the intercol
-                        }
                     };
                     // void: intercol & replacing missing cells
                     if in_branch && void_len > 2 {

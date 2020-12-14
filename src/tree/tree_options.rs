@@ -1,12 +1,19 @@
 use {
     super::Sort,
-    crate::pattern::*,
+    crate::{
+        conf::Conf,
+        display::{Cols, DEFAULT_COLS},
+        errors::ConfError,
+        pattern::*,
+    },
     clap::ArgMatches,
+    std::convert::TryFrom,
 };
 
 /// Options defining how the tree should be build and|or displayed
 #[derive(Debug, Clone)]
 pub struct TreeOptions {
+    pub show_selection_mark: bool, // whether to have a triangle left of selected line
     pub show_hidden: bool, // whether files whose name starts with a dot should be shown
     pub only_folders: bool, // whether to hide normal files and links
     pub show_counts: bool, // whether to show the number of files (> 1 only for dirs)
@@ -21,12 +28,14 @@ pub struct TreeOptions {
     pub pattern: InputPattern, // an optional filtering/scoring pattern
     pub date_time_format: &'static str,
     pub sort: Sort,
+    pub cols_order: Cols, // order of columns
 }
 
 impl TreeOptions {
     /// clone self but without the pattern (if any)
     pub fn without_pattern(&self) -> Self {
         TreeOptions {
+            show_selection_mark: self.show_selection_mark,
             show_hidden: self.show_hidden,
             only_folders: self.only_folders,
             show_counts: self.show_counts,
@@ -41,6 +50,7 @@ impl TreeOptions {
             pattern: InputPattern::none(),
             date_time_format: self.date_time_format,
             sort: self.sort,
+            cols_order: self.cols_order,
         }
     }
     /// counts must be computed, either for sorting or just for display
@@ -63,8 +73,30 @@ impl TreeOptions {
     pub fn set_date_time_format(&mut self, format: String) {
         self.date_time_format = Box::leak(format.into_boxed_str());
     }
+    /// change tree options according to configuration
+    pub fn apply_config(&mut self, config: &Conf) -> Result<(), ConfError> {
+        if let Some(default_flags) = &config.default_flags {
+            let clap_app = crate::clap::clap_app().setting(clap::AppSettings::NoBinaryName);
+            let flags_args = format!("-{}", default_flags);
+            let conf_matches = clap_app.get_matches_from(vec![&flags_args]);
+            self.apply_launch_args(&conf_matches);
+        }
+        if let Some(b) = &config.show_selection_mark {
+            self.show_selection_mark = *b;
+        }
+        if let Some(format) = &config.date_time_format {
+            self.set_date_time_format(format.clone());
+        }
+        self.cols_order = config
+            .cols_order
+            .as_ref()
+            .map(Cols::try_from)
+            .transpose()?
+            .unwrap_or(DEFAULT_COLS);
+        Ok(())
+    }
     /// change tree options according to broot launch arguments
-    pub fn apply(&mut self, cli_args: &ArgMatches<'_>) {
+    pub fn apply_launch_args(&mut self, cli_args: &ArgMatches<'_>) {
         if cli_args.is_present("sizes") {
             self.show_sizes = true;
             self.show_root_fs = true;
@@ -141,6 +173,7 @@ impl TreeOptions {
 impl Default for TreeOptions {
     fn default() -> Self {
         Self {
+            show_selection_mark: false,
             show_hidden: false,
             only_folders: false,
             show_counts: false,
@@ -155,6 +188,7 @@ impl Default for TreeOptions {
             pattern: InputPattern::none(),
             date_time_format: "%Y/%m/%d %R",
             sort: Sort::None,
+            cols_order: DEFAULT_COLS,
         }
     }
 }

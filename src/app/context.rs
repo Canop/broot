@@ -3,7 +3,6 @@ use {
     crate::{
         cli::AppLaunchArgs,
         conf::Conf,
-        display::*,
         errors::ConfError,
         icon::*,
         pattern::SearchModeMap,
@@ -37,9 +36,6 @@ pub struct AppContext {
 
     /// the map between search prefixes and the search mode to apply
     pub search_modes: SearchModeMap,
-
-    /// order of columns in tree display
-    pub cols: Cols,
 
     /// whether to show a triangle left to selected lines
     pub show_selection_mark: bool,
@@ -87,12 +83,6 @@ impl AppContext {
             .map(|map| map.try_into())
             .transpose()?
             .unwrap_or_default();
-        let cols = config
-            .cols_order
-            .as_ref()
-            .map(Cols::try_from)
-            .transpose()?
-            .unwrap_or(DEFAULT_COLS);
         let ext_colors = ExtColorMap::try_from(&config.ext_colors)?;
         Ok(Self {
             config_paths,
@@ -100,7 +90,6 @@ impl AppContext {
             verb_store,
             special_paths,
             search_modes,
-            cols,
             show_selection_mark: config.show_selection_mark.unwrap_or(false),
             ext_colors,
             syntax_theme: config.syntax_theme.clone(),

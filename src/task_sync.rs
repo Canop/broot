@@ -22,6 +22,9 @@ impl<V> ComputationResult<V> {
     pub fn is_not_computed(&self) -> bool {
         matches!(&self, Self::NotComputed)
     }
+    pub fn is_some(&self) -> bool {
+        !matches!(&self, Self::None)
+    }
     pub fn is_none(&self) -> bool {
         matches!(&self, Self::None)
     }

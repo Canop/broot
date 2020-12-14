@@ -177,16 +177,8 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     // found in the config file(s) (if any) then overriden
     // by the cli args
     let mut tree_options = TreeOptions::default();
-    if let Some(default_flags) = &config.default_flags {
-        let clap_app = crate::clap::clap_app().setting(clap::AppSettings::NoBinaryName);
-        let flags_args = format!("-{}", default_flags);
-        let conf_matches = clap_app.get_matches_from(vec![&flags_args]);
-        tree_options.apply(&conf_matches);
-    }
-    tree_options.apply(&cli_matches);
-    if let Some(format) = &config.date_time_format {
-        tree_options.set_date_time_format(format.clone());
-    }
+    tree_options.apply_config(&config)?;
+    tree_options.apply_launch_args(&cli_matches);
 
     // verb store is completed from the config file(s)
     let mut verb_store = VerbStore::default();
