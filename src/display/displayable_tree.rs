@@ -448,8 +448,11 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                             self.write_branch(cw, line_index, line, selected)?
                         }
 
-                        #[cfg(not(any(target_family = "windows", target_os = "android")))]
                         Col::Permission => {
+                            #[cfg(any(target_family = "windows", target_os = "android"))]
+                            { 0 }
+
+                            #[cfg(not(any(target_family = "windows", target_os = "android")))]
                             perm_writer.write_permissions(cw, line, selected)?
                         }
 
