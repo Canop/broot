@@ -97,14 +97,15 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         &self,
         cw: &mut CropWriter<'w, W>,
         line: &TreeLine,
+        count_len: usize,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
             cond_bg!(count_style, self, selected, self.skin.count);
-            cw.queue_g_string(&count_style, format!("{:>8}", s.to_count()))?;
+            cw.queue_g_string(&count_style, format!("{:>width$}", s.to_count(), width=count_len))?;
             1
         } else {
-            9
+            count_len + 1
         })
     }
 
@@ -398,6 +399,18 @@ impl<'s, 't> DisplayableTree<'s, 't> {
 
         let visible_cols = tree.visible_cols();
 
+        // if necessary we compute the width of the count column
+        let count_len = if tree.options.show_counts {
+            tree.lines.iter()
+                .skip(1) // we don't show the counts of the root
+                .map(|l| l.sum.map_or(0, |s| s.to_count()))
+                .max()
+                .map(|c| format!("{}", c).len())
+                .unwrap_or(0)
+        } else {
+            0
+        };
+
         // we compute the length of the dates, depending on the format
         let date_len = if tree.options.show_dates {
             let date_time: DateTime<Local> = Local::now();
@@ -474,7 +487,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                         }
 
                         Col::Count => {
-                            self.write_line_count(cw, line, selected)?
+                            self.write_line_count(cw, line, count_len, selected)?
                         }
 
                         Col::Name => {
