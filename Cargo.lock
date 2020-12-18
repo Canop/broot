@@ -150,6 +150,7 @@ dependencies = [
  "secular",
  "serde",
  "simplelog",
+ "splitty",
  "strict",
  "syntect",
  "tempfile",
@@ -1500,6 +1501,12 @@ dependencies = [
  "redox_syscall",
  "winapi",
 ]
+
+[[package]]
+name = "splitty"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8190298e89d4080e9c025535f73cacec4d51ff4495819dd8fdf1ae374c75ee80"
 
 [[package]]
 name = "str-buf"

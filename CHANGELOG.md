@@ -1,5 +1,5 @@
 ### next
-
+- fix handling on quotes in configured verbs - Fix #316
 
 <a name="v1.0.8"></a>
 ### v1.0.8 - 2020-12-01

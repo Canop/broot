@@ -18,7 +18,7 @@ use {
 /// to be executed in an external command.
 #[derive(Debug, Clone)]
 pub struct ExternalExecution {
-    /// the pattern which will result in an exectuable string when
+    /// the pattern which will result in an executable string when
     /// completed with the args.
     /// This pattern may include names coming from the invocation
     /// pattern (like {my-arg}) and special names automatically filled by

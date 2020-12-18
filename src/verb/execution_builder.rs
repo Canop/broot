@@ -1,9 +1,12 @@
-
 use {
     super::{InvocationParser, GROUP},
-    crate::{app::Selection, path},
+    crate::{
+        app::Selection,
+        path,
+    },
     fnv::FnvHashMap,
     regex::Captures,
+    splitty::split_unquoted_whitespace,
     std::path::{Path, PathBuf},
 };
 
@@ -110,13 +113,13 @@ impl<'b> ExecutionStringBuilder<'b> {
         &self,
         exec_pattern: &str,
     ) -> String {
-        GROUP
+        let replaced = GROUP
             .replace_all(
                 exec_pattern,
                 |ec: &Captures<'_>| self.get_capture_replacement(ec, true),
-            )
-            .to_string()
-            .split_whitespace()
+            );
+        split_unquoted_whitespace(&replaced)
+            .unwrap_quotes(false)
             .map(|token| {
                 let path = Path::new(token);
                 if path.exists() {
@@ -135,8 +138,8 @@ impl<'b> ExecutionStringBuilder<'b> {
         &self,
         exec_pattern: &str,
     ) -> Vec<String> {
-        exec_pattern
-            .split_whitespace()
+        split_unquoted_whitespace(exec_pattern)
+            .unwrap_quotes(true)
             .map(|token| {
                 GROUP
                     .replace_all(
@@ -147,4 +150,56 @@ impl<'b> ExecutionStringBuilder<'b> {
             })
             .collect()
     }
+}
+
+#[cfg(test)]
+mod execution_builder_test {
+
+    use super::*;
+
+    fn check_build_execution_from_sel(
+        exec_pattern: &str,
+        path: &str,
+        replacements: Vec<(&str, &str)>,
+        chk_exec_token: Vec<&str>,
+    ) {
+        let path = PathBuf::from(path);
+        let sel = Selection {
+            path: &path,
+            line: 0,
+            stype: SelectionType::File,
+            is_exe: false,
+        };
+        let mut builder = ExecutionStringBuilder::from_selection(sel);
+        let mut map = FnvHashMap::default();
+        for (k, v) in replacements {
+            map.insert(k.to_owned(), v.to_owned());
+        }
+        builder.invocation_values = Some(map);
+        let exec_token = builder.exec_token(exec_pattern);
+        assert_eq!(exec_token, chk_exec_token);
+    }
+
+    #[test]
+    fn test_build_execution() {
+        check_build_execution_from_sel(
+            "vi {file}",
+            "/home/dys/dev",
+            vec![],
+            vec!["vi", "/home/dys/dev"],
+        );
+        check_build_execution_from_sel(
+            "/bin/e.exe -a {arg} -e {file}",
+            "expérimental & 试验性",
+            vec![("arg", "deux mots")],
+            vec!["/bin/e.exe", "-a", "deux mots", "-e", "expérimental & 试验性"],
+        );
+        check_build_execution_from_sel(
+            "xterm -e \"kak {file}\"", // see https://github.com/Canop/broot/issues/316
+            "/path/to/file",
+            vec![],
+            vec!["xterm", "-e", "kak /path/to/file"],
+        );
+    }
+
 }
