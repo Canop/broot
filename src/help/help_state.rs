@@ -36,7 +36,7 @@ impl HelpState {
         let config_path = con.config_paths
             .last()
             .cloned()
-            .unwrap_or_else(|| Conf::default_location());
+            .unwrap_or_else(Conf::default_location);
         HelpState {
             text_area,
             scroll: 0,
@@ -207,7 +207,7 @@ impl AppState for HelpState {
             // FIXME check we can't use the generic one
             open_leave => {
                 AppStateCmdResult::from(Launchable::opener(
-                    Conf::default_location().to_path_buf()
+                    Conf::default_location()
                 ))
             }
             page_down => {
