@@ -8,6 +8,10 @@ This bash function gives you a better `tree` optimizing for the height of the sc
 
 ![tree](img/20200710-alias-tree.png)
 
+This function supports most broot arguments:
+
+![tree with args](img/20201219-tree-with-args.png)
+
 ## `dcd` : Deep fuzzy cd
 
 When you want to cd to a deep directory, using `br` is fast and easy enough:
