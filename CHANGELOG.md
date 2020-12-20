@@ -1,4 +1,5 @@
-### next
+<a name="v1.0.9"></a>
+### v1.0.9 - 2020-12-19
 - fix handling on quotes in configured verbs - Fix #316
 
 <a name="v1.0.8"></a>

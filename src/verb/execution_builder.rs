@@ -155,7 +155,10 @@ impl<'b> ExecutionStringBuilder<'b> {
 #[cfg(test)]
 mod execution_builder_test {
 
-    use super::*;
+    use {
+        super::*,
+        crate::app::SelectionType,
+    };
 
     fn check_build_execution_from_sel(
         exec_pattern: &str,
