@@ -160,6 +160,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_control_key('q')
             .with_shortcut("q"),
         internal(refresh).with_key(F5),
+        internal(select_first).with_key(HOME),
+        internal(select_last).with_key(END),
         internal(sort_by_count).with_shortcut("sc"),
         internal(sort_by_date).with_shortcut("sd"),
         internal(sort_by_size).with_shortcut("ss"),
