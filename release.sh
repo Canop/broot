@@ -17,6 +17,9 @@ cp man/page build/broot.1
 sed -i "s/#version/$version/g" build/broot.1
 sed -i "s/#date/$(date +'%Y\/%m\/%d')/g" build/broot.1
 
+# Publish version number
+echo "$version" > build/version
+
 # prepare the release archive
 rm broot_*.zip
 zip -r "broot_$version.zip" build/*
