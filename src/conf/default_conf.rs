@@ -1,9 +1,9 @@
 
-/// the content a the conf.toml file broot creates
+/// the content a the conf.hjson file broot creates
 /// when there's none. It features some default
 /// configuration and many completable
 /// or uncommentable sections to help the user
-/// define her own configuration.
+/// define their own configuration.
 pub const DEFAULT_CONF_FILE: &str = r#"
 ###############################################################
 # This configuration file lets you
@@ -17,271 +17,277 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 # Configuration documentation is available at
 #     https://dystroy.org/broot
 #
-# Note about the TOML format: single value properties must be
-# before arrays (skins, verbs)
+# This file's format is Hjson ( https://hjson.github.io/ )
+#
 ###############################################################
+{
 
-###############################################################
-# Default flags
-# You can set up flags you want broot to start with by
-# default, for example `default_flags="ihp"` if you usually want
-# to see hidden and gitignored files and the permissions (then
-# if you don't want the hidden files you can launch `br -H`)
-# A popular flag is the `g` one which displays git related info.
-#
-default_flags = ""
+	###############################################################
+	# Default flags
+	# You can set up flags you want broot to start with by
+	# default, for example `default_flags="ihp"` if you usually want
+	# to see hidden and gitignored files and the permissions (then
+	# if you don't want the hidden files you can launch `br -H`)
+	# A popular flag is the `g` one which displays git related info.
+	#
+	# default_flags:
 
-###############################################################
-# Date/Time format
-# If you want to change the format for date/time, uncomment the
-# following line and change it according to
-# https://docs.rs/chrono/0.4.11/chrono/format/strftime/index.html
-#
-# date_time_format = "%Y/%m/%d %R"
+	###############################################################
+	# Date/Time format
+	# If you want to change the format for date/time, uncomment the
+	# following line and change it according to
+	# https://docs.rs/chrono/0.4.11/chrono/format/strftime/index.html
+	#
+	# date_time_format: %Y/%m/%d %R
 
-###############################################################
-# Whether to mark the selected line with a triangle
-#
-# show_selection_mark = true
+	###############################################################
+	# Whether to mark the selected line with a triangle
+	#
+	# show_selection_mark: true
 
-###############################################################
-# Column order
-# cols_order, if specified, must be a permutation of the following
-# array. You should keep the name at the end as it has a variable
-# length.
-#
-# cols_order = [
-# 	"mark",
-# 	"git",
-# 	"branch",
-# 	"permission",
-# 	"date",
-# 	"size",
-# 	"count",
-# 	"name",
-# ]
+	###############################################################
+	# Column order
+	# cols_order, if specified, must be a permutation of the following
+	# array. You should keep the name at the end as it has a variable
+	# length.
+	#
+	# cols_order: [
+	# 	mark
+	# 	git
+	# 	size
+	# 	permission
+	# 	date
+	# 	count
+	# 	branch
+	# 	name
+	# ]
 
-###############################################################
-# True Colors
-# If this parameter isn't set, broot tries to automatically
-# determine whether true colors (24 bits) are available.
-# As this process is unreliable, you may uncomment this setting
-# and set it to false or true if you notice the colors in
-# previewed images are too off.
-# true_colors = false
+	###############################################################
+	# True Colors
+	# If this parameter isn't set, broot tries to automatically
+	# determine whether true colors (24 bits) are available.
+	# As this process is unreliable, you may uncomment this setting
+	# and set it to false or true if you notice the colors in
+	# previewed images are too off.
+	#
+	# true_colors: false
 
-###############################################################
-# Icons
-# If you want to display icons in broot, uncomment this line
-# (see https://dystroy.org/broot/icons for installation and
-# troubleshooting)
-# icon_theme = "vscode"
+	###############################################################
+	# Icons
+	# If you want to display icons in broot, uncomment this line
+	# (see https://dystroy.org/broot/icons for installation and
+	# troubleshooting)
+	#
+	# icon_theme: vscode
 
-###############################################################
-# Special paths
-# If some paths must be handled specially, uncomment (and change
-# this section as per the examples
-#
-# [special-paths]
-# "/media/slow-backup-disk" = "no-enter"
-# "/home/dys/useless" = "hide"
-# "/home/dys/my-link-I-want-to-explore" = "enter"
+	###############################################################
+	# Special paths
+	# If some paths must be handled specially, uncomment (and change
+	# this section as per the examples)
+	#
+	# special_paths: {
+	# 	"/media/slow-backup-disk"		: no-enter
+	# 	"/home/dys/useless"			: hide
+	# 	"/home/dys/my-link-I-want-to-explore"	: enter
+	# }
 
-###############################################################
-# Verbs and shortcuts
-# You can define your own commands which would be applied to
-# the selection.
-#
-# Exemple 1: launching `tail -n` on the selected file (leaving broot)
-# [[verbs]]
-# name = "tail_lines"
-# invocation = "tl {lines_count}"
-# execution = "tail -f -n {lines_count} {file}"
-#
-# Exemple 2: creating a new file without leaving broot
-# [[verbs]]
-# name = "touch"
-# invocation = "touch {new_file}"
-# execution = "touch {directory}/{new_file}"
-# leave_broot = false
+	###############################################################
+	# Verbs and shortcuts
+	# You can define your own commands which would be applied to
+	# the selection.
+	# You'll also find below verbs that you can customize or enable.
+	verbs: [
 
-# If $EDITOR isn't set on your computer, you should either set it using
-#  something similar to
-#   export EDITOR=nvim
-#  or just replace it with your editor of choice in the 'execution'
-#  pattern.
-#  If your editor is able to open a file on a specific line, use {line}
-#   so that you may jump directly at the right line from a preview.
-# Example:
-#  execution = "nvim +{line} {file}"
+		# Exemple 1: launching `tail -n` on the selected file (leaving broot)
+		# {
+		# 	name: tail_lines
+		# 	invocation: tl {lines_count}
+		# 	execution: tail -f -n {lines_count} {file}
+		# }
 
-[[verbs]]
-invocation = "edit"
-key = "F2"
-shortcut = "e"
-execution = "$EDITOR {file}"
-leave_broot = false
+		# Exemple 2: creating a new file without leaving broot
+		# {
+		# 	name: touch
+		# 	invocation: touch {new_file}
+		# 	execution: touch {directory}/{new_file}
+		# 	leave_broot: false
+		# }
 
-[[verbs]]
-invocation = "create {subpath}"
-execution = "$EDITOR {directory}/{subpath}"
-leave_broot = false
+		# A standard recommended command for editing files, that you
+		# can customize.
+		# If $EDITOR isn't set on your computer, you should either set it using
+		#  something similar to
+		#   export EDITOR=nvim
+		#  or just replace it with your editor of choice in the 'execution'
+		#  pattern.
+		#  If your editor is able to open a file on a specific line, use {line}
+		#   so that you may jump directly at the right line from a preview.
+		# Example:
+		#  execution: nvim +{line} {file}
+		{
+			invocation: edit
+			key: F2
+			shortcut: e
+			execution: "$EDITOR +{line} {file}"
+			leave_broot: false
+		}
 
-[[verbs]]
-invocation = "git_diff"
-shortcut = "gd"
-leave_broot = false
-execution = "git difftool -y {file}"
+		# A convenient shortcut to create new text files in
+		# the current directory or below
+		{
+			invocation: create {subpath}
+			execution: $EDITOR {directory}/{subpath}
+			leave_broot: false
+		}
 
-# If $PAGER isn't set on your computer, you should either set it
-#  or just replace it with your viewer of choice in the 'execution'
-#  pattern.
-# Example:
-#  execution = "less {file}"
-[[verbs]]
-name = "view"
-invocation = "view"
-execution = "$PAGER {file}"
-leave_broot = false
+		{
+			invocation: git_diff
+			shortcut: gd
+			leave_broot: false
+			execution: git difftool -y {file}
+		}
 
-# uncomment if you want to launch a terminal on ctrl-T
-# (on exit you'll be back in broot)
-# [[verbs]]
-# invocation = "terminal"
-# key = "ctrl-t"
-# execution = "$SHELL"
-# set_working_dir = true
-# leave_broot = false
+		# This verb lets you launch a terminal on ctrl-T
+		# (on exit you'll be back in broot)
+		{
+			invocation: terminal
+			key: ctrl-t
+			execution: $SHELL
+			set_working_dir: true
+			leave_broot: false
+		}
 
-# Here's an example of a shorctut bringing you to your home directory
-# [[verbs]]
-# invocation = "home"
-# key = "ctrl-home"
-# execution = ":focus ~"
+		# Here's an example of a shorctut bringing you to your home directory
+		# {
+		# 	invocation: home
+		# 	key: ctrl-home
+		# 	execution: ":focus ~"
+		# }
 
-# A popular set of shorctuts for going up and down:
-#
-# [[verbs]]
-# key = "ctrl-j"
-# execution = ":line_down"
-#
-# [[verbs]]
-# key = "ctrl-k"
-# execution = ":line_up"
-#
-# [[verbs]]
-# key = "ctrl-d"
-# execution = ":page_down"
-#
-# [[verbs]]
-# key = "ctrl-u"
-# execution = ":page_up"
-# [[verbs]]
-# key = "home"
-# execution = ":select_first"
-# [[verbs]]
-# key = "end"
-# execution = ":select_last"
+		# A popular set of shorctuts for going up and down:
+		#
+		# {
+		# 	key: ctrl-k
+		# 	execution: :line_up
+		# }
+		# {
+		# 	key: ctrl-j
+		# 	execution: :line_down
+		# }
+		# {
+		# 	key: ctrl-u
+		# 	execution: :page_up
+		# }
+		# {
+		# 	key: ctrl-d
+		# 	execution: :page_down
+		# }
 
-# If you develop using git, you might like to often switch
-# to the "git status" filter:
-# [[verbs]]
-# key = "ctrl-g"
-# execution = ":toggle_git_status"
+		# If you develop using git, you might like to often switch
+		# to the git status filter:
+		# {
+		# 	key: ctrl-g
+		# 	execution: :toggle_git_status
+		# }
 
-# You can reproduce the bindings of Norton Commander
-# on copying or moving to the other panel:
-#
-# [[verbs]]
-# key = "F5"
-# execution = ":copy_to_panel"
-#
-# [[verbs]]
-# key = "F6"
-# execution = ":move_to_panel"
+		# You can reproduce the bindings of Norton Commander
+		# on copying or moving to the other panel:
+		#
+		# {
+		# 	key: F5
+		# 	execution: :copy_to_panel
+		# }
+		# {
+		# 	key: F6
+		# 	execution: :move_to_panel
+		# }
+	]
 
+	###############################################################
+	# Skin
+	# If you want to change the colors of broot,
+	# uncomment the following bloc and start messing
+	# with the various values.
+	###############################################################
+	#
+	# skin: {
+	# 	default: gray(23) none / gray(20) none
+	# 	tree: ansi(94) None / gray(3) None
+	# 	file: gray(20) None / gray(15) None
+	# 	directory: ansi(208) None Bold / ansi(172) None bold
+	# 	exe: Cyan None
+	# 	link: Magenta None
+	# 	pruning: gray(12) None Italic
+	# 	perm__: gray(5) None
+	# 	perm_r: ansi(94) None
+	# 	perm_w: ansi(132) None
+	# 	perm_x: ansi(65) None
+	# 	owner: ansi(138) None
+	# 	group: ansi(131) None
+	# 	count: ansi(136) gray(3)
+	# 	dates: ansi(66) None
+	# 	sparse: ansi(214) None
+	# 	content_extract: ansi(29) None
+	# 	content_match: ansi(34) None
+	# 	git_branch: ansi(229) None
+	# 	git_insertions: ansi(28) None
+	# 	git_deletions: ansi(160) None
+	# 	git_status_current: gray(5) None
+	# 	git_status_modified: ansi(28) None
+	# 	git_status_new: ansi(94) None Bold
+	# 	git_status_ignored: gray(17) None
+	# 	git_status_conflicted: ansi(88) None
+	# 	git_status_other: ansi(88) None
+	# 	selected_line: None gray(5) / None gray(4)
+	# 	char_match: Yellow None
+	# 	file_error: Red None
+	# 	flag_label: gray(15) None
+	# 	flag_value: ansi(208) None Bold
+	# 	input: White None / gray(15) gray(2)
+	# 	status_error: gray(22) ansi(124)
+	# 	status_job: ansi(220) gray(5)
+	# 	status_normal: gray(20) gray(3) / gray(2) gray(2)
+	# 	status_italic: ansi(208) gray(3) / gray(2) gray(2)
+	# 	status_bold: ansi(208) gray(3) Bold / gray(2) gray(2)
+	# 	status_code: ansi(229) gray(3) / gray(2) gray(2)
+	# 	status_ellipsis: gray(19) gray(1) / gray(2) gray(2)
+	# 	purpose_normal: gray(20) gray(2)
+	# 	purpose_italic: ansi(178) gray(2)
+	# 	purpose_bold: ansi(178) gray(2) Bold
+	# 	purpose_ellipsis: gray(20) gray(2)
+	# 	scrollbar_track: gray(7) None / gray(4) None
+	# 	scrollbar_thumb: gray(22) None / gray(14) None
+	# 	help_paragraph: gray(20) None
+	# 	help_bold: ansi(208) None Bold
+	# 	help_italic: ansi(166) None
+	# 	help_code: gray(21) gray(3)
+	# 	help_headers: ansi(208) None
+	# 	help_table_border: ansi(239) None
+	# 	preview: gray(20) gray(1) / gray(18) gray(2)
+	# 	preview_line_number: gray(12) gray(3)
+	# 	preview_match: None ansi(29)
+	# 	hex_null: gray(11) None
+	# 	hex_ascii_graphic: gray(18) None
+	# 	hex_ascii_whitespace: ansi(143) None
+	# 	hex_ascii_other: ansi(215) None
+	# 	hex_non_ascii: ansi(167) None
+	# }
 
-###############################################################
-# Skin
-# If you want to change the colors of broot,
-# uncomment the following bloc and start messing
-# with the various values.
-#
-# [skin]
-# default = "gray(23) none / gray(20) none"
-# tree = "ansi(94) None / gray(3) None"
-# file = "gray(20) None / gray(15) None"
-# directory = "ansi(208) None Bold / ansi(172) None bold"
-# exe = "Cyan None"
-# link = "Magenta None"
-# pruning = "gray(12) None Italic"
-# perm__ = "gray(5) None"
-# perm_r = "ansi(94) None"
-# perm_w = "ansi(132) None"
-# perm_x = "ansi(65) None"
-# owner = "ansi(138) None"
-# group = "ansi(131) None"
-# count = "ansi(136) gray(3)"
-# dates = "ansi(66) None"
-# sparse = "ansi(214) None"
-# content_extract = "ansi(29) None"
-# content_match = "ansi(34) None"
-# git_branch = "ansi(229) None"
-# git_insertions = "ansi(28) None"
-# git_deletions = "ansi(160) None"
-# git_status_current = "gray(5) None"
-# git_status_modified = "ansi(28) None"
-# git_status_new = "ansi(94) None Bold"
-# git_status_ignored = "gray(17) None"
-# git_status_conflicted = "ansi(88) None"
-# git_status_other = "ansi(88) None"
-# selected_line = "None gray(5) / None gray(4)"
-# char_match = "Yellow None"
-# file_error = "Red None"
-# flag_label = "gray(15) None"
-# flag_value = "ansi(208) None Bold"
-# input = "White None / gray(15) gray(2)"
-# status_error = "gray(22) ansi(124)"
-# status_job = "ansi(220) gray(5)"
-# status_normal = "gray(20) gray(3) / gray(2) gray(2)"
-# status_italic = "ansi(208) gray(3) / gray(2) gray(2)"
-# status_bold = "ansi(208) gray(3) Bold / gray(2) gray(2)"
-# status_code = "ansi(229) gray(3) / gray(2) gray(2)"
-# status_ellipsis = "gray(19) gray(1) / gray(2) gray(2)"
-# purpose_normal = "gray(20) gray(2)"
-# purpose_italic = "ansi(178) gray(2)"
-# purpose_bold = "ansi(178) gray(2) Bold"
-# purpose_ellipsis = "gray(20) gray(2)"
-# scrollbar_track = "gray(7) None / gray(4) None"
-# scrollbar_thumb = "gray(22) None / gray(14) None"
-# help_paragraph = "gray(20) None"
-# help_bold = "ansi(208) None Bold"
-# help_italic = "ansi(166) None"
-# help_code = "gray(21) gray(3)"
-# help_headers = "ansi(208) None"
-# help_table_border = "ansi(239) None"
-# preview = "gray(20) gray(1) / gray(18) gray(2)"
-# preview_line_number = "gray(12) gray(3)"
-# preview_match = "None ansi(29)"
-# hex_null = "gray(11) None"
-# hex_ascii_graphic = "gray(18) None"
-# hex_ascii_whitespace = "ansi(143) None"
-# hex_ascii_other = "ansi(215) None"
-# hex_non_ascii = "ansi(167) None"
-
-# You may find explanations and other skins on
-#  https://dystroy.org/broot/skins
-# for example a skin suitable for white backgrounds
+	# You may find explanations and other skins on
+	#  https://dystroy.org/broot/skins
+	# for example a skin suitable for white backgrounds
 
 
-###############################################################
-# File Extension Colors
-#
-# uncomment and modify the next section if you want to color
-# file name depending on their extension
-#
-# [ext-colors]
-# png = "rgb(255, 128, 75)"
-# rs = "yellow"
+	###############################################################
+	# File Extension Colors
+	#
+	# uncomment and modify the next section if you want to color
+	# file name depending on their extension
+	#
+	# ext_colors: {
+	# 	png: rgb(255, 128, 75)
+	# 	rs: yellow
+	# }
 
+}
 "#;

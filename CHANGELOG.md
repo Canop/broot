@@ -1,3 +1,7 @@
+### next
+- broot now accepts both TOML and Hjson files for configuration. Default is Hjson (less prone to confusing configuration errors)
+
+
 <a name="v1.0.9"></a>
 ### v1.0.9 - 2020-12-19
 - fix handling on quotes in configured verbs - Fix #316

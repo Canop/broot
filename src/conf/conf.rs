@@ -16,7 +16,6 @@ use {
         fs, io,
         path::{Path, PathBuf},
     },
-    toml,
 };
 
 macro_rules! overwrite {
@@ -36,13 +35,15 @@ macro_rules! overwrite_map {
 }
 
 /// The configuration read from conf.toml file(s)
-#[derive(Default, Clone, Deserialize)]
+#[derive(Default, Clone, Debug, Deserialize)]
 pub struct Conf {
     /// the files used to load this configuration
     #[serde(skip)]
     pub files: Vec<PathBuf>,
+
     pub default_flags: Option<String>, // the flags to apply before cli ones
     pub date_time_format: Option<String>,
+    #[serde(default)]
     pub verbs: Vec<VerbConf>,
     pub skin: Option<FnvHashMap<String, SkinEntry>>,
     #[serde(default)]
@@ -64,7 +65,15 @@ impl Conf {
     /// If there's no conf.hjson file in the default conf directory,
     /// and if there's a toml file, return this toml file.
     pub fn default_location() -> PathBuf {
-        super::dir().join("conf.toml")
+        let hjson_file = super::dir().join("conf.hjson");
+        if !hjson_file.exists() {
+            let toml_file = super::dir().join("conf.toml");
+            if toml_file.exists() {
+                return toml_file;
+            }
+        }
+        // neither file exists, we return the default one
+        hjson_file
     }
 
     /// read the configuration file from the default OS specific location.
@@ -100,12 +109,7 @@ impl Conf {
     /// Errors are printed on stderr (assuming this function is called
     /// before terminal alternation).
     pub fn read_file(&mut self, path: PathBuf) -> Result<(), ProgramError> {
-        let file_content = fs::read_to_string(&path)?;
-        let mut conf = toml::from_str::<Conf>(&file_content)
-            .map_err(|e| ProgramError::ConfFile {
-                path: path.to_string_lossy().to_string(),
-                details: e.into(),
-            })?;
+        let mut conf: Conf = SerdeFormat::read_file(&path)?;
         overwrite!(self, default_flags, conf);
         overwrite!(self, date_time_format, conf);
         overwrite!(self, icon_theme, conf);

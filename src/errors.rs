@@ -37,7 +37,9 @@ custom_error! {pub TreeBuildError
 
 custom_error! {pub ConfError
     Io {source: io::Error}                          = "unable to read from the file: {}",
+    UnknownFileExtension { path: String}            = "unexpected file extension in {:?}",
     Toml {source: toml::de::Error}                  = "unable to parse TOML: {}",
+    Hjson {source: deser_hjson::Error}              = "unable to parse Hjson: {}",
     Invalid                                         = "unexpected conf structure", // not expected
     MissingField {txt: String}                      = "missing field in conf",
     InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: {}",

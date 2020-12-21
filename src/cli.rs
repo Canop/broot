@@ -172,6 +172,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         }
         _ => time!(Debug, "read conf", Conf::from_default_location()?),
     };
+    debug!("config: {:#?}", &config);
 
     // tree options are built from the default_flags
     // found in the config file(s) (if any) then overriden

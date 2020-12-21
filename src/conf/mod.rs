@@ -5,11 +5,13 @@ use {
 
 mod conf;
 mod default_conf;
+mod format;
 mod verb_conf;
 
 pub use {
     conf::Conf,
     default_conf::*,
+    format::*,
     verb_conf::VerbConf,
 };
 

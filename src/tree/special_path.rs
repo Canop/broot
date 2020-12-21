@@ -27,7 +27,6 @@ pub trait SpecialPathList {
     fn find(self, path: &Path) -> SpecialHandling;
 }
 
-
 impl<'de> Deserialize<'de> for SpecialHandling {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: Deserializer<'de>

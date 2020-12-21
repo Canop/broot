@@ -115,7 +115,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "1.0.9"
+version = "1.0.10-dev"
 dependencies = [
  "ansi_colours",
  "base64 0.13.0",
@@ -127,6 +127,7 @@ dependencies = [
  "crossbeam",
  "crossterm",
  "custom_error",
+ "deser-hjson",
  "directories",
  "file-size",
  "fnv",
@@ -518,6 +519,16 @@ checksum = "73770f8e1fe7d64df17ca66ad28994a0a623ea497fa69486e14984e715c5d174"
 dependencies = [
  "adler32",
  "byteorder",
+]
+
+[[package]]
+name = "deser-hjson"
+version = "0.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2e1354992dba7626630b6b50ff2bc4c9b15fefb80391bb41c0b0d473a68109e"
+dependencies = [
+ "serde",
+ "unescape",
 ]
 
 [[package]]
@@ -1585,9 +1596,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.9.1"
+version = "0.9.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fe9709f7deb2582e81b8bffd71ddc33ca46857c30fee361bcf6c0fd63caf8146"
+checksum = "b4fae9923b92f150e76725c2b25d07767154baa597825870cc1e418ce9262dab"
 dependencies = [
  "crossbeam",
  "crossterm",
@@ -1706,6 +1717,12 @@ name = "umask"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "982efbf70ec4d28f7862062c03dd1a4def601a5079e0faf1edc55f2ad0f6fe46"
+
+[[package]]
+name = "unescape"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ccb97dac3243214f8d8507998906ca3e2e0b900bf9bf4870477f125b82e68f6e"
 
 [[package]]
 name = "unicode-bidi"

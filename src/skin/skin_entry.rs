@@ -14,7 +14,7 @@ use {
 };
 
 /// parsed content of a [skin] line of the conf.toml file
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct SkinEntry {
     focused: CompoundStyle,
     unfocused: Option<CompoundStyle>,
