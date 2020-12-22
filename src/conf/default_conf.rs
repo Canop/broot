@@ -102,14 +102,14 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 		# {
 		# 	name: tail_lines
 		# 	invocation: tl {lines_count}
-		# 	execution: tail -f -n {lines_count} {file}
+		# 	execution: "tail -f -n {lines_count} {file}"
 		# }
 
 		# Exemple 2: creating a new file without leaving broot
 		# {
 		# 	name: touch
 		# 	invocation: touch {new_file}
-		# 	execution: touch {directory}/{new_file}
+		# 	execution: "touch {directory}/{new_file}"
 		# 	leave_broot: false
 		# }
 
@@ -136,7 +136,7 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 		# the current directory or below
 		{
 			invocation: create {subpath}
-			execution: $EDITOR {directory}/{subpath}
+			execution: "$EDITOR {directory}/{subpath}"
 			leave_broot: false
 		}
 
@@ -144,7 +144,7 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 			invocation: git_diff
 			shortcut: gd
 			leave_broot: false
-			execution: git difftool -y {file}
+			execution: "git difftool -y {file}"
 		}
 
 		# This verb lets you launch a terminal on ctrl-T
@@ -152,7 +152,7 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 		{
 			invocation: terminal
 			key: ctrl-t
-			execution: $SHELL
+			execution: "$SHELL"
 			set_working_dir: true
 			leave_broot: false
 		}
@@ -168,26 +168,26 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 		#
 		# {
 		# 	key: ctrl-k
-		# 	execution: :line_up
+		# 	execution: ":line_up"
 		# }
 		# {
 		# 	key: ctrl-j
-		# 	execution: :line_down
+		# 	execution: ":line_down"
 		# }
 		# {
 		# 	key: ctrl-u
-		# 	execution: :page_up
+		# 	execution: ":page_up"
 		# }
 		# {
 		# 	key: ctrl-d
-		# 	execution: :page_down
+		# 	execution: ":page_down"
 		# }
 
 		# If you develop using git, you might like to often switch
 		# to the git status filter:
 		# {
 		# 	key: ctrl-g
-		# 	execution: :toggle_git_status
+		# 	execution: ":toggle_git_status"
 		# }
 
 		# You can reproduce the bindings of Norton Commander
@@ -195,11 +195,11 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 		#
 		# {
 		# 	key: F5
-		# 	execution: :copy_to_panel
+		# 	execution: ":copy_to_panel"
 		# }
 		# {
 		# 	key: F6
-		# 	execution: :move_to_panel
+		# 	execution: ":move_to_panel"
 		# }
 	]
 
