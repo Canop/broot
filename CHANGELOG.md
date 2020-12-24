@@ -1,6 +1,6 @@
-### next
-- broot now accepts both TOML and Hjson files for configuration. Default is Hjson (less prone to confusing configuration errors)
-
+<a name="v1.1.0"></a>
+### v1.1.0 - 2020-12-24
+broot now accepts both TOML and Hjson files for configuration. Default is Hjson. I wrote about why this change [here](https://dystroy.org/blog/hjson-in-broot/)
 
 <a name="v1.0.9"></a>
 ### v1.0.9 - 2020-12-19

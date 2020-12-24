@@ -3,7 +3,9 @@ The most important part of broot configuration is the `[[verbs]]` sections, whic
 
 ## Verb Definition Attributes
 
-You can define a new verb in the TOML configuration file with a `[[verbs]]` section similar to this one:
+You can define a new verb in the TOML configuration file inside the `verbs` list.
+
+In conf.toml, a verb section looks like this:
 
 ```toml
 [[verbs]]
@@ -13,6 +15,19 @@ shortcut = "e"
 apply_to = "file"
 external = "nvim {file}"
 leave_broot = false
+```
+
+In conf.hjson:
+
+```css
+{
+	invocation: edit
+	key: F2
+	shortcut: e
+	apply_to: file
+	external: "nvim {file}"
+	leave_broot: false
+}
 ```
 
 The possible attributes are:

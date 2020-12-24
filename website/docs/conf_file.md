@@ -1,18 +1,13 @@
 
 # Opening the configuration file
 
-The configuration file is called `conf.toml` and is in [TOML](https://github.com/toml-lang/toml).
+Two formats are allowed: [TOML](https://github.com/toml-lang/toml) and [Hjson](https://hjson.github.io/).
 
-This file's location follows the XDG convention, which depends on your system settings. This location in your case can be found on the help screen (use <kbd>?</kbd>).
+The configuration file is called either `conf.toml` or `conf.hjson`.
+
+This default file's location follows the XDG convention, which depends on your system settings. This location in your case can be found on the help screen (use <kbd>?</kbd>).
 
 From this screen you can directly open the configuration file in your system's editor by typing `:os` (shortcut for `:open_stay`).
-
-Currently, you can configure
-
-* default flags
-* special paths
-* verbs and shortcuts
-* style
 
 The default configuration file contains several example sections that you may uncomment and modify for your goals.
 
@@ -24,9 +19,15 @@ For example, if you want to see hidden files (the ones whose name starts with a 
 
     br -gh
 
-If you almost always want those flags, you may define them as default in the `conf.toml` file, with the `default_flags` setting:
+If you almost always want those flags, you may define them as default in the configuration file file, with the `default_flags` setting.
+
+In TOML:
 
     default_flags = "gh"
+
+In Hjson:
+
+    default_flags: gh
 
 Those flags can still be overridden at launch with the negating ones. For example if you don't want to see hidden files at a specific launch, do
 
@@ -47,13 +48,23 @@ You may map special paths to specific behaviors. You may especially want
 - to have some link to a directory to always automatically be handled as a normal directory
 - to exclude some path because it's on a slow device or non relevant
 
-Example configuration:
+Example configuration in TOML:
 
 ```toml
 [special-paths]
 "/media/slow-backup-disk" = "no-enter"
 "/home/dys/useless" = "hide"
 "/home/dys/my-link-I-want-to-explore" = "enter"
+```
+
+In Hjson:
+
+```css
+special_paths: {
+	"/media/slow-backup-disk"		: no-enter
+	"/home/dys/useless"			: hide
+	"/home/dys/my-link-I-want-to-explore"	: enter
+}
 ```
 
 Be careful that those paths (globs, in fact) are checked a lot when broot builds trees and that defining a lot of paths will impact the overall speed.

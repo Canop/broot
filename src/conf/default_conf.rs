@@ -17,7 +17,8 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 # Configuration documentation is available at
 #     https://dystroy.org/broot
 #
-# This file's format is Hjson ( https://hjson.github.io/ )
+# This file's format is Hjson ( https://hjson.github.io/ ). Some
+# properties are commented out. To enable them, remove the `#`.
 #
 ###############################################################
 {
@@ -208,6 +209,9 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 	# If you want to change the colors of broot,
 	# uncomment the following bloc and start messing
 	# with the various values.
+        # A skin entry value is made of two parts separated with a '/':
+        # The first one is the skin for the active panel.
+        # The second one, optional, is the skin for non active panels.
 	###############################################################
 	#
 	# skin: {
