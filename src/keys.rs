@@ -160,7 +160,7 @@ mod key_parsing_tests {
 
     use {
         crate::keys::*,
-        crossterm::event::{KeyCode::*, KeyEvent},
+        crossterm::event::KeyEvent,
     };
 
     #[test]

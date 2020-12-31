@@ -5,7 +5,7 @@
 # code)
 rm -rf src-mine
 cp -r src src-mine
-cargo fmt
+cargo +nightly fmt
 mv src src-fmt
 mv src-mine src
 meld src-fmt src

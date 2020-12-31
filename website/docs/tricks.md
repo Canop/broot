@@ -1,3 +1,39 @@
+## Use broot as a generic fuzzy finder
+
+The goal here is to have a function you can use in shell to give you a path.
+
+**Step 1:** create a file `~/.config/select.toml` with this content:
+
+```
+[[verbs]]
+invocation = "ok"
+key = "enter"
+leave_broot = true
+execution = ":print_path"
+apply_to = "file"
+```
+
+**Step 2:** create a shortcut of some type, for example using  `~/.bash_aliases`
+
+```
+alias bo="br --conf ~/.config/broot/select.toml"
+```
+
+**Step 3:** you can then use broot as a selector in other commands:
+
+```
+echo $(bo)
+```
+or
+
+```
+echo $(bo some/path)
+```
+
+Here, the configuration file was used to ensure you can select a file with the enter key.
+
+You may use the same configuration file to also specify colors to remember yourself you're not in a standard broot.
+
 ## Replace tree
 
 This bash function gives you a better `tree` optimizing for the height of the screen:
