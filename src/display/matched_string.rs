@@ -46,6 +46,7 @@ impl<'a, 'w> MatchedString<'a> {
             let mut s = self.string;
             if let Some(dw) = self.display_width {
                 let w = unicode_width::UnicodeWidthStr::width(s);
+                #[allow(clippy::comparison_chain)]
                 if w > dw {
                     let (count_bytes, _) = StrFit::count_fitting(s, dw);
                     s = &s[0..count_bytes];

@@ -7,7 +7,7 @@ use {
     std::{
         fs::File,
         io::{BufRead, BufReader, Result},
-        path::Path,
+        path::{Path, PathBuf},
     },
 };
 
@@ -26,8 +26,9 @@ struct GitIgnoreRule {
 }
 
 impl GitIgnoreRule {
-    /// parse a line of a .gitignore file
-    fn from(line: &str, dir: &Path) -> Option<GitIgnoreRule> {
+    /// parse a line of a .gitignore file.
+    /// The ref_dir is used if the line starts with '/'
+    fn from(line: &str, ref_dir: &Path) -> Option<GitIgnoreRule> {
         if line.starts_with('#') {
             return None; // comment line
         }
@@ -45,7 +46,7 @@ impl GitIgnoreRule {
                 let mut p = p.as_str().to_string();
                 let has_separator = p.contains('/');
                 if has_separator && p.starts_with('/') {
-                    p = dir.to_string_lossy().to_string() + &p;
+                    p = ref_dir.to_string_lossy().to_string() + &p;
                 }
                 if let Ok(pattern) = glob::Pattern::new(&p) {
                     let pattern_options = glob::MatchOptions {
@@ -73,12 +74,16 @@ pub struct GitIgnoreFile {
     rules: Vec<GitIgnoreRule>,
 }
 impl GitIgnoreFile {
-    pub fn new(path: &Path) -> Result<GitIgnoreFile> {
-        let f = File::open(path)?;
-        let parent = path.parent().unwrap();
+    /// build a new gitignore file, from either a global ignore file or
+    /// a .gitignore file found inside a git repository.
+    /// The ref_dir is either:
+    /// - the path of the current repository for the global gitignore
+    /// - the directory containing the .gitignore file
+    pub fn new(file_path: &Path, ref_dir: &Path) -> Result<GitIgnoreFile> {
+        let f = File::open(file_path)?;
         let mut rules: Vec<GitIgnoreRule> = Vec::new();
         for line in BufReader::new(f).lines() {
-            if let Some(rule) = GitIgnoreRule::from(&line?, &parent) {
+            if let Some(rule) = GitIgnoreRule::from(&line?, ref_dir) {
                 rules.push(rule);
             }
         }
@@ -87,9 +92,21 @@ impl GitIgnoreFile {
         rules.reverse();
         Ok(GitIgnoreFile { rules })
     }
+    /// return the global gitignore file interpreted for
+    /// the given repo dir
+    pub fn global(repo_dir: &Path) -> Option<GitIgnoreFile> {
+        lazy_static! {
+            static ref GLOBAL_GI_PATH: Option<PathBuf> = find_global_ignore();
+        }
+        if let Some(path) = &*GLOBAL_GI_PATH {
+            GitIgnoreFile::new(path, repo_dir).ok()
+        } else {
+            None
+        }
+    }
 }
 
-pub fn find_global_ignore() -> Option<GitIgnoreFile> {
+pub fn find_global_ignore() -> Option<PathBuf> {
     git2::Config::open_default()
         .and_then(|global_config| global_config.get_path("core.excludesfile"))
         .ok()
@@ -100,8 +117,6 @@ pub fn find_global_ignore() -> Option<GitIgnoreFile> {
             directories::UserDirs::new()
                 .map(|user_dirs| user_dirs.home_dir().join(".config/git/ignore"))
         })
-        .as_ref()
-        .and_then(|path| time!(Debug, "GitIgnoreFile::new", GitIgnoreFile::new(path)).ok())
 }
 
 #[derive(Debug, Clone, Default)]
@@ -114,36 +129,27 @@ impl GitIgnoreChain {
         self.file_ids.push(id);
     }
 }
+
+#[derive(Default)]
 pub struct GitIgnorer {
     files: Arena<GitIgnoreFile>,
-    global_chain: GitIgnoreChain,
 }
 
-impl Default for GitIgnorer {
-    fn default() -> Self {
-        let mut files = Arena::new();
-        let mut global_chain = GitIgnoreChain::default();
-        lazy_static! {
-            static ref GLOBAL_GI: Option<GitIgnoreFile> = find_global_ignore();
-        }
-        if let Some(gif) = &*GLOBAL_GI {
-            global_chain.push(files.alloc(gif.clone()));
-        }
-        Self {
-            files,
-            global_chain,
-        }
-    }
-}
 impl GitIgnorer {
     pub fn root_chain(&mut self, mut dir: &Path) -> GitIgnoreChain {
-        let mut chain = self.global_chain.clone();
+        let mut chain = GitIgnoreChain::default();
         loop {
             let ignore_file = dir.join(".gitignore");
-            if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
+            let is_repo = is_repo(dir);
+            if is_repo {
+                if let Some(gif) = GitIgnoreFile::global(dir) {
+                    chain.push(self.files.alloc(gif));
+                }
+            }
+            if let Ok(gif) = GitIgnoreFile::new(&ignore_file, dir) {
                 chain.push(self.files.alloc(gif));
             }
-            if is_repo(dir) {
+            if is_repo {
                 chain.in_repo = true;
                 break;
             }
@@ -161,7 +167,10 @@ impl GitIgnorer {
         // we don't want the .gitignore files of super repositories
         // (see https://github.com/Canop/broot/issues/160)
         let mut chain = if is_repo(dir) {
-            let mut chain = self.global_chain.clone();
+            let mut chain = GitIgnoreChain::default();
+            if let Some(gif) = GitIgnoreFile::global(dir) {
+                chain.push(self.files.alloc(gif));
+            }
             chain.in_repo = true;
             chain
         } else {
@@ -169,7 +178,7 @@ impl GitIgnorer {
         };
         if chain.in_repo {
             let ignore_file = dir.join(".gitignore");
-            if let Ok(gif) = GitIgnoreFile::new(&ignore_file) {
+            if let Ok(gif) = GitIgnoreFile::new(&ignore_file, dir) {
                 chain.push(self.files.alloc(gif));
             }
         }

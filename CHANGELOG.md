@@ -1,3 +1,6 @@
+### next
+- fix handling of rules starting with '/' in the global gitignore - Fix #321
+
 <a name="v1.1.10"></a>
 ### v1.1.10 - 2020-12-24
 broot now accepts both TOML and Hjson files for configuration. Default is Hjson. I explain the change [here](https://dystroy.org/blog/hjson-in-broot/)
