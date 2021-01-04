@@ -290,6 +290,30 @@ impl AppState for PreviewState {
                     Ok(AppStateCmdResult::PopState)
                 }
             }
+            Internal::copy_line => {
+                #[cfg(not(feature = "clipboard"))]
+                {
+                    Ok(AppStateCmdResult::DisplayError(
+                        "Clipboard feature not enabled at compilation".to_string(),
+                    ))
+                }
+                #[cfg(feature = "clipboard")]
+                {
+                    Ok(match self.mut_preview().get_selected_line() {
+                        Some(line) => {
+                            match terminal_clipboard::set_string(line) {
+                                Ok(()) => AppStateCmdResult::Keep,
+                                Err(_) => AppStateCmdResult::DisplayError(
+                                    "Clipboard error while copying path".to_string(),
+                                ),
+                            }
+                        }
+                        None => AppStateCmdResult::DisplayError(
+                            "No selected line in preview".to_string(),
+                        ),
+                    })
+                }
+            }
             Internal::line_down => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.mut_preview().move_selection(count);

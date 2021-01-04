@@ -88,7 +88,7 @@ pub trait AppState {
             .unwrap_or(internal_exec.bang);
         Ok(match internal_exec.internal {
             Internal::back => AppStateCmdResult::PopState,
-            Internal::copy_path => {
+            Internal::copy_line | Internal::copy_path => {
                 #[cfg(not(feature = "clipboard"))]
                 {
                     AppStateCmdResult::DisplayError(

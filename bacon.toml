@@ -7,7 +7,12 @@ default_job = "check"
 [jobs]
 
 [jobs.check]
-command = ["cargo", "check", "--tests", "--color", "always"]
+command = [
+	"cargo", "check",
+	"--tests",
+	"--color", "always",
+	"--features", "clipboard",
+]
 need_stdout = false
 
 [jobs.light]

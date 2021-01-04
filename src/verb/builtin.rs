@@ -87,8 +87,10 @@ pub fn builtin_verbs() -> Vec<Verb> {
         )
             .with_shortcut("cp"),
         #[cfg(feature = "clipboard")]
-        internal(copy_path)
+        internal(copy_line)
             .with_alt_key('c'),
+        #[cfg(feature = "clipboard")]
+        internal(copy_path),
         external(
             "copy_to_panel",
             "cp -r {file} {other-panel-directory}",

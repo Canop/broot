@@ -48,6 +48,7 @@ Internals! {
     back: "revert to the previous state (mapped to *esc*)",
     close_panel_ok: "close the panel, validating the selected path",
     close_panel_cancel: "close the panel, not using the selected path",
+    copy_line: "copy selected line (in tree or preview)",
     copy_path: "copy path to system clipboard",
     filesystems: "list mounted filesystems",
     focus: "display the directory (mapped to *enter*)",

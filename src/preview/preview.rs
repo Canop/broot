@@ -168,6 +168,12 @@ impl Preview {
         matches!(self, Self::Syntactic(_))
     }
 
+    pub fn get_selected_line(&self) -> Option<String> {
+        match self {
+            Self::Syntactic(sv) => sv.get_selected_line(),
+            _ => None,
+        }
+    }
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {
         match self {
             Self::Syntactic(sv) => sv.get_selected_line_number(),

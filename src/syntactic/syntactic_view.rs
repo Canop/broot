@@ -186,6 +186,22 @@ impl SyntacticView {
         (self.page_height / 4).min(4)
     }
 
+    pub fn get_selected_line(&self) -> Option<String> {
+        self.selection_idx
+            .and_then(|idx| self.lines.get(idx))
+            .and_then(|line| {
+                File::open(&self.path)
+                    .and_then(|file| unsafe { Mmap::map(&file) })
+                    .ok()
+                    .filter(|mmap| mmap.len() >= line.start + line.len)
+                    .and_then(|mmap| {
+                        String::from_utf8(
+                            (&mmap[line.start..line.start + line.len]).to_vec(),
+                        ).ok()
+                    })
+            })
+    }
+
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {
         self.selection_idx
             .map(|idx| self.lines[idx].number)
