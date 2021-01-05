@@ -45,7 +45,7 @@ Fetch the [Canop/broot](https://github.com/Canop/broot) repository, move to the 
 cargo install --path .
 ```
 
-If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/features.md).
+If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/master/features.md).
 
 # Third party repositories
 
