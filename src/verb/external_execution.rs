@@ -29,7 +29,7 @@ pub struct ExternalExecution {
     /// * {other-panel-file}
     /// * {other-panel-directory}
     /// * {other-panel-parent}
-    pub exec_pattern: String,
+    pub exec_pattern: ExecPattern,
 
     /// how the external process must be launched
     pub exec_mode: ExternalExecutionMode,
@@ -41,7 +41,7 @@ pub struct ExternalExecution {
 
 impl ExternalExecution {
     pub fn new(
-        exec_pattern: String,
+        exec_pattern: ExecPattern,
         exec_mode: ExternalExecutionMode,
     ) -> Self {
         Self {

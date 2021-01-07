@@ -18,9 +18,9 @@ pub struct VerbConf {
 
     internal: Option<String>,
 
-    external: Option<String>,
+    external: Option<ExecPattern>,
 
-    execution: Option<String>,
+    execution: Option<ExecPattern>,
 
     cmd: Option<String>,
 
@@ -69,11 +69,11 @@ impl TryFrom<&VerbConf> for Verb {
         let execution = match (execution, internal, external, cmd) {
             // old definition with "execution": we guess whether it's an internal or
             // an external
-            (Some(s), None, None, None) => {
-                if s.starts_with(':') || s.starts_with(' ') {
-                    VerbExecution::Internal(InternalExecution::try_from(&s[1..])?)
+            (Some(ep), None, None, None) => {
+                if let Some(internal_pattern) = ep.as_internal_pattern() {
+                    VerbExecution::Internal(InternalExecution::try_from(internal_pattern)?)
                 } else {
-                    VerbExecution::External(make_external_execution(s.to_string()))
+                    VerbExecution::External(make_external_execution(ep.clone()))
                 }
             }
             // "internal": the leading `:` or ` ` is optional
@@ -85,8 +85,8 @@ impl TryFrom<&VerbConf> for Verb {
                 })
             }
             // "external": it can be about any form
-            (None, None, Some(s), None) => {
-                VerbExecution::External(make_external_execution(s.to_string()))
+            (None, None, Some(ep), None) => {
+                VerbExecution::External(make_external_execution(ep.clone()))
             }
             // "cmd": it's a sequence
             (None, None, None, Some(s)) => VerbExecution::Sequence(SequenceExecution {

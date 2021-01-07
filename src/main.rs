@@ -10,6 +10,7 @@ fn main() {
     cli_log::init("broot");
     match cli::run() {
         Ok(Some(launchable)) => {
+            debug!("launching {:#?}", launchable);
             if let Err(e) = launchable.execute(None) {
                 warn!("Failed to launch {:?}", &launchable);
                 warn!("Error: {:?}", e);

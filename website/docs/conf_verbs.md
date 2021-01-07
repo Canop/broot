@@ -50,6 +50,26 @@ The execution is defined either by `internal`, `external` or `cmd` so a verb mus
 !!!	Note
 	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example `cd` is a shell builtin which must be executed in the parent shell.
 
+## Using quotes
+
+If you want broot, for example, to execute `xterm -e "nvim {file}"`, you may either escape the quotes as `\"` or use the array format to separe parts.
+
+So the two following verb definitons are equivalent:
+
+```hjson
+{
+	invocation: xtv
+	external: "xterm -e \"nvim {file}\""
+}
+```
+
+```hjson
+{
+	invocation: xtv
+	external: ["xterm" "-e" "nvim {file}"]
+}
+```
+
 ## Shortcuts and Verb search
 
 **broot** looks for the first token following a space or `:` and tries to find the verb you want.

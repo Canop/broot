@@ -65,14 +65,11 @@ impl Verb {
         if let Some(ref invocation_parser) = invocation_parser {
             names.push(invocation_parser.name().to_string());
         }
-        let mut need_another_panel = false;
-        if let VerbExecution::External(ref external) = execution {
-            for group in GROUP.find_iter(&external.exec_pattern) {
-                if group.as_str().starts_with("{other-panel-") {
-                    need_another_panel = true;
-                }
-            }
-        }
+        let need_another_panel = if let VerbExecution::External(ref external) = execution {
+            external.exec_pattern.has_other_panel_group()
+        } else {
+            false
+        };
         Ok(Self {
             names,
             keys: Vec::new(),
@@ -179,7 +176,9 @@ impl Verb {
             )
         };
         if let VerbExecution::Sequence(seq_ex) = &self.execution {
-            let exec_desc = builder().shell_exec_string(&seq_ex.sequence.raw);
+            let exec_desc = builder().shell_exec_string(
+                &ExecPattern::from_string(&seq_ex.sequence.raw)
+            );
             format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
         } else if let VerbExecution::External(external_exec) = &self.execution {
             let exec_desc = builder().shell_exec_string(&external_exec.exec_pattern);

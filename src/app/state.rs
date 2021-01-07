@@ -324,7 +324,7 @@ pub trait AppState {
             VerbExecution::External(external) => external.to_cmd_result(w, exec_builder(), &cc.con),
             VerbExecution::Sequence(seq_ex) => {
                 let sequence = Sequence {
-                    raw: exec_builder().shell_exec_string(&seq_ex.sequence.raw),
+                    raw: exec_builder().shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
                     separator: seq_ex.sequence.separator.clone(),
                 };
                 Ok(AppStateCmdResult::ExecuteSequence { sequence })

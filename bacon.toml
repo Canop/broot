@@ -9,7 +9,6 @@ default_job = "check"
 [jobs.check]
 command = [
 	"cargo", "check",
-	"--tests",
 	"--color", "always",
 	"--features", "clipboard",
 ]

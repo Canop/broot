@@ -533,12 +533,11 @@ dependencies = [
 
 [[package]]
 name = "deser-hjson"
-version = "0.1.4"
+version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2e1354992dba7626630b6b50ff2bc4c9b15fefb80391bb41c0b0d473a68109e"
+checksum = "6a32f33b3655c00f7f3fc86410b573830bf6780afc35607d6e9ff09d49847a94"
 dependencies = [
  "serde",
- "unescape",
 ]
 
 [[package]]
@@ -1695,12 +1694,6 @@ name = "umask"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "982efbf70ec4d28f7862062c03dd1a4def601a5079e0faf1edc55f2ad0f6fe46"
-
-[[package]]
-name = "unescape"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccb97dac3243214f8d8507998906ca3e2e0b900bf9bf4870477f125b82e68f6e"
 
 [[package]]
 name = "unicode-bidi"
