@@ -1,4 +1,5 @@
-### next
+<a name="v1.1.11"></a>
+### v1.1.11 - 2021-01-07
 - fix handling of rules starting with '/' in the global gitignore - Fix #321
 - alt-c now mapped to the new :copy_line verb which, when in tree, puts the selected path in the clipboard and, when in text preview, puts the selected text line in the clipboard - Fix #322
 - it's possible to define verb execution patterns as arrays instead of simple strings, to avoid having to escape quotes - Fix #319
