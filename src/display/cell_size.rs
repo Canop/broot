@@ -22,7 +22,7 @@ pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
         ws_col: c_ushort,    /* columns, in characters */
         ws_xpixel: c_ushort, /* horizontal size, pixels */
         ws_ypixel: c_ushort, /* vertical size, pixels */
-    };
+    }
     let w = winsize {
         ws_row: 0,
         ws_col: 0,

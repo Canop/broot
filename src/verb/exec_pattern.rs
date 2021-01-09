@@ -41,7 +41,7 @@ impl ExecPattern {
             Self::Array(_) => None,
         }
     }
-    pub fn as_array(self) -> Vec<String> {
+    pub fn into_array(self) -> Vec<String> {
         match self {
             Self::String(s) => {
                 splitty::split_unquoted_whitespace(&s)
@@ -59,7 +59,7 @@ impl ExecPattern {
         Self::Array(v)
     }
     pub fn tokenize(self) -> Self {
-        Self::Array(self.as_array())
+        Self::Array(self.into_array())
     }
     pub fn apply(&self, f: &dyn Fn(&str) -> String) -> Self {
         Self::Array(

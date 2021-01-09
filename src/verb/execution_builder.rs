@@ -136,7 +136,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                 ).to_string()
             })
             .fix_paths()
-            .as_array()
+            .into_array()
     }
 }
 

@@ -93,7 +93,6 @@ harness = false
 # termimad = { path = "../termimad" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # deser-hjson = { path = "../deser-hjson" }
-# opener = { path = "../opener/opener" }
 # umask = { path = "../umask" }
 # secular = { path = "../secular" }
 # strict = { path = "../strict" }
