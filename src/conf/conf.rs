@@ -57,6 +57,9 @@ pub struct Conf {
     pub syntax_theme: Option<String>,
     pub true_colors: Option<bool>,
     pub icon_theme: Option<String>,
+    pub modal: Option<bool>,
+
+    // note: think about the read_file function below
 }
 
 impl Conf {
@@ -120,6 +123,7 @@ impl Conf {
         overwrite!(self, cols_order, conf);
         overwrite!(self, skin, conf);
         overwrite!(self, search_modes, conf);
+        overwrite!(self, modal, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense

@@ -43,6 +43,7 @@ pub struct FilesystemState {
     page_height: usize,
     tree_options: TreeOptions,
     filtered: Option<FilteredContent>,
+    mode: Mode,
 }
 
 impl FilesystemState {
@@ -53,7 +54,7 @@ impl FilesystemState {
     pub fn new(
         path: &Path,
         tree_options: TreeOptions,
-        _con: &AppContext,
+        con: &AppContext,
     ) -> Result<FilesystemState, ProgramError> {
         let mut mount_list = MOUNTS.lock().unwrap();
         let show_only_disks = false;
@@ -89,6 +90,7 @@ impl FilesystemState {
             page_height: 0,
             tree_options,
             filtered: None,
+            mode: initial_mode(con),
         })
     }
     pub fn count(&self) -> usize {
@@ -108,6 +110,14 @@ impl FilesystemState {
 }
 
 impl AppState for FilesystemState {
+
+    fn set_mode(&mut self, mode: Mode) {
+        self.mode = mode;
+    }
+
+    fn get_mode(&self) -> Mode {
+        self.mode
+    }
 
     fn selected_path(&self) -> &Path {
         &self.mounts[self.selection_idx].info.mount_point

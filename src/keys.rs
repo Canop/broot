@@ -1,8 +1,15 @@
 //! parsing keys from strings, and describing keys in strings
 
 use {
-    crate::errors::ConfError,
-    crossterm::event::{KeyCode::*, KeyEvent, KeyModifiers},
+    crate::{
+        app::Mode,
+        errors::ConfError,
+    },
+    crossterm::event::{
+        KeyCode::{self, *},
+        KeyEvent,
+        KeyModifiers,
+    },
 };
 
 macro_rules! const_key {
@@ -93,6 +100,27 @@ pub fn is_reserved(key: KeyEvent) -> bool {
         //UP => true, // basic navigation
         //DOWN => true, // basic navigation
         _ => false,
+    }
+}
+
+pub fn is_key_allowed_in_mode(key: KeyEvent, mode: Mode) -> bool {
+    match mode {
+        Mode::Input => {
+            // in input mode, keys normally used in the input are forbidden
+            match key {
+                KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::NONE } => false,
+                _ => true,
+            }
+        }
+        Mode::Command => true,
+    }
+}
+
+/// return the raw char if the event is a letter event
+pub fn as_letter(key: KeyEvent) -> Option<char> {
+    match key {
+        KeyEvent { code: KeyCode::Char(l), modifiers: KeyModifiers::NONE } => Some(l),
+        _ => None,
     }
 }
 

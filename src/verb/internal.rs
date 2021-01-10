@@ -69,6 +69,8 @@ Internals! {
     open_stay: "open file or directory according to OS (stay in broot)",
     open_stay_filter: "display the directory, keeping the current pattern",
     open_leave: "open file or directory according to OS (quit broot)",
+    mode_input: "enter the input mode",
+    mode_command: "enter the command mode",
     next_match: "select the next match",
     next_same_depth: "select the next file at the same depth",
     no_sort: "don't sort",

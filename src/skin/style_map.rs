@@ -171,6 +171,7 @@ StyleMap! {
     hex_ascii_whitespace: ansi(143), None, []
     hex_ascii_other: ansi(215), None, []
     hex_non_ascii: ansi(167), None, []
+    mode_command_mark: gray(5), ansi(204), [Bold]
 }
 
 impl fmt::Debug for StyleMap {

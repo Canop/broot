@@ -41,6 +41,12 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 	#
 	# date_time_format: %Y/%m/%d %R
 
+        ###############################################################
+        # "vim mode"
+        #
+        #
+        # modal: true
+
 	###############################################################
 	# Whether to mark the selected line with a triangle
 	#

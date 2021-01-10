@@ -103,14 +103,19 @@ pub fn builtin_verbs() -> Vec<Verb> {
         // but ctrl-f is useful for focusing on a file's parent
         // (and keep the filter)
         internal(focus)
+            .with_char_key('l')
             .with_control_key('f'),
         internal(help)
             .with_key(F1).with_shortcut("?"),
         #[cfg(feature="clipboard")]
         internal(input_paste)
             .with_control_key('v'),
-        internal(line_down).with_key(DOWN),
-        internal(line_up).with_key(UP),
+        internal(line_down)
+            .with_key(DOWN)
+            .with_char_key('j'),
+        internal(line_up)
+            .with_key(UP)
+            .with_char_key('k'),
         external(
             "mkdir {subpath}",
             "mkdir -p {subpath:path-from-directory}",
@@ -131,6 +136,12 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_shortcut("mvp"),
         internal_bang(start_end_panel)
             .with_control_key('p'),
+        // the char keys for mode_input are handled differently as they're not
+        // consumed by the command
+        internal(mode_input)
+            .with_char_key(' ')
+            .with_char_key(':')
+            .with_char_key('/'),
         internal(next_match)
             .with_key(TAB),
         internal(no_sort)
@@ -140,9 +151,15 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_shortcut("os"),
         internal(open_stay_filter)
             .with_shortcut("osf"),
-        internal(parent).with_shortcut("p"),
-        internal(page_down).with_key(PAGE_DOWN),
-        internal(page_up).with_key(PAGE_UP),
+        internal(parent)
+            .with_char_key('h')
+            .with_shortcut("p"),
+        internal(page_down)
+            .with_control_key('d')
+            .with_key(PAGE_DOWN),
+        internal(page_up)
+            .with_control_key('u')
+            .with_key(PAGE_UP),
         internal(panel_left)
             .with_key(KeyEvent {
                 code: KeyCode::Left,

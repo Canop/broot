@@ -27,6 +27,7 @@ pub struct BrowserState {
     pub filtered_tree: Option<Tree>,
     pub pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     pub total_search_required: bool,   // whether the pending pattern should be in total search mode
+    mode: Mode,
 }
 
 impl BrowserState {
@@ -54,6 +55,7 @@ impl BrowserState {
             filtered_tree: None,
             pending_pattern,
             total_search_required: false,
+            mode: initial_mode(con),
         }))
     }
 
@@ -145,6 +147,15 @@ impl BrowserState {
 }
 
 impl AppState for BrowserState {
+
+    fn set_mode(&mut self, mode: Mode) {
+        debug!("BrowserState::set_mode({:?})", mode);
+        self.mode = mode;
+    }
+
+    fn get_mode(&self) -> Mode {
+        self.mode
+    }
 
     fn get_pending_task(&self) -> Option<&'static str> {
         if self.pending_pattern.is_some() {

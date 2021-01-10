@@ -104,6 +104,12 @@ impl Verb {
             modifiers: KeyModifiers::CONTROL,
         })
     }
+    pub fn with_char_key(self, chr: char) -> Self {
+        self.with_key(KeyEvent {
+            code: KeyCode::Char(chr),
+            modifiers: KeyModifiers::NONE,
+        })
+    }
     pub fn with_description(mut self, description: &str) -> Self {
         self.description = VerbDescription::from_text(description.to_string());
         self
@@ -229,6 +235,10 @@ impl Verb {
             VerbExecution::Internal(internal_exec) => Some(internal_exec.internal),
             _ => None,
         }
+    }
+
+    pub fn is_internal(&self, internal: Internal) -> bool {
+        self.get_internal() == Some(internal)
     }
 
 }

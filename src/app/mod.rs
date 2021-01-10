@@ -2,6 +2,7 @@ mod app;
 mod cmd_context;
 mod cmd_result;
 mod context;
+mod mode;
 mod panel;
 mod panel_id;
 mod panel_purpose;
@@ -16,6 +17,7 @@ pub use {
     cmd_context::CmdContext,
     cmd_result::*,
     context::AppContext,
+    mode::*,
     panel::Panel,
     panel_id::PanelId,
     panel_purpose::PanelPurpose,

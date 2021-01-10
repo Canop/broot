@@ -1,3 +1,6 @@
+### next
+- expermimental "modal mode" (or "vim mode") in broot. See vim_mode.md
+
 <a name="v1.1.11"></a>
 ### v1.1.11 - 2021-01-07
 - fix handling of rules starting with '/' in the global gitignore - Fix #321

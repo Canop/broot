@@ -1,13 +1,19 @@
 use {
     super::*,
     crate::{
-        app::{AppContext, Selection},
+        app::*,
         display::W,
         errors::ProgramError,
         keys,
         skin::PanelSkin,
         verb::{Internal, Verb, VerbExecution},
     },
+    crossterm::{
+        cursor,
+        event::KeyEvent,
+        queue,
+    },
+    std::io::Write,
     termimad::{Area, Event, InputField},
 };
 
@@ -41,11 +47,18 @@ impl PanelInput {
         &mut self,
         w: &mut W,
         active: bool,
-        area: Area,
+        mode: Mode,
+        mut area: Area,
         panel_skin: &PanelSkin,
     ) -> Result<(), ProgramError> {
         self.input_field.set_normal_style(panel_skin.styles.input.clone());
-        self.input_field.focused = active;
+        self.input_field.focused = active && mode == Mode::Input;
+        if mode == Mode::Command && active {
+            queue!(w, cursor::MoveTo(area.left, area.top))?;
+            panel_skin.styles.mode_command_mark.queue_str(w, "C")?;
+            area.width -= 1;
+            area.left += 1;
+        }
         self.input_field.area = area;
         self.input_field.display_on(w)?;
         Ok(())
@@ -61,8 +74,9 @@ impl PanelInput {
         event: Event,
         con: &AppContext,
         sel: Selection<'_>,
+        mode: Mode,
     ) -> Result<Command, ProgramError> {
-        let cmd = self.get_command(event, con, sel);
+        let cmd = self.get_command(event, con, sel, mode);
         self.input_field.display_on(w)?;
         Ok(cmd)
     }
@@ -111,6 +125,27 @@ impl PanelInput {
         }
     }
 
+    /// when a key is used to enter input mode, we don't always
+    /// consume it. Sometimes it should be consumed, sometimes it
+    /// should be added to the input
+    fn enter_input_mode_with_key(
+        &mut self,
+        key: KeyEvent,
+        parts: &CommandParts,
+    ) {
+        if let Some(c) = keys::as_letter(key) {
+            let add = match c {
+                '/' if !parts.raw_pattern.is_empty() => true,
+                ' ' if parts.verb_invocation.is_none() => true,
+                ':' if parts.verb_invocation.is_none() => true,
+                _ => false,
+            };
+            if add {
+                self.input_field.put_char(c);
+            }
+        }
+    }
+
     /// consume the event to
     /// - maybe change the input
     /// - build a command
@@ -119,6 +154,7 @@ impl PanelInput {
         event: Event,
         con: &AppContext,
         sel: Selection<'_>,
+        mode: Mode,
     ) -> Command {
         match event {
             Event::Click(x, y, ..) => {
@@ -140,13 +176,21 @@ impl PanelInput {
                 // not be overriden by configuration
 
                 if key == keys::ESC {
+                    // tab cycling
                     self.tab_cycle_count = 0;
                     if let Some(raw) = self.input_before_cycle.take() {
                         // we cancel the tab cycling
                         self.input_field.set_content(&raw);
                         self.input_before_cycle = None;
                         return Command::from_raw(raw, false);
+                    } else if con.modal && mode == Mode::Input {
+                        // leave insertion mode
+                        return Command::Internal {
+                            internal: Internal::mode_command,
+                            input_invocation: None,
+                        };
                     } else {
+                        // general back command
                         self.input_field.set_content("");
                         let internal = Internal::back;
                         return Command::Internal {
@@ -218,19 +262,24 @@ impl PanelInput {
                 }
 
                 // we now check if the key is the trigger key of one of the verbs
-                for (index, verb) in con.verb_store.verbs.iter().enumerate() {
-                    for verb_key in &verb.keys {
-                        if *verb_key == key {
-                            if self.handle_input_related_verb(verb, con) {
-                                return Command::from_raw(self.input_field.get_content(), false);
-                            }
-                            if sel.stype.respects(verb.selection_condition) {
-                                return Command::VerbTrigger {
-                                    index,
-                                    input_invocation: parts.verb_invocation,
-                                };
-                            } else {
-                                debug!("verb not allowed on current selection");
+                if keys::is_key_allowed_in_mode(key, mode) {
+                    for (index, verb) in con.verb_store.verbs.iter().enumerate() {
+                        for verb_key in &verb.keys {
+                            if *verb_key == key {
+                                if self.handle_input_related_verb(verb, con) {
+                                    return Command::from_raw(self.input_field.get_content(), false);
+                                }
+                                if sel.stype.respects(verb.selection_condition) {
+                                    if verb.is_internal(Internal::mode_input) {
+                                        self.enter_input_mode_with_key(key, &parts);
+                                    }
+                                    return Command::VerbTrigger {
+                                        index,
+                                        input_invocation: parts.verb_invocation,
+                                    };
+                                } else {
+                                    debug!("verb not allowed on current selection");
+                                }
                             }
                         }
                     }
@@ -252,8 +301,10 @@ impl PanelInput {
                 }
 
                 // input field management
-                if self.input_field.apply_event(&event) {
-                    return Command::from_raw(self.input_field.get_content(), false);
+                if mode == Mode::Input {
+                    if self.input_field.apply_event(&event) {
+                        return Command::from_raw(self.input_field.get_content(), false);
+                    }
                 }
             }
             Event::Wheel(lines_count) => {

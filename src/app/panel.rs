@@ -143,7 +143,7 @@ impl Panel {
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
         let sel = self.states[self.states.len() - 1].selection();
-        self.input.on_event(w, event, con, sel)
+        self.input.on_event(w, event, con, sel, self.state().get_mode())
     }
 
     pub fn push_state(&mut self, new_state: Box<dyn AppState>) {
@@ -227,7 +227,7 @@ impl Panel {
                 flags_display::write(w, &flags, panel_skin)?;
             }
         }
-        self.input.display(w, active, input_area, panel_skin)?;
+        self.input.display(w, active, self.state().get_mode(), input_area, panel_skin)?;
         Ok(())
     }
 

@@ -24,6 +24,10 @@ use {
 /// a panel state, stackable to allow reverting
 ///  to a previous one
 pub trait AppState {
+
+    fn set_mode(&mut self, mode: Mode);
+    fn get_mode(&self) -> Mode;
+
     /// called on start of on_command
     fn clear_pending(&mut self) {}
 
@@ -53,6 +57,21 @@ pub trait AppState {
         _con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         Ok(AppStateCmdResult::Keep)
+    }
+
+    fn on_mode_verb(
+        &mut self,
+        mode: Mode,
+        con: &AppContext,
+    ) -> AppStateCmdResult {
+        if con.modal {
+            self.set_mode(mode);
+            AppStateCmdResult::Keep
+        } else {
+            AppStateCmdResult::DisplayError(
+                "modal mode not enabled in configuration".to_string()
+            )
+        }
     }
 
     /// execute the internal with the optional given invocation.
@@ -155,6 +174,8 @@ pub trait AppState {
                     ))
                 }
             }
+            Internal::mode_input => self.on_mode_verb(Mode::Input, &cc.con),
+            Internal::mode_command => self.on_mode_verb(Mode::Command, &cc.con),
             Internal::open_leave => self.selection().to_opener(con)?,
             Internal::open_preview => self.open_preview(None, false, cc),
             Internal::preview_image => self.open_preview(Some(PreviewMode::Image), false, cc),
@@ -564,4 +585,12 @@ pub fn get_arg<T: Copy + FromStr>(
         .or_else(|| internal_exec.arg.as_ref())
         .and_then(|s| s.parse::<T>().ok())
         .unwrap_or(default)
+}
+
+pub fn initial_mode(con: &AppContext) -> Mode {
+    if con.modal {
+        Mode::Command
+    } else {
+        Mode::Input
+    }
 }

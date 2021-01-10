@@ -34,6 +34,7 @@ pub struct PreviewState {
     removed_pattern: InputPattern,
     prefered_mode: Option<PreviewMode>,
     tree_options: TreeOptions,
+    mode: Mode,
 }
 
 impl PreviewState {
@@ -56,6 +57,7 @@ impl PreviewState {
             removed_pattern: InputPattern::none(),
             prefered_mode,
             tree_options,
+            mode: initial_mode(con),
         }
     }
     fn mut_preview(&mut self) -> &mut Preview {
@@ -85,6 +87,14 @@ impl PreviewState {
 }
 
 impl AppState for PreviewState {
+
+    fn set_mode(&mut self, mode: Mode) {
+        self.mode = mode;
+    }
+
+    fn get_mode(&self) -> Mode {
+        self.mode
+    }
 
     fn get_pending_task(&self) -> Option<&'static str> {
         if self.pending_pattern.is_some() {

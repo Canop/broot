@@ -24,6 +24,7 @@ pub struct HelpState {
     pattern: Pattern,
     tree_options: TreeOptions,
     config_path: PathBuf, // the last config path when several were used
+    mode: Mode,
 }
 
 impl HelpState {
@@ -44,11 +45,20 @@ impl HelpState {
             pattern: Pattern::None,
             tree_options,
             config_path,
+            mode: initial_mode(con),
         }
     }
 }
 
 impl AppState for HelpState {
+
+    fn set_mode(&mut self, mode: Mode) {
+        self.mode = mode;
+    }
+
+    fn get_mode(&self) -> Mode {
+        self.mode
+    }
 
     fn selected_path(&self) -> &Path {
         &self.config_path

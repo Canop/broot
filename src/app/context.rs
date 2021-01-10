@@ -56,6 +56,9 @@ pub struct AppContext {
     /// map extensions to icons, icon set chosen based on config
     /// Send, Sync safely beause once created, everything is immutable
     pub icons: Option<Box<dyn IconPlugin + Send + Sync>>,
+
+    /// modal (aka "vim) mode enabled
+    pub modal: bool,
 }
 
 impl AppContext {
@@ -96,6 +99,7 @@ impl AppContext {
             standard_status,
             true_colors,
             icons,
+            modal: config.modal.unwrap_or(false),
         })
     }
 }
