@@ -1,5 +1,6 @@
 ### next
 - expermimental "modal mode" (or "vim mode") in broot. See vim_mode.md
+- fix mouse staying captured during external app execution - Fix #325
 
 <a name="v1.1.11"></a>
 ### v1.1.11 - 2021-01-07

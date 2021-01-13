@@ -1,5 +1,6 @@
 use {
     crate::{
+        app::AppContext,
         display::{
             DisplayableTree,
             Screen,
@@ -14,6 +15,7 @@ use {
     },
     crossterm::{
         cursor,
+        event::{DisableMouseCapture, EnableMouseCapture},
         terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
     },
@@ -49,6 +51,7 @@ pub enum Launchable {
         exe: String,
         args: Vec<String>,
         working_dir: Option<PathBuf>,
+        mouse_capture_disabled: bool,
     },
 
     /// open a path
@@ -97,6 +100,7 @@ impl Launchable {
     pub fn program(
         parts: Vec<String>,
         working_dir: Option<PathBuf>,
+        con: &AppContext,
     ) -> io::Result<Launchable> {
         let mut parts = resolve_env_variables(parts).into_iter();
         match parts.next() {
@@ -104,12 +108,16 @@ impl Launchable {
                 exe,
                 args: parts.collect(),
                 working_dir,
+                mouse_capture_disabled: con.mouse_capture_disabled,
             }),
             None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
         }
     }
 
-    pub fn execute(&self, mut w: Option<&mut W>) -> Result<(), ProgramError> {
+    pub fn execute(
+        &self,
+        mut w: Option<&mut W>,
+    ) -> Result<(), ProgramError> {
         match self {
             Launchable::Printer { to_print } => {
                 println!("{}", to_print);
@@ -119,15 +127,22 @@ impl Launchable {
                 let dp = DisplayableTree::out_of_app(&tree, &skin, &ext_colors, *width);
                 dp.write_on(&mut std::io::stdout())
             }
-            Launchable::Program { working_dir, exe, args } => {
+            Launchable::Program {
+                working_dir,
+                exe,
+                args,
+                mouse_capture_disabled,
+            } => {
                 // we restore the normal terminal in case the executable
                 // is a terminal application, and we'll switch back to
                 // broot's alternate terminal when we're back to broot
                 // (and this part of the code should be cleaned...)
                 if let Some(ref mut w) = &mut w {
                     w.queue(cursor::Show).unwrap();
-                    w.queue(cursor::EnableBlinking).unwrap();
                     w.queue(LeaveAlternateScreen).unwrap();
+                    if !mouse_capture_disabled {
+                        w.queue(DisableMouseCapture).unwrap();
+                    }
                     terminal::disable_raw_mode().unwrap();
                     w.flush().unwrap();
                 }
@@ -146,8 +161,10 @@ impl Launchable {
                     })?;
                 if let Some(ref mut w) = &mut w {
                     terminal::enable_raw_mode().unwrap();
+                    if !mouse_capture_disabled {
+                        w.queue(EnableMouseCapture).unwrap();
+                    }
                     w.queue(EnterAlternateScreen).unwrap();
-                    w.queue(cursor::DisableBlinking).unwrap();
                     w.queue(cursor::Hide).unwrap();
                     w.flush().unwrap();
                 }

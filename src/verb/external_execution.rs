@@ -67,7 +67,7 @@ impl ExternalExecution {
         if self.exec_mode.is_from_shell() {
             self.exec_from_shell_cmd_result(builder, con)
         } else {
-            self.exec_cmd_result(w, builder)
+            self.exec_cmd_result(w, builder, con)
         }
     }
 
@@ -102,8 +102,8 @@ impl ExternalExecution {
     fn exec_cmd_result(
         &self,
         w: &mut W,
-        //sel: Selection<'_>,
         builder: ExecutionStringBuilder<'_>,
+        con: &AppContext,
     ) -> Result<AppStateCmdResult, ProgramError> {
         let launchable = Launchable::program(
             builder.exec_token(&self.exec_pattern),
@@ -112,6 +112,7 @@ impl ExternalExecution {
             } else {
                 None
             },
+            con,
         )?;
         if self.exec_mode.is_leave_broot() {
             Ok(AppStateCmdResult::from(launchable))

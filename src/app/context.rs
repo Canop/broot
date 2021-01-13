@@ -59,6 +59,8 @@ pub struct AppContext {
 
     /// modal (aka "vim) mode enabled
     pub modal: bool,
+
+    pub mouse_capture_disabled: bool,
 }
 
 impl AppContext {
@@ -100,6 +102,7 @@ impl AppContext {
             true_colors,
             icons,
             modal: config.modal.unwrap_or(false),
+            mouse_capture_disabled: config.disable_mouse_capture.unwrap_or(false),
         })
     }
 }

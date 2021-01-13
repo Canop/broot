@@ -62,6 +62,7 @@ impl Selection<'_> {
                 AppStateCmdResult::from(Launchable::program(
                     vec![path],
                     None, // we don't set the working directory
+                    con,
                 )?)
             }
         } else {
