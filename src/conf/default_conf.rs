@@ -98,6 +98,35 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 	# 	"/home/dys/my-link-I-want-to-explore"	: enter
 	# }
 
+
+	###############################################################
+	# Search modes
+        #
+        # broot allows many search modes.
+        # A search mode is defined by
+        # - the way to search: fuzzy, exact, or a regular expression.
+        # - where to search: name, sub-path, or file content
+        # A search pattern may for example be "fuzzy name" (default),
+        # "regex content" or "exact path".
+        #
+        # The search mode is selected from its prefix. For example, if
+        # you type "abc", the default mode is "fuzzy name". If you type
+        # "/abc", the mode is "regex name". If you type "rp/abc", the mode
+        # is "regex path".
+        #
+        # This mapping may be modified. You may want to dedicate the
+        # empty prefix (the one which doesn't need a '/') to the
+        # search mode you use most often. The example below makes it
+        # easy to search on subpath rather than on the name.
+        #
+        # More information on
+        #  https://dystroy.org/broot/input/#the-filtering-pattern
+        #
+        # search_modes: {
+        #     <empty>: fuzzy path
+        #     /: regex path
+        # }
+
 	###############################################################
 	# Verbs and shortcuts
 	# You can define your own commands which would be applied to
