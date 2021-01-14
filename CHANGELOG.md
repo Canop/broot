@@ -1,5 +1,6 @@
-### next
-- expermimental "modal mode" (or "vim mode") in broot. See vim_mode.md
+<a name="v1.2.0"></a>
+### v1.2.0 - 2021-01-14
+- experimental "modal mode" (or "vim mode") in broot. See https://dystroy.org/broot/vim_mode/
 - fix mouse staying captured during external app execution - Fix #325
 
 <a name="v1.1.11"></a>

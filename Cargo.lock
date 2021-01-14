@@ -115,7 +115,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "1.2.0-dev"
+version = "1.2.0"
 dependencies = [
  "ansi_colours",
  "base64 0.13.0",
@@ -533,9 +533,9 @@ dependencies = [
 
 [[package]]
 name = "deser-hjson"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6a32f33b3655c00f7f3fc86410b573830bf6780afc35607d6e9ff09d49847a94"
+checksum = "fe0bd3d7d417d64ee4c1a70e3d8914069c29d6d1b7feb2d30c6140304f604a28"
 dependencies = [
  "serde",
 ]
