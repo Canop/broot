@@ -32,6 +32,12 @@ mkdir build/completion
 cp "$(broot -c ":gi;release;:focus;broot.bash;:parent;:pp" target)/"* build/completion
 echo "   Done"
 
+# find and copy the default conf
+# (it's built as part of the normal compilation so must come after the linux version)
+echo -e "${H2}copying default configuration${EH}"
+cp "$(broot -c ":gi;release;:focus;deault-conf.hjson;:pp" target)" build
+echo "   Done"
+
 # add the resource (the icons font)
 echo -e "${H2}copying resources${EH}"
 mkdir build/resources

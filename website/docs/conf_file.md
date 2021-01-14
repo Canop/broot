@@ -11,6 +11,8 @@ From this screen you can directly open the configuration file in your system's e
 
 The default configuration file contains several example sections that you may uncomment and modify for your goals.
 
+The current default configuration file may be seen here: [default-conf.hjson](https://dystroy.org/broot/download/default-conf.hjson).
+
 # Default flags
 
 Broot accepts a few flags at launch (the complete list is available with `broot --help`.
