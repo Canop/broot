@@ -23,6 +23,7 @@ nav:
                 - Verbs and shortcuts: conf_verbs.md
                 - Skins: skins.md
                 - Icons: icons.md
+                - Vim Mode: vim_mode.md
         - Community: community.md
 
 extra_css:
