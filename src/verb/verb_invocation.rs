@@ -71,7 +71,7 @@ impl From<&str> for VerbInvocation {
                 ^
                 (?P<bang_before>!)?
                 (?P<name>[^!\s]*)
-                (?P<bang_after>!)?
+                (?P<bang_after>!(?P<post_bang>[^\s:]+)?)?
                 (?:[\s:]+(?P<args>.*))?
                 \s*
                 $
@@ -82,6 +82,12 @@ impl From<&str> for VerbInvocation {
         let bang_before = caps.name("bang_before").is_some();
         let bang_after = caps.name("bang_after").is_some();
         let bang = bang_before || bang_after;
+        if let Some(post_bang) = caps.name("post_bang") {
+            // If there's a non space character just after the "bang_after"
+            // (a bang which isn't the first charcter of the invocation)
+            // it falls into a kind of void, having no meaning.
+            info!("ignored post_bang: {:?}", post_bang);
+        }
         let name = caps.name("name").unwrap().as_str().to_string();
         let args = caps.name("args").map(|c| c.as_str().to_string());
         VerbInvocation { name, args, bang }
@@ -91,8 +97,12 @@ impl From<&str> for VerbInvocation {
 #[cfg(test)]
 mod verb_invocation_tests {
     use super::*;
+
     #[test]
-    fn check_verb_invocation_parsing() {
+    fn check_verb_invocation_parsing_empty_arg() {
+        // those tests focus mainly on the distinction between
+        // None and Some("") for the args, distinction which matters
+        // for inline help
         assert_eq!(
             VerbInvocation::from("!mv"),
             VerbInvocation::new("mv", None, true),
@@ -108,6 +118,71 @@ mod verb_invocation_tests {
         assert_eq!(
             VerbInvocation::from("cp ../"),
             VerbInvocation::new("cp", Some("../"), false),
+        );
+    }
+
+    #[test]
+    fn check_verb_invocation_parsing_post_bang() {
+        // ignoring post_bang (see issue #326)
+        assert_eq!(
+            VerbInvocation::from("mva!a"),
+            VerbInvocation::new("mva", None, true),
+        );
+        assert_eq!(
+            VerbInvocation::from("!!!"),
+            VerbInvocation::new("", None, true),
+        );
+    }
+
+    #[test]
+    fn check_verb_invocation_parsing_empty_verb() {
+        // there's currently no meaning for the empty verb, it's "reserved"
+        // and will probably not be used as it may need a distinction between
+        // one and two initial spaces in the input
+        assert_eq!(
+            VerbInvocation::from(""),
+            VerbInvocation::new("", None, false),
+        );
+        assert_eq!(
+            VerbInvocation::from("!"),
+            VerbInvocation::new("", None, true),
+        );
+        assert_eq!(
+            VerbInvocation::from("!!"),
+            VerbInvocation::new("", None, true),
+        );
+        assert_eq!(
+            VerbInvocation::from("!!a"), // case of post_bang
+            VerbInvocation::new("", None, true),
+        );
+        assert_eq!(
+            VerbInvocation::from("!! "),
+            VerbInvocation::new("", Some(""), true),
+        );
+        assert_eq!(
+            VerbInvocation::from("!! a"),
+            VerbInvocation::new("", Some("a"), true),
+        );
+    }
+
+    #[test]
+    fn check_verb_invocation_parsing_oddities() {
+        // checking some corner cases
+        assert_eq!(
+            VerbInvocation::from("a ! !"),
+            VerbInvocation::new("a", Some("! !"), false),
+        );
+        assert_eq!(
+            VerbInvocation::from("!a !a"),
+            VerbInvocation::new("a", Some("!a"), true),
+        );
+        assert_eq!(
+            VerbInvocation::from("a! ! //"),
+            VerbInvocation::new("a", Some("! //"), true),
+        );
+        assert_eq!(
+            VerbInvocation::from(".. .."),
+            VerbInvocation::new("..", Some(".."), false),
         );
     }
 }

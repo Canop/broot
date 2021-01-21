@@ -27,7 +27,6 @@ impl fmt::Display for CommandParts {
 
 impl CommandParts {
     pub fn from(mut raw: String) -> Self {
-        //let mut verb_invocation: Option<String> = None;
         let mut invocation_start_pos: Option<usize> = None;
         let mut escaping = false;
         let mut pt = BeTree::new();
