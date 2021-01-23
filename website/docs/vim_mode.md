@@ -1,5 +1,5 @@
 
-# "Vim Mode" (or "Modal Mode")
+# "Modal Mode" (aka "Vim Mode")
 
 ## Warnings
 
