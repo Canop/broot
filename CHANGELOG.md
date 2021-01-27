@@ -1,5 +1,7 @@
-### next
-- allow dashes instead of underscores in conf property names. This fixes a regression as "special-paths", "ext-colors" and "search-modes" were defined with a dash up to version 1.0.7. Now both spellings are OK. Fix #330
+<a name="v1.2.1"></a>
+### v1.2.1 - 2021-01-27
+- allow dashes instead of underscores in conf property names. This fixes a regression as "special-paths", "ext-colors" and "search-modes" were defined with a dash up to version 1.0.7. Now both spellings are OK - Fix #330
+- fix some problems with paths containing spaces (regression since 1.1.11)- Fix #329
 
 <a name="v1.2.0"></a>
 ### v1.2.0 - 2021-01-14
