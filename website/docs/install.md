@@ -54,6 +54,11 @@ If you want a custom compilation, have a look at the [optional features document
 ## Homebrew
 
     brew install broot
+    
+## MacPorts
+
+    sudo port selfupdate
+    sudo port install broot
 
 ## Alpine Linux
 
