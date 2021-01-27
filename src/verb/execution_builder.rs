@@ -59,30 +59,26 @@ impl<'b> ExecutionStringBuilder<'b> {
         let file = &self.sel.path;
         file.parent().unwrap_or(file)
     }
-    fn path_to_string(&self, path: &Path, escape: bool) -> String {
-        if escape {
-            path::escape_for_shell(path)
-        } else {
-            path.to_string_lossy().to_string()
-        }
+    fn path_to_string(&self, path: &Path) -> String {
+        path.to_string_lossy().to_string()
     }
-    fn get_raw_capture_replacement(&self, ec: &Captures<'_>, escape: bool) -> Option<String> {
+    fn get_raw_capture_replacement(&self, ec: &Captures<'_>) -> Option<String> {
         let name = ec.get(1).unwrap().as_str();
         match name {
             "line" => Some(self.sel.line.to_string()),
-            "file" => Some(self.path_to_string(self.get_file(), escape)),
-            "directory" => Some(self.path_to_string(&self.get_directory(), escape)),
-            "parent" => Some(self.path_to_string(self.get_parent(), escape)),
-            "other-panel-file" => self.other_file.map(|p| self.path_to_string(p, escape)),
+            "file" => Some(self.path_to_string(self.get_file())),
+            "directory" => Some(self.path_to_string(&self.get_directory())),
+            "parent" => Some(self.path_to_string(self.get_parent())),
+            "other-panel-file" => self.other_file.map(|p| self.path_to_string(p)),
             "other-panel-directory" => self
                 .other_file
                 .map(|p| path::closest_dir(p))
                 .as_ref()
-                .map(|p| self.path_to_string(p, escape)),
+                .map(|p| self.path_to_string(p)),
             "other-panel-parent" => self
                 .other_file
                 .and_then(|p| p.parent())
-                .map(|p| self.path_to_string(p, escape)),
+                .map(|p| self.path_to_string(p)),
             _ => {
                 // it's not one of the standard group names, so we'll look
                 // into the ones provided by the invocation pattern
@@ -103,8 +99,8 @@ impl<'b> ExecutionStringBuilder<'b> {
             }
         }
     }
-    fn get_capture_replacement(&self, ec: &Captures<'_>, escape: bool) -> String {
-        self.get_raw_capture_replacement(ec, escape)
+    fn get_capture_replacement(&self, ec: &Captures<'_>) -> String {
+        self.get_raw_capture_replacement(ec)
             .unwrap_or_else(|| ec[0].to_string())
     }
     /// build a shell compatible command, with escapings
@@ -116,7 +112,7 @@ impl<'b> ExecutionStringBuilder<'b> {
             .apply(&|s| {
                 GROUP.replace_all(
                     s,
-                    |ec: &Captures<'_>| self.get_capture_replacement(ec, true),
+                    |ec: &Captures<'_>| self.get_capture_replacement(ec),
                 ).to_string()
             })
             .fix_paths()
@@ -132,7 +128,7 @@ impl<'b> ExecutionStringBuilder<'b> {
             .apply(&|s| {
                 GROUP.replace_all(
                     s,
-                    |ec: &Captures<'_>| self.get_capture_replacement(ec, false),
+                    |ec: &Captures<'_>| self.get_capture_replacement(ec),
                 ).to_string()
             })
             .fix_paths()
