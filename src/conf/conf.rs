@@ -41,25 +41,46 @@ pub struct Conf {
     #[serde(skip)]
     pub files: Vec<PathBuf>,
 
+    #[serde(alias="default-flags")]
     pub default_flags: Option<String>, // the flags to apply before cli ones
+
+    #[serde(alias="date-time-format")]
     pub date_time_format: Option<String>,
+
     #[serde(default)]
     pub verbs: Vec<VerbConf>,
+
     pub skin: Option<FnvHashMap<String, SkinEntry>>,
-    #[serde(default)]
+
+    #[serde(default, alias="special-paths")]
     pub special_paths: FnvHashMap<Glob, SpecialHandling>,
+
+    #[serde(alias="search-modes")]
     pub search_modes: Option<FnvHashMap<String, String>>,
+
+    #[serde(alias="disable-mouse-capture")]
     pub disable_mouse_capture: Option<bool>,
+
+    #[serde(alias="cols-order")]
     pub cols_order: Option<ColsConf>,
+
+    #[serde(alias="show-selection-mark")]
     pub show_selection_mark: Option<bool>,
-    #[serde(default)]
+
+    #[serde(default, alias="ext-colors")]
     pub ext_colors: FnvHashMap<String, String>,
+
+    #[serde(alias="syntax-theme")]
     pub syntax_theme: Option<String>,
+
+    #[serde(alias="true-colors")]
     pub true_colors: Option<bool>,
+
+    #[serde(alias="icon-theme")]
     pub icon_theme: Option<String>,
+
     pub modal: Option<bool>,
 
-    // note: think about the read_file function below
 }
 
 impl Conf {
