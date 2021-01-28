@@ -1,6 +1,6 @@
 # Icons
 
-Since version 1.0.6 of broot, you may configure broot to display icons:
+You may configure broot to display icons:
 
 ![Broot with icons](img/20201117-icons.png)
 

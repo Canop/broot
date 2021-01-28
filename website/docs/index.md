@@ -2,9 +2,9 @@
 
 <p align=center style="max-width:600px">
 <img src="img/vache.svg" height=140px>
+<br><a class=install-link href=install>Install Broot</a>
 </p>
 
-**[Installation](install)**
 
 # Get an overview of a directory, even a big one
 

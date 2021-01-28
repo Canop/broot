@@ -1,6 +1,6 @@
 
 
-## General form
+# General form
 
 The input is the area at the bottom of the focused panel, in which you can type a filter or a command.
 
@@ -11,7 +11,7 @@ Its parts are
 
 Both parts are optional.
 
-## The filtering pattern
+# The filtering pattern
 
 A search pattern is made of 1 to 3 parts separated by the `/` character but you rarely need the two `/`.
 
@@ -38,7 +38,7 @@ It's also possible to [redefine those mode mappings](../conf_file/#search-modes)
 
 To escape characters (for example the space, colon or slash) in the pattern, use a `\` (an antislash is `\\`).
 
-## Combining filtering patterns
+# Combining filtering patterns
 
 Patterns can be combined with the `!` (not), `&` (and) and `|` (or) operators, and parentheses if necessary.
 
@@ -46,7 +46,7 @@ You can for example display non `json` files containing either `isize` or `i32` 
 
     !/json$/&(c/isize/|c/i32/)
 
-### Subtleties
+## Subtleties
 
 The characters you use as operators and the parenthesis can be useful in patterns too, either because you want to search for them in fuzzy patterns or in file contents, or because you write non trivial regular expressions.
 
@@ -55,7 +55,7 @@ Most often you'll just type what feels natural and broot will select the interpr
 * parenthesis and operators in the second pattern part (parts being separated by `/`) are part of the pattern, which explains why `/(json|xml)` is interpreted as a regular expression. If you want to do a fuzzy search for a `|` in the name of your files, you'll need to either escape it as `\|` or to have an explicit pattern mode : `nf/a|b` because `a|b` would search for files whose name contains either `a` or `b`. And to ensure an operator or closing parenthesis isn't interpreted as part of your pattern, close it with a `/`.
 * broot interprets the left operand before the right one and doesn't interpret the second one if it's not necessary. So if you want to search your whole disk for json files containing `abcd`, it will be faster to use `/json$/&c/abcd` rather than `c/abcd/&/json$/` which would look at the file name only after having scanned the content.
 
-## The verb invocation
+# The verb invocation
 
 The verb invocation is
 
@@ -69,27 +69,27 @@ where arguments can be empty, depending on the verb's behaviour and invocation p
 
 Verbs are detailed in the [Verbs & Commands](verbs.md) chapter.
 
-## Examples
+# Examples
 
-### A Fuzzy search:
+## A Fuzzy search:
 
 `re`
 
 ![fuzzy](img/20200526-input-fuzzy.png)
 
-### A regular expression based search:
+## A regular expression based search:
 
 `/re`
 
 ![fuzzy](img/20200604-input-regex.png)
 
-### A fuzzy path search
+## A fuzzy path search
 
 `p/coco`
 
 ![fuzzy](img/20200604-fuzzy-path.png)
 
-### A search followed by a command without arguments:
+## A search followed by a command without arguments:
 
 `re rm` (which is equivalent to `re:rm`)
 
@@ -97,13 +97,13 @@ This is very natural: You use the search to select your element and you don't ne
 
 ![fuzzy](img/20200526-input-fuzzy-rm.png)
 
-### A search followed by a command taking an argument:
+## A search followed by a command taking an argument:
 
 `re mv ../regex.rs`
 
 ![fuzzy](img/20200526-input-fuzzy-mv.png)
 
-### A full text search
+## A full text search
 
 In this case with an escaped space:
 
@@ -111,11 +111,11 @@ In this case with an escaped space:
 
 ![content search](img/20200608-content-search.png)
 
-### A regular expression based full text search
+## A regular expression based full text search
 
 ![content regex search](img/20201002-cr-search.png)
 
-### A complex composite search
+## A complex composite search
 
 Here we search for `"carg"` both in file names and file contents, and we exclude `"lock"` files:
 

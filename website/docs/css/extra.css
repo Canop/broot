@@ -12,8 +12,8 @@ body {
 h1 {
 	font-size: 22px;
 	border-bottom: solid 1px;
-	padding-bottom: 10px;
-	margin-bottom: 18px;
+	padding-bottom: 8px;
+	margin: 30px 0 20px 0;
 	border-image-source: linear-gradient(to right, #178acc, #fff);
 	border-image-slice: 1;
 }
@@ -26,9 +26,6 @@ h3 {
 
 .navbar {
 	background-image: linear-gradient(#184965,#02121b);
-	/*
-	background: #333;
-	*/
 }
 
 pre {
@@ -111,4 +108,16 @@ kbd.b {
 }
 .logo-wrap img {
 	width: 70px;
+}
+
+.install-link {
+	font-size: 15px;
+	margin: 10px 0 10px 0px;
+	text-align:center;
+	background: #133d55;
+	border-radius: 5px;
+	padding: 5px 8px;
+}
+.install-link:hover {
+	background: #acf;
 }

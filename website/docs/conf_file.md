@@ -3,10 +3,9 @@
 
 Two formats are allowed: [TOML](https://github.com/toml-lang/toml) and [Hjson](https://hjson.github.io/).
 
-The configuration file is called either `conf.toml` or `conf.hjson`.
+The main configuration file is called either `conf.toml` or `conf.hjson`.
 
 This default file's location follows the XDG convention, which depends on your system settings. This location in your case can be found on the help screen (use <kbd>?</kbd>).
-
 From this screen you can directly open the configuration file in your system's editor by typing `:os` (shortcut for `:open_stay`).
 
 The default configuration file contains several example sections that you may uncomment and modify for your goals.
@@ -63,9 +62,9 @@ In Hjson:
 
 ```css
 special_paths: {
-	"/media/slow-backup-disk"		: no-enter
-	"/home/dys/useless"			: hide
-	"/home/dys/my-link-I-want-to-explore"	: enter
+    "/media/slow-backup-disk"             : no-enter
+    "/home/dys/useless"                   : hide
+    "/home/dys/my-link-I-want-to-explore" : enter
 }
 ```
 

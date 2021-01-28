@@ -1,7 +1,7 @@
 
-The most important part of broot configuration is the `[[verbs]]` sections, which let you define new commands or shortcuts.
+The most important part of broot configuration is the `verbs` sections, which let you define new commands or shortcuts.
 
-## Verb Definition Attributes
+# Verb Definition Attributes
 
 You can define a new verb in the TOML configuration file inside the `verbs` list.
 
@@ -50,7 +50,7 @@ The execution is defined either by `internal`, `external` or `cmd` so a verb mus
 !!!	Note
 	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example `cd` is a shell builtin which must be executed in the parent shell.
 
-## Using quotes
+# Using quotes
 
 If you want broot, for example, to execute `xterm -e "nvim {file}"`, you may either escape the quotes as `\"` or use the array format to separe parts.
 
@@ -70,7 +70,7 @@ So the two following verb definitons are equivalent:
 }
 ```
 
-## Shortcuts and Verb search
+# Shortcuts and Verb search
 
 **broot** looks for the first token following a space or `:` and tries to find the verb you want.
 
@@ -93,7 +93,7 @@ Its interest is that if you do `:p`, then `enter`, it is executed even while the
 
 Use shortcuts for verbs you frequently use.
 
-## Keyboard key
+# Keyboard key
 
 The main keys you can use are
 
@@ -152,13 +152,13 @@ Then,
 
 Beware that consoles intercept some possible keys. Many keyboard shortcuts aren't available, depending on your configuration. Some keys are also reserved in broot for some uses, for example the <kbd>enter</kbd> key always validate an input command if there's some. The <kbd>Tab</kbd>, <kbd>delete</kbd>, <kbd>backspace</kbd>, <kbd>esc</kbd> keys are reserved too.
 
-### Verbs not leaving broot
+## Verbs not leaving broot
 
 If you set `leave_broot = false`, broot won't quit when executing your command, but it will update the tree.
 
 This is useful for commands modifying the tree (like creating or moving files).
 
-## Verb Arguments
+# Verb Arguments
 
 The execution of a verb can take one or several arguments.
 
@@ -228,7 +228,7 @@ from_shell = true
 
 You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
 
-## Internals
+# Internals
 
 Here's a list of internals: builtin actions you can add an alternate shortcut or keyboard key for:
 
@@ -283,7 +283,7 @@ Note that
 - you can always call a verb with its default invocation, you don't *have* to define a shortcut
 - verbs whose invocation needs an argument (like `{newpath}`) can't be triggered with just a keyboard key.
 
-## Input related verbs
+# Input related verbs
 
 Some internal actions can be bound to a key shortcut but can't be called explicitly because they directly act on the input field:
 
@@ -320,7 +320,7 @@ key = "alt-r"
 internal = ":input_del_word_right"
 ```
 
-## Focus
+# Focus
 
 The `:focus` internal has many uses.
 
@@ -342,7 +342,7 @@ key = "ctrl-d"
 internal = ":focus ~/dev"
 ```
 
-## cmd execution
+# cmd execution
 
 The `cmd` argument lets you define a sequence, just like the one you give to broot with [the `--cmd` argument](../launch/#the-cmd-launch-argument).
 

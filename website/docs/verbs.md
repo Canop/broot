@@ -5,7 +5,7 @@ The simplest verbs are just executed by typing a space (or `:`), then its first 
 
 A verb can be related to the current selection. For example typing `:p` will execute the `:parent` verb, which focuses the parent of the selection (*focusing* a directory means making it the current root).
 
-## Verbs using the selection
+# Verbs using the selection
 
 The `rm` verb executes the standard `rm` command.
 
@@ -41,7 +41,7 @@ When you type a verb, the execution pattern is completed using the selection(s),
 As for filters, hitting <kbd>esc</kbd> clears the command.
 
 
-## Verbs using user provided arguments
+# Verbs using user provided arguments
 
 Some commands not only use the selection but also takes one or several argument(s).
 
@@ -73,7 +73,7 @@ In this screenshot, you didn't type `mkdir` or its start but `md`. That's becaus
 !!!	Note
 	The help screen lists the whole set of available verbs, including the ones coming from the configuration.
 
-## Tab completion
+# Tab completion
 
 When you type a verb, a few letters are often enough because broot just want enough of them to be sure there's no confusion.
 But sometimes there are a lot of verbs with the same start (especially if you add them liberally in the config file). You might want to have broot complete or propose the few possible completions. The <kbd>tab</kbd> key can be used for this purpose.
@@ -82,7 +82,7 @@ Tab completion is probably more useful even with paths you provide to verbs. It 
 
 Note: there's another solution to gain time when typing a path, especially when you're not sure of it: hitting <kbd>ctrl</kbd><kbd>p</kbd> will open a new panel in which you can navigate until you have your selection that you validate with another hit on <kbd>ctrl</kbd><kbd>p</kbd> (see [panels](panels.md)).
 
-## Builtins & external commands, leaving or not
+# Builtins & external commands, leaving or not
 
 There are three types of verbs (they will be covered in more details in the [configuration page](../conf_file/#verb-definition-attributes)):
 
@@ -92,7 +92,7 @@ There are three types of verbs (they will be covered in more details in the [con
 
 A command may leave broot (for example to start a program), or not (the tree will be refreshed).
 
-## Adding verbs
+# Adding verbs
 
 You may start with the common set of verbs but you'll very quickly want to define how to edit or create files, and probably have a few personal commands.
 

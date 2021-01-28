@@ -6,8 +6,6 @@ The current version of broot works on linux, mac and windows (win 10+).
 	Some users on Windows also report problems with the colon. Remember that a space can be used instead of a colon.
 	You should also use the new PowerShell terminal and not the old cmd.exe which isn't supported.
 
-!!! Note
-	If you use cargo and there's a compilation error, it usually means you have an old version of the compiler, and you should update it (for example with `rustup update`).
 
 # From precompiled binaries
 
@@ -47,6 +45,9 @@ cargo install --path .
 
 If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/master/features.md).
 
+!!! Note
+	If there's a compilation error, it usually means you have an old version of the compiler, and you should update it (for example with `rustup update`).
+
 # Third party repositories
 
 Those packages are maintained by third parties and may be less up to date.
@@ -54,7 +55,7 @@ Those packages are maintained by third parties and may be less up to date.
 ## Homebrew
 
     brew install broot
-    
+
 ## MacPorts
 
     sudo port selfupdate

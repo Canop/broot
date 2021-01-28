@@ -1,4 +1,4 @@
-## Use broot as a generic fuzzy finder
+# Use broot as a generic fuzzy finder
 
 The goal here is to have a function you can use in shell to give you a path.
 
@@ -34,7 +34,7 @@ Here, the configuration file was used to ensure you can select a file with the e
 
 You may use the same configuration file to also specify colors to remember yourself you're not in a standard broot.
 
-## Replace tree
+# Replace tree
 
 This bash function gives you a better `tree` optimizing for the height of the screen:
 
@@ -48,7 +48,7 @@ This function supports most broot arguments:
 
 ![tree with args](img/20201219-tree-with-args.png)
 
-## `dcd` : Deep fuzzy cd
+# `dcd` : Deep fuzzy cd
 
 When you want to cd to a deep directory, using `br` is fast and easy enough:
 
@@ -75,23 +75,23 @@ Example:
 
 ![dcd ruleset](img/20190122-dcd_rulset.png)
 
-## Focus a new directory but keep the current filter
+# Focus a new directory but keep the current filter
 
 When you hit `enter` on a directory, it's focused and the filter is reset.
 
 If you want to keep the filter, for example to search deeper, you may use `:focus` instead (or  you can bind it to a key shortcut).
 
-## Go to the directory containing the selected file
+# Go to the directory containing the selected file
 
 Suppose you filter to find a file, and it's in a deeper directory, you may want to see it "more closely", that is, keeping the filter, to make its parent directory the current root.
 
 This can be done with the `:focus` verb which can be called with <kbd>ctrl</kbd><kbd>f</kbd>.
 
-## Run a script or program from broot
+# Run a script or program from broot
 
 If your system is normally configured, doing `alt`-`enter` on an executable will close broot and executes the file.
 
-## Change standard file opening
+# Change standard file opening
 
 When you hit enter on a file, broot asks the system to open the file. It's usually the best solution as it selects the program according to the file's type following settings you set system wide.
 
@@ -111,7 +111,7 @@ apply_to = "file"
 (the `apply_to` line ensures this verb isn't called when the selected line is a directory)
 
 
-## Git Status
+# Git Status
 
 If you want to start navigating with a view of the files which changed, you may do
 
@@ -125,7 +125,7 @@ From there you may use the `:gd` verb (`:git_diff`) to open the selection into y
 
 If you want more: [Use broot and meld to diff before commit](https://dystroy.org/blog/gg/).
 
-## Use negative filters
+# Use negative filters
 
 Here's a (real) example of how negative filters and combination can help you navigate.
 
@@ -147,7 +147,7 @@ We can also select the desired file with arrow keys at this point.
 
 When you grasped the basic logic of [combined filters](../input/#combining-filtering-patterns), navigation is incredibly efficient.
 
-## Use composite searches in preview
+# Use composite searches in preview
 
 You can apply composition and negation to searches in the preview panel which is convenient when filtering, for example, a log file.
 
@@ -155,13 +155,13 @@ In this example I show lines containing "youtube" but not "txt" nor " 0 ms".
 
 ![search log](img/20200716-search-log.png)
 
-## Escpape key
+# Escpape key
 
 Broot usage, just like vim, relies a lot on the <kbd>esc</kbd> key. If you're a frequent user of the terminal, you may want to remap an easy to reach and otherwise useless key (for example caps-lock) to <kbd>esc</kbd>.
 
 This brings a lot of comfort, not just in broot.
 
-## Vim integration/plugin
+# Vim integration/plugin
 
 In case you want to use broot for opening files fuzzily in vim (and potentially
 replace netrw), check out: [broot.vim](https://gitlab.com/lstwn/broot.vim)
