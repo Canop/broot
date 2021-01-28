@@ -54,6 +54,11 @@ Those packages are maintained by third parties and may be less up to date.
 ## Homebrew
 
     brew install broot
+    
+## MacPorts
+
+    sudo port selfupdate
+    sudo port install broot
 
 ## Alpine Linux
 
