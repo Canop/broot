@@ -11,12 +11,17 @@ body {
 
 h1 {
 	font-size: 22px;
+	border-bottom: solid 1px;
+	padding-bottom: 10px;
+	margin-bottom: 18px;
+	border-image-source: linear-gradient(to right, #178acc, #fff);
+	border-image-slice: 1;
 }
 h2 {
-	font-size: 20px;
+	font-size: 19px;
 }
 h3 {
-	font-size: 18px;
+	font-size: 16px;
 }
 
 .navbar {

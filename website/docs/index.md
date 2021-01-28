@@ -141,7 +141,7 @@ If you hit `:fs`, you can check the usage of all filesystems, so that you focus 
 
 Sizes, dates, files counts, are computed in the background, you don't have to wait for them when you navigate.
 
-# check git statuses:
+# Check git statuses:
 
 ![size](img/20200203-git.png)
 

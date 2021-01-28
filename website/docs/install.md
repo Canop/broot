@@ -49,7 +49,7 @@ If you want a custom compilation, have a look at the [optional features document
 
 # Third party repositories
 
-*note: those packages are maintained by third parties and may be less up to date.*
+Those packages are maintained by third parties and may be less up to date.
 
 ## Homebrew
 
