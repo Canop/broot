@@ -31,7 +31,7 @@ const FISH_FUNC: &str = r#"
 # it produces, if any.
 # It's needed because some shell commands, like `cd`,
 # have no useful effect if executed in a subshell.
-function br
+function br --wraps=broot
     set -l cmd_file (mktemp)
     if broot --outcmd $cmd_file $argv
         read --local --null cmd < $cmd_file
