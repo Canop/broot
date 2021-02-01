@@ -47,6 +47,9 @@ kbd.b {
 	padding: 0 5px;
 }
 
+.col-md-9 {
+	max-width: 1000px;
+}
 .col-md-9 img {
 	max-width: 100%;
 	display: inline-block;
