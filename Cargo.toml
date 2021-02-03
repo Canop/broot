@@ -21,7 +21,7 @@ clipboard = ["terminal-clipboard"]
 [dependencies]
 ansi_colours = "1.0"
 base64 = "0.13"
-bet = "0.3.4"
+bet = "0.4.0"
 char_reader = "0.1"
 clap = { version="2.33", default-features=false, features=["suggestions"] }
 cli-log = "0.1"
