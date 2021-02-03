@@ -53,12 +53,11 @@ impl<'de> Deserialize<'de> for Glob {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
         where D: Deserializer<'de>
     {
-    let s = String::deserialize(deserializer)?;
-    glob::Pattern::new(&s)
-        .map_err(|e| D::Error::custom(format!("invalid glob pattern {:?} : {:?}", s, e)))
-        .map(|pattern| Glob { pattern })
+        let s = String::deserialize(deserializer)?;
+        glob::Pattern::new(&s)
+            .map_err(|e| D::Error::custom(format!("invalid glob pattern {:?} : {:?}", s, e)))
+            .map(|pattern| Glob { pattern })
     }
-
 }
 
 impl SpecialPath {
@@ -67,6 +66,10 @@ impl SpecialPath {
             pattern: glob.pattern,
             handling,
         }
+    }
+    pub fn can_have_matches_in(&self, path: &Path) -> bool {
+        path.to_str()
+            .map_or(false, |p| self.pattern.as_str().starts_with(p))
     }
 }
 

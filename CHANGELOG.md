@@ -1,3 +1,6 @@
+### next
+- special paths in "no-enter" or "hide" aren't counted when summing sizes or dates. It's a compromise: it makes all sums a little slower, especially if you have a lot of special paths or complex ones, but it allows skipping over the very slow disks and thus makes some cases much faster - Fix #331
+
 <a name="v1.2.1"></a>
 ### v1.2.1 - 2021-01-27
 - allow dashes instead of underscores in conf property names. This fixes a regression as "special-paths", "ext-colors" and "search-modes" were defined with a dash up to version 1.0.7. Now both spellings are OK - Fix #330

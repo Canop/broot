@@ -366,12 +366,12 @@ impl Tree {
     ///
     /// To compute the size of all of them, this should be called until
     ///  has_dir_missing_sum returns false
-    pub fn fetch_some_missing_dir_sum(&mut self, dam: &Dam) {
+    pub fn fetch_some_missing_dir_sum(&mut self, dam: &Dam, con: &AppContext) {
         // we prefer to compute the root directory last: its computation
         // is faster when its first level children are already computed
         for i in (0..self.lines.len()).rev() {
             if self.lines[i].sum.is_none() && self.lines[i].line_type == TreeLineType::Dir {
-                self.lines[i].sum = FileSum::from_dir(&self.lines[i].path, dam);
+                self.lines[i].sum = FileSum::from_dir(&self.lines[i].path, dam, con);
                 self.sort_siblings();
                 return;
             }

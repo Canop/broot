@@ -519,7 +519,7 @@ impl AppState for BrowserState {
             let git_status = git::get_tree_status(root_path, dam);
             self.displayed_tree_mut().git_status = git_status;
         } else {
-            self.displayed_tree_mut().fetch_some_missing_dir_sum(dam);
+            self.displayed_tree_mut().fetch_some_missing_dir_sum(dam, con);
         }
     }
 

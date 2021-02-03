@@ -1,6 +1,10 @@
 use {
     super::FileSum,
-    crate::task_sync::Dam,
+    crate::{
+        app::*,
+        task_sync::Dam,
+        tree::*,
+    },
     crossbeam::channel,
     fnv::FnvHashMap,
     rayon::{ThreadPool, ThreadPoolBuilder},
@@ -37,6 +41,15 @@ struct NodeId {
 // threads used by one computation
 const THREADS_COUNT: usize = 6;
 
+
+#[inline(always)]
+fn is_ignored(path: &Path, special_paths: &[SpecialPath]) -> bool {
+    match special_paths.find(path) {
+        SpecialHandling::NoEnter | SpecialHandling::Hide => true,
+        SpecialHandling::None | SpecialHandling::Enter => false,
+    }
+}
+
 /// compute the consolidated numbers for a directory, with implementation
 /// varying depending on the OS:
 /// On unix, the computation is done on blocks of 512 bytes
@@ -45,8 +58,13 @@ pub fn compute_dir_sum(
     path: &Path,
     cache: &mut FnvHashMap<PathBuf, FileSum>,
     dam: &Dam,
+    con: &AppContext,
 ) -> Option<FileSum> {
     //debug!("compute size of dir {:?} --------------- ", path);
+
+    if is_ignored(path, &con.special_paths) {
+        return Some(FileSum::zero());
+    }
 
     lazy_static! {
         static ref THREAD_POOL: ThreadPool = ThreadPoolBuilder::new()
@@ -68,6 +86,11 @@ pub fn compute_dir_sum(
     // A None means there's nothing left and the thread may send its result and stop
     let (dirs_sender, dirs_receiver) = channel::unbounded();
 
+    let special_paths: Vec<SpecialPath> = con.special_paths.iter()
+        .filter(|sp| sp.can_have_matches_in(path))
+        .map(|sp| sp.clone())
+        .collect();
+
     // the first level is managed a little differently: we look at the cache
     // before adding. This enables faster computations in two cases:
     // - for the root line (assuming it's computed after the content)
@@ -77,6 +100,12 @@ pub fn compute_dir_sum(
             if let Ok(md) = e.metadata() {
                 if md.is_dir() {
                     let entry_path = e.path();
+
+                    if is_ignored(&entry_path, &special_paths) {
+                        debug!("not summing special path {:?}", entry_path);
+                        continue;
+                    }
+
                     // we check the cache
                     if let Some(entry_sum) = cache.get(&entry_path) {
                         sum += *entry_sum;
@@ -127,6 +156,8 @@ pub fn compute_dir_sum(
         #[cfg(unix)]
         let nodes = nodes.clone();
 
+        let special_paths = special_paths.clone();
+
         let observer = dam.observer();
         let thread_sum_sender = thread_sum_sender.clone();
         THREAD_POOL.spawn(move || {
@@ -138,10 +169,18 @@ pub fn compute_dir_sum(
                         for e in entries.flatten() {
                             if let Ok(md) = e.metadata() {
                                 if md.is_dir() {
+
+                                    let path = e.path();
+
+                                    if is_ignored(&path, &special_paths) {
+                                        debug!("not summing (deep) special path {:?}", path);
+                                        continue;
+                                    }
+
                                     // we add the directory to the channel of dirs needing
                                     // processing
                                     busy.fetch_add(1, Ordering::Relaxed);
-                                    dirs_sender.send(Some(e.path())).unwrap();
+                                    dirs_sender.send(Some(path)).unwrap();
                                 } else {
 
                                     #[cfg(unix)]

@@ -5,7 +5,10 @@
 mod sum_computation;
 
 use {
-    crate::task_sync::Dam,
+    crate::{
+        app::*,
+        task_sync::Dam,
+    },
     fnv::FnvHashMap,
     std::{
         ops::AddAssign,
@@ -60,7 +63,7 @@ impl FileSum {
     /// Return the sum of the directory, either by computing it of by
     ///  fetching it from cache.
     /// If the lifetime expires before complete computation, None is returned.
-    pub fn from_dir(path: &Path, dam: &Dam) -> Option<Self> {
+    pub fn from_dir(path: &Path, dam: &Dam, con: &AppContext) -> Option<Self> {
         let mut sum_cache = SUM_CACHE_MUTEX.lock().unwrap();
         match sum_cache.get(path) {
             Some(sum) => Some(*sum),
@@ -69,7 +72,7 @@ impl FileSum {
                     Debug,
                     "sum computation",
                     path,
-                    sum_computation::compute_dir_sum(path, &mut sum_cache, dam),
+                    sum_computation::compute_dir_sum(path, &mut sum_cache, dam, con),
                 );
                 if let Some(sum) = sum {
                     sum_cache.insert(PathBuf::from(path), sum);
