@@ -5,6 +5,8 @@ You can change all colors by adding a `[skin]` section in your `conf.toml` file.
 
 To start with, you might want broot to use more of your terminal colors.
 
+## Use terminal's default foreground and background
+
 Try adding this in your [config file](../conf_file):
 
 ```toml
@@ -17,6 +19,8 @@ The first `none` sets the terminal default foreground color as broot's default o
 Depending on your default colors, the result might be good or not.
 
 From there, keeping or not the default colors, you may define a whole skin.
+
+## A whole skin
 
 For example:
 
@@ -84,7 +88,7 @@ hex_ascii_other = "ansi(215) None"
 hex_non_ascii = "ansi(167) None"
 ```
 
-which would look like this:
+This would look like this:
 
 ![custom colors tree](img/20200525-custom-colors-panels.png)
 
@@ -94,7 +98,7 @@ Each skin entry value is made of
 * a background color (or `none`)
 * zero, one, or more *attributes*
 
-This tree parts can be repeated, after a `/`, to define the style to use in non focused panels (when more than one panel is used).
+These tree parts can be repeated, after a `/`, to define the style to use in non focused panels (when more than one panel is used).
 
 Example:
 
@@ -203,7 +207,7 @@ hex_non_ascii = "ansi(167) None"
 
 ![light skin](img/20200526-light-skin.png)
 
-When using this skin in a light terminal, it's recommended to also use a light syntax theme, which can be done by uncommenting this line at the top of the config file:
+When using this skin in a light terminal, it's recommended to also use a light syntax theme in previews, which can be done by uncommenting this line at the top of the config file:
 
 ```
 syntax_theme = "base16-ocean.light"
@@ -292,6 +296,84 @@ help_table_border = "none none"                                                 
 **Panels**
 
 ![default](img/skins/solarized_dark/panels.png)
+
+# Gruvbox
+
+*contributed by @basbebe and discussed [on this GitHub issue](https://github.com/Canop/broot/issues/335)*
+
+![gruvbox-search](img/20210204-mycnf.png)
+
+![Gruvbox-sdp](img/20210204-gruvbox-sdp.png)
+
+The Gruvbox skin uses RGB values, so it might not work well with some
+terminals.
+
+```hjson
+skin: {
+	default: rgb(235, 219, 178) rgb(40, 40, 40) / rgb(189, 174, 147) rgb(40, 40, 40)
+	tree: rgb(168, 153, 132) None / rgb(102, 92, 84) None
+	file: None None / None  None Italic
+	directory: rgb(69, 133, 136) None Bold / rgb(131, 165, 152) None
+	exe: rgb(184, 187, 38) None
+	link: rgb(104, 157, 106) None
+	pruning: rgb(124, 111, 100) None Italic
+	perm__: None None
+	perm_r: rgb(215, 153, 33) None
+	perm_w: rgb(204, 36, 29) None
+	perm_x: rgb(152, 151, 26) None
+	owner: rgb(215, 153, 33) None Bold
+	group: rgb(215, 153, 33) None
+	count: rgb(69, 133, 136) rgb(50, 48, 47)
+	dates: rgb(168, 153, 132) None
+	sparse: rgb(250, 189,47) None
+	content_extract: rgb(168, 153, 132) None Italic
+	content_match: rgb(189, 174, 147) None Bold
+	git_branch: rgb(251, 241, 199) None
+	git_insertions: rgb(152, 151, 26) None
+	git_deletions: rgb(190, 15, 23) None
+	git_status_current: rgb(60, 56, 54) None
+	git_status_modified: rgb(152, 151, 26) None
+	git_status_new: rgb(104, 187, 38) None Bold
+	git_status_ignored: rgb(213, 196, 161) None
+	git_status_conflicted: rgb(204, 36, 29) None
+	git_status_other: rgb(204, 36, 29) None
+	selected_line: None rgb(60, 56, 54) / None rgb(50, 48, 47)
+	char_match: rgb(250, 189, 47) None
+	file_error: rgb(251, 73, 52) None
+	flag_label: rgb(189, 174, 147) None
+	flag_value: rgb(211, 134, 155) None Bold
+	input: rgb(251, 241, 199) None / rgb(189, 174, 147) None Italic
+	status_error: rgb(213, 196, 161) rgb(204, 36, 29)
+	status_job: rgb(250, 189, 47) rgb(60, 56, 54)
+	status_normal: None rgb(50, 48, 47) / None None
+	status_italic: rgb(211, 134, 155) rgb(50, 48, 47) Italic / None None
+	status_bold: rgb(211, 134, 155) rgb(50, 48, 47) Bold / None None
+	status_code: rgb(251, 241, 199) rgb(50, 48, 47) / None None
+	status_ellipsis: rgb(251, 241, 199) rgb(50, 48, 47)  Bold / None None
+	purpose_normal: None None
+	purpose_italic: rgb(177, 98, 134) None Italic
+	purpose_bold: rgb(177, 98, 134) None Bold
+	purpose_ellipsis: None None
+	scrollbar_track: rgb(80, 73, 69) None / rgb(50, 48, 47) None
+	scrollbar_thumb: rgb(213, 196, 161) None / rgb(102, 92, 84) None
+	help_paragraph: None None
+	help_bold: rgb(214, 93, 14) None Bold
+	help_italic: rgb(211, 134, 155) None Italic
+	help_code: rgb(142, 192, 124) rgb(50, 48, 47)
+	help_headers: rgb(254, 128, 25) None Bold
+	help_table_border: rgb(80, 73, 69) None
+	preview: rgb(235, 219, 178) rgb(40, 40, 40) / rgb(235, 219, 178) rgb(40, 40, 40)
+	preview_line_number: rgb(124, 111, 100) None / rgb(124, 111, 100) rgb(40, 40, 40)
+	preview_match: None rgb(80, 73, 69) Bold
+	hex_null: rgb(189, 174, 147) None
+	hex_ascii_graphic: rgb(213, 196, 161) None
+	hex_ascii_whitespace: rgb(152, 151, 26) None
+	hex_ascii_other: rgb(254, 128, 25) None
+	hex_non_ascii: rgb(214, 93, 14) None
+}
+```
+
+
 
 # Contribute your own skin
 

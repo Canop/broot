@@ -42,13 +42,13 @@ Most useful keys for this:
 
 # Never lose track of file hierarchy while you search
 
-![size](img/20191112-mycnf.png)
+![search](img/20210204-mycnf.png)
 
 broot tries to select the most relevant file. You can still go from one match to another one using <kbd>tab</kbd> or arrow keys.
 
 You may also search with a regular expression. To do this, add a `/` before the pattern.
 
-And you have other types of searches, for example searching on file content (start with `c/`):
+And you have [other types of searches](input/#the-filtering-pattern), for example searching on file content (start with `c/`):
 
 ![content search](img/20200620-content-memm.png)
 
