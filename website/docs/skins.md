@@ -373,7 +373,11 @@ skin: {
 }
 ```
 
+If your terminal is dark, you may prefer to make broot transparent by changing the `default` line to
 
+```
+default: rgb(235, 219, 178) none / rgb(189, 174, 147) rgb(40, 40, 40)
+```
 
 # Contribute your own skin
 

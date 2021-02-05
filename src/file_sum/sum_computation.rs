@@ -2,8 +2,8 @@ use {
     super::FileSum,
     crate::{
         app::*,
+        path::*,
         task_sync::Dam,
-        tree::*,
     },
     crossbeam::channel,
     fnv::FnvHashMap,

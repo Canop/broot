@@ -7,7 +7,7 @@ use {
         display::ColsConf,
         errors::ProgramError,
         skin::SkinEntry,
-        tree::*,
+        path::{Glob, SpecialHandling},
     },
     crossterm::style::Attribute,
     fnv::FnvHashMap,

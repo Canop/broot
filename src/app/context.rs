@@ -6,8 +6,8 @@ use {
         errors::ConfError,
         icon::*,
         pattern::SearchModeMap,
+        path::SpecialPath,
         skin::ExtColorMap,
-        tree::SpecialPath,
         verb::VerbStore,
     },
     std::{

@@ -12,8 +12,7 @@ macro_rules! time {
     ($level: ident, $name: expr, $timed: expr $(,)?) => {{
         use log::Level::*;
         if log_enabled!($level) {
-            use std::time::Instant;
-            let start = Instant::now();
+            let start = std::time::Instant::now();
             let value = $timed;
             log!($level, "{} took {:?}", $name, start.elapsed());
             value
@@ -24,8 +23,7 @@ macro_rules! time {
     ($level: ident, $cat: expr, $name :expr,  $timed: expr $(,)?) => {{
         use log::Level::*;
         if log_enabled!($level) {
-            use std::time::Instant;
-            let start = Instant::now();
+            let start = std::time::Instant::now();
             let value = $timed;
             log!($level, "{} on {:?} took {:?}", $cat, $name, start.elapsed());
             value

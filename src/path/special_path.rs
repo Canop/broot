@@ -45,7 +45,6 @@ impl<'de> Deserialize<'de> for SpecialHandling {
                 s
             ))),
         }
-
     }
 }
 

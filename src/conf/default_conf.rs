@@ -228,14 +228,15 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 
 		# You can reproduce the bindings of Norton Commander
 		# on copying or moving to the other panel:
-		#
 		# {
 		# 	key: F5
-		# 	execution: ":copy_to_panel"
+		# 	external: "cp -r {file} {other-panel-directory}"
+		# 	leave_broot: false
 		# }
 		# {
 		# 	key: F6
-		# 	execution: ":move_to_panel"
+		# 	external: "mv {file} {other-panel-directory}"
+		# 	leave_broot: false
 		# }
 	]
 

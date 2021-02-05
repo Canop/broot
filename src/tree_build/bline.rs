@@ -1,9 +1,10 @@
 use {
     super::bid::BId,
     crate::{
-    app::AppContext,
+        app::AppContext,
         errors::TreeBuildError,
         git::GitIgnoreChain,
+        path::SpecialHandling,
         tree::*,
     },
     id_arena::Arena,

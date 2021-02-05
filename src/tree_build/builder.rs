@@ -8,6 +8,7 @@ use {
         errors::TreeBuildError,
         git::{GitIgnoreChain, GitIgnorer, LineStatusComputer},
         pattern::Candidate,
+        path::{SpecialHandling, SpecialPathList},
         task_sync::ComputationResult,
         task_sync::Dam,
         tree::*,
