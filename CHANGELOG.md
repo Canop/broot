@@ -1,7 +1,9 @@
-### next
+<a name="v1.2.2"></a>
+### v1.2.2 - 2021-02-05
 - special paths in "no-enter" or "hide" aren't counted when summing sizes or dates. It's a compromise: it makes all sums a little slower, especially if you have a lot of special paths or complex ones, but it allows skipping over the very slow disks and thus makes some cases much faster - Fix #331
 - br fish shell function uses shell completion of broot
 - tree height in `:pt` now applies even when there are more root items (thus truncating the tree) - Fix #341
+- fix the F5 and F6 shortcuts (copy and move between panels) in the default configuration
 
 <a name="v1.2.1"></a>
 ### v1.2.1 - 2021-01-27
