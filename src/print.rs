@@ -59,7 +59,13 @@ fn print_tree_to_file(
     ext_colors: &ExtColorMap,
 ) -> Result<AppStateCmdResult, ProgramError> {
     let no_style_skin = StyleMap::no_term();
-    let dp = DisplayableTree::out_of_app(tree, &no_style_skin, ext_colors, screen.width);
+    let dp = DisplayableTree::out_of_app(
+        tree,
+        &no_style_skin,
+        ext_colors,
+        screen.width,
+        (tree.lines.len() as u16).min(screen.height),
+    );
     let mut f = OpenOptions::new()
         .create(true)
         .append(true)

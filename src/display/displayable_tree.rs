@@ -49,6 +49,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         skin: &'s StyleMap,
         ext_colors: &'s ExtColorMap,
         width: u16,
+        height: u16,
     ) -> DisplayableTree<'s, 't> {
         DisplayableTree {
             tree,
@@ -58,7 +59,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 left: 0,
                 top: 0,
                 width,
-                height: tree.lines.len() as u16,
+                height,
             },
             in_app: false,
         }

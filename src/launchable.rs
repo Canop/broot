@@ -44,6 +44,7 @@ pub enum Launchable {
         skin: Box<StyleMap>,
         ext_colors: ExtColorMap,
         width: u16,
+        height: u16,
     },
 
     /// execute an external program
@@ -94,6 +95,7 @@ impl Launchable {
             skin: Box::new(style_map),
             ext_colors,
             width: screen.width,
+            height: (tree.lines.len() as u16).min(screen.height),
         }
     }
 
@@ -123,8 +125,8 @@ impl Launchable {
                 println!("{}", to_print);
                 Ok(())
             }
-            Launchable::TreePrinter { tree, skin, ext_colors, width } => {
-                let dp = DisplayableTree::out_of_app(&tree, &skin, &ext_colors, *width);
+            Launchable::TreePrinter { tree, skin, ext_colors, width, height } => {
+                let dp = DisplayableTree::out_of_app(&tree, &skin, &ext_colors, *width, *height);
                 dp.write_on(&mut std::io::stdout())
             }
             Launchable::Program {
