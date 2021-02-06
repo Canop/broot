@@ -248,6 +248,8 @@ pub const DEFAULT_CONF_FILE: &str = r#"
         # A skin entry value is made of two parts separated with a '/':
         # The first one is the skin for the active panel.
         # The second one, optional, is the skin for non active panels.
+	# You may find explanations and other skins on
+	#  https://dystroy.org/broot/skins
 	###############################################################
 	#
 	# skin: {
@@ -312,10 +314,6 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 	# 	hex_ascii_other: ansi(215) None
 	# 	hex_non_ascii: ansi(167) None
 	# }
-
-	# You may find explanations and other skins on
-	#  https://dystroy.org/broot/skins
-	# for example a skin suitable for white backgrounds
 
 
 	###############################################################
