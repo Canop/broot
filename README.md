@@ -28,7 +28,7 @@ Notice the *unlisted*?
 
 That's what makes it usable where the old `tree` command would produce pages of output.
 
-`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](../navigation/#toggles)).
+`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](https://dystroy.org/broot/navigation/#toggles)).
 
 # Find a directory then `cd` to it
 
@@ -54,7 +54,7 @@ Most useful keys for this:
 
 # Never lose track of file hierarchy while you search
 
-![size](website/docs/img/20191112-mycnf.png)
+![search](website/docs/img/20210204-mycnf.png)
 
 broot tries to select the most relevant file. You can still go from one match to another one using <kbd>tab</kbd> or arrow keys.
 
@@ -119,7 +119,7 @@ If your terminal is [kitty](https://sw.kovidgoyal.net/kitty/index.html), then th
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then <kbd>enter</kbd>.
 
-You can add verbs or configure the existing ones; see [documentation](../conf_file/#verbs-shortcuts-and-keys).
+You can add verbs or configure the existing ones; see [documentation](https://dystroy.org/broot/conf_verbs/).
 
 And you can add shortcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
