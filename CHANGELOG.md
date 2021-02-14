@@ -1,6 +1,7 @@
-### next
-- :line_down_no_cycle and :line_up_nocycle. They may be mapped instead of :line_up and :line_down when you
-don't want to cycle (ie arrive on top when you go down past the end of the tree/list) - Fix #344
+<a name="v1.2.4"></a>
+### v1.2.4 - 2021-02-14
+- :line_down_no_cycle and :line_up_nocycle. They may be mapped instead of :line_up and :line_down when you don't want to cycle (ie arrive on top when you go down past the end of the tree/list) - Fix #344
+- fix selected line number rendering in text preview
 
 <a name="v1.2.3"></a>
 ### v1.2.3 - 2021-02-06
