@@ -3,7 +3,7 @@ use {
     crate::{
         app::*,
         browser::BrowserState,
-        command::{Command, ScrollCommand, TriggerType},
+        command::*,
         display::*,
         errors::ProgramError,
         pattern::*,
@@ -107,6 +107,24 @@ impl FilesystemState {
         self.scroll = cmd.apply(self.scroll, self.count(), self.page_height);
         self.scroll != old_scroll
     }
+
+    fn move_line(
+        &mut self,
+        internal_exec: &InternalExecution,
+        input_invocation: Option<&VerbInvocation>,
+        dir: i32, // -1 for up, 1 for down
+        cycle: bool,
+    ) -> AppStateCmdResult {
+        let count = get_arg(input_invocation, internal_exec, 1);
+        let dir = dir * count as i32;
+        if let Some(f) = self.filtered.as_mut() {
+            f.selection_idx = move_sel(f.selection_idx, f.mounts.len(), dir, cycle);
+        } else {
+            self.selection_idx = move_sel(self.selection_idx, self.mounts.len().get(), dir, cycle);
+        }
+        AppStateCmdResult::Keep
+    }
+
 }
 
 impl AppState for FilesystemState {
@@ -448,31 +466,16 @@ impl AppState for FilesystemState {
                 }
             }
             Internal::line_down => {
-                let count = get_arg(input_invocation, internal_exec, 1);
-                if let Some(f) = self.filtered.as_mut() {
-                    if f.selection_idx + 1 < f.mounts.len() {
-                        f.selection_idx += count.min(f.mounts.len() - f.selection_idx);
-                    }
-                } else {
-                    if self.selection_idx + 1 < self.count() {
-                        self.selection_idx +=
-                            count.min(self.mounts.len().get() - self.selection_idx);
-                    }
-                }
-                AppStateCmdResult::Keep
+                self.move_line(internal_exec, input_invocation, 1, true)
             }
             Internal::line_up => {
-                let count = get_arg(input_invocation, internal_exec, 1);
-                if let Some(f) = self.filtered.as_mut() {
-                    if f.selection_idx > 0 {
-                        f.selection_idx -= count.min(f.selection_idx);
-                    }
-                } else {
-                    if self.selection_idx > 0 {
-                        self.selection_idx -= count.min(self.selection_idx);
-                    }
-                }
-                AppStateCmdResult::Keep
+                self.move_line(internal_exec, input_invocation, -1, true)
+            }
+            Internal::line_down_no_cycle => {
+                self.move_line(internal_exec, input_invocation, 1, false)
+            }
+            Internal::line_up_no_cycle => {
+                self.move_line(internal_exec, input_invocation, -1, false)
             }
             Internal::open_stay => {
                 let in_new_panel = input_invocation

@@ -66,6 +66,8 @@ Internals! {
     input_paste: "paste the clipboard content into the input",
     line_down: "move one line down",
     line_up: "move one line up",
+    line_down_no_cycle: "move one line down",
+    line_up_no_cycle: "move one line up",
     open_stay: "open file or directory according to OS (stay in broot)",
     open_stay_filter: "display the directory, keeping the current pattern",
     open_leave: "open file or directory according to OS (quit broot)",
@@ -120,14 +122,16 @@ impl Internal {
             Internal::focus => r"focus (?P<path>.*)?",
             Internal::line_down => r"line_down (?P<count>\d*)?",
             Internal::line_up => r"line_up (?P<count>\d*)?",
+            Internal::line_down_no_cycle => r"line_down_no_cycle (?P<count>\d*)?",
+            Internal::line_up_no_cycle => r"line_up_no_cycle (?P<count>\d*)?",
             _ => self.name(),
         }
     }
     pub fn exec_pattern(self) -> &'static str {
         match self {
             Internal::focus => r"focus {path}",
-            Internal::line_down => r"line_down {count}",
-            Internal::line_up => r"line_up {count}",
+            Internal::line_down_no_cycle => r"line_down_no_cycle {count}",
+            Internal::line_up_no_cycle => r"line_up_no_cycle {count}",
             _ => self.name(),
         }
     }

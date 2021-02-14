@@ -2,7 +2,7 @@ use {
     super::*,
     crate::{
         app::{AppContext, LineNumber},
-        command::ScrollCommand,
+        command::{ScrollCommand, move_sel},
         display::{CropWriter, Screen, SPACE_FILLING, W},
         errors::*,
         pattern::{InputPattern, NameMatch},
@@ -244,28 +244,11 @@ impl SyntacticView {
         false
     }
 
-    pub fn move_selection(&mut self, dy: i32) {
-        if dy > 0 {
-            if let Some(idx) = self.selection_idx {
-                if idx < self.lines.len() - 1 {
-                    self.selection_idx =
-                        Some(idx + dy.min(self.lines.len() as i32 - 1 - dy) as usize);
-                } else {
-                    self.selection_idx = Some(0);
-                }
-            } else if !self.lines.is_empty() {
-                self.selection_idx = Some(0);
-            }
-        } else if dy < 0 {
-            if let Some(idx) = self.selection_idx {
-                if idx > 0 {
-                    self.selection_idx = Some(idx - (-dy).min(idx as i32) as usize);
-                } else {
-                    self.selection_idx = Some(self.lines.len() - 1);
-                }
-            } else if !self.lines.is_empty() {
-                self.selection_idx = Some(self.lines.len() - 1);
-            }
+    pub fn move_selection(&mut self, dy: i32, cycle: bool) {
+        if let Some(idx) = self.selection_idx {
+            self.selection_idx = Some(move_sel(idx, self.lines.len(), dy, cycle));
+        } else if !self.lines.is_empty() {
+            self.selection_idx = Some(0)
         }
         self.ensure_selection_is_visible();
     }

@@ -326,12 +326,22 @@ impl AppState for PreviewState {
             }
             Internal::line_down => {
                 let count = get_arg(input_invocation, internal_exec, 1);
-                self.mut_preview().move_selection(count);
+                self.mut_preview().move_selection(count, true);
                 Ok(AppStateCmdResult::Keep)
             }
             Internal::line_up => {
                 let count = get_arg(input_invocation, internal_exec, 1);
-                self.mut_preview().move_selection(-count);
+                self.mut_preview().move_selection(-count, true);
+                Ok(AppStateCmdResult::Keep)
+            }
+            Internal::line_down_no_cycle => {
+                let count = get_arg(input_invocation, internal_exec, 1);
+                self.mut_preview().move_selection(count, false);
+                Ok(AppStateCmdResult::Keep)
+            }
+            Internal::line_up_no_cycle => {
+                let count = get_arg(input_invocation, internal_exec, 1);
+                self.mut_preview().move_selection(-count, false);
                 Ok(AppStateCmdResult::Keep)
             }
             Internal::page_down => {

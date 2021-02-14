@@ -244,6 +244,8 @@ invocation | default key | default shortcut | behavior / details
 :focus | <kbd>enter</kbd> | - | set the selected directory the root of the displayed tree |
 :line_down | <kbd>↓</kbd> | - | scroll one line down or select the next line (can be used with an argument eg `:line_down 4`)
 :line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
+:line_down_no_cycle | - | - | same as line_down, but doesn't cycle
+:line_up_no_cycle | - | - | same as line_down, but doesn't cycle
 :mkdir {subpath} | - | md | create a directory
 :mv {newpath} | - | - | move the file or directory to the provided path
 :next_match | <kbd>tab</kbd> | - | select the next matching file

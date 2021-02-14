@@ -145,17 +145,22 @@ impl Tree {
     /// select another line
     ///
     /// For example the following one if dy is 1.
-    pub fn move_selection(&mut self, dy: i32, page_height: i32) {
+    pub fn move_selection(&mut self, dy: i32, page_height: i32, cycle: bool) {
         // FIXME may not work well if dy is too big
-        let l = self.lines.len();
+        let l = self.lines.len() as i32;
         loop {
-            self.selection = (self.selection + ((l as i32) + dy) as usize) % l;
+            if !cycle {
+                let s = dy + (self.selection as i32);
+                if s < 0 || s >= l {
+                    break;
+                }
+            }
+            self.selection = (self.selection + (l + dy) as usize) % self.lines.len();
             if self.lines[self.selection].is_selectable() {
                 break;
             }
         }
         // we adjust the scroll
-        let l = l as i32;
         let sel = self.selection as i32;
         if l > page_height {
             if dy < 0 {

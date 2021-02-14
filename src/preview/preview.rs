@@ -197,9 +197,9 @@ impl Preview {
             _ => false,
         }
     }
-    pub fn move_selection(&mut self, dy: i32) {
+    pub fn move_selection(&mut self, dy: i32, cycle: bool) {
         match self {
-            Self::Syntactic(sv) => sv.move_selection(dy),
+            Self::Syntactic(sv) => sv.move_selection(dy, cycle),
             Self::Hex(hv) => {
                 hv.try_scroll(ScrollCommand::Lines(dy));
             }

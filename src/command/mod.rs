@@ -3,6 +3,7 @@ mod completion;
 mod panel_input;
 mod parts;
 mod sequence;
+mod sel;
 mod scroll;
 mod trigger_type;
 
@@ -12,6 +13,7 @@ pub use {
     panel_input::PanelInput,
     parts::CommandParts,
     sequence::Sequence,
+    sel::move_sel,
     scroll::ScrollCommand,
     trigger_type::TriggerType,
 };

@@ -297,12 +297,22 @@ impl AppState for BrowserState {
             Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
             Internal::line_down => {
                 let count = get_arg(input_invocation, internal_exec, 1);
-                self.displayed_tree_mut().move_selection(count, page_height);
+                self.displayed_tree_mut().move_selection(count, page_height, true);
                 AppStateCmdResult::Keep
             }
             Internal::line_up => {
                 let count = get_arg(input_invocation, internal_exec, 1);
-                self.displayed_tree_mut().move_selection(-count, page_height);
+                self.displayed_tree_mut().move_selection(-count, page_height, true);
+                AppStateCmdResult::Keep
+            }
+            Internal::line_down_no_cycle => {
+                let count = get_arg(input_invocation, internal_exec, 1);
+                self.displayed_tree_mut().move_selection(count, page_height, false);
+                AppStateCmdResult::Keep
+            }
+            Internal::line_up_no_cycle => {
+                let count = get_arg(input_invocation, internal_exec, 1);
+                self.displayed_tree_mut().move_selection(-count, page_height, false);
                 AppStateCmdResult::Keep
             }
             Internal::previous_match => {

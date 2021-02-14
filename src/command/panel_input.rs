@@ -309,9 +309,9 @@ impl PanelInput {
             }
             Event::Wheel(lines_count) => {
                 let internal = if lines_count > 0 {
-                    Internal::line_down
+                    Internal::line_down_no_cycle
                 } else {
-                    Internal::line_up
+                    Internal::line_up_no_cycle
                 };
                 return Command::Internal {
                     internal,

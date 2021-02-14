@@ -199,11 +199,11 @@ impl AppState for HelpState {
                 }
             }
             help => AppStateCmdResult::Keep,
-            line_down => {
+            line_down | line_down_no_cycle => {
                 self.scroll += get_arg(input_invocation, internal_exec, 1);
                 AppStateCmdResult::Keep
             }
-            line_up => {
+            line_up | line_up_no_cycle => {
                 self.scroll -= get_arg(input_invocation, internal_exec, 1);
                 AppStateCmdResult::Keep
             }
