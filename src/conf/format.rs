@@ -53,17 +53,17 @@ impl SerdeFormat {
         match format {
             Self::Hjson => {
                 deser_hjson::from_str::<T>(&file_content)
-                .map_err(|e| ProgramError::ConfFile {
-                    path: path.to_string_lossy().to_string(),
-                    details: e.into(),
-                })
+                    .map_err(|e| ProgramError::ConfFile {
+                        path: path.to_string_lossy().to_string(),
+                        details: e.into(),
+                    })
             }
             Self::Toml => {
                 toml::from_str::<T>(&file_content)
-                .map_err(|e| ProgramError::ConfFile {
-                    path: path.to_string_lossy().to_string(),
-                    details: e.into(),
-                })
+                    .map_err(|e| ProgramError::ConfFile {
+                        path: path.to_string_lossy().to_string(),
+                        details: e.into(),
+                    })
             }
         }
     }

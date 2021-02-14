@@ -88,7 +88,7 @@ pub fn compute_dir_sum(
 
     let special_paths: Vec<SpecialPath> = con.special_paths.iter()
         .filter(|sp| sp.can_have_matches_in(path))
-        .map(|sp| sp.clone())
+        .cloned()
         .collect();
 
     // the first level is managed a little differently: we look at the cache

@@ -352,16 +352,16 @@ impl SyntacticView {
                         regions = &regions_ur;
                     }
                 }
+                cw.w.queue(SetBackgroundColor(bg))?;
                 if show_line_number {
                     cw.queue_g_string(
                         &styles.preview_line_number,
                         format!(" {:w$} ", line.number, w = max_number_len),
                     )?;
-                    cw.w.queue(SetBackgroundColor(bg))?;
                 } else {
-                    cw.w.queue(SetBackgroundColor(bg))?;
                     cw.queue_unstyled_str(" ")?;
                 }
+                cw.w.queue(SetBackgroundColor(bg))?;
                 if con.show_selection_mark {
                     cw.queue_unstyled_char(if selected { '▶' } else { ' ' })?;
                 }
