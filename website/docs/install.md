@@ -46,7 +46,7 @@ cargo install --path .
 If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/master/features.md).
 
 !!! Note
-	If there's a compilation error, it usually means you have an old version of the compiler, and you should update it (for example with `rustup update`).
+	If there's a compilation error, it most often means either that you're missing some compilation dependency (on ubuntu/debian try `sudo apt install build-essential`) or that you have an old version of the compiler, and you should update it (for example with `rustup update`).
 
 # Third party repositories
 
