@@ -1,3 +1,7 @@
+### next
+- :line_down_no_cycle and :line_up_nocycle. They may be mapped instead of :line_up and :line_down when you
+don't want to cycle (ie arrive on top when you go down past the end of the tree/list) - Fix #344
+
 <a name="v1.2.3"></a>
 ### v1.2.3 - 2021-02-06
 - special paths in "no-enter" or "hide" aren't counted when summing sizes or dates. It's a compromise: it makes all sums a little slower, especially if you have a lot of special paths or complex ones, but it allows skipping over the very slow disks and thus makes some cases much faster - Fix #331
