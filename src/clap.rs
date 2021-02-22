@@ -159,6 +159,14 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("Semicolon separated commands to execute"),
         )
         .arg(
+            clap::Arg::with_name("color")
+                .long("color")
+                .takes_value(true)
+                .possible_values(&["yes", "no", "auto"])
+                .default_value("auto")
+                .help("Whether to have styles and colors (auto is default and usually OK)"),
+        )
+        .arg(
             clap::Arg::with_name("conf")
                 .long("conf")
                 .takes_value(true)
@@ -184,6 +192,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
         )
         .arg(
             clap::Arg::with_name("no-style")
+                .hidden(true) // we're deprecating this in favor of --color
                 .long("no-style")
                 .help("Whether to remove all style and colors from exported tree"),
         )

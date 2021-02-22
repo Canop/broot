@@ -10,9 +10,9 @@ Example with a filter:
 
 ![exported styled tree](img/20190321-cmd-pt-styled.png)
 
-Example without style or color, thanks to `--no-style`:
+Example without style or color, thanks to `--color no`:
 
-![exported unstyled tree](img/20190321-cmd-pt-unstyled.png)
+![exported unstyled tree](img/20210222-cmd-pt-unstyled.png)
 
 This is also how would look the tree directly exported into a file.
 
@@ -24,13 +24,13 @@ You don't have to enter broot, you may also directly get the tree by using the [
 
 For example
 
-    broot --cmd ":pt" --no-style > my_file.txt
+    br --cmd ":pt" > my_file.txt
 
 will export the local tree to the `my_file.txt` file.
 
 Or
 
-    broot --no-style > tree.txt
+    br > tree.txt
 
 in which case you'll manually do `:pt` when in broot but after having had the opportunity to navigate, filter and change toggles as desired.
 

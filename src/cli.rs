@@ -120,6 +120,21 @@ fn get_root_path(cli_args: &ArgMatches<'_>) -> Result<PathBuf, ProgramError> {
     Ok(canonicalize_root(&root)?)
 }
 
+fn is_output_piped() -> bool {
+    unsafe { libc::isatty(libc::STDOUT_FILENO) == 0 }
+}
+
+fn is_no_style(cli_matches: &ArgMatches) -> bool {
+    if cli_matches.is_present("no-style") {
+        return true;
+    }
+    match cli_matches.value_of("color") {
+        Some("yes") => false,
+        Some("no") => true,
+        _  => is_output_piped(),
+    }
+}
+
 /// run the application, and maybe return a launchable
 /// which must be run after broot
 pub fn run() -> Result<Option<Launchable>, ProgramError> {
@@ -189,7 +204,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     let file_export_path = cli_matches.value_of("file-export-path").map(str::to_string);
     let cmd_export_path = cli_matches.value_of("cmd-export-path").map(str::to_string);
     let commands = cli_matches.value_of("commands").map(str::to_string);
-    let no_style = cli_matches.is_present("no-style");
+    let no_style = is_no_style(&cli_matches);
     let height = cli_matches.value_of("height").and_then(|s| s.parse().ok());
 
     let root = get_root_path(&cli_matches)?;

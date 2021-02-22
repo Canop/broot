@@ -1,3 +1,7 @@
+### next
+- fix style characters being written in `--no-style` mode - Fix #346
+- replace `--no-style` with `--color` taking `yes`, `no` or `auto`, with detection of output being piped in `auto` mode (default). `--no-style` is still usable but it's not documented anymore - Fix #347
+
 <a name="v1.2.4"></a>
 ### v1.2.4 - 2021-02-14
 - :line_down_no_cycle and :line_up_nocycle. They may be mapped instead of :line_up and :line_down when you don't want to cycle (ie arrive on top when you go down past the end of the tree/list) - Fix #344
