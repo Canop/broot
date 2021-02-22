@@ -5,13 +5,23 @@
 /// one (there are thus two instances in the application)
 use {
     super::*,
-    crossterm::style::{
-        Attribute::*,
-        Attributes,
-        Color::*,
+    crate::{
+        errors::ProgramError,
+    },
+    crossterm::{
+        style::{
+            Attribute::*,
+            Attributes,
+            Color::*,
+            SetBackgroundColor,
+        },
+        QueueableCommand,
     },
     ahash::AHashMap,
-    std::fmt,
+    std::{
+        fmt,
+        io::Write,
+    },
     termimad::CompoundStyle,
 };
 
@@ -25,8 +35,11 @@ macro_rules! StyleMap {
             $name:ident: $fg:expr, $bg:expr, [$($attr:expr)*] $( / $fgu:expr, $bgu:expr , [$($attru:expr)*] )*
         )*
     ) => {
-        /// a struct whose fields are the styles to apply to various parts/cases
+        /// a struct whose fields are
+        /// - a boolean telling whether it's a no-style map
+        /// - the styles to apply to various parts/cases
         pub struct StyleMap {
+            styled: bool,
             $(pub $name: CompoundStyle,)*
         }
         /// a set of two style_maps: one for the focused panel and one for the other panels
@@ -40,6 +53,7 @@ macro_rules! StyleMap {
             /// build a skin without any terminal control character (for file output)
             pub fn no_term() -> Self {
                 Self {
+                    styled: false,
                     $($name: CompoundStyle::default(),)*
                 }
             }
@@ -56,6 +70,7 @@ macro_rules! StyleMap {
         impl StyleMaps {
             pub fn create(skin_conf: &AHashMap<String, SkinEntry>) -> Self {
                 let mut focused = StyleMap {
+                    styled: true,
                     $($name: skin_conf
                         .get(stringify!($name))
                         .map(|sec| sec.get_focused().clone())
@@ -70,6 +85,7 @@ macro_rules! StyleMap {
                 };
                 focused.diffuse_default();
                 let mut unfocused = StyleMap {
+                    styled: true,
                     $($name: CompoundStyle::default(),)*
                 };
                 $(
@@ -99,10 +115,20 @@ macro_rules! StyleMap {
         impl Clone for StyleMap {
             fn clone(&self) -> Self {
                 Self {
+                    styled: self.styled,
                     $($name: self.$name.clone(),)*
                 }
             }
         }
+    }
+}
+
+impl StyleMap {
+    pub fn queue_reset<W: Write>(&self, f: &mut W) -> Result<(), ProgramError> {
+        if self.styled {
+            f.queue(SetBackgroundColor(Color::Reset))?;
+        }
+        Ok(())
     }
 }
 

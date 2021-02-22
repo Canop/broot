@@ -18,7 +18,6 @@ use {
     chrono::{DateTime, Local, TimeZone},
     crossterm::{
         cursor,
-        style::{Color, SetBackgroundColor},
         QueueableCommand,
     },
     file_size,
@@ -396,7 +395,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         let mut cw = CropWriter::new(f, self.area.width as usize);
         let pattern_object = tree.options.pattern.pattern.object();
         self.write_root_line(&mut cw, self.in_app && tree.selection == 0)?;
-        f.queue(SetBackgroundColor(Color::Reset))?;
+        self.skin.queue_reset(f)?;
 
         let visible_cols = tree.visible_cols();
 
@@ -515,7 +514,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 }
             }
             self.extend_line_bg(cw, selected)?;
-            //f.queue(SetBackgroundColor(Color::Reset))?;
+            self.skin.queue_reset(f)?;
             if self.in_app && y > 0 {
                 if let Some((sctop, scbottom)) = scrollbar {
                     f.queue(cursor::MoveTo(self.area.left + self.area.width - 1, y))?;
