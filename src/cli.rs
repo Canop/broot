@@ -170,7 +170,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
             }
             conf
         }
-        _ => time!(Debug, "read conf", Conf::from_default_location()?),
+        _ => time!(Conf::from_default_location())?,
     };
     debug!("config: {:#?}", &config);
 

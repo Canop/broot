@@ -77,7 +77,7 @@ impl Dam {
     ) -> ComputationResult<V> {
         let (comp_sender, comp_receiver) = bounded(1);
         thread::spawn(move || {
-            let comp_res = time!(Debug, "comp in dam", f());
+            let comp_res = time!("comp in dam", f());
             if comp_sender.send(comp_res).is_err() {
                 debug!("no channel at end of computation");
             }

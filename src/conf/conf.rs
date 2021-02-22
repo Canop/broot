@@ -10,6 +10,7 @@ use {
         path::{Glob, SpecialHandling},
     },
     crossterm::style::Attribute,
+    ahash::AHashMap,
     fnv::FnvHashMap,
     serde::Deserialize,
     std::{
@@ -50,10 +51,10 @@ pub struct Conf {
     #[serde(default)]
     pub verbs: Vec<VerbConf>,
 
-    pub skin: Option<FnvHashMap<String, SkinEntry>>,
+    pub skin: Option<AHashMap<String, SkinEntry>>,
 
     #[serde(default, alias="special-paths")]
-    pub special_paths: FnvHashMap<Glob, SpecialHandling>,
+    pub special_paths: AHashMap<Glob, SpecialHandling>,
 
     #[serde(alias="search-modes")]
     pub search_modes: Option<FnvHashMap<String, String>>,
@@ -68,7 +69,7 @@ pub struct Conf {
     pub show_selection_mark: Option<bool>,
 
     #[serde(default, alias="ext-colors")]
-    pub ext_colors: FnvHashMap<String, String>,
+    pub ext_colors: AHashMap<String, String>,
 
     #[serde(alias="syntax-theme")]
     pub syntax_theme: Option<String>,

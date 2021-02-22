@@ -5,7 +5,7 @@ use {
         task_sync::{Computation, ComputationResult, Dam},
     },
     crossbeam::channel::bounded,
-    fnv::FnvHashMap,
+    ahash::AHashMap,
     git2::Repository,
     std::{
         path::{Path, PathBuf},
@@ -16,8 +16,7 @@ use {
 fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {
     match Repository::open(root_path) {
         Ok(git_repo) => {
-            let tree_git_status =
-                time!(Debug, "compute_tree_status", TreeGitStatus::from(&git_repo),);
+            let tree_git_status = time!(TreeGitStatus::from(&git_repo),);
             match tree_git_status {
                 Some(gs) => ComputationResult::Done(gs),
                 None => ComputationResult::None,
@@ -32,8 +31,8 @@ fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {
 
 lazy_static! {
     // the key is the path of the repository
-    static ref TS_CACHE_MX: Mutex<FnvHashMap<PathBuf, Computation<TreeGitStatus>>> =
-        Mutex::new(FnvHashMap::default());
+    static ref TS_CACHE_MX: Mutex<AHashMap<PathBuf, Computation<TreeGitStatus>>> =
+        Mutex::new(AHashMap::default());
 }
 
 /// try to get the result of the computation of the tree git status.

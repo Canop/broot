@@ -9,7 +9,7 @@ use {
         app::*,
         task_sync::Dam,
     },
-    fnv::FnvHashMap,
+    ahash::AHashMap,
     std::{
         ops::AddAssign,
         path::{Path, PathBuf},
@@ -18,8 +18,8 @@ use {
 };
 
 lazy_static! {
-    static ref SUM_CACHE_MUTEX: Mutex<FnvHashMap<PathBuf, FileSum>> =
-        Mutex::new(FnvHashMap::default());
+    static ref SUM_CACHE_MUTEX: Mutex<AHashMap<PathBuf, FileSum>> =
+        Mutex::new(AHashMap::default());
 }
 
 pub fn clear_cache() {
@@ -69,7 +69,6 @@ impl FileSum {
             Some(sum) => Some(*sum),
             None => {
                 let sum = time!(
-                    Debug,
                     "sum computation",
                     path,
                     sum_computation::compute_dir_sum(path, &mut sum_cache, dam, con),

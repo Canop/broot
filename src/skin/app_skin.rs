@@ -3,7 +3,7 @@ use {
     crate::{
         conf::Conf,
     },
-    fnv::FnvHashMap,
+    ahash::AHashMap,
 };
 
 
@@ -25,7 +25,7 @@ impl AppSkin {
         let skin = if let Some(skin) = &conf.skin {
             skin
         } else {
-            def_skin = FnvHashMap::default();
+            def_skin = AHashMap::default();
             &def_skin
         };
         let StyleMaps { focused, unfocused } = StyleMaps::create(skin);

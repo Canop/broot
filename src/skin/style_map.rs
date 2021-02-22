@@ -10,7 +10,7 @@ use {
         Attributes,
         Color::*,
     },
-    fnv::FnvHashMap,
+    ahash::AHashMap,
     std::fmt,
     termimad::CompoundStyle,
 };
@@ -54,7 +54,7 @@ macro_rules! StyleMap {
             }
         }
         impl StyleMaps {
-            pub fn create(skin_conf: &FnvHashMap<String, SkinEntry>) -> Self {
+            pub fn create(skin_conf: &AHashMap<String, SkinEntry>) -> Self {
                 let mut focused = StyleMap {
                     $($name: skin_conf
                         .get(stringify!($name))

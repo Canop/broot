@@ -13,7 +13,6 @@ use {
         event::KeyEvent,
         queue,
     },
-    std::io::Write,
     termimad::{Area, Event, InputField},
 };
 

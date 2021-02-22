@@ -129,7 +129,7 @@ impl Tree {
             }
         }
         if self.options.needs_sum() {
-            time!(Debug, "fetch_file_sum", self.fetch_regular_file_sums()); // not the dirs, only simple files
+            time!("fetch_file_sum", self.fetch_regular_file_sums()); // not the dirs, only simple files
             self.sort_siblings(); // does nothing when sort mode is None
         }
     }

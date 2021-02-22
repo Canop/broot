@@ -1,22 +1,22 @@
 use {
     super::*,
     crate::tree::TreeLineType,
-    fnv::FnvHashMap,
+    ahash::AHashMap,
 };
 
 pub struct VSCodeIconPlugin {
-    icon_name_to_icon_codepoint_map: FnvHashMap<&'static str, u32>,
-    file_name_to_icon_name_map: FnvHashMap<&'static str, &'static str>,
-    double_extension_to_icon_name_map: FnvHashMap<&'static str, &'static str>,
-    extension_to_icon_name_map: FnvHashMap<&'static str, &'static str>,
+    icon_name_to_icon_codepoint_map: AHashMap<&'static str, u32>,
+    file_name_to_icon_name_map: AHashMap<&'static str, &'static str>,
+    double_extension_to_icon_name_map: AHashMap<&'static str, &'static str>,
+    extension_to_icon_name_map: AHashMap<&'static str, &'static str>,
     default_icon_point: u32,
 }
 
 impl VSCodeIconPlugin {
     #[allow(dead_code)]
     fn sanity_check(
-        part_to_icon_name_map: &FnvHashMap<&str, &str>,
-        icon_name_to_icon_codepoint_map: &FnvHashMap<&str, u32>,
+        part_to_icon_name_map: &AHashMap<&str, &str>,
+        icon_name_to_icon_codepoint_map: &AHashMap<&str, u32>,
     ) {
         let offending_entries = part_to_icon_name_map
             .iter()
@@ -36,25 +36,25 @@ impl VSCodeIconPlugin {
     }
 
     pub fn new() -> Self {
-        let icon_name_to_icon_codepoint_map: FnvHashMap<&'static str, u32> =
+        let icon_name_to_icon_codepoint_map: AHashMap<&'static str, u32> =
             (include!("../../resources/icons/vscode/data/icon_name_to_icon_code_point_map.rs"))
                 .iter()
                 .cloned()
                 .collect();
 
-        let double_extension_to_icon_name_map: FnvHashMap<&'static str, &'static str> =
+        let double_extension_to_icon_name_map: AHashMap<&'static str, &'static str> =
             (include!("../../resources/icons/vscode/data/double_extension_to_icon_name_map.rs"))
                 .iter()
                 .cloned()
                 .collect();
 
-        let extension_to_icon_name_map: FnvHashMap<&'static str, &'static str> =
+        let extension_to_icon_name_map: AHashMap<&'static str, &'static str> =
             (include!("../../resources/icons/vscode/data/extension_to_icon_name_map.rs"))
                 .iter()
                 .cloned()
                 .collect();
 
-        let file_name_to_icon_name_map: FnvHashMap<&'static str, &'static str> =
+        let file_name_to_icon_name_map: AHashMap<&'static str, &'static str> =
             (include!("../../resources/icons/vscode/data/file_name_to_icon_name_map.rs"))
                 .iter()
                 .cloned()

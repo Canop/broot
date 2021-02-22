@@ -4,7 +4,7 @@ use {
         app::Selection,
         path,
     },
-    fnv::FnvHashMap,
+    ahash::AHashMap,
     regex::Captures,
     std::path::{Path, PathBuf},
 };
@@ -20,7 +20,7 @@ pub struct ExecutionStringBuilder<'b> {
     other_file: Option<&'b PathBuf>,
 
     /// parsed arguments
-    invocation_values: Option<FnvHashMap<String, String>>,
+    invocation_values: Option<AHashMap<String, String>>,
 }
 
 impl<'b> ExecutionStringBuilder<'b> {
@@ -170,7 +170,7 @@ mod execution_builder_test {
             is_exe: false,
         };
         let mut builder = ExecutionStringBuilder::from_selection(sel);
-        let mut map = FnvHashMap::default();
+        let mut map = AHashMap::default();
         for (k, v) in replacements {
             map.insert(k.to_owned(), v.to_owned());
         }

@@ -1,6 +1,6 @@
 use {
     git2::{self, Repository, Status},
-    fnv::FnvHashMap,
+    ahash::AHashMap,
     std::{
         path::{Path, PathBuf},
     },
@@ -29,12 +29,12 @@ impl LineGitStatus {
 }
 
 pub struct LineStatusComputer {
-    interesting_statuses: FnvHashMap<PathBuf, Status>,
+    interesting_statuses: AHashMap<PathBuf, Status>,
 }
 impl LineStatusComputer {
     pub fn from(repo: Repository) -> Self {
         let repo_path = repo.path().parent().unwrap().to_path_buf();
-        let mut interesting_statuses = FnvHashMap::default();
+        let mut interesting_statuses = AHashMap::default();
         if let Ok(statuses) = &repo.statuses(None) {
             for entry in statuses.iter() {
                 let status = entry.status();

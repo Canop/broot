@@ -189,7 +189,6 @@ impl App {
             let focused = idx == self.active_panel_idx;
             let skin = if focused { &skin.focused } else { &skin.unfocused };
             time!(
-                Debug,
                 "display panel",
                 panel.display(w, focused, self.screen, skin, con)?,
             );
@@ -561,7 +560,6 @@ impl App {
             if !self.quitting {
                 self.display_panels(w, &skin, con)?;
                 time!(
-                    Debug,
                     "pending_tasks",
                     self.do_pending_tasks(w, &skin, &mut dam, con)?,
                 );
@@ -614,7 +612,6 @@ impl App {
                         } else {
                             self.display_panels(w, &skin, con)?;
                             time!(
-                                Debug,
                                 "sequence pending tasks",
                                 self.do_pending_tasks(w, &skin, &mut dam, con)?,
                             );

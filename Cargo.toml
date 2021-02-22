@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.2.4"
+version = "1.2.5-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -19,15 +19,16 @@ client-server = []
 clipboard = ["terminal-clipboard"]
 
 [dependencies]
+ahash = { version = "0.7", features = ["serde"] }
 ansi_colours = "1.0"
 base64 = "0.13"
 bet = "0.4.0"
 char_reader = "0.1"
 clap = { version="2.33", default-features=false, features=["suggestions"] }
-cli-log = "0.1"
+cli-log = "1.0"
 chrono = "0.4"
 crossbeam = "0.8"
-crossterm = "0.17.7"
+crossterm = "0.19.0"
 custom_error = "1.6"
 deser-hjson = "0.1.12"
 directories = "2.0"
@@ -36,12 +37,12 @@ fnv = "1.0.7"
 git2 = { version="0.13", default-features=false }
 glob = "0.3"
 id-arena = "2.2.1"
-image = "0.23.12"
+image = "0.23.13"
 lazy-regex = "0.1.3"
 lazy_static = "1.4"
 libc = "0.2"
 log = "0.4"
-minimad = "=0.6.9"
+minimad = "0.7.0"
 open = "1.4"
 memmap = "0.7"
 pathdiff = "0.1.0"
@@ -52,9 +53,9 @@ secular = "0.2"
 serde = { version = "1.0", features = ["derive"] }
 splitty = "0.1"
 strict = "0.1.4"
-syntect = "4.2"
+syntect = "4.5"
 tempfile = "3.1"
-termimad = "0.9.4"
+termimad = { version = "0.10.0" }
 terminal-clipboard = { version = "0.1.1", optional = true }
 toml = "0.5"
 umask = "1.0"
@@ -92,6 +93,7 @@ harness = false
 
 [patch.crates-io]
 # bet = { path = "../bet" }
+# cli-log = { path = "../cli-log" }
 # lazy-regex = { path = "../lazy-regex" }
 # minimad = { path = "../minimad" }
 # termimad = { path = "../termimad" }

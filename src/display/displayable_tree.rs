@@ -515,7 +515,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 }
             }
             self.extend_line_bg(cw, selected)?;
-            f.queue(SetBackgroundColor(Color::Reset))?;
+            //f.queue(SetBackgroundColor(Color::Reset))?;
             if self.in_app && y > 0 {
                 if let Some((sctop, scbottom)) = scrollbar {
                     f.queue(cursor::MoveTo(self.area.left + self.area.width - 1, y))?;

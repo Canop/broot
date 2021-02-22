@@ -6,7 +6,7 @@ use {
         path::PathAnchor,
     },
     regex::Regex,
-    fnv::FnvHashMap,
+    ahash::AHashMap,
     std::{
         path::PathBuf,
     },
@@ -108,10 +108,10 @@ impl InvocationParser {
         }
     }
 
-    pub fn parse(&self, args: &str) -> Option<FnvHashMap<String, String>> {
+    pub fn parse(&self, args: &str) -> Option<AHashMap<String, String>> {
         self.args_parser.as_ref()
             .map(|r| {
-                let mut map = FnvHashMap::default();
+                let mut map = AHashMap::default();
                 if let Some(input_cap) = r.captures(&args) {
                     for name in r.capture_names().flatten() {
                         if let Some(c) = input_cap.name(name) {

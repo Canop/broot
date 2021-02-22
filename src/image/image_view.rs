@@ -44,7 +44,6 @@ pub struct ImageView {
 impl ImageView {
     pub fn new(path: &Path) -> Result<Self, ProgramError> {
         let source_img = time!(
-            Debug,
             "decode image",
             path,
             Reader::open(&path)?.decode()?
@@ -95,7 +94,6 @@ impl ImageView {
             Some(ci) => &ci.img,
             None => {
                 let img = time!(
-                    Debug,
                     "resize image",
                     self.source_img.resize(target_width, target_height, FilterType::Triangle),
                 );

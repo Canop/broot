@@ -4,7 +4,7 @@ use {
         errors::InvalidSkinError,
     },
     crossterm::style::Color,
-    fnv::FnvHashMap,
+    ahash::AHashMap,
     std::convert::TryFrom,
 };
 
@@ -13,7 +13,7 @@ use {
 /// color to use when drawing the tree
 #[derive(Debug, Clone, Default)]
 pub struct ExtColorMap {
-    map: FnvHashMap<String, Color>,
+    map: AHashMap<String, Color>,
 }
 
 impl ExtColorMap {
@@ -30,9 +30,9 @@ impl ExtColorMap {
     }
 }
 
-impl TryFrom<&FnvHashMap<String, String>> for ExtColorMap {
+impl TryFrom<&AHashMap<String, String>> for ExtColorMap {
     type Error = InvalidSkinError;
-    fn try_from(raw_map: &FnvHashMap<String, String>) -> Result<Self, Self::Error> {
+    fn try_from(raw_map: &AHashMap<String, String>) -> Result<Self, Self::Error> {
         let mut map = ExtColorMap::default();
         for (k, v) in raw_map {
             map.set(k.to_string(), v)?;

@@ -70,8 +70,8 @@ custom_error! {pub InvalidSkinError
 }
 
 custom_error! {pub NetError
-    SocketNotAvailable { path : String }  = "Can't open socket: {} already exists - consider removing it",
-    Io {source: io::Error}                = "error on the socket: {}",
-    InvalidMessage                        = "invalid message received",
+    SocketNotAvailable { path : String } = "Can't open socket: {} already exists - consider removing it",
+    Io {source: io::Error}               = "error on the socket: {}",
+    InvalidMessage                       = "invalid message received",
 }
 

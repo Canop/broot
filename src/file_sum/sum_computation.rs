@@ -6,7 +6,7 @@ use {
         task_sync::Dam,
     },
     crossbeam::channel,
-    fnv::FnvHashMap,
+    ahash::AHashMap,
     rayon::{ThreadPool, ThreadPoolBuilder},
     std::{
         convert::TryInto,
@@ -56,7 +56,7 @@ fn is_ignored(path: &Path, special_paths: &[SpecialPath]) -> bool {
 /// see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
 pub fn compute_dir_sum(
     path: &Path,
-    cache: &mut FnvHashMap<PathBuf, FileSum>,
+    cache: &mut AHashMap<PathBuf, FileSum>,
     dam: &Dam,
     con: &AppContext,
 ) -> Option<FileSum> {

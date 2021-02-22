@@ -74,11 +74,10 @@ impl<'c> TreeBuilder<'c> {
         con: &'c AppContext,
     ) -> Result<TreeBuilder<'c>, TreeBuildError> {
         let mut blines = Arena::new();
-        let mut git_ignorer = time!(Debug, "GitIgnorer::default", GitIgnorer::default());
+        let mut git_ignorer = time!(GitIgnorer::default());
         let root_ignore_chain = git_ignorer.root_chain(&path);
         let line_status_computer = if options.filter_by_git_status || options.show_git_file_info {
             time!(
-                Debug,
                 "init line_status_computer",
                 Repository::discover(&path)
                     .ok()
