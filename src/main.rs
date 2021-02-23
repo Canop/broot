@@ -1,7 +1,8 @@
 #[macro_use] extern crate log;
+#[macro_use] extern crate cli_log;
 
 fn main() {
-    cli_log::init("broot");
+    init_cli_log!();
     match broot::cli::run() {
         Ok(Some(launchable)) => {
             debug!("launching {:#?}", launchable);

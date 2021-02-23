@@ -266,9 +266,9 @@ dependencies = [
 
 [[package]]
 name = "cli-log"
-version = "1.0.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5a874a844d07e3e435dd666a0a2bb9a4df3c9ae14995612842d4f08a14660513"
+checksum = "bb79efde0c2e06b3577eff89b0788967051aaad4bf3bcc74a9638223d57ea321"
 dependencies = [
  "chrono",
  "log",
