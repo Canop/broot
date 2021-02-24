@@ -1,6 +1,7 @@
 use {
     super::Sort,
     crate::{
+        cli::clap_args,
         conf::Conf,
         display::{Cols, DEFAULT_COLS},
         errors::ConfError,
@@ -76,7 +77,7 @@ impl TreeOptions {
     /// change tree options according to configuration
     pub fn apply_config(&mut self, config: &Conf) -> Result<(), ConfError> {
         if let Some(default_flags) = &config.default_flags {
-            let clap_app = crate::clap::clap_app().setting(clap::AppSettings::NoBinaryName);
+            let clap_app = clap_args::clap_app().setting(clap::AppSettings::NoBinaryName);
             let flags_args = format!("-{}", default_flags);
             let conf_matches = clap_app.get_matches_from(vec![&flags_args]);
             self.apply_launch_args(&conf_matches);

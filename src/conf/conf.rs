@@ -82,6 +82,8 @@ pub struct Conf {
 
     pub modal: Option<bool>,
 
+    pub max_panels_count: Option<usize>,
+
 }
 
 impl Conf {
@@ -145,6 +147,7 @@ impl Conf {
         overwrite!(self, cols_order, conf);
         overwrite!(self, skin, conf);
         overwrite!(self, search_modes, conf);
+        overwrite!(self, max_panels_count, conf);
         overwrite!(self, modal, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several

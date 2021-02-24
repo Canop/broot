@@ -61,6 +61,10 @@ pub struct AppContext {
     pub modal: bool,
 
     pub mouse_capture_disabled: bool,
+
+    /// max number of panels (including preview) that can be
+    /// open. Guaranteed to be at least 2.
+    pub max_panels_count: usize,
 }
 
 impl AppContext {
@@ -89,6 +93,9 @@ impl AppContext {
             .transpose()?
             .unwrap_or_default();
         let ext_colors = ExtColorMap::try_from(&config.ext_colors)?;
+        let max_panels_count = config.max_panels_count
+            .unwrap_or(2)
+            .clamp(2, 100);
         Ok(Self {
             config_paths,
             launch_args,
@@ -103,6 +110,7 @@ impl AppContext {
             icons,
             modal: config.modal.unwrap_or(false),
             mouse_capture_disabled: config.disable_mouse_capture.unwrap_or(false),
+            max_panels_count,
         })
     }
 }

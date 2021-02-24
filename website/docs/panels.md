@@ -1,28 +1,36 @@
+Broot can display two panels. Most frequent uses are:
 
+* previewing files
+* copying or moving files between two locations
 
-# Open panels, switch between them
+# Keyboard shortcuts
 
-To focus a panel when several are displayed, you may click on the desired one, or use the `:panel_left` and `:panel_right` verbs which are, in standard, bound to <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>.
+The <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd> shortcuts should be enough to support all common panel related operation:
 
-When there's no panel in that direction, a new one is created:
+* When there's only one panel, use <kbd>ctrl</kbd><kbd>←</kbd> to open a panel to the left, and <kbd>ctrl</kbd><kbd>→</kbd> to open one to the right
+* When two panels are open, you may go to the panel left of the current one with <kbd>ctrl</kbd><kbd>←</kbd> and to the panel to the right with <kbd>ctrl</kbd><kbd>→</kbd>
+* When two panels are open, you may close the non selected one by going the opposite direction (i.e. if you're in the left panel, you may close the right one with <kbd>ctrl</kbd><kbd>←</kbd>)
 
-* if the current selection is a regular file and you've hit <kbd>ctrl</kbd><kbd>→</kbd>, you get the preview panel
-* in other cases you get a new tree whose root is the selected line.
+The type of open panel depends on the selection:
 
-This makes those shortcuts the easiest way to create a panel.
+* If the current selection is a directory, the new panel will be a file tree
+* If the current selection is a regular file, the new panel will be a preview
 
-Another way is to add a bang (`!`) to a verb. It tells broot to show the result in a new panel.
+You may also close the current panel with <kbd>ctrl</kbd><kbd>W</kbd>, which is a shortcut for `:close_panel` (you can [change all bindings](../conf_verbs/#keyboard-key)).
+
+# Use a verb to open a panel
+
+Another way to open a panel is to add a bang (`!`) to a verb. It tells broot to show the result in a new panel.
 
 For example, while `:focus ~` navigates to your home directory in the current panel, you can use `:!focus ~` or `:focus! ~` to open a new panel on your home.
-
-The `:close_panel` closes the current panel and is bound to <kbd>ctrl</kbd><kbd>W</kbd> (remember: you can [change all bindings](../conf_verbs/#keyboard-key)).
 
 # The preview panel
 
 ![preview](img/20200716-preview.png)
 
 It's not immediately focused on creation, because most often you'll want to preview a few files and it's convenient to stay in the tree to navigate.
-To focus it, for example to scroll it, do <kbd>ctrl</kbd><kbd>→</kbd> again.
+
+To focus it, for example to scroll it or to do a search, do <kbd>ctrl</kbd><kbd>→</kbd> again.
 
 Files that can't be interpreted as text or image are shown as binary:
 
@@ -35,7 +43,6 @@ You can search with fuzzy patterns or regular expressions inside a text preview 
 You can go from the selected matched line to the unfiltered text, at the right place, with <kbd>ctrl</kbd><kbd>→</kbd> (and then back to the list of matching lines with <kbd>ctrl</kbd><kbd>←</kbd>).
 
 Hopefully [this blog post](https://dystroy.org/blog/broot-c-search/) should make the complete search workflow look natural.
-
 
 # Copy, move between panels... or more
 
@@ -80,9 +87,13 @@ You may now hit enter to execute the command, maybe after having completed the p
 
 This workflow is based on the `:start_end_panel` verb which can be bound to another key if desired.
 
-# More about panels
+# More panels
 
-If your terminal is wide enough, you may open more panels:
+The default configuration limits the number of panels to two, because most people never needs more and it makes it easier to alternate between one or two panels.
+
+But if you want more panels, for a specific configuration of for your main one, you may change the value of `max_panels_count` in the configuration file.
+
+If your terminal is wide enough, you may then open more panels:
 
 ![image](img/20200526-3-panels.png)
 

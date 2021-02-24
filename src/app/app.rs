@@ -103,8 +103,18 @@ impl App {
         })
     }
 
+    fn panel_ref_to_idx(&self, panel_ref: PanelReference) -> Option<usize> {
+        match panel_ref {
+            PanelReference::Active => Some(self.active_panel_idx),
+            PanelReference::Leftest => Some(0),
+            PanelReference::Rightest => Some(self.panels.len().get() - 1),
+            PanelReference::Id(id) => self.panel_id_to_idx(id),
+            PanelReference::Preview => self.preview.and_then(|id| self.panel_id_to_idx(id)),
+        }
+    }
+
     /// return the current index of the panel whith given id
-    fn panel_idx(&self, id: PanelId) -> Option<usize> {
+    fn panel_id_to_idx(&self, id: PanelId) -> Option<usize> {
         self.panels.iter().position(|panel| panel.id == id)
     }
 
@@ -249,7 +259,7 @@ impl App {
             con,
         )? {
             ApplyOnPanel { id } => {
-                if let Some(idx) = self.panel_idx(id) {
+                if let Some(idx) = self.panel_id_to_idx(id) {
                     if let DisplayError(txt) = self.panels[idx].apply_command(
                         w,
                         &cmd,
@@ -269,12 +279,11 @@ impl App {
                     warn!("no panel found for ApplyOnPanel");
                 }
             }
-            ClosePanel { validate_purpose, id } => {
+            ClosePanel { validate_purpose, panel_ref } => {
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation();
                 }
-                let close_idx = id
-                    .and_then(|id| self.panel_idx(id))
+                let close_idx = self.panel_ref_to_idx(panel_ref)
                     .unwrap_or_else(||
                         // when there's a preview panel, we close it rather than the app
                         if self.panels.len().get()==2 && self.preview.is_some() {
@@ -320,11 +329,26 @@ impl App {
             }
             HandleInApp(internal) => {
                 let new_active_panel_idx = match internal {
-                    Internal::panel_left if self.active_panel_idx > 0 => {
-                        Some(self.active_panel_idx - 1)
+                    Internal::panel_left => {
+                        // we're not here to create a panel, this is handled in the state
+                        // we're here because the state wants us to either move to the panel
+                        // to the left, or close the rightest one
+                        if self.active_panel_idx == 0 {
+                            self.close_panel(self.panels.len().get()-1);
+                            None
+                        } else {
+                            Some(self.active_panel_idx - 1)
+                        }
                     }
-                    Internal::panel_right if self.active_panel_idx + 1 < self.panels.len().get() => {
-                        Some(self.active_panel_idx + 1)
+                    Internal::panel_right => {
+                        // we're not here to create panels (it's done in the state).
+                        // So we either move to the right or close the leftes panel
+                        if self.active_panel_idx + 1 == self.panels.len().get() {
+                            self.close_panel(0);
+                            None
+                        } else {
+                            Some(self.active_panel_idx + 1)
+                        }
                     }
                     _ => {
                         debug!("unhandled propagated internal. cmd={:?}", &cmd);
@@ -456,7 +480,7 @@ impl App {
 
     /// update the state of the preview, if there's some
     fn update_preview(&mut self, con: &AppContext) {
-        let preview_idx = self.preview.and_then(|id| self.panel_idx(id));
+        let preview_idx = self.preview.and_then(|id| self.panel_id_to_idx(id));
         if let Some(preview_idx) = preview_idx {
             let path = self.state().selected_path();
             let old_path = self.panels[preview_idx].state().selected_path();

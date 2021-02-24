@@ -11,7 +11,7 @@ use {
     },
 };
 
-include!("src/clap.rs");
+include!("src/cli/clap_args.rs");
 include!("src/conf/default_conf.rs");
 
 /// write the shell completion scripts which will be added to

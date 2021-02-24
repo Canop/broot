@@ -496,7 +496,7 @@ impl AppState for FilesystemState {
                 )
             }
             Internal::panel_left => {
-                if cc.areas.is_first() {
+                if cc.areas.is_first() && cc.areas.nb_pos < cc.con.max_panels_count {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),
@@ -512,7 +512,7 @@ impl AppState for FilesystemState {
                 }
             }
             Internal::panel_right => {
-                if cc.areas.is_last() {
+                if cc.areas.is_last() && cc.areas.nb_pos < cc.con.max_panels_count {
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),

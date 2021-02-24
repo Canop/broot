@@ -327,5 +327,12 @@ pub const DEFAULT_CONF_FILE: &str = r#"
 	# 	rs: yellow
 	# }
 
+
+	###############################################################
+	# Max Panels Count
+        #
+	# Change this if you sometimes want to have more than 2 panels
+        # open
+        # max_panels_count: 2
 }
 "#;

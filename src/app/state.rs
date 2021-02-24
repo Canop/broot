@@ -127,11 +127,11 @@ pub trait AppState {
             }
             Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
                 validate_purpose: true,
-                id: None,
+                panel_ref: PanelReference::Active,
             },
             Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
                 validate_purpose: false,
-                id: None,
+                panel_ref: PanelReference::Active,
             },
             #[cfg(unix)]
             Internal::filesystems => {
@@ -283,27 +283,17 @@ pub trait AppState {
                 if let Some(id) = cc.preview {
                     AppStateCmdResult::ClosePanel {
                         validate_purpose: false,
-                        id: Some(id),
+                        panel_ref: PanelReference::Id(id),
                     }
                 } else {
                     AppStateCmdResult::Keep
                 }
             }
             Internal::panel_left => {
-                if cc.areas.is_first() {
-                    AppStateCmdResult::Keep
-                } else {
-                    // we ask the app to focus the panel to the left
-                    AppStateCmdResult::HandleInApp(Internal::panel_left)
-                }
+                AppStateCmdResult::HandleInApp(Internal::panel_left)
             }
             Internal::panel_right => {
-                if cc.areas.is_last() {
-                    AppStateCmdResult::Keep
-                } else {
-                    // we ask the app to focus the panel to the left
-                    AppStateCmdResult::HandleInApp(Internal::panel_right)
-                }
+                AppStateCmdResult::HandleInApp(Internal::panel_right)
             }
             Internal::print_path => {
                 print::print_path(self.selected_path(), con)?
@@ -431,7 +421,7 @@ pub trait AppState {
             if close_if_open {
                 AppStateCmdResult::ClosePanel {
                     validate_purpose: false,
-                    id: Some(id),
+                    panel_ref: PanelReference::Id(id),
                 }
             } else {
                 if prefered_mode.is_some() {

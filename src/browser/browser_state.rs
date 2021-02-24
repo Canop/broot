@@ -346,30 +346,23 @@ impl AppState for BrowserState {
                 AppStateCmdResult::Keep
             }
             Internal::panel_left => {
-                if cc.areas.is_first() {
-                    if cc.preview.is_some() && cc.areas.nb_pos == 2 {
-                        AppStateCmdResult::ClosePanel {
-                            validate_purpose: false,
-                            id: cc.preview,
-                        }
-                    } else {
-                        // we ask for the creation of a panel to the left
-                        internal_focus::new_panel_on_path(
-                            self.selected_path().to_path_buf(),
-                            screen,
-                            self.displayed_tree().options.clone(),
-                            PanelPurpose::None,
-                            con,
-                            HDir::Left,
-                        )
-                    }
+                if cc.areas.is_first() && cc.areas.nb_pos < cc.con.max_panels_count  {
+                    // we ask for the creation of a panel to the left
+                    internal_focus::new_panel_on_path(
+                        self.selected_path().to_path_buf(),
+                        screen,
+                        self.displayed_tree().options.clone(),
+                        PanelPurpose::None,
+                        con,
+                        HDir::Left,
+                    )
                 } else {
-                    // we ask the app to focus the panel to the left
+                    // we let the app handle other cases
                     AppStateCmdResult::HandleInApp(Internal::panel_left)
                 }
             }
             Internal::panel_right => {
-                if cc.areas.is_last() {
+                if cc.areas.is_last() && cc.areas.nb_pos < cc.con.max_panels_count {
                     let purpose = if self.selected_path().is_file() && cc.preview.is_none() {
                         PanelPurpose::Preview
                     } else {
@@ -385,7 +378,8 @@ impl AppState for BrowserState {
                         HDir::Right,
                     )
                 } else {
-                    // we ask the app to focus the panel to the right
+                    // we ask the app to handle other cases :
+                    // focus the panel to the right or close the leftest one
                     AppStateCmdResult::HandleInApp(Internal::panel_right)
                 }
             }
@@ -415,7 +409,7 @@ impl AppState for BrowserState {
                     debug!("start_end understood as end");
                     AppStateCmdResult::ClosePanel {
                         validate_purpose: true,
-                        id: None,
+                        panel_ref: PanelReference::Active,
                     }
                 } else {
                     debug!("start_end understood as start");

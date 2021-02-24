@@ -2,6 +2,7 @@
 - fix style characters being written in `--no-style` mode - Fix #346
 - replace `--no-style` with `--color` taking `yes`, `no` or `auto`, with detection of output being piped in `auto` mode (default). `--no-style` is still usable but it's not documented anymore - Fix #347
 - fix wrong version number written in log file - Fix #349
+- by default the number of panels is now limited to 2 (can be changed in conf with `max_panels_count`) - Fix #345
 
 <a name="v1.2.4"></a>
 ### v1.2.4 - 2021-02-14

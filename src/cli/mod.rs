@@ -1,5 +1,15 @@
-/// this module manages reading and translating
-/// the arguments passed on launch of the application.
+//! this module manages reading and translating
+//! the arguments passed on launch of the application.
+
+pub mod clap_args;
+mod app_launch_args;
+mod install_launch_args;
+
+pub use {
+    app_launch_args::*,
+    install_launch_args::*,
+};
+
 use {
     crate::{
         app::{App, AppContext},
@@ -7,7 +17,7 @@ use {
         display,
         errors::{ProgramError, TreeBuildError},
         launchable::Launchable,
-        shell_install::{ShellInstall, ShellInstallState},
+        shell_install::ShellInstall,
         tree::TreeOptions,
         verb::VerbStore,
     },
@@ -23,64 +33,8 @@ use {
         env,
         io::{self, Write},
         path::{Path, PathBuf},
-        str::FromStr,
     },
 };
-
-/// launch arguments related to installation
-/// (not used by the application after the first step)
-struct InstallLaunchArgs {
-    install: Option<bool>,                        // installation is required
-    set_install_state: Option<ShellInstallState>, // the state to set
-    print_shell_function: Option<String>,         // shell function to print on stdout
-}
-impl InstallLaunchArgs {
-    fn from(cli_args: &ArgMatches<'_>) -> Result<Self, ProgramError> {
-        let mut install = None;
-        if let Ok(s) = env::var("BR_INSTALL") {
-            if s == "yes" {
-                install = Some(true);
-            } else if s == "no" {
-                install = Some(false);
-            } else {
-                warn!("Unexpected value of BR_INSTALL: {:?}", s);
-            }
-        }
-        // the cli arguments may override the env var value
-        if cli_args.is_present("install") {
-            install = Some(true);
-        } else if cli_args.value_of("cmd-export-path").is_some() {
-            install = Some(false);
-        }
-        let print_shell_function = cli_args
-            .value_of("print-shell-function")
-            .map(str::to_string);
-        let set_install_state = cli_args
-            .value_of("set-install-state")
-            .map(ShellInstallState::from_str)
-            .transpose()?;
-        Ok(Self {
-            install,
-            set_install_state,
-            print_shell_function,
-        })
-    }
-}
-
-/// the parsed program launch arguments which are kept for the
-/// life of the program
-pub struct AppLaunchArgs {
-    pub root: PathBuf,                    // what should be the initial root
-    pub file_export_path: Option<String>, // where to write the produced path (if required with --out)
-    pub cmd_export_path: Option<String>,  // where to write the produced command (if required with --outcmd)
-    pub tree_options: TreeOptions,        // initial tree options
-    pub commands: Option<String>,         // commands passed as cli argument, still unparsed
-    pub height: Option<u16>,              // an optional height to replace the screen's one
-    pub no_style: bool,                   // whether to remove all styles (including colors)
-
-    #[cfg(feature = "client-server")]
-    pub listen: Option<String>,
-}
 
 #[cfg(not(windows))]
 fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
@@ -138,7 +92,7 @@ fn is_no_style(cli_matches: &ArgMatches) -> bool {
 /// run the application, and maybe return a launchable
 /// which must be run after broot
 pub fn run() -> Result<Option<Launchable>, ProgramError> {
-    let clap_app = crate::clap::clap_app();
+    let clap_app = clap_args::clap_app();
 
     // parse the launch arguments we got from cli
     let cli_matches = clap_app.get_matches();
