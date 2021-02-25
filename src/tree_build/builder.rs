@@ -118,7 +118,6 @@ impl<'c> TreeBuilder<'c> {
             return None;
         }
         let name = name.to_string_lossy();
-        let name = name.to_string();
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
         let path = e.path();
@@ -148,6 +147,7 @@ impl<'c> TreeBuilder<'c> {
             has_match = false;
             false
         };
+        let name = name.to_string();
         if has_match && self.options.filter_by_git_status {
             if let Some(line_status_computer) = &self.line_status_computer {
                 if !line_status_computer.is_interesting(&path) {
