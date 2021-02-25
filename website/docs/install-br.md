@@ -35,15 +35,6 @@ As a shortcut for [Nushell](https://www.nushell.sh/), define the following alias
 
     alias br [] { broot | trim | cd $it }
 
-You can bind this command to a key sequence in the [configuration file](../conf_file):
-
-```toml
-[[verbs]]
-key = "alt-p"
-shortcut = "pp"
-execution = ":print_path"
-```
-
 # `br` alias for Xonsh shell
 
 The shortcut for [xonsh](https://xon.sh/) shell can be installed with using [xontrib-broot](https://github.com/jnoortheen/xontrib-broot)

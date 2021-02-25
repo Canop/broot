@@ -55,7 +55,17 @@ Two built-in verbs use those arguments: `:copy_to_panel` (alias `:cpp`) and `:mo
 The default configuration file contains this that you may uncomment to add <kbd>F5</kbd> and <kbd>F6</kbd> shortcuts:
 
 
-```toml
+```Hjson
+# {
+#     key: F5
+#     internal: ":copy_to_panel"
+# }
+# {
+#     key: F6
+#     internal: ":move_to_panel"
+# }
+```
+```TOML
 # [[verbs]]
 # key = "F5"
 # internal = ":copy_to_panel"

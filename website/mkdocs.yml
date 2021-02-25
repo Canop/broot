@@ -27,7 +27,12 @@ nav:
         - Community: community.md
 
 extra_css:
-    - css/extra.css
+        - css/extra.css
+        - css/tab-langs.css
+
+
+extra_javascript:
+        - js/tab-langs.js
 
 theme:
         name: mkdocs
@@ -35,6 +40,8 @@ theme:
         highlightjs: true
         hljs_languages:
                 - yaml
+                - ini
+                - css
                 - rust
 
 markdown_extensions:

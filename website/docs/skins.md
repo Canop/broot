@@ -9,9 +9,15 @@ To start with, you might want broot to use more of your terminal colors.
 
 Try adding this in your [config file](../conf_file):
 
+```Hjson
+skin: {
+	default: "none none"
+	...
+```
 ```toml
 [skin]
 default = "none none"
+...
 ```
 
 The first `none` sets the terminal default foreground color as broot's default one, and the second one is for the background.
@@ -102,6 +108,9 @@ These tree parts can be repeated, after a `/`, to define the style to use in non
 
 Example:
 
+```hjson
+directory: "ansi(208) None Bold / ansi(172) None"
+```
 ```toml
 directory = "ansi(208) None Bold / ansi(172) None"
 ```
@@ -132,6 +141,9 @@ The mapping between keys and screen parts may not always be obvious. Don't hesit
 
 If you want to set the background of broot transparent (i.e. to be the background of your terminal), you can set the default style like this:
 
+```hjson
+default: "gray(23) none / gray(20) none"
+```
 ```toml
 default = "gray(23) none / gray(20) none"
 ```

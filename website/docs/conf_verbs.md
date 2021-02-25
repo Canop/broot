@@ -3,23 +3,9 @@ The most important part of broot configuration is the `verbs` sections, which le
 
 # Verb Definition Attributes
 
-You can define a new verb in the TOML configuration file inside the `verbs` list.
+You can define a new verb in the configuration file inside the `verbs` list.
 
-In conf.toml, a verb section looks like this:
-
-```toml
-[[verbs]]
-invocation = "edit"
-key = "F2"
-shortcut = "e"
-apply_to = "file"
-external = "nvim {file}"
-leave_broot = false
-```
-
-In conf.hjson:
-
-```css
+```Hjson
 {
 	invocation: edit
 	key: F2
@@ -28,6 +14,15 @@ In conf.hjson:
 	external: "nvim {file}"
 	leave_broot: false
 }
+```
+```TOML
+[[verbs]]
+invocation = "edit"
+key = "F2"
+shortcut = "e"
+apply_to = "file"
+external = "nvim {file}"
+leave_broot = false
 ```
 
 The possible attributes are:
@@ -54,7 +49,9 @@ The execution is defined either by `internal`, `external` or `cmd` so a verb mus
 
 If you want broot, for example, to execute `xterm -e "nvim {file}"`, you may either escape the quotes as `\"` or use the array format to separe parts.
 
-So the two following verb definitons are equivalent:
+So the two following verb definitions are equivalent.
+
+With escaping:
 
 ```hjson
 {
@@ -62,12 +59,24 @@ So the two following verb definitons are equivalent:
 	external: "xterm -e \"nvim {file}\""
 }
 ```
+```toml
+[[verbs]]
+invocation = "xtv"
+external = "xterm -e \"nvim {file}\""
+```
+
+With an array:
 
 ```hjson
 {
 	invocation: xtv
 	external: ["xterm" "-e" "nvim {file}"]
 }
+```
+```toml
+[[verbs]]
+invocation = "xtv"
+external = ["xterm", "-e", "nvim {file}"]
 ```
 
 # Shortcuts and Verb search
@@ -104,6 +113,46 @@ It's possible to define a verb just to add a trigger key to an internal verb.
 
 For example you could add those mappings:
 
+```hjson
+verbs: [
+    {
+    	invocation: "root"
+    	key: "F9"
+    	internal: ":focus /"
+    }
+    {
+    	invocation: "home"
+    	key: "ctrl-H"
+    	internal: ":focus ~"
+    }
+    {
+    	key: "alt-j"
+    	internal: ":line_down"
+    }
+    {
+    	invocation: "top"
+    	key: "F6"
+    	internal: ":select_first"
+    }
+    {
+    	invocation: "bottom"
+    	key: "F7"
+    	internal: ":select_last"
+    }
+    {
+    	invocation: "open"
+    	key: "crtl-O"
+    	internal: ":open_stay"
+    }
+    {
+    	invocation: "edit"
+    	key: "F2"
+    	shortcut: "e"
+    	external: "$EDITOR +{line} {file}"
+    	from_shell: true
+    }
+]
+```
 ```toml
 [[verbs]]
 invocation = "root"
@@ -181,6 +230,12 @@ name | expanded to
 
 But you may also define some arguments in the invocation pattern. For example:
 
+```hjson
+{
+    invocation: "mkdir {subpath}"
+    external: "mkdir -p {directory}/{subpath}"
+}
+```
 ```toml
 [[verbs]]
 invocation = "mkdir {subpath}"
@@ -201,6 +256,13 @@ It also normalizes the paths it finds which eases the use of relative paths:
 
 Here's another example, where the invocation pattern defines two arguments by destructuring:
 
+```hjson
+{
+    invocation: "blop {name}\\.{type}"
+    external: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
+    from_shell: true
+}
+```
 ```toml
 [[verbs]]
 invocation = "blop {name}\\.{type}"
@@ -219,6 +281,13 @@ Notice the `\\.` in the invocation pattern ? That's because it is interpreted as
 The whole regular expression syntax may be useful for more complex rules.
 Let's say we don't want the type to contain dots, then we do this:
 
+```hjson
+{
+    invocation: "blop {name}\\.(?P<type>[^.]+)"
+    external: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
+    from_shell: true
+}
+```
 ```toml
 [[verbs]]
 invocation = "blop {name}\\.(?P<type>[^.]+)"
@@ -304,6 +373,24 @@ name | default binding | behavior
 
 You may add this kind of shortcuts:
 
+```hjson
+{
+key: "alt-b"
+internal: ":input_go_word_left"
+}
+{
+key: "alt-f"
+internal: ":input_go_word_right"
+}
+{
+key: "alt-l"
+internal: ":input_del_word_left"
+}
+{
+key: "alt-r"
+internal: ":input_del_word_right"
+}
+```
 ```toml
 [[verbs]]
 key = "alt-b"
@@ -334,6 +421,16 @@ It serves as base for several built-in commands, like `:home` whose execution is
 
 And you can add your own ones:
 
+```hjson
+{
+key: "ctrl-up"
+internal: ":focus .."
+}
+{
+key: "ctrl-d"
+internal: ":focus ~/dev"
+}
+```
 ```toml
 [[verbs]]
 key = "ctrl-up"
@@ -352,7 +449,15 @@ Such a sequence can contain some searches, some calls to internals, some calls t
 
 For example:
 
+```Hjson
+{
+    name: "backup"
+    invocation: "bu {name}"
+    cmd: ":cp {file}-back_{name};:!focus {file}-back_{name}"
+    apply_to: directory
+}
 ```
+```TOML
 [[verbs]]
 name = "backup"
 invocation = "bu {name}"

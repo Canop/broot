@@ -4,7 +4,18 @@ The goal here is to have a function you can use in shell to give you a path.
 
 **Step 1:** create a file `~/.config/select.toml` with this content:
 
+```Hjson
+verbs: [
+    {
+        invocation: "ok"
+        key: "enter"
+        leave_broot: true
+        execution: ":print_path"
+        apply_to: "file"
+    }
+]
 ```
+```TOML
 [[verbs]]
 invocation = "ok"
 key = "enter"
@@ -99,7 +110,18 @@ You might still wish to change that, for example when you're on a server without
 
 Here's an example of configuration changing the behaviour on open:
 
-```toml
+```Hjson
+verbs: [
+    {
+        invocation: edit
+        key: enter
+        external: "$EDITOR {file}"
+        leave_broot: false
+        apply_to: file
+    }
+]
+```
+```TOML
 [[verbs]]
 invocation = "edit"
 key = "enter"

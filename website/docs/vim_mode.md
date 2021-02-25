@@ -14,8 +14,11 @@ You need first to enable the "modal mode" with this line in the configuration:
 ```hjson
 modal: true
 ```
+```TOML
+modal = true
+```
 
-(or `modal = true` at the begining of the configuration if it's in TOML)
+(note: it must be at the begining of the configuration if it's in TOML)
 
 If `modal` isn't set to `true`, the single letter shortcuts you define in configuration will be ignored (so you don't have to remove them if you don't want modality anymore).
 

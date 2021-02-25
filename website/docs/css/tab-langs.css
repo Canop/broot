@@ -1,0 +1,18 @@
+
+.lang-tab {
+	color: #555;
+	padding: 2px 5px;
+	cursor: pointer;
+	font-size: 90%;
+}
+
+.lang-tab.active {
+	color: #333;
+	border-top: solid 1px #e1e4e5;
+	border-right: solid 1px #e1e4e5;
+	border-bottom: solid 3px #f8f8f8;
+	border-left: solid 1px #e1e4e5;
+	background: #f8f8f8;
+	cursor: auto;
+	z-index: 2;
+}

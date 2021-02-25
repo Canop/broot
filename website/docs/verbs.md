@@ -11,7 +11,11 @@ The `rm` verb executes the standard `rm` command.
 
 It's defined by this couple (invocation, external):
 
-```toml
+```Hjson
+invocation: "rm"
+external: "rm -rf {file}"
+```
+```TOML
 invocation = "rm"
 external = "rm -rf {file}"
 ```
@@ -29,7 +33,11 @@ name | expanded to
 
 Several selection based arguments can be used. For example the (built-in) `:copy_to_panel` verb is defined as
 
-```toml
+```Hjson
+invocation: "copy_to_panel"
+external: "cp -r {file} {other-panel-directory}"
+```
+```TOML
 invocation = "copy_to_panel"
 external = "cp -r {file} {other-panel-directory}"
 ```
@@ -45,9 +53,13 @@ As for filters, hitting <kbd>esc</kbd> clears the command.
 
 Some commands not only use the selection but also takes one or several argument(s).
 
-For example mkdir is defined as
+For example mkdir is virtually defined as
 
-```toml
+```Hjson
+invocation: "mkdir {subpath}"
+external: "mkdir -p {directory}/{subpath}"
+```
+```TOML
 invocation = "mkdir {subpath}"
 external = "mkdir -p {directory}/{subpath}"
 ```
@@ -68,7 +80,12 @@ If you type an argument, the command to execute is computed and shown:
 
 In this screenshot, you didn't type `mkdir` or its start but `md`. That's because the complete definition of this verb includes this line:
 
-	shortcut = "md"
+```Hjson
+shortcut: "md"
+```
+```TOML
+shortcut = "md"
+```
 
 !!!	Note
 	The help screen lists the whole set of available verbs, including the ones coming from the configuration.

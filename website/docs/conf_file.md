@@ -1,7 +1,19 @@
 
-# Opening the configuration file
+# Hjson or TOML
 
 Two formats are allowed: [TOML](https://github.com/toml-lang/toml) and [Hjson](https://hjson.github.io/).
+
+This documentation will often show you the same setting in both formats, with two tabs, like this:
+
+```Hjson
+setting to use if your config file is in .hjson
+```
+```TOML
+setting to use if your config file is in .toml
+```
+
+
+# Opening the configuration file
 
 The main configuration file is called either `conf.toml` or `conf.hjson`.
 
@@ -22,13 +34,12 @@ For example, if you want to see hidden files (the ones whose name starts with a 
 
 If you almost always want those flags, you may define them as default in the configuration file file, with the `default_flags` setting.
 
-In TOML:
-
-    default_flags = "gh"
-
-In Hjson:
-
-    default_flags: gh
+```Hjson
+default_flags: gh
+```
+```TOML
+default_flags = "gh"
+```
 
 Those flags can still be overridden at launch with the negating ones. For example if you don't want to see hidden files at a specific launch, do
 
@@ -38,7 +49,10 @@ Those flags can still be overridden at launch with the negating ones. For exampl
 
 Broot usually captures the mouse so that you can click or double click on items. If you want to disable this capture, you may add this:
 
-```toml
+```Hjson
+capture_mouse: false
+```
+```TOML
 capture_mouse = false
 ```
 
@@ -49,23 +63,20 @@ You may map special paths to specific behaviors. You may especially want
 - to have some link to a directory to always automatically be handled as a normal directory
 - to exclude some path because it's on a slow device or non relevant
 
-Example configuration in TOML:
+Example configuration:
 
-```toml
-[special-paths]
-"/media/slow-backup-disk" = "no-enter"
-"/home/dys/useless" = "hide"
-"/home/dys/my-link-I-want-to-explore" = "enter"
-```
-
-In Hjson:
-
-```css
+```Hjson
 special_paths: {
     "/media/slow-backup-disk"             : no-enter
     "/home/dys/useless"                   : hide
     "/home/dys/my-link-I-want-to-explore" : enter
 }
+```
+```TOML
+[special-paths]
+"/media/slow-backup-disk" = "no-enter"
+"/home/dys/useless" = "hide"
+"/home/dys/my-link-I-want-to-explore" = "enter"
 ```
 
 Be careful that those paths (globs, in fact) are checked a lot when broot builds trees and that defining a lot of paths will impact the overall speed.
@@ -74,7 +85,14 @@ Be careful that those paths (globs, in fact) are checked a lot when broot builds
 
 It's possible to redefine the mode mappings, for example if you usually prefer to do exact searches:
 
-```toml
+```Hjson
+"search-modes": {
+    <empty>: regex name
+    /: fuzzy path
+    z/: regex path
+}
+```
+```TOML
 [search-modes]
 "<empty>" = "regex name"
 "/" = "fuzzy path"
@@ -87,7 +105,10 @@ Note: I'd insist on you not overwriting default mode mappings before you master 
 
 When the background colors aren't rendered in your terminal, aren't visible enough, or just aren't clear enough for you, you may have the selected lines marked with triangles with
 
-```toml
+```Hjson
+show_selection_mark: true
+```
+```TOML
 show_selection_mark = true
 ```
 
@@ -106,7 +127,19 @@ You may change the order of file attributes in file lists:
 
 For example, if you prefer to have the branches left of the tree (as was the default in broot prior 0.18.1) you can use
 
-```toml
+```Hjson
+cols_order: [
+	mark
+	git
+	branch
+	permission
+	date
+	size
+	count
+	name
+]
+```
+```TOML
 cols_order = [
 	"mark",
 	"git",
@@ -127,7 +160,14 @@ broot doesn't support `LS_COLORS` which isn't available on all systems and is li
 
 But you can still give a color to files by extension:
 
-```toml
+```Hjson
+ext_colors: {
+    png: "rgb(255, 128, 75)"
+    rs: "yellow"
+    toml: "ansi(105)"
+}
+```
+```TOML
 [ext-colors]
 png = "rgb(255, 128, 75)"
 rs = "yellow"
@@ -148,7 +188,10 @@ It's possible to choose any of the standard themes listed [here](https://docs.rs
 * Solarized (dark)
 * Solarized (light)
 
-```toml
+```Hjson
+syntax_theme: base16-ocean.light
+```
+```TOML
 syntax_theme = "base16-ocean.light"
 ```
 
