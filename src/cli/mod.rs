@@ -79,17 +79,6 @@ fn is_output_piped() -> bool {
     !stdout().is_tty()
 }
 
-fn is_no_style(cli_matches: &ArgMatches) -> bool {
-    if cli_matches.is_present("no-style") {
-        return true;
-    }
-    match cli_matches.value_of("color") {
-        Some("yes") => false,
-        Some("no") => true,
-        _  => is_output_piped(),
-    }
-}
-
 /// run the application, and maybe return a launchable
 /// which must be run after broot
 pub fn run() -> Result<Option<Launchable>, ProgramError> {
@@ -159,7 +148,17 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     let file_export_path = cli_matches.value_of("file-export-path").map(str::to_string);
     let cmd_export_path = cli_matches.value_of("cmd-export-path").map(str::to_string);
     let commands = cli_matches.value_of("commands").map(str::to_string);
-    let no_style = is_no_style(&cli_matches);
+    let (no_style, must_show_selection_mark) = {
+        if cli_matches.is_present("no-style") {
+            (true, is_output_piped())
+        } else {
+            match cli_matches.value_of("color") {
+                Some("yes") => (false, false),
+                Some("no") => (true, !is_output_piped()),
+                _  => (is_output_piped(), false),
+            }
+        }
+    };
     let height = cli_matches.value_of("height").and_then(|s| s.parse().ok());
 
     let root = get_root_path(&cli_matches)?;
@@ -184,7 +183,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         return Ok(None);
     }
 
-    let launch_args = AppLaunchArgs {
+    let mut launch_args = AppLaunchArgs {
         root,
         file_export_path,
         cmd_export_path,
@@ -196,6 +195,9 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         #[cfg(feature = "client-server")]
         listen: cli_matches.value_of("listen").map(str::to_string),
     };
+    if must_show_selection_mark {
+        launch_args.tree_options.show_selection_mark = true;
+    }
 
     let context = AppContext::from(launch_args, verb_store, &config)?;
     let mut w = display::writer();

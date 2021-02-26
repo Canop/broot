@@ -1,3 +1,7 @@
+### next
+- fix a compilation problem on non gnu windows - Thanks @Stargateur
+- obey '--color no' even in standard application mode. In that case, automatically enable selection marks or you wouldn't know what line is selected
+
 <a name="v1.2.5"></a>
 ### v1.2.5 - 2021-02-25
 - fix style characters being written in `--no-style` mode - Fix #346

@@ -561,7 +561,7 @@ impl App {
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
 
-        let skin = AppSkin::new(conf);
+        let skin = AppSkin::new(conf, con.launch_args.no_style);
 
         self.screen.clear_bottom_right_char(w, &skin.focused)?;
 
