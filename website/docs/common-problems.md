@@ -55,6 +55,38 @@ I have no solution for that. If you know how to tackle the problem, the maintain
 
 Even Microsoft doesn't support them anymore. If you have a cheap solution it's welcome but I don't have any.
 
+# Trouble with PowerShell Encoding
+
+PowerShell is know to have problem with text encoding, for some reason the default is not UTF-8, if you want more compatibility it's advice to set encoding to UTF-8:
+
+Quick & Dirty (only for current session of powershell): use the command `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8`
+
+[Profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.1) (for every new powershell session):
+
+This will create a profile if it doesn't exist:
+```powershell
+if (!(Test-Path -Path <profile-name>)) {
+  New-Item -ItemType File -Path <profile-name> -Force
+}
+```
+
+`notepad $PROFILE` will open the profile config. You need to add `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` somewhere.
+
+The next will allow script to run for this user and require admin privilege, [source](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.1):
+
+```powershell
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+Unblock-File -Path $PROFILE
+```
+
+Now, this should load your profile everytime, you can check the current encoding using `[Console]::Out`, don't forget to open a new powershell window.
+
+```none
+Encoding                 FormatProvider NewLine
+--------                 -------------- -------
+System.Text.UTF8Encoding fr-FR          ...
+```
+
 # Broot doesn't seem as fast or feature complete on Windows
 
 It isn't. I'm not a Windows programmer and I don't even have a machine to test. I'd welcome the help of a programmer with the relevant competences and the will to improve broot.
