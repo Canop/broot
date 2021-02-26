@@ -371,25 +371,13 @@ name | default binding | behavior
 :input_go_word_left | - | "move the cursor one word to the left",
 :input_go_word_right | - | "move the cursor one word to the right",
 
-You may add this kind of shortcuts:
+You may add this kind of shortcuts in the `verbs` section:
 
 ```hjson
-{
-key: "alt-b"
-internal: ":input_go_word_left"
-}
-{
-key: "alt-f"
-internal: ":input_go_word_right"
-}
-{
-key: "alt-l"
-internal: ":input_del_word_left"
-}
-{
-key: "alt-r"
-internal: ":input_del_word_right"
-}
+{ key: "alt-b", internal: ":input_go_word_left" }
+{ key: "alt-f", internal: ":input_go_word_right" }
+{ key: "alt-l", internal: ":input_del_word_left" }
+{ key: "alt-r", internal: ":input_del_word_right" }
 ```
 ```toml
 [[verbs]]
@@ -422,14 +410,8 @@ It serves as base for several built-in commands, like `:home` whose execution is
 And you can add your own ones:
 
 ```hjson
-{
-key: "ctrl-up"
-internal: ":focus .."
-}
-{
-key: "ctrl-d"
-internal: ":focus ~/dev"
-}
+{ key: "ctrl-up", internal: ":focus .." }
+{ key: "ctrl-d", internal: ":focus ~/dev" }
 ```
 ```toml
 [[verbs]]
