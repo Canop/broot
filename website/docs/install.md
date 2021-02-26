@@ -15,6 +15,7 @@ Direct links:
 
 Target|Files
 -|-
+Android | [aarch64-linux-android](https://dystroy.org/broot/download/aarch64-linux-android/broot)
 Linux | [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
 Linux/musl | [x86_64-unknown-linux-musl](https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot)
 Raspberry | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)
