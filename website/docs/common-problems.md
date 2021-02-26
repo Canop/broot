@@ -87,6 +87,8 @@ Encoding                 FormatProvider NewLine
 System.Text.UTF8Encoding fr-FR          ...
 ```
 
+Try out `br -c :pt | Out-File broot_output -Encoding UTF8`, [`Out-File`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/out-file?view=powershell-7.1#parameters) will correctly interpret the input now, you are not force to encode the output file in UTF-8 the complete list of encoding format is in the doc.
+
 # Broot doesn't seem as fast or feature complete on Windows
 
 It isn't. I'm not a Windows programmer and I don't even have a machine to test. I'd welcome the help of a programmer with the relevant competences and the will to improve broot.
