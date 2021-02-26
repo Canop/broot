@@ -28,10 +28,11 @@ use {
         event::{DisableMouseCapture, EnableMouseCapture},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
+        tty::IsTty,
     },
     std::{
         env,
-        io::{self, Write},
+        io::{self, Write, stdout},
         path::{Path, PathBuf},
     },
 };
@@ -75,7 +76,7 @@ fn get_root_path(cli_args: &ArgMatches<'_>) -> Result<PathBuf, ProgramError> {
 }
 
 fn is_output_piped() -> bool {
-    unsafe { libc::isatty(libc::STDOUT_FILENO) == 0 }
+    !stdout().is_tty()
 }
 
 fn is_no_style(cli_matches: &ArgMatches) -> bool {
