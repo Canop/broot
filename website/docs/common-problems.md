@@ -57,7 +57,7 @@ Even Microsoft doesn't support them anymore. If you have a cheap solution it's w
 
 # Trouble with PowerShell Encoding
 
-PowerShell is know to have problem with text encoding, for some reason the default is not UTF-8, if you want more compatibility it's advice to set encoding to UTF-8:
+PowerShell is known to have problem with text encoding, for some reason the default is not UTF-8, if you want more compatibility it's advice to set encoding to UTF-8:
 
 Quick & Dirty (only for current session of powershell): use the command `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8`
 
@@ -65,8 +65,8 @@ Quick & Dirty (only for current session of powershell): use the command `[Consol
 
 This will create a profile if it doesn't exist:
 ```powershell
-if (!(Test-Path -Path <profile-name>)) {
-  New-Item -ItemType File -Path <profile-name> -Force
+if (!(Test-Path -Path $PROFILE)) {
+  New-Item -ItemType File -Path $PROFILE -Force
 }
 ```
 
