@@ -1,10 +1,3 @@
-
-/// the content a the conf.hjson file broot creates
-/// when there's none. It features some default
-/// configuration and many completable
-/// or uncommentable sections to help the user
-/// define their own configuration.
-pub const DEFAULT_CONF_FILE: &str = r#"
 ###############################################################
 # This configuration file lets you
 # - define new commands
@@ -335,4 +328,3 @@ pub const DEFAULT_CONF_FILE: &str = r#"
         # open
         # max_panels_count: 2
 }
-"#;

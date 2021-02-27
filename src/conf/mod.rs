@@ -4,16 +4,21 @@ use {
 };
 
 mod conf;
-mod default_conf;
 mod format;
 mod verb_conf;
 
 pub use {
     conf::Conf,
-    default_conf::*,
     format::*,
     verb_conf::VerbConf,
 };
+
+
+/// the content of the conf.hjson file broot creates when there's none.
+///
+/// It features some default configuration and many sections the user
+/// can uncomment then edit.
+pub const DEFAULT_CONF_FILE: &str = include_str!("../../resources/default-conf.hjson");
 
 /// return the instance of ProjectDirs holding broot's specific paths
 pub fn app_dirs() -> directories::ProjectDirs {
