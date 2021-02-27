@@ -121,7 +121,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "1.2.6-dev"
+version = "1.2.6"
 dependencies = [
  "ahash",
  "ansi_colours",
@@ -1622,13 +1622,20 @@ dependencies = [
 
 [[package]]
 name = "terminal-clipboard"
-version = "0.1.1"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b7d0bd72c5576dacccc02c15f7aa568e8ef46286b489eebe09de7c4451d493a4"
+checksum = "17a6b9bf0e5a40b6955cf6f384df9b7ed54106ff57b721f88614f30013d5ef5a"
 dependencies = [
  "clipboard-win",
+ "termux-clipboard",
  "x11-clipboard",
 ]
+
+[[package]]
+name = "termux-clipboard"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9f6aff13ca3293315b94f6dbd9c69e1c958fe421c294681e2ffda80c9858e36f"
 
 [[package]]
 name = "textwrap"

@@ -1,4 +1,6 @@
-### next
+<a name="v1.2.6"></a>
+### v1.2.6 - 2021-02-27
+- clipboard features (copy and paste verbs) now work on Android/Termux (needs the Termux API to be installed)
 - fix a compilation problem on non gnu windows - Thanks @Stargateur
 - obey '--color no' even in standard application mode. In that case, automatically enable selection marks or you wouldn't know what line is selected
 

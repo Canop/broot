@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.2.6-dev"
+version = "1.2.6"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -17,7 +17,6 @@ exclude = ["website", "broot*.zip"]
 default = []
 client-server = []
 clipboard = ["terminal-clipboard"]
-# termux = ["terminal-clipboard/termux"]
 
 [dependencies]
 ahash = { version = "0.7", features = ["serde"] }
@@ -57,7 +56,7 @@ strict = "0.1.4"
 syntect = "4.5"
 tempfile = "3.1"
 termimad = { version = "0.10.0" }
-terminal-clipboard = { version = "0.1.1", optional = true }
+terminal-clipboard = { version = "0.2.1", optional = true }
 toml = "0.5"
 umask = "1.0"
 unicode-width = "0.1.8"
@@ -104,3 +103,4 @@ harness = false
 # secular = { path = "../secular" }
 # strict = { path = "../strict" }
 # lfs-core = { path = "../lfs-core" }
+# terminal-clipboard = { path = "../terminal-clipboard" }

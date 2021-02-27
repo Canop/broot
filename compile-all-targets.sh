@@ -32,14 +32,13 @@ mkdir build/completion
 cp "$(broot -c ":gi;release;:focus;broot.bash;:parent;:pp" target)/"* build/completion
 echo "   Done"
 
-# find and copy the default conf
-# (it's built as part of the normal compilation so must come after the linux version)
+# copy the default conf
 echo -e "${H2}copying default configuration${EH}"
-cp "$(broot -c ":gi;release;:focus;deault-conf.hjson;:pp" target)" build
+cp resources/default-conf.hjson build
 echo "   Done"
 
 # add the resource (the icons font)
-echo -e "${H2}copying resources${EH}"
+echo -e "${H2}copying vscode-icon font${EH}"
 mkdir build/resources
 cp resources/icons/vscode/vscode.ttf build/resources
 echo "the font file comes from https://github.com/vscode-icons/vscode-icons/ and is licensed as MIT" > build/resources/README.md
@@ -62,7 +61,7 @@ cp target/armv7-unknown-linux-gnueabihf/release/broot build/armv7-unknown-linux-
 # build the Android version
 # use cargo cross
 echo -e "${H2}Compiling the Android version${EH}"
-cross build --target aarch64-linux-android --release
+cross build ---features "clipboard" --target aarch64-linux-android --release
 mkdir build/aarch64-linux-android
 cp target/aarch64-linux-android/release/broot build/aarch64-linux-android/
 

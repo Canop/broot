@@ -1,5 +1,6 @@
 bench.sh
 compile.sh
+termux-deploy.sh
 dev.log
 deploy.sh
 fix-win-toolchain.sh
