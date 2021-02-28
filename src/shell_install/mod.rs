@@ -162,13 +162,16 @@ impl ShellInstall {
                 debug!("User refuses the installation. Doing nothing.");
                 return Ok(());
             }
+            // even if the installation isn't really complete (for example
+            // when no bash file was found), we don't want to ask the user
+            // again, we'll assume it's done
+            ShellInstallState::Installed.write_file()?;
         }
         debug!("Starting install");
         bash::install(self)?;
         fish::install(self)?;
         self.should_quit = true;
         if self.done {
-            ShellInstallState::Installed.write_file()?;
             self.skin.print_text(MD_INSTALL_DONE);
         }
         Ok(())

@@ -1,3 +1,7 @@
+<a name="v1.2.7"></a>
+### v1.2.7 - 2021-02-28
+- don't ask again for installation if no sourcing file has been found
+
 <a name="v1.2.6"></a>
 ### v1.2.6 - 2021-02-27
 - clipboard features (copy and paste verbs) now work on Android/Termux (needs the Termux API to be installed)
