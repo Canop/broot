@@ -188,3 +188,5 @@ This brings a lot of comfort, not just in broot.
 In case you want to use broot for opening files fuzzily in vim (and potentially
 replace netrw), check out: [broot.vim](https://gitlab.com/lstwn/broot.vim)
 
+Another plugin [vim-floaterm](https://github.com/voldikss/vim-floaterm#broot) has a broot wrapper which allows to open broot in the floating/popup window.
+
