@@ -83,7 +83,7 @@ Unblock-File -Path $PROFILE
 
 This will ensure your profile is loaded in new terminals/sessions.
 You can check it by opening a new terminal then running `[Console]::Out`.
-The output should show an encoding of `System.Text.UTF8Encoding fr-FR`.
+The output should show an encoding of `System.Text.UTF8Encoding`.
 
 # Broot doesn't seem as fast or feature complete on Windows
 
