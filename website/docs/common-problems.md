@@ -57,11 +57,7 @@ Even Microsoft doesn't support them anymore. If you have a cheap solution it's w
 
 # Trouble with PowerShell Encoding
 
-PowerShell is known to have problem with text encoding, for some reason the default is not UTF-8, if you want more compatibility it's advice to set encoding to UTF-8:
-
-Quick & Dirty (only for current session of powershell): use the command `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8`
-
-[Profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.1) (for every new powershell session):
+Some problems in PowerShell are linked to a wrong encoding. You should set it to UTF-8 in your [profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.1).
 
 This will create a profile if it doesn't exist:
 ```powershell
@@ -70,24 +66,24 @@ if (!(Test-Path -Path $PROFILE)) {
 }
 ```
 
-`notepad $PROFILE` will open the profile config. You need to add `[Console]::OutputEncoding = [System.Text.Encoding]::UTF8` somewhere.
+`notepad $PROFILE` will open the profile config.
 
-The next will allow script to run for this user and require admin privilege, [source](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.1):
+Add this line:
+
+```
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+```
+
+Run the following with admin privilege ([source](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.security/set-executionpolicy?view=powershell-7.1)):
 
 ```powershell
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
 Unblock-File -Path $PROFILE
 ```
 
-Now, this should load your profile everytime, you can check the current encoding using `[Console]::Out`, don't forget to open a new powershell window.
-
-```none
-Encoding                 FormatProvider NewLine
---------                 -------------- -------
-System.Text.UTF8Encoding fr-FR          ...
-```
-
-Try out `br -c :pt | Out-File broot_output -Encoding UTF8`, [`Out-File`](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.utility/out-file?view=powershell-7.1#parameters) will correctly interpret the input now, you are not force to encode the output file in UTF-8 the complete list of encoding format is in the doc.
+This will ensure your profile is loaded in new terminals/sessions.
+You can check it by opening a new terminal then running `[Console]::Out`.
+The output should show an encoding of `System.Text.UTF8Encoding fr-FR`.
 
 # Broot doesn't seem as fast or feature complete on Windows
 
