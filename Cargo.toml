@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.2.7"
+version = "1.2.8-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -80,7 +80,7 @@ debug = false
 
 [profile.release]
 debug = false
-lto = true # link time optimization - roughly halves the size of the exec
+lto = "fat"
 codegen-units = 1 # this removes a few hundred bytes from the final exec size
 
 [[bench]]
