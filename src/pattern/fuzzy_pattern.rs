@@ -110,13 +110,10 @@ impl FuzzyPattern {
                     let last_idx = pos.len() - 1;
                     // The last char of the previous group is at index last_idx-1
                     if pos[last_idx-1] > pos[last_idx-2] + 1 {
-                        debug!("singled char in {:?}", cand_chars.iter().collect::<String>());
-                        debug!("before merge: {:?}", &pos);
                         // The last group was of size 1, it's a singled char.
                         // But maybe it can be rattached to the new group ?
                         if self.chars[pat_idx-1] == cand_chars[pos[last_idx]-1] {
                             pos[last_idx-1] = pos[last_idx] - 1;
-                            debug!("merging singled char -> {:?}", &pos);
                             nb_holes -= 1;
                         } else {
                             nb_singled_chars += 1;
