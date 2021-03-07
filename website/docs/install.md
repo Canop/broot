@@ -28,7 +28,7 @@ When you download executable files, you'll have to ensure the shell can find the
 
 # From crates.io
 
-You'll need to have the [Rust development environment](https://www.rust-lang.org/tools/install) installed and up to date.
+You'll need to have the [Rust development environment](https://www.rustup.rs) installed and up to date.
 
 Once it's installed, use cargo to install broot:
 
@@ -36,7 +36,7 @@ Once it's installed, use cargo to install broot:
 
 # From source
 
-You'll need to have the [Rust development environment](https://www.rust-lang.org/tools/install) installed.
+You'll need to have the [Rust development environment](https://www.rustup.rs) installed.
 
 Fetch the [Canop/broot](https://github.com/Canop/broot) repository, move to the broot directory, then run
 

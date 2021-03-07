@@ -11,7 +11,7 @@ There's a dedicated room:
 
 If you're French speaking, you might prefer to directly come where other French speaking programmers hang:
 
-[![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3490?broot) **Code & Croissants**
+[![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3) **Code & Croissants**
 
 # Issues
 
