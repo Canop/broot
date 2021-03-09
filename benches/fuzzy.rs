@@ -3,9 +3,7 @@ use {
     criterion::{black_box, criterion_group, criterion_main, Criterion},
 };
 
-static PATTERNS: &[&str] = &["réveil", "AB", "e", "brt"];
-// this list contains 100 names, which makes it easier to estimate the duration
-// of a pattern matching per file name.
+static PATTERNS: &[&str] = &["réveil", "AB", "e", "brt", "brootz"];
 static NAMES: &[&str] = &[
     " brr ooT",
     "Réveillon",
@@ -73,6 +71,7 @@ static NAMES: &[&str] = &[
     "la tortue géante",
     "le chamois",
     "dystroy",
+    "bra ernre rjrz a e3 broorar/ e/ smallvec/memmap;r b oot4 Z",
     "un petit peu n'importe quoi",
     "dans",
     "cette",
@@ -107,10 +106,21 @@ static NAMES: &[&str] = &[
     "is",
     "the",
     "author",
+    "bro o o o o  o o o  o o o o o ot",
+    "bro o o o o  o o o  o o o o o otz",
+    "br bro boo broot brootz",
+    "b b bb bb ca e 1234 oooot",
+    "Bo br BBBroo OOOOOt",
+    "kir ba lrbvr b rbaz broot",
+    "nrel ora hr rbooo t roo jrzz 7 tz",
+    "not matching anything, is it ?",
+    "ae/r/re /reee/ea",
+    "era",
+    "lrlb rre o",
+    "rjre nr",
 ];
 
 fn score_of_benchmark(c: &mut Criterion) {
-    assert_eq!(NAMES.len(), 100);
     for pattern in PATTERNS {
         let task = format!("FuzzyPattern({:?})::score_of", pattern);
         c.bench_function(&task, |b| {
