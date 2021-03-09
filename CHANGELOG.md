@@ -1,3 +1,6 @@
+### next
+- it's possible to define several key shortcuts for a verb, using the "keys" property
+
 <a name="v1.2.7"></a>
 ### v1.2.7 - 2021-02-28
 - don't ask again for installation if no sourcing file has been found
