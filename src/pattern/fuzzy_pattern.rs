@@ -5,6 +5,7 @@
 use {
     super::NameMatch,
     secular,
+    smallvec::SmallVec,
     std::fmt::{self, Write},
 };
 
@@ -79,7 +80,7 @@ impl FuzzyPattern {
         if cand_chars[start_idx] != self.chars[0] {
             return MatchSearchResult::None;
         }
-        let mut pos: Vec<usize> = vec![]; // positions of matching chars in candidate
+        let mut pos: SmallVec<[usize;12]> = SmallVec::with_capacity(self.chars.len()); // positions of matching chars in candidate
         pos.push(start_idx);
         let mut d = 1;
         let mut nb_holes = 0;

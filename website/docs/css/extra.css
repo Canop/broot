@@ -9,6 +9,10 @@ body {
 	font-size: 15px;
 }
 
+body .col-md-9 p img {
+	background-color: transparent;
+}
+
 h1 {
 	font-size: 22px;
 	border-bottom: solid 1px;

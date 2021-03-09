@@ -4,6 +4,7 @@
 
 use {
     super::NameMatch,
+    smallvec::SmallVec,
     std::fmt,
 };
 
@@ -68,7 +69,7 @@ impl ExactPattern {
                 // we must find the start in chars, not bytes
                 for (char_idx, (byte_idx, _)) in candidate.char_indices().enumerate() {
                     if byte_idx == start {
-                        let mut pos = Vec::with_capacity(self.chars_count);
+                        let mut pos = SmallVec::with_capacity(self.chars_count);
                         for i in 0..self.chars_count {
                             pos.push(i + char_idx);
                         }

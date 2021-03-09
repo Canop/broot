@@ -4,6 +4,7 @@ use {
     super::NameMatch,
     crate::errors::PatternError,
     regex,
+    smallvec::SmallVec,
     std::fmt,
 };
 
@@ -31,7 +32,7 @@ impl RegexPattern {
         // note that there's no significative cost related to using
         //  find over is_match
         self.rex.find(candidate).map(|rm| {
-            let mut pos = Vec::with_capacity(rm.end() - rm.start());
+            let mut pos = SmallVec::with_capacity(rm.end() - rm.start());
             for i in rm.start()..rm.end() {
                 pos.push(i);
             }
