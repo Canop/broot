@@ -34,6 +34,7 @@ internal | | execution, when your verb is based on a predefined broot verb
 external | | execution, when your verb is based on an external command
 cmd | | a semicolon sequence to execute, similar to an argument you pass to `--cmd`
 key | | a keyboard key triggering execution
+keys | | several keyboard shortcuts triggering execution (if you want to have the choice)
 shortcut | | an alternate way to call the verb (without the arguments part)
 leave_broot | `true` | whether to quit broot on execution
 from_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
@@ -136,17 +137,20 @@ verbs: [
     }
     {
     	invocation: "bottom"
-    	key: "F7"
+    	key: F7
     	internal: ":select_last"
     }
     {
     	invocation: "open"
-    	key: "crtl-O"
+    	key: crtl-O
     	internal: ":open_stay"
     }
     {
     	invocation: "edit"
-    	key: "F2"
+        keys: [ // several possible shortcuts here
+            F2
+            ctrl-e
+        ]
     	shortcut: "e"
     	external: "$EDITOR +{line} {file}"
     	from_shell: true
@@ -185,7 +189,7 @@ internal = ":open_stay"
 
 [[verbs]]
 invocation = "edit"
-key = "F2"
+key = [ "F2", "ctrl-e" ]
 shortcut = "e"
 external = "$EDITOR +{line} {file}"
 from_shell = true

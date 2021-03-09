@@ -28,6 +28,9 @@ pub struct VerbConf {
 
     key: Option<String>,
 
+    #[serde(default)]
+    keys: Vec<String>,
+
     shortcut: Option<String>,
 
     leave_broot: Option<bool>,
@@ -58,7 +61,6 @@ impl TryFrom<&VerbConf> for Verb {
         let cmd = vc.cmd.as_ref().filter(|i| !i.is_empty());
         let cmd_separator = vc.cmd_separator.as_ref().filter(|i| !i.is_empty());
         let execution = vc.execution.as_ref().filter(|i| !i.is_empty());
-        let key = vc.key.clone().map(|s| keys::parse_key(&s)).transpose()?;
         let make_external_execution = |s| {
             ExternalExecution::new(
                 s,
@@ -108,13 +110,23 @@ impl TryFrom<&VerbConf> for Verb {
             execution,
             description,
         )?;
-        if let Some(key) = key {
+        // we accept both key and keys. We merge both here
+        let mut unchecked_keys = vc.keys.clone();
+        if let Some(key) = &vc.key {
+            unchecked_keys.push(key.clone());
+        }
+        let mut checked_keys = Vec::new();
+        for key in &unchecked_keys {
+            let key = keys::parse_key(key)?;
             if keys::is_reserved(key) {
                 return Err(ConfError::ReservedKey {
                     key: keys::key_event_desc(key),
                 });
             }
-            verb = verb.with_key(key);
+            checked_keys.push(key);
+        }
+        if !checked_keys.is_empty() {
+            verb.add_keys(checked_keys);
         }
         if let Some(shortcut) = &vc.shortcut {
             verb.names.push(shortcut.clone());

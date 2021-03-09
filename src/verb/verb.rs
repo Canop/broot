@@ -81,16 +81,24 @@ impl Verb {
             need_another_panel,
         })
     }
-
-    pub fn with_key(mut self, key: KeyEvent) -> Self {
-        self.keys.push(key);
+    fn update_key_desc(&mut self) {
         self.keys_desc = self
             .keys
             .iter()
             .map(|&k| keys::key_event_desc(k))
             .collect::<Vec<String>>() // no way to join an iterator today ?
             .join(", ");
+    }
+    pub fn with_key(mut self, key: KeyEvent) -> Self {
+        self.keys.push(key);
+        self.update_key_desc();
         self
+    }
+    pub fn add_keys(&mut self, keys: Vec<KeyEvent>) {
+        for key in keys {
+            self.keys.push(key);
+        }
+        self.update_key_desc();
     }
     pub fn with_alt_key(self, chr: char) -> Self {
         self.with_key(KeyEvent {
