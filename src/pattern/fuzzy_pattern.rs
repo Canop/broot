@@ -5,7 +5,7 @@
 use {
     super::NameMatch,
     secular,
-    smallvec::SmallVec,
+    smallvec::smallvec,
     std::fmt::{self, Write},
 };
 
@@ -17,7 +17,7 @@ const BONUS_START_WORD: i32 = 5;
 const BONUS_CANDIDATE_LENGTH: i32 = -1; // per char
 const BONUS_MATCH_LENGTH: i32 = -10; // per char of length of the match
 const BONUS_NB_HOLES: i32 = -30; // there's also a max on that number
-const BONUS_SINGLED_CHAR: i32 = -40; // when there's a char, neither first not last, isolated
+const BONUS_SINGLED_CHAR: i32 = -15; // when there's a char, neither first not last, isolated
 
 /// A pattern for fuzzy matching
 #[derive(Debug, Clone)]
@@ -61,7 +61,7 @@ impl FuzzyPattern {
             4 => 2,
             5 => 3,
             6 => 3,
-            7 => 4,
+            7 => 3,
             8 => 4,
             _ => chars.len() * 4 / 7,
         };
@@ -80,55 +80,70 @@ impl FuzzyPattern {
         if cand_chars[start_idx] != self.chars[0] {
             return MatchSearchResult::None;
         }
-        let mut pos: SmallVec<[usize;12]> = SmallVec::with_capacity(self.chars.len()); // positions of matching chars in candidate
-        pos.push(start_idx);
-        let mut d = 1;
+        let mut pos = smallvec![0; self.chars.len()]; // positions of matching chars in candidate
         let mut nb_holes = 0;
         let mut nb_singled_chars = 0;
-        for pat_idx in 1..self.chars.len() {
-            let group_start = d;
+        let mut cand_idx = 1 + start_idx;
+        if self.chars.len() > 1 {
+            let mut group_len = 1;
+            let mut pat_idx = 1; // index both in self.chars and pos
+            let mut in_hole = false;
             loop {
-                let cand_idx = start_idx + d;
-                if cand_idx == cand_chars.len() {
-                    return MatchSearchResult::None;
-                }
-                d += 1;
                 if cand_chars[cand_idx] == self.chars[pat_idx] {
-                    pos.push(cand_idx);
-                    break;
-                }
-            }
-            if group_start + 1 != d {
-                // note that there's no absolute guarantee we found the minimal
-                // number of holes. The algorithm isn't perfect
-                if nb_holes > 0 {
-                    if nb_holes >= self.max_nb_holes {
-                        return MatchSearchResult::None;
-                    }
-                    // we're just after a hole which wasn't the first one
-                    // we check whether the previous group (which wasn't the
-                    // initial one) was a single char.
-                    let last_idx = pos.len() - 1;
-                    // The last char of the previous group is at index last_idx-1
-                    if pos[last_idx-1] > pos[last_idx-2] + 1 {
-                        // The last group was of size 1, it's a singled char.
-                        // But maybe it can be rattached to the new group ?
-                        if self.chars[pat_idx-1] == cand_chars[pos[last_idx]-1] {
-                            pos[last_idx-1] = pos[last_idx] - 1;
-                            nb_holes -= 1;
+                    if in_hole {
+                        // we're no more in a hole
+                        in_hole = false;
+                        if nb_holes > 0 {
+                            // it's not the first hole. We see whether it's possible
+                            // to join the previous group to the new one
+                            let mut can_be_joined = true;
+                            for ri in 0..group_len {
+                                if cand_chars[cand_idx-ri-1] != self.chars[pat_idx-ri-1] {
+                                    can_be_joined = false;
+                                    break;
+                                }
+                            }
+                            if can_be_joined {
+                                for ri in 0..group_len {
+                                    pos[pat_idx-ri-1] = cand_idx-ri-1;
+                                }
+                            } else {
+                                if group_len == 1 {
+                                    nb_singled_chars += 1;
+                                }
+                                nb_holes += 1;
+                                group_len = 0;
+                            }
                         } else {
-                            nb_singled_chars += 1;
+                            // first hole
+                            nb_holes += 1;
+                            group_len = 0;
                         }
                     }
+                    pos[pat_idx] = cand_idx;
+                    pat_idx += 1;
+                    if pat_idx == self.chars.len() {
+                        break; // match, finished
+                    }
+                    cand_idx += 1;
+                    group_len += 1;
+                } else {
+                    // there's a hole
+                    if cand_chars.len() - cand_idx <= self.chars.len() - pat_idx {
+                        return MatchSearchResult::None;
+                    }
+                    cand_idx += 1;
+                    in_hole = true;
                 }
-                nb_holes += 1;
             }
         }
+        pos[0] = start_idx;
+        let match_len = 1 + cand_idx - start_idx;
         let mut score = BONUS_MATCH;
         score += BONUS_CANDIDATE_LENGTH * (cand_chars.len() as i32);
         score += BONUS_SINGLED_CHAR * (nb_singled_chars as i32);
         score += BONUS_NB_HOLES * (nb_holes as i32);
-        score += d as i32 * BONUS_MATCH_LENGTH;
+        score += match_len as i32 * BONUS_MATCH_LENGTH;
         if start_idx == 0 {
             score += BONUS_START + BONUS_START_WORD;
             if cand_chars.len() == self.chars.len() {
@@ -144,7 +159,6 @@ impl FuzzyPattern {
                 }
             }
         }
-        debug!("{} -> s={}, pos={:?}", cand_chars.iter().collect::<String>(), score, &pos);
         MatchSearchResult::Some(NameMatch { score, pos })
     }
 
@@ -230,7 +244,14 @@ mod fuzzy_pattern_tests {
         );
         check_ordering_for(
             "Abc",
-            &["abCd", "aBdc", " abdc", " abdbccccc", " a b c", "nothing"],
+            &[
+                "abCd",
+                "aBdc",
+                " abdc",
+                " abdbccccc",
+                " a b c",
+                "nothing",
+            ],
         );
         check_ordering_for(
             "réveil",

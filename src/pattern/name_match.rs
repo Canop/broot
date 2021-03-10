@@ -7,7 +7,7 @@ use {
 #[derive(Debug, Clone)]
 pub struct NameMatch {
     pub score: i32, // score of the match, guaranteed strictly positive, bigger is better
-    pub pos: SmallVec<[usize; 12]>, // positions of the matching chars
+    pub pos: SmallVec<[usize; 8]>, // positions of the matching chars
 }
 
 impl NameMatch {
