@@ -1,5 +1,7 @@
-### next
+<a name="v1.2.8"></a>
+### v1.2.8 - 2021-03-11
 - it's possible to define several key shortcuts for a verb, using the "keys" property
+- improvements of fuzzy matching
 
 <a name="v1.2.7"></a>
 ### v1.2.7 - 2021-02-28
