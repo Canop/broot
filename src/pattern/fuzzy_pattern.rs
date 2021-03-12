@@ -1,13 +1,15 @@
-//! a simple fuzzy pattern matcher for filename filtering / sorting.
+//! a fuzzy pattern matcher for filename filtering / sorting.
 //! It's not meant for file contents but for small strings (less than 1000 chars)
 //!  such as file names.
 
 use {
     super::NameMatch,
     secular,
-    smallvec::smallvec,
+    smallvec::{smallvec, SmallVec},
     std::fmt::{self, Write},
 };
+
+type CandChars = SmallVec<[char; 32]>;
 
 // weights used in match score computing
 const BONUS_MATCH: i32 = 50_000;
@@ -71,90 +73,75 @@ impl FuzzyPattern {
         }
     }
 
-    /// look for a match starting at a given character
-    fn match_starting_at_index(
+    fn tight_match_from_index(
         &self,
-        cand_chars: &[char],
+        cand_chars: &CandChars,
         start_idx: usize, // start index in candidate, in chars
     ) -> MatchSearchResult {
-        if cand_chars[start_idx] != self.chars[0] {
-            return MatchSearchResult::None;
-        }
         let mut pos = smallvec![0; self.chars.len()]; // positions of matching chars in candidate
+        let mut cand_idx = start_idx;
+        let mut pat_idx = 0; // index both in self.chars and pos
+        let mut in_hole = false;
+        loop {
+            if cand_chars[cand_idx] == self.chars[pat_idx] {
+                pos[pat_idx] = cand_idx;
+                if in_hole {
+                    // We're no more in a hole.
+                    // Let's look if we can bring back the chars before the hole
+                    let mut rev_idx = 1;
+                    loop {
+                        if pat_idx < rev_idx {
+                            break;
+                        }
+                        if cand_chars[cand_idx-rev_idx] == self.chars[pat_idx-rev_idx] {
+                            pos[pat_idx-rev_idx] = cand_idx-rev_idx;
+                        } else {
+                            break;
+                        }
+                        rev_idx += 1;
+                    }
+                    in_hole = false;
+                }
+                pat_idx += 1;
+                if pat_idx == self.chars.len() {
+                    break; // match, finished
+                }
+            } else {
+                // there's a hole
+                if cand_chars.len() - cand_idx <= self.chars.len() - pat_idx {
+                    return MatchSearchResult::None;
+                }
+                in_hole = true;
+            }
+            cand_idx += 1;
+        }
         let mut nb_holes = 0;
         let mut nb_singled_chars = 0;
-        let mut cand_idx = 1 + start_idx;
-        if self.chars.len() > 1 {
-            let mut group_len = 1;
-            let mut pat_idx = 1; // index both in self.chars and pos
-            let mut in_hole = false;
-            loop {
-                if cand_chars[cand_idx] == self.chars[pat_idx] {
-                    if in_hole {
-                        // we're no more in a hole
-                        in_hole = false;
-                        if nb_holes > 0 {
-                            // it's not the first hole. We see whether it's possible
-                            // to join the previous group to the new one
-                            let mut can_be_joined = true;
-                            for ri in 0..group_len {
-                                if cand_chars[cand_idx-ri-1] != self.chars[pat_idx-ri-1] {
-                                    can_be_joined = false;
-                                    break;
-                                }
-                            }
-                            if can_be_joined {
-                                for ri in 0..group_len {
-                                    pos[pat_idx-ri-1] = cand_idx-ri-1;
-                                }
-                            } else {
-                                if group_len == 1 {
-                                    nb_singled_chars += 1;
-                                }
-                                nb_holes += 1;
-                                group_len = 0;
-                            }
-                        } else {
-                            // first hole
-                            nb_holes += 1;
-                            group_len = 0;
-                        }
-                    }
-                    pos[pat_idx] = cand_idx;
-                    pat_idx += 1;
-                    if pat_idx == self.chars.len() {
-                        break; // match, finished
-                    }
-                    cand_idx += 1;
-                    group_len += 1;
-                } else {
-                    // there's a hole
-                    if cand_chars.len() - cand_idx <= self.chars.len() - pat_idx {
-                        return MatchSearchResult::None;
-                    }
-                    cand_idx += 1;
-                    in_hole = true;
+        for idx in 1..pos.len() {
+            if pos[idx] > 1 + pos[idx-1] {
+                nb_holes += 1;
+                if idx > 1 && pos[idx-1] > 1 + pos[idx-2] {
+                    nb_singled_chars += 1;
                 }
             }
         }
-        pos[0] = start_idx;
-        let match_len = 1 + cand_idx - start_idx;
+        let match_len = 1 + cand_idx - pos[0];
         let mut score = BONUS_MATCH;
         score += BONUS_CANDIDATE_LENGTH * (cand_chars.len() as i32);
         score += BONUS_SINGLED_CHAR * (nb_singled_chars as i32);
         score += BONUS_NB_HOLES * (nb_holes as i32);
         score += match_len as i32 * BONUS_MATCH_LENGTH;
-        if start_idx == 0 {
+        if pos[0] == 0 {
             score += BONUS_START + BONUS_START_WORD;
             if cand_chars.len() == self.chars.len() {
                 score += BONUS_EXACT;
                 return MatchSearchResult::Perfect(NameMatch { score, pos });
             }
         } else {
-            let previous = cand_chars[start_idx - 1];
+            let previous = cand_chars[pos[0] - 1];
             if is_word_separator(previous) {
                 score += BONUS_START_WORD;
-                if cand_chars.len() - start_idx == self.chars.len() {
+                if cand_chars.len() - pos[0] == self.chars.len() {
                     return MatchSearchResult::Perfect(NameMatch { score, pos });
                 }
             }
@@ -169,7 +156,7 @@ impl FuzzyPattern {
         if candidate.len() < self.chars.len() {
             return None;
         }
-        let mut cand_chars: Vec<char> = Vec::with_capacity(candidate.len());
+        let mut cand_chars: CandChars = SmallVec::with_capacity(candidate.len());
         cand_chars.extend(candidate.chars().map(secular::lower_lay_char));
         if cand_chars.len() < self.chars.len() {
             return None;
@@ -178,17 +165,23 @@ impl FuzzyPattern {
         let mut best_match: Option<NameMatch> = None;
         let n = cand_chars.len() - self.chars.len();
         for start_idx in 0..=n {
-            match self.match_starting_at_index(&cand_chars, start_idx) {
-                MatchSearchResult::Perfect(m) => {
-                    return Some(m);
-                }
-                MatchSearchResult::Some(m) => {
-                    if m.score > best_score {
-                        best_score = m.score;
-                        best_match = Some(m);
+            if cand_chars[start_idx] == self.chars[0] {
+                match self.tight_match_from_index(&cand_chars, start_idx) {
+                    MatchSearchResult::Perfect(m) => {
+                        return Some(m);
                     }
+                    MatchSearchResult::Some(m) => {
+                        if m.score > best_score {
+                            best_score = m.score;
+                            best_match = Some(m);
+                        }
+                        // we could make start_idx jump to pos[0] here
+                        // but it doesn't improve the perfs (it's rare
+                        // anyway to have pos[0] much greater than the
+                        // start of the search)
+                    }
+                    _ => {}
                 }
-                _ => {}
             }
         }
         best_match
@@ -205,7 +198,72 @@ impl FuzzyPattern {
 #[cfg(test)]
 mod fuzzy_pattern_tests {
 
-    use super::*;
+    use {
+        super::*,
+        crate::pattern::Pos,
+    };
+
+    /// check position of the match of the pattern in name
+    fn check_pos(pattern: &str, name: &str, pos: &str) {
+        let pat = FuzzyPattern::from(pattern);
+        let match_pos = pat.find(name).unwrap().pos;
+        let target_pos: Pos = pos.chars()
+            .enumerate()
+            .filter(|(_, c)| *c=='^')
+            .map(|(i, _)| i)
+            .collect();
+        assert_eq!(match_pos, target_pos);
+    }
+
+    /// test the quality of match length and groups number minimization
+    #[test]
+    fn check_match_pos() {
+        check_pos(
+            "ba",
+            "babababaaa",
+            "^^        ",
+        );
+        check_pos(
+            "baa",
+            "babababaaa",
+            "      ^^^ ",
+        );
+        check_pos(
+            "bbabaa",
+            "babababaaa",
+            "  ^ ^^^^^ ",
+        );
+        check_pos(
+            "aoml",
+            "bacon.coml",
+            " ^     ^^^",
+        );
+        check_pos(
+            "broot",
+            "ab br bro oxt ",
+            "      ^^^ ^ ^ ",
+        );
+        check_pos(
+            "broot",
+            "b_broooooot_broot",
+            "            ^^^^^",
+        );
+        check_pos(
+            "buityp",
+            "builder-styles-less-typing.d.ts",
+            "^^^                 ^^^        ",
+        );
+        check_pos(
+            "broot",
+            "ветер br x o vent ootot",
+            "      ^^          ^^^  ",
+        );
+        check_pos(
+            "broot",
+            "brbroorrbbbbbrrooorobrototooooot.txt",
+            "                    ^^^ ^^          ",
+        );
+    }
 
     /// check that the scores of all names are strictly decreasing
     /// (pattern is first tested against itself).

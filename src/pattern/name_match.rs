@@ -2,12 +2,15 @@ use {
     smallvec::SmallVec,
 };
 
+/// a vector of indexes of the matching characters (not bytes)
+pub type Pos = SmallVec<[usize; 8]>;
+
 /// A NameMatch is a positive result of pattern matching inside
 /// a filename or subpath
 #[derive(Debug, Clone)]
 pub struct NameMatch {
     pub score: i32, // score of the match, guaranteed strictly positive, bigger is better
-    pub pos: SmallVec<[usize; 8]>, // positions of the matching chars
+    pub pos: Pos, // positions of the matching chars
 }
 
 impl NameMatch {

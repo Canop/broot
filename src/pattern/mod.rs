@@ -22,7 +22,7 @@ pub use {
     exact_pattern::ExactPattern,
     fuzzy_pattern::FuzzyPattern,
     input_pattern::InputPattern,
-    name_match::NameMatch,
+    name_match::{NameMatch, Pos},
     pattern::Pattern,
     pattern_object::PatternObject,
     pattern_parts::PatternParts,

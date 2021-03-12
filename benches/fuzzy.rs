@@ -131,15 +131,6 @@ fn score_of_benchmark(c: &mut Criterion) {
                 }
             });
         });
-        let task = format!("FuzzyPattern({:?})::find", pattern);
-        c.bench_function(&task, |b| {
-            let fp = FuzzyPattern::from(pattern);
-            b.iter(|| {
-                for name in NAMES {
-                    black_box(fp.find(name));
-                }
-            });
-        });
     }
 }
 
