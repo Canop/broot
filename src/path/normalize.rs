@@ -33,12 +33,12 @@ pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
 
 #[cfg(test)]
 mod path_normalize_tests {
-
+    use std::path::Path;
     use super::normalize_path;
 
     fn check(before: &str, after: &str) {
         println!("-----------------\nnormalizing {:?}", before);
-        assert_eq!(normalize_path(before.to_string()).to_string_lossy(), after);
+        assert_eq!(normalize_path(before), Path::new(after));
     }
 
     #[test]
