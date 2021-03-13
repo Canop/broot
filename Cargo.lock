@@ -1433,9 +1433,12 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "secular"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6767a0f724ed8212b010213dc5539bca92be6648a0645a119c292d1f130d41b1"
+checksum = "0dd0cba6d9810b4cbb984d54e8c0aa16f9c3f57011baba57cb2cc5c6f3011648"
+dependencies = [
+ "unicode-normalization",
+]
 
 [[package]]
 name = "semver"

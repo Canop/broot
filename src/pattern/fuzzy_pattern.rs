@@ -51,9 +51,8 @@ impl FuzzyPattern {
     /// build a pattern which will later be usable for fuzzy search.
     /// A pattern should be reused
     pub fn from(pat: &str) -> Self {
-        let chars = pat
+        let chars = secular::normalized_lower_lay_string(pat)
             .chars()
-            .map(secular::lower_lay_char)
             .collect::<Vec<char>>()
             .into_boxed_slice();
         let max_nb_holes = match chars.len() {
@@ -319,8 +318,46 @@ mod fuzzy_pattern_tests {
                 " réveils",
                 "πréveil",
                 "déréveil",
+                "Rêve-t-il ?",
                 " rêves",
             ],
         );
+    }
+
+    /// check that we don't fail to find strings differing by diacritics
+    /// or unicode normalization.
+    ///
+    /// Note that we can't go past the limits of unicode normalization
+    /// and for example I don't know how to make 'B́' one char (help welcome).
+    /// This should normally not cause any problem for the user as searching
+    /// `"ab"` in `"aB́"` will still match.
+    #[test]
+    fn check_equivalences() {
+        fn check_equivalences_in(arr: &[&str]) {
+            for pattern in arr.iter() {
+                let fp = FuzzyPattern::from(pattern);
+                for name in arr.iter() {
+                    println!("looking for pattern {:?} in name {:?}", pattern, name);
+                    assert!(fp.find(name).unwrap().score > 0);
+                }
+            }
+        }
+        check_equivalences_in(&vec![
+            "aB",
+            "ab",
+            "àb",
+            "âB",
+        ]);
+        let c12 = "Comunicações";
+        assert_eq!(c12.len(), 14);
+        assert_eq!(c12.chars().count(), 12);
+        let c14 = "Comunicações";
+        assert_eq!(c14.len(), 16);
+        assert_eq!(c14.chars().count(), 14);
+        check_equivalences_in(&vec![
+            "comunicacoes",
+            c12,
+            c14,
+        ]);
     }
 }
