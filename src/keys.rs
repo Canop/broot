@@ -142,6 +142,7 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
         "pagedown" => PageDown,
         "backtab" => BackTab,
         "backspace" => Backspace,
+        "del" => Delete,
         "delete" => Delete,
         "insert" => Insert,
         "ins" => Insert,

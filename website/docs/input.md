@@ -33,6 +33,7 @@ exact path | `ep/te\/d`  or `pe/te\/d/` | `website/docs` |  search for "te/d" in
 regex path | `rp/\\d{3}.*txt` | `dir/a256/abc.txt` |  search for the `\d{3}.*txt` regex  in sub-paths from current tree root
 exact content | `c/mask` or `c/mask/` | `umask = "1.0"` | search for the "mask" string in file contents
 regex content | `rc/[abc]{5}/i` | `bAAAc` | search with a regular expression in file contents - `i` making it case insensitive
+regex content | `cr/\\bzh\\b` | `"zh":{` | search a word with a regular expression in file contents
 
 It's also possible to [redefine those mode mappings](../conf_file/#search-modes).
 

@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.2.8"
+version = "1.2.9-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -37,7 +37,7 @@ fnv = "1.0.7"
 git2 = { version="0.13", default-features=false }
 glob = "0.3"
 id-arena = "2.2.1"
-image = "0.23.13"
+image = "0.23.14"
 lazy-regex = "0.1.3"
 lazy_static = "1.4"
 libc = "0.2"
@@ -45,17 +45,17 @@ log = "0.4"
 minimad = "0.7.0"
 open = "1.4"
 memmap = "0.7"
-pathdiff = "0.1.0"
+pathdiff = "0.2"
 phf = { version = "0.8", features = ["macros"] }
 rayon = "1.5"
-regex = "1.3"
+regex = "1.4"
 secular = { version = "0.3", features = ["normalization"] }
 serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.6"
 splitty = "0.1"
 strict = "0.1.4"
 syntect = "4.5"
-tempfile = "3.1"
+tempfile = "3.2"
 termimad = { version = "0.10.0" }
 terminal-clipboard = { version = "0.2.1", optional = true }
 toml = "0.5"

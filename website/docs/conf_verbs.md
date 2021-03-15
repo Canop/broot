@@ -364,7 +364,7 @@ Some internal actions can be bound to a key shortcut but can't be called explici
 
 name | default binding | behavior
 -|-|-
-:input_del_char_left | <kbd>del</kbd> | "delete the char left of the cursor",
+:input_del_char_left | <kbd>delete</kbd> | "delete the char left of the cursor",
 :input_del_char_below | <kbd>suppr</kbd> | "delete the char left at the cursor's position",
 :input_del_word_left | - | "delete the word left of the cursor",
 :input_del_word_right | - | "delete the word right of the cursor",
