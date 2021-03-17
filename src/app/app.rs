@@ -486,7 +486,7 @@ impl App {
             let old_path = self.panels[preview_idx].state().selected_path();
             if path != old_path && path.is_file() {
                 let path = path.to_path_buf();
-                self.panels[preview_idx].mut_state().set_selected_path(path, con);
+                self.panels[preview_idx].mut_state().set_selected_path(path.into(), con);
             }
         }
     }

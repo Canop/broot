@@ -10,9 +10,13 @@ use {
 /// (if it starts with / or ~) or relative to the supplied base_dir.
 /// (we might want to try detect windows drives in the future, too)
 ///
-pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -> PathBuf {
+pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -> PathBufWrapper {
     let tilde = regex!(r"^~(/|$)");
-    if input.starts_with('/') {
+    if input.starts_with('/') { // FIXME this doesn't look OS agnostic we should do
+                                // input.to_path().component().first().map_or(false, |p| match p { 
+                                //     RootDir | Prefix(_) => true,
+                                //     _ => false,
+                                // })
         // if the input starts with a `/`, we use it as is
         input.into()
     } else if tilde.is_match(input) {
@@ -28,7 +32,7 @@ pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -
                         c[0].to_string()
                     }
                 })
-        )
+        ).into()
     } else {
         // we put the input behind the source (the selected directory
         // or its parent) and we normalize so that the user can type
@@ -41,7 +45,8 @@ pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -
                 .to_path_buf(),
             _ => closest_dir(base_dir.as_ref()),
         };
-        normalize_path(base_dir.join(input))
+        let ret : PathBufWrapper = base_dir.join(input).into();
+        ret.normalize_path()
     }
 }
 

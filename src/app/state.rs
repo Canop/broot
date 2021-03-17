@@ -13,6 +13,7 @@ use {
         task_sync::Dam,
         tree::*,
         verb::*,
+        path::PathBufWrapper,
     },
     std::{
         path::{Path, PathBuf},
@@ -437,7 +438,7 @@ pub trait AppState {
             if path.is_file() {
                 AppStateCmdResult::NewPanel {
                     state: Box::new(PreviewState::new(
-                        path.to_path_buf(),
+                        path.into(),
                         InputPattern::none(),
                         prefered_mode,
                         self.tree_options(),
@@ -504,7 +505,7 @@ pub trait AppState {
         String::new()
     }
 
-    fn set_selected_path(&mut self, _path: PathBuf, _con: &AppContext) {
+    fn set_selected_path(&mut self, _path: PathBufWrapper, _con: &AppContext) {
         // this function is useful for preview states
     }
 

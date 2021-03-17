@@ -24,7 +24,7 @@ fn normalization_benchmark(c: &mut Criterion) {
     c.bench_function("normalize_path", |b| {
         b.iter(|| {
             for path in PATHS {
-                black_box(path::normalize_path(path));
+                black_box(path::PathBufWrapper::from(path).normalize_path());
             }
         });
     });

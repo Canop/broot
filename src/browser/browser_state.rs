@@ -285,7 +285,7 @@ impl AppState for BrowserState {
             ),
             Internal::up_tree => match self.displayed_tree().root().parent() {
                 Some(path) => internal_focus::on_path(
-                    path.to_path_buf(),
+                    path.into(),
                     screen,
                     self.displayed_tree().options.clone(),
                     bang,
@@ -349,7 +349,7 @@ impl AppState for BrowserState {
                 if cc.areas.is_first() && cc.areas.nb_pos < cc.con.max_panels_count  {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        self.selected_path().into(),
                         screen,
                         self.displayed_tree().options.clone(),
                         PanelPurpose::None,
@@ -370,7 +370,7 @@ impl AppState for BrowserState {
                     };
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        self.selected_path().into(),
                         screen,
                         self.displayed_tree().options.clone(),
                         purpose,
@@ -419,7 +419,7 @@ impl AppState for BrowserState {
                         let path = if let Some(input_arg) = &input_invocation.args {
                             path::path_from(self.root(), PathAnchor::Unspecified, input_arg)
                         } else {
-                            self.root().to_path_buf()
+                            self.root().to_path_buf().into()
                         };
                         let arg_type = SelectionType::Any; // We might do better later
                         let purpose = PanelPurpose::ArgEdition { arg_type };
@@ -430,7 +430,7 @@ impl AppState for BrowserState {
                         // we just open a new panel on the selected path,
                         // without purpose
                         internal_focus::new_panel_on_path(
-                            self.selected_path().to_path_buf(),
+                            self.selected_path().into(),
                             screen,
                             tree_options,
                             PanelPurpose::None,

@@ -11,12 +11,13 @@ use {
         task_sync::Dam,
         tree::TreeOptions,
         verb::*,
+        path::PathBufWrapper,
     },
     crossterm::{
         cursor,
         QueueableCommand,
     },
-    std::path::{Path, PathBuf},
+    std::path::Path,
     termimad::Area,
 };
 
@@ -27,7 +28,7 @@ use {
 pub struct PreviewState {
     pub preview_area: Area,
     dirty: bool,   // true when background must be cleared
-    path: PathBuf, // path to the previewed file
+    path: PathBufWrapper, // path to the previewed file
     preview: Preview,
     pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     filtered_preview: Option<Preview>,
@@ -39,7 +40,7 @@ pub struct PreviewState {
 
 impl PreviewState {
     pub fn new(
-        path: PathBuf,
+        path: PathBufWrapper,
         pending_pattern: InputPattern,
         prefered_mode: Option<PreviewMode>,
         tree_options: TreeOptions,
@@ -159,7 +160,7 @@ impl AppState for PreviewState {
         &self.path
     }
 
-    fn set_selected_path(&mut self, path: PathBuf, con: &AppContext) {
+    fn set_selected_path(&mut self, path: PathBufWrapper, con: &AppContext) {
         if let Some(fp) = &self.filtered_preview {
             self.pending_pattern = fp.pattern();
         };
@@ -193,7 +194,7 @@ impl AppState for PreviewState {
 
     fn refresh(&mut self, _screen: Screen, con: &AppContext) -> Command {
         self.dirty = true;
-        self.set_selected_path(self.path.clone(), con);
+        self.set_selected_path(self.path.clone().into(), con);
         Command::empty()
     }
 

@@ -11,12 +11,13 @@ use {
         preview::PreviewState,
         task_sync::Dam,
         tree::TreeOptions,
+        path::PathBufWrapper,
     },
-    std::path::{Path, PathBuf},
+    std::path::Path,
 };
 
 pub fn on_path(
-    path: PathBuf,
+    path: PathBufWrapper,
     screen: Screen,
     tree_options: TreeOptions,
     in_new_panel: bool,
@@ -37,7 +38,7 @@ pub fn on_path(
 }
 
 pub fn new_state_on_path(
-    path: PathBuf,
+    path: PathBufWrapper,
     screen: Screen,
     tree_options: TreeOptions,
     con: &AppContext,
@@ -50,7 +51,7 @@ pub fn new_state_on_path(
 }
 
 pub fn new_panel_on_path(
-    path: PathBuf,
+    path: PathBufWrapper,
     screen: Screen,
     tree_options: TreeOptions,
     purpose: PanelPurpose,
@@ -131,5 +132,5 @@ pub fn on_internal(
     let bang = input_invocation
         .map(|inv| inv.bang)
         .unwrap_or(internal_exec.bang);
-    on_path(selected_path.to_path_buf(), screen, tree_options, bang, con)
+    on_path(selected_path.into(), screen, tree_options, bang, con)
 }
