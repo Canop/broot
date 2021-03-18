@@ -212,7 +212,7 @@ impl PanelInput {
                         let completions = Completions::for_input(completable_parts, con, sel);
                         let added = match completions {
                             Completions::None => {
-                                debug!("nothing to complete!"); // where to tell this ? input field or status ?
+                                debug!("nothing to complete!");
                                 self.tab_cycle_count = 0;
                                 self.input_before_cycle = None;
                                 None

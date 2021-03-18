@@ -1,4 +1,5 @@
 ### next
+-
 - remove diacritics and normalize unicode from input on fuzzy search (an unnormalized string with unwanted diacritics most often happen when you paste a string in the input)
 
 <a name="v1.2.8"></a>
