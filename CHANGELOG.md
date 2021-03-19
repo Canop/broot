@@ -1,3 +1,6 @@
+### next
+- fix shift based key shortcuts - Fix #363
+
 <a name="v1.2.9"></a>
 ### v1.2.9 - 2021-03-18
 - fix crash on `:input_del_word_left` - Fix #361

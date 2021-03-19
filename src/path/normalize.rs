@@ -33,18 +33,17 @@ pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
 
 #[cfg(test)]
 mod path_normalize_tests {
-    use std::path::Path;
     use super::normalize_path;
 
     fn check(before: &str, after: &str) {
         println!("-----------------\nnormalizing {:?}", before);
-        /// As seen by Stargateur, the test here doesn't work on Windows
-        ///
-        /// There are two problems, at least:
-        ///
-        /// * strings used for test use the '/' separator. This is a test problem
-        /// * we do a "end with '/'" test in the tested function. This might
-        ///   lead to suboptimal interaction on windows
+        // As seen by Stargateur, the test here doesn't work on Windows
+        //
+        // There are two problems, at least:
+        //
+        // * strings used for test use the '/' separator. This is a test problem
+        // * we do a "end with '/'" test in the tested function. This might
+        //   lead to suboptimal interaction on windows
         assert_eq!(normalize_path(before.to_string()).to_string_lossy(), after);
     }
 

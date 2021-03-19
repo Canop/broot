@@ -35,9 +35,11 @@
 	# date_time_format: %Y/%m/%d %R
 
         ###############################################################
-        # "vim mode"
-        #
-        #
+        # uncomment to activate modal mode
+	#
+	# (you really should read https://dystroy.org/broot/vim_mode/
+	# before as it may not suit anybody even among vim users)
+	#
         # modal: true
 
 	###############################################################

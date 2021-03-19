@@ -6,7 +6,7 @@ deploy.sh
 fix-win-toolchain.sh
 /releases
 /target
-broot_*.zip
+/broot_*.zip
 **/*.rs.bk
 screens
 /website/site

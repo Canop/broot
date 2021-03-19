@@ -81,12 +81,6 @@ pub fn key_event_desc(key: KeyEvent) -> String {
     s
 }
 
-fn bad_key(raw: &str) -> Result<KeyEvent, ConfError> {
-    Err(ConfError::InvalidKey {
-        raw: raw.to_owned(),
-    })
-}
-
 pub fn is_reserved(key: KeyEvent) -> bool {
     match key {
         BACKSPACE => true, // needed for the input field
@@ -126,10 +120,19 @@ pub fn as_letter(key: KeyEvent) -> Option<char> {
 
 /// parse a string as a keyboard key definition.
 ///
+/// About the case:
+/// The char we receive as code from crossterm is usually lowercase
+/// but uppercase when it was typed with shift (i.e. we receive
+/// "g" for a lowercase, ang "shift-G" for an uppercase)
 pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
+    fn bad_key(raw: &str) -> Result<KeyEvent, ConfError> {
+        Err(ConfError::InvalidKey {
+            raw: raw.to_owned(),
+        })
+    }
     let tokens: Vec<&str> = raw.split('-').collect();
     let last = tokens[tokens.len() - 1].to_ascii_lowercase();
-    let code = match last.as_ref() {
+    let mut code = match last.as_ref() {
         "esc" => Esc,
         "enter" => Enter,
         "left" => Left,
@@ -176,6 +179,11 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
             }
             "shift" => {
                 modifiers.insert(KeyModifiers::SHIFT);
+                if let Char(c) = code {
+                    if c.is_ascii_lowercase() {
+                        code = Char(c.to_ascii_uppercase());
+                    }
+                }
             }
             _ => {
                 return bad_key(raw);
@@ -213,6 +221,9 @@ mod key_parsing_tests {
         check_ok("Enter", KeyEvent::from(Enter));
         check_ok("alt-enter", KeyEvent::new(Enter, KeyModifiers::ALT));
         check_ok("insert", KeyEvent::from(Insert));
+        check_ok("ctrl-q", KeyEvent::new(Char('q'), KeyModifiers::CONTROL));
+        check_ok("shift-q", KeyEvent::new(Char('Q'), KeyModifiers::SHIFT));
         check_ok("ctrl-Q", KeyEvent::new(Char('q'), KeyModifiers::CONTROL));
+        check_ok("shift-Q", KeyEvent::new(Char('Q'), KeyModifiers::SHIFT));
     }
 }
