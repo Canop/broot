@@ -316,6 +316,11 @@ pub trait AppState {
         cc: &CmdContext,
         screen: Screen,
     ) -> Result<AppStateCmdResult, ProgramError> {
+        if verb.need_another_panel && cc.other_path.is_none() {
+            return Ok(AppStateCmdResult::DisplayError(
+                "This verb needs another panel".to_string()
+            ));
+        }
         let exec_builder = || {
             ExecutionStringBuilder::from_invocation(
                 &verb.invocation_parser,

@@ -1,5 +1,6 @@
 ### next
 - fix shift based key shortcuts - Fix #363
+- check there's another panel before executing verbs with other-panel argument - Fix #366
 
 <a name="v1.2.9"></a>
 ### v1.2.9 - 2021-03-18
