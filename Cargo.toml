@@ -87,7 +87,9 @@ codegen-units = 1 # this removes a few hundred bytes from the final exec size
 [[bench]]
 name = "fuzzy"
 harness = false
-
+[[bench]]
+name = "composite"
+harness = false
 [[bench]]
 name = "path_normalization"
 harness = false

@@ -1,7 +1,6 @@
 use {
     super::*,
     crate::{
-        app::AppContext,
         content_search::ContentMatch,
         errors::PatternError,
     },
@@ -30,7 +29,7 @@ impl Pattern {
 
     pub fn new(
         raw_expr: &BeTree<PatternOperator, PatternParts>,
-        con: &AppContext,
+        search_modes: &SearchModeMap,
     ) -> Result<Self, PatternError> {
         let expr: BeTree<PatternOperator, Pattern> = raw_expr
             .try_map_atoms::<_, PatternError, _>(|pattern_parts| {
@@ -40,7 +39,7 @@ impl Pattern {
                         Pattern::None
                     } else {
                         let parts_mode = pattern_parts.mode();
-                        let mode = con.search_modes.search_mode(parts_mode)?;
+                        let mode = search_modes.search_mode(parts_mode)?;
                         let flags = pattern_parts.flags();
                         match mode {
                             SearchMode::NameExact => Self::NameExact(

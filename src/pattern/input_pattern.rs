@@ -30,7 +30,7 @@ impl InputPattern {
         parts_expr: &BeTree<PatternOperator, PatternParts>,
         con: &AppContext,
     ) -> Result<Self, PatternError> {
-        let pattern = Pattern::new(parts_expr, con)?;
+        let pattern = Pattern::new(parts_expr, &con.search_modes)?;
         Ok(Self { raw, pattern })
     }
     pub fn is_none(&self) -> bool {
