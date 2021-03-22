@@ -30,5 +30,9 @@ fn normalization_benchmark(c: &mut Criterion) {
     });
 }
 
-criterion_group!(benches, normalization_benchmark);
-criterion_main!(benches);
+criterion_group!(
+    name = path_normalization;
+    config = Criterion::default().without_plots();
+    targets = normalization_benchmark,
+);
+criterion_main!(path_normalization);

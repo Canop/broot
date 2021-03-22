@@ -30,5 +30,9 @@ fn score_of_composite_benchmark(c: &mut Criterion) {
     }
 }
 
-criterion_group!(benches, score_of_composite_benchmark);
-criterion_main!(benches);
+criterion_group!(
+    name = composite;
+    config = Criterion::default().without_plots();
+    targets = score_of_composite_benchmark,
+);
+criterion_main!(composite);

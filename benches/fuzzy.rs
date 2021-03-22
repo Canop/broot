@@ -3,7 +3,6 @@ mod shared;
 use {
     broot::pattern::FuzzyPattern,
     criterion::{black_box, criterion_group, criterion_main, Criterion},
-    shared::*,
 };
 
 static PATTERNS: &[&str] = &["réveil", "AB", "e", "brt", "brootz"];
@@ -22,5 +21,9 @@ fn score_of_benchmark(c: &mut Criterion) {
     }
 }
 
-criterion_group!(benches, score_of_benchmark);
-criterion_main!(benches);
+criterion_group!(
+    name = fuzzy;
+    config = Criterion::default().without_plots();
+    targets = score_of_benchmark,
+);
+criterion_main!(fuzzy);
