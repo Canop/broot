@@ -33,7 +33,7 @@ If you prefer to manage the function sourcing yourself, or to automate the insta
 
 As a shortcut for [Nushell](https://www.nushell.sh/), define the following alias:
 
-    alias br [] { broot | trim | cd $it }
+    def br [] { broot | trim | cd $it }
 
 # `br` alias for Xonsh shell
 
