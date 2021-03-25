@@ -5,34 +5,34 @@ use {
         command::CommandParts,
         pattern::*,
     },
-    criterion::{black_box, criterion_group, criterion_main, Criterion},
+    glassbench::*,
 };
 
 // this file benches composite patterns on file names so don't
 // use file content sub patterns here
 static PATTERNS: &[&str] = &[
+    "réveil",
     "r&!e",
+    "(!e&!b)|c",
 ];
 
-fn score_of_composite_benchmark(c: &mut Criterion) {
+fn bench_score_of_composite(gb: &mut GlassBench) {
     let search_modes = SearchModeMap::default();
     for pattern in PATTERNS {
-        let task = format!("Pattern({:?})::score_of", &pattern);
-        let parts = CommandParts::from(pattern.to_string());
-        c.bench_function(&task, |b| {
+        let name = format!("Composite({:?})::score_of", &pattern);
+        gb.task(name, |b| {
+            let parts = CommandParts::from(pattern.to_string());
             let cp = Pattern::new(&parts.pattern, &search_modes).unwrap();
             b.iter(|| {
                 for name in shared::NAMES {
-                    black_box(cp.score_of_string(name));
+                    pretend_used(cp.score_of_string(name));
                 }
             });
         });
     }
 }
 
-criterion_group!(
-    name = composite;
-    config = Criterion::default().without_plots();
-    targets = score_of_composite_benchmark,
+glassbench!(
+    "Composite Patterns",
+    bench_score_of_composite,
 );
-criterion_main!(composite);

@@ -1,6 +1,6 @@
 use {
     broot::path,
-    criterion::{black_box, criterion_group, criterion_main, Criterion},
+    glassbench::*,
 };
 
 static PATHS: &[&str] = &[
@@ -20,19 +20,17 @@ static PATHS: &[&str] = &[
     "π/2",
 ];
 
-fn normalization_benchmark(c: &mut Criterion) {
-    c.bench_function("normalize_path", |b| {
+fn bench_normalization(gb: &mut GlassBench) {
+    gb.task("normalize_path", |b| {
         b.iter(|| {
             for path in PATHS {
-                black_box(path::normalize_path(path));
+                pretend_used(path::normalize_path(path));
             }
         });
     });
 }
 
-criterion_group!(
-    name = path_normalization;
-    config = Criterion::default().without_plots();
-    targets = normalization_benchmark,
+glassbench!(
+    "Path Normalization",
+    bench_normalization,
 );
-criterion_main!(path_normalization);

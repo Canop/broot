@@ -2,28 +2,26 @@ mod shared;
 
 use {
     broot::pattern::FuzzyPattern,
-    criterion::{black_box, criterion_group, criterion_main, Criterion},
+    glassbench::*,
 };
 
 static PATTERNS: &[&str] = &["réveil", "AB", "e", "brt", "brootz"];
 
-fn score_of_benchmark(c: &mut Criterion) {
+fn bench_score_of_fuzzy(gb: &mut GlassBench) {
     for pattern in PATTERNS {
-        let task = format!("FuzzyPattern({:?})::score_of", pattern);
-        c.bench_function(&task, |b| {
+        let task_name = format!("Fuzzy({:?})::score_of", pattern);
+        gb.task(task_name, |b| {
             let fp = FuzzyPattern::from(pattern);
             b.iter(|| {
                 for name in shared::NAMES {
-                    black_box(fp.score_of(name));
+                    pretend_used(fp.score_of(name));
                 }
             });
         });
     }
 }
 
-criterion_group!(
-    name = fuzzy;
-    config = Criterion::default().without_plots();
-    targets = score_of_benchmark,
+glassbench!(
+    "Fuzzy Patterns",
+    bench_score_of_fuzzy,
 );
-criterion_main!(fuzzy);

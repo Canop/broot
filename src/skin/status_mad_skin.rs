@@ -13,28 +13,30 @@ pub struct StatusMadSkinSet {
 /// build a MadSkin which will be used to display the status
 /// when there's no error
 fn make_normal_status_mad_skin(skin: &StyleMap) -> MadSkin {
-    let mut mad_skin = MadSkin::default();
-    mad_skin.paragraph = LineStyle {
-        compound_style: skin.status_normal.clone(),
-        align: Alignment::Left,
-    };
-    mad_skin.italic = skin.status_italic.clone();
-    mad_skin.bold = skin.status_bold.clone();
-    mad_skin.inline_code = skin.status_code.clone();
-    mad_skin.ellipsis = skin.status_ellipsis.clone();
-    mad_skin
+    MadSkin {
+        paragraph: LineStyle {
+            compound_style: skin.status_normal.clone(),
+            align: Alignment::Left,
+        },
+        italic: skin.status_italic.clone(),
+        bold: skin.status_bold.clone(),
+        inline_code: skin.status_code.clone(),
+        ellipsis: skin.status_ellipsis.clone(),
+        ..Default::default()
+    }
 }
 
 /// build a MadSkin which will be used to display the status
 /// when there's a error
 fn make_error_status_mad_skin(skin: &StyleMap) -> MadSkin {
-    let mut mad_skin = MadSkin::default();
-    mad_skin.paragraph = LineStyle {
-        compound_style: skin.status_error.clone(),
-        align: Alignment::Left,
-    };
-    mad_skin.ellipsis = skin.status_ellipsis.clone();
-    mad_skin
+    MadSkin {
+        paragraph: LineStyle {
+            compound_style: skin.status_error.clone(),
+            align: Alignment::Left,
+        },
+        ellipsis: skin.status_ellipsis.clone(),
+        ..Default::default()
+    }
 }
 
 impl StatusMadSkinSet {

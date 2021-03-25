@@ -62,9 +62,8 @@ toml = "0.5"
 umask = "1.0"
 unicode-width = "0.1.8"
 
-
 [dev-dependencies]
-criterion = "0.3.1"
+glassbench = "0.1.0"
 
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.3.1"
@@ -102,6 +101,7 @@ harness = false
 # termimad = { path = "../termimad" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # deser-hjson = { path = "../deser-hjson" }
+# glassbench = { path = "../glassbench" }
 # umask = { path = "../umask" }
 # secular = { path = "../secular", features=["normalization"] }
 # strict = { path = "../strict" }
