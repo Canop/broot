@@ -10,6 +10,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
             "A tree explorer and a customizable launcher\n\
             Complete documentation lives at https://dystroy.org/broot"
         )
+        .setting(clap::AppSettings::ColoredHelp)
         .arg(clap::Arg::with_name("ROOT").help("sets the root directory"))
         // tree flags
         .arg(

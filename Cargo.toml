@@ -24,7 +24,7 @@ ansi_colours = "1.0"
 base64 = "0.13"
 bet = "0.4.0"
 char_reader = "0.1"
-clap = { version="2.33", default-features=false, features=["suggestions"] }
+clap = { version="2.33", default-features=false, features=["suggestions", "color"] }
 cli-log = "1.1"
 chrono = "0.4"
 crossbeam = "0.8"
