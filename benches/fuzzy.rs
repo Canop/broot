@@ -7,7 +7,7 @@ use {
 
 static PATTERNS: &[&str] = &["réveil", "AB", "e", "brt", "brootz"];
 
-fn bench_score_of_fuzzy(gb: &mut GlassBench) {
+fn bench_score_of_fuzzy(gb: &mut Bench) {
     for pattern in PATTERNS {
         let task_name = format!("Fuzzy({:?})::score_of", pattern);
         gb.task(task_name, |b| {

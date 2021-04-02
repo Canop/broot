@@ -16,7 +16,7 @@ static PATTERNS: &[&str] = &[
     "(!e&!b)|c",
 ];
 
-fn bench_score_of_composite(gb: &mut GlassBench) {
+fn bench_score_of_composite(gb: &mut Bench) {
     let search_modes = SearchModeMap::default();
     for pattern in PATTERNS {
         let name = format!("Composite({:?})::score_of", &pattern);

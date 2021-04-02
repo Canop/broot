@@ -20,7 +20,7 @@ static PATHS: &[&str] = &[
     "π/2",
 ];
 
-fn bench_normalization(gb: &mut GlassBench) {
+fn bench_normalization(gb: &mut Bench) {
     gb.task("normalize_path", |b| {
         b.iter(|| {
             for path in PATHS {

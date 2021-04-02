@@ -63,7 +63,7 @@ umask = "1.0"
 unicode-width = "0.1.8"
 
 [dev-dependencies]
-glassbench = "0.1.0"
+glassbench = "0.3.0"
 
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.3.1"
