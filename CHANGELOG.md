@@ -1,4 +1,5 @@
-### next
+<a name="v1.2.10"></a>
+### v1.2.10 - 2021-04-03
 - fix shift based key shortcuts - Fix #363
 - check there's another panel before executing verbs with other-panel argument - Fix #366
 
