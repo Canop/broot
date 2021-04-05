@@ -118,10 +118,10 @@ impl App {
         self.panels.iter().position(|panel| panel.id == id)
     }
 
-    fn state(&self) -> &dyn AppState {
+    fn state(&self) -> &dyn PanelState {
         self.panels[self.active_panel_idx].state()
     }
-    fn mut_state(&mut self) -> &mut dyn AppState {
+    fn mut_state(&mut self) -> &mut dyn PanelState {
         self.panels[self.active_panel_idx].mut_state()
     }
     fn panel(&self) -> &Panel {
@@ -243,7 +243,7 @@ impl App {
         panel_skin: &PanelSkin,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
-        use AppStateCmdResult::*;
+        use CmdResult::*;
         let mut error: Option<String> = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
         let other_path = self.get_other_panel_path();

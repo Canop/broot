@@ -25,7 +25,7 @@ use {
 /// one being visible
 pub struct Panel {
     pub id: PanelId,
-    states: Vec<Box<dyn AppState>>, // stack: the last one is current
+    states: Vec<Box<dyn PanelState>>, // stack: the last one is current
     pub areas: Areas,
     status: Status,
     pub purpose: PanelPurpose,
@@ -36,7 +36,7 @@ impl Panel {
 
     pub fn new(
         id: PanelId,
-        state: Box<dyn AppState>,
+        state: Box<dyn PanelState>,
         areas: Areas,
         con: &AppContext,
     ) -> Self {
@@ -69,7 +69,7 @@ impl Panel {
         panel_skin: &PanelSkin,
         preview: Option<PanelId>,
         con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         let state_idx = self.states.len() - 1;
         let cc = CmdContext {
             cmd,
@@ -146,14 +146,14 @@ impl Panel {
         self.input.on_event(w, event, con, sel, self.state().get_mode())
     }
 
-    pub fn push_state(&mut self, new_state: Box<dyn AppState>) {
+    pub fn push_state(&mut self, new_state: Box<dyn PanelState>) {
         self.input.set_content(&new_state.get_starting_input());
         self.states.push(new_state);
     }
-    pub fn mut_state(&mut self) -> &mut dyn AppState {
+    pub fn mut_state(&mut self) -> &mut dyn PanelState {
         self.states.last_mut().unwrap().as_mut()
     }
-    pub fn state(&self) -> &dyn AppState {
+    pub fn state(&self) -> &dyn PanelState {
         self.states.last().unwrap().as_ref()
     }
 

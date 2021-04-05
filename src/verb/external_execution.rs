@@ -63,7 +63,7 @@ impl ExternalExecution {
         w: &mut W,
         builder: ExecutionStringBuilder<'_>,
         con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if self.exec_mode.is_from_shell() {
             self.exec_from_shell_cmd_result(builder, con)
         } else {
@@ -76,21 +76,21 @@ impl ExternalExecution {
         &self,
         builder: ExecutionStringBuilder<'_>,
         con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if let Some(ref export_path) = con.launch_args.cmd_export_path {
             // Broot was probably launched as br.
             // the whole command is exported in the passed file
             let f = OpenOptions::new().append(true).open(export_path)?;
             writeln!(&f, "{}", builder.shell_exec_string(&self.exec_pattern))?;
-            Ok(AppStateCmdResult::Quit)
+            Ok(CmdResult::Quit)
         } else if let Some(ref export_path) = con.launch_args.file_export_path {
             // old version of the br function: only the file is exported
             // in the passed file
             let f = OpenOptions::new().append(true).open(export_path)?;
             writeln!(&f, "{}", builder.sel.path.to_string_lossy())?;
-            Ok(AppStateCmdResult::Quit)
+            Ok(CmdResult::Quit)
         } else {
-            Ok(AppStateCmdResult::DisplayError(
+            Ok(CmdResult::DisplayError(
                 "this verb needs broot to be launched as `br`. Try `broot --install` if necessary."
                     .to_string(),
             ))
@@ -104,7 +104,7 @@ impl ExternalExecution {
         w: &mut W,
         builder: ExecutionStringBuilder<'_>,
         con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         let launchable = Launchable::program(
             builder.exec_token(&self.exec_pattern),
             if self.set_working_dir {
@@ -115,18 +115,18 @@ impl ExternalExecution {
             con,
         )?;
         if self.exec_mode.is_leave_broot() {
-            Ok(AppStateCmdResult::from(launchable))
+            Ok(CmdResult::from(launchable))
         } else {
             info!("Executing not leaving, launchable {:?}", launchable);
             let execution = launchable.execute(Some(w));
             match execution {
                 Ok(()) => {
                     debug!("ok");
-                    Ok(AppStateCmdResult::RefreshState { clear_cache: true })
+                    Ok(CmdResult::RefreshState { clear_cache: true })
                 }
                 Err(e) => {
                     warn!("launchable failed : {:?}", e);
-                    Ok(AppStateCmdResult::DisplayError(e.to_string()))
+                    Ok(CmdResult::DisplayError(e.to_string()))
                 }
             }
         }

@@ -114,7 +114,7 @@ impl FilesystemState {
         input_invocation: Option<&VerbInvocation>,
         dir: i32, // -1 for up, 1 for down
         cycle: bool,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         let count = get_arg(input_invocation, internal_exec, 1);
         let dir = dir * count as i32;
         if let Some(f) = self.filtered.as_mut() {
@@ -122,12 +122,12 @@ impl FilesystemState {
         } else {
             self.selection_idx = move_sel(self.selection_idx, self.mounts.len().get(), dir, cycle);
         }
-        AppStateCmdResult::Keep
+        CmdResult::Keep
     }
 
 }
 
-impl AppState for FilesystemState {
+impl PanelState for FilesystemState {
 
     fn set_mode(&mut self, mode: Mode) {
         self.mode = mode;
@@ -151,9 +151,9 @@ impl AppState for FilesystemState {
         change_options: &dyn Fn(&mut TreeOptions),
         _in_new_panel: bool, // TODO open tree if true
         _con: &AppContext,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         change_options(&mut self.tree_options);
-        AppStateCmdResult::Keep
+        CmdResult::Keep
     }
 
     fn selection(&self) -> Selection<'_> {
@@ -173,7 +173,7 @@ impl AppState for FilesystemState {
         &mut self,
         pattern: InputPattern,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if pattern.is_none() {
             self.filtered = None;
         } else {
@@ -197,7 +197,7 @@ impl AppState for FilesystemState {
                 selection_idx,
             });
         }
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 
     fn display(
@@ -450,7 +450,7 @@ impl AppState for FilesystemState {
         trigger_type: TriggerType,
         cc: &CmdContext,
         screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         use Internal::*;
         Ok(match internal_exec.internal {
             Internal::back => {
@@ -460,9 +460,9 @@ impl AppState for FilesystemState {
                             .position(|m| m.info.id == f.mounts[f.selection_idx].info.id)
                             .unwrap(); // all filtered mounts come from self.mounts
                     }
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 } else {
-                    AppStateCmdResult::PopState
+                    CmdResult::PopState
                 }
             }
             Internal::line_down => {
@@ -484,7 +484,7 @@ impl AppState for FilesystemState {
                 let dam = Dam::unlimited();
                 let mut tree_options = self.tree_options();
                 tree_options.show_root_fs = true;
-                AppStateCmdResult::from_optional_state(
+                CmdResult::from_optional_state(
                     BrowserState::new(
                         self.selected_path().to_path_buf(),
                         tree_options,
@@ -508,7 +508,7 @@ impl AppState for FilesystemState {
                     )
                 } else {
                     // we ask the app to focus the panel to the left
-                    AppStateCmdResult::HandleInApp(Internal::panel_left)
+                    CmdResult::HandleInApp(Internal::panel_left)
                 }
             }
             Internal::panel_right => {
@@ -524,18 +524,18 @@ impl AppState for FilesystemState {
                     )
                 } else {
                     // we ask the app to focus the panel to the right
-                    AppStateCmdResult::HandleInApp(Internal::panel_right)
+                    CmdResult::HandleInApp(Internal::panel_right)
                 }
             }
             Internal::page_down => {
                 self.try_scroll(ScrollCommand::Pages(1));
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::page_up => {
                 self.try_scroll(ScrollCommand::Pages(-1));
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
-            open_leave => AppStateCmdResult::PopStateAndReapply,
+            open_leave => CmdResult::PopStateAndReapply,
             _ => self.on_internal_generic(
                 w,
                 internal_exec,
@@ -553,14 +553,14 @@ impl AppState for FilesystemState {
         y: u16,
         _screen: Screen,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if y >= 2 {
             let y = y as usize - 2 + self.scroll;
             if y < self.mounts.len().into() {
                 self.selection_idx = y;
             }
         }
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 }
 

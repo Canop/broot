@@ -67,18 +67,18 @@ impl PreviewState {
         &mut self,
         mode: PreviewMode,
         con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if self.preview.get_mode() == Some(mode) {
-            return Ok(AppStateCmdResult::Keep);
+            return Ok(CmdResult::Keep);
         }
         Ok(match Preview::with_mode(&self.path, mode, con) {
             Ok(preview) => {
                 self.preview = preview;
                 self.prefered_mode = Some(mode);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Err(e) => {
-                AppStateCmdResult::DisplayError(
+                CmdResult::DisplayError(
                     format!("Can't display as {:?} : {:?}", mode, e)
                 )
             }
@@ -86,7 +86,7 @@ impl PreviewState {
     }
 }
 
-impl AppState for PreviewState {
+impl PanelState for PreviewState {
 
     fn set_mode(&mut self, mode: Mode) {
         self.mode = mode;
@@ -108,7 +108,7 @@ impl AppState for PreviewState {
         &mut self,
         pat: InputPattern,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if pat.is_none() {
             if let Some(filtered_preview) = self.filtered_preview.take() {
                 let old_selection = filtered_preview.get_selected_line_number();
@@ -119,13 +119,13 @@ impl AppState for PreviewState {
             }
         } else {
             if !self.preview.is_filterable() {
-                return Ok(AppStateCmdResult::DisplayError(
+                return Ok(CmdResult::DisplayError(
                     "this preview can't be searched".to_string(),
                 ));
             }
         }
         self.pending_pattern = pat;
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 
     /// do the preview filtering if required and not yet done
@@ -186,9 +186,9 @@ impl AppState for PreviewState {
         change_options: &dyn Fn(&mut TreeOptions),
         _in_new_panel: bool, // TODO open tree if true
         _con: &AppContext,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         change_options(&mut self.tree_options);
-        AppStateCmdResult::Keep
+        CmdResult::Keep
     }
 
     fn refresh(&mut self, _screen: Screen, con: &AppContext) -> Command {
@@ -203,12 +203,12 @@ impl AppState for PreviewState {
         y: u16,
         _screen: Screen,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if y >= self.preview_area.top && y < self.preview_area.top + self.preview_area.height {
             let y = y - self.preview_area.top;
             self.mut_preview().try_select_y(y);
         }
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 
     fn display(
@@ -274,7 +274,7 @@ impl AppState for PreviewState {
         con: &AppContext,
     ) -> Status {
         let mut ssb = con.standard_status.builder(
-            AppStateType::Preview,
+            PanelStateType::Preview,
             self.selection(),
         );
         ssb.has_previous_state = has_previous_state;
@@ -291,19 +291,19 @@ impl AppState for PreviewState {
         trigger_type: TriggerType,
         cc: &CmdContext,
         screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         match internal_exec.internal {
             Internal::back => {
                 if self.filtered_preview.is_some() {
                     self.on_pattern(InputPattern::none(), &cc.con)
                 } else {
-                    Ok(AppStateCmdResult::PopState)
+                    Ok(CmdResult::PopState)
                 }
             }
             Internal::copy_line => {
                 #[cfg(not(feature = "clipboard"))]
                 {
-                    Ok(AppStateCmdResult::DisplayError(
+                    Ok(CmdResult::DisplayError(
                         "Clipboard feature not enabled at compilation".to_string(),
                     ))
                 }
@@ -312,13 +312,13 @@ impl AppState for PreviewState {
                     Ok(match self.mut_preview().get_selected_line() {
                         Some(line) => {
                             match terminal_clipboard::set_string(line) {
-                                Ok(()) => AppStateCmdResult::Keep,
-                                Err(_) => AppStateCmdResult::DisplayError(
+                                Ok(()) => CmdResult::Keep,
+                                Err(_) => CmdResult::DisplayError(
                                     "Clipboard error while copying path".to_string(),
                                 ),
                             }
                         }
-                        None => AppStateCmdResult::DisplayError(
+                        None => CmdResult::DisplayError(
                             "No selected line in preview".to_string(),
                         ),
                     })
@@ -327,51 +327,51 @@ impl AppState for PreviewState {
             Internal::line_down => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.mut_preview().move_selection(count, true);
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
             Internal::line_up => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.mut_preview().move_selection(-count, true);
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
             Internal::line_down_no_cycle => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.mut_preview().move_selection(count, false);
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
             Internal::line_up_no_cycle => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.mut_preview().move_selection(-count, false);
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
             Internal::page_down => {
                 self.mut_preview().try_scroll(ScrollCommand::Pages(1));
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
             Internal::page_up => {
                 self.mut_preview().try_scroll(ScrollCommand::Pages(-1));
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
             //Internal::restore_pattern => {
             //    debug!("restore_pattern");
             //    self.pending_pattern = self.removed_pattern.take();
-            //    Ok(AppStateCmdResult::Keep)
+            //    Ok(CmdResult::Keep)
             //}
             Internal::panel_left if self.removed_pattern.is_some() => {
                 debug!("restoring pattern");
                 self.pending_pattern = self.removed_pattern.take();
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
             Internal::panel_right if self.filtered_preview.is_some() => {
                 self.on_pattern(InputPattern::none(), &cc.con)
             }
             Internal::select_first => {
                 self.mut_preview().select_first();
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
             Internal::select_last => {
                 self.mut_preview().select_last();
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
             Internal::preview_image => self.set_mode(PreviewMode::Image, cc.con),
             Internal::preview_text => self.set_mode(PreviewMode::Text, cc.con),

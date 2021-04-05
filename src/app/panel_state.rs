@@ -23,7 +23,7 @@ use {
 
 /// a panel state, stackable to allow reverting
 ///  to a previous one
-pub trait AppState {
+pub trait PanelState {
 
     fn set_mode(&mut self, mode: Mode);
     fn get_mode(&self) -> Mode;
@@ -37,8 +37,8 @@ pub trait AppState {
         _y: u16,
         _screen: Screen,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
-        Ok(AppStateCmdResult::Keep)
+    ) -> Result<CmdResult, ProgramError> {
+        Ok(CmdResult::Keep)
     }
 
     fn on_double_click(
@@ -47,28 +47,28 @@ pub trait AppState {
         _y: u16,
         _screen: Screen,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
-        Ok(AppStateCmdResult::Keep)
+    ) -> Result<CmdResult, ProgramError> {
+        Ok(CmdResult::Keep)
     }
 
     fn on_pattern(
         &mut self,
         _pat: InputPattern,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
-        Ok(AppStateCmdResult::Keep)
+    ) -> Result<CmdResult, ProgramError> {
+        Ok(CmdResult::Keep)
     }
 
     fn on_mode_verb(
         &mut self,
         mode: Mode,
         con: &AppContext,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         if con.modal {
             self.set_mode(mode);
-            AppStateCmdResult::Keep
+            CmdResult::Keep
         } else {
-            AppStateCmdResult::DisplayError(
+            CmdResult::DisplayError(
                 "modal mode not enabled in configuration".to_string()
             )
         }
@@ -87,7 +87,7 @@ pub trait AppState {
         trigger_type: TriggerType,
         cc: &CmdContext,
         screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError>;
+    ) -> Result<CmdResult, ProgramError>;
 
     /// a generic implementation of on_internal which may be
     /// called by states when they don't have a specific
@@ -100,17 +100,17 @@ pub trait AppState {
         _trigger_type: TriggerType,
         cc: &CmdContext,
         screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         let con = &cc.con;
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
         Ok(match internal_exec.internal {
-            Internal::back => AppStateCmdResult::PopState,
+            Internal::back => CmdResult::PopState,
             Internal::copy_line | Internal::copy_path => {
                 #[cfg(not(feature = "clipboard"))]
                 {
-                    AppStateCmdResult::DisplayError(
+                    CmdResult::DisplayError(
                         "Clipboard feature not enabled at compilation".to_string(),
                     )
                 }
@@ -118,18 +118,18 @@ pub trait AppState {
                 {
                     let path = self.selected_path().to_string_lossy().to_string();
                     match terminal_clipboard::set_string(path) {
-                        Ok(()) => AppStateCmdResult::Keep,
-                        Err(_) => AppStateCmdResult::DisplayError(
+                        Ok(()) => CmdResult::Keep,
+                        Err(_) => CmdResult::DisplayError(
                             "Clipboard error while copying path".to_string(),
                         ),
                     }
                 }
             }
-            Internal::close_panel_ok => AppStateCmdResult::ClosePanel {
+            Internal::close_panel_ok => CmdResult::ClosePanel {
                 validate_purpose: true,
                 panel_ref: PanelReference::Active,
             },
-            Internal::close_panel_cancel => AppStateCmdResult::ClosePanel {
+            Internal::close_panel_cancel => CmdResult::ClosePanel {
                 validate_purpose: false,
                 panel_ref: PanelReference::Active,
             },
@@ -146,16 +146,16 @@ pub trait AppState {
                             .map(|inv| inv.bang)
                             .unwrap_or(internal_exec.bang);
                         if bang && cc.preview.is_none() {
-                            AppStateCmdResult::NewPanel {
+                            CmdResult::NewPanel {
                                 state: Box::new(state),
                                 purpose: PanelPurpose::None,
                                 direction: HDir::Right,
                             }
                         } else {
-                            AppStateCmdResult::NewState(Box::new(state))
+                            CmdResult::NewState(Box::new(state))
                         }
                     }
-                    Err(e) => AppStateCmdResult::DisplayError(format!("{}", e)),
+                    Err(e) => CmdResult::DisplayError(format!("{}", e)),
                 }
             }
             Internal::help => {
@@ -163,13 +163,13 @@ pub trait AppState {
                     .map(|inv| inv.bang)
                     .unwrap_or(internal_exec.bang);
                 if bang && cc.preview.is_none() {
-                    AppStateCmdResult::NewPanel {
+                    CmdResult::NewPanel {
                         state: Box::new(HelpState::new(self.tree_options(), screen, con)),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
                     }
                 } else {
-                    AppStateCmdResult::NewState(Box::new(
+                    CmdResult::NewState(Box::new(
                         HelpState::new(self.tree_options(), screen, con)
                     ))
                 }
@@ -281,19 +281,19 @@ pub trait AppState {
             }
             Internal::close_preview => {
                 if let Some(id) = cc.preview {
-                    AppStateCmdResult::ClosePanel {
+                    CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
                     }
                 } else {
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 }
             }
             Internal::panel_left => {
-                AppStateCmdResult::HandleInApp(Internal::panel_left)
+                CmdResult::HandleInApp(Internal::panel_left)
             }
             Internal::panel_right => {
-                AppStateCmdResult::HandleInApp(Internal::panel_right)
+                CmdResult::HandleInApp(Internal::panel_right)
             }
             Internal::print_path => {
                 print::print_path(self.selected_path(), con)?
@@ -301,9 +301,9 @@ pub trait AppState {
             Internal::print_relative_path => {
                 print::print_relative_path(self.selected_path(), con)?
             }
-            Internal::refresh => AppStateCmdResult::RefreshState { clear_cache: true },
-            Internal::quit => AppStateCmdResult::Quit,
-            _ => AppStateCmdResult::Keep,
+            Internal::refresh => CmdResult::RefreshState { clear_cache: true },
+            Internal::quit => CmdResult::Quit,
+            _ => CmdResult::Keep,
         })
     }
 
@@ -315,9 +315,9 @@ pub trait AppState {
         trigger_type: TriggerType,
         cc: &CmdContext,
         screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if verb.need_another_panel && cc.other_path.is_none() {
-            return Ok(AppStateCmdResult::DisplayError(
+            return Ok(CmdResult::DisplayError(
                 "This verb needs another panel".to_string()
             ));
         }
@@ -343,7 +343,7 @@ pub trait AppState {
                     raw: exec_builder().shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
                     separator: seq_ex.sequence.separator.clone(),
                 };
-                Ok(AppStateCmdResult::ExecuteSequence { sequence })
+                Ok(CmdResult::ExecuteSequence { sequence })
             }
         }
     }
@@ -354,7 +354,7 @@ pub trait AppState {
         w: &mut W,
         cc: &CmdContext,
         screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         self.clear_pending();
         let con = &cc.con;
         match cc.cmd {
@@ -363,7 +363,7 @@ pub trait AppState {
             Command::PatternEdit { raw, expr } => {
                 match InputPattern::new(raw.clone(), expr, &cc.con) {
                     Ok(pattern) => self.on_pattern(pattern, con),
-                    Err(e) => Ok(AppStateCmdResult::DisplayError(format!("{}", e))),
+                    Err(e) => Ok(CmdResult::DisplayError(format!("{}", e))),
                 }
             }
             Command::VerbTrigger {
@@ -394,7 +394,7 @@ pub trait AppState {
             ) {
                 PrefixSearchResult::Match(_, verb) => {
                     if let Some(err) = verb.check_args(invocation, &cc.other_path) {
-                        Ok(AppStateCmdResult::DisplayError(err))
+                        Ok(CmdResult::DisplayError(err))
                     } else {
                         self.execute_verb(
                             w,
@@ -406,11 +406,11 @@ pub trait AppState {
                         )
                     }
                 }
-                _ => Ok(AppStateCmdResult::verb_not_found(&invocation.name)),
+                _ => Ok(CmdResult::verb_not_found(&invocation.name)),
             },
             Command::None | Command::VerbEdit(_) => {
                 // we do nothing here, the real job is done in get_status
-                Ok(AppStateCmdResult::Keep)
+                Ok(CmdResult::Keep)
             }
         }
     }
@@ -421,10 +421,10 @@ pub trait AppState {
         prefered_mode: Option<PreviewMode>,
         close_if_open: bool,
         cc: &CmdContext,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         if let Some(id) = cc.preview {
             if close_if_open {
-                AppStateCmdResult::ClosePanel {
+                CmdResult::ClosePanel {
                     validate_purpose: false,
                     panel_ref: PanelReference::Id(id),
                 }
@@ -432,15 +432,15 @@ pub trait AppState {
                 if prefered_mode.is_some() {
                     // we'll make the preview mode change be
                     // applied on the preview panel
-                    AppStateCmdResult::ApplyOnPanel { id }
+                    CmdResult::ApplyOnPanel { id }
                 } else {
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 }
             }
         } else {
             let path = self.selected_path();
             if path.is_file() {
-                AppStateCmdResult::NewPanel {
+                CmdResult::NewPanel {
                     state: Box::new(PreviewState::new(
                         path.to_path_buf(),
                         InputPattern::none(),
@@ -452,7 +452,7 @@ pub trait AppState {
                     direction: HDir::Right,
                 }
             } else {
-                AppStateCmdResult::DisplayError(
+                CmdResult::DisplayError(
                     "only regular files can be previewed".to_string()
                 )
             }
@@ -475,7 +475,7 @@ pub trait AppState {
         change_options: &dyn Fn(&mut TreeOptions),
         in_new_panel: bool,
         con: &AppContext,
-    ) -> AppStateCmdResult;
+    ) -> CmdResult;
 
     fn do_pending_task(
         &mut self,

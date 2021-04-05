@@ -2,7 +2,7 @@
 /// one of the three types of state that you could
 /// find in a panel today
 #[derive(Debug, Clone, Copy)]
-pub enum AppStateType {
+pub enum PanelStateType {
 
     /// The standard browsing tree
     Tree,

@@ -50,7 +50,7 @@ impl HelpState {
     }
 }
 
-impl AppState for HelpState {
+impl PanelState for HelpState {
 
     fn set_mode(&mut self, mode: Mode) {
         self.mode = mode;
@@ -74,9 +74,9 @@ impl AppState for HelpState {
         change_options: &dyn Fn(&mut TreeOptions),
         _in_new_panel: bool, // TODO open a tree if true
         _con: &AppContext,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         change_options(&mut self.tree_options);
-        AppStateCmdResult::Keep
+        CmdResult::Keep
     }
 
     fn selection(&self) -> Selection<'_> {
@@ -97,9 +97,9 @@ impl AppState for HelpState {
         &mut self,
         pat: InputPattern,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         self.pattern = pat.pattern;
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 
     fn display(
@@ -187,46 +187,46 @@ impl AppState for HelpState {
         trigger_type: TriggerType,
         cc: &CmdContext,
         screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         use Internal::*;
         Ok(match internal_exec.internal {
             Internal::back => {
                 if self.pattern.is_some() {
                     self.pattern = Pattern::None;
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 } else {
-                    AppStateCmdResult::PopState
+                    CmdResult::PopState
                 }
             }
-            help => AppStateCmdResult::Keep,
+            help => CmdResult::Keep,
             line_down | line_down_no_cycle => {
                 self.scroll += get_arg(input_invocation, internal_exec, 1);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             line_up | line_up_no_cycle => {
                 self.scroll -= get_arg(input_invocation, internal_exec, 1);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             open_stay => match open::that(&Conf::default_location()) {
                 Ok(exit_status) => {
                     info!("open returned with exit_status {:?}", exit_status);
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 }
-                Err(e) => AppStateCmdResult::DisplayError(format!("{:?}", e)),
+                Err(e) => CmdResult::DisplayError(format!("{:?}", e)),
             },
             // FIXME check we can't use the generic one
             open_leave => {
-                AppStateCmdResult::from(Launchable::opener(
+                CmdResult::from(Launchable::opener(
                     Conf::default_location()
                 ))
             }
             page_down => {
                 self.scroll += self.text_area.height as i32;
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             page_up => {
                 self.scroll -= self.text_area.height as i32;
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             _ => self.on_internal_generic(
                 w,
