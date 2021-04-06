@@ -14,7 +14,7 @@ mod status;
 
 pub use {
     app::App,
-    cmd_context::CmdContext,
+    cmd_context::*,
     cmd_result::*,
     context::AppContext,
     mode::*,

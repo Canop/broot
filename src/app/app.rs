@@ -246,29 +246,18 @@ impl App {
         use CmdResult::*;
         let mut error: Option<String> = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
-        let other_path = self.get_other_panel_path();
-        let preview = self.preview;
-        let screen = self.screen; // it can't change in this function
-        match self.mut_panel().apply_command(
-            w,
-            &cmd,
-            &other_path,
-            screen,
+        let app_cmd_context = AppCmdContext {
+            cmd: &cmd,
+            other_path: self.get_other_panel_path(),
             panel_skin,
-            preview,
+            preview: self.preview,
+            screen: self.screen, // it can't change in this function
             con,
-        )? {
+        };
+        match self.mut_panel().apply_command(w, &app_cmd_context)? {
             ApplyOnPanel { id } => {
                 if let Some(idx) = self.panel_id_to_idx(id) {
-                    if let DisplayError(txt) = self.panels[idx].apply_command(
-                        w,
-                        &cmd,
-                        &other_path, // unsure...
-                        screen,
-                        panel_skin,
-                        preview,
-                        con,
-                    )? {
+                    if let DisplayError(txt) = self.panels[idx].apply_command(w, &app_cmd_context)? {
                         // we should probably handle other results
                         // which implies the possibility of a recursion
                         error = Some(txt);
@@ -301,21 +290,21 @@ impl App {
                     }
                 }
                 if self.close_panel(close_idx) {
+                    let screen = self.screen;
                     self.mut_state().refresh(screen, con);
                     if let Some(new_arg) = new_arg {
                         self.mut_panel().set_input_arg(new_arg);
                         let new_input = self.panel().get_input_content();
                         let cmd = Command::from_raw(new_input, false);
-                        let preview = self.preview;
-                        self.mut_panel().apply_command(
-                            w,
-                            &cmd,
-                            &other_path,
-                            screen,
+                        let app_cmd_context = AppCmdContext {
+                            cmd: &cmd,
+                            other_path: self.get_other_panel_path(),
                             panel_skin,
-                            preview,
+                            preview: self.preview,
+                            screen,
                             con,
-                        )?;
+                        };
+                        self.mut_panel().apply_command(w, &app_cmd_context)?;
                     }
                 } else {
                     self.quitting = true;
@@ -392,7 +381,7 @@ impl App {
                 match Areas::create(
                     self.panels.as_mut_slice(),
                     insertion_idx,
-                    screen,
+                    self.screen,
                     with_preview,
                 ) {
                     Ok(areas) => {
@@ -424,7 +413,7 @@ impl App {
                     self.mut_panel().clear_input();
                 }
                 if self.remove_state() {
-                    self.mut_state().refresh(screen, con);
+                    self.mut_state().refresh(app_cmd_context.screen, con);
                     let other_path = self.get_other_panel_path();
                     self.mut_panel().refresh_input_status(&other_path, con);
                 } else if ESCAPE_TO_QUIT {
@@ -436,16 +425,15 @@ impl App {
                     self.mut_panel().clear_input();
                 }
                 if self.remove_state() {
-                    let preview = self.preview;
-                    self.mut_panel().apply_command(
-                        w,
-                        &cmd,
-                        &other_path,
-                        screen,
+                    let app_cmd_context = AppCmdContext {
+                        cmd: &cmd,
+                        other_path: self.get_other_panel_path(),
                         panel_skin,
-                        preview,
+                        preview: self.preview,
+                        screen: self.screen,
                         con,
-                    )?;
+                    };
+                    self.mut_panel().apply_command(w, &app_cmd_context)?;
                 } else if ESCAPE_TO_QUIT {
                     self.quitting = true;
                 }
@@ -461,7 +449,7 @@ impl App {
                     clear_caches();
                 }
                 for i in 0..self.panels.len().get() {
-                    self.panels[i].mut_state().refresh(screen, con);
+                    self.panels[i].mut_state().refresh(self.screen, con);
                 }
             }
         }

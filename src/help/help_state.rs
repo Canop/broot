@@ -186,7 +186,6 @@ impl PanelState for HelpState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: Screen,
     ) -> Result<CmdResult, ProgramError> {
         use Internal::*;
         Ok(match internal_exec.internal {
@@ -234,7 +233,6 @@ impl PanelState for HelpState {
                 input_invocation,
                 trigger_type,
                 cc,
-                screen,
             )?,
         })
     }

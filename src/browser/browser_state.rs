@@ -251,10 +251,10 @@ impl PanelState for BrowserState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: Screen,
     ) -> Result<CmdResult, ProgramError> {
-        let con = &cc.con;
-        let page_height = BrowserState::page_height(screen);
+        let con = &cc.app.con;
+        let screen = cc.app.screen;
+        let page_height = BrowserState::page_height(cc.app.screen);
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
@@ -346,7 +346,8 @@ impl PanelState for BrowserState {
                 CmdResult::Keep
             }
             Internal::panel_left => {
-                if cc.areas.is_first() && cc.areas.nb_pos < cc.con.max_panels_count  {
+                let areas = &cc.panel.areas;
+                if areas.is_first() && areas.nb_pos < con.max_panels_count  {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),
@@ -362,8 +363,9 @@ impl PanelState for BrowserState {
                 }
             }
             Internal::panel_right => {
-                if cc.areas.is_last() && cc.areas.nb_pos < cc.con.max_panels_count {
-                    let purpose = if self.selected_path().is_file() && cc.preview.is_none() {
+                let areas = &cc.panel.areas;
+                if areas.is_last() && areas.nb_pos < con.max_panels_count {
+                    let purpose = if self.selected_path().is_file() && cc.has_no_preview() {
                         PanelPurpose::Preview
                     } else {
                         PanelPurpose::None
@@ -393,7 +395,7 @@ impl PanelState for BrowserState {
                 print::print_relative_path(path, con)?
             }
             Internal::print_tree => {
-                print::print_tree(&self.displayed_tree(), screen, &cc.panel_skin, con)?
+                print::print_tree(&self.displayed_tree(), cc.app.screen, &cc.app.panel_skin, con)?
             }
             Internal::select_first => {
                 self.displayed_tree_mut().try_select_first();
@@ -405,7 +407,7 @@ impl PanelState for BrowserState {
                 CmdResult::Keep
             }
             Internal::start_end_panel => {
-                if cc.panel_purpose.is_arg_edition() {
+                if cc.panel.purpose.is_arg_edition() {
                     debug!("start_end understood as end");
                     CmdResult::ClosePanel {
                         validate_purpose: true,
@@ -464,7 +466,6 @@ impl PanelState for BrowserState {
                 input_invocation,
                 trigger_type,
                 cc,
-                screen,
             )?,
         })
     }

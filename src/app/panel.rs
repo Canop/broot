@@ -60,31 +60,24 @@ impl Panel {
     /// apply a command on the current state, with no
     /// effect on screen
     #[allow(clippy::too_many_arguments)] // a refactory could still be useful
-    pub fn apply_command(
+    pub fn apply_command<'c>(
         &mut self,
-        w: &mut W,
-        cmd: &Command,
-        other_path: &Option<PathBuf>,
-        screen: Screen,
-        panel_skin: &PanelSkin,
-        preview: Option<PanelId>,
-        con: &AppContext,
+        w: &'c mut W,
+        app_cmd_context: &'c AppCmdContext<'c>,
     ) -> Result<CmdResult, ProgramError> {
         let state_idx = self.states.len() - 1;
         let cc = CmdContext {
-            cmd,
-            other_path,
-            panel_skin,
-            con,
-            areas: &self.areas,
-            panel_purpose: self.purpose,
-            preview,
+            app: app_cmd_context,
+            panel: PanelCmdContext {
+                areas: &self.areas,
+                purpose: self.purpose,
+            },
         };
-        let result = self.states[state_idx].on_command(w, &cc, screen);
+        let result = self.states[state_idx].on_command(w, &cc);
         let has_previous_state = self.states.len() > 1;
         self.status = self
             .state()
-            .get_status(cmd, other_path, has_previous_state, con);
+            .get_status(cc.app.cmd, &cc.app.other_path, has_previous_state, &cc.app.con);
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
     }

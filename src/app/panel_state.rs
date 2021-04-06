@@ -86,7 +86,6 @@ pub trait PanelState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: Screen,
     ) -> Result<CmdResult, ProgramError>;
 
     /// a generic implementation of on_internal which may be
@@ -99,9 +98,9 @@ pub trait PanelState {
         input_invocation: Option<&VerbInvocation>,
         _trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: Screen,
     ) -> Result<CmdResult, ProgramError> {
-        let con = &cc.con;
+        let con = &cc.app.con;
+        let screen = cc.app.screen;
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
@@ -145,7 +144,7 @@ pub trait PanelState {
                         let bang = input_invocation
                             .map(|inv| inv.bang)
                             .unwrap_or(internal_exec.bang);
-                        if bang && cc.preview.is_none() {
+                        if bang && cc.has_no_preview() {
                             CmdResult::NewPanel {
                                 state: Box::new(state),
                                 purpose: PanelPurpose::None,
@@ -162,7 +161,7 @@ pub trait PanelState {
                 let bang = input_invocation
                     .map(|inv| inv.bang)
                     .unwrap_or(internal_exec.bang);
-                if bang && cc.preview.is_none() {
+                if bang && cc.has_no_preview() {
                     CmdResult::NewPanel {
                         state: Box::new(HelpState::new(self.tree_options(), screen, con)),
                         purpose: PanelPurpose::None,
@@ -174,8 +173,8 @@ pub trait PanelState {
                     ))
                 }
             }
-            Internal::mode_input => self.on_mode_verb(Mode::Input, &cc.con),
-            Internal::mode_command => self.on_mode_verb(Mode::Command, &cc.con),
+            Internal::mode_input => self.on_mode_verb(Mode::Input, con),
+            Internal::mode_command => self.on_mode_verb(Mode::Command, con),
             Internal::open_leave => self.selection().to_opener(con)?,
             Internal::open_preview => self.open_preview(None, false, cc),
             Internal::preview_image => self.open_preview(Some(PreviewMode::Image), false, cc),
@@ -280,7 +279,7 @@ pub trait PanelState {
                 self.with_new_options(screen, &|o| o.trim_root ^= true, bang, con)
             }
             Internal::close_preview => {
-                if let Some(id) = cc.preview {
+                if let Some(id) = cc.app.preview {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
@@ -314,9 +313,8 @@ pub trait PanelState {
         invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: Screen,
     ) -> Result<CmdResult, ProgramError> {
-        if verb.need_another_panel && cc.other_path.is_none() {
+        if verb.need_another_panel && cc.app.other_path.is_none() {
             return Ok(CmdResult::DisplayError(
                 "This verb needs another panel".to_string()
             ));
@@ -325,7 +323,7 @@ pub trait PanelState {
             ExecutionStringBuilder::from_invocation(
                 &verb.invocation_parser,
                 self.selection(),
-                &cc.other_path,
+                &cc.app.other_path,
                 if let Some(inv) = invocation {
                     &inv.args
                 } else {
@@ -335,9 +333,9 @@ pub trait PanelState {
         };
         match &verb.execution {
             VerbExecution::Internal(internal_exec) => {
-                self.on_internal(w, internal_exec, invocation, trigger_type, cc, screen)
+                self.on_internal(w, internal_exec, invocation, trigger_type, cc)
             }
-            VerbExecution::External(external) => external.to_cmd_result(w, exec_builder(), &cc.con),
+            VerbExecution::External(external) => external.to_cmd_result(w, exec_builder(), &cc.app.con),
             VerbExecution::Sequence(seq_ex) => {
                 let sequence = Sequence {
                     raw: exec_builder().shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
@@ -353,15 +351,15 @@ pub trait PanelState {
         &mut self,
         w: &mut W,
         cc: &CmdContext,
-        screen: Screen,
     ) -> Result<CmdResult, ProgramError> {
         self.clear_pending();
-        let con = &cc.con;
-        match cc.cmd {
+        let con = &cc.app.con;
+        let screen = cc.app.screen;
+        match cc.app.cmd {
             Command::Click(x, y) => self.on_click(*x, *y, screen, con),
             Command::DoubleClick(x, y) => self.on_double_click(*x, *y, screen, con),
             Command::PatternEdit { raw, expr } => {
-                match InputPattern::new(raw.clone(), expr, &cc.con) {
+                match InputPattern::new(raw.clone(), expr, con) {
                     Ok(pattern) => self.on_pattern(pattern, con),
                     Err(e) => Ok(CmdResult::DisplayError(format!("{}", e))),
                 }
@@ -375,7 +373,6 @@ pub trait PanelState {
                 input_invocation.as_ref(),
                 TriggerType::Other,
                 cc,
-                screen,
             ),
             Command::Internal {
                 internal,
@@ -386,14 +383,13 @@ pub trait PanelState {
                 input_invocation.as_ref(),
                 TriggerType::Other,
                 cc,
-                screen,
             ),
             Command::VerbInvocate(invocation) => match con.verb_store.search(
                 &invocation.name,
                 Some(self.selection().stype), // TODO avoid recomputing selection
             ) {
                 PrefixSearchResult::Match(_, verb) => {
-                    if let Some(err) = verb.check_args(invocation, &cc.other_path) {
+                    if let Some(err) = verb.check_args(invocation, &cc.app.other_path) {
                         Ok(CmdResult::DisplayError(err))
                     } else {
                         self.execute_verb(
@@ -402,7 +398,6 @@ pub trait PanelState {
                             Some(invocation),
                             TriggerType::Input,
                             cc,
-                            screen,
                         )
                     }
                 }
@@ -422,7 +417,7 @@ pub trait PanelState {
         close_if_open: bool,
         cc: &CmdContext,
     ) -> CmdResult {
-        if let Some(id) = cc.preview {
+        if let Some(id) = cc.app.preview {
             if close_if_open {
                 CmdResult::ClosePanel {
                     validate_purpose: false,
@@ -446,7 +441,7 @@ pub trait PanelState {
                         InputPattern::none(),
                         prefered_mode,
                         self.tree_options(),
-                        &cc.con,
+                        &cc.app.con,
                     )),
                     purpose: PanelPurpose::Preview,
                     direction: HDir::Right,

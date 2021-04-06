@@ -449,8 +449,9 @@ impl PanelState for FilesystemState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: Screen,
     ) -> Result<CmdResult, ProgramError> {
+        let screen = cc.app.screen;
+        let con = &cc.app.con;
         use Internal::*;
         Ok(match internal_exec.internal {
             Internal::back => {
@@ -489,21 +490,22 @@ impl PanelState for FilesystemState {
                         self.selected_path().to_path_buf(),
                         tree_options,
                         screen,
-                        &cc.con,
+                        con,
                         &dam,
                     ),
                     in_new_panel,
                 )
             }
             Internal::panel_left => {
-                if cc.areas.is_first() && cc.areas.nb_pos < cc.con.max_panels_count {
+                let areas = &cc.panel.areas;
+                if areas.is_first() && areas.nb_pos < con.max_panels_count {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),
                         screen,
                         self.tree_options(),
                         PanelPurpose::None,
-                        &cc.con,
+                        con,
                         HDir::Left,
                     )
                 } else {
@@ -512,14 +514,15 @@ impl PanelState for FilesystemState {
                 }
             }
             Internal::panel_right => {
-                if cc.areas.is_last() && cc.areas.nb_pos < cc.con.max_panels_count {
+                let areas = &cc.panel.areas;
+                if areas.is_last() && areas.nb_pos < con.max_panels_count {
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
                         self.selected_path().to_path_buf(),
                         screen,
                         self.tree_options(),
                         PanelPurpose::None,
-                        &cc.con,
+                        con,
                         HDir::Right,
                     )
                 } else {
@@ -542,7 +545,6 @@ impl PanelState for FilesystemState {
                 input_invocation,
                 trigger_type,
                 cc,
-                screen,
             )?,
         })
     }

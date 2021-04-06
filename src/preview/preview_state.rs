@@ -290,12 +290,12 @@ impl PanelState for PreviewState {
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
         cc: &CmdContext,
-        screen: Screen,
     ) -> Result<CmdResult, ProgramError> {
+        let con = &cc.app.con;
         match internal_exec.internal {
             Internal::back => {
                 if self.filtered_preview.is_some() {
-                    self.on_pattern(InputPattern::none(), &cc.con)
+                    self.on_pattern(InputPattern::none(), con)
                 } else {
                     Ok(CmdResult::PopState)
                 }
@@ -363,7 +363,7 @@ impl PanelState for PreviewState {
                 Ok(CmdResult::Keep)
             }
             Internal::panel_right if self.filtered_preview.is_some() => {
-                self.on_pattern(InputPattern::none(), &cc.con)
+                self.on_pattern(InputPattern::none(), con)
             }
             Internal::select_first => {
                 self.mut_preview().select_first();
@@ -373,16 +373,15 @@ impl PanelState for PreviewState {
                 self.mut_preview().select_last();
                 Ok(CmdResult::Keep)
             }
-            Internal::preview_image => self.set_mode(PreviewMode::Image, cc.con),
-            Internal::preview_text => self.set_mode(PreviewMode::Text, cc.con),
-            Internal::preview_binary => self.set_mode(PreviewMode::Hex, cc.con),
+            Internal::preview_image => self.set_mode(PreviewMode::Image, con),
+            Internal::preview_text => self.set_mode(PreviewMode::Text, con),
+            Internal::preview_binary => self.set_mode(PreviewMode::Hex, con),
             _ => self.on_internal_generic(
                 w,
                 internal_exec,
                 input_invocation,
                 trigger_type,
                 cc,
-                screen,
             ),
         }
     }
