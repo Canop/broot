@@ -14,7 +14,7 @@ use {
 /// a verb's execution pattern
 pub struct ExecutionStringBuilder<'b> {
     /// the current file selection
-    pub sel: Selection<'b>,
+    pub sel: Option<Selection<'b>>,
 
     /// the selection in the other panel, when there exactly two
     other_file: Option<&'b PathBuf>,
@@ -25,7 +25,7 @@ pub struct ExecutionStringBuilder<'b> {
 
 impl<'b> ExecutionStringBuilder<'b> {
     pub fn from_selection(
-        sel: Selection<'b>,
+        sel: Option<Selection<'b>>,
     ) -> Self {
         Self {
             sel,
@@ -35,7 +35,7 @@ impl<'b> ExecutionStringBuilder<'b> {
     }
     pub fn from_invocation(
         invocation_parser: &Option<InvocationParser>,
-        sel: Selection<'b>,
+        sel: Option<Selection<'b>>,
         other_file: &'b Option<PathBuf>,
         invocation_args: &Option<String>,
     ) -> Self {
@@ -49,53 +49,54 @@ impl<'b> ExecutionStringBuilder<'b> {
             invocation_values,
         }
     }
-    fn get_file(&self) -> &Path {
-        &self.sel.path
+    fn get_file(&self) -> Option<&Path> {
+        self.sel.map(|s| s.path)
     }
-    fn get_directory(&self) -> PathBuf {
-        path::closest_dir(self.sel.path)
+    fn get_directory(&self) -> Option<PathBuf> {
+        self.sel.map(|s| path::closest_dir(s.path))
     }
-    fn get_parent(&self) -> &Path {
-        let file = &self.sel.path;
-        file.parent().unwrap_or(file)
-    }
-    fn path_to_string(&self, path: &Path) -> String {
-        path.to_string_lossy().to_string()
+    fn get_parent(&self) -> Option<&Path> {
+        self.sel.and_then(|s| s.path.parent())
     }
     fn get_raw_capture_replacement(&self, ec: &Captures<'_>) -> Option<String> {
         let name = ec.get(1).unwrap().as_str();
         match name {
-            "line" => Some(self.sel.line.to_string()),
-            "file" => Some(self.path_to_string(self.get_file())),
-            "directory" => Some(self.path_to_string(&self.get_directory())),
-            "parent" => Some(self.path_to_string(self.get_parent())),
-            "other-panel-file" => self.other_file.map(|p| self.path_to_string(p)),
+            "line" => self.sel.map(|s| s.line.to_string()),
+            "file" => self.get_file().map(path_to_string),
+            "directory" => self.get_directory().map(path_to_string),
+            "parent" => self.get_parent().map(path_to_string),
+            "other-panel-file" => self.other_file.map(path_to_string),
             "other-panel-directory" => self
                 .other_file
                 .map(|p| path::closest_dir(p))
                 .as_ref()
-                .map(|p| self.path_to_string(p)),
+                .map(path_to_string),
             "other-panel-parent" => self
                 .other_file
                 .and_then(|p| p.parent())
-                .map(|p| self.path_to_string(p)),
+                .map(path_to_string),
             _ => {
                 // it's not one of the standard group names, so we'll look
                 // into the ones provided by the invocation pattern
                 self.invocation_values.as_ref()
-                    .and_then(|map| map.get(name)
-                        .map(|value| {
-                            if let Some(fmt) = ec.get(2) {
-                                match fmt.as_str() {
-                                    "path-from-directory" => path::path_str_from(self.get_directory(), value),
-                                    "path-from-parent" => path::path_str_from(self.get_parent(), value),
-                                    _ => format!("invalid format: {:?}", fmt.as_str()),
+                    .and_then(|map| map.get(name))
+                    .and_then(|value| {
+                        if let Some(fmt) = ec.get(2) {
+                            match fmt.as_str() {
+                                "path-from-directory" => {
+                                    self.get_directory()
+                                        .map(|dir| path::path_str_from(dir, value))
                                 }
-                            } else {
-                                value.to_string()
+                                "path-from-parent" => {
+                                    self.get_parent()
+                                        .map(|dir| path::path_str_from(dir, value))
+                                }
+                                _ => Some(format!("invalid format: {:?}", fmt.as_str())),
                             }
-                        })
-                    )
+                        } else {
+                            Some(value.to_string())
+                        }
+                    })
             }
         }
     }
@@ -208,5 +209,8 @@ mod execution_builder_test {
             vec!["xterm", "-e", "kak /path/to/file"],
         );
     }
+}
 
+fn path_to_string<P: AsRef<Path>>(path: P) -> String {
+    path.as_ref().to_string_lossy().to_string()
 }

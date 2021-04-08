@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        app::{Selection, SelectionType, Status},
+        app::{Selection, SelectionType},
         errors::ConfError,
         keys,
         path::{self, PathAnchor},
@@ -48,9 +48,12 @@ pub struct Verb {
     /// the type of selection this verb applies to
     pub selection_condition: SelectionType,
 
+    /// whether the verb needs a selection
+    pub needs_selection: bool,
+
     /// whether we need to have a secondary panel for execution
     /// (which is the case when the execution pattern has {other-panel-file})
-    pub need_another_panel: bool,
+    pub needs_another_panel: bool,
 }
 
 impl Verb {
@@ -65,10 +68,20 @@ impl Verb {
         if let Some(ref invocation_parser) = invocation_parser {
             names.push(invocation_parser.name().to_string());
         }
-        let need_another_panel = if let VerbExecution::External(ref external) = execution {
-            external.exec_pattern.has_other_panel_group()
-        } else {
-            false
+        let (needs_selection, needs_another_panel) = match &execution {
+            VerbExecution::Internal(ie) => (
+                ie.needs_selection(),
+                false,
+            ),
+            VerbExecution::External(ee) => (
+                ee.exec_pattern.has_selection_group(),
+                ee.exec_pattern.has_other_panel_group(),
+            ),
+            VerbExecution::Sequence(se) => {
+                // FIXME we should do better here, probably by searching for groups
+                // in the sequence as string
+                (false, false)
+            }
         };
         Ok(Self {
             names,
@@ -78,7 +91,8 @@ impl Verb {
             execution,
             description,
             selection_condition: SelectionType::Any,
-            need_another_panel,
+            needs_selection,
+            needs_another_panel,
         })
     }
     fn update_key_desc(&mut self) {
@@ -131,7 +145,7 @@ impl Verb {
         self
     }
     pub fn needing_another_panel(mut self) -> Self {
-        self.need_another_panel = true;
+        self.needs_another_panel = true;
         self
     }
 
@@ -140,10 +154,13 @@ impl Verb {
     /// and return the error to display if arguments don't match.
     pub fn check_args(
         &self,
+        sel: &Option<Selection>,
         invocation: &VerbInvocation,
         other_path: &Option<PathBuf>,
     ) -> Option<String> {
-        if self.need_another_panel && other_path.is_none() {
+        if self.needs_selection && sel.is_none() {
+            Some("This verb needs a selection".to_string())
+        } else if self.needs_another_panel && other_path.is_none() {
             Some("This verb needs exactly two panels".to_string())
         } else if let Some(ref parser) = self.invocation_parser {
             parser.check_args(invocation, other_path)
@@ -154,9 +171,9 @@ impl Verb {
         }
     }
 
-    fn get_status_markdown(
+    pub fn get_status_markdown(
         &self,
-        sel: Selection<'_>,
+        sel: Option<Selection<'_>>,
         other_path: &Option<PathBuf>,
         invocation: &VerbInvocation,
     ) -> String {
@@ -169,15 +186,17 @@ impl Verb {
         // thus I hardcode the test here.
         if let VerbExecution::Internal(internal_exec) = &self.execution {
             if internal_exec.internal == Internal::focus {
-                let arg = invocation.args.as_ref().or_else(|| internal_exec.arg.as_ref());
-                let pb;
-                let arg_path = if let Some(arg) = arg {
-                    pb = path::path_from(sel.path, PathAnchor::Unspecified, arg);
-                    &pb
-                } else {
-                    sel.path
-                };
-                return format!("Hit *enter* to {} `{}`", name, arg_path.to_string_lossy());
+                if let Some(sel) = sel { // this is normally checked prior to this method
+                    let arg = invocation.args.as_ref().or_else(|| internal_exec.arg.as_ref());
+                    let pb;
+                    let arg_path = if let Some(arg) = arg {
+                        pb = path::path_from(sel.path, PathAnchor::Unspecified, arg);
+                        &pb
+                    } else {
+                        sel.path
+                    };
+                    return format!("Hit *enter* to {} `{}`", name, arg_path.to_string_lossy());
+                }
             }
         }
 
@@ -201,26 +220,6 @@ impl Verb {
             format!("Hit *enter* to **{}**: `{}`", name, &self.description.content)
         } else {
             format!("Hit *enter* to **{}**: {}", name, &self.description.content)
-        }
-    }
-
-    pub fn get_status(
-        &self,
-        sel: Selection<'_>,
-        other_path: &Option<PathBuf>,
-        invocation: &VerbInvocation,
-    ) -> Status {
-        if let Some(err) = self.check_args(invocation, other_path) {
-            Status::new(err, true)
-        } else {
-            Status::new(
-                self.get_status_markdown(
-                    sel,
-                    other_path,
-                    invocation,
-                ),
-                false,
-            )
         }
     }
 

@@ -81,6 +81,9 @@ impl CmdResult {
             Err(e) => CmdResult::DisplayError(e.to_string()),
         }
     }
+    pub fn error<S: Into<String>>(message: S) -> Self {
+        Self::DisplayError(message.into())
+    }
 }
 
 impl From<Launchable> for CmdResult {

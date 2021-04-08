@@ -28,6 +28,7 @@ pub mod pattern;
 pub mod permissions;
 pub mod preview;
 pub mod print;
+pub mod stage;
 pub mod shell_install;
 pub mod skin;
 pub mod syntactic;

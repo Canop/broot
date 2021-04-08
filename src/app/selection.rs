@@ -7,11 +7,13 @@ use {
     crate::{
         errors::ProgramError,
         launchable::Launchable,
+        path::longest_common_ancestor,
+        stage::Stage,
     },
     std::{
         fs::OpenOptions,
         io::Write,
-        path::Path,
+        path::{Path, PathBuf},
     },
 };
 
@@ -26,12 +28,6 @@ pub enum SelectionType {
     Any,
 }
 
-impl SelectionType {
-    pub fn respects(self, constraint: Self) -> bool {
-        constraint == Self::Any || self == constraint
-    }
-}
-
 /// light information about the currently selected
 /// file and maybe line number
 #[derive(Debug, Clone, Copy)]
@@ -41,6 +37,35 @@ pub struct Selection<'s> {
     pub stype: SelectionType,
     pub is_exe: bool,
 }
+
+#[derive(Debug)]
+pub enum SelInfo<'s> {
+    None,
+    One(Selection<'s>),
+    More(&'s Stage), // by contract the stage contains at least 2 paths
+}
+
+impl SelectionType {
+    pub fn respects(self, constraint: Self) -> bool {
+        constraint == Self::Any || self == constraint
+    }
+    pub fn is_respected_by(self, sel_type: Option<Self>) -> bool {
+        match (self, sel_type) {
+            (Self::File, Some(Self::File)) => true,
+            (Self::Directory, Some(Self::Directory)) => true,
+            (Self::Any, _) => true,
+            _ => false,
+        }
+    }
+    pub fn from(path: &Path) -> Self {
+        if path.is_dir() {
+            Self::Directory
+        } else {
+            Self::File
+        }
+    }
+}
+
 
 impl Selection<'_> {
 
@@ -69,5 +94,30 @@ impl Selection<'_> {
             CmdResult::from(Launchable::opener(self.path.to_path_buf()))
         })
     }
+}
 
+impl SelInfo<'_> {
+    pub fn common_path(&self) -> Option<PathBuf> {
+        match self {
+            SelInfo::None => None,
+            SelInfo::One(sel) => Some(sel.path.into()), // TODO way to avoid this clone ?
+            SelInfo::More(stage) => Some(longest_common_ancestor(&stage.paths))
+        }
+    }
+    pub fn common_stype(&self) -> Option<SelectionType> {
+        match self {
+            SelInfo::None => None,
+            SelInfo::One(sel) => Some(sel.stype),
+            SelInfo::More(stage) => {
+                let stype = SelectionType::from(&stage.paths[0]);
+                for path in stage.paths.iter().skip(1) {
+                    if stype != SelectionType::from(path) {
+                        return None;
+                    }
+                }
+                Some(stype)
+            }
+        }
+
+    }
 }

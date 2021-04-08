@@ -9,7 +9,6 @@ use {
         pattern::*,
         preview::{PreviewMode, PreviewState},
         print,
-        skin::PanelSkin,
         task_sync::Dam,
         tree::*,
         verb::*,
@@ -18,7 +17,6 @@ use {
         path::{Path, PathBuf},
         str::FromStr,
     },
-    termimad::Area,
 };
 
 /// a panel state, stackable to allow reverting
@@ -115,12 +113,18 @@ pub trait PanelState {
                 }
                 #[cfg(feature = "clipboard")]
                 {
-                    let path = self.selected_path().to_string_lossy().to_string();
-                    match terminal_clipboard::set_string(path) {
-                        Ok(()) => CmdResult::Keep,
-                        Err(_) => CmdResult::DisplayError(
-                            "Clipboard error while copying path".to_string(),
-                        ),
+                    if let Some(path) = self.selected_path() {
+                        let path = path.to_string_lossy().to_string();
+                        match terminal_clipboard::set_string(path) {
+                            Ok(()) => CmdResult::Keep,
+                            Err(_) => CmdResult::DisplayError(
+                                "Clipboard error while copying path".to_string(),
+                            ),
+                        }
+                    } else {
+                        CmdResult::DisplayError(
+                            "Nothing to copy".to_string(),
+                        )
                     }
                 }
             }
@@ -169,13 +173,19 @@ pub trait PanelState {
                     }
                 } else {
                     CmdResult::NewState(Box::new(
-                        HelpState::new(self.tree_options(), screen, con)
+                            HelpState::new(self.tree_options(), screen, con)
                     ))
                 }
             }
             Internal::mode_input => self.on_mode_verb(Mode::Input, con),
             Internal::mode_command => self.on_mode_verb(Mode::Command, con),
-            Internal::open_leave => self.selection().to_opener(con)?,
+            Internal::open_leave => {
+                if let Some(selection) = self.selection() {
+                    selection.to_opener(con)?
+                } else {
+                    CmdResult::DisplayError("no selection to open".to_string())
+                }
+            }
             Internal::open_preview => self.open_preview(None, false, cc),
             Internal::preview_image => self.open_preview(Some(PreviewMode::Image), false, cc),
             Internal::preview_text => self.open_preview(Some(PreviewMode::Text), false, cc),
@@ -294,11 +304,39 @@ pub trait PanelState {
             Internal::panel_right => {
                 CmdResult::HandleInApp(Internal::panel_right)
             }
+            Internal::clear_stage => {
+                CmdResult::HandleInApp(Internal::clear_stage)
+            }
+            Internal::stage => {
+                CmdResult::HandleInApp(Internal::stage)
+            }
+            Internal::unstage => {
+                CmdResult::HandleInApp(Internal::unstage)
+            }
+            Internal::toggle_stage => {
+                if let Some(path) = self.selected_path() {
+                    if cc.app.app_state.stage.paths.iter().any(|p| p==path) {
+                        CmdResult::HandleInApp(Internal::unstage)
+                    } else {
+                        CmdResult::HandleInApp(Internal::stage)
+                    }
+                } else {
+                    CmdResult::error("no selection")
+                }
+            }
             Internal::print_path => {
-                print::print_path(self.selected_path(), con)?
+                if let Some(path) = self.selected_path() {
+                    print::print_path(path, con)?
+                } else {
+                    CmdResult::DisplayError("no selection to print".to_string())
+                }
             }
             Internal::print_relative_path => {
-                print::print_relative_path(self.selected_path(), con)?
+                if let Some(path) = self.selected_path() {
+                    print::print_relative_path(path, con)?
+                } else {
+                    CmdResult::DisplayError("no selection to print".to_string())
+                }
             }
             Internal::refresh => CmdResult::RefreshState { clear_cache: true },
             Internal::quit => CmdResult::Quit,
@@ -314,15 +352,78 @@ pub trait PanelState {
         trigger_type: TriggerType,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
-        if verb.need_another_panel && cc.app.other_path.is_none() {
+        if verb.needs_selection && !self.has_at_least_one_selection(cc) {
+            return Ok(CmdResult::DisplayError(
+                "This verb needs a selection".to_string()
+            ));
+        }
+        if verb.needs_another_panel && cc.app.other_path.is_none() {
             return Ok(CmdResult::DisplayError(
                 "This verb needs another panel".to_string()
             ));
         }
+        match &verb.execution {
+            VerbExecution::Internal(internal_exec) => {
+                self.on_internal(w, internal_exec, invocation, trigger_type, cc)
+            }
+            VerbExecution::External(external) => {
+                self.execute_external(w, verb, external, invocation, cc)
+            }
+            VerbExecution::Sequence(seq_ex) => {
+                self.execute_sequence(w, verb, seq_ex, invocation, cc)
+            }
+        }
+    }
+
+    fn execute_external(
+        &mut self,
+        w: &mut W,
+        verb: &Verb,
+        external_execution: &ExternalExecution,
+        invocation: Option<&VerbInvocation>,
+        cc: &CmdContext,
+    ) -> Result<CmdResult, ProgramError> {
+        let selection = match self.selection() {
+            Some(selection) => selection,
+            None => {
+                // this function is overriden for the state which doesn't have a
+                // single selection (stage_state), so this error should not happen
+                return Ok(CmdResult::error("no selection (EV)"));
+            }
+        };
+        let exec_builder = ExecutionStringBuilder::from_invocation(
+            &verb.invocation_parser,
+            Some(selection),
+            &cc.app.other_path,
+            if let Some(inv) = invocation {
+                &inv.args
+            } else {
+                &None
+            },
+        );
+        external_execution.to_cmd_result(w, exec_builder, &cc.app.con)
+    }
+
+    fn execute_sequence(
+        &mut self,
+        w: &mut W,
+        verb: &Verb,
+        seq_ex: &SequenceExecution,
+        invocation: Option<&VerbInvocation>,
+        cc: &CmdContext,
+    ) -> Result<CmdResult, ProgramError> {
+        let selection = match self.selection() {
+            Some(selection) => selection,
+            None => {
+                // this function is overriden for the state which doesn't have a
+                // single selection (stage_state), so this error should not happen
+                return Ok(CmdResult::DisplayError("no selection (EV)".to_string()));
+            }
+        };
         let exec_builder = || {
             ExecutionStringBuilder::from_invocation(
                 &verb.invocation_parser,
-                self.selection(),
+                Some(selection),
                 &cc.app.other_path,
                 if let Some(inv) = invocation {
                     &inv.args
@@ -331,19 +432,11 @@ pub trait PanelState {
                 },
             )
         };
-        match &verb.execution {
-            VerbExecution::Internal(internal_exec) => {
-                self.on_internal(w, internal_exec, invocation, trigger_type, cc)
-            }
-            VerbExecution::External(external) => external.to_cmd_result(w, exec_builder(), &cc.app.con),
-            VerbExecution::Sequence(seq_ex) => {
-                let sequence = Sequence {
-                    raw: exec_builder().shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
-                    separator: seq_ex.sequence.separator.clone(),
-                };
-                Ok(CmdResult::ExecuteSequence { sequence })
-            }
-        }
+        let sequence = Sequence {
+            raw: exec_builder().shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
+            separator: seq_ex.sequence.separator.clone(),
+        };
+        Ok(CmdResult::ExecuteSequence { sequence })
     }
 
     /// change the state, does no rendering
@@ -355,7 +448,7 @@ pub trait PanelState {
         self.clear_pending();
         let con = &cc.app.con;
         let screen = cc.app.screen;
-        match cc.app.cmd {
+        match &cc.cmd {
             Command::Click(x, y) => self.on_click(*x, *y, screen, con),
             Command::DoubleClick(x, y) => self.on_double_click(*x, *y, screen, con),
             Command::PatternEdit { raw, expr } => {
@@ -384,14 +477,13 @@ pub trait PanelState {
                 TriggerType::Other,
                 cc,
             ),
-            Command::VerbInvocate(invocation) => match con.verb_store.search(
-                &invocation.name,
-                Some(self.selection().stype), // TODO avoid recomputing selection
-            ) {
-                PrefixSearchResult::Match(_, verb) => {
-                    if let Some(err) = verb.check_args(invocation, &cc.app.other_path) {
-                        Ok(CmdResult::DisplayError(err))
-                    } else {
+            Command::VerbInvocate(invocation) => {
+                let selection = self.selection();
+                match con.verb_store.search(
+                    &invocation.name,
+                    self.selection().map(|s| s.stype),
+                ) {
+                    PrefixSearchResult::Match(_, verb) => {
                         self.execute_verb(
                             w,
                             verb,
@@ -400,9 +492,9 @@ pub trait PanelState {
                             cc,
                         )
                     }
+                    _ => Ok(CmdResult::verb_not_found(&invocation.name)),
                 }
-                _ => Ok(CmdResult::verb_not_found(&invocation.name)),
-            },
+            }
             Command::None | Command::VerbEdit(_) => {
                 // we do nothing here, the real job is done in get_status
                 Ok(CmdResult::Keep)
@@ -433,30 +525,47 @@ pub trait PanelState {
                 }
             }
         } else {
-            let path = self.selected_path();
-            if path.is_file() {
-                CmdResult::NewPanel {
-                    state: Box::new(PreviewState::new(
-                        path.to_path_buf(),
-                        InputPattern::none(),
-                        prefered_mode,
-                        self.tree_options(),
-                        &cc.app.con,
-                    )),
-                    purpose: PanelPurpose::Preview,
-                    direction: HDir::Right,
+            if let Some(path) = self.selected_path() {
+                if path.is_file() {
+                    CmdResult::NewPanel {
+                        state: Box::new(PreviewState::new(
+                            path.to_path_buf(),
+                            InputPattern::none(),
+                            prefered_mode,
+                            self.tree_options(),
+                            &cc.app.con,
+                        )),
+                        purpose: PanelPurpose::Preview,
+                        direction: HDir::Right,
+                    }
+                } else {
+                    CmdResult::DisplayError(
+                        "only regular files can be previewed".to_string()
+                    )
                 }
             } else {
                 CmdResult::DisplayError(
-                    "only regular files can be previewed".to_string()
+                    "no selected file".to_string()
                 )
             }
         }
     }
 
-    fn selected_path(&self) -> &Path;
+    fn selected_path(&self) -> Option<&Path>;
 
-    fn selection(&self) -> Selection<'_>;
+    fn selection(&self) -> Option<Selection<'_>>;
+
+    fn sel_info<'c>(&'c self, app_state: &'c AppState) -> SelInfo<'c> {
+        // overloaded in stage_state
+        match self.selection() {
+            None => SelInfo::None,
+            Some(selection) => SelInfo::One(selection),
+        }
+    }
+
+    fn has_at_least_one_selection(&self, cc: &CmdContext) -> bool {
+        true // overloaded in stage_state
+    }
 
     fn refresh(&mut self, screen: Screen, con: &AppContext) -> Command;
 
@@ -489,10 +598,7 @@ pub trait PanelState {
     fn display(
         &mut self,
         w: &mut W,
-        screen: Screen,
-        state_area: Area,
-        skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError>;
 
     /// return the flags to display
@@ -521,13 +627,11 @@ pub trait PanelState {
 
     fn get_status(
         &self,
-        cmd: &Command,
-        other_path: &Option<PathBuf>,
+        cc: &CmdContext,
         has_previous_state: bool,
-        con: &AppContext,
     ) -> Status {
-        match cmd {
-            Command::PatternEdit { .. } => self.no_verb_status(has_previous_state, con),
+        match &cc.cmd {
+            Command::PatternEdit { .. } => self.no_verb_status(has_previous_state, cc.app.con),
             Command::VerbEdit(invocation) => {
                 if invocation.name.is_empty() {
                     Status::new(
@@ -535,16 +639,15 @@ pub trait PanelState {
                         false,
                     )
                 } else {
-                    match con.verb_store.search(
+                    match cc.app.con.verb_store.search(
                         &invocation.name,
-                        Some(self.selection().stype),
+                        self.selection().map(|s| s.stype), // FIXME is that always OK for stage ?
                     ) {
                         PrefixSearchResult::NoMatch => {
                             Status::new("No matching verb (*?* for the list of verbs)", true)
                         }
                         PrefixSearchResult::Match(_, verb) => {
-                            let selection = self.selection();
-                            verb.get_status(selection, other_path, invocation)
+                            self.get_verb_status(verb, invocation, cc)
                         }
                         PrefixSearchResult::Matches(completions) => Status::new(
                             format!(
@@ -560,10 +663,33 @@ pub trait PanelState {
                     }
                 }
             }
-            _ => self.no_verb_status(has_previous_state, con),
+            _ => self.no_verb_status(has_previous_state, cc.app.con),
+        }
+    }
+
+    // overloaded in stage_state
+    fn get_verb_status(
+        &self,
+        verb: &Verb,
+        invocation: &VerbInvocation,
+        cc: &CmdContext,
+    ) -> Status {
+        let selection = self.selection();
+        if let Some(err) = verb.check_args(&selection, invocation, &cc.app.other_path) {
+            Status::new(err, true)
+        } else {
+            Status::new(
+                verb.get_status_markdown(
+                    selection,
+                    &cc.app.other_path,
+                    invocation,
+                ),
+                false,
+            )
         }
     }
 }
+
 
 pub fn get_arg<T: Copy + FromStr>(
     verb_invocation: Option<&VerbInvocation>,

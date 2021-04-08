@@ -84,11 +84,16 @@ impl ExternalExecution {
             writeln!(&f, "{}", builder.shell_exec_string(&self.exec_pattern))?;
             Ok(CmdResult::Quit)
         } else if let Some(ref export_path) = con.launch_args.file_export_path {
-            // old version of the br function: only the file is exported
-            // in the passed file
-            let f = OpenOptions::new().append(true).open(export_path)?;
-            writeln!(&f, "{}", builder.sel.path.to_string_lossy())?;
-            Ok(CmdResult::Quit)
+            if let Some(sel) = builder.sel {
+                // old version of the br function: only the file is exported
+                // in the passed file
+                let f = OpenOptions::new().append(true).open(export_path)?;
+                writeln!(&f, "{}", sel.path.to_string_lossy())?;
+                Ok(CmdResult::Quit)
+            } else {
+                // should not happen
+                Ok(CmdResult::error("no selection"))
+            }
         } else {
             Ok(CmdResult::DisplayError(
                 "this verb needs broot to be launched as `br`. Try `broot --install` if necessary."
@@ -108,7 +113,7 @@ impl ExternalExecution {
         let launchable = Launchable::program(
             builder.exec_token(&self.exec_pattern),
             if self.set_working_dir {
-                Some(path::closest_dir(builder.sel.path))
+                builder.sel.map(|sel| path::closest_dir(sel.path))
             } else {
                 None
             },

@@ -17,7 +17,6 @@ use {
         verb::*,
     },
     minimad::{Alignment, Composite},
-    std::path::PathBuf,
     termimad::Event,
 };
 
@@ -63,10 +62,12 @@ impl Panel {
     pub fn apply_command<'c>(
         &mut self,
         w: &'c mut W,
+        cmd: &'c Command,
         app_cmd_context: &'c AppCmdContext<'c>,
     ) -> Result<CmdResult, ProgramError> {
         let state_idx = self.states.len() - 1;
         let cc = CmdContext {
+            cmd,
             app: app_cmd_context,
             panel: PanelCmdContext {
                 areas: &self.areas,
@@ -75,25 +76,28 @@ impl Panel {
         };
         let result = self.states[state_idx].on_command(w, &cc);
         let has_previous_state = self.states.len() > 1;
-        self.status = self
-            .state()
-            .get_status(cc.app.cmd, &cc.app.other_path, has_previous_state, &cc.app.con);
+        self.status = self.state().get_status(&cc, has_previous_state);
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
     }
 
     /// called on focusing the panel and before the display,
     /// this updates the status from the command read in the input
-    pub fn refresh_input_status(
+    pub fn refresh_input_status<'c>(
         &mut self,
-        other_path: &Option<PathBuf>,
-        con: &AppContext,
+        app_cmd_context: &'c AppCmdContext<'c>,
     ) {
         let cmd = Command::from_raw(self.input.get_content(), false);
+        let cc = CmdContext {
+            cmd: &cmd,
+            app: app_cmd_context,
+            panel: PanelCmdContext {
+                areas: &self.areas,
+                purpose: self.purpose,
+            },
+        };
         let has_previous_state = self.states.len() > 1;
-        self.status = self
-            .state()
-            .get_status(&cmd, other_path, has_previous_state, con);
+        self.status = self.state().get_status(&&cc, has_previous_state);
     }
 
     /// execute all the pending tasks until there's none remaining or
@@ -133,10 +137,11 @@ impl Panel {
         &mut self,
         w: &mut W,
         event: Event,
+        app_state: &AppState,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
-        let sel = self.states[self.states.len() - 1].selection();
-        self.input.on_event(w, event, con, sel, self.state().get_mode())
+        let sel_info = self.states[self.states.len() - 1].sel_info(&app_state);
+        self.input.on_event(w, event, con, sel_info, self.state().get_mode())
     }
 
     pub fn push_state(&mut self, new_state: Box<dyn PanelState>) {
@@ -197,30 +202,25 @@ impl Panel {
     pub fn display(
         &mut self,
         w: &mut W,
-        active: bool,
-        screen: Screen,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
-        let state_area = self.areas.state.clone();
-        self.mut_state()
-            .display(w, screen, state_area, panel_skin, con)?;
-        if active || !WIDE_STATUS {
-            self.write_status(w, panel_skin, screen)?;
+        self.mut_state().display(w, disc)?;
+        if disc.active || !WIDE_STATUS {
+            self.write_status(w, &disc.panel_skin, disc.screen)?;
         }
         let mut input_area = self.areas.input.clone();
-        if active {
-            self.write_purpose(w, panel_skin, screen, con)?;
+        if disc.active {
+            self.write_purpose(w, &disc.panel_skin, disc.screen, &disc.con)?;
             let flags = self.state().get_flags();
             let input_content_len = self.input.get_content().len() as u16;
             let flags_len = flags_display::visible_width(&flags);
             if input_area.width > input_content_len + 1 + flags_len {
                 input_area.width -= flags_len + 1;
-                screen.goto(w, input_area.left + input_area.width, input_area.top)?;
-                flags_display::write(w, &flags, panel_skin)?;
+                disc.screen.goto(w, input_area.left + input_area.width, input_area.top)?;
+                flags_display::write(w, &flags, &disc.panel_skin)?;
             }
         }
-        self.input.display(w, active, self.state().get_mode(), input_area, panel_skin)?;
+        self.input.display(w, disc.active, self.state().get_mode(), input_area, &disc.panel_skin)?;
         Ok(())
     }
 

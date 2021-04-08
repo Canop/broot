@@ -1,4 +1,4 @@
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum ExternalExecutionMode {
     /// executed in the parent shell, on broot leaving, using the `br` function
     FromParentShell,

@@ -47,6 +47,12 @@ In such a case, which isn't rare in server systems, you can rebind <kbd>enter</k
 
 * [change standard file opening](../tricks/#change-standard-file-opening)
 
+# Everything feels slow, even moving the selection or scrolling
+
+It's probably your terminal app's fault. You could check that by using any other TUI application.
+
+Most terminal apps are fine but some, made with Electron or worse, or crippled with fancy plugins, take dozens of milliseconds to redraw the screen. You should not use those applications.
+
 # Broot doesn't seem to work on msysgit or git bash
 
 I have no solution for that. If you know how to tackle the problem, the maintainers of [Crossterm](https://github.com/crossterm-rs/crossterm) would be interested too.

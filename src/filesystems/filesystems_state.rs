@@ -52,7 +52,7 @@ impl FilesystemState {
     /// Not finding any filesystem is considered an error and prevents
     /// the opening of this state.
     pub fn new(
-        path: &Path,
+        path: Option<&Path>,
         tree_options: TreeOptions,
         con: &AppContext,
     ) -> Result<FilesystemState, ProgramError> {
@@ -78,10 +78,12 @@ impl FilesystemState {
                 });
             }
         };
-        let device_id = fs::metadata(path)?.dev().into();
-        let selection_idx = mounts
-            .iter()
-            .position(|m| m.info.dev == device_id)
+        let selection_idx = path
+            .and_then(|path| fs::metadata(path).ok())
+            .and_then(|md| {
+                let device_id = md.dev().into();
+                mounts.iter().position(|m| m.info.dev == device_id)
+            })
             .unwrap_or(0);
         Ok(FilesystemState {
             mounts,
@@ -125,6 +127,18 @@ impl FilesystemState {
         CmdResult::Keep
     }
 
+    fn no_opt_selected_path(&self) -> &Path {
+        &self.mounts[self.selection_idx].info.mount_point
+    }
+
+    fn no_opt_selection(&self) -> Selection<'_> {
+        Selection {
+            path: self.no_opt_selected_path(),
+            stype: SelectionType::Directory,
+            is_exe: false,
+            line: 0,
+        }
+    }
 }
 
 impl PanelState for FilesystemState {
@@ -137,8 +151,8 @@ impl PanelState for FilesystemState {
         self.mode
     }
 
-    fn selected_path(&self) -> &Path {
-        &self.mounts[self.selection_idx].info.mount_point
+    fn selected_path(&self) -> Option<&Path> {
+        Some(self.no_opt_selected_path())
     }
 
     fn tree_options(&self) -> TreeOptions {
@@ -156,13 +170,8 @@ impl PanelState for FilesystemState {
         CmdResult::Keep
     }
 
-    fn selection(&self) -> Selection<'_> {
-        Selection {
-            path: self.selected_path(),
-            stype: SelectionType::Directory,
-            is_exe: false,
-            line: 0,
-        }
+    fn selection(&self) -> Option<Selection<'_>> {
+        Some(self.no_opt_selection())
     }
 
     fn refresh(&mut self, _screen: Screen, _con: &AppContext) -> Command {
@@ -203,11 +212,10 @@ impl PanelState for FilesystemState {
     fn display(
         &mut self,
         w: &mut W,
-        _screen: Screen,
-        area: Area,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
+        let area = &disc.state_area;
+        let con = &disc.con;
         self.page_height = area.height as usize;
         let (mounts, selection_idx) = if let Some(filtered) = &self.filtered {
             (filtered.mounts.as_slice(), filtered.selection_idx)
@@ -216,7 +224,7 @@ impl PanelState for FilesystemState {
         };
         let scrollbar = area.scrollbar(self.scroll as i32, mounts.len() as i32);
         //- style preparation
-        let styles = &panel_skin.styles;
+        let styles = &disc.panel_skin.styles;
         let selection_bg = styles.selected_line.get_bg()
             .unwrap_or(Color::AnsiValue(240));
         let match_style = &styles.char_match;
@@ -487,7 +495,7 @@ impl PanelState for FilesystemState {
                 tree_options.show_root_fs = true;
                 CmdResult::from_optional_state(
                     BrowserState::new(
-                        self.selected_path().to_path_buf(),
+                        self.no_opt_selected_path().to_path_buf(),
                         tree_options,
                         screen,
                         con,
@@ -501,7 +509,7 @@ impl PanelState for FilesystemState {
                 if areas.is_first() && areas.nb_pos < con.max_panels_count {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        self.no_opt_selected_path().to_path_buf(),
                         screen,
                         self.tree_options(),
                         PanelPurpose::None,
@@ -518,7 +526,7 @@ impl PanelState for FilesystemState {
                 if areas.is_last() && areas.nb_pos < con.max_panels_count {
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        self.no_opt_selected_path().to_path_buf(),
                         screen,
                         self.tree_options(),
                         PanelPurpose::None,

@@ -7,7 +7,6 @@ use {
         errors::ProgramError,
         flag::Flag,
         pattern::InputPattern,
-        skin::PanelSkin,
         task_sync::Dam,
         tree::TreeOptions,
         verb::*,
@@ -84,6 +83,16 @@ impl PreviewState {
             }
         })
     }
+
+    fn no_opt_selection(&self) -> Selection<'_> {
+        Selection {
+            path: &self.path,
+            stype: SelectionType::File,
+            is_exe: false, // not always true. It means :open_leave won't execute it
+            line: self.preview.get_selected_line_number().unwrap_or(0),
+        }
+    }
+
 }
 
 impl PanelState for PreviewState {
@@ -155,8 +164,8 @@ impl PanelState for PreviewState {
         }
     }
 
-    fn selected_path(&self) -> &Path {
-        &self.path
+    fn selected_path(&self) -> Option<&Path> {
+        Some(&self.path)
     }
 
     fn set_selected_path(&mut self, path: PathBuf, con: &AppContext) {
@@ -167,13 +176,8 @@ impl PanelState for PreviewState {
         self.path = path;
     }
 
-    fn selection(&self) -> Selection<'_> {
-        Selection {
-            path: &self.path,
-            stype: SelectionType::File,
-            is_exe: false, // not always true. It means :open_leave won't execute it
-            line: self.preview.get_selected_line_number().unwrap_or(0),
-        }
+    fn selection(&self) -> Option<Selection<'_>> {
+        Some(self.no_opt_selection())
     }
 
     fn tree_options(&self) -> TreeOptions {
@@ -214,11 +218,10 @@ impl PanelState for PreviewState {
     fn display(
         &mut self,
         w: &mut W,
-        screen: Screen,
-        state_area: Area,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
+        let con = &disc.con;
+        let state_area = &disc.state_area;
         if state_area.height < 3 {
             warn!("area too small for preview");
             return Ok(());
@@ -231,11 +234,11 @@ impl PanelState for PreviewState {
             self.preview_area = preview_area;
         }
         if self.dirty {
-            panel_skin.styles.default.queue_bg(w)?;
-            screen.clear_area_to_right(w, &state_area)?;
+            disc.panel_skin.styles.default.queue_bg(w)?;
+            disc.screen.clear_area_to_right(w, state_area)?;
             self.dirty = false;
         }
-        let styles = &panel_skin.styles;
+        let styles = &disc.panel_skin.styles;
         w.queue(cursor::MoveTo(state_area.left, 0))?;
         let mut cw = CropWriter::new(w, state_area.width as usize);
         let file_name = self
@@ -252,15 +255,15 @@ impl PanelState for PreviewState {
         );
         cw.fill(&styles.default, &SPACE_FILLING)?;
         let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
-        preview.display_info(w, screen, panel_skin, &info_area)?;
-        if let Err(err) = preview.display(w, screen, panel_skin, &self.preview_area, con) {
+        preview.display_info(w, disc.screen, disc.panel_skin, &info_area)?;
+        if let Err(err) = preview.display(w, disc.screen, disc.panel_skin, &self.preview_area, con) {
             warn!("error while displaying file: {:?}", &err);
             if preview.get_mode().is_some() {
                 // means it's not an error already
                 if let ProgramError::Io { source } = err {
                     // we mutate the preview to Preview::IOError
                     self.preview = Preview::IOError(source);
-                    return self.display(w, screen, state_area, panel_skin, con);
+                    return self.display(w, disc);
                 }
             }
             return Err(err);
@@ -275,7 +278,7 @@ impl PanelState for PreviewState {
     ) -> Status {
         let mut ssb = con.standard_status.builder(
             PanelStateType::Preview,
-            self.selection(),
+            self.no_opt_selection(),
         );
         ssb.has_previous_state = has_previous_state;
         ssb.is_filtered = self.filtered_preview.is_some();

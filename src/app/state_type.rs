@@ -12,4 +12,7 @@ pub enum PanelStateType {
 
     /// The preview panel, never alone on screen
     Preview,
+
+    /// The stage panel, never alone on screen
+    Stage,
 }

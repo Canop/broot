@@ -1,7 +1,9 @@
 mod app;
+mod app_context;
+mod app_state;
 mod cmd_context;
 mod cmd_result;
-mod context;
+mod display_context;
 mod mode;
 mod panel;
 mod panel_id;
@@ -14,15 +16,17 @@ mod status;
 
 pub use {
     app::App,
+    app_context::AppContext,
+    app_state::*,
     cmd_context::*,
     cmd_result::*,
-    context::AppContext,
+    display_context::*,
     mode::*,
     panel::Panel,
     panel_id::PanelId,
     panel_purpose::PanelPurpose,
     panel_state::*,
-    selection::{LineNumber, Selection, SelectionType},
+    selection::*,
     standard_status::StandardStatus,
     state_type::PanelStateType,
     status::Status,

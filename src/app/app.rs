@@ -9,6 +9,7 @@ use {
         file_sum, git,
         launchable::Launchable,
         skin::*,
+        stage::StageState,
         task_sync::{Dam, Either},
         verb::Internal,
     },
@@ -52,7 +53,9 @@ pub struct App {
     created_panels_count: usize,
 
     /// the panel dedicated to preview, if any
-    preview: Option<PanelId>,
+    preview_panel: Option<PanelId>,
+
+    stage_panel: Option<PanelId>,
 
     /// the root of the active panel
     #[cfg(feature = "client-server")]
@@ -94,7 +97,8 @@ impl App {
             quitting: false,
             launch_at_end: None,
             created_panels_count: 1,
-            preview: None,
+            preview_panel: None,
+            stage_panel: None,
 
             #[cfg(feature = "client-server")]
             root: Arc::new(Mutex::new(con.launch_args.root.clone())),
@@ -109,7 +113,7 @@ impl App {
             PanelReference::Leftest => Some(0),
             PanelReference::Rightest => Some(self.panels.len().get() - 1),
             PanelReference::Id(id) => self.panel_id_to_idx(id),
-            PanelReference::Preview => self.preview.and_then(|id| self.panel_id_to_idx(id)),
+            PanelReference::Preview => self.preview_panel.and_then(|id| self.panel_id_to_idx(id)),
         }
     }
 
@@ -140,20 +144,29 @@ impl App {
     /// Return true when the panel has been removed (ie it wasn't the last one)
     fn close_panel(&mut self, panel_idx: usize) -> bool {
         let active_panel_id = self.panels[self.active_panel_idx].id;
-        if let Some(preview_id) = self.preview {
+        if let Some(preview_id) = self.preview_panel {
             if self.panels.has_len(2) && self.panels[panel_idx].id != preview_id {
                 // we don't want to stay with just the preview
                 return false;
             }
         }
+        if let Some(stage_id) = self.stage_panel {
+            if self.panels.has_len(2) && self.panels[panel_idx].id != stage_id {
+                // we don't want to stay with just the stage
+                return false;
+            }
+        }
         if let Ok(removed_panel) = self.panels.remove(panel_idx) {
-            if self.preview == Some(removed_panel.id) {
-                self.preview = None;
+            if self.preview_panel == Some(removed_panel.id) {
+                self.preview_panel = None;
+            }
+            if self.stage_panel == Some(removed_panel.id) {
+                self.stage_panel = None;
             }
             Areas::resize_all(
                 self.panels.as_mut_slice(),
                 self.screen,
-                self.preview.is_some(),
+                self.preview_panel.is_some(),
             )
             .expect("removing a panel should be easy");
             self.active_panel_idx = self
@@ -165,6 +178,49 @@ impl App {
         } else {
             false // there's no other panel to go to
         }
+    }
+
+    /// a polite request to show the stage, if it bothers nobody
+    fn maybe_show_stage(&mut self, state: &AppState, con: &AppContext) -> bool {
+        if state.stage.is_empty() {
+            return false; // nothing to show
+        }
+        if self.stage_panel.is_some() {
+            return false; // already here
+        }
+        let len = self.panels.len().get();
+        if len >= con.max_panels_count {
+            if let Some(panel_id) = self.preview_panel {
+                // we replace the preview with the staging area
+                let preview_panel_idx = self
+                    .panels
+                    .iter()
+                    .position(|p| p.id == panel_id)
+                    .unwrap_or(len - 1);
+                self.close_panel(preview_panel_idx);
+            } else {
+                return false;
+            }
+        }
+        let insertion_idx = len;
+        if let Ok(areas) = Areas::create(
+            self.panels.as_mut_slice(),
+            insertion_idx,
+            self.screen,
+            false, // TODO new argument to set it smaller
+        ) {
+            let panel_id = self.created_panels_count.into();
+            let state = StageState::new(
+                self.state().tree_options(),
+                con,
+            );
+            let mut panel = Panel::new(panel_id, Box::new(state), areas, con);
+            self.created_panels_count += 1;
+            self.panels.insert(insertion_idx, panel);
+            self.stage_panel = Some(panel_id);
+            info!("stage state added");
+        }
+        false
     }
 
     /// remove the top state of the current panel
@@ -183,6 +239,7 @@ impl App {
         &mut self,
         w: &mut W,
         skin: &AppSkin,
+        app_state: &AppState,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         // if some images are displayed by kitty, we'll erase it,
@@ -196,11 +253,19 @@ impl App {
                 renderer.take_current_images()
             });
         for (idx, panel) in self.panels.as_mut_slice().iter_mut().enumerate() {
-            let focused = idx == self.active_panel_idx;
-            let skin = if focused { &skin.focused } else { &skin.unfocused };
+            let active = idx == self.active_panel_idx;
+            let panel_skin = if active { &skin.focused } else { &skin.unfocused };
+            let disc = DisplayContext {
+                active,
+                screen: self.screen,
+                panel_skin,
+                state_area: panel.areas.state.clone(),
+                app_state,
+                con,
+            };
             time!(
                 "display panel",
-                panel.display(w, focused, self.screen, skin, con)?,
+                panel.display(w, &disc)?,
             );
         }
         #[cfg(unix)]
@@ -216,20 +281,23 @@ impl App {
 
     /// if there are exactly two non preview panels, return the selection
     /// in the non focused panel
+    /// FIXME exclude stage panel
     fn get_other_panel_path(&self) -> Option<PathBuf> {
         let len = self.panels.len().get();
         if len == 3 {
-            if let Some(preview_id) = self.preview {
+            if let Some(preview_id) = self.preview_panel {
                 for (idx, panel) in self.panels.iter().enumerate() {
                     if self.active_panel_idx != idx && panel.id != preview_id {
-                        return Some(panel.state().selected_path().to_path_buf());
+                        return panel.state().selected_path()
+                            .map(|p| p.to_path_buf());
                     }
                 }
             }
             None
-        } else if self.panels.len().get() == 2 && self.preview.is_none() {
+        } else if self.panels.len().get() == 2 && self.preview_panel.is_none() {
             let non_focused_panel_idx = if self.active_panel_idx == 0 { 1 } else { 0 };
-            Some(self.panels[non_focused_panel_idx].state().selected_path().to_path_buf())
+            self.panels[non_focused_panel_idx].state().selected_path()
+                .map(|p| p.to_path_buf())
         } else {
             None
         }
@@ -241,23 +309,24 @@ impl App {
         w: &mut W,
         cmd: Command,
         panel_skin: &PanelSkin,
+        app_state: &mut AppState,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         use CmdResult::*;
         let mut error: Option<String> = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
         let app_cmd_context = AppCmdContext {
-            cmd: &cmd,
+            app_state,
             other_path: self.get_other_panel_path(),
             panel_skin,
-            preview: self.preview,
+            preview: self.preview_panel,
             screen: self.screen, // it can't change in this function
             con,
         };
-        match self.mut_panel().apply_command(w, &app_cmd_context)? {
+        match self.mut_panel().apply_command(w, &cmd, &app_cmd_context)? {
             ApplyOnPanel { id } => {
                 if let Some(idx) = self.panel_id_to_idx(id) {
-                    if let DisplayError(txt) = self.panels[idx].apply_command(w, &app_cmd_context)? {
+                    if let DisplayError(txt) = self.panels[idx].apply_command(w, &cmd, &app_cmd_context)? {
                         // we should probably handle other results
                         // which implies the possibility of a recursion
                         error = Some(txt);
@@ -275,7 +344,7 @@ impl App {
                 let close_idx = self.panel_ref_to_idx(panel_ref)
                     .unwrap_or_else(||
                         // when there's a preview panel, we close it rather than the app
-                        if self.panels.len().get()==2 && self.preview.is_some() {
+                        if self.panels.len().get()==2 && self.preview_panel.is_some() {
                             1
                         } else {
                             self.active_panel_idx
@@ -285,8 +354,10 @@ impl App {
                 if validate_purpose {
                     let purpose = &self.panels[close_idx].purpose;
                     if let PanelPurpose::ArgEdition { .. } = purpose {
-                        let path = self.panels[close_idx].state().selected_path();
-                        new_arg = Some(path.to_string_lossy().to_string());
+                        new_arg = self.panels[close_idx]
+                            .state()
+                            .selected_path()
+                            .map(|p| p.to_string_lossy().to_string());
                     }
                 }
                 if self.close_panel(close_idx) {
@@ -297,14 +368,14 @@ impl App {
                         let new_input = self.panel().get_input_content();
                         let cmd = Command::from_raw(new_input, false);
                         let app_cmd_context = AppCmdContext {
-                            cmd: &cmd,
+                            app_state,
                             other_path: self.get_other_panel_path(),
                             panel_skin,
-                            preview: self.preview,
+                            preview: self.preview_panel,
                             screen,
                             con,
                         };
-                        self.mut_panel().apply_command(w, &app_cmd_context)?;
+                        self.mut_panel().apply_command(w, &cmd, &app_cmd_context)?;
                     }
                 } else {
                     self.quitting = true;
@@ -339,6 +410,46 @@ impl App {
                             Some(self.active_panel_idx + 1)
                         }
                     }
+                    Internal::clear_stage => {
+                        app_state.stage.paths.clear();
+                        let panel_idx = self.stage_panel
+                            .and_then(|id| self.panel_id_to_idx(id));
+                        if let Some(idx) = panel_idx {
+                            self.close_panel(idx);
+                        }
+                        // TODO refresh
+                        None
+                    }
+                    Internal::stage => {
+                        info!("received command to stage {:?}", self.state().selected_path());
+                        if let Some(path) = self.state().selected_path() {
+                            let path = path.to_path_buf();
+                            app_state.stage.add(path);
+                            self.maybe_show_stage(app_state, con);
+                        } else {
+                            // TODO display error ?
+                            warn!("no path in state");
+                        }
+                        None
+                    }
+                    Internal::unstage => {
+                        info!("received command to unstage {:?}", self.state().selected_path());
+                        if let Some(path) = self.state().selected_path() {
+                            if app_state.stage.remove(path) {
+                                if app_state.stage.is_empty() {
+                                    let panel_idx = self.stage_panel
+                                        .and_then(|id| self.panel_id_to_idx(id));
+                                    if let Some(idx) = panel_idx {
+                                        self.close_panel(idx);
+                                    }
+                                }
+                            }
+                        } else {
+                            // TODO display error ?
+                            warn!("no path in state");
+                        }
+                        None
+                    }
                     _ => {
                         debug!("unhandled propagated internal. cmd={:?}", &cmd);
                         None
@@ -350,7 +461,15 @@ impl App {
                     }
                     self.active_panel_idx = idx;
                     let other_path = self.get_other_panel_path();
-                    self.mut_panel().refresh_input_status(&other_path, con);
+                    let app_cmd_context = AppCmdContext {
+                        app_state,
+                        other_path: self.get_other_panel_path(),
+                        panel_skin,
+                        preview: self.preview_panel,
+                        screen: self.screen,
+                        con,
+                    };
+                    self.mut_panel().refresh_input_status(&app_cmd_context);
                 }
             }
             Keep => {
@@ -377,7 +496,7 @@ impl App {
                 } else {
                     self.active_panel_idx
                 };
-                let with_preview = purpose.is_preview() || self.preview.is_some();
+                let with_preview = purpose.is_preview() || self.preview_panel.is_some();
                 match Areas::create(
                     self.panels.as_mut_slice(),
                     insertion_idx,
@@ -391,8 +510,8 @@ impl App {
                         self.created_panels_count += 1;
                         self.panels.insert(insertion_idx, panel);
                         if purpose.is_preview() {
-                            debug_assert!(self.preview.is_none());
-                            self.preview = Some(panel_id);
+                            debug_assert!(self.preview_panel.is_none());
+                            self.preview_panel = Some(panel_id);
                         } else {
                             self.active_panel_idx = insertion_idx;
                         }
@@ -406,7 +525,7 @@ impl App {
                 self.mut_panel().clear_input();
                 self.mut_panel().push_state(state);
                 let other_path = self.get_other_panel_path();
-                self.mut_panel().refresh_input_status(&other_path, con);
+                self.mut_panel().refresh_input_status(&app_cmd_context);
             }
             PopState => {
                 if is_input_invocation {
@@ -415,7 +534,7 @@ impl App {
                 if self.remove_state() {
                     self.mut_state().refresh(app_cmd_context.screen, con);
                     let other_path = self.get_other_panel_path();
-                    self.mut_panel().refresh_input_status(&other_path, con);
+                    self.mut_panel().refresh_input_status(&app_cmd_context);
                 } else if ESCAPE_TO_QUIT {
                     self.quitting = true;
                 }
@@ -426,14 +545,14 @@ impl App {
                 }
                 if self.remove_state() {
                     let app_cmd_context = AppCmdContext {
-                        cmd: &cmd,
+                        app_state,
                         other_path: self.get_other_panel_path(),
                         panel_skin,
-                        preview: self.preview,
+                        preview: self.preview_panel,
                         screen: self.screen,
                         con,
                     };
-                    self.mut_panel().apply_command(w, &app_cmd_context)?;
+                    self.mut_panel().apply_command(w, &cmd, &app_cmd_context)?;
                 } else if ESCAPE_TO_QUIT {
                     self.quitting = true;
                 }
@@ -468,13 +587,14 @@ impl App {
 
     /// update the state of the preview, if there's some
     fn update_preview(&mut self, con: &AppContext) {
-        let preview_idx = self.preview.and_then(|id| self.panel_id_to_idx(id));
+        let preview_idx = self.preview_panel.and_then(|id| self.panel_id_to_idx(id));
         if let Some(preview_idx) = preview_idx {
-            let path = self.state().selected_path();
-            let old_path = self.panels[preview_idx].state().selected_path();
-            if path != old_path && path.is_file() {
-                let path = path.to_path_buf();
-                self.panels[preview_idx].mut_state().set_selected_path(path, con);
+            if let Some(path) = self.state().selected_path() {
+                let old_path = self.panels[preview_idx].state().selected_path();
+                if Some(path) != old_path && path.is_file() {
+                    let path = path.to_path_buf();
+                    self.panels[preview_idx].mut_state().set_selected_path(path, con);
+                }
             }
         }
     }
@@ -491,14 +611,22 @@ impl App {
         w: &mut W,
         skin: &AppSkin,
         dam: &mut Dam,
+        app_state: &mut AppState,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         while self.has_pending_task() && !dam.has_event() {
             if self.do_pending_task(con, dam) {
                 self.update_preview(con); // the selection may have changed
-                let other_path = self.get_other_panel_path();
-                self.mut_panel().refresh_input_status(&other_path, con);
-                self.display_panels(w, &skin, con)?;
+                let app_cmd_context = AppCmdContext {
+                    app_state,
+                    other_path: self.get_other_panel_path(),
+                    panel_skin: &skin.focused,
+                    preview: self.preview_panel,
+                    screen: self.screen,
+                    con,
+                };
+                self.mut_panel().refresh_input_status(&app_cmd_context);
+                self.display_panels(w, &skin, app_state, con)?;
             } else {
                 warn!("unexpected lack of update on do_pending_task");
                 return Ok(());
@@ -548,8 +676,8 @@ impl App {
         let event_source = EventSource::new()?;
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
-
         let skin = AppSkin::new(conf, con.launch_args.no_style);
+        let mut app_state = AppState::default();
 
         self.screen.clear_bottom_right_char(w, &skin.focused)?;
 
@@ -570,10 +698,10 @@ impl App {
 
         loop {
             if !self.quitting {
-                self.display_panels(w, &skin, con)?;
+                self.display_panels(w, &skin, &app_state, con)?;
                 time!(
                     "pending_tasks",
-                    self.do_pending_tasks(w, &skin, &mut dam, con)?,
+                    self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
                 );
             }
             match dam.next(&self.rx_seqs) {
@@ -593,7 +721,7 @@ impl App {
                             Areas::resize_all(
                                 self.panels.as_mut_slice(),
                                 self.screen,
-                                self.preview.is_some(),
+                                self.preview_panel.is_some(),
                             )?;
                             for panel in &mut self.panels {
                                 panel.mut_state().refresh(self.screen, con);
@@ -601,9 +729,9 @@ impl App {
                         }
                         _ => {
                             // event handled by the panel
-                            let cmd = self.mut_panel().add_event(w, event, con)?;
+                            let cmd = self.mut_panel().add_event(w, event, &app_state, con)?;
                             debug!("command after add_event: {:?}", &cmd);
-                            self.apply_command(w, cmd, &skin.focused, con)?;
+                            self.apply_command(w, cmd, &skin.focused, &mut app_state, con)?;
                         }
                     }
                     event_source.unblock(self.quitting);
@@ -617,15 +745,15 @@ impl App {
                     debug!("got command sequence: {:?}", &raw_sequence);
                     for (input, arg_cmd) in raw_sequence.parse(con)? {
                         self.mut_panel().set_input_content(&input);
-                        self.apply_command(w, arg_cmd, &skin.focused, con)?;
+                        self.apply_command(w, arg_cmd, &skin.focused, &mut app_state, con)?;
                         if self.quitting {
                             // is that a 100% safe way of quitting ?
                             return Ok(self.launch_at_end.take());
                         } else {
-                            self.display_panels(w, &skin, con)?;
+                            self.display_panels(w, &skin, &mut app_state, con)?;
                             time!(
                                 "sequence pending tasks",
-                                self.do_pending_tasks(w, &skin, &mut dam, con)?,
+                                self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
                             );
                         }
                     }

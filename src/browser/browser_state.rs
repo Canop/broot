@@ -9,7 +9,6 @@ use {
         pattern::*,
         path::{self, PathAnchor},
         print,
-        skin::PanelSkin,
         task_sync::Dam,
         tree::*,
         tree_build::TreeBuilder,
@@ -17,7 +16,6 @@ use {
     },
     open,
     std::path::{Path, PathBuf},
-    termimad::Area,
 };
 
 /// An application state dedicated to displaying a tree.
@@ -169,12 +167,12 @@ impl PanelState for BrowserState {
         }
     }
 
-    fn selected_path(&self) -> &Path {
-        &self.displayed_tree().selected_line().path
+    fn selected_path(&self) -> Option<&Path> {
+        Some(&self.displayed_tree().selected_line().path)
     }
 
-    fn selection(&self) -> Selection<'_> {
-        self.displayed_tree().selected_line().as_selection()
+    fn selection(&self) -> Option<Selection<'_>> {
+        Some(self.displayed_tree().selected_line().as_selection())
     }
 
     fn tree_options(&self) -> TreeOptions {
@@ -278,7 +276,7 @@ impl PanelState for BrowserState {
                 internal_exec,
                 input_invocation,
                 trigger_type,
-                self.selected_path(),
+                &self.displayed_tree().selected_line().path,
                 screen,
                 con,
                 self.displayed_tree().options.clone(),
@@ -350,7 +348,7 @@ impl PanelState for BrowserState {
                 if areas.is_first() && areas.nb_pos < con.max_panels_count  {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        self.displayed_tree().selected_line().path.to_path_buf(),
                         screen,
                         self.displayed_tree().options.clone(),
                         PanelPurpose::None,
@@ -364,15 +362,16 @@ impl PanelState for BrowserState {
             }
             Internal::panel_right => {
                 let areas = &cc.panel.areas;
+                let selected_path = &self.displayed_tree().selected_line().path;
                 if areas.is_last() && areas.nb_pos < con.max_panels_count {
-                    let purpose = if self.selected_path().is_file() && cc.has_no_preview() {
+                    let purpose = if selected_path.is_file() && cc.has_no_preview() {
                         PanelPurpose::Preview
                     } else {
                         PanelPurpose::None
                     };
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        selected_path.to_path_buf(),
                         screen,
                         self.displayed_tree().options.clone(),
                         purpose,
@@ -432,7 +431,7 @@ impl PanelState for BrowserState {
                         // we just open a new panel on the selected path,
                         // without purpose
                         internal_focus::new_panel_on_path(
-                            self.selected_path().to_path_buf(),
+                            self.displayed_tree().selected_line().path.to_path_buf(),
                             screen,
                             tree_options,
                             PanelPurpose::None,
@@ -477,7 +476,7 @@ impl PanelState for BrowserState {
     ) -> Status {
         let mut ssb = con.standard_status.builder(
             PanelStateType::Tree,
-            self.selection(),
+            self.displayed_tree().selected_line().as_selection(),
         );
         ssb.has_previous_state = has_previous_state;
         ssb.is_filtered = self.filtered_tree.is_some();
@@ -531,16 +530,13 @@ impl PanelState for BrowserState {
     fn display(
         &mut self,
         w: &mut W,
-        _screen: Screen,
-        area: Area,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
         let dp = DisplayableTree {
             tree: &self.displayed_tree(),
-            skin: &panel_skin.styles,
-            ext_colors: &con.ext_colors,
-            area,
+            skin: &disc.panel_skin.styles,
+            ext_colors: &disc.con.ext_colors,
+            area: disc.state_area.clone(),
             in_app: true,
         };
         dp.write_on(w)

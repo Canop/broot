@@ -1,15 +1,18 @@
-
 use {
     super::CommandParts,
     crate::{
         app::{
             AppContext,
-            Selection,
+            SelectionType,
+            SelInfo,
         },
         path::{self, PathAnchor},
         verb::PrefixSearchResult,
     },
-    std::io,
+    std::{
+        io,
+        path::Path,
+    },
 };
 
 /// find the longest common start of a and b
@@ -38,6 +41,9 @@ pub enum Completions {
 
 impl Completions {
     fn from_list(completions: Vec<String>) -> Self {
+        if completions.is_empty() {
+            return Self::None;
+        }
         let mut iter = completions.iter();
         let mut common: &str = match iter.next() {
             Some(s) => &s,
@@ -77,9 +83,9 @@ impl Completions {
     fn for_verb(
         start: &str,
         con: &AppContext,
-        sel: Selection<'_>,
+        sel_info: SelInfo<'_>,
     ) -> Self {
-        match con.verb_store.search(start, Some(sel.stype)) {
+        match con.verb_store.search(start, sel_info.common_stype()) {
             PrefixSearchResult::NoMatch => Self::None,
             PrefixSearchResult::Match(name, _) => {
                 if start.len() >= name.len() {
@@ -96,61 +102,95 @@ impl Completions {
         }
     }
 
-    fn for_path(
-        anchor: PathAnchor,
+    fn list_for_path(
+        verb_name: &str,
         arg: &str,
-        _con: &AppContext,
-        sel: Selection<'_>,
-    ) -> io::Result<Self> {
+        path: &Path,
+        stype: SelectionType,
+        con: &AppContext,
+    ) -> io::Result<Vec<String>> {
+        let anchor = match con.verb_store.search(verb_name, Some(stype)) {
+            PrefixSearchResult::Match(_, verb) => verb.get_arg_anchor(),
+            _ => PathAnchor::Unspecified,
+        };
         let c = regex!(r"^(.*?)([^/]*)$").captures(arg).unwrap();
         let parent_part = &c[1];
         let child_part = &c[2];
-        let parent = path::path_from(sel.path, anchor, parent_part);
+        let parent = path::path_from(path, anchor, parent_part);
+        let mut children = Vec::new();
         if !parent.exists() {
             debug!("no path completion possible because {:?} doesn't exist", &parent);
-            return Ok(Self::None);
-        }
-        let mut children = Vec::new();
-        for entry in parent.read_dir()? {
-            let entry = entry?;
-            let mut name = entry.file_name().to_string_lossy().to_string();
-            if !child_part.is_empty() {
-                if !name.starts_with(child_part) {
-                    continue;
+        } else {
+            for entry in parent.read_dir()? {
+                let entry = entry?;
+                let mut name = entry.file_name().to_string_lossy().to_string();
+                if !child_part.is_empty() {
+                    if !name.starts_with(child_part) {
+                        continue;
+                    }
+                    if name == child_part && entry.file_type()?.is_dir() {
+                        name = "/".to_string();
+                    } else {
+                        name.drain(0..child_part.len());
+                    }
                 }
-                if name == child_part && entry.file_type()?.is_dir() {
-                    name = "/".to_string();
-                } else {
-                    name.drain(0..child_part.len());
-                }
+                children.push(name);
             }
-            children.push(name);
         }
-        Ok(Self::from_list(children))
+        Ok(children)
     }
 
     fn for_arg(
         verb_name: &str,
         arg: &str,
         con: &AppContext,
-        sel: Selection<'_>,
+        sel_info: SelInfo<'_>,
     ) -> Self {
         // in the future we might offer completion of other types
         // of arguments, maybe user supplied, but there's no use case
         // now so we'll just assume the user wants to complete a path.
         if arg.contains(' ') {
-            Self::None
-        } else {
-            let anchor = match con.verb_store.search(verb_name, Some(sel.stype)) {
-                PrefixSearchResult::Match(_, verb) => verb.get_arg_anchor(),
-                _ => PathAnchor::Unspecified,
-            };
-            match Self::for_path(anchor, arg, con, sel) {
-                Ok(c) => c,
-                Err(e) => {
-                    warn!("Error while trying to complete path: {:?}", e);
-                    Self::None
+            return Self::None;
+        }
+        match sel_info {
+            SelInfo::None => Self::None,
+            SelInfo::One(sel) => {
+                match Self::list_for_path(verb_name, arg, sel.path, sel.stype, con) {
+                    Ok(list) => Self::from_list(list),
+                    Err(e) => {
+                        warn!("Error while trying to complete path: {:?}", e);
+                        Self::None
+                    }
                 }
+            }
+            SelInfo::More(stage) => {
+                // We're looking for the possible completions which
+                // are valid for all elements of the stage
+                let mut lists = stage.paths.iter()
+                    .filter_map(|path| {
+                        Self::list_for_path(
+                                verb_name,
+                                arg,
+                                path,
+                                SelectionType::from(path),
+                                con
+                        ).ok()
+                    });
+                let mut list = match lists.next() {
+                    Some(list) => list,
+                    None => {
+                        // can happen if there were IO errors on paths in stage, for example
+                        // on removals
+                        return Self::None;
+                    }
+                };
+                for ol in lists.next() {
+                    list = list.iter().filter(|c| ol.contains(c)).cloned().collect();
+                    if list.is_empty() {
+                        break;
+                    }
+                }
+                Self::from_list(list)
             }
         }
     }
@@ -158,18 +198,18 @@ impl Completions {
     pub fn for_input(
         parts: &CommandParts,
         con: &AppContext,
-        sel: Selection<'_>,
+        sel_info: SelInfo<'_>,
     ) -> Self {
         match &parts.verb_invocation {
             Some(invocation) if !invocation.is_empty() => {
                 match &invocation.args {
                     None => {
                         // looking into verb completion
-                        Self::for_verb(&invocation.name, con, sel)
+                        Self::for_verb(&invocation.name, con, sel_info)
                     }
                     Some(args) if !args.is_empty() => {
                         // looking into arg completion
-                        Self::for_arg(&invocation.name, args, con, sel)
+                        Self::for_arg(&invocation.name, args, con, sel_info)
                     }
                     _ => {
                         // nothing possible

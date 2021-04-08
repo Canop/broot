@@ -8,7 +8,6 @@ use {
         errors::ProgramError,
         launchable::Launchable,
         pattern::*,
-        skin::PanelSkin,
         tree::TreeOptions,
         verb::*,
     },
@@ -60,8 +59,8 @@ impl PanelState for HelpState {
         self.mode
     }
 
-    fn selected_path(&self) -> &Path {
-        &self.config_path
+    fn selected_path(&self) -> Option<&Path> {
+        Some(&self.config_path)
     }
 
     fn tree_options(&self) -> TreeOptions {
@@ -79,13 +78,13 @@ impl PanelState for HelpState {
         CmdResult::Keep
     }
 
-    fn selection(&self) -> Selection<'_> {
-        Selection {
+    fn selection(&self) -> Option<Selection<'_>> {
+        Some(Selection {
             path: &self.config_path,
             stype: SelectionType::File,
             is_exe: false,
             line: 0,
-        }
+        })
     }
 
     fn refresh(&mut self, _screen: Screen, _con: &AppContext) -> Command {
@@ -105,25 +104,22 @@ impl PanelState for HelpState {
     fn display(
         &mut self,
         w: &mut W,
-        screen: Screen,
-        state_area: Area,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
-        let mut text_area = state_area.clone();
+        let con = &disc.con;
+        let mut text_area = disc.state_area.clone();
         text_area.pad_for_max_width(120);
         if text_area != self.text_area {
             self.dirty = true;
             self.text_area = text_area;
         }
         if self.dirty {
-            panel_skin.styles.default.queue_bg(w)?;
-            screen.clear_area_to_right(w, &state_area)?;
+            disc.panel_skin.styles.default.queue_bg(w)?;
+            disc.screen.clear_area_to_right(w, &disc.state_area)?;
             self.dirty = false;
         }
         let mut expander = help_content::expander();
-        expander
-            .set("version", env!("CARGO_PKG_VERSION"));
+        expander.set("version", env!("CARGO_PKG_VERSION"));
         let config_paths: Vec<String> = con.config_paths.iter()
             .map(|p| p.to_string_lossy().to_string())
             .collect();
@@ -170,7 +166,7 @@ impl PanelState for HelpState {
         }
         let text = expander.expand();
         let fmt_text = FmtText::from_text(
-            &panel_skin.help_skin,
+            &disc.panel_skin.help_skin,
             text,
             Some((self.text_area.width - 1) as usize),
         );
