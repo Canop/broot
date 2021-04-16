@@ -5,18 +5,14 @@ use {
         display::{CropWriter, Screen, SPACE_FILLING, W},
         errors::ProgramError,
         pattern::*,
-        path::{self, PathAnchor},
-        skin::PanelSkin,
         tree::*,
         verb::*,
     },
     crossterm::{
         cursor,
-        style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
-    std::path::{Path, PathBuf},
-    termimad::Area,
+    std::path::{Path},
 };
 
 pub struct StageState {
@@ -38,6 +34,10 @@ impl StageState {
 }
 
 impl PanelState for StageState {
+
+    fn get_type(&self) -> PanelStateType {
+        PanelStateType::Stage
+    }
 
     fn get_pending_task(&self) -> Option<&'static str> {
         None
@@ -64,8 +64,8 @@ impl PanelState for StageState {
         }
     }
 
-    fn has_at_least_one_selection(&self, cc: &CmdContext) -> bool {
-        !cc.app.app_state.stage.is_empty()
+    fn has_at_least_one_selection(&self, app_state: &AppState) -> bool {
+        !app_state.stage.is_empty()
     }
 
     fn tree_options(&self) -> TreeOptions {
@@ -137,15 +137,16 @@ impl PanelState for StageState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
-        use Internal::*;
         Ok(match internal_exec.internal {
             _ => self.on_internal_generic(
                 w,
                 internal_exec,
                 input_invocation,
                 trigger_type,
+                app_state,
                 cc,
             )?,
         })
@@ -158,9 +159,10 @@ impl PanelState for StageState {
         &self,
         verb: &Verb,
         invocation: &VerbInvocation,
+        app_state: &AppState,
         cc: &CmdContext,
     ) -> Status {
-        if cc.app.app_state.stage.paths.len() > 1 {
+        if app_state.stage.paths.len() > 1 {
             if let VerbExecution::External(external) = &verb.execution {
                 if external.exec_mode != ExternalExecutionMode::StayInBroot {
                     return Status::new(
@@ -171,14 +173,14 @@ impl PanelState for StageState {
             }
             // right now there's no check for sequences but they're inherently dangereous
         }
-        if cc.app.app_state.stage.is_empty() {
+        if app_state.stage.is_empty() {
             if let Some(err) = verb.check_args(&None, invocation, &cc.app.other_path) {
                 return Status::new(err, true);
             }
         } else {
             // we check that the verb applies to all selections
             // TODO make it faster when the verb doesn't need the selection ?
-            for path in &cc.app.app_state.stage.paths {
+            for path in &app_state.stage.paths {
                 let selection = Selection {
                     path,
                     line: 0,
@@ -206,16 +208,17 @@ impl PanelState for StageState {
         verb: &Verb,
         external_execution: &ExternalExecution,
         invocation: Option<&VerbInvocation>,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
-        if cc.app.app_state.stage.paths.len() > 1 {
+        if app_state.stage.paths.len() > 1 {
             if external_execution.exec_mode != ExternalExecutionMode::StayInBroot {
                 return Ok(CmdResult::error(
                     "only verbs returning to broot on end can be executed on a multi-selection".to_owned()
                 ));
             }
         }
-        if cc.app.app_state.stage.is_empty() {
+        if app_state.stage.is_empty() {
             // execution on no selection
             let exec_builder = ExecutionStringBuilder::from_invocation(
                 &verb.invocation_parser,
@@ -231,7 +234,7 @@ impl PanelState for StageState {
         } else {
             let mut refresh = false;
             // we apply the verb to all selections
-            for path in &cc.app.app_state.stage.paths {
+            for path in &app_state.stage.paths {
                 let selection = Selection {
                     path,
                     line: 0,
@@ -272,6 +275,7 @@ impl PanelState for StageState {
         verb: &Verb,
         seq_ex: &SequenceExecution,
         invocation: Option<&VerbInvocation>,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         Ok(CmdResult::error("sequence execution not yet implemented on staging area"))

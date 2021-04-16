@@ -40,6 +40,7 @@ macro_rules! Internals {
                 }
             }
             pub fn need_path(self) -> bool {
+                use Internal::*;
                 match self {
                     $($name => $need_path,)*
                 }

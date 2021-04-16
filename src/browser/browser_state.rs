@@ -146,6 +146,10 @@ impl BrowserState {
 
 impl PanelState for BrowserState {
 
+    fn get_type(&self) -> PanelStateType {
+        PanelStateType::Tree
+    }
+
     fn set_mode(&mut self, mode: Mode) {
         debug!("BrowserState::set_mode({:?})", mode);
         self.mode = mode;
@@ -248,6 +252,7 @@ impl PanelState for BrowserState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         let con = &cc.app.con;
@@ -364,7 +369,7 @@ impl PanelState for BrowserState {
                 let areas = &cc.panel.areas;
                 let selected_path = &self.displayed_tree().selected_line().path;
                 if areas.is_last() && areas.nb_pos < con.max_panels_count {
-                    let purpose = if selected_path.is_file() && cc.has_no_preview() {
+                    let purpose = if selected_path.is_file() && cc.app.preview_panel.is_none() {
                         PanelPurpose::Preview
                     } else {
                         PanelPurpose::None
@@ -464,6 +469,7 @@ impl PanelState for BrowserState {
                 internal_exec,
                 input_invocation,
                 trigger_type,
+                app_state,
                 cc,
             )?,
         })

@@ -18,10 +18,10 @@ pub struct CmdContext<'c> {
 
 /// the part of the immutable command execution context which comes from the app
 pub struct AppCmdContext<'c> {
-    pub app_state: &'c AppState,
     pub other_path: Option<PathBuf>,
     pub panel_skin: &'c PanelSkin,
-    pub preview: Option<PanelId>, // id of the app's preview panel
+    pub preview_panel: Option<PanelId>, // id of the app's preview panel
+    pub stage_panel: Option<PanelId>, // id of the app's preview panel
     pub screen: Screen,
     pub con: &'c AppContext,
 }
@@ -32,11 +32,11 @@ pub struct PanelCmdContext<'c> {
     pub purpose: PanelPurpose,
 }
 
-impl<'c> CmdContext<'c> {
-    pub fn has_preview(&self) -> bool {
-        self.app.preview.is_some()
-    }
-    pub fn has_no_preview(&self) -> bool {
-        self.app.preview.is_none()
-    }
-}
+//impl<'c> CmdContext<'c> {
+//    pub fn has_preview(&self) -> bool {
+//        self.app.preview_panel.is_some()
+//    }
+//    pub fn has_no_preview(&self) -> bool {
+//        self.app.preview.is_none()
+//    }
+//}

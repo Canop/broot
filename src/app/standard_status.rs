@@ -185,6 +185,9 @@ impl<'s> StandardStatusBuilder<'s> {
                     parts.add(&ss.no_verb);
                 }
             }
+            PanelStateType::Fs => {
+                warn!("TODO fs status");
+            }
             PanelStateType::Stage => {
                 warn!("TODO stage status");
             }

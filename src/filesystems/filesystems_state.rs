@@ -7,7 +7,6 @@ use {
         display::*,
         errors::ProgramError,
         pattern::*,
-        skin::PanelSkin,
         task_sync::Dam,
         tree::TreeOptions,
         verb::*,
@@ -26,7 +25,7 @@ use {
         path::Path,
     },
     strict::NonEmptyVec,
-    termimad::{Area, ProgressBar},
+    termimad::ProgressBar,
 };
 
 struct FilteredContent {
@@ -142,6 +141,10 @@ impl FilesystemState {
 }
 
 impl PanelState for FilesystemState {
+
+    fn get_type(&self) -> PanelStateType {
+        PanelStateType::Fs
+    }
 
     fn set_mode(&mut self, mode: Mode) {
         self.mode = mode;
@@ -456,6 +459,7 @@ impl PanelState for FilesystemState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         let screen = cc.app.screen;
@@ -552,6 +556,7 @@ impl PanelState for FilesystemState {
                 internal_exec,
                 input_invocation,
                 trigger_type,
+                app_state,
                 cc,
             )?,
         })

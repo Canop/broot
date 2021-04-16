@@ -97,6 +97,10 @@ impl PreviewState {
 
 impl PanelState for PreviewState {
 
+    fn get_type(&self) -> PanelStateType {
+        PanelStateType::Preview
+    }
+
     fn set_mode(&mut self, mode: Mode) {
         self.mode = mode;
     }
@@ -292,6 +296,7 @@ impl PanelState for PreviewState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         let con = &cc.app.con;
@@ -384,6 +389,7 @@ impl PanelState for PreviewState {
                 internal_exec,
                 input_invocation,
                 trigger_type,
+                app_state,
                 cc,
             ),
         }

@@ -63,6 +63,7 @@ impl Panel {
         &mut self,
         w: &'c mut W,
         cmd: &'c Command,
+        app_state: &mut AppState,
         app_cmd_context: &'c AppCmdContext<'c>,
     ) -> Result<CmdResult, ProgramError> {
         let state_idx = self.states.len() - 1;
@@ -74,9 +75,9 @@ impl Panel {
                 purpose: self.purpose,
             },
         };
-        let result = self.states[state_idx].on_command(w, &cc);
+        let result = self.states[state_idx].on_command(w, app_state, &cc);
         let has_previous_state = self.states.len() > 1;
-        self.status = self.state().get_status(&cc, has_previous_state);
+        self.status = self.state().get_status(app_state, &cc, has_previous_state);
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
     }
@@ -85,6 +86,7 @@ impl Panel {
     /// this updates the status from the command read in the input
     pub fn refresh_input_status<'c>(
         &mut self,
+        app_state: &AppState,
         app_cmd_context: &'c AppCmdContext<'c>,
     ) {
         let cmd = Command::from_raw(self.input.get_content(), false);
@@ -97,7 +99,7 @@ impl Panel {
             },
         };
         let has_previous_state = self.states.len() > 1;
-        self.status = self.state().get_status(&&cc, has_previous_state);
+        self.status = self.state().get_status(app_state, &cc, has_previous_state);
     }
 
     /// execute all the pending tasks until there's none remaining or

@@ -9,6 +9,7 @@ use {
         pattern::*,
         preview::{PreviewMode, PreviewState},
         print,
+        stage::StageState,
         task_sync::Dam,
         tree::*,
         verb::*,
@@ -22,6 +23,8 @@ use {
 /// a panel state, stackable to allow reverting
 ///  to a previous one
 pub trait PanelState {
+
+    fn get_type(&self) -> PanelStateType;
 
     fn set_mode(&mut self, mode: Mode);
     fn get_mode(&self) -> Mode;
@@ -83,6 +86,7 @@ pub trait PanelState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError>;
 
@@ -95,6 +99,7 @@ pub trait PanelState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         _trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         let con = &cc.app.con;
@@ -148,7 +153,7 @@ pub trait PanelState {
                         let bang = input_invocation
                             .map(|inv| inv.bang)
                             .unwrap_or(internal_exec.bang);
-                        if bang && cc.has_no_preview() {
+                        if bang && cc.app.preview_panel.is_none() {
                             CmdResult::NewPanel {
                                 state: Box::new(state),
                                 purpose: PanelPurpose::None,
@@ -165,7 +170,7 @@ pub trait PanelState {
                 let bang = input_invocation
                     .map(|inv| inv.bang)
                     .unwrap_or(internal_exec.bang);
-                if bang && cc.has_no_preview() {
+                if bang && cc.app.preview_panel.is_none() {
                     CmdResult::NewPanel {
                         state: Box::new(HelpState::new(self.tree_options(), screen, con)),
                         purpose: PanelPurpose::None,
@@ -289,7 +294,7 @@ pub trait PanelState {
                 self.with_new_options(screen, &|o| o.trim_root ^= true, bang, con)
             }
             Internal::close_preview => {
-                if let Some(id) = cc.app.preview {
+                if let Some(id) = cc.app.preview_panel {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
@@ -305,25 +310,19 @@ pub trait PanelState {
                 CmdResult::HandleInApp(Internal::panel_right)
             }
             Internal::clear_stage => {
-                CmdResult::HandleInApp(Internal::clear_stage)
-            }
-            Internal::stage => {
-                CmdResult::HandleInApp(Internal::stage)
-            }
-            Internal::unstage => {
-                CmdResult::HandleInApp(Internal::unstage)
-            }
-            Internal::toggle_stage => {
-                if let Some(path) = self.selected_path() {
-                    if cc.app.app_state.stage.paths.iter().any(|p| p==path) {
-                        CmdResult::HandleInApp(Internal::unstage)
-                    } else {
-                        CmdResult::HandleInApp(Internal::stage)
+                app_state.stage.paths.clear();
+                if let Some(panel_id) = cc.app.stage_panel {
+                    CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Id(panel_id),
                     }
                 } else {
-                    CmdResult::error("no selection")
+                    CmdResult::Keep
                 }
             }
+            Internal::stage => self.stage(app_state, cc, con),
+            Internal::unstage => self.unstage(app_state, cc, con),
+            Internal::toggle_stage => self.toggle_stage(app_state, cc, con),
             Internal::print_path => {
                 if let Some(path) = self.selected_path() {
                     print::print_path(path, con)?
@@ -344,15 +343,76 @@ pub trait PanelState {
         })
     }
 
+    fn stage(
+        &self,
+        app_state: &mut AppState,
+        cc: &CmdContext,
+        con: &AppContext,
+    ) -> CmdResult {
+        info!("received command to stage {:?}", self.selected_path());
+        if let Some(path) = self.selected_path() {
+            let path = path.to_path_buf();
+            app_state.stage.add(path);
+            if cc.app.stage_panel.is_none() {
+                return CmdResult::NewPanel {
+                    state: Box::new(StageState::new(self.tree_options(), con)),
+                    purpose: PanelPurpose::None,
+                    direction: HDir::Right,
+                };
+            }
+        } else {
+            // TODO display error ?
+            warn!("no path in state");
+        }
+        CmdResult::Keep
+    }
+
+    fn unstage(
+        &self,
+        app_state: &mut AppState,
+        cc: &CmdContext,
+        con: &AppContext,
+    ) -> CmdResult {
+        if let Some(path) = self.selected_path() {
+            if app_state.stage.remove(path) && app_state.stage.is_empty() {
+                if let Some(panel_id) = cc.app.stage_panel {
+                    return CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Id(panel_id),
+                    };
+                }
+            }
+        }
+        CmdResult::Keep
+    }
+
+    fn toggle_stage(
+        &self,
+        app_state: &mut AppState,
+        cc: &CmdContext,
+        con: &AppContext,
+    ) -> CmdResult {
+        if let Some(path) = self.selected_path() {
+            if app_state.stage.paths.iter().any(|p| p==path) {
+                self.unstage(app_state, cc, con)
+            } else {
+                self.stage(app_state, cc, con)
+            }
+        } else {
+            CmdResult::error("no selection")
+        }
+    }
+
     fn execute_verb(
         &mut self,
         w: &mut W, // needed because we may want to switch from alternate in some externals
         verb: &Verb,
         invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
-        if verb.needs_selection && !self.has_at_least_one_selection(cc) {
+        if verb.needs_selection && !self.has_at_least_one_selection(app_state) {
             return Ok(CmdResult::DisplayError(
                 "This verb needs a selection".to_string()
             ));
@@ -364,13 +424,13 @@ pub trait PanelState {
         }
         match &verb.execution {
             VerbExecution::Internal(internal_exec) => {
-                self.on_internal(w, internal_exec, invocation, trigger_type, cc)
+                self.on_internal(w, internal_exec, invocation, trigger_type, app_state, cc)
             }
             VerbExecution::External(external) => {
-                self.execute_external(w, verb, external, invocation, cc)
+                self.execute_external(w, verb, external, invocation, app_state, cc)
             }
             VerbExecution::Sequence(seq_ex) => {
-                self.execute_sequence(w, verb, seq_ex, invocation, cc)
+                self.execute_sequence(w, verb, seq_ex, invocation, app_state, cc)
             }
         }
     }
@@ -381,6 +441,7 @@ pub trait PanelState {
         verb: &Verb,
         external_execution: &ExternalExecution,
         invocation: Option<&VerbInvocation>,
+        _app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         let selection = match self.selection() {
@@ -406,10 +467,11 @@ pub trait PanelState {
 
     fn execute_sequence(
         &mut self,
-        w: &mut W,
+        _w: &mut W,
         verb: &Verb,
         seq_ex: &SequenceExecution,
         invocation: Option<&VerbInvocation>,
+        _app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         let selection = match self.selection() {
@@ -443,6 +505,7 @@ pub trait PanelState {
     fn on_command(
         &mut self,
         w: &mut W,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         self.clear_pending();
@@ -465,6 +528,7 @@ pub trait PanelState {
                 &con.verb_store.verbs[*index],
                 input_invocation.as_ref(),
                 TriggerType::Other,
+                app_state,
                 cc,
             ),
             Command::Internal {
@@ -475,10 +539,10 @@ pub trait PanelState {
                 &InternalExecution::from_internal(*internal),
                 input_invocation.as_ref(),
                 TriggerType::Other,
+                app_state,
                 cc,
             ),
             Command::VerbInvocate(invocation) => {
-                let selection = self.selection();
                 match con.verb_store.search(
                     &invocation.name,
                     self.selection().map(|s| s.stype),
@@ -489,6 +553,7 @@ pub trait PanelState {
                             verb,
                             Some(invocation),
                             TriggerType::Input,
+                            app_state,
                             cc,
                         )
                     }
@@ -509,7 +574,7 @@ pub trait PanelState {
         close_if_open: bool,
         cc: &CmdContext,
     ) -> CmdResult {
-        if let Some(id) = cc.app.preview {
+        if let Some(id) = cc.app.preview_panel {
             if close_if_open {
                 CmdResult::ClosePanel {
                     validate_purpose: false,
@@ -555,7 +620,7 @@ pub trait PanelState {
 
     fn selection(&self) -> Option<Selection<'_>>;
 
-    fn sel_info<'c>(&'c self, app_state: &'c AppState) -> SelInfo<'c> {
+    fn sel_info<'c>(&'c self, _app_state: &'c AppState) -> SelInfo<'c> {
         // overloaded in stage_state
         match self.selection() {
             None => SelInfo::None,
@@ -563,7 +628,7 @@ pub trait PanelState {
         }
     }
 
-    fn has_at_least_one_selection(&self, cc: &CmdContext) -> bool {
+    fn has_at_least_one_selection(&self, _app_state: &AppState) -> bool {
         true // overloaded in stage_state
     }
 
@@ -627,6 +692,7 @@ pub trait PanelState {
 
     fn get_status(
         &self,
+        app_state: &AppState,
         cc: &CmdContext,
         has_previous_state: bool,
     ) -> Status {
@@ -647,7 +713,7 @@ pub trait PanelState {
                             Status::new("No matching verb (*?* for the list of verbs)", true)
                         }
                         PrefixSearchResult::Match(_, verb) => {
-                            self.get_verb_status(verb, invocation, cc)
+                            self.get_verb_status(verb, invocation, app_state, cc)
                         }
                         PrefixSearchResult::Matches(completions) => Status::new(
                             format!(
@@ -672,6 +738,7 @@ pub trait PanelState {
         &self,
         verb: &Verb,
         invocation: &VerbInvocation,
+        _app_state: &AppState,
         cc: &CmdContext,
     ) -> Status {
         let selection = self.selection();

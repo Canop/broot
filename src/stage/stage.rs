@@ -38,5 +38,8 @@ impl Stage {
             false
         }
     }
-
+    /// removes paths to non existing files
+    pub fn refresh(&mut self) {
+        self.paths.retain(|p| p.exists());
+    }
 }

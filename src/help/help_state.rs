@@ -51,6 +51,10 @@ impl HelpState {
 
 impl PanelState for HelpState {
 
+    fn get_type(&self) -> PanelStateType {
+        PanelStateType::Help
+    }
+
     fn set_mode(&mut self, mode: Mode) {
         self.mode = mode;
     }
@@ -181,6 +185,7 @@ impl PanelState for HelpState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         use Internal::*;
@@ -228,6 +233,7 @@ impl PanelState for HelpState {
                 internal_exec,
                 input_invocation,
                 trigger_type,
+                app_state,
                 cc,
             )?,
         })
