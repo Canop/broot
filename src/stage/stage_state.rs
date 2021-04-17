@@ -79,6 +79,7 @@ impl PanelState for StageState {
         in_new_panel: bool,
         con: &AppContext,
     ) -> CmdResult {
+        // FIXME we must register the options, at least
         // TODO implement: sorting, etc.
         CmdResult::Keep
     }
@@ -264,7 +265,15 @@ impl PanelState for StageState {
             Ok(if refresh {
                 CmdResult::RefreshState { clear_cache: true }
             } else {
-                CmdResult::Keep
+                app_state.stage.refresh();
+                if app_state.stage.is_empty() {
+                    CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Active,
+                    }
+                } else {
+                    CmdResult::Keep
+                }
             })
         }
     }

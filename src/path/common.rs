@@ -7,7 +7,7 @@ pub fn longest_common_ancestor(paths: &[PathBuf]) -> PathBuf {
         0 => PathBuf::new(), // empty
         1 => paths[0].clone(),
         _ => {
-            let mut cs0 = paths[0].components();
+            let cs0 = paths[0].components();
             let mut csi: Vec<Components> = paths
                 .iter()
                 .skip(1)

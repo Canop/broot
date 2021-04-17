@@ -323,6 +323,27 @@ pub trait PanelState {
             Internal::stage => self.stage(app_state, cc, con),
             Internal::unstage => self.unstage(app_state, cc, con),
             Internal::toggle_stage => self.toggle_stage(app_state, cc, con),
+            Internal::close_staging_area => {
+                if let Some(id) = cc.app.stage_panel {
+                    CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Id(id),
+                    }
+                } else {
+                    CmdResult::Keep
+                }
+            }
+            Internal::open_staging_area => {
+                if cc.app.stage_panel.is_none() {
+                    CmdResult::NewPanel {
+                        state: Box::new(StageState::new(self.tree_options(), con)),
+                        purpose: PanelPurpose::None,
+                        direction: HDir::Right,
+                    }
+                } else {
+                    CmdResult::Keep
+                }
+            }
             Internal::print_path => {
                 if let Some(path) = self.selected_path() {
                     print::print_path(path, con)?
@@ -371,7 +392,7 @@ pub trait PanelState {
         &self,
         app_state: &mut AppState,
         cc: &CmdContext,
-        con: &AppContext,
+        _con: &AppContext,
     ) -> CmdResult {
         if let Some(path) = self.selected_path() {
             if app_state.stage.remove(path) && app_state.stage.is_empty() {

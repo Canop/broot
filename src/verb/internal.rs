@@ -112,6 +112,8 @@ Internals! {
     clear_stage: "empty the staging area" false,
     stage: "add selection to staging area" true,
     unstage: "remove selection from staging area" true,
+    open_staging_area: "open the staging area" false,
+    close_staging_area: "close the sting area panel" false,
     toggle_stage: "add or remove selection to staging area" true,
     toggle_counts: "toggle showing number of files in directories" false,
     toggle_dates: "toggle showing last modified dates" false,

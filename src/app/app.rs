@@ -9,7 +9,6 @@ use {
         file_sum, git,
         launchable::Launchable,
         skin::*,
-        stage::StageState,
         task_sync::{Dam, Either},
         verb::Internal,
     },
