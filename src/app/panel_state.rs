@@ -69,9 +69,7 @@ pub trait PanelState {
             self.set_mode(mode);
             CmdResult::Keep
         } else {
-            CmdResult::DisplayError(
-                "modal mode not enabled in configuration".to_string()
-            )
+            CmdResult::error("modal mode not enabled in configuration")
         }
     }
 
@@ -112,9 +110,7 @@ pub trait PanelState {
             Internal::copy_line | Internal::copy_path => {
                 #[cfg(not(feature = "clipboard"))]
                 {
-                    CmdResult::DisplayError(
-                        "Clipboard feature not enabled at compilation".to_string(),
-                    )
+                    CmdResult::error("Clipboard feature not enabled at compilation")
                 }
                 #[cfg(feature = "clipboard")]
                 {
@@ -122,14 +118,10 @@ pub trait PanelState {
                         let path = path.to_string_lossy().to_string();
                         match terminal_clipboard::set_string(path) {
                             Ok(()) => CmdResult::Keep,
-                            Err(_) => CmdResult::DisplayError(
-                                "Clipboard error while copying path".to_string(),
-                            ),
+                            Err(_) => CmdResult::error("Clipboard error while copying path"),
                         }
                     } else {
-                        CmdResult::DisplayError(
-                            "Nothing to copy".to_string(),
-                        )
+                        CmdResult::error("Nothing to copy")
                     }
                 }
             }
@@ -188,7 +180,7 @@ pub trait PanelState {
                 if let Some(selection) = self.selection() {
                     selection.to_opener(con)?
                 } else {
-                    CmdResult::DisplayError("no selection to open".to_string())
+                    CmdResult::error("no selection to open")
                 }
             }
             Internal::open_preview => self.open_preview(None, false, cc),
@@ -348,14 +340,14 @@ pub trait PanelState {
                 if let Some(path) = self.selected_path() {
                     print::print_path(path, con)?
                 } else {
-                    CmdResult::DisplayError("no selection to print".to_string())
+                    CmdResult::error("no selection to print")
                 }
             }
             Internal::print_relative_path => {
                 if let Some(path) = self.selected_path() {
                     print::print_relative_path(path, con)?
                 } else {
-                    CmdResult::DisplayError("no selection to print".to_string())
+                    CmdResult::error("no selection to print")
                 }
             }
             Internal::refresh => CmdResult::RefreshState { clear_cache: true },
@@ -434,14 +426,10 @@ pub trait PanelState {
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         if verb.needs_selection && !self.has_at_least_one_selection(app_state) {
-            return Ok(CmdResult::DisplayError(
-                "This verb needs a selection".to_string()
-            ));
+            return Ok(CmdResult::error("This verb needs a selection"));
         }
         if verb.needs_another_panel && cc.app.other_path.is_none() {
-            return Ok(CmdResult::DisplayError(
-                "This verb needs another panel".to_string()
-            ));
+            return Ok(CmdResult::error("This verb needs another panel"));
         }
         match &verb.execution {
             VerbExecution::Internal(internal_exec) => {
@@ -500,7 +488,7 @@ pub trait PanelState {
             None => {
                 // this function is overriden for the state which doesn't have a
                 // single selection (stage_state), so this error should not happen
-                return Ok(CmdResult::DisplayError("no selection (EV)".to_string()));
+                return Ok(CmdResult::error("no selection (EV)"));
             }
         };
         let exec_builder = || {
@@ -625,14 +613,10 @@ pub trait PanelState {
                         direction: HDir::Right,
                     }
                 } else {
-                    CmdResult::DisplayError(
-                        "only regular files can be previewed".to_string()
-                    )
+                    CmdResult::error("only regular files can be previewed")
                 }
             } else {
-                CmdResult::DisplayError(
-                    "no selected file".to_string()
-                )
+                CmdResult::error("no selected file")
             }
         }
     }

@@ -13,6 +13,7 @@ use {
         QueueableCommand,
     },
     std::path::{Path},
+    termimad::Area,
 };
 
 pub struct StageState {
@@ -101,21 +102,25 @@ impl PanelState for StageState {
         let stage = &disc.app_state.stage;
         let area = &disc.state_area;
         let styles = &disc.panel_skin.styles;
-        let line_count = area.height as usize;
         let width = area.width as usize;
-        for y in 0..line_count {
-            w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
+        w.queue(cursor::MoveTo(area.left, 0))?;
+        let mut cw = CropWriter::new(w, width);
+        cw.queue_str(&styles.staging_area_title, "Staging Area")?;
+        cw.fill(&styles.staging_area_title, &SPACE_FILLING)?;
+        let list_area = Area::new(area.left, area.top + 1, area.width, area.height - 1);
+        let list_height = list_area.height as usize;
+        for idx in 0..list_height {
+            let y = list_area.top + idx as u16;
+            let stage_idx = idx; // + scroll
+            w.queue(cursor::MoveTo(area.left, y))?;
             let mut cw = CropWriter::new(w, width);
-            if let Some(path) = stage.paths.get(y) {
+            if let Some(path) = stage.paths.get(stage_idx) {
                 cw.queue_g_string(
                     &styles.default,
                     path.to_string_lossy().to_string(),
                 )?;
             }
-            cw.fill(
-                &styles.default,
-                &SPACE_FILLING,
-            )?;
+            cw.fill(&styles.default, &SPACE_FILLING)?;
         }
         Ok(())
     }

@@ -95,9 +95,8 @@ impl ExternalExecution {
                 Ok(CmdResult::error("no selection"))
             }
         } else {
-            Ok(CmdResult::DisplayError(
+            Ok(CmdResult::error(
                 "this verb needs broot to be launched as `br`. Try `broot --install` if necessary."
-                    .to_string(),
             ))
         }
     }
@@ -131,7 +130,7 @@ impl ExternalExecution {
                 }
                 Err(e) => {
                     warn!("launchable failed : {:?}", e);
-                    Ok(CmdResult::DisplayError(e.to_string()))
+                    Ok(CmdResult::error(e.to_string()))
                 }
             }
         }

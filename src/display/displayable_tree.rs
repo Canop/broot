@@ -7,6 +7,7 @@ use {
         MatchedString,
     },
     crate::{
+        app::AppState,
         content_search::ContentMatch,
         errors::ProgramError,
         file_sum::FileSum,
@@ -33,7 +34,8 @@ use {
 ///  - the selection is drawn
 ///  - a scrollbar may be drawn
 ///  - the empty lines will be erased
-pub struct DisplayableTree<'s, 't> {
+pub struct DisplayableTree<'a, 's, 't> {
+    pub app_state: Option<&'a AppState>,
     pub tree: &'t Tree,
     pub skin: &'s StyleMap,
     pub area: termimad::Area,
@@ -41,7 +43,7 @@ pub struct DisplayableTree<'s, 't> {
     pub ext_colors: &'s ExtColorMap,
 }
 
-impl<'s, 't> DisplayableTree<'s, 't> {
+impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
     pub fn out_of_app(
         tree: &'t Tree,
@@ -49,8 +51,9 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         ext_colors: &'s ExtColorMap,
         width: u16,
         height: u16,
-    ) -> DisplayableTree<'s, 't> {
+    ) -> DisplayableTree<'a, 's, 't> {
         DisplayableTree {
+            app_state: None,
             tree,
             skin,
             ext_colors,
@@ -216,6 +219,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         line_index: usize,
         line: &TreeLine,
         selected: bool,
+        staged: bool,
     ) -> Result<usize, ProgramError> {
         cond_bg!(branch_style, self, selected, self.skin.tree);
         let mut branch = String::new();
@@ -225,12 +229,20 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                     if self.tree.has_branch(line_index + 1, depth as usize) {
                         // TODO: If a theme is on, remove the horizontal lines
                         if depth == line.depth - 1 {
-                            "├──"
+                            if staged {
+                                "├◍─"
+                            } else {
+                                "├──"
+                            }
                         } else {
                             "│  "
                         }
                     } else {
-                        "└──"
+                        if staged {
+                            "└◍─"
+                        } else {
+                            "└──"
+                        }
                     }
                 } else {
                     "   "
@@ -241,6 +253,21 @@ impl<'s, 't> DisplayableTree<'s, 't> {
             cw.queue_g_string(&branch_style, branch)?;
         }
         Ok(0)
+    }
+
+    /// write the symbol showing whether the path is staged
+    fn write_line_stage_mark<'w, W: Write>(
+        &self,
+        cw: &mut CropWriter<'w, W>,
+        style: &CompoundStyle,
+        staged: bool,
+    ) -> Result<usize, termimad::Error> {
+        Ok(if staged {
+            cw.queue_char(&style, '◍')?; // ▣
+            0
+        } else {
+            1
+        })
     }
 
     /// write the name or subpath, depending on the pattern_object
@@ -397,7 +424,13 @@ impl<'s, 't> DisplayableTree<'s, 't> {
         self.write_root_line(&mut cw, self.in_app && tree.selection == 0)?;
         self.skin.queue_reset(f)?;
 
-        let visible_cols = tree.visible_cols();
+        let visible_cols: Vec<Col> = tree
+            .options
+            .cols_order
+            .iter()
+            .filter(|col| col.is_visible(&tree, self.app_state))
+            .cloned()
+            .collect();
 
         // if necessary we compute the width of the count column
         let count_len = if tree.options.show_counts {
@@ -445,6 +478,8 @@ impl<'s, 't> DisplayableTree<'s, 't> {
                 if visible_cols[0].needs_left_margin() {
                     cw.queue_char(space_style, ' ')?;
                 }
+                let staged = self.app_state
+                    .map_or(false, |a| a.stage.paths.contains(&line.path));
                 for col in &visible_cols {
                     let void_len = match col {
 
@@ -458,7 +493,7 @@ impl<'s, 't> DisplayableTree<'s, 't> {
 
                         Col::Branch => {
                             in_branch = true;
-                            self.write_branch(cw, line_index, line, selected)?
+                            self.write_branch(cw, line_index, line, selected, staged)?
                         }
 
                         Col::Permission => {
@@ -488,6 +523,10 @@ impl<'s, 't> DisplayableTree<'s, 't> {
 
                         Col::Count => {
                             self.write_line_count(cw, line, count_len, selected)?
+                        }
+
+                        Col::Staged => {
+                            self.write_line_stage_mark(cw, &label_style, staged)?
                         }
 
                         Col::Name => {

@@ -1,5 +1,6 @@
 use {
     crate::{
+        app::AppState,
         errors::ConfError,
         tree::Tree,
     },
@@ -11,7 +12,7 @@ use {
 };
 
 // number of columns in enum
-const COLS_COUNT: usize = 8;
+const COLS_COUNT: usize = 9;
 
 /// One of the "columns" of the tree view
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -37,6 +38,9 @@ pub enum Col {
     /// number of files in the directory
     Count,
 
+    /// marks whether the path is staged (not used for now, may be removed)
+    Staged,
+
     /// name of the file, or subpath if relevant due to filtering mode
     Name,
 }
@@ -61,6 +65,7 @@ pub static DEFAULT_COLS: Cols = [
     Col::Permission,
     Col::Count,
     Col::Branch,
+    Col::Staged,
     Col::Name,
 ];
 
@@ -76,6 +81,7 @@ impl FromStr for Col {
             "d" | "date" => Ok(Self::Date),
             "s" | "size" => Ok(Self::Size),
             "c" | "count" => Ok(Self::Count),
+            "staged" => Ok(Self::Staged),
             "n" | "name" => Ok(Self::Name),
             _ => Err(ConfError::InvalidCols {
                 details: format!("column not recognized : {}", s),
@@ -104,10 +110,15 @@ impl Col {
             Col::Permission => true,
             Col::Count => false,
             Col::Branch => false,
+            Col::Staged => false,
             Col::Name => false,
         }
     }
-    pub fn is_visible(self, tree: &Tree) -> bool {
+    pub fn is_visible(
+        self,
+        tree: &Tree,
+        app_state: Option<&AppState>,
+    ) -> bool {
         let tree_options = &tree.options;
         match self {
             Col::Mark => tree_options.show_selection_mark,
@@ -117,6 +128,8 @@ impl Col {
             Col::Permission => tree_options.show_permissions,
             Col::Count => tree_options.show_counts,
             Col::Branch => true,
+            //Col::Staged => app_state.map_or(false, |a| !a.stage.is_empty()),
+            Col::Staged => false,
             Col::Name => true,
         }
 

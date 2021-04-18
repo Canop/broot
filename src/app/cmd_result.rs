@@ -79,7 +79,7 @@ impl CmdResult {
                 }
             }
             Ok(None) => CmdResult::Keep,
-            Err(e) => CmdResult::DisplayError(e.to_string()),
+            Err(e) => CmdResult::error(e.to_string()),
         }
     }
     pub fn error<S: Into<String>>(message: S) -> Self {

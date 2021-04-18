@@ -132,9 +132,7 @@ impl PanelState for PreviewState {
             }
         } else {
             if !self.preview.is_filterable() {
-                return Ok(CmdResult::DisplayError(
-                    "this preview can't be searched".to_string(),
-                ));
+                return Ok(CmdResult::error("this preview can't be searched"));
             }
         }
         self.pending_pattern = pat;
@@ -250,14 +248,14 @@ impl PanelState for PreviewState {
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
-        cw.queue_str(&styles.default, &file_name)?;
+        cw.queue_str(&styles.preview_title, &file_name)?;
         let info_area = Area::new(
             state_area.left + state_area.width - cw.allowed as u16,
             state_area.top,
             cw.allowed as u16,
             1,
         );
-        cw.fill(&styles.default, &SPACE_FILLING)?;
+        cw.fill(&styles.preview_title, &SPACE_FILLING)?;
         let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
         preview.display_info(w, disc.screen, disc.panel_skin, &info_area)?;
         if let Err(err) = preview.display(w, disc.screen, disc.panel_skin, &self.preview_area, con) {
@@ -311,9 +309,7 @@ impl PanelState for PreviewState {
             Internal::copy_line => {
                 #[cfg(not(feature = "clipboard"))]
                 {
-                    Ok(CmdResult::DisplayError(
-                        "Clipboard feature not enabled at compilation".to_string(),
-                    ))
+                    Ok(CmdResult::error("Clipboard feature not enabled at compilation"))
                 }
                 #[cfg(feature = "clipboard")]
                 {
@@ -321,14 +317,10 @@ impl PanelState for PreviewState {
                         Some(line) => {
                             match terminal_clipboard::set_string(line) {
                                 Ok(()) => CmdResult::Keep,
-                                Err(_) => CmdResult::DisplayError(
-                                    "Clipboard error while copying path".to_string(),
-                                ),
+                                Err(_) => CmdResult::error("Clipboard error while copying path"),
                             }
                         }
-                        None => CmdResult::DisplayError(
-                            "No selected line in preview".to_string(),
-                        ),
+                        None => CmdResult::error("No selected line in preview"),
                     })
                 }
             }

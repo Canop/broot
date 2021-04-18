@@ -116,7 +116,7 @@ impl BrowserState {
                     info!("open returned with exit_status {:?}", exit_status);
                     Ok(CmdResult::Keep)
                 }
-                Err(e) => Ok(CmdResult::DisplayError(format!("{:?}", e))),
+                Err(e) => Ok(CmdResult::error(format!("{:?}", e))),
             }
         }
     }
@@ -138,7 +138,7 @@ impl BrowserState {
                 ),
                 in_new_panel,
             ),
-            None => CmdResult::DisplayError("no parent found".to_string()),
+            None => CmdResult::error("no parent found"),
         }
     }
 
@@ -294,7 +294,7 @@ impl PanelState for BrowserState {
                     bang,
                     con,
                 ),
-                None => CmdResult::DisplayError("no parent found".to_string()),
+                None => CmdResult::error("no parent found"),
             },
             Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang, false)?,
             Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
@@ -449,18 +449,14 @@ impl PanelState for BrowserState {
             Internal::total_search => {
                 if let Some(tree) = &self.filtered_tree {
                     if tree.total_search {
-                        CmdResult::DisplayError(
-                            "search was already total - all children have been rated".to_owned(),
-                        )
+                        CmdResult::error("search was already total - all children have been rated")
                     } else {
                         self.pending_pattern = tree.options.pattern.clone();
                         self.total_search_required = true;
                         CmdResult::Keep
                     }
                 } else {
-                    CmdResult::DisplayError(
-                        "this verb can be used only after a search".to_owned(),
-                    )
+                    CmdResult::error("this verb can be used only after a search")
                 }
             }
             Internal::quit => CmdResult::Quit,
@@ -539,6 +535,7 @@ impl PanelState for BrowserState {
         disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
         let dp = DisplayableTree {
+            app_state: Some(&disc.app_state),
             tree: &self.displayed_tree(),
             skin: &disc.panel_skin.styles,
             ext_colors: &disc.con.ext_colors,
