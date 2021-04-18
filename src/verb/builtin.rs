@@ -181,11 +181,14 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(select_first).with_key(HOME),
         internal(select_last).with_key(END),
         internal(clear_stage),
-        internal(stage),
-        internal(unstage),
+        internal(stage)
+            .with_char_key('+'),
+        internal(unstage)
+            .with_char_key('-'),
         internal(toggle_stage),
         internal(open_staging_area),
         internal(close_staging_area),
+        internal(toggle_staging_area).with_shortcut("tsa"),
         internal(sort_by_count).with_shortcut("sc"),
         internal(sort_by_date).with_shortcut("sd"),
         internal(sort_by_size).with_shortcut("ss"),

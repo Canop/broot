@@ -2,7 +2,6 @@ use {
     super::*,
     crate::{
         app::AppContext,
-        display::Col,
         errors,
         file_sum::FileSum,
         git::TreeGitStatus,

@@ -336,6 +336,20 @@ pub trait PanelState {
                     CmdResult::Keep
                 }
             }
+            Internal::toggle_staging_area => {
+                if let Some(id) = cc.app.stage_panel {
+                    CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Id(id),
+                    }
+                } else {
+                    CmdResult::NewPanel {
+                        state: Box::new(StageState::new(self.tree_options(), con)),
+                        purpose: PanelPurpose::None,
+                        direction: HDir::Right,
+                    }
+                }
+            }
             Internal::print_path => {
                 if let Some(path) = self.selected_path() {
                     print::print_path(path, con)?

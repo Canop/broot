@@ -117,7 +117,7 @@ impl Col {
     pub fn is_visible(
         self,
         tree: &Tree,
-        app_state: Option<&AppState>,
+        _app_state: Option<&AppState>,
     ) -> bool {
         let tree_options = &tree.options;
         match self {
