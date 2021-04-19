@@ -78,7 +78,7 @@ pub trait AppState {
     ///
     /// The invocation comes from the input and may be related
     /// to a different verb (the verb may have been triggered
-    /// by a key shorctut)
+    /// by a key shortcut)
     fn on_internal(
         &mut self,
         w: &mut W,

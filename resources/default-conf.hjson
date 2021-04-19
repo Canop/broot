@@ -188,14 +188,14 @@
 			leave_broot: false
 		}
 
-		# Here's an example of a shorctut bringing you to your home directory
+		# Here's an example of a shortcut bringing you to your home directory
 		# {
 		# 	invocation: home
 		# 	key: ctrl-home
 		# 	execution: ":focus ~"
 		# }
 
-		# A popular set of shorctuts for going up and down:
+		# A popular set of shortcuts for going up and down:
 		#
 		# {
 		# 	key: ctrl-k
