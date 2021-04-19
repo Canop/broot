@@ -58,25 +58,44 @@ impl ExternalExecution {
         self
     }
 
+    /// goes from the external execution command to the CmdResult:
+    /// - by executing the command if it can be executed from a subprocess
+    /// - by building a command to be executed in parent shell in other cases
     pub fn to_cmd_result(
         &self,
         w: &mut W,
         builder: ExecutionStringBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
-        if self.exec_mode.is_from_shell() {
-            self.exec_from_shell_cmd_result(builder, con)
-        } else {
-            self.exec_cmd_result(w, builder, con)
+        match self.exec_mode {
+            ExternalExecutionMode::FromParentShell => self.cmd_result_exec_from_parent_shell(
+                builder,
+                con,
+            ),
+            ExternalExecutionMode::LeaveBroot => self.cmd_result_exec_leave_broot(
+                builder,
+                con,
+            ),
+            ExternalExecutionMode::StayInBroot => self.cmd_result_exec_stay_in_broot(
+                w,
+                builder,
+                con,
+            ),
         }
     }
 
-    /// build the cmd result as an executable which will be called from shell
-    fn exec_from_shell_cmd_result(
+    /// build the cmd result as an executable which will be called
+    /// from the parent shell (meaning broot must quit)
+    fn cmd_result_exec_from_parent_shell(
         &self,
         builder: ExecutionStringBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
+        if builder.sel_info.count_paths() > 1 {
+            return Ok(CmdResult::error(
+                "only verbs returning to broot on end can be executed on a multi-selection"
+            ));
+        }
         if let Some(ref export_path) = con.launch_args.cmd_export_path {
             // Broot was probably launched as br.
             // the whole command is exported in the passed file
@@ -84,7 +103,7 @@ impl ExternalExecution {
             writeln!(&f, "{}", builder.shell_exec_string(&self.exec_pattern))?;
             Ok(CmdResult::Quit)
         } else if let Some(ref export_path) = con.launch_args.file_export_path {
-            if let Some(sel) = builder.sel {
+            if let Some(sel) = builder.sel_info.as_one_sel() {
                 // old version of the br function: only the file is exported
                 // in the passed file
                 let f = OpenOptions::new().append(true).open(export_path)?;
@@ -102,37 +121,80 @@ impl ExternalExecution {
     }
 
     /// build the cmd result as an executable which will be called in a process
+    /// launched by broot at end of broot
+    fn cmd_result_exec_leave_broot(
+        &self,
+        builder: ExecutionStringBuilder<'_>,
+        con: &AppContext,
+    ) -> Result<CmdResult, ProgramError> {
+        if builder.sel_info.count_paths() > 1 {
+            return Ok(CmdResult::error(
+                "only verbs returning to broot on end can be executed on a multi-selection"
+            ));
+        }
+        let launchable = Launchable::program(
+            builder.exec_token(&self.exec_pattern),
+            builder.sel_info
+                .as_one_sel()
+                .filter(|_| self.set_working_dir)
+                .map(|sel| path::closest_dir(sel.path)),
+            con,
+        )?;
+        Ok(CmdResult::from(launchable))
+    }
+
+    /// build the cmd result as an executable which will be called in a process
     /// launched by broot
-    fn exec_cmd_result(
+    fn cmd_result_exec_stay_in_broot(
         &self,
         w: &mut W,
         builder: ExecutionStringBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
-        let launchable = Launchable::program(
-            builder.exec_token(&self.exec_pattern),
-            if self.set_working_dir {
-                builder.sel.map(|sel| path::closest_dir(sel.path))
-            } else {
-                None
-            },
-            con,
-        )?;
-        if self.exec_mode.is_leave_broot() {
-            Ok(CmdResult::from(launchable))
-        } else {
-            info!("Executing not leaving, launchable {:?}", launchable);
-            let execution = launchable.execute(Some(w));
-            match execution {
-                Ok(()) => {
-                    debug!("ok");
-                    Ok(CmdResult::RefreshState { clear_cache: true })
-                }
-                Err(e) => {
+        match &builder.sel_info {
+            SelInfo::None | SelInfo::One(_) => {
+                // zero or one selection -> only one execution
+                let launchable = Launchable::program(
+                    builder.exec_token(&self.exec_pattern),
+                    builder.sel_info
+                        .as_one_sel()
+                        .filter(|_| self.set_working_dir)
+                        .map(|sel| path::closest_dir(sel.path)),
+                    con,
+                )?;
+                info!("Executing not leaving, launchable {:?}", launchable);
+                if let Err(e) = launchable.execute(Some(w)) {
                     warn!("launchable failed : {:?}", e);
-                    Ok(CmdResult::error(e.to_string()))
+                    return Ok(CmdResult::error(e.to_string()));
+                }
+            }
+            SelInfo::More(stage) => {
+                // multiselection -> we must execute on all paths
+                let sels = stage.paths.iter()
+                    .map(|path| Selection {
+                        path,
+                        line: 0,
+                        stype: SelectionType::from(path),
+                        is_exe: false,
+                    });
+                for sel in sels {
+                    debug!("executing on path {:?}", &sel.path);
+                    let launchable = Launchable::program(
+                        builder.sel_exec_token(&self.exec_pattern, Some(sel)),
+                        if self.set_working_dir {
+                            Some(path::closest_dir(sel.path))
+                        } else {
+                            None
+                        },
+                        con,
+                    )?;
+                    if let Err(e) = launchable.execute(Some(w)) {
+                        warn!("launchable failed : {:?}", e);
+                        return Ok(CmdResult::error(e.to_string()));
+                    }
                 }
             }
         }
+        Ok(CmdResult::RefreshState { clear_cache: true })
     }
 }

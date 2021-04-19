@@ -96,12 +96,19 @@ impl Selection<'_> {
     }
 }
 
-impl SelInfo<'_> {
+impl<'a> SelInfo<'a> {
     pub fn common_path(&self) -> Option<PathBuf> {
         match self {
             SelInfo::None => None,
             SelInfo::One(sel) => Some(sel.path.into()), // TODO way to avoid this clone ?
             SelInfo::More(stage) => Some(longest_common_ancestor(&stage.paths))
+        }
+    }
+    pub fn count_paths(&self) -> usize {
+        match self {
+            SelInfo::None => 0,
+            SelInfo::One(_) => 1,
+            SelInfo::More(stage) => stage.paths.len(),
         }
     }
     pub fn common_stype(&self) -> Option<SelectionType> {
@@ -118,6 +125,11 @@ impl SelInfo<'_> {
                 Some(stype)
             }
         }
-
+    }
+    pub fn as_one_sel(self) -> Option<Selection<'a>> {
+        match self {
+            SelInfo::One(sel) => Some(sel),
+            _ => None,
+        }
     }
 }

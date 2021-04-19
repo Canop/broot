@@ -158,139 +158,14 @@ impl PanelState for StageState {
         })
     }
 
-    /// the stage state deals with a multiple selection, which means
-    /// the tests on what can be executed are different, and the verb
-    /// display is different too
-    fn get_verb_status(
-        &self,
-        verb: &Verb,
-        invocation: &VerbInvocation,
-        app_state: &AppState,
-        cc: &CmdContext,
-    ) -> Status {
-        if app_state.stage.paths.len() > 1 {
-            if let VerbExecution::External(external) = &verb.execution {
-                if external.exec_mode != ExternalExecutionMode::StayInBroot {
-                    return Status::new(
-                        "only verbs returning to broot on end can be executed on a multi-selection".to_owned(),
-                        true,
-                    );
-                }
-            }
-            // right now there's no check for sequences but they're inherently dangereous
-        }
-        if app_state.stage.is_empty() {
-            if let Some(err) = verb.check_args(&None, invocation, &cc.app.other_path) {
-                return Status::new(err, true);
-            }
-        } else {
-            // we check that the verb applies to all selections
-            // TODO make it faster when the verb doesn't need the selection ?
-            for path in &app_state.stage.paths {
-                let selection = Selection {
-                    path,
-                    line: 0,
-                    stype: SelectionType::from(path),
-                    is_exe: false,
-                };
-                if let Some(err) = verb.check_args(&Some(selection), invocation, &cc.app.other_path) {
-                    return Status::new(err, true);
-                }
-            }
-        }
-        Status::new(
-            verb.get_status_markdown(
-                None,
-                &cc.app.other_path,
-                invocation,
-            ),
-            false,
-        )
-    }
-
-    fn execute_external(
-        &mut self,
-        w: &mut W,
-        verb: &Verb,
-        external_execution: &ExternalExecution,
-        invocation: Option<&VerbInvocation>,
-        app_state: &mut AppState,
-        cc: &CmdContext,
-    ) -> Result<CmdResult, ProgramError> {
-        if app_state.stage.paths.len() > 1 {
-            if external_execution.exec_mode != ExternalExecutionMode::StayInBroot {
-                return Ok(CmdResult::error(
-                    "only verbs returning to broot on end can be executed on a multi-selection".to_owned()
-                ));
-            }
-        }
-        if app_state.stage.is_empty() {
-            // execution on no selection
-            let exec_builder = ExecutionStringBuilder::from_invocation(
-                &verb.invocation_parser,
-                None,
-                &cc.app.other_path,
-                if let Some(inv) = invocation {
-                    &inv.args
-                } else {
-                    &None
-                },
-            );
-            external_execution.to_cmd_result(w, exec_builder, &cc.app.con)
-        } else {
-            let mut refresh = false;
-            // we apply the verb to all selections
-            for path in &app_state.stage.paths {
-                let selection = Selection {
-                    path,
-                    line: 0,
-                    stype: SelectionType::from(path),
-                    is_exe: false,
-                };
-                let exec_builder = ExecutionStringBuilder::from_invocation(
-                    &verb.invocation_parser,
-                    Some(selection),
-                    &cc.app.other_path,
-                    if let Some(inv) = invocation {
-                        &inv.args
-                    } else {
-                        &None
-                    },
-                );
-                match external_execution.to_cmd_result(w, exec_builder, &cc.app.con)? {
-                    CmdResult::Keep => {}
-                    CmdResult::RefreshState { .. } => {
-                        refresh = true;
-                    }
-                    cr => {
-                        return Ok(CmdResult::error(format!("unexpected execution result: {:?}", cr)));
-                    }
-                }
-            }
-            Ok(if refresh {
-                CmdResult::RefreshState { clear_cache: true }
-            } else {
-                app_state.stage.refresh();
-                if app_state.stage.is_empty() {
-                    CmdResult::ClosePanel {
-                        validate_purpose: false,
-                        panel_ref: PanelReference::Active,
-                    }
-                } else {
-                    CmdResult::Keep
-                }
-            })
-        }
-    }
-
     fn execute_sequence(
         &mut self,
-        w: &mut W,
-        verb: &Verb,
-        seq_ex: &SequenceExecution,
-        invocation: Option<&VerbInvocation>,
-        app_state: &mut AppState,
-        cc: &CmdContext,
+        _w: &mut W,
+        _verb: &Verb,
+        _seq_ex: &SequenceExecution,
+        _invocation: Option<&VerbInvocation>,
+        _app_state: &mut AppState,
+        _cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         Ok(CmdResult::error("sequence execution not yet implemented on staging area"))
     }

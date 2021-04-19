@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        app::{Selection, SelectionType},
+        app::{Selection, SelInfo, SelectionType},
         errors::ConfError,
         keys,
         path::{self, PathAnchor},
@@ -154,7 +154,32 @@ impl Verb {
     /// and return the error to display if arguments don't match.
     pub fn check_args(
         &self,
-        sel: &Option<Selection>,
+        sel_info: &SelInfo<'_>,
+        invocation: &VerbInvocation,
+        other_path: &Option<PathBuf>,
+    ) -> Option<String> {
+        match sel_info {
+            SelInfo::None => self.check_sel_args(None, invocation, other_path),
+            SelInfo::One(sel) => self.check_sel_args(Some(*sel), invocation, other_path),
+            SelInfo::More(stage) => {
+                stage.paths.iter()
+                    .filter_map(|path| {
+                        let sel = Selection {
+                            path,
+                            line: 0,
+                            stype: SelectionType::from(path),
+                            is_exe: false,
+                        };
+                        self.check_sel_args(Some(sel), invocation, other_path)
+                    })
+                    .next()
+            }
+        }
+    }
+
+    fn check_sel_args(
+        &self,
+        sel: Option<Selection<'_>>,
         invocation: &VerbInvocation,
         other_path: &Option<PathBuf>,
     ) -> Option<String> {
@@ -173,7 +198,7 @@ impl Verb {
 
     pub fn get_status_markdown(
         &self,
-        sel: Option<Selection<'_>>,
+        sel_info: SelInfo<'_>,
         other_path: &Option<PathBuf>,
         invocation: &VerbInvocation,
     ) -> String {
@@ -186,7 +211,7 @@ impl Verb {
         // thus I hardcode the test here.
         if let VerbExecution::Internal(internal_exec) = &self.execution {
             if internal_exec.internal == Internal::focus {
-                if let Some(sel) = sel { // this is normally checked prior to this method
+                if let Some(sel) = sel_info.as_one_sel() {
                     let arg = invocation.args.as_ref().or_else(|| internal_exec.arg.as_ref());
                     let pb;
                     let arg_path = if let Some(arg) = arg {
@@ -196,14 +221,17 @@ impl Verb {
                         sel.path
                     };
                     return format!("Hit *enter* to {} `{}`", name, arg_path.to_string_lossy());
+                } else {
+                    return "You can't focus without selection".to_string();
                 }
             }
+            // TODO check that before
         }
 
         let builder = || {
             ExecutionStringBuilder::from_invocation(
                 &self.invocation_parser,
-                sel,
+                sel_info,
                 other_path,
                 &invocation.args,
             )

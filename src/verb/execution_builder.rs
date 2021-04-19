@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        app::Selection,
+        app::{Selection, SelInfo, SelectionType},
         path,
     },
     ahash::AHashMap,
@@ -14,9 +14,9 @@ use {
 /// a verb's execution pattern
 pub struct ExecutionStringBuilder<'b> {
     /// the current file selection
-    pub sel: Option<Selection<'b>>,
+    pub sel_info: SelInfo<'b>,
 
-    /// the selection in the other panel, when there exactly two
+    /// the selection in the other panel, when there are exactly two
     other_file: Option<&'b PathBuf>,
 
     /// parsed arguments
@@ -24,18 +24,18 @@ pub struct ExecutionStringBuilder<'b> {
 }
 
 impl<'b> ExecutionStringBuilder<'b> {
-    pub fn from_selection(
-        sel: Option<Selection<'b>>,
+    pub fn from_sel_info(
+         sel_info: SelInfo<'b>,
     ) -> Self {
         Self {
-            sel,
+            sel_info,
             other_file: None,
             invocation_values: None,
         }
     }
     pub fn from_invocation(
         invocation_parser: &Option<InvocationParser>,
-        sel: Option<Selection<'b>>,
+        sel_info: SelInfo<'b>,
         other_file: &'b Option<PathBuf>,
         invocation_args: &Option<String>,
     ) -> Self {
@@ -44,27 +44,47 @@ impl<'b> ExecutionStringBuilder<'b> {
             .zip(invocation_args.as_ref())
             .and_then(|(parser, args)| parser.parse(args));
         Self {
-            sel,
+            sel_info,
             other_file: other_file.as_ref(),
             invocation_values,
         }
     }
-    fn get_file(&self) -> Option<&Path> {
-        self.sel.map(|s| s.path)
-    }
-    fn get_directory(&self) -> Option<PathBuf> {
-        self.sel.map(|s| path::closest_dir(s.path))
-    }
-    fn get_parent(&self) -> Option<&Path> {
-        self.sel.and_then(|s| s.path.parent())
-    }
     fn get_raw_capture_replacement(&self, ec: &Captures<'_>) -> Option<String> {
+        match self.sel_info {
+            SelInfo::None => self.get_raw_sel_capture_replacement(ec, None),
+            SelInfo::One(sel) => self.get_raw_sel_capture_replacement(ec, Some(sel)),
+            SelInfo::More(stage) => {
+                let mut sels = stage.paths.iter()
+                    .map(|path| Selection {
+                        path,
+                        line: 0,
+                        stype: SelectionType::from(path),
+                        is_exe: false,
+                    });
+                self.get_raw_sel_capture_replacement(ec, sels.next())
+                    .filter(|first_rcr| {
+                        for sel in sels {
+                            let rcr = self.get_raw_sel_capture_replacement(ec, Some(sel));
+                            if rcr.as_ref() != Some(first_rcr) {
+                                return false;
+                            }
+                        }
+                        true
+                    })
+            }
+        }
+    }
+    fn get_raw_sel_capture_replacement(
+        &self,
+        ec: &Captures<'_>,
+        sel: Option<Selection<'_>>,
+    ) -> Option<String> {
         let name = ec.get(1).unwrap().as_str();
         match name {
-            "line" => self.sel.map(|s| s.line.to_string()),
-            "file" => self.get_file().map(path_to_string),
-            "directory" => self.get_directory().map(path_to_string),
-            "parent" => self.get_parent().map(path_to_string),
+            "line" => sel.map(|s| s.line.to_string()),
+            "file" => sel.map(|s| s.path).map(path_to_string),
+            "directory" => sel.map(|s| path::closest_dir(s.path)).map(path_to_string),
+            "parent" => sel.and_then(|s| s.path.parent()).map(path_to_string),
             "other-panel-file" => self.other_file.map(path_to_string),
             "other-panel-directory" => self
                 .other_file
@@ -84,11 +104,11 @@ impl<'b> ExecutionStringBuilder<'b> {
                         if let Some(fmt) = ec.get(2) {
                             match fmt.as_str() {
                                 "path-from-directory" => {
-                                    self.get_directory()
+                                    sel.map(|s| path::closest_dir(s.path))
                                         .map(|dir| path::path_str_from(dir, value))
                                 }
                                 "path-from-parent" => {
-                                    self.get_parent()
+                                     sel.and_then(|s| s.path.parent())
                                         .map(|dir| path::path_str_from(dir, value))
                                 }
                                 _ => Some(format!("invalid format: {:?}", fmt.as_str())),
@@ -102,6 +122,14 @@ impl<'b> ExecutionStringBuilder<'b> {
     }
     fn get_capture_replacement(&self, ec: &Captures<'_>) -> String {
         self.get_raw_capture_replacement(ec)
+            .unwrap_or_else(|| ec[0].to_string())
+    }
+    fn get_sel_capture_replacement(
+        &self,
+        ec: &Captures<'_>,
+        sel: Option<Selection<'_>>,
+    ) -> String {
+        self.get_raw_sel_capture_replacement(ec, sel)
             .unwrap_or_else(|| ec[0].to_string())
     }
     /// build a shell compatible command, with escapings
@@ -119,6 +147,24 @@ impl<'b> ExecutionStringBuilder<'b> {
             .fix_paths()
             .to_string()
     }
+    /// build a shell compatible command, with escapings, for a specific
+    /// selection (this is intended for execution on all selections of a
+    /// stage)
+    pub fn sel_shell_exec_string(
+        &self,
+        exec_pattern: &ExecPattern,
+        sel: Option<Selection<'_>>,
+    ) -> String {
+        exec_pattern
+            .apply(&|s| {
+                GROUP.replace_all(
+                    s,
+                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel),
+                ).to_string()
+            })
+            .fix_paths()
+            .to_string()
+    }
     /// build a vec of tokens which can be passed to Command to
     /// launch an executable
     pub fn exec_token(
@@ -130,6 +176,23 @@ impl<'b> ExecutionStringBuilder<'b> {
                 GROUP.replace_all(
                     s,
                     |ec: &Captures<'_>| self.get_capture_replacement(ec),
+                ).to_string()
+            })
+            .fix_paths()
+            .into_array()
+    }
+    /// build a vec of tokens which can be passed to Command to
+    /// launch an executable
+    pub fn sel_exec_token(
+        &self,
+        exec_pattern: &ExecPattern,
+        sel: Option<Selection<'_>>,
+    ) -> Vec<String> {
+        exec_pattern
+            .apply(&|s| {
+                GROUP.replace_all(
+                    s,
+                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel),
                 ).to_string()
             })
             .fix_paths()
@@ -170,7 +233,7 @@ mod execution_builder_test {
             stype: SelectionType::File,
             is_exe: false,
         };
-        let mut builder = ExecutionStringBuilder::from_selection(Some(sel));
+        let mut builder = ExecutionStringBuilder::from_sel_info(SelInfo::One(sel));
         let mut map = AHashMap::default();
         for (k, v) in replacements {
             map.insert(k.to_owned(), v.to_owned());

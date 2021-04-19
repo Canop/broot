@@ -464,20 +464,12 @@ pub trait PanelState {
         verb: &Verb,
         external_execution: &ExternalExecution,
         invocation: Option<&VerbInvocation>,
-        _app_state: &mut AppState,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
-        let selection = match self.selection() {
-            Some(selection) => selection,
-            None => {
-                // this function is overriden for the state which doesn't have a
-                // single selection (stage_state), so this error should not happen
-                return Ok(CmdResult::error("no selection (EV)"));
-            }
-        };
         let exec_builder = ExecutionStringBuilder::from_invocation(
             &verb.invocation_parser,
-            Some(selection),
+            self.sel_info(app_state),
             &cc.app.other_path,
             if let Some(inv) = invocation {
                 &inv.args
@@ -494,31 +486,21 @@ pub trait PanelState {
         verb: &Verb,
         seq_ex: &SequenceExecution,
         invocation: Option<&VerbInvocation>,
-        _app_state: &mut AppState,
+        app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
-        let selection = match self.selection() {
-            Some(selection) => selection,
-            None => {
-                // this function is overriden for the state which doesn't have a
-                // single selection (stage_state), so this error should not happen
-                return Ok(CmdResult::error("no selection (EV)"));
-            }
-        };
-        let exec_builder = || {
-            ExecutionStringBuilder::from_invocation(
-                &verb.invocation_parser,
-                Some(selection),
-                &cc.app.other_path,
-                if let Some(inv) = invocation {
-                    &inv.args
-                } else {
-                    &None
-                },
-            )
-        };
+        let exec_builder = ExecutionStringBuilder::from_invocation(
+            &verb.invocation_parser,
+            self.sel_info(app_state),
+            &cc.app.other_path,
+            if let Some(inv) = invocation {
+                &inv.args
+            } else {
+                &None
+            },
+        );
         let sequence = Sequence {
-            raw: exec_builder().shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
+            raw: exec_builder.shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
             separator: seq_ex.sequence.separator.clone(),
         };
         Ok(CmdResult::ExecuteSequence { sequence })
@@ -752,21 +734,31 @@ pub trait PanelState {
         }
     }
 
-    // overloaded in stage_state
     fn get_verb_status(
         &self,
         verb: &Verb,
         invocation: &VerbInvocation,
-        _app_state: &AppState,
+        app_state: &AppState,
         cc: &CmdContext,
     ) -> Status {
-        let selection = self.selection();
-        if let Some(err) = verb.check_args(&selection, invocation, &cc.app.other_path) {
+        let sel_info = self.sel_info(app_state);
+        if sel_info.count_paths() > 1 {
+            if let VerbExecution::External(external) = &verb.execution {
+                if external.exec_mode != ExternalExecutionMode::StayInBroot {
+                    return Status::new(
+                        "only verbs returning to broot on end can be executed on a multi-selection".to_owned(),
+                        true,
+                    );
+                }
+            }
+            // right now there's no check for sequences but they're inherently dangereous
+        }
+        if let Some(err) = verb.check_args(&sel_info, invocation, &cc.app.other_path) {
             Status::new(err, true)
         } else {
             Status::new(
                 verb.get_status_markdown(
-                    selection,
+                    sel_info,
                     &cc.app.other_path,
                     invocation,
                 ),
