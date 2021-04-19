@@ -1,3 +1,6 @@
+### next
+- modal mode: revert to command mode on command execution - Fix #372
+
 <a name="v1.2.10"></a>
 ### v1.2.10 - 2021-04-03
 - fix shift based key shortcuts - Fix #363

@@ -281,7 +281,7 @@ impl App {
             }
             ClosePanel { validate_purpose, panel_ref } => {
                 if is_input_invocation {
-                    self.mut_panel().clear_input_invocation();
+                    self.mut_panel().clear_input_invocation(con);
                 }
                 let close_idx = self.panel_ref_to_idx(panel_ref)
                     .unwrap_or_else(||
@@ -366,7 +366,7 @@ impl App {
             }
             Keep => {
                 if is_input_invocation {
-                    self.mut_panel().clear_input_invocation();
+                    self.mut_panel().clear_input_invocation(con);
                 }
             }
             Launch(launchable) => {
@@ -379,7 +379,7 @@ impl App {
                 direction,
             } => {
                 if is_input_invocation {
-                    self.mut_panel().clear_input_invocation();
+                    self.mut_panel().clear_input_invocation(con);
                 }
                 let insertion_idx = if purpose.is_preview() {
                     self.panels.len().get()
@@ -455,7 +455,7 @@ impl App {
             }
             RefreshState { clear_cache } => {
                 if is_input_invocation {
-                    self.mut_panel().clear_input_invocation();
+                    self.mut_panel().clear_input_invocation(con);
                 }
                 if clear_cache {
                     clear_caches();
