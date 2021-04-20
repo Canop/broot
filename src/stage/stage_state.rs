@@ -6,6 +6,7 @@ use {
         display::{CropWriter, Screen, SPACE_FILLING, W},
         errors::ProgramError,
         pattern::*,
+        skin::*,
         tree::*,
         verb::*,
     },
@@ -16,6 +17,8 @@ use {
     std::path::{Path},
     termimad::Area,
 };
+
+const TITLE: &str = "Staging Area"; // no wide char allowed here
 
 pub struct StageState {
 
@@ -45,6 +48,45 @@ impl StageState {
             tree_options,
             mode: initial_mode(con),
         }
+    }
+
+    fn write_title_line(
+        &self,
+        stage: &Stage,
+        cw: &mut CropWriter<'_, W>,
+        styles: &StyleMap,
+    ) -> Result<(), ProgramError> {
+        let total_count = format!("{}", stage.len());
+        let mut count_len = total_count.len();
+        if self.filtered_stage.pattern().is_some() {
+            count_len += total_count.len() + 1; // 1 for '/'
+        }
+        if cw.allowed < count_len {
+            return Ok(());
+        }
+        if TITLE.len() + 1 + count_len <= cw.allowed {
+            cw.queue_str(
+                &styles.staging_area_title,
+                TITLE,
+            )?;
+        }
+        cw.repeat(&styles.staging_area_title, &SPACE_FILLING, cw.allowed - count_len)?;
+        if self.filtered_stage.pattern().is_some() {
+            cw.queue_g_string(
+                &styles.char_match,
+                format!("{}", self.filtered_stage.len()),
+            )?;
+            cw.queue_char(
+                &styles.staging_area_title,
+                '/',
+            )?;
+        }
+        cw.queue_g_string(
+            &styles.staging_area_title,
+            total_count,
+        )?;
+        cw.fill(&styles.staging_area_title, &SPACE_FILLING)?;
+        Ok(())
     }
 }
 
@@ -132,8 +174,7 @@ impl PanelState for StageState {
         let width = area.width as usize;
         w.queue(cursor::MoveTo(area.left, 0))?;
         let mut cw = CropWriter::new(w, width);
-        cw.queue_str(&styles.staging_area_title, "Staging Area")?;
-        cw.fill(&styles.staging_area_title, &SPACE_FILLING)?;
+        self.write_title_line(stage, &mut cw, styles)?;
         let list_area = Area::new(area.left, area.top + 1, area.width, area.height - 1);
         let list_height = list_area.height as usize;
         for idx in 0..list_height {
