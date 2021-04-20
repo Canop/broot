@@ -162,13 +162,14 @@ impl Panel {
     }
     /// remove the verb invocation from the input but keep
     /// the filter if there's one
-    pub fn clear_input_invocation(&mut self) {
+    pub fn clear_input_invocation(&mut self, con: &AppContext) {
         let mut command_parts = CommandParts::from(self.input.get_content());
         if command_parts.verb_invocation.is_some() {
             command_parts.verb_invocation = None;
             let new_input = format!("{}", command_parts);
             self.input.set_content(&new_input);
         }
+        self.mut_state().set_mode(initial_mode(con));
     }
 
     pub fn set_input_content(&mut self, content: &str) {
