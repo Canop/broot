@@ -134,7 +134,7 @@ impl PanelInput {
     ) {
         if let Some(c) = keys::as_letter(key) {
             let add = match c {
-                '/' if !parts.raw_pattern.is_empty() => true,
+                // '/' if !parts.raw_pattern.is_empty() => true,
                 ' ' if parts.verb_invocation.is_none() => true,
                 ':' if parts.verb_invocation.is_none() => true,
                 _ => false,
@@ -269,7 +269,7 @@ impl PanelInput {
                                     return Command::from_raw(self.input_field.get_content(), false);
                                 }
                                 if sel.stype.respects(verb.selection_condition) {
-                                    if verb.is_internal(Internal::mode_input) {
+                                    if mode != Mode::Input && verb.is_internal(Internal::mode_input) {
                                         self.enter_input_mode_with_key(key, &parts);
                                     }
                                     return Command::VerbTrigger {
