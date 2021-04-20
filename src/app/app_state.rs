@@ -8,7 +8,6 @@ use {
 /// global mutable state
 #[derive(Debug, Default)]
 pub struct AppState {
-
     pub stage: Stage,
 }
 

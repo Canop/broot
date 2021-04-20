@@ -120,6 +120,7 @@ impl PanelState for PreviewState {
     fn on_pattern(
         &mut self,
         pat: InputPattern,
+        _app_state: &AppState,
         _con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         if pat.is_none() {
@@ -301,7 +302,7 @@ impl PanelState for PreviewState {
         match internal_exec.internal {
             Internal::back => {
                 if self.filtered_preview.is_some() {
-                    self.on_pattern(InputPattern::none(), con)
+                    self.on_pattern(InputPattern::none(), app_state, con)
                 } else {
                     Ok(CmdResult::PopState)
                 }
@@ -363,7 +364,7 @@ impl PanelState for PreviewState {
                 Ok(CmdResult::Keep)
             }
             Internal::panel_right if self.filtered_preview.is_some() => {
-                self.on_pattern(InputPattern::none(), con)
+                self.on_pattern(InputPattern::none(), app_state, con)
             }
             Internal::select_first => {
                 self.mut_preview().select_first();

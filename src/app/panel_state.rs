@@ -55,6 +55,7 @@ pub trait PanelState {
     fn on_pattern(
         &mut self,
         _pat: InputPattern,
+        _app_state: &AppState,
         _con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         Ok(CmdResult::Keep)
@@ -302,7 +303,7 @@ pub trait PanelState {
                 CmdResult::HandleInApp(Internal::panel_right)
             }
             Internal::clear_stage => {
-                app_state.stage.paths.clear();
+                app_state.stage.clear();
                 if let Some(panel_id) = cc.app.stage_panel {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
@@ -328,7 +329,7 @@ pub trait PanelState {
             Internal::open_staging_area => {
                 if cc.app.stage_panel.is_none() {
                     CmdResult::NewPanel {
-                        state: Box::new(StageState::new(self.tree_options(), con)),
+                        state: Box::new(StageState::new(app_state, self.tree_options(), con)),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
                     }
@@ -344,7 +345,7 @@ pub trait PanelState {
                     }
                 } else {
                     CmdResult::NewPanel {
-                        state: Box::new(StageState::new(self.tree_options(), con)),
+                        state: Box::new(StageState::new(app_state, self.tree_options(), con)),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
                     }
@@ -382,7 +383,7 @@ pub trait PanelState {
             app_state.stage.add(path);
             if cc.app.stage_panel.is_none() {
                 return CmdResult::NewPanel {
-                    state: Box::new(StageState::new(self.tree_options(), con)),
+                    state: Box::new(StageState::new(app_state, self.tree_options(), con)),
                     purpose: PanelPurpose::None,
                     direction: HDir::Right,
                 };
@@ -420,7 +421,7 @@ pub trait PanelState {
         con: &AppContext,
     ) -> CmdResult {
         if let Some(path) = self.selected_path() {
-            if app_state.stage.paths.iter().any(|p| p==path) {
+            if app_state.stage.contains(path) {
                 self.unstage(app_state, cc, con)
             } else {
                 self.stage(app_state, cc, con)
@@ -521,7 +522,7 @@ pub trait PanelState {
             Command::DoubleClick(x, y) => self.on_double_click(*x, *y, screen, con),
             Command::PatternEdit { raw, expr } => {
                 match InputPattern::new(raw.clone(), expr, con) {
-                    Ok(pattern) => self.on_pattern(pattern, con),
+                    Ok(pattern) => self.on_pattern(pattern, app_state, con),
                     Err(e) => Ok(CmdResult::DisplayError(format!("{}", e))),
                 }
             }

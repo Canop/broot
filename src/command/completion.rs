@@ -166,7 +166,8 @@ impl Completions {
             SelInfo::More(stage) => {
                 // We're looking for the possible completions which
                 // are valid for all elements of the stage
-                let mut lists = stage.paths.iter()
+                let mut lists = stage.paths()
+                    .iter()
                     .filter_map(|path| {
                         Self::list_for_path(
                                 verb_name,

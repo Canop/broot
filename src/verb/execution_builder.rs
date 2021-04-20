@@ -54,7 +54,7 @@ impl<'b> ExecutionStringBuilder<'b> {
             SelInfo::None => self.get_raw_sel_capture_replacement(ec, None),
             SelInfo::One(sel) => self.get_raw_sel_capture_replacement(ec, Some(sel)),
             SelInfo::More(stage) => {
-                let mut sels = stage.paths.iter()
+                let mut sels = stage.paths().iter()
                     .map(|path| Selection {
                         path,
                         line: 0,

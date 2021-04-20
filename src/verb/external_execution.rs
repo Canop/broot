@@ -170,7 +170,7 @@ impl ExternalExecution {
             }
             SelInfo::More(stage) => {
                 // multiselection -> we must execute on all paths
-                let sels = stage.paths.iter()
+                let sels = stage.paths().iter()
                     .map(|path| Selection {
                         path,
                         line: 0,

@@ -1,4 +1,5 @@
 use {
+    super::*,
     crate::{
         app::*,
         command::{Command, TriggerType},
@@ -17,17 +18,30 @@ use {
 };
 
 pub struct StageState {
+
+    filtered_stage: FilteredStage,
+
+    /// those options are mainly kept for transmission to child state
+    /// (if they become possible)
     tree_options: TreeOptions,
+
+    /// the 'modal' mode
     mode: Mode,
 }
 
 impl StageState {
 
     pub fn new(
+        app_state: &AppState,
         tree_options: TreeOptions,
         con: &AppContext,
     ) -> StageState {
+        let filtered_stage = FilteredStage::filtered(
+            &app_state.stage,
+            tree_options.pattern.clone(),
+        );
         Self {
+            filtered_stage,
             tree_options,
             mode: initial_mode(con),
         }
@@ -53,10 +67,10 @@ impl PanelState for StageState {
     }
 
     fn sel_info<'c>(&'c self, app_state: &'c AppState) -> SelInfo<'c> {
-        match app_state.stage.paths.len() {
+        match app_state.stage.len() {
             0 => SelInfo::None,
             1 => SelInfo::One(Selection {
-                path: &app_state.stage.paths[0],
+                path: &app_state.stage.paths()[0],
                 stype: SelectionType::File,
                 is_exe: false,
                 line: 0,
@@ -88,16 +102,21 @@ impl PanelState for StageState {
         } else {
             let mut new_options= self.tree_options();
             change_options(&mut new_options);
-            CmdResult::NewState(Box::new(StageState::new(new_options, con)))
+            CmdResult::NewState(Box::new(StageState {
+                filtered_stage: self.filtered_stage.clone(),
+                mode: initial_mode(con),
+                tree_options: new_options,
+            }))
         }
     }
 
     fn on_pattern(
         &mut self,
         pat: InputPattern,
+        app_state: &AppState,
         _con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
-        // TODO implement
+        self.filtered_stage = FilteredStage::filtered(&app_state.stage, pat);
         Ok(CmdResult::Keep)
     }
 
@@ -107,6 +126,7 @@ impl PanelState for StageState {
         disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
         let stage = &disc.app_state.stage;
+        self.filtered_stage.update(stage);
         let area = &disc.state_area;
         let styles = &disc.panel_skin.styles;
         let width = area.width as usize;
@@ -121,7 +141,7 @@ impl PanelState for StageState {
             let stage_idx = idx; // + scroll
             w.queue(cursor::MoveTo(area.left, y))?;
             let mut cw = CropWriter::new(w, width);
-            if let Some(path) = stage.paths.get(stage_idx) {
+            if let Some(path) = self.filtered_stage.path(stage, idx) {
                 cw.queue_g_string(
                     &styles.default,
                     path.to_string_lossy().to_string(),
@@ -154,6 +174,10 @@ impl PanelState for StageState {
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         Ok(match internal_exec.internal {
+            Internal::back if self.filtered_stage.pattern().is_some() => {
+                self.filtered_stage = FilteredStage::unfiltered(&app_state.stage);
+                CmdResult::Keep
+            }
             _ => self.on_internal_generic(
                 w,
                 internal_exec,

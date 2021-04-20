@@ -7,13 +7,12 @@ use {
     crate::{
         errors::ProgramError,
         launchable::Launchable,
-        path::longest_common_ancestor,
         stage::Stage,
     },
     std::{
         fs::OpenOptions,
         io::Write,
-        path::{Path, PathBuf},
+        path::Path,
     },
 };
 
@@ -97,18 +96,18 @@ impl Selection<'_> {
 }
 
 impl<'a> SelInfo<'a> {
-    pub fn common_path(&self) -> Option<PathBuf> {
-        match self {
-            SelInfo::None => None,
-            SelInfo::One(sel) => Some(sel.path.into()), // TODO way to avoid this clone ?
-            SelInfo::More(stage) => Some(longest_common_ancestor(&stage.paths))
-        }
-    }
+    //pub fn common_path(&self) -> Option<PathBuf> {
+    //    match self {
+    //        SelInfo::None => None,
+    //        SelInfo::One(sel) => Some(sel.path.into()), // TODO way to avoid this clone ?
+    //        SelInfo::More(stage) => Some(longest_common_ancestor(&stage.paths))
+    //    }
+    //}
     pub fn count_paths(&self) -> usize {
         match self {
             SelInfo::None => 0,
             SelInfo::One(_) => 1,
-            SelInfo::More(stage) => stage.paths.len(),
+            SelInfo::More(stage) => stage.len(),
         }
     }
     pub fn common_stype(&self) -> Option<SelectionType> {
@@ -116,8 +115,8 @@ impl<'a> SelInfo<'a> {
             SelInfo::None => None,
             SelInfo::One(sel) => Some(sel.stype),
             SelInfo::More(stage) => {
-                let stype = SelectionType::from(&stage.paths[0]);
-                for path in stage.paths.iter().skip(1) {
+                let stype = SelectionType::from(&stage.paths()[0]);
+                for path in stage.paths().iter().skip(1) {
                     if stype != SelectionType::from(path) {
                         return None;
                     }

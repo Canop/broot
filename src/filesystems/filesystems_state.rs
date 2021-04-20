@@ -184,6 +184,7 @@ impl PanelState for FilesystemState {
     fn on_pattern(
         &mut self,
         pattern: InputPattern,
+        _app_state: &AppState,
         _con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         if pattern.is_none() {

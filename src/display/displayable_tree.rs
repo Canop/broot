@@ -479,7 +479,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     cw.queue_char(space_style, ' ')?;
                 }
                 let staged = self.app_state
-                    .map_or(false, |a| a.stage.paths.contains(&line.path));
+                    .map_or(false, |a| a.stage.contains(&line.path));
                 for col in &visible_cols {
                     let void_len = match col {
 

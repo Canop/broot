@@ -162,7 +162,7 @@ impl Verb {
             SelInfo::None => self.check_sel_args(None, invocation, other_path),
             SelInfo::One(sel) => self.check_sel_args(Some(*sel), invocation, other_path),
             SelInfo::More(stage) => {
-                stage.paths.iter()
+                stage.paths().iter()
                     .filter_map(|path| {
                         let sel = Selection {
                             path,

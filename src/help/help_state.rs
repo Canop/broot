@@ -99,6 +99,7 @@ impl PanelState for HelpState {
     fn on_pattern(
         &mut self,
         pat: InputPattern,
+        _app_state: &AppState,
         _con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         self.pattern = pat.pattern;
