@@ -73,16 +73,23 @@ impl PanelState for StageState {
         self.tree_options.clone()
     }
 
+    /// option changing is unlikely to be done on this state, but
+    /// we'll still do it in case a future scenario makes it possible
+    /// to open a different state from this state
     fn with_new_options(
         &mut self,
-        screen: Screen,
+        _screen: Screen,
         change_options: &dyn Fn(&mut TreeOptions),
         in_new_panel: bool,
         con: &AppContext,
     ) -> CmdResult {
-        // FIXME we must register the options, at least
-        // TODO implement: sorting, etc.
-        CmdResult::Keep
+        if in_new_panel {
+            CmdResult::error("stage can't be displayed in two panels")
+        } else {
+            let mut new_options= self.tree_options();
+            change_options(&mut new_options);
+            CmdResult::NewState(Box::new(StageState::new(new_options, con)))
+        }
     }
 
     fn on_pattern(
