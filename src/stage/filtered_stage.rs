@@ -4,7 +4,7 @@ use {
         pattern::*,
     },
     std::{
-        path::{Path, PathBuf},
+        path::PathBuf,
     },
 };
 

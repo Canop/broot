@@ -3,7 +3,7 @@ use {
     crate::{
         app::*,
         command::{Command, TriggerType},
-        display::{CropWriter, Screen, SPACE_FILLING, W},
+        display::{CropWriter, MatchedString, Screen, SPACE_FILLING, W},
         errors::ProgramError,
         pattern::*,
         skin::*,
@@ -16,9 +16,11 @@ use {
     },
     std::path::{Path},
     termimad::Area,
+    unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
 };
 
-const TITLE: &str = "Staging Area"; // no wide char allowed here
+static TITLE: &str = "Staging Area"; // no wide char allowed here
+static ELLIPSIS: char = '…';
 
 pub struct StageState {
 
@@ -177,16 +179,87 @@ impl PanelState for StageState {
         self.write_title_line(stage, &mut cw, styles)?;
         let list_area = Area::new(area.left, area.top + 1, area.width, area.height - 1);
         let list_height = list_area.height as usize;
+        let pattern = &self.filtered_stage.pattern().pattern;
+        let pattern_object = pattern.object();
         for idx in 0..list_height {
             let y = list_area.top + idx as u16;
             let stage_idx = idx; // + scroll
             w.queue(cursor::MoveTo(area.left, y))?;
             let mut cw = CropWriter::new(w, width);
-            if let Some(path) = self.filtered_stage.path(stage, idx) {
-                cw.queue_g_string(
-                    &styles.default,
-                    path.to_string_lossy().to_string(),
-                )?;
+            let cw = &mut cw;
+            if let Some(path) = self.filtered_stage.path(stage, stage_idx) {
+                let style = if path.is_dir() {
+                    &styles.directory
+                } else {
+                    &styles.file
+                };
+                if pattern_object.subpath {
+                    let label = path.to_string_lossy();
+                    // we must display the matching on the whole path
+                    // (subpath is the path for the staging area)
+                    let name_match = pattern.search_string(&label);
+                    let matched_string = MatchedString::new(
+                        name_match,
+                        &label,
+                        &style,
+                        &styles.char_match,
+                    );
+                    matched_string.queue_on(cw)?;
+                } else if let Some(file_name) = path.file_name() {
+                    let label = file_name.to_string_lossy();
+                    let label_cols = label.width();
+                    if label_cols + 2 < cw.allowed {
+                        if let Some(parent_path) = path.parent() {
+                            let cols_max = cw.allowed - label_cols - 3;
+                            let parent_path = parent_path.to_string_lossy();
+                            let parent_cols = parent_path.width();
+                            if parent_cols <= cols_max {
+                                cw.queue_str(
+                                    &styles.parent,
+                                    &parent_path,
+                                )?;
+                            } else {
+                                // TODO move to (crop_writer ? termimad ?)
+                                // we'll compute the size of the tail fitting
+                                // the width minus one (for the ellipsis)
+                                let mut bytes_count = 0;
+                                let mut cols_count = 0;
+                                for c in parent_path.chars().rev() {
+                                    let char_width = UnicodeWidthChar::width(c).unwrap_or(0);
+                                    let next_str_width = cols_count + char_width;
+                                    if next_str_width > cols_max {
+                                        break;
+                                    }
+                                    cols_count = next_str_width;
+                                    bytes_count += c.len_utf8();
+                                }
+                                cw.queue_char(
+                                    &styles.parent,
+                                    ELLIPSIS,
+                                )?;
+                                cw.queue_str(
+                                    &styles.parent,
+                                    &parent_path[parent_path.len()-bytes_count..],
+                                )?;
+                            }
+                            cw.queue_char(
+                                &styles.parent,
+                                '/',
+                            )?;
+                        }
+                    }
+                    let name_match = pattern.search_string(&label);
+                    let matched_string = MatchedString::new(
+                        name_match,
+                        &label,
+                        &style,
+                        &styles.char_match,
+                    );
+                    matched_string.queue_on(cw)?;
+                } else {
+                    // this should not happen
+                    warn!("how did we fall on a path without filename?");
+                }
             }
             cw.fill(&styles.default, &SPACE_FILLING)?;
         }
