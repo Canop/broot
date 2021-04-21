@@ -26,7 +26,7 @@ pub struct StageState {
 
     filtered_stage: FilteredStage,
 
-    /// those options are mainly kept for transmission to child state
+    /// those options are only kept for transmission to child state
     /// (if they become possible)
     tree_options: TreeOptions,
 
@@ -160,7 +160,7 @@ impl PanelState for StageState {
         app_state: &AppState,
         _con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
-        self.filtered_stage = FilteredStage::filtered(&app_state.stage, pat);
+        self.filtered_stage.set_pattern(&app_state.stage, pat);
         Ok(CmdResult::Keep)
     }
 
@@ -187,12 +187,20 @@ impl PanelState for StageState {
             w.queue(cursor::MoveTo(area.left, y))?;
             let mut cw = CropWriter::new(w, width);
             let cw = &mut cw;
-            if let Some(path) = self.filtered_stage.path(stage, stage_idx) {
-                let style = if path.is_dir() {
+            if let Some((path, selected)) = self.filtered_stage.path_sel(stage, stage_idx) {
+                let mut style = if path.is_dir() {
                     &styles.directory
                 } else {
                     &styles.file
                 };
+                let mut bg_style;
+                if selected {
+                    bg_style = style.clone();
+                    if let Some(c) = styles.selected_line.get_bg() {
+                        bg_style.set_bg(c);
+                    }
+                    style = &bg_style;
+                }
                 if pattern_object.subpath {
                     let label = path.to_string_lossy();
                     // we must display the matching on the whole path
@@ -201,7 +209,7 @@ impl PanelState for StageState {
                     let matched_string = MatchedString::new(
                         name_match,
                         &label,
-                        &style,
+                        style,
                         &styles.char_match,
                     );
                     matched_string.queue_on(cw)?;
@@ -210,12 +218,21 @@ impl PanelState for StageState {
                     let label_cols = label.width();
                     if label_cols + 2 < cw.allowed {
                         if let Some(parent_path) = path.parent() {
+                            let mut parent_style = &styles.parent;
+                            let mut bg_style;
+                            if selected {
+                                bg_style = parent_style.clone();
+                                if let Some(c) = styles.selected_line.get_bg() {
+                                    bg_style.set_bg(c);
+                                }
+                                parent_style = &bg_style;
+                            }
                             let cols_max = cw.allowed - label_cols - 3;
                             let parent_path = parent_path.to_string_lossy();
                             let parent_cols = parent_path.width();
                             if parent_cols <= cols_max {
                                 cw.queue_str(
-                                    &styles.parent,
+                                    parent_style,
                                     &parent_path,
                                 )?;
                             } else {
@@ -234,16 +251,16 @@ impl PanelState for StageState {
                                     bytes_count += c.len_utf8();
                                 }
                                 cw.queue_char(
-                                    &styles.parent,
+                                    parent_style,
                                     ELLIPSIS,
                                 )?;
                                 cw.queue_str(
-                                    &styles.parent,
+                                    parent_style,
                                     &parent_path[parent_path.len()-bytes_count..],
                                 )?;
                             }
                             cw.queue_char(
-                                &styles.parent,
+                                parent_style,
                                 '/',
                             )?;
                         }
@@ -252,7 +269,7 @@ impl PanelState for StageState {
                     let matched_string = MatchedString::new(
                         name_match,
                         &label,
-                        &style,
+                        style,
                         &styles.char_match,
                     );
                     matched_string.queue_on(cw)?;
@@ -260,6 +277,7 @@ impl PanelState for StageState {
                     // this should not happen
                     warn!("how did we fall on a path without filename?");
                 }
+                cw.fill(style, &SPACE_FILLING)?;
             }
             cw.fill(&styles.default, &SPACE_FILLING)?;
         }
@@ -291,6 +309,41 @@ impl PanelState for StageState {
             Internal::back if self.filtered_stage.pattern().is_some() => {
                 self.filtered_stage = FilteredStage::unfiltered(&app_state.stage);
                 CmdResult::Keep
+            }
+            Internal::back if self.filtered_stage.pattern().is_some() => {
+                self.filtered_stage = FilteredStage::unfiltered(&app_state.stage);
+                CmdResult::Keep
+            }
+            Internal::line_down => {
+                let count = get_arg(input_invocation, internal_exec, 1);
+                self.filtered_stage.move_selection(count, true);
+                CmdResult::Keep
+            }
+            Internal::line_up => {
+                let count = get_arg(input_invocation, internal_exec, 1);
+                self.filtered_stage.move_selection(-count, true);
+                CmdResult::Keep
+            }
+            Internal::line_down_no_cycle => {
+                let count = get_arg(input_invocation, internal_exec, 1);
+                self.filtered_stage.move_selection(count, false);
+                CmdResult::Keep
+            }
+            Internal::line_up_no_cycle => {
+                let count = get_arg(input_invocation, internal_exec, 1);
+                self.filtered_stage.move_selection(-count, false);
+                CmdResult::Keep
+            }
+            Internal::stage => {
+                // shall we restage what we just unstaged ?
+                CmdResult::error("nothing to stage here")
+            }
+            Internal::unstage | Internal::toggle_stage => {
+                if self.filtered_stage.unstage_selection(&mut app_state.stage) {
+                    CmdResult::Keep
+                } else {
+                    CmdResult::error("you must select a path to unstage")
+                }
             }
             _ => self.on_internal_generic(
                 w,

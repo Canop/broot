@@ -46,6 +46,12 @@ impl Stage {
             false
         }
     }
+    pub fn remove_idx(&mut self, idx: usize) {
+        if idx < self.paths.len() {
+            self.version += 1;
+            self.paths.remove(idx);
+        }
+    }
     pub fn clear(&mut self) {
         self.version += 1;
         self.paths.clear()
