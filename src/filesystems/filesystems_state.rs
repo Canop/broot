@@ -444,7 +444,7 @@ impl PanelState for FilesystemState {
                 idx += 1;
             }
             cw.fill(txt_style, &SPACE_FILLING)?;
-            let scrollbar_style = if is_thumb(y, scrollbar) {
+            let scrollbar_style = if ScrollCommand::is_thumb(y, scrollbar) {
                 &styles.scrollbar_thumb
             } else {
                 &styles.scrollbar_track
@@ -580,11 +580,3 @@ impl PanelState for FilesystemState {
     }
 }
 
-fn is_thumb(y: u16, scrollbar: Option<(u16, u16)>) -> bool {
-    if let Some((sctop, scbottom)) = scrollbar {
-        if sctop <= y && y <= scbottom {
-            return true;
-        }
-    }
-    false
-}

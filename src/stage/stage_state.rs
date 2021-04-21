@@ -2,7 +2,7 @@ use {
     super::*,
     crate::{
         app::*,
-        command::{Command, TriggerType},
+        command::*,
         display::{CropWriter, MatchedString, Screen, SPACE_FILLING, W},
         errors::ProgramError,
         pattern::*,
@@ -26,12 +26,16 @@ pub struct StageState {
 
     filtered_stage: FilteredStage,
 
+    scroll: usize,
+
     /// those options are only kept for transmission to child state
     /// (if they become possible)
     tree_options: TreeOptions,
 
     /// the 'modal' mode
     mode: Mode,
+
+    page_height: usize,
 }
 
 impl StageState {
@@ -47,8 +51,30 @@ impl StageState {
         );
         Self {
             filtered_stage,
+            scroll: 0,
             tree_options,
             mode: initial_mode(con),
+            page_height: 0,
+        }
+    }
+
+    pub fn try_scroll(
+        &mut self,
+        cmd: ScrollCommand,
+    ) -> bool {
+        let old_scroll = self.scroll;
+        self.scroll = cmd.apply(self.scroll, self.filtered_stage.len(), self.page_height);
+        self.scroll != old_scroll
+    }
+
+    pub fn fix_scroll(&mut self) {
+        let len = self.filtered_stage.len();
+        if self.scroll + self.page_height > len {
+            self.scroll = if len > self.page_height {
+                len - self.page_height
+            } else {
+                0
+            };
         }
     }
 
@@ -90,6 +116,20 @@ impl StageState {
         cw.fill(&styles.staging_area_title, &SPACE_FILLING)?;
         Ok(())
     }
+
+    fn move_selection(&mut self, dy: i32, cycle: bool) -> CmdResult {
+        self.filtered_stage.move_selection(dy, cycle);
+        if let Some(sel) = self.filtered_stage.selection() {
+            if sel < self.scroll + 5 {
+                self.scroll = (sel as i32 -5).max(0) as usize;
+            } else if sel > self.scroll + self.page_height - 5 {
+                self.scroll = (sel + 5 - self.page_height)
+                    .min(self.filtered_stage.len() - self.page_height);
+            }
+        }
+        CmdResult::Keep
+    }
+
 }
 
 impl PanelState for StageState {
@@ -148,8 +188,10 @@ impl PanelState for StageState {
             change_options(&mut new_options);
             CmdResult::NewState(Box::new(StageState {
                 filtered_stage: self.filtered_stage.clone(),
+                scroll: self.scroll,
                 mode: initial_mode(con),
                 tree_options: new_options,
+                page_height: self.page_height,
             }))
         }
     }
@@ -161,6 +203,7 @@ impl PanelState for StageState {
         _con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         self.filtered_stage.set_pattern(&app_state.stage, pat);
+        self.fix_scroll();
         Ok(CmdResult::Keep)
     }
 
@@ -170,7 +213,9 @@ impl PanelState for StageState {
         disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
         let stage = &disc.app_state.stage;
-        self.filtered_stage.update(stage);
+        if self.filtered_stage.update(stage) {
+            self.fix_scroll();
+        }
         let area = &disc.state_area;
         let styles = &disc.panel_skin.styles;
         let width = area.width as usize;
@@ -178,14 +223,18 @@ impl PanelState for StageState {
         let mut cw = CropWriter::new(w, width);
         self.write_title_line(stage, &mut cw, styles)?;
         let list_area = Area::new(area.left, area.top + 1, area.width, area.height - 1);
-        let list_height = list_area.height as usize;
+        self.page_height = list_area.height as usize;
         let pattern = &self.filtered_stage.pattern().pattern;
         let pattern_object = pattern.object();
-        for idx in 0..list_height {
+        let scrollbar = list_area.scrollbar(
+            self.scroll as i32,
+            self.filtered_stage.len() as i32,
+        );
+        for idx in 0..self.page_height {
             let y = list_area.top + idx as u16;
-            let stage_idx = idx; // + scroll
+            let stage_idx = idx + self.scroll;
             w.queue(cursor::MoveTo(area.left, y))?;
-            let mut cw = CropWriter::new(w, width);
+            let mut cw = CropWriter::new(w, width - 1);
             let cw = &mut cw;
             if let Some((path, selected)) = self.filtered_stage.path_sel(stage, stage_idx) {
                 let mut style = if path.is_dir() {
@@ -280,6 +329,12 @@ impl PanelState for StageState {
                 cw.fill(style, &SPACE_FILLING)?;
             }
             cw.fill(&styles.default, &SPACE_FILLING)?;
+            let scrollbar_style = if ScrollCommand::is_thumb(y, scrollbar) {
+                &styles.scrollbar_thumb
+            } else {
+                &styles.scrollbar_track
+            };
+            scrollbar_style.queue_str(w, "▐")?;
         }
         Ok(())
     }
@@ -316,22 +371,26 @@ impl PanelState for StageState {
             }
             Internal::line_down => {
                 let count = get_arg(input_invocation, internal_exec, 1);
-                self.filtered_stage.move_selection(count, true);
-                CmdResult::Keep
+                self.move_selection(count, true)
             }
             Internal::line_up => {
                 let count = get_arg(input_invocation, internal_exec, 1);
-                self.filtered_stage.move_selection(-count, true);
-                CmdResult::Keep
+                self.move_selection(-count, true)
             }
             Internal::line_down_no_cycle => {
                 let count = get_arg(input_invocation, internal_exec, 1);
-                self.filtered_stage.move_selection(count, false);
-                CmdResult::Keep
+                self.move_selection(count, false)
             }
             Internal::line_up_no_cycle => {
                 let count = get_arg(input_invocation, internal_exec, 1);
-                self.filtered_stage.move_selection(-count, false);
+                self.move_selection(-count, false)
+            }
+            Internal::page_down => {
+                self.try_scroll(ScrollCommand::Pages(1));
+                CmdResult::Keep
+            }
+            Internal::page_up => {
+                self.try_scroll(ScrollCommand::Pages(-1));
                 CmdResult::Keep
             }
             Internal::stage => {

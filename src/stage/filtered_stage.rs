@@ -102,6 +102,9 @@ impl FilteredStage {
     pub fn pattern(&self) -> &InputPattern {
         &self.pattern
     }
+    pub fn selection(&self) -> Option<usize> {
+        self.selection
+    }
     pub fn has_selection(&self) -> bool {
         self.selection.is_some()
     }
