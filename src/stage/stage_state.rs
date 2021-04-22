@@ -250,6 +250,9 @@ impl PanelState for StageState {
                     }
                     style = &bg_style;
                 }
+                if disc.con.show_selection_mark && self.filtered_stage.has_selection() {
+                    cw.queue_char(style, if selected { '▶' } else { ' ' })?;
+                }
                 if pattern_object.subpath {
                     let label = path.to_string_lossy();
                     // we must display the matching on the whole path
@@ -365,8 +368,8 @@ impl PanelState for StageState {
                 self.filtered_stage = FilteredStage::unfiltered(&app_state.stage);
                 CmdResult::Keep
             }
-            Internal::back if self.filtered_stage.pattern().is_some() => {
-                self.filtered_stage = FilteredStage::unfiltered(&app_state.stage);
+            Internal::back if self.filtered_stage.has_selection() => {
+                self.filtered_stage.unselect();
                 CmdResult::Keep
             }
             Internal::line_down => {
