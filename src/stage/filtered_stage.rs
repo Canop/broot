@@ -21,39 +21,52 @@ impl FilteredStage {
     pub fn unfiltered(stage: &Stage) -> Self {
         Self::filtered(stage, InputPattern::none())
     }
-    fn compute(stage: &Stage, pattern: &Pattern) -> Vec<usize> {
-        stage.paths().iter()
-            .enumerate()
-            .filter(|(_, path)| {
-                if pattern.is_none() {
-                    true
-                } else {
-                    path.file_name()
-                        .map(|file_name| {
-                            let subpath = path.to_string_lossy().to_string();
-                            let name = file_name.to_string_lossy().to_string();
-                            let regular_file = path.is_file();
-                            let candidate = Candidate {
-                                path,
-                                subpath: &subpath,
-                                name: &name,
-                                regular_file,
-                            };
-                            pattern.score_of(candidate).is_some()
-                        })
-                        .unwrap_or(false)
+    /// compute the paths_idx and maybe change the selection
+    fn compute(&mut self, stage: &Stage) {
+        if self.pattern.is_none() {
+            self.paths_idx = stage.paths().iter()
+                .enumerate()
+                .map(|(idx, _)| idx)
+                .collect();
+        } else {
+            let mut best_score = None;
+            self.paths_idx.clear();
+            for (idx, path) in stage.paths().iter().enumerate() {
+                if let Some(file_name) = path.file_name() {
+                    let subpath = path.to_string_lossy().to_string();
+                    let name = file_name.to_string_lossy().to_string();
+                    let regular_file = path.is_file();
+                    let candidate = Candidate {
+                        path,
+                        subpath: &subpath,
+                        name: &name,
+                        regular_file,
+                    };
+                    if let Some(score) = self.pattern.pattern.score_of(candidate) {
+                        let is_best = match best_score {
+                            Some(old_score) if old_score < score => true,
+                            None => true,
+                            _ => false,
+                        };
+                        if is_best {
+                            self.selection = Some(self.paths_idx.len());
+                            best_score = Some(score);
+                        }
+                        self.paths_idx.push(idx);
+                    }
                 }
-            })
-            .map(|(idx, _)| idx)
-            .collect()
+            }
+        }
     }
     pub fn filtered(stage: &Stage, pattern: InputPattern) -> Self {
-        Self {
+        let mut fs = Self {
             stage_version: stage.version(),
-            paths_idx: Self::compute(stage, &pattern.pattern),
+            paths_idx: Vec::new(),
             pattern,
             selection: None,
-        }
+        };
+        fs.compute(stage);
+        fs
     }
     /// chech whether the stage has changed, and update the
     /// filtered list if necessary
@@ -61,15 +74,7 @@ impl FilteredStage {
         if stage.version() == self.stage_version {
             false
         } else {
-            debug!("filtering stage");
-            let selected_path_before = self.selection
-                .map(|idx| &stage.paths()[self.paths_idx[idx]]);
-            self.paths_idx = Self::compute(stage, &self.pattern.pattern);
-            self.selection = selected_path_before
-                .and_then(|p| {
-                    self.paths_idx.iter()
-                        .position(|&pi| p==&stage.paths()[self.paths_idx[pi]])
-                });
+            self.compute(stage);
             true
         }
     }
@@ -77,14 +82,9 @@ impl FilteredStage {
     /// Assumes the stage didn't change (if it changed, we lose the
     /// selection)
     pub fn set_pattern(&mut self, stage: &Stage, pattern: InputPattern) {
-        let selected_idx_before = self.selection
-            .filter(|_| self.stage_version == stage.version())
-            .map(|idx| self.paths_idx[idx]);
         self.stage_version = stage.version(); // in case it changed
         self.pattern = pattern;
-        self.paths_idx = Self::compute(stage, &self.pattern.pattern);
-        self.selection = selected_idx_before
-            .and_then(|pi| self.paths_idx.iter().position(|&v| v==pi));
+        self.compute(stage);
     }
     pub fn len(&self) -> usize {
         self.paths_idx.len()
@@ -124,10 +124,10 @@ impl FilteredStage {
         if let Some(spi) = self.selection {
             stage.remove_idx(self.paths_idx[spi]);
             self.stage_version = stage.version();
-            self.paths_idx = Self::compute(stage, &self.pattern.pattern);
+            self.compute(stage);
             if spi >= self.paths_idx.len() {
-                self.selection = None;
-            }
+                self.selection = Some(spi);
+            };
             true
         } else {
             false
@@ -155,6 +155,8 @@ impl FilteredStage {
                     new_sel_idx as usize
                 }
             )
+        } else if dy < 0 {
+            Some(self.paths_idx.len() - 1)
         } else {
             Some(0)
         };

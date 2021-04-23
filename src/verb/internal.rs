@@ -145,6 +145,8 @@ impl Internal {
     pub fn exec_pattern(self) -> &'static str {
         match self {
             Internal::focus => r"focus {path}",
+            Internal::line_down => r"line_down {count}",
+            Internal::line_up => r"line_up {count}",
             Internal::line_down_no_cycle => r"line_down_no_cycle {count}",
             Internal::line_up_no_cycle => r"line_up_no_cycle {count}",
             _ => self.name(),
