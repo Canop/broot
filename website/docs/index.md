@@ -42,7 +42,7 @@ Most useful keys for this:
 
 # Never lose track of file hierarchy while you search
 
-![search](img/20210204-mycnf.png)
+![search](img/20210424-mycnf.png)
 
 broot tries to select the most relevant file. You can still go from one match to another one using <kbd>tab</kbd> or arrow keys.
 
@@ -105,7 +105,7 @@ If your terminal is [kitty](https://sw.kovidgoyal.net/kitty/index.html), then th
 
 ![kitty preview](img/20201127-kitty-preview.png)
 
-# Apply a standard or personal shortcut to a file
+# Apply a standard or personal command to a file
 
 ![size](img/20191112-edit.png)
 
