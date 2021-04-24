@@ -185,7 +185,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_char_key('+'),
         internal(unstage)
             .with_char_key('-'),
-        internal(toggle_stage),
+        internal(toggle_stage)
+            .with_control_key('g'),
         internal(open_staging_area),
         internal(close_staging_area),
         internal(toggle_staging_area).with_shortcut("tsa"),
