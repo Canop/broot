@@ -196,6 +196,20 @@ impl PanelState for StageState {
         }
     }
 
+    fn on_click(
+        &mut self,
+        _x: u16,
+        y: u16,
+        _screen: Screen,
+        _con: &AppContext,
+    ) -> Result<CmdResult, ProgramError> {
+        if y > 0 {
+            // the list starts on the second row
+            self.filtered_stage.try_select_idx(y as usize - 1 + self.scroll);
+        }
+        Ok(CmdResult::Keep)
+    }
+
     fn on_pattern(
         &mut self,
         pat: InputPattern,

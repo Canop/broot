@@ -108,6 +108,14 @@ impl FilteredStage {
     pub fn has_selection(&self) -> bool {
         self.selection.is_some()
     }
+    pub fn try_select_idx(&mut self, idx: usize) -> bool {
+        if idx < self.paths_idx.len() {
+            self.selection = Some(idx);
+            true
+        } else {
+            false
+        }
+    }
     pub fn selected_path<'s>(&self, stage: &'s Stage) -> Option<&'s Path> {
         self.selection
             .and_then(|pi| self.paths_idx.get(pi))
