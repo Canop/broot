@@ -250,6 +250,15 @@ impl PanelState for StageState {
                     }
                     style = &bg_style;
                 }
+                let mut bg_style_match;
+                let mut style_match = &styles.char_match;
+                if selected {
+                    bg_style_match = style_match.clone();
+                    if let Some(c) = styles.selected_line.get_bg() {
+                        bg_style_match.set_bg(c);
+                    }
+                    style_match = &bg_style_match;
+                }
                 if disc.con.show_selection_mark && self.filtered_stage.has_selection() {
                     cw.queue_char(style, if selected { '▶' } else { ' ' })?;
                 }
@@ -262,7 +271,7 @@ impl PanelState for StageState {
                         name_match,
                         &label,
                         style,
-                        &styles.char_match,
+                        style_match,
                     );
                     matched_string.queue_on(cw)?;
                 } else if let Some(file_name) = path.file_name() {
@@ -322,7 +331,7 @@ impl PanelState for StageState {
                         name_match,
                         &label,
                         style,
-                        &styles.char_match,
+                        style_match,
                     );
                     matched_string.queue_on(cw)?;
                 } else {
