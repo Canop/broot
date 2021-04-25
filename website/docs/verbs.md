@@ -5,6 +5,10 @@ The simplest verbs are just executed by typing a space (or `:`), then its first 
 
 A verb can be related to the current selection. For example typing `:p` will execute the `:parent` verb, which focuses the parent of the selection (*focusing* a directory means making it the current root).
 
+Verbs are listed in help. As there are many of them, it can be sometimes useful to use pattern filtering to look at what's available for your concern. For example to see [stage](../staging-area) related verbs and their shortcuts:
+
+![help filter](img/20210425-help-filter-stage.png)
+
 # Verbs using the selection
 
 The `rm` verb executes the standard `rm` command.

@@ -72,10 +72,10 @@ impl PanelInput {
         w: &mut W,
         event: Event,
         con: &AppContext,
-        sel: Selection<'_>,
+        sel_info: SelInfo<'_>,
         mode: Mode,
     ) -> Result<Command, ProgramError> {
-        let cmd = self.get_command(event, con, sel, mode);
+        let cmd = self.get_command(event, con, sel_info, mode);
         self.input_field.display_on(w)?;
         Ok(cmd)
     }
@@ -152,7 +152,7 @@ impl PanelInput {
         &mut self,
         event: Event,
         con: &AppContext,
-        sel: Selection<'_>,
+        sel_info: SelInfo<'_>,
         mode: Mode,
     ) -> Command {
         match event {
@@ -209,7 +209,8 @@ impl PanelInput {
                         } else {
                             &parts
                         };
-                        let completions = Completions::for_input(completable_parts, con, sel);
+                        let completions = Completions::for_input(completable_parts, con, sel_info);
+                        info!(" -> completions: {:?}", &completions);
                         let added = match completions {
                             Completions::None => {
                                 debug!("nothing to complete!");
@@ -268,7 +269,7 @@ impl PanelInput {
                                 if self.handle_input_related_verb(verb, con) {
                                     return Command::from_raw(self.input_field.get_content(), false);
                                 }
-                                if sel.stype.respects(verb.selection_condition) {
+                                if verb.selection_condition.is_respected_by(sel_info.common_stype()) {
                                     if mode != Mode::Input && verb.is_internal(Internal::mode_input) {
                                         self.enter_input_mode_with_key(key, &parts);
                                     }

@@ -1,4 +1,18 @@
-# Use broot as a generic fuzzy finder
+# Replace tree
+
+This bash function gives you a better `tree` optimizing for the height of the screen:
+
+	function tree {
+	     br -c :pt "$@"
+	}
+
+![tree](img/20210425-alias-tree.png)
+
+This function supports most broot arguments:
+
+![tree with args](img/20201219-tree-with-args.png)
+
+# A generic fuzzy finder
 
 The goal here is to have a function you can use in shell to give you a path.
 
@@ -45,19 +59,6 @@ Here, the configuration file was used to ensure you can select a file with the e
 
 You may use the same configuration file to also specify colors to remember yourself you're not in a standard broot.
 
-# Replace tree
-
-This bash function gives you a better `tree` optimizing for the height of the screen:
-
-	function tree {
-	     br -c :pt "$@"
-	}
-
-![tree](img/20200710-alias-tree.png)
-
-This function supports most broot arguments:
-
-![tree with args](img/20201219-tree-with-args.png)
 
 # `dcd` : Deep fuzzy cd
 

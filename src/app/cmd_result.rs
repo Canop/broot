@@ -25,10 +25,11 @@ pub enum PanelReference {
     Rightest,
     Id(PanelId),
     Preview,
+    //StagingArea,
 }
 
 /// Result of applying a command to a state
-pub enum AppStateCmdResult {
+pub enum CmdResult {
     ApplyOnPanel {
         id: PanelId,
     },
@@ -44,11 +45,11 @@ pub enum AppStateCmdResult {
     Keep,
     Launch(Box<Launchable>),
     NewPanel {
-        state: Box<dyn AppState>,
+        state: Box<dyn PanelState>,
         purpose: PanelPurpose,
         direction: HDir,
     },
-    NewState(Box<dyn AppState>),
+    NewState(Box<dyn PanelState>),
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
     Quit,
@@ -57,62 +58,65 @@ pub enum AppStateCmdResult {
     },
 }
 
-impl AppStateCmdResult {
-    pub fn verb_not_found(text: &str) -> AppStateCmdResult {
-        AppStateCmdResult::DisplayError(format!("verb not found: {:?}", &text))
+impl CmdResult {
+    pub fn verb_not_found(text: &str) -> CmdResult {
+        CmdResult::DisplayError(format!("verb not found: {:?}", &text))
     }
     pub fn from_optional_state(
         os: Result<Option<BrowserState>, TreeBuildError>,
         in_new_panel: bool,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         match os {
             Ok(Some(os)) => {
                 if in_new_panel {
-                    AppStateCmdResult::NewPanel {
+                    CmdResult::NewPanel {
                         state: Box::new(os),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
                     }
                 } else {
-                    AppStateCmdResult::NewState(Box::new(os))
+                    CmdResult::NewState(Box::new(os))
                 }
             }
-            Ok(None) => AppStateCmdResult::Keep,
-            Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
+            Ok(None) => CmdResult::Keep,
+            Err(e) => CmdResult::error(e.to_string()),
         }
     }
-}
-
-impl From<Launchable> for AppStateCmdResult {
-    fn from(launchable: Launchable) -> Self {
-        AppStateCmdResult::Launch(Box::new(launchable))
+    pub fn error<S: Into<String>>(message: S) -> Self {
+        Self::DisplayError(message.into())
     }
 }
 
-impl fmt::Debug for AppStateCmdResult {
+impl From<Launchable> for CmdResult {
+    fn from(launchable: Launchable) -> Self {
+        CmdResult::Launch(Box::new(launchable))
+    }
+}
+
+impl fmt::Debug for CmdResult {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                AppStateCmdResult::ApplyOnPanel { .. } => "ApplyOnPanel",
-                AppStateCmdResult::ClosePanel {
+                CmdResult::ApplyOnPanel { .. } => "ApplyOnPanel",
+                CmdResult::ClosePanel {
                     validate_purpose: false, ..
                 } => "CancelPanel",
-                AppStateCmdResult::ClosePanel {
+                CmdResult::ClosePanel {
                     validate_purpose: true, ..
                 } => "OkPanel",
-                AppStateCmdResult::DisplayError(_) => "DisplayError",
-                AppStateCmdResult::ExecuteSequence{ .. } => "ExecuteSequence",
-                AppStateCmdResult::Keep => "Keep",
-                AppStateCmdResult::Launch(_) => "Launch",
-                AppStateCmdResult::NewState { .. } => "NewState",
-                AppStateCmdResult::NewPanel { .. } => "NewPanel",
-                AppStateCmdResult::PopStateAndReapply => "PopStateAndReapply",
-                AppStateCmdResult::PopState => "PopState",
-                AppStateCmdResult::HandleInApp(_) => "HandleInApp",
-                AppStateCmdResult::Quit => "Quit",
-                AppStateCmdResult::RefreshState { .. } => "RefreshState",
+                CmdResult::DisplayError(_) => "DisplayError",
+                CmdResult::ExecuteSequence{ .. } => "ExecuteSequence",
+                CmdResult::Keep => "Keep",
+                CmdResult::Launch(_) => "Launch",
+                CmdResult::NewState { .. } => "NewState",
+                CmdResult::NewPanel { .. } => "NewPanel",
+                CmdResult::PopStateAndReapply => "PopStateAndReapply",
+                CmdResult::PopState => "PopState",
+                CmdResult::HandleInApp(_) => "HandleInApp",
+                CmdResult::Quit => "Quit",
+                CmdResult::RefreshState { .. } => "RefreshState",
             }
         )
     }

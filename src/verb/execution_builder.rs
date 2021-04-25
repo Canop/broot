@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        app::Selection,
+        app::{Selection, SelInfo, SelectionType},
         path,
     },
     ahash::AHashMap,
@@ -14,9 +14,9 @@ use {
 /// a verb's execution pattern
 pub struct ExecutionStringBuilder<'b> {
     /// the current file selection
-    pub sel: Selection<'b>,
+    pub sel_info: SelInfo<'b>,
 
-    /// the selection in the other panel, when there exactly two
+    /// the selection in the other panel, when there are exactly two
     other_file: Option<&'b PathBuf>,
 
     /// parsed arguments
@@ -24,18 +24,18 @@ pub struct ExecutionStringBuilder<'b> {
 }
 
 impl<'b> ExecutionStringBuilder<'b> {
-    pub fn from_selection(
-        sel: Selection<'b>,
+    pub fn from_sel_info(
+         sel_info: SelInfo<'b>,
     ) -> Self {
         Self {
-            sel,
+            sel_info,
             other_file: None,
             invocation_values: None,
         }
     }
     pub fn from_invocation(
         invocation_parser: &Option<InvocationParser>,
-        sel: Selection<'b>,
+        sel_info: SelInfo<'b>,
         other_file: &'b Option<PathBuf>,
         invocation_args: &Option<String>,
     ) -> Self {
@@ -44,63 +44,92 @@ impl<'b> ExecutionStringBuilder<'b> {
             .zip(invocation_args.as_ref())
             .and_then(|(parser, args)| parser.parse(args));
         Self {
-            sel,
+            sel_info,
             other_file: other_file.as_ref(),
             invocation_values,
         }
     }
-    fn get_file(&self) -> &Path {
-        &self.sel.path
-    }
-    fn get_directory(&self) -> PathBuf {
-        path::closest_dir(self.sel.path)
-    }
-    fn get_parent(&self) -> &Path {
-        let file = &self.sel.path;
-        file.parent().unwrap_or(file)
-    }
-    fn path_to_string(&self, path: &Path) -> String {
-        path.to_string_lossy().to_string()
-    }
     fn get_raw_capture_replacement(&self, ec: &Captures<'_>) -> Option<String> {
+        match self.sel_info {
+            SelInfo::None => self.get_raw_sel_capture_replacement(ec, None),
+            SelInfo::One(sel) => self.get_raw_sel_capture_replacement(ec, Some(sel)),
+            SelInfo::More(stage) => {
+                let mut sels = stage.paths().iter()
+                    .map(|path| Selection {
+                        path,
+                        line: 0,
+                        stype: SelectionType::from(path),
+                        is_exe: false,
+                    });
+                self.get_raw_sel_capture_replacement(ec, sels.next())
+                    .filter(|first_rcr| {
+                        for sel in sels {
+                            let rcr = self.get_raw_sel_capture_replacement(ec, Some(sel));
+                            if rcr.as_ref() != Some(first_rcr) {
+                                return false;
+                            }
+                        }
+                        true
+                    })
+            }
+        }
+    }
+    fn get_raw_sel_capture_replacement(
+        &self,
+        ec: &Captures<'_>,
+        sel: Option<Selection<'_>>,
+    ) -> Option<String> {
         let name = ec.get(1).unwrap().as_str();
         match name {
-            "line" => Some(self.sel.line.to_string()),
-            "file" => Some(self.path_to_string(self.get_file())),
-            "directory" => Some(self.path_to_string(&self.get_directory())),
-            "parent" => Some(self.path_to_string(self.get_parent())),
-            "other-panel-file" => self.other_file.map(|p| self.path_to_string(p)),
+            "line" => sel.map(|s| s.line.to_string()),
+            "file" => sel.map(|s| s.path).map(path_to_string),
+            "directory" => sel.map(|s| path::closest_dir(s.path)).map(path_to_string),
+            "parent" => sel.and_then(|s| s.path.parent()).map(path_to_string),
+            "other-panel-file" => self.other_file.map(path_to_string),
             "other-panel-directory" => self
                 .other_file
                 .map(|p| path::closest_dir(p))
                 .as_ref()
-                .map(|p| self.path_to_string(p)),
+                .map(path_to_string),
             "other-panel-parent" => self
                 .other_file
                 .and_then(|p| p.parent())
-                .map(|p| self.path_to_string(p)),
+                .map(path_to_string),
             _ => {
                 // it's not one of the standard group names, so we'll look
                 // into the ones provided by the invocation pattern
                 self.invocation_values.as_ref()
-                    .and_then(|map| map.get(name)
-                        .map(|value| {
-                            if let Some(fmt) = ec.get(2) {
-                                match fmt.as_str() {
-                                    "path-from-directory" => path::path_str_from(self.get_directory(), value),
-                                    "path-from-parent" => path::path_str_from(self.get_parent(), value),
-                                    _ => format!("invalid format: {:?}", fmt.as_str()),
+                    .and_then(|map| map.get(name))
+                    .and_then(|value| {
+                        if let Some(fmt) = ec.get(2) {
+                            match fmt.as_str() {
+                                "path-from-directory" => {
+                                    sel.map(|s| path::closest_dir(s.path))
+                                        .map(|dir| path::path_str_from(dir, value))
                                 }
-                            } else {
-                                value.to_string()
+                                "path-from-parent" => {
+                                     sel.and_then(|s| s.path.parent())
+                                        .map(|dir| path::path_str_from(dir, value))
+                                }
+                                _ => Some(format!("invalid format: {:?}", fmt.as_str())),
                             }
-                        })
-                    )
+                        } else {
+                            Some(value.to_string())
+                        }
+                    })
             }
         }
     }
     fn get_capture_replacement(&self, ec: &Captures<'_>) -> String {
         self.get_raw_capture_replacement(ec)
+            .unwrap_or_else(|| ec[0].to_string())
+    }
+    fn get_sel_capture_replacement(
+        &self,
+        ec: &Captures<'_>,
+        sel: Option<Selection<'_>>,
+    ) -> String {
+        self.get_raw_sel_capture_replacement(ec, sel)
             .unwrap_or_else(|| ec[0].to_string())
     }
     /// build a shell compatible command, with escapings
@@ -118,6 +147,24 @@ impl<'b> ExecutionStringBuilder<'b> {
             .fix_paths()
             .to_string()
     }
+    /// build a shell compatible command, with escapings, for a specific
+    /// selection (this is intended for execution on all selections of a
+    /// stage)
+    pub fn sel_shell_exec_string(
+        &self,
+        exec_pattern: &ExecPattern,
+        sel: Option<Selection<'_>>,
+    ) -> String {
+        exec_pattern
+            .apply(&|s| {
+                GROUP.replace_all(
+                    s,
+                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel),
+                ).to_string()
+            })
+            .fix_paths()
+            .to_string()
+    }
     /// build a vec of tokens which can be passed to Command to
     /// launch an executable
     pub fn exec_token(
@@ -129,6 +176,23 @@ impl<'b> ExecutionStringBuilder<'b> {
                 GROUP.replace_all(
                     s,
                     |ec: &Captures<'_>| self.get_capture_replacement(ec),
+                ).to_string()
+            })
+            .fix_paths()
+            .into_array()
+    }
+    /// build a vec of tokens which can be passed to Command to
+    /// launch an executable
+    pub fn sel_exec_token(
+        &self,
+        exec_pattern: &ExecPattern,
+        sel: Option<Selection<'_>>,
+    ) -> Vec<String> {
+        exec_pattern
+            .apply(&|s| {
+                GROUP.replace_all(
+                    s,
+                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel),
                 ).to_string()
             })
             .fix_paths()
@@ -169,7 +233,7 @@ mod execution_builder_test {
             stype: SelectionType::File,
             is_exe: false,
         };
-        let mut builder = ExecutionStringBuilder::from_selection(sel);
+        let mut builder = ExecutionStringBuilder::from_sel_info(SelInfo::One(sel));
         let mut map = AHashMap::default();
         for (k, v) in replacements {
             map.insert(k.to_owned(), v.to_owned());
@@ -208,5 +272,8 @@ mod execution_builder_test {
             vec!["xterm", "-e", "kak /path/to/file"],
         );
     }
+}
 
+fn path_to_string<P: AsRef<Path>>(path: P) -> String {
+    path.as_ref().to_string_lossy().to_string()
 }

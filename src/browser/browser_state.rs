@@ -9,7 +9,6 @@ use {
         pattern::*,
         path::{self, PathAnchor},
         print,
-        skin::PanelSkin,
         task_sync::Dam,
         tree::*,
         tree_build::TreeBuilder,
@@ -17,7 +16,6 @@ use {
     },
     open,
     std::path::{Path, PathBuf},
-    termimad::Area,
 };
 
 /// An application state dedicated to displaying a tree.
@@ -85,7 +83,7 @@ impl BrowserState {
         con: &AppContext,
         in_new_panel: bool,
         keep_pattern: bool,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         let tree = self.displayed_tree();
         let line = tree.selected_line();
         let mut target = line.target().to_path_buf();
@@ -98,7 +96,7 @@ impl BrowserState {
                 }
             }
             let dam = Dam::unlimited();
-            Ok(AppStateCmdResult::from_optional_state(
+            Ok(CmdResult::from_optional_state(
                 BrowserState::new(
                     target,
                     if keep_pattern {
@@ -116,9 +114,9 @@ impl BrowserState {
             match open::that(&target) {
                 Ok(exit_status) => {
                     info!("open returned with exit_status {:?}", exit_status);
-                    Ok(AppStateCmdResult::Keep)
+                    Ok(CmdResult::Keep)
                 }
-                Err(e) => Ok(AppStateCmdResult::DisplayError(format!("{:?}", e))),
+                Err(e) => Ok(CmdResult::error(format!("{:?}", e))),
             }
         }
     }
@@ -128,9 +126,9 @@ impl BrowserState {
         screen: Screen,
         con: &AppContext,
         in_new_panel: bool,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         match &self.displayed_tree().selected_line().path.parent() {
-            Some(path) => AppStateCmdResult::from_optional_state(
+            Some(path) => CmdResult::from_optional_state(
                 BrowserState::new(
                     path.to_path_buf(),
                     self.displayed_tree().options.without_pattern(),
@@ -140,13 +138,17 @@ impl BrowserState {
                 ),
                 in_new_panel,
             ),
-            None => AppStateCmdResult::DisplayError("no parent found".to_string()),
+            None => CmdResult::error("no parent found"),
         }
     }
 
 }
 
-impl AppState for BrowserState {
+impl PanelState for BrowserState {
+
+    fn get_type(&self) -> PanelStateType {
+        PanelStateType::Tree
+    }
 
     fn set_mode(&mut self, mode: Mode) {
         debug!("BrowserState::set_mode({:?})", mode);
@@ -169,12 +171,12 @@ impl AppState for BrowserState {
         }
     }
 
-    fn selected_path(&self) -> &Path {
-        &self.displayed_tree().selected_line().path
+    fn selected_path(&self) -> Option<&Path> {
+        Some(&self.displayed_tree().selected_line().path)
     }
 
-    fn selection(&self) -> Selection<'_> {
-        self.displayed_tree().selected_line().as_selection()
+    fn selection(&self) -> Option<Selection<'_>> {
+        Some(self.displayed_tree().selected_line().as_selection())
     }
 
     fn tree_options(&self) -> TreeOptions {
@@ -190,11 +192,11 @@ impl AppState for BrowserState {
         change_options: &dyn Fn(&mut TreeOptions),
         in_new_panel: bool,
         con: &AppContext,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         let tree = self.displayed_tree();
         let mut options = tree.options.clone();
         change_options(&mut options);
-        AppStateCmdResult::from_optional_state(
+        CmdResult::from_optional_state(
             BrowserState::new(tree.root().clone(), options, screen, con, &Dam::unlimited()),
             in_new_panel,
         )
@@ -210,9 +212,9 @@ impl AppState for BrowserState {
         y: u16,
         _screen: Screen,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         self.displayed_tree_mut().try_select_y(y as i32);
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 
     fn on_double_click(
@@ -221,27 +223,28 @@ impl AppState for BrowserState {
         y: u16,
         screen: Screen,
         con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if self.displayed_tree().selection == y as usize {
             self.open_selection_stay_in_broot(screen, con, false, false)
         } else {
             // A double click always come after a simple click at
             // same position. If it's not the selected line, it means
             // the click wasn't on a selectable/openable tree line
-            Ok(AppStateCmdResult::Keep)
+            Ok(CmdResult::Keep)
         }
     }
 
     fn on_pattern(
         &mut self,
         pat: InputPattern,
+        _app_state: &AppState,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if pat.is_none() {
             self.filtered_tree = None;
         }
         self.pending_pattern = pat;
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 
     fn on_internal(
@@ -250,11 +253,12 @@ impl AppState for BrowserState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
-        screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError> {
-        let con = &cc.con;
-        let page_height = BrowserState::page_height(screen);
+    ) -> Result<CmdResult, ProgramError> {
+        let con = &cc.app.con;
+        let screen = cc.app.screen;
+        let page_height = BrowserState::page_height(cc.app.screen);
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
@@ -266,19 +270,19 @@ impl AppState for BrowserState {
                         self.tree.make_selection_visible(page_height);
                     }
                     self.filtered_tree = None;
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 } else if self.tree.selection > 0 {
                     self.tree.selection = 0;
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 } else {
-                    AppStateCmdResult::PopState
+                    CmdResult::PopState
                 }
             }
             Internal::focus => internal_focus::on_internal(
                 internal_exec,
                 input_invocation,
                 trigger_type,
-                self.selected_path(),
+                &self.displayed_tree().selected_line().path,
                 screen,
                 con,
                 self.displayed_tree().options.clone(),
@@ -291,65 +295,66 @@ impl AppState for BrowserState {
                     bang,
                     con,
                 ),
-                None => AppStateCmdResult::DisplayError("no parent found".to_string()),
+                None => CmdResult::error("no parent found"),
             },
             Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang, false)?,
             Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
             Internal::line_down => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.displayed_tree_mut().move_selection(count, page_height, true);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::line_up => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.displayed_tree_mut().move_selection(-count, page_height, true);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::line_down_no_cycle => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.displayed_tree_mut().move_selection(count, page_height, false);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::line_up_no_cycle => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.displayed_tree_mut().move_selection(-count, page_height, false);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::previous_match => {
                 self.displayed_tree_mut().try_select_previous_match();
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::next_match => {
                 self.displayed_tree_mut().try_select_next_match();
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::previous_same_depth => {
                 self.displayed_tree_mut().try_select_previous_same_depth();
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::next_same_depth => {
                 self.displayed_tree_mut().try_select_next_same_depth();
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::page_down => {
                 let tree = self.displayed_tree_mut();
                 if page_height < tree.lines.len() as i32 {
                     tree.try_scroll(page_height, page_height);
                 }
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::page_up => {
                 let tree = self.displayed_tree_mut();
                 if page_height < tree.lines.len() as i32 {
                     tree.try_scroll(-page_height, page_height);
                 }
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::panel_left => {
-                if cc.areas.is_first() && cc.areas.nb_pos < cc.con.max_panels_count  {
+                let areas = &cc.panel.areas;
+                if areas.is_first() && areas.nb_pos < con.max_panels_count  {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        self.displayed_tree().selected_line().path.to_path_buf(),
                         screen,
                         self.displayed_tree().options.clone(),
                         PanelPurpose::None,
@@ -358,19 +363,21 @@ impl AppState for BrowserState {
                     )
                 } else {
                     // we let the app handle other cases
-                    AppStateCmdResult::HandleInApp(Internal::panel_left)
+                    CmdResult::HandleInApp(Internal::panel_left)
                 }
             }
             Internal::panel_right => {
-                if cc.areas.is_last() && cc.areas.nb_pos < cc.con.max_panels_count {
-                    let purpose = if self.selected_path().is_file() && cc.preview.is_none() {
+                let areas = &cc.panel.areas;
+                let selected_path = &self.displayed_tree().selected_line().path;
+                if areas.is_last() && areas.nb_pos < con.max_panels_count {
+                    let purpose = if selected_path.is_file() && cc.app.preview_panel.is_none() {
                         PanelPurpose::Preview
                     } else {
                         PanelPurpose::None
                     };
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        selected_path.to_path_buf(),
                         screen,
                         self.displayed_tree().options.clone(),
                         purpose,
@@ -380,7 +387,7 @@ impl AppState for BrowserState {
                 } else {
                     // we ask the app to handle other cases :
                     // focus the panel to the right or close the leftest one
-                    AppStateCmdResult::HandleInApp(Internal::panel_right)
+                    CmdResult::HandleInApp(Internal::panel_right)
                 }
             }
             Internal::parent => self.go_to_parent(screen, con, bang),
@@ -393,21 +400,21 @@ impl AppState for BrowserState {
                 print::print_relative_path(path, con)?
             }
             Internal::print_tree => {
-                print::print_tree(&self.displayed_tree(), screen, &cc.panel_skin, con)?
+                print::print_tree(&self.displayed_tree(), cc.app.screen, &cc.app.panel_skin, con)?
             }
             Internal::select_first => {
                 self.displayed_tree_mut().try_select_first();
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::select_last => {
                 let page_height = BrowserState::page_height(screen);
                 self.displayed_tree_mut().try_select_last(page_height);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::start_end_panel => {
-                if cc.panel_purpose.is_arg_edition() {
+                if cc.panel.purpose.is_arg_edition() {
                     debug!("start_end understood as end");
-                    AppStateCmdResult::ClosePanel {
+                    CmdResult::ClosePanel {
                         validate_purpose: true,
                         panel_ref: PanelReference::Active,
                     }
@@ -430,7 +437,7 @@ impl AppState for BrowserState {
                         // we just open a new panel on the selected path,
                         // without purpose
                         internal_focus::new_panel_on_path(
-                            self.selected_path().to_path_buf(),
+                            self.displayed_tree().selected_line().path.to_path_buf(),
                             screen,
                             tree_options,
                             PanelPurpose::None,
@@ -443,28 +450,24 @@ impl AppState for BrowserState {
             Internal::total_search => {
                 if let Some(tree) = &self.filtered_tree {
                     if tree.total_search {
-                        AppStateCmdResult::DisplayError(
-                            "search was already total - all children have been rated".to_owned(),
-                        )
+                        CmdResult::error("search was already total - all children have been rated")
                     } else {
                         self.pending_pattern = tree.options.pattern.clone();
                         self.total_search_required = true;
-                        AppStateCmdResult::Keep
+                        CmdResult::Keep
                     }
                 } else {
-                    AppStateCmdResult::DisplayError(
-                        "this verb can be used only after a search".to_owned(),
-                    )
+                    CmdResult::error("this verb can be used only after a search")
                 }
             }
-            Internal::quit => AppStateCmdResult::Quit,
+            Internal::quit => CmdResult::Quit,
             _ => self.on_internal_generic(
                 w,
                 internal_exec,
                 input_invocation,
                 trigger_type,
+                app_state,
                 cc,
-                screen,
             )?,
         })
     }
@@ -475,8 +478,8 @@ impl AppState for BrowserState {
         con: &AppContext,
     ) -> Status {
         let mut ssb = con.standard_status.builder(
-            AppStateType::Tree,
-            self.selection(),
+            PanelStateType::Tree,
+            self.displayed_tree().selected_line().as_selection(),
         );
         ssb.has_previous_state = has_previous_state;
         ssb.is_filtered = self.filtered_tree.is_some();
@@ -530,16 +533,14 @@ impl AppState for BrowserState {
     fn display(
         &mut self,
         w: &mut W,
-        _screen: Screen,
-        area: Area,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
         let dp = DisplayableTree {
+            app_state: Some(&disc.app_state),
             tree: &self.displayed_tree(),
-            skin: &panel_skin.styles,
-            ext_colors: &con.ext_colors,
-            area,
+            skin: &disc.panel_skin.styles,
+            ext_colors: &disc.con.ext_colors,
+            area: disc.state_area.clone(),
             in_app: true,
         };
         dp.write_on(w)

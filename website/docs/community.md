@@ -13,6 +13,8 @@ If you're French speaking, you might prefer to directly come where other French 
 
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3) **Code & Croissants**
 
+Don't hesitate to come if you have a question.
+
 # Issues
 
 We use [GitHub's issue manager](https://github.com/Canop/broot/issues).

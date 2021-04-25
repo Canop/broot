@@ -21,7 +21,7 @@ pub fn on_path(
     tree_options: TreeOptions,
     in_new_panel: bool,
     con: &AppContext,
-) -> AppStateCmdResult {
+) -> CmdResult {
     if in_new_panel {
         new_panel_on_path(
             path,
@@ -41,9 +41,9 @@ pub fn new_state_on_path(
     screen: Screen,
     tree_options: TreeOptions,
     con: &AppContext,
-) -> AppStateCmdResult {
+) -> CmdResult {
     let path = path::closest_dir(&path);
-    AppStateCmdResult::from_optional_state(
+    CmdResult::from_optional_state(
         BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()),
         false,
     )
@@ -56,10 +56,10 @@ pub fn new_panel_on_path(
     purpose: PanelPurpose,
     con: &AppContext,
     direction: HDir,
-) -> AppStateCmdResult {
+) -> CmdResult {
     if purpose.is_preview() {
         let pattern = tree_options.pattern.tree_to_preview();
-        AppStateCmdResult::NewPanel {
+        CmdResult::NewPanel {
             state: Box::new(PreviewState::new(path, pattern, None, tree_options, con)),
             purpose,
             direction,
@@ -67,13 +67,13 @@ pub fn new_panel_on_path(
     } else {
         let path = path::closest_dir(&path);
         match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
-            Ok(Some(os)) => AppStateCmdResult::NewPanel {
+            Ok(Some(os)) => CmdResult::NewPanel {
                 state: Box::new(os),
                 purpose,
                 direction,
             },
-            Ok(None) => AppStateCmdResult::Keep, // this isn't supposed to happen
-            Err(e) => AppStateCmdResult::DisplayError(e.to_string()),
+            Ok(None) => CmdResult::Keep, // this isn't supposed to happen
+            Err(e) => CmdResult::DisplayError(e.to_string()),
         }
     }
 }
@@ -88,7 +88,7 @@ pub fn on_internal(
     screen: Screen,
     con: &AppContext,
     tree_options: TreeOptions,
-) -> AppStateCmdResult {
+) -> CmdResult {
     if let Some(arg) = &internal_exec.arg {
         // the internal_execution specifies the path to use
         // (it may come from a configured verb whose execution is

@@ -2,7 +2,6 @@ use {
     super::*,
     crate::{
         app::AppContext,
-        display::Col,
         errors,
         file_sum::FileSum,
         git::TreeGitStatus,
@@ -441,15 +440,6 @@ impl Tree {
             }
             sum
         }
-    }
-    /// compute the ordered list of columns that should be displayed
-    /// for current tree state and options
-    pub fn visible_cols(&self) -> Vec<Col> {
-        self.options.cols_order
-            .iter()
-            .filter(|col| col.is_visible(&self))
-            .cloned()
-            .collect()
     }
 }
 

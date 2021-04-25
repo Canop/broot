@@ -139,6 +139,7 @@ impl StyleMap {
 StyleMap! {
     default: gray(22), gray(2), [] / gray(20), gray(2), []
     tree: gray(8), None, [] / gray(4), None, []
+    parent: gray(17), None, [] / gray(13), None, []
     file: gray(22), None, [] / gray(15), None, []
     directory: ansi(110), None, [Bold] / ansi(110), None, []
     exe: Some(Cyan), None, []
@@ -190,6 +191,7 @@ StyleMap! {
     help_headers: ansi(178), None, []
     help_table_border: ansi(239), None, []
     preview: gray(20), gray(1), [] / gray(18), gray(2), []
+    preview_title: gray(23), gray(2), [] / gray(21), gray(2), []
     preview_line_number: gray(12), gray(3), []
     preview_match: None, ansi(29), []
     hex_null: gray(8), None, []
@@ -197,6 +199,7 @@ StyleMap! {
     hex_ascii_whitespace: ansi(143), None, []
     hex_ascii_other: ansi(215), None, []
     hex_non_ascii: ansi(167), None, []
+    staging_area_title: gray(22), gray(2), [] / gray(20), gray(3), []
     mode_command_mark: gray(5), ansi(204), [Bold]
 }
 

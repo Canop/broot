@@ -1,5 +1,4 @@
 
-
 <p align=center style="max-width:600px">
 <img src="img/vache.svg" height=140px>
 <br><a class=install-link href=install>Install Broot</a>
@@ -28,7 +27,7 @@ Hit <kbd>alt</kbd><kbd>enter</kbd> and you're back to the terminal in the desire
 
 This way, you can navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
 
-broot is fast and doesn't block (any keystroke interrupts the current search to start the next one).
+Broot is fast and doesn't block (any keystroke interrupts the current search to start the next one).
 
 Most useful keys for this:
 
@@ -42,9 +41,9 @@ Most useful keys for this:
 
 # Never lose track of file hierarchy while you search
 
-![search](img/20210204-mycnf.png)
+![search](img/20210424-mycnf.png)
 
-broot tries to select the most relevant file. You can still go from one match to another one using <kbd>tab</kbd> or arrow keys.
+Broot tries to select the most relevant file. You can still go from one match to another one using <kbd>tab</kbd> or arrow keys.
 
 You may also search with a regular expression. To do this, add a `/` before the pattern.
 
@@ -105,7 +104,7 @@ If your terminal is [kitty](https://sw.kovidgoyal.net/kitty/index.html), then th
 
 ![kitty preview](img/20201127-kitty-preview.png)
 
-# Apply a standard or personal shortcut to a file
+# Apply a standard or personal command to a file
 
 ![size](img/20191112-edit.png)
 
@@ -115,11 +114,17 @@ You can add verbs or configure the existing ones; see [documentation](../conf_fi
 
 And you can add shortcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
+# Apply commands on several files
+
+Add files to the [staging area](../staging-area) then execute any command on all of them.
+
+![staging mv](img/20210424-staging-mv.png)
+
 # Replace `ls` (and its clones):
 
 If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which gets you this:
 
-![replace ls](img/20201130-sdp.png)
+![replace ls](img/20210425-sdp.png)
 
 You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or a space, then `h` then enter and you see hidden files.
 

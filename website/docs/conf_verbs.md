@@ -352,6 +352,13 @@ invocation | default key | default shortcut | behavior / details
 :toggle_sizes | - | - | toggle the size mode
 :toggle_trim_root | - | - | toggle trimming of top level files in tree display
 :up_tree | - | - | focus the parent of the current root
+:stage | <kbd>+</kbd> | - | add selection to staging area
+:unstage | <kbd>-</kbd> | - | remove selection from staging area
+:toggle_stage | <kbd>ctrl</kbd><kbd>g</kbd> | - | add or remove selection to staging area
+:clear_stage | - | cls | empty the staging area
+:open_staging_area | - | osa | open the staging area
+:close_staging_area | - | csa | close the staging area panel
+:toggle_staging_area | - | tsa | open/close the staging area panel
 
 Note that
 
@@ -360,7 +367,7 @@ Note that
 
 # Input related verbs
 
-Some internal actions can be bound to a key shortcut but can't be called explicitly because they directly act on the input field:
+Some internal actions can be bound to a key shortcut but can't be called explicitly from the input because they directly act on the input field:
 
 name | default binding | behavior
 -|-|-

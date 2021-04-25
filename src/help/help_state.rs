@@ -8,7 +8,6 @@ use {
         errors::ProgramError,
         launchable::Launchable,
         pattern::*,
-        skin::PanelSkin,
         tree::TreeOptions,
         verb::*,
     },
@@ -50,7 +49,11 @@ impl HelpState {
     }
 }
 
-impl AppState for HelpState {
+impl PanelState for HelpState {
+
+    fn get_type(&self) -> PanelStateType {
+        PanelStateType::Help
+    }
 
     fn set_mode(&mut self, mode: Mode) {
         self.mode = mode;
@@ -60,8 +63,8 @@ impl AppState for HelpState {
         self.mode
     }
 
-    fn selected_path(&self) -> &Path {
-        &self.config_path
+    fn selected_path(&self) -> Option<&Path> {
+        Some(&self.config_path)
     }
 
     fn tree_options(&self) -> TreeOptions {
@@ -74,18 +77,18 @@ impl AppState for HelpState {
         change_options: &dyn Fn(&mut TreeOptions),
         _in_new_panel: bool, // TODO open a tree if true
         _con: &AppContext,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         change_options(&mut self.tree_options);
-        AppStateCmdResult::Keep
+        CmdResult::Keep
     }
 
-    fn selection(&self) -> Selection<'_> {
-        Selection {
+    fn selection(&self) -> Option<Selection<'_>> {
+        Some(Selection {
             path: &self.config_path,
             stype: SelectionType::File,
             is_exe: false,
             line: 0,
-        }
+        })
     }
 
     fn refresh(&mut self, _screen: Screen, _con: &AppContext) -> Command {
@@ -96,34 +99,32 @@ impl AppState for HelpState {
     fn on_pattern(
         &mut self,
         pat: InputPattern,
+        _app_state: &AppState,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         self.pattern = pat.pattern;
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 
     fn display(
         &mut self,
         w: &mut W,
-        screen: Screen,
-        state_area: Area,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
-        let mut text_area = state_area.clone();
+        let con = &disc.con;
+        let mut text_area = disc.state_area.clone();
         text_area.pad_for_max_width(120);
         if text_area != self.text_area {
             self.dirty = true;
             self.text_area = text_area;
         }
         if self.dirty {
-            panel_skin.styles.default.queue_bg(w)?;
-            screen.clear_area_to_right(w, &state_area)?;
+            disc.panel_skin.styles.default.queue_bg(w)?;
+            disc.screen.clear_area_to_right(w, &disc.state_area)?;
             self.dirty = false;
         }
         let mut expander = help_content::expander();
-        expander
-            .set("version", env!("CARGO_PKG_VERSION"));
+        expander.set("version", env!("CARGO_PKG_VERSION"));
         let config_paths: Vec<String> = con.config_paths.iter()
             .map(|p| p.to_string_lossy().to_string())
             .collect();
@@ -170,7 +171,7 @@ impl AppState for HelpState {
         }
         let text = expander.expand();
         let fmt_text = FmtText::from_text(
-            &panel_skin.help_skin,
+            &disc.panel_skin.help_skin,
             text,
             Some((self.text_area.width - 1) as usize),
         );
@@ -185,56 +186,56 @@ impl AppState for HelpState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
-        screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         use Internal::*;
         Ok(match internal_exec.internal {
             Internal::back => {
                 if self.pattern.is_some() {
                     self.pattern = Pattern::None;
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 } else {
-                    AppStateCmdResult::PopState
+                    CmdResult::PopState
                 }
             }
-            help => AppStateCmdResult::Keep,
+            help => CmdResult::Keep,
             line_down | line_down_no_cycle => {
                 self.scroll += get_arg(input_invocation, internal_exec, 1);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             line_up | line_up_no_cycle => {
                 self.scroll -= get_arg(input_invocation, internal_exec, 1);
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             open_stay => match open::that(&Conf::default_location()) {
                 Ok(exit_status) => {
                     info!("open returned with exit_status {:?}", exit_status);
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 }
-                Err(e) => AppStateCmdResult::DisplayError(format!("{:?}", e)),
+                Err(e) => CmdResult::DisplayError(format!("{:?}", e)),
             },
             // FIXME check we can't use the generic one
             open_leave => {
-                AppStateCmdResult::from(Launchable::opener(
+                CmdResult::from(Launchable::opener(
                     Conf::default_location()
                 ))
             }
             page_down => {
                 self.scroll += self.text_area.height as i32;
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             page_up => {
                 self.scroll -= self.text_area.height as i32;
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             _ => self.on_internal_generic(
                 w,
                 internal_exec,
                 input_invocation,
                 trigger_type,
+                app_state,
                 cc,
-                screen,
             )?,
         })
     }

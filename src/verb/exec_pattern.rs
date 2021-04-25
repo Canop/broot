@@ -23,6 +23,12 @@ impl ExecPattern {
             Self::Array(v) => v.is_empty(),
         }
     }
+    pub fn has_selection_group(&self) -> bool {
+        match self {
+            Self::String(s) => str_has_selection_group(s),
+            Self::Array(v) => v.iter().any(|s| str_has_selection_group(s)),
+        }
+    }
     pub fn has_other_panel_group(&self) -> bool {
         match self {
             Self::String(s) => str_has_other_panel_group(s),
@@ -95,6 +101,17 @@ impl ExecPattern {
     }
 }
 
+fn str_has_selection_group(s: &str) -> bool {
+    for group in GROUP.find_iter(s) {
+        if matches!(
+            group.as_str(),
+            "{file}" | "{parent}" | "{directory}"
+        ){
+                return true;
+        }
+    }
+    false
+}
 fn str_has_other_panel_group(s: &str) -> bool {
     for group in GROUP.find_iter(s) {
         if group.as_str().starts_with("{other-panel-") {

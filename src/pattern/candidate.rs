@@ -7,7 +7,7 @@ use {
     },
 };
 
-/// something which we can be evaluated by a pattern to produce
+/// something which can be evaluated by a pattern to produce
 /// either a score or a more precise match
 #[derive(Debug, Clone, Copy)]
 pub struct Candidate<'c> {

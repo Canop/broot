@@ -17,7 +17,6 @@ use {
         verb::*,
     },
     minimad::{Alignment, Composite},
-    std::path::PathBuf,
     termimad::Event,
 };
 
@@ -25,7 +24,7 @@ use {
 /// one being visible
 pub struct Panel {
     pub id: PanelId,
-    states: Vec<Box<dyn AppState>>, // stack: the last one is current
+    states: Vec<Box<dyn PanelState>>, // stack: the last one is current
     pub areas: Areas,
     status: Status,
     pub purpose: PanelPurpose,
@@ -36,7 +35,7 @@ impl Panel {
 
     pub fn new(
         id: PanelId,
-        state: Box<dyn AppState>,
+        state: Box<dyn PanelState>,
         areas: Areas,
         con: &AppContext,
     ) -> Self {
@@ -60,47 +59,47 @@ impl Panel {
     /// apply a command on the current state, with no
     /// effect on screen
     #[allow(clippy::too_many_arguments)] // a refactory could still be useful
-    pub fn apply_command(
+    pub fn apply_command<'c>(
         &mut self,
-        w: &mut W,
-        cmd: &Command,
-        other_path: &Option<PathBuf>,
-        screen: Screen,
-        panel_skin: &PanelSkin,
-        preview: Option<PanelId>,
-        con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+        w: &'c mut W,
+        cmd: &'c Command,
+        app_state: &mut AppState,
+        app_cmd_context: &'c AppCmdContext<'c>,
+    ) -> Result<CmdResult, ProgramError> {
         let state_idx = self.states.len() - 1;
         let cc = CmdContext {
             cmd,
-            other_path,
-            panel_skin,
-            con,
-            areas: &self.areas,
-            panel_purpose: self.purpose,
-            preview,
+            app: app_cmd_context,
+            panel: PanelCmdContext {
+                areas: &self.areas,
+                purpose: self.purpose,
+            },
         };
-        let result = self.states[state_idx].on_command(w, &cc, screen);
+        let result = self.states[state_idx].on_command(w, app_state, &cc);
         let has_previous_state = self.states.len() > 1;
-        self.status = self
-            .state()
-            .get_status(cmd, other_path, has_previous_state, con);
+        self.status = self.state().get_status(app_state, &cc, has_previous_state);
         debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
     }
 
     /// called on focusing the panel and before the display,
     /// this updates the status from the command read in the input
-    pub fn refresh_input_status(
+    pub fn refresh_input_status<'c>(
         &mut self,
-        other_path: &Option<PathBuf>,
-        con: &AppContext,
+        app_state: &AppState,
+        app_cmd_context: &'c AppCmdContext<'c>,
     ) {
         let cmd = Command::from_raw(self.input.get_content(), false);
+        let cc = CmdContext {
+            cmd: &cmd,
+            app: app_cmd_context,
+            panel: PanelCmdContext {
+                areas: &self.areas,
+                purpose: self.purpose,
+            },
+        };
         let has_previous_state = self.states.len() > 1;
-        self.status = self
-            .state()
-            .get_status(&cmd, other_path, has_previous_state, con);
+        self.status = self.state().get_status(app_state, &cc, has_previous_state);
     }
 
     /// execute all the pending tasks until there's none remaining or
@@ -140,20 +139,21 @@ impl Panel {
         &mut self,
         w: &mut W,
         event: Event,
+        app_state: &AppState,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
-        let sel = self.states[self.states.len() - 1].selection();
-        self.input.on_event(w, event, con, sel, self.state().get_mode())
+        let sel_info = self.states[self.states.len() - 1].sel_info(&app_state);
+        self.input.on_event(w, event, con, sel_info, self.state().get_mode())
     }
 
-    pub fn push_state(&mut self, new_state: Box<dyn AppState>) {
+    pub fn push_state(&mut self, new_state: Box<dyn PanelState>) {
         self.input.set_content(&new_state.get_starting_input());
         self.states.push(new_state);
     }
-    pub fn mut_state(&mut self) -> &mut dyn AppState {
+    pub fn mut_state(&mut self) -> &mut dyn PanelState {
         self.states.last_mut().unwrap().as_mut()
     }
-    pub fn state(&self) -> &dyn AppState {
+    pub fn state(&self) -> &dyn PanelState {
         self.states.last().unwrap().as_ref()
     }
 
@@ -205,30 +205,25 @@ impl Panel {
     pub fn display(
         &mut self,
         w: &mut W,
-        active: bool,
-        screen: Screen,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
-        let state_area = self.areas.state.clone();
-        self.mut_state()
-            .display(w, screen, state_area, panel_skin, con)?;
-        if active || !WIDE_STATUS {
-            self.write_status(w, panel_skin, screen)?;
+        self.mut_state().display(w, disc)?;
+        if disc.active || !WIDE_STATUS {
+            self.write_status(w, &disc.panel_skin, disc.screen)?;
         }
         let mut input_area = self.areas.input.clone();
-        if active {
-            self.write_purpose(w, panel_skin, screen, con)?;
+        if disc.active {
+            self.write_purpose(w, &disc.panel_skin, disc.screen, &disc.con)?;
             let flags = self.state().get_flags();
             let input_content_len = self.input.get_content().len() as u16;
             let flags_len = flags_display::visible_width(&flags);
             if input_area.width > input_content_len + 1 + flags_len {
                 input_area.width -= flags_len + 1;
-                screen.goto(w, input_area.left + input_area.width, input_area.top)?;
-                flags_display::write(w, &flags, panel_skin)?;
+                disc.screen.goto(w, input_area.left + input_area.width, input_area.top)?;
+                flags_display::write(w, &flags, &disc.panel_skin)?;
             }
         }
-        self.input.display(w, active, self.state().get_mode(), input_area, panel_skin)?;
+        self.input.display(w, disc.active, self.state().get_mode(), input_area, &disc.panel_skin)?;
         Ok(())
     }
 

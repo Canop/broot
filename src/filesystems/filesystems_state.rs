@@ -7,7 +7,6 @@ use {
         display::*,
         errors::ProgramError,
         pattern::*,
-        skin::PanelSkin,
         task_sync::Dam,
         tree::TreeOptions,
         verb::*,
@@ -26,7 +25,7 @@ use {
         path::Path,
     },
     strict::NonEmptyVec,
-    termimad::{Area, ProgressBar},
+    termimad::ProgressBar,
 };
 
 struct FilteredContent {
@@ -52,7 +51,7 @@ impl FilesystemState {
     /// Not finding any filesystem is considered an error and prevents
     /// the opening of this state.
     pub fn new(
-        path: &Path,
+        path: Option<&Path>,
         tree_options: TreeOptions,
         con: &AppContext,
     ) -> Result<FilesystemState, ProgramError> {
@@ -78,10 +77,12 @@ impl FilesystemState {
                 });
             }
         };
-        let device_id = fs::metadata(path)?.dev().into();
-        let selection_idx = mounts
-            .iter()
-            .position(|m| m.info.dev == device_id)
+        let selection_idx = path
+            .and_then(|path| fs::metadata(path).ok())
+            .and_then(|md| {
+                let device_id = md.dev().into();
+                mounts.iter().position(|m| m.info.dev == device_id)
+            })
             .unwrap_or(0);
         Ok(FilesystemState {
             mounts,
@@ -114,7 +115,7 @@ impl FilesystemState {
         input_invocation: Option<&VerbInvocation>,
         dir: i32, // -1 for up, 1 for down
         cycle: bool,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         let count = get_arg(input_invocation, internal_exec, 1);
         let dir = dir * count as i32;
         if let Some(f) = self.filtered.as_mut() {
@@ -122,12 +123,28 @@ impl FilesystemState {
         } else {
             self.selection_idx = move_sel(self.selection_idx, self.mounts.len().get(), dir, cycle);
         }
-        AppStateCmdResult::Keep
+        CmdResult::Keep
     }
 
+    fn no_opt_selected_path(&self) -> &Path {
+        &self.mounts[self.selection_idx].info.mount_point
+    }
+
+    fn no_opt_selection(&self) -> Selection<'_> {
+        Selection {
+            path: self.no_opt_selected_path(),
+            stype: SelectionType::Directory,
+            is_exe: false,
+            line: 0,
+        }
+    }
 }
 
-impl AppState for FilesystemState {
+impl PanelState for FilesystemState {
+
+    fn get_type(&self) -> PanelStateType {
+        PanelStateType::Fs
+    }
 
     fn set_mode(&mut self, mode: Mode) {
         self.mode = mode;
@@ -137,8 +154,8 @@ impl AppState for FilesystemState {
         self.mode
     }
 
-    fn selected_path(&self) -> &Path {
-        &self.mounts[self.selection_idx].info.mount_point
+    fn selected_path(&self) -> Option<&Path> {
+        Some(self.no_opt_selected_path())
     }
 
     fn tree_options(&self) -> TreeOptions {
@@ -151,18 +168,13 @@ impl AppState for FilesystemState {
         change_options: &dyn Fn(&mut TreeOptions),
         _in_new_panel: bool, // TODO open tree if true
         _con: &AppContext,
-    ) -> AppStateCmdResult {
+    ) -> CmdResult {
         change_options(&mut self.tree_options);
-        AppStateCmdResult::Keep
+        CmdResult::Keep
     }
 
-    fn selection(&self) -> Selection<'_> {
-        Selection {
-            path: self.selected_path(),
-            stype: SelectionType::Directory,
-            is_exe: false,
-            line: 0,
-        }
+    fn selection(&self) -> Option<Selection<'_>> {
+        Some(self.no_opt_selection())
     }
 
     fn refresh(&mut self, _screen: Screen, _con: &AppContext) -> Command {
@@ -172,8 +184,9 @@ impl AppState for FilesystemState {
     fn on_pattern(
         &mut self,
         pattern: InputPattern,
+        _app_state: &AppState,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if pattern.is_none() {
             self.filtered = None;
         } else {
@@ -197,17 +210,16 @@ impl AppState for FilesystemState {
                 selection_idx,
             });
         }
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 
     fn display(
         &mut self,
         w: &mut W,
-        _screen: Screen,
-        area: Area,
-        panel_skin: &PanelSkin,
-        con: &AppContext,
+        disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
+        let area = &disc.state_area;
+        let con = &disc.con;
         self.page_height = area.height as usize;
         let (mounts, selection_idx) = if let Some(filtered) = &self.filtered {
             (filtered.mounts.as_slice(), filtered.selection_idx)
@@ -216,7 +228,7 @@ impl AppState for FilesystemState {
         };
         let scrollbar = area.scrollbar(self.scroll as i32, mounts.len() as i32);
         //- style preparation
-        let styles = &panel_skin.styles;
+        let styles = &disc.panel_skin.styles;
         let selection_bg = styles.selected_line.get_bg()
             .unwrap_or(Color::AnsiValue(240));
         let match_style = &styles.char_match;
@@ -432,7 +444,7 @@ impl AppState for FilesystemState {
                 idx += 1;
             }
             cw.fill(txt_style, &SPACE_FILLING)?;
-            let scrollbar_style = if is_thumb(y, scrollbar) {
+            let scrollbar_style = if ScrollCommand::is_thumb(y, scrollbar) {
                 &styles.scrollbar_thumb
             } else {
                 &styles.scrollbar_track
@@ -448,9 +460,11 @@ impl AppState for FilesystemState {
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
+        app_state: &mut AppState,
         cc: &CmdContext,
-        screen: Screen,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
+        let screen = cc.app.screen;
+        let con = &cc.app.con;
         use Internal::*;
         Ok(match internal_exec.internal {
             Internal::back => {
@@ -460,9 +474,9 @@ impl AppState for FilesystemState {
                             .position(|m| m.info.id == f.mounts[f.selection_idx].info.id)
                             .unwrap(); // all filtered mounts come from self.mounts
                     }
-                    AppStateCmdResult::Keep
+                    CmdResult::Keep
                 } else {
-                    AppStateCmdResult::PopState
+                    CmdResult::PopState
                 }
             }
             Internal::line_down => {
@@ -484,65 +498,67 @@ impl AppState for FilesystemState {
                 let dam = Dam::unlimited();
                 let mut tree_options = self.tree_options();
                 tree_options.show_root_fs = true;
-                AppStateCmdResult::from_optional_state(
+                CmdResult::from_optional_state(
                     BrowserState::new(
-                        self.selected_path().to_path_buf(),
+                        self.no_opt_selected_path().to_path_buf(),
                         tree_options,
                         screen,
-                        &cc.con,
+                        con,
                         &dam,
                     ),
                     in_new_panel,
                 )
             }
             Internal::panel_left => {
-                if cc.areas.is_first() && cc.areas.nb_pos < cc.con.max_panels_count {
+                let areas = &cc.panel.areas;
+                if areas.is_first() && areas.nb_pos < con.max_panels_count {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        self.no_opt_selected_path().to_path_buf(),
                         screen,
                         self.tree_options(),
                         PanelPurpose::None,
-                        &cc.con,
+                        con,
                         HDir::Left,
                     )
                 } else {
                     // we ask the app to focus the panel to the left
-                    AppStateCmdResult::HandleInApp(Internal::panel_left)
+                    CmdResult::HandleInApp(Internal::panel_left)
                 }
             }
             Internal::panel_right => {
-                if cc.areas.is_last() && cc.areas.nb_pos < cc.con.max_panels_count {
+                let areas = &cc.panel.areas;
+                if areas.is_last() && areas.nb_pos < con.max_panels_count {
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
-                        self.selected_path().to_path_buf(),
+                        self.no_opt_selected_path().to_path_buf(),
                         screen,
                         self.tree_options(),
                         PanelPurpose::None,
-                        &cc.con,
+                        con,
                         HDir::Right,
                     )
                 } else {
                     // we ask the app to focus the panel to the right
-                    AppStateCmdResult::HandleInApp(Internal::panel_right)
+                    CmdResult::HandleInApp(Internal::panel_right)
                 }
             }
             Internal::page_down => {
                 self.try_scroll(ScrollCommand::Pages(1));
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
             Internal::page_up => {
                 self.try_scroll(ScrollCommand::Pages(-1));
-                AppStateCmdResult::Keep
+                CmdResult::Keep
             }
-            open_leave => AppStateCmdResult::PopStateAndReapply,
+            open_leave => CmdResult::PopStateAndReapply,
             _ => self.on_internal_generic(
                 w,
                 internal_exec,
                 input_invocation,
                 trigger_type,
+                app_state,
                 cc,
-                screen,
             )?,
         })
     }
@@ -553,22 +569,14 @@ impl AppState for FilesystemState {
         y: u16,
         _screen: Screen,
         _con: &AppContext,
-    ) -> Result<AppStateCmdResult, ProgramError> {
+    ) -> Result<CmdResult, ProgramError> {
         if y >= 2 {
             let y = y as usize - 2 + self.scroll;
             if y < self.mounts.len().into() {
                 self.selection_idx = y;
             }
         }
-        Ok(AppStateCmdResult::Keep)
+        Ok(CmdResult::Keep)
     }
 }
 
-fn is_thumb(y: u16, scrollbar: Option<(u16, u16)>) -> bool {
-    if let Some((sctop, scbottom)) = scrollbar {
-        if sctop <= y && y <= scbottom {
-            return true;
-        }
-    }
-    false
-}

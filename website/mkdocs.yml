@@ -15,6 +15,7 @@ nav:
                 - Navigation: navigation.md
                 - Verbs & Commands: verbs.md
                 - Panels: panels.md
+                - Staging Area: staging-area.md
                 - Tree export: export.md
                 - Tips & tricks: tricks.md
                 - Reference - The input: input.md
@@ -23,7 +24,7 @@ nav:
                 - Verbs and shortcuts: conf_verbs.md
                 - Skins: skins.md
                 - Icons: icons.md
-                - Modal Mode: vim_mode.md
+                - Modal Mode: modal.md
         - Community: community.md
 
 extra_css:

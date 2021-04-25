@@ -2,7 +2,7 @@
 
 use {
     crate::{
-        app::{AppContext, AppStateCmdResult},
+        app::{AppContext, CmdResult},
         display::{DisplayableTree, Screen},
         errors::ProgramError,
         launchable::Launchable,
@@ -17,7 +17,7 @@ use {
     },
 };
 
-pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult> {
+pub fn print_path(path: &Path, con: &AppContext) -> io::Result<CmdResult> {
     let path = path.to_string_lossy().to_string();
     Ok(
         if let Some(ref output_path) = con.launch_args.file_export_path {
@@ -27,19 +27,19 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult
                 .append(true)
                 .open(output_path)?;
             writeln!(&f, "{}", path)?;
-            AppStateCmdResult::Quit
+            CmdResult::Quit
         } else {
             // no output path provided. We write on stdout, but we must
             // do it after app closing to have the normal terminal
-            AppStateCmdResult::from(Launchable::printer(path))
+            CmdResult::from(Launchable::printer(path))
         },
     )
 }
 
-pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<AppStateCmdResult> {
+pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<CmdResult> {
     let relative_path = match pathdiff::diff_paths(path, &con.launch_args.root) {
         None => {
-            return Ok(AppStateCmdResult::DisplayError(
+            return Ok(CmdResult::DisplayError(
                 format!("Cannot relativize {:?}", path), // does this happen ? how ?
             ));
         }
@@ -57,7 +57,7 @@ fn print_tree_to_file(
     screen: Screen,
     file_path: &str,
     ext_colors: &ExtColorMap,
-) -> Result<AppStateCmdResult, ProgramError> {
+) -> Result<CmdResult, ProgramError> {
     let no_style_skin = StyleMap::no_term();
     let dp = DisplayableTree::out_of_app(
         tree,
@@ -71,7 +71,7 @@ fn print_tree_to_file(
         .append(true)
         .open(file_path)?;
     dp.write_on(&mut f)?;
-    Ok(AppStateCmdResult::Quit)
+    Ok(CmdResult::Quit)
 }
 
 pub fn print_tree(
@@ -79,7 +79,7 @@ pub fn print_tree(
     screen: Screen,
     panel_skin: &PanelSkin,
     con: &AppContext,
-) -> Result<AppStateCmdResult, ProgramError> {
+) -> Result<CmdResult, ProgramError> {
     if let Some(ref output_path) = con.launch_args.file_export_path {
         // an output path was provided, we write to it
         print_tree_to_file(tree, screen, output_path, &con.ext_colors)
@@ -91,7 +91,7 @@ pub fn print_tree(
         } else {
             panel_skin.styles.clone()
         };
-        Ok(AppStateCmdResult::from(Launchable::tree_printer(
+        Ok(CmdResult::from(Launchable::tree_printer(
             tree,
             screen,
             styles,

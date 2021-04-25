@@ -13,10 +13,23 @@ impl ScrollCommand {
         }
     }
     /// compute the new scroll value
-    pub fn apply(self, scroll: usize, content_height: usize, page_height: usize) -> usize {
+    pub fn apply(
+        self,
+        scroll: usize,
+        content_height: usize,
+        page_height: usize,
+    ) -> usize {
         (scroll as i32 + self.to_lines(page_height))
             .min(content_height as i32 - page_height as i32 + 1)
             .max(0) as usize
+    }
+    pub fn is_thumb(y: u16, scrollbar: Option<(u16, u16)>) -> bool {
+        if let Some((sctop, scbottom)) = scrollbar {
+            if sctop <= y && y <= scbottom {
+                return true;
+            }
+        }
+        false
     }
 }
 

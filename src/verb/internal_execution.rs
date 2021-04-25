@@ -44,6 +44,9 @@ impl InternalExecution {
             arg: invocation.args,
         })
     }
+    pub fn needs_selection(&self) -> bool {
+        self.internal.needs_selection(&self.arg)
+    }
 }
 impl fmt::Display for InternalExecution {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

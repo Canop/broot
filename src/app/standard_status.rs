@@ -70,7 +70,7 @@ impl StandardStatus {
     }
     pub fn builder<'s>(
         &'s self,
-        state_type: AppStateType,
+        state_type: PanelStateType,
         selection: Selection<'s>,
     ) -> StandardStatusBuilder<'s> {
         StandardStatusBuilder::new(&self, state_type, selection)
@@ -111,7 +111,7 @@ impl<'b> StatusParts<'b> {
 
 pub struct StandardStatusBuilder<'s> {
     ss: &'s StandardStatus,
-    state_type: AppStateType,
+    state_type: PanelStateType,
     selection: Selection<'s>,
     pub has_previous_state: bool,
     pub is_filtered: bool,
@@ -121,7 +121,7 @@ pub struct StandardStatusBuilder<'s> {
 impl<'s> StandardStatusBuilder<'s> {
     fn new(
         ss: &'s StandardStatus,
-        state_type: AppStateType,
+        state_type: PanelStateType,
         selection: Selection<'s>,
     ) -> Self {
         Self {
@@ -141,7 +141,7 @@ impl<'s> StandardStatusBuilder<'s> {
             parts.add(&ss.not_first_state);
         }
         match self.state_type {
-            AppStateType::Tree => {
+            PanelStateType::Tree => {
                 if self.on_tree_root {
                     if self.selection.path.file_name().is_some() { // it's not '/'
                         parts.add(&ss.tree_top_focus);
@@ -169,7 +169,7 @@ impl<'s> StandardStatusBuilder<'s> {
                     }
                 }
             }
-            AppStateType::Preview => {
+            PanelStateType::Preview => {
                 if self.is_filtered {
                     parts.addo(&ss.preview_filtered);
                 } else if self.has_removed_pattern {
@@ -179,11 +179,17 @@ impl<'s> StandardStatusBuilder<'s> {
                 }
                 parts.add(&ss.no_verb);
             }
-            AppStateType::Help => {
+            PanelStateType::Help => {
                 // not yet used, help_state has its own hard status
                 if parts.len() < 4 {
                     parts.add(&ss.no_verb);
                 }
+            }
+            PanelStateType::Fs => {
+                warn!("TODO fs status");
+            }
+            PanelStateType::Stage => {
+                warn!("TODO stage status");
             }
         }
         parts.to_status()
