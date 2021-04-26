@@ -377,7 +377,6 @@ pub trait PanelState {
         cc: &CmdContext,
         con: &AppContext,
     ) -> CmdResult {
-        info!("received command to stage {:?}", self.selected_path());
         if let Some(path) = self.selected_path() {
             let path = path.to_path_buf();
             app_state.stage.add(path);
@@ -490,9 +489,16 @@ pub trait PanelState {
         app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
+        let sel_info = self.sel_info(app_state);
+        if matches!(sel_info, SelInfo::More(_)) {
+            // sequences would be hard to execute as the execution on a file can change the
+            // state in too many ways (changing selection, focused panel, parent, unstage or
+            // stage files, removing the staged paths, etc.)
+            return Ok(CmdResult::error("sequences can't be executed on multiple selections"));
+        }
         let exec_builder = ExecutionStringBuilder::from_invocation(
             &verb.invocation_parser,
-            self.sel_info(app_state),
+            sel_info,
             &cc.app.other_path,
             if let Some(inv) = invocation {
                 &inv.args
@@ -500,6 +506,8 @@ pub trait PanelState {
                 &None
             },
         );
+        // TODO what follows is dangerous: if an inserted group value contains the separator,
+        // the parsing will cut on this separator
         let sequence = Sequence {
             raw: exec_builder.shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
             separator: seq_ex.sequence.separator.clone(),
@@ -549,9 +557,10 @@ pub trait PanelState {
                 cc,
             ),
             Command::VerbInvocate(invocation) => {
-                match con.verb_store.search(
+                let sel_info = self.sel_info(app_state);
+                match con.verb_store.search_sel_info(
                     &invocation.name,
-                    self.selection().map(|s| s.stype),
+                    &sel_info,
                 ) {
                     PrefixSearchResult::Match(_, verb) => {
                         self.execute_verb(
@@ -707,15 +716,16 @@ pub trait PanelState {
                         false,
                     )
                 } else {
-                    match cc.app.con.verb_store.search(
+                    let sel_info = self.sel_info(app_state);
+                    match cc.app.con.verb_store.search_sel_info(
                         &invocation.name,
-                        self.selection().map(|s| s.stype), // FIXME is that always OK for stage ?
+                        &sel_info,
                     ) {
                         PrefixSearchResult::NoMatch => {
                             Status::new("No matching verb (*?* for the list of verbs)", true)
                         }
                         PrefixSearchResult::Match(_, verb) => {
-                            self.get_verb_status(verb, invocation, app_state, cc)
+                            self.get_verb_status(verb, invocation, sel_info, cc)
                         }
                         PrefixSearchResult::Matches(completions) => Status::new(
                             format!(
@@ -739,10 +749,9 @@ pub trait PanelState {
         &self,
         verb: &Verb,
         invocation: &VerbInvocation,
-        app_state: &AppState,
+        sel_info: SelInfo<'_>,
         cc: &CmdContext,
     ) -> Status {
-        let sel_info = self.sel_info(app_state);
         if sel_info.count_paths() > 1 {
             if let VerbExecution::External(external) = &verb.execution {
                 if external.exec_mode != ExternalExecutionMode::StayInBroot {

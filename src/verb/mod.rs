@@ -36,3 +36,24 @@ lazy_static! {
     pub static ref GROUP: regex::Regex =
         regex::Regex::new(r"\{([^{}:]+)(?::([^{}:]+))?\}").unwrap();
 }
+
+pub fn str_has_selection_group(s: &str) -> bool {
+    for group in GROUP.find_iter(s) {
+        if matches!(
+            group.as_str(),
+            "{file}" | "{parent}" | "{directory}"
+        ){
+                return true;
+        }
+    }
+    false
+}
+pub fn str_has_other_panel_group(s: &str) -> bool {
+    for group in GROUP.find_iter(s) {
+        if group.as_str().starts_with("{other-panel-") {
+            return true;
+        }
+    }
+    false
+}
+

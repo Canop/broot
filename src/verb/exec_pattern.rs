@@ -101,26 +101,6 @@ impl ExecPattern {
     }
 }
 
-fn str_has_selection_group(s: &str) -> bool {
-    for group in GROUP.find_iter(s) {
-        if matches!(
-            group.as_str(),
-            "{file}" | "{parent}" | "{directory}"
-        ){
-                return true;
-        }
-    }
-    false
-}
-fn str_has_other_panel_group(s: &str) -> bool {
-    for group in GROUP.find_iter(s) {
-        if group.as_str().starts_with("{other-panel-") {
-            return true;
-        }
-    }
-    false
-}
-
 fn fix_token_path<T: Into<String> + AsRef<str>>(token: T) -> String {
     let path = Path::new(token.as_ref());
     if path.exists() {

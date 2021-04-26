@@ -6,12 +6,11 @@ Two formats are allowed: [TOML](https://github.com/toml-lang/toml) and [Hjson](h
 This documentation will often show you the same setting in both formats, with two tabs, like this:
 
 ```Hjson
-setting to use if your config file is in .hjson
+// setting to use if your config file is in .hjson
 ```
 ```TOML
-setting to use if your config file is in .toml
+# setting to use if your config file is in .toml
 ```
-
 
 # Opening the configuration file
 

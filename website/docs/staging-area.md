@@ -27,7 +27,10 @@ The verb will be executed, in order, to all files of the staging area.
 
 Computed groups which would have the same value for all files are shown in the status bar. For example here, when you type ` mv ../app-panels`, broot can tell you that it will run `mv {file} /home/dys/dev/broot/src/app-panels/` for each file of the staging area.
 
-Verbs which don't come back to broot after execution (for example `:cd` or any verb quitting broot) can't be executed this way.
+Some verbs aren't compatible with execution on the staging area:
+
+* Verbs which don't come back to broot after execution (for example `:cd` or any verb quitting broot)
+* [Sequences](../conf_verbs#cmd-execution)
 
 # Read the staging area
 

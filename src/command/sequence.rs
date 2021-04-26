@@ -6,7 +6,7 @@ use {
     crate::{
         app::AppContext,
         errors::ProgramError,
-        verb::PrefixSearchResult,
+        verb::*,
     },
 };
 
@@ -59,6 +59,12 @@ impl Sequence {
         }
         Ok(commands)
     }
+    pub fn has_selection_group(&self) -> bool {
+        str_has_selection_group(&self.raw)
+    }
+    pub fn has_other_panel_group(&self) -> bool {
+        str_has_other_panel_group(&self.raw)
+    }
 }
 
 /// an input may be made of two parts:
@@ -82,7 +88,7 @@ fn add_commands(
         if let Command::VerbInvocate(invocation) = &command {
             // we check that the verb exists to avoid running a sequence
             // of actions with some missing
-            match con.verb_store.search(&invocation.name, None) {
+            match con.verb_store.search_prefix(&invocation.name) {
                 PrefixSearchResult::NoMatch => {
                     return Err(ProgramError::UnknownVerb {
                         name: invocation.name.to_string(),

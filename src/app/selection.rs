@@ -96,13 +96,6 @@ impl Selection<'_> {
 }
 
 impl<'a> SelInfo<'a> {
-    //pub fn common_path(&self) -> Option<PathBuf> {
-    //    match self {
-    //        SelInfo::None => None,
-    //        SelInfo::One(sel) => Some(sel.path.into()), // TODO way to avoid this clone ?
-    //        SelInfo::More(stage) => Some(longest_common_ancestor(&stage.paths))
-    //    }
-    //}
     pub fn count_paths(&self) -> usize {
         match self {
             SelInfo::None => 0,

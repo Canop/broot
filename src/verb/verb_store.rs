@@ -5,7 +5,7 @@ use {
         Verb,
     },
     crate::{
-        app::SelectionType,
+        app::*,
         conf::Conf,
         errors::ConfError,
         keys,
@@ -44,10 +44,28 @@ impl VerbStore {
         Ok(())
     }
 
+    pub fn search_sel_info<'v>(
+        &'v self,
+        prefix: &str,
+        sel_info: &SelInfo<'_>,
+    ) -> PrefixSearchResult<'v, &Verb> {
+        let stype = sel_info.common_stype();
+        let count = sel_info.count_paths();
+        self.search(prefix, stype, Some(count))
+    }
+
+    pub fn search_prefix<'v>(
+        &'v self,
+        prefix: &str,
+    ) -> PrefixSearchResult<'v, &Verb> {
+        self.search(prefix, None, None)
+    }
+
     pub fn search<'v>(
         &'v self,
         prefix: &str,
         stype: Option<SelectionType>,
+        sel_count: Option<usize>,
     ) -> PrefixSearchResult<'v, &Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
@@ -55,6 +73,14 @@ impl VerbStore {
         for (index, verb) in self.verbs.iter().enumerate() {
             if let Some(stype) = stype {
                 if !stype.respects(verb.selection_condition) {
+                    continue;
+                }
+            }
+            if let Some(count) = sel_count {
+                if count > 1 && verb.is_sequence() {
+                    continue;
+                }
+                if count == 0 && verb.needs_selection {
                     continue;
                 }
             }

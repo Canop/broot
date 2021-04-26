@@ -178,7 +178,6 @@ impl ExternalExecution {
                         is_exe: false,
                     });
                 for sel in sels {
-                    debug!("executing on path {:?}", &sel.path);
                     let launchable = Launchable::program(
                         builder.sel_exec_token(&self.exec_pattern, Some(sel)),
                         if self.set_working_dir {

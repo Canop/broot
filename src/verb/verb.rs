@@ -75,13 +75,12 @@ impl Verb {
             ),
             VerbExecution::External(ee) => (
                 ee.exec_pattern.has_selection_group(),
-                ee.exec_pattern.has_other_panel_group(),
+                ee.exec_pattern.has_other_panel_group()
             ),
-            VerbExecution::Sequence(se) => {
-                // FIXME we should do better here, probably by searching for groups
-                // in the sequence as string
-                (false, false)
-            }
+            VerbExecution::Sequence(se) => (
+                se.sequence.has_selection_group(),
+                se.sequence.has_other_panel_group()
+            )
         };
         Ok(Self {
             names,
@@ -276,4 +275,7 @@ impl Verb {
         self.get_internal() == Some(internal)
     }
 
+    pub fn is_sequence(&self) -> bool {
+        matches!(self.execution, VerbExecution::Sequence(_))
+    }
 }

@@ -3,7 +3,6 @@ use {
     crate::{
         app::{
             AppContext,
-            SelectionType,
             SelInfo,
         },
         path::{self, PathAnchor},
@@ -85,7 +84,7 @@ impl Completions {
         con: &AppContext,
         sel_info: SelInfo<'_>,
     ) -> Self {
-        match con.verb_store.search(start, sel_info.common_stype()) {
+        match con.verb_store.search_sel_info(start, &sel_info) {
             PrefixSearchResult::NoMatch => Self::None,
             PrefixSearchResult::Match(name, _) => {
                 if start.len() >= name.len() {
@@ -106,10 +105,10 @@ impl Completions {
         verb_name: &str,
         arg: &str,
         path: &Path,
-        stype: SelectionType,
+        sel_info: &SelInfo<'_>,
         con: &AppContext,
     ) -> io::Result<Vec<String>> {
-        let anchor = match con.verb_store.search(verb_name, Some(stype)) {
+        let anchor = match con.verb_store.search_sel_info(verb_name, sel_info) {
             PrefixSearchResult::Match(_, verb) => verb.get_arg_anchor(),
             _ => PathAnchor::Unspecified,
         };
@@ -152,10 +151,10 @@ impl Completions {
         if arg.contains(' ') {
             return Self::None;
         }
-        match sel_info {
+        match &sel_info {
             SelInfo::None => Self::None,
             SelInfo::One(sel) => {
-                match Self::list_for_path(verb_name, arg, sel.path, sel.stype, con) {
+                match Self::list_for_path(verb_name, arg, sel.path, &sel_info, con) {
                     Ok(list) => Self::from_list(list),
                     Err(e) => {
                         warn!("Error while trying to complete path: {:?}", e);
@@ -173,7 +172,7 @@ impl Completions {
                                 verb_name,
                                 arg,
                                 path,
-                                SelectionType::from(path),
+                                &sel_info,
                                 con
                         ).ok()
                     });

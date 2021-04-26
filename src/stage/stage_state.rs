@@ -440,17 +440,5 @@ impl PanelState for StageState {
             )?,
         })
     }
-
-    fn execute_sequence(
-        &mut self,
-        _w: &mut W,
-        _verb: &Verb,
-        _seq_ex: &SequenceExecution,
-        _invocation: Option<&VerbInvocation>,
-        _app_state: &mut AppState,
-        _cc: &CmdContext,
-    ) -> Result<CmdResult, ProgramError> {
-        Ok(CmdResult::error("sequence execution not yet implemented on staging area"))
-    }
 }
 
