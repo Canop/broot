@@ -153,14 +153,14 @@ impl Launchable {
                     old_working_dir = std::env::current_dir().ok();
                     std::env::set_current_dir(working_dir).unwrap();
                 }
-                Command::new(&exe)
+                let exec_res = Command::new(&exe)
                     .args(args.iter())
                     .spawn()
                     .and_then(|mut p| p.wait())
                     .map_err(|source| ProgramError::LaunchError {
                         program: exe.clone(),
                         source,
-                    })?;
+                    });
                 if let Some(ref mut w) = &mut w {
                     terminal::enable_raw_mode().unwrap();
                     if !mouse_capture_disabled {
@@ -173,6 +173,7 @@ impl Launchable {
                 if let Some(old_working_dir) = old_working_dir {
                     std::env::set_current_dir(old_working_dir).unwrap();
                 }
+                exec_res?; // we trigger the error display after restoration
                 Ok(())
             }
             Launchable::SystemOpen { path } => {
