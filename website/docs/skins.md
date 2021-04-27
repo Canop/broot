@@ -500,7 +500,7 @@ terminals.
 
 ```hjson
 skin: {
-	default: rgb(235, 219, 178) rgb(40, 40, 40) / rgb(189, 174, 147) rgb(40, 40, 40)
+	default: rgb(235, 219, 178) none / rgb(189, 174, 147) none
 	tree: rgb(168, 153, 132) None / rgb(102, 92, 84) None
 	file: None None / None  None Italic
 	directory: rgb(131, 165, 152) None Bold / rgb(131, 165, 152) None
@@ -516,8 +516,8 @@ skin: {
 	count: rgb(69, 133, 136) rgb(50, 48, 47)
 	dates: rgb(168, 153, 132) None
 	sparse: rgb(250, 189,47) None
-	content_extract: rgb(168, 153, 132) None Italic
-	content_match: rgb(189, 174, 147) None Bold
+	content_extract: ansi(29) None Italic
+	content_match: ansi(34) None Bold
 	git_branch: rgb(251, 241, 199) None
 	git_insertions: rgb(152, 151, 26) None
 	git_deletions: rgb(190, 15, 23) None
@@ -535,11 +535,11 @@ skin: {
 	input: rgb(251, 241, 199) None / rgb(189, 174, 147) None Italic
 	status_error: rgb(213, 196, 161) rgb(204, 36, 29)
 	status_job: rgb(250, 189, 47) rgb(60, 56, 54)
-	status_normal: None rgb(50, 48, 47) / None None
-	status_italic: rgb(211, 134, 155) rgb(50, 48, 47) Italic / None None
-	status_bold: rgb(211, 134, 155) rgb(50, 48, 47) Bold / None None
-	status_code: rgb(251, 241, 199) rgb(50, 48, 47) / None None
-	status_ellipsis: rgb(251, 241, 199) rgb(50, 48, 47)  Bold / None None
+	status_normal: None rgb(40, 38, 37) / None None
+	status_italic: rgb(211, 134, 155) rgb(40, 38, 37) Italic / None None
+	status_bold: rgb(211, 134, 155) rgb(40, 38, 37) Bold / None None
+	status_code: rgb(251, 241, 199) rgb(40, 38, 37) / None None
+	status_ellipsis: rgb(251, 241, 199) rgb(40, 38, 37)  Bold / None None
 	purpose_normal: None None
 	purpose_italic: rgb(177, 98, 134) None Italic
 	purpose_bold: rgb(177, 98, 134) None Bold
@@ -555,7 +555,7 @@ skin: {
 	preview_title: rgb(235, 219, 178) rgb(40, 40, 40) / rgb(189, 174, 147) rgb(40, 40, 40)
 	preview: rgb(235, 219, 178) rgb(40, 40, 40) / rgb(235, 219, 178) rgb(40, 40, 40)
 	preview_line_number: rgb(124, 111, 100) None / rgb(124, 111, 100) rgb(40, 40, 40)
-	preview_match: None rgb(80, 73, 69) Bold
+	preview_match: None ansi(29) Bold
 	hex_null: rgb(189, 174, 147) None
 	hex_ascii_graphic: rgb(213, 196, 161) None
 	hex_ascii_whitespace: rgb(152, 151, 26) None
