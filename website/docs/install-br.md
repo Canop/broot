@@ -29,12 +29,6 @@ If you prefer to manage the function sourcing yourself, or to automate the insta
 
 `broot --set-install-state installed` tells broot the `br` function is installed (other possible values are `undefined` and `refused`).
 
-# `br` alias for Nushell
-
-As a shortcut for [Nushell](https://www.nushell.sh/), define the following alias:
-
-    def br [] { broot | trim | cd $it }
-
 # `br` alias for Xonsh shell
 
 The shortcut for [xonsh](https://xon.sh/) shell can be installed with using [xontrib-broot](https://github.com/jnoortheen/xontrib-broot)

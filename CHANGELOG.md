@@ -2,6 +2,7 @@
 #### Minor changes:
 - modal mode: revert to command mode on command execution - Fix #372
 - modal mode: when in command mode, '/' only enters input mode and is never appended to the input
+- better handle failing external programs when not leaving broot
 #### Major feature: staging area
 Yoy may add files to the staging area then apply a command on all of them. This new feature is described [here](https://dystroy.org/broot/staging-area).
 Several verbs have been added. Type "stag" in help to see them all.
