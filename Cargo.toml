@@ -56,7 +56,7 @@ splitty = "0.1"
 strict = "0.1.4"
 syntect = "4.5"
 tempfile = "3.2"
-termimad = { version = "0.10.1" }
+termimad = { version = "0.10.2" }
 terminal-clipboard = { version = "0.2.1", optional = true }
 toml = "0.5"
 umask = "1.0"
