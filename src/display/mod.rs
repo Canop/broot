@@ -76,7 +76,6 @@ lazy_static! {
 pub const WIDE_STATUS: bool = true;
 
 /// the type used by all GUI writing functions
-//pub type W = std::io::BufWriter<std::io::Stderr>;
 pub type W = std::io::BufWriter<std::io::Stderr>;
 
 /// return the writer used by the application
