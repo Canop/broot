@@ -1,3 +1,7 @@
+### next
+- fix `:previous_match` not jumping over indirect matches - Fix #377
+- fix "typing a prefixed pattern then emptying it while keeping the prefix doesn't remove filtering" - Fix #379
+
 <a name="v1.3.0"></a>
 ### v1.3.0 - 2021-04-28
 #### Minor changes:

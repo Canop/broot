@@ -34,7 +34,7 @@ impl InputPattern {
         Ok(Self { raw, pattern })
     }
     pub fn is_none(&self) -> bool {
-        self.raw.is_empty()
+        self.pattern.is_none()
     }
     pub fn is_some(&self) -> bool {
         self.pattern.is_some()

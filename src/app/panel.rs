@@ -78,7 +78,6 @@ impl Panel {
         let result = self.states[state_idx].on_command(w, app_state, &cc);
         let has_previous_state = self.states.len() > 1;
         self.status = self.state().get_status(app_state, &cc, has_previous_state);
-        debug!("result in panel {:?}: {:?}", &self.id, &result);
         result
     }
 
@@ -102,21 +101,6 @@ impl Panel {
         self.status = self.state().get_status(app_state, &cc, has_previous_state);
     }
 
-    /// execute all the pending tasks until there's none remaining or
-    ///  the dam asks for interruption
-    pub fn do_pending_tasks(
-        &mut self,
-        screen: Screen,
-        con: &AppContext,
-        dam: &mut Dam,
-    ) -> Result<bool, ProgramError> {
-        let mut did_something = false;
-        while self.mut_state().get_pending_task().is_some() & !dam.has_event() {
-            self.mut_state().do_pending_task(screen, con, dam);
-            did_something = true;
-        }
-        Ok(did_something)
-    }
 
     /// do the next pending task stopping as soon as there's an event
     /// in the dam

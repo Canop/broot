@@ -151,7 +151,6 @@ impl PanelState for BrowserState {
     }
 
     fn set_mode(&mut self, mode: Mode) {
-        debug!("BrowserState::set_mode({:?})", mode);
         self.mode = mode;
     }
 
