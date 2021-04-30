@@ -45,7 +45,7 @@
 	###############################################################
 	# Whether to mark the selected line with a triangle
 	#
-	# show_selection_mark: true
+	show_selection_mark: true
 
 	###############################################################
 	# Column order
