@@ -106,12 +106,25 @@ impl BLine {
             0
         };
         let metadata = fs::symlink_metadata(&self.path)?;
-        let subpath = TreeLine::make_displayable_name(&self.subpath, &self.path, &line_type, con);
-        let name = TreeLine::make_displayable_name(&self.name, &self.path, &line_type, con);
+        let subpath = self.subpath.replace('\n', "");
+        let name = self.name.replace('\n', "");
+        let icon = con.icons.as_ref()
+            .map(|icon_plugin| {
+                let extension = TreeLine::extension_from_name(&name);
+                let double_extension = extension
+                    .and_then(|_| TreeLine::double_extension_from_name(&name));
+                icon_plugin.get_icon(
+                    &line_type,
+                    &name,
+                    double_extension,
+                    extension,
+                )
+            });
 
         Ok(TreeLine {
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
+            icon,
             name,
             subpath,
             path: self.path.clone(),

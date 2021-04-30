@@ -280,12 +280,21 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
     ) -> Result<usize, ProgramError> {
         cond_bg!(char_match_style, self, selected, self.skin.char_match);
+        if let Some(icon) = line.icon {
+            cw.queue_char(style, icon)?;
+            cw.queue_char(style, ' ')?;
+            cw.queue_char(style, ' ')?;
+        }
         let label = if pattern_object.subpath {
             &line.subpath
         } else {
             &line.name
         };
         let name_match = self.tree.options.pattern.pattern.search_string(label);
+        if selected {
+            debug!("label: {:?}", label);
+            debug!("name_match: {:#?}", &name_match);
+        }
         let matched_string = MatchedString::new(
             name_match,
             label,

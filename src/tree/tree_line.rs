@@ -1,7 +1,6 @@
 use {
     super::*,
     crate::{
-        app::AppContext,
         app::{Selection, SelectionType},
         file_sum::FileSum,
         git::LineGitStatus,
@@ -26,6 +25,7 @@ pub struct TreeLine {
     pub depth: u16,
     pub path: PathBuf,
     pub subpath: String,
+    pub icon: Option<char>,
     pub name: String, // a displayable name - some chars may have been stripped
     pub line_type: TreeLineType,
     pub has_error: bool,
@@ -39,33 +39,6 @@ pub struct TreeLine {
 }
 
 impl TreeLine {
-    pub fn make_displayable_name(
-        name: &str,
-        path: &std::path::PathBuf,
-        tree_line_type: &TreeLineType,
-        con: &AppContext,
-    ) -> String {
-        let newline_replaced_name = name.replace('\n', "");
-        match &con.icons {
-            None => newline_replaced_name,
-            Some(icon_plugin) => {
-                let extension = Self::extension_from_name(name);
-                let double_extension = if extension.is_some() {
-                    Self::double_extension_from_name(name)
-                } else {
-                    None
-                };
-                let icon = icon_plugin.get_icon(
-                    tree_line_type,
-                    path,
-                    &name,
-                    double_extension,
-                    extension,
-                );
-                format!("{}  {}", icon, newline_replaced_name)
-            }
-        }
-    }
 
     pub fn double_extension_from_name(name: &str) -> Option<&str> {
         regex!(r"\.([^.]+\.[^.]+)")

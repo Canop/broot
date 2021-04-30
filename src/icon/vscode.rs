@@ -127,7 +127,6 @@ impl IconPlugin for VSCodeIconPlugin {
     fn get_icon(
         &self,
         tree_line_type: &TreeLineType,
-        _full_path: &std::path::PathBuf,
         name: &str,
         double_ext: Option<&str>,
         ext: Option<&str>,
