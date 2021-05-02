@@ -103,7 +103,7 @@ impl ExternalExecution {
             writeln!(&f, "{}", builder.shell_exec_string(&self.exec_pattern))?;
             Ok(CmdResult::Quit)
         } else if let Some(ref export_path) = con.launch_args.file_export_path {
-            if let Some(sel) = builder.sel_info.as_one_sel() {
+            if let Some(sel) = builder.sel_info.one_sel() {
                 // old version of the br function: only the file is exported
                 // in the passed file
                 let f = OpenOptions::new().append(true).open(export_path)?;
@@ -135,7 +135,7 @@ impl ExternalExecution {
         let launchable = Launchable::program(
             builder.exec_token(&self.exec_pattern),
             builder.sel_info
-                .as_one_sel()
+                .one_sel()
                 .filter(|_| self.set_working_dir)
                 .map(|sel| path::closest_dir(sel.path)),
             con,
@@ -157,7 +157,7 @@ impl ExternalExecution {
                 let launchable = Launchable::program(
                     builder.exec_token(&self.exec_pattern),
                     builder.sel_info
-                        .as_one_sel()
+                        .one_sel()
                         .filter(|_| self.set_working_dir)
                         .map(|sel| path::closest_dir(sel.path)),
                     con,

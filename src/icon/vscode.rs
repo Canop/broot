@@ -4,7 +4,7 @@ use {
     ahash::AHashMap,
 };
 
-pub struct VSCodeIconPlugin {
+pub struct VsCodeIconPlugin {
     icon_name_to_icon_codepoint_map: AHashMap<&'static str, u32>,
     file_name_to_icon_name_map: AHashMap<&'static str, &'static str>,
     double_extension_to_icon_name_map: AHashMap<&'static str, &'static str>,
@@ -12,7 +12,7 @@ pub struct VSCodeIconPlugin {
     default_icon_point: u32,
 }
 
-impl VSCodeIconPlugin {
+impl VsCodeIconPlugin {
     #[allow(dead_code)]
     fn sanity_check(
         part_to_icon_name_map: &AHashMap<&str, &str>,
@@ -123,7 +123,7 @@ impl VSCodeIconPlugin {
     }
 }
 
-impl IconPlugin for VSCodeIconPlugin {
+impl IconPlugin for VsCodeIconPlugin {
     fn get_icon(
         &self,
         tree_line_type: &TreeLineType,

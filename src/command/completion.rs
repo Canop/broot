@@ -184,7 +184,7 @@ impl Completions {
                         return Self::None;
                     }
                 };
-                for ol in lists.next() {
+                for ol in lists {
                     list = list.iter().filter(|c| ol.contains(c)).cloned().collect();
                     if list.is_empty() {
                         break;

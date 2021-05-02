@@ -30,7 +30,11 @@ command = [
 	"--",
 	"-A", "clippy::match_like_matches_macro",
 	"-A", "clippy::collapsible_if",
+	"-A", "clippy::collapsible_else_if",
 	"-A", "clippy::module_inception",
+	"-A", "clippy::vec_init_then_push",
+	"-A", "clippy::manual_unwrap_or",
+	"-A", "clippy::len_without_is_empty",
 ]
 need_stdout = false
 

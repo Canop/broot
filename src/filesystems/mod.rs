@@ -38,7 +38,7 @@ static SHARE_COLORS: &[Color] = &[
 ];
 
 pub fn share_color(share: f64) -> Color {
-    debug_assert!(share >= 0.0 && share <= 1.0);
+    debug_assert!((0.0..=1.0).contains(&share));
     let idx = (share * SHARE_COLORS.len() as f64) as usize;
     if idx >= SHARE_COLORS.len() {
         SHARE_COLORS[SHARE_COLORS.len() - 1]

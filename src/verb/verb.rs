@@ -210,7 +210,7 @@ impl Verb {
         // thus I hardcode the test here.
         if let VerbExecution::Internal(internal_exec) = &self.execution {
             if internal_exec.internal == Internal::focus {
-                if let Some(sel) = sel_info.as_one_sel() {
+                if let Some(sel) = sel_info.one_sel() {
                     let arg = invocation.args.as_ref().or_else(|| internal_exec.arg.as_ref());
                     let pb;
                     let arg_path = if let Some(arg) = arg {

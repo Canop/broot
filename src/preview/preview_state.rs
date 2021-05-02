@@ -265,7 +265,7 @@ impl PanelState for PreviewState {
                 // means it's not an error already
                 if let ProgramError::Io { source } = err {
                     // we mutate the preview to Preview::IOError
-                    self.preview = Preview::IOError(source);
+                    self.preview = Preview::IoError(source);
                     return self.display(w, disc);
                 }
             }

@@ -118,7 +118,7 @@ impl<'a> SelInfo<'a> {
             }
         }
     }
-    pub fn as_one_sel(self) -> Option<Selection<'a>> {
+    pub fn one_sel(self) -> Option<Selection<'a>> {
         match self {
             SelInfo::One(sel) => Some(sel),
             _ => None,

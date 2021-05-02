@@ -25,7 +25,7 @@ pub enum Preview {
     Syntactic(SyntacticView),
     Hex(HexView),
     ZeroLen(ZeroLenFileView),
-    IOError(io::Error),
+    IoError(io::Error),
 }
 
 impl Preview {
@@ -134,7 +134,7 @@ impl Preview {
             Err(e) => {
                 // it's unlikely as the file isn't open at this point
                 warn!("error while previewing {:?} : {:?}", path, e);
-                Self::IOError(e)
+                Self::IoError(e)
             }
         }
     }
@@ -145,7 +145,7 @@ impl Preview {
             Self::Syntactic(_) => Some(PreviewMode::Text),
             Self::ZeroLen(_) => Some(PreviewMode::Text),
             Self::Hex(_) => Some(PreviewMode::Hex),
-            Self::IOError(_) => None,
+            Self::IoError(_) => None,
         }
     }
     pub fn pattern(&self) -> InputPattern {
@@ -233,7 +233,7 @@ impl Preview {
             Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area, con),
             Self::ZeroLen(zlv) => zlv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
-            Self::IOError(err) => {
+            Self::IoError(err) => {
                 let mut y = area.top;
                 w.queue(cursor::MoveTo(area.left, y))?;
                 let mut cw = CropWriter::new(w, area.width as usize);
