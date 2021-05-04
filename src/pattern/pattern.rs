@@ -17,9 +17,11 @@ pub enum Pattern {
     NameExact(ExactPattern),
     NameFuzzy(FuzzyPattern),
     NameRegex(RegexPattern),
+    NameTokens(TokPattern),
     PathExact(ExactPattern),
     PathFuzzy(FuzzyPattern),
     PathRegex(RegexPattern),
+    PathTokens(TokPattern),
     ContentExact(ContentExactPattern),
     ContentRegex(ContentRegexPattern),
     Composite(CompositePattern),
@@ -51,6 +53,9 @@ impl Pattern {
                             SearchMode::NameRegex => Self::NameRegex(
                                 RegexPattern::from(core, flags.unwrap_or(""))?
                             ),
+                            SearchMode::NameTokens => Self::NameTokens(
+                                TokPattern::new(core, ',')
+                            ),
                             SearchMode::PathExact => Self::PathExact(
                                 ExactPattern::from(core)
                             ),
@@ -59,6 +64,9 @@ impl Pattern {
                             ),
                             SearchMode::PathRegex => Self::PathRegex(
                                 RegexPattern::from(core, flags.unwrap_or(""))?
+                            ),
+                            SearchMode::PathTokens => Self::PathTokens(
+                                TokPattern::new(core, ',')
                             ),
                             SearchMode::ContentExact => Self::ContentExact(
                                 ContentExactPattern::from(core)
@@ -83,10 +91,10 @@ impl Pattern {
         let mut object = PatternObject::default();
         match self {
             Self::None => {}
-            Self::NameExact(_) | Self::NameFuzzy(_) | Self::NameRegex(_) => {
+            Self::NameExact(_) | Self::NameFuzzy(_) | Self::NameRegex(_) | Self::NameTokens(_) => {
                 object.name = true;
             }
-            Self::PathExact(_) | Self::PathFuzzy(_) | Self::PathRegex(_) => {
+            Self::PathExact(_) | Self::PathFuzzy(_) | Self::PathRegex(_) | Self::PathTokens(_) => {
                 object.subpath = true;
             }
             Self::ContentExact(_) | Self::ContentRegex(_) => {
@@ -109,9 +117,11 @@ impl Pattern {
             Self::NameExact(ep) => ep.find(candidate),
             Self::NameFuzzy(fp) => fp.find(candidate),
             Self::NameRegex(rp) => rp.find(candidate),
+            Self::NameTokens(tp) => tp.find(candidate),
             Self::PathExact(ep) => ep.find(candidate),
             Self::PathFuzzy(fp) => fp.find(candidate),
             Self::PathRegex(rp) => rp.find(candidate),
+            Self::PathTokens(tp) => tp.find(candidate),
             Self::Composite(cp) => cp.search_string(candidate),
             _ => None,
         }
@@ -137,9 +147,11 @@ impl Pattern {
             Self::NameExact(ep) => ep.score_of(&candidate.name),
             Self::NameFuzzy(fp) => fp.score_of(&candidate.name),
             Self::NameRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
+            Self::NameTokens(tp) => tp.score_of(&candidate.name),
             Self::PathExact(ep) => ep.score_of(&candidate.subpath),
             Self::PathFuzzy(fp) => fp.score_of(&candidate.subpath),
             Self::PathRegex(rp) => rp.find(&candidate.subpath).map(|m| m.score),
+            Self::PathTokens(tp) => tp.score_of(&candidate.subpath),
             Self::ContentExact(cp) => cp.score_of(candidate),
             Self::ContentRegex(cp) => cp.score_of(candidate),
             Self::Composite(cp) => cp.score_of(candidate),
@@ -152,9 +164,11 @@ impl Pattern {
             Self::NameExact(ep) => ep.score_of(&candidate),
             Self::NameFuzzy(fp) => fp.score_of(&candidate),
             Self::NameRegex(rp) => rp.find(&candidate).map(|m| m.score),
+            Self::NameTokens(tp) => tp.score_of(&candidate),
             Self::PathExact(ep) => ep.score_of(&candidate),
             Self::PathFuzzy(fp) => fp.score_of(&candidate),
             Self::PathRegex(rp) => rp.find(&candidate).map(|m| m.score),
+            Self::PathTokens(tp) => tp.score_of(&candidate),
             Self::ContentExact(_) => None, // this isn't suitable
             Self::ContentRegex(_) => None, // this isn't suitable
             Self::Composite(cp) => cp.score_of_string(candidate),

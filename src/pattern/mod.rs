@@ -11,8 +11,10 @@ mod operator;
 mod pattern;
 mod pattern_object;
 mod pattern_parts;
+mod pos;
 mod regex_pattern;
 mod search_mode;
+mod tok_pattern;
 
 pub use {
     candidate::Candidate,
@@ -22,13 +24,15 @@ pub use {
     exact_pattern::ExactPattern,
     fuzzy_pattern::FuzzyPattern,
     input_pattern::InputPattern,
-    name_match::{NameMatch, Pos},
+    name_match::NameMatch,
     pattern::Pattern,
     pattern_object::PatternObject,
     pattern_parts::PatternParts,
+    pos::*,
     operator::PatternOperator,
     regex_pattern::RegexPattern,
     search_mode::*,
+    tok_pattern::*,
 };
 
 use crate::errors::PatternError;

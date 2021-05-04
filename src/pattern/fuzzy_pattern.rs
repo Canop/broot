@@ -186,8 +186,7 @@ impl FuzzyPattern {
         best_match
     }
 
-    /// compute the score of the best match, in a way mostly similar to `find` but
-    /// faster by not storing match positions
+    /// compute the score of the best match
     pub fn score_of(&self, candidate: &str) -> Option<i32> {
         self.find(candidate)
             .map(|nm| nm.score)

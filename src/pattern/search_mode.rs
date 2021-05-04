@@ -20,6 +20,7 @@ pub enum SearchKind {
     Exact,
     Fuzzy,
     Regex,
+    Tokens,
     Unspecified,
 }
 
@@ -30,9 +31,11 @@ pub enum SearchMode {
     NameExact,
     NameFuzzy,
     NameRegex,
+    NameTokens,
     PathExact,
     PathFuzzy,
     PathRegex,
+    PathTokens,
     ContentExact,
     ContentRegex,
 }
@@ -41,9 +44,11 @@ pub static SEARCH_MODES: &[SearchMode] = &[
     SearchMode::NameFuzzy,
     SearchMode::NameRegex,
     SearchMode::NameExact,
+    SearchMode::NameTokens,
+    SearchMode::PathExact,
     SearchMode::PathFuzzy,
     SearchMode::PathRegex,
-    SearchMode::PathExact,
+    SearchMode::PathTokens,
     SearchMode::ContentExact,
     SearchMode::ContentRegex,
 ];
@@ -59,22 +64,25 @@ impl SearchMode {
             (Name, Exact) => Some(Self::NameExact),
             (Name, Fuzzy) => Some(Self::NameFuzzy),
             (Name, Regex) => Some(Self::NameRegex),
+            (Name, Tokens) => Some(Self::NameTokens),
 
             (Path, Unspecified) => Some(Self::PathFuzzy),
             (Path, Exact) => Some(Self::PathExact),
             (Path, Fuzzy) => Some(Self::PathFuzzy),
             (Path, Regex) => Some(Self::PathRegex),
+            (Path, Tokens) => Some(Self::PathTokens),
 
             (Content, Unspecified) => Some(Self::ContentExact),
             (Content, Exact) => Some(Self::ContentExact),
             (Content, Fuzzy) => None, // unsupported for now - could be but why ?
             (Content, Regex) => Some(Self::ContentRegex),
+            (Content, Tokens) => None, // unsupported for now - could be but need bench
         }
     }
     pub fn object(&self) -> SearchObject {
         match self {
-            Self::NameExact | Self::NameFuzzy | Self::NameRegex => SearchObject::Name,
-            Self::PathExact | Self::PathFuzzy | Self::PathRegex => SearchObject::Path,
+            Self::NameExact | Self::NameFuzzy | Self::NameRegex | Self::NameTokens => SearchObject::Name,
+            Self::PathExact | Self::PathFuzzy | Self::PathRegex | Self::PathTokens => SearchObject::Path,
             Self::ContentExact | Self::ContentRegex => SearchObject::Content,
         }
     }
@@ -83,9 +91,11 @@ impl SearchMode {
             Self::NameExact => SearchKind::Exact,
             Self::NameFuzzy => SearchKind::Fuzzy,
             Self::NameRegex => SearchKind::Regex,
+            Self::NameTokens => SearchKind::Tokens,
             Self::PathExact => SearchKind::Exact,
             Self::PathFuzzy => SearchKind::Fuzzy,
             Self::PathRegex => SearchKind::Regex,
+            Self::PathTokens => SearchKind::Tokens,
             Self::ContentExact => SearchKind::Exact,
             Self::ContentRegex => SearchKind::Regex,
         }
@@ -130,14 +140,16 @@ impl SearchModeMapEntry {
         let exact = s.contains("exact");
         let fuzzy = s.contains("fuzzy");
         let regex = s.contains("regex");
-        let search_kind = match (exact, fuzzy, regex) {
-            (false, false, false) => SearchKind::Unspecified,
-            (true, false, false) => SearchKind::Exact,
-            (false, true, false) => SearchKind::Fuzzy,
-            (false, false, true) => SearchKind::Regex,
+        let tokens = s.contains("tokens");
+        let search_kind = match (exact, fuzzy, regex, tokens) {
+            (false, false, false, false) => SearchKind::Unspecified,
+            (true, false, false, false) => SearchKind::Exact,
+            (false, true, false, false) => SearchKind::Fuzzy,
+            (false, false, true, false) => SearchKind::Regex,
+            (false, false, false, true) => SearchKind::Tokens,
             _ => {
                 return Err(ConfError::InvalidSearchMode {
-                    details: "you may have at most one of \"exact\", \"fuzzy\" or \"regex\"".to_string()
+                    details: "you may have at most one of \"exact\", \"fuzzy\", \"regex\", or \"tokens\"".to_string()
                 });
             }
         };
@@ -181,6 +193,8 @@ impl Default for SearchModeMap {
         smm.setm(&["pr", "rp"], SearchMode::PathRegex);
         smm.setm(&["ce", "ec", "c"], SearchMode::ContentExact);
         smm.setm(&["rx", "cr"], SearchMode::ContentRegex);
+        smm.setm(&["pt", "tp", "t"], SearchMode::PathTokens);
+        smm.setm(&["pn", "np"], SearchMode::NameTokens);
         smm.set(SearchModeMapEntry { key: None, mode: SearchMode::NameFuzzy });
         smm
     }

@@ -291,10 +291,6 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             &line.name
         };
         let name_match = self.tree.options.pattern.pattern.search_string(label);
-        if selected {
-            debug!("label: {:?}", label);
-            debug!("name_match: {:#?}", &name_match);
-        }
         let matched_string = MatchedString::new(
             name_match,
             label,

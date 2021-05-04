@@ -1,9 +1,6 @@
 use {
-    smallvec::SmallVec,
+    super::Pos,
 };
-
-/// a vector of indexes of the matching characters (not bytes)
-pub type Pos = SmallVec<[usize; 8]>;
 
 /// A NameMatch is a positive result of pattern matching inside
 /// a filename or subpath
