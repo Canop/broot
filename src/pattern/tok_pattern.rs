@@ -82,7 +82,9 @@ impl TokPattern {
         }
     }
 
-    pub fn find(&self, candidate: &str) -> Option<NameMatch> {
+    /// return either None (no match) or a vec whose size is the number
+    /// of tokens
+    pub fn find_ranges(&self, candidate: &str) -> Option<Vec<Range<usize>>> {
         if candidate.len() < self.sum_len {
             return None;
         }
@@ -112,23 +114,34 @@ impl TokPattern {
                 return None;
             }
         }
-        let mut pos = smallvec![0; self.sum_len];
-        let mut i = 0;
-        for r in matching_ranges {
-            for p in r {
-                pos[i] = p;
-                i += 1;
-            }
-        }
-        pos.sort();
-        let score = BONUS_MATCH + BONUS_CANDIDATE_LENGTH * candidate.len() as i32;
-        Some(NameMatch { score, pos })
+        Some(matching_ranges)
+    }
+
+    fn score_of_matching(&self, candidate: &str) -> i32 {
+        BONUS_MATCH + BONUS_CANDIDATE_LENGTH * candidate.len() as i32
+    }
+
+    pub fn find(&self, candidate: &str) -> Option<NameMatch> {
+        self.find_ranges(candidate)
+            .map(|matching_ranges| {
+                let mut pos = smallvec![0; self.sum_len];
+                let mut i = 0;
+                for r in matching_ranges {
+                    for p in r {
+                        pos[i] = p;
+                        i += 1;
+                    }
+                }
+                pos.sort();
+                let score = self.score_of_matching(candidate);
+                NameMatch { score, pos }
+            })
     }
 
     /// compute the score of the best match
     pub fn score_of(&self, candidate: &str) -> Option<i32> {
-        self.find(candidate)
-            .map(|nm| nm.score)
+        self.find_ranges(candidate)
+            .map(|_| self.score_of_matching(candidate))
     }
 }
 
