@@ -117,9 +117,9 @@ checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
 name = "bet"
-version = "0.4.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5edd00b661a92a0db2263a455ee2c9ae80942dbc804401bbb5a4598c4968af2e"
+checksum = "3e218e587658fb0b595e7d27c222a4caf56748a47644bc31483973d8dc6d8670"
 
 [[package]]
 name = "bincode"
@@ -774,9 +774,9 @@ dependencies = [
 
 [[package]]
 name = "lazy-regex"
-version = "0.1.4"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "83a32b42cf4770f191a2899a4b565d124d888d3f7fdbdd30ad98cf2c1d2b470f"
+checksum = "7d4358d81ee87faee9eab26098e3efde0a72ed8db1c7d40fa3ec1d9f68fcf283"
 dependencies = [
  "lazy_static",
 ]
@@ -1428,9 +1428,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "secular"
-version = "0.3.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0dd0cba6d9810b4cbb984d54e8c0aa16f9c3f57011baba57cb2cc5c6f3011648"
+checksum = "a4c9ad4c423ca634baf90edd056c562dc7730215e0689aa5eaf707f92f219905"
 dependencies = [
  "unicode-normalization",
 ]

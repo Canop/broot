@@ -22,7 +22,7 @@ clipboard = ["terminal-clipboard"]
 ahash = { version = "0.7", features = ["serde"] }
 ansi_colours = "1.0"
 base64 = "0.13"
-bet = "0.4.0"
+bet = "1.0"
 char_reader = "0.1"
 clap = { version="2.33", default-features=false, features=["suggestions", "color"] }
 cli-log = "1.1"
@@ -38,7 +38,7 @@ git2 = { version="0.13", default-features=false }
 glob = "0.3"
 id-arena = "2.2.1"
 image = "0.23.14"
-lazy-regex = "0.1.3"
+lazy-regex = "1.0"
 lazy_static = "1.4"
 libc = "0.2"
 log = "0.4"
@@ -49,7 +49,7 @@ pathdiff = "0.2"
 phf = { version = "0.8", features = ["macros"] }
 rayon = "1.5"
 regex = "1.4"
-secular = { version = "0.3", features = ["normalization"] }
+secular = { version = "1.0", features = ["normalization"] }
 serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.6"
 splitty = "0.1"
@@ -85,6 +85,9 @@ codegen-units = 1 # this removes a few hundred bytes from the final exec size
 
 [[bench]]
 name = "fuzzy"
+harness = false
+[[bench]]
+name = "toks"
 harness = false
 [[bench]]
 name = "composite"
