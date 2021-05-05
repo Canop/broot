@@ -39,4 +39,8 @@ impl RegexPattern {
             super::NameMatch { score: 1, pos }
         })
     }
+    pub fn is_empty(&self) -> bool {
+        self.rex.as_str().is_empty()
+    }
+
 }

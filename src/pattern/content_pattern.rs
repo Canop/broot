@@ -34,6 +34,10 @@ impl ContentExactPattern {
         self.needle.as_str()
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.needle.is_empty()
+    }
+
     pub fn to_regex_parts(&self) -> (String, String) {
         (self.as_str().to_string(), "".to_string())
     }

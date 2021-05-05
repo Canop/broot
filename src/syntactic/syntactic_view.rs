@@ -131,7 +131,7 @@ impl SyntacticView {
             while line.ends_with('\n') || line.ends_with('\r') {
                 line.pop();
             }
-            if pattern.is_none() || pattern.score_of_string(&line).is_some() {
+            if pattern.is_empty() || pattern.score_of_string(&line).is_some() {
                 let name_match = pattern.search_string(&line);
                 let regions = if let Some(highlighter) = highlighter.as_mut() {
                     highlighter

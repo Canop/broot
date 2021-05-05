@@ -31,15 +31,6 @@ pub struct TokPattern {
     sum_len: usize,
 }
 
-// optimizations to test:
-// - score_of doesn't need to compute pos, just the ranges
-// - try the first tok before creating the matching_ranges vec
-//   (the first one is also impler to test)
-// - if there's no room for any of the other toks before the
-//   first matching tok, start other loops after the first
-//   matching range
-// But until I add some scoring and multiple positions tests
-//  there should not be any perf concerns
 // scoring basis ?
 // - number of parts of the candidats (separated by / for example)
 //   that are touched by a tok ?
@@ -82,45 +73,65 @@ impl TokPattern {
         }
     }
 
+    /// an "empty" pattern is one which accepts everything because
+    /// it has no discriminant
+    pub fn is_empty(&self) -> bool {
+        self.sum_len == 0
+    }
+
     /// return either None (no match) or a vec whose size is the number
     /// of tokens
-    pub fn find_ranges(&self, candidate: &str) -> Option<Vec<Range<usize>>> {
-        if candidate.len() < self.sum_len {
+    fn find_ranges(&self, candidate: &str) -> Option<Vec<Range<usize>>> {
+        if candidate.len() < self.sum_len || self.sum_len == 0 {
             return None;
         }
         let mut cand_chars: CandChars = SmallVec::with_capacity(candidate.len());
         cand_chars.extend(candidate.chars().map(secular::lower_lay_char));
-        let mut matching_ranges: Vec<Range<usize>> = Vec::with_capacity(self.toks.len());
-        for tok in &self.toks {
-            let l = tok.len();
-            let matching_range = (0..cand_chars.len()+1-l)
-                .map(|idx| idx..idx+l)
-                .filter(|r| {
-                    &cand_chars[r.start..r.end] == tok.as_ref()
-                })
-                .filter(|r| {
-                    // check we're not intersecting a previous range
-                    for pr in &matching_ranges {
-                        if pr.contains(&r.start) || pr.contains(&(r.end-1)) {
-                            return false;
-                        }
+        // we first look for the first tok, it's simpler
+        let first_tok = &self.toks[0];
+        let l = first_tok.len();
+        let first_matching_range = (0..cand_chars.len()+1-l)
+            .map(|idx| idx..idx+l)
+            .filter(|r| {
+                &cand_chars[r.start..r.end] == first_tok.as_ref()
+            })
+            .next();
+        // we initialize the vec only when the first tok is found
+        first_matching_range
+            .and_then(|first_matching_range| {
+                let mut matching_ranges = vec![first_matching_range];
+                for tok in self.toks.iter().skip(1) {
+                    let l = tok.len();
+                    let matching_range = (0..cand_chars.len()+1-l)
+                        .map(|idx| idx..idx+l)
+                        .filter(|r| {
+                            &cand_chars[r.start..r.end] == tok.as_ref()
+                        })
+                        .filter(|r| {
+                            // check we're not intersecting a previous range
+                            for pr in &matching_ranges {
+                                if pr.contains(&r.start) || pr.contains(&(r.end-1)) {
+                                    return false;
+                                }
+                            }
+                            true
+                        })
+                        .next();
+                    if let Some(r) = matching_range {
+                        matching_ranges.push(r);
+                    } else {
+                        return None;
                     }
-                    true
-                })
-                .next();
-            if let Some(r) = matching_range {
-                matching_ranges.push(r);
-            } else {
-                return None;
-            }
-        }
-        Some(matching_ranges)
+                }
+                Some(matching_ranges)
+            })
     }
 
     fn score_of_matching(&self, candidate: &str) -> i32 {
         BONUS_MATCH + BONUS_CANDIDATE_LENGTH * candidate.len() as i32
     }
 
+    /// note that it should not be called on empty patterns
     pub fn find(&self, candidate: &str) -> Option<NameMatch> {
         self.find_ranges(candidate)
             .map(|matching_ranges| {
@@ -139,6 +150,7 @@ impl TokPattern {
     }
 
     /// compute the score of the best match
+    /// Note that it should not be called on empty patterns
     pub fn score_of(&self, candidate: &str) -> Option<i32> {
         self.find_ranges(candidate)
             .map(|_| self.score_of_matching(candidate))
@@ -155,6 +167,7 @@ mod tok_pattern_tests {
 
     /// check position of the match of the pattern in name
     fn check_pos(pattern: &str, name: &str, pos: &str) {
+        println!("checking pattern={:?} name={:?}", pattern, name);
         let pat = TokPattern::new(pattern);
         let match_pos = pat.find(name).unwrap().pos;
         let target_pos: Pos = pos.chars()

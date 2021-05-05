@@ -44,6 +44,10 @@ impl ExactPattern {
         }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.chars_count == 0
+    }
+
     fn score(&self, start: usize, candidate: &str) -> i32 {
         // start is the byte index
         let mut score = BONUS_MATCH + BONUS_CANDIDATE_LENGTH * candidate.len() as i32;

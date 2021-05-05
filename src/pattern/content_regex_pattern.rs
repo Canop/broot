@@ -35,6 +35,10 @@ impl ContentRegexPattern {
         })
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.rex.as_str().is_empty()
+    }
+
     pub fn to_regex_parts(&self) -> (String, String) {
         (self.rex.to_string(), self.flags.clone())
     }

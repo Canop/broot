@@ -177,11 +177,26 @@ impl Pattern {
     }
 
     pub fn is_some(&self) -> bool {
-        !matches!(&self, Pattern::None)
+        !self.is_empty()
     }
 
-    pub fn is_none(&self) -> bool {
-        matches!(&self, Pattern::None)
+    /// an empty pattern is one which doesn't discriminate
+    /// (it accepts everything)
+    pub fn is_empty(&self) -> bool {
+        match self {
+            Self::NameExact(ep) => ep.is_empty(),
+            Self::NameFuzzy(fp) => fp.is_empty(),
+            Self::NameRegex(rp) => rp.is_empty(),
+            Self::NameTokens(tp) => tp.is_empty(),
+            Self::PathExact(ep) => ep.is_empty(),
+            Self::PathFuzzy(fp) => fp.is_empty(),
+            Self::PathRegex(rp) => rp.is_empty(),
+            Self::PathTokens(tp) => tp.is_empty(),
+            Self::ContentExact(ep) => ep.is_empty(),
+            Self::ContentRegex(rp) => rp.is_empty(),
+            Self::Composite(cp) => cp.is_empty(),
+            Self::None => true,
+        }
     }
 
     /// whether the scores are more than just 0 or 1.

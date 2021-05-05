@@ -72,6 +72,12 @@ impl FuzzyPattern {
         }
     }
 
+    /// an "empty" pattern is one which accepts everything because
+    /// it has no discriminant
+    pub fn is_empty(&self) -> bool {
+        self.chars.is_empty()
+    }
+
     fn tight_match_from_index(
         &self,
         cand_chars: &CandChars,

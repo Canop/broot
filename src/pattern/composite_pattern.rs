@@ -145,4 +145,10 @@ impl CompositePattern {
             })
     }
 
+    pub fn is_empty(&self) -> bool {
+        let is_not_empty = self.expr.iter_atoms()
+            .any(|p| p.is_some());
+        !is_not_empty
+    }
+
 }

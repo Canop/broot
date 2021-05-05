@@ -40,6 +40,10 @@ impl Needle {
         Self { bytes }
     }
 
+    pub fn is_empty(&self) -> bool {
+        self.bytes.is_empty()
+    }
+
     pub fn as_str(&self) -> &str {
         unsafe { std::str::from_utf8_unchecked(&self.bytes) }
     }
