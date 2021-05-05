@@ -54,7 +54,7 @@ impl Pattern {
                                 RegexPattern::from(core, flags.unwrap_or(""))?
                             ),
                             SearchMode::NameTokens => Self::NameTokens(
-                                TokPattern::new(core, ',')
+                                TokPattern::new(core)
                             ),
                             SearchMode::PathExact => Self::PathExact(
                                 ExactPattern::from(core)
@@ -66,7 +66,7 @@ impl Pattern {
                                 RegexPattern::from(core, flags.unwrap_or(""))?
                             ),
                             SearchMode::PathTokens => Self::PathTokens(
-                                TokPattern::new(core, ',')
+                                TokPattern::new(core)
                             ),
                             SearchMode::ContentExact => Self::ContentExact(
                                 ContentExactPattern::from(core)
