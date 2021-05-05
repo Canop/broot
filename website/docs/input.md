@@ -1,5 +1,4 @@
 
-
 # General form
 
 The input is the area at the bottom of the focused panel, in which you can type a filter or a command.
@@ -21,9 +20,15 @@ The syntax is globally
 
 The mode is either nothing (fuzzy name), just a slash (regex name) or some letters followed by a slash.
 
+The search mode combines
+
+* the search type: fuzzy, regex, exact, tokens
+* the search object: file name, file path, file content
+
 mode | example query | example match | explanation
 -|-|-|-
 fuzzy name | `abc` or `nf/abc` | `abac.txt` | search for "abc" in a fuzzy way in filenames
+tokens name | `nt/ab,cd` | `dcdAbac.txt` | search for the "ab" and "cd" tokens, in whatever order (case and diacritics insensitive)
 exact name | `e/Bac` or `en/Bac` | `ABac.txt` | search for the string "Bac" in filenames
 regex name | `/[yz]{3}` or `/[yz]{3}/` | `fuzzy.rs` | search for the regular expression `[yz]{3}` in filenames
 regex name | `/(json|xml)$/i` | `thing.XML` | find files whose name ends in `json` or `xml`, case insensitive
@@ -31,6 +36,7 @@ regex name | `/abc/i` | `aBc.txt` | search for the regular expression `abc` with
 fuzzy path | `p/abc`  or `p/abc/` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-paths from current tree root
 exact path | `ep/te\/d`  or `pe/te\/d/` | `website/docs` |  search for "te/d" in sub-paths from current tree root
 regex path | `rp/\\d{3}.*txt` | `dir/a256/abc.txt` |  search for the `\d{3}.*txt` regex  in sub-paths from current tree root
+tokens path | `t/ab,cd` | `DCD/a256/abc.txt` |  search for the "ab" and "cd" tokens in sub-paths from current tree root
 exact content | `c/mask` or `c/mask/` | `umask = "1.0"` | search for the "mask" string in file contents
 regex content | `rc/[abc]{5}/i` | `bAAAc` | search with a regular expression in file contents - `i` making it case insensitive
 regex content | `cr/\\bzh\\b` | `"zh":{` | search a word with a regular expression in file contents
