@@ -203,11 +203,11 @@ impl Default for SearchModeMap {
 impl TryFrom<&FnvHashMap<String, String>> for SearchModeMap {
     type Error = ConfError;
     fn try_from(map: &FnvHashMap<String, String>) -> Result<Self, Self::Error> {
-        let mut entries = Vec::with_capacity(map.len());
+        let mut smm = Self::default();
         for (k, v) in map {
-            entries.push(SearchModeMapEntry::parse(k, v)?);
+            smm.entries.push(SearchModeMapEntry::parse(k, v)?);
         }
-        Ok(Self { entries })
+        Ok(smm)
     }
 }
 

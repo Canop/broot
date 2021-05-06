@@ -25,7 +25,6 @@ pub enum PanelReference {
     Rightest,
     Id(PanelId),
     Preview,
-    //StagingArea,
 }
 
 /// Result of applying a command to a state

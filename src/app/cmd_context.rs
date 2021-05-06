@@ -31,12 +31,3 @@ pub struct PanelCmdContext<'c> {
     pub areas: &'c Areas,
     pub purpose: PanelPurpose,
 }
-
-//impl<'c> CmdContext<'c> {
-//    pub fn has_preview(&self) -> bool {
-//        self.app.preview_panel.is_some()
-//    }
-//    pub fn has_no_preview(&self) -> bool {
-//        self.app.preview.is_none()
-//    }
-//}

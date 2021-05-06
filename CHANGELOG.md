@@ -1,5 +1,6 @@
 ### next
 - new "unordered tokens" search type: `t/ab,cd` searches for tokens "ab" and "cd" in any order and case insensitive in the subpath, matches for example `src/dcd/Bab.rs`.
+- fix search modes configuration removing all default mappings - Fix #383
 
 <a name="v1.3.1"></a>
 ### v1.3.1 - 2021-04-30
