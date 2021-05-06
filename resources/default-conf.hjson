@@ -93,6 +93,14 @@
 	# 	"/home/dys/my-link-I-want-to-explore"	: enter
 	# }
 
+	###############################################################
+	# Quit on last cancel
+	# You can usually cancel the last state change on escape.
+	# If you want the escape key to quit broot when there's nothing
+	# to cancel (for example when you just opened broot), uncomment
+	# this parameter
+	# 
+	# quit_on_last_cancel: true
 
 	###############################################################
 	# Search modes

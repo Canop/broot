@@ -100,6 +100,19 @@ It's possible to redefine the mode mappings, for example if you usually prefer t
 
 Note: I'd insist on you not overwriting default mode mappings before you master how broot is used and what those modes exactly work.
 
+# Quit on last cancel
+
+You can usually cancel the last state change on escape.
+If you want the escape key to quit broot when there's nothing to cancel (for example when you just opened broot), you can set `quit_on_last_cancel` to true.
+this parameter
+
+```Hjson
+quit_on_last_cancel: true
+```
+```TOML
+quit_on_last_cancel = true
+```
+
 # Selection Mark
 
 When the background colors aren't rendered in your terminal, aren't visible enough, or just aren't clear enough for you, you may have the selected lines marked with triangles with

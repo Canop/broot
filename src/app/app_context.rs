@@ -65,6 +65,10 @@ pub struct AppContext {
     /// max number of panels (including preview) that can be
     /// open. Guaranteed to be at least 2.
     pub max_panels_count: usize,
+
+    /// whether to quit broot when the user hits "escape"
+    /// and there's nothing to cancel
+    pub quit_on_last_cancel: bool,
 }
 
 impl AppContext {
@@ -111,6 +115,7 @@ impl AppContext {
             modal: config.modal.unwrap_or(false),
             mouse_capture_disabled: config.disable_mouse_capture.unwrap_or(false),
             max_panels_count,
+            quit_on_last_cancel: config.quit_on_last_cancel.unwrap_or(false),
         })
     }
 }

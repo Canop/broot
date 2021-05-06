@@ -35,7 +35,7 @@ macro_rules! overwrite_map {
     };
 }
 
-/// The configuration read from conf.toml file(s)
+/// The configuration read from conf.toml or conf.hjson file(s)
 #[derive(Default, Clone, Debug, Deserialize)]
 pub struct Conf {
     /// the files used to load this configuration
@@ -83,6 +83,9 @@ pub struct Conf {
     pub modal: Option<bool>,
 
     pub max_panels_count: Option<usize>,
+
+    #[serde(alias="quit-on-last-cancel")]
+    pub quit_on_last_cancel: Option<bool>,
 
 }
 
@@ -149,6 +152,7 @@ impl Conf {
         overwrite!(self, search_modes, conf);
         overwrite!(self, max_panels_count, conf);
         overwrite!(self, modal, conf);
+        overwrite!(self, quit_on_last_cancel, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense

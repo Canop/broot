@@ -26,8 +26,6 @@ use {
     termimad::{Event, EventSource},
 };
 
-const ESCAPE_TO_QUIT: bool = false;
-
 #[cfg(feature = "client-server")]
 use std::sync::{Arc, Mutex};
 
@@ -419,7 +417,7 @@ impl App {
                 if self.remove_state() {
                     self.mut_state().refresh(app_cmd_context.screen, con);
                     self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
-                } else if ESCAPE_TO_QUIT {
+                } else if con.quit_on_last_cancel {
                     self.quitting = true;
                 }
             }
@@ -437,7 +435,7 @@ impl App {
                         con,
                     };
                     self.mut_panel().apply_command(w, &cmd, app_state, &app_cmd_context)?;
-                } else if ESCAPE_TO_QUIT {
+                } else if con.quit_on_last_cancel {
                     self.quitting = true;
                 }
             }

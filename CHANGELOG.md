@@ -1,6 +1,7 @@
 ### next
-- new "unordered tokens" search type: `t/ab,cd` searches for tokens "ab" and "cd" in any order and case insensitive in the subpath, matches for example `src/dcd/Bab.rs`.
+- new "unordered tokens" search type: `t/ab,cd` searches for tokens "ab" and "cd" in any order and case insensitive in the subpath, matches for example `src/dcd/Bab.rs` - Fix #378
 - fix search modes configuration removing all default mappings - Fix #383
+- conf / quit_on_last_cancel to allow quitting with esc when there's nothing to cancel - Fix #380
 
 <a name="v1.3.1"></a>
 ### v1.3.1 - 2021-04-30
