@@ -43,7 +43,7 @@ impl FileSum {
         count: usize,
         modified: u32,
     ) -> Self {
-        Self { real_size, sparse, count, modified }
+        Self { real_size, count, modified, sparse }
     }
 
     pub fn zero() -> Self {

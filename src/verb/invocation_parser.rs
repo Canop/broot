@@ -71,8 +71,8 @@ impl InvocationParser {
         Ok(Self {
             invocation_pattern,
             args_parser,
-            arg_selection_type,
             arg_anchor,
+            arg_selection_type,
         })
     }
 

@@ -42,8 +42,8 @@ impl<'a, 's> GitStatusDisplay<'a, 's> {
             status,
             skin,
             show_branch,
-            show_stats,
             show_wide,
+            show_stats,
             width,
         }
     }

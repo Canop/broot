@@ -45,12 +45,10 @@ impl TokPattern {
         // separator of the whole. This allows using the
         // other char: In ";ab,er", the comma isn't seen
         // as a separator but as part of a tok
-        let sep = pattern.chars()
-            .filter(|c| SEPARATORS.contains(c))
-            .next();
+        let sep = pattern.chars().find(|c| SEPARATORS.contains(c));
         let mut toks: Vec<Box<[char]>> = if let Some(sep) = sep {
             pattern.split(sep)
-                .filter(|s| s.len() > 0)
+                .filter(|s| !s.is_empty())
                 .map(norm_chars)
                 .collect()
         } else {
@@ -92,10 +90,9 @@ impl TokPattern {
         let l = first_tok.len();
         let first_matching_range = (0..cand_chars.len()+1-l)
             .map(|idx| idx..idx+l)
-            .filter(|r| {
+            .find(|r| {
                 &cand_chars[r.start..r.end] == first_tok.as_ref()
-            })
-            .next();
+            });
         // we initialize the vec only when the first tok is found
         first_matching_range
             .and_then(|first_matching_range| {
@@ -107,7 +104,7 @@ impl TokPattern {
                         .filter(|r| {
                             &cand_chars[r.start..r.end] == tok.as_ref()
                         })
-                        .filter(|r| {
+                        .find(|r| {
                             // check we're not intersecting a previous range
                             for pr in &matching_ranges {
                                 if pr.contains(&r.start) || pr.contains(&(r.end-1)) {
@@ -115,8 +112,7 @@ impl TokPattern {
                                 }
                             }
                             true
-                        })
-                        .next();
+                        });
                     if let Some(r) = matching_range {
                         matching_ranges.push(r);
                     } else {
@@ -143,7 +139,7 @@ impl TokPattern {
                         i += 1;
                     }
                 }
-                pos.sort();
+                pos.sort_unstable();
                 let score = self.score_of_matching(candidate);
                 NameMatch { score, pos }
             })

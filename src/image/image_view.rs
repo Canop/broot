@@ -98,9 +98,9 @@ impl ImageView {
                     self.source_img.resize(target_width, target_height, FilterType::Triangle),
                 );
                 self.display_img = Some(CachedImage {
+                    img,
                     target_width,
                     target_height,
-                    img,
                 });
                 &self.display_img.as_ref().unwrap().img
             }

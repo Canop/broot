@@ -129,8 +129,8 @@ impl<'i> KittyImage<'i> {
         let data = src.into();
         let id = renderer.new_id();
         Self {
-            data,
             id,
+            data,
             img_width,
             img_height,
             area,
