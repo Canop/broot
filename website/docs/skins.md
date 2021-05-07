@@ -230,6 +230,7 @@ It is suitable if your terminal has a clear background.
 skin: {
 	default: gray(1) None
 	tree: gray(7) None / gray(18) None
+	parent: gray(5) None / gray(10) None
 	file: gray(3) None / gray(8) None
 	directory: ansi(25) None Bold / ansi(25) None
 	exe: ansi(130) None
@@ -502,6 +503,7 @@ terminals.
 skin: {
 	default: rgb(235, 219, 178) none / rgb(189, 174, 147) none
 	tree: rgb(168, 153, 132) None / rgb(102, 92, 84) None
+	parent: rgb(235, 219, 178) none / rgb(189, 174, 147) none Italic
 	file: None None / None  None Italic
 	directory: rgb(131, 165, 152) None Bold / rgb(131, 165, 152) None
 	exe: rgb(184, 187, 38) None

@@ -30,6 +30,34 @@ impl<'a, 'w> MatchedString<'a> {
             align: Alignment::Left,
         }
     }
+    /// If the string contains sep, then cut the tail of this matched
+    /// string and return it.
+    /// Note: a non none display_width currently prevents splitting
+    /// (i.e. it's not yet implemented and would involve compute width)
+    pub fn split_on_last(&mut self, sep: char) -> Option<Self> {
+        if self.display_width.is_some() {
+            // the proper algo would need measuring the left part I guess
+            None
+        } else {
+            self.string
+                .rfind(sep)
+                .map(|sep_idx| {
+                    let right = &self.string[sep_idx+1..];
+                    self.string = &self.string[..sep_idx+1];
+                    let left_chars_count = self.string.chars().count();
+                    let right_name_match = self.name_match.as_mut()
+                        .map(|nm| nm.cut_after(left_chars_count));
+                    MatchedString {
+                        name_match: right_name_match,
+                        string: right,
+                        base_style: self.base_style,
+                        match_style: self.match_style,
+                        display_width: None,
+                        align: self.align,
+                    }
+                })
+        }
+    }
     pub fn fill(&mut self, width: usize, align: Alignment) {
         self.display_width = Some(width);
         self.align = align;

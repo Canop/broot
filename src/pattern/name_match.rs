@@ -1,5 +1,6 @@
 use {
     super::Pos,
+    smallvec::SmallVec,
 };
 
 /// A NameMatch is a positive result of pattern matching inside
@@ -11,6 +12,7 @@ pub struct NameMatch {
 }
 
 impl NameMatch {
+    /// wraps any group of matching characters with match_start and match_end
     pub fn wrap(&self, name: &str, match_start: &str, match_end: &str) -> String {
         let mut result = String::new();
         let mut index_in_pos = 0;
@@ -32,6 +34,21 @@ impl NameMatch {
             result.push_str(match_end);
         }
         result
+    }
+    // cut the name match in two parts by recomputing the pos
+    // arrays
+    pub fn cut_after(&mut self, chars_count: usize) -> Self {
+        let mut tail = Self {
+            score: self.score,
+            pos: SmallVec::new(),
+        };
+        let idx = self.pos.iter().position(|&p| p >= chars_count);
+        if let Some(idx) = idx {
+            for p in self.pos.drain(idx..) {
+                tail.pos.push(p - chars_count);
+            }
+        }
+        tail
     }
 }
 
