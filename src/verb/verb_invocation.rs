@@ -1,5 +1,6 @@
 use {
     std::fmt,
+    lazy_regex::regex,
 };
 
 /// the verb and its arguments, making the invocation.

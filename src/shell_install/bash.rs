@@ -16,6 +16,7 @@ use {
         errors::ProgramError,
     },
     directories::UserDirs,
+    lazy_regex::regex,
     minimad::*,
     regex::Captures,
     std::{env, fs::OpenOptions, io::Write, path::PathBuf},

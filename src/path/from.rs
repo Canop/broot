@@ -2,6 +2,7 @@ use {
     super::*,
     directories::UserDirs,
     ahash::AHashMap,
+    lazy_regex::regex,
     regex::{self, Captures},
     std::path::{Path, PathBuf},
 };

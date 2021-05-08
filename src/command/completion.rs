@@ -8,6 +8,7 @@ use {
         path::{self, PathAnchor},
         verb::PrefixSearchResult,
     },
+    lazy_regex::regex,
     std::{
         io,
         path::Path,

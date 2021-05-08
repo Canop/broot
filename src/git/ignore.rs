@@ -4,6 +4,7 @@ use {
     git2,
     glob,
     id_arena::{Arena, Id},
+    lazy_regex::regex,
     std::{
         fs::File,
         io::{BufRead, BufReader, Result},

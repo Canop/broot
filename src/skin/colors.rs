@@ -4,6 +4,7 @@ use {
     crossterm::style::{
         Color::{self, *},
     },
+    lazy_regex::regex,
 };
 
 /// read a color from a string.

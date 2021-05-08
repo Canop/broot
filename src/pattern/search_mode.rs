@@ -4,6 +4,7 @@ use {
         errors::{ConfError, PatternError},
     },
     fnv::FnvHashMap,
+    lazy_regex::regex,
     std::convert::TryFrom,
 };
 

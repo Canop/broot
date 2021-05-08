@@ -9,6 +9,7 @@ use {
         Attribute::{self, *},
         Attributes,
     },
+    lazy_regex::regex,
     serde::{de::Error, Deserialize, Deserializer},
     termimad::CompoundStyle,
 };

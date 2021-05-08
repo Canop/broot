@@ -774,11 +774,12 @@ dependencies = [
 
 [[package]]
 name = "lazy-regex"
-version = "1.0.0"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d4358d81ee87faee9eab26098e3efde0a72ed8db1c7d40fa3ec1d9f68fcf283"
+checksum = "927b2672eaeee74af46448cd6ce01a53125a4959261dca834bc28115e3b24e00"
 dependencies = [
- "lazy_static",
+ "once_cell",
+ "regex",
 ]
 
 [[package]]

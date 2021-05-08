@@ -5,6 +5,7 @@ use {
         file_sum::FileSum,
         git::LineGitStatus,
     },
+    lazy_regex::regex,
     std::{
         cmp::{self, Ord, Ordering, PartialOrd},
         fs,

@@ -1,5 +1,6 @@
 use {
     glob,
+    lazy_regex::regex,
     serde::{de::Error, Deserialize, Deserializer},
     std::path::Path,
 };
