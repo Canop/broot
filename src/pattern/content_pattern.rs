@@ -61,6 +61,18 @@ impl ContentExactPattern {
         }
     }
 
+    /// get the line of the first match, if any
+    pub fn get_match_line_count(
+        &self,
+        path: &Path,
+    ) -> Option<usize> {
+        if let Ok(ContentSearchResult::Found { pos }) = self.needle.search(path) {
+            line_count_at_pos(path, pos).ok()
+        } else {
+            None
+        }
+    }
+
     pub fn get_content_match(
         &self,
         path: &Path,

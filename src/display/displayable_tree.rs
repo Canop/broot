@@ -567,7 +567,8 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 }
 
                 if cw.allowed > 8 && pattern_object.content {
-                    let extract = tree.options.pattern.pattern.search_content(&line.path, cw.allowed - 2);
+                    let extract = tree.options.pattern.pattern
+                        .search_content(&line.path, cw.allowed - 2);
                     if let Some(extract) = extract {
                         self.write_content_extract(cw, extract, selected)?;
                     }

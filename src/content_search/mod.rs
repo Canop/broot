@@ -9,6 +9,7 @@ pub use {
     content_match::ContentMatch,
     content_search_result::ContentSearchResult,
     needle::Needle,
+    std::io::{ BufRead, BufReader},
 };
 
 use {
@@ -52,4 +53,20 @@ pub fn is_path_binary<P: AsRef<Path>>(path: P) -> bool {
         Ok(Some(_)) => false,
         _ => true,
     }
+}
+
+pub fn line_count_at_pos<P: AsRef<Path>>(path: P, pos: usize) -> io::Result<usize> {
+    let mut reader = BufReader::new(File::open(path)?);
+    let mut line = String::new();
+    let mut line_count = 1;
+    let mut bytes_count = 0;
+    while reader.read_line(&mut line)? > 0 {
+        bytes_count += line.len();
+        if bytes_count >= pos {
+            return Ok(line_count);
+        }
+        line_count += 1;
+        line.clear();
+    }
+    Err(io::Error::new(io::ErrorKind::UnexpectedEof, "too short".to_string()))
 }

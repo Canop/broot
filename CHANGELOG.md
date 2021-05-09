@@ -3,6 +3,7 @@
 - fix search modes configuration removing all default mappings - Fix #383
 - conf / quit_on_last_cancel to allow quitting with esc when there's nothing to cancel - Fix #380
 - new `parent` skin entry for the part of the sub-path before the file name (visible when you search on subpath)
+- when a content search has been done, opening a file with a compatible command (like the standard `:edit`) opens on the first line with a match
 
 <a name="v1.3.1"></a>
 ### v1.3.1 - 2021-04-30

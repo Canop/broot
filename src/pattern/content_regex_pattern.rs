@@ -86,6 +86,30 @@ impl ContentRegexPattern {
         Ok(None)
     }
 
+    /// get the line of the first match, if any
+    pub fn try_get_match_line_count(
+        &self,
+        path: &Path,
+    ) -> io::Result<Option<usize>> {
+        let mut line_count = 1;
+        for line in BufReader::new(File::open(path)?).lines() {
+            let line = line?;
+            if self.rex.is_match(line.as_str()) {
+                return Ok(Some(line_count));
+            }
+            line_count += 1;
+        }
+        Ok(None)
+    }
+    /// get the line of the first match, if any
+    pub fn get_match_line_count(
+        &self,
+        path: &Path,
+    ) -> Option<usize> {
+        self.try_get_match_line_count(path)
+            .unwrap_or(None)
+    }
+
     pub fn get_content_match(
         &self,
         path: &Path,

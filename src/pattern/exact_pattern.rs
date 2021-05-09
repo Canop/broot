@@ -5,7 +5,12 @@
 use {
     super::NameMatch,
     smallvec::SmallVec,
-    std::fmt,
+    std::{
+        fmt,
+        fs::File,
+        io::{self, BufRead, BufReader},
+        path::Path,
+    },
 };
 
 // weights used in match score computing
@@ -85,6 +90,33 @@ impl ExactPattern {
                 }
                 unreachable!(); // if there was a match, pos should have been reached
             })
+    }
+
+    /// get the line of the first match, if any
+    /// (not used today, we use content_pattern to search in files)
+    pub fn try_get_match_line_count(
+        &self,
+        path: &Path,
+    ) -> io::Result<Option<usize>> {
+        let mut line_count = 1; // first line in text editors is 1
+        for line in BufReader::new(File::open(path)?).lines() {
+            let line = line?;
+            if line.contains(&self.pattern) {
+                return Ok(Some(line_count));
+            }
+            line_count = 1;
+        }
+        Ok(None)
+    }
+
+    /// get the line of the first match, if any
+    /// (not used today, we use content_pattern to search in files)
+    pub fn get_match_line_count(
+        &self,
+        path: &Path,
+    ) -> Option<usize> {
+        self.try_get_match_line_count(path)
+            .unwrap_or(None)
     }
 
     /// compute the score of the best match

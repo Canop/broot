@@ -175,7 +175,12 @@ impl PanelState for BrowserState {
     }
 
     fn selection(&self) -> Option<Selection<'_>> {
-        Some(self.displayed_tree().selected_line().as_selection())
+        let tree = self.displayed_tree();
+        let mut selection = tree.selected_line().as_selection();
+        selection.line = tree.options.pattern.pattern
+            .get_match_line_count(&selection.path)
+            .unwrap_or(0);
+        Some(selection)
     }
 
     fn tree_options(&self) -> TreeOptions {

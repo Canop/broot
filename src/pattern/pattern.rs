@@ -142,6 +142,19 @@ impl Pattern {
         }
     }
 
+    /// get the line of the first match, if any
+    pub fn get_match_line_count(
+        &self,
+        path: &Path,
+    ) -> Option<usize> {
+        match self {
+            Self::ContentExact(cp) => cp.get_match_line_count(path),
+            Self::ContentRegex(cp) => cp.get_match_line_count(path),
+            Self::Composite(cp) => cp.get_match_line_count(path),
+            _ => None,
+        }
+    }
+
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
         match self {
             Self::NameExact(ep) => ep.score_of(&candidate.name),

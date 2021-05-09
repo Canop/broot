@@ -137,6 +137,33 @@ impl CompositePattern {
             })
     }
 
+    pub fn get_match_line_count(
+        &self,
+        candidate: &Path,
+    ) -> Option<usize> {
+        use PatternOperator::*;
+        let composite_result: Option<Option<usize>> = self.expr.eval(
+            // score evaluation
+            |pat| pat.get_match_line_count(candidate),
+            // operator
+            |op, a, b| match (op, a, b) {
+                (Not, Some(_), _) => None,
+                (_, Some(ma), _) => Some(ma),
+                (_, None, Some(omb)) => omb,
+                _ => None,
+            },
+            |op, a| match (op, a) {
+                (Or, Some(_)) => true,
+                _ => false,
+            },
+        );
+        composite_result
+            .unwrap_or_else(||{
+                warn!("unexpectedly missing result ");
+                None
+            })
+    }
+
     pub fn has_real_scores(&self) -> bool {
         self.expr.iter_atoms()
             .fold(false, |r, p| match p {
