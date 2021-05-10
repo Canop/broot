@@ -395,14 +395,6 @@ impl PanelState for BrowserState {
                 }
             }
             Internal::parent => self.go_to_parent(screen, con, bang),
-            Internal::print_path => {
-                let path = &self.displayed_tree().selected_line().target();
-                print::print_path(path, con)?
-            }
-            Internal::print_relative_path => {
-                let path = &self.displayed_tree().selected_line().target();
-                print::print_relative_path(path, con)?
-            }
             Internal::print_tree => {
                 print::print_tree(&self.displayed_tree(), cc.app.screen, &cc.app.panel_skin, con)?
             }

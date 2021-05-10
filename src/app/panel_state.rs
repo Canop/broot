@@ -351,20 +351,8 @@ pub trait PanelState {
                     }
                 }
             }
-            Internal::print_path => {
-                if let Some(path) = self.selected_path() {
-                    print::print_path(path, con)?
-                } else {
-                    CmdResult::error("no selection to print")
-                }
-            }
-            Internal::print_relative_path => {
-                if let Some(path) = self.selected_path() {
-                    print::print_relative_path(path, con)?
-                } else {
-                    CmdResult::error("no selection to print")
-                }
-            }
+            Internal::print_path => print::print_paths(&self.sel_info(app_state), con)?,
+            Internal::print_relative_path => print::print_relative_paths(&self.sel_info(app_state), con)?,
             Internal::refresh => CmdResult::RefreshState { clear_cache: true },
             Internal::quit => CmdResult::Quit,
             _ => CmdResult::Keep,

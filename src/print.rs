@@ -2,7 +2,7 @@
 
 use {
     crate::{
-        app::{AppContext, CmdResult},
+        app::*,
         display::{DisplayableTree, Screen},
         errors::ProgramError,
         launchable::Launchable,
@@ -17,8 +17,7 @@ use {
     },
 };
 
-pub fn print_path(path: &Path, con: &AppContext) -> io::Result<CmdResult> {
-    let path = path.to_string_lossy().to_string();
+fn print_string(string: String, con: &AppContext) -> io::Result<CmdResult> {
     Ok(
         if let Some(ref output_path) = con.launch_args.file_export_path {
             // an output path was provided, we write to it
@@ -26,30 +25,65 @@ pub fn print_path(path: &Path, con: &AppContext) -> io::Result<CmdResult> {
                 .create(true)
                 .append(true)
                 .open(output_path)?;
-            writeln!(&f, "{}", path)?;
+            writeln!(&f, "{}", string)?;
             CmdResult::Quit
         } else {
             // no output path provided. We write on stdout, but we must
             // do it after app closing to have the normal terminal
-            CmdResult::from(Launchable::printer(path))
-        },
+            CmdResult::from(Launchable::printer(string))
+        }
     )
 }
 
-pub fn print_relative_path(path: &Path, con: &AppContext) -> io::Result<CmdResult> {
+pub fn print_paths(sel_info: &SelInfo, con: &AppContext) -> io::Result<CmdResult> {
+    let string = match sel_info {
+        SelInfo::None => "".to_string(), // better idea ?
+        SelInfo::One(sel) => sel.path.to_string_lossy().to_string(),
+        SelInfo::More(stage) => {
+            let mut string = String::new();
+            for path in stage.paths().iter() {
+                string.push_str(&path.to_string_lossy());
+                string.push('\n');
+            }
+            string
+        }
+    };
+    print_string(string, con)
+}
+
+fn relativize_path(path: &Path, con: &AppContext) -> io::Result<String> {
     let relative_path = match pathdiff::diff_paths(path, &con.launch_args.root) {
         None => {
-            return Ok(CmdResult::DisplayError(
+            return Err(io::Error::new(
+                io::ErrorKind::Other,
                 format!("Cannot relativize {:?}", path), // does this happen ? how ?
             ));
         }
         Some(p) => p,
     };
-    if relative_path.components().next().is_some() {
-        print_path(&relative_path, con)
-    } else {
-        print_path(Path::new("."), con)
-    }
+    Ok(
+        if relative_path.components().next().is_some() {
+            relative_path.to_string_lossy().to_string()
+        } else {
+            ".".to_string()
+        }
+    )
+}
+
+pub fn print_relative_paths(sel_info: &SelInfo, con: &AppContext) -> io::Result<CmdResult> {
+    let string = match sel_info {
+        SelInfo::None => "".to_string(),
+        SelInfo::One(sel) => relativize_path(sel.path, con)?,
+        SelInfo::More(stage) => {
+            let mut string = String::new();
+            for path in stage.paths().iter() {
+                string.push_str(&relativize_path(path, con)?);
+                string.push('\n');
+            }
+            string
+        }
+    };
+    print_string(string, con)
 }
 
 fn print_tree_to_file(
