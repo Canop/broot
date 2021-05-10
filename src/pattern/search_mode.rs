@@ -196,7 +196,7 @@ impl Default for SearchModeMap {
         smm.setm(&["rx", "cr"], SearchMode::ContentRegex);
         smm.setm(&["pt", "tp", "t"], SearchMode::PathTokens);
         smm.setm(&["tn", "nt"], SearchMode::NameTokens);
-        smm.set(SearchModeMapEntry { key: None, mode: SearchMode::NameFuzzy });
+        smm.set(SearchModeMapEntry { key: None, mode: SearchMode::PathFuzzy });
         smm
     }
 }

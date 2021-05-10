@@ -18,7 +18,7 @@ The syntax is globally
 
     <mode><pattern>[/<flags>]
 
-The mode is either nothing (fuzzy name), just a slash (regex name) or some letters followed by a slash.
+The mode is either nothing (fuzzy path), just a slash (regex name) or some letters followed by a slash.
 
 The search mode combines
 
@@ -27,13 +27,13 @@ The search mode combines
 
 mode | example query | example match | explanation
 -|-|-|-
-fuzzy name | `abc` or `nf/abc` | `abac.txt` | search for "abc" in a fuzzy way in filenames
+fuzzy path | `abc`  or `p/abc` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-paths from current tree root
+fuzzy name | `n/abc` or `nf/abc` | `abac.txt` | search for "abc" in a fuzzy way in filenames
 tokens name | `nt/ab,cd` | `dcdAbac.txt` | search for the "ab" and "cd" tokens, in whatever order (case and diacritics insensitive)
 exact name | `e/Bac` or `en/Bac` | `ABac.txt` | search for the string "Bac" in filenames
 regex name | `/[yz]{3}` or `/[yz]{3}/` | `fuzzy.rs` | search for the regular expression `[yz]{3}` in filenames
 regex name | `/(json|xml)$/i` | `thing.XML` | find files whose name ends in `json` or `xml`, case insensitive
 regex name | `/abc/i` | `aBc.txt` | search for the regular expression `abc` with flag `i` in filenames
-fuzzy path | `p/abc`  or `p/abc/` | `a/bac.txt` |  search for "abc" in a fuzzy way in sub-paths from current tree root
 exact path | `ep/te\/d`  or `pe/te\/d/` | `website/docs` |  search for "te/d" in sub-paths from current tree root
 regex path | `rp/\\d{3}.*txt` | `dir/a256/abc.txt` |  search for the `\d{3}.*txt` regex  in sub-paths from current tree root
 tokens path | `t/ab,cd` | `DCD/a256/abc.txt` |  search for the "ab" and "cd" tokens in sub-paths from current tree root
