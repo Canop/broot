@@ -60,7 +60,7 @@ impl FuzzyPattern {
             2 => 1,
             3 => 2,
             4 => 2,
-            5 => 3,
+            5 => 2,
             6 => 3,
             7 => 3,
             8 => 4,
@@ -129,6 +129,9 @@ impl FuzzyPattern {
                     nb_singled_chars += 1;
                 }
             }
+        }
+        if nb_holes > self.max_nb_holes {
+            return MatchSearchResult::None;
         }
         let match_len = 1 + cand_idx - pos[0];
         let mut score = BONUS_MATCH;
