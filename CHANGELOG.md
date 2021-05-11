@@ -1,4 +1,5 @@
-### next
+<a name="v1.4.0"></a>
+### v1.4.0 - 2021-05-11
 - the default (non prefixed) search is now "path fuzzy" instead of "name fuzzy". You can still change the default mode and mode bindings in the config. This was done after a survey in chat.
 - new "unordered tokens" search type: `t/ab,cd` searches for tokens "ab" and "cd" in any order and case insensitive in the subpath, matches for example `src/dcd/Bab.rs` - Fix #378
 - fix search modes configuration removing all default mappings - Fix #383
