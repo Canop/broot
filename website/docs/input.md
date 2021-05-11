@@ -78,23 +78,17 @@ Verbs are detailed in the [Verbs & Commands](verbs.md) chapter.
 
 # Examples
 
-## A Fuzzy search:
+## A Fuzzy Path search:
 
 `re`
 
-![fuzzy](img/20200526-input-fuzzy.png)
+![fuzzy](img/20210511-fuzzy-re.png)
 
 ## A regular expression based search:
 
-`/re`
+`/R`
 
-![fuzzy](img/20200604-input-regex.png)
-
-## A fuzzy path search
-
-`p/coco`
-
-![fuzzy](img/20200604-fuzzy-path.png)
+![fuzzy](img/20210511-regex.png)
 
 ## A search followed by a command without arguments:
 
@@ -116,7 +110,7 @@ In this case with an escaped space:
 
 `c/two\ p`
 
-![content search](img/20200608-content-search.png)
+![content search](img/20210511-twop.png)
 
 ## A regular expression based full text search
 
