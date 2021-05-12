@@ -28,7 +28,6 @@ pub fn search_mode_rows(con: &AppContext) -> Vec<MatchingSearchModeRow> {
                     SearchKind::Fuzzy => "fuzzy",
                     SearchKind::Regex => "regex",
                     SearchKind::Tokens => "tokens",
-                    SearchKind::Unspecified => "???",
                 },
                 match mode.object() {
                     SearchObject::Name => "file name",

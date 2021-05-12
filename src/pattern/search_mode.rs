@@ -22,7 +22,6 @@ pub enum SearchKind {
     Fuzzy,
     Regex,
     Tokens,
-    Unspecified,
 }
 
 /// a valid combination of SearchObject and SearchKind,
@@ -61,19 +60,16 @@ impl SearchMode {
             SearchKind::*,
         };
         match (search_object, search_kind) {
-            (Name, Unspecified) => Some(Self::NameFuzzy),
             (Name, Exact) => Some(Self::NameExact),
             (Name, Fuzzy) => Some(Self::NameFuzzy),
             (Name, Regex) => Some(Self::NameRegex),
             (Name, Tokens) => Some(Self::NameTokens),
 
-            (Path, Unspecified) => Some(Self::PathFuzzy),
             (Path, Exact) => Some(Self::PathExact),
             (Path, Fuzzy) => Some(Self::PathFuzzy),
             (Path, Regex) => Some(Self::PathRegex),
             (Path, Tokens) => Some(Self::PathTokens),
 
-            (Content, Unspecified) => Some(Self::ContentExact),
             (Content, Exact) => Some(Self::ContentExact),
             (Content, Fuzzy) => None, // unsupported for now - could be but why ?
             (Content, Regex) => Some(Self::ContentRegex),
@@ -120,42 +116,50 @@ pub struct SearchModeMap {
 
 impl SearchModeMapEntry {
     pub fn parse(conf_key: &str, conf_mode: &str) -> Result<Self, ConfError> {
+        let mut search_kinds = Vec::new();
+        let mut search_objects = Vec::new();
+
         let s = conf_mode.to_lowercase();
-        let s = s.trim();
-
-        let name = s.contains("name");
-        let path = s.contains("path");
-        let content = s.contains("content");
-        let search_object = match (name, path, content) {
-            //(false, false, false) => SearchObject::Unspecified,
-            (true, false, false) => SearchObject::Name,
-            (false, true, false) => SearchObject::Path,
-            (false, false, true) => SearchObject::Content,
-            _ => {
-                return Err(ConfError::InvalidSearchMode {
-                    details: "you must have exactly one of \"name\", \"path\" or \"content".to_string()
-                });
+        for t in s.trim().split_whitespace() {
+            match t {
+                "exact" => search_kinds.push(SearchKind::Exact),
+                "fuzzy" => search_kinds.push(SearchKind::Fuzzy),
+                "regex" => search_kinds.push(SearchKind::Regex),
+                "tokens" => search_kinds.push(SearchKind::Tokens),
+                "name" => search_objects.push(SearchObject::Name),
+                "content" => search_objects.push(SearchObject::Content),
+                "path" => search_objects.push(SearchObject::Path),
+                _ => {
+                    return Err(ConfError::InvalidSearchMode {
+                        details: format!("{:?} not understood in search mode definition", t),
+                    });
+                }
             }
-        };
+        }
+        if search_kinds.is_empty() {
+            return Err(ConfError::InvalidSearchMode {
+                details: "missing search kind in search mode definition\
+                    (the search kind must be one of 'exact', 'fuzzy', 'regex', 'tokens')".to_string()
+            });
+        }
+        if search_kinds.len() > 1 {
+            return Err(ConfError::InvalidSearchMode {
+                details: "only one search kind can be specified in a search mode".to_string()
+            });
+        }
+        if search_objects.is_empty() {
+            return Err(ConfError::InvalidSearchMode {
+                details: "missing search object in search mode definition\
+                    (the search object must be one of 'name', 'path', 'content')".to_string()
+            });
+        }
+        if search_objects.len() > 1 {
+            return Err(ConfError::InvalidSearchMode {
+                details: "only one search object can be specified in a search mode".to_string()
+            });
+        }
 
-        let exact = s.contains("exact");
-        let fuzzy = s.contains("fuzzy");
-        let regex = s.contains("regex");
-        let tokens = s.contains("tokens");
-        let search_kind = match (exact, fuzzy, regex, tokens) {
-            (false, false, false, false) => SearchKind::Unspecified,
-            (true, false, false, false) => SearchKind::Exact,
-            (false, true, false, false) => SearchKind::Fuzzy,
-            (false, false, true, false) => SearchKind::Regex,
-            (false, false, false, true) => SearchKind::Tokens,
-            _ => {
-                return Err(ConfError::InvalidSearchMode {
-                    details: "you may have at most one of \"exact\", \"fuzzy\", \"regex\", or \"tokens\"".to_string()
-                });
-            }
-        };
-
-        let mode = match SearchMode::new(search_object, search_kind) {
+        let mode = match SearchMode::new(search_objects[0], search_kinds[0]) {
             Some(mode) => mode,
             None => {
                 return Err(ConfError::InvalidSearchMode {

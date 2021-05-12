@@ -98,7 +98,10 @@ It's possible to redefine the mode mappings, for example if you usually prefer t
 "z/" = "regex path"
 ```
 
-Note: I'd insist on you not overwriting default mode mappings before you master how broot is used and what those modes exactly work.
+The search mode must be made of two parts :
+
+* the search kind: Either  `exact`, `fuzzy`, `regex`, or `tokens`
+* the search object: Either `name`, `path`, or `content`
 
 # Quit on last cancel
 
