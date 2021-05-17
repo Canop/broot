@@ -8,7 +8,7 @@ use {
         path::{self, PathAnchor},
         verb::PrefixSearchResult,
     },
-    lazy_regex::regex,
+    lazy_regex::regex_captures,
     std::{
         io,
         path::Path,
@@ -113,9 +113,7 @@ impl Completions {
             PrefixSearchResult::Match(_, verb) => verb.get_arg_anchor(),
             _ => PathAnchor::Unspecified,
         };
-        let c = regex!(r"^(.*?)([^/]*)$").captures(arg).unwrap();
-        let parent_part = &c[1];
-        let child_part = &c[2];
+        let (_, parent_part, child_part) = regex_captures!(r"^(.*?)([^/]*)$", arg).unwrap();
         let parent = path::path_from(path, anchor, parent_part);
         let mut children = Vec::new();
         if !parent.exists() {

@@ -4,7 +4,7 @@ use {
         errors::{ConfError, PatternError},
     },
     fnv::FnvHashMap,
-    lazy_regex::regex,
+    lazy_regex::regex_is_match,
     std::convert::TryFrom,
 };
 
@@ -173,7 +173,7 @@ impl SearchModeMapEntry {
             // alternative the `"<empty>" = "fuzzy name"` solution.
             // TODO look at issues and/or code in serde-toml
             None
-        } else if regex!(r"^\w*/$").is_match(conf_key) {
+        } else if regex_is_match!(r"^\w*/$", conf_key) {
             Some(conf_key[0..conf_key.len() - 1].to_string())
         } else {
             return Err(ConfError::InvalidKey {

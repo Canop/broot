@@ -38,7 +38,7 @@ git2 = { version="0.13", default-features=false }
 glob = "0.3"
 id-arena = "2.2.1"
 image = "0.23.14"
-lazy-regex = "1.1"
+lazy-regex = "2.0.0"
 lazy_static = "1.4"
 libc = "0.2"
 log = "0.4"
@@ -48,7 +48,7 @@ memmap = "0.7"
 pathdiff = "0.2"
 phf = { version = "0.8", features = ["macros"] }
 rayon = "1.5"
-regex = "1.4"
+regex = "1.5"
 secular = { version = "1.0", features = ["normalization"] }
 serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.6"
@@ -99,7 +99,7 @@ harness = false
 [patch.crates-io]
 # bet = { path = "../bet" }
 # cli-log = { path = "../cli-log" }
-# lazy-regex = { path = "../lazy-regex" }
+# lazy-regex = { path = "../lazy-regex" }
 # minimad = { path = "../minimad" }
 # termimad = { path = "../termimad" }
 # crossterm = { path = "../crossterm-rs/crossterm" }

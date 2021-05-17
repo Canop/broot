@@ -5,7 +5,7 @@ use {
         file_sum::FileSum,
         git::LineGitStatus,
     },
-    lazy_regex::regex,
+    lazy_regex::regex_captures,
     std::{
         cmp::{self, Ord, Ordering, PartialOrd},
         fs,
@@ -42,17 +42,13 @@ pub struct TreeLine {
 impl TreeLine {
 
     pub fn double_extension_from_name(name: &str) -> Option<&str> {
-        regex!(r"\.([^.]+\.[^.]+)")
-            .captures(&name)
-            .and_then(|c| c.get(1))
-            .map(|e| e.as_str())
+        regex_captures!(r"\.([^.]+\.[^.]+)", name)
+            .map(|(_, de)| de)
     }
 
     pub fn extension_from_name(name: &str) -> Option<&str> {
-        regex!(r"\.([^.]+)$")
-            .captures(&name)
-            .and_then(|c| c.get(1))
-            .map(|e| e.as_str())
+        regex_captures!(r"\.([^.]+)$", name)
+            .map(|(_, ext)| ext)
     }
 
     pub fn is_selectable(&self) -> bool {

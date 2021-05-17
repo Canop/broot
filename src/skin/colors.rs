@@ -4,7 +4,7 @@ use {
     crossterm::style::{
         Color::{self, *},
     },
-    lazy_regex::regex,
+    lazy_regex::regex_captures,
 };
 
 /// read a color from a string.
@@ -17,8 +17,7 @@ use {
 /// This function needs a lowercase string (assuming lowercasing
 /// has be done before, to ensure case-insensitive parsing)
 pub fn parse(s: &str) -> Result<Option<Color>, InvalidSkinError> {
-    if let Some(c) = regex!(r"^ansi\((?P<value>\d+)\)$").captures(&s) {
-        let value: &str = c.name("value").unwrap().as_str();
+    if let Some((_, value)) = regex_captures!(r"^ansi\((?P<value>\d+)\)$", &s) {
         let value = value.parse();
         if let Ok(value) = value {
             return Ok(ansi(value)); // all ANSI values are ok
@@ -27,8 +26,7 @@ pub fn parse(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         }
     }
 
-    if let Some(c) = regex!(r"^gr[ae]y(?:scale)?\((?P<level>\d+)\)$").captures(&s) {
-        let level: &str = c.name("level").unwrap().as_str();
+    if let Some((_, level)) = regex_captures!(r"^gr[ae]y(?:scale)?\((?P<level>\d+)\)$", &s) {
         let level = level.parse();
         if let Ok(level) = level {
             if level > 23 {
@@ -40,11 +38,8 @@ pub fn parse(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         }
     }
 
-    if let Some(c) = regex!(r"^rgb\((?P<r>\d+),\s*(?P<g>\d+),\s*(?P<b>\d+)\)$").captures(&s) {
-        let r = c.name("r").unwrap().as_str().parse();
-        let g = c.name("g").unwrap().as_str().parse();
-        let b = c.name("b").unwrap().as_str().parse();
-        if let (Ok(r), Ok(g), Ok(b)) = (r, g, b) {
+    if let Some((_, r, g, b)) = regex_captures!(r"^rgb\((?P<r>\d+),\s*(?P<g>\d+),\s*(?P<b>\d+)\)$", &s) {
+        if let (Ok(r), Ok(g), Ok(b)) = (r.parse(), g.parse(), b.parse()) {
             return Ok(rgb(r, g, b));
         } else {
             return Err(InvalidSkinError::InvalidColor { raw: s.to_owned() });
