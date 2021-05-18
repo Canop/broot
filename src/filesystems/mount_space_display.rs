@@ -106,10 +106,9 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             }
             if e_bar {
                 let pb = ProgressBar::new(s.use_share() as f32, w_bar);
+                cw.w.queue(ResetColor {})?;
                 if let Some(bg_color) = bg {
                     cw.w.queue(SetBackgroundColor(bg_color))?;
-                } else {
-                    cw.w.queue(ResetColor {})?;
                 }
                 cw.queue_unstyled_char(' ')?;
                 cw.w.queue(SetBackgroundColor(share_color))?;
@@ -126,7 +125,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             // there's not much to print if there's no size info
             cw.queue_g_string(&txt_style, format!(" {}", &self.mount.info.fs))?;
         }
-
+        cw.w.queue(ResetColor {})?;
         Ok(())
     }
 }
