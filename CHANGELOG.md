@@ -1,3 +1,6 @@
+### next
+- add support for backtab key (by default it's bound to :previous_match)
+
 <a name="v1.4.0"></a>
 ### v1.4.0 - 2021-05-11
 - the default (non prefixed) search is now "path fuzzy" instead of "name fuzzy". You can still change the default mode and mode bindings in the config. This was done after a survey in chat.

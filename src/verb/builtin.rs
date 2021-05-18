@@ -77,7 +77,6 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(preview_binary),
         internal(close_panel_ok),
         internal(close_panel_cancel)
-            .with_key(BACK_TAB)
             .with_control_key('w'),
         external(
             "copy {newpath:path-from-parent}",
@@ -142,6 +141,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_char_key(' ')
             .with_char_key(':')
             .with_char_key('/'),
+        internal(previous_match)
+            .with_key(BACK_TAB),
         internal(next_match)
             .with_key(TAB),
         internal(no_sort)

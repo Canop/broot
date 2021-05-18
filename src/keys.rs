@@ -31,7 +31,7 @@ macro_rules! const_key {
 const_key!(ALT_ENTER, Enter, KeyModifiers::ALT);
 const_key!(ENTER, Enter);
 const_key!(BACKSPACE, Backspace);
-const_key!(BACK_TAB, BackTab);
+const_key!(BACK_TAB, BackTab, KeyModifiers::SHIFT); // backtab needs shift
 const_key!(DELETE, Delete);
 const_key!(DOWN, Down);
 const_key!(PAGE_DOWN, PageDown);
@@ -123,7 +123,7 @@ pub fn as_letter(key: KeyEvent) -> Option<char> {
 /// About the case:
 /// The char we receive as code from crossterm is usually lowercase
 /// but uppercase when it was typed with shift (i.e. we receive
-/// "g" for a lowercase, ang "shift-G" for an uppercase)
+/// "g" for a lowercase, and "shift-G" for an uppercase)
 pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
     fn bad_key(raw: &str) -> Result<KeyEvent, ConfError> {
         Err(ConfError::InvalidKey {
@@ -169,6 +169,11 @@ pub fn parse_key(raw: &str) -> Result<KeyEvent, ConfError> {
         }
     };
     let mut modifiers = KeyModifiers::empty();
+    if code == BackTab {
+        // Crossterm always sends the shift key with
+        // backtab
+        modifiers.insert(KeyModifiers::SHIFT);
+    }
     for token in tokens.iter().take(tokens.len() - 1) {
         match token.to_ascii_lowercase().as_ref() {
             "ctrl" => {
