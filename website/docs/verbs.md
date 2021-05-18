@@ -113,6 +113,22 @@ There are three types of verbs (they will be covered in more details in the [con
 
 A command may leave broot (for example to start a program), or not (the tree will be refreshed).
 
+# Open in new panel with `!`
+
+The exclamation mark can be used to open the execution result in a new panel instead of replacing the current one.
+
+It can be located before or after the verb.
+
+Examples:
+
+command | result
+-|-
+:fo! | focus the current directory in a new panel
+:!he | open the help side to your content
+:!fo ~ | show your home directory in a new panel
+
+It can be used in a verb declaration in configuration too.
+
 # Adding verbs
 
 You may start with the common set of verbs but you'll very quickly want to define how to edit or create files, and probably have a few personal commands.
