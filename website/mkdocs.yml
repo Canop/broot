@@ -31,13 +31,12 @@ extra_css:
         - css/extra.css
         - css/tab-langs.css
 
-
 extra_javascript:
         - js/tab-langs.js
 
 theme:
-        name: mkdocs
-        custom_dir: custom_theme
+        name: null
+        custom_dir: broot_theme/
         highlightjs: true
         hljs_languages:
                 - yaml
