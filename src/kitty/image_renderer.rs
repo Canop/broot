@@ -17,6 +17,7 @@ use {
         RgbImage,
         RgbaImage,
     },
+    log::*,
     std::{
         env,
         io::{self, Write},

@@ -10,6 +10,7 @@ use {
         task_sync::Dam,
     },
     ahash::AHashMap,
+    lazy_static::lazy_static,
     std::{
         ops::AddAssign,
         path::{Path, PathBuf},

@@ -3,6 +3,7 @@ mod image_renderer;
 pub use image_renderer::*;
 
 use {
+    lazy_static::lazy_static,
     std::sync::Mutex,
 };
 

@@ -5,8 +5,9 @@ use {
         path::*,
         task_sync::Dam,
     },
-    crossbeam::channel,
     ahash::AHashMap,
+    crossbeam::channel,
+    lazy_static::lazy_static,
     rayon::{ThreadPool, ThreadPoolBuilder},
     std::{
         convert::TryInto,

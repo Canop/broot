@@ -1,6 +1,7 @@
 use {
     super::CropWriter,
     crate::{
+        display::cond_bg,
         errors::ProgramError,
         permissions,
         skin::StyleMap,

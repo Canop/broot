@@ -1,5 +1,6 @@
 use {
     fnv::FnvHashMap,
+    lazy_static::lazy_static,
     std::sync::Mutex,
 };
 

@@ -10,6 +10,7 @@ mod verb_conf;
 pub use {
     conf::Conf,
     format::*,
+    lazy_static::lazy_static,
     verb_conf::VerbConf,
 };
 

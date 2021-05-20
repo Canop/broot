@@ -1,5 +1,6 @@
 use {
     super::{
+        cond_bg,
         Col,
         CropWriter,
         GitStatusDisplay,

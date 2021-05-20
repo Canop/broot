@@ -5,6 +5,7 @@
 /// declare a style named `$dst` which is usually a reference to the `$src`
 /// skin but, in case `selected` is true, is a clone with background changed
 /// to the one of selected lines.
+#[macro_export]
 macro_rules! cond_bg {
     ($dst:ident, $self:ident, $selected:expr, $src:expr) => {
         let mut cloned_style;
@@ -38,6 +39,7 @@ mod permissions;
 pub use {
     areas::Areas,
     col::*,
+    cond_bg,
     crop_writer::CropWriter,
     displayable_tree::DisplayableTree,
     filling::*,
@@ -57,6 +59,7 @@ use {
         },
         QueueableCommand,
     },
+    lazy_static::lazy_static,
 };
 
 #[cfg(not(any(target_family="windows",target_os="android")))]

@@ -14,6 +14,7 @@ use {
         style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
+    lazy_static::lazy_static,
     memmap::Mmap,
     std::{
         fs::File,

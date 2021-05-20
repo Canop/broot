@@ -1,6 +1,6 @@
 use {
     crate::{
-        display::CropWriter,
+        display::{cond_bg, CropWriter},
         errors::ProgramError,
         filesystems::share_color,
         skin::StyleMap,

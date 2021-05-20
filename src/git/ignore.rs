@@ -4,6 +4,7 @@ use {
     git2,
     glob,
     id_arena::{Arena, Id},
+    lazy_static::lazy_static,
     lazy_regex::regex,
     std::{
         fs::File,

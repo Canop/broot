@@ -32,7 +32,7 @@ pub use {
 
 
 // the group you find in invocation patterns and execution patterns
-lazy_static! {
+lazy_static::lazy_static! {
     pub static ref GROUP: regex::Regex =
         regex::Regex::new(r"\{([^{}:]+)(?::([^{}:]+))?\}").unwrap();
 }

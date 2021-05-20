@@ -5,6 +5,8 @@ use {
         path::{Path, PathBuf},
         str::FromStr,
     },
+    lazy_static::lazy_static,
+    minimad::mad_inline,
     termimad::{mad_print_inline, MadSkin},
 };
 

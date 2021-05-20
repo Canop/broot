@@ -17,6 +17,7 @@ use {
     },
     directories::UserDirs,
     lazy_regex::regex,
+    lazy_static::lazy_static,
     minimad::*,
     regex::Captures,
     std::{env, fs::OpenOptions, io::Write, path::PathBuf},

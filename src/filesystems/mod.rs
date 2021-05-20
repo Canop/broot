@@ -12,6 +12,7 @@ pub use {
 
 use {
     crossterm::style::Color,
+    lazy_static::lazy_static,
     std::sync::Mutex,
 };
 

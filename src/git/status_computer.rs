@@ -7,6 +7,7 @@ use {
     crossbeam::channel::bounded,
     ahash::AHashMap,
     git2::Repository,
+    lazy_static::lazy_static,
     std::{
         path::{Path, PathBuf},
         sync::Mutex,

@@ -1,10 +1,5 @@
-#[macro_use] extern crate crossbeam;
-#[macro_use] extern crate minimad;
-#[macro_use] extern crate lazy_static;
 #[macro_use] extern crate log;
 #[macro_use] extern crate cli_log;
-
-#[macro_use] pub mod display;
 
 pub mod app;
 pub mod browser;
@@ -12,6 +7,7 @@ pub mod cli;
 pub mod command;
 pub mod conf;
 pub mod content_search;
+pub mod display;
 pub mod errors;
 pub mod file_sum;
 pub mod flag;

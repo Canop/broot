@@ -1,5 +1,5 @@
 use {
-    crossbeam::channel::{self, bounded, Receiver},
+    crossbeam::channel::{self, bounded, select, Receiver},
     std::thread,
     termimad::Event,
 };
