@@ -147,7 +147,7 @@ dependencies = [
  "char_reader",
  "chrono",
  "clap",
- "cli-log 1.2.0",
+ "cli-log 2.0.0",
  "crossbeam",
  "crossterm",
  "custom_error",
@@ -165,7 +165,6 @@ dependencies = [
  "lazy_static",
  "lfs-core",
  "libc",
- "log",
  "memmap",
  "minimad",
  "open",
@@ -274,7 +273,9 @@ dependencies = [
 
 [[package]]
 name = "cli-log"
-version = "1.2.0"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3d2ab00dc4c82ec28af25ac085aecc11ffeabf353755715a3113a7aa044ca5cc"
 dependencies = [
  "chrono",
  "file-size",

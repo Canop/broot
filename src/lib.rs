@@ -1,4 +1,3 @@
-#[macro_use] extern crate log;
 #[macro_use] extern crate cli_log;
 
 pub mod app;

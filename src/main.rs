@@ -1,5 +1,4 @@
-#[macro_use] extern crate log;
-#[macro_use] extern crate cli_log;
+use cli_log::*;
 
 fn main() {
     init_cli_log!();
@@ -19,5 +18,6 @@ fn main() {
             eprintln!("{}", e);
         }
     };
+    log_mem(Level::Info);
     info!("bye");
 }

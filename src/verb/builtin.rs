@@ -133,6 +133,12 @@ pub fn builtin_verbs() -> Vec<Verb> {
             StayInBroot,
         )
             .with_shortcut("mvp"),
+        external(
+            "rename {from-filename:new_filename}",
+            "mv {file} {parent}/{new_filename}",
+            StayInBroot,
+        )
+            .with_key(F2),
         internal_bang(start_end_panel)
             .with_control_key('p'),
         // the char keys for mode_input are handled differently as they're not

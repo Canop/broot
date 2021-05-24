@@ -7,6 +7,7 @@ use {
         errors::ProgramError,
     },
     base64,
+    cli_log::*,
     crossterm::{
         cursor,
         QueueableCommand,
@@ -17,7 +18,6 @@ use {
         RgbImage,
         RgbaImage,
     },
-    log::*,
     std::{
         env,
         io::{self, Write},
