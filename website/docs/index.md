@@ -110,13 +110,13 @@ If your terminal is [kitty](https://sw.kovidgoyal.net/kitty/index.html), then th
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then <kbd>enter</kbd>.
 
-You can add verbs or configure the existing ones; see [documentation](../conf_file/#verbs-shortcuts-and-keys).
+You can add verbs or configure the existing ones; see [documentation](conf_file/#verbs-shortcuts-and-keys).
 
 And you can add shortcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
 # Apply commands on several files
 
-Add files to the [staging area](../staging-area) then execute any command on all of them.
+Add files to the [staging area](staging-area) then execute any command on all of them.
 
 ![staging mv](img/20210424-staging-mv.png)
 
