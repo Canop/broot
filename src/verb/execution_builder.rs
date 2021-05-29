@@ -49,10 +49,16 @@ impl<'b> ExecutionStringBuilder<'b> {
             invocation_values,
         }
     }
-    fn get_raw_capture_replacement(&self, ec: &Captures<'_>) -> Option<String> {
+    fn get_raw_replacement<F>(
+        &self,
+        f: F
+    ) -> Option<String>
+    where
+        F: Fn(Option<Selection<'_>>) -> Option<String>
+    {
         match self.sel_info {
-            SelInfo::None => self.get_raw_sel_capture_replacement(ec, None),
-            SelInfo::One(sel) => self.get_raw_sel_capture_replacement(ec, Some(sel)),
+            SelInfo::None => f(None),
+            SelInfo::One(sel) => f(Some(sel)),
             SelInfo::More(stage) => {
                 let mut sels = stage.paths().iter()
                     .map(|path| Selection {
@@ -61,10 +67,10 @@ impl<'b> ExecutionStringBuilder<'b> {
                         stype: SelectionType::from(path),
                         is_exe: false,
                     });
-                self.get_raw_sel_capture_replacement(ec, sels.next())
+                f(sels.next())
                     .filter(|first_rcr| {
                         for sel in sels {
-                            let rcr = self.get_raw_sel_capture_replacement(ec, Some(sel));
+                            let rcr = f(Some(sel));
                             if rcr.as_ref() != Some(first_rcr) {
                                 return false;
                             }
@@ -74,18 +80,55 @@ impl<'b> ExecutionStringBuilder<'b> {
             }
         }
     }
-    fn get_raw_sel_capture_replacement(
+    fn get_raw_capture_replacement(&self, ec: &Captures<'_>) -> Option<String> {
+        self.get_raw_replacement(|sel| {
+            self.get_raw_sel_capture_replacement(ec, sel)
+        })
+    }
+    /// return the standard replacement (ie not one from the invocation)
+    fn get_raw_sel_name_standard_replacement(
         &self,
-        ec: &Captures<'_>,
+        name: &str,
         sel: Option<Selection<'_>>,
     ) -> Option<String> {
-        let name = ec.get(1).unwrap().as_str();
+        debug!("repl name : {:?}", name);
         match name {
             "line" => sel.map(|s| s.line.to_string()),
-            "file" => sel.map(|s| s.path).map(path_to_string),
-            "directory" => sel.map(|s| path::closest_dir(s.path)).map(path_to_string),
-            "parent" => sel.and_then(|s| s.path.parent()).map(path_to_string),
-            "other-panel-file" => self.other_file.map(path_to_string),
+            "file" => sel.map(|s| s.path)
+                .map(path_to_string),
+            "file-name" => sel.map(|s| s.path)
+                .and_then(|path| path.file_name())
+                .and_then(|oss| oss.to_str())
+                .map(|s| s.to_string()),
+            "file-stem" => sel.map(|s| s.path)
+                .and_then(|path| path.file_stem())
+                .and_then(|oss| oss.to_str())
+                .map(|s| s.to_string()),
+            "file-extension" => {
+                debug!("expending file extension");
+                sel.map(|s| s.path)
+                .and_then(|path| path.extension())
+                .and_then(|oss| oss.to_str())
+                .map(|s| s.to_string())
+            }
+            "file-dot-extension" => {
+                debug!("expending file dot extension");
+                sel.map(|s| s.path)
+                .and_then(|path| path.extension())
+                .and_then(|oss| oss.to_str())
+                .map(|ext| format!(".{}", ext))
+                .or_else(|| Some("".to_string()))
+            }
+            "directory" => sel.map(|s| path::closest_dir(s.path))
+                .map(path_to_string),
+            "parent" => sel.and_then(|s| s.path.parent())
+                .map(path_to_string),
+            "other-panel-file" => self.other_file
+                .map(path_to_string),
+            "other-panel-filename" => self.other_file
+                .and_then(|path| path.file_name())
+                .and_then(|oss| oss.to_str())
+                .map(|s| s.to_string()),
             "other-panel-directory" => self
                 .other_file
                 .map(|p| path::closest_dir(p))
@@ -95,7 +138,17 @@ impl<'b> ExecutionStringBuilder<'b> {
                 .other_file
                 .and_then(|p| p.parent())
                 .map(path_to_string),
-            _ => {
+            _ => None,
+        }
+    }
+    fn get_raw_sel_capture_replacement(
+        &self,
+        ec: &Captures<'_>,
+        sel: Option<Selection<'_>>,
+    ) -> Option<String> {
+        let name = ec.get(1).unwrap().as_str();
+        self.get_raw_sel_name_standard_replacement(name, sel)
+            .or_else(||{
                 // it's not one of the standard group names, so we'll look
                 // into the ones provided by the invocation pattern
                 self.invocation_values.as_ref()
@@ -117,8 +170,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                             Some(value.to_string())
                         }
                     })
-            }
-        }
+            })
     }
     fn get_capture_replacement(&self, ec: &Captures<'_>) -> String {
         self.get_raw_capture_replacement(ec)
@@ -132,6 +184,35 @@ impl<'b> ExecutionStringBuilder<'b> {
         self.get_raw_sel_capture_replacement(ec, sel)
             .unwrap_or_else(|| ec[0].to_string())
     }
+    /// fills groups having a default value (after the colon)
+    ///
+    /// This is used to fill the input in case on non auto_exec
+    /// verb triggered with a key
+    pub fn invocation_with_default(
+        &self,
+        verb_invocation: &VerbInvocation,
+    ) -> VerbInvocation {
+        VerbInvocation {
+            name: verb_invocation.name.clone(),
+            args: verb_invocation.args.as_ref().map(|a| {
+                GROUP.replace_all(
+                    a.as_str(),
+                    |ec: &Captures<'_>| {
+                        ec.get(2)
+                            .map(|default_name| default_name.as_str())
+                            .and_then(|default_name|
+                                self.get_raw_replacement(|sel|
+                                    self.get_raw_sel_name_standard_replacement(default_name, sel)
+                                )
+                            )
+                            .unwrap_or_else(|| "".to_string())
+                    },
+                ).to_string()
+            }),
+            bang: verb_invocation.bang,
+        }
+    }
+
     /// build a shell compatible command, with escapings
     pub fn shell_exec_string(
         &self,

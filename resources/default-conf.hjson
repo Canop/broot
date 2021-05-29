@@ -165,7 +165,6 @@
 		#  execution: nvim +{line} {file}
 		{
 			invocation: edit
-			key: F2
 			shortcut: e
 			execution: "$EDITOR +{line} {file}"
 			leave_broot: false
@@ -184,6 +183,19 @@
 			shortcut: gd
 			leave_broot: false
 			execution: "git difftool -y {file}"
+		}
+
+		# On ctrl-b, propose the creation of a copy of the selection.
+		# While this might occasionnaly be useful, this verb is mostly here
+		# as an example to demonstrate rare standard groups like {file-stem}
+		# and {file-dot-extension} and the auto_exec verb property which
+		# allows verbs not executed until you hit enter
+		{
+			invocation: "backup {version}"
+			key: ctrl-b
+			leave_broot: false
+			auto_exec: false
+			execution: "cp -r {file} {parent}/{file-stem}-{version}{file-dot-extension}"
 		}
 
 		# This verb lets you launch a terminal on ctrl-T

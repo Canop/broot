@@ -79,7 +79,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(close_panel_cancel)
             .with_control_key('w'),
         external(
-            "copy {newpath:path-from-parent}",
+            "copy {newpath}",
             "cp -r {file} {newpath:path-from-parent}",
             StayInBroot,
         )
@@ -122,7 +122,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         )
             .with_shortcut("md"),
         external(
-            "move {newpath:path-from-parent}",
+            "move {newpath}",
             "mv {file} {newpath:path-from-parent}",
             StayInBroot,
         )
@@ -134,10 +134,11 @@ pub fn builtin_verbs() -> Vec<Verb> {
         )
             .with_shortcut("mvp"),
         external(
-            "rename {from-filename:new_filename}",
+            "rename {new_filename:file-name}",
             "mv {file} {parent}/{new_filename}",
             StayInBroot,
         )
+            .with_auto_exec(false)
             .with_key(F2),
         internal_bang(start_end_panel)
             .with_control_key('p'),

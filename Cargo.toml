@@ -30,7 +30,7 @@ chrono = "0.4"
 crossbeam = "0.8"
 crossterm = "0.19.0"
 custom_error = "1.6"
-deser-hjson = "0.1.12"
+deser-hjson = "0.1.13"
 directories = "3.0"
 file-size = "1.0.3"
 fnv = "1.0.7"
@@ -41,7 +41,7 @@ image = "0.23.14"
 lazy-regex = "2.0.0"
 lazy_static = "1.4"
 libc = "0.2"
-minimad = "0.7.0"
+minimad = "0.7.1"
 open = "1.4"
 memmap = "0.7"
 pathdiff = "0.2"
@@ -55,7 +55,7 @@ splitty = "0.1"
 strict = "0.1.4"
 syntect = "4.5"
 tempfile = "3.2"
-termimad = { version = "0.10.2" }
+termimad = { version = "0.10.3" }
 terminal-clipboard = { version = "0.2.1", optional = true }
 toml = "0.5"
 umask = "1.0"
@@ -98,14 +98,14 @@ harness = false
 [patch.crates-io]
 # bet = { path = "../bet" }
 # cli-log = { path = "../cli-log" }
-# lazy-regex = { path = "../lazy-regex" }
-# minimad = { path = "../minimad" }
-# termimad = { path = "../termimad" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # deser-hjson = { path = "../deser-hjson" }
 # glassbench = { path = "../glassbench" }
-# umask = { path = "../umask" }
+# lazy-regex = { path = "../lazy-regex" }
+# lfs-core = { path = "../lfs-core" }
+# minimad = { path = "../minimad" }
 # secular = { path = "../secular", features=["normalization"] }
 # strict = { path = "../strict" }
-# lfs-core = { path = "../lfs-core" }
+# termimad = { path = "../termimad" }
 # terminal-clipboard = { path = "../terminal-clipboard" }
+# umask = { path = "../umask" }

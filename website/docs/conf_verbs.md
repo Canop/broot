@@ -40,6 +40,7 @@ leave_broot | `true` | whether to quit broot on execution
 from_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
 apply_to | | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
 set_working_dir | `false` | whether the working dir of the process must be set to the currenly selected directory
+auto_exec | `true` | whether to execute the verb as soon as it's key-triggered (instead of waiting for <kbd>enter</kbd>)
 
 The execution is defined either by `internal`, `external` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
 
@@ -221,13 +222,17 @@ Some arguments are predefined in broot and depends on the current selection:
 
 name | expanded to
 -|-
-`{file}` | the complete path of the current selection
-`{line}` | number of the selected line in the previewed file
-`{parent}` | the complete path of the current selection's parent
-`{directory}` | the closest directory, either `{file}` or `{parent}`
-`{other-panel-file}` | the complete path of the current selection in the other panel
-`{other-panel-parent}` | the complete path of the current selection's parent in the other panel
-`{other-panel-directory}` | the closest directory, either `{file}` or `{parent}` in the other panel
+`{file}` | complete path of the current selection
+`{file-name}` | file name of the current selection
+`{file-extenstion}` | file extension of the current selection (example `rs` for `main.rs`)
+`{file-stem}` | file name of the current selection
+`{file-dot-extenstion}` | dot and extension of the current selection (example `.rs` for `main.rs`) or the empty string if there's no extension
+`{line}` | number of selected line in the previewed file
+`{parent}` | complete path of the current selection's parent
+`{directory}` | closest directory, either `{file}` or `{parent}`
+`{other-panel-file}` | complete path of the current selection in the other panel
+`{other-panel-parent}` | complete path of the current selection's parent in the other panel
+`{other-panel-directory}` | closest directory, either `{file}` or `{parent}` in the other panel
 
 !!!	Note
 	when you're in the help screen, `{file}` is the configuration file, while `{directory}` is the configuration directory.
@@ -407,6 +412,8 @@ internal = ":input_del_word_left"
 key = "alt-r"
 internal = ":input_del_word_right"
 ```
+
+
 
 # Focus
 

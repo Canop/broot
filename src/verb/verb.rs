@@ -54,6 +54,10 @@ pub struct Verb {
     /// whether we need to have a secondary panel for execution
     /// (which is the case when the execution pattern has {other-panel-file})
     pub needs_another_panel: bool,
+
+    /// if true (default) verbs are directly executed when
+    /// triggered with a keyboard shortcut
+    pub auto_exec: bool,
 }
 
 impl Verb {
@@ -68,18 +72,21 @@ impl Verb {
         if let Some(ref invocation_parser) = invocation_parser {
             names.push(invocation_parser.name().to_string());
         }
-        let (needs_selection, needs_another_panel) = match &execution {
+        let (
+            needs_selection,
+            needs_another_panel,
+        ) = match &execution {
             VerbExecution::Internal(ie) => (
                 ie.needs_selection(),
                 false,
             ),
             VerbExecution::External(ee) => (
                 ee.exec_pattern.has_selection_group(),
-                ee.exec_pattern.has_other_panel_group()
+                ee.exec_pattern.has_other_panel_group(),
             ),
             VerbExecution::Sequence(se) => (
                 se.sequence.has_selection_group(),
-                se.sequence.has_other_panel_group()
+                se.sequence.has_other_panel_group(),
             )
         };
         Ok(Self {
@@ -92,6 +99,7 @@ impl Verb {
             selection_condition: SelectionType::Any,
             needs_selection,
             needs_another_panel,
+            auto_exec: true,
         })
     }
     fn update_key_desc(&mut self) {
@@ -145,6 +153,10 @@ impl Verb {
     }
     pub fn needing_another_panel(mut self) -> Self {
         self.needs_another_panel = true;
+        self
+    }
+    pub fn with_auto_exec(mut self, b: bool) -> Self {
+        self.auto_exec = b;
         self
     }
 

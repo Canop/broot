@@ -6,7 +6,7 @@ use {
         errors::ProgramError,
         keys,
         skin::PanelSkin,
-        verb::{Internal, Verb, VerbExecution},
+        verb::*,
     },
     crossterm::{
         cursor,
@@ -169,7 +169,7 @@ impl PanelInput {
             Event::Key(key) => {
                 // value of raw and parts before any key related change
                 let raw = self.input_field.get_content();
-                let parts = CommandParts::from(raw.clone());
+                let mut parts = CommandParts::from(raw.clone());
 
                 // we first handle the cases that MUST absolutely
                 // not be overriden by configuration
@@ -265,21 +265,34 @@ impl PanelInput {
                 if keys::is_key_allowed_in_mode(key, mode) {
                     for (index, verb) in con.verb_store.verbs.iter().enumerate() {
                         for verb_key in &verb.keys {
-                            if *verb_key == key {
-                                if self.handle_input_related_verb(verb, con) {
-                                    return Command::from_raw(self.input_field.get_content(), false);
-                                }
-                                if verb.selection_condition.is_respected_by(sel_info.common_stype()) {
-                                    if mode != Mode::Input && verb.is_internal(Internal::mode_input) {
-                                        self.enter_input_mode_with_key(key, &parts);
-                                    }
-                                    return Command::VerbTrigger {
-                                        index,
-                                        input_invocation: parts.verb_invocation,
-                                    };
-                                } else {
-                                    debug!("verb not allowed on current selection");
-                                }
+                            if *verb_key != key {
+                                continue;
+                            }
+                            if self.handle_input_related_verb(verb, con) {
+                                return Command::from_raw(self.input_field.get_content(), false);
+                            }
+                            if !verb.selection_condition.is_respected_by(sel_info.common_stype()) {
+                                continue;
+                            }
+                            if mode != Mode::Input && verb.is_internal(Internal::mode_input) {
+                                self.enter_input_mode_with_key(key, &parts);
+                            }
+                            if verb.auto_exec {
+                                return Command::VerbTrigger {
+                                    index,
+                                    input_invocation: parts.verb_invocation,
+                                };
+                            }
+                            if let Some(invocation_parser) = &verb.invocation_parser {
+                                let exec_builder = ExecutionStringBuilder::from_sel_info(
+                                    sel_info,
+                                );
+                                let verb_invocation = exec_builder.invocation_with_default(
+                                    &invocation_parser.invocation_pattern
+                                );
+                                parts.verb_invocation = Some(verb_invocation);
+                                self.set_content(&parts.to_string());
+                                return Command::VerbEdit(parts.verb_invocation.unwrap());
                             }
                         }
                     }
@@ -323,3 +336,4 @@ impl PanelInput {
         Command::None
     }
 }
+

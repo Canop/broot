@@ -43,6 +43,8 @@ pub struct VerbConf {
 
     description: Option<String>,
 
+    auto_exec: Option<bool>,
+
 }
 
 /// read a deserialized verb conf item into a verb,
@@ -130,6 +132,9 @@ impl TryFrom<&VerbConf> for Verb {
         }
         if let Some(shortcut) = &vc.shortcut {
             verb.names.push(shortcut.clone());
+        }
+        if vc.auto_exec == Some(false) {
+            verb.auto_exec = false;
         }
         verb.selection_condition = match vc.apply_to.as_deref() {
             Some("file") => SelectionType::File,

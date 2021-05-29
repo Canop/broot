@@ -23,6 +23,9 @@ pub struct InvocationParser {
     pub invocation_pattern: VerbInvocation,
 
     /// a regex to read the arguments in the user input
+    /// This regex declares named groups, with the name being the
+    /// name of the replacement variable (this implies that an
+    /// invocation name's characters are [_0-9a-zA-Z.\[\]])
     args_parser: Option<Regex>,
 
     /// whether the path, when non absolute, should be interpreted

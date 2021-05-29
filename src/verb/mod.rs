@@ -38,15 +38,11 @@ lazy_static::lazy_static! {
 }
 
 pub fn str_has_selection_group(s: &str) -> bool {
-    for group in GROUP.find_iter(s) {
-        if matches!(
+    GROUP.find_iter(s)
+        .any(|group| matches!(
             group.as_str(),
-            "{file}" | "{parent}" | "{directory}"
-        ){
-                return true;
-        }
-    }
-    false
+            "{file}" | "{file-name}" | "{parent}" | "{directory}",
+        ))
 }
 pub fn str_has_other_panel_group(s: &str) -> bool {
     for group in GROUP.find_iter(s) {
