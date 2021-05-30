@@ -1,7 +1,7 @@
 
 /// one of the types of state that you could
 /// find in a panel today
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq)]
 pub enum PanelStateType {
 
     /// The standard browsing tree

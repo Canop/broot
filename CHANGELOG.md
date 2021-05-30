@@ -3,6 +3,7 @@
 - `:rename` built-in verb, best used with its keyboard shortcut F2
 - new verb argument: `auto_exec`
 - new standard verb arguments: `{file-stem}`, `{file-extension}`, and `{file-dot-extension}`,
+- new `:toggle_second_tree` internal - Fix #388
 - fix a few minor bugs
 
 <a name="v1.4.0"></a>

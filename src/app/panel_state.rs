@@ -302,6 +302,9 @@ pub trait PanelState {
             Internal::panel_right => {
                 CmdResult::HandleInApp(Internal::panel_right)
             }
+            Internal::toggle_second_tree => {
+                CmdResult::HandleInApp(Internal::toggle_second_tree)
+            }
             Internal::clear_stage => {
                 app_state.stage.clear();
                 if let Some(panel_id) = cc.app.stage_panel {

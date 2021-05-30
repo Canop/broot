@@ -8,6 +8,7 @@ use {
         errors::ProgramError,
         file_sum, git,
         launchable::Launchable,
+        path::closest_dir,
         skin::*,
         task_sync::{Dam, Either},
         verb::Internal,
@@ -344,47 +345,92 @@ impl App {
                 self.tx_seqs.send(sequence).unwrap();
             }
             HandleInApp(internal) => {
-                let new_active_panel_idx = match internal {
-                    Internal::panel_left => {
-                        // we're not here to create a panel, this is handled in the state
-                        // we're here because the state wants us to either move to the panel
-                        // to the left, or close the rightest one
-                        if self.active_panel_idx == 0 {
-                            self.close_panel(self.panels.len().get()-1);
-                            None
-                        } else {
-                            Some(self.active_panel_idx - 1)
+                match internal {
+                    Internal::panel_left | Internal::panel_right => {
+                        let new_active_panel_idx = if internal == Internal::panel_left {
+                            // we're not here to create a panel, this is handled in the state
+                            // we're here because the state wants us to either move to the panel
+                            // to the left, or close the rightest one
+                            if self.active_panel_idx == 0 {
+                                self.close_panel(self.panels.len().get()-1);
+                                None
+                            } else {
+                                Some(self.active_panel_idx - 1)
+                            }
+                        } else { // panel_right
+                            // we're not here to create panels (it's done in the state).
+                            // So we either move to the right or close the leftes panel
+                            if self.active_panel_idx + 1 == self.panels.len().get() {
+                                self.close_panel(0);
+                                None
+                            } else {
+                                Some(self.active_panel_idx + 1)
+                            }
+                        };
+                        if let Some(idx) = new_active_panel_idx {
+                            if is_input_invocation {
+                                self.mut_panel().clear_input();
+                            }
+                            self.active_panel_idx = idx;
+                            let app_cmd_context = AppCmdContext {
+                                other_path: self.get_other_panel_path(),
+                                panel_skin,
+                                preview_panel: self.preview_panel,
+                                stage_panel: self.stage_panel,
+                                screen: self.screen,
+                                con,
+                            };
+                            self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
                         }
                     }
-                    Internal::panel_right => {
-                        // we're not here to create panels (it's done in the state).
-                        // So we either move to the right or close the leftes panel
-                        if self.active_panel_idx + 1 == self.panels.len().get() {
-                            self.close_panel(0);
-                            None
+                    Internal::toggle_second_tree => {
+                        let panels_count = self.panels.len().get();
+                        let trees_count = self.panels.iter()
+                            .filter(|p| p.state().get_type() == PanelStateType::Tree)
+                            .count();
+                        if trees_count < 2 {
+                            // we open a tree, closing a panel if necessary
+                            if panels_count >= con.max_panels_count {
+                                for i in (0..panels_count).rev() {
+                                    if self.panels[i].state().get_type() != PanelStateType::Tree {
+                                        self.close_panel(i);
+                                        break;
+                                    }
+                                }
+                            }
+                            if let Some(selected_path) = self.state().selected_path() {
+                                let dir = closest_dir(selected_path);
+                                if let Ok(Some(new_state)) = BrowserState::new(
+                                    dir,
+                                    self.state().tree_options().without_pattern(),
+                                    self.screen,
+                                    con,
+                                    &Dam::unlimited(),
+                                ) {
+                                    if let Err(s) = self.new_panel(
+                                        Box::new(new_state),
+                                        PanelPurpose::None,
+                                        HDir::Right,
+                                        is_input_invocation,
+                                        con,
+                                    ) {
+                                        error = Some(s);
+                                    }
+                                }
+                            }
                         } else {
-                            Some(self.active_panel_idx + 1)
+                            // we close the rightest tree
+                            for i in (0..panels_count).rev() {
+                                if self.panels[i].state().get_type() == PanelStateType::Tree {
+                                    self.close_panel(i);
+                                    break;
+                                }
+                            }
                         }
                     }
                     _ => {
-                        debug!("unhandled propagated internal. cmd={:?}", &cmd);
-                        None
+                        info!("unhandled propagated internal. cmd={:?}", &cmd);
                     }
-                };
-                if let Some(idx) = new_active_panel_idx {
-                    if is_input_invocation {
-                        self.mut_panel().clear_input();
-                    }
-                    self.active_panel_idx = idx;
-                    let app_cmd_context = AppCmdContext {
-                        other_path: self.get_other_panel_path(),
-                        panel_skin,
-                        preview_panel: self.preview_panel,
-                        stage_panel: self.stage_panel,
-                        screen: self.screen,
-                        con,
-                    };
-                    self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
                 }
             }
             Keep => {
@@ -494,7 +540,7 @@ impl App {
         state: Box<dyn PanelState>,
         purpose: PanelPurpose,
         direction: HDir,
-        is_input_invocation: bool,
+        is_input_invocation: bool, // if true we clean the input
         con: &AppContext,
     ) -> Result<(), String> {
         match state.get_type() {

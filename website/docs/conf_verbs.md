@@ -356,6 +356,7 @@ invocation | default key | default shortcut | behavior / details
 :toggle_preview | - | - | toggle display of the preview panel
 :toggle_sizes | - | - | toggle the size mode
 :toggle_trim_root | - | - | toggle trimming of top level files in tree display
+:toggle_second_tree | - | - | toggle displaying a second tree
 :up_tree | - | - | focus the parent of the current root
 :stage | <kbd>+</kbd> | - | add selection to staging area
 :unstage | <kbd>-</kbd> | - | remove selection from staging area

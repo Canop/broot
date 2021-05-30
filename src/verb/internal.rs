@@ -127,6 +127,7 @@ Internals! {
     toggle_perm: "toggle showing file permissions" false,
     toggle_sizes: "toggle showing sizes" false,
     toggle_trim_root: "toggle removing nodes at first level too" false,
+    toggle_second_tree: "toggle display of a second tree panel" true,
     total_search: "search again but on all children" false,
     up_tree: "focus the parent of the current root" true,
 }
