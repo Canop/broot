@@ -6,7 +6,7 @@ repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
 description = "A new file manager"
 edition = "2018"
-keywords = ["cli", "fuzzy", "tree", "search", "regex"]
+keywords = ["cli", "fuzzy", "tree", "search", "file"]
 license = "MIT"
 categories = ["command-line-utilities"]
 readme = "README.md"
@@ -38,7 +38,7 @@ git2 = { version="0.13", default-features=false }
 glob = "0.3"
 id-arena = "2.2.1"
 image = "0.23.14"
-lazy-regex = "2.0.0"
+lazy-regex = "2.0.2"
 lazy_static = "1.4"
 libc = "0.2"
 minimad = "0.7.1"
@@ -101,7 +101,7 @@ harness = false
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # deser-hjson = { path = "../deser-hjson" }
 # glassbench = { path = "../glassbench" }
-# lazy-regex = { path = "../lazy-regex" }
+# lazy-regex = { path = "../lazy-regex" }
 # lfs-core = { path = "../lfs-core" }
 # minimad = { path = "../minimad" }
 # secular = { path = "../secular", features=["normalization"] }
