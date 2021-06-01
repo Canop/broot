@@ -7,6 +7,7 @@ use {
         errors::ProgramError,
         pattern::*,
         skin::*,
+        task_sync::Dam,
         tree::*,
         verb::*,
     },
@@ -20,6 +21,8 @@ use {
 };
 
 static TITLE: &str = "Staging Area"; // no wide char allowed here
+static COUNT_LABEL: &str = " count: ";
+static SIZE_LABEL: &str = " size: ";
 static ELLIPSIS: char = '…';
 
 pub struct StageState {
@@ -28,14 +31,15 @@ pub struct StageState {
 
     scroll: usize,
 
-    /// those options are only kept for transmission to child state
-    /// (if they become possible)
     tree_options: TreeOptions,
 
     /// the 'modal' mode
     mode: Mode,
 
     page_height: usize,
+
+    stage_sum: StageSum,
+
 }
 
 impl StageState {
@@ -55,8 +59,14 @@ impl StageState {
             tree_options,
             mode: initial_mode(con),
             page_height: 0,
+            stage_sum: StageSum::default(),
         }
     }
+
+    fn need_sum_computation(&self) -> bool {
+        self.tree_options.show_sizes && !self.stage_sum.is_up_to_date()
+    }
+
 
     pub fn try_scroll(
         &mut self,
@@ -98,7 +108,40 @@ impl StageState {
                 TITLE,
             )?;
         }
-        cw.repeat(&styles.staging_area_title, &SPACE_FILLING, cw.allowed - count_len)?;
+        let mut show_count_label = false;
+        let mut rem = cw.allowed - count_len;
+        if COUNT_LABEL.len() < rem {
+            rem -= COUNT_LABEL.len();
+            show_count_label = true;
+            if self.tree_options.show_sizes {
+                if let Some(sum) = self.stage_sum.computed() {
+                    let size = file_size::fit_4(sum.to_size());
+                    let size_len = SIZE_LABEL.len() + size.len();
+                    if size_len < rem {
+                        rem -= size_len;
+                        // we display the size in the middle, so we cut rem in two
+                        let left_rem  = rem / 2;
+                        rem -= left_rem;
+                        cw.repeat(&styles.staging_area_title, &SPACE_FILLING, left_rem)?;
+                        cw.queue_g_string(
+                            &styles.staging_area_title,
+                            SIZE_LABEL.to_string(),
+                        )?;
+                        cw.queue_g_string(
+                            &styles.staging_area_title,
+                            size,
+                        )?;
+                    }
+                }
+            }
+        }
+        cw.repeat(&styles.staging_area_title, &SPACE_FILLING, rem)?;
+        if show_count_label {
+            cw.queue_g_string(
+                &styles.staging_area_title,
+                COUNT_LABEL.to_string(),
+            )?;
+        }
         if self.filtered_stage.pattern().is_some() {
             cw.queue_g_string(
                 &styles.char_match,
@@ -138,16 +181,35 @@ impl PanelState for StageState {
         PanelStateType::Stage
     }
 
-    fn get_pending_task(&self) -> Option<&'static str> {
-        None
-    }
-
     fn selected_path(&self) -> Option<&Path> {
         None
     }
 
     fn selection(&self) -> Option<Selection<'_>> {
         None
+    }
+
+    fn clear_pending(&mut self) {
+        self.stage_sum.clear();
+    }
+    fn do_pending_task(
+        &mut self,
+        stage: &Stage,
+        _screen: Screen,
+        con: &AppContext,
+        dam: &mut Dam,
+        // need the stage here
+    ) {
+        if self.need_sum_computation() {
+            self.stage_sum.compute(stage, dam, con);
+        }
+    }
+    fn get_pending_task(&self) -> Option<&'static str> {
+        if self.need_sum_computation() {
+            Some("stage size summing")
+        } else {
+            None
+        }
     }
 
     fn sel_info<'c>(&'c self, app_state: &'c AppState) -> SelInfo<'c> {
@@ -192,6 +254,7 @@ impl PanelState for StageState {
                 mode: initial_mode(con),
                 tree_options: new_options,
                 page_height: self.page_height,
+                stage_sum: self.stage_sum,
             }))
         }
     }
@@ -227,6 +290,7 @@ impl PanelState for StageState {
         disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
         let stage = &disc.app_state.stage;
+        self.stage_sum.see_stage(stage); // this may invalidate the sum
         if self.filtered_stage.update(stage) {
             self.fix_scroll();
         }

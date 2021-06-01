@@ -7,6 +7,7 @@ use {
         errors::ProgramError,
         flag::Flag,
         pattern::InputPattern,
+        stage::*,
         task_sync::Dam,
         tree::TreeOptions,
         verb::*,
@@ -143,6 +144,7 @@ impl PanelState for PreviewState {
     /// do the preview filtering if required and not yet done
     fn do_pending_task(
         &mut self,
+        _stage: &Stage,
         _screen: Screen,
         con: &AppContext,
         dam: &mut Dam,

@@ -1,4 +1,9 @@
 use {
+    crate::{
+        app::AppContext,
+        file_sum::FileSum,
+        task_sync::Dam,
+    },
     std::{
         path::{Path, PathBuf},
     },
@@ -54,7 +59,7 @@ impl Stage {
     }
     pub fn clear(&mut self) {
         self.version += 1;
-        self.paths.clear()
+        self.paths.clear();
     }
     pub fn paths(&self) -> &[PathBuf] {
         &self.paths
@@ -72,5 +77,21 @@ impl Stage {
     }
     pub fn version(&self) -> usize {
         self.version
+    }
+    pub fn compute_sum(&self, dam: &Dam, con: &AppContext) -> Option<FileSum> {
+        let mut sum = FileSum::zero();
+        for path in &self.paths {
+            if path.is_dir() {
+                let dir_sum = FileSum::from_dir(path, dam, con);
+                if let Some(dir_sum) = dir_sum {
+                    sum += dir_sum;
+                } else {
+                    return None; // computation was interrupted
+                }
+            } else {
+                sum += FileSum::from_file(path);
+            }
+        }
+        Some(sum)
     }
 }

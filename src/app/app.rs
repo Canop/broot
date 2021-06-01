@@ -604,7 +604,7 @@ impl App {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         while self.has_pending_task() && !dam.has_event() {
-            if self.do_pending_task(con, dam) {
+            if self.do_pending_task(app_state, con, dam) {
                 self.update_preview(con); // the selection may have changed
                 let app_cmd_context = AppCmdContext {
                     other_path: self.get_other_panel_path(),
@@ -627,13 +627,14 @@ impl App {
     /// do the next pending task
     fn do_pending_task(
         &mut self,
+        app_state: &AppState,
         con: &AppContext,
         dam: &mut Dam,
     ) -> bool {
         let screen = self.screen;
         // we start with the focused panel
         if self.panel().has_pending_task() {
-            self.mut_panel().do_pending_task(screen, con, dam);
+            self.mut_panel().do_pending_task(&app_state.stage, screen, con, dam);
             return true;
         }
         // then the other ones
@@ -641,7 +642,7 @@ impl App {
             if idx != self.active_panel_idx {
                 let panel = &mut self.panels[idx];
                 if panel.has_pending_task() {
-                    panel.do_pending_task(screen, con, dam);
+                    panel.do_pending_task(&app_state.stage, screen, con, dam);
                     return true;
                 }
             }

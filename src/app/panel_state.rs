@@ -9,7 +9,7 @@ use {
         pattern::*,
         preview::{PreviewMode, PreviewState},
         print,
-        stage::StageState,
+        stage::*,
         task_sync::Dam,
         tree::*,
         verb::*,
@@ -650,6 +650,7 @@ pub trait PanelState {
 
     fn do_pending_task(
         &mut self,
+        _stage: &Stage,
         _screen: Screen,
         _con: &AppContext,
         _dam: &mut Dam,
@@ -658,7 +659,9 @@ pub trait PanelState {
         unreachable!();
     }
 
-    fn get_pending_task(&self) -> Option<&'static str> {
+    fn get_pending_task(
+        &self,
+    ) -> Option<&'static str> {
         None
     }
 

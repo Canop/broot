@@ -9,6 +9,7 @@ use {
         pattern::*,
         path::{self, PathAnchor},
         print,
+        stage::*,
         task_sync::Dam,
         tree::*,
         tree_build::TreeBuilder,
@@ -488,6 +489,7 @@ impl PanelState for BrowserState {
     /// Stop as soon as the dam asks for interruption
     fn do_pending_task(
         &mut self,
+        _stage: &Stage,
         screen: Screen,
         con: &AppContext,
         dam: &mut Dam,

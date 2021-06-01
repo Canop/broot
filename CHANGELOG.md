@@ -4,6 +4,7 @@
 - new verb argument: `auto_exec`
 - new standard verb arguments: `{file-stem}`, `{file-extension}`, and `{file-dot-extension}`,
 - new `:toggle_second_tree` internal - Fix #388
+- total size of staging area computed and displayed if sizes displayed elsewhere
 - fix a few minor bugs
 
 <a name="v1.4.0"></a>
