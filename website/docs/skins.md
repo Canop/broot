@@ -488,6 +488,213 @@ staging_area_title = "gray(22) rgb(0, 43, 54)"
 ```
 
 
+
+
+# Solarized Light
+
+*contributed by [@guillaumecherel](https://github.com/guillaumecherel)*
+
+![default](img/skins/solarized_light/search.png)
+
+![default](img/skins/solarized_light/fs.png)
+
+Light version of the above.
+
+The comment above each setting tells the name of the color from the Solarized
+Light color scheme. The values are taken from
+[here](https://github.com/altercation/solarized#the-values). The term `default`
+in the comment refers to the skins default setting.
+
+```Hjson
+skin: {
+    // base00 base3 / base1 base2
+    default: "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)"
+    // base1 default
+    tree: "rgb(147, 161, 161) none"
+    // default default
+    file: "none none"
+    // blue default bold
+    directory: "rgb(38, 139, 210) none bold"
+    // red default
+    exe: "rgb(211, 1, 2) none"
+    // magenta default
+    link: "rgb(211, 54, 130) none"
+    // base1 default italic
+    pruning: "rgb(147, 161, 161) none italic"
+    // base1 default
+    perm__: "rgb(147, 161, 161) none"
+    // default default
+    perm_r: "none none"
+    // default default
+    perm_w: "none none"
+    // default default
+    perm_x: "none none"
+    // base1 default
+    owner: "rgb(147, 161, 161) none"
+    // base1 default
+    group: "rgb(147, 161, 161) none"
+    // default default
+    sparse: "none none"
+    // base01 default
+    git_branch: "rgb(88, 110, 117) none"
+    // green default
+    git_insertions: "rgb(133, 153, 0) none"
+    // red default
+    git_deletions: "rgb(211, 1, 2) none"
+    // default default
+    git_status_current: "none none"
+    // yellow default
+    git_status_modified: "rgb(181, 137, 0) none"
+    // green default
+    git_status_new: "rgb(133, 153, 0) none"
+    // base1 default
+    git_status_ignored: "rgb(147, 161, 161) none"
+    // red default
+    git_status_conflicted: "rgb(211, 1, 2) none"
+    // red default
+    git_status_other: "rgb(211, 1, 2) none"
+    // default base2
+    selected_line: "none rgb(238, 232, 213)"
+    // green default underlined
+    char_match: "rgb(133, 153, 0) none underlined"
+    // orange default italic
+    file_error: "rgb(203, 75, 22) none italic"
+    // default default
+    flag_label: "none none"
+    // yellow default bold
+    flag_value: "rgb(181, 137, 0) none bold"
+    // default default
+    input: "none none"
+    // orange base2
+    status_error: "rgb(203, 75, 22) rgb(238, 232, 213)"
+    // violet base2 bold
+    status_job: "rgb(108, 113, 196) rgb(238, 232, 213) bold"
+    // default base2
+    status_normal: "none rgb(238, 232, 213)"
+    // yellow base2
+    status_italic: "rgb(181, 137, 0) rgb(238, 232, 213)"
+    // base01 base2 bold
+    status_bold: "rgb(88, 110, 117) rgb(238, 232, 213) bold"
+    // violet base2
+    status_code: "rgb(108, 113, 196) rgb(238, 232, 213)"
+    // default base2
+    status_ellipsis: "none rgb(238, 232, 213)"
+    // base2 default
+    scrollbar_track: "rgb(238, 232, 213) none"
+    // default default
+    scrollbar_thumb: "none none"
+    // default default
+    help_paragraph: "none none"
+    // base01 default bold
+    help_bold: "rgb(88, 110, 117) none bold"
+    // base01 default italic
+    help_italic: "rgb(88, 110, 117) none italic"
+    // base01 base2
+    help_code: "rgb(88, 110, 117) rgb(238, 232, 213)"
+    // yellow default
+    help_headers: "rgb(181, 137, 0) none"
+    // default default
+    help_table_border: "none none"
+    preview_title: "gray(20) rgb(253, 246, 227)"
+    staging_area_title: "gray(22) rgb(253, 246, 227)"
+}
+```
+
+
+```toml
+[skin]
+# base00 base3 / base1 base2
+default = "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)"
+# base1 default
+tree = "rgb(147, 161, 161) none"
+# default default
+file = "none none"
+# blue default bold
+directory = "rgb(38, 139, 210) none bold"
+# red default
+exe = "rgb(211, 1, 2) none"
+# magenta default
+link = "rgb(211, 54, 130) none"
+# base1 default italic
+pruning = "rgb(147, 161, 161) none italic"
+# base1 default
+perm__ = "rgb(147, 161, 161) none"
+# default default
+perm_r = "none none"
+# default default
+perm_w = "none none"
+# default default
+perm_x = "none none"
+# base1 default
+owner = "rgb(147, 161, 161) none"
+# base1 default
+group = "rgb(147, 161, 161) none"
+# default default
+sparse = "none none"
+# base01 default
+git_branch = "rgb(88, 110, 117) none"
+# green default
+git_insertions = "rgb(133, 153, 0) none"
+# red default
+git_deletions = "rgb(211, 1, 2) none"
+# default default
+git_status_current = "none none"
+# yellow default
+git_status_modified = "rgb(181, 137, 0) none"
+# green default
+git_status_new = "rgb(133, 153, 0) none"
+# base1 default
+git_status_ignored = "rgb(147, 161, 161) none"
+# red default
+git_status_conflicted = "rgb(211, 1, 2) none"
+# red default
+git_status_other = "rgb(211, 1, 2) none"
+# default base2
+selected_line = "none rgb(238, 232, 213)"
+# green default underlined
+char_match = "rgb(133, 153, 0) none underlined"
+# orange default italic
+file_error = "rgb(203, 75, 22) none italic"
+# default default
+flag_label = "none none"
+# yellow default bold
+flag_value = "rgb(181, 137, 0) none bold"
+# default default
+input = "none none"
+# orange base2
+status_error = "rgb(203, 75, 22) rgb(238, 232, 213)"
+# violet base2 bold
+status_job = "rgb(108, 113, 196) rgb(238, 232, 213) bold"
+# default base2
+status_normal = "none rgb(238, 232, 213)"
+# yellow base2
+status_italic = "rgb(181, 137, 0) rgb(238, 232, 213)"
+# base01 base2 bold
+status_bold = "rgb(88, 110, 117) rgb(238, 232, 213) bold"
+# violet base2
+status_code = "rgb(108, 113, 196) rgb(238, 232, 213)"
+# default base2
+status_ellipsis = "none rgb(238, 232, 213)"
+# base2 default
+scrollbar_track = "rgb(238, 232, 213) none"
+# default default
+scrollbar_thumb = "none none"
+# default default
+help_paragraph = "none none"
+# base01 default bold
+help_bold = "rgb(88, 110, 117) none bold"
+# base01 default italic
+help_italic = "rgb(88, 110, 117) none italic"
+# base01 base2
+help_code = "rgb(88, 110, 117) rgb(238, 232, 213)"
+# yellow default
+help_headers = "rgb(181, 137, 0) none"
+# default default
+help_table_border = "none none"
+preview_title = "gray(20) rgb(253, 246, 227)"
+staging_area_title = "gray(22) rgb(253, 246, 227)"
+```
+
 # Gruvbox
 
 *Initially contributed by @basbebe*
