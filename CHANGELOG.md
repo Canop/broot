@@ -1,6 +1,6 @@
 <a name="v1.5.0"></a>
 ### v1.5.0 - 2021-06-02
-- new `auto_exec` verb propery: a non-auto_exec verb isn't executed directly on a keyboard shortcut but fills the input so that it may be edited before execution on enter key
+- new `auto_exec` verb property: a non-auto_exec verb isn't executed directly on a keyboard shortcut but fills the input so that it may be edited before execution on enter key
 - add support for backtab key (by default it's bound to :previous_match)
 - `:rename` built-in verb, best used with its keyboard shortcut F2
 - new standard verb arguments: `{file-stem}`, `{file-extension}`, and `{file-dot-extension}`,

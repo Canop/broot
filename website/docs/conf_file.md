@@ -210,3 +210,17 @@ syntax_theme: base16-ocean.light
 syntax_theme = "base16-ocean.light"
 ```
 
+# Number of threads for directory size computation
+
+Most users should not change this. In my measurements a number of 4 to 6 looks optimal.
+
+I'm looking for people to try tune this and tell me what they find, what's their OS and disk type.
+
+```Hjson
+file_sum_threads_count: 10,
+```
+```TOML
+file_sum_threads_count = 10
+```
+
+If you make experiments, please come to [Miaou](https://miaou.dystroy.org/3490) and tell me.
