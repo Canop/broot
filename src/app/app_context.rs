@@ -4,6 +4,7 @@ use {
         cli::AppLaunchArgs,
         conf::Conf,
         errors::ConfError,
+        file_sum,
         icon::*,
         pattern::SearchModeMap,
         path::SpecialPath,
@@ -69,6 +70,10 @@ pub struct AppContext {
     /// whether to quit broot when the user hits "escape"
     /// and there's nothing to cancel
     pub quit_on_last_cancel: bool,
+
+    /// number of threads used by file_sum (count, size, date)
+    /// computation
+    pub file_sum_threads_count: usize,
 }
 
 impl AppContext {
@@ -97,6 +102,11 @@ impl AppContext {
             .transpose()?
             .unwrap_or_default();
         let ext_colors = ExtColorMap::try_from(&config.ext_colors)?;
+        let file_sum_threads_count = config.file_sum_threads_count
+            .unwrap_or(file_sum::DEFAULT_THREAD_COUNT);
+        if file_sum_threads_count < 1 || file_sum_threads_count > 50 {
+            return Err(ConfError::InvalidThreadsCount{ count: file_sum_threads_count });
+        }
         let max_panels_count = config.max_panels_count
             .unwrap_or(2)
             .clamp(2, 100);
@@ -116,6 +126,7 @@ impl AppContext {
             mouse_capture_disabled: config.disable_mouse_capture.unwrap_or(false),
             max_panels_count,
             quit_on_last_cancel: config.quit_on_last_cancel.unwrap_or(false),
+            file_sum_threads_count,
         })
     }
 }

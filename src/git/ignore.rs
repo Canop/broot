@@ -4,8 +4,8 @@ use {
     git2,
     glob,
     id_arena::{Arena, Id},
-    lazy_static::lazy_static,
     lazy_regex::regex,
+    once_cell::sync::Lazy,
     std::{
         fs::File,
         io::{BufRead, BufReader, Result},
@@ -97,9 +97,7 @@ impl GitIgnoreFile {
     /// return the global gitignore file interpreted for
     /// the given repo dir
     pub fn global(repo_dir: &Path) -> Option<GitIgnoreFile> {
-        lazy_static! {
-            static ref GLOBAL_GI_PATH: Option<PathBuf> = find_global_ignore();
-        }
+        static GLOBAL_GI_PATH: Lazy<Option<PathBuf>> = Lazy::new(find_global_ignore);
         if let Some(path) = &*GLOBAL_GI_PATH {
             GitIgnoreFile::new(path, repo_dir).ok()
         } else {

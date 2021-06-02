@@ -162,11 +162,11 @@ dependencies = [
  "image",
  "is_executable",
  "lazy-regex",
- "lazy_static",
  "lfs-core",
  "libc",
  "memmap",
- "minimad",
+ "minimad 0.8.0",
+ "once_cell",
  "open",
  "pathdiff",
  "phf",
@@ -179,7 +179,7 @@ dependencies = [
  "strict",
  "syntect",
  "tempfile",
- "termimad",
+ "termimad 0.11.0",
  "terminal-clipboard",
  "toml",
  "umask",
@@ -630,14 +630,14 @@ dependencies = [
  "csv2svg",
  "git2",
  "lazy_static",
- "minimad",
+ "minimad 0.7.1",
  "open",
  "rusqlite",
  "serde",
  "serde_json",
  "svg",
  "tempfile",
- "termimad",
+ "termimad 0.10.3",
  "thiserror",
 ]
 
@@ -773,9 +773,9 @@ dependencies = [
 
 [[package]]
 name = "lazy-regex"
-version = "2.0.2"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5ccd39a8bca82b0a9c186d5ae0a73a79cc68ac3ff8dd35712baae188ea3b61d1"
+checksum = "7b00f3e4d8dc7bedf8f0947c7079bfe11f5dba7a96d95c8340c851eec8ffc41e"
 dependencies = [
  "lazy-regex-proc_macros",
  "once_cell",
@@ -784,9 +784,9 @@ dependencies = [
 
 [[package]]
 name = "lazy-regex-proc_macros"
-version = "2.0.2"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "495df213e9f7f0defedfe0138d038e8ef3dc662facefa0c6ab91e6f4bf34ab13"
+checksum = "cd6f321bbea1296f0fe12342fdf3e8eaf0b871b80b8a2dc37337e05cfe364c8d"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -928,6 +928,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c6176dd156ab0154ee95322efe2da93796cc338a8a63a6338d64c79419bcbe13"
 dependencies = [
  "lazy_static",
+]
+
+[[package]]
+name = "minimad"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8957f240ecb82a4e699bcf4db189fe8a7f5aa68b9e6d5abf829c62a9ee4630ed"
+dependencies = [
+ "once_cell",
 ]
 
 [[package]]
@@ -1597,7 +1606,20 @@ dependencies = [
  "crossbeam",
  "crossterm",
  "lazy_static",
- "minimad",
+ "minimad 0.7.1",
+ "thiserror",
+ "unicode-width",
+]
+
+[[package]]
+name = "termimad"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "eaf5f65b9464ce6ab282052f984ba2beead5937829fd9f0347f716fa8edf9cd0"
+dependencies = [
+ "crossbeam",
+ "crossterm",
+ "minimad 0.8.0",
  "thiserror",
  "unicode-width",
 ]

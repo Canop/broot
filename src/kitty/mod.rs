@@ -3,13 +3,13 @@ mod image_renderer;
 pub use image_renderer::*;
 
 use {
-    lazy_static::lazy_static,
+    once_cell::sync::Lazy,
     std::sync::Mutex,
 };
 
-lazy_static! {
-    static ref RENDERER: Option<Mutex<KittyImageRenderer>> = KittyImageRenderer::new().map(Mutex::new);
-}
+static RENDERER: Lazy<Option<Mutex<KittyImageRenderer>>> = Lazy::new(|| {
+    KittyImageRenderer::new().map(Mutex::new)
+});
 
 // TODO try to find another way (making app_context mut ?) to pass this
 // around without the mutex gymnastic, and also to make it really lazy

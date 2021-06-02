@@ -5,6 +5,7 @@
 - new standard verb arguments: `{file-stem}`, `{file-extension}`, and `{file-dot-extension}`,
 - new `:toggle_second_tree` internal - Fix #388
 - total size of staging area computed and displayed if sizes displayed elsewhere
+- new `file_sum_threads_count` conf property to define the number of threads used for file summing (size, count, last modified). The goal is to more easily search what's the best value depending on the cpu, OS and disk type/speed
 - fix a few minor bugs
 
 <a name="v1.4.0"></a>

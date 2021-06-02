@@ -51,6 +51,7 @@ custom_error! {pub ConfError
     UnexpectedInternalArg {invocation: String}      = "unexpected argument for internal: {}",
     InvalidCols {details: String}                   = "invalid cols definition: {}",
     InvalidSkin {source: InvalidSkinError}          = "invalid skin: {}",
+    InvalidThreadsCount { count: usize }            = "invalid threads count: {}",
 }
 
 // error which can be raised when parsing a pattern the user typed

@@ -14,8 +14,8 @@ use {
         style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
-    lazy_static::lazy_static,
     memmap::Mmap,
+    once_cell::sync::Lazy,
     std::{
         fs::File,
         io::{BufRead, BufReader},
@@ -115,9 +115,7 @@ impl SyntacticView {
         self.total_lines_count = 0;
         let mut offset = 0;
         let mut number = 0;
-        lazy_static! {
-            static ref SYNTAXER: Syntaxer = Syntaxer::default();
-        }
+        static SYNTAXER: Lazy<Syntaxer> = Lazy::new(Syntaxer::default);
         let mut highlighter = if with_style {
             SYNTAXER.highlighter_for(&self.path, con)
         } else {

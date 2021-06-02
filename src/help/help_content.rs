@@ -1,5 +1,4 @@
 use {
-    lazy_static::lazy_static,
     minimad::{TextTemplate, TextTemplateExpander},
 };
 
@@ -75,9 +74,7 @@ ${features
 /// completed with data and which then would be used to
 /// produce the markdown of the help page
 pub fn expander() -> TextTemplateExpander<'static, 'static> {
-    lazy_static! {
-        // this doesn't really matter, only half a ms is spared
-        static ref TEMPLATE: TextTemplate<'static> = TextTemplate::from(MD);
-    }
+    use once_cell::sync::Lazy;
+    static TEMPLATE: Lazy<TextTemplate<'static>> = Lazy::new(|| TextTemplate::from(MD));
     TEMPLATE.expander()
 }

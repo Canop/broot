@@ -22,6 +22,7 @@ pub use {
     internal::Internal,
     internal_execution::InternalExecution,
     invocation_parser::InvocationParser,
+    once_cell::sync::Lazy,
     sequence_execution::SequenceExecution,
     verb::Verb,
     verb_description::VerbDescription,
@@ -29,13 +30,12 @@ pub use {
     verb_invocation::*,
     verb_store::{PrefixSearchResult, VerbStore},
 };
+use {
+    lazy_regex::*,
+};
 
-
-// the group you find in invocation patterns and execution patterns
-lazy_static::lazy_static! {
-    pub static ref GROUP: regex::Regex =
-        regex::Regex::new(r"\{([^{}:]+)(?::([^{}:]+))?\}").unwrap();
-}
+/// the group you find in invocation patterns and execution patterns
+pub static GROUP: Lazy<Regex> = lazy_regex!(r"\{([^{}:]+)(?::([^{}:]+))?\}");
 
 pub fn str_has_selection_group(s: &str) -> bool {
     GROUP.find_iter(s)

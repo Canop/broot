@@ -690,6 +690,7 @@ impl App {
             if !self.quitting {
                 self.display_panels(w, &skin, &app_state, con)?;
                 time!(
+                    Info,
                     "pending_tasks",
                     self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
                 );

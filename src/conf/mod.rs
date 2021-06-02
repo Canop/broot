@@ -10,7 +10,7 @@ mod verb_conf;
 pub use {
     conf::Conf,
     format::*,
-    lazy_static::lazy_static,
+    once_cell::sync::Lazy,
     verb_conf::VerbConf,
 };
 
@@ -60,10 +60,9 @@ fn find_conf_dir() -> PathBuf {
     }
 }
 
+static CONF_DIR: Lazy<PathBuf> = Lazy::new(find_conf_dir);
+
 /// return the path to the config directory
 pub fn dir() -> &'static Path {
-    lazy_static! {
-        static ref CONF_DIR: PathBuf = find_conf_dir();
-    }
     &*CONF_DIR
 }

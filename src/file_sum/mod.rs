@@ -10,7 +10,7 @@ use {
         task_sync::Dam,
     },
     ahash::AHashMap,
-    lazy_static::lazy_static,
+    once_cell::sync::Lazy,
     std::{
         ops::AddAssign,
         path::{Path, PathBuf},
@@ -18,14 +18,14 @@ use {
     },
 };
 
-lazy_static! {
-    static ref SUM_CACHE_MUTEX: Mutex<AHashMap<PathBuf, FileSum>> =
-        Mutex::new(AHashMap::default());
-}
+pub const DEFAULT_THREAD_COUNT: usize = 4;
+
+static SUM_CACHE: Lazy<Mutex<AHashMap<PathBuf, FileSum>>> = Lazy::new(|| {
+    Mutex::new(AHashMap::default())
+});
 
 pub fn clear_cache() {
-    let mut sum_cache = SUM_CACHE_MUTEX.lock().unwrap();
-    sum_cache.clear();
+    SUM_CACHE.lock().unwrap().clear();
 }
 
 /// Reduction of counts, dates and sizes on a file or directory
@@ -65,7 +65,7 @@ impl FileSum {
     ///  fetching it from cache.
     /// If the lifetime expires before complete computation, None is returned.
     pub fn from_dir(path: &Path, dam: &Dam, con: &AppContext) -> Option<Self> {
-        let mut sum_cache = SUM_CACHE_MUTEX.lock().unwrap();
+        let mut sum_cache = SUM_CACHE.lock().unwrap();
         match sum_cache.get(path) {
             Some(sum) => Some(*sum),
             None => {

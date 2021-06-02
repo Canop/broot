@@ -87,6 +87,8 @@ pub struct Conf {
     #[serde(alias="quit-on-last-cancel")]
     pub quit_on_last_cancel: Option<bool>,
 
+    pub file_sum_threads_count: Option<usize>,
+
 }
 
 impl Conf {
@@ -153,6 +155,7 @@ impl Conf {
         overwrite!(self, max_panels_count, conf);
         overwrite!(self, modal, conf);
         overwrite!(self, quit_on_last_cancel, conf);
+        overwrite!(self, file_sum_threads_count, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense

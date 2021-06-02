@@ -59,7 +59,7 @@ use {
         },
         QueueableCommand,
     },
-    lazy_static::lazy_static,
+    once_cell::sync::Lazy,
 };
 
 #[cfg(not(any(target_family="windows",target_os="android")))]
@@ -69,10 +69,8 @@ pub use {
 
 pub static TAB_REPLACEMENT: &str = "  ";
 
-lazy_static! {
-    pub static ref SPACE_FILLING: Filling = Filling::from_char(' ');
-    pub static ref BRANCH_FILLING: Filling = Filling::from_char('─');
-}
+pub static SPACE_FILLING: Lazy<Filling> = Lazy::new(|| { Filling::from_char(' ') });
+pub static BRANCH_FILLING: Lazy<Filling> = Lazy::new(|| { Filling::from_char('─') });
 
 /// if true then the status of a panel covers the whole width
 /// of the terminal (over the other panels)

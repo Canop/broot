@@ -12,13 +12,11 @@ pub use {
 
 use {
     crossterm::style::Color,
-    lazy_static::lazy_static,
+    once_cell::sync::Lazy,
     std::sync::Mutex,
 };
 
-lazy_static! {
-    pub static ref MOUNTS: Mutex<MountList> = Mutex::new(MountList::new());
-}
+pub static MOUNTS: Lazy<Mutex<MountList>> = Lazy::new(|| Mutex::new(MountList::new()));
 
 pub fn clear_cache() {
     let mut mount_list = MOUNTS.lock().unwrap();

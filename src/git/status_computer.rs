@@ -7,7 +7,7 @@ use {
     crossbeam::channel::bounded,
     ahash::AHashMap,
     git2::Repository,
-    lazy_static::lazy_static,
+    once_cell::sync::Lazy,
     std::{
         path::{Path, PathBuf},
         sync::Mutex,
@@ -30,11 +30,10 @@ fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {
     }
 }
 
-lazy_static! {
     // the key is the path of the repository
-    static ref TS_CACHE_MX: Mutex<AHashMap<PathBuf, Computation<TreeGitStatus>>> =
-        Mutex::new(AHashMap::default());
-}
+static TS_CACHE_MX: Lazy<Mutex<AHashMap<PathBuf, Computation<TreeGitStatus>>>> = Lazy::new(|| {
+        Mutex::new(AHashMap::default())
+});
 
 /// try to get the result of the computation of the tree git status.
 /// This may be immediate if a previous computation was finished.

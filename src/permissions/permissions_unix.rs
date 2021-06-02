@@ -1,6 +1,6 @@
 use {
     fnv::FnvHashMap,
-    lazy_static::lazy_static,
+    once_cell::sync::Lazy,
     std::sync::Mutex,
 };
 
@@ -9,10 +9,9 @@ pub fn supported() -> bool {
 }
 
 pub fn user_name(uid: u32) -> String {
-    lazy_static! {
-        static ref USERS_CACHE_MUTEX: Mutex<FnvHashMap<u32, String>> =
-            Mutex::new(FnvHashMap::default());
-    }
+    static USERS_CACHE_MUTEX: Lazy<Mutex<FnvHashMap<u32, String>>> = Lazy::new(|| {
+            Mutex::new(FnvHashMap::default())
+    });
     let mut users_cache = USERS_CACHE_MUTEX.lock().unwrap();
     let name = users_cache
         .entry(uid)
@@ -26,10 +25,10 @@ pub fn user_name(uid: u32) -> String {
 }
 
 pub fn group_name(gid: u32) -> String {
-    lazy_static! {
-        static ref USERS_CACHE_MUTEX: Mutex<FnvHashMap<u32, String>> = Mutex::new(FnvHashMap::default());
-    }
-    let mut groups_cache = USERS_CACHE_MUTEX.lock().unwrap();
+    static GROUPS_CACHE_MUTEX: Lazy<Mutex<FnvHashMap<u32, String>>> = Lazy::new(|| {
+        Mutex::new(FnvHashMap::default())
+    });
+    let mut groups_cache = GROUPS_CACHE_MUTEX.lock().unwrap();
     let name = groups_cache
         .entry(gid)
         .or_insert_with(|| {
