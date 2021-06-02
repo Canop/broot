@@ -15,6 +15,7 @@ use {
         sync::{
             atomic::{AtomicIsize, Ordering},
             Arc,
+            Mutex,
         },
     },
 };
@@ -24,7 +25,6 @@ use {
     fnv::FnvHashSet,
     std::{
         os::unix::fs::MetadataExt,
-        sync::Mutex,
     },
 };
 
