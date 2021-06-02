@@ -1,12 +1,12 @@
 ### next
+- new `auto_exec` verb propery: a non-auto_exec verb isn't executed directly on a keyboard shortcut but fills the input so that it may be edited before execution on enter key
 - add support for backtab key (by default it's bound to :previous_match)
 - `:rename` built-in verb, best used with its keyboard shortcut F2
-- new verb argument: `auto_exec`
 - new standard verb arguments: `{file-stem}`, `{file-extension}`, and `{file-dot-extension}`,
 - new `:toggle_second_tree` internal - Fix #388
 - total size of staging area computed and displayed if sizes displayed elsewhere
 - new `file_sum_threads_count` conf property to define the number of threads used for file summing (size, count, last modified). The goal is to more easily search what's the best value depending on the cpu, OS and disk type/speed
-- fix a few minor bugs
+- `:input_clear` internal - Fix #24
 
 <a name="v1.4.0"></a>
 ### v1.4.0 - 2021-05-11

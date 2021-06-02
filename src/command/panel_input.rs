@@ -90,6 +90,14 @@ impl PanelInput {
     ) -> bool {
         if let VerbExecution::Internal(internal_exec) = &verb.execution {
             match internal_exec.internal {
+                Internal::input_clear => {
+                    if self.input_field.get_content().is_empty() {
+                        false
+                    } else {
+                        self.input_field.set_content("");
+                        true
+                    }
+                }
                 Internal::input_del_char_left => self.input_field.del_char_left(),
                 Internal::input_del_char_below => self.input_field.del_char_below(),
                 Internal::input_del_word_left => self.input_field.del_word_left(),

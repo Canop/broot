@@ -61,6 +61,7 @@ Internals! {
     filesystems: "list mounted filesystems" false,
     focus: "display the directory (mapped to *enter*)" true,
     help: "display broot's help" false,
+    input_clear: "empty the input" false,
     input_del_char_left: "delete the char left of the cursor" false,
     input_del_char_below: "delete the char left at the cursor's position" false,
     input_del_word_left: "delete the word left of the cursor" false,
