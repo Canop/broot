@@ -389,7 +389,7 @@ impl App {
                             .filter(|p| p.state().get_type() == PanelStateType::Tree)
                             .count();
                         if trees_count < 2 {
-                            // we open a tree, closing a panel if necessary
+                            // we open a tree, closing a (non tree) panel if necessary
                             if panels_count >= con.max_panels_count {
                                 for i in (0..panels_count).rev() {
                                     if self.panels[i].state().get_type() != PanelStateType::Tree {
@@ -419,9 +419,12 @@ impl App {
                                 }
                             }
                         } else {
-                            // we close the rightest tree
+                            // we close the rightest inactive tree
                             for i in (0..panels_count).rev() {
                                 if self.panels[i].state().get_type() == PanelStateType::Tree {
+                                    if i == self.active_panel_idx {
+                                        continue;
+                                    }
                                     self.close_panel(i);
                                     break;
                                 }
