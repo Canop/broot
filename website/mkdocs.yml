@@ -18,6 +18,7 @@ nav:
                 - Staging Area: staging-area.md
                 - Tree export: export.md
                 - Tips & tricks: tricks.md
+                - Common file operations: file-operations.md
                 - Reference - The input: input.md
         - Conf:
                 - Config file: conf_file.md

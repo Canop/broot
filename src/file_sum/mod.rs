@@ -18,7 +18,7 @@ use {
     },
 };
 
-pub const DEFAULT_THREAD_COUNT: usize = 4;
+pub const DEFAULT_THREAD_COUNT: usize = 5;
 
 static SUM_CACHE: Lazy<Mutex<AHashMap<PathBuf, FileSum>>> = Lazy::new(|| {
     Mutex::new(AHashMap::default())
