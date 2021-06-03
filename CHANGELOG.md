@@ -1,3 +1,7 @@
+<a name="v1.5.1"></a>
+### v1.5.1 - 2021-06-03
+- fixed a few problems with the `:del_word_right` internal
+
 <a name="v1.5.0"></a>
 ### v1.5.0 - 2021-06-02
 - new `auto_exec` verb property: a non-auto_exec verb isn't executed directly on a keyboard shortcut but fills the input so that it may be edited before execution on enter key
