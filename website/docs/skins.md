@@ -506,6 +506,10 @@ Light color scheme. The values are taken from
 in the comment refers to the skins default setting.
 
 ```Hjson
+# Syntax theme for code preview
+syntax_theme: "Solarized (light)"
+
+# Solarized light skin
 skin: {
     // base00 base3 / base1 base2
     default: "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)"
@@ -595,13 +599,19 @@ skin: {
     help_headers: "rgb(181, 137, 0) none"
     // default default
     help_table_border: "none none"
-    preview_title: "gray(20) rgb(253, 246, 227)"
+    preview_title: "rgb(147, 161, 161) rgb(238, 232, 213)"
+    preview: "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)" 
+    preview_line_number: "rgb(147, 161, 161) rgb(238, 232, 213)"
+    preview_match: "None ansi(29)"
     staging_area_title: "gray(22) rgb(253, 246, 227)"
 }
 ```
 
 
 ```toml
+# Syntax theme for code preview
+syntax_theme = "Solarized (light)"
+
 [skin]
 # base00 base3 / base1 base2
 default = "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)"
@@ -691,7 +701,10 @@ help_code = "rgb(88, 110, 117) rgb(238, 232, 213)"
 help_headers = "rgb(181, 137, 0) none"
 # default default
 help_table_border = "none none"
-preview_title = "gray(20) rgb(253, 246, 227)"
+preview_title = "rgb(147, 161, 161) rgb(238, 232, 213)"
+preview = "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)" 
+preview_line_number = "rgb(147, 161, 161) rgb(238, 232, 213)"
+preview_match = "None ansi(29)"
 staging_area_title = "gray(22) rgb(253, 246, 227)"
 ```
 
