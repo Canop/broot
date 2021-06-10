@@ -213,6 +213,18 @@ impl<'b> ExecutionStringBuilder<'b> {
         }
     }
 
+    /// build a path
+    pub fn path(
+        &self,
+        pattern: &str,
+    ) -> PathBuf {
+        PathBuf::from(
+            GROUP.replace_all(
+                pattern,
+                |ec: &Captures<'_>| self.get_capture_replacement(ec),
+            ).to_string()
+        )
+    }
     /// build a shell compatible command, with escapings
     pub fn shell_exec_string(
         &self,

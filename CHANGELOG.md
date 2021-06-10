@@ -1,3 +1,6 @@
+### next
+- `working_dir` verb attribute
+
 <a name="v1.5.1"></a>
 ### v1.5.1 - 2021-06-03
 - fixed a few problems with the `:del_word_right` internal

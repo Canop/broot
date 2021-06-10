@@ -135,6 +135,7 @@ impl Launchable {
                 args,
                 mouse_capture_disabled,
             } => {
+                debug!("working_dir: {:?}", &working_dir);
                 // we restore the normal terminal in case the executable
                 // is a terminal application, and we'll switch back to
                 // broot's alternate terminal when we're back to broot

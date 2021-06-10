@@ -9,6 +9,7 @@ use {
     },
 };
 
+/// A pattern which can be expanded into an executable
 #[derive(Debug, Clone, Deserialize)]
 #[serde(untagged)]
 pub enum ExecPattern {

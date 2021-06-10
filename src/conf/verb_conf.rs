@@ -41,6 +41,8 @@ pub struct VerbConf {
 
     set_working_dir: Option<bool>,
 
+    working_dir: Option<String>,
+
     description: Option<String>,
 
     auto_exec: Option<bool>,
@@ -64,11 +66,16 @@ impl TryFrom<&VerbConf> for Verb {
         let cmd_separator = vc.cmd_separator.as_ref().filter(|i| !i.is_empty());
         let execution = vc.execution.as_ref().filter(|i| !i.is_empty());
         let make_external_execution = |s| {
+            let working_dir = match (vc.set_working_dir, &vc.working_dir) {
+                (Some(false), _) => None,
+                (_, Some(s)) => Some(s.clone()),
+                (_, None) => Some("{directory}".to_owned()),
+            };
             ExternalExecution::new(
                 s,
                 ExternalExecutionMode::from_conf(vc.from_shell, vc.leave_broot),
             )
-            .with_set_working_dir(vc.set_working_dir)
+            .with_working_dir(working_dir)
         };
         let execution = match (execution, internal, external, cmd) {
             // old definition with "execution": we guess whether it's an internal or

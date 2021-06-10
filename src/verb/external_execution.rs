@@ -5,14 +5,13 @@ use {
         display::W,
         errors::ProgramError,
         launchable::Launchable,
-        path,
     },
     std::{
         fs::OpenOptions,
         io::Write,
+        path::PathBuf,
     },
 };
-
 
 /// Definition of how the user input should be interpreted
 /// to be executed in an external command.
@@ -34,9 +33,9 @@ pub struct ExternalExecution {
     /// how the external process must be launched
     pub exec_mode: ExternalExecutionMode,
 
-    /// whether the working dir of the external process must be set
-    /// to the current directory
-    pub set_working_dir: bool,
+    /// the working directory of the new process, or none if we don't
+    /// want to set it
+    pub working_dir: Option<String>,
 }
 
 impl ExternalExecution {
@@ -47,14 +46,12 @@ impl ExternalExecution {
         Self {
             exec_pattern,
             exec_mode,
-            set_working_dir: false,
+            working_dir: None,
         }
     }
 
-    pub fn with_set_working_dir(mut self, b: Option<bool>) -> Self {
-        if let Some(b) = b {
-            self.set_working_dir = b;
-        }
+    pub fn with_working_dir(mut self, b: Option<String>) -> Self {
+        self.working_dir = b;
         self
     }
 
@@ -82,6 +79,23 @@ impl ExternalExecution {
                 con,
             ),
         }
+    }
+
+    fn working_dir_path(
+        &self,
+        builder: &ExecutionStringBuilder<'_>,
+    ) -> Option<PathBuf> {
+        self.working_dir
+            .as_ref()
+            .map(|pattern| builder.path(pattern))
+            .filter(|pb| {
+                if pb.exists() {
+                    true
+                } else {
+                    warn!("workding dir doesn't exist: {:?}", pb);
+                    false
+                }
+            })
     }
 
     /// build the cmd result as an executable which will be called
@@ -134,10 +148,7 @@ impl ExternalExecution {
         }
         let launchable = Launchable::program(
             builder.exec_token(&self.exec_pattern),
-            builder.sel_info
-                .one_sel()
-                .filter(|_| self.set_working_dir)
-                .map(|sel| path::closest_dir(sel.path)),
+            self.working_dir_path(&builder),
             con,
         )?;
         Ok(CmdResult::from(launchable))
@@ -151,15 +162,13 @@ impl ExternalExecution {
         builder: ExecutionStringBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
+        let working_dir_path = self.working_dir_path(&builder);
         match &builder.sel_info {
             SelInfo::None | SelInfo::One(_) => {
                 // zero or one selection -> only one execution
                 let launchable = Launchable::program(
                     builder.exec_token(&self.exec_pattern),
-                    builder.sel_info
-                        .one_sel()
-                        .filter(|_| self.set_working_dir)
-                        .map(|sel| path::closest_dir(sel.path)),
+                    working_dir_path,
                     con,
                 )?;
                 info!("Executing not leaving, launchable {:?}", launchable);
@@ -180,11 +189,7 @@ impl ExternalExecution {
                 for sel in sels {
                     let launchable = Launchable::program(
                         builder.sel_exec_token(&self.exec_pattern, Some(sel)),
-                        if self.set_working_dir {
-                            Some(path::closest_dir(sel.path))
-                        } else {
-                            None
-                        },
+                        working_dir_path.clone(),
                         con,
                     )?;
                     if let Err(e) = launchable.execute(Some(w)) {
