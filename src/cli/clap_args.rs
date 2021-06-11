@@ -213,7 +213,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .help("Print to stdout the br function for a given shell"),
         )
         .setting(clap::AppSettings::DeriveDisplayOrder);
-    #[cfg(feature="client-server")]
+    #[cfg(unix)]
     let app = app
         .arg(
             clap::Arg::with_name("listen")
@@ -230,7 +230,7 @@ pub fn clap_app() -> clap::App<'static, 'static> {
             clap::Arg::with_name("send")
             .long("send")
             .takes_value(true)
-            .help("send command and quits")
+            .help("send commands to a remote broot then quits")
         );
     app
 }

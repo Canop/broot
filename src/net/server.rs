@@ -30,7 +30,7 @@ impl Server {
             return Err(NetError::SocketNotAvailable { path });
         }
         let listener = UnixListener::bind(&path)?;
-        debug!("listening on {}", &path);
+        info!("listening on {}", &path);
 
         // we use only one thread as we don't want to support long connections
         thread::spawn(move || {

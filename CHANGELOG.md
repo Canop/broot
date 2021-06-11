@@ -1,5 +1,6 @@
 ### next
 - `working_dir` verb attribute
+- client-server mode fixed, no longer feature-gated (but still only available on unix like systems)
 
 <a name="v1.5.1"></a>
 ### v1.5.1 - 2021-06-03
@@ -177,7 +178,7 @@ broot now accepts both TOML and Hjson files for configuration. Default is Hjson.
 
 <a name="v0.20.1"></a>
 ### v0.20.1 - 2020-08-18
-- completion of the "client-server" feature (see client-server.md)
+- completion of the "client-server" feature
 - the tree tries to keep the selection when you remove a filter using the esc key
 - :focus now has a shortcut for when a file is selected too: ctrl-f
 - show_selection_mark preference in config (mostly for cases the background isn't clear enough)

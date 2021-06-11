@@ -19,7 +19,5 @@ pub struct AppLaunchArgs {
     pub commands: Option<String>,         // commands passed as cli argument, still unparsed
     pub height: Option<u16>,              // an optional height to replace the screen's one
     pub no_style: bool,                   // whether to remove all styles (including colors)
-
-    #[cfg(feature = "client-server")]
     pub listen: Option<String>,
 }

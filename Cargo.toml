@@ -15,7 +15,6 @@ exclude = ["website", "broot*.zip"]
 
 [features]
 default = []
-client-server = []
 clipboard = ["terminal-clipboard"]
 
 [dependencies]

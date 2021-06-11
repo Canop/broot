@@ -24,7 +24,10 @@ pub struct ExecutionStringBuilder<'b> {
 }
 
 impl<'b> ExecutionStringBuilder<'b> {
-    pub fn from_sel_info(
+    /// constructor to use when there's no invocation string
+    /// (because we're in the process of building one, for example
+    /// when a verb is triggered from a key shortcut)
+    pub fn without_invocation(
          sel_info: SelInfo<'b>,
     ) -> Self {
         Self {
@@ -33,7 +36,7 @@ impl<'b> ExecutionStringBuilder<'b> {
             invocation_values: None,
         }
     }
-    pub fn from_invocation(
+    pub fn with_invocation(
         invocation_parser: &Option<InvocationParser>,
         sel_info: SelInfo<'b>,
         other_file: &'b Option<PathBuf>,

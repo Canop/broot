@@ -458,7 +458,7 @@ pub trait PanelState {
         app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
-        let exec_builder = ExecutionStringBuilder::from_invocation(
+        let exec_builder = ExecutionStringBuilder::with_invocation(
             &verb.invocation_parser,
             self.sel_info(app_state),
             &cc.app.other_path,
@@ -487,7 +487,7 @@ pub trait PanelState {
             // stage files, removing the staged paths, etc.)
             return Ok(CmdResult::error("sequences can't be executed on multiple selections"));
         }
-        let exec_builder = ExecutionStringBuilder::from_invocation(
+        let exec_builder = ExecutionStringBuilder::with_invocation(
             &verb.invocation_parser,
             sel_info,
             &cc.app.other_path,

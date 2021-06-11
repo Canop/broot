@@ -53,6 +53,20 @@ pub fn builtin_verbs() -> Vec<Verb> {
     vec![
         internal(back),
 
+        // input actions, not visible in doc, but available for
+        // exemple in remote control
+        internal(input_clear).no_doc(),
+        internal(input_del_char_left).no_doc(),
+        internal(input_del_char_below).no_doc(),
+        internal(input_del_word_left).no_doc(),
+        internal(input_del_word_right).no_doc(),
+        internal(input_go_to_end).no_doc(),
+        internal(input_go_left).no_doc(),
+        internal(input_go_right).no_doc(),
+        internal(input_go_to_start).no_doc(),
+        internal(input_go_word_left).no_doc(),
+        internal(input_go_word_right).no_doc(),
+
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
         external("cd", "cd {directory}", FromParentShell)

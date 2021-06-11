@@ -58,6 +58,10 @@ pub struct Verb {
     /// if true (default) verbs are directly executed when
     /// triggered with a keyboard shortcut
     pub auto_exec: bool,
+
+    /// whether to show the verb in help screen
+    /// (if we show all input related actions, the doc is unusable)
+    pub show_in_doc: bool
 }
 
 impl Verb {
@@ -100,6 +104,7 @@ impl Verb {
             needs_selection,
             needs_another_panel,
             auto_exec: true,
+            show_in_doc: true,
         })
     }
     fn update_key_desc(&mut self) {
@@ -138,6 +143,10 @@ impl Verb {
             code: KeyCode::Char(chr),
             modifiers: KeyModifiers::NONE,
         })
+    }
+    pub fn no_doc(mut self) -> Self {
+        self.show_in_doc = false;
+        self
     }
     pub fn with_description(mut self, description: &str) -> Self {
         self.description = VerbDescription::from_text(description.to_string());
@@ -240,7 +249,7 @@ impl Verb {
         }
 
         let builder = || {
-            ExecutionStringBuilder::from_invocation(
+            ExecutionStringBuilder::with_invocation(
                 &self.invocation_parser,
                 sel_info,
                 other_path,

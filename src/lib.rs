@@ -37,5 +37,5 @@ pub mod filesystems;
 #[cfg(unix)]
 pub mod kitty;
 
-#[cfg(feature="client-server")]
+#[cfg(unix)]
 pub mod net;

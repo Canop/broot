@@ -22,13 +22,12 @@ use {
     std::{
         io::Write,
         path::PathBuf,
+        sync::{Arc, Mutex},
     },
     strict::NonEmptyVec,
     termimad::{Event, EventSource},
 };
 
-#[cfg(feature = "client-server")]
-use std::sync::{Arc, Mutex};
 
 /// The GUI
 pub struct App {
@@ -55,9 +54,12 @@ pub struct App {
 
     stage_panel: Option<PanelId>,
 
-    /// the root of the active panel
-    #[cfg(feature = "client-server")]
-    root: Arc<Mutex<PathBuf>>,
+    /// the current root, updated when a panel with this concept
+    /// becomes active
+    root: PathBuf,
+
+    /// an optional copy of the root for the --server
+    shared_root: Option<Arc<Mutex<PathBuf>>>,
 
     /// sender to the sequence channel
     tx_seqs: Sender<Sequence>,
@@ -97,9 +99,8 @@ impl App {
             created_panels_count: 1,
             preview_panel: None,
             stage_panel: None,
-
-            #[cfg(feature = "client-server")]
-            root: Arc::new(Mutex::new(con.launch_args.root.clone())),
+            root: con.launch_args.root.clone(),
+            shared_root: None,
             tx_seqs,
             rx_seqs,
         })
@@ -236,7 +237,6 @@ impl App {
 
     /// if there are exactly two non preview panels, return the selection
     /// in the non focused panel
-    /// FIXME exclude stage panel
     fn get_other_panel_path(&self) -> Option<PathBuf> {
         let len = self.panels.len().get();
         if len == 3 {
@@ -509,10 +509,14 @@ impl App {
         }
         self.update_preview(con);
 
-        #[cfg(feature="client-server")]
-        if let Ok(mut root) = self.root.lock() {
-            if let Some(path) = self.state().selected_path() {
-                *root = path.to_path_buf();
+
+        if let Some(path) = self.state().selected_path() {
+            self.root = path.to_path_buf();
+        }
+
+        if let Some(shared_root) = &mut self.shared_root {
+            if let Ok(mut root) = shared_root.lock() {
+                *root = self.root.clone();
             }
         }
 
@@ -682,13 +686,18 @@ impl App {
                 .unwrap();
         }
 
-        #[cfg(feature="client-server")]
+        #[cfg(unix)]
         let _server = con.launch_args.listen.as_ref()
-            .map(|server_name| crate::net::Server::new(
-                &server_name,
-                self.tx_seqs.clone(),
-                Arc::clone(&self.root),
-            ))
+            .map(|server_name| {
+                let shared_root = Arc::new(Mutex::new(self.root.clone()));
+                let server = crate::net::Server::new(
+                    &server_name,
+                    self.tx_seqs.clone(),
+                    Arc::clone(&shared_root),
+                );
+                self.shared_root = Some(shared_root);
+                server
+            })
             .transpose()?;
 
         loop {

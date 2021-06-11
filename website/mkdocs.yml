@@ -19,6 +19,7 @@ nav:
                 - Tree export: export.md
                 - Tips & tricks: tricks.md
                 - Common file operations: file-operations.md
+                - Client - Server: remote.md
                 - Reference - The input: input.md
         - Conf:
                 - Config file: conf_file.md

@@ -1,17 +1,10 @@
 
 
-broot defines two optional features which may be applied on compilation:
+This page defines the optional features which may be applied on compilation:
 
-* client-server
 * clipboard
 
-## The "client-server" feature
-
-This feature allows an instance of broot to be remotely controlled.
-
-It's described in [client-server.md](client-server.md).
-
-This feature could potentially be made standard if there's some demand.
+Feature gating is usually temporary: they may be removed when a technical problem is solved, when a feature becomes "mainstream", or when it's dropped because no user mentionned using it.
 
 ## The "clipboard" feature
 

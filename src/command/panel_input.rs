@@ -292,7 +292,7 @@ impl PanelInput {
                                 };
                             }
                             if let Some(invocation_parser) = &verb.invocation_parser {
-                                let exec_builder = ExecutionStringBuilder::from_sel_info(
+                                let exec_builder = ExecutionStringBuilder::without_invocation(
                                     sel_info,
                                 );
                                 let verb_invocation = exec_builder.invocation_with_default(

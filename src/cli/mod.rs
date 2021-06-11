@@ -163,7 +163,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     let root = get_root_path(&cli_matches)?;
 
-    #[cfg(feature = "client-server")]
+    #[cfg(unix)]
     if let Some(server_name) = cli_matches.value_of("send") {
         use crate::{
             command::Sequence,
@@ -191,8 +191,6 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         commands,
         height,
         no_style,
-
-        #[cfg(feature = "client-server")]
         listen: cli_matches.value_of("listen").map(str::to_string),
     };
     if must_show_selection_mark {

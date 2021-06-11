@@ -45,6 +45,9 @@ pub fn matching_verb_rows<'v>(
 ) -> Vec<MatchingVerbRow<'v>> {
     let mut rows = Vec::new();
     for verb in &con.verb_store.verbs {
+        if !verb.show_in_doc {
+            continue;
+        }
         let mut name = None;
         let mut shortcut = None;
         if pat.is_some() {

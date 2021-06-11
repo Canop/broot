@@ -64,8 +64,8 @@ impl Message {
             }
             Self::Sequence(Sequence { separator, raw }) => {
                 writeln!(w, "SEQ")?;
-                writeln!(w, "{}", separator)?;
-                writeln!(w, "{}", raw)
+                writeln!(w, "{}", raw)?;
+                writeln!(w, "{}", separator)
             }
         }
     }
