@@ -13,4 +13,4 @@ This feature allows the `:copy_path` verb which copies the currently selected pa
 Limits:
 
 - the feature doesn't compile right now on some platforms (for example Raspberry)
-- on some platforms the content leaves the clipboard when you quit broot (so you must paste while broot is still running)
+- on some platforms, such as X11 on Linux, \*BSD, etc the content leaves the clipboard when you quit broot, so you must paste while broot is still running. In the case of X11, this is a limitation of the platform and not something that can ever be handled on an application leve.
