@@ -2,6 +2,7 @@
 - `{root}` argument (current tree root) can be used in verb patterns
 - `working_dir` verb attribute
 - client-server mode fixed, no longer feature-gated (but still only available on unix like systems)
+- broot tries to keep same selection on option changes
 
 <a name="v1.5.1"></a>
 ### v1.5.1 - 2021-06-03

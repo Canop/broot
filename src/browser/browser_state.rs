@@ -205,8 +205,14 @@ impl PanelState for BrowserState {
         let tree = self.displayed_tree();
         let mut options = tree.options.clone();
         change_options(&mut options);
+        let mut new_state = BrowserState::new(tree.root().clone(), options, screen, con, &Dam::unlimited());
+        if let Ok(Some(bs)) = &mut new_state {
+            if tree.selection != 0 {
+                bs.displayed_tree_mut().try_select_path(&tree.selected_line().path);
+            }
+        }
         CmdResult::from_optional_state(
-            BrowserState::new(tree.root().clone(), options, screen, con, &Dam::unlimited()),
+            new_state,
             in_new_panel,
         )
     }
