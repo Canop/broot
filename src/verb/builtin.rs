@@ -200,6 +200,16 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_control_key('q')
             .with_shortcut("q"),
         internal(refresh).with_key(F5),
+        internal(root_up)
+            .with_key(KeyEvent {
+                code: KeyCode::Up,
+                modifiers: KeyModifiers::CONTROL,
+            }),
+        internal(root_down)
+            .with_key(KeyEvent {
+                code: KeyCode::Down,
+                modifiers: KeyModifiers::CONTROL,
+            }),
         internal(select_first).with_key(HOME),
         internal(select_last).with_key(END),
         internal(clear_stage).with_shortcut("cls"),

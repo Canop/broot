@@ -58,6 +58,30 @@ impl BrowserState {
         }))
     }
 
+    /// build a cmdResult asking for the addition of a new state
+    /// being a browser state similar to the current one but with
+    /// different options or a different root, or both
+    fn modified(
+        &self,
+        screen: Screen,
+        root: PathBuf,
+        options: TreeOptions,
+        in_new_panel: bool,
+        con: &AppContext,
+    ) -> CmdResult {
+        let tree = self.displayed_tree();
+        let mut new_state = BrowserState::new(root, options, screen, con, &Dam::unlimited());
+        if let Ok(Some(bs)) = &mut new_state {
+            if tree.selection != 0 {
+                bs.displayed_tree_mut().try_select_path(&tree.selected_line().path);
+            }
+        }
+        CmdResult::from_optional_state(
+            new_state,
+            in_new_panel,
+        )
+    }
+
     pub fn root(&self) -> &Path {
         self.tree.root()
     }
@@ -205,16 +229,7 @@ impl PanelState for BrowserState {
         let tree = self.displayed_tree();
         let mut options = tree.options.clone();
         change_options(&mut options);
-        let mut new_state = BrowserState::new(tree.root().clone(), options, screen, con, &Dam::unlimited());
-        if let Ok(Some(bs)) = &mut new_state {
-            if tree.selection != 0 {
-                bs.displayed_tree_mut().try_select_path(&tree.selected_line().path);
-            }
-        }
-        CmdResult::from_optional_state(
-            new_state,
-            in_new_panel,
-        )
+        self.modified(screen, tree.root().clone(), options, in_new_panel, con)
     }
 
     fn clear_pending(&mut self) {
@@ -408,6 +423,28 @@ impl PanelState for BrowserState {
             Internal::parent => self.go_to_parent(screen, con, bang),
             Internal::print_tree => {
                 print::print_tree(&self.displayed_tree(), cc.app.screen, &cc.app.panel_skin, con)?
+            }
+            Internal::root_up => {
+                let tree = self.displayed_tree();
+                let root = tree.root();
+                if let Some(new_root) = root.parent() {
+                    self.modified(screen, new_root.to_path_buf(), tree.options.clone(), bang, con)
+                } else {
+                    CmdResult::error(format!("{:?} has no parent", root))
+                }
+            }
+            Internal::root_down => {
+                let tree = self.displayed_tree();
+                if tree.selection > 0 {
+                    let root_len = tree.root().components().count();
+                    let new_root = tree.selected_line().path
+                        .components()
+                        .take(root_len + 1)
+                        .collect();
+                    self.modified(screen, new_root, tree.options.clone(), bang, con)
+                } else {
+                    CmdResult::error("No selected line")
+                }
             }
             Internal::select_first => {
                 self.displayed_tree_mut().try_select_first();

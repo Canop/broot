@@ -104,6 +104,8 @@ Internals! {
     start_end_panel: "either open or close an additional panel" true,
     quit: "quit Broot" false,
     refresh: "refresh tree and clear size cache" false,
+    root_up: "move tree root up" true,
+    root_down: "move tree root down" true,
     //restore_pattern: "restore a pattern which was just removed" false,
     select_first: "select the first item" false,
     select_last: "select the last item" false,
