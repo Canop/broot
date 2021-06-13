@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        app::{Selection, SelInfo, SelectionType},
+        app::*,
         errors::ConfError,
         keys,
         path::{self, PathAnchor},
@@ -219,7 +219,7 @@ impl Verb {
     pub fn get_status_markdown(
         &self,
         sel_info: SelInfo<'_>,
-        other_path: &Option<PathBuf>,
+        app_state: &AppState,
         invocation: &VerbInvocation,
     ) -> String {
         let name = self.names.get(0).unwrap_or(&invocation.name);
@@ -252,7 +252,7 @@ impl Verb {
             ExecutionStringBuilder::with_invocation(
                 &self.invocation_parser,
                 sel_info,
-                other_path,
+                app_state,
                 &invocation.args,
             )
         };

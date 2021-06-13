@@ -73,9 +73,10 @@ impl PanelInput {
         event: Event,
         con: &AppContext,
         sel_info: SelInfo<'_>,
+        app_state: &AppState,
         mode: Mode,
     ) -> Result<Command, ProgramError> {
-        let cmd = self.get_command(event, con, sel_info, mode);
+        let cmd = self.get_command(event, con, sel_info, app_state, mode);
         self.input_field.display_on(w)?;
         Ok(cmd)
     }
@@ -161,6 +162,7 @@ impl PanelInput {
         event: Event,
         con: &AppContext,
         sel_info: SelInfo<'_>,
+        app_state: &AppState,
         mode: Mode,
     ) -> Command {
         match event {
@@ -294,6 +296,7 @@ impl PanelInput {
                             if let Some(invocation_parser) = &verb.invocation_parser {
                                 let exec_builder = ExecutionStringBuilder::without_invocation(
                                     sel_info,
+                                    app_state,
                                 );
                                 let verb_invocation = exec_builder.invocation_with_default(
                                     &invocation_parser.invocation_pattern

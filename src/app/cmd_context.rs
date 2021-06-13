@@ -5,7 +5,6 @@ use {
         display::{Areas, Screen},
         skin::PanelSkin,
     },
-    std::path::PathBuf,
 };
 
 /// short lived wrapping of a few things which are needed for the handling
@@ -18,7 +17,6 @@ pub struct CmdContext<'c> {
 
 /// the part of the immutable command execution context which comes from the app
 pub struct AppCmdContext<'c> {
-    pub other_path: Option<PathBuf>,
     pub panel_skin: &'c PanelSkin,
     pub preview_panel: Option<PanelId>, // id of the app's preview panel
     pub stage_panel: Option<PanelId>, // id of the app's preview panel

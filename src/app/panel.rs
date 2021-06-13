@@ -129,7 +129,7 @@ impl Panel {
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
         let sel_info = self.states[self.states.len() - 1].sel_info(&app_state);
-        self.input.on_event(w, event, con, sel_info, self.state().get_mode())
+        self.input.on_event(w, event, con, sel_info, app_state, self.state().get_mode())
     }
 
     pub fn push_state(&mut self, new_state: Box<dyn PanelState>) {

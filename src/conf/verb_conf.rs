@@ -69,7 +69,8 @@ impl TryFrom<&VerbConf> for Verb {
             let working_dir = match (vc.set_working_dir, &vc.working_dir) {
                 (Some(false), _) => None,
                 (_, Some(s)) => Some(s.clone()),
-                (_, None) => Some("{directory}".to_owned()),
+                (Some(true), None) => Some("{directory}".to_owned()),
+                (None, None) => None,
             };
             ExternalExecution::new(
                 s,

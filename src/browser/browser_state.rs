@@ -147,6 +147,10 @@ impl BrowserState {
 
 impl PanelState for BrowserState {
 
+    fn tree_root(&self) -> Option<&Path> {
+        Some(self.root())
+    }
+
     fn get_type(&self) -> PanelStateType {
         PanelStateType::Tree
     }

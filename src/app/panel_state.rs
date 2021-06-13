@@ -433,7 +433,7 @@ pub trait PanelState {
         if verb.needs_selection && !self.has_at_least_one_selection(app_state) {
             return Ok(CmdResult::error("This verb needs a selection"));
         }
-        if verb.needs_another_panel && cc.app.other_path.is_none() {
+        if verb.needs_another_panel && app_state.other_panel_path.is_none() {
             return Ok(CmdResult::error("This verb needs another panel"));
         }
         match &verb.execution {
@@ -461,7 +461,7 @@ pub trait PanelState {
         let exec_builder = ExecutionStringBuilder::with_invocation(
             &verb.invocation_parser,
             self.sel_info(app_state),
-            &cc.app.other_path,
+            app_state,
             if let Some(inv) = invocation {
                 &inv.args
             } else {
@@ -478,7 +478,7 @@ pub trait PanelState {
         seq_ex: &SequenceExecution,
         invocation: Option<&VerbInvocation>,
         app_state: &mut AppState,
-        cc: &CmdContext,
+        _cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         let sel_info = self.sel_info(app_state);
         if matches!(sel_info, SelInfo::More(_)) {
@@ -490,7 +490,7 @@ pub trait PanelState {
         let exec_builder = ExecutionStringBuilder::with_invocation(
             &verb.invocation_parser,
             sel_info,
-            &cc.app.other_path,
+            app_state,
             if let Some(inv) = invocation {
                 &inv.args
             } else {
@@ -618,6 +618,11 @@ pub trait PanelState {
         }
     }
 
+    /// must return None if the state doesn't display a file tree
+    fn tree_root(&self) -> Option<&Path> {
+        None
+    }
+
     fn selected_path(&self) -> Option<&Path>;
 
     fn selection(&self) -> Option<Selection<'_>>;
@@ -719,7 +724,7 @@ pub trait PanelState {
                             Status::new("No matching verb (*?* for the list of verbs)", true)
                         }
                         PrefixSearchResult::Match(_, verb) => {
-                            self.get_verb_status(verb, invocation, sel_info, cc)
+                            self.get_verb_status(verb, invocation, sel_info, cc, app_state)
                         }
                         PrefixSearchResult::Matches(completions) => Status::new(
                             format!(
@@ -744,7 +749,8 @@ pub trait PanelState {
         verb: &Verb,
         invocation: &VerbInvocation,
         sel_info: SelInfo<'_>,
-        cc: &CmdContext,
+        _cc: &CmdContext,
+        app_state: &AppState,
     ) -> Status {
         if sel_info.count_paths() > 1 {
             if let VerbExecution::External(external) = &verb.execution {
@@ -757,13 +763,13 @@ pub trait PanelState {
             }
             // right now there's no check for sequences but they're inherently dangereous
         }
-        if let Some(err) = verb.check_args(&sel_info, invocation, &cc.app.other_path) {
+        if let Some(err) = verb.check_args(&sel_info, invocation, &app_state.other_panel_path) {
             Status::new(err, true)
         } else {
             Status::new(
                 verb.get_status_markdown(
                     sel_info,
-                    &cc.app.other_path,
+                    app_state,
                     invocation,
                 ),
                 false,

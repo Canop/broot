@@ -10,6 +10,7 @@ use {
         launchable::Launchable,
         path::closest_dir,
         skin::*,
+        stage::Stage,
         task_sync::{Dam, Either},
         verb::Internal,
     },
@@ -54,10 +55,6 @@ pub struct App {
 
     stage_panel: Option<PanelId>,
 
-    /// the current root, updated when a panel with this concept
-    /// becomes active
-    root: PathBuf,
-
     /// an optional copy of the root for the --server
     shared_root: Option<Arc<Mutex<PathBuf>>>,
 
@@ -99,7 +96,6 @@ impl App {
             created_panels_count: 1,
             preview_panel: None,
             stage_panel: None,
-            root: con.launch_args.root.clone(),
             shared_root: None,
             tx_seqs,
             rx_seqs,
@@ -271,7 +267,6 @@ impl App {
         let mut error: Option<String> = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
         let app_cmd_context = AppCmdContext {
-            other_path: self.get_other_panel_path(),
             panel_skin,
             preview_panel: self.preview_panel,
             stage_panel: self.stage_panel,
@@ -325,7 +320,6 @@ impl App {
                         let new_input = self.panel().get_input_content();
                         let cmd = Command::from_raw(new_input, false);
                         let app_cmd_context = AppCmdContext {
-                            other_path: self.get_other_panel_path(),
                             panel_skin,
                             preview_panel: self.preview_panel,
                             stage_panel: self.stage_panel,
@@ -373,7 +367,6 @@ impl App {
                             }
                             self.active_panel_idx = idx;
                             let app_cmd_context = AppCmdContext {
-                                other_path: self.get_other_panel_path(),
                                 panel_skin,
                                 preview_panel: self.preview_panel,
                                 stage_panel: self.stage_panel,
@@ -476,7 +469,6 @@ impl App {
                 }
                 if self.remove_state() {
                     let app_cmd_context = AppCmdContext {
-                        other_path: self.get_other_panel_path(),
                         panel_skin,
                         preview_panel: self.preview_panel,
                         stage_panel: self.stage_panel,
@@ -507,18 +499,20 @@ impl App {
         if let Some(text) = error {
             self.mut_panel().set_error(text);
         }
-        self.update_preview(con);
 
-
-        if let Some(path) = self.state().selected_path() {
-            self.root = path.to_path_buf();
+        app_state.other_panel_path = self.get_other_panel_path();
+        if let Some(path) = self.state().tree_root() {
+            app_state.root = path.to_path_buf();
         }
+
 
         if let Some(shared_root) = &mut self.shared_root {
             if let Ok(mut root) = shared_root.lock() {
-                *root = self.root.clone();
+                *root = app_state.root.clone();
             }
         }
+
+        self.update_preview(con);
 
         Ok(())
     }
@@ -616,7 +610,6 @@ impl App {
             if self.do_pending_task(app_state, con, dam) {
                 self.update_preview(con); // the selection may have changed
                 let app_cmd_context = AppCmdContext {
-                    other_path: self.get_other_panel_path(),
                     panel_skin: &skin.focused,
                     preview_panel: self.preview_panel,
                     stage_panel: self.stage_panel,
@@ -676,7 +669,11 @@ impl App {
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
         let skin = AppSkin::new(conf, con.launch_args.no_style);
-        let mut app_state = AppState::default();
+        let mut app_state = AppState {
+            stage: Stage::default(),
+            root: con.launch_args.root.clone(),
+            other_panel_path: None,
+        };
 
         self.screen.clear_bottom_right_char(w, &skin.focused)?;
 
@@ -689,7 +686,7 @@ impl App {
         #[cfg(unix)]
         let _server = con.launch_args.listen.as_ref()
             .map(|server_name| {
-                let shared_root = Arc::new(Mutex::new(self.root.clone()));
+                let shared_root = Arc::new(Mutex::new(app_state.root.clone()));
                 let server = crate::net::Server::new(
                     &server_name,
                     self.tx_seqs.clone(),

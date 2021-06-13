@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        app::{Selection, SelInfo, SelectionType},
+        app::*,
         path,
     },
     ahash::AHashMap,
@@ -16,6 +16,9 @@ pub struct ExecutionStringBuilder<'b> {
     /// the current file selection
     pub sel_info: SelInfo<'b>,
 
+    /// the current root of the app
+    root: &'b Path,
+
     /// the selection in the other panel, when there are exactly two
     other_file: Option<&'b PathBuf>,
 
@@ -29,17 +32,19 @@ impl<'b> ExecutionStringBuilder<'b> {
     /// when a verb is triggered from a key shortcut)
     pub fn without_invocation(
          sel_info: SelInfo<'b>,
+         app_state: &'b AppState,
     ) -> Self {
         Self {
             sel_info,
-            other_file: None,
+            root: &app_state.root,
+            other_file: app_state.other_panel_path.as_ref(),
             invocation_values: None,
         }
     }
     pub fn with_invocation(
         invocation_parser: &Option<InvocationParser>,
         sel_info: SelInfo<'b>,
-        other_file: &'b Option<PathBuf>,
+        app_state: &'b AppState,
         invocation_args: &Option<String>,
     ) -> Self {
         let invocation_values = invocation_parser
@@ -48,7 +53,8 @@ impl<'b> ExecutionStringBuilder<'b> {
             .and_then(|(parser, args)| parser.parse(args));
         Self {
             sel_info,
-            other_file: other_file.as_ref(),
+            root: &app_state.root,
+            other_file: app_state.other_panel_path.as_ref(),
             invocation_values,
         }
     }
@@ -96,6 +102,7 @@ impl<'b> ExecutionStringBuilder<'b> {
     ) -> Option<String> {
         debug!("repl name : {:?}", name);
         match name {
+            "root" => Some(path_to_string(self.root)),
             "line" => sel.map(|s| s.line.to_string()),
             "file" => sel.map(|s| s.path)
                 .map(path_to_string),
@@ -313,7 +320,9 @@ mod execution_builder_test {
 
     use {
         super::*,
-        crate::app::SelectionType,
+        crate::{
+            stage::*,
+        },
     };
 
     fn check_build_execution_from_sel(
@@ -329,7 +338,15 @@ mod execution_builder_test {
             stype: SelectionType::File,
             is_exe: false,
         };
-        let mut builder = ExecutionStringBuilder::from_sel_info(SelInfo::One(sel));
+        let app_state = AppState {
+            stage: Stage::default(),
+            root: PathBuf::from("/".to_owned()),
+            other_panel_path: None,
+        };
+        let mut builder = ExecutionStringBuilder::without_invocation(
+            SelInfo::One(sel),
+            &app_state,
+        );
         let mut map = AHashMap::default();
         for (k, v) in replacements {
             map.insert(k.to_owned(), v.to_owned());

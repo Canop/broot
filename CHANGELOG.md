@@ -1,4 +1,5 @@
 ### next
+- `{root}` argument (current tree root) can be used in verb patterns
 - `working_dir` verb attribute
 - client-server mode fixed, no longer feature-gated (but still only available on unix like systems)
 
