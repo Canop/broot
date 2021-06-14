@@ -10,8 +10,7 @@ const INTERESTING: Status = Status::from_bits_truncate(
     Status::WT_NEW.bits() | Status::CONFLICTED.bits() | Status::WT_MODIFIED.bits(),
 );
 
-// if I add nothing, I'll remove this useless struct
-// and only use git2.Status
+/// A git status
 #[derive(Debug, Clone, Copy)]
 pub struct LineGitStatus {
     pub status: Status,
@@ -28,6 +27,9 @@ impl LineGitStatus {
     }
 }
 
+/// As a git repo can't tell whether a path has a status, this computer
+/// looks at all the statuses of the repo and build a map path->status
+/// which can then be efficiently queried
 pub struct LineStatusComputer {
     interesting_statuses: AHashMap<PathBuf, Status>,
 }
