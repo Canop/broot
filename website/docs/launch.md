@@ -46,12 +46,6 @@ The trick to enable broot to `cd` your shell when you do `alt-enter` is the foll
 
 Most users have no reason to use `--outcmd` on their own, but it can still be used to write an alternative to **br** or to port it to shells which aren't currently supported.
 
-## the `--out` launch argument
-
-If you provide a path to broot with `--out`, then a few commands won't execute anything directly but will instead write the relevant path as a line in the given file.
-
-This may be used by shell functions or other programs calling broot, in a similar way to `--outcmd`, for example in conjunction with ̀ --cmd`.
-
 <a name=cmd></a>
 ## the `--cmd` launch argument
 

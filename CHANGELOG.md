@@ -1,9 +1,12 @@
-### next
+### next (1.6)
 - `{root}` argument (current tree root) can be used in verb patterns - Fix #395
 - `working_dir` verb attribute - Fix #396
 - client-server mode fixed, no longer feature-gated (but still only available on unix like systems)
 - broot tries to keep same selection on option changes
 - `:tree_up` and `:tree_down` internals, mapped to ctrl-up and ctrl-down - Fix #399
+- better handling of auto color mode: two separate behaviors: for app running and for export when leaving - Fix #397
+- remove the deprecated `--no-style` launch argument (use `--color no` instead)
+- deprecate the `--out` argument (redirecting the output is the recommanded solution)
 
 <a name="v1.5.1"></a>
 ### v1.5.1 - 2021-06-03

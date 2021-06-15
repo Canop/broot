@@ -28,11 +28,10 @@ use {
         event::{DisableMouseCapture, EnableMouseCapture},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
-        tty::IsTty,
     },
     std::{
         env,
-        io::{self, Write, stdout},
+        io::{self, Write},
         path::{Path, PathBuf},
     },
 };
@@ -73,10 +72,6 @@ fn get_root_path(cli_args: &ArgMatches<'_>) -> Result<PathBuf, ProgramError> {
         }
     }
     Ok(canonicalize_root(&root)?)
-}
-
-fn is_output_piped() -> bool {
-    !stdout().is_tty()
 }
 
 /// run the application, and maybe return a launchable
@@ -148,18 +143,12 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     let file_export_path = cli_matches.value_of("file-export-path").map(str::to_string);
     let cmd_export_path = cli_matches.value_of("cmd-export-path").map(str::to_string);
     let commands = cli_matches.value_of("commands").map(str::to_string);
-    let (no_style, must_show_selection_mark) = {
-        if cli_matches.is_present("no-style") {
-            (true, is_output_piped())
-        } else {
-            match cli_matches.value_of("color") {
-                Some("yes") => (false, false),
-                Some("no") => (true, !is_output_piped()),
-                _  => (is_output_piped(), false),
-            }
-        }
-    };
     let height = cli_matches.value_of("height").and_then(|s| s.parse().ok());
+    let color = match cli_matches.value_of("color") {
+        Some("yes") => Some(true),
+        Some("no") => Some(false),
+        _ => None,
+    };
 
     let root = get_root_path(&cli_matches)?;
 
@@ -190,10 +179,10 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         tree_options,
         commands,
         height,
-        no_style,
+        color,
         listen: cli_matches.value_of("listen").map(str::to_string),
     };
-    if must_show_selection_mark {
+    if color == Some(false) {
         launch_args.tree_options.show_selection_mark = true;
     }
 

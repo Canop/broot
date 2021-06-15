@@ -180,22 +180,17 @@ pub fn clap_app() -> clap::App<'static, 'static> {
                 .takes_value(true),
         )
         .arg(
-            clap::Arg::with_name("file-export-path")
+            clap::Arg::with_name("file-export-path") // deprecated since broot 1.6
                 .short("o")
                 .long("out")
                 .takes_value(true)
+                .hidden(true)
                 .help("Where to write the produced path (if any)"),
         )
         .arg(
             clap::Arg::with_name("install")
                 .long("install")
                 .help("Install or reinstall the br shell function"),
-        )
-        .arg(
-            clap::Arg::with_name("no-style")
-                .hidden(true) // we're deprecating this in favor of --color
-                .long("no-style")
-                .help("Whether to remove all style and colors from exported tree"),
         )
         .arg(
             clap::Arg::with_name("set-install-state")

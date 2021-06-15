@@ -668,7 +668,7 @@ impl App {
         let event_source = EventSource::new()?;
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
-        let skin = AppSkin::new(conf, con.launch_args.no_style);
+        let skin = AppSkin::new(conf, con.launch_args.color == Some(false));
         let mut app_state = AppState {
             stage: Stage::default(),
             root: con.launch_args.root.clone(),

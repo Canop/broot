@@ -9,10 +9,11 @@ use {
         skin::{ExtColorMap, PanelSkin, StyleMap},
         tree::Tree,
     },
+    crossterm::tty::IsTty,
     pathdiff,
     std::{
         fs::OpenOptions,
-        io::{self, Write},
+        io::{self, Write, stdout},
         path::Path,
     },
 };
@@ -29,7 +30,8 @@ fn print_string(string: String, con: &AppContext) -> io::Result<CmdResult> {
             CmdResult::Quit
         } else {
             // no output path provided. We write on stdout, but we must
-            // do it after app closing to have the normal terminal
+            // do it after app closing to have the desired stdout (it may
+            // be the normal terminal or a file, or other output)
             CmdResult::from(Launchable::printer(string))
         }
     )
@@ -120,10 +122,13 @@ pub fn print_tree(
     } else {
         // no output path provided. We write on stdout, but we must
         // do it after app closing to have the normal terminal
-        let styles = if con.launch_args.no_style {
-            StyleMap::no_term()
-        } else {
+        let show_color = con.launch_args
+            .color
+            .unwrap_or_else(|| stdout().is_tty());
+        let styles = if show_color {
             panel_skin.styles.clone()
+        } else {
+            StyleMap::no_term()
         };
         Ok(CmdResult::from(Launchable::tree_printer(
             tree,
