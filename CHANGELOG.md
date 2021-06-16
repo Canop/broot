@@ -1,4 +1,5 @@
-### next (1.6)
+<a name="v1.6.0"></a>
+### v1.6.0 - 2021-06-16
 - `{root}` argument (current tree root) can be used in verb patterns - Fix #395
 - `working_dir` verb attribute - Fix #396
 - client-server mode fixed, no longer feature-gated (but still only available on unix like systems)
