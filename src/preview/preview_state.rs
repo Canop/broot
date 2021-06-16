@@ -60,6 +60,9 @@ impl PreviewState {
             mode: initial_mode(con),
         }
     }
+    fn vis_preview(&self) -> &Preview {
+        self.filtered_preview.as_ref().unwrap_or(&self.preview)
+    }
     fn mut_preview(&mut self) -> &mut Preview {
         self.filtered_preview.as_mut().unwrap_or(&mut self.preview)
     }
@@ -90,7 +93,7 @@ impl PreviewState {
             path: &self.path,
             stype: SelectionType::File,
             is_exe: false, // not always true. It means :open_leave won't execute it
-            line: self.preview.get_selected_line_number().unwrap_or(0),
+            line: self.vis_preview().get_selected_line_number().unwrap_or(0),
         }
     }
 
@@ -361,7 +364,6 @@ impl PanelState for PreviewState {
             //    Ok(CmdResult::Keep)
             //}
             Internal::panel_left if self.removed_pattern.is_some() => {
-                debug!("restoring pattern");
                 self.pending_pattern = self.removed_pattern.take();
                 Ok(CmdResult::Keep)
             }

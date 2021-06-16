@@ -7,6 +7,7 @@
 - better handling of auto color mode: two separate behaviors: for app running and for export when leaving - Fix #397
 - remove the deprecated `--no-style` launch argument (use `--color no` instead)
 - deprecate the `--out` argument (redirecting the output is the recommanded solution)
+- fix a few minor bugs
 
 <a name="v1.5.1"></a>
 ### v1.5.1 - 2021-06-03
