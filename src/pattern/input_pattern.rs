@@ -18,6 +18,12 @@ pub struct InputPattern {
     pub pattern: Pattern,
 }
 
+impl PartialEq for InputPattern {
+    fn eq(&self, other: &Self) -> bool {
+        self.raw == other.raw
+    }
+}
+
 impl InputPattern {
     pub fn none() -> Self {
         Self {

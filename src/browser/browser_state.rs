@@ -273,7 +273,13 @@ impl PanelState for BrowserState {
         if pat.is_none() {
             self.filtered_tree = None;
         }
-        self.pending_pattern = pat;
+        if let Some(filtered_tree) = &self.filtered_tree {
+            if pat != filtered_tree.options.pattern {
+                self.pending_pattern = pat;
+            }
+        } else {
+            self.pending_pattern = pat;
+        }
         Ok(CmdResult::Keep)
     }
 
