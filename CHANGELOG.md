@@ -1,3 +1,6 @@
+### next
+- fix compilation on freeBSD
+
 <a name="v1.6.0"></a>
 ### v1.6.0 - 2021-06-16
 - `{root}` argument (current tree root) can be used in verb patterns - Fix #395
