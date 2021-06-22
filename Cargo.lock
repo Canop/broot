@@ -464,9 +464,9 @@ dependencies = [
 
 [[package]]
 name = "deser-hjson"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1b28e438b793f41d0a6401a58ed95ce02f2f36a45af9ef929c7e4a0a6453f0f6"
+checksum = "bf2973e4fb5f11bb10cc56814ce30e9721ced195cec313a80c94ce29c2f0e896"
 dependencies = [
  "serde",
 ]
@@ -809,9 +809,9 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "lfs-core"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a00c17e133785e5d924d4593a4cea9c0eda301fcfbe9e455f0d0a31ff2d15661"
+checksum = "8e081de7baf470066d5caa416f998f984d50df206c35ad6b663530a06d7dc621"
 dependencies = [
  "lazy-regex",
  "libc",

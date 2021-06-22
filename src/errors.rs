@@ -28,6 +28,7 @@ custom_error! {pub ProgramError
     ImageError {source: ImageError } = "{}",
     Lfs {details: String} = "Failed to fetch mounts: {}",
     ZeroLenFile = "File seems empty",
+    UnmappableFile = "File can't be mapped",
 }
 
 custom_error! {pub TreeBuildError

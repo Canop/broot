@@ -104,6 +104,14 @@ impl SyntacticView {
         con: &AppContext,
     ) -> Result<bool, ProgramError> {
         let f = File::open(&self.path)?;
+        {
+            // if we detect the file isn't mappable, we'll
+            // let the ZeroLenFilePreview try to read it
+            let mmap = unsafe { Mmap::map(&f) };
+            if mmap.is_err() {
+                return Err(ProgramError::UnmappableFile);
+            }
+        }
         let md = f.metadata()?;
         if md.len() == 0 {
             return Err(ProgramError::ZeroLenFile);

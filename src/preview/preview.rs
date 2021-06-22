@@ -82,7 +82,8 @@ impl Preview {
 
     }
     /// build a text preview (maybe with syntaxic coloring) if possible,
-    /// a hex (binary) view if content isnt't UTF8, or a IOError when
+    /// a hex (binary) view if content isnt't UTF8, a ZeroLen file if there's
+    /// no length (it's probably a linux pseudofile) or a IOError when
     /// there's a IO problem
     pub fn unfiltered_text(
         path: &Path,
@@ -90,8 +91,8 @@ impl Preview {
     ) -> Self {
         match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con) {
             Ok(Some(sv)) => Self::Syntactic(sv),
-            Err(ProgramError::ZeroLenFile) => {
-                debug!("zero len file - check if system file");
+            Err(ProgramError::ZeroLenFile | ProgramError::UnmappableFile) => {
+                debug!("zero len or unmappable file - check if system file");
                 Self::ZeroLen(ZeroLenFileView::new(path.to_path_buf()))
             }
             // not previewable as UTF8 text

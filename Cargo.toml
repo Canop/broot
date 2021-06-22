@@ -29,7 +29,7 @@ chrono = "0.4"
 crossbeam = "0.8"
 crossterm = "0.19.0"
 custom_error = "1.6"
-deser-hjson = "1.0"
+deser-hjson = "1.0.1"
 directories = "3.0"
 file-size = "1.0.3"
 fnv = "1.0.7"
@@ -64,7 +64,7 @@ unicode-width = "0.1.8"
 glassbench = "0.3.0"
 
 [target.'cfg(unix)'.dependencies]
-lfs-core = "0.3.2"
+lfs-core = "0.3.3"
 users = "0.11"
 
 [target.'cfg(windows)'.dependencies]
