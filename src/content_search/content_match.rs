@@ -15,6 +15,14 @@ impl ContentMatch {
         needle: &str,
         desired_len: usize, // max length of the extract in bytes
     ) -> Self {
+        if hay.is_empty() {
+            // this happens if you search `cr/.*` and a file starts with an empty line
+            return Self {
+                extract: "".to_string(),
+                needle_start: 0,
+                needle_end: 0,
+            };
+        }
         let mut extract_start = pos;
         let mut extract_end = pos + needle.len(); // not included
         loop {

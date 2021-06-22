@@ -1,6 +1,7 @@
 ### next
 - fix compilation on freeBSD
-- fix disks whose mount points has a space character missing from the `:filesystems` view
+- fix `:filesystems` view not listing disks whose mount point has a space character
+- fix panic on searching `cr/.*` if a file starts with an empty line - Fix #406
 
 <a name="v1.6.0"></a>
 ### v1.6.0 - 2021-06-16
@@ -61,7 +62,7 @@ Several verbs have been added. Type "stag" in help to see them and their keyboar
 
 <a name="v1.2.9"></a>
 ### v1.2.9 - 2021-03-18
-- fix crash on `:input_del_word_left` - Fix #361
+- fix panic on `:input_del_word_left` - Fix #361
 - remove diacritics and normalize unicode from input on fuzzy search (an unnormalized string with unwanted diacritics most often happen when you paste a string in the input)
 
 <a name="v1.2.8"></a>
@@ -203,7 +204,7 @@ If you want it to be changed, add `set_working_dir = true` to the verb definitio
 - the selected directory is now the working dir for subprocess launched from broot
 - images are previewed as such
 - :preview_binay, :preview_text, and :preview_image verbs allow the choice of previewing mode
-- fix a possible crash in previewed files on displaying fuzzy pattern matches
+- fix a possible panic in previewed files on displaying fuzzy pattern matches
 
 <a name="v0.19.4"></a>
 ### v0.19.4 - 2020-07-31
@@ -485,7 +486,7 @@ Note that broot will ask you again to install the br function
 
 <a name="v0.10.3"></a>
 ### v0.10.3 - 2019-11-27
-* fix crash on doing `:rm` on the last child of current root
+* fix panic on doing `:rm` on the last child of current root
 * refactor help page generation using Termimad templates
 * clear help background when terminal was resized between redraws
 
