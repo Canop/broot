@@ -1,5 +1,6 @@
 ### next
 - fix compilation on freeBSD
+- fix disks whose mount points has a space character missing from the `:filesystems` view
 
 <a name="v1.6.0"></a>
 ### v1.6.0 - 2021-06-16

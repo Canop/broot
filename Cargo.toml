@@ -64,7 +64,7 @@ unicode-width = "0.1.8"
 glassbench = "0.3.0"
 
 [target.'cfg(unix)'.dependencies]
-lfs-core = "0.3.1"
+lfs-core = "0.3.2"
 users = "0.11"
 
 [target.'cfg(windows)'.dependencies]
@@ -78,7 +78,7 @@ debug = false
 
 [profile.release]
 debug = false
-lto = "fat"
+lto = true
 codegen-units = 1 # this removes a few hundred bytes from the final exec size
 
 [[bench]]
