@@ -247,7 +247,7 @@ impl PanelState for FilesystemState {
         if con.show_selection_mark {
             wc_fs += 1;
         }
-        let w_dsk = 3;
+        let w_dsk = 5; // max width of a lfs-core disk type
         let w_type = mounts.iter()
             .map(|m| m.info.fs_type.chars().count())
             .max().unwrap_or(0)
@@ -304,7 +304,7 @@ impl PanelState for FilesystemState {
         cw.queue_g_string(&styles.default, format!("{:width$}", "filesystem", width = wc_fs))?;
         cw.queue_char(border_style, '│')?;
         if e_dsk {
-            cw.queue_g_string(&styles.default, "dsk".to_string())?;
+            cw.queue_g_string(&styles.default, " dsk ".to_string())?;
             cw.queue_char(border_style, '│')?;
         }
         if e_type {
@@ -373,10 +373,10 @@ impl PanelState for FilesystemState {
                             txt_style,
                             match_style,
                         );
-                        matched_string.fill(3, Alignment::Left);
+                        matched_string.fill(5, Alignment::Center);
                         matched_string.queue_on(&mut cw)?;
                     } else {
-                        cw.queue_g_string(txt_style, "   ".to_string())?;
+                        cw.queue_g_string(txt_style, "     ".to_string())?;
                     }
                     cw.queue_char(border_style, '│')?;
                 }

@@ -1,8 +1,10 @@
-### next
+<a name="v1.6.1"></a>
+### v1.6.1 - 2021-06-23
 - fix compilation on freeBSD
 - fix `:filesystems` view not listing disks whose mount point has a space character
 - fix panic on searching `cr/.*` if a file starts with an empty line - Fix #406
 - fix preview of linux pseudo-files
+- identify "RAM" and "crypted" disks in `:filesystems` view
 
 <a name="v1.6.0"></a>
 ### v1.6.0 - 2021-06-16

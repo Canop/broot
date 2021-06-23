@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.6.1-dev"
+version = "1.6.1"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -64,7 +64,7 @@ unicode-width = "0.1.8"
 glassbench = "0.3.0"
 
 [target.'cfg(unix)'.dependencies]
-lfs-core = "0.3.3"
+lfs-core = "0.3.4"
 users = "0.11"
 
 [target.'cfg(windows)'.dependencies]
