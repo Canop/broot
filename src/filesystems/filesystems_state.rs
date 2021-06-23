@@ -395,13 +395,16 @@ impl PanelState for FilesystemState {
                 }
                 // size, used, free
                 if let Some(stats) = mount.stats.as_ref().filter(|s| s.size() > 0) {
+                    let share_color = super::share_color(stats.use_share());
                     // size
                     cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(mount.size())))?;
                     cw.queue_char(border_style, '│')?;
                     // used
                     if e_use {
                         cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(stats.used())))?;
-                        let share_color = super::share_color(stats.use_share());
+                        if e_use_share {
+                            cw.queue_g_string(txt_style, format!("{:>3.0}%", 100.0*stats.use_share()))?;
+                        }
                         if e_use_bar {
                             cw.queue_char(txt_style, ' ')?;
                             let pb = ProgressBar::new(stats.use_share() as f32, w_use_bar);
@@ -409,15 +412,12 @@ impl PanelState for FilesystemState {
                             bar_style.set_bg(share_color);
                             cw.queue_g_string(&bar_style, format!("{:<width$}", pb, width=w_use_bar))?;
                         }
-                        if e_use_share {
-                            let mut share_style = txt_style.clone();
-                            share_style.set_fg(share_color);
-                            cw.queue_g_string(&share_style, format!("{:>3.0}%", 100.0*stats.use_share()))?;
-                        }
                         cw.queue_char(border_style, '│')?;
                     }
                     // free
-                    cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(stats.available())))?;
+                    let mut share_style = txt_style.clone();
+                    share_style.set_fg(share_color);
+                    cw.queue_g_string(&share_style, format!("{:>4}", file_size::fit_4(stats.available())))?;
                     cw.queue_char(border_style, '│')?;
                 } else {
                     // size
