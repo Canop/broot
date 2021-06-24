@@ -9,7 +9,6 @@ use {
 
 custom_error! {pub ProgramError
     Io {source: io::Error} = "IO Error : {:?}",
-    Crossterm {source: crossterm::ErrorKind} = "Crossterm Error : {:?}",
     Termimad {source: termimad::Error} = "Termimad Error : {:?}",
     Conf {source: ConfError} = "Bad configuration: {}",
     ConfFile {path:String, details: ConfError} = "Bad configuration file {:?} : {}",

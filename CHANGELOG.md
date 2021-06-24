@@ -1,3 +1,5 @@
+### next
+
 <a name="v1.6.1"></a>
 ### v1.6.1 - 2021-06-23
 - fix compilation on freeBSD

@@ -82,19 +82,7 @@ pub fn key_event_desc(key: KeyEvent) -> String {
 }
 
 pub fn is_reserved(key: KeyEvent) -> bool {
-    match key {
-        BACKSPACE => true, // needed for the input field
-        //HOME => true, // needed for the input field
-        //END => true, // needed for the input field
-        //LEFT => true, // needed for the input field
-        //RIGHT => true, // needed for the input field
-        DELETE => true, // needed for the input field
-        ESC => true,    // basic navigation
-        //TAB => true,    // completion
-        //UP => true, // basic navigation
-        //DOWN => true, // basic navigation
-        _ => false,
-    }
+    key == BACKSPACE || key == DELETE || key == ESC
 }
 
 pub fn is_key_allowed_in_mode(key: KeyEvent, mode: Mode) -> bool {
