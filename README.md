@@ -1,4 +1,4 @@
-# Broot
+## Broot
 
 [![CI][s3]][l3] [![MIT][s2]][l2] [![Latest Version][s1]][l1] [![Chat on Miaou][s4]][l4]
 
@@ -16,9 +16,9 @@
 
 A better way to navigate directories
 
-[Install Broot](https://dystroy.org/broot/install/)
+[**Installation Instructions**](https://dystroy.org/broot/install/)
 
-# Get an overview of a directory, even a big one
+## Get an overview of a directory, even a big one
 
 `br -s`
 
@@ -30,7 +30,7 @@ That's what makes it usable where the old `tree` command would produce pages of 
 
 `.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](https://dystroy.org/broot/navigation/#toggles)).
 
-# Find a directory then `cd` to it
+## Find a directory then `cd` to it
 
 type a few letters
 
@@ -52,7 +52,7 @@ Most useful keys for this:
 * <kbd>alt</kbd><kbd>enter</kbd> to get back to the shell having `cd` to the selected directory
 * `:q` if you just want to quit (you can use <kbd>ctrl</kbd><kbd>q</kbd> if you prefer)
 
-# Never lose track of file hierarchy while you search
+## Never lose track of file hierarchy while you search
 
 ![search](website/docs/img/20210204-mycnf.png)
 
@@ -75,7 +75,7 @@ Once the file you want is selected you can
 
 [blog: a broot content search workflow](https://dystroy.org/blog/broot-c-search/)
 
-# Manipulate your files
+## Manipulate your files
 
 ![mv](website/docs/img/20191112-mv.png)
 
@@ -85,7 +85,7 @@ You can instead do it without losing the view of the file hierarchy.
 
 Move, copy, rm, mkdir, are built in and you can add your own shortcuts.
 
-# Manage files with panels
+## Manage files with panels
 
 When a directory is selected, do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
 
@@ -99,7 +99,7 @@ Using two panels, you can for example copy or move elements between them:
 
 If you like you may do it Norton Commander style by binding `:copy_to_panel` to <kbd>F5</kbd> and `:move_to_panel` to <kbd>F6</kbd>.
 
-# Preview files
+## Preview files
 
 Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel appears.
 
@@ -113,7 +113,7 @@ If your terminal is [kitty](https://sw.kovidgoyal.net/kitty/index.html), then th
 
 ![kitty preview](website/docs/img/20201127-kitty-preview.png)
 
-# Apply a standard or personal shortcut to a file
+## Apply a standard or personal shortcut to a file
 
 ![size](website/docs/img/20191112-edit.png)
 
@@ -123,7 +123,7 @@ You can add verbs or configure the existing ones; see [documentation](https://dy
 
 And you can add shortcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
-# Replace `ls` (and its clones):
+## Replace `ls` (and its clones):
 
 If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which gets you this:
 
@@ -131,7 +131,7 @@ If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which ge
 
 You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or a space, then `h` then enter and you see hidden files.
 
-# Sort, see what takes space:
+## Sort, see what takes space:
 
 You may sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
 
@@ -149,7 +149,7 @@ If you hit `:fs`, you can check the usage of all filesystems, so that you focus 
 
 Sizes, dates, files counts, are computed in the background, you don't have to wait for them when you navigate.
 
-# check git statuses:
+## check git statuses:
 
 ![size](website/docs/img/20200203-git.png)
 

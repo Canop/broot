@@ -2,6 +2,13 @@ This page lists a few problems which were observed more than once and the best c
 
 Please come to [miaou](https://miaou.dystroy.org/3490?broot) if something isn't clear or if you want to propose a change or addition.
 
+# Compilation fails during installation
+
+The common causes are
+
+* an oudated Rust installation. If you're using [rustup](https://rustup.rs), do `rustup update`.
+* some tools missing. On Debian like distributions, this can generally be solved with `sudo apt install build-essential`
+
 # Those aren't my colors
 
 Broot's initial colors ensure that everything is readable whatever your settings.
