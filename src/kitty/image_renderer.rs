@@ -88,6 +88,13 @@ const CHUNK_SIZE: usize = 4096;
 /// terminal, I think I can just check the name
 pub fn is_term_kitty() -> bool {
     if let Ok(term_name) = env::var("TERM") {
+        debug!("TERM env var: {:?}", env::var("TERM"));
+        if term_name.contains("kitty") {
+            return true;
+        }
+    }
+    if let Ok(term_name) = env::var("TERMINAL") {
+        debug!("TERMINAL env var: {:?}", env::var("TERMINAL"));
         if term_name.contains("kitty") {
             return true;
         }

@@ -1,4 +1,5 @@
 ### next
+- broot reads now both the TERM and TERMINAL env variables to try determine whether the terminal is Kitty
 
 <a name="v1.6.1"></a>
 ### v1.6.1 - 2021-06-23
