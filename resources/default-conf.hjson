@@ -137,14 +137,14 @@
 	# You'll also find below verbs that you can customize or enable.
 	verbs: [
 
-		# Exemple 1: launching `tail -n` on the selected file (leaving broot)
+		# Example 1: launching `tail -n` on the selected file (leaving broot)
 		# {
 		# 	name: tail_lines
 		# 	invocation: tl {lines_count}
 		# 	execution: "tail -f -n {lines_count} {file}"
 		# }
 
-		# Exemple 2: creating a new file without leaving broot
+		# Example 2: creating a new file without leaving broot
 		# {
 		# 	name: touch
 		# 	invocation: touch {new_file}
