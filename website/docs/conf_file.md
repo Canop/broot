@@ -189,11 +189,11 @@ rs = "yellow"
 toml = "ansi(105)"
 ```
 
+(see [here](../skins#color) for precision about the color syntax in broot)
+
 # Syntax Theme
 
-Broot uses [syntect](https://github.com/trishume/syntect) for syntax coloring of previewed files.
-
-It's possible to choose any of the standard themes listed [here](https://docs.rs/syntect/latest/syntect/highlighting/struct.ThemeSet.html#impl):
+You can choose any of the following syntaxic coloring themes for previewed files:
 
 * base16-ocean.dark
 * base16-eighties.dark
@@ -209,6 +209,8 @@ syntax_theme: base16-ocean.light
 ```TOML
 syntax_theme = "base16-ocean.light"
 ```
+
+Those themes come from [syntect](https://github.com/trishume/syntect) and are bundled in broot.
 
 # Number of threads for directory size computation
 

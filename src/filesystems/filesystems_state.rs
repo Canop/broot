@@ -304,7 +304,7 @@ impl PanelState for FilesystemState {
         cw.queue_g_string(&styles.default, format!("{:width$}", "filesystem", width = wc_fs))?;
         cw.queue_char(border_style, '│')?;
         if e_dsk {
-            cw.queue_g_string(&styles.default, " dsk ".to_string())?;
+            cw.queue_g_string(&styles.default, "disk ".to_string())?;
             cw.queue_char(border_style, '│')?;
         }
         if e_type {

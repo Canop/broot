@@ -185,14 +185,18 @@ directory: "ansi(208) None Bold / ansi(172) None"
 directory = "ansi(208) None Bold / ansi(172) None"
 ```
 
-A color can be
+## Color
+
+A color in a skin or in the [ext_colors](../conf_file/#colors-by-file-extension) section can be:
 
 * `none`
-* an [Ansi value](https://en.wikipedia.org/wiki/ANSI_escape_code), for example `ansi(160)`
+* an [Ansi value](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit), for example `ansi(160)`
 * a grayscale value, with a level between 0 and 23, for example `grey(3)`
 * a RGB color, for example `rgb(255, 187, 0)`
 
 Beware that many terminals aren't compatible with RGB 24 bits colors (or aren't usually configured for).
+
+## Style attributes
 
 Currently supported attributes are:
 
@@ -600,7 +604,7 @@ skin: {
     // default default
     help_table_border: "none none"
     preview_title: "rgb(147, 161, 161) rgb(238, 232, 213)"
-    preview: "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)" 
+    preview: "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)"
     preview_line_number: "rgb(147, 161, 161) rgb(238, 232, 213)"
     preview_match: "None ansi(29)"
     staging_area_title: "gray(22) rgb(253, 246, 227)"
@@ -702,7 +706,7 @@ help_headers = "rgb(181, 137, 0) none"
 # default default
 help_table_border = "none none"
 preview_title = "rgb(147, 161, 161) rgb(238, 232, 213)"
-preview = "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)" 
+preview = "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)"
 preview_line_number = "rgb(147, 161, 161) rgb(238, 232, 213)"
 preview_match = "None ansi(29)"
 staging_area_title = "gray(22) rgb(253, 246, 227)"

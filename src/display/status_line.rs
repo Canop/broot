@@ -38,7 +38,7 @@ pub fn write(
         w,
         Composite::from_inline(&status.message),
         remaining_width,
-        Alignment::Left,
+        Alignment::Unspecified,
     )?;
     Ok(())
 }
