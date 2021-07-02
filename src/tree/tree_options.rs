@@ -21,6 +21,7 @@ pub struct TreeOptions {
     pub show_dates: bool,  // whether to show the last modified date
     pub show_sizes: bool,  // whether to show sizes of files and dirs
     pub show_git_file_info: bool,
+    pub show_device_id: bool,
     pub show_root_fs: bool, // show information relative to the fs of the root
     pub trim_root: bool,    // whether to cut out direct children of root
     pub show_permissions: bool, // show classic rwx unix permissions (only on unix)
@@ -46,6 +47,7 @@ impl TreeOptions {
             respect_git_ignore: self.respect_git_ignore,
             filter_by_git_status: self.filter_by_git_status,
             show_git_file_info: self.show_git_file_info,
+            show_device_id: self.show_device_id,
             show_root_fs: self.show_root_fs,
             trim_root: self.trim_root,
             pattern: InputPattern::none(),
@@ -181,6 +183,7 @@ impl Default for TreeOptions {
             show_dates: false,
             show_sizes: false,
             show_git_file_info: false,
+            show_device_id: false,
             show_root_fs: false,
             trim_root: false,
             show_permissions: false,

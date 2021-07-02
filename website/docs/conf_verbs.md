@@ -349,6 +349,7 @@ invocation | default key | default shortcut | behavior / details
 :sort_by_size | - | - | sort by size
 :toggle_counts | - | - | toggle display of total counts of files per directory
 :toggle_dates | - | - | toggle display of last modified dates (looking for the most recently changed file, even deep)
+:toggle_device_id | - | - | toggle display of device id (unix only)
 :toggle_files | - | - | toggle showing files (or just folders)
 :toggle_git_ignore | - | - | toggle git ignore handling (auto, no or yes)
 :toggle_git_file_info | - | - | toggle display of git file information

@@ -121,6 +121,7 @@ Internals! {
     toggle_stage: "add or remove selection to staging area" true,
     toggle_counts: "toggle showing number of files in directories" false,
     toggle_dates: "toggle showing last modified dates" false,
+    toggle_device_id: "toggle showing device id" false,
     toggle_files: "toggle showing files (or just folders)" false,
     toggle_git_ignore: "toggle use of .gitignore" false,
     toggle_git_file_info: "toggle display of git file information" false,

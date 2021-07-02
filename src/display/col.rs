@@ -12,7 +12,7 @@ use {
 };
 
 // number of columns in enum
-const COLS_COUNT: usize = 9;
+const COLS_COUNT: usize = 10;
 
 /// One of the "columns" of the tree view
 #[derive(Debug, Clone, Copy, PartialEq)]
@@ -25,6 +25,9 @@ pub enum Col {
 
     /// the branch showing filliation
     Branch,
+
+    /// The filesystem's device id (unix only)
+    DeviceId,
 
     /// file mode and ownership
     Permission,
@@ -60,6 +63,7 @@ pub enum ColsConf {
 pub static DEFAULT_COLS: Cols = [
     Col::Mark,
     Col::Git,
+    Col::DeviceId,
     Col::Size,
     Col::Date,
     Col::Permission,
@@ -76,6 +80,7 @@ impl FromStr for Col {
         match s.as_ref() {
             "m" | "mark" => Ok(Self::Mark),
             "g" | "git" => Ok(Self::Git),
+            "dev" | "device" | "device-id" => Ok(Self::DeviceId),
             "b" | "branch" => Ok(Self::Branch),
             "p" | "permission" => Ok(Self::Permission),
             "d" | "date" => Ok(Self::Date),
@@ -105,6 +110,7 @@ impl Col {
         match self {
             Col::Mark => false,
             Col::Git => false,
+            Col::DeviceId => true,
             Col::Size => true,
             Col::Date => true,
             Col::Permission => true,
@@ -123,6 +129,7 @@ impl Col {
         match self {
             Col::Mark => tree_options.show_selection_mark,
             Col::Git => tree.git_status.is_some(),
+            Col::DeviceId => tree_options.show_device_id,
             Col::Size => tree_options.show_sizes,
             Col::Date => tree_options.show_dates,
             Col::Permission => tree_options.show_permissions,
@@ -166,6 +173,7 @@ pub fn parse_cols(arr: &Vec<String>) -> Result<Cols, ConfError> {
     debug!("cols from conf = {:?}", cols);
     Ok(cols)
 }
+
 /// return a Cols which tries to take the s setting into account
 /// but is guaranteed to have every Col exactly once.
 pub fn parse_cols_single_str(s: &str) -> Result<Cols, ConfError> {

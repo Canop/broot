@@ -228,6 +228,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         external("rm", "rm -rf {file}", StayInBroot),
         internal(toggle_counts).with_shortcut("counts"),
         internal(toggle_dates).with_shortcut("dates"),
+        internal(toggle_device_id).with_shortcut("dev"),
         internal(toggle_files).with_shortcut("files"),
         internal(toggle_git_ignore).with_shortcut("gi"),
         internal(toggle_git_file_info).with_shortcut("gf"),

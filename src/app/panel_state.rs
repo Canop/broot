@@ -239,6 +239,9 @@ pub trait PanelState {
             Internal::toggle_dates => {
                 self.with_new_options(screen, &|o| o.show_dates ^= true, bang, con)
             }
+            Internal::toggle_device_id => {
+                self.with_new_options(screen, &|o| o.show_device_id ^= true, bang, con)
+            }
             Internal::toggle_files => {
                 self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true, bang, con)
             }

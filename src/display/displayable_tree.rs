@@ -113,6 +113,23 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         })
     }
 
+    #[cfg(unix)]
+    fn write_line_device_id<'w, W: Write>(
+        &self,
+        cw: &mut CropWriter<'w, W>,
+        line: &TreeLine,
+        selected: bool,
+    ) -> Result<usize, termimad::Error> {
+        let device_id = line.device_id();
+        cond_bg!(style, self, selected, self.skin.device_id_major);
+        cw.queue_g_string(&style, format!("{:>3}", device_id.major))?;
+        cond_bg!(style, self, selected, self.skin.device_id_sep);
+        cw.queue_char(&style, ':')?;
+        cond_bg!(style, self, selected, self.skin.device_id_minor);
+        cw.queue_g_string(&style, format!("{:<3}", device_id.minor))?;
+        Ok(0)
+    }
+
     fn write_line_selection_mark<'w, W: Write>(
         &self,
         cw: &mut CropWriter<'w, W>,
@@ -516,6 +533,14 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                         Col::Branch => {
                             in_branch = true;
                             self.write_branch(cw, line_index, line, selected, staged)?
+                        }
+
+                        Col::DeviceId => {
+                            #[cfg(not(unix))]
+                            { 0 }
+
+                            #[cfg(unix)]
+                            self.write_line_device_id(cw, line, selected)?
                         }
 
                         Col::Permission => {

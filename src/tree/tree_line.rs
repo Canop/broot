@@ -102,6 +102,10 @@ impl TreeLine {
         Mode::from(self.metadata.mode())
     }
     #[cfg(unix)]
+    pub fn device_id(&self) -> lfs_core::DeviceId {
+        self.metadata.dev().into()
+    }
+    #[cfg(unix)]
     pub fn mount(&self) -> Option<lfs_core::Mount> {
         use crate::filesystems::*;
         let mut mount_list = MOUNTS.lock().unwrap();

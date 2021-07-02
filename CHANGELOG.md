@@ -1,5 +1,7 @@
 ### next
 - broot reads now both the TERM and TERMINAL env variables to try determine whether the terminal is Kitty
+- using `:toggle_device_id`, you can display the device of files (unix only)
+- a few minor rendering improvements
 
 <a name="v1.6.1"></a>
 ### v1.6.1 - 2021-06-23
