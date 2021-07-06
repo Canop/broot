@@ -73,8 +73,8 @@ Don't trim the root (still trim the deeper levels). A scrollbar may be used when
 .B \-\-install
 Install or reinstall the \fBbr\fR shell function
 .TP
-.B \-\-no-style
-Remove all style and colors
+.B \-\-color <yes|no|auto>
+Controls styling of the output (default: auto). If set to auto, all styling is removed when output is piped.
 .TP
 .B \-\-help
 Prints a help page, with more or less the same content as this man page
