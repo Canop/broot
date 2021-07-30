@@ -64,7 +64,7 @@ unicode-width = "0.1.8"
 glassbench = "0.3.0"
 
 [target.'cfg(unix)'.dependencies]
-lfs-core = "0.3.4"
+lfs-core = "0.4.2"
 users = "0.11"
 
 [target.'cfg(windows)'.dependencies]
