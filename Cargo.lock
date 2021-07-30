@@ -181,7 +181,7 @@ dependencies = [
  "strict",
  "syntect",
  "tempfile",
- "termimad 0.13.0",
+ "termimad 0.14.0",
  "terminal-clipboard",
  "toml",
  "umask",
@@ -1474,9 +1474,9 @@ checksum = "d29ab0c6d3fc0ee92fe66e2d99f700eab17a8d57d1c1d3b748380fb20baa78cd"
 
 [[package]]
 name = "secular"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a4c9ad4c423ca634baf90edd056c562dc7730215e0689aa5eaf707f92f219905"
+checksum = "c3dc3eccdf599b53eba8a34a1190bd47394948258d1c43dca9cceb2426e25bb5"
 dependencies = [
  "unicode-normalization",
 ]
@@ -1658,9 +1658,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.13.0"
+version = "0.14.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a09f249613ba31188fd902030fcbc94bbdebb5e881fe7fcb58be16fb50e0d77a"
+checksum = "72cc07d71829847df3a04fe2341f0598676b1faf377d0965c48cb922241273d7"
 dependencies = [
  "crossbeam",
  "crossterm 0.20.0",

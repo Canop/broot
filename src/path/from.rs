@@ -2,16 +2,18 @@ use {
     super::*,
     directories::UserDirs,
     ahash::AHashMap,
-    lazy_regex::regex,
-    regex::{self, Captures},
+    lazy_regex::*,
     std::path::{Path, PathBuf},
 };
 
-/// build a usable path from a user input which may be absolute
+/// Build a usable path from a user input which may be absolute
 /// (if it starts with / or ~) or relative to the supplied base_dir.
 /// (we might want to try detect windows drives in the future, too)
-///
-pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -> PathBuf {
+pub fn path_from<P: AsRef<Path>>(
+    base_dir: P,
+    anchor: PathAnchor,
+    input: &str,
+) -> PathBuf {
     let tilde = regex!(r"^~(/|$)");
     if input.starts_with('/') {
         // if the input starts with a `/`, we use it as is
@@ -23,7 +25,11 @@ pub fn path_from<P: AsRef<Path>>(base_dir: P, anchor: PathAnchor, input: &str) -
             &*tilde
                 .replace(input, |c: &Captures| {
                     if let Some(user_dirs) = UserDirs::new() {
-                        format!("{}{}", user_dirs.home_dir().to_string_lossy(), &c[1],)
+                        format!(
+                            "{}{}",
+                            user_dirs.home_dir().to_string_lossy(),
+                            &c[1],
+                        )
                     } else {
                         warn!("no user dirs found, no expansion of ~");
                         c[0].to_string()
@@ -52,7 +58,7 @@ pub fn path_str_from<P: AsRef<Path>>(base_dir: P, input: &str) -> String {
         .to_string()
 }
 
-/// replace a group in the execution string, using
+/// Replace a group in the execution string, using
 ///  data from the user input and from the selected line
 pub fn do_exec_replacement(
     ec: &Captures<'_>,

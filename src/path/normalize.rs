@@ -11,7 +11,9 @@ use std::path::{Component, Path, PathBuf};
 /// This function ensures a given path ending with '/' still
 /// ends with '/' after normalization.
 pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    let ends_with_slash = path.as_ref().to_str().map_or(false, |s| s.ends_with('/'));
+    let ends_with_slash = path.as_ref()
+        .to_str()
+        .map_or(false, |s| s.ends_with('/'));
     let mut normalized = PathBuf::new();
     for component in path.as_ref().components() {
         match &component {
