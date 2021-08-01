@@ -39,7 +39,7 @@ If a shortcut isn't available for broot and you can't or don't want to remap the
 * [specific solution for alt-enter](https://github.com/Canop/broot/issues/86#issuecomment-635974557)
 * [general shortcut configuration](../conf_verbs/#keyboard-key)
 
-[Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys) binds `alt+enter` to the "toggle fullscreen" command by default. To reclaim `alt+enter` for Broot, [add an 'unbound' entry to the actions array in settings.json](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys):
+[Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/) binds `alt+enter` to the "toggle fullscreen" command by default. To reclaim `alt+enter` for Broot, [add an 'unbound' entry to the actions array in settings.json](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys):
 
 ```json
 {"command": "unbound", "keys": "alt+enter"}
