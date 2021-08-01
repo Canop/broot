@@ -32,12 +32,18 @@ Another problem is the fact the `br` function doesn't set a proper pane name (yo
 
 # alt-enter (or other shortcut) isn't available
 
-Most terminals intercept a few keyboard shortcut for their own features.
+Most terminals intercept a few keyboard shortcut for their own features. You may need to remap your terminal's default keyboard shortcuts.
 
 If a shortcut isn't available for broot and you can't or don't want to remap the one of your terminal, the solution is to change the shortcut in broot.
 
 * [specific solution for alt-enter](https://github.com/Canop/broot/issues/86#issuecomment-635974557)
 * [general shortcut configuration](../conf_verbs/#keyboard-key)
+
+[Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys) binds `alt+enter` to the "toggle fullscreen" command by default. To reclaim `alt+enter` for Broot, [add an 'unbound' entry to the actions array in settings.json](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys):
+
+```json
+{"command": "unbound", "keys": "alt+enter"}
+```
 
 # Searching is slow when I mount a slow remote disk
 
