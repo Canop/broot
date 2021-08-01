@@ -17,7 +17,6 @@ use {
     },
     directories::UserDirs,
     lazy_regex::regex,
-    minimad::*,
     regex::Captures,
     std::{env, fs::OpenOptions, io::Write, path::PathBuf},
     termimad::mad_print_inline,

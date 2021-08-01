@@ -461,9 +461,16 @@ pub trait PanelState {
         app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
+        let sel_info = self.sel_info(app_state);
+        if let Some(invocation) = &invocation {
+            if let Some(error) = verb.check_args(&sel_info, &invocation, &app_state.other_panel_path) {
+                debug!("verb.check_args prevented execution: {:?}", &error);
+                return Ok(CmdResult::error(error));
+            }
+        }
         let exec_builder = ExecutionStringBuilder::with_invocation(
             &verb.invocation_parser,
-            self.sel_info(app_state),
+            sel_info,
             app_state,
             if let Some(inv) = invocation {
                 &inv.args

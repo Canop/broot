@@ -245,7 +245,6 @@ impl Verb {
                     return "You can't focus without selection".to_string();
                 }
             }
-            // TODO check that before
         }
 
         let builder = || {
