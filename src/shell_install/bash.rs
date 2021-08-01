@@ -128,19 +128,13 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
         return Ok(());
     }
     let source_line = format!("source {}", &link_path.to_string_lossy());
-    let sourced_template = TextTemplate::from(
-        r#"
-        ${path} successfully patched, you can make the function immediately available with
-            source ${path}
-        "#,
-    );
     for sourcing_path in &sourcing_paths {
         let sourcing_path_str = sourcing_path.to_string_lossy();
         if util::file_contains_line(sourcing_path, &source_line)? {
             mad_print_inline!(
                 &si.skin,
                 "`$0` already patched, no change made.\n",
-                &sourcing_path_str
+                &sourcing_path_str,
             );
         } else {
             let mut shellrc = OpenOptions::new()
@@ -150,9 +144,20 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
             shellrc.write_all(b"\n")?;
             shellrc.write_all(source_line.as_bytes())?;
             shellrc.write_all(b"\n")?;
-            let mut expander = sourced_template.expander();
-            expander.set("path", &sourcing_path_str);
-            si.skin.print_expander(expander);
+            let is_zsh = sourcing_path_str.contains(".zshrc");
+            if is_zsh {
+                mad_print_inline!(
+                    &si.skin,
+                    "`$0` successfully patched, you can make the function immediately available with `exec zsh`\n",
+                    &sourcing_path_str,
+                );
+            } else {
+                mad_print_inline!(
+                    &si.skin,
+                    "`$0` successfully patched, you can make the function immediately available with `source $0`\n",
+                    &sourcing_path_str,
+                );
+            }
         }
     }
     si.done = true;
