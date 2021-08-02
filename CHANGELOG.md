@@ -1,6 +1,7 @@
-### next
-- hjson: fix bad parsing on tab alignement
-- now check all args of externals are set, doesn't use the raw {arg}
+<a name="v1.6.3"></a>
+### v1.6.3 - 2021-08-02
+- hjson: fix bad parsing on tab before colon
+- now checks all args of externals are set, doesn't use the raw {arg}
 
 <a name="v1.6.2"></a>
 ### v1.6.2 - 2021-07-31
