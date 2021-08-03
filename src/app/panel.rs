@@ -128,7 +128,7 @@ impl Panel {
         app_state: &AppState,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
-        let sel_info = self.states[self.states.len() - 1].sel_info(&app_state);
+        let sel_info = self.states[self.states.len() - 1].sel_info(app_state);
         self.input.on_event(w, event, con, sel_info, app_state, self.state().get_mode())
     }
 
@@ -195,21 +195,21 @@ impl Panel {
     ) -> Result<(), ProgramError> {
         self.mut_state().display(w, disc)?;
         if disc.active || !WIDE_STATUS {
-            self.write_status(w, &disc.panel_skin, disc.screen)?;
+            self.write_status(w, disc.panel_skin, disc.screen)?;
         }
         let mut input_area = self.areas.input.clone();
         if disc.active {
-            self.write_purpose(w, &disc.panel_skin, disc.screen, &disc.con)?;
+            self.write_purpose(w, disc.panel_skin, disc.screen, disc.con)?;
             let flags = self.state().get_flags();
             let input_content_len = self.input.get_content().len() as u16;
             let flags_len = flags_display::visible_width(&flags);
             if input_area.width > input_content_len + 1 + flags_len {
                 input_area.width -= flags_len + 1;
                 disc.screen.goto(w, input_area.left + input_area.width, input_area.top)?;
-                flags_display::write(w, &flags, &disc.panel_skin)?;
+                flags_display::write(w, &flags, disc.panel_skin)?;
             }
         }
-        self.input.display(w, disc.active, self.state().get_mode(), input_area, &disc.panel_skin)?;
+        self.input.display(w, disc.active, self.state().get_mode(), input_area, disc.panel_skin)?;
         Ok(())
     }
 

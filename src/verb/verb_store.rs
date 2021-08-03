@@ -87,7 +87,7 @@ impl VerbStore {
             for name in &verb.names {
                 if name.starts_with(prefix) {
                     if name == prefix {
-                        return PrefixSearchResult::Match(name, &verb);
+                        return PrefixSearchResult::Match(name, verb);
                     }
                     found_index = index;
                     nb_found += 1;

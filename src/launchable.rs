@@ -126,7 +126,7 @@ impl Launchable {
                 Ok(())
             }
             Launchable::TreePrinter { tree, skin, ext_colors, width, height } => {
-                let dp = DisplayableTree::out_of_app(&tree, &skin, &ext_colors, *width, *height);
+                let dp = DisplayableTree::out_of_app(tree, skin, ext_colors, *width, *height);
                 dp.write_on(&mut std::io::stdout())
             }
             Launchable::Program {

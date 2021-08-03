@@ -46,7 +46,7 @@ impl Completions {
         }
         let mut iter = completions.iter();
         let mut common: &str = match iter.next() {
-            Some(s) => &s,
+            Some(s) => s,
             _ => { return Self::None; }
         };
         for c in iter {

@@ -617,7 +617,7 @@ impl App {
                     con,
                 };
                 self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
-                self.display_panels(w, &skin, app_state, con)?;
+                self.display_panels(w, skin, app_state, con)?;
             } else {
                 warn!("unexpected lack of update on do_pending_task");
                 return Ok(());
@@ -688,7 +688,7 @@ impl App {
             .map(|server_name| {
                 let shared_root = Arc::new(Mutex::new(app_state.root.clone()));
                 let server = crate::net::Server::new(
-                    &server_name,
+                    server_name,
                     self.tx_seqs.clone(),
                     Arc::clone(&shared_root),
                 );

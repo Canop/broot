@@ -73,7 +73,7 @@ impl StandardStatus {
         state_type: PanelStateType,
         selection: Selection<'s>,
     ) -> StandardStatusBuilder<'s> {
-        StandardStatusBuilder::new(&self, state_type, selection)
+        StandardStatusBuilder::new(self, state_type, selection)
     }
 }
 

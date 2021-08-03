@@ -267,7 +267,15 @@ impl SyntacticView {
         let old_scroll = self.scroll;
         self.scroll = cmd.apply(self.scroll, self.lines.len(), self.page_height);
         if let Some(idx) = self.selection_idx {
-            if self.scroll != old_scroll && idx >= old_scroll && idx < old_scroll + self.page_height {
+            if self.scroll == old_scroll {
+                let old_selection = self.selection_idx;
+                if cmd.is_up() {
+                    self.selection_idx = Some(0);
+                } else {
+                    self.selection_idx = Some(self.lines.len() - 1);
+                }
+                return self.selection_idx == old_selection;
+            } else  if idx >= old_scroll && idx < old_scroll + self.page_height {
                 if idx + self.scroll < old_scroll {
                     self.selection_idx = Some(0);
                 } else if idx + self.scroll - old_scroll >= self.lines.len() {

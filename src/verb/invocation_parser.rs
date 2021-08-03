@@ -101,7 +101,7 @@ impl InvocationParser {
                 }
             }
             (Some(ref s), Some(ref regex)) => {
-                if regex.is_match(&s) {
+                if regex.is_match(s) {
                     None
                 } else {
                     Some(self.invocation_pattern.to_string_for_name(&invocation.name))
@@ -115,7 +115,7 @@ impl InvocationParser {
         self.args_parser.as_ref()
             .map(|r| {
                 let mut map = AHashMap::default();
-                if let Some(input_cap) = r.captures(&args) {
+                if let Some(input_cap) = r.captures(args) {
                     for name in r.capture_names().flatten() {
                         if let Some(c) = input_cap.name(name) {
                             map.insert(name.to_string(), c.as_str().to_string());

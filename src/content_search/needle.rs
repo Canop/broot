@@ -142,7 +142,7 @@ impl Needle {
     fn find_naive(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
         let max_pos = hay.len() - self.bytes.len();
         while pos <= max_pos {
-            if self.is_at_pos(&hay, pos) {
+            if self.is_at_pos(hay, pos) {
                 return Some(pos);
             }
             pos += 1;
@@ -183,12 +183,12 @@ impl Needle {
         }
 
         let pos = match self.bytes.len() {
-            1 => self.find_naive_1(&hay),
-            2 => self.find_naive_2(0, &hay),
-            3 => self.find_naive_3(0, &hay),
-            4 => self.find_naive_4(0, &hay),
-            6 => self.find_naive_6(0, &hay),
-            _ => self.find_naive(0, &hay),
+            1 => self.find_naive_1(hay),
+            2 => self.find_naive_2(0, hay),
+            3 => self.find_naive_3(0, hay),
+            4 => self.find_naive_4(0, hay),
+            6 => self.find_naive_6(0, hay),
+            _ => self.find_naive(0, hay),
         };
         pos.map_or(
             ContentSearchResult::NotFound,

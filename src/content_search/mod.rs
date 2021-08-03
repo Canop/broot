@@ -33,7 +33,7 @@ pub fn get_mmap<P: AsRef<Path>>(hay_path: P) -> io::Result<Mmap> {
 /// that the file is binary (from its extension, size, or first bytes)
 pub fn get_mmap_if_not_binary<P: AsRef<Path>>(hay_path: P) -> io::Result<Option<Mmap>> {
     if let Some(ext) = hay_path.as_ref().extension().and_then(|s| s.to_str()) {
-        if extensions::is_known_binary(&ext) {
+        if extensions::is_known_binary(ext) {
             return Ok(None);
         }
     }

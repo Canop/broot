@@ -463,7 +463,7 @@ pub trait PanelState {
     ) -> Result<CmdResult, ProgramError> {
         let sel_info = self.sel_info(app_state);
         if let Some(invocation) = &invocation {
-            if let Some(error) = verb.check_args(&sel_info, &invocation, &app_state.other_panel_path) {
+            if let Some(error) = verb.check_args(&sel_info, invocation, &app_state.other_panel_path) {
                 debug!("verb.check_args prevented execution: {:?}", &error);
                 return Ok(CmdResult::error(error));
             }
@@ -478,7 +478,7 @@ pub trait PanelState {
                 &None
             },
         );
-        external_execution.to_cmd_result(w, exec_builder, &cc.app.con)
+        external_execution.to_cmd_result(w, exec_builder, cc.app.con)
     }
 
     fn execute_sequence(
@@ -614,7 +614,7 @@ pub trait PanelState {
                             InputPattern::none(),
                             prefered_mode,
                             self.tree_options(),
-                            &cc.app.con,
+                            cc.app.con,
                         )),
                         purpose: PanelPurpose::Preview,
                         direction: HDir::Right,

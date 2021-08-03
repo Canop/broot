@@ -93,7 +93,7 @@ impl TryFrom<&VerbConf> for Verb {
                 VerbExecution::Internal(if s.starts_with(':') || s.starts_with(' ') {
                     InternalExecution::try_from(&s[1..])?
                 } else {
-                    InternalExecution::try_from(&s)?
+                    InternalExecution::try_from(s)?
                 })
             }
             // "external": it can be about any form

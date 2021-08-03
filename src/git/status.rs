@@ -18,7 +18,7 @@ pub struct LineGitStatus {
 
 impl LineGitStatus {
     pub fn from(repo: &Repository, relative_path: &Path) -> Option<LineGitStatus> {
-        repo.status_file(&relative_path)
+        repo.status_file(relative_path)
             .ok()
             .map(|status| LineGitStatus { status })
     }

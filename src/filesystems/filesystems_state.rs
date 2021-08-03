@@ -106,9 +106,15 @@ impl FilesystemState {
     ) -> bool {
         let old_scroll = self.scroll;
         self.scroll = cmd.apply(self.scroll, self.count(), self.page_height);
+        if self.selection_idx < self.scroll {
+            self.selection_idx = self.scroll;
+        } else if self.selection_idx >= self.scroll + self.page_height {
+            self.selection_idx = self.scroll + self.page_height - 1;
+        }
         self.scroll != old_scroll
     }
 
+    /// change the selection
     fn move_line(
         &mut self,
         internal_exec: &InternalExecution,
@@ -122,6 +128,11 @@ impl FilesystemState {
             f.selection_idx = move_sel(f.selection_idx, f.mounts.len(), dir, cycle);
         } else {
             self.selection_idx = move_sel(self.selection_idx, self.mounts.len().get(), dir, cycle);
+        }
+        if self.selection_idx < self.scroll {
+            self.scroll = self.selection_idx;
+        } else if self.selection_idx >= self.scroll + self.page_height {
+            self.scroll = self.selection_idx + 1 - self.page_height;
         }
         CmdResult::Keep
     }
@@ -220,7 +231,7 @@ impl PanelState for FilesystemState {
     ) -> Result<(), ProgramError> {
         let area = &disc.state_area;
         let con = &disc.con;
-        self.page_height = area.height as usize;
+        self.page_height = area.height as usize - 2;
         let (mounts, selection_idx) = if let Some(filtered) = &self.filtered {
             (filtered.mounts.as_slice(), filtered.selection_idx)
         } else {
@@ -350,7 +361,7 @@ impl PanelState for FilesystemState {
                 let match_style = if selected { &selected_match_style } else { &match_style };
                 let border_style = if selected { &selected_border_style } else { &border_style };
                 if con.show_selection_mark {
-                    cw.queue_char(&txt_style, if selected { '▶' } else { ' ' })?;
+                    cw.queue_char(txt_style, if selected { '▶' } else { ' ' })?;
                 }
                 // fs
                 let s = &mount.info.fs;
@@ -544,11 +555,15 @@ impl PanelState for FilesystemState {
                 }
             }
             Internal::page_down => {
-                self.try_scroll(ScrollCommand::Pages(1));
+                if !self.try_scroll(ScrollCommand::Pages(1)) {
+                    self.selection_idx = self.count() - 1;
+                }
                 CmdResult::Keep
             }
             Internal::page_up => {
-                self.try_scroll(ScrollCommand::Pages(-1));
+                if !self.try_scroll(ScrollCommand::Pages(-1)) {
+                    self.selection_idx = 0;
+                }
                 CmdResult::Keep
             }
             open_leave => CmdResult::PopStateAndReapply,

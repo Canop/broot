@@ -48,8 +48,8 @@ impl SerdeFormat {
     pub fn read_file<T>(path: &Path) -> Result<T, ProgramError>
         where T: DeserializeOwned
     {
-        let format = Self::from_path(&path)?;
-        let file_content = fs::read_to_string(&path)?;
+        let format = Self::from_path(path)?;
+        let file_content = fs::read_to_string(path)?;
         match format {
             Self::Hjson => {
                 deser_hjson::from_str::<T>(&file_content)

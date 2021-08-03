@@ -317,6 +317,6 @@ fn md_sum(md: &fs::Metadata) -> FileSum {
     #[cfg(not(unix))]
     let size = md.len();
 
-    let seconds = extract_seconds(&md);
+    let seconds = extract_seconds(md);
     FileSum::new(size, false, 1, seconds)
 }

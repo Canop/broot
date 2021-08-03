@@ -56,7 +56,7 @@ impl VerbInvocation {
         s.push_str(name);
         if let Some(args) = &self.args {
             s.push(' ');
-            s.push_str(&args);
+            s.push_str(args);
         }
         s
     }

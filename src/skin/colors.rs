@@ -17,7 +17,7 @@ use {
 /// This function needs a lowercase string (assuming lowercasing
 /// has be done before, to ensure case-insensitive parsing)
 pub fn parse(s: &str) -> Result<Option<Color>, InvalidSkinError> {
-    if let Some((_, value)) = regex_captures!(r"^ansi\((?P<value>\d+)\)$", &s) {
+    if let Some((_, value)) = regex_captures!(r"^ansi\((?P<value>\d+)\)$", s) {
         let value = value.parse();
         if let Ok(value) = value {
             return Ok(ansi(value)); // all ANSI values are ok
@@ -26,7 +26,7 @@ pub fn parse(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         }
     }
 
-    if let Some((_, level)) = regex_captures!(r"^gr[ae]y(?:scale)?\((?P<level>\d+)\)$", &s) {
+    if let Some((_, level)) = regex_captures!(r"^gr[ae]y(?:scale)?\((?P<level>\d+)\)$", s) {
         let level = level.parse();
         if let Ok(level) = level {
             if level > 23 {
@@ -38,7 +38,7 @@ pub fn parse(s: &str) -> Result<Option<Color>, InvalidSkinError> {
         }
     }
 
-    if let Some((_, r, g, b)) = regex_captures!(r"^rgb\((?P<r>\d+),\s*(?P<g>\d+),\s*(?P<b>\d+)\)$", &s) {
+    if let Some((_, r, g, b)) = regex_captures!(r"^rgb\((?P<r>\d+),\s*(?P<g>\d+),\s*(?P<b>\d+)\)$", s) {
         if let (Ok(r), Ok(g), Ok(b)) = (r.parse(), g.parse(), b.parse()) {
             return Ok(rgb(r, g, b));
         } else {

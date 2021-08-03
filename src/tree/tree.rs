@@ -180,9 +180,27 @@ impl Tree {
         }
     }
 
-    pub fn try_scroll(&mut self, dy: i32, page_height: i32) {
-        self.scroll = (self.scroll + dy).max(0).min(self.lines.len() as i32 - 5);
+    /// scroll the desired amount and return true, or return false if it's
+    /// already at end or the tree fits the page
+    pub fn try_scroll(&mut self, dy: i32, page_height: i32) -> bool {
+        let lines_len = self.lines.len() as i32;
+        if lines_len <= page_height {
+            return false;
+        }
+        if dy < 0 { // scroll up
+            if self.scroll == 0 {
+                return false;
+            }
+            self.scroll = (self.scroll + dy).max(0);
+        } else { // scroll down
+            let max = lines_len - page_height;
+            if self.scroll >= max {
+                return false;
+            }
+            self.scroll = (self.scroll + dy).min(max);
+        }
         self.select_visible_line(page_height);
+        true
     }
 
     /// try to select a line (works if y+scroll falls on a selectable line)

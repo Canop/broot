@@ -207,7 +207,7 @@ impl PanelState for BrowserState {
         let tree = self.displayed_tree();
         let mut selection = tree.selected_line().as_selection();
         selection.line = tree.options.pattern.pattern
-            .get_match_line_count(&selection.path)
+            .get_match_line_count(selection.path)
             .unwrap_or(0);
         Some(selection)
     }
@@ -373,15 +373,15 @@ impl PanelState for BrowserState {
             }
             Internal::page_down => {
                 let tree = self.displayed_tree_mut();
-                if page_height < tree.lines.len() as i32 {
-                    tree.try_scroll(page_height, page_height);
+                if !tree.try_scroll(page_height, page_height) {
+                    tree.try_select_last(page_height);
                 }
                 CmdResult::Keep
             }
             Internal::page_up => {
                 let tree = self.displayed_tree_mut();
-                if page_height < tree.lines.len() as i32 {
-                    tree.try_scroll(-page_height, page_height);
+                if !tree.try_scroll(-page_height, page_height) {
+                    tree.try_select_first();
                 }
                 CmdResult::Keep
             }
@@ -428,7 +428,7 @@ impl PanelState for BrowserState {
             }
             Internal::parent => self.go_to_parent(screen, con, bang),
             Internal::print_tree => {
-                print::print_tree(&self.displayed_tree(), cc.app.screen, &cc.app.panel_skin, con)?
+                print::print_tree(self.displayed_tree(), cc.app.screen, cc.app.panel_skin, con)?
             }
             Internal::root_up => {
                 let tree = self.displayed_tree();
@@ -587,8 +587,8 @@ impl PanelState for BrowserState {
         disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
         let dp = DisplayableTree {
-            app_state: Some(&disc.app_state),
-            tree: &self.displayed_tree(),
+            app_state: Some(disc.app_state),
+            tree: self.displayed_tree(),
             skin: &disc.panel_skin.styles,
             ext_colors: &disc.con.ext_colors,
             area: disc.state_area.clone(),

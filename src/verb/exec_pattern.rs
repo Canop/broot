@@ -72,7 +72,7 @@ impl ExecPattern {
         Self::Array(
             match self {
                 Self::String(s) => {
-                    splitty::split_unquoted_whitespace(&s)
+                    splitty::split_unquoted_whitespace(s)
                         .unwrap_quotes(true)
                         .map(|s| f(s))
                         .collect()

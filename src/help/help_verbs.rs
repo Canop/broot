@@ -22,7 +22,7 @@ impl MatchingVerbRow<'_> {
         self.name
             .as_deref()
             .unwrap_or_else(|| match self.verb.names.get(0) {
-                Some(s) => &s.as_str(),
+                Some(s) => s.as_str(),
                 _ => " ",
             })
     }
@@ -31,7 +31,7 @@ impl MatchingVerbRow<'_> {
         self.shortcut
             .as_deref()
             .unwrap_or_else(|| match self.verb.names.get(1) {
-                Some(s) => &s.as_str(),
+                Some(s) => s.as_str(),
                 _ => " ",
             })
     }

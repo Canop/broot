@@ -12,6 +12,12 @@ impl ScrollCommand {
             Self::Pages(n) => n * page_height as i32,
         }
     }
+    pub fn is_up(self) -> bool {
+        match self {
+            Self::Lines(n) => n < 0,
+            Self::Pages(n) => n < 0,
+        }
+    }
     /// compute the new scroll value
     pub fn apply(
         self,

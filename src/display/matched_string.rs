@@ -81,11 +81,11 @@ impl<'a, 'w> MatchedString<'a> {
                 } else if w < dw {
                     match self.align {
                         Alignment::Right => {
-                            cw.repeat(&self.base_style, &SPACE_FILLING, dw - w)?;
+                            cw.repeat(self.base_style, &SPACE_FILLING, dw - w)?;
                         }
                         Alignment::Center => {
                             right_filling = (dw - w) / 2;
-                            cw.repeat(&self.base_style, &SPACE_FILLING, dw - w - right_filling)?;
+                            cw.repeat(self.base_style, &SPACE_FILLING, dw - w - right_filling)?;
                         }
                         _ => {
                             right_filling = dw - w;
@@ -100,26 +100,26 @@ impl<'a, 'w> MatchedString<'a> {
                     cw.queue_char(&combined_style, cand_char)?;
                     pos_idx += 1;
                 } else {
-                    cw.queue_char(&self.base_style, cand_char)?;
+                    cw.queue_char(self.base_style, cand_char)?;
                 }
             }
             if right_filling > 0 {
-                cw.repeat(&self.base_style, &SPACE_FILLING, right_filling)?;
+                cw.repeat(self.base_style, &SPACE_FILLING, right_filling)?;
             }
         } else if let Some(w) = self.display_width {
             match self.align {
                 Alignment::Center => {
-                    cw.queue_str(&self.base_style, &format!("{:^w$}", self.string, w = w))?;
+                    cw.queue_str(self.base_style, &format!("{:^w$}", self.string, w = w))?;
                 }
                 Alignment::Right => {
-                    cw.queue_str(&self.base_style, &format!("{:>w$}", self.string, w = w))?;
+                    cw.queue_str(self.base_style, &format!("{:>w$}", self.string, w = w))?;
                 }
                 _ => {
-                    cw.queue_str(&self.base_style, &format!("{:<w$}", self.string, w = w))?;
+                    cw.queue_str(self.base_style, &format!("{:<w$}", self.string, w = w))?;
                 }
             }
         } else {
-            cw.queue_str(&self.base_style, self.string)?;
+            cw.queue_str(self.base_style, self.string)?;
         }
         Ok(())
     }

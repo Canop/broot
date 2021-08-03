@@ -57,11 +57,11 @@ impl ContentRegexPattern {
         if !candidate.regular_file || is_path_binary(&candidate.path) {
             return None;
         }
-        match self.has_match(&candidate.path) {
+        match self.has_match(candidate.path) {
             Ok(true) => Some(1),
             Ok(false) => None,
             Err(e) => {
-                debug!("error while scanning {:?} : {:?}", &candidate.path, e);
+                debug!("error while scanning {:?} : {:?}", candidate.path, e);
                 None
             }
         }

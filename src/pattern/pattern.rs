@@ -157,14 +157,14 @@ impl Pattern {
 
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
         match self {
-            Self::NameExact(ep) => ep.score_of(&candidate.name),
-            Self::NameFuzzy(fp) => fp.score_of(&candidate.name),
-            Self::NameRegex(rp) => rp.find(&candidate.name).map(|m| m.score),
-            Self::NameTokens(tp) => tp.score_of(&candidate.name),
-            Self::PathExact(ep) => ep.score_of(&candidate.subpath),
-            Self::PathFuzzy(fp) => fp.score_of(&candidate.subpath),
-            Self::PathRegex(rp) => rp.find(&candidate.subpath).map(|m| m.score),
-            Self::PathTokens(tp) => tp.score_of(&candidate.subpath),
+            Self::NameExact(ep) => ep.score_of(candidate.name),
+            Self::NameFuzzy(fp) => fp.score_of(candidate.name),
+            Self::NameRegex(rp) => rp.find(candidate.name).map(|m| m.score),
+            Self::NameTokens(tp) => tp.score_of(candidate.name),
+            Self::PathExact(ep) => ep.score_of(candidate.subpath),
+            Self::PathFuzzy(fp) => fp.score_of(candidate.subpath),
+            Self::PathRegex(rp) => rp.find(candidate.subpath).map(|m| m.score),
+            Self::PathTokens(tp) => tp.score_of(candidate.subpath),
             Self::ContentExact(cp) => cp.score_of(candidate),
             Self::ContentRegex(cp) => cp.score_of(candidate),
             Self::Composite(cp) => cp.score_of(candidate),
@@ -174,14 +174,14 @@ impl Pattern {
 
     pub fn score_of_string(&self, candidate: &str) -> Option<i32> {
         match self {
-            Self::NameExact(ep) => ep.score_of(&candidate),
-            Self::NameFuzzy(fp) => fp.score_of(&candidate),
-            Self::NameRegex(rp) => rp.find(&candidate).map(|m| m.score),
-            Self::NameTokens(tp) => tp.score_of(&candidate),
-            Self::PathExact(ep) => ep.score_of(&candidate),
-            Self::PathFuzzy(fp) => fp.score_of(&candidate),
-            Self::PathRegex(rp) => rp.find(&candidate).map(|m| m.score),
-            Self::PathTokens(tp) => tp.score_of(&candidate),
+            Self::NameExact(ep) => ep.score_of(candidate),
+            Self::NameFuzzy(fp) => fp.score_of(candidate),
+            Self::NameRegex(rp) => rp.find(candidate).map(|m| m.score),
+            Self::NameTokens(tp) => tp.score_of(candidate),
+            Self::PathExact(ep) => ep.score_of(candidate),
+            Self::PathFuzzy(fp) => fp.score_of(candidate),
+            Self::PathRegex(rp) => rp.find(candidate).map(|m| m.score),
+            Self::PathTokens(tp) => tp.score_of(candidate),
             Self::ContentExact(_) => None, // this isn't suitable
             Self::ContentRegex(_) => None, // this isn't suitable
             Self::Composite(cp) => cp.score_of_string(candidate),

@@ -1,3 +1,6 @@
+### next
+- better scrolling behaviors - Fix #419
+
 <a name="v1.6.3"></a>
 ### v1.6.3 - 2021-08-02
 - hjson: fix bad parsing on tab before colon

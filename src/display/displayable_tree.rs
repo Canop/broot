@@ -106,7 +106,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
             cond_bg!(count_style, self, selected, self.skin.count);
-            cw.queue_g_string(&count_style, format!("{:>width$}", s.to_count(), width=count_len))?;
+            cw.queue_g_string(count_style, format!("{:>width$}", s.to_count(), width=count_len))?;
             1
         } else {
             count_len + 1
@@ -122,11 +122,11 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     ) -> Result<usize, termimad::Error> {
         let device_id = line.device_id();
         cond_bg!(style, self, selected, self.skin.device_id_major);
-        cw.queue_g_string(&style, format!("{:>3}", device_id.major))?;
+        cw.queue_g_string(style, format!("{:>3}", device_id.major))?;
         cond_bg!(style, self, selected, self.skin.device_id_sep);
-        cw.queue_char(&style, ':')?;
+        cw.queue_char(style, ':')?;
         cond_bg!(style, self, selected, self.skin.device_id_minor);
-        cw.queue_g_string(&style, format!("{:<3}", device_id.minor))?;
+        cw.queue_g_string(style, format!("{:<3}", device_id.minor))?;
         Ok(0)
     }
 
@@ -137,7 +137,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if selected {
-            cw.queue_char(&style, '▶')?;
+            cw.queue_char(style, '▶')?;
             0
         } else {
             1
@@ -180,7 +180,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 format!("{:>4}", file_size::fit_4(s.to_size())),
             )?;
             cw.queue_char(
-                &sparse_style,
+                sparse_style,
                 if s.is_sparse() && line.is_file() { 's' } else { ' ' },
             )?;
             cw.queue_g_string(label_style, format!("{:<10}", pb))?;
@@ -268,7 +268,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             );
         }
         if !branch.is_empty() {
-            cw.queue_g_string(&branch_style, branch)?;
+            cw.queue_g_string(branch_style, branch)?;
         }
         Ok(0)
     }
@@ -281,7 +281,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         staged: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if staged {
-            cw.queue_char(&style, '◍')?; // ▣
+            cw.queue_char(style, '◍')?; // ▣
             0
         } else {
             1
@@ -309,13 +309,13 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             let mut path_ms = MatchedString::new(
                 name_match,
                 &line.subpath,
-                &style,
-                &char_match_style,
+                style,
+                char_match_style,
             );
             let name_ms = path_ms.split_on_last('/');
             cond_bg!(parent_style, self, selected, self.skin.parent);
             if name_ms.is_some() {
-                path_ms.base_style = &parent_style;
+                path_ms.base_style = parent_style;
             }
             path_ms.queue_on(cw)?;
             if let Some(name_ms) = name_ms {
@@ -327,8 +327,8 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             let matched_string = MatchedString::new(
                 name_match,
                 &line.name,
-                &style,
-                &char_match_style,
+                style,
+                char_match_style,
             );
             matched_string.queue_on(cw)?;
         }
@@ -341,7 +341,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             TreeLineType::BrokenSymLink(direct_path) => {
                 cw.queue_str(style, " -> ")?;
                 cond_bg!(error_style, self, selected, self.skin.file_error);
-                cw.queue_str(error_style, &direct_path)?;
+                cw.queue_str(error_style, direct_path)?;
             }
             TreeLineType::SymLink {
                 final_is_dir,
@@ -355,7 +355,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     &self.skin.file
                 };
                 cond_bg!(target_style, self, selected, target_style);
-                cw.queue_str(target_style, &direct_target)?;
+                cw.queue_str(target_style, direct_target)?;
             }
             _ => {}
         }
@@ -370,16 +370,16 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     ) -> Result<(), ProgramError> {
         cond_bg!(extract_style, self, selected, self.skin.content_extract);
         cond_bg!(match_style, self, selected, self.skin.content_match);
-        cw.queue_str(&extract_style, "  ")?;
+        cw.queue_str(extract_style, "  ")?;
         if extract.needle_start > 0 {
-            cw.queue_str(&extract_style, &extract.extract[0..extract.needle_start])?;
+            cw.queue_str(extract_style, &extract.extract[0..extract.needle_start])?;
         }
         cw.queue_str(
-            &match_style,
+            match_style,
             &extract.extract[extract.needle_start..extract.needle_end],
         )?;
         if extract.needle_end < extract.extract.len() {
-            cw.queue_str(&extract_style, &extract.extract[extract.needle_end..])?;
+            cw.queue_str(extract_style, &extract.extract[extract.needle_end..])?;
         }
         Ok(())
     }
@@ -400,12 +400,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             }
         }
         let title = line.path.to_string_lossy();
-        cw.queue_str(&style, &title)?;
+        cw.queue_str(style, &title)?;
         if self.in_app && !cw.is_full() {
             if let ComputationResult::Done(git_status) = &self.tree.git_status {
                 let git_status_display = GitStatusDisplay::from(
                     git_status,
-                    &self.skin,
+                    self.skin,
                     cw.allowed,
                 );
                 git_status_display.write(cw, selected)?;
@@ -415,7 +415,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 if let Some(mount) = line.mount() {
                     let fs_space_display = crate::filesystems::MountSpaceDisplay::from(
                         &mount,
-                        &self.skin,
+                        self.skin,
                         cw.allowed,
                     );
                     fs_space_display.write(cw, selected)?;
@@ -446,7 +446,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     /// write the whole tree on the given `W`
     pub fn write_on<W: Write>(&self, f: &mut W) -> Result<(), ProgramError> {
         #[cfg(not(any(target_family = "windows", target_os = "android")))]
-        let perm_writer = super::PermWriter::for_tree(&self.skin, &self.tree);
+        let perm_writer = super::PermWriter::for_tree(self.skin, self.tree);
 
         let tree = self.tree;
         let total_size = tree.total_sum();
@@ -467,7 +467,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             .options
             .cols_order
             .iter()
-            .filter(|col| col.is_visible(&tree, self.app_state))
+            .filter(|col| col.is_visible(tree, self.app_state))
             .cloned()
             .collect();
 
@@ -584,10 +584,10 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     };
                     // void: intercol & replacing missing cells
                     if in_branch && void_len > 2 {
-                        cond_bg!(void_style, self, selected, &self.skin.tree);
+                        cond_bg!(void_style, self, selected, self.skin.tree);
                         cw.repeat(void_style, &BRANCH_FILLING, void_len)?;
                     } else {
-                        cond_bg!(void_style, self, selected, &self.skin.default);
+                        cond_bg!(void_style, self, selected, self.skin.default);
                         cw.repeat(void_style, &SPACE_FILLING, void_len)?;
                     }
                 }

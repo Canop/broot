@@ -61,19 +61,19 @@ impl<'a, 's> GitStatusDisplay<'a, 's> {
             cond_bg!(branch_style, self, selected, self.skin.git_branch);
             if let Some(name) = &self.status.current_branch_name {
                 if self.show_wide {
-                    cw.queue_str(&branch_style, " ᚜ ")?;
+                    cw.queue_str(branch_style, " ᚜ ")?;
                 } else {
-                    cw.queue_char(&branch_style, ' ')?;
+                    cw.queue_char(branch_style, ' ')?;
                 }
-                cw.queue_str(&branch_style, name)?;
-                cw.queue_char(&branch_style, ' ')?;
+                cw.queue_str(branch_style, name)?;
+                cw.queue_char(branch_style, ' ')?;
             }
         }
         if self.show_stats {
             cond_bg!(insertions_style, self, selected, self.skin.git_insertions);
-            cw.queue_g_string(&insertions_style, format!("+{}", self.status.insertions))?;
+            cw.queue_g_string(insertions_style, format!("+{}", self.status.insertions))?;
             cond_bg!(deletions_style, self, selected, self.skin.git_deletions);
-            cw.queue_g_string(&deletions_style, format!("-{}", self.status.deletions))?;
+            cw.queue_g_string(deletions_style, format!("-{}", self.status.deletions))?;
         }
         Ok(())
     }

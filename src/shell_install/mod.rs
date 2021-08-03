@@ -211,7 +211,7 @@ impl ShellInstall {
 
     /// write the script at the given path
     fn write_script(&self, script_path: &Path, content: &str) -> Result<(), ProgramError> {
-        self.remove(&script_path)?;
+        self.remove(script_path)?;
         info!("Writing `br` shell function in `{:?}`", &script_path);
         mad_print_inline!(
             &self.skin,
@@ -226,7 +226,7 @@ impl ShellInstall {
     /// create a link
     fn create_link(&self, link_path: &Path, script_path: &Path) -> Result<(), ProgramError> {
         info!("Creating link from {:?} to {:?}", &link_path, &script_path);
-        self.remove(&link_path)?;
+        self.remove(link_path)?;
         let link_path_str = link_path.to_string_lossy();
         let script_path_str = script_path.to_string_lossy();
         mad_print_inline!(

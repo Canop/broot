@@ -64,7 +64,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             if rem > 1 {
                 // left margin for readability
                 rem -= 1;
-                cw.queue_char(&txt_style, ' ')?;
+                cw.queue_char(txt_style, ' ')?;
             }
             if rem > w_fs {
                 rem -= w_fs + 1; // 1 for margin
@@ -87,11 +87,11 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             }
             //- display
             if e_fs {
-                cw.queue_g_string(&txt_style, format!(" {}", &self.mount.info.fs))?;
+                cw.queue_g_string(txt_style, format!(" {}", &self.mount.info.fs))?;
             }
             if e_dsk {
-                cw.queue_char(&txt_style, ' ')?;
-                cw.queue_g_string(&txt_style, dsk.to_string())?;
+                cw.queue_char(txt_style, ' ')?;
+                cw.queue_g_string(txt_style, dsk.to_string())?;
             }
             if e_fraction {
                 if let Some(bg_color) = bg {
@@ -102,7 +102,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
                 cw.w.queue(SetForegroundColor(share_color))?;
                 cw.queue_unstyled_char(' ')?;
                 cw.queue_unstyled_g_string(file_size::fit_4(s.used()))?;
-                cw.queue_g_string(&txt_style, format!("/{}", file_size::fit_4(s.size())))?;
+                cw.queue_g_string(txt_style, format!("/{}", file_size::fit_4(s.size())))?;
             }
             if e_bar {
                 let pb = ProgressBar::new(s.use_share() as f32, w_bar);
@@ -123,7 +123,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             cw.queue_unstyled_g_string(format!("{:>3.0}%", 100.0 * s.use_share()))?;
         } else {
             // there's not much to print if there's no size info
-            cw.queue_g_string(&txt_style, format!(" {}", &self.mount.info.fs))?;
+            cw.queue_g_string(txt_style, format!(" {}", &self.mount.info.fs))?;
         }
         cw.w.queue(ResetColor {})?;
         Ok(())

@@ -43,7 +43,7 @@ impl Syntaxer {
                     .and_then(|key| self.theme_set.themes.get(key))
                     .or_else(|| self.theme_set.themes.get("base16-mocha.dark"))
                     .unwrap_or_else(|| self.theme_set.themes.iter().next().unwrap().1);
-                HighlightLines::new(syntax, &theme)
+                HighlightLines::new(syntax, theme)
             })
     }
 }
