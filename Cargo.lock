@@ -169,7 +169,7 @@ dependencies = [
  "memmap",
  "minimad 0.8.0",
  "once_cell",
- "open",
+ "open 2.0.0",
  "pathdiff",
  "phf",
  "rayon",
@@ -466,7 +466,7 @@ dependencies = [
  "libc",
  "log",
  "num-traits",
- "open",
+ "open 1.7.1",
  "svg",
  "tempfile",
 ]
@@ -657,7 +657,7 @@ dependencies = [
  "git2",
  "lazy_static",
  "minimad 0.7.1",
- "open",
+ "open 1.7.1",
  "rusqlite",
  "serde",
  "serde_json",
@@ -1106,6 +1106,16 @@ name = "open"
 version = "1.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "dcea7a30d6b81a2423cc59c43554880feff7b57d12916f231a79f8d6d9470201"
+dependencies = [
+ "pathdiff",
+ "winapi",
+]
+
+[[package]]
+name = "open"
+version = "2.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "970d0e0b8f5f39e6090f3d612e3a17b8e02b91c860fe9eb33665d1aed1f6f37f"
 dependencies = [
  "pathdiff",
  "winapi",
