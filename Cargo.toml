@@ -68,7 +68,7 @@ lfs-core = "0.4.2"
 users = "0.11"
 
 [target.'cfg(windows)'.dependencies]
-is_executable = "0.1"
+is_executable = "1.0"
 
 [build-dependencies]
 clap = "2.33"
