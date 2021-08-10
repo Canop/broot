@@ -21,7 +21,11 @@ We use [GitHub's issue manager](https://github.com/Canop/broot/issues).
 
 Before posting a new issue, check your problem hasn't already been raised and in case of doubt **please come first discuss it on the chat**.
 
-## Log
+# Your wishes
+
+[Issues](https://github.com/Canop/broot/issues) is also where I test new ideas. If you're interested in the directions broot takes, **please come and vote on issues**, or maybe comment. This would help me prioritize developments: if nobody's interested in a feature I'm not sure I want, I'll do something else.
+
+# Log
 
 When something looks like a bug, especially keyboard problems, we need both to know the exact configuration (OS, terminal program, mainly) and to have the log. The log can be obtained this way:
 
@@ -30,7 +34,7 @@ When something looks like a bug, especially keyboard problems, we need both to k
 3. quit broot
 4. go to the chat (or the GitHub issue if you already made one) and paste the content of the `broot.log` file
 
-## Benchmark
+# Benchmark
 
 To get a precise idea of the time taken by operations in real broot use, it's often a good idea to run them with `--cmd`.
 
