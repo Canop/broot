@@ -114,14 +114,10 @@ impl Pattern {
         candidate: &str,
     ) -> Option<NameMatch> {
         match self {
-            Self::NameExact(ep) => ep.find(candidate),
-            Self::NameFuzzy(fp) => fp.find(candidate),
-            Self::NameRegex(rp) => rp.find(candidate),
-            Self::NameTokens(tp) => tp.find(candidate),
-            Self::PathExact(ep) => ep.find(candidate),
-            Self::PathFuzzy(fp) => fp.find(candidate),
-            Self::PathRegex(rp) => rp.find(candidate),
-            Self::PathTokens(tp) => tp.find(candidate),
+            Self::NameExact(ep) | Self::PathExact(ep) => ep.find(candidate),
+            Self::NameFuzzy(fp) | Self::PathFuzzy(fp) => fp.find(candidate),
+            Self::NameRegex(rp) | Self::PathRegex(rp) => rp.find(candidate),
+            Self::NameTokens(tp) | Self::PathTokens(tp) => tp.find(candidate),
             Self::Composite(cp) => cp.search_string(candidate),
             _ => None,
         }
@@ -197,16 +193,12 @@ impl Pattern {
     /// (it accepts everything)
     pub fn is_empty(&self) -> bool {
         match self {
-            Self::NameExact(ep) => ep.is_empty(),
-            Self::NameFuzzy(fp) => fp.is_empty(),
-            Self::NameRegex(rp) => rp.is_empty(),
-            Self::NameTokens(tp) => tp.is_empty(),
-            Self::PathExact(ep) => ep.is_empty(),
-            Self::PathFuzzy(fp) => fp.is_empty(),
-            Self::PathRegex(rp) => rp.is_empty(),
-            Self::PathTokens(tp) => tp.is_empty(),
+            Self::NameExact(ep) | Self::PathExact(ep) => ep.is_empty(),
             Self::ContentExact(ep) => ep.is_empty(),
+            Self::NameFuzzy(fp) | Self::PathFuzzy(fp) => fp.is_empty(),
+            Self::NameRegex(rp) | Self::PathRegex(rp) => rp.is_empty(),
             Self::ContentRegex(rp) => rp.is_empty(),
+            Self::NameTokens(tp) | Self::PathTokens(tp) => tp.is_empty(),
             Self::Composite(cp) => cp.is_empty(),
             Self::None => true,
         }
