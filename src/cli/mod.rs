@@ -136,8 +136,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     tree_options.apply_launch_args(&cli_matches);
 
     // verb store is completed from the config file(s)
-    let mut verb_store = VerbStore::default();
-    verb_store.init(&mut config)?;
+    let verb_store = VerbStore::new(&mut config)?;
 
     // reading the other arguments
     let file_export_path = cli_matches.value_of("file-export-path").map(str::to_string);

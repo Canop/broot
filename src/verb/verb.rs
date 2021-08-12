@@ -169,6 +169,10 @@ impl Verb {
         self
     }
 
+    pub fn has_name(&self, searched_name: &str) -> bool {
+        self.names.iter().any(|name| name == searched_name)
+    }
+
     /// Assuming the verb has been matched, check whether the arguments
     /// are OK according to the regex. Return none when there's no problem
     /// and return the error to display if arguments don't match.

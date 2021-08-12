@@ -11,7 +11,6 @@ use {
         keys,
     },
     crossterm::event::KeyEvent,
-    std::convert::TryFrom,
 };
 
 /// Provide access to the verbs:
@@ -21,7 +20,6 @@ use {
 /// When the user types some keys, we select a verb
 /// - if the input exactly matches a shortcut or the name
 /// - if only one verb name starts with the input
-#[derive(Default)]
 pub struct VerbStore {
     pub verbs: Vec<Verb>,
 }
@@ -34,14 +32,22 @@ pub enum PrefixSearchResult<'v, T> {
 }
 
 impl VerbStore {
-    pub fn init(&mut self, conf: &mut Conf) -> Result<(), ConfError> {
-        // We first add the verbs coming from configuration, as we'll search in order.
-        // This way, a user can overload a standard verb.
+    pub fn new(conf: &mut Conf) -> Result<Self, ConfError> {
+        // we start with the builtin verbs so that a verb from configuration
+        // can refer to a built-in
+        let mut verbs = builtin_verbs();
+
         for vc in &conf.verbs {
-            self.verbs.push(Verb::try_from(vc)?);
+            let verb = vc.make_verb(&verbs)?;
+            verbs.push(verb);
         }
-        self.verbs.extend(builtin_verbs());
-        Ok(())
+
+        // We reverse the array as we'll search in order.
+        // This way, a user can overload a standard verb, or a standard
+        // shortcut.
+        verbs.reverse();
+
+        Ok(Self { verbs })
     }
 
     pub fn search_sel_info<'v>(

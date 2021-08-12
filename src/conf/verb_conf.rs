@@ -7,7 +7,6 @@ use {
         verb::*,
     },
     serde::Deserialize,
-    std::convert::TryFrom,
 };
 
 /// a deserializable verb entry in the configuration
@@ -51,9 +50,11 @@ pub struct VerbConf {
 
 /// read a deserialized verb conf item into a verb,
 /// checking a few basic things in the process
-impl TryFrom<&VerbConf> for Verb {
-    type Error = ConfError;
-    fn try_from(vc: &VerbConf) -> Result<Self, Self::Error> {
+impl VerbConf {
+    /// the verb_store is provided to allow a verb to be built from other ones
+    /// already defined
+    pub fn make_verb(&self, previous_verbs: &[Verb]) -> Result<Verb, ConfError> {
+        let vc = self;
         if vc.leave_broot == Some(false) && vc.from_shell == Some(true) {
             return Err(ConfError::InvalidVerbConf {
                 details: "You can't simultaneously have leave_broot=false and from_shell=true".to_string(),
@@ -83,7 +84,11 @@ impl TryFrom<&VerbConf> for Verb {
             // an external
             (Some(ep), None, None, None) => {
                 if let Some(internal_pattern) = ep.as_internal_pattern() {
-                    VerbExecution::Internal(InternalExecution::try_from(internal_pattern)?)
+                    if let Some(previous_verb) = previous_verbs.iter().find(|&v| v.has_name(internal_pattern)) {
+                        previous_verb.execution.clone()
+                    } else {
+                        VerbExecution::Internal(InternalExecution::try_from(internal_pattern)?)
+                    }
                 } else {
                     VerbExecution::External(make_external_execution(ep.clone()))
                 }
