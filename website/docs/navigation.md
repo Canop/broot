@@ -117,5 +117,5 @@ Other than executing a command leaving broot, there are several ways to quit:
 
 * if the current root is selected, just hit `enter`
 * hit <kbd>ctrl</kbd>+<kbd>Q</kbd>
-* type `:q` or ` q` then `enter`
+* type `:q` or `space` `q` then `enter`
 

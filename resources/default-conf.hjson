@@ -104,31 +104,31 @@
 
 	###############################################################
 	# Search modes
-        #
-        # broot allows many search modes.
-        # A search mode is defined by
-        # - the way to search: 'fuzzy', 'exact', 'regex', or 'tokens'.
-        # - where to search: file 'name', 'path', or file 'content'
-        # A search pattern may for example be "fuzzy path" (default),
-        # "regex content" or "exact path".
-        #
-        # The search mode is selected from its prefix. For example, if
-        # you type "abc", the default mode is "fuzzy path". If you type
-        # "/abc", the mode is "regex path". If you type "rn/abc", the mode
-        # is "regex name".
-        #
-        # This mapping may be modified. You may want to dedicate the
-        # empty prefix (the one which doesn't need a '/') to the
-        # search mode you use most often. The example below makes it
-        # easy to search on name rather than on the subpath.
-        #
-        # More information on
-        #  https://dystroy.org/broot/input/#the-filtering-pattern
-        #
-        # search_modes: {
-        #     <empty>: fuzzy name
-        #     /: regex name
-        # }
+	#
+	# broot allows many search modes.
+	# A search mode is defined by
+	# - the way to search: 'fuzzy', 'exact', 'regex', or 'tokens'.
+	# - where to search: file 'name', 'path', or file 'content'
+	# A search pattern may for example be "fuzzy path" (default),
+	# "regex content" or "exact path".
+	#
+	# The search mode is selected from its prefix. For example, if
+	# you type "abc", the default mode is "fuzzy path". If you type
+	# "/abc", the mode is "regex path". If you type "rn/abc", the mode
+	# is "regex name".
+	#
+	# This mapping may be modified. You may want to dedicate the
+	# empty prefix (the one which doesn't need a '/') to the
+	# search mode you use most often. The example below makes it
+	# easy to search on name rather than on the subpath.
+	#
+	# More information on
+	#  https://dystroy.org/broot/input/#the-filtering-pattern
+	#
+	# search_modes: {
+	#     <empty>: fuzzy name
+	#     /: regex name
+	# }
 
 	###############################################################
 	# Verbs and shortcuts
@@ -186,7 +186,7 @@
 		}
 
 		# On ctrl-b, propose the creation of a copy of the selection.
-		# While this might occasionnaly be useful, this verb is mostly here
+		# While this might occasionally be useful, this verb is mostly here
 		# as an example to demonstrate rare standard groups like {file-stem}
 		# and {file-dot-extension} and the auto_exec verb property which
 		# allows verbs not executed until you hit enter
@@ -260,9 +260,9 @@
 	# If you want to change the colors of broot,
 	# uncomment the following bloc and start messing
 	# with the various values.
-        # A skin entry value is made of two parts separated with a '/':
-        # The first one is the skin for the active panel.
-        # The second one, optional, is the skin for non active panels.
+	# A skin entry value is made of two parts separated with a '/':
+	# The first one is the skin for the active panel.
+	# The second one, optional, is the skin for non active panels.
 	# You may find explanations and other skins on
 	#  https://dystroy.org/broot/skins
 	###############################################################
@@ -352,8 +352,8 @@
 
 	###############################################################
 	# Max Panels Count
-        #
+	#
 	# Change this if you sometimes want to have more than 2 panels
-        # open
-        # max_panels_count: 2
+	# open
+	# max_panels_count: 2
 }

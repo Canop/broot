@@ -16,7 +16,7 @@ This function supports most broot arguments:
 
 The goal here is to have a function you can use in shell to give you a path.
 
-**Step 1:** create a file `~/.config/select.toml` with this content:
+**Step 1:** create a file `~/.config/broot/select.toml` with this content:
 
 ```Hjson
 verbs: [
@@ -178,7 +178,7 @@ In this example I show lines containing "youtube" but not "txt" nor " 0 ms".
 
 ![search log](img/20200716-search-log.png)
 
-# Escpape key
+# Escape key
 
 Broot usage, just like vim, relies a lot on the <kbd>esc</kbd> key. If you're a frequent user of the terminal, you may want to remap an easy to reach and otherwise useless key (for example caps-lock) to <kbd>esc</kbd>.
 
