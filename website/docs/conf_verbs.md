@@ -40,7 +40,7 @@ leave_broot | `true` | whether to quit broot on execution
 from_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
 apply_to | | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
 working_dir | | the working directory of the external application, for example `"{directory}"` for the closest directory (the working dir isn't set if the directory doesn't exist)
-set_working_dir | `false` | whether the working dir of the process must be set to the currenly selected directory (it's equivalent to `workding_dir: "{directory}"`)
+set_working_dir | `false` | whether the working dir of the process must be set to the currently selected directory (it's equivalent to `workding_dir: "{directory}"`)
 auto_exec | `true` | whether to execute the verb as soon as it's key-triggered (instead of waiting for <kbd>enter</kbd>)
 
 The execution is defined either by `internal`, `external` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
@@ -50,7 +50,7 @@ The execution is defined either by `internal`, `external` or `cmd` so a verb mus
 
 # Using quotes
 
-If you want broot, for example, to execute `xterm -e "nvim {file}"`, you may either escape the quotes as `\"` or use the array format to separe parts.
+If you want broot, for example, to execute `xterm -e "nvim {file}"`, you may either escape the quotes as `\"` or use the array format to separate parts.
 
 So the two following verb definitions are equivalent.
 
