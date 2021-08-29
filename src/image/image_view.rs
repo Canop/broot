@@ -2,7 +2,7 @@ use {
     super::double_line::DoubleLine,
     crate::{
         app::AppContext,
-        display::{fill_bg, Screen, W},
+        display::{Screen, W},
         errors::ProgramError,
         skin::PanelSkin,
     },
@@ -21,7 +21,7 @@ use {
         imageops::FilterType,
     },
     std::path::{Path, PathBuf},
-    termimad::Area,
+    termimad::{fill_bg, Area},
 };
 
 /// an already resized image, with the dimensions it

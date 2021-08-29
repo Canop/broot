@@ -1,6 +1,6 @@
 use {
     crate::{
-        display::{fill_bg, W},
+        display::W,
         errors::ProgramError,
     },
     ansi_colours,
@@ -14,6 +14,7 @@ use {
         QueueableCommand,
     },
     image::Rgba,
+    termimad::fill_bg,
 };
 
 const UPPER_HALF_BLOCK: char = '▀';

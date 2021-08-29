@@ -3,7 +3,7 @@ use {
     crate::{
         app::*,
         command::{Command, ScrollCommand, TriggerType},
-        display::{CropWriter, Screen, SPACE_FILLING, W},
+        display::{Screen, W},
         errors::ProgramError,
         flag::Flag,
         pattern::InputPattern,
@@ -17,7 +17,7 @@ use {
         QueueableCommand,
     },
     std::path::{Path, PathBuf},
-    termimad::Area,
+    termimad::{Area, CropWriter, SPACE_FILLING},
 };
 
 /// an application state dedicated to previewing files.

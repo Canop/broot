@@ -3,7 +3,7 @@ use {
     crate::{
         app::{AppContext, LineNumber},
         command::{ScrollCommand, move_sel},
-        display::{CropWriter, Screen, SPACE_FILLING, W},
+        display::{Screen, W},
         errors::*,
         pattern::{InputPattern, NameMatch},
         skin::PanelSkin,
@@ -23,7 +23,7 @@ use {
         str,
     },
     syntect::highlighting::Style,
-    termimad::Area,
+    termimad::{Area, CropWriter, SPACE_FILLING},
 };
 
 /// a homogeneously colored piece of a line

@@ -25,7 +25,7 @@ use {
         path::Path,
     },
     strict::NonEmptyVec,
-    termimad::ProgressBar,
+    termimad::*,
 };
 
 struct FilteredContent {

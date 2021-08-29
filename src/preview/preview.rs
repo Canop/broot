@@ -17,7 +17,7 @@ use {
         io,
         path::Path,
     },
-    termimad::Area,
+    termimad::{Area, CropWriter, SPACE_FILLING},
 };
 
 pub enum Preview {

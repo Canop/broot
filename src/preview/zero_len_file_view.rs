@@ -1,6 +1,6 @@
 use {
     crate::{
-        display::{CropWriter, Screen, SPACE_FILLING, W},
+        display::{Screen, W},
         errors::ProgramError,
         skin::PanelSkin,
     },
@@ -13,7 +13,7 @@ use {
         fs::File,
         path::PathBuf,
     },
-    termimad::{Area},
+    termimad::{Area, CropWriter, SPACE_FILLING},
 };
 
 /// a (light) display for a file declaring a size 0,

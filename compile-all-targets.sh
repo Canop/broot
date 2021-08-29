@@ -61,7 +61,7 @@ cp target/armv7-unknown-linux-gnueabihf/release/broot build/armv7-unknown-linux-
 # build the Android version
 # use cargo cross
 echo -e "${H2}Compiling the Android version${EH}"
-cross build ---features "clipboard" --target aarch64-linux-android --release
+cross build --features "clipboard" --target aarch64-linux-android --release
 mkdir build/aarch64-linux-android
 cp target/aarch64-linux-android/release/broot build/aarch64-linux-android/
 

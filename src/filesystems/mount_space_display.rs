@@ -1,6 +1,6 @@
 use {
     crate::{
-        display::{cond_bg, CropWriter},
+        display::cond_bg,
         errors::ProgramError,
         filesystems::share_color,
         skin::StyleMap,
@@ -10,7 +10,7 @@ use {
         QueueableCommand,
     },
     lfs_core::Mount,
-    termimad::ProgressBar,
+    termimad::*,
 };
 
 /// an abstract of the space info relative to a block device.

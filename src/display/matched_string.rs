@@ -15,6 +15,7 @@ pub struct MatchedString<'a> {
 }
 
 impl<'a, 'w> MatchedString<'a> {
+
     pub fn new(
         name_match: Option<NameMatch>,
         string: &'a str,

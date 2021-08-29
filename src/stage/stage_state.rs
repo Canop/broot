@@ -3,7 +3,7 @@ use {
     crate::{
         app::*,
         command::*,
-        display::{CropWriter, MatchedString, Screen, SPACE_FILLING, W},
+        display::{MatchedString, Screen, W},
         errors::ProgramError,
         pattern::*,
         skin::*,
@@ -16,7 +16,7 @@ use {
         QueueableCommand,
     },
     std::path::{Path},
-    termimad::Area,
+    termimad::{Area, CropWriter, SPACE_FILLING},
     unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
 };
 

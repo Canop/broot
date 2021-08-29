@@ -151,7 +151,7 @@ dependencies = [
  "clap",
  "cli-log 2.0.0",
  "crossbeam",
- "crossterm 0.20.0",
+ "crossterm 0.21.0",
  "custom_error",
  "deser-hjson",
  "directories",
@@ -181,7 +181,7 @@ dependencies = [
  "strict",
  "syntect",
  "tempfile",
- "termimad 0.14.0",
+ "termimad 0.15.0",
  "terminal-clipboard",
  "toml",
  "umask",
@@ -397,9 +397,9 @@ dependencies = [
 
 [[package]]
 name = "crossterm"
-version = "0.20.0"
+version = "0.21.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0ebde6a9dd5e331cd6c6f48253254d117642c31653baa475e394657c59c1f7d"
+checksum = "486d44227f71a1ef39554c0dc47e44b9f4139927c75043312690c3f476d1d788"
 dependencies = [
  "bitflags",
  "crossterm_winapi 0.8.0",
@@ -1612,12 +1612,12 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.14.0"
+version = "0.15.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "72cc07d71829847df3a04fe2341f0598676b1faf377d0965c48cb922241273d7"
+checksum = "513d1d28d91be635bdca58c59270dd54ae2280a7bf8a66c49a9963d2b6f112cd"
 dependencies = [
  "crossbeam",
- "crossterm 0.20.0",
+ "crossterm 0.21.0",
  "minimad 0.8.0",
  "thiserror",
  "unicode-width",

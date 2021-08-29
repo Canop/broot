@@ -2,7 +2,7 @@ use {
     super::byte::Byte,
     crate::{
         command::ScrollCommand,
-        display::{CropWriter, Screen, SPACE_FILLING, W},
+        display::{Screen, W},
         errors::ProgramError,
         skin::PanelSkin,
     },
@@ -17,7 +17,7 @@ use {
         io,
         path::PathBuf,
     },
-    termimad::{Area},
+    termimad::{Area, CropWriter, SPACE_FILLING},
 };
 
 
