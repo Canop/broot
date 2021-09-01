@@ -44,7 +44,7 @@ once_cell = "1.7"
 open = "2.0"
 memmap = "0.7"
 pathdiff = "0.2"
-phf = { version = "0.9", features = ["macros"] }
+phf = { version = "0.10", features = ["macros"] }
 rayon = "1.5"
 regex = "1.5"
 secular = { version = "1.0", features = ["normalization"] }
