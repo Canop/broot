@@ -145,7 +145,7 @@ impl HexView {
             margin_around_adresses = true;
             //rem -= 2;
         }
-        let scrollbar = area.scrollbar(self.scroll as i32, self.line_count() as i32);
+        let scrollbar = area.scrollbar(self.scroll, self.line_count());
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
@@ -201,7 +201,7 @@ impl HexView {
                 }
             }
             cw.fill(&styles.default, &SPACE_FILLING)?;
-            if is_thumb(y, scrollbar) {
+            if is_thumb(y as u16 + area.top, scrollbar) {
                 w.queue(SetForegroundColor(scrollbar_fg))?;
                 w.queue(Print('▐'))?;
             } else {
@@ -237,9 +237,8 @@ impl HexView {
     }
 }
 
-fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
+fn is_thumb(y: u16, scrollbar: Option<(u16, u16)>) -> bool {
     if let Some((sctop, scbottom)) = scrollbar {
-        let y = y as u16;
         if sctop <= y && y <= scbottom {
             return true;
         }

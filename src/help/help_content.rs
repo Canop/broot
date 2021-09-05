@@ -68,6 +68,7 @@ ${features-text}
 ${features
 * **${feature-name}:** ${feature-description}
 }
+
 "#;
 
 /// build a markdown expander which will need to be

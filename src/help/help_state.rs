@@ -17,7 +17,7 @@ use {
 
 /// an application state dedicated to help
 pub struct HelpState {
-    pub scroll: i32, // scroll position
+    pub scroll: usize,
     pub text_area: Area,
     dirty: bool, // background must be cleared
     pattern: Pattern,
@@ -205,7 +205,12 @@ impl PanelState for HelpState {
                 CmdResult::Keep
             }
             line_up | line_up_no_cycle => {
-                self.scroll -= get_arg(input_invocation, internal_exec, 1);
+                let dy = get_arg(input_invocation, internal_exec, 1);
+                self.scroll = if self.scroll > dy {
+                    self.scroll - dy
+                } else {
+                    0
+                };
                 CmdResult::Keep
             }
             open_stay => match open::that(&Conf::default_location()) {
@@ -222,11 +227,16 @@ impl PanelState for HelpState {
                 ))
             }
             page_down => {
-                self.scroll += self.text_area.height as i32;
+                self.scroll += self.text_area.height as usize;
                 CmdResult::Keep
             }
             page_up => {
-                self.scroll -= self.text_area.height as i32;
+                let height = self.text_area.height as usize;
+                self.scroll = if self.scroll > height {
+                    self.scroll - self.text_area.height as usize
+                } else {
+                    0
+                };
                 CmdResult::Keep
             }
             _ => self.on_internal_generic(

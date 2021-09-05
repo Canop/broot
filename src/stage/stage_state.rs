@@ -304,10 +304,7 @@ impl PanelState for StageState {
         self.page_height = list_area.height as usize;
         let pattern = &self.filtered_stage.pattern().pattern;
         let pattern_object = pattern.object();
-        let scrollbar = list_area.scrollbar(
-            self.scroll as i32,
-            self.filtered_stage.len() as i32,
-        );
+        let scrollbar = list_area.scrollbar(self.scroll, self.filtered_stage.len());
         for idx in 0..self.page_height {
             let y = list_area.top + idx as u16;
             let stage_idx = idx + self.scroll;

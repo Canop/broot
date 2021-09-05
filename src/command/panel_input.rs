@@ -16,8 +16,7 @@ use {
     termimad::{Area, Event, InputField},
 };
 
-/// wrap the input of a panel,
-/// receive events and make commands
+/// Wrap the input of a panel, receive events and make commands
 pub struct PanelInput {
     pub input_field: InputField,
     tab_cycle_count: usize,
@@ -35,7 +34,7 @@ impl PanelInput {
     }
 
     pub fn set_content(&mut self, content: &str) {
-        self.input_field.set_content(content);
+        self.input_field.set_str(content);
     }
 
     pub fn get_content(&self) -> String {
@@ -51,14 +50,14 @@ impl PanelInput {
         panel_skin: &PanelSkin,
     ) -> Result<(), ProgramError> {
         self.input_field.set_normal_style(panel_skin.styles.input.clone());
-        self.input_field.focused = active && mode == Mode::Input;
+        self.input_field.set_focus(active && mode == Mode::Input);
         if mode == Mode::Command && active {
             queue!(w, cursor::MoveTo(area.left, area.top))?;
             panel_skin.styles.mode_command_mark.queue_str(w, "C")?;
             area.width -= 1;
             area.left += 1;
         }
-        self.input_field.area = area;
+        self.input_field.set_area(area);
         self.input_field.display_on(w)?;
         Ok(())
     }
@@ -95,7 +94,7 @@ impl PanelInput {
                     if self.input_field.get_content().is_empty() {
                         false
                     } else {
-                        self.input_field.set_content("");
+                        self.input_field.clear();
                         true
                     }
                 }
@@ -189,7 +188,7 @@ impl PanelInput {
                     self.tab_cycle_count = 0;
                     if let Some(raw) = self.input_before_cycle.take() {
                         // we cancel the tab cycling
-                        self.input_field.set_content(&raw);
+                        self.input_field.set_str(&raw);
                         self.input_before_cycle = None;
                         return Command::from_raw(raw, false);
                     } else if con.modal && mode == Mode::Input {
@@ -200,7 +199,7 @@ impl PanelInput {
                         };
                     } else {
                         // general back command
-                        self.input_field.set_content("");
+                        self.input_field.clear();
                         let internal = Internal::back;
                         return Command::Internal {
                             internal,
@@ -247,7 +246,7 @@ impl PanelInput {
                                 .as_ref()
                                 .map_or(raw, |s| s.to_string());
                             raw.push_str(&added);
-                            self.input_field.set_content(&raw);
+                            self.input_field.set_str(&raw);
                             return Command::from_raw(raw, false);
                         } else {
                             return Command::None;

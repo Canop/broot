@@ -25,7 +25,7 @@ use {
     file_size,
     git2::Status,
     std::io::Write,
-    termimad::{CompoundStyle, ProgressBar},
+    termimad::{Area, CompoundStyle, ProgressBar},
 };
 
 /// A tree wrapper which can be used either
@@ -451,7 +451,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         let tree = self.tree;
         let total_size = tree.total_sum();
         let scrollbar = if self.in_app {
-            self.area.scrollbar(tree.scroll, tree.lines.len() as i32 - 1)
+            termimad::compute_scrollbar(
+                tree.scroll,
+                tree.lines.len() - 1, // the root line isn't scrolled
+                self.area.height - 1, // the scrollbar doesn't cover the first line
+                self.area.top + 1,
+            )
         } else {
             None
         };
@@ -602,7 +607,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             }
             self.extend_line_bg(cw, selected)?;
             self.skin.queue_reset(f)?;
-            if self.in_app && y > 0 {
+            if self.in_app {
                 if let Some((sctop, scbottom)) = scrollbar {
                     f.queue(cursor::MoveTo(self.area.left + self.area.width - 1, y))?;
                     let style = if sctop <= y && y <= scbottom {

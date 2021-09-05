@@ -86,8 +86,8 @@ impl BrowserState {
         self.tree.root()
     }
 
-    pub fn page_height(screen: Screen) -> i32 {
-        i32::from(screen.height) - 2
+    pub fn page_height(screen: Screen) -> usize {
+        screen.height as usize - 2 // br shouldn't be displayed when the screen is smaller
     }
 
     /// return a reference to the currently displayed tree, which
@@ -243,7 +243,7 @@ impl PanelState for BrowserState {
         _screen: Screen,
         _con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
-        self.displayed_tree_mut().try_select_y(y as i32);
+        self.displayed_tree_mut().try_select_y(y as usize);
         Ok(CmdResult::Keep)
     }
 
@@ -373,14 +373,14 @@ impl PanelState for BrowserState {
             }
             Internal::page_down => {
                 let tree = self.displayed_tree_mut();
-                if !tree.try_scroll(page_height, page_height) {
+                if !tree.try_scroll(page_height as i32, page_height) {
                     tree.try_select_last(page_height);
                 }
                 CmdResult::Keep
             }
             Internal::page_up => {
                 let tree = self.displayed_tree_mut();
-                if !tree.try_scroll(-page_height, page_height) {
+                if !tree.try_scroll(page_height as i32 * -1, page_height) {
                     tree.try_select_first();
                 }
                 CmdResult::Keep

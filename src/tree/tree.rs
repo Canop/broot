@@ -25,7 +25,7 @@ pub struct Tree {
     pub lines: Box<[TreeLine]>,
     pub selection: usize, // there's always a selection (starts with root, which is 0)
     pub options: TreeOptions,
-    pub scroll: i32, // the number of lines at the top hidden because of scrolling
+    pub scroll: usize, // the number of lines at the top hidden because of scrolling
     pub nb_gitignored: u32, // number of times a gitignore pattern excluded a file
     pub total_search: bool, // whether the search was made on all children
     pub git_status: ComputationResult<TreeGitStatus>,
@@ -60,7 +60,7 @@ impl Tree {
                 self.selection = 0;
             }
         }
-        self.make_selection_visible(page_height as i32);
+        self.make_selection_visible(page_height);
         Ok(())
     }
 
@@ -144,70 +144,74 @@ impl Tree {
     /// select another line
     ///
     /// For example the following one if dy is 1.
-    pub fn move_selection(&mut self, dy: i32, page_height: i32, cycle: bool) {
-        // FIXME may not work well if dy is too big
-        let l = self.lines.len() as i32;
+    pub fn move_selection(&mut self, dy: i32, page_height: usize, cycle: bool) {
+        let l = self.lines.len();
+        // we find the new line to select
         loop {
-            if !cycle {
-                let s = dy + (self.selection as i32);
-                if s < 0 || s >= l {
+            if dy < 0 {
+                let ady = (-dy) as usize;
+                if !cycle && self.selection < ady {
                     break;
                 }
+                self.selection = (self.selection + l - ady) % l;
+            } else {
+                let dy = dy as usize;
+                if !cycle && self.selection + dy > l {
+                    break;
+                }
+                self.selection = (self.selection + dy) % l;
             }
-            self.selection = (self.selection + (l + dy) as usize) % self.lines.len();
             if self.lines[self.selection].is_selectable() {
                 break;
             }
         }
         // we adjust the scroll
-        let sel = self.selection as i32;
         if l > page_height {
-            if dy < 0 {
-                if sel == l - 1 {
-                    // cycling
-                    self.scroll = l - page_height;
-                } else if sel < self.scroll + 5 {
-                    self.scroll = (self.scroll + 2 * dy).max(0);
-                }
-            } else {
-                if sel == 0 {
-                    // cycling brought us back to top
-                    self.scroll = 0;
-                } else if sel > self.scroll + page_height - 5 {
-                    self.scroll = (self.scroll + 2 * dy).min(l - page_height);
-                }
+            if self.selection < 3 {
+                self.scroll = 0;
+            } else if self.selection < self.scroll + 3 {
+                self.scroll = self.selection - 3;
+            } else if self.selection + 3 > l {
+                self.scroll = l - page_height;
+            } else if self.selection + 3 > self.scroll + page_height {
+                self.scroll = self.selection + 3 - page_height;
             }
         }
     }
 
-    /// scroll the desired amount and return true, or return false if it's
+    /// Scroll the desired amount and return true, or return false if it's
     /// already at end or the tree fits the page
-    pub fn try_scroll(&mut self, dy: i32, page_height: i32) -> bool {
-        let lines_len = self.lines.len() as i32;
-        if lines_len <= page_height {
+    pub fn try_scroll(&mut self, dy: i32, page_height: usize) -> bool {
+        if self.lines.len() <= page_height {
             return false;
         }
         if dy < 0 { // scroll up
             if self.scroll == 0 {
                 return false;
+            } else {
+                let ady = -dy as usize;
+                if ady < self.scroll {
+                    self.scroll -= ady;
+                } else {
+                    self.scroll = 0;
+                }
             }
-            self.scroll = (self.scroll + dy).max(0);
         } else { // scroll down
-            let max = lines_len - page_height;
+            let max = self.lines.len() - page_height;
             if self.scroll >= max {
                 return false;
             }
-            self.scroll = (self.scroll + dy).min(max);
+            self.scroll = (self.scroll + dy as usize).min(max);
         }
         self.select_visible_line(page_height);
         true
     }
 
-    /// try to select a line (works if y+scroll falls on a selectable line)
-    pub fn try_select_y(&mut self, y: i32) -> bool {
+    /// try to select a line by index of visible line
+    /// (works if y+scroll falls on a selectable line)
+    pub fn try_select_y(&mut self, y: usize) -> bool {
         let y = y + self.scroll;
-        if y >= 0 && y < self.lines.len() as i32 {
-            let y = y as usize;
+        if y < self.lines.len() {
             if self.lines[y].is_selectable() {
                 self.selection = y;
                 return true;
@@ -216,13 +220,12 @@ impl Tree {
         false
     }
     /// fix the selection so that it's a selectable visible line
-    fn select_visible_line(&mut self, page_height: i32) {
-        let sel = self.selection as i32;
-        if sel < self.scroll || sel >= self.scroll + page_height {
-            self.selection = self.scroll as usize;
+    fn select_visible_line(&mut self, page_height: usize) {
+        if self.selection < self.scroll || self.selection >= self.scroll + page_height {
+            self.selection = self.scroll;
             let l = self.lines.len();
             loop {
-                self.selection = (self.selection + ((l as i32) + 1) as usize) % l;
+                self.selection = (self.selection + l + 1) % l;
                 if self.lines[self.selection].is_selectable() {
                     break;
                 }
@@ -230,14 +233,19 @@ impl Tree {
         }
     }
 
-    pub fn make_selection_visible(&mut self, page_height: i32) {
-        let sel = self.selection as i32;
-        let l = self.lines.len() as i32;
-        if sel < self.scroll {
-            self.scroll = (self.selection as i32 - 2).max(0);
-        } else if l > page_height && sel >= self.scroll + page_height {
-            self.scroll = (self.selection as i32 - page_height + 2) as i32;
+    pub fn make_selection_visible(&mut self, page_height: usize) {
+        debug!("make_selection_visible len={} page_height={} scroll={} sel={}",
+            self.lines.len(), page_height, self.scroll, self.selection);
+        if page_height >= self.lines.len() || self.selection < 3 {
+            self.scroll = 0;
+        } else if self.selection < self.scroll {
+            self.scroll = self.selection - 2;
+        } else if self.selection > self.lines.len() - 2 {
+            self.scroll = self.lines.len() - page_height;
+        } else if self.selection >= self.scroll + page_height {
+            self.scroll = self.selection + 2 - page_height;
         }
+        debug!(" -> scroll={}", self.scroll);
     }
     pub fn selected_line(&self) -> &TreeLine {
         &self.lines[self.selection]
@@ -289,7 +297,7 @@ impl Tree {
         }
         false
     }
-    pub fn try_select_last(&mut self, page_height: i32) -> bool {
+    pub fn try_select_last(&mut self, page_height: usize) -> bool {
         for idx in (0..self.lines.len()).rev() {
             let line = &self.lines[idx];
             if line.is_selectable() {

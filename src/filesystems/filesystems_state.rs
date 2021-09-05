@@ -237,7 +237,7 @@ impl PanelState for FilesystemState {
         } else {
             (self.mounts.as_slice(), self.selection_idx)
         };
-        let scrollbar = area.scrollbar(self.scroll as i32, mounts.len() as i32);
+        let scrollbar = area.scrollbar(self.scroll, mounts.len());
         //- style preparation
         let styles = &disc.panel_skin.styles;
         let selection_bg = styles.selected_line.get_bg()
