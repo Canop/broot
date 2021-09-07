@@ -419,7 +419,6 @@ internal = ":input_del_word_right"
 ```
 
 
-
 # Focus
 
 The `:focus` internal has many uses.
@@ -427,6 +426,8 @@ The `:focus` internal has many uses.
 It can be used without explicit argument in which case it takes the selection (for example `:!focus` is equivalent to <kbd>ctrl</kbd><kbd>→</kbd>).
 
 It can be used with an argument, for example you can go to a specific place without leaving broot by typing ` fo /usr/bin` then <kbd>enter</kbd>.
+
+You may also want to use it in some cases instead of <kbd>enter</kbd> because it keeps the active filter.
 
 It serves as base for several built-in commands, like `:home` whose execution is `:focus ~` (`~` is interpreted in broot as the user home even on Windows).
 

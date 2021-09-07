@@ -234,8 +234,6 @@ impl Tree {
     }
 
     pub fn make_selection_visible(&mut self, page_height: usize) {
-        debug!("make_selection_visible len={} page_height={} scroll={} sel={}",
-            self.lines.len(), page_height, self.scroll, self.selection);
         if page_height >= self.lines.len() || self.selection < 3 {
             self.scroll = 0;
         } else if self.selection < self.scroll {
@@ -245,7 +243,6 @@ impl Tree {
         } else if self.selection >= self.scroll + page_height {
             self.scroll = self.selection + 2 - page_height;
         }
-        debug!(" -> scroll={}", self.scroll);
     }
     pub fn selected_line(&self) -> &TreeLine {
         &self.lines[self.selection]
