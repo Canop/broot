@@ -7,8 +7,9 @@ use {
         git::TreeGitStatus,
         task_sync::ComputationResult,
         task_sync::Dam,
-        tree_build::TreeBuilder,
+        tree_build::{BId, TreeBuilder},
     },
+    fnv::FnvHashMap,
     std::{
         cmp::Ord,
         mem,
@@ -68,8 +69,44 @@ impl Tree {
     /// - sort the lines
     /// - compute left branchs
     pub fn after_lines_changed(&mut self) {
-        // we sort the lines (this is mandatory to avoid crashes)
-        self.lines[1..].sort();
+
+        // we need to order the lines to build the tree.
+        // It's a little complicated because
+        //  - we want a case insensitive sort
+        //  - we still don't want to confuse the children of AA and Aa
+        //  - a node can come from a not parent node, when we followed a link
+        let mut bid_parents: FnvHashMap<BId, BId> = FnvHashMap::default();
+        let mut bid_lines: FnvHashMap<BId, &TreeLine> = FnvHashMap::default();
+        for line in self.lines[..].iter() {
+            if let Some(parent_bid) = line.parent_bid {
+                bid_parents.insert(line.bid, parent_bid);
+            }
+            bid_lines.insert(line.bid, &line);
+        }
+        let mut sort_paths: FnvHashMap<BId, String> = FnvHashMap::default();
+        for line in self.lines[1..].iter() {
+            let mut sort_path = String::new();
+            let mut bid = line.bid;
+            loop {
+                if let Some(l) = bid_lines.get(&bid) {
+                    sort_path = format!(
+                        "{}-{}/{}",
+                        l.path.to_string_lossy().to_lowercase(),
+                        bid.index(), // to be sure to separate paths having the same lowercase
+                        sort_path,
+                    );
+                } else {
+                    break;
+                }
+                if let Some(&parent_bid) = bid_parents.get(&bid) {
+                    bid = parent_bid;
+                } else {
+                    break;
+                }
+            }
+            sort_paths.insert(line.bid, sort_path);
+        }
+        self.lines[1..].sort_by_key(|line| sort_paths.get(&line.bid).unwrap());
 
         let mut best_index = 0; // index of the line with the best score
         for i in 1..self.lines.len() {
@@ -86,24 +123,21 @@ impl Tree {
         for end_index in (1..self.lines.len()).rev() {
             let depth = (self.lines[end_index].depth - 1) as usize;
             let start_index = {
-                let parent_index = {
-                    let parent_path = &self.lines[end_index].path.parent();
-                    match parent_path {
-                        Some(parent_path) => {
-                            let mut index = end_index;
-                            loop {
-                                index -= 1;
-                                if self.lines[index].path == *parent_path {
-                                    break;
-                                }
-                                if index == 0 {
-                                    break;
-                                }
+                let parent_index = match self.lines[end_index].parent_bid {
+                    Some(parent_bid) => {
+                        let mut index = end_index;
+                        loop {
+                            index -= 1;
+                            if self.lines[index].bid == parent_bid {
+                                break;
                             }
-                            index
+                            if index == 0 {
+                                break;
+                            }
                         }
-                        None => end_index, // Should not happen
+                        index
                     }
+                    None => end_index, // Should not happen
                 };
                 if parent_index != last_parent_index {
                     // the line at end_index is the last listed child of the line at parent_index

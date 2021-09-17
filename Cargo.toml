@@ -105,6 +105,6 @@ harness = false
 # minimad = { path = "../minimad" }
 # secular = { path = "../secular", features=["normalization"] }
 # strict = { path = "../strict" }
-# termimad = { path = "../termimad" }
+# termimad = { path = "../termimad" }
 # terminal-clipboard = { path = "../terminal-clipboard" }
 # umask = { path = "../umask" }

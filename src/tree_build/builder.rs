@@ -155,7 +155,7 @@ impl<'c> TreeBuilder<'c> {
                 }
             }
         }
-        if file_type.is_file() || file_type.is_symlink() {
+        if file_type.is_file() {
             if !has_match {
                 return None;
             }
@@ -198,7 +198,7 @@ impl<'c> TreeBuilder<'c> {
     /// returns true when there are direct matches among children
     fn load_children(&mut self, bid: BId) -> bool {
         let mut has_child_match = false;
-        match fs::read_dir(&self.blines[bid].path) {
+        match self.blines[bid].read_dir() {
             Ok(entries) => {
                 let mut children: Vec<BId> = Vec::new();
                 let child_depth = self.blines[bid].depth + 1;
@@ -395,10 +395,10 @@ impl<'c> TreeBuilder<'c> {
         for id in out_blines.iter() {
             if self.blines[*id].has_match {
                 // we need to count the children, so we load them
-                if self.blines[*id].file_type.is_dir() && self.blines[*id].children.is_none() {
+                if self.blines[*id].can_enter() && self.blines[*id].children.is_none() {
                     self.load_children(*id);
                 }
-                if let Ok(tree_line) = self.blines[*id].to_tree_line(self.con) {
+                if let Ok(tree_line) = self.blines[*id].to_tree_line(*id, self.con) {
                     lines.push(tree_line);
                 } else {
                     // I guess the file went missing during tree computation

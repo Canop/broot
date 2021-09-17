@@ -1,5 +1,6 @@
 ### next
 - better scrolling behaviors - Fix #419
+- fix special-path::Enter for symlinks - Fix #448
 
 <a name="v1.6.3"></a>
 ### v1.6.3 - 2021-08-02

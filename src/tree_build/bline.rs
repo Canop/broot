@@ -4,11 +4,16 @@ use {
         app::AppContext,
         errors::TreeBuildError,
         git::GitIgnoreChain,
-        path::SpecialHandling,
+        path::{normalize_path, SpecialHandling},
         tree::*,
     },
     id_arena::Arena,
-    std::{fs, path::PathBuf, result::Result},
+    std::{
+        fs,
+        io,
+        path::PathBuf,
+        result::Result,
+    },
 };
 
 /// like a tree line, but with the info needed during the build
@@ -68,6 +73,23 @@ impl BLine {
             })
         }
     }
+    /// execute read_dir either on the link if we're a link,
+    /// or on the path otherwise.
+    ///
+    /// Assume the can_enter check has already be done.
+    pub(crate) fn read_dir(&self) -> io::Result<fs::ReadDir> {
+        if self.file_type.is_symlink() {
+            if let Ok(target) = fs::read_link(&self.path) {
+                let mut target_path = PathBuf::from(&target);
+                if target_path.is_relative() {
+                    target_path = self.path.parent().unwrap().join(target_path);
+                    target_path = normalize_path(target_path);
+                }
+                return fs::read_dir(&target_path);
+            }
+        }
+        fs::read_dir(&self.path)
+    }
     /// tell whether we should list the childs of the present line
     pub fn can_enter(&self) -> bool {
         if self.file_type.is_dir() && self.special_handling != SpecialHandling::NoEnter {
@@ -79,7 +101,7 @@ impl BLine {
                 if let Ok(target) = fs::read_link(&self.path) {
                     let mut target_path = PathBuf::from(&target);
                     if target_path.is_relative() {
-                        target_path = self.path.parent().unwrap().join(target_path)
+                        target_path = self.path.parent().unwrap().join(target_path);
                     }
                     if let Ok(target_metadata) = fs::symlink_metadata(&target_path) {
                         if target_metadata.file_type().is_dir() {
@@ -96,7 +118,7 @@ impl BLine {
         }
         false
     }
-    pub fn to_tree_line(&self, con: &AppContext) -> std::io::Result<TreeLine> {
+    pub fn to_tree_line(&self, bid: BId, con: &AppContext) -> std::io::Result<TreeLine> {
         let has_error = self.has_error;
         let line_type = TreeLineType::new(&self.path, &self.file_type);
         let unlisted = if let Some(children) = &self.children {
@@ -122,6 +144,8 @@ impl BLine {
             });
 
         Ok(TreeLine {
+            bid,
+            parent_bid: self.parent_id,
             left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
             icon,

@@ -25,7 +25,7 @@ use {
     file_size,
     git2::Status,
     std::io::Write,
-    termimad::{Area, CompoundStyle, ProgressBar},
+    termimad::{CompoundStyle, ProgressBar},
 };
 
 /// A tree wrapper which can be used either

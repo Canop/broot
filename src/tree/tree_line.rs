@@ -4,10 +4,10 @@ use {
         app::{Selection, SelectionType},
         file_sum::FileSum,
         git::LineGitStatus,
+        tree_build::BId,
     },
     lazy_regex::regex_captures,
     std::{
-        cmp::{self, Ord, Ordering, PartialOrd},
         fs,
         path::{Path, PathBuf},
     },
@@ -22,6 +22,8 @@ use is_executable::IsExecutable;
 /// a line in the representation of the file hierarchy
 #[derive(Debug, Clone)]
 pub struct TreeLine {
+    pub bid: BId,
+    pub parent_bid: Option<BId>,
     pub left_branchs: Box<[bool]>, // a depth-sized array telling whether a branch pass
     pub depth: u16,
     pub path: PathBuf,
@@ -133,55 +135,5 @@ impl TreeLine {
         }
     }
 }
-impl PartialEq for TreeLine {
-    fn eq(&self, other: &TreeLine) -> bool {
-        self.path == other.path
-    }
-}
 
-impl Eq for TreeLine {}
 
-impl Ord for TreeLine {
-    // paths are sorted in a complete ignore case way
-    // (A<a<B<b)
-    fn cmp(&self, other: &TreeLine) -> Ordering {
-        let mut sci = self.path.components();
-        let mut oci = other.path.components();
-        loop {
-            match sci.next() {
-                Some(sc) => {
-                    match oci.next() {
-                        Some(oc) => {
-                            let scs = sc.as_os_str().to_string_lossy();
-                            let ocs = oc.as_os_str().to_string_lossy();
-                            let lower_ordering = scs.to_lowercase().cmp(&ocs.to_lowercase());
-                            if lower_ordering != Ordering::Equal {
-                                return lower_ordering;
-                            }
-                            let ordering = scs.cmp(&ocs);
-                            if ordering != Ordering::Equal {
-                                return ordering;
-                            }
-                        }
-                        None => {
-                            return Ordering::Greater;
-                        }
-                    };
-                }
-                None => {
-                    if oci.next().is_some() {
-                        return Ordering::Less;
-                    } else {
-                        return Ordering::Equal;
-                    }
-                }
-            };
-        }
-    }
-}
-
-impl PartialOrd for TreeLine {
-    fn partial_cmp(&self, other: &TreeLine) -> Option<cmp::Ordering> {
-        Some(self.cmp(other))
-    }
-}
