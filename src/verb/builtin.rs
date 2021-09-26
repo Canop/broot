@@ -69,13 +69,13 @@ pub fn builtin_verbs() -> Vec<Verb> {
 
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
+        internal(open_leave) // calls the system open
+            .with_key(ALT_ENTER)
+            .with_shortcut("ol"),
         external("cd", "cd {directory}", FromParentShell)
             .with_stype(SelectionType::Directory)
             .with_key(ALT_ENTER)
             .with_description("change directory and quit"),
-        internal(open_leave) // calls the system open
-            .with_key(ALT_ENTER)
-            .with_shortcut("ol"),
 
         #[cfg(unix)]
         external("chmod {args}", "chmod {args} {file}", StayInBroot)
