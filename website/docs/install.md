@@ -76,6 +76,10 @@ Ubuntu and Debian users may use this apt repository: [https://packages.azlux.fr/
 
     pkgin install broot
 
+## Gentoo Linux
+
+    emerge broot
+
 -----------------------------------
 
 Now you should [install the br shell function](../install-br/).
