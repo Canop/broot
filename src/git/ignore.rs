@@ -7,6 +7,7 @@ use {
     lazy_regex::regex,
     once_cell::sync::Lazy,
     std::{
+        fmt,
         fs::File,
         io::{BufRead, BufReader, Result},
         path::{Path, PathBuf},
@@ -25,6 +26,17 @@ struct GitIgnoreRule {
     filename: bool,  // does this rule apply to just the filename
     pattern: glob::Pattern,
     pattern_options: glob::MatchOptions,
+}
+
+impl fmt::Debug for GitIgnoreRule {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("GitIgnoreRule")
+            .field("ok", &self.ok)
+            .field("directory", &self.directory)
+            .field("filename", &self.filename)
+            .field("pattern", &self.pattern.as_str())
+            .finish()
+    }
 }
 
 impl GitIgnoreRule {
@@ -50,19 +62,24 @@ impl GitIgnoreRule {
                 if has_separator && p.starts_with('/') {
                     p = ref_dir.to_string_lossy().to_string() + &p;
                 }
-                if let Ok(pattern) = glob::Pattern::new(&p) {
-                    let pattern_options = glob::MatchOptions {
-                        case_sensitive: true,
-                        require_literal_leading_dot: false,
-                        require_literal_separator: has_separator,
-                    };
-                    return Some(GitIgnoreRule {
-                        ok: c.get(1).is_some(), // if negation
-                        pattern,
-                        directory: c.get(3).is_some(),
-                        filename: !has_separator,
-                        pattern_options,
-                    });
+                match glob::Pattern::new(&p) {
+                    Ok(pattern) => {
+                        let pattern_options = glob::MatchOptions {
+                            case_sensitive: true,
+                            require_literal_leading_dot: false,
+                            require_literal_separator: has_separator,
+                        };
+                        return Some(GitIgnoreRule {
+                            ok: c.get(1).is_some(), // if negation
+                            pattern,
+                            directory: c.get(3).is_some(),
+                            filename: !has_separator,
+                            pattern_options,
+                        });
+                    }
+                    Err(e) => {
+                        debug!(" wrong glob pattern {:?} : {}", &p, e);
+                    }
                 }
             }
         }
@@ -71,7 +88,7 @@ impl GitIgnoreRule {
 }
 
 /// The rules of a gitignore file
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct GitIgnoreFile {
     rules: Vec<GitIgnoreRule>,
 }
@@ -147,6 +164,7 @@ impl GitIgnorer {
                 }
             }
             if let Ok(gif) = GitIgnoreFile::new(&ignore_file, dir) {
+                debug!("pushing GIF {:#?}", &gif);
                 chain.push(self.files.alloc(gif));
             }
             if is_repo {
@@ -210,6 +228,7 @@ impl GitIgnorer {
                     rule.pattern.matches_path_with(path, rule.pattern_options)
                 };
                 if ok {
+                    // as we read the rules in reverse, the first applying is OK
                     return rule.ok;
                 }
             }
