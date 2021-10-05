@@ -34,7 +34,7 @@ Broot may be in one of two modes:
 
 In *command* mode, you'll find those keys already configured:
 * `j` and `k` to go down and up
-* ̀ h` and `l` to go to parent or to enter a directory
+* `h` and `l` to go to parent or to enter a directory
 
 You enter *input* mode by typing one of those letters: ` ` (space), `:`, or `/`. You leave it with the `escape` key. You may add other bindings to the `:mode_input` and `:mode_command` verbs.
 
