@@ -87,8 +87,16 @@ impl<'c> TreeBuilder<'c> {
             None
         };
         let root_id = BLine::from_root(&mut blines, path, root_ignore_chain, &options)?;
-        let trim_root = options.pattern.is_some()
-            || (options.trim_root && !options.sort.is_some());
+        let trim_root = match (options.trim_root, options.pattern.is_some(), options.sort.is_some()) {
+            // we never want to trim the root if there's a sort
+            (_, _, true) => false,
+            // if the user don't want root trimming, we don't trim
+            (false, _, _) => false,
+            // if there's a pattern, we try to show at least root matches
+            (_, true, _) => false,
+            // in other cases, as the user wants trimming, we trim
+            _ => true,
+        };
         Ok(TreeBuilder {
             options,
             targeted_size,
