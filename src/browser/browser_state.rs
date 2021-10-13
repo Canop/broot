@@ -356,19 +356,19 @@ impl PanelState for BrowserState {
                 CmdResult::Keep
             }
             Internal::previous_match => {
-                self.displayed_tree_mut().try_select_previous_match();
+                self.displayed_tree_mut().try_select_previous_match(page_height);
                 CmdResult::Keep
             }
             Internal::next_match => {
-                self.displayed_tree_mut().try_select_next_match();
+                self.displayed_tree_mut().try_select_next_match(page_height);
                 CmdResult::Keep
             }
             Internal::previous_same_depth => {
-                self.displayed_tree_mut().try_select_previous_same_depth();
+                self.displayed_tree_mut().try_select_previous_same_depth(page_height);
                 CmdResult::Keep
             }
             Internal::next_same_depth => {
-                self.displayed_tree_mut().try_select_next_same_depth();
+                self.displayed_tree_mut().try_select_next_same_depth(page_height);
                 CmdResult::Keep
             }
             Internal::page_down => {

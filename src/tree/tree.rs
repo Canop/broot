@@ -270,7 +270,7 @@ impl Tree {
     pub fn make_selection_visible(&mut self, page_height: usize) {
         if page_height >= self.lines.len() || self.selection < 3 {
             self.scroll = 0;
-        } else if self.selection < self.scroll {
+        } else if self.selection <= self.scroll {
             self.scroll = self.selection - 2;
         } else if self.selection > self.lines.len() - 2 {
             self.scroll = self.lines.len() - page_height;
@@ -339,7 +339,7 @@ impl Tree {
         }
         false
     }
-    pub fn try_select_previous_same_depth(&mut self) -> bool {
+    pub fn try_select_previous_same_depth(&mut self, page_height: usize) -> bool {
         let depth = self.lines[self.selection].depth;
         for di in (0..self.lines.len()).rev() {
             let idx = (self.selection + di) % self.lines.len();
@@ -348,11 +348,12 @@ impl Tree {
                 continue;
             }
             self.selection = idx;
+            self.make_selection_visible(page_height);
             return true;
         }
         false
     }
-    pub fn try_select_next_same_depth(&mut self) -> bool {
+    pub fn try_select_next_same_depth(&mut self, page_height: usize) -> bool {
         let depth = self.lines[self.selection].depth;
         for di in 0..self.lines.len() {
             let idx = (self.selection + di + 1) % self.lines.len();
@@ -361,11 +362,12 @@ impl Tree {
                 continue;
             }
             self.selection = idx;
+            self.make_selection_visible(page_height);
             return true;
         }
         false
     }
-    pub fn try_select_previous_match(&mut self) -> bool {
+    pub fn try_select_previous_match(&mut self, page_height: usize) -> bool {
         for di in (0..self.lines.len()).rev() {
             let idx = (self.selection + di) % self.lines.len();
             let line = &self.lines[idx];
@@ -377,12 +379,13 @@ impl Tree {
             }
             if line.score > 0 {
                 self.selection = idx;
+                self.make_selection_visible(page_height);
                 return true;
             }
         }
         false
     }
-    pub fn try_select_next_match(&mut self) -> bool {
+    pub fn try_select_next_match(&mut self, page_height: usize) -> bool {
         for di in 0..self.lines.len() {
             let idx = (self.selection + di + 1) % self.lines.len();
             let line = &self.lines[idx];
@@ -394,6 +397,7 @@ impl Tree {
             }
             if line.score > 0 {
                 self.selection = idx;
+                self.make_selection_visible(page_height);
                 return true;
             }
         }
