@@ -1,0 +1,17 @@
+
+.link-to-dystroy {
+	position: absolute;
+	left: 4px;
+	top: 0;
+	height: 100%;
+	width: 50px;
+	background: url(../img/dystroy-rust-white.svg) no-repeat;
+	background-position: left center;
+	background-size: 40px 40px;
+	opacity: .3;
+	transition: opacity .5s;
+}
+.link-to-dystroy:hover {
+	opacity: 1;
+	transition: opacity .5s;
+}

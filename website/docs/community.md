@@ -1,6 +1,9 @@
 
 **broot** is developed by [Denys Séguret](https://twitter.com/DenysSeguret), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
 
+**broot** is free for all uses.
+If it helps your company make money, consider [helping me](https://github.com/sponsors/Canop) find time to add features and to develop new free open-source software.
+
 # Discuss Broot in a chat room
 
 The best place to chat about broot, to talk about features or bugs, is the Miaou chat.
