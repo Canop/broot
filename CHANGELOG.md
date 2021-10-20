@@ -1,4 +1,5 @@
-### next
+<a name="v1.6.5"></a>
+### v1.6.5 - 2021-10-01
 - improve decision on whether to trim root - Fix #434
 - better make the decision visible
 
