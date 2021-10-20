@@ -140,7 +140,7 @@ checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
 name = "broot"
-version = "1.6.5-dev"
+version = "1.6.5"
 dependencies = [
  "ahash 0.7.4",
  "ansi_colours",
@@ -167,7 +167,6 @@ dependencies = [
  "lfs-core",
  "libc",
  "memmap",
- "minimad 0.9.0",
  "once_cell",
  "open 2.0.0",
  "pathdiff",

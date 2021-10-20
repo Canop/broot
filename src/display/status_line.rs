@@ -5,8 +5,10 @@ use {
         errors::ProgramError,
         skin::PanelSkin,
     },
-    minimad::{Alignment, Composite},
-    termimad::{Area, StyledChar},
+    termimad::{
+        minimad::{Alignment, Composite},
+        Area, StyledChar,
+    },
 };
 
 /// write the whole status line (task + status)

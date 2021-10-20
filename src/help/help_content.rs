@@ -1,5 +1,5 @@
 use {
-    minimad::{TextTemplate, TextTemplateExpander},
+    termimad::minimad::{TextTemplate, TextTemplateExpander},
 };
 
 static MD: &str = r#"

@@ -1,8 +1,10 @@
 use {
     super::{CropWriter, SPACE_FILLING},
     crate::pattern::NameMatch,
-    minimad::Alignment,
-    termimad::{CompoundStyle, StrFit},
+    termimad::{
+        minimad::Alignment,
+        CompoundStyle, StrFit,
+    },
 };
 
 pub struct MatchedString<'a> {

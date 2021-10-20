@@ -17,8 +17,10 @@ use {
         task_sync::Dam,
         verb::*,
     },
-    minimad::{Alignment, Composite},
-    termimad::Event,
+    termimad::{
+        minimad::{Alignment, Composite},
+        Event,
+    },
 };
 
 /// A colon on screen containing a stack of states, the top

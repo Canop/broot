@@ -19,7 +19,10 @@ use {
     lazy_regex::regex,
     regex::Captures,
     std::{env, fs::OpenOptions, io::Write, path::PathBuf},
-    termimad::mad_print_inline,
+    termimad::{
+        minimad,
+        mad_print_inline,
+    },
 };
 
 const NAME: &str = "bash";

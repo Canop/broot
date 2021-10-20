@@ -17,7 +17,6 @@ use {
         QueueableCommand,
     },
     lfs_core::Mount,
-    minimad::Alignment,
     std::{
         convert::TryInto,
         fs,
@@ -25,7 +24,10 @@ use {
         path::Path,
     },
     strict::NonEmptyVec,
-    termimad::*,
+    termimad::{
+        minimad::Alignment,
+        *,
+    },
 };
 
 struct FilteredContent {
