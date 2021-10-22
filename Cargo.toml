@@ -5,12 +5,13 @@ authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
 description = "A new file manager"
-edition = "2018"
+edition = "2021"
 keywords = ["cli", "fuzzy", "tree", "search", "file"]
 license = "MIT"
 categories = ["command-line-utilities"]
 readme = "README.md"
 build = "build.rs"
+rust-version = "1.56"
 exclude = ["website", "broot*.zip"]
 
 [features]
