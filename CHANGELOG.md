@@ -1,4 +1,5 @@
-### next
+<a name="v1.6.6"></a>
+### v1.6.6 - 2021-10-22
 - make it possible to rebind left and right arrow keys without breaking usage in input - Fix #438
 
 <a name="v1.6.5"></a>
