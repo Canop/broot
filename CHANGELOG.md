@@ -1,3 +1,6 @@
+### next
+- make it possible to rebind left and right arrow keys without breaking usage in input - Fix #438
+
 <a name="v1.6.5"></a>
 ### v1.6.5 - 2021-10-01
 - improve decision on whether to trim root - Fix #434

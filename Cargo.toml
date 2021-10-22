@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.6.5"
+version = "1.6.6-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -53,7 +53,7 @@ splitty = "0.1"
 strict = "0.1.4"
 syntect = "4.5"
 tempfile = "3.2"
-termimad = "0.16.3"
+termimad = "0.16.4"
 terminal-clipboard = { version = "0.2.1", optional = true }
 toml = "0.5"
 umask = "1.0"
@@ -104,6 +104,6 @@ harness = false
 # minimad = { path = "../minimad" }
 # secular = { path = "../secular", features=["normalization"] }
 # strict = { path = "../strict" }
-# termimad = { path = "../termimad" }
+# termimad = { path = "../termimad" }
 # terminal-clipboard = { path = "../terminal-clipboard" }
 # umask = { path = "../umask" }

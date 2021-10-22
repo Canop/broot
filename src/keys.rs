@@ -85,13 +85,18 @@ pub fn is_reserved(key: KeyEvent) -> bool {
     key == BACKSPACE || key == DELETE || key == ESC
 }
 
-pub fn is_key_allowed_in_mode(key: KeyEvent, mode: Mode) -> bool {
+pub fn is_key_allowed_for_verb(
+    key: KeyEvent,
+    mode: Mode,
+    input_is_empty: bool,
+) -> bool {
     match mode {
         Mode::Input => {
             // in input mode, keys normally used in the input are forbidden
-            match key {
-                KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::NONE } => false,
-                _ => true,
+            if key==LEFT || key==RIGHT {
+                input_is_empty
+            } else {
+                !matches!(key, KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::NONE })
             }
         }
         Mode::Command => true,

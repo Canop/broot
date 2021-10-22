@@ -8,7 +8,8 @@ The "modal mode", which may be familiar to vim users, changes a little the way y
 - The downside is you have one letter more to type to start searching, which isn't to dismiss as searching is usually the first thing you do in broot.
 
 I recommand you **don't** activate this mode until you really tried broot. Broot isn't a text editor and can't be confused with one. This mode may be more comfortable when you constantly jump from vim to broot but only after you understood how broot works.
-You may be an avid vim user, as I am, and still prefer not to use modality in broot. Starting in *command* mode means you have one more letter to type before searching, because search is done in *input* mode. And broot is search oriented and often used in very short sessions (less than 5 seconds from intent to launch to being back in the shell in the right directory or editing the right file in your favorite editor)
+
+You may be an avid vim user, as I am, and still prefer not to use modality in broot. Starting in *command* mode means you have one more letter to type before searching, because search is done in *input* mode. And broot is search oriented and often used in very short sessions (less than 5 seconds from intent to launch to being back in the shell in the right directory or editing the right file in your favorite editor).
 
 # Configuration
 
@@ -18,10 +19,9 @@ You need first to enable the "modal mode" with this line in the configuration:
 modal: true
 ```
 ```TOML
+# note that this must be near the start of the configuration file
 modal = true
 ```
-
-(note: it must be at the begining of the configuration if it's in TOML)
 
 If `modal` isn't set to `true`, the single letter shortcuts you define in configuration will be ignored (so you don't have to remove them if you don't want modality anymore).
 

@@ -67,6 +67,12 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(input_go_word_left).no_doc(),
         internal(input_go_word_right).no_doc(),
 
+        // arrow keys bindings
+        internal(back).with_key(LEFT),
+        internal(open_stay).with_key(RIGHT),
+        internal(line_down).with_key(DOWN).with_char_key('j'),
+        internal(line_up).with_key(UP).with_char_key('k'),
+
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
         internal(open_leave) // calls the system open
@@ -123,12 +129,6 @@ pub fn builtin_verbs() -> Vec<Verb> {
         #[cfg(feature="clipboard")]
         internal(input_paste)
             .with_control_key('v'),
-        internal(line_down)
-            .with_key(DOWN)
-            .with_char_key('j'),
-        internal(line_up)
-            .with_key(UP)
-            .with_char_key('k'),
         external(
             "mkdir {subpath}",
             "mkdir -p {subpath:path-from-directory}",

@@ -140,7 +140,7 @@ checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
 name = "broot"
-version = "1.6.5"
+version = "1.6.6-dev"
 dependencies = [
  "ahash 0.7.4",
  "ansi_colours",
@@ -180,7 +180,7 @@ dependencies = [
  "strict",
  "syntect",
  "tempfile",
- "termimad 0.16.3",
+ "termimad 0.16.4",
  "terminal-clipboard",
  "toml",
  "umask",
@@ -1611,9 +1611,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.16.3"
+version = "0.16.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d06b905c5f505c6fe06d2c1df359d4919c44aed53cb12ff9babf8d5085885a36"
+checksum = "d88221817ef21964ccccf7d8ccc35fed3bae3066a177d1fcda72d694a016a47d"
 dependencies = [
  "crossbeam",
  "crossterm 0.21.0",

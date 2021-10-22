@@ -271,7 +271,7 @@ impl PanelInput {
                 }
 
                 // we now check if the key is the trigger key of one of the verbs
-                if keys::is_key_allowed_in_mode(key, mode) {
+                if keys::is_key_allowed_for_verb(key, mode, raw.is_empty()) {
                     for (index, verb) in con.verb_store.verbs.iter().enumerate() {
                         for verb_key in &verb.keys {
                             if *verb_key != key {
@@ -306,21 +306,6 @@ impl PanelInput {
                             }
                         }
                     }
-                }
-
-                if key == keys::LEFT && raw.is_empty() {
-                    let internal = Internal::back;
-                    return Command::Internal {
-                        internal,
-                        input_invocation: parts.verb_invocation,
-                    };
-                }
-
-                if key == keys::RIGHT && raw.is_empty() {
-                    return Command::Internal {
-                        internal: Internal::open_stay,
-                        input_invocation: None,
-                    };
                 }
 
                 // input field management

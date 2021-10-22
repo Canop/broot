@@ -20,7 +20,6 @@ use {
     regex::Captures,
     std::{env, fs::OpenOptions, io::Write, path::PathBuf},
     termimad::{
-        minimad,
         mad_print_inline,
     },
 };

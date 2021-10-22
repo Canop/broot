@@ -5,7 +5,7 @@ use {
         path::{Path, PathBuf},
         str::FromStr,
     },
-    termimad::{minimad, mad_print_inline, MadSkin},
+    termimad::{mad_print_inline, MadSkin},
 };
 
 mod bash;
