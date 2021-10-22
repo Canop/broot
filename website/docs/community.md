@@ -1,8 +1,13 @@
 
 **broot** is developed by [Denys Séguret](https://twitter.com/DenysSeguret), also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
 
+# Sponsorship
+
 **broot** is free for all uses.
+
 If it helps your company make money, consider [helping me](https://github.com/sponsors/Canop) find time to add features and to develop new free open-source software.
+
+There's no moral obligation to do so, though, even if you're an avid user.
 
 # Discuss Broot in a chat room
 
@@ -30,7 +35,7 @@ Before posting a new issue, check your problem hasn't already been raised and in
 
 # Log
 
-When something looks like a bug, especially keyboard problems, we need both to know the exact configuration (OS, terminal program, mainly) and to have the log. The log can be obtained this way:
+When something looks like a bug, especially keyboard problems, I need both to know the exact configuration (OS, terminal program, mainly) and to have the log. The log can be obtained this way:
 
 1. start broot with `BROOT_LOG=debug br`
 2. do the action which seems not to properly work, and nothing else
@@ -49,7 +54,7 @@ time broot -c "c/memmap;:pt" ~/code
 
 # Contribute
 
-**Broot** is written in [Rust](https://www.rust-lang.org/). The current focus is linux+mac but we try to support Windows too (use PowerShell instead of the old cmd).
+**Broot** is written in [Rust](https://www.rust-lang.org/). The current focus is linux+mac but I try to support Windows too (use PowerShell instead of the old cmd).
 
 Before starting working on a Pull Request, please join the Miaou room to coordinate the development. There are frequently several feature branches waiting to be merged and adding some wild ones may make the process painful.
 
