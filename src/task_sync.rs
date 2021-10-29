@@ -1,7 +1,7 @@
 use {
     crossbeam::channel::{self, bounded, select, Receiver},
     std::thread,
-    termimad::Event,
+    termimad::TimedEvent,
 };
 
 pub enum Either<A, B> {
@@ -36,12 +36,12 @@ impl<V> ComputationResult<V> {
 /// to stop (the computation function checking `has_event`)
 /// or drop the computation.
 pub struct Dam {
-    receiver: Receiver<Event>,
-    in_dam: Option<Event>,
+    receiver: Receiver<TimedEvent>,
+    in_dam: Option<TimedEvent>,
 }
 
 impl Dam {
-    pub fn from(receiver: Receiver<Event>) -> Self {
+    pub fn from(receiver: Receiver<TimedEvent>) -> Self {
         Self {
             receiver,
             in_dam: None,
@@ -120,7 +120,7 @@ impl Dam {
     /// no event means the source is dead (i.e. we
     /// must quit broot)
     /// There's no event kept in dam after this call.
-    pub fn next_event(&mut self) -> Option<Event> {
+    pub fn next_event(&mut self) -> Option<TimedEvent> {
         if self.in_dam.is_some() {
             self.in_dam.take()
         } else {
@@ -134,8 +134,8 @@ impl Dam {
         }
     }
 
-    // or maybed return either Option<Event> or Option<T> ?
-    pub fn next<T>(&mut self, other: &Receiver<T>) -> Either<Option<Event>, Option<T>> {
+    // or maybed return either Option<TimedEvent> or Option<T> ?
+    pub fn next<T>(&mut self, other: &Receiver<T>) -> Either<Option<TimedEvent>, Option<T>> {
         if self.in_dam.is_some() {
             Either::First(self.in_dam.take())
         } else {
@@ -160,7 +160,7 @@ impl Dam {
 }
 
 pub struct DamObserver {
-    receiver: Receiver<Event>,
+    receiver: Receiver<TimedEvent>,
 }
 impl DamObserver {
     pub fn from(dam: &Dam) -> Self {

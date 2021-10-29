@@ -10,10 +10,17 @@ use {
     },
     crossterm::{
         cursor,
-        event::KeyEvent,
+        event::{
+            Event,
+            KeyEvent,
+            KeyModifiers,
+            MouseButton,
+            MouseEvent,
+            MouseEventKind,
+        },
         queue,
     },
-    termimad::{Area, Event, InputField},
+    termimad::{Area, TimedEvent, InputField},
 };
 
 /// Wrap the input of a panel, receive events and make commands
@@ -69,7 +76,7 @@ impl PanelInput {
     pub fn on_event(
         &mut self,
         w: &mut W,
-        event: Event,
+        event: TimedEvent,
         con: &AppContext,
         sel_info: SelInfo<'_>,
         app_state: &AppState,
@@ -108,6 +115,22 @@ impl PanelInput {
                 Internal::input_go_word_right => self.input_field.move_word_right(),
                 Internal::input_go_to_start => self.input_field.move_to_start(),
                 Internal::input_go_to_end => self.input_field.move_to_end(),
+                #[cfg(feature = "clipboard")]
+                Internal::input_selection_cut => {
+                    let s = self.input_field.cut_selection();
+                    if let Err(err) = terminal_clipboard::set_string(s) {
+                        warn!("error in writing into clipboard: {}", err);
+                    }
+                    true
+                }
+                #[cfg(feature = "clipboard")]
+                Internal::input_selection_copy => {
+                    let s = self.input_field.copy_selection();
+                    if let Err(err) = terminal_clipboard::set_string(s) {
+                        warn!("error in writing into clipboard: {}", err);
+                    }
+                    true
+                }
                 #[cfg(feature = "clipboard")]
                 Internal::input_paste => {
                     match terminal_clipboard::get_string() {
@@ -158,22 +181,40 @@ impl PanelInput {
     /// - build a command
     fn get_command(
         &mut self,
-        event: Event,
+        timed_event: TimedEvent,
         con: &AppContext,
         sel_info: SelInfo<'_>,
         app_state: &AppState,
         mode: Mode,
     ) -> Command {
-        match event {
-            Event::Click(x, y, ..) => {
-                return if self.input_field.apply_event(&event) {
+        match timed_event.event {
+            Event::Mouse(MouseEvent { kind, column, row, modifiers: KeyModifiers::NONE }) => {
+                if self.input_field.apply_timed_event(timed_event) {
                     Command::empty()
                 } else {
-                    Command::Click(x, y)
-                };
-            }
-            Event::DoubleClick(x, y) => {
-                return Command::DoubleClick(x, y);
+                    match kind {
+                        MouseEventKind::Up(MouseButton::Left) => {
+                            if timed_event.double_click {
+                                Command::DoubleClick(column, row)
+                            } else {
+                                Command::Click(column, row)
+                            }
+                        }
+                        MouseEventKind::ScrollDown => {
+                            Command::Internal {
+                                internal: Internal::line_down_no_cycle,
+                                input_invocation: None,
+                            }
+                        }
+                        MouseEventKind::ScrollUp => {
+                            Command::Internal {
+                                internal: Internal::line_up_no_cycle,
+                                input_invocation: None,
+                            }
+                        }
+                        _ => Command::None,
+                    }
+                }
             }
             Event::Key(key) => {
                 // value of raw and parts before any key related change
@@ -310,25 +351,14 @@ impl PanelInput {
 
                 // input field management
                 if mode == Mode::Input {
-                    if self.input_field.apply_event(&event) {
+                    if self.input_field.apply_timed_event(timed_event) {
                         return Command::from_raw(self.input_field.get_content(), false);
                     }
                 }
+                Command::None
             }
-            Event::Wheel(lines_count) => {
-                let internal = if lines_count > 0 {
-                    Internal::line_down_no_cycle
-                } else {
-                    Internal::line_up_no_cycle
-                };
-                return Command::Internal {
-                    internal,
-                    input_invocation: None,
-                };
-            }
-            _ => {}
+            _ => Command::None,
         }
-        Command::None
     }
 }
 

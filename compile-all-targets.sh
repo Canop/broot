@@ -18,9 +18,9 @@ rm -rf build
 mkdir build
 echo "   build cleaned"
 
-# build the linux version (with the "clipboard" feature) 
+# build the linux version
 echo -e "${H2}Compiling the linux version${EH}"
-cargo build --release --features "clipboard"
+cargo build --release
 strip target/release/broot
 mkdir build/x86_64-linux/
 cp target/release/broot build/x86_64-linux/
@@ -44,29 +44,29 @@ cp resources/icons/vscode/vscode.ttf build/resources
 echo "the font file comes from https://github.com/vscode-icons/vscode-icons/ and is licensed as MIT" > build/resources/README.md
 echo "   Done"
 
-# build the windows version (with the "clipboard" feature) 
+# build the windows version
 # use cargo cross
 echo -e "${H2}Compiling the Windows version${EH}"
-cross build --target x86_64-pc-windows-gnu --release --features "clipboard"
+cross build --target x86_64-pc-windows-gnu --release
 mkdir build/x86_64-pc-windows-gnu
 cp target/x86_64-pc-windows-gnu/release/broot.exe build/x86_64-pc-windows-gnu/
 
 # build the Raspberry version
 # use cargo cross
 echo -e "${H2}Compiling the Raspberry version${EH}"
-cross build --target armv7-unknown-linux-gnueabihf --release
+cross build --target armv7-unknown-linux-gnueabihf --release --no-default-features
 mkdir build/armv7-unknown-linux-gnueabihf
 cp target/armv7-unknown-linux-gnueabihf/release/broot build/armv7-unknown-linux-gnueabihf/
 
 # build the Android version
 # use cargo cross
 echo -e "${H2}Compiling the Android version${EH}"
-cross build --features "clipboard" --target aarch64-linux-android --release
+cross build --target aarch64-linux-android --release
 mkdir build/aarch64-linux-android
 cp target/aarch64-linux-android/release/broot build/aarch64-linux-android/
 
 # build a musl version
 echo -e "${H2}Compiling the MUSL version${EH}"
-cross build --release --target x86_64-unknown-linux-musl
+cross build --release --target x86_64-unknown-linux-musl --no-default-features
 mkdir build/x86_64-unknown-linux-musl
 cp target/x86_64-unknown-linux-musl/release/broot build/x86_64-unknown-linux-musl

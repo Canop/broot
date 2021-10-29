@@ -81,7 +81,7 @@ impl Tree {
             if let Some(parent_bid) = line.parent_bid {
                 bid_parents.insert(line.bid, parent_bid);
             }
-            bid_lines.insert(line.bid, &line);
+            bid_lines.insert(line.bid, line);
         }
         let mut sort_paths: FnvHashMap<BId, String> = FnvHashMap::default();
         for line in self.lines[1..].iter() {

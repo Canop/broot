@@ -19,7 +19,7 @@ use {
     },
     termimad::{
         minimad::{Alignment, Composite},
-        Event,
+        TimedEvent,
     },
 };
 
@@ -126,7 +126,7 @@ impl Panel {
     pub fn add_event(
         &mut self,
         w: &mut W,
-        event: Event,
+        event: TimedEvent,
         app_state: &AppState,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {

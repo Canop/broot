@@ -19,14 +19,14 @@ use {
         Sender,
         unbounded,
     },
-    crossterm::event::KeyModifiers,
+    crossterm::event::Event,
     std::{
         io::Write,
         path::PathBuf,
         sync::{Arc, Mutex},
     },
     strict::NonEmptyVec,
-    termimad::{Event, EventSource},
+    termimad::EventSource,
 };
 
 
@@ -663,6 +663,13 @@ impl App {
         con: &AppContext,
         conf: &Conf,
     ) -> Result<Option<Launchable>, ProgramError> {
+        #[cfg(feature = "clipboard")]
+        {
+            // different systems have different clipboard capabilities
+            // and it may be useful to know which one we have
+            debug!("Clipboard backend: {:?}", terminal_clipboard::get_type());
+        }
+
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
         let event_source = EventSource::new()?;
@@ -709,33 +716,36 @@ impl App {
             match dam.next(&self.rx_seqs) {
                 Either::First(Some(event)) => {
                     info!("event: {:?}", &event);
-                    match event {
-                        Event::Click(x, y, KeyModifiers::NONE)
-                            if self.clicked_panel_index(x, y) != self.active_panel_idx =>
-                        {
+                    let mut handled = false;
+
+                    // app level handling
+                    if let Some((x, y)) = event.as_click() {
+                        if self.clicked_panel_index(x, y) != self.active_panel_idx {
                             // panel activation click
-                            // this will be cleaner when if let will be allowed in match guards with
-                            // chaining (currently experimental)
                             self.active_panel_idx = self.clicked_panel_index(x, y);
+                            handled = true;
                         }
-                        Event::Resize(w, h) => {
-                            self.screen.set_terminal_size(w, h, con);
-                            Areas::resize_all(
-                                self.panels.as_mut_slice(),
-                                self.screen,
-                                self.preview_panel.is_some(),
-                            )?;
-                            for panel in &mut self.panels {
-                                panel.mut_state().refresh(self.screen, con);
-                            }
+                    } else if let Event::Resize(w, h) = event.event {
+                        self.screen.set_terminal_size(w, h, con);
+                        Areas::resize_all(
+                            self.panels.as_mut_slice(),
+                            self.screen,
+                            self.preview_panel.is_some(),
+                        )?;
+                        for panel in &mut self.panels {
+                            panel.mut_state().refresh(self.screen, con);
                         }
-                        _ => {
-                            // event handled by the panel
-                            let cmd = self.mut_panel().add_event(w, event, &app_state, con)?;
-                            debug!("command after add_event: {:?}", &cmd);
-                            self.apply_command(w, cmd, &skin.focused, &mut app_state, con)?;
-                        }
+                        handled = true;
                     }
+
+                    // event handled by the panel
+                    if !handled {
+                        let cmd = self.mut_panel().add_event(w, event, &app_state, con)?;
+                        debug!("command after add_event: {:?}", &cmd);
+                        self.apply_command(w, cmd, &skin.focused, &mut app_state, con)?;
+
+                    }
+
                     event_source.unblock(self.quitting);
                 }
                 Either::First(None) => {

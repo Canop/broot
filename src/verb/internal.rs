@@ -72,6 +72,8 @@ Internals! {
     input_go_to_start: "move the cursor to the start of input" false,
     input_go_word_left: "move the cursor one word to the left" false,
     input_go_word_right: "move the cursor one word to the right" false,
+    input_selection_copy: "copy the selected part of the input into the selection" false,
+    input_selection_cut: "cut the selected part of the input into the selection" false,
     input_paste: "paste the clipboard content into the input" false,
     line_down: "move one line down" false,
     line_up: "move one line up" false,

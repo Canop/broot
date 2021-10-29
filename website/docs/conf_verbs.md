@@ -381,16 +381,19 @@ Some internal actions can be bound to a key shortcut but can't be called explici
 name | default binding | behavior
 -|-|-
 :input_clear | | empty the input,
-:input_del_char_left | <kbd>delete</kbd> | delete the char left of the cursor,
-:input_del_char_below | <kbd>suppr</kbd> | delete the char left at the cursor's position,
-:input_del_word_left | - | delete the word left of the cursor,
-:input_del_word_right | - | delete the word right of the cursor,
-:input_go_to_end | <kbd>end</kbd> | move the cursor to the end of input,
-:input_go_left | <kbd>←</kbd> | move the cursor to the left,
-:input_go_right | <kbd>→</kbd> | move the cursor to the right,
-:input_go_to_start | <kbd>home</kbd> | move the cursor to the start of input,
-:input_go_word_left | - | move the cursor one word to the left,
-:input_go_word_right | - | move the cursor one word to the right,
+:input_del_char_left | <kbd>delete</kbd> | delete the char left of the cursor
+:input_del_char_below | <kbd>suppr</kbd> | delete the char left at the cursor's position
+:input_del_word_left | - | delete the word left of the cursor
+:input_del_word_right | - | delete the word right of the cursor
+:input_go_to_end | <kbd>end</kbd> | move the cursor to the end of input
+:input_go_left | <kbd>←</kbd> | move the cursor to the left
+:input_go_right | <kbd>→</kbd> | move the cursor to the right
+:input_go_to_start | <kbd>home</kbd> | move the cursor to the start of input
+:input_go_word_left | - | move the cursor one word to the left
+:input_go_word_right | - | move the cursor one word to the right
+:input_selection_copy | - | copy the selected part of the input into the selection
+:input_selection_cut | - | cut the selected part of the input into the selection
+:input_paste | - | paste the clipboard content into the input
 
 You may add this kind of shortcuts in the `verbs` section:
 
@@ -418,6 +421,22 @@ key = "alt-r"
 internal = ":input_del_word_right"
 ```
 
+## Copy, Cut, Paste, in input
+
+By default, only pasting into input is bound (with <kbd>ctrl</kbd><kbd>V</kbd>), because you don't usually write long texts here, but you may bind copying and cutting too:
+
+```hjson
+{ key: "ctrl-c", internal: ":input_selection_copy" }
+{ key: "ctrl-x", internal: ":input_selection_cut" }
+```
+```toml
+[[verbs]]
+key = "ctrl-c"
+internal = ":input_selection_copy"
+[[verbs]]
+key = "ctrl-x"
+internal = ":input_selection_cut"
+```
 
 # Focus
 

@@ -1,3 +1,9 @@
+### next
+- "clipboard" feature now default (can still be removed at compilation with  `--no-default-features`)
+- fix clipboard features not working on some recent linux distributions
+- you can now select part of the input with shift arrows or by dragging the mouse cursor
+- new internals: input_selection_cut and input_selection_copy (not bound by default)
+
 <a name="v1.6.6"></a>
 ### v1.6.6 - 2021-10-22
 - make it possible to rebind left and right arrow keys without breaking usage in input - Fix #438
