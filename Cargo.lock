@@ -140,7 +140,7 @@ checksum = "cf1de2fe8c75bc145a2f577add951f8134889b4795d47466a54a5c846d691693"
 
 [[package]]
 name = "broot"
-version = "1.6.6"
+version = "1.6.7-dev"
 dependencies = [
  "ahash 0.7.4",
  "ansi_colours",
@@ -180,7 +180,7 @@ dependencies = [
  "strict",
  "syntect",
  "tempfile",
- "termimad 0.16.4",
+ "termimad 0.17.0",
  "terminal-clipboard",
  "toml",
  "umask",
@@ -839,9 +839,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.98"
+version = "0.2.105"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "320cfe77175da3a483efed4bc0adc1968ca050b098ce4f2f1c13a56626128790"
+checksum = "869d572136620d55835903746bcb5cdc54cb2851fd0aeec53220b4bb65ef3013"
 
 [[package]]
 name = "libgit2-sys"
@@ -1253,6 +1253,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "quick-xml"
+version = "0.22.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "8533f14c8382aaad0d592c812ac3b826162128b65662331e1127b45c3d18536b"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "quote"
 version = "1.0.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1611,9 +1620,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.16.4"
+version = "0.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d88221817ef21964ccccf7d8ccc35fed3bae3066a177d1fcda72d694a016a47d"
+checksum = "65099744de84765fa303b9dbf5fe7756844c2b5ffdaa571609220f271e90d747"
 dependencies = [
  "crossbeam",
  "crossterm 0.21.0",
@@ -1624,11 +1633,12 @@ dependencies = [
 
 [[package]]
 name = "terminal-clipboard"
-version = "0.2.1"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "17a6b9bf0e5a40b6955cf6f384df9b7ed54106ff57b721f88614f30013d5ef5a"
+checksum = "e2f39144c8166526298d0d398008de92ab16be2ef8ba0a299a173b9cfe20579c"
 dependencies = [
  "clipboard-win",
+ "once_cell",
  "termux-clipboard",
  "x11-clipboard",
 ]
@@ -1851,21 +1861,22 @@ checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
 name = "x11-clipboard"
-version = "0.5.2"
+version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b397ace6e980510de59a4fe3d4c758dffab231d6d747ce9fa1aba6b6035d5f32"
+checksum = "473068b7b80ac86a18328824f1054e5e007898c47b5bbc281bd7abe32bc3653c"
 dependencies = [
  "xcb",
 ]
 
 [[package]]
 name = "xcb"
-version = "0.9.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "62056f63138b39116f82a540c983cc11f1c90cd70b3d492a70c25eaa50bd22a6"
+checksum = "771e2b996df720cd1c6dd9ff90f62d91698fd3610cc078388d0564bdd6622a9c"
 dependencies = [
  "libc",
  "log",
+ "quick-xml",
 ]
 
 [[package]]
