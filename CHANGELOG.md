@@ -1,4 +1,5 @@
-### next
+<a name="v1.7.0"></a>
+### v1.7.0 - 2021-10-30
 - "clipboard" feature now default (can still be removed at compilation with  `--no-default-features`)
 - fix clipboard features not working on some recent linux distributions
 - you can now select part of the input with shift arrows or by dragging the mouse cursor
