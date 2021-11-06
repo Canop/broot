@@ -423,7 +423,8 @@ internal = ":input_del_word_right"
 
 ## Copy, Cut, Paste, in input
 
-By default, only pasting into input is bound (with <kbd>ctrl</kbd><kbd>V</kbd>), because you don't usually write long texts here, but you may bind copying and cutting too:
+Pasting into input is bound to <kbd>ctrl</kbd><kbd>V</kbd> but copying from input and cutting aren't bount by default, because you don't usually write long texts here.
+You may add those bindings if you wish:
 
 ```hjson
 { key: "ctrl-c", internal: ":input_selection_copy" }

@@ -1633,9 +1633,9 @@ dependencies = [
 
 [[package]]
 name = "terminal-clipboard"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e2f39144c8166526298d0d398008de92ab16be2ef8ba0a299a173b9cfe20579c"
+checksum = "58a7bd0c28e9221173c7d32e774bc3c5432fe788f91984dd1b78c501b5e7d1df"
 dependencies = [
  "clipboard-win",
  "once_cell",

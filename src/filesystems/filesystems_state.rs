@@ -324,8 +324,6 @@ impl PanelState for FilesystemState {
             cw.queue_g_string(&styles.default, format!("{:^width$}", "type", width = w_type))?;
             cw.queue_char(border_style, '│')?;
         }
-        cw.queue_g_string(&styles.default, "size".to_string())?;
-        cw.queue_char(border_style, '│')?;
         if e_use {
             cw.queue_g_string(&styles.default, format!(
                 "{:^width$}", if wc_use > 4 { "usage" } else { "use" }, width = wc_use
@@ -333,6 +331,8 @@ impl PanelState for FilesystemState {
             cw.queue_char(border_style, '│')?;
         }
         cw.queue_g_string(&styles.default, "free".to_string())?;
+        cw.queue_char(border_style, '│')?;
+        cw.queue_g_string(&styles.default, "size".to_string())?;
         cw.queue_char(border_style, '│')?;
         cw.queue_g_string(&styles.default, "mount point".to_string())?;
         cw.fill(border_style, &SPACE_FILLING)?;
@@ -409,9 +409,6 @@ impl PanelState for FilesystemState {
                 // size, used, free
                 if let Some(stats) = mount.stats.as_ref().filter(|s| s.size() > 0) {
                     let share_color = super::share_color(stats.use_share());
-                    // size
-                    cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(mount.size())))?;
-                    cw.queue_char(border_style, '│')?;
                     // used
                     if e_use {
                         cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(stats.used())))?;
@@ -432,10 +429,10 @@ impl PanelState for FilesystemState {
                     share_style.set_fg(share_color);
                     cw.queue_g_string(&share_style, format!("{:>4}", file_size::fit_4(stats.available())))?;
                     cw.queue_char(border_style, '│')?;
-                } else {
                     // size
-                    cw.repeat(txt_style, &SPACE_FILLING, w_size)?;
+                    cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(mount.size())))?;
                     cw.queue_char(border_style, '│')?;
+                } else {
                     // used
                     if e_use {
                         cw.repeat(txt_style, &SPACE_FILLING, wc_use)?;
@@ -443,6 +440,9 @@ impl PanelState for FilesystemState {
                     }
                     // free
                     cw.repeat(txt_style, &SPACE_FILLING, w_free)?;
+                    cw.queue_char(border_style, '│')?;
+                    // size
+                    cw.repeat(txt_style, &SPACE_FILLING, w_size)?;
                     cw.queue_char(border_style, '│')?;
                 }
                 // mount point
