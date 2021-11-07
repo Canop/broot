@@ -298,7 +298,7 @@ impl PanelInput {
                     self.input_before_cycle = None;
                 }
 
-                if key == keys::ENTER && parts.verb_invocation.is_some() {
+                if key == keys::ENTER && parts.has_not_empty_verb_invocation() {
                     return Command::from_parts(parts, true);
                 }
 

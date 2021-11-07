@@ -26,6 +26,11 @@ impl fmt::Display for CommandParts {
 }
 
 impl CommandParts {
+    pub fn has_not_empty_verb_invocation(&self) -> bool {
+        self.verb_invocation
+            .as_ref()
+            .map_or(false, |vi| !vi.is_empty())
+    }
     pub fn from(mut raw: String) -> Self {
         let mut invocation_start_pos: Option<usize> = None;
         let mut escaping = false;
