@@ -1,3 +1,7 @@
+<a name="v1.7.1"></a>
+### v1.7.1 - 2021-11-07
+- fix clipboard filled with dummy value on launch on X11
+
 <a name="v1.7.0"></a>
 ### v1.7.0 - 2021-10-30
 - "clipboard" feature now default (can still be removed at compilation with  `--no-default-features`)
