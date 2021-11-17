@@ -10,6 +10,8 @@ use {
     },
 };
 
+static SYNTAXES: &[u8] = include_bytes!("../../resources/syntect/syntaxes.bin");
+
 /// wrap heavy to initialize syntect things
 pub struct Syntaxer {
     pub syntax_set: SyntaxSet,
@@ -18,7 +20,7 @@ pub struct Syntaxer {
 impl Default for Syntaxer {
     fn default() -> Self {
         Self {
-            syntax_set: SyntaxSet::load_defaults_nonewlines(),
+            syntax_set: time!(Debug, syntect::dumps::from_binary(SYNTAXES)),
             theme_set: ThemeSet::load_defaults(),
         }
     }

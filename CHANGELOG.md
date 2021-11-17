@@ -1,3 +1,6 @@
+### next
+- include more syntaxes for preview of code files (using the list from the bat project) - Fix #464
+
 <a name="v1.7.1"></a>
 ### v1.7.1 - 2021-11-07
 - fix clipboard filled with dummy value on launch on X11
