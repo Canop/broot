@@ -54,7 +54,7 @@ time broot -c "c/memmap;:pt" ~/code
 
 # Contribute
 
-**Broot** is written in [Rust](https://www.rust-lang.org/). The current focus is linux+mac but I try to support Windows too (use PowerShell instead of the old cmd).
+**Broot** is written in [Rust](https://www.rust-lang.org/). The current focus is linux+mac but I try to support Windows too (use a modern terminal like the [new MS one](https://github.com/microsoft/terminal)).
 
 Before starting working on a Pull Request, please join the Miaou room to coordinate the development. There are frequently several feature branches waiting to be merged and adding some wild ones may make the process painful.
 

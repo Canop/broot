@@ -713,6 +713,7 @@ impl App {
                     self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
                 );
             }
+            #[allow(unused_mut)]
             match dam.next(&self.rx_seqs) {
                 Either::First(Some(event)) => {
                     info!("event: {:?}", &event);
@@ -725,8 +726,15 @@ impl App {
                             self.active_panel_idx = self.clicked_panel_index(x, y);
                             handled = true;
                         }
-                    } else if let Event::Resize(w, h) = event.event {
-                        self.screen.set_terminal_size(w, h, con);
+                    } else if let Event::Resize(mut width, mut height) = event.event {
+                        // I don't know why but Crossterm seems to always report an
+                        // understimated size on Windows
+                        #[cfg(windows)]
+                        {
+                            width += 1;
+                            height += 1;
+                        }
+                        self.screen.set_terminal_size(width, height, con);
                         Areas::resize_all(
                             self.panels.as_mut_slice(),
                             self.screen,

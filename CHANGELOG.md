@@ -1,3 +1,6 @@
+### next
+- Fix rendering artefacts on Windows, like a duplicate input line
+
 <a name="v1.7.2"></a>
 ### v1.7.2 - 2021-11-18
 - include more syntaxes for preview of code files (using the list from the bat project) - Fix #464

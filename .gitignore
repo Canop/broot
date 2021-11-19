@@ -3,6 +3,7 @@
 /termux-deploy.sh
 dev.log
 deploy.sh
+/*-deploy.sh
 /fix-win-toolchain.sh
 /releases
 /target

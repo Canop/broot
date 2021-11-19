@@ -4,8 +4,7 @@ The current version of broot works on linux, mac and windows (win 10+).
 !!! Note
 	**Windows users:** broot may need additional rights at first use in order to write its configuration file.
 	Some users on Windows also report problems with the colon. Remember that a space can be used instead of a colon.
-	You should also use the new PowerShell terminal and not the old cmd.exe which isn't supported.
-
+	You should also use a modern terminal, for example the [new Microsoft one](https://github.com/microsoft/terminal)
 
 # From precompiled binaries
 
