@@ -1,4 +1,5 @@
-### next
+<a name="v1.7.3"></a>
+### v1.7.3 - 2021-11-19
 - Fix rendering artefacts on Windows, like a duplicate input line
 
 <a name="v1.7.2"></a>
