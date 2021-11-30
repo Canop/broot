@@ -103,7 +103,7 @@ impl HexView {
         let page = self.get_page(self.scroll, line_count)?;
         let addresses_len = if self.len < 0xffff {
             4
-        } else if self.len < 0xffffff {
+        } else if self.len < 0xff_ffff {
             6
         } else {
             8
@@ -116,7 +116,11 @@ impl HexView {
         let mut chars_middle_space = false;
         let mut inter_hex = false;
         let mut chars = false;
-        let mut rem = area.width as i32 - 32; // 32: minimum, tight
+        const MIN: i32 =
+            1    // margin
+            + 32 // 32 hex
+            + 1; // scrollbar
+        let mut rem = area.width as i32 - MIN;
         if rem > 17 {
             chars = true;
             rem -= 17;

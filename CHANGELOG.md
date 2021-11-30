@@ -1,3 +1,6 @@
+### next
+- Fix 1 or 2 characters of the right ASCII column in hex view sometimes lost
+
 <a name="v1.7.3"></a>
 ### v1.7.3 - 2021-11-19
 - Fix rendering artefacts on Windows, like a duplicate input line
