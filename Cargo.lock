@@ -140,7 +140,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "broot"
-version = "1.7.3"
+version = "1.7.4"
 dependencies = [
  "ahash 0.7.6",
  "ansi_colours",
@@ -151,7 +151,7 @@ dependencies = [
  "clap",
  "cli-log 2.0.0",
  "crossbeam",
- "crossterm 0.21.0",
+ "crossterm 0.22.1",
  "custom_error",
  "deser-hjson",
  "directories",
@@ -180,7 +180,7 @@ dependencies = [
  "strict",
  "syntect",
  "tempfile",
- "termimad 0.19.0",
+ "termimad 0.19.3",
  "terminal-clipboard",
  "toml",
  "umask",
@@ -303,12 +303,12 @@ checksum = "3d7b894f5411737b7867f4827955924d7c254fc9f4d91a6aad6b097804b1018b"
 
 [[package]]
 name = "coolor"
-version = "0.3.0"
+version = "0.3.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "abae1f425167dae5fdb4c953e6205565a9a1cc252c33b7414cedd02e424243f4"
+checksum = "b78645ef095d812eecfa830f67e35394314e31be71fdba59543274542c950013"
 dependencies = [
  "ansi_colours",
- "crossterm 0.21.0",
+ "crossterm 0.22.1",
 ]
 
 [[package]]
@@ -406,12 +406,12 @@ dependencies = [
 
 [[package]]
 name = "crossterm"
-version = "0.21.0"
+version = "0.22.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "486d44227f71a1ef39554c0dc47e44b9f4139927c75043312690c3f476d1d788"
+checksum = "c85525306c4291d1b73ce93c8acf9c339f9b213aef6c1d85c3830cbf1c16325c"
 dependencies = [
  "bitflags",
- "crossterm_winapi 0.8.0",
+ "crossterm_winapi 0.9.0",
  "libc",
  "mio",
  "parking_lot",
@@ -431,9 +431,9 @@ dependencies = [
 
 [[package]]
 name = "crossterm_winapi"
-version = "0.8.0"
+version = "0.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3a6966607622438301997d3dac0d2f6e9a90c68bb6bc1785ea98456ab93c0507"
+checksum = "2ae1b35a484aa10e07fe0638d02301c5ad24de82d310ccbd2f3693da5f09bf1c"
 dependencies = [
  "winapi",
 ]
@@ -1630,13 +1630,13 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.19.0"
+version = "0.19.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f6981ef35a70dfb4e78037a4ac33ce5a64233c6566592698a9d1c3bdda64271f"
+checksum = "80eede1afff45a78b38b298e3b315a4e69261ee68162bf79699061ef89f410fb"
 dependencies = [
  "coolor",
  "crossbeam",
- "crossterm 0.21.0",
+ "crossterm 0.22.1",
  "minimad 0.9.0",
  "thiserror",
  "unicode-width",

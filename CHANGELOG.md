@@ -1,4 +1,5 @@
-### next
+<a name="v1.7.4"></a>
+### v1.7.4 - 2021-12-01
 - Fix 1 or 2 characters of the right ASCII column in hex view sometimes lost
 
 <a name="v1.7.3"></a>
