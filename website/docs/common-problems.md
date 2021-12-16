@@ -7,7 +7,7 @@ Please come to [miaou](https://miaou.dystroy.org/3490?broot) if something isn't 
 The common causes are
 
 * an oudated Rust installation. If you're using [rustup](https://rustup.rs), do `rustup update`.
-* some tools missing. On Debian like distributions, this can generally be solved with `sudo apt install build-essential`
+* some tools missing. On Debian like distributions, this can generally be solved with `sudo apt install build-essential libxcb-shape0-dev and libxcb-xfixes0-dev`
 
 # Those aren't my colors
 

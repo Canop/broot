@@ -1,3 +1,7 @@
+<a name="v1.7.5"></a>
+### v1.7.5 - 2021-12-16
+- Make the "clipboard" feature non default again, as it proves to make compilation harder on some platform. I still distribute executables with this feature and you can still try the compilation with `cargo install broot --features "clipboard"`
+
 <a name="v1.7.4"></a>
 ### v1.7.4 - 2021-12-01
 - Fix 1 or 2 characters of the right ASCII column in hex view sometimes lost
