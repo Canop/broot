@@ -1,6 +1,7 @@
 ### next
 - alt-i bound to toggle_git_ignore
 - alt-h bound to toggle_hidden
+- text previews switches to hexa when there are not printable chars (eg escape sequences)
 
 <a name="v1.7.5"></a>
 ### v1.7.5 - 2021-12-16

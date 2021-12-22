@@ -28,6 +28,7 @@ custom_error! {pub ProgramError
     Lfs {details: String} = "Failed to fetch mounts: {}",
     ZeroLenFile = "File seems empty",
     UnmappableFile = "File can't be mapped",
+    UnprintableFile = "File can't be printed", // has characters that can't be printed without escaping
 }
 
 custom_error! {pub TreeBuildError

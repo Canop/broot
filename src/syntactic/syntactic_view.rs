@@ -138,6 +138,12 @@ impl SyntacticView {
             while line.ends_with('\n') || line.ends_with('\r') {
                 line.pop();
             }
+            for c in line.chars() {
+                if !is_char_printable(c) {
+                    debug!("unprintable char: {:?}", c);
+                    return Err(ProgramError::UnprintableFile);
+                }
+            }
             if pattern.is_empty() || pattern.score_of_string(&line).is_some() {
                 let name_match = pattern.search_string(&line);
                 let regions = if let Some(highlighter) = highlighter.as_mut() {
@@ -173,7 +179,9 @@ impl SyntacticView {
     }
 
     fn ensure_selection_is_visible(&mut self) {
-        if let Some(idx) = self.selection_idx {
+        if self.page_height >= self.lines.len() {
+            self.scroll = 0;
+        } else if let Some(idx) = self.selection_idx {
             let padding = self.padding();
             if idx < self.scroll + padding || idx + padding > self.scroll + self.page_height {
                 if idx <= padding {
@@ -443,3 +451,9 @@ fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
     })
 }
 
+/// tell whether the character is normal enough to be displayed by the
+/// syntactic view (if not we'll use a hex view)
+fn is_char_printable(c: char) -> bool {
+    // the tab is printable because it's replaced by spaces
+    c == '\t' || !c.is_control()
+}

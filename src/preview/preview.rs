@@ -97,6 +97,7 @@ impl Preview {
             }
             // not previewable as UTF8 text
             // we'll try reading it as binary
+            Err(ProgramError::UnprintableFile) => Self::hex(path),
             _ => Self::hex(path),
         }
     }

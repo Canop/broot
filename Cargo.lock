@@ -180,7 +180,7 @@ dependencies = [
  "strict",
  "syntect",
  "tempfile",
- "termimad 0.19.3",
+ "termimad 0.19.4",
  "terminal-clipboard",
  "toml",
  "umask",
@@ -1630,9 +1630,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.19.3"
+version = "0.19.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "80eede1afff45a78b38b298e3b315a4e69261ee68162bf79699061ef89f410fb"
+checksum = "d038a6d61e13ee0b7a44e0ef4555817287bb0cfded3b43cc547ad15f854c8ded"
 dependencies = [
  "coolor",
  "crossbeam",
