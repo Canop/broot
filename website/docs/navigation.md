@@ -90,17 +90,17 @@ Initially, broot doesn't show files whose name starts with a dot, or files decla
 
 This behavior is tuned with several toggles.
 
- | name                 | shortcut | description
- |----------------------|----------|----------------------------------------------------
- | toggle_counts        | counts   | toggle showing deep counts of files in directories
- | toggle_dates         | dates    | toggle showing last modified dates (deep computed)
- | toggle_files         | files    | toggle showing files (or just folders)
- | toggle_git_file_info | gf       | toggle display of git file information
- | toggle_git_ignore    | gi       | toggle use of .gitignore
- | toggle_hidden        | h        | toggle showing hidden files
- | toggle_perm          | perm     | toggle showing file permissions (Unix only)
- | toggle_sizes         | sizes    | toggle showing sizes
- | toggle_trim_root     | t        | toggle removing nodes at first level too (default)
+ | name                 | shortcut |  key  |description
+ |----------------------|----------|-------|----------------------------------------------
+ | toggle_counts        | counts   |       | toggle showing deep counts of files in directories
+ | toggle_dates         | dates    |       | toggle showing last modified dates (deep computed)
+ | toggle_files         | files    |       | toggle showing files (or just folders)
+ | toggle_git_file_info | gf       |       | toggle display of git file information
+ | toggle_git_ignore    | gi       | <kbd>alt</kbd><kbd>i</kbd> | toggle use of .gitignore
+ | toggle_hidden        | h        | <kbd>alt</kbd><kbd>h</kbd> | toggle showing hidden files
+ | toggle_perm          | perm     |       | toggle showing file permissions (Unix only)
+ | toggle_sizes         | sizes    |       | toggle showing sizes
+ | toggle_trim_root     | t        |       | toggle removing nodes at first level too
 
 To apply one, type a space (or `:`), then the start of its shortcut, then hit <kbd class=b>⏎</kbd>.
 
@@ -109,7 +109,7 @@ For example typing `:s` then enter will show file and directory sizes.
 !!!	Note
 	The displayed size on Unix is the space the file takes on disk, that is the number of blocks multiplied by the size of a block. If a file is sparse, a little 's' is displayed next to the size.
 
-Those toggles may also be defined with [launch options](../launch) and the [default_flags preference](../conf_file/#default-flags).
+Those toggles may also be defined with [launch options](../launch) and the [default_flags preference](../conf_file/#default-flags). And you can see them in the application with <kbd>?</kbd>.
 
 # Quitting broot
 

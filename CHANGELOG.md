@@ -1,3 +1,7 @@
+### next
+- alt-i bound to toggle_git_ignore
+- alt-h bound to toggle_hidden
+
 <a name="v1.7.5"></a>
 ### v1.7.5 - 2021-12-16
 - Make the "clipboard" feature non default again, as it proves to make compilation harder on some platform. I still distribute executables with this feature and you can still try the compilation with `cargo install broot --features "clipboard"`

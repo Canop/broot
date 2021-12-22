@@ -15,7 +15,11 @@ Notice the *unlisted*?
 
 That's what makes it usable where the old `tree` command would produce pages of output.
 
-`.gitignore` files are properly dealt with to put unwanted files out of your way (you can ignore them though, see [documentation](../navigation/#toggles)).
+`.gitignore` files are properly dealt with to put unwanted files out of your way.
+
+As you sometimes want to see gitignored files, or hidden ones, you'll soon get used to the <kbd>alt</kbd><kbd>i</kbd> and <kbd>alt</kbd><kbd>h</kbd> shortcuts to toggle those visibilities.
+
+(you can ignore them though, see [documentation](../navigation/#toggles)).
 
 # Find a directory then `cd` to it
 
@@ -37,6 +41,8 @@ Most useful keys for this:
 * <kbd>esc</kbd> to get back to the previous state or clear your search
 * <kbd class=b>↓</kbd> and <kbd class=b>↑</kbd> may be used to move the selection
 * <kbd>alt</kbd><kbd>enter</kbd> to get back to the shell having `cd` to the selected directory
+* <kbd>alt</kbd><kbd>h</kbd> to toggle showing hidden files (the ones whose name starts with a dot)
+* <kbd>alt</kbd><kbd>i</kbd> to toggle showing gitignored files
 * `:q` if you just want to quit (you can use <kbd>ctrl</kbd><kbd>q</kbd> if you prefer)
 
 # Never lose track of file hierarchy while you search

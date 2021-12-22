@@ -230,11 +230,21 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(toggle_dates).with_shortcut("dates"),
         internal(toggle_device_id).with_shortcut("dev"),
         internal(toggle_files).with_shortcut("files"),
-        internal(toggle_git_ignore).with_shortcut("gi"),
+        internal(toggle_git_ignore)
+            .with_key(KeyEvent {
+                code: KeyCode::Char('i'),
+                modifiers: KeyModifiers::ALT,
+            })
+            .with_shortcut("gi"),
         internal(toggle_git_file_info).with_shortcut("gf"),
         internal(toggle_git_status).with_shortcut("gs"),
         internal(toggle_root_fs).with_shortcut("rfs"),
-        internal(toggle_hidden).with_shortcut("h"),
+        internal(toggle_hidden)
+            .with_key(KeyEvent {
+                code: KeyCode::Char('h'),
+                modifiers: KeyModifiers::ALT,
+            })
+            .with_shortcut("h"),
         #[cfg(unix)]
         internal(toggle_perm).with_shortcut("perm"),
         internal(toggle_sizes).with_shortcut("sizes"),
