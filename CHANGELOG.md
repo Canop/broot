@@ -1,3 +1,7 @@
+### v1.8.1 - 2021-12-29
+<a name="v1.8.1"></a>
+- fix regex pattern automatically built from content pattern when going from a tree search to a file preview isn't escaped - Fix #472
+
 <a name="v1.8.0"></a>
 ### v1.8.0 - 2021-12-26
 - alt-i bound to toggle_git_ignore

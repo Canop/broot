@@ -55,11 +55,11 @@ impl InputPattern {
     pub fn tree_to_preview(&self) -> Self {
         let regex_parts: Option<(String, String)> = match &self.pattern {
             Pattern::ContentExact(cp) => Some(cp.to_regex_parts()),
-            Pattern::ContentRegex(cp) => Some(cp.to_regex_parts()),
+            Pattern::ContentRegex(rp) => Some(rp.to_regex_parts()),
             Pattern::Composite(cp) => cp.expr
                 .iter_atoms()
                 .find_map(|p| match p {
-                    Pattern::ContentExact(cp) => Some(cp.to_regex_parts()),
+                    Pattern::ContentExact(ce) => Some(ce.to_regex_parts()),
                     Pattern::ContentRegex(cp) => Some(cp.to_regex_parts()),
                     _ => None
                 }),
