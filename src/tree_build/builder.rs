@@ -447,7 +447,10 @@ impl<'c> TreeBuilder<'c> {
     pub fn build(mut self, total_search: bool, dam: &Dam) -> Option<Tree> {
         match self.gather_lines(total_search, dam) {
             Some(out_blines) => {
-                self.trim_excess(&out_blines);
+                debug!("blines before trimming: {}", out_blines.len());
+                if !self.total_search {
+                    self.trim_excess(&out_blines);
+                }
                 Some(self.take(&out_blines))
             }
             None => None, // interrupted

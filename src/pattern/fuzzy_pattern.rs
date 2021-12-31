@@ -181,8 +181,8 @@ impl FuzzyPattern {
         }
         let mut best_score = 0;
         let mut best_match: Option<NameMatch> = None;
-        let n = cand_chars.len() - self.chars.len();
-        for start_idx in 0..=n {
+        let n = cand_chars.len() + 1 - self.chars.len();
+        for start_idx in 0..n {
             if cand_chars[start_idx] == self.chars[0] {
                 match self.tight_match_from_index(&cand_chars, start_idx) {
                     MatchSearchResult::Perfect(m) => {

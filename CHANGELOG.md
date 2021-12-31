@@ -1,3 +1,6 @@
+### next
+- total search (launched with ctrl-s) shows all matches - This is experimental and might be reversed, opinions welvome
+
 ### v1.8.1 - 2021-12-29
 <a name="v1.8.1"></a>
 - fix regex pattern automatically built from content pattern when going from a tree search to a file preview isn't escaped - Fix #472
