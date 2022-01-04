@@ -225,9 +225,9 @@ name | expanded to
 -|-
 `{file}` | complete path of the current selection
 `{file-name}` | file name of the current selection
-`{file-extenstion}` | file extension of the current selection (example `rs` for `main.rs`)
+`{file-extension}` | file extension of the current selection (example `rs` for `main.rs`)
 `{file-stem}` | file name of the current selection
-`{file-dot-extenstion}` | dot and extension of the current selection (example `.rs` for `main.rs`) or the empty string if there's no extension
+`{file-dot-extension}` | dot and extension of the current selection (example `.rs` for `main.rs`) or the empty string if there's no extension
 `{line}` | number of selected line in the previewed file
 `{parent}` | complete path of the current selection's parent
 `{directory}` | closest directory, either `{file}` or `{parent}`
