@@ -1,5 +1,6 @@
 ### next
 - total search (launched with ctrl-s) shows all matches - This is experimental and might be reversed, opinions welvome
+- kitty graphics protocol used if the terminal declares to be wezterm - This is experimental and might be reversed
 
 ### v1.8.1 - 2021-12-29
 <a name="v1.8.1"></a>
