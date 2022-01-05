@@ -16,6 +16,7 @@ pub mod help;
 pub mod icon;
 pub mod image;
 pub mod keys;
+pub mod kitty;
 pub mod launchable;
 pub mod path;
 pub mod pattern;
@@ -34,8 +35,6 @@ pub mod verb;
 #[cfg(unix)]
 pub mod filesystems;
 
-#[cfg(unix)]
-pub mod kitty;
 
 #[cfg(unix)]
 pub mod net;

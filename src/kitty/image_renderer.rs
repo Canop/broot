@@ -26,12 +26,12 @@ use {
     termimad::Area,
 };
 
-pub type KittyImageSet = Vec<usize>;
 
 /// How to send the image to kitty
 ///
 /// Note that I didn't test yet the named shared memory
 /// solution offered by kitty.
+#[derive(Debug)]
 pub enum TransmissionMedium {
     /// write a temp file, then give its path to kitty
     /// in the payload of the escape sequence. It's quite
@@ -84,23 +84,55 @@ impl<'i> ImageData<'i> {
 /// according to kitty's documentation
 const CHUNK_SIZE: usize = 4096;
 
-/// until I'm told there's another terminal supporting the kitty
-/// terminal, I think I can just check the name
-pub fn is_term_kitty() -> bool {
-    if let Ok(term_name) = env::var("TERM") {
-        debug!("TERM env var: {:?}", env::var("TERM"));
-        if term_name.contains("kitty") {
-            return true;
+/// this is called only once, and cached in the kitty manager's MaybeRenderer state
+#[allow(unreachable_code)]
+fn is_kitty_graphics_protocol_supported() -> bool {
+    debug!("is_kitty_graphics_protocol_supported ?");
+
+    #[cfg(not(unix))]
+    {
+        // because cell_size_in_pixels isn't implemented on Windows
+        debug!("no kitty support yet on Windows");
+        return false;
+    }
+
+    for env_var in ["TERM", "TERMINAL"] {
+        if let Ok(env_val) = env::var(env_var) {
+            debug!("{:?} = {:?}", env_var, env_val);
+            let env_val = env_val.to_ascii_lowercase();
+            for name in ["kitty", "wezterm"] {
+                if env_val.contains(name) {
+                    debug!(" -> env var indicates kitty support");
+                    return true;
+                }
+            }
         }
     }
-    if let Ok(term_name) = env::var("TERMINAL") {
-        debug!("TERMINAL env var: {:?}", env::var("TERMINAL"));
-        if term_name.contains("kitty") {
-            return true;
-        }
+
+    // Checking support with a proper CSI sequence should be the prefered way but
+    // it doesn't work reliably on wezterm and requires a wait on other terminal.
+    // Only Kitty does supports it perfectly and it's not even necessary on this
+    // terminal because we can just check the env var TERM.
+    #[cfg(feature = "kitty-csi-check")]
+    {
+        let start = std::time::Instant::now();
+        const TIMEOUT_MS: isize = 400;
+        let s = match xterm_query::query("\x1b_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1b\\\x1b[c", TIMEOUT_MS) {
+            Err(e) => {
+                debug!("xterm querying failed: {}", e);
+                false
+            }
+            Ok(response) => {
+                response.starts_with("\x1b_Gi=31;OK\x1b")
+            }
+        };
+        debug!("Xterm querying took {:?}", start.elapsed());
+        debug!("kitty protocol support: {:?}", s);
+        return s;
     }
     false
 }
+
 
 fn div_ceil(a: u32, b: u32) -> u32 {
     a / b + (0 != a % b) as u32
@@ -109,11 +141,11 @@ fn div_ceil(a: u32, b: u32) -> u32 {
 /// the image renderer, with knowledge of the
 /// console cells dimensions, and built only on Kitty.
 ///
+#[derive(Debug)]
 pub struct KittyImageRenderer {
     cell_width: u32,
     cell_height: u32,
     next_id: usize,
-    current_images: Option<KittyImageSet>,
     pub transmission_medium: TransmissionMedium,
 }
 
@@ -217,8 +249,9 @@ impl<'i> KittyImage<'i> {
 }
 
 impl KittyImageRenderer {
+    /// Called only once (at most) by the KittyManager
     pub fn new() -> Option<Self> {
-        if !is_term_kitty() {
+        if !is_kitty_graphics_protocol_supported() {
             return None;
         }
         cell_size_in_pixels()
@@ -226,54 +259,31 @@ impl KittyImageRenderer {
             .map(|(cell_width, cell_height)| Self {
                 cell_width,
                 cell_height,
-                current_images: None,
                 next_id: 1,
                 transmission_medium: TransmissionMedium::Chunks,
             })
     }
-    pub fn take_current_images(&mut self) -> Option<KittyImageSet> {
-        self.current_images.take()
-    }
-    /// return a new image id which is assumed will be used
+    /// return a new image id
     fn new_id(&mut self) -> usize {
         let new_id = self.next_id;
         self.next_id += 1;
-        self.current_images
-            .get_or_insert_with(Vec::new)
-            .push(new_id);
         new_id
     }
+    /// Print the dynamicImage and return the KittyImageId
+    /// for later removal from screen
     pub fn print(
         &mut self,
         w: &mut W,
         src: &DynamicImage,
         area: &Area,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<usize, ProgramError> {
         let img = KittyImage::new(src, area, self);
+        debug!("transmission medium: {:?}", self.transmission_medium);
         match self.transmission_medium {
-            TransmissionMedium::TempFile => img.print_with_temp_file(w),
-            TransmissionMedium::Chunks => img.print_with_chunks(w),
+            TransmissionMedium::TempFile => img.print_with_temp_file(w)?,
+            TransmissionMedium::Chunks => img.print_with_chunks(w)?,
         }
-    }
-    pub fn erase(
-        &mut self,
-        w: &mut W,
-        ids: KittyImageSet,
-    ) -> Result<(), ProgramError> {
-        for id in ids {
-            debug!("erase kitty image {}", id);
-            write!(w, "\u{1b}_Ga=d,d=I,i={}\u{1b}\\", id)?;
-        }
-        Ok(())
-    }
-    /// erase all kitty images, even the forgetted ones
-    pub fn erase_all(
-        &mut self,
-        w: &mut W,
-    ) -> Result<(), ProgramError> {
-        write!(w, "\u{1b}_Ga=d,d=A\u{1b}\\")?;
-        self.current_images = None;
-        Ok(())
+        Ok(img.id)
     }
     fn rendering_area(
         &self,

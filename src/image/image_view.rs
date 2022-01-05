@@ -73,14 +73,7 @@ impl ImageView {
             .or_else(|| styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
 
-        #[cfg(unix)]
-        if let Some(renderer) = crate::kitty::image_renderer() {
-            let mut renderer = renderer.lock().unwrap();
-            renderer.print(w, &self.source_img, area)?;
-            for y in area.top..area.top + area.height {
-                w.queue(cursor::MoveTo(area.left, y))?;
-                fill_bg(w, area.width as usize, bg)?;
-            }
+        if crate::kitty::try_print_image(w, &self.source_img, area)? {
             return Ok(());
         }
 

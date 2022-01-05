@@ -44,3 +44,11 @@ pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
     }
 }
 
+#[cfg(not(unix))]
+pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
+    // there's probably a way but I don't know it
+    Err(std::io::Error::new(
+        std::io::ErrorKind::Other,
+        "fetching cell size isn't supported on Windows",
+    ))
+}

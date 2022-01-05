@@ -194,16 +194,11 @@ impl App {
         app_state: &AppState,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
-        // if some images are displayed by kitty, we'll erase it,
+        // if some images are displayed by kitty, we'll erase them,
         // but only after having displayed the new ones (if any)
         // to prevent some flickerings
-        #[cfg(unix)]
-        let previous_images = crate::kitty::image_renderer()
-            .as_ref()
-            .and_then(|renderer| {
-                let mut renderer = renderer.lock().unwrap();
-                renderer.take_current_images()
-            });
+        let previous_images = crate::kitty::take_current_images();
+
         for (idx, panel) in self.panels.as_mut_slice().iter_mut().enumerate() {
             let active = idx == self.active_panel_idx;
             let panel_skin = if active { &skin.focused } else { &skin.unfocused };
@@ -220,12 +215,9 @@ impl App {
                 panel.display(w, &disc)?,
             );
         }
-        #[cfg(unix)]
+
         if let Some(previous_images) = previous_images {
-            if let Some(renderer) = crate::kitty::image_renderer().as_ref() {
-                let mut renderer = renderer.lock().unwrap();
-                renderer.erase(w, previous_images)?;
-            }
+            previous_images.erase(w)?;
         }
         w.flush()?;
         Ok(())
