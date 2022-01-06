@@ -12,6 +12,19 @@ This function supports most broot arguments:
 
 ![tree with args](img/20201219-tree-with-args.png)
 
+# Search deeper
+
+The search normally stops after some time, or when it found enough matches (that is a few times what can be displayed, in order to only show the ones with the best ranking).
+
+Sometimes, you want a more exhaustive search:
+
+- you want to see **all** matches
+- you want the search to go deeper to find better ranked matches, even if it's slower
+
+Then, you can hit <kbd>ctrl</kbd><kbd>s</kbd>, which does a `:total_search` and ensures the whole tree is searched and all matches are displayed.
+
+The downside is it takes time and the most relevant matches may be hard to find among hundred of less relevant ones which wouldn't be shown otherwise.
+
 # A generic fuzzy finder
 
 The goal here is to have a function you can use in shell to give you a path.
