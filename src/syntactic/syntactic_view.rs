@@ -323,6 +323,7 @@ impl SyntacticView {
         let match_bg = styles.preview_match.get_bg().unwrap_or(Color::AnsiValue(28));
         let code_width = area.width as usize - 1; // 1 char left for scrollbar
         let scrollbar = area.scrollbar(self.scroll, self.lines.len());
+        debug!("scrollbar: {:#?}", scrollbar);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
@@ -406,7 +407,7 @@ impl SyntacticView {
                 &SPACE_FILLING,
             )?;
             w.queue(SetBackgroundColor(bg))?;
-            if is_thumb(y, scrollbar) {
+            if is_thumb(y + area.top as usize, scrollbar) {
                 w.queue(SetForegroundColor(scrollbar_fg))?;
                 w.queue(Print('▐'))?;
             } else {
