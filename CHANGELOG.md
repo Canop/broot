@@ -1,6 +1,7 @@
 ### next
 - total search (launched with ctrl-s) shows all matches - This is experimental and might be reversed, opinions welvome
 - kitty graphics protocol used for high definition image rendering on recent enough versions of WezTerm - Fix #473
+- fix syntaxic preview of Python files broken by comments - Fix #477
 
 ### v1.8.1 - 2021-12-29
 <a name="v1.8.1"></a>

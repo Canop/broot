@@ -135,15 +135,15 @@ impl SyntacticView {
             self.total_lines_count += 1;
             let start = offset;
             offset += line.len();
-            while line.ends_with('\n') || line.ends_with('\r') {
-                line.pop();
-            }
             for c in line.chars() {
                 if !is_char_printable(c) {
                     debug!("unprintable char: {:?}", c);
                     return Err(ProgramError::UnprintableFile);
                 }
             }
+            // We don't remove '\n' or '\r' at this point because some syntax sets
+            // need them for correct detection of comments. See #477
+            // Those chars are removed on printing
             if pattern.is_empty() || pattern.score_of_string(&line).is_some() {
                 let name_match = pattern.search_string(&line);
                 let regions = if let Some(highlighter) = highlighter.as_mut() {
@@ -376,7 +376,7 @@ impl SyntacticView {
                     let pos = &nm.pos;
                     let mut pos_idx: usize = 0;
                     for content in regions {
-                        let s = &content.string;
+                        let s = content.string.trim_end_matches(is_char_end_of_line);
                         cw.w.queue(SetForegroundColor(content.fg))?;
                         if pos_idx < pos.len() {
                             for (cand_idx, cand_char) in s.chars().enumerate() {
@@ -397,7 +397,7 @@ impl SyntacticView {
                 } else {
                     for content in regions {
                         cw.w.queue(SetForegroundColor(content.fg))?;
-                        cw.queue_unstyled_str(&content.string)?;
+                        cw.queue_unstyled_str(content.string.trim_end_matches(is_char_end_of_line))?;
                     }
                 }
             }
@@ -455,5 +455,10 @@ fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
 /// syntactic view (if not we'll use a hex view)
 fn is_char_printable(c: char) -> bool {
     // the tab is printable because it's replaced by spaces
-    c == '\t' || !c.is_control()
+    c == '\t' || c == '\n' || c == '\r' || !c.is_control()
 }
+
+fn is_char_end_of_line(c: char) -> bool {
+    c == '\n' || c == '\r'
+}
+
