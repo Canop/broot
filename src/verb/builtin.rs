@@ -60,10 +60,10 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(input_del_char_below).no_doc(),
         internal(input_del_word_left).no_doc(),
         internal(input_del_word_right).no_doc(),
-        internal(input_go_to_end).no_doc(),
+        internal(input_go_to_end).with_key(END).no_doc(),
         internal(input_go_left).no_doc(),
         internal(input_go_right).no_doc(),
-        internal(input_go_to_start).no_doc(),
+        internal(input_go_to_start).with_key(HOME).no_doc(),
         internal(input_go_word_left).no_doc(),
         internal(input_go_word_right).no_doc(),
 
@@ -210,8 +210,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
                 code: KeyCode::Down,
                 modifiers: KeyModifiers::CONTROL,
             }),
-        internal(select_first).with_key(HOME),
-        internal(select_last).with_key(END),
+        internal(select_first),
+        internal(select_last),
         internal(clear_stage).with_shortcut("cls"),
         internal(stage)
             .with_char_key('+'),
