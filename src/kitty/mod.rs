@@ -1,3 +1,4 @@
+mod detect_support;
 mod image_renderer;
 mod image_set;
 

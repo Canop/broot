@@ -26,7 +26,7 @@ use {
     termimad::{Area, CropWriter, SPACE_FILLING},
 };
 
-/// a homogeneously colored piece of a line
+/// Homogeneously colored piece of a line
 #[derive(Debug)]
 pub struct Region {
     pub fg: Color,
@@ -71,7 +71,7 @@ pub struct SyntacticView {
 
 impl SyntacticView {
 
-    /// return a prepared text view with syntax coloring if possible.
+    /// Return a prepared text view with syntax coloring if possible.
     /// May return Ok(None) only when a pattern is given and there
     /// was an event before the end of filtering.
     pub fn new(
@@ -97,7 +97,7 @@ impl SyntacticView {
         }
     }
 
-    /// return true when there was no interruption
+    /// Return true when there was no interruption
     fn read_lines(
         &mut self,
         dam: &mut Dam,
@@ -150,7 +150,7 @@ impl SyntacticView {
                     highlighter
                         .highlight(&line, &SYNTAXER.syntax_set)
                         .iter()
-                        .map(|r| Region::from_syntect(r))
+                        .map(Region::from_syntect)
                         .collect()
                 } else {
                     Vec::new()
@@ -172,8 +172,8 @@ impl SyntacticView {
         Ok(true)
     }
 
-    /// (count of lines which can be seen when scrolling,
-    /// total count including filtered ones)
+    /// Give the count of lines which can be seen when scrolling,
+    /// total count including filtered ones
     pub fn line_counts(&self) -> (usize, usize) {
         (self.lines.len(), self.total_lines_count)
     }
@@ -451,7 +451,7 @@ fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
     })
 }
 
-/// tell whether the character is normal enough to be displayed by the
+/// Tell whether the character is normal enough to be displayed by the
 /// syntactic view (if not we'll use a hex view)
 fn is_char_printable(c: char) -> bool {
     // the tab is printable because it's replaced by spaces

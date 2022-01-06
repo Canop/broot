@@ -1,6 +1,6 @@
-/// Manage conversion of a user provided string
-/// defining foreground and background colors into
-/// a string with TTY colors
+//! Manage conversion of a user provided string
+//! defining foreground and background colors into
+//! a string with TTY colors
 
 use {
     super::*,
@@ -14,7 +14,7 @@ use {
     termimad::CompoundStyle,
 };
 
-/// parsed content of a [skin] line of the conf.toml file
+/// Parsed content of a [skin] line of the conf.toml file
 #[derive(Clone, Debug)]
 pub struct SkinEntry {
     focused: CompoundStyle,
@@ -31,7 +31,7 @@ impl SkinEntry {
     pub fn get_unfocused(&self) -> &CompoundStyle {
         self.unfocused.as_ref().unwrap_or(&self.focused)
     }
-    /// parse a string representation of a skin entry.
+    /// Parse a string representation of a skin entry.
     ///
     /// The general form is either "<focused>" or "<focused> / <unfocused>":
     /// It may be just the focused compound_style, or both
@@ -44,7 +44,7 @@ impl SkinEntry {
         let mut parts = s.split('/');
         let focused = parse_compound_style(parts.next().unwrap())?;
         let unfocused = parts.next()
-            .map(|p| parse_compound_style(p))
+            .map(parse_compound_style)
             .transpose()?;
         Ok(Self { focused, unfocused })
     }
@@ -59,8 +59,6 @@ impl<'de> Deserialize<'de> for SkinEntry {
             .map_err(|e| D::Error::custom(e.to_string()))
     }
 }
-
-
 
 fn parse_attribute(s: &str) -> Result<Attribute, InvalidSkinError> {
     match s {
@@ -82,7 +80,7 @@ fn parse_attribute(s: &str) -> Result<Attribute, InvalidSkinError> {
 
 /// parse a sequence of space separated style attributes
 fn parse_attributes(s: &str) -> Result<Vec<Attribute>, InvalidSkinError> {
-    s.split_whitespace().map(|t| parse_attribute(t)).collect()
+    s.split_whitespace().map(parse_attribute).collect()
 }
 
 fn parse_compound_style(s: &str) -> Result<CompoundStyle, InvalidSkinError> {

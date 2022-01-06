@@ -109,7 +109,8 @@ Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected and the preview panel 
 
 The preview panel stays synchronized with the selection in tree panels.
 
-If your terminal is [kitty](https://sw.kovidgoyal.net/kitty/index.html), then the image preview is high definition:
+Broot displays images in high resolution when the terminal supports Kitty's graphics protocol
+(compatible terminals: [Kitty](https://sw.kovidgoyal.net/kitty/index.html), [WezTerm](https://wezfurlong.org/wezterm/)):
 
 ![kitty preview](website/docs/img/20201127-kitty-preview.png)
 

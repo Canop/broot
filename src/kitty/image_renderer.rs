@@ -1,4 +1,5 @@
 use {
+    super::detect_support::is_kitty_graphics_protocol_supported,
     crate::{
         display::{
             cell_size_in_pixels,
@@ -19,13 +20,11 @@ use {
         RgbaImage,
     },
     std::{
-        env,
         io::{self, Write},
     },
     tempfile,
     termimad::Area,
 };
-
 
 /// How to send the image to kitty
 ///
@@ -84,63 +83,13 @@ impl<'i> ImageData<'i> {
 /// according to kitty's documentation
 const CHUNK_SIZE: usize = 4096;
 
-/// this is called only once, and cached in the kitty manager's MaybeRenderer state
-#[allow(unreachable_code)]
-fn is_kitty_graphics_protocol_supported() -> bool {
-    debug!("is_kitty_graphics_protocol_supported ?");
-
-    #[cfg(not(unix))]
-    {
-        // because cell_size_in_pixels isn't implemented on Windows
-        debug!("no kitty support yet on Windows");
-        return false;
-    }
-
-    for env_var in ["TERM", "TERMINAL"] {
-        if let Ok(env_val) = env::var(env_var) {
-            debug!("{:?} = {:?}", env_var, env_val);
-            let env_val = env_val.to_ascii_lowercase();
-            for name in ["kitty", "wezterm"] {
-                if env_val.contains(name) {
-                    debug!(" -> env var indicates kitty support");
-                    return true;
-                }
-            }
-        }
-    }
-
-    // Checking support with a proper CSI sequence should be the prefered way but
-    // it doesn't work reliably on wezterm and requires a wait on other terminal.
-    // Only Kitty does supports it perfectly and it's not even necessary on this
-    // terminal because we can just check the env var TERM.
-    #[cfg(feature = "kitty-csi-check")]
-    {
-        let start = std::time::Instant::now();
-        const TIMEOUT_MS: isize = 400;
-        let s = match xterm_query::query("\x1b_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1b\\\x1b[c", TIMEOUT_MS) {
-            Err(e) => {
-                debug!("xterm querying failed: {}", e);
-                false
-            }
-            Ok(response) => {
-                response.starts_with("\x1b_Gi=31;OK\x1b")
-            }
-        };
-        debug!("Xterm querying took {:?}", start.elapsed());
-        debug!("kitty protocol support: {:?}", s);
-        return s;
-    }
-    false
-}
-
 
 fn div_ceil(a: u32, b: u32) -> u32 {
     a / b + (0 != a % b) as u32
 }
 
-/// the image renderer, with knowledge of the
-/// console cells dimensions, and built only on Kitty.
-///
+/// The image renderer, with knowledge of the console cells
+/// dimensions, and built only on a compatible terminal
 #[derive(Debug)]
 pub struct KittyImageRenderer {
     cell_width: u32,
@@ -150,7 +99,6 @@ pub struct KittyImageRenderer {
 }
 
 /// An image prepared for a precise area on screen
-///
 struct KittyImage<'i> {
     id: usize,
     data: ImageData<'i>,
@@ -176,7 +124,7 @@ impl<'i> KittyImage<'i> {
             area,
         }
     }
-    /// render the image by sending multiple kitty escape sequence, each
+    /// Render the image by sending multiple kitty escape sequences, each
     /// one with part of the image raw data (encoded as base64)
     fn print_with_chunks(
         &self,
@@ -207,7 +155,7 @@ impl<'i> KittyImage<'i> {
         }
         Ok(())
     }
-    /// render the image by writing the raw data in a temporary file
+    /// Render the image by writing the raw data in a temporary file
     /// then giving to kitty the path to this file in the payload of
     /// a unique kitty ecape sequence
     pub fn print_with_temp_file(
