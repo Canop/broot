@@ -1,9 +1,10 @@
 use {
     super::double_line::DoubleLine,
     crate::{
-        app::AppContext,
+        app::*,
         display::{Screen, W},
         errors::ProgramError,
+        kitty::{self, KittyImageId},
         skin::PanelSkin,
     },
     crossterm::{
@@ -24,6 +25,19 @@ use {
     termimad::{fill_bg, Area},
 };
 
+#[derive(Debug)]
+struct DrawingInfo {
+    drawing_count: usize,
+    area: Area,
+}
+
+impl DrawingInfo {
+    pub fn follows_in_place(&self, previous: &DrawingInfo) -> bool {
+        self.drawing_count == previous.drawing_count + 1
+            && self.area == previous.area
+    }
+}
+
 /// an already resized image, with the dimensions it
 /// was computed for (which may be different from the
 /// dimensions we got)
@@ -39,6 +53,8 @@ pub struct ImageView {
     path: PathBuf,
     source_img: DynamicImage,
     display_img: Option<CachedImage>,
+    last_drawing: Option<DrawingInfo>,
+    kitty_image_id: Option<KittyImageId>,
 }
 
 impl ImageView {
@@ -52,6 +68,8 @@ impl ImageView {
             path: path.to_path_buf(),
             source_img,
             display_img: None,
+            last_drawing: None,
+            kitty_image_id: None,
         })
     }
     pub fn is_png(&self) -> bool {
@@ -63,17 +81,46 @@ impl ImageView {
     pub fn display(
         &mut self,
         w: &mut W,
-        _screen: Screen,
-        panel_skin: &PanelSkin,
+        disc: &DisplayContext,
         area: &Area,
-        con: &AppContext,
     ) -> Result<(), ProgramError> {
-        let styles = &panel_skin.styles;
+
+        let styles = &disc.panel_skin.styles;
         let bg = styles.preview.get_bg()
             .or_else(|| styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
 
-        if crate::kitty::try_print_image(w, &self.source_img, area)? {
+        // we avoid drawing when we were just diplayed
+        // on the last drawing_count and the area is the same.
+        let drawing_info = DrawingInfo {
+            drawing_count: disc.count,
+            area: area.clone(),
+        };
+        let must_draw = self.last_drawing
+            .as_ref()
+            .map_or(true, |previous| !drawing_info.follows_in_place(previous));
+        if must_draw {
+            debug!("image_view must be cleared");
+        } else {
+            debug!("no need to clear image_view");
+        }
+        self.last_drawing = Some(drawing_info);
+
+        let mut kitty_manager = kitty::manager().lock().unwrap();
+
+        if !must_draw {
+            if let Some(kitty_image_id) = self.kitty_image_id {
+                // we tell the manager the images must be kept, otherwise
+                // they would be erased at end of drawing, as obsolete
+                kitty_manager.keep(kitty_image_id, disc.count);
+            }
+            return Ok(());
+        }
+
+        self.kitty_image_id = kitty_manager
+            .try_print_image(w, &self.source_img, area, bg, disc.count)?;
+
+        if self.kitty_image_id.is_some() {
             return Ok(());
         }
 
@@ -101,7 +148,7 @@ impl ImageView {
         let (width, height) = img.dimensions();
         debug!("resized image dimensions: {},{}", width, height);
         debug_assert!(width <= area.width as u32);
-        let mut double_line = DoubleLine::new(width as usize, con.true_colors);
+        let mut double_line = DoubleLine::new(width as usize, disc.con.true_colors);
         let mut y = area.top;
         let img_top_offset = (area.height - (height / 2) as u16) / 2;
         for _ in 0..img_top_offset {

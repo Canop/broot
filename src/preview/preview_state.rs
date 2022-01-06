@@ -228,7 +228,6 @@ impl PanelState for PreviewState {
         w: &mut W,
         disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
-        let con = &disc.con;
         let state_area = &disc.state_area;
         if state_area.height < 3 {
             warn!("area too small for preview");
@@ -264,7 +263,7 @@ impl PanelState for PreviewState {
         cw.fill(&styles.preview_title, &SPACE_FILLING)?;
         let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
         preview.display_info(w, disc.screen, disc.panel_skin, &info_area)?;
-        if let Err(err) = preview.display(w, disc.screen, disc.panel_skin, &self.preview_area, con) {
+        if let Err(err) = preview.display(w, disc, &self.preview_area) {
             warn!("error while displaying file: {:?}", &err);
             if preview.get_mode().is_some() {
                 // means it's not an error already

@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        app::{AppContext, LineNumber},
+        app::*,
         command::ScrollCommand,
         display::*,
         errors::ProgramError,
@@ -225,13 +225,14 @@ impl Preview {
     pub fn display(
         &mut self,
         w: &mut W,
-        screen: Screen,
-        panel_skin: &PanelSkin,
+        disc: &DisplayContext,
         area: &Area,
-        con: &AppContext,
     ) -> Result<(), ProgramError> {
+        let panel_skin = &disc.panel_skin;
+        let screen = disc.screen;
+        let con = &disc.con;
         match self {
-            Self::Image(iv) => iv.display(w, screen, panel_skin, area, con),
+            Self::Image(iv) => iv.display(w, disc, area),
             Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area, con),
             Self::ZeroLen(zlv) => zlv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),

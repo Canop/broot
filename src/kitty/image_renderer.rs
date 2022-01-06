@@ -12,6 +12,7 @@ use {
     crossterm::{
         cursor,
         QueueableCommand,
+        style::Color,
     },
     image::{
         DynamicImage,
@@ -23,7 +24,7 @@ use {
         io::{self, Write},
     },
     tempfile,
-    termimad::Area,
+    termimad::{fill_bg, Area},
 };
 
 /// How to send the image to kitty
@@ -95,7 +96,7 @@ pub struct KittyImageRenderer {
     cell_width: u32,
     cell_height: u32,
     next_id: usize,
-    pub transmission_medium: TransmissionMedium,
+    transmission_medium: TransmissionMedium,
 }
 
 /// An image prepared for a precise area on screen
@@ -217,14 +218,22 @@ impl KittyImageRenderer {
         self.next_id += 1;
         new_id
     }
-    /// Print the dynamicImage and return the KittyImageId
-    /// for later removal from screen
+    /// Clean the area, then print the dynamicImage and
+    /// return the KittyImageId for later removal from screen
     pub fn print(
         &mut self,
         w: &mut W,
         src: &DynamicImage,
         area: &Area,
+        bg: Color,
     ) -> Result<usize, ProgramError> {
+
+        // clean the background below (and around) the image
+        for y in area.top..area.top + area.height {
+            w.queue(cursor::MoveTo(area.left, y))?;
+            fill_bg(w, area.width as usize, bg)?;
+        }
+
         let img = KittyImage::new(src, area, self);
         debug!("transmission medium: {:?}", self.transmission_medium);
         match self.transmission_medium {

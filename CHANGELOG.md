@@ -1,3 +1,6 @@
+### next
+- fix a few problems of speed, flickering and uncleaned background with Kitty images
+
 ### v1.9.0 - 2022-01-06
 <a name="v1.9.0"></a>
 - total search (launched with ctrl-s) shows all matches - This is experimental and might be reversed, opinions welcome

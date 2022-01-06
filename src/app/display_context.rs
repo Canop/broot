@@ -10,6 +10,7 @@ use {
 /// short lived wrapping of a few things which are needed for displaying
 /// panels
 pub struct DisplayContext<'c> {
+    pub count: usize,
     pub active: bool,
     pub screen: Screen,
     pub state_area: Area,

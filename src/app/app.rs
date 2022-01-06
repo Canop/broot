@@ -6,7 +6,9 @@ use {
         conf::Conf,
         display::{Areas, Screen, W},
         errors::ProgramError,
-        file_sum, git,
+        file_sum,
+        git,
+        kitty,
         launchable::Launchable,
         path::closest_dir,
         skin::*,
@@ -63,6 +65,9 @@ pub struct App {
 
     /// receiver to listen to the sequence channel
     rx_seqs: Receiver<Sequence>,
+
+    /// counter incremented at every draw
+    drawing_count: usize,
 }
 
 impl App {
@@ -99,6 +104,7 @@ impl App {
             shared_root: None,
             tx_seqs,
             rx_seqs,
+            drawing_count: 0,
         })
     }
 
@@ -194,15 +200,12 @@ impl App {
         app_state: &AppState,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
-        // if some images are displayed by kitty, we'll erase them,
-        // but only after having displayed the new ones (if any)
-        // to prevent some flickerings
-        let previous_images = crate::kitty::take_current_images();
-
+        self.drawing_count += 1;
         for (idx, panel) in self.panels.as_mut_slice().iter_mut().enumerate() {
             let active = idx == self.active_panel_idx;
             let panel_skin = if active { &skin.focused } else { &skin.unfocused };
             let disc = DisplayContext {
+                count: self.drawing_count,
                 active,
                 screen: self.screen,
                 panel_skin,
@@ -215,10 +218,7 @@ impl App {
                 panel.display(w, &disc)?,
             );
         }
-
-        if let Some(previous_images) = previous_images {
-            previous_images.erase(w)?;
-        }
+        kitty::manager().lock().unwrap().erase_images_before(w, self.drawing_count)?;
         w.flush()?;
         Ok(())
     }

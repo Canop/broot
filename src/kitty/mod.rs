@@ -1,10 +1,8 @@
 mod detect_support;
 mod image_renderer;
-mod image_set;
 
 pub use {
     image_renderer::*,
-    image_set::*,
 };
 
 use {
@@ -12,48 +10,40 @@ use {
         display::W,
         errors::ProgramError,
     },
+    crossterm::style::Color,
     image::DynamicImage,
     once_cell::sync::Lazy,
-    std::sync::Mutex,
+    std::{
+        io::Write,
+        sync::Mutex,
+    },
     termimad::Area,
 };
 
-/// Give the current images, so that they can be removed
-/// (which should be done only after a new content has been
-/// displayed)
-pub fn take_current_images() -> Option<KittyImageSet> {
-    manager().lock().unwrap().take_current_images()
-}
-/// Try print the image in the specified area.
-///
-/// Return Ok(true) if it went well, Ok(false) if
-/// the terminal doesn't appear compatible with the Kitty
-/// graphics protocol, or an error if somebody went wrong.
-pub fn try_print_image(
-    w: &mut W,
-    src: &DynamicImage,
-    area: &Area,
-) -> Result<bool, ProgramError> {
-    let mut manager = manager().lock().unwrap();
-    manager.try_print_image(w, src, area)
-}
+pub type KittyImageId = usize;
 
 static MANAGER: Lazy<Mutex<KittyManager>> = Lazy::new(|| {
     let manager = KittyManager {
-        current_images: None,
+        rendered_images: Vec::new(),
         renderer: MaybeRenderer::Untested,
     };
     Mutex::new(manager)
 });
 
-fn manager() -> &'static Mutex<KittyManager> {
+pub fn manager() -> &'static Mutex<KittyManager> {
     &*MANAGER
 }
 
 #[derive(Debug)]
-struct KittyManager {
-    current_images: Option<KittyImageSet>,
+pub struct KittyManager {
+    rendered_images: Vec<RenderedImage>,
     renderer: MaybeRenderer,
+}
+
+#[derive(Debug)]
+struct RenderedImage {
+    image_id: KittyImageId,
+    drawing_count: usize,
 }
 
 #[derive(Debug)]
@@ -66,9 +56,6 @@ enum MaybeRenderer {
 }
 
 impl KittyManager {
-    pub fn take_current_images(&mut self) -> Option<KittyImageSet> {
-        self.current_images.take()
-    }
     /// return the renderer if it's already checked and enabled, none if
     /// it's disabled or if it hasn't been tested yet
     pub fn renderer_if_tested(&mut self) -> Option<&mut KittyImageRenderer> {
@@ -96,20 +83,52 @@ impl KittyManager {
             }
         }
     }
+    pub fn keep(
+        &mut self,
+        kept_id: KittyImageId,
+        drawing_count: usize,
+    ) {
+        for image in self.rendered_images.iter_mut() {
+            if image.image_id == kept_id {
+                image.drawing_count = drawing_count;
+            }
+        }
+    }
     pub fn try_print_image(
         &mut self,
         w: &mut W,
         src: &DynamicImage,
         area: &Area,
-    ) -> Result<bool, ProgramError> {
+        bg: Color,
+        drawing_count: usize,
+    ) -> Result<Option<KittyImageId>, ProgramError> {
         if let Some(renderer) = self.renderer() {
-            let new_id = renderer.print(w, src, area)?;
-            self.current_images
-                .get_or_insert_with(KittyImageSet::default)
-                .push(new_id);
-            Ok(true)
+            let new_id = renderer.print(w, src, area, bg)?;
+            self.rendered_images.push(RenderedImage {
+                image_id: new_id,
+                drawing_count,
+            });
+            Ok(Some(new_id))
         } else {
-            Ok(false)
+            Ok(None)
         }
+    }
+    pub fn erase_images_before(
+        &mut self,
+        w: &mut W,
+        drawing_count: usize,
+    ) -> Result<(), ProgramError> {
+        let mut kept_images = Vec::new();
+        for image in self.rendered_images.drain(..) {
+            if image.drawing_count >= drawing_count {
+                kept_images.push(image);
+            } else {
+                let id = image.image_id;
+                debug!("erase kitty image {}", id);
+                write!(w, "\u{1b}_Ga=d,d=I,i={}\u{1b}\\", id)?;
+            }
+        }
+        self.rendered_images = kept_images;
+        Ok(())
     }
 }
