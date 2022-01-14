@@ -2,7 +2,7 @@ This page lists a few problems which were observed more than once and the best c
 
 Please come to [miaou](https://miaou.dystroy.org/3490?broot) if something isn't clear or if you want to propose a change or addition.
 
-# Compilation fails during installation
+# Compilation fails
 
 The common causes are
 
@@ -30,14 +30,11 @@ Additionaly, if backgrounds can't be properly displayed, you may consider [marki
 
 Another problem is the fact the `br` function doesn't set a proper pane name (you'll probably see the name of your shell instead of broot). This may be [solved with a modified shell function](https://github.com/Canop/broot/issues/270).
 
-# alt-enter (or other shortcut) isn't available
+# A shortcut isn't available
 
 Most terminals intercept a few keyboard shortcut for their own features. You may need to remap your terminal's default keyboard shortcuts.
 
-If a shortcut isn't available for broot and you can't or don't want to remap the one of your terminal, the solution is to change the shortcut in broot.
-
-* [specific solution for alt-enter](https://github.com/Canop/broot/issues/86#issuecomment-635974557)
-* [general shortcut configuration](../conf_verbs/#keyboard-key)
+## remap in Windows Terminal
 
 [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/) binds `alt+enter` to the "toggle fullscreen" command by default. To reclaim `alt+enter` for Broot, [add an 'unbound' entry to the actions array in settings.json](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys):
 
@@ -45,7 +42,22 @@ If a shortcut isn't available for broot and you can't or don't want to remap the
 {"command": "unbound", "keys": "alt+enter"}
 ```
 
-# Searching is slow when I mount a slow remote disk
+## remap in iTerm2
+
+For Mac users, iTerm2 must also be configured to enable this shortcut:
+Go to *Preferences->Profiles->Default->Keys* and add a mapping that maps `⌥Return↩` to `Send Hex Codes: 0x1b 0x0d`. This can be done by clicking the + sign at the bottom to add a mapping, clicking the "Click to Set" area, pressing the desired key combination (⌥Enter a.k.a ⌥Return), choosing the "Send Hex Code" option from the drop-down menu and inserting the following string there: "0x1b 0x0d".
+
+Note that this will change the behavior of `alt+enter` for all terminal windows, and it will no longer send the `return` sequence.
+
+## remap in Broot
+
+If a shortcut isn't available for broot and you can't or don't want to remap the one of your terminal, the solution is to change the shortcut in broot.
+
+* [specific solution for alt-enter](https://github.com/Canop/broot/issues/86#issuecomment-635974557)
+* [general shortcut configuration](../conf_verbs/#keyboard-key)
+
+
+# Slow remote disk
 
 Broot dives into all visible directories to look for the best matches.
 This can be a problem if you mount a remote disk.
@@ -54,27 +66,27 @@ The solution is to tell broot not to automatically enter the directory. It will 
 * [define a special-path in configuration](../conf_file/#special-paths)
 * [relevant issue](https://github.com/Canop/broot/issues/251)
 
-# My system has neither xdg-open nor any equivalent and doesn't know how to open files
+# Open files without xdg-open (or equivalent)
 
 In such a case, which isn't rare in server systems, you can rebind <kbd>enter</kbd> to the program of your choice.
 
 * [change standard file opening](../tricks/#change-standard-file-opening)
 
-# Everything feels slow, even moving the selection or scrolling
+# Everything feels slow
 
 It's probably your terminal app's fault. You could check that by using any other TUI application.
 
-Most terminal apps are fine but some, made with Electron or worse, or crippled with fancy plugins, take dozens of milliseconds to redraw the screen. You should not use those applications.
+Most terminal apps are fine but some, made with Electron or worse, or crippled with fancy plugins, take dozens of milliseconds to redraw the screen. You should not use those terminals.
 
-# Broot doesn't seem to work on msysgit or git bash
+# Broot doesn't work on msysgit or git bash
 
 I have no solution for that. If you know how to tackle the problem, the maintainers of [Crossterm](https://github.com/crossterm-rs/crossterm) would be interested too.
 
-# Broot doesn't seem to work correctly on Windows before 10
+# Windows 9-
 
-Even Microsoft doesn't support them anymore. If you have a cheap solution it's welcome but I don't have any.
+Even Microsoft doesn't support versions of Windows before the 10. If you have a cheap solution it's welcome but I don't have any.
 
-# Trouble with PowerShell Encoding
+# PowerShell Encoding
 
 Some problems in PowerShell are linked to a wrong encoding. You should set it to UTF-8 in your [profile](https://docs.microsoft.com/en-us/powershell/module/microsoft.powershell.core/about/about_profiles?view=powershell-7.1).
 
