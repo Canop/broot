@@ -314,14 +314,14 @@ impl PanelState for FilesystemState {
         //- titles
         w.queue(cursor::MoveTo(area.left, area.top))?;
         let mut cw = CropWriter::new(w, width);
-        cw.queue_g_string(&styles.default, format!("{:width$}", "filesystem", width = wc_fs))?;
+        cw.queue_g_string(&styles.default, format!("{:wc_fs$}", "filesystem"))?;
         cw.queue_char(border_style, '│')?;
         if e_dsk {
             cw.queue_g_string(&styles.default, "disk ".to_string())?;
             cw.queue_char(border_style, '│')?;
         }
         if e_type {
-            cw.queue_g_string(&styles.default, format!("{:^width$}", "type", width = w_type))?;
+            cw.queue_g_string(&styles.default, format!("{:^w_type$}", "type"))?;
             cw.queue_char(border_style, '│')?;
         }
         if e_use {

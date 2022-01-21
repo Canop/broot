@@ -1,3 +1,6 @@
+### next
+- instead of crashing on syntect panic in code preview, fall back to unstyled text - Fix #485
+
 ### v1.9.1 - 2022-01-07
 <a name="v1.9.1"></a>
 - fix a few problems of speed, flickering and uncleaned background with high resolution image preview

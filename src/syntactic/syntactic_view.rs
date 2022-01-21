@@ -79,6 +79,7 @@ impl SyntacticView {
         pattern: InputPattern,
         dam: &mut Dam,
         con: &AppContext,
+        no_style: bool,
     ) -> Result<Option<Self>, ProgramError> {
         let mut sv = Self {
             path: path.to_path_buf(),
@@ -89,7 +90,7 @@ impl SyntacticView {
             selection_idx: None,
             total_lines_count: 0,
         };
-        if sv.read_lines(dam, con)? {
+        if sv.read_lines(dam, con, no_style)? {
             sv.select_first();
             Ok(Some(sv))
         } else {
@@ -102,6 +103,7 @@ impl SyntacticView {
         &mut self,
         dam: &mut Dam,
         con: &AppContext,
+        no_style: bool,
     ) -> Result<bool, ProgramError> {
         let f = File::open(&self.path)?;
         {
@@ -116,7 +118,7 @@ impl SyntacticView {
         if md.len() == 0 {
             return Err(ProgramError::ZeroLenFile);
         }
-        let with_style = md.len() < MAX_SIZE_FOR_STYLING;
+        let with_style = !no_style && md.len() < MAX_SIZE_FOR_STYLING;
         let mut reader = BufReader::new(f);
         self.lines.clear();
         let mut line = String::new();
@@ -149,6 +151,7 @@ impl SyntacticView {
                 let regions = if let Some(highlighter) = highlighter.as_mut() {
                     highlighter
                         .highlight(&line, &SYNTAXER.syntax_set)
+                        .map_err(|e| ProgramError::SyntectCrashed { details: e.to_string() })?
                         .iter()
                         .map(Region::from_syntect)
                         .collect()

@@ -29,6 +29,7 @@ custom_error! {pub ProgramError
     ZeroLenFile = "File seems empty",
     UnmappableFile = "File can't be mapped",
     UnprintableFile = "File can't be printed", // has characters that can't be printed without escaping
+    SyntectCrashed { details: String } = "Syntect crashed on {details:?}",
 }
 
 custom_error! {pub TreeBuildError

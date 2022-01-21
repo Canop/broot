@@ -64,7 +64,7 @@ impl Preview {
             }
             PreviewMode::Text => {
                 Ok(
-                    SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con)
+                    SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con, false)
                         .transpose()
                         .expect("syntactic view without pattern shouldn't be none")
                         .map(Self::Syntactic)?,
@@ -89,14 +89,34 @@ impl Preview {
         path: &Path,
         con: &AppContext,
     ) -> Self {
-        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con) {
+        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con, false) {
             Ok(Some(sv)) => Self::Syntactic(sv),
             Err(ProgramError::ZeroLenFile | ProgramError::UnmappableFile) => {
                 debug!("zero len or unmappable file - check if system file");
                 Self::ZeroLen(ZeroLenFileView::new(path.to_path_buf()))
             }
+            Err(ProgramError::SyntectCrashed { details }) => {
+                warn!("syntect crashed with message : {details:?}");
+                Self::unstyled_text(path, con)
+            }
             // not previewable as UTF8 text
             // we'll try reading it as binary
+            Err(ProgramError::UnprintableFile) => Self::hex(path),
+            _ => Self::hex(path),
+        }
+    }
+    /// build a text preview with no syntax highlighting, if possible
+    pub fn unstyled_text(
+        path: &Path,
+        con: &AppContext,
+    ) -> Self {
+        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con, true) {
+            Ok(Some(sv)) => Self::Syntactic(sv),
+            Err(ProgramError::ZeroLenFile | ProgramError::UnmappableFile) => {
+                debug!("zero len or unmappable file - check if system file");
+                Self::ZeroLen(ZeroLenFileView::new(path.to_path_buf()))
+            }
+            // not previewable as UTF8 text - we'll try reading it as binary
             Err(ProgramError::UnprintableFile) => Self::hex(path),
             _ => Self::hex(path),
         }
@@ -112,7 +132,7 @@ impl Preview {
     ) -> Option<Self> {
         match self {
             Self::Syntactic(_) => {
-                match SyntacticView::new(path, pattern, dam, con) {
+                match SyntacticView::new(path, pattern, dam, con, false) {
 
                     // normal finished loading
                     Ok(Some(sv)) => Some(Self::Syntactic(sv)),
@@ -122,7 +142,7 @@ impl Preview {
 
                     // not previewable as UTF8 text
                     // we'll try reading it as binary
-                    Err(_) => Some(Self::hex(path)),
+                    Err(_) => Some(Self::hex(path)), // FIXME try as unstyled if syntect crashed
                 }
             }
             _ => None, // not filterable

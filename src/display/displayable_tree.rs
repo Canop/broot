@@ -106,7 +106,8 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
             cond_bg!(count_style, self, selected, self.skin.count);
-            cw.queue_g_string(count_style, format!("{:>width$}", s.to_count(), width=count_len))?;
+            let s = s.to_count();
+            cw.queue_g_string(count_style, format!("{s:>count_len$}"))?;
             1
         } else {
             count_len + 1

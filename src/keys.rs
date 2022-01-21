@@ -72,7 +72,7 @@ pub fn key_event_desc(key: KeyEvent) -> String {
             s.push(c);
         }
         F(u) => {
-            s.push_str(&format!("F{}", u));
+            s.push_str(&format!("F{u}"));
         }
         _ => {
             s.push_str(&format!("{:?}", key.code)); // FIXME check
