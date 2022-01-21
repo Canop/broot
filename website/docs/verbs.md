@@ -105,7 +105,7 @@ Note: there's another solution to gain time when typing a path, especially when 
 
 # Builtins & external commands, leaving or not
 
-There are three types of verbs (they will be covered in more details in the [configuration page](../conf_file/#verb-definition-attributes)):
+There are three types of verbs (they will be covered in more details in the [configuration page](../conf_verbs/#verb-definition-attributes)):
 
 * builtin features apply internal functions, for example `:toggle_perm` to trigger computation and display of Unix file permissions
 * external commands, whose execution implies calling an external program, for example `rm -rf {file}`
@@ -133,4 +133,4 @@ It can be used in a verb declaration in configuration too.
 
 You may start with the common set of verbs but you'll very quickly want to define how to edit or create files, and probably have a few personal commands.
 
-That's why should see [how to configure verbs](../conf_file/#verbs-shortcuts-and-keys).
+That's why should see [how to configure verbs](../conf_verbs/#verbs-shortcuts-and-keys).
