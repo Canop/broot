@@ -1,4 +1,5 @@
-### next
+### v1.9.2 - 2022-01-23
+<a name="v1.9.2"></a>
 - instead of crashing on syntect panic in code preview, fall back to unstyled text - Fix #485
 - fix files in worktree missing from git statuses - Fix #428
 
