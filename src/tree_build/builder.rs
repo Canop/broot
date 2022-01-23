@@ -81,7 +81,7 @@ impl<'c> TreeBuilder<'c> {
                 "init line_status_computer",
                 Repository::discover(&path)
                     .ok()
-                    .map(LineStatusComputer::from),
+                    .and_then(LineStatusComputer::from),
             )
         } else {
             None

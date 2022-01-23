@@ -34,25 +34,20 @@ pub struct LineStatusComputer {
     interesting_statuses: AHashMap<PathBuf, Status>,
 }
 impl LineStatusComputer {
-    pub fn from(repo: Repository) -> Self {
-        let repo_path = repo.path().parent().unwrap().to_path_buf();
+    pub fn from(repo: Repository) -> Option<Self> {
+        let workdir = repo.workdir()?;
         let mut interesting_statuses = AHashMap::default();
-        if let Ok(statuses) = &repo.statuses(None) {
-            for entry in statuses.iter() {
-                let status = entry.status();
-                if status.intersects(INTERESTING) {
-                    if let Some(path) = entry.path() {
-                        let path = repo_path.join(path);
-                        interesting_statuses.insert(path, status);
-                    }
+        let statuses = repo.statuses(None).ok()?;
+        for entry in statuses.iter() {
+            let status = entry.status();
+            if status.intersects(INTERESTING) {
+                if let Some(path) = entry.path() {
+                    let path = workdir.join(path);
+                    interesting_statuses.insert(path, status);
                 }
             }
-        } else {
-            debug!("get statuses failed");
         }
-        Self {
-            interesting_statuses,
-        }
+        Some(Self { interesting_statuses })
     }
     pub fn line_status(&self, path: &Path) -> Option<LineGitStatus> {
         self.interesting_statuses
