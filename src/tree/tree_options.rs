@@ -8,6 +8,7 @@ use {
         pattern::*,
     },
     clap::ArgMatches,
+    crossterm::style::Stylize,
     std::convert::TryFrom,
 };
 
@@ -81,7 +82,18 @@ impl TreeOptions {
         if let Some(default_flags) = &config.default_flags {
             let clap_app = clap_args::clap_app().setting(clap::AppSettings::NoBinaryName);
             let flags_args = format!("-{}", default_flags);
-            let conf_matches = clap_app.get_matches_from(vec![&flags_args]);
+            let conf_matches = match clap_app.get_matches_from_safe(vec![&flags_args]) {
+                Ok(cm) => cm,
+                Err(e) => {
+                    error!("bad default_flags in conf: {:?}", default_flags);
+                    eprintln!(
+                        "{} Invalid default_flags in configuration file: \"{}\"",
+                        "error:".red(),
+                        default_flags.to_string().red(),
+                    );
+                    e.exit();
+                }
+            };
             self.apply_launch_args(&conf_matches);
         }
         if let Some(b) = &config.show_selection_mark {
