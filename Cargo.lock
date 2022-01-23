@@ -178,7 +178,7 @@ dependencies = [
  "smallvec",
  "splitty",
  "strict",
- "syntect",
+ "syntect-no-panic",
  "tempfile",
  "termimad 0.20.0",
  "terminal-clipboard",
@@ -1587,9 +1587,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "syntect"
-version = "4.6.0"
-source = "git+https://github.com/Canop/syntect?branch=version-4.6#5c9840eab9477c3964b1a310ede4f5e3070ccc67"
+name = "syntect-no-panic"
+version = "4.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bee6d840027be11d9fae1432a799c548eaf0332a9a8dbe8526281d55a9600e4f"
 dependencies = [
  "bincode",
  "bitflags",

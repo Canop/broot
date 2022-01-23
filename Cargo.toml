@@ -53,8 +53,8 @@ serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.6"
 splitty = "0.1"
 strict = "0.1.4"
-# syntect = "4.6"
-syntect = { git = "https://github.com/Canop/syntect", branch = "version-4.6" } # no panicky fork
+# a temporary fork, see issue #485
+syntect = { package = "syntect-no-panic", version = "4.6.1" }
 tempfile = "3.2"
 termimad = "0.20.0"
 terminal-clipboard = { version = "0.3.1", optional = true }
@@ -109,6 +109,8 @@ harness = false
 # secular = { path = "../secular", features=["normalization"] }
 # strict = { path = "../strict" }
 # syntect = { path = "../syntect" }
+# syntect = { path = "../syntect" }
+# syntect-no-panic = { path = "../syntect" }
 # termimad = { path = "../termimad" }
 # terminal-clipboard = { path = "../terminal-clipboard" }
 # umask = { path = "../umask" }
