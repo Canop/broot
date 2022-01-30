@@ -200,5 +200,5 @@ This brings a lot of comfort, not just in broot.
 # Vim integration/plugin
 
 In case you want to use broot for opening files fuzzily in vim (and potentially
-replace netrw), check out: [broot.vim](https://gitlab.com/lstwn/broot.vim)
+replace netrw), check out: [broot.vim](https://github.com/lstwn/broot.vim)
 
