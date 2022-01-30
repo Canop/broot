@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.9.2"
+version = "1.9.3-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 documentation = "https://dystroy.org/broot"
@@ -28,6 +28,7 @@ char_reader = "0.1"
 clap = { version="2.33", default-features=false, features=["suggestions", "color"] }
 cli-log = "2.0"
 chrono = "0.4"
+crokey = "0.1"
 crossbeam = "0.8"
 crossterm = "0.22.1"
 custom_error = "1.6"
@@ -60,7 +61,7 @@ termimad = "0.20.0"
 terminal-clipboard = { version = "0.3.1", optional = true }
 toml = "0.5"
 xterm-query = { version = "0.1", optional = true }
-umask = "1.0"
+umask = "1.0.1"
 unicode-width = "0.1.8"
 
 [dev-dependencies]

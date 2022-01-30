@@ -8,7 +8,7 @@ use {
         app::*,
         conf::Conf,
         errors::ConfError,
-        keys,
+        keys::KEY_FORMAT,
     },
     crossterm::event::KeyEvent,
 };
@@ -128,7 +128,7 @@ impl VerbStore {
     ) -> Option<String> {
         for verb in &self.verbs {
             if verb.get_internal() == Some(internal) && stype.respects(verb.selection_condition) {
-                return verb.keys.get(0).map(|&k| keys::key_event_desc(k));
+                return verb.keys.get(0).map(|&k| KEY_FORMAT.to_string(k));
             }
         }
         None
@@ -140,7 +140,7 @@ impl VerbStore {
     ) -> Option<String> {
         for verb in &self.verbs {
             if verb.get_internal() == Some(internal) {
-                return verb.keys.get(0).map(|&k| keys::key_event_desc(k));
+                return verb.keys.get(0).map(|&k| KEY_FORMAT.to_string(k));
             }
         }
         None

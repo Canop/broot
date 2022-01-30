@@ -11,7 +11,7 @@ use {
             flags_display,
         },
         errors::ProgramError,
-        keys,
+        keys::KEY_FORMAT,
         skin::PanelSkin,
         stage::*,
         task_sync::Dam,
@@ -255,7 +255,7 @@ impl Panel {
                     _ => false,
                 })
                 .filter_map(|v| v.keys.first())
-                .map(|&k| keys::key_event_desc(k))
+                .map(|&k| KEY_FORMAT.to_string(k))
                 .next()
                 .unwrap_or_else(|| ":start_end_panel".to_string());
 

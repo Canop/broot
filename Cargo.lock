@@ -140,7 +140,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "broot"
-version = "1.9.2"
+version = "1.9.3-dev"
 dependencies = [
  "ahash 0.7.6",
  "ansi_colours",
@@ -150,6 +150,7 @@ dependencies = [
  "chrono",
  "clap",
  "cli-log 2.0.0",
+ "crokey",
  "crossbeam",
  "crossterm 0.22.1",
  "custom_error",
@@ -319,6 +320,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "81156fece84ab6a9f2afdb109ce3ae577e42b1228441eded99bd77f627953b1a"
 dependencies = [
  "cfg-if",
+]
+
+[[package]]
+name = "crokey"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b01f5c53d3b8f27269e925512a12048ad0267b8fce4d86f1543e85570f07d2af"
+dependencies = [
+ "crossterm 0.22.1",
 ]
 
 [[package]]
@@ -1754,9 +1764,9 @@ dependencies = [
 
 [[package]]
 name = "umask"
-version = "1.0.0"
+version = "1.0.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "982efbf70ec4d28f7862062c03dd1a4def601a5079e0faf1edc55f2ad0f6fe46"
+checksum = "efb3f38a494193b563eb215c43cb635a4fda1dfcd885fe3906b215bc6a9fb6b8"
 
 [[package]]
 name = "unicode-bidi"

@@ -49,6 +49,7 @@ custom_error! {pub ConfError
     UnknownInternal {verb: String}                  = "not a known internal: {}",
     InvalidSearchMode {details: String}             = "invalid search mode: {}",
     InvalidKey {raw: String}                        = "not a valid key: {}",
+    ParseKey {source: crokey::ParseKeyError}        = "{}",
     ReservedKey {key: String}                       = "reserved key: {}",
     UnexpectedInternalArg {invocation: String}      = "unexpected argument for internal: {}",
     InvalidCols {details: String}                   = "invalid cols definition: {}",

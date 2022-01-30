@@ -3,7 +3,7 @@ use {
     crate::{
         app::*,
         errors::ConfError,
-        keys,
+        keys::KEY_FORMAT,
         path::{self, PathAnchor},
     },
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
@@ -111,7 +111,7 @@ impl Verb {
         self.keys_desc = self
             .keys
             .iter()
-            .map(|&k| keys::key_event_desc(k))
+            .map(|&k| KEY_FORMAT.to_string(k))
             .collect::<Vec<String>>() // no way to join an iterator today ?
             .join(", ");
     }

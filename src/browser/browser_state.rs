@@ -500,7 +500,7 @@ impl PanelState for BrowserState {
             Internal::total_search => {
                 if let Some(tree) = &self.filtered_tree {
                     if tree.total_search {
-                        CmdResult::error("search was already total - all children have been rated")
+                        CmdResult::error("search was already total: all possible matches have been ranked")
                     } else {
                         self.pending_pattern = tree.options.pattern.clone();
                         self.total_search_required = true;

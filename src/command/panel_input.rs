@@ -163,7 +163,7 @@ impl PanelInput {
         key: KeyEvent,
         parts: &CommandParts,
     ) {
-        if let Some(c) = keys::as_letter(key) {
+        if let Some(c) = crokey::as_letter(key) {
             let add = match c {
                 // '/' if !parts.raw_pattern.is_empty() => true,
                 ' ' if parts.verb_invocation.is_none() => true,
@@ -224,7 +224,7 @@ impl PanelInput {
                 // we first handle the cases that MUST absolutely
                 // not be overriden by configuration
 
-                if key == keys::ESC {
+                if key == crokey::ESC {
                     // tab cycling
                     self.tab_cycle_count = 0;
                     if let Some(raw) = self.input_before_cycle.take() {
@@ -250,7 +250,7 @@ impl PanelInput {
                 }
 
                 // tab completion
-                if key == keys::TAB {
+                if key == crokey::TAB {
                     if parts.verb_invocation.is_some() {
                         let parts_before_cycle;
                         let completable_parts = if let Some(s) = &self.input_before_cycle {
@@ -298,11 +298,11 @@ impl PanelInput {
                     self.input_before_cycle = None;
                 }
 
-                if key == keys::ENTER && parts.has_not_empty_verb_invocation() {
+                if key == crokey::ENTER && parts.has_not_empty_verb_invocation() {
                     return Command::from_parts(parts, true);
                 }
 
-                if key == keys::QUESTION && (raw.is_empty() || parts.verb_invocation.is_some()) {
+                if key == crokey::QUESTION && (raw.is_empty() || parts.verb_invocation.is_some()) {
                     // a '?' opens the help when it's the first char
                     // or when it's part of the verb invocation
                     return Command::Internal {

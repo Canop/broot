@@ -2,8 +2,8 @@ use {
     super::*,
     crate::{
         app::SelectionType,
-        keys::*,
     },
+    crokey::*,
     crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
 };
 

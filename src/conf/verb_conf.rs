@@ -1,9 +1,9 @@
 use {
     crate::{
         app::SelectionType,
-        keys,
         command::Sequence,
         errors::ConfError,
+        keys,
         verb::*,
     },
     serde::Deserialize,
@@ -132,10 +132,10 @@ impl VerbConf {
         }
         let mut checked_keys = Vec::new();
         for key in &unchecked_keys {
-            let key = keys::parse_key(key)?;
+            let key = crokey::parse(key)?;
             if keys::is_reserved(key) {
                 return Err(ConfError::ReservedKey {
-                    key: keys::key_event_desc(key),
+                    key: keys::KEY_FORMAT.to_string(key)
                 });
             }
             checked_keys.push(key);
