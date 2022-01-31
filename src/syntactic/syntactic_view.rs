@@ -326,7 +326,6 @@ impl SyntacticView {
         let match_bg = styles.preview_match.get_bg().unwrap_or(Color::AnsiValue(28));
         let code_width = area.width as usize - 1; // 1 char left for scrollbar
         let scrollbar = area.scrollbar(self.scroll, self.lines.len());
-        debug!("scrollbar: {:#?}", scrollbar);
         let scrollbar_fg = styles.scrollbar_thumb.get_fg()
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);

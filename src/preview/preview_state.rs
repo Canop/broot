@@ -177,10 +177,18 @@ impl PanelState for PreviewState {
     }
 
     fn set_selected_path(&mut self, path: PathBuf, con: &AppContext) {
+        let selected_line_number = if self.path == path {
+            self.preview.get_selected_line_number()
+        } else {
+            None
+        };
         if let Some(fp) = &self.filtered_preview {
             self.pending_pattern = fp.pattern();
         };
         self.preview = Preview::new(&path, self.prefered_mode, con);
+        if let Some(number) = selected_line_number {
+            self.preview.try_select_line_number(number);
+        }
         self.path = path;
     }
 
