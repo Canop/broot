@@ -6,7 +6,7 @@ use {
         keys::KEY_FORMAT,
         path::{self, PathAnchor},
     },
-    crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
+    crossterm::event::KeyEvent,
     std::path::PathBuf,
 };
 
@@ -125,24 +125,6 @@ impl Verb {
             self.keys.push(key);
         }
         self.update_key_desc();
-    }
-    pub fn with_alt_key(self, chr: char) -> Self {
-        self.with_key(KeyEvent {
-            code: KeyCode::Char(chr),
-            modifiers: KeyModifiers::ALT,
-        })
-    }
-    pub fn with_control_key(self, chr: char) -> Self {
-        self.with_key(KeyEvent {
-            code: KeyCode::Char(chr),
-            modifiers: KeyModifiers::CONTROL,
-        })
-    }
-    pub fn with_char_key(self, chr: char) -> Self {
-        self.with_key(KeyEvent {
-            code: KeyCode::Char(chr),
-            modifiers: KeyModifiers::NONE,
-        })
     }
     pub fn no_doc(mut self) -> Self {
         self.show_in_doc = false;

@@ -8,6 +8,7 @@ use {
         skin::PanelSkin,
         verb::*,
     },
+    crokey::key,
     crossterm::{
         cursor,
         event::{
@@ -224,7 +225,7 @@ impl PanelInput {
                 // we first handle the cases that MUST absolutely
                 // not be overriden by configuration
 
-                if key == crokey::ESC {
+                if key == key!(esc) {
                     // tab cycling
                     self.tab_cycle_count = 0;
                     if let Some(raw) = self.input_before_cycle.take() {
@@ -250,7 +251,7 @@ impl PanelInput {
                 }
 
                 // tab completion
-                if key == crokey::TAB {
+                if key == key!(tab) {
                     if parts.verb_invocation.is_some() {
                         let parts_before_cycle;
                         let completable_parts = if let Some(s) = &self.input_before_cycle {
@@ -298,11 +299,11 @@ impl PanelInput {
                     self.input_before_cycle = None;
                 }
 
-                if key == crokey::ENTER && parts.has_not_empty_verb_invocation() {
+                if key == key!(enter) && parts.has_not_empty_verb_invocation() {
                     return Command::from_parts(parts, true);
                 }
 
-                if key == crokey::QUESTION && (raw.is_empty() || parts.verb_invocation.is_some()) {
+                if key == key!('?') && (raw.is_empty() || parts.verb_invocation.is_some()) {
                     // a '?' opens the help when it's the first char
                     // or when it's part of the verb invocation
                     return Command::Internal {

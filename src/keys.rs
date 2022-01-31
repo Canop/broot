@@ -16,7 +16,7 @@ pub static KEY_FORMAT: Lazy<KeyEventFormat> = Lazy::new(|| {
 });
 
 pub fn is_reserved(key: KeyEvent) -> bool {
-    key == BACKSPACE || key == DELETE || key == ESC
+    key == key!(backspace) || key == key!(delete) || key == key!(esc)
 }
 
 pub fn is_key_allowed_for_verb(
@@ -27,7 +27,7 @@ pub fn is_key_allowed_for_verb(
     match mode {
         Mode::Input => {
             // in input mode, keys normally used in the input are forbidden
-            if key==LEFT || key==RIGHT {
+            if key==key!(left) || key==key!(right) {
                 input_is_empty
             } else {
                 !matches!(key, KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::NONE })

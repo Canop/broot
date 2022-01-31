@@ -4,7 +4,6 @@ use {
         app::SelectionType,
     },
     crokey::*,
-    crossterm::event::{KeyCode, KeyEvent, KeyModifiers},
 };
 
 fn build_internal(
@@ -60,27 +59,27 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(input_del_char_below).no_doc(),
         internal(input_del_word_left).no_doc(),
         internal(input_del_word_right).no_doc(),
-        internal(input_go_to_end).with_key(END).no_doc(),
+        internal(input_go_to_end).with_key(key!(end)).no_doc(),
         internal(input_go_left).no_doc(),
         internal(input_go_right).no_doc(),
-        internal(input_go_to_start).with_key(HOME).no_doc(),
+        internal(input_go_to_start).with_key(key!(home)).no_doc(),
         internal(input_go_word_left).no_doc(),
         internal(input_go_word_right).no_doc(),
 
         // arrow keys bindings
-        internal(back).with_key(LEFT),
-        internal(open_stay).with_key(RIGHT),
-        internal(line_down).with_key(DOWN).with_char_key('j'),
-        internal(line_up).with_key(UP).with_char_key('k'),
+        internal(back).with_key(key!(left)),
+        internal(open_stay).with_key(key!(right)),
+        internal(line_down).with_key(key!(down)).with_key(key!('j')),
+        internal(line_up).with_key(key!(up)).with_key(key!('k')),
 
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
         internal(open_leave) // calls the system open
-            .with_key(ALT_ENTER)
+            .with_key(key!(alt-enter))
             .with_shortcut("ol"),
         external("cd", "cd {directory}", FromParentShell)
             .with_stype(SelectionType::Directory)
-            .with_key(ALT_ENTER)
+            .with_key(key!(alt-enter))
             .with_description("change directory and quit"),
 
         #[cfg(unix)]
@@ -97,7 +96,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(preview_binary),
         internal(close_panel_ok),
         internal(close_panel_cancel)
-            .with_control_key('w'),
+            .with_key(key!(ctrl-w)),
         external(
             "copy {newpath}",
             "cp -r {file} {newpath:path-from-parent}",
@@ -106,7 +105,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_shortcut("cp"),
         #[cfg(feature = "clipboard")]
         internal(copy_line)
-            .with_alt_key('c'),
+            .with_key(key!(alt-c)),
         #[cfg(feature = "clipboard")]
         internal(copy_path),
         external(
@@ -122,13 +121,14 @@ pub fn builtin_verbs() -> Vec<Verb> {
         // but ctrl-f is useful for focusing on a file's parent
         // (and keep the filter)
         internal(focus)
-            .with_char_key('l')
-            .with_control_key('f'),
+            .with_key(key!(l))
+            .with_key(key!(ctrl-f)),
         internal(help)
-            .with_key(F1).with_shortcut("?"),
+            .with_key(key!(F1))
+            .with_shortcut("?"),
         #[cfg(feature="clipboard")]
         internal(input_paste)
-            .with_control_key('v'),
+            .with_key(key!(ctrl-v)),
         external(
             "mkdir {subpath}",
             "mkdir -p {subpath:path-from-directory}",
@@ -153,72 +153,61 @@ pub fn builtin_verbs() -> Vec<Verb> {
             StayInBroot,
         )
             .with_auto_exec(false)
-            .with_key(F2),
+            .with_key(key!(F2)),
         internal_bang(start_end_panel)
-            .with_control_key('p'),
+            .with_key(key!(ctrl-p)),
         // the char keys for mode_input are handled differently as they're not
         // consumed by the command
         internal(mode_input)
-            .with_char_key(' ')
-            .with_char_key(':')
-            .with_char_key('/'),
+            .with_key(key!(' '))
+            .with_key(key!(':'))
+            .with_key(key!('/')),
         internal(previous_match)
-            .with_key(BACK_TAB),
+            .with_key(key!(shift-backtab))
+            .with_key(key!(backtab)),
         internal(next_match)
-            .with_key(TAB),
+            .with_key(key!(tab)),
         internal(no_sort)
             .with_shortcut("ns"),
         internal(open_stay)
-            .with_key(ENTER)
+            .with_key(key!(enter))
             .with_shortcut("os"),
         internal(open_stay_filter)
             .with_shortcut("osf"),
         internal(parent)
-            .with_char_key('h')
+            .with_key(key!(h))
             .with_shortcut("p"),
         internal(page_down)
-            .with_control_key('d')
-            .with_key(PAGE_DOWN),
+            .with_key(key!(ctrl-d))
+            .with_key(key!(pagedown)),
         internal(page_up)
-            .with_control_key('u')
-            .with_key(PAGE_UP),
+            .with_key(key!(ctrl-u))
+            .with_key(key!(pageup)),
         internal(panel_left)
-            .with_key(KeyEvent {
-                code: KeyCode::Left,
-                modifiers: KeyModifiers::CONTROL,
-            }),
+            .with_key(key!(ctrl-left)),
         internal(panel_right)
-            .with_key(KeyEvent {
-                code: KeyCode::Right,
-                modifiers: KeyModifiers::CONTROL,
-            }),
+            .with_key(key!(ctrl-right)),
         internal(print_path).with_shortcut("pp"),
         internal(print_relative_path).with_shortcut("prp"),
         internal(print_tree).with_shortcut("pt"),
         internal(quit)
-            .with_control_key('c')
-            .with_control_key('q')
+            .with_key(key!(ctrl-c))
+            .with_key(key!(ctrl-q))
             .with_shortcut("q"),
-        internal(refresh).with_key(F5),
+        internal(refresh).with_key(key!(F5)),
         internal(root_up)
-            .with_key(KeyEvent {
-                code: KeyCode::Up,
-                modifiers: KeyModifiers::CONTROL,
-            }),
+            .with_key(key!(ctrl-up)),
         internal(root_down)
-            .with_key(KeyEvent {
-                code: KeyCode::Down,
-                modifiers: KeyModifiers::CONTROL,
-            }),
+            .with_key(key!(ctrl-down)),
         internal(select_first),
         internal(select_last),
         internal(clear_stage).with_shortcut("cls"),
         internal(stage)
-            .with_char_key('+'),
+            .with_key(key!('+')),
         internal(unstage)
-            .with_char_key('-'),
+            .with_key(key!('-')),
         internal(toggle_stage)
-            .with_control_key('g'),
+            .with_key(key!(ctrl-g)),
         internal(open_staging_area).with_shortcut("osa"),
         internal(close_staging_area).with_shortcut("csa"),
         internal(toggle_staging_area).with_shortcut("tsa"),
@@ -231,25 +220,19 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(toggle_device_id).with_shortcut("dev"),
         internal(toggle_files).with_shortcut("files"),
         internal(toggle_git_ignore)
-            .with_key(KeyEvent {
-                code: KeyCode::Char('i'),
-                modifiers: KeyModifiers::ALT,
-            })
+            .with_key(key!(alt-i))
             .with_shortcut("gi"),
         internal(toggle_git_file_info).with_shortcut("gf"),
         internal(toggle_git_status).with_shortcut("gs"),
         internal(toggle_root_fs).with_shortcut("rfs"),
         internal(toggle_hidden)
-            .with_key(KeyEvent {
-                code: KeyCode::Char('h'),
-                modifiers: KeyModifiers::ALT,
-            })
+            .with_key(key!(alt-h))
             .with_shortcut("h"),
         #[cfg(unix)]
         internal(toggle_perm).with_shortcut("perm"),
         internal(toggle_sizes).with_shortcut("sizes"),
         internal(toggle_trim_root),
-        internal(total_search).with_control_key('s'),
+        internal(total_search).with_key(key!(ctrl-s)),
         internal(up_tree).with_shortcut("up"),
     ]
 }
