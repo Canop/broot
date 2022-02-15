@@ -317,25 +317,30 @@ invocation | default key | default shortcut | behavior / details
 :back | <kbd>Esc</kbd> | - | back to previous app state (see Usage page) |
 :cd | <kbd>alt</kbd><kbd>enter</kbd> | - | leave broot and cd to the selected directory (needs the br shell function)
 :chmod {args} | - | - | execute a chmod
+:clear_stage | - | cls | empty the staging area
 :close_preview | - | - | close the preview panel
+:close_staging_area | - | csa | close the staging area panel
 :copy_path | <kbd>alt</kbd><kbd>c</kbd> | - | copy path
 :cp {newpath} | - | - | copy the file or directory to the provided name
-:help | <kbd>F1</kbd> | - | open the help page. Help page can also be open with <kbd>?</kbd>
 :focus | <kbd>enter</kbd> | - | set the selected directory the root of the displayed tree |
+:help | <kbd>F1</kbd> | - | open the help page. Help page can also be open with <kbd>?</kbd>
 :line_down | <kbd>↓</kbd> | - | scroll one line down or select the next line (can be used with an argument eg `:line_down 4`)
-:line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
 :line_down_no_cycle | - | - | same as line_down, but doesn't cycle
+:line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
 :line_up_no_cycle | - | - | same as line_down, but doesn't cycle
 :mkdir {subpath} | - | md | create a directory
 :mv {newpath} | - | - | move the file or directory to the provided path
+:next_dir | - | - | select the next directory
 :next_match | <kbd>tab</kbd> | - | select the next matching file
-:open_stay | <kbd>enter</kbd> | - | open the selected file in the default OS opener, or focus the directory
-:open_preview | - | - | open the preview panel
 :open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leave broot
+:open_preview | - | - | open the preview panel
+:open_staging_area | - | osa | open the staging area
+:open_stay | <kbd>enter</kbd> | - | open the selected file in the default OS opener, or focus the directory
 :open_stay_filter | - | - | focus the directory but keeping the current filtering pattern
 :page_down | <kbd>⇟</kbd> | - | scroll one page down
 :page_up | <kbd>⇞</kbd> | - | scroll one page up
 :parent | - | - | focus the parent directory
+:previous_dir | - | - | select the previous directory
 :print_path | - | pp | print path and leave broot
 :print_relative_path | - | pp | print relative path and leave broot
 :print_tree | - | pt | print tree and leave broot
@@ -347,27 +352,24 @@ invocation | default key | default shortcut | behavior / details
 :sort_by_count | - | - | sort by count (only one level of the tree is displayed)
 :sort_by_date | - | - | sort by date
 :sort_by_size | - | - | sort by size
+:stage | <kbd>+</kbd> | - | add selection to staging area
 :toggle_counts | - | - | toggle display of total counts of files per directory
 :toggle_dates | - | - | toggle display of last modified dates (looking for the most recently changed file, even deep)
 :toggle_device_id | - | - | toggle display of device id (unix only)
 :toggle_files | - | - | toggle showing files (or just folders)
-:toggle_git_ignore | - | - | toggle git ignore handling (auto, no or yes)
 :toggle_git_file_info | - | - | toggle display of git file information
+:toggle_git_ignore | - | - | toggle git ignore handling (auto, no or yes)
 :toggle_git_status | - | - | toggle showing only the file which would show up on `git status`
 :toggle_hidden | - | - | toggle display of hidden files (the ones whose name starts with a dot on linux)
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_preview | - | - | toggle display of the preview panel
-:toggle_sizes | - | - | toggle the size mode
-:toggle_trim_root | - | - | toggle trimming of top level files in tree display
 :toggle_second_tree | - | - | toggle displaying a second tree
-:up_tree | - | - | focus the parent of the current root
-:stage | <kbd>+</kbd> | - | add selection to staging area
-:unstage | <kbd>-</kbd> | - | remove selection from staging area
+:toggle_sizes | - | - | toggle the size mode
 :toggle_stage | <kbd>ctrl</kbd><kbd>g</kbd> | - | add or remove selection to staging area
-:clear_stage | - | cls | empty the staging area
-:open_staging_area | - | osa | open the staging area
-:close_staging_area | - | csa | close the staging area panel
 :toggle_staging_area | - | tsa | open/close the staging area panel
+:toggle_trim_root | - | - | toggle trimming of top level files in tree display
+:unstage | <kbd>-</kbd> | - | remove selection from staging area
+:up_tree | - | - | focus the parent of the current root
 
 Note that
 

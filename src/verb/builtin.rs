@@ -121,7 +121,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         // but ctrl-f is useful for focusing on a file's parent
         // (and keep the filter)
         internal(focus)
-            .with_key(key!(l))
+            .with_key(key!(L))  // hum... why this one ?
             .with_key(key!(ctrl-f)),
         internal(help)
             .with_key(key!(F1))
@@ -153,7 +153,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             StayInBroot,
         )
             .with_auto_exec(false)
-            .with_key(key!(F2)),
+            .with_key(key!(f2)),
         internal_bang(start_end_panel)
             .with_key(key!(ctrl-p)),
         // the char keys for mode_input are handled differently as they're not
@@ -194,7 +194,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_key(key!(ctrl-c))
             .with_key(key!(ctrl-q))
             .with_shortcut("q"),
-        internal(refresh).with_key(key!(F5)),
+        internal(refresh).with_key(key!(f5)),
         internal(root_up)
             .with_key(key!(ctrl-up)),
         internal(root_down)

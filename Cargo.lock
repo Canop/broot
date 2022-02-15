@@ -324,21 +324,22 @@ dependencies = [
 
 [[package]]
 name = "crokey"
-version = "0.2.1"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "023ac011343d16baf65a32e91b04c462a88065f1586fea673f92a3dab0b5c1db"
+checksum = "f4219688ddf851f784c11c8be2da562bcc911e20919119cb03f10fda27d231ef"
 dependencies = [
  "crokey-proc_macros",
  "crossterm 0.22.1",
+ "once_cell",
+ "serde",
 ]
 
 [[package]]
 name = "crokey-proc_macros"
-version = "0.2.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22d6d508fa1a069ea01ccd610651c9652cfced32c0369a22d6a21b2a9633334a"
+checksum = "4d4832efaa2189caf3fbcf30a96e1f614503140712f7da8da4032ac1c841ac78"
 dependencies = [
- "crossterm 0.22.1",
  "proc-macro2",
  "quote",
  "syn",
@@ -1104,9 +1105,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.8.0"
+version = "1.9.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "692fcb63b64b1758029e0a96ee63e049ce8c5948587f2f7208df04625e5f6b56"
+checksum = "da32515d9f6e6e489d7bc9d84c71b060db7247dc035bbe44eac88cf87486d8d5"
 
 [[package]]
 name = "onig"

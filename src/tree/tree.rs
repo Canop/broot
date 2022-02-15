@@ -367,14 +367,20 @@ impl Tree {
         }
         false
     }
-    pub fn try_select_previous_match(&mut self, page_height: usize) -> bool {
+    pub fn try_select_previous_filtered<F>(
+        &mut self,
+        filter: F,
+        page_height: usize,
+    ) -> bool where
+        F: Fn(&TreeLine) -> bool,
+    {
         for di in (0..self.lines.len()).rev() {
             let idx = (self.selection + di) % self.lines.len();
             let line = &self.lines[idx];
             if !line.is_selectable() {
                 continue;
             }
-            if !line.direct_match {
+            if !filter(line) {
                 continue;
             }
             if line.score > 0 {
@@ -385,14 +391,20 @@ impl Tree {
         }
         false
     }
-    pub fn try_select_next_match(&mut self, page_height: usize) -> bool {
+    pub fn try_select_next_filtered<F>(
+        &mut self,
+        filter: F,
+        page_height: usize,
+    ) -> bool where
+        F: Fn(&TreeLine) -> bool,
+    {
         for di in 0..self.lines.len() {
             let idx = (self.selection + di + 1) % self.lines.len();
             let line = &self.lines[idx];
             if !line.is_selectable() {
                 continue;
             }
-            if !line.direct_match {
+            if !filter(line) {
                 continue;
             }
             if line.score > 0 {

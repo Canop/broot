@@ -1,3 +1,7 @@
+### next
+- keep same line visible in preview when resizing
+- `:previous_dir` and `:next_dir` internals - Fix #502
+
 ### v1.9.2 - 2022-01-23
 <a name="v1.9.2"></a>
 - instead of crashing on syntect panic in code preview, fall back to unstyled text - Fix #485

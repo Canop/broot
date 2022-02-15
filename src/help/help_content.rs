@@ -69,13 +69,6 @@ ${features
 * **${feature-name}:** ${feature-description}
 }
 
-## Sponsorship
-
-**broot** is totally free for all uses.
-If you *want* to help me find time to improve it and build other free programs, consider sponsoring me.
-See https://dystroy.org/broot/community/#sponsorship
-
-
 "#;
 
 /// build a markdown expander which will need to be

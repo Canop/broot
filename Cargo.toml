@@ -28,7 +28,7 @@ char_reader = "0.1"
 clap = { version="2.33", default-features=false, features=["suggestions", "color"] }
 cli-log = "2.0"
 chrono = "0.4"
-crokey = "0.2"
+crokey = "0.4.0"
 crossbeam = "0.8"
 crossterm = "0.22.1"
 custom_error = "1.6"
@@ -100,6 +100,7 @@ harness = false
 
 [patch.crates-io]
 # bet = { path = "../bet" }
+# crokey = { path = "../crokey" }
 # cli-log = { path = "../cli-log" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # deser-hjson = { path = "../deser-hjson" }
