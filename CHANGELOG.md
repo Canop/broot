@@ -1,4 +1,5 @@
-### next
+### v1.9.3 - 2022-02-15
+<a name="v1.9.3"></a>
 - keep same line visible in preview when resizing
 - `:previous_dir` and `:next_dir` internals - Fix #502
 
