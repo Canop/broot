@@ -18,6 +18,9 @@ The type of open panel depends on the selection:
 
 You may also close the current panel with <kbd>ctrl</kbd><kbd>W</kbd>, which is a shortcut for `:close_panel` (you can [change all bindings](../conf_verbs/#keyboard-key)).
 
+!!! Note
+    Depending on your system and terminal, the <kbd>ctrl</kbd><kbd>←</kbd>  and <kbd>ctrl</kbd><kbd>→</kbd> key bindings might not convenient or not usable. In such a case, you should [rebind](../conf_verbs/#keyboard-key) the `:panel_left` and `:panel_right` internals.
+
 # Use a verb to open a panel
 
 Another way to open a panel is to add a bang (`!`) to a verb. It tells broot to show the result in a new panel.

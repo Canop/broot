@@ -339,6 +339,8 @@ invocation | default key | default shortcut | behavior / details
 :open_stay_filter | - | - | focus the directory but keeping the current filtering pattern
 :page_down | <kbd>⇟</kbd> | - | scroll one page down
 :page_up | <kbd>⇞</kbd> | - | scroll one page up
+:panel_left | <kbd>ctrl</kbd><kbd>←</kbd>  | - | move to or open a panel to the left
+:panel_right | <kbd>ctrl</kbd><kbd>→</kbd>  | - | move to or open a panel to the right
 :parent | - | - | focus the parent directory
 :previous_dir | - | - | select the previous directory
 :print_path | - | pp | print path and leave broot

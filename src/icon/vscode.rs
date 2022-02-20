@@ -13,7 +13,7 @@ pub struct VsCodeIconPlugin {
 }
 
 impl VsCodeIconPlugin {
-    #[allow(dead_code)]
+    #[cfg(debug_assertions)]
     fn sanity_check(
         part_to_icon_name_map: &AHashMap<&str, &str>,
         icon_name_to_icon_codepoint_map: &AHashMap<&str, u32>,
