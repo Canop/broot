@@ -66,7 +66,7 @@ impl FilesystemState {
                 if show_only_disks {
                     mount.disk.is_some()
                 } else {
-                    mount.stats.is_some()
+                    mount.stats().is_some()
                 }
             })
             .cloned()
@@ -407,7 +407,7 @@ impl PanelState for FilesystemState {
                     cw.queue_char(border_style, '│')?;
                 }
                 // size, used, free
-                if let Some(stats) = mount.stats.as_ref().filter(|s| s.size() > 0) {
+                if let Some(stats) = mount.stats().filter(|s| s.size() > 0) {
                     let share_color = super::share_color(stats.use_share());
                     // used
                     if e_use {
@@ -430,7 +430,11 @@ impl PanelState for FilesystemState {
                     cw.queue_g_string(&share_style, format!("{:>4}", file_size::fit_4(stats.available())))?;
                     cw.queue_char(border_style, '│')?;
                     // size
-                    cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(mount.size())))?;
+                    if let Some(stats) = mount.stats() {
+                        cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(stats.size())))?;
+                    } else {
+                        cw.repeat(txt_style, &SPACE_FILLING, 4)?;
+                    }
                     cw.queue_char(border_style, '│')?;
                 } else {
                     // used

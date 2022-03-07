@@ -48,7 +48,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
         };
         cond_bg!(txt_style, self, selected, self.skin.default);
         let w_fs = self.mount.info.fs.chars().count();
-        if let Some(s) = &self.mount.stats {
+        if let Some(s) = &self.mount.stats() {
             //- width computation
             let mut e_fs = false;
             let dsk = self.mount.disk.as_ref().map_or("", |d| d.disk_type());

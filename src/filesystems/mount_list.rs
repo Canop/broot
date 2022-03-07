@@ -7,6 +7,7 @@ use {
         DeviceId,
         Mount,
         read_mounts,
+        ReadOptions,
     },
 };
 
@@ -24,10 +25,15 @@ impl MountList {
     /// try to load the mounts if they aren't loaded.
     pub fn load(&mut self) -> Result<&Vec<Mount>, ProgramError> {
         if self.mounts.is_none() {
-            match read_mounts() {
+            let mut options = ReadOptions::default();
+            options.remote_stats(false);
+            match read_mounts(&options) {
                 Ok(mut vec) => {
                     debug!("{} mounts loaded", vec.len());
-                    vec.sort_by_key(|m| u64::MAX - m.size());
+                    vec.sort_by_key(|m| {
+                        let size = m.stats().map_or(0, |s| s.size());
+                        u64::MAX - size
+                    });
                     self.mounts = Some(vec);
                 }
                 Err(e) => {

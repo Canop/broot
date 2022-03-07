@@ -21,7 +21,6 @@ echo "   build cleaned"
 # build the linux version
 echo -e "${H2}Compiling the linux version${EH}"
 cargo build --release --features "clipboard"
-strip target/release/broot
 mkdir build/x86_64-linux/
 cp target/release/broot build/x86_64-linux/
 

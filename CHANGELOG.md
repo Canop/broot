@@ -1,3 +1,6 @@
+### next
+- don't query size of remote filesystems anymore. This fixes some 10 seconds hangs in some cases (e.g. filesystem screen) when a remote filesystem is unreachable
+
 ### v1.9.3 - 2022-02-15
 <a name="v1.9.3"></a>
 - keep same line visible in preview when resizing
