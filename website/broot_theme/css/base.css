@@ -146,6 +146,8 @@ footer {
 /* By default it's not affixed in mobile views, so undo that */
 .bs-sidebar.affix { /* csslint allow: adjoining-classes */
     position: static;
+    height: calc(100vh - 85px);
+    overflow-y: auto;
 }
 
 .bs-sidebar.well { /* csslint allow: adjoining-classes */
