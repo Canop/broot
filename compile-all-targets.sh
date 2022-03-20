@@ -21,6 +21,7 @@ echo "   build cleaned"
 # build the linux version
 echo -e "${H2}Compiling the linux version${EH}"
 cargo build --release --features "clipboard"
+strip target/release/broot
 mkdir build/x86_64-linux/
 cp target/release/broot build/x86_64-linux/
 
@@ -46,26 +47,26 @@ echo "   Done"
 # build the windows version
 # use cargo cross
 echo -e "${H2}Compiling the Windows version${EH}"
-cross build --target x86_64-pc-windows-gnu --release --features "clipboard"
+cross build +1.58 --target x86_64-pc-windows-gnu --release --features "clipboard"
 mkdir build/x86_64-pc-windows-gnu
 cp target/x86_64-pc-windows-gnu/release/broot.exe build/x86_64-pc-windows-gnu/
 
 # build the Raspberry version
 # use cargo cross
 echo -e "${H2}Compiling the Raspberry version${EH}"
-cross build --target armv7-unknown-linux-gnueabihf --release
+cross build +1.58 --target armv7-unknown-linux-gnueabihf --release
 mkdir build/armv7-unknown-linux-gnueabihf
 cp target/armv7-unknown-linux-gnueabihf/release/broot build/armv7-unknown-linux-gnueabihf/
 
 # build the Android version
 # use cargo cross
 echo -e "${H2}Compiling the Android version${EH}"
-cross build --target aarch64-linux-android --release --features "clipboard"
+cross build +1.58 --target aarch64-linux-android --release --features "clipboard"
 mkdir build/aarch64-linux-android
 cp target/aarch64-linux-android/release/broot build/aarch64-linux-android/
 
 # build a musl version
 echo -e "${H2}Compiling the MUSL version${EH}"
-cross build --release --target x86_64-unknown-linux-musl
+cross build +1.58 --release --target x86_64-unknown-linux-musl
 mkdir build/x86_64-unknown-linux-musl
 cp target/x86_64-unknown-linux-musl/release/broot build/x86_64-unknown-linux-musl

@@ -11,7 +11,7 @@ license = "MIT"
 categories = ["command-line-utilities"]
 readme = "README.md"
 build = "build.rs"
-rust-version = "1.59"
+rust-version = "1.58"
 exclude = ["website", "broot*.zip"]
 
 [features]
@@ -84,7 +84,7 @@ debug = false
 debug = false
 lto = true
 codegen-units = 1 # this removes a few hundred bytes from the final exec size
-strip = true
+#strip = true
 
 [[bench]]
 name = "fuzzy"
