@@ -128,7 +128,8 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
         si.skin.print_text(MD_NO_SOURCING);
         return Ok(());
     }
-    let source_line = format!("source {}", &link_path.to_string_lossy());
+    let escaped_path = link_path.to_string_lossy().replace(' ', "\\ ");
+    let source_line = format!("source {}", &escaped_path);
     for sourcing_path in &sourcing_paths {
         let sourcing_path_str = sourcing_path.to_string_lossy();
         if util::file_contains_line(sourcing_path, &source_line)? {
