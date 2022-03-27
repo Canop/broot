@@ -59,8 +59,12 @@ pub struct Conf {
     #[serde(alias="search-modes")]
     pub search_modes: Option<FnvHashMap<String, String>>,
 
+    /// Obsolete, kept for compatibility: you should now use capture_mouse
     #[serde(alias="disable-mouse-capture")]
     pub disable_mouse_capture: Option<bool>,
+
+    #[serde(alias="capture-mouse")]
+    pub capture_mouse: Option<bool>,
 
     #[serde(alias="cols-order")]
     pub cols_order: Option<ColsConf>,
@@ -147,6 +151,7 @@ impl Conf {
         overwrite!(self, icon_theme, conf);
         overwrite!(self, syntax_theme, conf);
         overwrite!(self, disable_mouse_capture, conf);
+        overwrite!(self, capture_mouse, conf);
         overwrite!(self, true_colors, conf);
         overwrite!(self, show_selection_mark, conf);
         overwrite!(self, cols_order, conf);

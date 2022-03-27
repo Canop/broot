@@ -1,3 +1,6 @@
+### next
+- fix the `capture_mouse` config item which was described in documentation but not usable (the non documented `disable_mouse_capture` argument was working and is kept for compatibility)
+
 ### v1.9.4 - 2022-03-07
 <a name="v1.9.4"></a>
 - don't query size of remote filesystems anymore. This fixes some 10 seconds hangs in some cases (e.g. filesystem screen) when a remote filesystem is unreachable

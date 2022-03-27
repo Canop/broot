@@ -61,7 +61,8 @@ pub struct AppContext {
     /// modal (aka "vim) mode enabled
     pub modal: bool,
 
-    pub mouse_capture_disabled: bool,
+    /// Whether to support mouse interactions
+    pub capture_mouse: bool,
 
     /// max number of panels (including preview) that can be
     /// open. Guaranteed to be at least 2.
@@ -110,6 +111,11 @@ impl AppContext {
         let max_panels_count = config.max_panels_count
             .unwrap_or(2)
             .clamp(2, 100);
+        let capture_mouse = match (config.capture_mouse, config.disable_mouse_capture) {
+            (Some(b), _) => b, // the new "capture_mouse" argument takes precedence
+            (_, Some(b)) => !b,
+            _ => true,
+        };
         Ok(Self {
             config_paths,
             launch_args,
@@ -123,7 +129,7 @@ impl AppContext {
             true_colors,
             icons,
             modal: config.modal.unwrap_or(false),
-            mouse_capture_disabled: config.disable_mouse_capture.unwrap_or(false),
+            capture_mouse,
             max_panels_count,
             quit_on_last_cancel: config.quit_on_last_cancel.unwrap_or(false),
             file_sum_threads_count,

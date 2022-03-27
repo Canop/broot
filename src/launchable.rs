@@ -52,7 +52,7 @@ pub enum Launchable {
         exe: String,
         args: Vec<String>,
         working_dir: Option<PathBuf>,
-        mouse_capture_disabled: bool,
+        capture_mouse: bool,
     },
 
     /// open a path
@@ -110,7 +110,7 @@ impl Launchable {
                 exe,
                 args: parts.collect(),
                 working_dir,
-                mouse_capture_disabled: con.mouse_capture_disabled,
+                capture_mouse: con.capture_mouse,
             }),
             None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
         }
@@ -133,7 +133,7 @@ impl Launchable {
                 working_dir,
                 exe,
                 args,
-                mouse_capture_disabled,
+                capture_mouse,
             } => {
                 debug!("working_dir: {:?}", &working_dir);
                 // we restore the normal terminal in case the executable
@@ -143,7 +143,7 @@ impl Launchable {
                 if let Some(ref mut w) = &mut w {
                     w.queue(cursor::Show).unwrap();
                     w.queue(LeaveAlternateScreen).unwrap();
-                    if !mouse_capture_disabled {
+                    if *capture_mouse {
                         w.queue(DisableMouseCapture).unwrap();
                     }
                     terminal::disable_raw_mode().unwrap();
@@ -164,7 +164,7 @@ impl Launchable {
                     });
                 if let Some(ref mut w) = &mut w {
                     terminal::enable_raw_mode().unwrap();
-                    if !mouse_capture_disabled {
+                    if *capture_mouse {
                         w.queue(EnableMouseCapture).unwrap();
                     }
                     w.queue(EnterAlternateScreen).unwrap();
