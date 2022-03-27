@@ -1,6 +1,6 @@
 
 (function main(){
-	let groups = find_groups(["Hjson", "TOML"]);
+	let groups = find_groups(["Hjson", "JSON", "TOML"]);
 	console.log("groups:", groups);
 	for (let group of groups) {
 		add_tabs(group);
@@ -14,10 +14,8 @@ function find_groups(langs) {
 	let groups = [];
 	$("code").each(function(){
 		let lang = langs.find(
-			lang => this.className.split(' ')
-				.map(c => c.toLowerCase())
-				.includes(lang.toLowerCase())
-			);
+			lang => this.className.toLowerCase().split(/[ -]/).includes(lang.toLowerCase())
+		);
 		if (!lang) return;
 		let pre = this.parentElement;
 		let last_group = groups[groups.length-1];

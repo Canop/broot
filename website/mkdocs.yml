@@ -42,11 +42,6 @@ theme:
         name: null
         custom_dir: broot_theme/
         highlightjs: true
-        hljs_languages:
-                - yaml
-                - ini
-                - css
-                - rust
 
 markdown_extensions:
         - admonition

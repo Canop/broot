@@ -16,3 +16,13 @@
 	cursor: auto;
 	z-index: 2;
 }
+
+/* Hljs support for unknown languages like Hjson has
+ * regressed, I have to hack */
+pre code.language-Hjson {
+	display: block;
+	overflow-x: auto;
+	padding: 0.5em;
+	color: #333;
+	background: #f8f8f8;
+}
