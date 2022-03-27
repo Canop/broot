@@ -1,5 +1,6 @@
 ### next
 - fix the `capture_mouse` config item which was described in documentation but not usable (the non documented `disable_mouse_capture` argument was working and is kept for compatibility)
+- verb filtering on file extension - Fix #508
 
 ### v1.9.4 - 2022-03-07
 <a name="v1.9.4"></a>

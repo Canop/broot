@@ -57,14 +57,14 @@ impl VerbStore {
     ) -> PrefixSearchResult<'v, &Verb> {
         let stype = sel_info.common_stype();
         let count = sel_info.count_paths();
-        self.search(prefix, stype, Some(count))
+        self.search(prefix, stype, Some(count), sel_info.extension())
     }
 
     pub fn search_prefix<'v>(
         &'v self,
         prefix: &str,
     ) -> PrefixSearchResult<'v, &Verb> {
-        self.search(prefix, None, None)
+        self.search(prefix, None, None, None)
     }
 
     pub fn search<'v>(
@@ -72,6 +72,7 @@ impl VerbStore {
         prefix: &str,
         stype: Option<SelectionType>,
         sel_count: Option<usize>,
+        extension: Option<&str>,
     ) -> PrefixSearchResult<'v, &Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
@@ -98,6 +99,11 @@ impl VerbStore {
                     found_index = index;
                     nb_found += 1;
                     completions.push(name);
+                    continue;
+                }
+            }
+            if !verb.file_extensions.is_empty() {
+                if !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
                     continue;
                 }
             }

@@ -33,6 +33,7 @@ invocation | | how the verb is called by the user, with placeholders for argumen
 internal | | execution, when your verb is based on a predefined broot verb
 external | | execution, when your verb is based on an external command
 cmd | | a semicolon sequence to execute, similar to an argument you pass to `--cmd`
+extensions | | optional array of allowed file extensions
 key | | a keyboard key triggering execution
 keys | | several keyboard shortcuts triggering execution (if you want to have the choice)
 shortcut | | an alternate way to call the verb (without the arguments part)
@@ -80,6 +81,36 @@ With an array:
 [[verbs]]
 invocation = "xtv"
 external = ["xterm", "-e", "nvim {file}"]
+```
+
+# File extensions
+
+You may filter the execution of a verb with file extensions.
+
+For example, if you'd want <kbd>enter</kbd> to work as predefined in most cases but just choose a specific action for some files, you might add this verb definition:
+
+```hjson
+{
+    name: open-code
+    key: enter
+    extensions: [
+        rs
+        js
+        toml
+    ]
+    execution: "$EDITOR +{line} {file}"
+    working_dir: "{root}"
+    leave_broot: false
+}
+```
+```toml
+[[verbs]]
+name = "open-code"
+key = "enter"
+extensions = ["rs", "js", "toml"]
+execution = "$EDITOR +{line} {file}"
+working_dir = "{root}"
+leave_broot = false
 ```
 
 # Shortcuts and Verb search

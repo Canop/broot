@@ -18,6 +18,7 @@ function find_groups(langs) {
 		);
 		if (!lang) return;
 		let pre = this.parentElement;
+		pre.classList.add("tabbed");
 		let last_group = groups[groups.length-1];
 		let item = { lang, pre };
 		if (last_group) {

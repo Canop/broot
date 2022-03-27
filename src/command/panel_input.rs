@@ -328,6 +328,12 @@ impl PanelInput {
                             if mode != Mode::Input && verb.is_internal(Internal::mode_input) {
                                 self.enter_input_mode_with_key(key, &parts);
                             }
+                            if !verb.file_extensions.is_empty() {
+                                let extension = sel_info.extension();
+                                if !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
+                                    continue;
+                                }
+                            }
                             if verb.auto_exec {
                                 return Command::VerbTrigger {
                                     index,

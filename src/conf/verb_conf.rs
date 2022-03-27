@@ -9,7 +9,7 @@ use {
     serde::Deserialize,
 };
 
-/// a deserializable verb entry in the configuration
+/// A deserializable verb entry in the configuration
 #[derive(Default, Debug, Clone, Deserialize)]
 pub struct VerbConf {
 
@@ -29,6 +29,9 @@ pub struct VerbConf {
 
     #[serde(default)]
     keys: Vec<String>,
+
+    #[serde(default)]
+    extensions: Vec<String>,
 
     shortcut: Option<String>,
 
@@ -139,6 +142,9 @@ impl VerbConf {
                 });
             }
             checked_keys.push(key);
+        }
+        for extension in &self.extensions {
+            verb.file_extensions.push(extension.clone());
         }
         if !checked_keys.is_empty() {
             verb.add_keys(checked_keys);

@@ -124,4 +124,24 @@ impl<'a> SelInfo<'a> {
             _ => None,
         }
     }
+    pub fn extension(&self) -> Option<&str> {
+        match self {
+            SelInfo::None => None,
+            SelInfo::One(sel) => sel.path.extension().and_then(|e| e.to_str()),
+            SelInfo::More(stage) => {
+                let common_extension = stage.paths()[0]
+                    .extension().and_then(|e| e.to_str());
+                if common_extension.is_none() {
+                    return None;
+                }
+                for path in stage.paths().iter().skip(1) {
+                    let extension = path.extension().and_then(|e| e.to_str());
+                    if extension != common_extension {
+                        return None;
+                    }
+                }
+                common_extension
+            }
+        }
+    }
 }

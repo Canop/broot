@@ -14,12 +14,14 @@
 	border-left: solid 1px #e1e4e5;
 	background: #f8f8f8;
 	cursor: auto;
-	z-index: 2;
+}
+
+pre.tabbed {
 }
 
 /* Hljs support for unknown languages like Hjson has
  * regressed, I have to hack */
-pre code.language-Hjson {
+pre code.language-Hjson, pre code.language-hjson {
 	display: block;
 	overflow-x: auto;
 	padding: 0.5em;

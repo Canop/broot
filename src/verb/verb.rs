@@ -48,6 +48,9 @@ pub struct Verb {
     /// the type of selection this verb applies to
     pub selection_condition: SelectionType,
 
+    /// extension filtering. If empty, all extensions apply
+    pub file_extensions: Vec<String>,
+
     /// whether the verb needs a selection
     pub needs_selection: bool,
 
@@ -101,6 +104,7 @@ impl Verb {
             execution,
             description,
             selection_condition: SelectionType::Any,
+            file_extensions: Vec::new(),
             needs_selection,
             needs_another_panel,
             auto_exec: true,
