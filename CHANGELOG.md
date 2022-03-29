@@ -1,7 +1,8 @@
-### next
-- fix the `capture_mouse` config item which was described in documentation but not usable (the non documented `disable_mouse_capture` argument was working and is kept for compatibility)
+### v1.10.0 - 2022-03-29
+<a name="v1.10.0"></a>
 - verb filtering on file extension - Fix #508
 - don't quit on tiny terminals - Fix #511
+- fix the `capture_mouse` config item which was described in documentation but not usable (the non documented `disable_mouse_capture` argument was working and is kept for compatibility)
 
 ### v1.9.4 - 2022-03-07
 <a name="v1.9.4"></a>
