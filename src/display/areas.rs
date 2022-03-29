@@ -5,7 +5,6 @@ use {
     },
     crate::{
         app::Panel,
-        errors::ProgramError,
     },
     termimad::Area,
 };
@@ -23,8 +22,9 @@ pub struct Areas {
     pub nb_pos: usize,  // number of displayed panels
 }
 
-const MINIMAL_PANEL_HEIGHT: u16 = 10;
-const MINIMAL_PANEL_WIDTH: u16 = 20;
+const MINIMAL_PANEL_HEIGHT: u16 = 4;
+const MINIMAL_PANEL_WIDTH: u16 = 4;
+const MINIMAL_SCREEN_WIDTH: u16 = 8;
 
 enum Slot<'a> {
     Panel(usize),
@@ -39,7 +39,7 @@ impl Areas {
         mut insertion_idx: usize,
         screen: Screen,
         with_preview: bool, // slightly larger last panel
-    ) -> Result<Self, ProgramError> {
+    ) -> Self {
         if insertion_idx > present_panels.len() {
             insertion_idx = present_panels.len();
         }
@@ -59,15 +59,15 @@ impl Areas {
         for i in insertion_idx..present_panels.len() {
             slots.push(Slot::Panel(i));
         }
-        Self::compute_areas(present_panels, &mut slots, screen, with_preview)?;
-        Ok(areas)
+        Self::compute_areas(present_panels, &mut slots, screen, with_preview);
+        areas
     }
 
     pub fn resize_all(
         panels: &mut [Panel],
         screen: Screen,
         with_preview: bool, // slightly larger last panel
-    ) -> Result<(), ProgramError> {
+    ) {
         let mut slots = Vec::new();
         for i in 0..panels.len() {
             slots.push(Slot::Panel(i));
@@ -80,34 +80,33 @@ impl Areas {
         slots: &mut Vec<Slot>,
         screen: Screen,
         with_preview: bool, // slightly larger last panel
-    ) -> Result<(), ProgramError> {
-        if screen.height < MINIMAL_PANEL_HEIGHT {
-            return Err(ProgramError::TerminalTooSmallError);
-        }
+    ) {
+        let screen_height = screen.height.max(MINIMAL_PANEL_HEIGHT);
+        let screen_width = screen.width.max(MINIMAL_SCREEN_WIDTH);
         let n = slots.len() as u16;
         let mut panel_width = if with_preview {
-            3 * screen.width / (3 * n + 1)
+            3 * screen_width / (3 * n + 1)
         } else {
-            screen.width / n
+            screen_width / n
         };
         if panel_width < MINIMAL_PANEL_WIDTH {
-            return Err(ProgramError::TerminalTooSmallError);
+            panel_width = panel_width.max(MINIMAL_PANEL_WIDTH);
         }
         let mut x = 0;
         let nb_pos = slots.len();
         #[allow(clippy::needless_range_loop)]
         for slot_idx in 0..nb_pos {
             if slot_idx == nb_pos - 1 {
-                panel_width = screen.width - x;
+                panel_width = screen_width - x;
             }
             let areas: &mut Areas = match &mut slots[slot_idx] {
                 Slot::Panel(panel_idx) => &mut panels[*panel_idx].areas,
                 Slot::New(areas) => areas,
             };
-            let y = screen.height - 2;
+            let y = screen_height - 2;
             areas.state = Area::new(x, 0, panel_width, y);
             areas.status = if WIDE_STATUS {
-                Area::new(0, y, screen.width, 1)
+                Area::new(0, y, screen_width, 1)
             } else {
                 Area::new(x, y, panel_width, 1)
             };
@@ -128,7 +127,6 @@ impl Areas {
             areas.nb_pos = nb_pos;
             x += panel_width;
         }
-        Ok(())
     }
 
     pub fn is_first(&self) -> bool {

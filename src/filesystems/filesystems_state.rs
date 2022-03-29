@@ -360,8 +360,8 @@ impl PanelState for FilesystemState {
             let mut cw = CropWriter::new(w, width - 1); // -1 for scrollbar
             let txt_style = if selected { &styles.selected_line } else { &styles.default };
             if let Some(mount) = mounts.get(idx) {
-                let match_style = if selected { &selected_match_style } else { &match_style };
-                let border_style = if selected { &selected_border_style } else { &border_style };
+                let match_style = if selected { &selected_match_style } else { match_style };
+                let border_style = if selected { &selected_border_style } else { border_style };
                 if con.show_selection_mark {
                     cw.queue_char(txt_style, if selected { '▶' } else { ' ' })?;
                 }

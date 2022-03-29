@@ -88,7 +88,7 @@ impl App {
                 )?
                 .expect("Failed to create BrowserState"),
             ),
-            Areas::create(&mut Vec::new(), 0, screen, false)?,
+            Areas::create(&mut Vec::new(), 0, screen, false),
             con,
         );
         let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
@@ -168,8 +168,7 @@ impl App {
                 self.panels.as_mut_slice(),
                 self.screen,
                 self.preview_panel.is_some(),
-            )
-            .expect("removing a panel should be easy");
+            );
             self.active_panel_idx = self
                 .panels
                 .iter()
@@ -560,33 +559,29 @@ impl App {
             self.active_panel_idx
         };
         let with_preview = purpose.is_preview() || self.preview_panel.is_some();
-        match Areas::create(
+        let areas = Areas::create(
             self.panels.as_mut_slice(),
             insertion_idx,
             self.screen,
             with_preview,
-        ) {
-            Ok(areas) => {
-                let panel_id = self.created_panels_count.into();
-                match state.get_type() {
-                    PanelStateType::Preview => {
-                        self.preview_panel = Some(panel_id);
-                    }
-                    PanelStateType::Stage => {
-                        self.stage_panel = Some(panel_id);
-                    }
-                    _ => {
-                        self.active_panel_idx = insertion_idx;
-                    }
-                }
-                let mut panel = Panel::new(panel_id, state, areas, con);
-                panel.purpose = purpose;
-                self.created_panels_count += 1;
-                self.panels.insert(insertion_idx, panel);
-                Ok(())
+        );
+        let panel_id = self.created_panels_count.into();
+        match state.get_type() {
+            PanelStateType::Preview => {
+                self.preview_panel = Some(panel_id);
             }
-            Err(e) => Err(e.to_string())
+            PanelStateType::Stage => {
+                self.stage_panel = Some(panel_id);
+            }
+            _ => {
+                self.active_panel_idx = insertion_idx;
+            }
         }
+        let mut panel = Panel::new(panel_id, state, areas, con);
+        panel.purpose = purpose;
+        self.created_panels_count += 1;
+        self.panels.insert(insertion_idx, panel);
+        Ok(())
     }
 
     /// do the pending tasks, if any, and refresh the screen accordingly
@@ -731,7 +726,7 @@ impl App {
                             self.panels.as_mut_slice(),
                             self.screen,
                             self.preview_panel.is_some(),
-                        )?;
+                        );
                         for panel in &mut self.panels {
                             panel.mut_state().refresh(self.screen, con);
                         }

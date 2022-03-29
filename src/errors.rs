@@ -20,7 +20,6 @@ custom_error! {pub ProgramError
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
     UnknowShell {shell: String} = "Unknown shell: {shell}",
     InternalError {details: String} = "Internal error: {details}", // should not happen
-    TerminalTooSmallError = "Terminal too small", // unable to open panel or app
     InvalidGlobError {pattern: String} = "Invalid glob: {pattern}",
     Unrecognized {token: String} = "Unrecognized: {token}",
     NetError {source: NetError} = "{}",
