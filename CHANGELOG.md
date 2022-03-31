@@ -1,3 +1,6 @@
+### next
+- sorting by type, with 3 new internals: `:sort_by_type_dirs_first`,  `:sort_by_type_dirs_last`, and `:sort_by_type`. The last one lets you toggle between no sort, sorting by type with directories first, and sorting by type with directories last. - Fix #467
+
 ### v1.10.0 - 2022-03-29
 <a name="v1.10.0"></a>
 - verb filtering on file extension - Fix #508

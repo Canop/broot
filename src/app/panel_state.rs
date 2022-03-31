@@ -232,6 +232,40 @@ pub trait PanelState {
                 bang,
                 con,
             ),
+            Internal::sort_by_type => self.with_new_options(
+                screen,
+                &|o| {
+                    o.sort = match o.sort {
+                        Sort::TypeDirsFirst => Sort::TypeDirsLast,
+                        Sort::TypeDirsLast => Sort::None,
+                        _ => Sort::TypeDirsFirst,
+                    };
+                },
+                bang,
+                con,
+            ),
+            Internal::sort_by_type_dirs_first => self.with_new_options(
+                screen,
+                &|o| {
+                    o.sort = match o.sort {
+                        Sort::TypeDirsFirst => Sort::None,
+                        _ => Sort::TypeDirsFirst,
+                    };
+                },
+                bang,
+                con,
+            ),
+            Internal::sort_by_type_dirs_last => self.with_new_options(
+                screen,
+                &|o| {
+                    o.sort = match o.sort {
+                        Sort::TypeDirsLast => Sort::None,
+                        _ => Sort::TypeDirsLast,
+                    };
+                },
+                bang,
+                con,
+            ),
             Internal::no_sort => self.with_new_options(screen, &|o| o.sort = Sort::None, bang, con),
             Internal::toggle_counts => {
                 self.with_new_options(screen, &|o| o.show_counts ^= true, bang, con)

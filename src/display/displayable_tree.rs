@@ -566,7 +566,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                         }
 
                         Col::Size => {
-                            if tree.options.sort.is_some() {
+                            if tree.options.sort.prevent_deep_display() {
                                 // as soon as there's only one level displayed we can show the size bars
                                 self.write_line_size_with_bar(cw, line, &label_style, total_size, selected)?
                             } else {

@@ -214,6 +214,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(sort_by_count).with_shortcut("sc"),
         internal(sort_by_date).with_shortcut("sd"),
         internal(sort_by_size).with_shortcut("ss"),
+        internal(sort_by_type).with_shortcut("st"),
         external("rm", "rm -rf {file}", StayInBroot),
         internal(toggle_counts).with_shortcut("counts"),
         internal(toggle_dates).with_shortcut("dates"),

@@ -87,7 +87,7 @@ impl<'c> TreeBuilder<'c> {
             None
         };
         let root_id = BLine::from_root(&mut blines, path, root_ignore_chain, &options)?;
-        let trim_root = match (options.trim_root, options.pattern.is_some(), options.sort.is_some()) {
+        let trim_root = match (options.trim_root, options.pattern.is_some(), options.sort.prevent_deep_display()) {
             // we never want to trim the root if there's a sort
             (_, _, true) => false,
             // if the user don't want root trimming, we don't trim
@@ -303,7 +303,7 @@ impl<'c> TreeBuilder<'c> {
                 }
             } else {
                 // this depth is finished, we must go deeper
-                if self.options.sort.is_some() {
+                if self.options.sort.prevent_deep_display() {
                     // in sort mode, only one level is displayed
                     break;
                 }

@@ -361,6 +361,7 @@ invocation | default key | default shortcut | behavior / details
 :line_up_no_cycle | - | - | same as line_down, but doesn't cycle
 :mkdir {subpath} | - | md | create a directory
 :mv {newpath} | - | - | move the file or directory to the provided path
+:no_sort | - | ns | remove all sorts
 :next_dir | - | - | select the next directory
 :next_match | <kbd>tab</kbd> | - | select the next matching file
 :open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leave broot
@@ -382,9 +383,12 @@ invocation | default key | default shortcut | behavior / details
 :rm | - | - | remove the selected file or directory. To stay safe, don't define a keyboard key for this action
 :select_first | - | - | select the first line
 :select_last | - | - | select the last line
-:sort_by_count | - | - | sort by count (only one level of the tree is displayed)
-:sort_by_date | - | - | sort by date
-:sort_by_size | - | - | sort by size
+:sort_by_count | - | sc | sort by count (only one level of the tree is displayed)
+:sort_by_date | - | sd | sort by date
+:sort_by_size | - | ss | sort by size
+:sort_by_type | - | st | sort by type
+:sort_by_type_dirs_first | - | - | sort by type, dirs first
+:sort_by_type_dirs_last | - | - | sort by type, dirs last
 :stage | <kbd>+</kbd> | - | add selection to staging area
 :toggle_counts | - | - | toggle display of total counts of files per directory
 :toggle_dates | - | - | toggle display of last modified dates (looking for the most recently changed file, even deep)

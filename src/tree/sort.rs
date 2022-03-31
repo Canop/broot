@@ -9,10 +9,19 @@ pub enum Sort {
     Count,
     Date,
     Size,
+    TypeDirsFirst,
+    TypeDirsLast,
 }
 
 impl Sort {
-    pub fn is_some(self) -> bool {
-        !matches!(self, Sort::None)
+    pub fn prevent_deep_display(self) -> bool {
+        match self {
+            Self::None => false,
+            Self::Count => true,
+            Self::Date => true,
+            Self::Size => true,
+            Self::TypeDirsFirst => false,
+            Self::TypeDirsLast => false,
+        }
     }
 }

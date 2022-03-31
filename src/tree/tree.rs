@@ -70,6 +70,7 @@ impl Tree {
     /// - compute left branchs
     pub fn after_lines_changed(&mut self) {
 
+
         // we need to order the lines to build the tree.
         // It's a little complicated because
         //  - we want a case insensitive sort
@@ -89,9 +90,31 @@ impl Tree {
             let mut bid = line.bid;
             loop {
                 if let Some(l) = bid_lines.get(&bid) {
+                    let lower_name = l.path.file_name().map_or(
+                        "".to_string(),
+                        |name| name.to_string_lossy().to_lowercase(),
+                    );
+                    let sort_prefix = match self.options.sort {
+                        Sort::TypeDirsFirst => {
+                            if l.is_dir() {
+                                "              "
+                            } else {
+                                l.path.extension().and_then(|s| s.to_str()).unwrap_or("")
+                            }
+                        }
+                        Sort::TypeDirsLast => {
+                            if l.is_dir() {
+                                "~~~~~~~~~~~~~~"
+                            } else {
+                                l.path.extension().and_then(|s| s.to_str()).unwrap_or("")
+                            }
+                        }
+                        _ => { "" }
+                    };
                     sort_path = format!(
-                        "{}-{}/{}",
-                        l.path.to_string_lossy().to_lowercase(),
+                        "{}{}-{}/{}",
+                        sort_prefix,
+                        lower_name,
                         bid.index(), // to be sure to separate paths having the same lowercase
                         sort_path,
                     );
@@ -462,9 +485,6 @@ impl Tree {
     ///
     /// (does nothing if it's None)
     fn sort_siblings(&mut self) {
-        if !self.options.sort.is_some() {
-            return;
-        }
         match self.options.sort {
             Sort::Count => {
                 // we'll try to keep the same path selected
@@ -494,7 +514,7 @@ impl Tree {
                 });
                 self.try_select_path(&selected_path);
             }
-            Sort::None => {}
+            _ => {}
         }
     }
 
