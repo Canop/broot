@@ -12,7 +12,9 @@ nav:
                 - Common Problems: common-problems.md
         - Usage:
                 - Launch: launch.md
-                - Navigation: navigation.md
+                - Search and Navigate: navigation.md
+                - Tree View: tree_view.md
+                - Help screen: help.md
                 - Verbs & Commands: verbs.md
                 - Panels: panels.md
                 - Staging Area: staging-area.md
