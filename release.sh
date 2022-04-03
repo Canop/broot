@@ -1,7 +1,7 @@
 # build a new release of broot
 # This isn't used for normal compilation (see https://dystroy.org/broot for instruction)
 # but for the building of the official releases
-version=$(sed 's/version = "\([0-9.]\{1,\}\)"/\1/;t;d' Cargo.toml | head -1)
+version=$(./version.sh)
 
 echo "Building release $version"
 

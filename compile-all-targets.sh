@@ -1,4 +1,4 @@
-# WARNING: This script is NOT meant for normal installation, it's dedicated
+#WARNING: This script is NOT meant for normal installation, it's dedicated
 # to the compilation of all supported targets, from a linux machine.
 # This is a long process and it involves specialized toolchains.
 # For usual compilation do
@@ -10,7 +10,7 @@ H1="\n\e[30;104;1m\e[2K\n\e[A" # style first header
 H2="\n\e[30;104m\e[1K\n\e[A" # style second header
 EH="\e[00m\n\e[2K" # end header
 
-version=$(sed 's/version = "\([0-9.]\{1,\}\(-[a-z]\+\)\?\)"/\1/;t;d' Cargo.toml | head -1)
+version=$(./version.sh)
 echo -e "${H1}Compilation of all targets for broot $version${EH}"
  
 # clean previous build
