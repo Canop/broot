@@ -140,7 +140,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "broot"
-version = "1.11.0"
+version = "1.11.1-dev"
 dependencies = [
  "ahash 0.7.6",
  "ansi_colours",
@@ -169,7 +169,7 @@ dependencies = [
  "libc",
  "memmap",
  "once_cell",
- "open 2.1.1",
+ "opener",
  "pathdiff",
  "phf",
  "rayon",
@@ -501,7 +501,7 @@ dependencies = [
  "libc",
  "log",
  "num-traits",
- "open 1.7.1",
+ "open",
  "svg",
  "tempfile",
 ]
@@ -696,7 +696,7 @@ dependencies = [
  "git2",
  "lazy_static",
  "minimad 0.7.1",
- "open 1.7.1",
+ "open",
  "rusqlite",
  "serde",
  "serde_json",
@@ -1173,12 +1173,12 @@ dependencies = [
 ]
 
 [[package]]
-name = "open"
-version = "2.1.1"
+name = "opener"
+version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9213e7b66aa06a7722828ee2980c1adff22a3922b582baaa1e62e30ca2a6c018"
+checksum = "4ea3ebcd72a54701f56345f16785a6d3ac2df7e986d273eb4395c0b01db17952"
 dependencies = [
- "pathdiff",
+ "bstr",
  "winapi",
 ]
 

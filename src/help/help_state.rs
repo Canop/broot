@@ -213,7 +213,7 @@ impl PanelState for HelpState {
                 };
                 CmdResult::Keep
             }
-            open_stay => match open::that(&Conf::default_location()) {
+            open_stay => match opener::open(&Conf::default_location()) {
                 Ok(exit_status) => {
                     info!("open returned with exit_status {:?}", exit_status);
                     CmdResult::Keep

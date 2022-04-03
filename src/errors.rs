@@ -8,8 +8,8 @@ use {
 };
 
 custom_error! {pub ProgramError
-    Io {source: io::Error} = "IO Error : {:?}",
-    Termimad {source: termimad::Error} = "Termimad Error : {:?}",
+    Io {source: io::Error} = "IO Error : {}",
+    Termimad {source: termimad::Error} = "Termimad Error : {}",
     Conf {source: ConfError} = "Bad configuration: {}",
     ConfFile {path:String, details: ConfError} = "Bad configuration file {:?} : {}",
     ArgParse {bad: String, valid: String} = "{:?} can't be parsed (valid values: {:?})",
@@ -29,6 +29,7 @@ custom_error! {pub ProgramError
     UnmappableFile = "File can't be mapped",
     UnprintableFile = "File can't be printed", // has characters that can't be printed without escaping
     SyntectCrashed { details: String } = "Syntect crashed on {details:?}",
+    OpenError { source: opener::OpenError } = "Open error: {}",
 }
 
 custom_error! {pub TreeBuildError

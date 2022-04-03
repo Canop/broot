@@ -15,7 +15,7 @@ use {
         tree_build::TreeBuilder,
         verb::*,
     },
-    open,
+    opener,
     std::path::{Path, PathBuf},
 };
 
@@ -136,7 +136,7 @@ impl BrowserState {
                 in_new_panel,
             ))
         } else {
-            match open::that(&target) {
+            match opener::open(&target) {
                 Ok(exit_status) => {
                     info!("open returned with exit_status {:?}", exit_status);
                     Ok(CmdResult::Keep)

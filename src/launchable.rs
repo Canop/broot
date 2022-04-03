@@ -19,7 +19,7 @@ use {
         terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
     },
-    open,
+    opener,
     std::{
         env,
         io::{self, Write},
@@ -178,7 +178,7 @@ impl Launchable {
                 Ok(())
             }
             Launchable::SystemOpen { path } => {
-                open::that(&path)?;
+                opener::open(&path)?;
                 Ok(())
             }
         }
