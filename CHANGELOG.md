@@ -1,4 +1,6 @@
-### next
+### v1.11.1 - 2022-04-04
+<a name="v1.11.1"></a>
+- fix broot not being usable while an image is being opened by hitting enter on linux - Fix #530
 
 ### v1.11.0 - 2022-04-02
 <a name="v1.11.0"></a>
