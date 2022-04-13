@@ -10,16 +10,19 @@ The current version of broot works on linux, mac and windows (win 10+).
 
 Binaries are made available at every release in [download](https://dystroy.org/broot/download).
 
+The archives there contain all precompiled versions, as well as the licenses and other files. They're the prefered distribution way.
+
 Direct links:
 
-Target|Files
--|-
-Android | [aarch64-linux-android](https://dystroy.org/broot/download/aarch64-linux-android/broot)
-Linux | [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
-Linux/musl | [x86_64-unknown-linux-musl](https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot)
-Raspberry | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)
-Windows 10+ | [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
-Shell completion | [completion/](https://dystroy.org/broot/download/completion/)
+Target|Details|Download
+-|-|-
+Linux | clipoard support| [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
+Android | clipoard support | [aarch64-linux-android](https://dystroy.org/broot/download/aarch64-linux-android/broot)
+Linux/glibc | no clipoard support, compatible with older GLIBC | [x86_64-unknown-linux-gnu](https://dystroy.org/broot/download/x86_64-unknown-linux-gnu/broot)
+Linux/musl | no clipoard support | [x86_64-unknown-linux-musl](https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot)
+Raspberry | no clipoard support | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)
+Windows 10+ | clipoard support | [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
+Shell completion  | | [completion/](https://dystroy.org/broot/download/completion)
 
 You may download previous releases on [GitHub releases](https://github.com/Canop/broot/releases).
 
