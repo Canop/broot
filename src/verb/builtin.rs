@@ -151,21 +151,46 @@ pub fn builtin_verbs() -> Vec<Verb> {
             StayInBroot,
         )
             .with_shortcut("md"),
+        #[cfg(unix)]
         external(
             "move {newpath}",
             "mv {file} {newpath:path-from-parent}",
             StayInBroot,
         )
             .with_shortcut("mv"),
+        #[cfg(windows)]
+        external(
+            "move {newpath}",
+            "cmd /c move /Y {file} {newpath:path-from-parent}",
+            StayInBroot,
+        )
+            .with_shortcut("mv"),
+        #[cfg(unix)]
         external(
             "move_to_panel",
             "mv {file} {other-panel-directory}",
             StayInBroot,
         )
             .with_shortcut("mvp"),
+        #[cfg(windows)]
+        external(
+            "move_to_panel",
+            "cmd /c move /Y {file} {other-panel-directory}",
+            StayInBroot,
+        )
+            .with_shortcut("mvp"),
+        #[cfg(unix)]
         external(
             "rename {new_filename:file-name}",
             "mv {file} {parent}/{new_filename}",
+            StayInBroot,
+        )
+            .with_auto_exec(false)
+            .with_key(key!(f2)),
+        #[cfg(windows)]
+        external(
+            "rename {new_filename:file-name}",
+            "cmd /c move /Y {file} {parent}/{new_filename}",
             StayInBroot,
         )
             .with_auto_exec(false)
