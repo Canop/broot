@@ -129,9 +129,17 @@ pub fn builtin_verbs() -> Vec<Verb> {
         #[cfg(feature="clipboard")]
         internal(input_paste)
             .with_key(key!(ctrl-v)),
+        #[cfg(unix)]
         external(
             "mkdir {subpath}",
             "mkdir -p {subpath:path-from-directory}",
+            StayInBroot,
+        )
+            .with_shortcut("md"),
+        #[cfg(windows)]
+        external(
+            "mkdir {subpath}",
+            "cmd /c mkdir {subpath:path-from-directory}",
             StayInBroot,
         )
             .with_shortcut("md"),
