@@ -97,9 +97,17 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(close_panel_ok),
         internal(close_panel_cancel)
             .with_key(key!(ctrl-w)),
+        #[cfg(unix)]
         external(
             "copy {newpath}",
             "cp -r {file} {newpath:path-from-parent}",
+            StayInBroot,
+        )
+            .with_shortcut("cp"),
+        #[cfg(windows)]
+        external(
+            "copy {newpath}",
+            "xcopy /Q /H /Y /I {file} {newpath:path-from-parent}",
             StayInBroot,
         )
             .with_shortcut("cp"),
