@@ -231,7 +231,14 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(sort_by_date).with_shortcut("sd"),
         internal(sort_by_size).with_shortcut("ss"),
         internal(sort_by_type).with_shortcut("st"),
+        #[cfg(unix)]
         external("rm", "rm -rf {file}", StayInBroot),
+        #[cfg(windows)]
+        external("rm", "cmd /c rmdir /Q /S {file}", StayInBroot)
+            .with_stype(SelectionType::Directory),
+        #[cfg(windows)]
+        external("rm", "cmd /c del /Q /S {file}", StayInBroot)
+            .with_stype(SelectionType::File),
         internal(toggle_counts).with_shortcut("counts"),
         internal(toggle_dates).with_shortcut("dates"),
         internal(toggle_device_id).with_shortcut("dev"),
