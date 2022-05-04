@@ -35,6 +35,8 @@ custom_error! {pub ProgramError
 custom_error! {pub TreeBuildError
     NotADirectory { path: String } = "Not a directory: {}",
     FileNotFound { path: String } = "File not found: {}",
+    Interrupted = "Task Interrupted",
+    TooManyMatches { max: usize } = "Too many matches (max allowed: {max})",
 }
 
 custom_error! {pub ConfError

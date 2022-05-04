@@ -86,7 +86,6 @@ impl App {
                     con,
                     &Dam::unlimited(),
                 )?
-                .expect("Failed to create BrowserState"),
             ),
             Areas::create(&mut Vec::new(), 0, screen, false),
             con,
@@ -384,7 +383,7 @@ impl App {
                             }
                             if let Some(selected_path) = self.state().selected_path() {
                                 let dir = closest_dir(selected_path);
-                                if let Ok(Some(new_state)) = BrowserState::new(
+                                if let Ok(new_state) = BrowserState::new(
                                     dir,
                                     self.state().tree_options().without_pattern(),
                                     self.screen,
@@ -594,8 +593,11 @@ impl App {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         while self.has_pending_task() && !dam.has_event() {
-            if self.do_pending_task(app_state, con, dam) {
-                self.update_preview(con); // the selection may have changed
+            let error = self.do_pending_task(app_state, con, dam).err();
+            self.update_preview(con); // the selection may have changed
+            if let Some(error) = &error {
+                self.mut_panel().set_error(error.to_string());
+            } else {
                 let app_cmd_context = AppCmdContext {
                     panel_skin: &skin.focused,
                     preview_panel: self.preview_panel,
@@ -604,39 +606,38 @@ impl App {
                     con,
                 };
                 self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
-                self.display_panels(w, skin, app_state, con)?;
-            } else {
-                warn!("unexpected lack of update on do_pending_task");
-                return Ok(());
+            }
+            self.display_panels(w, skin, app_state, con)?;
+            if error.is_some() {
+                return Ok(()); // breaking pending tasks chain on first error/interruption
             }
         }
         Ok(())
     }
 
-    /// do the next pending task
+    /// Do the next pending task
     fn do_pending_task(
         &mut self,
-        app_state: &AppState,
+        app_state: &mut AppState,
         con: &AppContext,
         dam: &mut Dam,
-    ) -> bool {
+    ) -> Result<(), ProgramError> {
         let screen = self.screen;
         // we start with the focused panel
         if self.panel().has_pending_task() {
-            self.mut_panel().do_pending_task(&app_state.stage, screen, con, dam);
-            return true;
+            return self.mut_panel().do_pending_task(app_state, screen, con, dam);
         }
         // then the other ones
         for idx in 0..self.panels.len().get() {
             if idx != self.active_panel_idx {
                 let panel = &mut self.panels[idx];
                 if panel.has_pending_task() {
-                    panel.do_pending_task(&app_state.stage, screen, con, dam);
-                    return true;
+                    return panel.do_pending_task(app_state, screen, con, dam);
                 }
             }
         }
-        false
+        warn!("unexpected lack of pending task");
+        Ok(())
     }
 
     fn has_pending_task(&mut self) -> bool {

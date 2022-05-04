@@ -63,6 +63,7 @@ pub struct TreeBuilder<'c> {
     git_ignorer: GitIgnorer,
     line_status_computer: Option<LineStatusComputer>,
     con: &'c AppContext,
+    pub matches_max: Option<usize>, // optional hard limit
     trim_root: bool,
 }
 impl<'c> TreeBuilder<'c> {
@@ -108,6 +109,7 @@ impl<'c> TreeBuilder<'c> {
             line_status_computer,
             con,
             trim_root,
+            matches_max: None,
         })
     }
 
@@ -267,7 +269,7 @@ impl<'c> TreeBuilder<'c> {
     /// first step of the build: we explore the directories and gather lines.
     /// If there's no search pattern we stop when we have enough lines to fill the screen.
     /// If there's a pattern, we try to gather more lines that will be sorted afterwards.
-    fn gather_lines(&mut self, total_search: bool, dam: &Dam) -> Option<Vec<BId>> {
+    fn gather_lines(&mut self, total_search: bool, dam: &Dam) -> Result<Vec<BId>, TreeBuildError> {
         let start = Instant::now();
         let mut out_blines: Vec<BId> = Vec::new(); // the blines we want to display
         let optimal_size = if self.options.pattern.pattern.has_real_scores() {
@@ -288,6 +290,11 @@ impl<'c> TreeBuilder<'c> {
             ) {
                 self.total_search = false;
                 break;
+            }
+            if let Some(max) = self.matches_max {
+                if nb_lines_ok > max {
+                    return Err(TreeBuildError::TooManyMatches{max});
+                }
             }
             if let Some(open_dir_id) = open_dirs.pop_front() {
                 if let Some(child_id) = self.next_child(open_dir_id) {
@@ -314,7 +321,7 @@ impl<'c> TreeBuilder<'c> {
                 for next_level_dir_id in &next_level_dirs {
                     if dam.has_event() {
                         info!("task expired (core build - inner loop)");
-                        return None;
+                        return Err(TreeBuildError::Interrupted);
                     }
                     let has_child_match = self.load_children(*next_level_dir_id);
                     if has_child_match {
@@ -338,6 +345,11 @@ impl<'c> TreeBuilder<'c> {
                 next_level_dirs.clear();
             }
         }
+        if let Some(max) = self.matches_max {
+            if nb_lines_ok > max {
+                return Err(TreeBuildError::TooManyMatches{max});
+            }
+        }
         if !self.trim_root {
             // if the root directory isn't totally read, we finished it even
             // it it goes past the bottom of the screen
@@ -345,7 +357,7 @@ impl<'c> TreeBuilder<'c> {
                 out_blines.push(child_id);
             }
         }
-        Some(out_blines)
+        Ok(out_blines)
     }
 
     /// Post search trimming
@@ -398,7 +410,7 @@ impl<'c> TreeBuilder<'c> {
     }
 
     /// make a tree from the builder's specific structure
-    fn take(mut self, out_blines: &[BId]) -> Tree {
+    fn take_as_tree(mut self, out_blines: &[BId]) -> Tree {
         let mut lines: Vec<TreeLine> = Vec::new();
         for id in out_blines.iter() {
             if self.blines[*id].has_match {
@@ -444,16 +456,33 @@ impl<'c> TreeBuilder<'c> {
     ///
     /// Return None if the lifetime expires before end of computation
     /// (usually because the user hit a key)
-    pub fn build(mut self, total_search: bool, dam: &Dam) -> Option<Tree> {
-        match self.gather_lines(total_search, dam) {
-            Some(out_blines) => {
-                debug!("blines before trimming: {}", out_blines.len());
+    pub fn build_tree(mut self, total_search: bool, dam: &Dam) -> Result<Tree, TreeBuildError> {
+        self.gather_lines(total_search, dam)
+            .map(|blines_ids| {
+                debug!("blines before trimming: {}", blines_ids.len());
                 if !self.total_search {
-                    self.trim_excess(&out_blines);
+                    self.trim_excess(&blines_ids);
                 }
-                Some(self.take(&out_blines))
-            }
-            None => None, // interrupted
-        }
+                self.take_as_tree(&blines_ids)
+            })
+    }
+
+    ///
+    pub fn build_paths<F>(
+        mut self,
+        total_search: bool,
+        dam: &Dam,
+        filter: F
+    ) -> Result<Vec<PathBuf>, TreeBuildError>
+    where F: Fn(&BLine) -> bool
+    {
+        self.gather_lines(total_search, dam)
+            .map(|mut blines_ids| {
+                blines_ids
+                    .drain(..)
+                    .filter(|&bid| filter(&self.blines[bid]))
+                    .map(|id| self.blines[id].path.clone())
+                    .collect()
+            })
     }
 }

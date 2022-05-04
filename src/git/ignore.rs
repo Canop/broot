@@ -164,7 +164,7 @@ impl GitIgnorer {
                 }
             }
             if let Ok(gif) = GitIgnoreFile::new(&ignore_file, dir) {
-                debug!("pushing GIF {:#?}", &gif);
+                //debug!("pushing GIF {:#?}", &gif);
                 chain.push(self.files.alloc(gif));
             }
             if is_repo {

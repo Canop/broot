@@ -62,11 +62,11 @@ impl CmdResult {
         CmdResult::DisplayError(format!("verb not found: {:?}", &text))
     }
     pub fn from_optional_state(
-        os: Result<Option<BrowserState>, TreeBuildError>,
+        os: Result<BrowserState, TreeBuildError>,
         in_new_panel: bool,
     ) -> CmdResult {
         match os {
-            Ok(Some(os)) => {
+            Ok(os) => {
                 if in_new_panel {
                     CmdResult::NewPanel {
                         state: Box::new(os),
@@ -77,7 +77,7 @@ impl CmdResult {
                     CmdResult::NewState(Box::new(os))
                 }
             }
-            Ok(None) => CmdResult::Keep,
+            Err(TreeBuildError::Interrupted) => CmdResult::Keep,
             Err(e) => CmdResult::error(e.to_string()),
         }
     }

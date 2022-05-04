@@ -67,12 +67,11 @@ pub fn new_panel_on_path(
     } else {
         let path = path::closest_dir(&path);
         match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
-            Ok(Some(os)) => CmdResult::NewPanel {
+            Ok(os) => CmdResult::NewPanel {
                 state: Box::new(os),
                 purpose,
                 direction,
             },
-            Ok(None) => CmdResult::Keep, // this isn't supposed to happen
             Err(e) => CmdResult::DisplayError(e.to_string()),
         }
     }
