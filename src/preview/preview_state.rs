@@ -7,7 +7,6 @@ use {
         errors::ProgramError,
         flag::Flag,
         pattern::InputPattern,
-        stage::*,
         task_sync::Dam,
         tree::TreeOptions,
         verb::*,
@@ -147,11 +146,11 @@ impl PanelState for PreviewState {
     /// do the preview filtering if required and not yet done
     fn do_pending_task(
         &mut self,
-        _stage: &Stage,
+        _app_state: &mut AppState,
         _screen: Screen,
         con: &AppContext,
         dam: &mut Dam,
-    ) {
+    ) -> Result<(), ProgramError> {
         if self.pending_pattern.is_some() {
             let old_selection = self
                 .filtered_preview
@@ -170,6 +169,7 @@ impl PanelState for PreviewState {
                 }
             }
         }
+        Ok(())
     }
 
     fn selected_path(&self) -> Option<&Path> {

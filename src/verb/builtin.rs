@@ -91,9 +91,12 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(open_preview),
         internal(close_preview),
         internal(toggle_preview),
-        internal(preview_image),
-        internal(preview_text),
-        internal(preview_binary),
+        internal(preview_image)
+            .with_shortcut("img"),
+        internal(preview_text)
+            .with_shortcut("txt"),
+        internal(preview_binary)
+            .with_shortcut("hex"),
         internal(close_panel_ok),
         internal(close_panel_cancel)
             .with_key(key!(ctrl-w)),
@@ -206,6 +209,8 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_key(key!('+')),
         internal(unstage)
             .with_key(key!('-')),
+        internal(stage_all_files)
+            .with_key(key!(ctrl-a)),
         internal(toggle_stage)
             .with_key(key!(ctrl-g)),
         internal(open_staging_area).with_shortcut("osa"),

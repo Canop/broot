@@ -77,7 +77,7 @@ impl Areas {
 
     fn compute_areas(
         panels: &mut [Panel],
-        slots: &mut Vec<Slot>,
+        slots: &mut [Slot],
         screen: Screen,
         with_preview: bool, // slightly larger last panel
     ) {

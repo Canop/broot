@@ -75,6 +75,9 @@ pub struct AppContext {
     /// number of threads used by file_sum (count, size, date)
     /// computation
     pub file_sum_threads_count: usize,
+
+    /// number of files which may be staged in one staging operation
+    pub max_staged_count: usize,
 }
 
 impl AppContext {
@@ -116,6 +119,9 @@ impl AppContext {
             (_, Some(b)) => !b,
             _ => true,
         };
+        let max_staged_count = config.max_staged_count
+            .unwrap_or(10_000)
+            .clamp(10, 100_000);
         Ok(Self {
             config_paths,
             launch_args,
@@ -133,6 +139,7 @@ impl AppContext {
             max_panels_count,
             quit_on_last_cancel: config.quit_on_last_cancel.unwrap_or(false),
             file_sum_threads_count,
+            max_staged_count,
         })
     }
 }

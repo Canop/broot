@@ -125,6 +125,7 @@ Internals! {
     open_staging_area: "open the staging area" false,
     close_staging_area: "close the staging area panel" false,
     toggle_staging_area: "open/close the staging area panel" false,
+    stage_all_files: "stage all matching files" true,
     toggle_stage: "add or remove selection to staging area" true,
     toggle_counts: "toggle showing number of files in directories" false,
     toggle_dates: "toggle showing last modified dates" false,

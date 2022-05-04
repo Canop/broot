@@ -699,11 +699,11 @@ pub trait PanelState {
 
     fn do_pending_task(
         &mut self,
-        _stage: &Stage,
+        _app_state: &mut AppState,
         _screen: Screen,
         _con: &AppContext,
         _dam: &mut Dam,
-    ) {
+    ) -> Result<(), ProgramError> {
         // no pending task in default impl
         unreachable!();
     }

@@ -47,7 +47,7 @@ impl Tree {
             con,
         )?;
         let mut tree = builder
-            .build(
+            .build_tree(
                 false, // on refresh we always do a non total search
                 &Dam::unlimited(),
             )

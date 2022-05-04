@@ -12,7 +12,7 @@ This documentation will often show you the same setting in both formats, with tw
 # setting to use if your config file is in .toml
 ```
 
-# Opening the configuration file
+# Opening the config file
 
 The main configuration file is called either `conf.toml` or `conf.hjson`.
 
@@ -43,17 +43,6 @@ default_flags = "gh"
 Those flags can still be overridden at launch with the negating ones. For example if you don't want to see hidden files at a specific launch, do
 
     br -H
-
-# Mouse Capture
-
-Broot usually captures the mouse so that you can click or double click on items. If you want to disable this capture, you may add this:
-
-```Hjson
-capture_mouse: false
-```
-```TOML
-capture_mouse = false
-```
 
 # Special Paths
 
@@ -102,19 +91,6 @@ The search mode must be made of two parts :
 
 * the search kind: Either  `exact`, `fuzzy`, `regex`, or `tokens`
 * the search object: Either `name`, `path`, or `content`
-
-# Quit on last cancel
-
-You can usually cancel the last state change on escape.
-If you want the escape key to quit broot when there's nothing to cancel (for example when you just opened broot), you can set `quit_on_last_cancel` to true.
-this parameter
-
-```Hjson
-quit_on_last_cancel: true
-```
-```TOML
-quit_on_last_cancel = true
-```
 
 # Selection Mark
 
@@ -212,7 +188,30 @@ syntax_theme = "base16-ocean.light"
 
 Those themes come from [syntect](https://github.com/trishume/syntect) and are bundled in broot.
 
-# Number of threads for directory size computation
+# Miscelaneous
+
+
+## Maximal number of files added by a :stage_all_files command
+
+```Hjson
+max_staged_count: 1234
+```
+```TOML
+max_staged_count = 1234
+```
+
+## Mouse Capture
+
+Broot usually captures the mouse so that you can click or double click on items. If you want to disable this capture, you may add this:
+
+```Hjson
+capture_mouse: false
+```
+```TOML
+capture_mouse = false
+```
+
+## Number of threads for directory size computation
 
 Most users should not change this. In my measurements a number of 4 to 6 looks optimal.
 
@@ -225,4 +224,18 @@ file_sum_threads_count: 10,
 file_sum_threads_count = 10
 ```
 
+
 If you make experiments, please come to [Miaou](https://miaou.dystroy.org/3490) and tell me.
+
+## Quit on last cancel
+
+You can usually cancel the last state change on escape.
+If you want the escape key to quit broot when there's nothing to cancel (for example when you just opened broot), you can set `quit_on_last_cancel` to true.
+this parameter
+
+```Hjson
+quit_on_last_cancel: true
+```
+```TOML
+quit_on_last_cancel = true
+```

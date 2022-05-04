@@ -50,6 +50,13 @@ impl InputPattern {
     pub fn take(&mut self) -> Self {
         std::mem::replace(self, Self::none())
     }
+    pub fn as_option(self) -> Option<Self> {
+        if self.is_some() {
+            Some(self)
+        } else {
+            None
+        }
+    }
     /// from a pattern used to filter a tree, build a pattern
     /// which would make sense to filter a previewed file
     pub fn tree_to_preview(&self) -> Self {

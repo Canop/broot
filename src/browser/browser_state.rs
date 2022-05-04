@@ -24,38 +24,52 @@ use {
 pub struct BrowserState {
     pub tree: Tree,
     pub filtered_tree: Option<Tree>,
-    pub pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
-    pub total_search_required: bool,   // whether the pending pattern should be in total search mode
-    mode: Mode,
+    // pub pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
+    // pub total_search_required: bool,   // whether the pending pattern should be in total search mode
+    mode: Mode, // whether we're in 'input' or 'normal' mode
+    pending_task: Option<BrowserTask>, // note: there are some other pending task, see
+}
+
+/// A task that can be computed in background
+enum BrowserTask {
+    Search {
+        pattern: InputPattern,
+        total: bool,
+    },
+    StageAll(InputPattern),
 }
 
 impl BrowserState {
 
     /// build a new tree state if there's no error and there's no cancellation.
-    ///
-    /// In case of cancellation return `Ok(None)`. If dam is `unlimited()` then
-    /// this can't be returned.
     pub fn new(
         path: PathBuf,
         mut options: TreeOptions,
         screen: Screen,
         con: &AppContext,
         dam: &Dam,
-    ) -> Result<Option<BrowserState>, TreeBuildError> {
-        let pending_pattern = options.pattern.take();
+    ) -> Result<BrowserState, TreeBuildError> {
+        let pending_task = options.pattern
+            .take()
+            .as_option()
+            .map(|pattern| BrowserTask::Search { pattern, total: false });
         let builder = TreeBuilder::from(
             path,
             options,
             BrowserState::page_height(screen) as usize,
             con,
         )?;
-        Ok(builder.build(false, dam).map(move |tree| BrowserState {
+        let tree = builder.build_tree(false, dam)?;
+        Ok(BrowserState {
             tree,
             filtered_tree: None,
-            pending_pattern,
-            total_search_required: false,
             mode: initial_mode(con),
-        }))
+            pending_task,
+        })
+    }
+
+    fn search(&mut self, pattern: InputPattern, total: bool) {
+        self.pending_task = Some(BrowserTask::Search { pattern, total });
     }
 
     /// build a cmdResult asking for the addition of a new state
@@ -71,7 +85,7 @@ impl BrowserState {
     ) -> CmdResult {
         let tree = self.displayed_tree();
         let mut new_state = BrowserState::new(root, options, screen, con, &Dam::unlimited());
-        if let Ok(Some(bs)) = &mut new_state {
+        if let Ok(bs) = &mut new_state {
             if tree.selection != 0 {
                 bs.displayed_tree_mut().try_select_path(&tree.selected_line().path);
             }
@@ -188,14 +202,16 @@ impl PanelState for BrowserState {
     }
 
     fn get_pending_task(&self) -> Option<&'static str> {
-        if self.pending_pattern.is_some() {
-            Some("searching")
-        } else if self.displayed_tree().has_dir_missing_sum() {
+        if self.displayed_tree().has_dir_missing_sum() {
             Some("computing stats")
         } else if self.displayed_tree().is_missing_git_status_computation() {
             Some("computing git status")
         } else {
-            None
+            self
+                .pending_task.as_ref().map(|task| match task {
+                    BrowserTask::Search{ .. } => "searching",
+                    BrowserTask::StageAll(_) => "staging",
+                })
         }
     }
 
@@ -233,7 +249,7 @@ impl PanelState for BrowserState {
     }
 
     fn clear_pending(&mut self) {
-        self.pending_pattern = InputPattern::none();
+        self.pending_task = None;
     }
 
     fn on_click(
@@ -275,10 +291,10 @@ impl PanelState for BrowserState {
         }
         if let Some(filtered_tree) = &self.filtered_tree {
             if pat != filtered_tree.options.pattern {
-                self.pending_pattern = pat;
+                self.search(pat, false);
             }
         } else {
-            self.pending_pattern = pat;
+            self.search(pat, false);
         }
         Ok(CmdResult::Keep)
     }
@@ -472,6 +488,20 @@ impl PanelState for BrowserState {
                     CmdResult::error("No selected line")
                 }
             }
+            Internal::stage_all_files => {
+                let pattern = self.displayed_tree().options.pattern.clone();
+                self.pending_task = Some(BrowserTask::StageAll(pattern));
+                if cc.app.stage_panel.is_none() {
+                    let stage_options = self.tree.options.without_pattern();
+                    CmdResult::NewPanel {
+                        state: Box::new(StageState::new(app_state, stage_options, con)),
+                        purpose: PanelPurpose::None,
+                        direction: HDir::Right,
+                    }
+                } else {
+                    CmdResult::Keep
+                }
+            }
             Internal::select_first => {
                 self.displayed_tree_mut().try_select_first();
                 CmdResult::Keep
@@ -518,16 +548,17 @@ impl PanelState for BrowserState {
                 }
             }
             Internal::total_search => {
-                if let Some(tree) = &self.filtered_tree {
-                    if tree.total_search {
+                match self.filtered_tree.as_ref().map(|t| t.total_search) {
+                    None => {
+                        CmdResult::error("this verb can be used only after a search")
+                    }
+                    Some(true) => {
                         CmdResult::error("search was already total: all possible matches have been ranked")
-                    } else {
-                        self.pending_pattern = tree.options.pattern.clone();
-                        self.total_search_required = true;
+                    }
+                    Some(false) => {
+                        self.search(self.displayed_tree().options.pattern.clone(), true);
                         CmdResult::Keep
                     }
-                } else {
-                    CmdResult::error("this verb can be used only after a search")
                 }
             }
             Internal::quit => CmdResult::Quit,
@@ -562,35 +593,52 @@ impl PanelState for BrowserState {
     /// Stop as soon as the dam asks for interruption
     fn do_pending_task(
         &mut self,
-        _stage: &Stage,
+        app_state: &mut AppState,
         screen: Screen,
         con: &AppContext,
         dam: &mut Dam,
-    ) {
-        if self.pending_pattern.is_some() {
-            let pattern_str = self.pending_pattern.raw.clone();
-            let mut options = self.tree.options.clone();
-            options.pattern = self.pending_pattern.take();
-            let root = self.tree.root().clone();
-            let page_height = BrowserState::page_height(screen) as usize;
-            let builder = match TreeBuilder::from(root, options, page_height, con) {
-                Ok(builder) => builder,
-                Err(e) => {
-                    warn!("Error while preparing tree builder: {:?}", e);
-                    return;
+    ) -> Result<(), ProgramError> {
+        if let Some(pending_task) = self.pending_task.take() {
+            match pending_task {
+                BrowserTask::Search { pattern, total } => {
+                    let pattern_str = pattern.raw.clone();
+                    let mut options = self.tree.options.clone();
+                    options.pattern = pattern;
+                    let root = self.tree.root().clone();
+                    let page_height = BrowserState::page_height(screen) as usize;
+                    let builder = TreeBuilder::from(root, options, page_height, con)?;
+                    let filtered_tree = time!(
+                        Info,
+                        "tree filtering",
+                        &pattern_str,
+                        builder.build_tree(total, dam),
+                    );
+                    if let Ok(mut ft) = filtered_tree {
+                        ft.try_select_best_match();
+                        ft.make_selection_visible(BrowserState::page_height(screen));
+                        self.filtered_tree = Some(ft);
+                    }
                 }
-            };
-            let mut filtered_tree = time!(
-                Info,
-                "tree filtering",
-                &pattern_str,
-                builder.build(self.total_search_required, dam),
-            ); // can be None if a cancellation was required
-            self.total_search_required = false;
-            if let Some(ref mut ft) = filtered_tree {
-                ft.try_select_best_match();
-                ft.make_selection_visible(BrowserState::page_height(screen));
-                self.filtered_tree = filtered_tree;
+                BrowserTask::StageAll(pattern) => {
+                    let tree = self.displayed_tree();
+                    let root = tree.root().clone();
+                    let mut options = tree.options.clone();
+                    let total_search = true;
+                    options.pattern = pattern; // should be the same
+                    let builder = TreeBuilder::from(root, options, con.max_staged_count, con);
+                    let mut paths = builder
+                        .and_then(|mut builder| {
+                            builder.matches_max = Some(con.max_staged_count);
+                            time!(builder.build_paths(
+                                total_search,
+                                dam,
+                                |line| line.file_type.is_file(),
+                            ))
+                        })?;
+                    for path in paths.drain(..) {
+                        app_state.stage.add(path);
+                    }
+                }
             }
         } else if self.displayed_tree().is_missing_git_status_computation() {
             let root_path = self.displayed_tree().root();
@@ -599,6 +647,7 @@ impl PanelState for BrowserState {
         } else {
             self.displayed_tree_mut().fetch_some_missing_dir_sum(dam, con);
         }
+        Ok(())
     }
 
     fn display(
@@ -650,8 +699,8 @@ impl PanelState for BrowserState {
     }
 
     fn get_starting_input(&self) -> String {
-        if self.pending_pattern.is_some() {
-            self.pending_pattern.raw.clone()
+        if let Some(BrowserTask::Search { pattern, .. }) = self.pending_task.as_ref() {
+            pattern.raw.clone()
         } else {
             self.displayed_tree().options.pattern.raw.clone()
         }

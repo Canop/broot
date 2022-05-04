@@ -93,6 +93,8 @@ pub struct Conf {
 
     pub file_sum_threads_count: Option<usize>,
 
+    #[serde(alias="max_staged_count")]
+    pub max_staged_count: Option<usize>,
 }
 
 impl Conf {
@@ -161,6 +163,7 @@ impl Conf {
         overwrite!(self, modal, conf);
         overwrite!(self, quit_on_last_cancel, conf);
         overwrite!(self, file_sum_threads_count, conf);
+        overwrite!(self, max_staged_count, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense

@@ -13,7 +13,6 @@ use {
         errors::ProgramError,
         keys::KEY_FORMAT,
         skin::PanelSkin,
-        stage::*,
         task_sync::Dam,
         verb::*,
     },
@@ -109,12 +108,12 @@ impl Panel {
     /// in the dam
     pub fn do_pending_task(
         &mut self,
-        stage: &Stage,
+        app_state: &mut AppState,
         screen: Screen,
         con: &AppContext,
         dam: &mut Dam,
-    ) {
-        self.mut_state().do_pending_task(stage, screen, con, dam)
+    ) -> Result<(), ProgramError> {
+        self.mut_state().do_pending_task(app_state, screen, con, dam)
     }
 
     pub fn has_pending_task(&self) -> bool {

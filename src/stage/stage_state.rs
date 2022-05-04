@@ -194,15 +194,16 @@ impl PanelState for StageState {
     }
     fn do_pending_task(
         &mut self,
-        stage: &Stage,
+        app_state: &mut AppState,
         _screen: Screen,
         con: &AppContext,
         dam: &mut Dam,
         // need the stage here
-    ) {
+    ) -> Result<(), ProgramError> {
         if self.need_sum_computation() {
-            self.stage_sum.compute(stage, dam, con);
+            self.stage_sum.compute(&app_state.stage, dam, con);
         }
+        Ok(())
     }
     fn get_pending_task(&self) -> Option<&'static str> {
         if self.need_sum_computation() {

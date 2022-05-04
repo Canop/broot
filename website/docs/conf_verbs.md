@@ -390,6 +390,7 @@ invocation | default key | default shortcut | behavior / details
 :sort_by_type_dirs_first | - | - | sort by type, dirs first
 :sort_by_type_dirs_last | - | - | sort by type, dirs last
 :stage | <kbd>+</kbd> | - | add selection to staging area
+:stage_all_files | <kbd>ctrl</kbd><kbd>a</kbd> | - | add all files verifying the pattern to the staging area
 :toggle_counts | - | - | toggle display of total counts of files per directory
 :toggle_dates | - | - | toggle display of last modified dates (looking for the most recently changed file, even deep)
 :toggle_device_id | - | - | toggle display of device id (unix only)
