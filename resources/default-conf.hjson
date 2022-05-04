@@ -11,7 +11,7 @@
 #     https://dystroy.org/broot
 #
 # This file's format is Hjson ( https://hjson.github.io/ ). Some
-# properties are commented out. To enable them, remove the `#`.
+# properties are commented out. To enable them, remove the `#`.
 #
 ###############################################################
 {
