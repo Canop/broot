@@ -22,7 +22,9 @@ echo "$version" > build/version
 
 # prepare the release archive
 rm broot_*.zip
-zip -r "broot_$version.zip" build/*
+cd build
+zip -r "../broot_$version.zip" *
+cd -
 
 # copy it to releases folder
 mkdir releases
