@@ -127,4 +127,3 @@ impl ExactPattern {
     }
 }
 
-

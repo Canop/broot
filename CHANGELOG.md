@@ -1,4 +1,5 @@
-### next
+### v1.12.0 - 2022-05-05
+<a name="v1.12.0"></a>
 - `:stage_all_files` internal, adding to the staging area all the files verifying the current pattern. Mapped by default to ctrl-a
 
 ### v1.11.1 - 2022-04-04
