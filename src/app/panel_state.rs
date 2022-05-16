@@ -473,7 +473,7 @@ pub trait PanelState {
         if verb.needs_another_panel && app_state.other_panel_path.is_none() {
             return Ok(CmdResult::error("This verb needs another panel"));
         }
-        match &verb.execution {
+        let res = match &verb.execution {
             VerbExecution::Internal(internal_exec) => {
                 self.on_internal(w, internal_exec, invocation, trigger_type, app_state, cc)
             }
@@ -483,7 +483,21 @@ pub trait PanelState {
             VerbExecution::Sequence(seq_ex) => {
                 self.execute_sequence(w, verb, seq_ex, invocation, app_state, cc)
             }
+        };
+        if res.is_ok() {
+            // if the stage has been emptied by the operation (eg a "rm"), we
+            // close it
+            app_state.stage.refresh();
+            if app_state.stage.is_empty() {
+                if let Some(id) = cc.app.stage_panel {
+                    return Ok(CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Id(id),
+                    });
+                }
+            }
         }
+        res
     }
 
     fn execute_external(
