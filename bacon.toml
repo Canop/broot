@@ -46,3 +46,10 @@ need_stdout = false
 command = ["cargo", "test", "--color", "always"]
 need_stdout = true
 
+[keybindings]
+a = "job:check-all"
+i = "job:initial"
+c = "job:clippy"
+d = "job:doc-open"
+t = "job:test"
+r = "job:run"

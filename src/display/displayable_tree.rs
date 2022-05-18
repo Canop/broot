@@ -4,8 +4,9 @@ use {
         Col,
         CropWriter,
         GitStatusDisplay,
-        SPACE_FILLING, BRANCH_FILLING,
         MatchedString,
+        num_format::format_count,
+        SPACE_FILLING, BRANCH_FILLING,
     },
     crate::{
         app::AppState,
@@ -106,7 +107,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
             cond_bg!(count_style, self, selected, self.skin.count);
-            let s = s.to_count();
+            let s = format_count(s.to_count());
             cw.queue_g_string(count_style, format!("{s:>count_len$}"))?;
             1
         } else {
@@ -483,7 +484,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 .skip(1) // we don't show the counts of the root
                 .map(|l| l.sum.map_or(0, |s| s.to_count()))
                 .max()
-                .map(|c| format!("{}", c).len())
+                .map(|c| format_count(c).len())
                 .unwrap_or(0)
         } else {
             0
