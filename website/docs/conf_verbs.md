@@ -113,6 +113,9 @@ working_dir = "{root}"
 leave_broot = false
 ```
 
+Verbs are tried in order (the default ones after the user defined ones).
+You may thus define first verbs with extension filter and then a catching-all one.
+
 # Shortcuts and Verb search
 
 **broot** looks for the first token following a space or `:` and tries to find the verb you want.

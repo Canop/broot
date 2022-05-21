@@ -33,20 +33,12 @@ pub enum PrefixSearchResult<'v, T> {
 
 impl VerbStore {
     pub fn new(conf: &mut Conf) -> Result<Self, ConfError> {
-        // we start with the builtin verbs so that a verb from configuration
-        // can refer to a built-in
-        let mut verbs = builtin_verbs();
-
+        let mut verbs = Vec::new();
         for vc in &conf.verbs {
             let verb = vc.make_verb(&verbs)?;
             verbs.push(verb);
         }
-
-        // We reverse the array as we'll search in order.
-        // This way, a user can overload a standard verb, or a standard
-        // shortcut.
-        verbs.reverse();
-
+        verbs.append(&mut builtin_verbs()); // at the end so that we can override them
         Ok(Self { verbs })
     }
 
@@ -91,6 +83,11 @@ impl VerbStore {
                     continue;
                 }
             }
+            if !verb.file_extensions.is_empty() {
+                if !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
+                    continue;
+                }
+            }
             for name in &verb.names {
                 if name.starts_with(prefix) {
                     if name == prefix {
@@ -99,11 +96,6 @@ impl VerbStore {
                     found_index = index;
                     nb_found += 1;
                     completions.push(name);
-                    continue;
-                }
-            }
-            if !verb.file_extensions.is_empty() {
-                if !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
                     continue;
                 }
             }
