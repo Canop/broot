@@ -28,6 +28,7 @@ mod git_status_display;
 pub mod flags_display;
 pub mod status_line;
 mod matched_string;
+mod num_format;
 mod screen;
 mod cell_size;
 
