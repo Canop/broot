@@ -1,6 +1,7 @@
 ### next
 - close the staging area when it's emptied with a verb (e.g. on `:rm`)
 - format files counts with thousands separator - Fix #549
+- try verbs in order allowing some with filters before one without - Fix #552
 
 ### v1.12.0 - 2022-05-05
 <a name="v1.12.0"></a>
