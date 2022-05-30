@@ -1,3 +1,7 @@
+### v1.13.1 - 2022-05-30
+<a name="v1.13.1"></a>
+- fix alt-enter failing to cd to directory
+
 ### v1.13.0 - 2022-05-29
 <a name="v1.13.0"></a>
 - close the staging area when it's emptied with a verb (e.g. on `:rm`)

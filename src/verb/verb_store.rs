@@ -10,7 +10,6 @@ use {
         errors::ConfError,
         keys::KEY_FORMAT,
     },
-    crossterm::event::KeyEvent,
 };
 
 /// Provide access to the verbs:
@@ -105,18 +104,6 @@ impl VerbStore {
             1 => PrefixSearchResult::Match(completions[0], &self.verbs[found_index]),
             _ => PrefixSearchResult::Matches(completions),
         }
-    }
-
-    /// return the index of the verb which is triggered by the given keyboard key, if any
-    pub fn index_of_key(&self, key: KeyEvent) -> Option<usize> {
-        for i in 0..self.verbs.len() {
-            for verb_key in &self.verbs[i].keys {
-                if *verb_key == key {
-                    return Some(i);
-                }
-            }
-        }
-        None
     }
 
     pub fn key_desc_of_internal_stype(

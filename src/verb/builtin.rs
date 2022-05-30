@@ -75,6 +75,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
         internal(open_leave) // calls the system open
+            .with_stype(SelectionType::File)
             .with_key(key!(alt-enter))
             .with_shortcut("ol"),
         external("cd", "cd {directory}", FromParentShell)
