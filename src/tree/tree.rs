@@ -7,7 +7,7 @@ use {
         git::TreeGitStatus,
         task_sync::ComputationResult,
         task_sync::Dam,
-        tree_build::{BId, TreeBuilder},
+        tree_build::{BId, BuildReport, TreeBuilder},
     },
     fnv::FnvHashMap,
     std::{
@@ -27,9 +27,9 @@ pub struct Tree {
     pub selection: usize, // there's always a selection (starts with root, which is 0)
     pub options: TreeOptions,
     pub scroll: usize, // the number of lines at the top hidden because of scrolling
-    pub nb_gitignored: u32, // number of times a gitignore pattern excluded a file
     pub total_search: bool, // whether the search was made on all children
     pub git_status: ComputationResult<TreeGitStatus>,
+    pub build_report: BuildReport,
 }
 
 impl Tree {
@@ -69,7 +69,6 @@ impl Tree {
     /// - sort the lines
     /// - compute left branchs
     pub fn after_lines_changed(&mut self) {
-
 
         // we need to order the lines to build the tree.
         // It's a little complicated because
@@ -188,6 +187,10 @@ impl Tree {
             time!("fetch_file_sum", self.fetch_regular_file_sums()); // not the dirs, only simple files
             self.sort_siblings(); // does nothing when sort mode is None
         }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.lines.len() == 1
     }
 
     pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {

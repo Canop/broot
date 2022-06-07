@@ -578,14 +578,29 @@ impl PanelState for BrowserState {
         has_previous_state: bool,
         con: &AppContext,
     ) -> Status {
+        let tree = self.displayed_tree();
+        if tree.is_empty() {
+            if tree.build_report.hidden_count > 0 {
+                let mut parts = Vec::new();
+                if let Some(md) = con.standard_status.all_files_hidden.clone() {
+                    parts.push(md);
+                }
+                if let Some(md) = con.standard_status.all_files_git_ignored.clone() {
+                    parts.push(md);
+                }
+                if !parts.is_empty() {
+                    return Status::from_error(parts.join(". "));
+                }
+            }
+        }
         let mut ssb = con.standard_status.builder(
             PanelStateType::Tree,
-            self.displayed_tree().selected_line().as_selection(),
+            tree.selected_line().as_selection(),
         );
         ssb.has_previous_state = has_previous_state;
         ssb.is_filtered = self.filtered_tree.is_some();
         ssb.has_removed_pattern = false;
-        ssb.on_tree_root = self.displayed_tree().selection == 0;
+        ssb.on_tree_root = tree.selection == 0;
         ssb.status()
     }
 

@@ -8,7 +8,7 @@ use {
     },
 };
 
-/// all the precomputed status which don't involve a verb
+/// All the precomputed status which don't involve a verb
 pub struct StandardStatus {
     tree_top_focus: String, // go up (if not at root)
     tree_dir_focus: String,
@@ -23,6 +23,8 @@ pub struct StandardStatus {
     not_first_state: String, // "esc to go back"
     help: String,
     no_verb: String,
+    pub all_files_hidden: Option<String>,
+    pub all_files_git_ignored: Option<String>,
 }
 
 impl StandardStatus {
@@ -51,6 +53,12 @@ impl StandardStatus {
         let not_first_state = "*esc* to go back".to_string();
         let help = "*?* for help".to_string();
         let no_verb = "a space then a verb".to_string();
+        let all_files_hidden = verb_store
+            .key_desc_of_internal(Internal::toggle_hidden)
+            .map(|k| format!("Some files are hidden, use *{}* to display them", k));
+        let all_files_git_ignored = verb_store
+            .key_desc_of_internal(Internal::toggle_git_ignore)
+            .map(|k| format!("Some files are git-ignored, use *{}* to display them", k));
         Self {
             tree_top_focus,
             tree_dir_focus,
@@ -66,6 +74,8 @@ impl StandardStatus {
             not_first_state,
             help,
             no_verb,
+            all_files_hidden,
+            all_files_git_ignored,
         }
     }
     pub fn builder<'s>(

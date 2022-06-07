@@ -1,6 +1,7 @@
 use {
     super::{
         bid::{BId, SortableBId},
+        BuildReport,
         bline::BLine,
     },
     crate::{
@@ -15,7 +16,6 @@ use {
     },
     git2::Repository,
     id_arena::Arena,
-    rayon::prelude::*,
     std::{
         collections::{BinaryHeap, VecDeque},
         fs,
@@ -56,7 +56,6 @@ static NOT_LONG: Duration = Duration::from_millis(900);
 pub struct TreeBuilder<'c> {
     pub options: TreeOptions,
     targeted_size: usize, // the number of lines we should fill (height of the screen)
-    nb_gitignored: u32,   // number of times a gitignore pattern excluded a file
     blines: Arena<BLine>,
     root_id: BId,
     total_search: bool,
@@ -65,6 +64,7 @@ pub struct TreeBuilder<'c> {
     con: &'c AppContext,
     pub matches_max: Option<usize>, // optional hard limit
     trim_root: bool,
+    report: BuildReport,
 }
 impl<'c> TreeBuilder<'c> {
 
@@ -101,7 +101,6 @@ impl<'c> TreeBuilder<'c> {
         Ok(TreeBuilder {
             options,
             targeted_size,
-            nb_gitignored: 0,
             blines,
             root_id,
             total_search: true, // we'll set it to false if we don't look at all children
@@ -110,21 +109,24 @@ impl<'c> TreeBuilder<'c> {
             con,
             trim_root,
             matches_max: None,
+            report: BuildReport::default(),
         })
     }
 
-    /// return a bline if the dir_entry directly matches the options and there's no error
+    /// Return a bline if the dir_entry directly matches the options and there's no error
     fn make_line(
-        &self,
+        &mut self,
         parent_id: BId,
         e: &fs::DirEntry,
         depth: u16,
     ) -> Option<BLine> {
         let name = e.file_name();
         if name.is_empty() {
+            self.report.error_count += 1;
             return None;
         }
         if !self.options.show_hidden && name.as_bytes()[0] == b'.' {
+            self.report.hidden_count += 1;
             return None;
         }
         let name = name.to_string_lossy();
@@ -134,6 +136,7 @@ impl<'c> TreeBuilder<'c> {
         let file_type = match e.file_type() {
             Ok(ft) => ft,
             Err(_) => {
+                self.report.error_count += 1;
                 return None;
             }
         };
@@ -205,18 +208,19 @@ impl<'c> TreeBuilder<'c> {
         })
     }
 
-    /// returns true when there are direct matches among children
+    /// Return true when there are direct matches among children
     fn load_children(&mut self, bid: BId) -> bool {
         let mut has_child_match = false;
         match self.blines[bid].read_dir() {
             Ok(entries) => {
                 let mut children: Vec<BId> = Vec::new();
                 let child_depth = self.blines[bid].depth + 1;
-                let entries: Vec<fs::DirEntry> = entries.filter_map(Result::ok).collect();
-                let lines: Vec<BLine> = entries
-                    .par_iter()
-                    .filter_map(|e| self.make_line(bid, e, child_depth))
-                    .collect();
+                let mut lines = Vec::new();
+                for e in entries.flatten() {
+                    if let Some(line) = self.make_line(bid, &e, child_depth) {
+                        lines.push(line);
+                    }
+                }
                 for mut bl in lines {
                     if self.options.respect_git_ignore {
                         let parent_chain = &self.blines[bid].git_ignore_chain;
@@ -434,9 +438,9 @@ impl<'c> TreeBuilder<'c> {
             selection: 0,
             options: self.options.clone(),
             scroll: 0,
-            nb_gitignored: self.nb_gitignored,
             total_search: self.total_search,
             git_status: ComputationResult::None,
+            build_report: self.report,
         };
         tree.after_lines_changed();
         if let Some(computer) = self.line_status_computer {

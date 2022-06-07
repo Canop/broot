@@ -1,3 +1,6 @@
+### next
+- advice to hit alt-i and|or alt-h when no file is visible - Fix #556
+
 ### v1.13.1 - 2022-05-30
 <a name="v1.13.1"></a>
 - fix alt-enter failing to cd to directory

@@ -11,7 +11,7 @@ license = "MIT"
 categories = ["command-line-utilities"]
 readme = "README.md"
 build = "build.rs"
-rust-version = "1.58"
+rust-version = "1.60"
 exclude = ["website", "broot*.zip"]
 
 [features]
@@ -36,7 +36,7 @@ deser-hjson = "1.0.2"
 directories = "3.0"
 file-size = "1.0.3"
 fnv = "1.0.7"
-git2 = { version="0.13", default-features=false }
+git2 = { version="0.14", default-features=false }
 glob = "0.3"
 id-arena = "2.2.1"
 image = "0.23.14"
@@ -65,7 +65,7 @@ umask = "2.0.0"
 unicode-width = "0.1.8"
 
 [dev-dependencies]
-glassbench = "0.3.0"
+glassbench = "0.3.2"
 
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.11.0"
@@ -108,7 +108,6 @@ harness = false
 # glassbench = { path = "../glassbench" }
 # lazy-regex = { path = "../lazy-regex" }
 # lfs-core = { path = "../lfs-core" }
-# minimad = { path = "../minimad" }
 # secular = { path = "../secular", features=["normalization"] }
 # strict = { path = "../strict" }
 # syntect = { path = "../syntect" }
