@@ -21,7 +21,7 @@ pub struct InstallLaunchArgs {
     pub print_shell_function: Option<String>,         // shell function to print on stdout
 }
 impl InstallLaunchArgs {
-    pub fn from(cli_args: &ArgMatches<'_>) -> Result<Self, ProgramError> {
+    pub fn from(cli_args: &ArgMatches) -> Result<Self, ProgramError> {
         let mut install = None;
         if let Ok(s) = env::var("BR_INSTALL") {
             if s == "yes" {

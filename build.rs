@@ -2,28 +2,37 @@
 // It builds shell completion scripts.
 
 use {
-    clap::Shell,
+    clap_complete::{Generator, Shell},
     std::{
         env,
-        str::FromStr,
+        ffi::OsStr,
     },
 };
 
 include!("src/cli/clap_args.rs");
 
+fn write_completions_file<G: Generator + Copy, P: AsRef<OsStr>>(generator: G, out_dir: P) {
+    let mut app = clap_app();
+    for name in &["broot", "br"] {
+        clap_complete::generate_to(
+            generator,
+            &mut app,
+            name.to_string(),
+            &out_dir,
+        ).expect("clap complete generation failed");
+    }
+}
+
 /// write the shell completion scripts which will be added to
 /// the release archive
 fn build_completion_scripts() {
-    // out_dir should be defined, see
-    //  https://doc.rust-lang.org/cargo/reference/environment-variables.html
     let out_dir = env::var_os("OUT_DIR").expect("out dir not set");
-    let mut app = clap_app();
-    for variant in &Shell::variants() {
-        let variant = Shell::from_str(variant).unwrap();
-        app.gen_completions("broot", variant, &out_dir);
-        app.gen_completions("br", variant, &out_dir);
-    }
-    println!("completion scripts generated in {:?}", out_dir);
+    write_completions_file(Shell::Bash, &out_dir);
+    write_completions_file(Shell::Elvish, &out_dir);
+    write_completions_file(Shell::Fish, &out_dir);
+    write_completions_file(Shell::PowerShell, &out_dir);
+    write_completions_file(Shell::Zsh, &out_dir);
+    eprintln!("completion scripts generated in {:?}", out_dir);
 }
 
 fn main() {

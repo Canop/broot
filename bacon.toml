@@ -39,6 +39,7 @@ command = [
 	"-A", "clippy::manual_unwrap_or",
 	"-A", "clippy::len_without_is_empty",
 	"-A", "clippy::manual_range_contains",
+	"-A", "clippy::neg_multiply",
 ]
 need_stdout = false
 

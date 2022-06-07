@@ -131,6 +131,7 @@ impl<'a> SelInfo<'a> {
             SelInfo::More(stage) => {
                 let common_extension = stage.paths()[0]
                     .extension().and_then(|e| e.to_str());
+                #[allow(clippy::question_mark)]
                 if common_extension.is_none() {
                     return None;
                 }
