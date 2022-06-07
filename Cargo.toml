@@ -25,28 +25,28 @@ ansi_colours = "1.0"
 base64 = "0.13"
 bet = "1.0"
 char_reader = "0.1"
+chrono = "0.4"
 clap = "3.1"
 cli-log = "2.0"
-chrono = "0.4"
 crokey = "0.4.1"
 crossbeam = "0.8"
 crossterm = "0.23.2"
 custom_error = "1.6"
 deser-hjson = "1.0.2"
-directories = "3.0"
+directories = "4.0"
 file-size = "1.0.3"
 fnv = "1.0.7"
 git2 = { version="0.14", default-features=false }
 glob = "0.3"
 id-arena = "2.2.1"
-image = "0.23.14"
+image = "0.24"
 lazy-regex = "2.2.2"
 libc = "0.2"
+memmap = "0.7"
 once_cell = "1.7"
 opener = "0.5"
-memmap = "0.7"
 pathdiff = "0.2"
-phf = { version = "0.9", features = ["macros"] }
+phf = { version = "0.10", features = ["macros"] }
 rayon = "1.5"
 regex = "1.5"
 secular = { version = "1.0", features = ["normalization"] }
@@ -54,15 +54,14 @@ serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.6"
 splitty = "0.1"
 strict = "0.1.4"
-# a temporary fork, see issue #485
-syntect = { package = "syntect-no-panic", version = "4.6.1" }
+syntect = { package = "syntect-no-panic", version = "4.6.1" } # see issue #485
 tempfile = "3.2"
 termimad = "0.20.2"
 terminal-clipboard = { version = "0.3.1", optional = true }
 toml = "0.5"
-xterm-query = { version = "0.1", optional = true }
 umask = "2.0.0"
 unicode-width = "0.1.8"
+xterm-query = { version = "0.1", optional = true }
 
 [dev-dependencies]
 glassbench = "0.3.3"
