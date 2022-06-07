@@ -28,9 +28,9 @@ char_reader = "0.1"
 clap = { version="2.33", default-features=false, features=["suggestions", "color"] }
 cli-log = "2.0"
 chrono = "0.4"
-crokey = "0.4.0"
+crokey = "0.4.1"
 crossbeam = "0.8"
-crossterm = "0.22.1"
+crossterm = "0.23.2"
 custom_error = "1.6"
 deser-hjson = "1.0.2"
 directories = "3.0"
@@ -57,7 +57,7 @@ strict = "0.1.4"
 # a temporary fork, see issue #485
 syntect = { package = "syntect-no-panic", version = "4.6.1" }
 tempfile = "3.2"
-termimad = "0.20.0"
+termimad = "0.20.2"
 terminal-clipboard = { version = "0.3.1", optional = true }
 toml = "0.5"
 xterm-query = { version = "0.1", optional = true }
