@@ -30,6 +30,7 @@ ${search-mode-rows
 |-
 You can combine searches with logical operators.
 For example, to search all toml or rs files containing `tomat`, you may type `(${nr-prefix}toml/|${nr-prefix}rs$/)&${ce-prefix}tomat`.
+For efficiency, place content search last.
 
 ## Verbs
 
