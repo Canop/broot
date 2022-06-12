@@ -1,6 +1,7 @@
 
 use {
     crate::{
+        app::AppContext,
         errors::{ConfError, PatternError},
     },
     fnv::FnvHashMap,
@@ -76,14 +77,22 @@ impl SearchMode {
             (Content, Tokens) => None, // unsupported for now - could be but need bench
         }
     }
-    pub fn object(&self) -> SearchObject {
+    /// Return the prefix to type, eg "/" in standard for a name-regex,
+    /// "" for a name-fuzzy, and "ep" for a path-exact
+    pub fn prefix(self, con: &AppContext) -> String {
+        con
+            .search_modes
+            .key(self)
+            .map_or_else(|| "".to_string(), |k| format!("{}/", k))
+    }
+    pub fn object(self) -> SearchObject {
         match self {
             Self::NameExact | Self::NameFuzzy | Self::NameRegex | Self::NameTokens => SearchObject::Name,
             Self::PathExact | Self::PathFuzzy | Self::PathRegex | Self::PathTokens => SearchObject::Path,
             Self::ContentExact | Self::ContentRegex => SearchObject::Content,
         }
     }
-    pub fn kind(&self) -> SearchKind {
+    pub fn kind(self) -> SearchKind {
         match self {
             Self::NameExact => SearchKind::Exact,
             Self::NameFuzzy => SearchKind::Fuzzy,

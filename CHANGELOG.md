@@ -1,6 +1,7 @@
 ### next
 - advice to hit alt-i and|or alt-h when no file is visible - Fix #556
 - update many dependencies
+- examples on search modes in help screen - Fix #559
 
 ### v1.13.1 - 2022-05-30
 <a name="v1.13.1"></a>

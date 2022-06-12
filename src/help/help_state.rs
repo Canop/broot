@@ -1,5 +1,8 @@
 use {
-    super::help_content,
+    super::{
+        help_content,
+        SearchModeHelp,
+    },
     crate::{
         app::*,
         command::{Command, TriggerType},
@@ -147,13 +150,29 @@ impl PanelState for HelpState {
                 sub.set("execution", "");
             }
         }
-        let search_rows = super::help_search_modes::search_mode_rows(con);
+        let mode_help;
+        if let Ok(default_mode) = con.search_modes.search_mode(None) {
+            mode_help = super::search_mode_help(default_mode, con);
+            expander
+                .sub("default-search")
+                .set_md("default-search-example", &mode_help.example);
+        }
+        let search_rows: Vec<SearchModeHelp> = SEARCH_MODES
+            .iter()
+            .map(|mode| super::search_mode_help(*mode, con))
+            .collect();
         for row in &search_rows {
             expander
                 .sub("search-mode-rows")
                 .set("search-prefix", &row.prefix)
-                .set("search-type", &row.description);
+                .set("search-type", &row.description)
+                .set_md("search-example", &row.example);
         }
+        let nr_prefix = SearchMode::NameRegex.prefix(con);
+        let ce_prefix = SearchMode::ContentExact.prefix(con);
+        expander
+            .set("nr-prefix", &nr_prefix)
+            .set("ce-prefix", &ce_prefix);
         let features = super::help_features::list();
         expander.set(
             "features-text",

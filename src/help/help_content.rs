@@ -14,13 +14,22 @@ The *esc* key gets you back to the previous state.
 The *↑* and *↓* arrow keys can be used to change selection.
 The mouse can be used to select (on click) or open (on double-click).
 
-## Configuration
+## Search Modes
 
-Verbs, skin, and more, are configured in
-${config-files
-* **${path}**
+Type some letters to search the tree and select the most relevant file.
+${default-search
+For example, ${default-search-example}.
 }
-(hit *enter* to open)
+Various types of search can be used:
+|:-:|:-:|:-
+|**prefix**|**search**|**example**|
+|-:|:-|:-
+${search-mode-rows
+|`${search-prefix}`|${search-type}|${search-example}
+}
+|-
+You can combine searches with logical operators.
+For example, to search all toml or rs files containing `tomat`, you may type `(${nr-prefix}toml/|${nr-prefix}rs$/)&${ce-prefix}tomat`.
 
 ## Verbs
 
@@ -34,18 +43,13 @@ ${verb-rows
 }
 |-:
 
-## Search Modes
+## Configuration
 
-Typing some letters searches the tree and selects the most relevant file.
-To use a regular expression, prefix with a slash eg `/j(ava|s)$/i`.
-To search by file content, prefix with `c/` eg `c/TODO`.
-|:-:|:-:
-|**prefix**|**search**
-|:-:|:-
-${search-mode-rows
-|${search-prefix}|${search-type}
+Verbs, skin, and more, are configured in
+${config-files
+* **${path}**
 }
-|-:
+(hit *enter* to open)
 
 ## Launch Arguments
 
