@@ -34,7 +34,9 @@ You'll need to have the [Rust development environment](https://www.rustup.rs) in
 
 Once it's installed, use cargo to install broot:
 
-    cargo install broot
+```bash
+cargo install --locked broot
+```
 
 # From source
 
@@ -43,7 +45,7 @@ You'll need to have the [Rust development environment](https://www.rustup.rs) in
 Fetch the [Canop/broot](https://github.com/Canop/broot) repository, move to the broot directory, then run
 
 ```bash
-cargo install --path .
+cargo install --locked --path .
 ```
 
 If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/master/features.md).
