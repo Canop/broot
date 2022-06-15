@@ -110,7 +110,7 @@ impl ExternalExecution {
                 "only verbs returning to broot on end can be executed on a multi-selection"
             ));
         }
-        if let Some(ref export_path) = con.launch_args.cmd_export_path {
+        if let Some(ref export_path) = con.launch_args.outcmd {
             // Broot was probably launched as br.
             // the whole command is exported in the passed file
             let f = OpenOptions::new().append(true).open(export_path)?;

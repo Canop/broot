@@ -222,7 +222,7 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
 #[cfg(windows)]
 fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
     Ok(if root.is_relative() {
-        env::current_dir()?.join(root)
+        std::env::current_dir()?.join(root)
     } else {
         root.to_path_buf()
     })

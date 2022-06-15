@@ -106,7 +106,7 @@ pub struct Args {
 
     /// Where to write the produced cmd (if any)
     #[clap(long, value_parser)]
-    pub cmd_export_path: Option<PathBuf>,
+    pub outcmd: Option<PathBuf>,
 
     /// Semicolon separated commands to execute
     #[clap(short, long, value_parser)]

@@ -33,7 +33,7 @@ impl InstallLaunchArgs {
         // the cli arguments may override the env var value
         if args.install {
             install = Some(true);
-        } else if args.cmd_export_path.is_some() {
+        } else if args.outcmd.is_some() {
             install = Some(false);
         }
         let print_shell_function = args.print_shell_function.clone();

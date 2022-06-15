@@ -77,7 +77,7 @@ impl Selection<'_> {
     ) -> Result<CmdResult, ProgramError> {
         Ok(if self.is_exe {
             let path = self.path.to_string_lossy().to_string();
-            if let Some(export_path) = &con.launch_args.cmd_export_path {
+            if let Some(export_path) = &con.launch_args.outcmd {
                 // broot was launched as br, we can launch the executable from the shell
                 let f = OpenOptions::new().append(true).open(export_path)?;
                 writeln!(&f, "{}", path)?;
