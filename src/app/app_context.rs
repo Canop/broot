@@ -1,19 +1,21 @@
 use {
     super::*,
     crate::{
-        cli::AppLaunchArgs,
+        cli::{Args, TriBool},
         conf::Conf,
-        errors::ConfError,
+        errors::*,
         file_sum,
         icon::*,
         pattern::SearchModeMap,
         path::SpecialPath,
         skin::ExtColorMap,
+        tree::TreeOptions,
         verb::VerbStore,
     },
     std::{
         convert::{TryFrom, TryInto},
-        path::PathBuf,
+        io,
+        path::{Path, PathBuf},
     },
 };
 
@@ -22,12 +24,18 @@ use {
 /// life of the App
 pub struct AppContext {
 
+    /// The initial tree root
+    pub initial_root: PathBuf,
+
+    /// Initial tree options
+    pub initial_tree_options: TreeOptions,
+
     /// where's the config file we're using
     /// This vec can't be empty
     pub config_paths: Vec<PathBuf>,
 
     /// all the arguments specified at launch
-    pub launch_args: AppLaunchArgs,
+    pub launch_args: Args,
 
     /// the verbs in use (builtins and configured ones)
     pub verb_store: VerbStore,
@@ -82,10 +90,10 @@ pub struct AppContext {
 
 impl AppContext {
     pub fn from(
-        launch_args: AppLaunchArgs,
+        launch_args: Args,
         verb_store: VerbStore,
         config: &Conf,
-    ) -> Result<Self, ConfError> {
+    ) -> Result<Self, ProgramError> {
         let config_paths = config.files.clone();
         let standard_status = StandardStatus::new(&verb_store);
         let true_colors = if let Some(value) = config.true_colors {
@@ -105,11 +113,12 @@ impl AppContext {
             .map(|map| map.try_into())
             .transpose()?
             .unwrap_or_default();
-        let ext_colors = ExtColorMap::try_from(&config.ext_colors)?;
+        let ext_colors = ExtColorMap::try_from(&config.ext_colors)
+            .map_err(ConfError::from)?;
         let file_sum_threads_count = config.file_sum_threads_count
             .unwrap_or(file_sum::DEFAULT_THREAD_COUNT);
         if file_sum_threads_count < 1 || file_sum_threads_count > 50 {
-            return Err(ConfError::InvalidThreadsCount{ count: file_sum_threads_count });
+            return Err(ConfError::InvalidThreadsCount{ count: file_sum_threads_count }.into());
         }
         let max_panels_count = config.max_panels_count
             .unwrap_or(2)
@@ -122,7 +131,21 @@ impl AppContext {
         let max_staged_count = config.max_staged_count
             .unwrap_or(10_000)
             .clamp(10, 100_000);
+        let initial_root = get_root_path(&launch_args)?;
+
+        // tree options are built from the default_flags
+        // found in the config file(s) (if any) then overriden
+        // by the cli args
+        let mut initial_tree_options = TreeOptions::default();
+        initial_tree_options.apply_config(config)?;
+        initial_tree_options.apply_launch_args(&launch_args);
+        if launch_args.color == TriBool::No {
+            initial_tree_options.show_selection_mark = true;
+        }
+
         Ok(Self {
+            initial_root,
+            initial_tree_options,
             config_paths,
             launch_args,
             verb_store,
@@ -165,3 +188,44 @@ fn are_true_colors_available() -> bool {
         true
     }
 }
+
+fn get_root_path(cli_args: &Args) -> Result<PathBuf, ProgramError> {
+    let mut root = cli_args
+        .root
+        .as_ref()
+        .map_or(std::env::current_dir()?, PathBuf::from);
+    if !root.exists() {
+        return Err(TreeBuildError::FileNotFound {
+            path: format!("{:?}", &root),
+        }.into());
+    }
+    if !root.is_dir() {
+        // we try to open the parent directory if the passed file isn't one
+        if let Some(parent) = root.parent() {
+            info!("Passed path isn't a directory => opening parent instead");
+            root = parent.to_path_buf();
+        } else {
+            // let's give up
+            return Err(TreeBuildError::NotADirectory {
+                path: format!("{:?}", &root),
+            }.into());
+        }
+    }
+    Ok(canonicalize_root(&root)?)
+}
+
+#[cfg(not(windows))]
+fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
+    root.canonicalize()
+}
+
+#[cfg(windows)]
+fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
+    Ok(if root.is_relative() {
+        env::current_dir()?.join(root)
+    } else {
+        root.to_path_buf()
+    })
+}
+
+

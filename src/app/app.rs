@@ -2,6 +2,7 @@ use {
     super::*,
     crate::{
         browser::BrowserState,
+        cli::TriBool,
         command::{Command, Sequence},
         conf::Conf,
         display::{Areas, Screen, W},
@@ -80,8 +81,8 @@ impl App {
             PanelId::from(0),
             Box::new(
                 BrowserState::new(
-                    con.launch_args.root.clone(),
-                    con.launch_args.tree_options.clone(),
+                    con.initial_root.clone(),
+                    con.initial_tree_options.clone(),
                     screen,
                     con,
                     &Dam::unlimited(),
@@ -663,10 +664,10 @@ impl App {
         let event_source = EventSource::new()?;
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
-        let skin = AppSkin::new(conf, con.launch_args.color == Some(false));
+        let skin = AppSkin::new(conf, con.launch_args.color == TriBool::No);
         let mut app_state = AppState {
             stage: Stage::default(),
-            root: con.launch_args.root.clone(),
+            root: con.initial_root.clone(),
             other_panel_path: None,
         };
 

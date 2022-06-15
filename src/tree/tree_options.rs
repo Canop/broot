@@ -1,13 +1,13 @@
 use {
     super::Sort,
     crate::{
-        cli::clap_args,
+        cli::Args,
         conf::Conf,
         display::{Cols, DEFAULT_COLS},
         errors::ConfError,
         pattern::*,
     },
-    clap::ArgMatches,
+    clap::Parser,
     std::convert::TryFrom,
 };
 
@@ -79,9 +79,8 @@ impl TreeOptions {
     /// change tree options according to configuration
     pub fn apply_config(&mut self, config: &Conf) -> Result<(), ConfError> {
         if let Some(default_flags) = &config.default_flags {
-            let clap_app = clap_args::clap_app().no_binary_name(true);
             let flags_args = format!("-{}", default_flags);
-            let conf_matches = clap_app.get_matches_from(vec![&flags_args]);
+            let conf_matches = Args::parse_from(vec![&flags_args]);
             self.apply_launch_args(&conf_matches);
         }
         if let Some(b) = &config.show_selection_mark {
@@ -99,75 +98,75 @@ impl TreeOptions {
         Ok(())
     }
     /// change tree options according to broot launch arguments
-    pub fn apply_launch_args(&mut self, cli_args: &ArgMatches) {
-        if cli_args.is_present("sizes") {
+    pub fn apply_launch_args(&mut self, cli_args: &Args) {
+        if cli_args.sizes {
             self.show_sizes = true;
             self.show_root_fs = true;
-        } else if cli_args.is_present("no-sizes") {
+        } else if cli_args.no_sizes {
             self.show_sizes = false;
         }
-        if cli_args.is_present("whale-spotting") {
+        if cli_args.whale_spotting {
             self.show_hidden = true;
             self.respect_git_ignore = false;
             self.sort = Sort::Size;
             self.show_sizes = true;
             self.show_root_fs = true;
         }
-        if cli_args.is_present("only-folders") {
+        if cli_args.only_folders {
             self.only_folders = true;
-        } else if cli_args.is_present("no-only-folders") {
+        } else if cli_args.no_only_folders {
             self.only_folders = false;
         }
-        if cli_args.is_present("git-status") {
+        if cli_args.git_status {
             self.filter_by_git_status = true;
             self.show_hidden = true;
         }
-        if cli_args.is_present("hidden") {
+        if cli_args.hidden {
             self.show_hidden = true;
-        } else if cli_args.is_present("no-hidden") {
+        } else if cli_args.no_hidden {
             self.show_hidden = false;
         }
-        if cli_args.is_present("dates") {
+        if cli_args.dates {
             self.show_dates = true;
-        } else if cli_args.is_present("no-dates") {
+        } else if cli_args.no_dates {
             self.show_dates = false;
         }
-        if cli_args.is_present("permissions") {
+        if cli_args.permissions {
             self.show_permissions = true;
-        } else if cli_args.is_present("no-permissions") {
+        } else if cli_args.no_permissions {
             self.show_permissions = false;
         }
-        if cli_args.is_present("show-root-fs") {
+        if cli_args.show_root_fs {
             self.show_root_fs = true;
         }
-        if cli_args.is_present("show-gitignored") {
+        if cli_args.git_ignored {
             self.respect_git_ignore = false;
-        } else if cli_args.is_present("no-show-gitignored") {
+        } else if cli_args.no_git_ignored {
             self.respect_git_ignore = true;
         }
-        if cli_args.is_present("show-git-info") {
+        if cli_args.show_git_info {
             self.show_git_file_info = true;
-        } else if cli_args.is_present("no-show-git-info") {
+        } else if cli_args.no_show_git_info {
             self.show_git_file_info = false;
         }
-        if cli_args.is_present("sort-by-count") {
+        if cli_args.sort_by_count {
             self.sort = Sort::Count;
             self.show_counts = true;
         }
-        if cli_args.is_present("sort-by-date") {
+        if cli_args.sort_by_date {
             self.sort = Sort::Date;
             self.show_dates = true;
         }
-        if cli_args.is_present("sort-by-size") {
+        if cli_args.sort_by_size {
             self.sort = Sort::Size;
             self.show_sizes = true;
         }
-        if cli_args.is_present("no-sort") {
+        if cli_args.no_sort {
             self.sort = Sort::None;
         }
-        if cli_args.is_present("trim-root") {
+        if cli_args.trim_root {
             self.trim_root = true;
-        } else if cli_args.is_present("no-trim-root") {
+        } else if cli_args.no_trim_root {
             self.trim_root = false;
         }
     }

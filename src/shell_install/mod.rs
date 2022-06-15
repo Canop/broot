@@ -1,9 +1,13 @@
 use {
-    crate::{cli, conf, errors::ProgramError, skin},
+    crate::{
+        cli::{self, ShellInstallState},
+        conf,
+        errors::ProgramError,
+        skin,
+    },
     std::{
         fs, io, os,
         path::{Path, PathBuf},
-        str::FromStr,
     },
     termimad::{mad_print_inline, MadSkin},
 };
@@ -57,56 +61,34 @@ pub struct ShellInstall {
     done: bool, // true if the installation was just made
 }
 
-#[derive(Debug, Clone, Copy)]
-pub enum ShellInstallState {
-    Undefined, // before any install, this is the initial state
-    Refused,
-    Installed,
-}
-impl FromStr for ShellInstallState {
-    type Err = ProgramError;
-    fn from_str(state: &str) -> Result<Self, Self::Err> {
-        match state {
-            "undefined" => Ok(Self::Undefined),
-            "refused" => Ok(Self::Refused),
-            "installed" => Ok(Self::Installed),
-            _ => Err(ProgramError::InternalError {
-                // not supposed to happen because claps check the values
-                details: format!("unexpected install state: {:?}", state),
-            }),
-        }
+/// write either the "installed" or the "refused" file, or remove
+///  those files.
+///
+/// This is useful in installation
+/// or test scripts when we don't want the user to be prompted
+/// to install the function, or in case something doesn't properly
+/// work in shell detections
+pub fn write_state(state: ShellInstallState) -> Result<(), ProgramError> {
+    let refused_path = get_refused_path();
+    let installed_path = get_installed_path();
+    if installed_path.exists() {
+        fs::remove_file(&installed_path)?;
     }
-}
-impl ShellInstallState {
-    /// write either the "installed" or the "refused" file, or remove
-    ///  those files.
-    ///
-    /// This is useful in installation
-    /// or test scripts when we don't want the user to be prompted
-    /// to install the function, or in case something doesn't properly
-    /// work in shell detections
-    pub fn write_file(self) -> Result<(), ProgramError> {
-        let refused_path = get_refused_path();
-        let installed_path = get_installed_path();
-        if installed_path.exists() {
-            fs::remove_file(&installed_path)?;
-        }
-        if refused_path.exists() {
-            fs::remove_file(&refused_path)?;
-        }
-        match self {
-            Self::Refused => {
-                fs::create_dir_all(refused_path.parent().unwrap())?;
-                fs::write(&refused_path, REFUSED_FILE_CONTENT)?;
-            }
-            Self::Installed => {
-                fs::create_dir_all(installed_path.parent().unwrap())?;
-                fs::write(&installed_path, INSTALLED_FILE_CONTENT)?;
-            }
-            _ => {}
-        }
-        Ok(())
+    if refused_path.exists() {
+        fs::remove_file(&refused_path)?;
     }
+    match state {
+        ShellInstallState::Refused => {
+            fs::create_dir_all(refused_path.parent().unwrap())?;
+            fs::write(&refused_path, REFUSED_FILE_CONTENT)?;
+        }
+        ShellInstallState::Installed => {
+            fs::create_dir_all(installed_path.parent().unwrap())?;
+            fs::write(&installed_path, INSTALLED_FILE_CONTENT)?;
+        }
+        _ => {}
+    }
+    Ok(())
 }
 
 fn get_refused_path() -> PathBuf {
@@ -165,7 +147,7 @@ impl ShellInstall {
             // even if the installation isn't really complete (for example
             // when no bash file was found), we don't want to ask the user
             // again, we'll assume it's done
-            ShellInstallState::Installed.write_file()?;
+            write_state(ShellInstallState::Installed)?;
         }
         debug!("Starting install");
         bash::install(self)?;
@@ -203,7 +185,7 @@ impl ShellInstall {
         debug!("proceed: {:?}", proceed);
         self.authorization = Some(proceed);
         if !proceed {
-            ShellInstallState::Refused.write_file()?;
+            write_state(ShellInstallState::Refused)?;
             self.skin.print_text(MD_INSTALL_CANCELLED);
         }
         Ok(proceed)

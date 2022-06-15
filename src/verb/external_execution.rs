@@ -116,17 +116,6 @@ impl ExternalExecution {
             let f = OpenOptions::new().append(true).open(export_path)?;
             writeln!(&f, "{}", builder.shell_exec_string(&self.exec_pattern))?;
             Ok(CmdResult::Quit)
-        } else if let Some(ref export_path) = con.launch_args.file_export_path {
-            if let Some(sel) = builder.sel_info.one_sel() {
-                // old version of the br function: only the file is exported
-                // in the passed file
-                let f = OpenOptions::new().append(true).open(export_path)?;
-                writeln!(&f, "{}", sel.path.to_string_lossy())?;
-                Ok(CmdResult::Quit)
-            } else {
-                // should not happen
-                Ok(CmdResult::error("no selection"))
-            }
         } else {
             Ok(CmdResult::error(
                 "this verb needs broot to be launched as `br`. Try `broot --install` if necessary."

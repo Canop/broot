@@ -1,7 +1,9 @@
-### next
+### v1.13.2 - ???
+<a name="v1.13.2"></a>
 - advice to hit alt-i and|or alt-h when no file is visible - Fix #556
-- update many dependencies
 - examples on search modes in help screen - Fix #559
+- list of syntactic themes in default conf
+- the --file-export-path launch argument which was deprecated since broot 1.6 has been removed (redirect the output of broot instead)
 
 ### v1.13.1 - 2022-05-30
 <a name="v1.13.1"></a>

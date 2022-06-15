@@ -1,12 +1,13 @@
 //! this module manages reading and translating
 //! the arguments passed on launch of the application.
 
-pub mod clap_args;
-mod app_launch_args;
+//mod app_launch_args;
+mod args;
 mod install_launch_args;
 
 pub use {
-    app_launch_args::*,
+    //app_launch_args::*,
+    args::*,
     install_launch_args::*,
 };
 
@@ -15,13 +16,12 @@ use {
         app::{App, AppContext},
         conf::Conf,
         display,
-        errors::{ProgramError, TreeBuildError},
+        errors::ProgramError,
         launchable::Launchable,
-        shell_install::ShellInstall,
-        tree::TreeOptions,
+        shell_install::{ShellInstall, write_state},
         verb::VerbStore,
     },
-    clap::{self, ArgMatches},
+    clap::Parser,
     crossterm::{
         self,
         cursor,
@@ -30,65 +30,25 @@ use {
         QueueableCommand,
     },
     std::{
-        env,
         io::{self, Write},
-        path::{Path, PathBuf},
+        path::PathBuf,
     },
 };
-
-#[cfg(not(windows))]
-fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
-    root.canonicalize()
-}
-
-#[cfg(windows)]
-fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
-    Ok(if root.is_relative() {
-        env::current_dir()?.join(root)
-    } else {
-        root.to_path_buf()
-    })
-}
-
-fn get_root_path(cli_args: &ArgMatches) -> Result<PathBuf, ProgramError> {
-    let mut root = cli_args
-        .value_of("ROOT")
-        .map_or(env::current_dir()?, PathBuf::from);
-    if !root.exists() {
-        return Err(TreeBuildError::FileNotFound {
-            path: format!("{:?}", &root),
-        }.into());
-    }
-    if !root.is_dir() {
-        // we try to open the parent directory if the passed file isn't one
-        if let Some(parent) = root.parent() {
-            info!("Passed path isn't a directory => opening parent instead");
-            root = parent.to_path_buf();
-        } else {
-            // let's give up
-            return Err(TreeBuildError::NotADirectory {
-                path: format!("{:?}", &root),
-            }.into());
-        }
-    }
-    Ok(canonicalize_root(&root)?)
-}
 
 /// run the application, and maybe return a launchable
 /// which must be run after broot
 pub fn run() -> Result<Option<Launchable>, ProgramError> {
-    let clap_app = clap_args::clap_app();
 
     // parse the launch arguments we got from cli
-    let cli_matches = clap_app.get_matches();
+    let args = Args::parse();
 
     // read the install related arguments
-    let install_args = InstallLaunchArgs::from(&cli_matches)?;
+    let install_args = InstallLaunchArgs::from(&args)?;
 
     // execute installation things required by launch args
     let mut must_quit = false;
     if let Some(state) = install_args.set_install_state {
-        state.write_file()?;
+        write_state(state)?;
         must_quit = true;
     }
     if let Some(shell) = &install_args.print_shell_function {
@@ -100,8 +60,8 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     }
 
     // read the list of specific config files
-    let specific_conf: Option<Vec<PathBuf>> = cli_matches
-        .value_of("conf")
+    let specific_conf: Option<Vec<PathBuf>> = args.conf
+        .as_ref()
         .map(|s| s.split(';').map(PathBuf::from).collect());
 
     // if we don't run on a specific config file, we check the
@@ -128,64 +88,32 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     };
     debug!("config: {:#?}", &config);
 
-    // tree options are built from the default_flags
-    // found in the config file(s) (if any) then overriden
-    // by the cli args
-    let mut tree_options = TreeOptions::default();
-    tree_options.apply_config(&config)?;
-    tree_options.apply_launch_args(&cli_matches);
 
     // verb store is completed from the config file(s)
     let verb_store = VerbStore::new(&mut config)?;
 
-    // reading the other arguments
-    let file_export_path = cli_matches.value_of("file-export-path").map(str::to_string);
-    let cmd_export_path = cli_matches.value_of("cmd-export-path").map(str::to_string);
-    let commands = cli_matches.value_of("commands").map(str::to_string);
-    let height = cli_matches.value_of("height").and_then(|s| s.parse().ok());
-    let color = match cli_matches.value_of("color") {
-        Some("yes") => Some(true),
-        Some("no") => Some(false),
-        _ => None,
-    };
-
-    let root = get_root_path(&cli_matches)?;
+    let context = AppContext::from(args, verb_store, &config)?;
 
     #[cfg(unix)]
-    if let Some(server_name) = cli_matches.value_of("send") {
+    if let Some(server_name) = &context.launch_args.send {
         use crate::{
             command::Sequence,
             net::{Client, Message},
         };
         let client = Client::new(server_name);
-        if let Some(seq) = &commands {
+        if let Some(seq) = &context.launch_args.commands {
             let message = Message::Sequence(Sequence::new_local(seq.to_string()));
             client.send(&message)?;
-        } else if !cli_matches.is_present("get-root") {
-            let message = Message::Command(format!(":focus {}", root.to_string_lossy()));
+        } else if !context.launch_args.get_root {
+            let message = Message::Command(format!(":focus {}", context.initial_root.to_string_lossy()));
             client.send(&message)?;
         };
-        if cli_matches.is_present("get-root") {
+        if context.launch_args.get_root {
             client.send(&Message::GetRoot)?;
         }
         return Ok(None);
     }
 
-    let mut launch_args = AppLaunchArgs {
-        root,
-        file_export_path,
-        cmd_export_path,
-        tree_options,
-        commands,
-        height,
-        color,
-        listen: cli_matches.value_of("listen").map(str::to_string),
-    };
-    if color == Some(false) {
-        launch_args.tree_options.show_selection_mark = true;
-    }
-
-    let context = AppContext::from(launch_args, verb_store, &config)?;
     let mut w = display::writer();
     let app = App::new(&context)?;
     w.queue(EnterAlternateScreen)?;

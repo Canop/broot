@@ -356,4 +356,19 @@
     # Change this if you sometimes want to have more than 2 panels
     # open
     # max_panels_count: 2
+
+    
+    ###############################################################
+    # Syntax Theme
+    # 
+    # If you want to choose the them used for preview, uncomment
+    # one of the following lines:
+    # 
+    # syntax_theme: base16-ocean.light
+    # syntax_theme: base16-ocean.dark
+    # syntax_theme: base16-mocha.dark
+    # syntax_theme: base16-mocha.light
+    # syntax_theme: InspiredGitHub
+    # syntax_theme: "Solarized (dark)"
+    # syntax_theme: "Solarized (light)"
 }

@@ -2,6 +2,7 @@
 // It builds shell completion scripts.
 
 use {
+    clap::CommandFactory,
     clap_complete::{Generator, Shell},
     std::{
         env,
@@ -9,14 +10,14 @@ use {
     },
 };
 
-include!("src/cli/clap_args.rs");
+include!("src/cli/args.rs");
 
 fn write_completions_file<G: Generator + Copy, P: AsRef<OsStr>>(generator: G, out_dir: P) {
-    let mut app = clap_app();
+    let mut args = Args::command();
     for name in &["broot", "br"] {
         clap_complete::generate_to(
             generator,
-            &mut app,
+            &mut args,
             name.to_string(),
             &out_dir,
         ).expect("clap complete generation failed");

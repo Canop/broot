@@ -3,12 +3,10 @@
 use {
     crate::{
         errors::ProgramError,
-        shell_install::ShellInstallState,
+        cli::{Args, ShellInstallState},
     },
-    clap::{self, ArgMatches},
     std::{
         env,
-        str::FromStr,
     },
 };
 
@@ -21,7 +19,7 @@ pub struct InstallLaunchArgs {
     pub print_shell_function: Option<String>,         // shell function to print on stdout
 }
 impl InstallLaunchArgs {
-    pub fn from(cli_args: &ArgMatches) -> Result<Self, ProgramError> {
+    pub fn from(args: &Args) -> Result<Self, ProgramError> {
         let mut install = None;
         if let Ok(s) = env::var("BR_INSTALL") {
             if s == "yes" {
@@ -33,18 +31,13 @@ impl InstallLaunchArgs {
             }
         }
         // the cli arguments may override the env var value
-        if cli_args.is_present("install") {
+        if args.install {
             install = Some(true);
-        } else if cli_args.value_of("cmd-export-path").is_some() {
+        } else if args.cmd_export_path.is_some() {
             install = Some(false);
         }
-        let print_shell_function = cli_args
-            .value_of("print-shell-function")
-            .map(str::to_string);
-        let set_install_state = cli_args
-            .value_of("set-install-state")
-            .map(ShellInstallState::from_str)
-            .transpose()?;
+        let print_shell_function = args.print_shell_function.clone();
+        let set_install_state = args.set_install_state;
         Ok(Self {
             install,
             set_install_state,
