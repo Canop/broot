@@ -1,10 +1,12 @@
-### v1.13.2 - ???
+### v1.13.2 - not yet released
 <a name="v1.13.2"></a>
+This version doesn't include an Android build - see https://github.com/Canop/broot/issues/565
 - advice to hit alt-i and|or alt-h when no file is visible - Fix #556
 - examples on search modes in help screen - Fix #559
 - list of syntactic themes in default conf
 - the --file-export-path launch argument which was deprecated since broot 1.6 has been removed (redirect the output of broot instead)
 - better built-in verbs for Windows - Thanks @Spacelord-XaN
+- take the .git/info/exclude file into account for ignoring
 
 ### v1.13.1 - 2022-05-30
 <a name="v1.13.1"></a>
