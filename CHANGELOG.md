@@ -4,6 +4,7 @@
 - examples on search modes in help screen - Fix #559
 - list of syntactic themes in default conf
 - the --file-export-path launch argument which was deprecated since broot 1.6 has been removed (redirect the output of broot instead)
+- better built-in verbs for Windows - Thanks @Spacelord-XaN
 
 ### v1.13.1 - 2022-05-30
 <a name="v1.13.1"></a>

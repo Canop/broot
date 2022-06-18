@@ -18,6 +18,34 @@ echo -e "${H1}Compilation of all targets for $NAME $version${EH}"
 rm -rf build
 mkdir build
 echo "   build cleaned"
+
+# build versions for other platforms using cargo cross
+cross_build() {
+    target_name="$1"
+    target="$2"
+    features="$3"
+    echo -e "${H2}Compiling the $target_name version (target=$target, features='$features')${EH}"
+    cargo clean
+    if [[ -n $features ]]
+    then
+        cross build --target "$target" --release --features "$features"
+    else
+        cross build --target "$target" --release
+    fi
+    mkdir "build/$target"
+    if [[ $target_name == 'Windows' ]]
+    then
+        exec="$NAME.exe"
+    else
+        exec="$NAME"
+    fi
+    cp "target/$target/release/$exec" "build/$target/"
+}
+cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard"
+cross_build "MUSL" "x86_64-unknown-linux-musl" ""
+cross_build "Linux GLIBC" "x86_64-unknown-linux-gnu" ""
+# cross_build "Android" "aarch64-linux-android" "clipboard" Doesn't work anymore - See https://github.com/Canop/broot/issues/565
+cross_build "Raspberry 32" "armv7-unknown-linux-gnueabihf" ""
  
 # build the default linux version (with clipboard support)
 # recent glibc
@@ -45,33 +73,6 @@ mkdir build/resources
 cp resources/icons/vscode/vscode.ttf build/resources
 echo "the font file comes from https://github.com/vscode-icons/vscode-icons/ and is licensed as MIT" > build/resources/README.md
 echo "   Done"
-
-# build versions for other platforms using cargo cross
-cross_build() {
-    target_name="$1"
-    target="$2"
-    features="$3"
-    echo -e "${H2}Compiling the $target_name version (target=$target, features='$features')${EH}"
-    if [[ -n $features ]]
-    then
-        cross build --target "$target" --release --features "$features"
-    else
-        cross build --target "$target" --release
-    fi
-    mkdir "build/$target"
-    if [[ $target_name == 'Windows' ]]
-    then
-        exec="$NAME.exe"
-    else
-        exec="$NAME"
-    fi
-    cp "target/$target/release/$exec" "build/$target/"
-}
-cross_build "Android" "aarch64-linux-android" "clipboard"
-cross_build "Linux GLIBC" "x86_64-unknown-linux-gnu" ""
-cross_build "MUSL" "x86_64-unknown-linux-musl" ""
-cross_build "Raspberry 32" "armv7-unknown-linux-gnueabihf" ""
-cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard"
 
 # add a summary of content
 echo '
