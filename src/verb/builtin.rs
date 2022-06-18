@@ -101,9 +101,17 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(close_panel_ok),
         internal(close_panel_cancel)
             .with_key(key!(ctrl-w)),
+        #[cfg(unix)]
         external(
             "copy {newpath}",
             "cp -r {file} {newpath:path-from-parent}",
+            StayInBroot,
+        )
+            .with_shortcut("cp"),
+        #[cfg(windows)]
+        external(
+            "copy {newpath}",
+            "xcopy /Q /H /Y /I {file} {newpath:path-from-parent}",
             StayInBroot,
         )
             .with_shortcut("cp"),
@@ -133,27 +141,60 @@ pub fn builtin_verbs() -> Vec<Verb> {
         #[cfg(feature="clipboard")]
         internal(input_paste)
             .with_key(key!(ctrl-v)),
+        #[cfg(unix)]
         external(
             "mkdir {subpath}",
             "mkdir -p {subpath:path-from-directory}",
             StayInBroot,
         )
             .with_shortcut("md"),
+        #[cfg(windows)]
+        external(
+            "mkdir {subpath}",
+            "cmd /c mkdir {subpath:path-from-directory}",
+            StayInBroot,
+        )
+            .with_shortcut("md"),
+        #[cfg(unix)]
         external(
             "move {newpath}",
             "mv {file} {newpath:path-from-parent}",
             StayInBroot,
         )
             .with_shortcut("mv"),
+        #[cfg(windows)]
+        external(
+            "move {newpath}",
+            "cmd /c move /Y {file} {newpath:path-from-parent}",
+            StayInBroot,
+        )
+            .with_shortcut("mv"),
+        #[cfg(unix)]
         external(
             "move_to_panel",
             "mv {file} {other-panel-directory}",
             StayInBroot,
         )
             .with_shortcut("mvp"),
+        #[cfg(windows)]
+        external(
+            "move_to_panel",
+            "cmd /c move /Y {file} {other-panel-directory}",
+            StayInBroot,
+        )
+            .with_shortcut("mvp"),
+        #[cfg(unix)]
         external(
             "rename {new_filename:file-name}",
             "mv {file} {parent}/{new_filename}",
+            StayInBroot,
+        )
+            .with_auto_exec(false)
+            .with_key(key!(f2)),
+        #[cfg(windows)]
+        external(
+            "rename {new_filename:file-name}",
+            "cmd /c move /Y {file} {parent}/{new_filename}",
             StayInBroot,
         )
             .with_auto_exec(false)
@@ -221,7 +262,14 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(sort_by_date).with_shortcut("sd"),
         internal(sort_by_size).with_shortcut("ss"),
         internal(sort_by_type).with_shortcut("st"),
+        #[cfg(unix)]
         external("rm", "rm -rf {file}", StayInBroot),
+        #[cfg(windows)]
+        external("rm", "cmd /c rmdir /Q /S {file}", StayInBroot)
+            .with_stype(SelectionType::Directory),
+        #[cfg(windows)]
+        external("rm", "cmd /c del /Q /S {file}", StayInBroot)
+            .with_stype(SelectionType::File),
         internal(toggle_counts).with_shortcut("counts"),
         internal(toggle_dates).with_shortcut("dates"),
         internal(toggle_device_id).with_shortcut("dev"),
