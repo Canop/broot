@@ -156,16 +156,18 @@ impl GitIgnorer {
     pub fn root_chain(&mut self, mut dir: &Path) -> GitIgnoreChain {
         let mut chain = GitIgnoreChain::default();
         loop {
-            let ignore_file = dir.join(".gitignore");
             let is_repo = is_repo(dir);
             if is_repo {
                 if let Some(gif) = GitIgnoreFile::global(dir) {
                     chain.push(self.files.alloc(gif));
                 }
             }
-            if let Ok(gif) = GitIgnoreFile::new(&ignore_file, dir) {
-                //debug!("pushing GIF {:#?}", &gif);
-                chain.push(self.files.alloc(gif));
+            for filename in [".gitignore", ".git/info/exclude"] {
+                let file = dir.join(filename);
+                if let Ok(gif) = GitIgnoreFile::new(&file, dir) {
+                    //debug!("pushing GIF {:#?}", &gif);
+                    chain.push(self.files.alloc(gif));
+                }
             }
             if is_repo {
                 chain.in_repo = true;
