@@ -1,3 +1,6 @@
+### next
+- fix default_flags in conf not working anymore - Fix #566
+
 ### v1.13.2 - 2022-06-18
 <a name="v1.13.2"></a>
 - advice to hit alt-i and|or alt-h when no file is visible - Fix #556

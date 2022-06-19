@@ -57,6 +57,7 @@ custom_error! {pub ConfError
     InvalidCols {details: String}                   = "invalid cols definition: {}",
     InvalidSkin {source: InvalidSkinError}          = "invalid skin: {}",
     InvalidThreadsCount { count: usize }            = "invalid threads count: {}",
+    InvalidDefaultFlags { flags: String }           = "invalid default flags: {:?}",
 }
 
 // error which can be raised when parsing a pattern the user typed

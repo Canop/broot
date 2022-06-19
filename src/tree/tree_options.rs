@@ -80,7 +80,10 @@ impl TreeOptions {
     pub fn apply_config(&mut self, config: &Conf) -> Result<(), ConfError> {
         if let Some(default_flags) = &config.default_flags {
             let flags_args = format!("-{}", default_flags);
-            let conf_matches = Args::parse_from(vec![&flags_args]);
+            let conf_matches = Args::try_parse_from(vec!["broot", &flags_args])
+                .map_err(|_| ConfError::InvalidDefaultFlags {
+                    flags: default_flags.to_string()
+                })?;
             self.apply_launch_args(&conf_matches);
         }
         if let Some(b) = &config.show_selection_mark {
