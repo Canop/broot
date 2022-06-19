@@ -6,7 +6,7 @@ use {
     syntect::{
         easy::HighlightLines,
         parsing::SyntaxSet,
-        highlighting::ThemeSet,
+        highlighting::{Theme, ThemeSet},
     },
 };
 
@@ -27,6 +27,12 @@ impl Default for Syntaxer {
 }
 
 impl Syntaxer {
+    pub fn available_themes<'s>(
+        &self
+    ) -> std::collections::btree_map::Keys<String, Theme> {
+        self.theme_set.themes.keys()
+    }
+
     pub fn highlighter_for<'s, 'p>(
         &'s self,
         path: &'p Path,

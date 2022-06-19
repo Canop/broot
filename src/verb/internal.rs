@@ -113,6 +113,7 @@ Internals! {
     //restore_pattern: "restore a pattern which was just removed" false,
     select_first: "select the first item" false,
     select_last: "select the last item" false,
+    set_syntax_theme: "set the theme of code preview" false,
     sort_by_count: "sort by count" false,
     sort_by_date: "sort by date" false,
     sort_by_size: "sort by size" false,
@@ -152,6 +153,7 @@ impl Internal {
             Internal::line_up => r"line_up (?P<count>\d*)?",
             Internal::line_down_no_cycle => r"line_down_no_cycle (?P<count>\d*)?",
             Internal::line_up_no_cycle => r"line_up_no_cycle (?P<count>\d*)?",
+            Internal::set_syntax_theme => r"set_syntax_theme (?P<theme>\S*)?",
             _ => self.name(),
         }
     }

@@ -260,18 +260,18 @@ impl Verb {
         }
     }
 
-    /// in case the verb take only one argument of type path, return
-    /// the selection type of this unique argument
-    pub fn get_arg_selection_type(&self) -> Option<SelectionType> {
-        self.invocation_parser
-            .as_ref()
-            .and_then(|parser| parser.arg_selection_type)
-    }
+    // /// in case the verb take only one argument of type path, return
+    // /// the selection type of this unique argument
+    // pub fn get_arg_selection_type(&self) -> Option<SelectionType> {
+    //     self.invocation_parser
+    //         .as_ref()
+    //         .and_then(|parser| parser.arg_selection_type)
+    // }
 
-    pub fn get_arg_anchor(&self) -> PathAnchor {
+    pub fn get_unique_arg_anchor(&self) -> PathAnchor {
         self.invocation_parser
             .as_ref()
-            .map_or(PathAnchor::Unspecified, |parser| parser.arg_anchor)
+            .map_or(PathAnchor::Unspecified, InvocationParser::get_unique_arg_anchor)
     }
 
     pub fn get_internal(&self) -> Option<Internal> {

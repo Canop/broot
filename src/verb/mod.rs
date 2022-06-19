@@ -1,3 +1,4 @@
+mod arg_def;
 mod builtin;
 mod exec_pattern;
 mod execution_builder;
@@ -15,6 +16,7 @@ mod verb_invocation;
 mod verb_store;
 
 pub use {
+    arg_def::*,
     exec_pattern::*,
     execution_builder::ExecutionStringBuilder,
     external_execution::ExternalExecution,

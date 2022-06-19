@@ -72,6 +72,9 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(line_down).with_key(key!(down)).with_key(key!('j')),
         internal(line_up).with_key(key!(up)).with_key(key!('k')),
 
+        //
+        internal(set_syntax_theme),
+
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
         internal(open_leave) // calls the system open

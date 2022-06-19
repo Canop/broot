@@ -28,15 +28,17 @@ pub struct InvocationParser {
     /// invocation name's characters are [_0-9a-zA-Z.\[\]])
     args_parser: Option<Regex>,
 
-    /// whether the path, when non absolute, should be interpreted
-    /// as relative to the closest directory (which may be the selection)
-    /// or to the parent of the selection
-    pub arg_anchor: PathAnchor,
+    // //// whether the path, when non absolute, should be interpreted
+    // //// as relative to the closest directory (which may be the selection)
+    // //// or to the parent of the selection
+    // /pub arg_anchor: PathAnchor,
 
-    /// contain the type of selection in case there's only one arg
-    /// and it's a path (when it's not None, the user can type ctrl-P
-    /// to select the argument in another panel)
-    pub arg_selection_type: Option<SelectionType>,
+    // //// contain the type of selection in case there's only one arg
+    // //// and it's a path (when it's not None, the user can type ctrl-P
+    // //// to select the argument in another panel)
+    // /pub arg_selection_type: Option<SelectionType>,
+
+    pub arg_defs: Vec<ArgDef>,
 
 }
 
@@ -47,8 +49,7 @@ impl InvocationParser {
     ) -> Result<Self, ConfError> {
         let invocation_pattern = VerbInvocation::from(invocation_str);
         let mut args_parser = None;
-        let mut arg_selection_type = None;
-        let mut arg_anchor = PathAnchor::Unspecified;
+        let mut arg_defs = Vec::new();
         if let Some(args) = &invocation_pattern.args {
             let spec = GROUP.replace_all(args, r"(?P<$1>.+)");
             let spec = format!("^{}$", spec);
@@ -58,24 +59,36 @@ impl InvocationParser {
                     return Err(ConfError::InvalidVerbInvocation { invocation: spec });
                 }
             };
-            if let Some(group) = GROUP.find(args) {
-                if group.start() == 0 && group.end() == args.len() {
-                    // there's one group, covering the whole args
-                    arg_selection_type = Some(SelectionType::Any);
-                    let group_str = group.as_str();
+            for group in GROUP.find_iter(args) {
+                let group_str = group.as_str();
+                arg_defs.push(
                     if group_str.ends_with("path-from-parent}") {
-                        arg_anchor = PathAnchor::Parent;
+                        ArgDef::Path {
+                            anchor: PathAnchor::Parent,
+                            selection_type: SelectionType::Any,
+                        }
                     } else if group_str.ends_with("path-from-directory}") {
-                        arg_anchor = PathAnchor::Directory;
+                        ArgDef::Path {
+                            anchor: PathAnchor::Directory,
+                            selection_type: SelectionType::Any,
+                        }
+                    } else if group_str.ends_with("path}") {
+                        ArgDef::Path {
+                            anchor: PathAnchor::Unspecified,
+                            selection_type: SelectionType::Any,
+                        }
+                    } else if group_str.ends_with("theme}") {
+                        ArgDef::Theme
+                    } else {
+                        ArgDef::Unspecified // still probably a path
                     }
-                }
+                );
             }
         }
         Ok(Self {
             invocation_pattern,
             args_parser,
-            arg_anchor,
-            arg_selection_type,
+            arg_defs,
         })
     }
 
@@ -83,6 +96,14 @@ impl InvocationParser {
         &self.invocation_pattern.name
     }
 
+    pub fn get_unique_arg_anchor(&self) -> PathAnchor {
+        if self.arg_defs.len() == 1 {
+            if let ArgDef::Path { anchor, .. } = self.arg_defs[0] {
+                return anchor;
+            }
+        }
+        PathAnchor::Unspecified
+    }
     /// Assuming the verb has been matched, check whether the arguments
     /// are OK according to the regex. Return none when there's no problem
     /// and return the error to display if arguments don't match

@@ -110,7 +110,7 @@ impl Completions {
         con: &AppContext,
     ) -> io::Result<Vec<String>> {
         let anchor = match con.verb_store.search_sel_info(verb_name, sel_info) {
-            PrefixSearchResult::Match(_, verb) => verb.get_arg_anchor(),
+            PrefixSearchResult::Match(_, verb) => verb.get_unique_arg_anchor(),
             _ => PathAnchor::Unspecified,
         };
         let (_, parent_part, child_part) = regex_captures!(r"^(.*?)([^/]*)$", arg).unwrap();
