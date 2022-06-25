@@ -34,6 +34,8 @@ Another problem is the fact the `br` function doesn't set a proper pane name (yo
 
 Most terminals intercept a few keyboard shortcut for their own features. You may need to remap your terminal's default keyboard shortcuts.
 
+I've made a small program which tells you what key combinations are available: [print_key](https://github.com/Canop/print_key).
+
 ## remap in Windows Terminal
 
 [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/) binds `alt+enter` to the "toggle fullscreen" command by default. To reclaim `alt+enter` for Broot, [add an 'unbound' entry to the actions array in settings.json](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys):
