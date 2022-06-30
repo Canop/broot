@@ -92,7 +92,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     // verb store is completed from the config file(s)
     let verb_store = VerbStore::new(&mut config)?;
 
-    let context = AppContext::from(args, verb_store, &config)?;
+    let mut context = AppContext::from(args, verb_store, &config)?;
 
     #[cfg(unix)]
     if let Some(server_name) = &context.launch_args.send {
@@ -121,7 +121,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     if context.capture_mouse {
         w.queue(EnableMouseCapture)?;
     }
-    let r = app.run(&mut w, &context, &config);
+    let r = app.run(&mut w, &mut context, &config);
     if context.capture_mouse {
         w.queue(DisableMouseCapture)?;
     }

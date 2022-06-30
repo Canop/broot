@@ -37,7 +37,7 @@ pub struct Selection<'s> {
     pub is_exe: bool,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 pub enum SelInfo<'s> {
     None,
     One(Selection<'s>),

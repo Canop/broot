@@ -58,6 +58,7 @@ custom_error! {pub ConfError
     InvalidSkin {source: InvalidSkinError}          = "invalid skin: {}",
     InvalidThreadsCount { count: usize }            = "invalid threads count: {}",
     InvalidDefaultFlags { flags: String }           = "invalid default flags: {:?}",
+    InvalidSyntaxTheme { name: String }             = "invalid syntax theme: {:?}",
 }
 
 // error which can be raised when parsing a pattern the user typed

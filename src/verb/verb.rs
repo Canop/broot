@@ -164,13 +164,13 @@ impl Verb {
     /// and return the error to display if arguments don't match.
     pub fn check_args(
         &self,
-        sel_info: &SelInfo<'_>,
+        sel_info: SelInfo<'_>,
         invocation: &VerbInvocation,
         other_path: &Option<PathBuf>,
     ) -> Option<String> {
         match sel_info {
             SelInfo::None => self.check_sel_args(None, invocation, other_path),
-            SelInfo::One(sel) => self.check_sel_args(Some(*sel), invocation, other_path),
+            SelInfo::One(sel) => self.check_sel_args(Some(sel), invocation, other_path),
             SelInfo::More(stage) => {
                 stage.paths().iter()
                     .filter_map(|path| {

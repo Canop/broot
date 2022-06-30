@@ -14,6 +14,7 @@ use {
         path::closest_dir,
         skin::*,
         stage::Stage,
+        syntactic::SyntaxTheme,
         task_sync::{Dam, Either},
         verb::Internal,
     },
@@ -26,6 +27,7 @@ use {
     std::{
         io::Write,
         path::PathBuf,
+        str::FromStr,
         sync::{Arc, Mutex},
     },
     strict::NonEmptyVec,
@@ -252,7 +254,7 @@ impl App {
         cmd: Command,
         panel_skin: &PanelSkin,
         app_state: &mut AppState,
-        con: &AppContext,
+        con: &mut AppContext,
     ) -> Result<(), ProgramError> {
         use CmdResult::*;
         let mut error: Option<String> = None;
@@ -415,6 +417,27 @@ impl App {
                             }
                         }
                     }
+                    Internal::set_syntax_theme => {
+                        let arg = cmd
+                            .as_verb_invocation()
+                            .and_then(|vi| vi.args.as_ref());
+                        match arg {
+                            Some(arg) => {
+                                match SyntaxTheme::from_str(arg) {
+                                    Ok(theme) => {
+                                        con.syntax_theme = Some(theme);
+                                        self.update_preview(con, true);
+                                    }
+                                    Err(e) => {
+                                        error = Some(e.to_string());
+                                    }
+                                }
+                            }
+                            None => {
+                                error = Some("no theme provided".to_string());
+                            }
+                        }
+                    }
                     _ => {
                         info!("unhandled propagated internal. cmd={:?}", &cmd);
                     }
@@ -503,18 +526,18 @@ impl App {
             }
         }
 
-        self.update_preview(con);
+        self.update_preview(con, false);
 
         Ok(())
     }
 
     /// update the state of the preview, if there's some
-    fn update_preview(&mut self, con: &AppContext) {
+    fn update_preview(&mut self, con: &AppContext, refresh: bool) {
         let preview_idx = self.preview_panel.and_then(|id| self.panel_id_to_idx(id));
         if let Some(preview_idx) = preview_idx {
             if let Some(path) = self.state().selected_path() {
                 let old_path = self.panels[preview_idx].state().selected_path();
-                if Some(path) != old_path && path.is_file() {
+                if (refresh || Some(path) != old_path) && path.is_file() {
                     let path = path.to_path_buf();
                     self.panels[preview_idx].mut_state().set_selected_path(path, con);
                 }
@@ -595,7 +618,7 @@ impl App {
     ) -> Result<(), ProgramError> {
         while self.has_pending_task() && !dam.has_event() {
             let error = self.do_pending_task(app_state, con, dam).err();
-            self.update_preview(con); // the selection may have changed
+            self.update_preview(con, false); // the selection may have changed
             if let Some(error) = &error {
                 self.mut_panel().set_error(error.to_string());
             } else {
@@ -649,7 +672,7 @@ impl App {
     pub fn run(
         mut self,
         w: &mut W,
-        con: &AppContext,
+        con: &mut AppContext,
         conf: &Conf,
     ) -> Result<Option<Launchable>, ProgramError> {
         #[cfg(feature = "clipboard")]

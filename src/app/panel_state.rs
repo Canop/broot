@@ -391,8 +391,9 @@ pub trait PanelState {
                     }
                 }
             }
-            Internal::print_path => print::print_paths(&self.sel_info(app_state), con)?,
-            Internal::print_relative_path => print::print_relative_paths(&self.sel_info(app_state), con)?,
+            Internal::set_syntax_theme => CmdResult::HandleInApp(Internal::set_syntax_theme),
+            Internal::print_path => print::print_paths(self.sel_info(app_state), con)?,
+            Internal::print_relative_path => print::print_relative_paths(self.sel_info(app_state), con)?,
             Internal::refresh => CmdResult::RefreshState { clear_cache: true },
             Internal::quit => CmdResult::Quit,
             _ => CmdResult::Keep,
@@ -511,7 +512,7 @@ pub trait PanelState {
     ) -> Result<CmdResult, ProgramError> {
         let sel_info = self.sel_info(app_state);
         if let Some(invocation) = &invocation {
-            if let Some(error) = verb.check_args(&sel_info, invocation, &app_state.other_panel_path) {
+            if let Some(error) = verb.check_args(sel_info, invocation, &app_state.other_panel_path) {
                 debug!("verb.check_args prevented execution: {:?}", &error);
                 return Ok(CmdResult::error(error));
             }
@@ -609,7 +610,7 @@ pub trait PanelState {
                 let sel_info = self.sel_info(app_state);
                 match con.verb_store.search_sel_info(
                     &invocation.name,
-                    &sel_info,
+                    sel_info,
                 ) {
                     PrefixSearchResult::Match(_, verb) => {
                         self.execute_verb(
@@ -776,7 +777,7 @@ pub trait PanelState {
                     let sel_info = self.sel_info(app_state);
                     match cc.app.con.verb_store.search_sel_info(
                         &invocation.name,
-                        &sel_info,
+                        sel_info,
                     ) {
                         PrefixSearchResult::NoMatch => {
                             Status::new("No matching verb (*?* for the list of verbs)", true)
@@ -821,7 +822,7 @@ pub trait PanelState {
             }
             // right now there's no check for sequences but they're inherently dangereous
         }
-        if let Some(err) = verb.check_args(&sel_info, invocation, &app_state.other_panel_path) {
+        if let Some(err) = verb.check_args(sel_info, invocation, &app_state.other_panel_path) {
             Status::new(err, true)
         } else {
             Status::new(

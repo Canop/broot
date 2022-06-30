@@ -59,6 +59,16 @@ impl Command {
         Command::None
     }
 
+    pub fn as_verb_invocation(&self) -> Option<&VerbInvocation> {
+        match self {
+            Self::VerbEdit(vi) => Some(vi),
+            Self::VerbInvocate(vi) => Some(vi),
+            Self::Internal { input_invocation, .. } =>  input_invocation.as_ref(),
+            Self::VerbTrigger { input_invocation, .. } =>  input_invocation.as_ref(),
+            _ => None,
+        }
+    }
+
     /// build a command from the parsed string representation
     ///
     /// The command being finished is the difference between

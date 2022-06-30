@@ -6,9 +6,10 @@ use {
         errors::*,
         file_sum,
         icon::*,
-        pattern::SearchModeMap,
         path::SpecialPath,
+        pattern::SearchModeMap,
         skin::ExtColorMap,
+        syntactic::SyntaxTheme,
         tree::TreeOptions,
         verb::VerbStore,
     },
@@ -19,9 +20,8 @@ use {
     },
 };
 
-/// The immutable container that can be passed around
-/// to provide the configuration things for the whole
-/// life of the App
+/// The container that can be passed around to provide the configuration things
+/// for the whole life of the App
 pub struct AppContext {
 
     /// The initial tree root
@@ -53,7 +53,7 @@ pub struct AppContext {
     pub ext_colors: ExtColorMap,
 
     /// the syntect theme to use for text files previewing
-    pub syntax_theme: Option<String>,
+    pub syntax_theme: Option<SyntaxTheme>,
 
     /// precomputed status to display in standard cases
     /// (ie when no verb is involved)
@@ -153,7 +153,7 @@ impl AppContext {
             search_modes,
             show_selection_mark: config.show_selection_mark.unwrap_or(false),
             ext_colors,
-            syntax_theme: config.syntax_theme.clone(),
+            syntax_theme: config.syntax_theme,
             standard_status,
             true_colors,
             icons,

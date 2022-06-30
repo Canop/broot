@@ -44,7 +44,7 @@ impl VerbStore {
     pub fn search_sel_info<'v>(
         &'v self,
         prefix: &str,
-        sel_info: &SelInfo<'_>,
+        sel_info: SelInfo<'_>,
     ) -> PrefixSearchResult<'v, &Verb> {
         let stype = sel_info.common_stype();
         let count = sel_info.count_paths();
@@ -56,6 +56,19 @@ impl VerbStore {
         prefix: &str,
     ) -> PrefixSearchResult<'v, &Verb> {
         self.search(prefix, None, None, None)
+    }
+
+    /// Return either the only match, or None if there's not
+    /// exactly one match
+    pub fn search_sel_info_unique <'v>(
+        &'v self,
+        prefix: &str,
+        sel_info: SelInfo<'_>,
+    ) -> Option<&'v Verb> {
+        match self.search_sel_info(prefix, sel_info) {
+            PrefixSearchResult::Match(_, verb) => Some(verb),
+            _ => None,
+        }
     }
 
     pub fn search<'v>(

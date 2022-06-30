@@ -28,19 +28,10 @@ pub struct InvocationParser {
     /// invocation name's characters are [_0-9a-zA-Z.\[\]])
     args_parser: Option<Regex>,
 
-    // //// whether the path, when non absolute, should be interpreted
-    // //// as relative to the closest directory (which may be the selection)
-    // //// or to the parent of the selection
-    // /pub arg_anchor: PathAnchor,
-
-    // //// contain the type of selection in case there's only one arg
-    // //// and it's a path (when it's not None, the user can type ctrl-P
-    // //// to select the argument in another panel)
-    // /pub arg_selection_type: Option<SelectionType>,
-
     pub arg_defs: Vec<ArgDef>,
 
 }
+
 
 impl InvocationParser {
 
@@ -96,6 +87,11 @@ impl InvocationParser {
         &self.invocation_pattern.name
     }
 
+    pub fn get_unique_arg_def(&self) -> Option<ArgDef> {
+        (self.arg_defs.len() == 1)
+            .then(|| self.arg_defs[0])
+    }
+
     pub fn get_unique_arg_anchor(&self) -> PathAnchor {
         if self.arg_defs.len() == 1 {
             if let ArgDef::Path { anchor, .. } = self.arg_defs[0] {
@@ -104,6 +100,7 @@ impl InvocationParser {
         }
         PathAnchor::Unspecified
     }
+
     /// Assuming the verb has been matched, check whether the arguments
     /// are OK according to the regex. Return none when there's no problem
     /// and return the error to display if arguments don't match

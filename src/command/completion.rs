@@ -6,7 +6,11 @@ use {
             SelInfo,
         },
         path::{self, PathAnchor},
-        verb::PrefixSearchResult,
+        syntactic::SYNTAX_THEMES,
+        verb::{
+            ArgDef,
+            PrefixSearchResult,
+        },
     },
     lazy_regex::regex_captures,
     std::{
@@ -85,7 +89,7 @@ impl Completions {
         con: &AppContext,
         sel_info: SelInfo<'_>,
     ) -> Self {
-        match con.verb_store.search_sel_info(start, &sel_info) {
+        match con.verb_store.search_sel_info(start, sel_info) {
             PrefixSearchResult::NoMatch => Self::None,
             PrefixSearchResult::Match(name, _) => {
                 if start.len() >= name.len() {
@@ -106,7 +110,7 @@ impl Completions {
         verb_name: &str,
         arg: &str,
         path: &Path,
-        sel_info: &SelInfo<'_>,
+        sel_info: SelInfo<'_>,
         con: &AppContext,
     ) -> io::Result<Vec<String>> {
         let anchor = match con.verb_store.search_sel_info(verb_name, sel_info) {
@@ -138,7 +142,45 @@ impl Completions {
         Ok(children)
     }
 
+
+    /// we have a verb, we try to complete one of the args
     fn for_arg(
+        verb_name: &str,
+        arg: &str,
+        con: &AppContext,
+        sel_info: SelInfo<'_>,
+    ) -> Self {
+        if arg.contains(' ') {
+            return Self::None;
+        }
+        // we try to get the type of argument
+        let arg_def = con
+            .verb_store
+            .search_sel_info_unique(verb_name, sel_info)
+            .and_then(|verb| verb.invocation_parser.as_ref())
+            .and_then(|invocation_parser| invocation_parser.get_unique_arg_def());
+        if matches!(arg_def, Some(ArgDef::Theme)) {
+            Self::for_theme_arg(arg)
+        } else {
+            Self::for_path_arg(verb_name, arg, con, sel_info)
+        }
+    }
+
+    /// we have a verb and it asks for a theme
+    fn for_theme_arg(
+        arg: &str,
+    ) -> Self {
+        let arg = arg.to_lowercase();
+        let completions: Vec<String> = SYNTAX_THEMES
+            .iter()
+            .map(|st| st.name().to_lowercase())
+            .filter_map(|name| name.strip_prefix(&arg).map(|s| s.to_string()))
+            .collect();
+        Self::from_list(completions)
+    }
+
+    /// we have a verb and it asks for a path
+    fn for_path_arg(
         verb_name: &str,
         arg: &str,
         con: &AppContext,
@@ -153,7 +195,7 @@ impl Completions {
         match &sel_info {
             SelInfo::None => Self::None,
             SelInfo::One(sel) => {
-                match Self::list_for_path(verb_name, arg, sel.path, &sel_info, con) {
+                match Self::list_for_path(verb_name, arg, sel.path, sel_info, con) {
                     Ok(list) => Self::from_list(list),
                     Err(e) => {
                         warn!("Error while trying to complete path: {:?}", e);
@@ -171,7 +213,7 @@ impl Completions {
                                 verb_name,
                                 arg,
                                 path,
-                                &sel_info,
+                                sel_info,
                                 con
                         ).ok()
                     });
@@ -199,6 +241,7 @@ impl Completions {
         con: &AppContext,
         sel_info: SelInfo<'_>,
     ) -> Self {
+        info!("Looking for completions");
         match &parts.verb_invocation {
             Some(invocation) if !invocation.is_empty() => {
                 match &invocation.args {

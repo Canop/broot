@@ -153,7 +153,7 @@ impl Internal {
             Internal::line_up => r"line_up (?P<count>\d*)?",
             Internal::line_down_no_cycle => r"line_down_no_cycle (?P<count>\d*)?",
             Internal::line_up_no_cycle => r"line_up_no_cycle (?P<count>\d*)?",
-            Internal::set_syntax_theme => r"set_syntax_theme (?P<theme>\S*)?",
+            Internal::set_syntax_theme => r"set_syntax_theme {theme:theme}",
             _ => self.name(),
         }
     }

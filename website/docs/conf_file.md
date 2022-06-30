@@ -171,19 +171,19 @@ toml = "ansi(105)"
 
 You can choose any of the following syntaxic coloring themes for previewed files:
 
-* base16-ocean.dark
-* base16-eighties.dark
-* base16-mocha.dark
-* base16-ocean.light
-* InspiredGitHub
-* Solarized (dark)
-* Solarized (light)
+* GitHub
+* SolarizedDark
+* SolarizedLight
+* EightiesDark
+* MochaDark
+* OceanDark
+* OceanLight
 
 ```Hjson
-syntax_theme: base16-ocean.light
+syntax_theme: OceanLight
 ```
 ```TOML
-syntax_theme = "base16-ocean.light"
+syntax_theme = "OceanLight"
 ```
 
 Those themes come from [syntect](https://github.com/trishume/syntect) and are bundled in broot.

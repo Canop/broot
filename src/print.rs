@@ -26,7 +26,7 @@ fn print_string(string: String, _con: &AppContext) -> io::Result<CmdResult> {
     )
 }
 
-pub fn print_paths(sel_info: &SelInfo, con: &AppContext) -> io::Result<CmdResult> {
+pub fn print_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<CmdResult> {
     let string = match sel_info {
         SelInfo::None => "".to_string(), // better idea ?
         SelInfo::One(sel) => sel.path.to_string_lossy().to_string(),
@@ -61,7 +61,7 @@ fn relativize_path(path: &Path, con: &AppContext) -> io::Result<String> {
     )
 }
 
-pub fn print_relative_paths(sel_info: &SelInfo, con: &AppContext) -> io::Result<CmdResult> {
+pub fn print_relative_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<CmdResult> {
     let string = match sel_info {
         SelInfo::None => "".to_string(),
         SelInfo::One(sel) => relativize_path(sel.path, con)?,

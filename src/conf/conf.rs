@@ -6,11 +6,12 @@ use {
     crate::{
         display::ColsConf,
         errors::ProgramError,
-        skin::SkinEntry,
         path::{Glob, SpecialHandling},
+        skin::SkinEntry,
+        syntactic::SyntaxTheme,
     },
-    crossterm::style::Attribute,
     ahash::AHashMap,
+    crossterm::style::Attribute,
     fnv::FnvHashMap,
     serde::Deserialize,
     std::{
@@ -76,7 +77,7 @@ pub struct Conf {
     pub ext_colors: AHashMap<String, String>,
 
     #[serde(alias="syntax-theme")]
-    pub syntax_theme: Option<String>,
+    pub syntax_theme: Option<SyntaxTheme>,
 
     #[serde(alias="true-colors")]
     pub true_colors: Option<bool>,
