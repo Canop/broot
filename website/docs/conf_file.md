@@ -12,16 +12,61 @@ This documentation will often show you the same setting in both formats, with tw
 # setting to use if your config file is in .toml
 ```
 
-# Opening the config file
+# Opening the config files
 
 The main configuration file is called either `conf.toml` or `conf.hjson`.
 
+
 This default file's location follows the XDG convention, which depends on your system settings. This location in your case can be found on the help screen (use <kbd>?</kbd>).
-From this screen you can directly open the configuration file in your system's editor by typing `:os` (shortcut for `:open_stay`).
 
 The default configuration file contains several example sections that you may uncomment and modify for your goals.
 
-The current default configuration file may be seen here: [default-conf.hjson](https://dystroy.org/broot/download/default-conf.hjson).
+It typically imports other files in the same directory.
+
+# Imports
+
+A configuration file can import some other files.
+This eases management, as you may for example define your skin in a file, or the list of verbs in another one.
+
+An import can have as condition whether the terminal is in dark or light mode, so that broot can take the most suitable skin on launch.
+
+All imports are defined in an `imports` array.
+
+For example:
+
+```Hjson
+imports: [
+
+	verbs.hjson
+
+	{
+		luma: light
+		file: white-skin.hjson
+	}
+
+	{
+		luma: [
+			dark
+			unknown
+		]
+		file: dark-blue-skin.hjson
+	}
+
+]
+```
+
+This example defines 3 imports.
+
+The first one has the simplest form: just a (relative or absolute) path. This import isn't conditional.
+
+The second import is done only if the terminal's *luma* is determined to be light.
+
+And the third one is done when the terminal's luma is either dark or couldn't be determined.
+
+Starting from version 1.14, the default configuration is released in several files.
+
+!!!	Note
+	Be careful when installing a configuration file from an unknown source: it may contain an arbitrary command to execute. Check it before importing it
 
 # Default flags
 

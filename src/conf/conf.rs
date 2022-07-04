@@ -157,7 +157,10 @@ impl Conf {
     /// Values set in the read file replace the ones of self.
     /// Errors are printed on stderr (assuming this function is called
     /// before terminal alternation).
-    pub fn read_file(&mut self, path: PathBuf) -> Result<(), ProgramError> {
+    pub fn read_file(
+        &mut self,
+        path: PathBuf,
+    ) -> Result<(), ProgramError> {
         debug!("reading conf file: {:?}", &path);
         let mut conf: Conf = SerdeFormat::read_file(&path)?;
         overwrite!(self, default_flags, conf);

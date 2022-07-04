@@ -64,7 +64,7 @@ echo "   Done"
 
 # copy the default conf
 echo -e "${H2}copying default configuration${EH}"
-cp resources/default-conf.hjson build
+cp -r resources/default-conf build
 echo "   Done"
  
 # add the resource (the icons font)
