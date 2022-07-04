@@ -110,7 +110,7 @@ pub struct Args {
 
     /// Semicolon separated commands to execute
     #[clap(short, long, value_parser)]
-    pub commands: Option<String>,
+    pub cmd: Option<String>,
 
     /// Whether to have styles and colors (auto is default and usually OK)
     #[clap(long, arg_enum, value_parser, default_value="auto")]

@@ -101,7 +101,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
             net::{Client, Message},
         };
         let client = Client::new(server_name);
-        if let Some(seq) = &context.launch_args.commands {
+        if let Some(seq) = &context.launch_args.cmd {
             let message = Message::Sequence(Sequence::new_local(seq.to_string()));
             client.send(&message)?;
         } else if !context.launch_args.get_root {
