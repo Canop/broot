@@ -5,8 +5,13 @@ use {
     super::*,
     crate::{
         display::ColsConf,
-        errors::ProgramError,
-        path::{Glob, SpecialHandling},
+        errors::{ConfError, ProgramError},
+        path::{
+            Glob,
+            SpecialHandling,
+            path_from,
+            PathAnchor,
+        },
         skin::SkinEntry,
         syntactic::SyntaxTheme,
     },
@@ -96,6 +101,10 @@ pub struct Conf {
 
     #[serde(alias="max_staged_count")]
     pub max_staged_count: Option<usize>,
+
+    #[serde(default)]
+    pub imports: Vec<Import>,
+
 }
 
 impl Conf {
@@ -130,10 +139,8 @@ impl Conf {
             println!("You should have a look at it.");
         }
         let mut conf = Conf::default();
-        match conf.read_file(conf_filepath) {
-            Err(e) => Err(e),
-            _ => Ok(conf),
-        }
+        conf.read_file(conf_filepath.clone())?;
+        Ok(conf)
     }
 
     /// assume the file doesn't yet exist
@@ -143,11 +150,24 @@ impl Conf {
         Ok(())
     }
 
+    pub fn solve_conf_path(&self, path: &str) -> Option<PathBuf> {
+        if path.ends_with(".toml") || path.ends_with(".hjson") {
+            for conf_file in self.files.iter().rev() {
+                let solved = path_from(conf_file, PathAnchor::Parent, path);
+                if solved.exists() {
+                    return Some(solved)
+                }
+            }
+        }
+        None
+    }
+
     /// read the configuration from a given path. Assume it exists.
     /// Values set in the read file replace the ones of self.
     /// Errors are printed on stderr (assuming this function is called
     /// before terminal alternation).
     pub fn read_file(&mut self, path: PathBuf) -> Result<(), ProgramError> {
+        debug!("reading conf file: {:?}", &path);
         let mut conf: Conf = SerdeFormat::read_file(&path)?;
         overwrite!(self, default_flags, conf);
         overwrite!(self, date_time_format, conf);
@@ -171,6 +191,21 @@ impl Conf {
         overwrite_map!(self, special_paths, conf);
         overwrite_map!(self, ext_colors, conf);
         self.files.push(path);
+        // read the imports
+        for import in &conf.imports {
+            let file = import.file();
+            if !import.applies() {
+                debug!("skipping not applying conf file : {:?}", file);
+                continue;
+            }
+            let import_path = self.solve_conf_path(file)
+                .ok_or_else(|| ConfError::ImportNotFound { path: file.to_string() })?;
+            if self.files.contains(&import_path) {
+                debug!("skipping import already read: {:?}", import_path);
+                continue;
+            }
+            self.read_file(import_path)?;
+        }
         Ok(())
     }
 }

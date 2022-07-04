@@ -137,7 +137,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "broot"
-version = "1.13.4-dev"
+version = "1.14.0-dev"
 dependencies = [
  "ahash 0.7.6",
  "ansi_colours",
@@ -181,6 +181,7 @@ dependencies = [
  "tempfile",
  "termimad",
  "terminal-clipboard",
+ "terminal-light",
  "toml",
  "umask",
  "unicode-width",
@@ -1837,6 +1838,18 @@ dependencies = [
  "once_cell",
  "termux-clipboard",
  "x11-clipboard",
+]
+
+[[package]]
+name = "terminal-light"
+version = "0.8.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f279e95099c18b04b1b5dcab98fa6f2a50908754cbf453ddbb99c392b7d662d1"
+dependencies = [
+ "coolor",
+ "crossterm",
+ "thiserror",
+ "xterm-query",
 ]
 
 [[package]]

@@ -22,15 +22,16 @@ macro_rules! cond_bg {
 }
 
 mod areas;
+mod cell_size;
 mod col;
 mod displayable_tree;
-mod git_status_display;
 pub mod flags_display;
-pub mod status_line;
+mod git_status_display;
+mod luma;
 mod matched_string;
 mod num_format;
 mod screen;
-mod cell_size;
+pub mod status_line;
 
 #[cfg(not(any(target_family="windows",target_os="android")))]
 mod permissions;
@@ -41,6 +42,7 @@ pub use {
     cond_bg,
     displayable_tree::DisplayableTree,
     git_status_display::GitStatusDisplay,
+    luma::*,
     matched_string::MatchedString,
     screen::Screen,
     cell_size::*,

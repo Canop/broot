@@ -1,3 +1,9 @@
+### next
+Major Feature: imports
+A configuration file can now import one or several other ones.
+An import can have a condition on the terminal's background color, which makes it possible to import either a dark or a light theme depending on the current terminal settings.
+You're also encouraged to split your configuration in several files.
+
 ### v1.13.3 - 2022-06-19
 <a name="v1.13.2"></a>
 - fix default_flags in conf not working anymore - Fix #566
@@ -10,7 +16,8 @@
 - the --file-export-path launch argument which was deprecated since broot 1.6 has been removed (redirect the output of broot instead)
 - better built-in verbs for Windows - Thanks @Spacelord-XaN
 - take the .git/info/exclude file into account for ignoring - Thanks @refi64
-The released archive doesn't include an Android build - see https://github.com/Canop/broot/issues/565
+
+Note: The released archive doesn't include an Android build - see https://github.com/Canop/broot/issues/565
 
 ### v1.13.1 - 2022-05-30
 <a name="v1.13.1"></a>

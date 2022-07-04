@@ -88,7 +88,6 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     };
     debug!("config: {:#?}", &config);
 
-
     // verb store is completed from the config file(s)
     let verb_store = VerbStore::new(&mut config)?;
 
@@ -105,7 +104,9 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
             let message = Message::Sequence(Sequence::new_local(seq.to_string()));
             client.send(&message)?;
         } else if !context.launch_args.get_root {
-            let message = Message::Command(format!(":focus {}", context.initial_root.to_string_lossy()));
+            let message = Message::Command(
+                format!(":focus {}", context.initial_root.to_string_lossy())
+            );
             client.send(&message)?;
         };
         if context.launch_args.get_root {

@@ -41,6 +41,7 @@ custom_error! {pub TreeBuildError
 
 custom_error! {pub ConfError
     Io {source: io::Error}                          = "unable to read from the file: {}",
+    ImportNotFound {path: String}                   = "import file not found: {:?}",
     UnknownFileExtension { path: String}            = "unexpected file extension in {:?}",
     Toml {source: toml::de::Error}                  = "unable to parse TOML: {}",
     Hjson {source: deser_hjson::Error}              = "unable to parse Hjson: {}",
