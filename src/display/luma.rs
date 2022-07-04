@@ -1,4 +1,6 @@
 pub use {
+    crate::cli::{Args, TriBool},
+    crossterm::tty::IsTty,
     once_cell::sync::Lazy,
     serde::Deserialize,
 };
@@ -41,7 +43,12 @@ pub enum LumaCondition {
 
 impl LumaCondition {
     pub fn is_verified(&self) -> bool {
-        self.includes(Luma::read())
+        let luma = if std::io::stdout().is_tty() {
+            Luma::read()
+        } else {
+            Luma::Unknown
+        };
+        self.includes(luma)
     }
     pub fn includes(&self, other: Luma) -> bool {
         match self {
