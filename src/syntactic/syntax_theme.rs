@@ -28,7 +28,7 @@ macro_rules! Themes {
                     if s == stringify!($enum_name).to_lowercase() {
                         return Ok($enum_name);
                     }
-                    if s == stringify!($syntect_name).to_lowercase() {
+                    if s == $syntect_name.to_lowercase() {
                         return Ok($enum_name);
                     }
                 )*
