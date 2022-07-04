@@ -149,8 +149,23 @@
     # open
     # max_panels_count: 2
 
+    ###############################################################
+    # Imports
+    #
+    # While it's possible to have all configuration in one file,
+    # it's more convenient to split it in several ones.
+    # Importing also allows to set a condition on the terminal's
+    # color, which makes it possible to have a different skin 
+    # chosen when your terminal has a light background and when
+    # it has a light one.
 	imports: [
+
+        # Verbs are better configured in verbs.hjson. But you
+        # can also add another files for your personal verbs
 		verbs.hjson
+
+        # This file contains the skin to use when the terminal
+        # is dark (or when this couldn't be determined)
 		{
 			luma: [
 				dark
@@ -158,6 +173,8 @@
 			]
 			file: dark-blue-skin.hjson
 		}
+
+        # This skin is imported when your terminal is light
 		{
 			luma: light
 			file: white-skin.hjson
