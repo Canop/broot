@@ -129,7 +129,7 @@ impl SearchModeMapEntry {
         let mut search_objects = Vec::new();
 
         let s = conf_mode.to_lowercase();
-        for t in s.trim().split_whitespace() {
+        for t in s.split_whitespace() {
             match t {
                 "exact" => search_kinds.push(SearchKind::Exact),
                 "fuzzy" => search_kinds.push(SearchKind::Fuzzy),

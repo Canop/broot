@@ -14,7 +14,7 @@ pub use {
 use {
     crate::{
         app::{App, AppContext},
-        conf::Conf,
+        conf::{Conf, write_default_conf_in},
         display,
         errors::ProgramError,
         launchable::Launchable,
@@ -41,12 +41,17 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     // parse the launch arguments we got from cli
     let args = Args::parse();
+    let mut must_quit = false;
+
+    if let Some(dir) = &args.write_default_conf {
+        write_default_conf_in(dir)?;
+        must_quit = true;
+    }
 
     // read the install related arguments
     let install_args = InstallLaunchArgs::from(&args)?;
 
     // execute installation things required by launch args
-    let mut must_quit = false;
     if let Some(state) = install_args.set_install_state {
         write_state(state)?;
         must_quit = true;

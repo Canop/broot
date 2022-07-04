@@ -1,8 +1,8 @@
 ### next
-Major Feature: imports
+#### Major Feature: imports
 A configuration file can now import one or several other ones.
 An import can have a condition on the terminal's background color, which makes it possible to import either a dark or a light theme depending on the current terminal settings.
-You're also encouraged to split your configuration in several files.
+You're also encouraged to split your configuration in several files, as is now done for the default configuration.
 
 ### v1.13.3 - 2022-06-19
 <a name="v1.13.2"></a>

@@ -146,6 +146,10 @@ pub struct Args {
     #[clap(long, action)]
     pub get_root: bool,
 
+    /// Write default conf files in given directory
+    #[clap(long, value_parser)]
+    pub write_default_conf: Option<PathBuf>,
+
     /// A socket that broot sends commands to before quitting
     #[cfg(unix)]
     #[clap(long, value_parser)]

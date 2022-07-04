@@ -19,10 +19,7 @@ use {
     crossterm::style::Attribute,
     fnv::FnvHashMap,
     serde::Deserialize,
-    std::{
-        fs, io,
-        path::{Path, PathBuf},
-    },
+    std::path::PathBuf,
 };
 
 macro_rules! overwrite {
@@ -127,27 +124,21 @@ impl Conf {
     /// read the configuration file from the default OS specific location.
     /// Create it if it doesn't exist
     pub fn from_default_location() -> Result<Conf, ProgramError> {
+        let conf_dir = super::dir();
         let conf_filepath = Conf::default_location();
         if !conf_filepath.exists() {
-            Conf::write_sample(&conf_filepath)?;
+            write_default_conf_in(conf_dir)?;
             println!(
-                "New Configuration file written in {}{:?}{}.",
+                "New Configuration files written in {}{:?}{}.",
                 Attribute::Bold,
-                &conf_filepath,
+                &conf_dir,
                 Attribute::Reset,
             );
-            println!("You should have a look at it.");
+            println!("You should have a look at them.");
         }
         let mut conf = Conf::default();
-        conf.read_file(conf_filepath.clone())?;
+        conf.read_file(conf_filepath)?;
         Ok(conf)
-    }
-
-    /// assume the file doesn't yet exist
-    pub fn write_sample(filepath: &Path) -> Result<(), io::Error> {
-        fs::create_dir_all(filepath.parent().unwrap())?;
-        fs::write(filepath, DEFAULT_CONF_FILE)?;
-        Ok(())
     }
 
     pub fn solve_conf_path(&self, path: &str) -> Option<PathBuf> {
