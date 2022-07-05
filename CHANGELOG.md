@@ -3,6 +3,8 @@
 A configuration file can now import one or several other ones.
 An import can have a condition on the terminal's background color, which makes it possible to import either a dark or a light theme depending on the current terminal settings.
 You're also encouraged to split your configuration in several files, as is now done for the default configuration.
+### Minor changes
+- fix `--cmd` not working (it was accidentaly renamed in `--commands`, `-c` was still working) - Fix #570
 
 ### v1.13.3 - 2022-06-19
 <a name="v1.13.2"></a>
