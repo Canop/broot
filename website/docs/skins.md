@@ -9,7 +9,7 @@ To setup a new skin
 If you installed broot since version 1.14, you should already have a few skins in your configuration directory.
 You may look for other ones in the [dev repo](https://github.com/Canop/broot/tree/master/resources/default-conf).
 
-The default configuration now selects the skin according to the light or dark mode.
+The default configuration selects the skin according to the light or dark mode.
 
 # Skin definition
 

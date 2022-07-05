@@ -16,12 +16,12 @@ Direct links:
 
 Target|Details|Download
 -|-|-
-Linux | clipoard support| [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
-Android | clipoard support | [aarch64-linux-android](https://dystroy.org/broot/download/aarch64-linux-android/broot)
-Linux/glibc | no clipoard support, compatible with older GLIBC | [x86_64-unknown-linux-gnu](https://dystroy.org/broot/download/x86_64-unknown-linux-gnu/broot)
-Linux/musl | no clipoard support | [x86_64-unknown-linux-musl](https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot)
-Raspberry | no clipoard support | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)
-Windows 10+ | clipoard support | [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
+Linux | clipboard support| [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
+Android | clipboard support | [aarch64-linux-android](https://dystroy.org/broot/download/aarch64-linux-android/broot)
+Linux/glibc | no clipboard support, compatible with older GLIBC | [x86_64-unknown-linux-gnu](https://dystroy.org/broot/download/x86_64-unknown-linux-gnu/broot)
+Linux/musl | no clipboard support | [x86_64-unknown-linux-musl](https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot)
+Raspberry | no clipboard support | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)
+Windows 10+ | clipboard support | [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
 Shell completion  | | [completion/](https://dystroy.org/broot/download/completion)
 
 You may download previous releases on [GitHub releases](https://github.com/Canop/broot/releases).

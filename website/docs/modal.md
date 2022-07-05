@@ -33,6 +33,7 @@ Broot may be in one of two modes:
 1. **command** mode, with input not focused, and single key shortcuts enabled
 
 In *command* mode, you'll find those keys already configured:
+
 * `j` and `k` to go down and up
 * `h` and `l` to go to parent or to enter a directory
 
