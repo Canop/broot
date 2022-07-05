@@ -696,7 +696,7 @@ impl App {
 
         self.screen.clear_bottom_right_char(w, &skin.focused)?;
 
-        if let Some(raw_sequence) = &con.launch_args.commands {
+        if let Some(raw_sequence) = &con.launch_args.cmd {
             self.tx_seqs
                 .send(Sequence::new_local(raw_sequence.to_string()))
                 .unwrap();
