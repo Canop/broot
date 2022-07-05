@@ -50,8 +50,8 @@
     ###############################################################
     # Column order
     # cols_order, if specified, must be a permutation of the following
-    # array. You should keep the name at the end as it has a variable
-    # length.
+    # array. You should keep the name column at the end as it has a
+    # variable length.
     #
     # cols_order: [
     #     mark

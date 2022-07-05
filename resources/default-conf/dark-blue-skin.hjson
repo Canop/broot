@@ -4,6 +4,8 @@
 # To create your own skin, copy this file, change the entries
 # and import your skin file from the main conf file (look
 # for "imports")
+#
+# Doc at https://dystroy.org/broot/skins/
 ###############################################################
 {
 
