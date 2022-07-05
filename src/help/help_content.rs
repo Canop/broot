@@ -50,7 +50,7 @@ Verbs, skin, and more, are configured in
 ${config-files
 * **${path}**
 }
-(hit *enter* to open)
+(hit *enter* to open the main configuration file)
 
 ## Launch Arguments
 
