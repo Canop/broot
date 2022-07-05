@@ -84,6 +84,14 @@ Ubuntu and Debian users may use this apt repository: [https://packages.azlux.fr/
 
     emerge broot
 
------------------------------------
+# Reinstall
+
+To reinstall, just change the executable.
+
+It's always been compatible with the previous configuration files but if your previous installation is old (especially if it's pre 1.14), you might want to get the new [configuration files](https://github.com/Canop/broot/resources/default-conf) which have more relevant sections.
+
+The simplest solution is to remove your old configuration directory (or rename if you want to keep things) so that broot recreates it.
+
+# After installation
 
 Now you should [install the br shell function](../install-br/).

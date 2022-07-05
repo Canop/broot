@@ -1,4 +1,5 @@
-### next
+### v1.14.0 - 2022-07-05
+<a name="v1.14.0"></a>
 #### Major Feature: imports
 A configuration file can now import one or several other ones.
 An import can have a condition on the terminal's background color, which makes it possible to import either a dark or a light theme depending on the current terminal settings.
