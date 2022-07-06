@@ -68,6 +68,9 @@ Starting from version 1.14, the default configuration is released in several fil
 !!!	Note
 	Be careful when installing a configuration file from an unknown source: it may contain an arbitrary command to execute. Check it before importing it
 
+!!! Note
+	Background color determination is currently disabled (always "unknown") on non linux systems. This is expected to be fixed.
+
 # Default flags
 
 Broot accepts a few flags at launch (the complete list is available with `broot --help`.

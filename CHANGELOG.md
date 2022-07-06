@@ -1,3 +1,7 @@
+### v1.14.1 - 2022-07-06
+<a name="v1.14.1"></a>
+Due to a technical problem, background color based skin selection is disabled on non linux systems.
+
 ### v1.14.0 - 2022-07-05
 <a name="v1.14.0"></a>
 #### Major Feature: imports

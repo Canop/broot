@@ -15,6 +15,7 @@ pub enum Luma {
 
 /// Return the light of the terminal background, which is a value
 /// between 0 (black) and 1 (white).
+#[cfg(target_os = "linux")]
 pub fn luma() -> &'static Result<f32, terminal_light::TlError> {
     static LUMA: Lazy<Result<f32, terminal_light::TlError>> = Lazy::new(|| {
         let luma = time!(Debug, terminal_light::luma());
@@ -22,6 +23,11 @@ pub fn luma() -> &'static Result<f32, terminal_light::TlError> {
         luma
     });
     &*LUMA
+}
+
+#[cfg(not(target_os = "linux"))]
+pub fn luma() -> Result<&'static f32, &'static str> {
+    Err("not implemented on this OS")
 }
 
 impl Luma {
