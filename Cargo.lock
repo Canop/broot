@@ -187,7 +187,7 @@ dependencies = [
  "umask",
  "unicode-width",
  "users",
- "xterm-query",
+ "xterm-query 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -1863,13 +1863,12 @@ dependencies = [
 [[package]]
 name = "terminal-light"
 version = "0.8.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f279e95099c18b04b1b5dcab98fa6f2a50908754cbf453ddbb99c392b7d662d1"
+source = "git+https://github.com/Canop/terminal-light?branch=mio#2077bc03573b61f967aec001a6f64da78f11a5eb"
 dependencies = [
  "coolor",
  "crossterm",
  "thiserror",
- "xterm-query",
+ "xterm-query 0.1.0 (git+https://github.com/Canop/xterm-query?branch=mio)",
 ]
 
 [[package]]
@@ -2232,6 +2231,16 @@ version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fcf3ae9267e2d939a754366532ed14fc9c4eeb08eb4f51884c3036c85e9120b4"
 dependencies = [
+ "nix",
+ "thiserror",
+]
+
+[[package]]
+name = "xterm-query"
+version = "0.1.0"
+source = "git+https://github.com/Canop/xterm-query?branch=mio#0a6bb9438ae532931a363e02922a71c5e775bbe7"
+dependencies = [
+ "mio",
  "nix",
  "thiserror",
 ]
