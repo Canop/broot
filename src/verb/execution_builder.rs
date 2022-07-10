@@ -45,7 +45,7 @@ impl<'b> ExecutionStringBuilder<'b> {
         invocation_parser: &Option<InvocationParser>,
         sel_info: SelInfo<'b>,
         app_state: &'b AppState,
-        invocation_args: &Option<String>,
+        invocation_args: Option<&String>,
     ) -> Self {
         let invocation_values = invocation_parser
             .as_ref()
@@ -223,16 +223,24 @@ impl<'b> ExecutionStringBuilder<'b> {
         }
     }
 
+    fn base_dir(&self) -> &Path {
+        self.sel_info
+            .one_sel()
+            .map_or(self.root, |sel| sel.path)
+    }
+
     /// build a path
     pub fn path(
         &self,
         pattern: &str,
     ) -> PathBuf {
-        PathBuf::from(
-            GROUP.replace_all(
+        path::path_from(
+            self.base_dir(),
+            path::PathAnchor::Unspecified,
+            &GROUP.replace_all(
                 pattern,
                 |ec: &Captures<'_>| self.get_capture_replacement(ec),
-            ).to_string()
+            )
         )
     }
     /// build a shell compatible command, with escapings

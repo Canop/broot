@@ -9,7 +9,7 @@ use {
 /// Build a usable path from a user input which may be absolute
 /// (if it starts with / or ~) or relative to the supplied base_dir.
 /// (we might want to try detect windows drives in the future, too)
-pub fn path_from<P: AsRef<Path>>(
+pub fn path_from<P: AsRef<Path> + std::fmt::Debug>(
     base_dir: P,
     anchor: PathAnchor,
     input: &str,
@@ -52,7 +52,10 @@ pub fn path_from<P: AsRef<Path>>(
     }
 }
 
-pub fn path_str_from<P: AsRef<Path>>(base_dir: P, input: &str) -> String {
+pub fn path_str_from<P: AsRef<Path> + std::fmt::Debug>(
+    base_dir: P,
+    input: &str,
+) -> String {
     path_from(base_dir, PathAnchor::Unspecified, input)
         .to_string_lossy()
         .to_string()

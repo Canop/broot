@@ -499,6 +499,14 @@ And you can add your own ones:
 ```hjson
 { key: "ctrl-up", internal: ":focus .." }
 { key: "ctrl-d", internal: ":focus ~/dev" }
+{ // make :go an alias of :focus
+    invocation: "go {path}",
+    internal: ":focus {path}"
+}
+{
+    invocation: "gotar {path}",
+    internal: ":focus {path}/target"
+}
 ```
 ```toml
 [[verbs]]

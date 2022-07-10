@@ -476,7 +476,14 @@ pub trait PanelState {
         }
         let res = match &verb.execution {
             VerbExecution::Internal(internal_exec) => {
-                self.on_internal(w, internal_exec, invocation, trigger_type, app_state, cc)
+                self.on_internal(
+                    w,
+                    internal_exec,
+                    invocation,
+                    trigger_type,
+                    app_state,
+                    cc,
+                )
             }
             VerbExecution::External(external) => {
                 self.execute_external(w, verb, external, invocation, app_state, cc)
@@ -522,9 +529,9 @@ pub trait PanelState {
             sel_info,
             app_state,
             if let Some(inv) = invocation {
-                &inv.args
+                inv.args.as_ref()
             } else {
-                &None
+                None
             },
         );
         external_execution.to_cmd_result(w, exec_builder, cc.app.con)
@@ -551,9 +558,9 @@ pub trait PanelState {
             sel_info,
             app_state,
             if let Some(inv) = invocation {
-                &inv.args
+                inv.args.as_ref()
             } else {
-                &None
+                None
             },
         );
         // TODO what follows is dangerous: if an inserted group value contains the separator,
@@ -617,7 +624,7 @@ pub trait PanelState {
                             w,
                             verb,
                             Some(invocation),
-                            TriggerType::Input,
+                            TriggerType::Input(verb),
                             app_state,
                             cc,
                         )

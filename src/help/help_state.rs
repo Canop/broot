@@ -37,7 +37,7 @@ impl HelpState {
     ) -> HelpState {
         let text_area = Area::uninitialized(); // will be fixed at drawing time
         let config_path = con.config_paths
-            .last()
+            .first()
             .cloned()
             .unwrap_or_else(Conf::default_location);
         HelpState {

@@ -96,6 +96,16 @@ impl Selection<'_> {
 }
 
 impl<'a> SelInfo<'a> {
+    pub fn from_path(path: &'a Path) -> Self {
+        Self::One(
+            Selection {
+                stype: SelectionType::from(path),
+                line: 0,
+                path,
+                is_exe: false, // OK, I don't know
+            }
+        )
+    }
     pub fn count_paths(&self) -> usize {
         match self {
             SelInfo::None => 0,
@@ -123,6 +133,9 @@ impl<'a> SelInfo<'a> {
             SelInfo::One(sel) => Some(sel),
             _ => None,
         }
+    }
+    pub fn one_path(self) -> Option<&'a Path> {
+        self.one_sel().map(|sel| sel.path)
     }
     pub fn extension(&self) -> Option<&str> {
         match self {

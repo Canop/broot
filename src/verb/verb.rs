@@ -4,10 +4,14 @@ use {
         app::*,
         errors::ConfError,
         keys::KEY_FORMAT,
-        path::{self, PathAnchor},
+        path::PathAnchor,
     },
     crossterm::event::KeyEvent,
-    std::path::PathBuf,
+    std::{
+        cmp::PartialEq,
+        path::PathBuf,
+        ptr,
+    },
 };
 
 /// what makes a verb.
@@ -20,6 +24,9 @@ use {
 /// - internal behaviors (focusing a path, going back, showing the help, etc.)
 /// Some verbs are builtins, some other ones are created by configuration.
 /// Both builtins and configured vers can be internal or external based.
+///
+/// Verbs can't be cloned. Two verbs are equal if they have the same address
+/// in memory.
 #[derive(Debug)]
 pub struct Verb {
     /// names (like "cd", "focus", "focus_tab", "c") by which
@@ -65,6 +72,12 @@ pub struct Verb {
     /// whether to show the verb in help screen
     /// (if we show all input related actions, the doc is unusable)
     pub show_in_doc: bool
+}
+
+impl PartialEq for Verb {
+    fn eq(&self, other: &Self) -> bool {
+        ptr::eq(self, other)
+    }
 }
 
 impl Verb {
@@ -221,19 +234,13 @@ impl Verb {
         // thus I hardcode the test here.
         if let VerbExecution::Internal(internal_exec) = &self.execution {
             if internal_exec.internal == Internal::focus {
-                if let Some(sel) = sel_info.one_sel() {
-                    let arg = invocation.args.as_ref().or(internal_exec.arg.as_ref());
-                    let pb;
-                    let arg_path = if let Some(arg) = arg {
-                        pb = path::path_from(sel.path, PathAnchor::Unspecified, arg);
-                        &pb
-                    } else {
-                        sel.path
-                    };
-                    return format!("Hit *enter* to {} `{}`", name, arg_path.to_string_lossy());
-                } else {
-                    return "You can't focus without selection".to_string();
-                }
+                return internal_focus::get_status_markdown(
+                    self,
+                    internal_exec,
+                    sel_info,
+                    invocation,
+                    app_state,
+                );
             }
         }
 
@@ -242,7 +249,7 @@ impl Verb {
                 &self.invocation_parser,
                 sel_info,
                 app_state,
-                &invocation.args,
+                invocation.args.as_ref(),
             )
         };
         if let VerbExecution::Sequence(seq_ex) = &self.execution {
