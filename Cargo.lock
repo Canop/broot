@@ -137,7 +137,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "broot"
-version = "1.14.1"
+version = "1.14.2"
 dependencies = [
  "ahash 0.7.6",
  "ansi_colours",
@@ -187,7 +187,7 @@ dependencies = [
  "umask",
  "unicode-width",
  "users",
- "xterm-query 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "xterm-query 0.1.0",
 ]
 
 [[package]]
@@ -1862,13 +1862,14 @@ dependencies = [
 
 [[package]]
 name = "terminal-light"
-version = "0.8.1"
-source = "git+https://github.com/Canop/terminal-light?branch=mio#2077bc03573b61f967aec001a6f64da78f11a5eb"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d07063eee8d7fdc8dd56ed0e6668b0ead96815410a5e3ebeedf4eceb6f49f914"
 dependencies = [
  "coolor",
  "crossterm",
  "thiserror",
- "xterm-query 0.1.0 (git+https://github.com/Canop/xterm-query?branch=mio)",
+ "xterm-query 0.2.0",
 ]
 
 [[package]]
@@ -2237,8 +2238,9 @@ dependencies = [
 
 [[package]]
 name = "xterm-query"
-version = "0.1.0"
-source = "git+https://github.com/Canop/xterm-query?branch=mio#0a6bb9438ae532931a363e02922a71c5e775bbe7"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ec02abe9c7efbcb010adc0d90bc4a054653477cd4a3eb8eef5a689799c146a13"
 dependencies = [
  "mio",
  "nix",

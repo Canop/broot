@@ -1,3 +1,8 @@
+### v1.14.2 - 2022-07-11
+<a name="v1.14.2"></a>
+- Terminal background luma determination now works on all tested unixes, including MacOS - Fix #575
+- Allow :focus based verbs to take a pattern - Fix #389
+
 ### v1.14.1 - 2022-07-06
 <a name="v1.14.1"></a>
 Due to a technical problem, background color based skin selection is disabled on non linux systems.
