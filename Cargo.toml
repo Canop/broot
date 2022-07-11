@@ -59,6 +59,7 @@ syntect = { package = "syntect-no-panic", version = "4.6.1" } # see issue #485
 tempfile = "3.2"
 termimad = "0.20.2"
 terminal-clipboard = { version = "0.3.1", optional = true }
+terminal-light = { version = "0.8.1", git = "https://github.com/Canop/terminal-light", branch = "mio" }
 toml = "0.5"
 umask = "2.0.0"
 unicode-width = "0.1.8"
@@ -70,9 +71,6 @@ glassbench = "0.3.3"
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.11.0"
 users = "0.11"
-
-[target.'cfg(target_os = "linux")'.dependencies]
-terminal-light = "0.8.1"
 
 [target.'cfg(windows)'.dependencies]
 is_executable = "1.0.1"
@@ -118,5 +116,6 @@ harness = false
 # syntect = { path = "../syntect" }
 # syntect-no-panic = { path = "../syntect" }
 # termimad = { path = "../termimad" }
+# terminal-light = { path = "../terminal-light" }
 # terminal-clipboard = { path = "../terminal-clipboard" }
 # umask = { path = "../umask" }
