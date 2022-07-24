@@ -1,4 +1,4 @@
-//! fonctions printing a tree or a path
+//! functions printing a tree or a path
 
 use {
     crate::{

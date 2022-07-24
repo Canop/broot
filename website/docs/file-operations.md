@@ -132,7 +132,7 @@ You may have noticed the `+0`. If you're in a preview on a specific line, or you
 
 ![file op](img/20210603-e-line.png)
 
-Here, on <kbd>enter</kbd>,  we'd go to line 13 where is the first occurence of "lazy-" in this file.
+Here, on <kbd>enter</kbd>,  we'd go to line 13 where is the first occurrence of "lazy-" in this file.
 
 (you may change the configuration if your editor has a different syntax)
 

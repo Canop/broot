@@ -68,7 +68,7 @@ impl FilteredStage {
         fs.compute(stage);
         fs
     }
-    /// chech whether the stage has changed, and update the
+    /// check whether the stage has changed, and update the
     /// filtered list if necessary
     pub fn update(&mut self, stage: &Stage) -> bool {
         if stage.version() == self.stage_version {

@@ -466,7 +466,7 @@ internal = ":input_del_word_right"
 
 ## Copy, Cut, Paste, in input
 
-Pasting into input is bound to <kbd>ctrl</kbd><kbd>V</kbd> but copying from input and cutting aren't bount by default, because you don't usually write long texts here.
+Pasting into input is bound to <kbd>ctrl</kbd><kbd>V</kbd> but copying from input and cutting aren't bound by default, because you don't usually write long texts here.
 You may add those bindings if you wish:
 
 ```hjson

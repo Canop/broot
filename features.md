@@ -4,7 +4,7 @@ This page defines the optional features which may be applied on compilation:
 
 * clipboard
 
-Feature gating is usually temporary: they may be removed when a technical problem is solved, when a feature becomes "mainstream", or when it's dropped because no user mentionned using it.
+Feature gating is usually temporary: they may be removed when a technical problem is solved, when a feature becomes "mainstream", or when it's dropped because no user mentioned using it.
 
 ## The "clipboard" feature
 

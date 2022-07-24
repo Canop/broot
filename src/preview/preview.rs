@@ -30,7 +30,7 @@ pub enum Preview {
 
 impl Preview {
     /// build a preview, never failing (but the preview can be Preview::IOError).
-    /// If the prefered mode can't be applied, an other mode is chosen.
+    /// If the preferred mode can't be applied, an other mode is chosen.
     pub fn new(
         path: &Path,
         prefered_mode: Option<PreviewMode>,

@@ -26,7 +26,7 @@ The first problem you might see is the presence of artifacts. This may happen in
 
 A workaround is to create a skin (for example by uncommenting the one in `conf.toml`) and to remove all `Italic` and `Bold`.
 
-Additionaly, if backgrounds can't be properly displayed, you may consider [marking selected lines](../conf_file/#selection-mark).
+Additionally, if backgrounds can't be properly displayed, you may consider [marking selected lines](../conf_file/#selection-mark).
 
 Another problem is the fact the `br` function doesn't set a proper pane name (you'll probably see the name of your shell instead of broot). This may be [solved with a modified shell function](https://github.com/Canop/broot/issues/270).
 

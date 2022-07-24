@@ -10,7 +10,7 @@ The current version of broot works on linux, mac and windows (win 10+).
 
 Binaries are made available at every release in [download](https://dystroy.org/broot/download).
 
-The archives there contain all precompiled versions, as well as the licenses and other files. They're the prefered distribution way.
+The archives there contain all precompiled versions, as well as the licenses and other files. They're the preferred distribution way.
 
 Direct links:
 

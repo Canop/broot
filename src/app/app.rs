@@ -120,7 +120,7 @@ impl App {
         }
     }
 
-    /// return the current index of the panel whith given id
+    /// return the current index of the panel with given id
     fn panel_id_to_idx(&self, id: PanelId) -> Option<usize> {
         self.panels.iter().position(|panel| panel.id == id)
     }

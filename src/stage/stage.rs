@@ -12,7 +12,7 @@ use {
 /// a staging area: selection of several paths
 /// for later user
 ///
-/// The structure is versionned to allow caching
+/// The structure is versioned to allow caching
 /// of derived structs (filtered list mainly). This
 /// scheme implies the stage isn't cloned, and that
 /// it exists in only one instance

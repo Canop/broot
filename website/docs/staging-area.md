@@ -15,7 +15,7 @@ verb | default binding | comment
 `:unstage` | <kbd>-</kbd> | only in [command mode](../modal#usage)
 `:clear_stage` |  | shortcut: `:cls`
 
-When staging a file, the staging area opens (but doesn't get focused) if it wasn't and there's not aleady the max number of panels open.
+When staging a file, the staging area opens (but doesn't get focused) if it wasn't and there's not already the max number of panels open.
 
 # Execute a command
 

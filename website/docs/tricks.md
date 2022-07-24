@@ -146,7 +146,7 @@ apply_to = "file"
 
 (the `apply_to` line ensures this verb isn't called when the selected line is a directory)
 
-If you need to use a different application for some kind(s) of file, you may additionaly [filter by extension](../conf_verbs/#file-extensions).
+If you need to use a different application for some kind(s) of file, you may additionally [filter by extension](../conf_verbs/#file-extensions).
 
 # Git Status
 

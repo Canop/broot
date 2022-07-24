@@ -62,7 +62,7 @@ pub enum Launchable {
 }
 
 /// If a part starts with a '$', replace it by the environment variable of the same name.
-/// This part is splitted too (because of https://github.com/Canop/broot/issues/114)
+/// This part is split too (because of https://github.com/Canop/broot/issues/114)
 fn resolve_env_variables(parts: Vec<String>) -> Vec<String> {
     let mut resolved = Vec::new();
     for part in parts.into_iter() {

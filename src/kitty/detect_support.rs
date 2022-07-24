@@ -52,7 +52,7 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
         }
     }
 
-    // Checking support with a proper CSI sequence should be the prefered way but
+    // Checking support with a proper CSI sequence should be the preferred way but
     // it doesn't work reliably on wezterm and requires a wait on other terminals.
     // As both Kitty and WezTerm set env vars allowing an easy detection, this
     // CSI based querying isn't necessary right now.

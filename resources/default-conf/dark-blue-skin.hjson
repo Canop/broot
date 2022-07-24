@@ -12,7 +12,7 @@
     ###############################################################
     # Skin
     # If you want to change the colors of broot,
-    # uncomment the following bloc and start messing
+    # uncomment the following block and start messing
     # with the various values.
     # A skin entry value is made of two parts separated with a '/':
     # The first one is the skin for the active panel.

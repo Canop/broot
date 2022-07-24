@@ -6,7 +6,7 @@ Broot can also act as client or server, which lets you
 * control broot from another process
 * query the state of broot from another process
 
-Exemple use cases:
+Example use cases:
 
 * synchronize broot with another program (shell, editor, etc.), both ways
 * have a viewer automatically display the file selected in broot

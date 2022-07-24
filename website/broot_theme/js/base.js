@@ -22,7 +22,7 @@ $(document).ready(function() {
         $search_modal.modal();
     }
 
-    // make sure search input gets autofocus everytime modal opens.
+    // make sure search input gets autofocus every time modal opens.
     $search_modal.on('shown.bs.modal', function () {
         $search_modal.find('#mkdocs-search-query').focus();
     });
@@ -100,7 +100,7 @@ $("li.disabled a").click(function() {
 });
 
 // See https://www.cambiaresearch.com/articles/15/javascript-char-codes-key-codes
-// We only list common keys below. Obscure keys are omited and their use is discouraged.
+// We only list common keys below. Obscure keys are omitted and their use is discouraged.
 var keyCodes = {
   8: 'backspace',
   9: 'tab',

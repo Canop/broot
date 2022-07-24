@@ -33,14 +33,14 @@ fn find_conf_dir() -> PathBuf {
 #[cfg(target_os = "macos")]
 fn find_conf_dir() -> PathBuf {
     if let Some(user_dirs) = directories::UserDirs::new() {
-        // We first search in ~/.config/broot which should be the prefered solution
-        let prefered = user_dirs.home_dir().join(".config/broot");
-        if prefered.exists() {
-            return prefered;
+        // We first search in ~/.config/broot which should be the preferred solution
+        let preferred = user_dirs.home_dir().join(".config/broot");
+        if preferred.exists() {
+            return preferred;
         }
         // The directories crate has a non usual choice of config directory,
         // especially for a CLI application. We use it only when
-        // the prefered directory doesn't exist and this one exists.
+        // the preferred directory doesn't exist and this one exists.
         // See https://github.com/Canop/broot/issues/103
         let second_choice = app_dirs().config_dir().to_path_buf();
         if second_choice.exists() {
@@ -49,7 +49,7 @@ fn find_conf_dir() -> PathBuf {
             return second_choice;
         }
         // Either the config has been scraped or it's a new installation
-        return prefered;
+        return preferred;
     } else {
         // there's no home. There are probably other problems too but here we
         // are just looking for a place for our config, not for a shelter for all

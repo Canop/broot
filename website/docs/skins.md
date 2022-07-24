@@ -4,7 +4,7 @@
 To setup a new skin
 
 1. download or create a configuration file, either TOML or Hjson, with a `skin` map
-2. [import](../conf_file#imports) this file from the main one, either unconditionaly or depending on the terminal's luma (dark or light)
+2. [import](../conf_file#imports) this file from the main one, either unconditionally or depending on the terminal's luma (dark or light)
 
 If you installed broot since version 1.14, you should already have a few skins in your configuration directory.
 You may look for other ones in the [dev repo](https://github.com/Canop/broot/tree/master/resources/default-conf).
