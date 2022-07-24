@@ -7,7 +7,7 @@ The "modal mode", which may be familiar to vim users, changes a little the way y
 - The upside is you can use keyboard shortcuts without <kbd>ctrl</kbd>, for example you may move the selection with <kbd>j</kbd> and <kbd>k</kbd>.
 - The downside is you have one letter more to type to start searching, which isn't to dismiss as searching is usually the first thing you do in broot.
 
-I recommand you **don't** activate this mode until you really tried broot. Broot isn't a text editor and can't be confused with one. This mode may be more comfortable when you constantly jump from vim to broot but only after you understood how broot works.
+I recommend you **don't** activate this mode until you really tried broot. Broot isn't a text editor and can't be confused with one. This mode may be more comfortable when you constantly jump from vim to broot but only after you understood how broot works.
 
 You may be an avid vim user, as I am, and still prefer not to use modality in broot. Starting in *command* mode means you have one more letter to type before searching, because search is done in *input* mode. And broot is search oriented and often used in very short sessions (less than 5 seconds from intent to launch to being back in the shell in the right directory or editing the right file in your favorite editor).
 

@@ -84,7 +84,7 @@ static BINARY_EXTENSIONS: Set<&'static str> = phf_set! {
 };
 
 /// tells whether the file extension is one of a file format
-/// which shouln't be searched as text
+/// which shouldn't be searched as text
 pub fn is_known_binary(ext: &str) -> bool {
     BINARY_EXTENSIONS.contains(ext)
 }

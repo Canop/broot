@@ -153,7 +153,7 @@ impl<'c> TreeBuilder<'c> {
             regular_file: file_type.is_file(),
         };
         let direct_match = if let Some(pattern_score) = self.options.pattern.pattern.score_of(candidate) {
-            // we dope direct matchs to compensate for depth doping of parent folders
+            // we dope direct matches to compensate for depth doping of parent folders
             score += pattern_score + 10;
             true
         } else {

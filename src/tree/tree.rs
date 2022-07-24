@@ -67,7 +67,7 @@ impl Tree {
 
     /// do what must be done after line additions or removals:
     /// - sort the lines
-    /// - compute left branchs
+    /// - compute left branches
     pub fn after_lines_changed(&mut self) {
 
         // we need to order the lines to build the tree.

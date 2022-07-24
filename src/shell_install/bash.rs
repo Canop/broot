@@ -83,7 +83,7 @@ fn get_script_path() -> PathBuf {
 
 /// return the paths to the files in which the br function is sourced.
 /// Paths in SOURCING_FILES can be absolute or relative to the home
-/// directory. Environnement variables designed as $NAME are interpolated.
+/// directory. Environment variables designed as $NAME are interpolated.
 fn get_sourcing_paths() -> Vec<PathBuf> {
     let homedir_path = UserDirs::new()
         .expect("no home directory!")

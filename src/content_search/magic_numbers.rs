@@ -19,7 +19,7 @@ pub const MIN_FILE_SIZE: usize = 100;
 // ];
 
 // signatures starting with 00, FF or FE don't need to be put here
-// note: the phf_set macro doesn't seem to allow u32 litterals like 0x504B0304
+// note: the phf_set macro doesn't seem to allow u32 literals like 0x504B0304
 static SIGNATURES_4: Set<[u8; 4]> = phf_set! {
     [ 0x50, 0x4B, 0x03, 0x04 ], // zip file format and formats based on it, such as EPUB, JAR, ODF, OOXML
     [ 0x50, 0x4B, 0x05, 0x06 ], // zip file format and formats based on it, such as EPUB, JAR, ODF, OOXML
@@ -68,7 +68,7 @@ static SIGNATURES_4: Set<[u8; 4]> = phf_set! {
 /// return true when the first bytes of the file aren't polite or match one
 /// of the known binary signatures.
 /// Signatures are taken in https://en.wikipedia.org/wiki/List_of_file_signatures
-/// Some signatures are ommited from list because they would not go past the
+/// Some signatures are omitted from list because they would not go past the
 /// specific test of the first byte anyway.
 ///
 /// If you feel this list should maybe be changed, contact

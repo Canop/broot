@@ -8,7 +8,7 @@ use {
 
 
 /// all the skin things used by the broot application
-/// during runing
+/// during running
 pub struct AppSkin {
 
     /// the skin used in the focused panel

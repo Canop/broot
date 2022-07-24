@@ -198,7 +198,7 @@ impl Default for SearchModeMap {
         let mut smm = SearchModeMap {
             entries: Vec::new(),
         };
-        // the last keys are prefered
+        // the last keys are preferred
         smm.setm(&["ne", "en", "e"], SearchMode::NameExact);
         smm.setm(&["nf", "fn", "n", "f"], SearchMode::NameFuzzy);
         smm.setm(&["r", "nr", "rn", ""], SearchMode::NameRegex);

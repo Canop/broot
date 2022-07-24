@@ -63,7 +63,7 @@ pub struct AppContext {
     pub true_colors: bool,
 
     /// map extensions to icons, icon set chosen based on config
-    /// Send, Sync safely beause once created, everything is immutable
+    /// Send, Sync safely because once created, everything is immutable
     pub icons: Option<Box<dyn IconPlugin + Send + Sync>>,
 
     /// modal (aka "vim) mode enabled
@@ -134,7 +134,7 @@ impl AppContext {
         let initial_root = get_root_path(&launch_args)?;
 
         // tree options are built from the default_flags
-        // found in the config file(s) (if any) then overriden
+        // found in the config file(s) (if any) then overridden
         // by the cli args
         let mut initial_tree_options = TreeOptions::default();
         initial_tree_options.apply_config(config)?;

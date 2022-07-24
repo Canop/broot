@@ -56,7 +56,7 @@ impl Dam {
     /// The observer can safely be moved to another thread
     /// but Be careful not to use it
     /// after the event listener started again. In any case
-    /// using try_compute should be prefered for immediate
+    /// using try_compute should be preferred for immediate
     /// return to the ui thread.
 
     pub fn observer(&self) -> DamObserver {

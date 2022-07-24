@@ -49,7 +49,7 @@ impl Server {
                                 let root = root.lock().unwrap();
                                 let answer = Message::Root(root.to_string_lossy().to_string());
                                 match answer.write(&mut stream) {
-                                    Ok(()) => debug!("root path successfuly returned"),
+                                    Ok(()) => debug!("root path successfully returned"),
                                     Err(e) => warn!("error while answering: {:?}", e),
                                 }
                                 None

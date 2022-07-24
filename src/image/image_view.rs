@@ -90,7 +90,7 @@ impl ImageView {
             .or_else(|| styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
 
-        // we avoid drawing when we were just diplayed
+        // we avoid drawing when we were just displayed
         // on the last drawing_count and the area is the same.
         let drawing_info = DrawingInfo {
             drawing_count: disc.count,

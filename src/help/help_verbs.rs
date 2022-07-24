@@ -16,7 +16,7 @@ pub struct MatchingVerbRow<'v> {
 
 impl MatchingVerbRow<'_> {
     /// the name in markdown (with matching chars in bold if
-    /// some filtering occured)
+    /// some filtering occurred)
     pub fn name(&self) -> &str {
         // there should be a better way to write this
         self.name

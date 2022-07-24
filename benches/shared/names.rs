@@ -9,7 +9,7 @@ pub static NAMES: &[&str] = &[
     "test again",
     "des réveils",
     "pi",
-    "a quite longuer name",
+    "a quite longer name",
     "compliqué - 这个大象有多重",
     "brrooT",
     "1",

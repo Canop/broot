@@ -46,14 +46,14 @@ fn external(
 }
 
 /// declare the built_in verbs, the ones which are available
-/// in standard (they still may be overriden by configuration)
+/// in standard (they still may be overridden by configuration)
 pub fn builtin_verbs() -> Vec<Verb> {
     use super::{ExternalExecutionMode::*, Internal::*};
     vec![
         internal(back),
 
         // input actions, not visible in doc, but available for
-        // exemple in remote control
+        // example in remote control
         internal(input_clear).no_doc(),
         internal(input_del_char_left).no_doc(),
         internal(input_del_char_below).no_doc(),

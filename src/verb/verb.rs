@@ -230,7 +230,7 @@ impl Verb {
         // there's one special case: the ̀ :focus` internal. As long
         // as no other internal takes args, and no other verb can
         // have an optional argument, I don't try to build a
-        // generic behavior for internal optionaly taking args and
+        // generic behavior for internal optionally taking args and
         // thus I hardcode the test here.
         if let VerbExecution::Internal(internal_exec) = &self.execution {
             if internal_exec.internal == Internal::focus {

@@ -17,7 +17,7 @@ use {
 };
 
 /// like a tree line, but with the info needed during the build
-/// This structure isn't usable independantly from the tree builder
+/// This structure isn't usable independently from the tree builder
 pub struct BLine {
     pub parent_id: Option<BId>,
     pub path: PathBuf,
@@ -96,7 +96,7 @@ impl BLine {
             return true;
         }
         if self.special_handling == SpecialHandling::Enter {
-            // we must chek we're a link to a directory
+            // we must check we're a link to a directory
             if self.file_type.is_symlink() {
                 if let Ok(target) = fs::read_link(&self.path) {
                     let mut target_path = PathBuf::from(&target);

@@ -19,7 +19,7 @@ use {
 
 const UPPER_HALF_BLOCK: char = '▀';
 
-/// A "double line" normaly contains two lines of pixels
+/// A "double line" normally contains two lines of pixels
 /// which are displayed as one line of characters, the
 /// UPPER_HALF_BLOCK foreground for the upper pixel and
 /// the background of the char for the lower pixel.

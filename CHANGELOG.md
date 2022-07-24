@@ -14,7 +14,7 @@ A configuration file can now import one or several other ones.
 An import can have a condition on the terminal's background color, which makes it possible to import either a dark or a light theme depending on the current terminal settings.
 You're also encouraged to split your configuration in several files, as is now done for the default configuration.
 ### Minor changes
-- fix `--cmd` not working (it was accidentaly renamed in `--commands`, `-c` was still working) - Fix #570
+- fix `--cmd` not working (it was accidentally renamed in `--commands`, `-c` was still working) - Fix #570
 
 ### v1.13.3 - 2022-06-19
 <a name="v1.13.2"></a>
@@ -164,7 +164,7 @@ Note: The released archive doesn't include an Android build - see https://github
 - `:tree_up` and `:tree_down` internals, mapped to ctrl-up and ctrl-down - Fix #399
 - better handling of auto color mode: two separate behaviors: for app running and for export when leaving - Fix #397
 - remove the deprecated `--no-style` launch argument (use `--color no` instead)
-- deprecate the `--out` argument (redirecting the output is the recommanded solution)
+- deprecate the `--out` argument (redirecting the output is the recommended solution)
 - fix a few minor bugs
 
 <a name="v1.5.1"></a>
@@ -394,7 +394,7 @@ Hit ctrl-right when a file is selected and you get the preview.
 
 <a name="v0.18.5"></a>
 ### v0.18.5 - 2020-07-05
-- git status takes into accout overloading of enter and alt-enter
+- git status takes into account overloading of enter and alt-enter
 - a few minor fixes and changes
 
 <a name="v0.18.4"></a>
@@ -541,11 +541,11 @@ It's probably a good idea to remove your existing conf.toml file so that broot c
 - `:git_diff` verb launching `git diff {file}`
 - `:git_status` filter files to show only the ones which are relevant for `git status` (warning: slow on big repositories)
 #### Major change: rewamped launch flags
-Several new launch flags have been added, mostly doing the opposite of previous ones (eg `-S` negates `-s`) and a new entry in the conf.toml lets you define default flags (which can be overriden by the ones you pass on the command line).
+Several new launch flags have been added, mostly doing the opposite of previous ones (eg `-S` negates `-s`) and a new entry in the conf.toml lets you define default flags (which can be overridden by the ones you pass on the command line).
 Do `br --help` to view the complete list of flags.
 #### Minor changes:
 - on refresh or after command, if the previously selected path can't be selected (missing file, probably) then the previous index will be kept if possible
-- alt-enter can be rebinded (users should not do that whithout binding `:cd`, though)
+- alt-enter can be rebinded (users should not do that without binding `:cd`, though)
 
 <a name="v0.12.2"></a>
 ### v0.12.2 - 2020-01-29
@@ -574,7 +574,7 @@ Do `br --help` to view the complete list of flags.
 - `--set-install-state` can be used in tests or manual installs to set the installation state
 - Raspberry now a default target available in installation page
 - fix a regression: `br -s` not finishing computing size until receiving an event
-- diplay the real size of sparse files (fix #102)
+- display the real size of sparse files (fix #102)
 
 <a name="v0.11.8"></a>
 ### v0.11.8 - 2020-01-12
@@ -594,7 +594,7 @@ Do `br --help` to view the complete list of flags.
 - fix wrong background applied on sizes in tree display
 - allow env vars used in verb execution to contain parameters (fix #114)
 - allow the use of arrow keys as triggers for verbs (fix #121)
-- fix scroll adjustement when using the arrow keys (when there's a scrollbar) (fix #112)
+- fix scroll adjustment when using the arrow keys (when there's a scrollbar) (fix #112)
 
 <a name="v0.11.5"></a>
 ### v0.11.5 - 2020-01-10
@@ -713,7 +713,7 @@ Launching broot with `--sizes` now sets a set of features enabling fast "whale s
 
 <a name="v0.9.2"></a>
 ### v0.9.2 - 2019-07-31
-Fix non consistent builds due to lack of precise versionning in crossterm subcrate versionning
+Fix non consistent builds due to lack of precise versioning in crossterm subcrate versioning
 
 <a name="v0.9.1"></a>
 ### v0.9.1 - 2019-07-29

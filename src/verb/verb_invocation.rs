@@ -85,7 +85,7 @@ impl From<&str> for VerbInvocation {
         let bang = bang_before || bang_after;
         if let Some(post_bang) = caps.name("post_bang") {
             // If there's a non space character just after the "bang_after"
-            // (a bang which isn't the first charcter of the invocation)
+            // (a bang which isn't the first character of the invocation)
             // it falls into a kind of void, having no meaning.
             info!("ignored post_bang: {:?}", post_bang);
         }

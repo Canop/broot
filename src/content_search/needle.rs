@@ -150,7 +150,7 @@ impl Needle {
         None
     }
 
-    /// search the mem map to find the first occurence of the needle.
+    /// search the mem map to find the first occurrence of the needle.
     ///
     /// Known limit: if the file has an encoding where the needle would
     /// be represented in a way different than UTF-8, the needle won't

@@ -223,7 +223,7 @@ impl PanelInput {
                 let mut parts = CommandParts::from(raw.clone());
 
                 // we first handle the cases that MUST absolutely
-                // not be overriden by configuration
+                // not be overridden by configuration
 
                 if key == key!(esc) {
                     // tab cycling
