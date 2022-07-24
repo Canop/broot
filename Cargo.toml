@@ -3,6 +3,7 @@ name = "broot"
 version = "1.14.2"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
+homepage = "https://dystroy.org/broot"
 documentation = "https://dystroy.org/broot"
 description = "A new file manager"
 edition = "2021"
