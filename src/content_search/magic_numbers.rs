@@ -1,6 +1,6 @@
 
 use {
-    memmap::Mmap,
+    memmap2::Mmap,
     phf::{phf_set, Set},
 };
 

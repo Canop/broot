@@ -13,7 +13,7 @@ pub use {
 };
 
 use {
-    memmap::Mmap,
+    memmap2::Mmap,
     std::{
         fs::File,
         io,

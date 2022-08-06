@@ -11,7 +11,7 @@ use {
         style::{Color, Print, SetForegroundColor},
         QueueableCommand,
     },
-    memmap::Mmap,
+    memmap2::Mmap,
     std::{
         fs::File,
         io,

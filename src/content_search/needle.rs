@@ -4,7 +4,7 @@
 
 use {
     super::*,
-    memmap::Mmap,
+    memmap2::Mmap,
     std::{
         convert::TryInto,
         fmt,

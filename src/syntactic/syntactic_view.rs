@@ -14,7 +14,7 @@ use {
         style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },
-    memmap::Mmap,
+    memmap2::Mmap,
     once_cell::sync::Lazy,
     std::{
         fs::File,
