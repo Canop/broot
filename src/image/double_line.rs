@@ -4,7 +4,7 @@ use {
         errors::ProgramError,
     },
     ansi_colours,
-    crossterm::{
+    crokey::crossterm::{
         style::{
             Color,
             Colors,

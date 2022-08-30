@@ -5,7 +5,7 @@ use {
         filesystems::share_color,
         skin::StyleMap,
     },
-    crossterm::{
+    crokey::crossterm::{
         style::{ResetColor, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
     },

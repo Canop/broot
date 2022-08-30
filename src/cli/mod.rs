@@ -22,8 +22,7 @@ use {
         verb::VerbStore,
     },
     clap::Parser,
-    crossterm::{
-        self,
+    crokey::crossterm::{
         cursor,
         event::{DisableMouseCapture, EnableMouseCapture},
         terminal::{EnterAlternateScreen, LeaveAlternateScreen},

@@ -23,7 +23,7 @@ use {
         Sender,
         unbounded,
     },
-    crossterm::event::Event,
+    crokey::crossterm::event::Event,
     std::{
         io::Write,
         path::PathBuf,

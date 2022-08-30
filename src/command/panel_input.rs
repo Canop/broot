@@ -9,7 +9,7 @@ use {
         verb::*,
     },
     crokey::key,
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         event::{
             Event,

@@ -11,7 +11,7 @@ use {
         tree::TreeOptions,
         verb::*,
     },
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         QueueableCommand,
     },

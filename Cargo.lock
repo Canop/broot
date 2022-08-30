@@ -150,7 +150,6 @@ dependencies = [
  "cli-log 2.0.0",
  "crokey",
  "crossbeam",
- "crossterm",
  "custom_error",
  "deser-hjson",
  "directories",
@@ -362,9 +361,9 @@ dependencies = [
 
 [[package]]
 name = "crokey"
-version = "0.4.1"
+version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fd55b26d7b832a245ff71f470688539afccf705ab74b7f0fbb8da43bafcafcf8"
+checksum = "2bf153da078e5e4429867d210b984ef96a15a82cf3086f42cb20b58e4f62a980"
 dependencies = [
  "crokey-proc_macros",
  "crossterm",

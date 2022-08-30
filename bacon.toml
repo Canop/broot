@@ -31,15 +31,16 @@ command = [
 	"cargo", "clippy",
 	"--color", "always",
 	"--",
-	"-A", "clippy::match_like_matches_macro",
-	"-A", "clippy::collapsible_if",
 	"-A", "clippy::collapsible_else_if",
-	"-A", "clippy::module_inception",
-	"-A", "clippy::vec_init_then_push",
-	"-A", "clippy::manual_unwrap_or",
+	"-A", "clippy::collapsible_if",
+	"-A", "clippy::derive_partial_eq_without_eq",
 	"-A", "clippy::len_without_is_empty",
 	"-A", "clippy::manual_range_contains",
+	"-A", "clippy::manual_unwrap_or",
+	"-A", "clippy::match_like_matches_macro",
+	"-A", "clippy::module_inception",
 	"-A", "clippy::neg_multiply",
+	"-A", "clippy::vec_init_then_push",
 ]
 need_stdout = false
 

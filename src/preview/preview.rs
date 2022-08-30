@@ -12,7 +12,7 @@ use {
         syntactic::SyntacticView,
         task_sync::Dam,
     },
-    crossterm::{cursor, QueueableCommand},
+    crokey::crossterm::{cursor, QueueableCommand},
     std::{
         io,
         path::Path,

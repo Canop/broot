@@ -5,7 +5,7 @@ use {
         errors::ProgramError,
         skin::PanelSkin,
     },
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         terminal::{Clear, ClearType},
         QueueableCommand,

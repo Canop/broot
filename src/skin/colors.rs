@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::errors::InvalidSkinError,
-    crossterm::style::{
+    crokey::crossterm::style::{
         Color::{self, *},
     },
     lazy_regex::regex_captures,

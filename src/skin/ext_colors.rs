@@ -3,7 +3,7 @@ use {
     crate::{
         errors::InvalidSkinError,
     },
-    crossterm::style::Color,
+    crokey::crossterm::style::Color,
     ahash::AHashMap,
     std::convert::TryFrom,
 };

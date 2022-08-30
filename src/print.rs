@@ -9,7 +9,7 @@ use {
         skin::{PanelSkin, StyleMap},
         tree::Tree,
     },
-    crossterm::tty::IsTty,
+    crokey::crossterm::tty::IsTty,
     pathdiff,
     std::{
         io::{self, stdout},

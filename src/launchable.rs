@@ -13,7 +13,7 @@ use {
         },
         tree::Tree,
     },
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         event::{DisableMouseCapture, EnableMouseCapture},
         terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},

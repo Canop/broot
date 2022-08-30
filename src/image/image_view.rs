@@ -7,7 +7,7 @@ use {
         kitty::{self, KittyImageId},
         skin::PanelSkin,
     },
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         style::{
             Color,

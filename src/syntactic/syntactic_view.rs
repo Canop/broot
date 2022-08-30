@@ -9,7 +9,7 @@ use {
         skin::PanelSkin,
         task_sync::Dam,
     },
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,

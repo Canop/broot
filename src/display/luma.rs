@@ -1,6 +1,6 @@
 pub use {
     crate::cli::{Args, TriBool},
-    crossterm::tty::IsTty,
+    crokey::crossterm::tty::IsTty,
     once_cell::sync::Lazy,
     serde::Deserialize,
 };

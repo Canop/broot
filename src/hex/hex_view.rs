@@ -6,7 +6,7 @@ use {
         errors::ProgramError,
         skin::PanelSkin,
     },
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         style::{Color, Print, SetForegroundColor},
         QueueableCommand,

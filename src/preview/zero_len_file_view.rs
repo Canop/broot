@@ -5,7 +5,7 @@ use {
         skin::PanelSkin,
     },
     char_reader::CharReader,
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         QueueableCommand,
     },

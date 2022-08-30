@@ -6,7 +6,7 @@ use {
         keys::KEY_FORMAT,
         path::PathAnchor,
     },
-    crossterm::event::KeyEvent,
+    crokey::crossterm::event::KeyEvent,
     std::{
         cmp::PartialEq,
         path::PathBuf,

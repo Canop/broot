@@ -10,7 +10,7 @@ use {
         display::W,
         errors::ProgramError,
     },
-    crossterm::style::Color,
+    crokey::crossterm::style::Color,
     image::DynamicImage,
     once_cell::sync::Lazy,
     std::{

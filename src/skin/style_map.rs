@@ -8,7 +8,7 @@ use {
     crate::{
         errors::ProgramError,
     },
-    crossterm::{
+    crokey::crossterm::{
         style::{
             Attribute::*,
             Attributes,

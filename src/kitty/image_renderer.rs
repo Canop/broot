@@ -9,7 +9,7 @@ use {
     },
     base64,
     cli_log::*,
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         QueueableCommand,
         style::Color,

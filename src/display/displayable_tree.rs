@@ -19,7 +19,7 @@ use {
         tree::{Tree, TreeLine, TreeLineType},
     },
     chrono::{DateTime, Local, TimeZone},
-    crossterm::{
+    crokey::crossterm::{
         cursor,
         QueueableCommand,
     },

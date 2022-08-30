@@ -16,7 +16,7 @@ use {
         syntactic::SyntaxTheme,
     },
     ahash::AHashMap,
-    crossterm::style::Attribute,
+    crokey::crossterm::style::Attribute,
     fnv::FnvHashMap,
     serde::Deserialize,
     std::path::PathBuf,

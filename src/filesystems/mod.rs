@@ -11,7 +11,7 @@ pub use {
 };
 
 use {
-    crossterm::style::Color,
+    crokey::crossterm::style::Color,
     once_cell::sync::Lazy,
     std::sync::Mutex,
 };

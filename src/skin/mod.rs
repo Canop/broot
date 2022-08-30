@@ -21,7 +21,7 @@ pub use {
     status_mad_skin::StatusMadSkinSet,
 };
 
-use crossterm::style::Color::{self, *};
+use crokey::crossterm::style::Color::{self, *};
 
 pub fn gray(mut level: u8) -> Option<Color> {
     if level > 23 {

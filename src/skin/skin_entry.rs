@@ -5,7 +5,7 @@
 use {
     super::*,
     crate::errors::InvalidSkinError,
-    crossterm::style::{
+    crokey::crossterm::style::{
         Attribute::{self, *},
         Attributes,
     },
