@@ -1,4 +1,5 @@
-### next
+### v1.14.3 - 2022-09-12
+<a name="v1.14.3"></a>
 - fix crash with token searches - Fix #504 - Thanks @FedericoStra
 
 ### v1.14.2 - 2022-07-11
