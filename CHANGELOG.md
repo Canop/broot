@@ -1,3 +1,6 @@
+### next
+- fix crash with token searches - Fix #504 - Thanks @FedericoStra
+
 ### v1.14.2 - 2022-07-11
 <a name="v1.14.2"></a>
 - Terminal background luma determination now works on all tested unixes, including MacOS - Fix #575
