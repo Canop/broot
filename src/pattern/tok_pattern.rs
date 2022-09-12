@@ -80,11 +80,11 @@ impl TokPattern {
     /// return either None (no match) or a vec whose size is the number
     /// of tokens
     fn find_ranges(&self, candidate: &str) -> Option<Vec<Range<usize>>> {
-        if candidate.len() < self.sum_len || self.sum_len == 0 {
-            return None;
-        }
         let mut cand_chars: CandChars = SmallVec::with_capacity(candidate.len());
         cand_chars.extend(candidate.chars().map(secular::lower_lay_char));
+        if cand_chars.len() < self.sum_len || self.sum_len == 0 {
+            return None;
+        }
         // we first look for the first tok, it's simpler
         let first_tok = &self.toks[0];
         let l = first_tok.len();
@@ -234,6 +234,7 @@ mod tok_pattern_tests {
         check_match("mi", "a", false);
         check_match("mi", "π", false);
         check_match("mi", "miaou/a", true);
+        check_match("imm", "😍", false);
     }
 
     #[test]
