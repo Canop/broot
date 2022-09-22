@@ -87,39 +87,35 @@ impl Tree {
         for line in self.lines[1..].iter() {
             let mut sort_path = String::new();
             let mut bid = line.bid;
-            loop {
-                if let Some(l) = bid_lines.get(&bid) {
-                    let lower_name = l.path.file_name().map_or(
-                        "".to_string(),
-                        |name| name.to_string_lossy().to_lowercase(),
-                    );
-                    let sort_prefix = match self.options.sort {
-                        Sort::TypeDirsFirst => {
-                            if l.is_dir() {
-                                "              "
-                            } else {
-                                l.path.extension().and_then(|s| s.to_str()).unwrap_or("")
-                            }
+            while let Some(l) = bid_lines.get(&bid) {
+                let lower_name = l.path.file_name().map_or(
+                    "".to_string(),
+                    |name| name.to_string_lossy().to_lowercase(),
+                );
+                let sort_prefix = match self.options.sort {
+                    Sort::TypeDirsFirst => {
+                        if l.is_dir() {
+                            "              "
+                        } else {
+                            l.path.extension().and_then(|s| s.to_str()).unwrap_or("")
                         }
-                        Sort::TypeDirsLast => {
-                            if l.is_dir() {
-                                "~~~~~~~~~~~~~~"
-                            } else {
-                                l.path.extension().and_then(|s| s.to_str()).unwrap_or("")
-                            }
+                    }
+                    Sort::TypeDirsLast => {
+                        if l.is_dir() {
+                            "~~~~~~~~~~~~~~"
+                        } else {
+                            l.path.extension().and_then(|s| s.to_str()).unwrap_or("")
                         }
-                        _ => { "" }
-                    };
-                    sort_path = format!(
-                        "{}{}-{}/{}",
-                        sort_prefix,
-                        lower_name,
-                        bid.index(), // to be sure to separate paths having the same lowercase
-                        sort_path,
-                    );
-                } else {
-                    break;
-                }
+                    }
+                    _ => { "" }
+                };
+                sort_path = format!(
+                    "{}{}-{}/{}",
+                    sort_prefix,
+                    lower_name,
+                    bid.index(), // to be sure to separate paths having the same lowercase
+                    sort_path,
+                );
                 if let Some(&parent_bid) = bid_parents.get(&bid) {
                     bid = parent_bid;
                 } else {

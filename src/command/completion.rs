@@ -226,7 +226,7 @@ impl Completions {
                     }
                 };
                 for ol in lists {
-                    list = list.iter().filter(|c| ol.contains(c)).cloned().collect();
+                    list.retain(|c| ol.contains(c));
                     if list.is_empty() {
                         break;
                     }

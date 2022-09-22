@@ -214,7 +214,7 @@ impl SyntacticView {
                     .filter(|mmap| mmap.len() >= line.start + line.len)
                     .and_then(|mmap| {
                         String::from_utf8(
-                            (&mmap[line.start..line.start + line.len]).to_vec(),
+                            (mmap[line.start..line.start + line.len]).to_vec(),
                         ).ok()
                     })
             })
@@ -351,7 +351,7 @@ impl SyntacticView {
                         // an UTF8 error can only happen if file modified during display
                         let string = String::from_utf8(
                             // we copy the memmap slice, as it's not immutable
-                            (&op_mmap.unwrap()[line.start..line.start + line.len]).to_vec(),
+                            (op_mmap.unwrap()[line.start..line.start + line.len]).to_vec(),
                         )
                         .unwrap_or_else(|_| "Bad UTF8".to_string());
                         regions_ur = vec![Region {
