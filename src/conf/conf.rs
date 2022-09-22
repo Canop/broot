@@ -102,6 +102,8 @@ pub struct Conf {
     #[serde(default)]
     pub imports: Vec<Import>,
 
+    #[serde(alias="show-matching-characters-on-path-searches")]
+    pub show_matching_characters_on_path_searches: Option<bool>,
 }
 
 impl Conf {
@@ -179,6 +181,7 @@ impl Conf {
         overwrite!(self, quit_on_last_cancel, conf);
         overwrite!(self, file_sum_threads_count, conf);
         overwrite!(self, max_staged_count, conf);
+        overwrite!(self, show_matching_characters_on_path_searches, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense

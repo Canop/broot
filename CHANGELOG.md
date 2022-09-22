@@ -1,3 +1,6 @@
+### next
+- with `show_matching_characters_on_path_searches: false`, it's possible to show only file names even when searching paths - Fix #490
+
 ### v1.14.3 - 2022-09-12
 <a name="v1.14.3"></a>
 - fix crash with token searches - Fix #504 - Thanks @FedericoStra

@@ -305,23 +305,27 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             cw.queue_char(style, ' ')?;
             cw.queue_char(style, ' ')?;
         }
-        if pattern_object.subpath && line.unlisted == 0 {
-            let name_match = self.tree.options.pattern.pattern
-                .search_string(&line.subpath);
-            let mut path_ms = MatchedString::new(
-                name_match,
-                &line.subpath,
-                style,
-                char_match_style,
-            );
-            let name_ms = path_ms.split_on_last('/');
-            cond_bg!(parent_style, self, selected, self.skin.parent);
-            if name_ms.is_some() {
-                path_ms.base_style = parent_style;
-            }
-            path_ms.queue_on(cw)?;
-            if let Some(name_ms) = name_ms {
-                name_ms.queue_on(cw)?;
+        if pattern_object.subpath {
+            if self.tree.options.show_matching_characters_on_path_searches && line.unlisted == 0 {
+                let name_match = self.tree.options.pattern.pattern
+                    .search_string(&line.subpath);
+                let mut path_ms = MatchedString::new(
+                    name_match,
+                    &line.subpath,
+                    style,
+                    char_match_style,
+                );
+                let name_ms = path_ms.split_on_last('/');
+                cond_bg!(parent_style, self, selected, self.skin.parent);
+                if name_ms.is_some() {
+                    path_ms.base_style = parent_style;
+                }
+                path_ms.queue_on(cw)?;
+                if let Some(name_ms) = name_ms {
+                    name_ms.queue_on(cw)?;
+                }
+            } else {
+                cw.queue_str(style, &line.name)?;
             }
         } else {
             let name_match = self.tree.options.pattern.pattern

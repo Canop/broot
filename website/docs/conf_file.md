@@ -282,3 +282,21 @@ quit_on_last_cancel: true
 ```TOML
 quit_on_last_cancel = true
 ```
+## Only show file name even when the pattern is on paths
+
+When your search pattern is applied to a path, the path is shown on each line so that you see why the line matches:
+
+![shown](img/subpath-match-shown.png)
+
+If you don't really need to see matching characters, you may get a cleaner display with just file names with this option:
+
+```Hjson
+show_matching_characters_on_path_searches: false
+```
+```TOML
+show_matching_characters_on_path_searches = false
+```
+
+which gives this:
+
+![not shown](img/subpath-match-not-shown.png)

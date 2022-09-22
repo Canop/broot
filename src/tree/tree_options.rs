@@ -31,6 +31,7 @@ pub struct TreeOptions {
     pub date_time_format: &'static str,
     pub sort: Sort,
     pub cols_order: Cols, // order of columns
+    pub show_matching_characters_on_path_searches: bool,
 }
 
 impl TreeOptions {
@@ -54,6 +55,7 @@ impl TreeOptions {
             date_time_format: self.date_time_format,
             sort: self.sort,
             cols_order: self.cols_order,
+            show_matching_characters_on_path_searches: self.show_matching_characters_on_path_searches,
         }
     }
     /// counts must be computed, either for sorting or just for display
@@ -86,11 +88,14 @@ impl TreeOptions {
                 })?;
             self.apply_launch_args(&conf_matches);
         }
-        if let Some(b) = &config.show_selection_mark {
-            self.show_selection_mark = *b;
+        if let Some(b) = config.show_selection_mark {
+            self.show_selection_mark = b;
         }
         if let Some(format) = &config.date_time_format {
             self.set_date_time_format(format.clone());
+        }
+        if let Some(b) = config.show_matching_characters_on_path_searches {
+            self.show_matching_characters_on_path_searches = b;
         }
         self.cols_order = config
             .cols_order
@@ -195,6 +200,7 @@ impl Default for TreeOptions {
             date_time_format: "%Y/%m/%d %R",
             sort: Sort::None,
             cols_order: DEFAULT_COLS,
+            show_matching_characters_on_path_searches: true,
         }
     }
 }
