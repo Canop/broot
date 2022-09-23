@@ -1724,9 +1724,9 @@ dependencies = [
 
 [[package]]
 name = "splitty"
-version = "0.1.0"
+version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8190298e89d4080e9c025535f73cacec4d51ff4495819dd8fdf1ae374c75ee80"
+checksum = "53060f84ce26aec49454cc575f949876d928ea954ea1bd6071a9b2602d8c7caa"
 
 [[package]]
 name = "str-buf"
