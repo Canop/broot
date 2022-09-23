@@ -3,6 +3,7 @@
 - `--sort-by-type-dirs-first` and `--sort-by-type-dirs-last` - Fix #602
 - modal: in intput mode, uppercase letters don't trigger verbs anymore - Fix #604
 - fix :line_down_no_cycle which was cycling
+- selecting lines up or down with the mouse wheel now wraps in both direction (ie going up when your on top brings you to the bottom, and vice-versa)
 
 ### v1.14.3 - 2022-09-12
 <a name="v1.14.3"></a>

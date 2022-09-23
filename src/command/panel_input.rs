@@ -203,13 +203,13 @@ impl PanelInput {
                         }
                         MouseEventKind::ScrollDown => {
                             Command::Internal {
-                                internal: Internal::line_down_no_cycle,
+                                internal: Internal::line_down,
                                 input_invocation: None,
                             }
                         }
                         MouseEventKind::ScrollUp => {
                             Command::Internal {
-                                internal: Internal::line_up_no_cycle,
+                                internal: Internal::line_up,
                                 input_invocation: None,
                             }
                         }
