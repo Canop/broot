@@ -88,6 +88,18 @@ pub struct Args {
     /// Sort by size (only show one level of the tree)
     pub sort_by_size: bool,
 
+    #[clap(long, action)]
+    /// Same as sort-by-type-dirs-first
+    pub sort_by_type: bool,
+
+    #[clap(long, action)]
+    /// Sort by type, directories first (only show one level of the tree)
+    pub sort_by_type_dirs_first: bool,
+
+    #[clap(long, action)]
+    /// Sort by type, directories last (only show one level of the tree)
+    pub sort_by_type_dirs_last: bool,
+
     /// Sort by size, show ignored and hidden files
     #[clap(short, long, action)]
     pub whale_spotting: bool,

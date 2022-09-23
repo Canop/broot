@@ -169,6 +169,12 @@ impl TreeOptions {
             self.sort = Sort::Size;
             self.show_sizes = true;
         }
+        if cli_args.sort_by_type_dirs_first || cli_args.sort_by_type {
+            self.sort = Sort::TypeDirsFirst;
+        }
+        if cli_args.sort_by_type_dirs_last {
+            self.sort = Sort::TypeDirsLast;
+        }
         if cli_args.no_sort {
             self.sort = Sort::None;
         }
