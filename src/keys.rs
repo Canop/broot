@@ -30,7 +30,10 @@ pub fn is_key_allowed_for_verb(
             if key==key!(left) || key==key!(right) {
                 input_is_empty
             } else {
-                !matches!(key, KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::NONE })
+                !(
+                    matches!(key, KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::NONE })
+                    || matches!(key, KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::SHIFT })
+                )
             }
         }
         Mode::Command => true,
