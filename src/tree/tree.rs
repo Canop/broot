@@ -212,7 +212,7 @@ impl Tree {
                 self.selection = (self.selection + l - ady) % l;
             } else {
                 let dy = dy as usize;
-                if !cycle && self.selection + dy > l {
+                if !cycle && self.selection + dy >= l {
                     break;
                 }
                 self.selection = (self.selection + dy) % l;
