@@ -386,6 +386,7 @@ invocation | default key | default shortcut | behavior / details
 :rm | - | - | remove the selected file or directory. To stay safe, don't define a keyboard key for this action
 :select_first | - | - | select the first line
 :select_last | - | - | select the last line
+:select | - | - | select a path given as argument, if it's in the visible tree
 :sort_by_count | - | sc | sort by count (only one level of the tree is displayed)
 :sort_by_date | - | sd | sort by date
 :sort_by_size | - | ss | sort by size

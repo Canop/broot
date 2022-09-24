@@ -80,7 +80,7 @@ pub fn new_panel_on_path(
 /// Compute the path to go to in case of the internal being triggered from
 /// the input.
 ///
-/// This path depends on the verb (which may hardcore the path of have a
+/// This path depends on the verb (which may hardcore the path or have a
 /// pattern), from the selection,
 fn path_from_input(
     verb: &Verb,

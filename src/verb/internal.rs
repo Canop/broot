@@ -113,6 +113,7 @@ Internals! {
     //restore_pattern: "restore a pattern which was just removed" false,
     select_first: "select the first item" false,
     select_last: "select the last item" false,
+    select: "select a file by path" true,
     set_syntax_theme: "set the theme of code preview" false,
     sort_by_count: "sort by count" false,
     sort_by_date: "sort by date" false,
@@ -149,6 +150,7 @@ impl Internal {
     pub fn invocation_pattern(self) -> &'static str {
         match self {
             Internal::focus => r"focus (?P<path>.*)?",
+            Internal::select => r"select (?P<path>.*)?",
             Internal::line_down => r"line_down (?P<count>\d*)?",
             Internal::line_up => r"line_up (?P<count>\d*)?",
             Internal::line_down_no_cycle => r"line_down_no_cycle (?P<count>\d*)?",

@@ -7,6 +7,7 @@ mod external_execution_mode;
 mod internal;
 mod internal_execution;
 pub mod internal_focus;
+pub mod internal_select;
 mod invocation_parser;
 mod sequence_execution;
 mod verb;

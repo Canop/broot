@@ -339,6 +339,14 @@ impl PanelState for BrowserState {
                 app_state,
                 cc,
             ),
+            Internal::select => internal_select::on_internal(
+                internal_exec,
+                input_invocation,
+                trigger_type,
+                self.displayed_tree_mut(),
+                app_state,
+                cc,
+            ),
             Internal::up_tree => match self.displayed_tree().root().parent() {
                 Some(path) => internal_focus::on_path(
                     path.to_path_buf(),

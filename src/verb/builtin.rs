@@ -249,6 +249,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_key(key!(ctrl-down)),
         internal(select_first),
         internal(select_last),
+        internal(select),
         internal(clear_stage).with_shortcut("cls"),
         internal(stage)
             .with_key(key!('+')),
@@ -292,5 +293,6 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(toggle_trim_root),
         internal(total_search).with_key(key!(ctrl-s)),
         internal(up_tree).with_shortcut("up"),
+
     ]
 }

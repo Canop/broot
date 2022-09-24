@@ -2,8 +2,9 @@
 - with `show_matching_characters_on_path_searches: false`, it's possible to show only file names even when searching paths - Fix #490
 - `--sort-by-type-dirs-first` and `--sort-by-type-dirs-last` - Fix #602
 - modal: in intput mode, uppercase letters don't trigger verbs anymore - Fix #604
-- fix :line_down_no_cycle which was cycling
+- fix :line_down_no_cycle which was cycling - Fix #603
 - selecting lines up or down with the mouse wheel now wraps in both direction (ie going up when your on top brings you to the bottom, and vice-versa)
+- :select internal, which can be used to select a visible file when given a path as argument. Experimental
 
 ### v1.14.3 - 2022-09-12
 <a name="v1.14.3"></a>
