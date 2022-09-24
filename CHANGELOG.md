@@ -1,4 +1,5 @@
-### next
+### v1.15.0 - 2022-09-24
+<a name="v1.15.0"></a>
 - with `show_matching_characters_on_path_searches: false`, it's possible to show only file names even when searching paths - Fix #490
 - `--sort-by-type-dirs-first` and `--sort-by-type-dirs-last` - Fix #602
 - modal: in intput mode, uppercase letters don't trigger verbs anymore - Fix #604
