@@ -27,16 +27,28 @@ impl Default for PatternParts {
     }
 }
 
+#[cfg(test)]
+impl TryFrom<&[&str]> for PatternParts {
+    type Error = &'static str;
+    fn try_from(a: &[&str]) -> Result<Self, Self::Error> {
+        if a.is_empty() {
+            return Err("invalid empty parts array");
+        }
+        let parts = a.iter().map(|s| (*s).into()).collect();
+        Ok(Self { parts })
+    }
+}
+
 impl PatternParts {
     pub fn push(&mut self, c: char) {
         // self.parts can't be empty, by construct
         self.parts.last_mut().unwrap().push(c);
     }
+    pub fn is_between_slashes(&self) -> bool {
+        self.parts.len() > 1
+    }
     pub fn add_part(&mut self) {
         self.parts.push(String::new());
-    }
-    pub fn allow_inter_pattern_token(&self) -> bool {
-        self.parts.len() != 2
     }
     pub fn is_empty(&self) -> bool {
         self.core().is_empty()

@@ -113,9 +113,9 @@ checksum = "904dfeac50f3cdaba28fc6f57fdcddb75f49ed61346676a78c4ffe55877802fd"
 
 [[package]]
 name = "bet"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "05187b4047565a2bb9aeab0c3e8740175871fd616984d816b0c8f1f6cb71125e"
+checksum = "1673d13ad9c8d4b5e3d17a38730714157d428d1a249c18dd96e77e969623ac98"
 
 [[package]]
 name = "bincode"

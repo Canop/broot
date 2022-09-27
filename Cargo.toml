@@ -24,7 +24,7 @@ kitty-csi-check = ["xterm-query"]
 ahash = { version = "0.7", features = ["serde"] }
 ansi_colours = "1.0"
 base64 = "0.13"
-bet = "1.0"
+bet = "1.0.2"
 char_reader = "0.1"
 chrono = "0.4"
 clap = { version = "3.2.1", features = ["derive"] }
