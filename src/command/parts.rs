@@ -40,6 +40,11 @@ impl CommandParts {
         let mut escape_next_char = false;
         // we loop on chars and build the pattern tree until we reach an unescaped ' ' or ':'
         while let Some((pos, cur_char)) = chars.next() {
+            let between_slashes = pt.current_atom()
+                .map_or(
+                    false,
+                    |pp: &PatternParts| pp.is_between_slashes(),
+                );
             match cur_char {
                 c if escape_cur_char => {
                     // Escaping is used to prevent characters from being consumed at the
@@ -60,7 +65,7 @@ impl CommandParts {
                         None => false, // End of the string, we can't be escaping
                         Some((_, next_char)) => match (next_char, between_slashes) {
                             (' ' | ':' | '/' | '\\', _) => true,
-                            ('&' | '|' | '(' | ')', false) => true,
+                            ('&' | '|' | '!' | '(' | ')', false) => true,
                             _ => false,
                         }
                     };
@@ -76,19 +81,19 @@ impl CommandParts {
                 '/' => { // starting an atom part
                     pt.mutate_or_create_atom(PatternParts::default).add_part();
                 }
-                '|' if pt.accept_binary_operator() => {
+                '|' if !between_slashes && pt.accept_binary_operator() => {
                     pt.push_operator(PatternOperator::Or);
                 }
-                '&' if pt.accept_binary_operator() => {
+                '&' if !between_slashes && pt.accept_binary_operator() => {
                     pt.push_operator(PatternOperator::And);
                 }
-                '!' if pt.accept_unary_operator() => {
+                '!' if !between_slashes && pt.accept_unary_operator() => {
                     pt.push_operator(PatternOperator::Not);
                 }
-                '(' if pt.accept_opening_par() => {
+                '(' if !between_slashes && pt.accept_opening_par() => {
                     pt.open_par();
                 }
-                ')' if pt.accept_closing_par() => {
+                ')' if !between_slashes && pt.accept_closing_par() => {
                     pt.close_par();
                 }
                 _ => {
@@ -210,6 +215,27 @@ mod test_command_parts {
                 Token::Atom(pp(&["", "r"])),
             ],
             Some("cd /"),
+        );
+    }
+    #[test]
+    fn parse_pattern_between_slashes() {
+        check(
+            r#"/&"#,
+            r#"/&"#,
+            vec![
+                Token::Atom(pp(&["", "&"])),
+            ],
+            None,
+        );
+        check(
+            r#"/&/&r/a(\w-)+/ rm"#,
+            r#"/&/&r/a(\w-)+/"#,
+            vec![
+                Token::Atom(pp(&["", "&", ""])),
+                Token::Operator(PatternOperator::And),
+                Token::Atom(pp(&["r", r#"a(\w-)+"#, ""])),
+            ],
+            Some("rm"),
         );
     }
     #[test]

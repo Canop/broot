@@ -45,7 +45,7 @@ impl PatternParts {
         self.parts.last_mut().unwrap().push(c);
     }
     pub fn is_between_slashes(&self) -> bool {
-        self.parts.len() > 1
+        self.parts.len() == 2
     }
     pub fn add_part(&mut self) {
         self.parts.push(String::new());
