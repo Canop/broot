@@ -1,3 +1,6 @@
+### next
+- status messages now displayed on toggling (for example showing hidden files)
+
 ### v1.15.0 - 2022-09-24
 <a name="v1.15.0"></a>
 - with `show_matching_characters_on_path_searches: false`, it's possible to show only file names even when searching paths - Fix #490

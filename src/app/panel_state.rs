@@ -153,7 +153,7 @@ pub trait PanelState {
                                 direction: HDir::Right,
                             }
                         } else {
-                            CmdResult::NewState(Box::new(state))
+                            CmdResult::new_state(Box::new(state))
                         }
                     }
                     Err(e) => CmdResult::DisplayError(format!("{}", e)),
@@ -170,7 +170,7 @@ pub trait PanelState {
                         direction: HDir::Right,
                     }
                 } else {
-                    CmdResult::NewState(Box::new(
+                    CmdResult::new_state(Box::new(
                             HelpState::new(self.tree_options(), screen, con)
                     ))
                 }
@@ -195,9 +195,11 @@ pub trait PanelState {
                     if o.sort == Sort::Count {
                         o.sort = Sort::None;
                         o.show_counts = false;
+                        "*not sorting anymore*"
                     } else {
                         o.sort = Sort::Count;
                         o.show_counts = true;
+                        "*now sorting by file count*"
                     }
                 },
                 bang,
@@ -209,9 +211,11 @@ pub trait PanelState {
                     if o.sort == Sort::Date {
                         o.sort = Sort::None;
                         o.show_dates = false;
+                        "*not sorting anymore*"
                     } else {
                         o.sort = Sort::Date;
                         o.show_dates = true;
+                        "*now sorting by last modified date*"
                     }
                 },
                 bang,
@@ -223,10 +227,12 @@ pub trait PanelState {
                     if o.sort == Sort::Size {
                         o.sort = Sort::None;
                         o.show_sizes = false;
+                        "*not sorting anymore*"
                     } else {
                         o.sort = Sort::Size;
                         o.show_sizes = true;
                         o.show_root_fs = true;
+                        "*now sorting files and directories by total size*"
                     }
                 },
                 bang,
@@ -235,11 +241,20 @@ pub trait PanelState {
             Internal::sort_by_type => self.with_new_options(
                 screen,
                 &|o| {
-                    o.sort = match o.sort {
-                        Sort::TypeDirsFirst => Sort::TypeDirsLast,
-                        Sort::TypeDirsLast => Sort::None,
-                        _ => Sort::TypeDirsFirst,
-                    };
+                    match o.sort {
+                        Sort::TypeDirsFirst => {
+                           o.sort = Sort::TypeDirsLast;
+                           "*sorting by type, directories last*"
+                        }
+                        Sort::TypeDirsLast => {
+                            o.sort = Sort::None;
+                            "*not sorting anymore*"
+                        }
+                        _ => {
+                            o.sort = Sort::TypeDirsFirst;
+                           "*sorting by type, directories first*"
+                        }
+                    }
                 },
                 bang,
                 con,
@@ -247,10 +262,13 @@ pub trait PanelState {
             Internal::sort_by_type_dirs_first => self.with_new_options(
                 screen,
                 &|o| {
-                    o.sort = match o.sort {
-                        Sort::TypeDirsFirst => Sort::None,
-                        _ => Sort::TypeDirsFirst,
-                    };
+                    if o.sort == Sort::TypeDirsFirst {
+                        o.sort = Sort::None;
+                        "*not sorting anymore*"
+                    } else {
+                        o.sort = Sort::TypeDirsFirst;
+                        "*now sorting by type, directories first*"
+                    }
                 },
                 bang,
                 con,
@@ -258,53 +276,178 @@ pub trait PanelState {
             Internal::sort_by_type_dirs_last => self.with_new_options(
                 screen,
                 &|o| {
-                    o.sort = match o.sort {
-                        Sort::TypeDirsLast => Sort::None,
-                        _ => Sort::TypeDirsLast,
-                    };
+                    if o.sort == Sort::TypeDirsLast {
+                        o.sort = Sort::None;
+                        "*not sorting anymore*"
+                    } else {
+                        o.sort = Sort::TypeDirsLast;
+                        "*now sorting by type, directories last*"
+                    }
                 },
                 bang,
                 con,
             ),
-            Internal::no_sort => self.with_new_options(screen, &|o| o.sort = Sort::None, bang, con),
+            Internal::no_sort => self.with_new_options(
+                screen,
+                &|o| {
+                    if o.sort == Sort::None {
+                        "*still not searching*"
+                    } else {
+                        o.sort = Sort::None;
+                        "*not sorting anymore*"
+                    }
+                },
+                bang,
+                con,
+            ),
             Internal::toggle_counts => {
-                self.with_new_options(screen, &|o| o.show_counts ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.show_counts ^= true;
+                        if o.show_counts {
+                            "*displaying file counts*"
+                        } else {
+                            "*hiding file counts*"
+                        }
+					},
+					bang,
+					con,
+				)
             }
             Internal::toggle_dates => {
-                self.with_new_options(screen, &|o| o.show_dates ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.show_dates ^= true;
+                        if o.show_dates {
+                            "*displaying last modified dates*"
+                        } else {
+                            "*hiding last modified dates*"
+                        }
+					},
+					bang,
+					con,
+				)
             }
             Internal::toggle_device_id => {
-                self.with_new_options(screen, &|o| o.show_device_id ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.show_device_id ^= true;
+                        if o.show_device_id {
+                            "*displaying device id*"
+                        } else {
+                            "*hiding device id*"
+                        }
+					},
+					bang,
+					con,
+				)
             }
             Internal::toggle_files => {
-                self.with_new_options(screen, &|o: &mut TreeOptions| o.only_folders ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+                        o.only_folders ^= true;
+                        if o.only_folders {
+                            "*displaying only directories*"
+                        } else {
+                            "*displaying both files and directories*"
+                        }
+                    },
+					bang,
+					con,
+				)
             }
             Internal::toggle_hidden => {
-                self.with_new_options(screen, &|o| o.show_hidden ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.show_hidden ^= true;
+                        if o.show_hidden {
+                            "h:**y** - *Hidden files displayed*"
+                        } else {
+                            "h:**n** - *Hidden files not displayed*"
+                        }
+					},
+					bang,
+					con,
+				)
             }
             Internal::toggle_root_fs => {
-                self.with_new_options(screen, &|o| o.show_root_fs ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.show_root_fs ^= true;
+                        if o.show_root_fs {
+                            "*displaying filesystem info for the tree's root directory*"
+                        } else {
+                            "*removing filesystem info*"
+                        }
+					},
+					bang,
+					con,
+				)
             }
             Internal::toggle_git_ignore => {
-                self.with_new_options(screen, &|o| o.respect_git_ignore ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.respect_git_ignore ^= true;
+                        if o.respect_git_ignore {
+                            "gi:**y** - *applying gitignore rules*"
+                        } else {
+                            "gi:**n** - *not applying gitignore rules*"
+                        }
+					},
+					bang,
+					con,
+				)
             }
             Internal::toggle_git_file_info => {
-                self.with_new_options(screen, &|o| o.show_git_file_info ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.show_git_file_info ^= true;
+                        if o.show_git_file_info {
+                            "*displaying git info next to files*"
+                        } else {
+                            "*removing git file info*"
+                        }
+					},
+					bang,
+					con,
+				)
             }
             Internal::toggle_git_status => {
                 self.with_new_options(
                     screen, &|o| {
                         if o.filter_by_git_status {
                             o.filter_by_git_status = false;
+                            "*not filtering according to git status anymore*"
                         } else {
                             o.filter_by_git_status = true;
                             o.show_hidden = true;
+                            "*only displaying new or modified files*"
                         }
                     }, bang, con
                 )
             }
             Internal::toggle_perm => {
-                self.with_new_options(screen, &|o| o.show_permissions ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.show_permissions ^= true;
+                        if o.show_permissions {
+                            "*displaying file permissions*"
+                        } else {
+                            "*removing file permissions*"
+                        }
+					},
+					bang,
+					con,
+				)
             }
             Internal::toggle_sizes => self.with_new_options(
                 screen,
@@ -312,16 +455,30 @@ pub trait PanelState {
                     if o.show_sizes {
                         o.show_sizes = false;
                         o.show_root_fs = false;
+                        "*removing sizes of files and directories*"
                     } else {
                         o.show_sizes = true;
                         o.show_root_fs = true;
+                        "*now diplaying sizes of files and directories*"
                     }
                 },
                 bang,
                 con,
             ),
             Internal::toggle_trim_root => {
-                self.with_new_options(screen, &|o| o.trim_root ^= true, bang, con)
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.trim_root ^= true;
+                        if o.trim_root {
+                            "*now trimming root from excess files*"
+                        } else {
+                            "*not trimming root files anymore*"
+                        }
+					},
+					bang,
+					con,
+				)
             }
             Internal::close_preview => {
                 if let Some(id) = cc.app.preview_panel {
@@ -709,12 +866,15 @@ pub trait PanelState {
 
     fn tree_options(&self) -> TreeOptions;
 
-    /// build a cmdResult in response to a command being a change of
-    /// tree options. This may or not be a new state
+    /// Build a cmdResult in response to a command being a change of
+    /// tree options. This may or not be a new state.
+    ///
+    /// The provided `change_options` function returns a status message
+    /// explaining the change
     fn with_new_options(
         &mut self,
         screen: Screen,
-        change_options: &dyn Fn(&mut TreeOptions),
+        change_options: &dyn Fn(&mut TreeOptions) -> &'static str,
         in_new_panel: bool,
         con: &AppContext,
     ) -> CmdResult;

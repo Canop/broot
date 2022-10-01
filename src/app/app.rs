@@ -266,7 +266,9 @@ impl App {
             screen: self.screen, // it can't change in this function
             con,
         };
-        match self.mut_panel().apply_command(w, &cmd, app_state, &app_cmd_context)? {
+        let cmd_result = self.mut_panel().apply_command(w, &cmd, app_state, &app_cmd_context)?;
+        debug!("cmd_result: {:?}", &cmd_result);
+        match cmd_result {
             ApplyOnPanel { id } => {
                 if let Some(idx) = self.panel_id_to_idx(id) {
                     if let DisplayError(txt) = self.panels[idx].apply_command(
@@ -461,10 +463,14 @@ impl App {
                     error = Some(s);
                 }
             }
-            NewState(state) => {
+            NewState { state, message } => {
                 self.mut_panel().clear_input();
                 self.mut_panel().push_state(state);
-                self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
+                if let Some(md) = message {
+                    self.mut_panel().set_message(md);
+                } else {
+                    self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
+                }
             }
             PopState => {
                 if is_input_invocation {
@@ -621,15 +627,17 @@ impl App {
             self.update_preview(con, false); // the selection may have changed
             if let Some(error) = &error {
                 self.mut_panel().set_error(error.to_string());
-            } else {
-                let app_cmd_context = AppCmdContext {
-                    panel_skin: &skin.focused,
-                    preview_panel: self.preview_panel,
-                    stage_panel: self.stage_panel,
-                    screen: self.screen,
-                    con,
-                };
-                self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
+            //} else {
+            //    // the refresh here removes the toggle status message. Not
+            //    // sure there's a case it's useful
+            //    let app_cmd_context = AppCmdContext {
+            //        panel_skin: &skin.focused,
+            //        preview_panel: self.preview_panel,
+            //        stage_panel: self.stage_panel,
+            //        screen: self.screen,
+            //        con,
+            //    };
+            //    self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
             }
             self.display_panels(w, skin, app_state, con)?;
             if error.is_some() {

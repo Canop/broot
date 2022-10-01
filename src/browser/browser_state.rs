@@ -80,6 +80,7 @@ impl BrowserState {
         screen: Screen,
         root: PathBuf,
         options: TreeOptions,
+        message: Option<&'static str>,
         in_new_panel: bool,
         con: &AppContext,
     ) -> CmdResult {
@@ -92,6 +93,7 @@ impl BrowserState {
         }
         CmdResult::from_optional_state(
             new_state,
+            message,
             in_new_panel,
         )
     }
@@ -147,6 +149,7 @@ impl BrowserState {
                     con,
                     &dam,
                 ),
+                None,
                 in_new_panel,
             ))
         } else {
@@ -175,6 +178,7 @@ impl BrowserState {
                     con,
                     &Dam::unlimited(),
                 ),
+                None,
                 in_new_panel,
             ),
             None => CmdResult::error("no parent found"),
@@ -238,14 +242,22 @@ impl PanelState for BrowserState {
     fn with_new_options(
         &mut self,
         screen: Screen,
-        change_options: &dyn Fn(&mut TreeOptions),
+        change_options: &dyn Fn(&mut TreeOptions) -> &'static str,
         in_new_panel: bool,
         con: &AppContext,
     ) -> CmdResult {
         let tree = self.displayed_tree();
         let mut options = tree.options.clone();
-        change_options(&mut options);
-        self.modified(screen, tree.root().clone(), options, in_new_panel, con)
+        let message = change_options(&mut options);
+        let message = Some(message);
+        self.modified(
+            screen,
+            tree.root().clone(),
+            options,
+            message,
+            in_new_panel,
+            con,
+        )
     }
 
     fn clear_pending(&mut self) {
@@ -478,7 +490,14 @@ impl PanelState for BrowserState {
                 let tree = self.displayed_tree();
                 let root = tree.root();
                 if let Some(new_root) = root.parent() {
-                    self.modified(screen, new_root.to_path_buf(), tree.options.clone(), bang, con)
+                    self.modified(
+                        screen,
+                        new_root.to_path_buf(),
+                        tree.options.clone(),
+                        None,
+                        bang,
+                        con,
+                    )
                 } else {
                     CmdResult::error(format!("{:?} has no parent", root))
                 }
@@ -491,7 +510,14 @@ impl PanelState for BrowserState {
                         .components()
                         .take(root_len + 1)
                         .collect();
-                    self.modified(screen, new_root, tree.options.clone(), bang, con)
+                    self.modified(
+                        screen,
+                        new_root,
+                        tree.options.clone(),
+                        None,
+                        bang,
+                        con,
+                    )
                 } else {
                     CmdResult::error("No selected line")
                 }

@@ -48,7 +48,10 @@ pub enum CmdResult {
         purpose: PanelPurpose,
         direction: HDir,
     },
-    NewState(Box<dyn PanelState>),
+    NewState {
+        state: Box<dyn PanelState>,
+        message: Option<&'static str>, // explaining why there's a new state
+    },
     PopStateAndReapply, // the state asks the command be executed on a previous state
     PopState,
     Quit,
@@ -63,23 +66,30 @@ impl CmdResult {
     }
     pub fn from_optional_state(
         os: Result<BrowserState, TreeBuildError>,
+        message: Option<&'static str>,
         in_new_panel: bool,
     ) -> CmdResult {
         match os {
             Ok(os) => {
                 if in_new_panel {
-                    CmdResult::NewPanel {
+                    CmdResult::NewPanel { // TODO keep the message ?
                         state: Box::new(os),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
                     }
                 } else {
-                    CmdResult::NewState(Box::new(os))
+                    CmdResult::NewState {
+                        state: Box::new(os),
+                        message,
+                    }
                 }
             }
             Err(TreeBuildError::Interrupted) => CmdResult::Keep,
             Err(e) => CmdResult::error(e.to_string()),
         }
+    }
+    pub fn new_state(state: Box<dyn PanelState>) -> Self {
+        Self::NewState { state, message: None }
     }
     pub fn error<S: Into<String>>(message: S) -> Self {
         Self::DisplayError(message.into())

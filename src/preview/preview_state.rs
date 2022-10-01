@@ -203,7 +203,7 @@ impl PanelState for PreviewState {
     fn with_new_options(
         &mut self,
         _screen: Screen,
-        change_options: &dyn Fn(&mut TreeOptions),
+        change_options: &dyn Fn(&mut TreeOptions) -> &'static str,
         _in_new_panel: bool, // TODO open tree if true
         _con: &AppContext,
     ) -> CmdResult {
