@@ -1,5 +1,6 @@
 ### next
 - status messages now displayed on toggling (for example showing hidden files)
+- upgrade terminal-light to 1.0.1 for better recognition of background color on high precision color terminals
 
 ### v1.15.0 - 2022-09-24
 <a name="v1.15.0"></a>
