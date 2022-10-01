@@ -240,7 +240,7 @@ impl PanelState for StageState {
     fn with_new_options(
         &mut self,
         _screen: Screen,
-        change_options: &dyn Fn(&mut TreeOptions),
+        change_options: &dyn Fn(&mut TreeOptions) -> &'static str,
         in_new_panel: bool,
         con: &AppContext,
     ) -> CmdResult {
@@ -248,15 +248,16 @@ impl PanelState for StageState {
             CmdResult::error("stage can't be displayed in two panels")
         } else {
             let mut new_options= self.tree_options();
-            change_options(&mut new_options);
-            CmdResult::NewState(Box::new(StageState {
+            let message = change_options(&mut new_options);
+            let state = Box::new(StageState {
                 filtered_stage: self.filtered_stage.clone(),
                 scroll: self.scroll,
                 mode: initial_mode(con),
                 tree_options: new_options,
                 page_height: self.page_height,
                 stage_sum: self.stage_sum,
-            }))
+            });
+            CmdResult::NewState { state, message: Some(message) }
         }
     }
 

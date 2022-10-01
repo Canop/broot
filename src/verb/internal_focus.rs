@@ -45,6 +45,7 @@ pub fn new_state_on_path(
     let path = path::closest_dir(&path);
     CmdResult::from_optional_state(
         BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()),
+        None,
         false,
     )
 }
