@@ -57,6 +57,9 @@ impl Panel {
     pub fn set_error(&mut self, text: String) {
         self.status = Status::from_error(text);
     }
+    pub fn set_message<S: Into<String>>(&mut self, md: S) {
+        self.status = Status::from_message(md.into());
+    }
 
     /// apply a command on the current state, with no
     /// effect on screen
