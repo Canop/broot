@@ -163,7 +163,6 @@ mod test_command_parts {
         verb_invocation: Option<&str>,
     ) {
         let left = CommandParts::from(input);
-        //dbg!(&left.pattern);
         dbg!(&left);
         let mut pattern = BeTree::new();
         for token in pattern_tokens.drain(..) {
@@ -174,7 +173,6 @@ mod test_command_parts {
             pattern,
             verb_invocation: verb_invocation.map(|s| VerbInvocation::from(s)),
         };
-        //dbg!(&right.pattern);
         dbg!(&right);
         assert_eq!(left, right);
     }
@@ -261,6 +259,28 @@ mod test_command_parts {
         );
     }
     #[test]
+    fn parse_fuzzy_pattern_searching_parenthesis() {
+        check(
+            r#"\("#,
+            r#"\("#,
+            vec![
+                Token::Atom(pp(&["("])),
+            ],
+            None,
+        );
+    }
+    #[test]
+    fn parse_regex_pattern_searching_parenthesis() {
+        check(
+            r#"/\("#,
+            r#"/\("#,
+            vec![
+                Token::Atom(pp(&["", r#"\("#])),
+            ],
+            None,
+        );
+    }
+    #[test]
     fn parse_composite_pattern() {
         check(
             "(/txt$/&!truc)&c/rex",
@@ -276,6 +296,23 @@ mod test_command_parts {
                 Token::Atom(pp(&["c", "rex"])),
             ],
             None
+        );
+    }
+    #[test]
+    fn parse_unclosed_composite_pattern() {
+        check(
+            r#"!/\.json$/&(c/isize/|c/i32:rm"#,
+            r#"!/\.json$/&(c/isize/|c/i32"#,
+            vec![
+                Token::Operator(PatternOperator::Not),
+                Token::Atom(pp(&["", r#"\.json$"#, ""])),
+                Token::Operator(PatternOperator::And),
+                Token::OpeningParenthesis,
+                Token::Atom(pp(&["c", "isize", ""])),
+                Token::Operator(PatternOperator::Or),
+                Token::Atom(pp(&["c", "i32"])),
+            ],
+            Some("rm"),
         );
     }
     #[test]
