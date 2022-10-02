@@ -374,9 +374,11 @@ impl PanelState for PreviewState {
                 self.pending_pattern = self.removed_pattern.take();
                 Ok(CmdResult::Keep)
             }
+            Internal::panel_left_no_open => Ok(CmdResult::HandleInApp(Internal::panel_left_no_open)),
             Internal::panel_right if self.filtered_preview.is_some() => {
                 self.on_pattern(InputPattern::none(), app_state, con)
             }
+            Internal::panel_right_no_open => Ok(CmdResult::HandleInApp(Internal::panel_right_no_open)),
             Internal::select_first => {
                 self.mut_preview().select_first();
                 Ok(CmdResult::Keep)

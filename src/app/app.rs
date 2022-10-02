@@ -334,10 +334,10 @@ impl App {
                 self.tx_seqs.send(sequence).unwrap();
             }
             HandleInApp(internal) => {
+                debug!("handling internal {internal:?} at app level");
                 match internal {
-                    Internal::panel_left | Internal::panel_right => {
-                        let new_active_panel_idx = if internal == Internal::panel_left {
-                            // we're not here to create a panel, this is handled in the state
+                    Internal::panel_left_no_open | Internal::panel_right_no_open => {
+                        let new_active_panel_idx = if internal == Internal::panel_left_no_open {
                             // we're here because the state wants us to either move to the panel
                             // to the left, or close the rightest one
                             if self.active_panel_idx == 0 {
@@ -347,8 +347,7 @@ impl App {
                                 Some(self.active_panel_idx - 1)
                             }
                         } else { // panel_right
-                            // we're not here to create panels (it's done in the state).
-                            // So we either move to the right or close the leftes panel
+                            // we either move to the right or close the leftest panel
                             if self.active_panel_idx + 1 == self.panels.len().get() {
                                 self.close_panel(0);
                                 None

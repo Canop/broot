@@ -455,9 +455,10 @@ impl PanelState for BrowserState {
                     )
                 } else {
                     // we let the app handle other cases
-                    CmdResult::HandleInApp(Internal::panel_left)
+                    CmdResult::HandleInApp(Internal::panel_left_no_open)
                 }
             }
+            Internal::panel_left_no_open => CmdResult::HandleInApp(Internal::panel_left_no_open),
             Internal::panel_right => {
                 let areas = &cc.panel.areas;
                 let selected_path = &self.displayed_tree().selected_line().path;
@@ -479,9 +480,10 @@ impl PanelState for BrowserState {
                 } else {
                     // we ask the app to handle other cases :
                     // focus the panel to the right or close the leftest one
-                    CmdResult::HandleInApp(Internal::panel_right)
+                    CmdResult::HandleInApp(Internal::panel_right_no_open)
                 }
             }
+            Internal::panel_right_no_open => CmdResult::HandleInApp(Internal::panel_right_no_open),
             Internal::parent => self.go_to_parent(screen, con, bang),
             Internal::print_tree => {
                 print::print_tree(self.displayed_tree(), cc.app.screen, cc.app.panel_skin, con)?

@@ -490,11 +490,11 @@ pub trait PanelState {
                     CmdResult::Keep
                 }
             }
-            Internal::panel_left => {
-                CmdResult::HandleInApp(Internal::panel_left)
+            Internal::panel_left | Internal::panel_left_no_open => {
+                CmdResult::HandleInApp(Internal::panel_left_no_open)
             }
-            Internal::panel_right => {
-                CmdResult::HandleInApp(Internal::panel_right)
+            Internal::panel_right | Internal::panel_right_no_open => {
+                CmdResult::HandleInApp(Internal::panel_right_no_open)
             }
             Internal::toggle_second_tree => {
                 CmdResult::HandleInApp(Internal::toggle_second_tree)
