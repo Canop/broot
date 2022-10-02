@@ -48,7 +48,7 @@ impl StandardStatus {
             .key_desc_of_internal(Internal::panel_right)
             .map(|k| format!("*{}* to reveal the text", k));
         let preview_restorable_filter = verb_store
-            .key_desc_of_internal(Internal::panel_left)
+            .key_desc_of_internal(Internal::panel_left_no_open)
             .map(|k| format!("*{}* to restore the filter", k));
         let not_first_state = "*esc* to go back".to_string();
         let help = "*?* for help".to_string();
