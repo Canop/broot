@@ -231,7 +231,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(page_up)
             .with_key(key!(ctrl-u))
             .with_key(key!(pageup)),
-        internal(panel_left)
+        internal(panel_left_no_open)
             .with_key(key!(ctrl-left)),
         internal(panel_right)
             .with_key(key!(ctrl-right)),

@@ -541,9 +541,10 @@ impl PanelState for FilesystemState {
                     )
                 } else {
                     // we ask the app to focus the panel to the left
-                    CmdResult::HandleInApp(Internal::panel_left)
+                    CmdResult::HandleInApp(Internal::panel_left_no_open)
                 }
             }
+            Internal::panel_left_no_open => CmdResult::HandleInApp(Internal::panel_left_no_open),
             Internal::panel_right => {
                 let areas = &cc.panel.areas;
                 if areas.is_last() && areas.nb_pos < con.max_panels_count {
@@ -558,9 +559,10 @@ impl PanelState for FilesystemState {
                     )
                 } else {
                     // we ask the app to focus the panel to the right
-                    CmdResult::HandleInApp(Internal::panel_right)
+                    CmdResult::HandleInApp(Internal::panel_right_no_open)
                 }
             }
+            Internal::panel_right_no_open => CmdResult::HandleInApp(Internal::panel_right_no_open),
             Internal::page_down => {
                 if !self.try_scroll(ScrollCommand::Pages(1)) {
                     self.selection_idx = self.count() - 1;
