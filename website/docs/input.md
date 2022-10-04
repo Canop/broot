@@ -35,32 +35,79 @@ regex name | `/[yz]{3}` or `/[yz]{3}/` | `fuzzy.rs` | search for the regular exp
 regex name | `/(json|xml)$/i` | `thing.XML` | find files whose name ends in `json` or `xml`, case insensitive
 regex name | `/abc/i` | `aBc.txt` | search for the regular expression `abc` with flag `i` in filenames
 exact path | `ep/te\/d`  or `pe/te\/d/` | `website/docs` |  search for "te/d" in sub-paths from current tree root
-regex path | `rp/\\d{3}.*txt` | `dir/a256/abc.txt` |  search for the `\d{3}.*txt` regex  in sub-paths from current tree root
+regex path | `rp/\d{3}.*txt` | `dir/a256/abc.txt` |  search for the `\d{3}.*txt` regex  in sub-paths from current tree root
 tokens path | `t/ab,cd` | `DCD/a256/abc.txt` |  search for the "ab" and "cd" tokens in sub-paths from current tree root
 exact content | `c/mask` or `c/mask/` | `umask = "1.0"` | search for the "mask" string in file contents
 regex content | `rc/[abc]{5}/i` | `bAAAc` | search with a regular expression in file contents - `i` making it case insensitive
-regex content | `cr/\\bzh\\b` | `"zh":{` | search a word with a regular expression in file contents
+regex content | `cr/\bzh\b` | `"zh":{` | search a word with a regular expression in file contents
 
 It's also possible to [redefine those mode mappings](../conf_file/#search-modes).
-
-To escape characters (for example the space, colon or slash) in the pattern, use a `\` (an antislash is `\\`).
 
 # Combining filtering patterns
 
 Patterns can be combined with the `!` (not), `&` (and) and `|` (or) operators, and parentheses if necessary.
 
-You can for example display non `json` files containing either `isize` or `i32` with
+You can for example list files whose name contains a `z` and whose content contains one too with
 
-    !/json$/&(c/isize/|c/i32/)
+    z&c/z
 
-## Subtleties
+To display non `json` files containing either `isize` or `i32`, type
+
+    !/\.json$/&(c/isize/|c/i32/)
+
+The last closing characters are often unecessary when no ambiguity is possible, so you could have typed this:
+
+    !/\.json$/&(c/isize/|c/i32
+
+# Escaping
+
+## Why escaping ?
+
+Look at this input: `a|b rm`.
+
+It's for searching files whose name contains either a `a` or a `b`, then removing the selected one.
+The pattern here is `a|b`, it's a composite pattern.
+
+A space or a colon starts the verb invocation.
+So if you needs one of them in your pattern, you need to escape it with `\`.
+
+For example
+
+* to search for a file whose name contains a x and a colon, you type `x\:`
+* to search for a file whose name contains a space just before a digit, you can use a regular expression: `/\ \d`
 
 The characters you use as operators and the parenthesis can be useful in patterns too, either because you want to search for them in fuzzy patterns or in file contents, or because you write non trivial regular expressions.
 
-Most often you'll just type what feels natural and broot will select the interpretation which makes sense but you might be interested in a few rules:
+If you want to search for the `|` character (or a `&`, or `(`, or `)`), you can't just type it because it's used to combine elementary patterns. I needs escaping. So if you need to search for the `|` character in file names, you type `\|`.
 
-* parenthesis and operators in the second pattern part (parts being separated by `/`) are part of the pattern, which explains why `/(json|xml)` is interpreted as a regular expression. If you want to do a fuzzy search for a `|` in the name of your files, you'll need to either escape it as `\|` or to have an explicit pattern mode : `nf/a|b` because `a|b` would search for files whose name contains either `a` or `b`. And to ensure an operator or closing parenthesis isn't interpreted as part of your pattern, close it with a `/`.
-* broot interprets the left operand before the right one and doesn't interpret the second one if it's not necessary. So if you want to search your whole disk for json files containing `abcd`, it will be faster to use `/json$/&c/abcd` rather than `c/abcd/&/json$/` which would look at the file name only after having scanned the content.
+An elementary pattern which starts with a `/` can only be ended with a `/`, a space, or a colon.
+That's why you don't have to escape other characters you want to include in your elementary pattern.
+
+This lets you type this regular expression with no unecessary escaping:
+
+    /(\d-){2}\w
+
+![regex](img/regex-antislash-d.png)
+
+Regular expression escaping rules still apply, so if you want to search with a regex for a file containing a `(`, you'll type `/\(`.
+
+## Escaping Rules
+
+The escaping character is the antislash `\`.
+
+Most often, you don't need to know more: when broot tells you it doesn't understand your pattern, it should click that your special character needs escaping and you prefix it with a `\ `.
+
+More precisely:
+
+1. After the first `/` of a pattern, only ` `, `:`,  `/` and `\` need escaping.
+2. Otherwise, `&,` `|`, `(`, `)`, `\` need escaping too.
+3. When there's no ambiguity, ending characters are often unecessary
+
+# Performances
+
+broot interprets the left operand before the right one and doesn't interpret the second one if it's not necessary.
+
+So if you want to search your whole disk for json files containing `abcd`, it will be faster to use `/\.json$/&c/abcd` rather than `c/abcd/&/\.json$/` which would look at the file name only after having scanned the content.
 
 # The verb invocation
 
