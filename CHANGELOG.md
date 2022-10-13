@@ -1,3 +1,7 @@
+### v1.16.1 - 2022-10-13
+<a name="v1.16.1"></a>
+- fix ctrl-left not usable anymore in filtered preview to remove filtering
+
 ### v1.16.0 - 2022-10-07
 <a name="v1.16.0"></a>
 - status messages now displayed on toggling (for example showing hidden files)
