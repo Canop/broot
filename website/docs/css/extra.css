@@ -29,7 +29,8 @@ h3 {
 }
 
 .navbar {
-	background-image: linear-gradient(#184965,#02121b);
+	//background-image: linear-gradient(#184965,#02121b);
+	background: #1b465f;
 }
 
 pre {
