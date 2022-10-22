@@ -1,21 +1,25 @@
+use {
+    serde::Deserialize,
+};
 
 /// one of the types of state that you could
 /// find in a panel today
-#[derive(Debug, Clone, Copy, PartialEq)]
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum PanelStateType {
 
-    /// The standard browsing tree
+    /// standard browsing tree
     Tree,
 
-    /// the filesystem
+    /// filesystems
     Fs,
 
-    /// The help "screen"
+    /// help "screen"
     Help,
 
-    /// The preview panel, never alone on screen
+    /// preview panel, never alone on screen
     Preview,
 
-    /// The stage panel, never alone on screen
+    /// stage panel, never alone on screen
     Stage,
 }

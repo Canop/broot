@@ -1,6 +1,9 @@
 use {
     crate::{
-        app::SelectionType,
+        app::{
+            PanelStateType,
+            SelectionType,
+        },
         command::Sequence,
         errors::ConfError,
         keys,
@@ -49,6 +52,8 @@ pub struct VerbConf {
 
     auto_exec: Option<bool>,
 
+    #[serde(default)]
+    panels: Vec<PanelStateType>,
 }
 
 /// read a deserialized verb conf item into a verb,
@@ -154,6 +159,9 @@ impl VerbConf {
         }
         if vc.auto_exec == Some(false) {
             verb.auto_exec = false;
+        }
+        if !vc.panels.is_empty() {
+            verb.panels = vc.panels.clone();
         }
         verb.selection_condition = match vc.apply_to.as_deref() {
             Some("file") => SelectionType::File,

@@ -1,3 +1,6 @@
+### next
+- you can restrict the panels in which verbs apply with the verb configuration `panels` parameter
+
 ### v1.16.1 - 2022-10-13
 <a name="v1.16.1"></a>
 - fix ctrl-left not usable anymore in filtered preview to remove filtering
