@@ -74,6 +74,7 @@ impl PanelInput {
     /// - maybe change the input
     /// - build a command
     /// then redraw the input field
+    #[allow(clippy::too_many_arguments)]
     pub fn on_event(
         &mut self,
         w: &mut W,
@@ -82,8 +83,9 @@ impl PanelInput {
         sel_info: SelInfo<'_>,
         app_state: &AppState,
         mode: Mode,
+        panel_state_type: PanelStateType,
     ) -> Result<Command, ProgramError> {
-        let cmd = self.get_command(event, con, sel_info, app_state, mode);
+        let cmd = self.get_command(event, con, sel_info, app_state, mode, panel_state_type);
         self.input_field.display_on(w)?;
         Ok(cmd)
     }
@@ -187,6 +189,7 @@ impl PanelInput {
         sel_info: SelInfo<'_>,
         app_state: &AppState,
         mode: Mode,
+        panel_state_type: PanelStateType,
     ) -> Command {
         match timed_event.event {
             Event::Mouse(MouseEvent { kind, column, row, modifiers: KeyModifiers::NONE }) => {
@@ -323,6 +326,9 @@ impl PanelInput {
                                 return Command::from_raw(self.input_field.get_content(), false);
                             }
                             if !verb.selection_condition.is_respected_by(sel_info.common_stype()) {
+                                continue;
+                            }
+                            if !verb.can_be_called_in_panel(panel_state_type) {
                                 continue;
                             }
                             if mode != Mode::Input && verb.is_internal(Internal::mode_input) {

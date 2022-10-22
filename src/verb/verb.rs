@@ -71,7 +71,9 @@ pub struct Verb {
 
     /// whether to show the verb in help screen
     /// (if we show all input related actions, the doc is unusable)
-    pub show_in_doc: bool
+    pub show_in_doc: bool,
+
+    pub panels: Vec<PanelStateType>,
 }
 
 impl PartialEq for Verb {
@@ -122,6 +124,7 @@ impl Verb {
             needs_another_panel,
             auto_exec: true,
             show_in_doc: true,
+            panels: Vec::new(),
         })
     }
     fn update_key_desc(&mut self) {
@@ -294,5 +297,9 @@ impl Verb {
 
     pub fn is_sequence(&self) -> bool {
         matches!(self.execution, VerbExecution::Sequence(_))
+    }
+
+    pub fn can_be_called_in_panel(&self, panel_state_type: PanelStateType) -> bool {
+        self.panels.is_empty() || self.panels.contains(&panel_state_type)
     }
 }
