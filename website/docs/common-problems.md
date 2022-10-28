@@ -2,14 +2,14 @@ This page lists a few problems which were observed more than once and the best c
 
 Please come to [miaou](https://miaou.dystroy.org/3490?broot) if something isn't clear or if you want to propose a change or addition.
 
-# Compilation fails
+# Compilation failure
 
 The common causes are
 
 * an oudated Rust installation. If you're using [rustup](https://rustup.rs), do `rustup update`.
 * some tools missing. On Debian like distributions, this can generally be solved with `sudo apt install build-essential libxcb-shape0-dev and libxcb-xfixes0-dev`
 
-# Those aren't my colors
+# Colors
 
 Broot's initial colors ensure that everything is readable whatever your settings.
 But you may want to have something more similar to your usual terminal colors, or maybe to define the whole skin.
@@ -18,7 +18,7 @@ But you may want to have something more similar to your usual terminal colors, o
 * [set a transparent background](../skins/#transparent-background)
 * [set file extension dependent colors](../conf_file/#colors-by-file-extension)
 
-# I have trouble with tmux
+# Tmux
 
 The first problem you might see is the presence of artifacts. This may happen in other terminal multiplexers too and it seems related to their bad proxying of some style related codes.
 
@@ -30,7 +30,7 @@ Additionally, if backgrounds can't be properly displayed, you may consider [mark
 
 Another problem is the fact the `br` function doesn't set a proper pane name (you'll probably see the name of your shell instead of broot). This may be [solved with a modified shell function](https://github.com/Canop/broot/issues/270).
 
-# A shortcut isn't available
+# Missing shortcut
 
 Most terminals intercept a few keyboard shortcut for their own features. You may need to remap your terminal's default keyboard shortcuts.
 
@@ -80,9 +80,15 @@ It's probably your terminal app's fault. You could check that by using any other
 
 Most terminal apps are fine but some, made with Electron or worse, or crippled with fancy plugins, take dozens of milliseconds to redraw the screen. You should not use those terminals.
 
-# Broot doesn't work on msysgit or git bash
+# msysgit or git bash
 
 I have no solution for that. If you know how to tackle the problem, the maintainers of [Crossterm](https://github.com/crossterm-rs/crossterm) would be interested too.
+
+# Windows
+
+Broot isn't as fast or feature complete on Windows.
+
+I'm not a Windows programmer and I don't even have a machine to test. I'd welcome the help of a programmer with the relevant competences and the will to improve broot.
 
 # Windows 9-
 
@@ -118,6 +124,8 @@ This will ensure your profile is loaded in new terminals/sessions.
 You can check it by opening a new terminal then running `[Console]::Out`.
 The output should show an encoding of `System.Text.UTF8Encoding`.
 
-# Broot doesn't seem as fast or feature complete on Windows
+# High-Resolution images in Kitty
 
-It isn't. I'm not a Windows programmer and I don't even have a machine to test. I'd welcome the help of a programmer with the relevant competences and the will to improve broot.
+When using Kitty (and no terminal multiplexer), image preview is normally in high resolution.
+
+If it's not the case, it's probably because the `TERM` environnement variable has been redefined. Set either `TERM` or `TERMINAL` to include `kitty`. This can be done several ways, for example by adding `env TERMINAL=xterm-kitty` in your [kitty.conf](https://sw.kovidgoyal.net/kitty/conf/) file
