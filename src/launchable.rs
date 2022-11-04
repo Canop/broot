@@ -154,7 +154,7 @@ impl Launchable {
                     old_working_dir = std::env::current_dir().ok();
                     std::env::set_current_dir(working_dir).unwrap();
                 }
-                let exec_res = Command::new(&exe)
+                let exec_res = Command::new(exe)
                     .args(args.iter())
                     .spawn()
                     .and_then(|mut p| p.wait())
@@ -178,7 +178,7 @@ impl Launchable {
                 Ok(())
             }
             Launchable::SystemOpen { path } => {
-                opener::open(&path)?;
+                opener::open(path)?;
                 Ok(())
             }
         }

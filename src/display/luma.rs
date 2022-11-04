@@ -21,7 +21,7 @@ pub fn luma() -> &'static Result<f32, terminal_light::TlError> {
         info!("terminal's luma: {:?}", &luma);
         luma
     });
-    &*LUMA
+    &LUMA
 }
 
 impl Luma {

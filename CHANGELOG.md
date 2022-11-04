@@ -1,5 +1,7 @@
-### next
+### v1.16.2 - 2022-11-04
+<a name="v1.16.2"></a>
 - you can restrict the panels in which verbs apply with the verb configuration `panels` parameter
+- fix rm on Windows behaving "recursively" (it was `cmd /c del /Q /S {file}`) - Fix #627
 
 ### v1.16.1 - 2022-10-13
 <a name="v1.16.1"></a>

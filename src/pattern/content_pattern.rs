@@ -46,7 +46,7 @@ impl ContentExactPattern {
         if !candidate.regular_file {
             return None;
         }
-        match self.needle.search(&candidate.path) {
+        match self.needle.search(candidate.path) {
             Ok(ContentSearchResult::Found { .. }) => Some(1),
             Ok(ContentSearchResult::NotFound) => None,
             Ok(ContentSearchResult::NotSuitable) => {

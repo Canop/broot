@@ -54,7 +54,7 @@ impl ContentRegexPattern {
     }
 
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
-        if !candidate.regular_file || is_path_binary(&candidate.path) {
+        if !candidate.regular_file || is_path_binary(candidate.path) {
             return None;
         }
         match self.has_match(candidate.path) {

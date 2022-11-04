@@ -31,6 +31,7 @@ command = [
 	"cargo", "clippy",
 	"--color", "always",
 	"--",
+	"-A", "clippy::bool_to_int_with_if",
 	"-A", "clippy::collapsible_else_if",
 	"-A", "clippy::collapsible_if",
 	"-A", "clippy::derive_partial_eq_without_eq",

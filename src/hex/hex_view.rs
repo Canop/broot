@@ -44,7 +44,7 @@ impl HexView {
         })
     }
     pub fn line_count(&self) -> usize {
-        self.len / 16 + if self.len % 16 != 0 { 1 } else { 0 }
+        self.len / 16 + usize::from(self.len % 16 != 0)
     }
     pub fn try_scroll(
         &mut self,

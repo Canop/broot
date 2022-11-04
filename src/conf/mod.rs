@@ -62,5 +62,5 @@ static CONF_DIR: Lazy<PathBuf> = Lazy::new(find_conf_dir);
 
 /// return the path to the config directory
 pub fn dir() -> &'static Path {
-    &*CONF_DIR
+    &CONF_DIR
 }

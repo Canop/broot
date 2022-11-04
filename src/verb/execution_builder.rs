@@ -215,7 +215,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                                     self.get_raw_sel_name_standard_replacement(default_name, sel)
                                 )
                             )
-                            .unwrap_or_else(|| "".to_string())
+                            .unwrap_or_default()
                     },
                 ).to_string()
             }),

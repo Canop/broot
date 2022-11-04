@@ -201,7 +201,7 @@ impl ShellInstall {
             script_path.to_string_lossy(),
         );
         fs::create_dir_all(script_path.parent().unwrap())?;
-        fs::write(&script_path, content)?;
+        fs::write(script_path, content)?;
         Ok(())
     }
 
@@ -219,7 +219,7 @@ impl ShellInstall {
         );
         fs::create_dir_all(link_path.parent().unwrap())?;
         #[cfg(unix)]
-        os::unix::fs::symlink(&script_path, &link_path)?;
+        os::unix::fs::symlink(script_path, link_path)?;
         #[cfg(windows)]
         os::windows::fs::symlink_file(&script_path, &link_path)?;
         Ok(())

@@ -62,7 +62,7 @@ impl ImageView {
         let source_img = time!(
             "decode image",
             path,
-            Reader::open(&path)?.decode()?
+            Reader::open(path)?.decode()?
         );
         Ok(Self {
             path: path.to_path_buf(),

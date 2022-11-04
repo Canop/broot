@@ -272,7 +272,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         external("rm", "cmd /c rmdir /Q /S {file}", StayInBroot)
             .with_stype(SelectionType::Directory),
         #[cfg(windows)]
-        external("rm", "cmd /c del /Q /S {file}", StayInBroot)
+        external("rm", "cmd /c del /Q {file}", StayInBroot)
             .with_stype(SelectionType::File),
         internal(toggle_counts).with_shortcut("counts"),
         internal(toggle_dates).with_shortcut("dates"),

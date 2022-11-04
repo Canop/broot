@@ -31,7 +31,7 @@ static MANAGER: Lazy<Mutex<KittyManager>> = Lazy::new(|| {
 });
 
 pub fn manager() -> &'static Mutex<KittyManager> {
-    &*MANAGER
+    &MANAGER
 }
 
 #[derive(Debug)]
