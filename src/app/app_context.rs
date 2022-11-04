@@ -3,6 +3,7 @@ use {
     crate::{
         cli::{Args, TriBool},
         conf::Conf,
+        content_search,
         errors::*,
         file_sum,
         icon::*,
@@ -86,6 +87,9 @@ pub struct AppContext {
 
     /// number of files which may be staged in one staging operation
     pub max_staged_count: usize,
+
+    /// max file size when searching file content
+    pub content_search_max_file_size: usize,
 }
 
 impl AppContext {
@@ -143,6 +147,10 @@ impl AppContext {
             initial_tree_options.show_selection_mark = true;
         }
 
+        let content_search_max_file_size = config.content_search_max_file_size
+            .map(|u64value| usize::try_from(u64value).unwrap_or(usize::MAX))
+            .unwrap_or(content_search::DEFAULT_MAX_FILE_SIZE);
+
         Ok(Self {
             initial_root,
             initial_tree_options,
@@ -163,6 +171,7 @@ impl AppContext {
             quit_on_last_cancel: config.quit_on_last_cancel.unwrap_or(false),
             file_sum_threads_count,
             max_staged_count,
+            content_search_max_file_size,
         })
     }
 }

@@ -22,6 +22,7 @@ pub struct Needle {
     /// (guaranteed to be valid UTF8 by construct)
     bytes: Box<[u8]>,
 
+    max_file_size: usize,
 }
 
 impl fmt::Debug for Needle {
@@ -35,9 +36,9 @@ impl fmt::Debug for Needle {
 
 impl Needle {
 
-    pub fn new(pat: &str) -> Self {
+    pub fn new(pat: &str, max_file_size: usize) -> Self {
         let bytes = pat.as_bytes().to_vec().into_boxed_slice();
-        Self { bytes }
+        Self { bytes, max_file_size }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -198,7 +199,7 @@ impl Needle {
 
     /// determine whether the file contains the needle
     pub fn search<P: AsRef<Path>>(&self, hay_path: P) -> io::Result<ContentSearchResult> {
-        super::get_mmap_if_not_binary(hay_path)
+        super::get_mmap_if_suitable(hay_path, self.max_file_size)
             .map(|om| om.map_or(
                 ContentSearchResult::NotSuitable,
                 |hay| self.search_mmap(&hay),
@@ -231,7 +232,7 @@ mod content_search_tests {
 
     #[test]
     fn test_found() -> Result<(), io::Error> {
-        let needle = Needle::new("inception");
+        let needle = Needle::new("inception", 1_000_000);
         let res = needle.search("src/content_search/needle.rs")?;
         assert!(res.is_found());
         Ok(())

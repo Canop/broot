@@ -18,6 +18,7 @@ use {
 pub struct ContentRegexPattern {
     rex: regex::Regex,
     flags: String,
+    max_file_size: usize
 }
 
 impl fmt::Display for ContentRegexPattern {
@@ -28,10 +29,11 @@ impl fmt::Display for ContentRegexPattern {
 
 impl ContentRegexPattern {
 
-    pub fn from(pat: &str, flags: &str) -> Result<Self, PatternError> {
+    pub fn new(pat: &str, flags: &str, max_file_size: usize) -> Result<Self, PatternError> {
         Ok(Self {
             rex: super::build_regex(pat, flags)?,
             flags: flags.to_string(),
+            max_file_size,
         })
     }
 
@@ -54,7 +56,7 @@ impl ContentRegexPattern {
     }
 
     pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
-        if !candidate.regular_file || is_path_binary(candidate.path) {
+        if !candidate.regular_file || !is_path_suitable(candidate.path, self.max_file_size) {
             return None;
         }
         match self.has_match(candidate.path) {

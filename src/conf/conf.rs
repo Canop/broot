@@ -104,6 +104,9 @@ pub struct Conf {
 
     #[serde(alias="show-matching-characters-on-path-searches")]
     pub show_matching_characters_on_path_searches: Option<bool>,
+
+    #[serde(alias="content-search-max-file-size", deserialize_with="file_size::deserialize", default)]
+    pub content_search_max_file_size: Option<u64>,
 }
 
 impl Conf {
@@ -182,6 +185,7 @@ impl Conf {
         overwrite!(self, file_sum_threads_count, conf);
         overwrite!(self, max_staged_count, conf);
         overwrite!(self, show_matching_characters_on_path_searches, conf);
+        overwrite!(self, content_search_max_file_size, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense
@@ -206,4 +210,6 @@ impl Conf {
         Ok(())
     }
 }
+
+
 

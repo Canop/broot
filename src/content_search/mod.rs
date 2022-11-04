@@ -21,7 +21,7 @@ use {
     },
 };
 
-pub const MAX_FILE_SIZE: usize = 10 * 1024 * 1024;
+pub const DEFAULT_MAX_FILE_SIZE: usize = 10 * 1024 * 1024;
 
 pub fn get_mmap<P: AsRef<Path>>(hay_path: P) -> io::Result<Mmap> {
     let file = File::open(hay_path.as_ref())?;
@@ -31,28 +31,26 @@ pub fn get_mmap<P: AsRef<Path>>(hay_path: P) -> io::Result<Mmap> {
 
 /// return the memmap to the file except if it was determined
 /// that the file is binary (from its extension, size, or first bytes)
-pub fn get_mmap_if_not_binary<P: AsRef<Path>>(hay_path: P) -> io::Result<Option<Mmap>> {
+/// or is too big
+pub fn get_mmap_if_suitable<P: AsRef<Path>>(hay_path: P, max_size: usize) -> io::Result<Option<Mmap>> {
     if let Some(ext) = hay_path.as_ref().extension().and_then(|s| s.to_str()) {
         if extensions::is_known_binary(ext) {
             return Ok(None);
         }
     }
     let hay = get_mmap(&hay_path)?;
-    if hay.len() > MAX_FILE_SIZE || magic_numbers::is_known_binary(&hay) {
+    if hay.len() > max_size || magic_numbers::is_known_binary(&hay) {
         return Ok(None);
     }
     Ok(Some(hay))
 }
 
-/// return false when the file looks suitable for searching as text.
+/// return true when the file looks suitable for searching as text.
 ///
 /// This function is quite slow as it creates a memmap just to check
 /// a few bytes. If the memmap can be used, prefer `get_mmap_if_not_binary`
-pub fn is_path_binary<P: AsRef<Path>>(path: P) -> bool {
-    match get_mmap_if_not_binary(path) {
-        Ok(Some(_)) => false,
-        _ => true,
-    }
+pub fn is_path_suitable<P: AsRef<Path>>(path: P, max_size: usize) -> bool {
+    matches!(get_mmap_if_suitable(path, max_size), Ok(Some(_)))
 }
 
 pub fn line_count_at_pos<P: AsRef<Path>>(path: P, pos: usize) -> io::Result<usize> {
