@@ -179,7 +179,7 @@ verbs: [
     }
     {
     	invocation: "open"
-    	key: crtl-O
+    	key: ctrl-O
     	internal: ":open_stay"
     }
     {
@@ -221,7 +221,7 @@ internal = ":select_last"
 
 [[verbs]]
 invocation = "open"
-key = "crtl-O"
+key = "ctrl-O"
 internal = ":open_stay"
 
 [[verbs]]
