@@ -32,6 +32,7 @@ impl Pattern {
     pub fn new(
         raw_expr: &BeTree<PatternOperator, PatternParts>,
         search_modes: &SearchModeMap,
+        content_search_max_file_size: usize,
     ) -> Result<Self, PatternError> {
         let expr: BeTree<PatternOperator, Pattern> = raw_expr
             .try_map_atoms::<_, PatternError, _>(|pattern_parts| {
@@ -69,10 +70,14 @@ impl Pattern {
                                 TokPattern::new(core)
                             ),
                             SearchMode::ContentExact => Self::ContentExact(
-                                ContentExactPattern::from(core)
+                                ContentExactPattern::new(core, content_search_max_file_size)
                             ),
                             SearchMode::ContentRegex => Self::ContentRegex(
-                                ContentRegexPattern::from(core, flags.unwrap_or(""))?
+                                ContentRegexPattern::new(
+                                    core,
+                                    flags.unwrap_or(""),
+                                    content_search_max_file_size,
+                                )?
                             ),
                         }
                     }

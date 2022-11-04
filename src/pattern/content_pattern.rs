@@ -24,10 +24,8 @@ impl fmt::Display for ContentExactPattern {
 
 impl ContentExactPattern {
 
-    pub fn from(pat: &str) -> Self {
-        Self {
-            needle: Needle::new(pat),
-        }
+    pub fn new(pat: &str, max_file_size: usize) -> Self {
+        Self { needle: Needle::new(pat, max_file_size) }
     }
 
     pub fn as_str(&self) -> &str {
@@ -50,11 +48,9 @@ impl ContentExactPattern {
             Ok(ContentSearchResult::Found { .. }) => Some(1),
             Ok(ContentSearchResult::NotFound) => None,
             Ok(ContentSearchResult::NotSuitable) => {
-                // debug!("{:?} isn't suitable for search", &candidate.path);
                 None
             }
             Err(e) => {
-                // today it mostly happens on empty files
                 debug!("error while scanning {:?} : {:?}", &candidate.path, e);
                 None
             }

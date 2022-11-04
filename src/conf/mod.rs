@@ -6,6 +6,7 @@ use {
 mod conf;
 mod default;
 mod format;
+pub mod file_size;
 mod import;
 mod verb_conf;
 

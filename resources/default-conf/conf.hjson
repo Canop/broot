@@ -141,6 +141,13 @@
     #     rs: yellow
     # }
 
+    ###############################################################
+    # Max file size for content search
+    #
+    # Bigger files are ignored when searching their content. You
+    # can specify this size either in ISO units (eg 5GB) or in
+    # the old binary units (eg 44Kib)
+    content_search_max_file_size: 10MB
 
     ###############################################################
     # Max Panels Count
