@@ -84,6 +84,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         external("cd", "cd {directory}", FromParentShell)
             .with_stype(SelectionType::Directory)
             .with_key(key!(alt-enter))
+            .with_shortcut("ol")
             .with_description("change directory and quit"),
 
         #[cfg(unix)]
