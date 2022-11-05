@@ -1,3 +1,6 @@
+### next
+- max file size for content search now configurable (default is now 10MB) - Fix #626
+
 ### v1.16.2 - 2022-11-04
 <a name="v1.16.2"></a>
 - you can restrict the panels in which verbs apply with the verb configuration `panels` parameter

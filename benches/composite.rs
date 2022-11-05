@@ -22,7 +22,7 @@ fn bench_score_of_composite(gb: &mut Bench) {
         let name = format!("Composite({:?})::score_of", &pattern);
         gb.task(name, |b| {
             let parts = CommandParts::from(pattern.to_string());
-            let cp = Pattern::new(&parts.pattern, &search_modes).unwrap();
+            let cp = Pattern::new(&parts.pattern, &search_modes, 10*1024*1024).unwrap();
             b.iter(|| {
                 for name in shared::NAMES {
                     pretend_used(cp.score_of_string(name));
