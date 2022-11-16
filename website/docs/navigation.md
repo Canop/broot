@@ -60,11 +60,15 @@ To display only files containing `"memmap"`, type `c/memmap`:
 
 Simple patterns can be composed with the `!`, `&` and `|` operators.
 
-For example, if you don't want to see files whose name ends in `"rs"`, you may type `!/rs$` (it's the negation of the `/rs$` regular expression).
+Examples:
 
-And if you want to see all files containing `"pattern"` but not the rust ones, you'll type `!rs&c/pattern`:
+If you don't want to see files whose name ends in `"rs"`, you may type `!/rs$` (it's the negation of the `/rs$` regular expression).
+
+If you want to see all files containing `"pattern"` but not the rust ones, you'll type `!rs&c/pattern`:
 
 ![composite](img/20200620-composite-notrs.png)
+
+If you're looking for a file whose name you don't remember exactly ("rust_test" ? "test-rust" ?), you may type `test&rust` meaning the name contains both "test" and "rust".
 
 # More about searches
 
