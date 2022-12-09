@@ -28,7 +28,6 @@ use {
     },
 };
 
-
 struct DirSummer {
     thread_count: usize,
     thread_pool: ThreadPool,
@@ -80,6 +79,16 @@ impl DirSummer {
             return Some(FileSum::zero());
         }
 
+        // there are problems in /proc - See issue #637
+        if path.starts_with("/proc") {
+            debug!("not summing in /proc");
+            return Some(FileSum::zero());
+        }
+        if path.starts_with("/run") {
+            debug!("not summing in /run");
+            return Some(FileSum::zero());
+        }
+
         // to avoid counting twice a node, we store their id in a set
         #[cfg(unix)]
         let nodes = Arc::new(Mutex::new(FnvHashSet::<NodeId>::default()));
@@ -118,6 +127,7 @@ impl DirSummer {
                             sum += *entry_sum;
                             continue;
                         }
+
                         // we add the directory to the channel of dirs needing
                         // processing
                         busy += 1;
@@ -152,7 +162,6 @@ impl DirSummer {
         // this MPMC channel is here for the threads to send their results
         // at end of computation
         let (thread_sum_sender, thread_sum_receiver) = channel::bounded(threads_count);
-
 
         // Each  thread does a summation without merge and the data are merged
         // at the end (this avoids waiting for a mutex during computation)

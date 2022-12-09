@@ -87,11 +87,12 @@
     # If some paths must be handled specially, uncomment (and change
     # this section as per the examples)
     #
-    # special_paths: {
-    #     "/media/slow-backup-disk"    : no-enter
-    #     "/home/dys/useless"    : hide
-    #     "/home/dys/my-link-I-want-to-explore"    : enter
-    # }
+    special_paths: {
+        "/media" : "no-enter" // comment it if desired
+        # "/media/slow-backup-disk"    : no-enter
+        # "/home/dys/useless"    : hide
+        # "/home/dys/my-link-I-want-to-explore"    : enter
+    }
 
     ###############################################################
     # Quit on last cancel
