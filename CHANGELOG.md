@@ -1,5 +1,7 @@
-### next
+### v1.17.0 - 2022-12-09
+<a name="v1.17.0"></a>
 - max file size for content search now configurable (default is now 10MB) - Fix #626
+- file summing now avoids /proc and /run
 
 ### v1.16.2 - 2022-11-04
 <a name="v1.16.2"></a>
