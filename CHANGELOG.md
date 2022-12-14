@@ -2,6 +2,7 @@
 <a name="v1.17.0"></a>
 - max file size for content search now configurable (default is now 10MB) - Fix #626
 - file summing now avoids /proc and /run
+- default configuration sets /media as not entered by default (can be commented out, of course)
 
 ### v1.16.2 - 2022-11-04
 <a name="v1.16.2"></a>
