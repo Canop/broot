@@ -124,9 +124,17 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_key(key!(alt-c)),
         #[cfg(feature = "clipboard")]
         internal(copy_path),
+        #[cfg(unix)]
         external(
             "copy_to_panel",
             "cp -r {file} {other-panel-directory}",
+            StayInBroot,
+        )
+            .with_shortcut("cpp"),
+        #[cfg(windows)]
+        external(
+            "copy_to_panel",
+            "xcopy /Q /H /Y /I {file} {other-panel-directory}",
             StayInBroot,
         )
             .with_shortcut("cpp"),
