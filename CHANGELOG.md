@@ -1,3 +1,6 @@
+### next
+- Windows specific implementation of :cpp
+
 ### v1.17.0 - 2022-12-09
 <a name="v1.17.0"></a>
 - max file size for content search now configurable (default is now 10MB) - Fix #626
