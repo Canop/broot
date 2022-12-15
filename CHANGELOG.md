@@ -1,4 +1,5 @@
-### next
+### v1.17.1 - 2022-12-15
+<a name="v1.17.1"></a>
 - Windows specific implementation of :cpp
 
 ### v1.17.0 - 2022-12-09
