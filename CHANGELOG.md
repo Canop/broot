@@ -1,3 +1,7 @@
+### next
+- allow opening the help screen with just the `?` key on Windows (as for other systems)
+- fix a crash in some cases of input being cleaned with a selection - Fix #643
+
 ### v1.17.1 - 2022-12-15
 <a name="v1.17.1"></a>
 - Windows specific implementation of :cpp
