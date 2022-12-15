@@ -18,7 +18,7 @@ use {
         task_sync::ComputationResult,
         tree::{Tree, TreeLine, TreeLineType},
     },
-    chrono::{DateTime, Local, TimeZone},
+    chrono::{DateTime, Local, LocalResult, TimeZone},
     crokey::crossterm::{
         cursor,
         QueueableCommand,
@@ -222,14 +222,15 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         seconds: i64,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
-        let date_time: DateTime<Local> = Local.timestamp(seconds, 0);
-        cond_bg!(date_style, self, selected, self.skin.dates);
-        cw.queue_g_string(
-            date_style,
-            date_time
-                .format(self.tree.options.date_time_format)
-                .to_string(),
-        )?;
+        if let LocalResult::Single(date_time) = Local.timestamp_opt(seconds, 0) {
+            cond_bg!(date_style, self, selected, self.skin.dates);
+            cw.queue_g_string(
+                date_style,
+                date_time
+                    .format(self.tree.options.date_time_format)
+                    .to_string(),
+            )?;
+        }
         Ok(1)
     }
 

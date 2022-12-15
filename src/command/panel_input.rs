@@ -306,7 +306,8 @@ impl PanelInput {
                     return Command::from_parts(parts, true);
                 }
 
-                if key == key!('?') && (raw.is_empty() || parts.verb_invocation.is_some()) {
+                if (key == key!('?') || key == key!(shift-'?'))
+                    && (raw.is_empty() || parts.verb_invocation.is_some()) {
                     // a '?' opens the help when it's the first char
                     // or when it's part of the verb invocation
                     return Command::Internal {
