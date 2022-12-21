@@ -1,4 +1,6 @@
-### next
+### v1.18.0 - 2022-12-21
+<a name="v1.18.0"></a>
+- Hjson configuration file can now omit outside braces (it's "braceless Hjson"), making it much cleaner
 - allow opening the help screen with just the `?` key on Windows (as for other systems)
 - fix a crash in some cases of input being cleaned with a selection - Fix #643
 
