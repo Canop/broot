@@ -14,6 +14,7 @@ use {
 
 mod bash;
 mod fish;
+mod nushell;
 mod util;
 
 const MD_INSTALL_REQUEST: &str = r#"
@@ -116,6 +117,7 @@ impl ShellInstall {
         match shell {
             "bash" | "zsh" => println!("{}", bash::get_script()),
             "fish" => println!("{}", fish::get_script()),
+            "nushell" => println!("{}", nushell::get_script()),
             _ => {
                 return Err(ProgramError::UnknowShell {
                     shell: shell.to_string(),
@@ -152,6 +154,7 @@ impl ShellInstall {
         debug!("Starting install");
         bash::install(self)?;
         fish::install(self)?;
+        nushell::install(self)?;
         self.should_quit = true;
         if self.done {
             self.skin.print_text(MD_INSTALL_DONE);
