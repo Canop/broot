@@ -16,10 +16,10 @@ use {
     super::{util, ShellInstall},
     crate::{
         conf,
-        errors::ProgramError,
+        errors::*,
     },
     directories::BaseDirs,
-    std::{fs::OpenOptions, io::Write, path::PathBuf},
+    std::path::PathBuf,
     termimad::{
         mad_print_inline,
     },
@@ -79,7 +79,7 @@ fn get_script_path() -> PathBuf {
 /// Check whether the shell function is installed, install
 /// it if it wasn't refused before or if broot is launched
 /// with --install.
-pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
+pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     debug!("install {NAME}");
     let Some(nushell_dir) = get_nushell_dir() else {
         debug!("no nushell config directory. Assuming nushell isn't used.");
@@ -111,13 +111,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
             &sourcing_path_str,
         );
     } else {
-        let mut shellrc = OpenOptions::new()
-            .write(true)
-            .append(true)
-            .open(&sourcing_path)?;
-        shellrc.write_all(b"\n")?;
-        shellrc.write_all(source_line.as_bytes())?;
-        shellrc.write_all(b"\n")?;
+        util::append_to_file(&sourcing_path, format!("\n{source_line}\n"))?;
         mad_print_inline!(
             &si.skin,
             "`$0` successfully patched, you can make the function immediately available with `source $0`\n",

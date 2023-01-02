@@ -15,7 +15,7 @@
 
 use {
     super::ShellInstall,
-    crate::{conf, errors::ProgramError},
+    crate::{conf, errors::*},
     directories::BaseDirs,
     directories::ProjectDirs,
     std::path::PathBuf,
@@ -94,7 +94,7 @@ fn get_script_path() -> PathBuf {
 ///
 /// As fish isn't frequently used, we first check that it seems
 /// to be installed. If not, we just do nothing.
-pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
+pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     let fish_dir = get_fish_dir();
     if !fish_dir.exists() {
         debug!("no fish config directory. Assuming fish isn't used.");
