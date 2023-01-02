@@ -59,7 +59,7 @@ fn get_link_path() -> PathBuf {
 /// return the root of
 fn get_nushell_dir() -> Option<PathBuf> {
     BaseDirs::new()
-        .map(|base_dirs| base_dirs.home_dir().join(".config").join("nushell"))
+        .map(|base_dirs| base_dirs.config_dir().join("nushell"))
         .filter(|dir| dir.exists())
 }
 
