@@ -39,7 +39,16 @@ custom_error!{pub ShellInstallError
 impl ShellInstallError {
     pub fn is_permission_denied(&self) -> bool {
         match self {
-            Self::Io { source, .. } => source.kind() == io::ErrorKind::PermissionDenied,
+            Self::Io { source, .. } => {
+                if source.kind() == io::ErrorKind::PermissionDenied {
+                    true
+                } else if cfg!(windows) && source.raw_os_error().unwrap_or(0) == 1314 {
+                    // https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1300-1699-
+                    true
+                } else {
+                    false
+                }
+            }
         }
     }
 }
