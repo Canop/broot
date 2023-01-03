@@ -22,7 +22,7 @@ body > .container {
 }
 
 ul.nav .main {
-    font-weight: bold;
+    /*font-weight: bold;*/
 }
 
 .col-md-3 {
@@ -177,7 +177,7 @@ footer {
 .bs-sidebar .nav > .active > a,
 .bs-sidebar .nav > .active:hover > a,
 .bs-sidebar .nav > .active:focus > a {
-    font-weight: bold;
+    /*font-weight: bold;*/
     background-color: transparent;
     border-right: 1px solid;
 }

@@ -6,7 +6,7 @@ body::before {
 }
 
 body {
-	font-size: 15px;
+	font-size: 17px;
 }
 
 body .col-md-9 p img {
@@ -94,7 +94,7 @@ kbd.b {
 .bs-sidebar .nav > .main.active > a,
 .bs-sidebar .nav > .main.active:hover > a,
 .bs-sidebar .nav > .main.active:focus > a {
-	font-weight: bold;
+    /*font-weight: bold;*/
 }
 
 /******************/

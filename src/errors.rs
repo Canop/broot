@@ -8,28 +8,59 @@ use {
 };
 
 custom_error! {pub ProgramError
-    Io {source: io::Error} = "IO Error : {source}",
-    Termimad {source: termimad::Error} = "Termimad Error : {source}",
+    AmbiguousVerbName {name: String} = "Ambiguous name: More than one verb matches {name:?}",
+    ArgParse {bad: String, valid: String} = "{bad:?} can't be parsed (valid values: {valid:?})",
     Conf {source: ConfError} = "Bad configuration: {source}",
     ConfFile {path:String, details: ConfError} = "Bad configuration file {path:?} : {details}",
-    ArgParse {bad: String, valid: String} = "{bad:?} can't be parsed (valid values: {valid:?})",
-    UnknownVerb {name: String} = "No verb matches {name:?}",
-    AmbiguousVerbName {name: String} = "Ambiguous name: More than one verb matches {name:?}",
-    UnmatchingVerbArgs {name: String} = "No matching argument found for verb {name:?}",
-    TreeBuild {source: TreeBuildError} = "{source}",
-    LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
-    UnknowShell {shell: String} = "Unknown shell: {shell}",
+    ImageError {source: ImageError } = "{source}",
     InternalError {details: String} = "Internal error: {details}", // should not happen
     InvalidGlobError {pattern: String} = "Invalid glob: {pattern}",
-    Unrecognized {token: String} = "Unrecognized: {token}",
-    NetError {source: NetError} = "{source}",
-    ImageError {source: ImageError } = "{source}",
+    Io {source: io::Error} = "IO Error : {source}",
+    LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
     Lfs {details: String} = "Failed to fetch mounts: {details}",
-    ZeroLenFile = "File seems empty",
-    UnmappableFile = "File can't be mapped",
-    UnprintableFile = "File can't be printed", // has characters that can't be printed without escaping
-    SyntectCrashed { details: String } = "Syntect crashed on {details:?}",
+    NetError {source: NetError} = "{source}",
     OpenError { source: opener::OpenError } = "Open error: {source}",
+    ShelInstall { source: ShellInstallError } = "{source}",
+    SyntectCrashed { details: String } = "Syntect crashed on {details:?}",
+    Termimad {source: termimad::Error} = "Termimad Error : {source}",
+    TreeBuild {source: TreeBuildError} = "{source}",
+    UnknowShell {shell: String} = "Unknown shell: {shell}",
+    UnknownVerb {name: String} = "No verb matches {name:?}",
+    UnmappableFile = "File can't be mapped",
+    UnmatchingVerbArgs {name: String} = "No matching argument found for verb {name:?}",
+    UnprintableFile = "File can't be printed", // has characters that can't be printed without escaping
+    Unrecognized {token: String} = "Unrecognized: {token}",
+    ZeroLenFile = "File seems empty",
+}
+
+custom_error!{pub ShellInstallError
+    Io {source: io::Error, when: String} = "IO Error {source} on {when}",
+}
+impl ShellInstallError {
+    pub fn is_permission_denied(&self) -> bool {
+        match self {
+            Self::Io { source, .. } => {
+                if source.kind() == io::ErrorKind::PermissionDenied {
+                    true
+                } else if cfg!(windows) && source.raw_os_error().unwrap_or(0) == 1314 {
+                    // https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1300-1699-
+                    true
+                } else {
+                    false
+                }
+            }
+        }
+    }
+}
+pub trait IoToShellInstallError<Ok> {
+    fn context(self, f: &dyn Fn() -> String) -> Result<Ok, ShellInstallError>;
+}
+impl<Ok> IoToShellInstallError<Ok> for Result<Ok, io::Error> {
+    fn context(self, f: &dyn Fn() -> String) -> Result<Ok, ShellInstallError> {
+        self.map_err(|source| ShellInstallError::Io {
+            source, when: f()
+        })
+    }
 }
 
 custom_error! {pub TreeBuildError

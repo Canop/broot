@@ -13,12 +13,12 @@ use {
     super::{util, ShellInstall},
     crate::{
         conf,
-        errors::ProgramError,
+        errors::*,
     },
     directories::UserDirs,
     lazy_regex::regex,
     regex::Captures,
-    std::{env, fs::OpenOptions, io::Write, path::PathBuf},
+    std::{env, path::PathBuf},
     termimad::{
         mad_print_inline,
     },
@@ -117,7 +117,7 @@ fn get_sourcing_paths() -> Vec<PathBuf> {
 /// check whether the shell function is installed, install
 /// it if it wasn't refused before or if broot is launched
 /// with --install.
-pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
+pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     let script_path = get_script_path();
     si.write_script(&script_path, BASH_FUNC)?;
     let link_path = get_link_path();
@@ -139,13 +139,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ProgramError> {
                 &sourcing_path_str,
             );
         } else {
-            let mut shellrc = OpenOptions::new()
-                .write(true)
-                .append(true)
-                .open(sourcing_path)?;
-            shellrc.write_all(b"\n")?;
-            shellrc.write_all(source_line.as_bytes())?;
-            shellrc.write_all(b"\n")?;
+            util::append_to_file(sourcing_path, format!("\n{source_line}\n"))?;
             let is_zsh = sourcing_path_str.contains(".zshrc");
             if is_zsh {
                 mad_print_inline!(
