@@ -125,7 +125,7 @@ impl FilesystemState {
         cycle: bool,
     ) -> CmdResult {
         let count = get_arg(input_invocation, internal_exec, 1);
-        let dir = dir * count as i32;
+        let dir = dir * count;
         if let Some(f) = self.filtered.as_mut() {
             f.selection_idx = move_sel(f.selection_idx, f.mounts.len(), dir, cycle);
         } else {
@@ -353,7 +353,7 @@ impl PanelState for FilesystemState {
         cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_free+1))?;
         cw.fill(border_style, &BRANCH_FILLING)?;
         //- content
-        let mut idx = self.scroll as usize;
+        let mut idx = self.scroll;
         for y in 2..area.height {
             w.queue(cursor::MoveTo(area.left, y + area.top))?;
             let selected = selection_idx == idx;

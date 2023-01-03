@@ -56,7 +56,7 @@ impl BrowserState {
         let builder = TreeBuilder::from(
             path,
             options,
-            BrowserState::page_height(screen) as usize,
+            BrowserState::page_height(screen),
             con,
         )?;
         let tree = builder.build_tree(false, dam)?;
@@ -656,7 +656,7 @@ impl PanelState for BrowserState {
                     let mut options = self.tree.options.clone();
                     options.pattern = pattern;
                     let root = self.tree.root().clone();
-                    let page_height = BrowserState::page_height(screen) as usize;
+                    let page_height = BrowserState::page_height(screen);
                     let builder = TreeBuilder::from(root, options, page_height, con)?;
                     let filtered_tree = time!(
                         Info,
@@ -718,7 +718,7 @@ impl PanelState for BrowserState {
     }
 
     fn refresh(&mut self, screen: Screen, con: &AppContext) -> Command {
-        let page_height = BrowserState::page_height(screen) as usize;
+        let page_height = BrowserState::page_height(screen);
         // refresh the base tree
         if let Err(e) = self.tree.refresh(page_height, con) {
             warn!("refreshing base tree failed : {:?}", e);

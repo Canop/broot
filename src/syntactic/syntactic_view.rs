@@ -332,7 +332,7 @@ impl SyntacticView {
         for y in 0..line_count {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
             let mut cw = CropWriter::new(w, code_width);
-            let line_idx = self.scroll as usize + y;
+            let line_idx = self.scroll + y;
             let selected = self.selection_idx == Some(line_idx);
             let bg = if selected { selection_bg } else { normal_bg };
             let mut op_mmap: Option<Mmap> = None;

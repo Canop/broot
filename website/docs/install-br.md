@@ -7,11 +7,11 @@ But broot needs a companion function in the shell in order to be able to change 
 
 This is normally the easiest solution and it's safe.
 
-When you start broot, it checks whether the `br` shell function seems to have been installed (or
-to have been refused). If needed, and if the used shell seems compatible (supported shells today are bash, zsh and fish),
-then broot asks the permission to register this shell function.
+When you start broot, it checks whether the `br` shell function seems to have been installed (or to have been refused). If needed, and if the used shell seems compatible, then broot asks the permission to register this shell function.
 
 When it's done, you can do `br` to launch broot, and typing <kbd>alt</kbd><kbd>enter</kbd> will cd for you.
+
+Supported shells today are bash, zsh, fish, and nushell.
 
 # Retry the automatic installation
 
@@ -25,7 +25,7 @@ You can also use the `--install` argument when you first refused and then decide
 
 If you prefer to manage the function sourcing yourself, or to automate the installation your way, or if you use an unsupported configuration, you still can get some help of broot:
 
-`broot --print-shell-function bash` (you can replace `bash` with either `zsh` or `fish`) outputs a recommended shell function.
+`broot --print-shell-function bash` (you can replace `bash` with `zsh`, `fish`, or `nushell`) outputs a recommended shell function.
 
 `broot --set-install-state installed` tells broot the `br` function is installed (other possible values are `undefined` and `refused`).
 

@@ -511,7 +511,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             }
             let mut line_index = y as usize;
             if line_index > 0 {
-                line_index += tree.scroll as usize;
+                line_index += tree.scroll;
             }
             let mut selected = false;
             let mut cw = CropWriter::new(f, self.area.width as usize);

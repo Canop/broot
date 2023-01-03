@@ -146,7 +146,7 @@ impl FuzzyPattern {
         let match_len = 1 + cand_idx - pos[0];
         let mut score = BONUS_MATCH;
         score += BONUS_CANDIDATE_LENGTH * (cand_chars.len() as i32);
-        score += BONUS_SINGLED_CHAR * (nb_singled_chars as i32);
+        score += BONUS_SINGLED_CHAR * nb_singled_chars;
         score += BONUS_NB_HOLES * (nb_holes as i32);
         score += match_len as i32 * BONUS_MATCH_LENGTH;
         if pos[0] == 0 {

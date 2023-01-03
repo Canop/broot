@@ -181,7 +181,7 @@ impl DirSummer {
                 loop {
                     let o = dirs_receiver.recv();
                     if let Ok(Some(open_dir)) = o {
-                        if let Ok(entries) = fs::read_dir(&open_dir) {
+                        if let Ok(entries) = fs::read_dir(open_dir) {
                             for e in entries.flatten() {
                                 if let Ok(md) = e.metadata() {
                                     if md.is_dir() {

@@ -1,3 +1,7 @@
+### v1.19.0 - 2023-01-03
+<a name="v1.19.0"></a>
+- Nushell support - Fix #375 - Thanks @FrancescElies, @mediumrarez, and issue contributors
+
 ### v1.18.0 - 2022-12-21
 <a name="v1.18.0"></a>
 - Hjson configuration file can now omit outside braces (it's "braceless Hjson"), making it much cleaner

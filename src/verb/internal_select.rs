@@ -139,7 +139,7 @@ pub fn on_path(
         warn!("bang in :select isn't supported yet");
     }
     if tree.try_select_path(&path) {
-        tree.make_selection_visible(BrowserState::page_height(screen) as usize);
+        tree.make_selection_visible(BrowserState::page_height(screen));
     }
     CmdResult::Keep
 }
