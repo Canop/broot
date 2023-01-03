@@ -72,7 +72,12 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     // configuration
     if specific_conf.is_none() && install_args.install != Some(false) {
         let mut shell_install = ShellInstall::new(install_args.install == Some(true));
-        shell_install.check()?;
+        // TODO clean the next few lines when inspect_err is stable
+        let res = shell_install.check();
+        if let Err(e) = &res {
+            shell_install.comment_error(e);
+        }
+        res?;
         if shell_install.should_quit {
             return Ok(None);
         }
@@ -137,7 +142,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 }
 
 /// wait for user input, return `true` if they didn't answer 'n'
-pub fn ask_authorization() -> Result<bool, ProgramError> {
+pub fn ask_authorization() -> io::Result<bool> {
     let mut answer = String::new();
     io::stdin().read_line(&mut answer)?;
     let answer = answer.trim();
