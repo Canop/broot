@@ -2,19 +2,23 @@ body {
     padding-top: 70px;
 }
 
-/* Replacement for `body { background-attachment: fixed; }`, which has
-   performance issues when scrolling on large displays. See #1394. */
-body::before {
-    content: ' ';
-    position: fixed;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
-    background-color: #f8f8f8;
-    background: url(../img/grid.png) repeat-x;
-    will-change: transform;
-    z-index: -1;
+body {
+	background-image:
+		linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,1) 20%, rgba(255,255,255,1) 75%, rgba(255,255,255,0.4) 100%),
+		url("../img/cows.jpg");
+	background-position: center;
+	background-size: cover;
+    background-attachment: fixed;
+}
+@media (max-width: 800px) {
+	body {
+		background-image:
+			linear-gradient(to right, rgba(255,255,255,0.8) 0%, rgba(255,255,255,1) 10%, rgba(255,255,255,1) 90%, rgba(255,255,255,0.8) 100%),
+			url("../img/cows.jpg");
+		background-position: repeat;
+		background-size: initial;
+        background-attachment: fixed;
+	}
 }
 
 body > .container {
@@ -142,12 +146,14 @@ footer {
  * Scrollspy and affixed enhanced navigation to highlight sections and secondary
  * sections of docs content.
  */
-
-/* By default it's not affixed in mobile views, so undo that */
-.bs-sidebar.affix { /* csslint allow: adjoining-classes */
+.bs-sidebar.affix {
     position: static;
-    height: calc(100vh - 85px);
     overflow-y: auto;
+}
+@media (min-width: 800px) {
+    .bs-sidebar.affix {
+        height: calc(100vh - 85px);
+    }
 }
 
 .bs-sidebar.well { /* csslint allow: adjoining-classes */
