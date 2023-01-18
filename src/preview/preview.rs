@@ -21,6 +21,7 @@ use {
 };
 
 pub enum Preview {
+    Dir(DirView),
     Image(ImageView),
     Syntactic(SyntacticView),
     Hex(HexView),
@@ -36,16 +37,20 @@ impl Preview {
         prefered_mode: Option<PreviewMode>,
         con: &AppContext,
     ) -> Self {
-        match prefered_mode {
-            Some(PreviewMode::Hex) => Self::hex(path),
-            Some(PreviewMode::Image) => Self::image(path),
-            Some(PreviewMode::Text) => Self::unfiltered_text(path, con),
-            None => {
-                // automatic behavior: image, text, hex
-                ImageView::new(path)
-                    .map(Self::Image)
-                    .unwrap_or_else(|_| Self::unfiltered_text(path, con))
+        if path.is_file() {
+            match prefered_mode {
+                Some(PreviewMode::Hex) => Self::hex(path),
+                Some(PreviewMode::Image) => Self::image(path),
+                Some(PreviewMode::Text) => Self::unfiltered_text(path, con),
+                None => {
+                    // automatic behavior: image, text, hex
+                    ImageView::new(path)
+                        .map(Self::Image)
+                        .unwrap_or_else(|_| Self::unfiltered_text(path, con))
+                }
             }
+        } else {
+            Self::dir(path, InputPattern::none(), &Dam::unlimited(), con)
         }
     }
     /// try to build a preview with the designed mode, return an error
@@ -55,23 +60,36 @@ impl Preview {
         mode: PreviewMode,
         con: &AppContext,
     ) -> Result<Self, ProgramError> {
-        match mode {
-            PreviewMode::Hex => {
-                Ok(HexView::new(path.to_path_buf()).map(Self::Hex)?)
+        if path.is_file() {
+            match mode {
+                PreviewMode::Hex => {
+                    Ok(HexView::new(path.to_path_buf()).map(Self::Hex)?)
+                }
+                PreviewMode::Image => {
+                    ImageView::new(path).map(Self::Image)
+                }
+                PreviewMode::Text => {
+                    Ok(
+                        SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con, false)
+                            .transpose()
+                            .expect("syntactic view without pattern shouldn't be none")
+                            .map(Self::Syntactic)?,
+                    )
+                }
             }
-            PreviewMode::Image => {
-                ImageView::new(path).map(Self::Image)
-            }
-            PreviewMode::Text => {
-                Ok(
-                    SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con, false)
-                        .transpose()
-                        .expect("syntactic view without pattern shouldn't be none")
-                        .map(Self::Syntactic)?,
-                )
-            }
+        } else {
+            Ok(Self::dir(path, InputPattern::none(), &Dam::unlimited(), con))
         }
     }
+
+    /// build a dir preview
+    pub fn dir(path: &Path, pattern: InputPattern, dam: &Dam, con: &AppContext) -> Self {
+        match DirView::new(path.to_path_buf(), pattern, dam, con) {
+            Ok(dv) => Self::Dir(dv),
+            Err(e) => Self::IoError(e),
+        }
+    }
+
     /// build an image view, unless the file can't be interpreted
     /// as an image, in which case a hex view is used
     pub fn image(path: &Path) -> Self {
@@ -121,7 +139,7 @@ impl Preview {
             _ => Self::hex(path),
         }
     }
-    /// try to build a filtered text view. Will return None if
+    /// try to build a filtered view. Will return None if
     /// the dam gets an event before it's built
     pub fn filtered(
         &self,
@@ -130,22 +148,26 @@ impl Preview {
         dam: &mut Dam,
         con: &AppContext,
     ) -> Option<Self> {
-        match self {
-            Self::Syntactic(_) => {
-                match SyntacticView::new(path, pattern, dam, con, false) {
+        if path.is_file() {
+            match self {
+                Self::Syntactic(_) => {
+                    match SyntacticView::new(path, pattern, dam, con, false) {
 
-                    // normal finished loading
-                    Ok(Some(sv)) => Some(Self::Syntactic(sv)),
+                        // normal finished loading
+                        Ok(Some(sv)) => Some(Self::Syntactic(sv)),
 
-                    // interrupted search
-                    Ok(None) => None,
+                        // interrupted search
+                        Ok(None) => None,
 
-                    // not previewable as UTF8 text
-                    // we'll try reading it as binary
-                    Err(_) => Some(Self::hex(path)), // FIXME try as unstyled if syntect crashed
+                        // not previewable as UTF8 text
+                        // we'll try reading it as binary
+                        Err(_) => Some(Self::hex(path)), // FIXME try as unstyled if syntect crashed
+                    }
                 }
+                _ => None, // not filterable
             }
-            _ => None, // not filterable
+        } else {
+            Some(Self::dir(path, pattern, dam, con))
         }
     }
     /// return a hex_view, suitable for binary, or Self::IOError
@@ -160,7 +182,7 @@ impl Preview {
             }
         }
     }
-    /// return the preview_mode, or None if we're on IOError
+    /// return the preview_mode, or None if we're on IOError or Directory
     pub fn get_mode(&self) -> Option<PreviewMode> {
         match self {
             Self::Image(_) => Some(PreviewMode::Image),
@@ -168,10 +190,12 @@ impl Preview {
             Self::ZeroLen(_) => Some(PreviewMode::Text),
             Self::Hex(_) => Some(PreviewMode::Hex),
             Self::IoError(_) => None,
+            Self::Dir(_) => None,
         }
     }
     pub fn pattern(&self) -> InputPattern {
         match self {
+            Self::Dir(dv) => dv.tree.options.pattern.clone(),
             Self::Syntactic(sv) => sv.pattern.clone(),
             _ => InputPattern::none(),
         }
@@ -181,13 +205,14 @@ impl Preview {
         cmd: ScrollCommand,
     ) -> bool {
         match self {
+            Self::Dir(dv) => dv.try_scroll(cmd),
             Self::Syntactic(sv) => sv.try_scroll(cmd),
             Self::Hex(hv) => hv.try_scroll(cmd),
             _ => false,
         }
     }
     pub fn is_filterable(&self) -> bool {
-        matches!(self, Self::Syntactic(_))
+        matches!(self, Self::Syntactic(_) | Self::Dir(_))
     }
 
     pub fn get_selected_line(&self) -> Option<String> {
@@ -209,18 +234,21 @@ impl Preview {
         }
     }
     pub fn unselect(&mut self) {
+        // it's not possible to unselect in a dir_view
         if let Self::Syntactic(sv) = self {
             sv.unselect();
         }
     }
     pub fn try_select_y(&mut self, y: u16) -> bool {
         match self {
+            Self::Dir(dv) => dv.try_select_y(y),
             Self::Syntactic(sv) => sv.try_select_y(y),
             _ => false,
         }
     }
     pub fn move_selection(&mut self, dy: i32, cycle: bool) {
         match self {
+            Self::Dir(dv) => dv.move_selection(dy, cycle),
             Self::Syntactic(sv) => sv.move_selection(dy, cycle),
             Self::Hex(hv) => {
                 hv.try_scroll(ScrollCommand::Lines(dy));
@@ -230,6 +258,7 @@ impl Preview {
     }
     pub fn select_first(&mut self) {
         match self {
+            Self::Dir(dv) => dv.select_first(),
             Self::Syntactic(sv) => sv.select_first(),
             Self::Hex(hv) => hv.select_first(),
             _ => {}
@@ -252,6 +281,7 @@ impl Preview {
         let screen = disc.screen;
         let con = &disc.con;
         match self {
+            Self::Dir(dv) => dv.display(w, disc, area),
             Self::Image(iv) => iv.display(w, disc, area),
             Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area, con),
             Self::ZeroLen(zlv) => zlv.display(w, screen, panel_skin, area),
@@ -286,6 +316,7 @@ impl Preview {
         area: &Area,
     ) -> Result<(), ProgramError> {
         match self {
+            Self::Dir(dv) => dv.display_info(w, screen, panel_skin, area),
             Self::Image(iv) => iv.display_info(w, screen, panel_skin, area),
             Self::Syntactic(sv) => sv.display_info(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display_info(w, screen, panel_skin, area),

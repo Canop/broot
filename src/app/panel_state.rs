@@ -820,20 +820,16 @@ pub trait PanelState {
             }
         } else {
             if let Some(path) = self.selected_path() {
-                if path.is_file() {
-                    CmdResult::NewPanel {
-                        state: Box::new(PreviewState::new(
-                            path.to_path_buf(),
-                            InputPattern::none(),
-                            prefered_mode,
-                            self.tree_options(),
-                            cc.app.con,
-                        )),
-                        purpose: PanelPurpose::Preview,
-                        direction: HDir::Right,
-                    }
-                } else {
-                    CmdResult::error("only regular files can be previewed")
+                CmdResult::NewPanel {
+                    state: Box::new(PreviewState::new(
+                        path.to_path_buf(),
+                        InputPattern::none(),
+                        prefered_mode,
+                        self.tree_options(),
+                        cc.app.con,
+                    )),
+                    purpose: PanelPurpose::Preview,
+                    direction: HDir::Right,
                 }
             } else {
                 CmdResult::error("no selected file")

@@ -1,8 +1,10 @@
+mod dir_view;
 mod preview;
 mod preview_state;
 mod zero_len_file_view;
 
 pub use {
+    dir_view::DirView,
     preview::Preview,
     preview_state::PreviewState,
     zero_len_file_view::ZeroLenFileView,
