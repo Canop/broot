@@ -15,8 +15,8 @@ body {
 		background-image:
 			linear-gradient(to right, rgba(255,255,255,0.8) 0%, rgba(255,255,255,1) 10%, rgba(255,255,255,1) 90%, rgba(255,255,255,0.8) 100%),
 			url("../img/cows.jpg");
-		background-position: repeat;
-		background-size: initial;
+        background-position: center;
+        background-size: cover;
         background-attachment: fixed;
 	}
 }
