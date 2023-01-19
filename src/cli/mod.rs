@@ -1,12 +1,10 @@
 //! this module manages reading and translating
 //! the arguments passed on launch of the application.
 
-//mod app_launch_args;
 mod args;
 mod install_launch_args;
 
 pub use {
-    //app_launch_args::*,
     args::*,
     install_launch_args::*,
 };
@@ -18,7 +16,7 @@ use {
         display,
         errors::ProgramError,
         launchable::Launchable,
-        shell_install::{ShellInstall, write_state},
+        shell_install::{ShellInstall, ShellInstallState},
         verb::VerbStore,
     },
     clap::Parser,
@@ -50,9 +48,12 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     // read the install related arguments
     let install_args = InstallLaunchArgs::from(&args)?;
 
+    let mut shell_install = ShellInstall::new(install_args.install == Some(true));
+
     // execute installation things required by launch args
     if let Some(state) = install_args.set_install_state {
-        write_state(state)?;
+        let state: ShellInstallState = state.into();
+        state.write(&shell_install)?;
         must_quit = true;
     }
     if let Some(shell) = &install_args.print_shell_function {
@@ -71,7 +72,6 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     // if we don't run on a specific config file, we check the
     // configuration
     if specific_conf.is_none() && install_args.install != Some(false) {
-        let mut shell_install = ShellInstall::new(install_args.install == Some(true));
         // TODO clean the next few lines when inspect_err is stable
         let res = shell_install.check();
         if let Err(e) = &res {

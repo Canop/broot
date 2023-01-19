@@ -3,7 +3,7 @@
 use {
     crate::{
         errors::ProgramError,
-        cli::{Args, ShellInstallState},
+        cli::{Args, CliShellInstallState},
     },
     std::{
         env,
@@ -14,9 +14,9 @@ use {
 /// launch arguments related to installation
 /// (not used by the application after the first step)
 pub struct InstallLaunchArgs {
-    pub install: Option<bool>,                        // installation is required
-    pub set_install_state: Option<ShellInstallState>, // the state to set
-    pub print_shell_function: Option<String>,         // shell function to print on stdout
+    pub install: Option<bool>,                           // installation is required
+    pub set_install_state: Option<CliShellInstallState>, // the state to set
+    pub print_shell_function: Option<String>,            // shell function to print on stdout
 }
 impl InstallLaunchArgs {
     pub fn from(args: &Args) -> Result<Self, ProgramError> {
