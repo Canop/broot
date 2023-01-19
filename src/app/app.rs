@@ -524,7 +524,6 @@ impl App {
             app_state.root = path.to_path_buf();
         }
 
-
         if let Some(shared_root) = &mut self.shared_root {
             if let Ok(mut root) = shared_root.lock() {
                 *root = app_state.root.clone();
@@ -542,7 +541,7 @@ impl App {
         if let Some(preview_idx) = preview_idx {
             if let Some(path) = self.state().selected_path() {
                 let old_path = self.panels[preview_idx].state().selected_path();
-                if (refresh || Some(path) != old_path) && path.is_file() {
+                if refresh || Some(path) != old_path {
                     let path = path.to_path_buf();
                     self.panels[preview_idx].mut_state().set_selected_path(path, con);
                 }
@@ -626,17 +625,6 @@ impl App {
             self.update_preview(con, false); // the selection may have changed
             if let Some(error) = &error {
                 self.mut_panel().set_error(error.to_string());
-            //} else {
-            //    // the refresh here removes the toggle status message. Not
-            //    // sure there's a case it's useful
-            //    let app_cmd_context = AppCmdContext {
-            //        panel_skin: &skin.focused,
-            //        preview_panel: self.preview_panel,
-            //        stage_panel: self.stage_panel,
-            //        screen: self.screen,
-            //        con,
-            //    };
-            //    self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
             }
             self.display_panels(w, skin, app_state, con)?;
             if error.is_some() {
