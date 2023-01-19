@@ -14,15 +14,10 @@
 
 use {
     super::{util, ShellInstall},
-    crate::{
-        conf,
-        errors::*,
-    },
+    crate::{conf, errors::*},
     directories::BaseDirs,
     std::path::PathBuf,
-    termimad::{
-        mad_print_inline,
-    },
+    termimad::mad_print_inline,
 };
 
 const NAME: &str = "nushell";
@@ -35,16 +30,29 @@ const NU_FUNC: &str = r#"
 # it produces, if any.
 # It's needed because some shell commands, like `cd`,
 # have no useful effect if executed in a subshell.
+#
+# Testing
+# -------
+# # Create the following directories
+# mkdir "1st-level/2nd-level with singlequote '/3rd-level"
+# mkdir "1st-level/2nd-level öä/3rd-level"
+# mkdir "1st-level/2nd-level with spaces/3rd-level"
+# mkdir "1st-level/2nd-level with spaces/3rd-level"
+#
+# # In Unix like systems create:
+# mkdir '1st-level/2nd-level with "/3rd-level'
+#
+# # Now open `br` and try to change your current directory via `alt-enter`
 def _br_cmd [] {
   let cmd_file = ([ $nu.temp-path, $"broot-(random chars).tmp" ] | path join)
   touch $cmd_file
   ^broot --outcmd $cmd_file
-  let target_dir = (open $cmd_file | to text | str replace "^cd\\s+" "" | str trim)
+  let target_dir = (open $cmd_file | parse -r `^cd\s+(?<quote>"|'|)(?<path>.+)\k<quote>[\s\r\n]*$` | get path | to text)
   rm -p -f $cmd_file
 
   $target_dir
 }
-alias br = cd (_br_cmd)
+alias br = cd $"(_br_cmd)"
 "#;
 
 pub fn get_script() -> &'static str {
