@@ -64,6 +64,7 @@ pub struct TreeBuilder<'c> {
     con: &'c AppContext,
     pub matches_max: Option<usize>, // optional hard limit
     trim_root: bool,
+    pub deep: bool,
     report: BuildReport,
 }
 impl<'c> TreeBuilder<'c> {
@@ -109,6 +110,7 @@ impl<'c> TreeBuilder<'c> {
             con,
             trim_root,
             matches_max: None,
+            deep: true,
             report: BuildReport::default(),
         })
     }
@@ -287,6 +289,7 @@ impl<'c> TreeBuilder<'c> {
         let mut next_level_dirs: Vec<BId> = Vec::new();
         self.load_children(self.root_id);
         open_dirs.push_back(self.root_id);
+        let deep = self.deep && !self.options.sort.prevent_deep_display();
         loop {
             if !total_search && (
                 (nb_lines_ok > optimal_size)
@@ -314,8 +317,7 @@ impl<'c> TreeBuilder<'c> {
                 }
             } else {
                 // this depth is finished, we must go deeper
-                if self.options.sort.prevent_deep_display() {
-                    // in sort mode, only one level is displayed
+                if !deep {
                     break;
                 }
                 if next_level_dirs.is_empty() {

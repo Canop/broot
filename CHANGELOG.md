@@ -1,3 +1,6 @@
+### next
+- preview can now be done on directories, showing their first level
+
 ### v1.19.0 - 2023-01-03
 <a name="v1.19.0"></a>
 - Nushell support - Fix #375 - Thanks @FrancescElies, @mediumrarez, and issue contributors
