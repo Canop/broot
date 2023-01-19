@@ -1,5 +1,5 @@
 ### next
-- preview can now be done on directories, showing their first level
+- preview can now be opened on directories, showing their first level - Fix #405
 
 ### v1.19.0 - 2023-01-03
 <a name="v1.19.0"></a>
