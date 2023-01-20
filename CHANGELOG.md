@@ -1,5 +1,6 @@
 ### next
 - preview can now be opened on directories, showing their first level - Fix #405
+- new version of the nushell function. You should be prompted for an update
 
 ### v1.19.0 - 2023-01-03
 <a name="v1.19.0"></a>
