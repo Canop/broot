@@ -1,9 +1,28 @@
 
-The current version of broot works on linux, mac and windows (win 10+).
+**broot** works on linux, mac and windows (win 10+).
+
+Current version: **<a id=current-version href=../download>download</a>**
+<script>
+console.log("in script");
+fetch("../download/version")
+    .then(response => response.text())
+    .then(version => {
+        console.log(`version: #${version}#`);
+        version = version.trim();
+        if (!/^\d+(\.\d+)*(-\w+)?$/.test(version)) {
+            console.warn("invalid version in download/version");
+            return;
+        }
+        document.getElementById("current-version").textContent = version;
+    })
+</script>
+
+[CHANGELOG](https://github.com/Canop/broot/blob/main/CHANGELOG.md)
+
 
 !!! Note
 	**Windows users:** broot may need additional rights at first use in order to write its configuration file.
-	Some users on Windows also report problems with the colon. Remember that a space can be used instead of a colon.
+	Some users on Windows also report problems with the colon; remember that a space can be used instead of a colon.
 	You should also use a modern terminal, for example the [new Microsoft one](https://github.com/microsoft/terminal)
 
 # From precompiled binaries
