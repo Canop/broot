@@ -16,6 +16,7 @@ pub enum SpecialHandling {
     Enter,
     NoEnter,
     Hide,
+    NoHide,
 }
 
 #[derive(Debug, Clone)]
@@ -41,6 +42,7 @@ impl<'de> Deserialize<'de> for SpecialHandling {
             "enter" => Ok(SpecialHandling::Enter),
             "noenter" => Ok(SpecialHandling::NoEnter),
             "hide" => Ok(SpecialHandling::Hide),
+            "nohide" => Ok(SpecialHandling::NoHide),
             _ => Err(D::Error::custom(format!(
                 "unrecognized special handling: {:?}",
                 s

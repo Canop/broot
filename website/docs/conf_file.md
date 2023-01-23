@@ -106,6 +106,7 @@ special_paths: {
     "/media/slow-backup-disk"             : no-enter
     "/home/dys/useless"                   : hide
     "/home/dys/my-link-I-want-to-explore" : enter
+    "/home/dys/.config"                   : no-hide
 }
 ```
 ```TOML
@@ -113,6 +114,7 @@ special_paths: {
 "/media/slow-backup-disk" = "no-enter"
 "/home/dys/useless" = "hide"
 "/home/dys/my-link-I-want-to-explore" = "enter"
+"/home/dys/.config" = "no-hide"
 ```
 
 Be careful that those paths (globs, in fact) are checked a lot when broot builds trees and that defining a lot of paths will impact the overall speed.
