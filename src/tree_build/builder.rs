@@ -127,14 +127,21 @@ impl<'c> TreeBuilder<'c> {
             self.report.error_count += 1;
             return None;
         }
-        if !self.options.show_hidden && name.as_bytes()[0] == b'.' {
+        let path = e.path();
+        if !self.options.show_hidden
+            && name.as_bytes()[0] == b'.'
+            // if not matches any SpecialHandling::NoHide pattern
+            && !self.con.special_paths
+            .iter()
+            .filter(|sp| sp.handling == SpecialHandling::NoHide)
+            .any(|sp| sp.pattern.matches_path(&path))
+        {
             self.report.hidden_count += 1;
             return None;
         }
         let name = name.to_string_lossy();
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
-        let path = e.path();
         let file_type = match e.file_type() {
             Ok(ft) => ft,
             Err(_) => {

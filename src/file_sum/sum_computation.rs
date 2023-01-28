@@ -47,7 +47,7 @@ struct NodeId {
 fn is_ignored(path: &Path, special_paths: &[SpecialPath]) -> bool {
     match special_paths.find(path) {
         SpecialHandling::NoEnter | SpecialHandling::Hide => true,
-        SpecialHandling::None | SpecialHandling::Enter => false,
+        SpecialHandling::None | SpecialHandling::Enter | SpecialHandling::NoHide => false,
     }
 }
 
