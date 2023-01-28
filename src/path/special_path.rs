@@ -40,9 +40,9 @@ impl<'de> Deserialize<'de> for SpecialHandling {
         match s.as_ref() {
             "none" => Ok(SpecialHandling::None),
             "enter" => Ok(SpecialHandling::Enter),
-            "noenter" => Ok(SpecialHandling::NoEnter),
+            "noenter" => Ok(SpecialHandling::NoEnter), // noenter or no-enter
             "hide" => Ok(SpecialHandling::Hide),
-            "nohide" => Ok(SpecialHandling::NoHide),
+            "nohide" => Ok(SpecialHandling::NoHide),   // nohide or no-hide
             _ => Err(D::Error::custom(format!(
                 "unrecognized special handling: {:?}",
                 s
