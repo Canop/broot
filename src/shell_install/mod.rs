@@ -1,22 +1,26 @@
+mod bash;
+mod fish;
+mod nushell;
+mod state;
+mod util;
+
 use {
     crate::{
-        cli::{self, ShellInstallState},
-        conf,
+        cli,
         errors::*,
         skin,
     },
     std::{
         fs,
         os,
-        path::{Path, PathBuf},
+        path::Path,
     },
     termimad::{mad_print_inline, MadSkin},
 };
 
-mod bash;
-mod fish;
-mod nushell;
-mod util;
+pub use {
+    state::ShellInstallState,
+};
 
 const MD_INSTALL_REQUEST: &str = r#"
 **Broot** should be launched using a shell function.
@@ -24,6 +28,12 @@ This function most notably makes it possible to `cd` from inside broot
 (see *https://dystroy.org/broot/install* for explanations).
 
 Can I install it now? [**Y**/n]
+"#;
+
+const MD_UPGRADE_REQUEST: &str = r#"
+Broot's shell function should be upgraded.
+
+Can I proceed? [**Y**/n]
 "#;
 
 const MD_INSTALL_CANCELLED: &str = r#"
@@ -50,18 +60,6 @@ Afterwards, you should start broot with `br` in order to use its full power.
 
 "#;
 
-const REFUSED_FILE_CONTENT: &str = r#"
-This file tells broot you refused the installation of the companion shell function.
-If you want to install it run
-    broot -- install
-"#;
-
-const INSTALLED_FILE_CONTENT: &str = r#"
-This file tells broot the installation of the br function was done.
-If there's a problem and you want to install it again run
-    broot -- install
-"#;
-
 pub struct ShellInstall {
     force_install: bool, // when the program was launched with --install
     skin: MadSkin,
@@ -70,49 +68,6 @@ pub struct ShellInstall {
     done: bool, // true if the installation was just made
 }
 
-/// write either the "installed" or the "refused" file, or remove
-///  those files.
-///
-/// This is useful in installation
-/// or test scripts when we don't want the user to be prompted
-/// to install the function, or in case something doesn't properly
-/// work in shell detections
-pub fn write_state(state: ShellInstallState) -> Result<(), ShellInstallError> {
-    let refused_path = get_refused_path();
-    let installed_path = get_installed_path();
-    if installed_path.exists() {
-        fs::remove_file(&installed_path)
-            .context(&|| format!("removing {:?}", &installed_path))?;
-    }
-    if refused_path.exists() {
-        fs::remove_file(&refused_path)
-            .context(&|| format!("removing {:?}", &refused_path))?;
-    }
-    match state {
-        ShellInstallState::Refused => {
-            fs::create_dir_all(refused_path.parent().unwrap())
-                .context(&|| format!("creating parents of {refused_path:?}"))?;
-            fs::write(&refused_path, REFUSED_FILE_CONTENT)
-                .context(&|| format!("writing in {refused_path:?}"))?;
-        }
-        ShellInstallState::Installed => {
-            fs::create_dir_all(installed_path.parent().unwrap())
-                .context(&|| format!("creating parents of {installed_path:?}"))?;
-            fs::write(&installed_path, INSTALLED_FILE_CONTENT)
-                .context(&|| format!("writing in {installed_path:?}"))?;
-        }
-        _ => {}
-    }
-    Ok(())
-}
-
-fn get_refused_path() -> PathBuf {
-    conf::dir().join("launcher").join("refused")
-}
-
-fn get_installed_path() -> PathBuf {
-    conf::dir().join("launcher").join("installed-v1")
-}
 
 impl ShellInstall {
     pub fn new(force_install: bool) -> Self {
@@ -141,29 +96,40 @@ impl ShellInstall {
         Ok(())
     }
 
-    /// check whether the shell function is installed, install
-    /// it if it wasn't refused before or if broot is launched
+    /// check whether the shell function is installed an up to date,
+    /// install it if it wasn't refused before or if broot is launched
     /// with --install.
     pub fn check(&mut self) -> Result<(), ShellInstallError> {
-        let installed_path = get_installed_path();
+        let install_state = ShellInstallState::detect();
+        info!("Shell installation state: {install_state:?}");
         if self.force_install {
             self.skin.print_text("You requested a clean (re)install.");
-            self.remove(&get_refused_path())?;
-            self.remove(&installed_path)?;
+            ShellInstallState::remove(&self)?;
         } else {
-            if installed_path.exists() {
-                debug!("Shell script already installed. Doing nothing.");
-                return Ok(());
-            }
-            debug!("No 'installed' : we ask if we can install");
-            if !self.can_do()? {
-                debug!("User refuses the installation. Doing nothing.");
-                return Ok(());
+            match install_state {
+                ShellInstallState::Refused => {
+                    return Ok(());
+                }
+                ShellInstallState::UpToDate => {
+                    return Ok(());
+                }
+                ShellInstallState::Obsolete => {
+                    if !self.can_upgrade()? {
+                        debug!("User refuses the upgrade. Doing nothing.");
+                        return Ok(());
+                    }
+                }
+                ShellInstallState::NotInstalled => {
+                    if !self.can_install()? {
+                        debug!("User refuses the installation. Doing nothing.");
+                        return Ok(());
+                    }
+                }
             }
             // even if the installation isn't really complete (for example
             // when no bash file was found), we don't want to ask the user
             // again, we'll assume it's done
-            write_state(ShellInstallState::Installed)?;
+            ShellInstallState::UpToDate.write(&self)?;
         }
         debug!("Starting install");
         bash::install(self)?;
@@ -197,22 +163,28 @@ impl ShellInstall {
     }
 
     /// check whether we're allowed to install.
-    fn can_do(&mut self) -> Result<bool, ShellInstallError> {
+    fn can_install(&mut self) -> Result<bool, ShellInstallError> {
+        self.can_do(false)
+    }
+    fn can_upgrade(&mut self) -> Result<bool, ShellInstallError> {
+        self.can_do(true)
+    }
+    fn can_do(&mut self, upgrade: bool) -> Result<bool, ShellInstallError> {
         if let Some(authorization) = self.authorization {
             return Ok(authorization);
         }
-        let refused_path = get_refused_path();
+        let refused_path = ShellInstallState::get_refused_path();
         if refused_path.exists() {
             debug!("User already refused the installation");
             return Ok(false);
         }
-        self.skin.print_text(MD_INSTALL_REQUEST);
+        self.skin.print_text(if upgrade { MD_UPGRADE_REQUEST } else { MD_INSTALL_REQUEST });
         let proceed = cli::ask_authorization()
             .context(&|| "asking user".to_string())?; // read_line failure
         debug!("proceed: {:?}", proceed);
         self.authorization = Some(proceed);
         if !proceed {
-            write_state(ShellInstallState::Refused)?;
+            ShellInstallState::Refused.write(&self)?;
             self.skin.print_text(MD_INSTALL_CANCELLED);
         }
         Ok(proceed)
@@ -233,7 +205,6 @@ impl ShellInstall {
             .context(&|| format!("writing script in {script_path:?}"))?;
         Ok(())
     }
-
 
     /// create a link
     fn create_link(&self, link_path: &Path, script_path: &Path) -> Result<(), ShellInstallError> {

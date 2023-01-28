@@ -1,3 +1,4 @@
+// Warning: this module can't import broot's stuf
 use {
     std::{
         path::PathBuf,
@@ -142,7 +143,7 @@ pub struct Args {
 
     /// Where to write the produced cmd (if any)
     #[clap(long, value_parser)]
-    pub set_install_state: Option<ShellInstallState>,
+    pub set_install_state: Option<CliShellInstallState>,
 
     /// Print to stdout the br function for a given shell
     #[clap(long, value_parser)]
@@ -194,12 +195,12 @@ impl TriBool {
 }
 
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
-pub enum ShellInstallState {
+pub enum CliShellInstallState {
     Undefined, // before any install, this is the initial state
     Refused,
     Installed,
 }
-impl FromStr for ShellInstallState {
+impl FromStr for CliShellInstallState {
     type Err = String;
     fn from_str(state: &str) -> Result<Self, Self::Err> {
         match state {
