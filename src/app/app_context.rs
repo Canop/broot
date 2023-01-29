@@ -7,7 +7,7 @@ use {
         errors::*,
         file_sum,
         icon::*,
-        path::SpecialPath,
+        path,
         pattern::SearchModeMap,
         skin::ExtColorMap,
         syntactic::SyntaxTheme,
@@ -42,7 +42,7 @@ pub struct AppContext {
     pub verb_store: VerbStore,
 
     /// the paths for which there's a special behavior to follow (comes from conf)
-    pub special_paths: Vec<SpecialPath>,
+    pub special_paths: Vec<path::SpecialPath>,
 
     /// the map between search prefixes and the search mode to apply
     pub search_modes: SearchModeMap,
@@ -107,10 +107,11 @@ impl AppContext {
         };
         let icons = config.icon_theme.as_ref()
             .and_then(|itn| icon_plugin(itn));
-        let special_paths = config.special_paths
+        let mut special_paths = config.special_paths
             .iter()
-            .map(|(k, v)| SpecialPath::new(k.clone(), *v))
+            .map(|(k, v)| path::SpecialPath::new(k.clone(), *v))
             .collect();
+        path::add_defaults(&mut special_paths);
         let search_modes = config
             .search_modes
             .as_ref()

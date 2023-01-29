@@ -2,7 +2,7 @@ use {
     glob,
     lazy_regex::regex,
     serde::{de::Error, Deserialize, Deserializer},
-    std::path::Path,
+    std::path::{Path, PathBuf},
 };
 
 #[derive(Debug, Clone, PartialEq, Hash, Eq)]
@@ -84,4 +84,22 @@ impl SpecialPathList for &[SpecialPath] {
         }
         SpecialHandling::None
     }
+}
+
+/// Add a special handling, if none was previously defined for that path
+fn add_default(list: &mut Vec<SpecialPath>, path: &str, handling: SpecialHandling) {
+    if list.find(&PathBuf::from("/proc")) == SpecialHandling::None {
+        match glob::Pattern::new("/proc") {
+            Ok(pattern) => {
+                list.push(SpecialPath { pattern, handling });
+            }
+            Err(e) => {
+                warn!("Invalid glob pattern: {path:?} : {e}");
+            }
+        }
+    }
+}
+pub fn add_defaults(list: &mut Vec<SpecialPath>) {
+    // see https://github.com/Canop/broot/issues/639
+    add_default(list, "/proc", SpecialHandling::NoEnter);
 }
