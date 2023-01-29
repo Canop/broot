@@ -11,7 +11,7 @@
 
 skin: {
     default: rgb(235, 219, 178) none / rgb(189, 174, 147) none
-    tree: rgb(168, 153, 132) None / rgb(102, 92, 84) None
+    tree: rgb(70, 70, 80) None / rgb(60, 60, 60) None
     parent: rgb(235, 219, 178) none / rgb(189, 174, 147) none Italic
     file: None None / None  None Italic
     directory: rgb(131, 165, 152) None Bold / rgb(131, 165, 152) None

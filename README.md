@@ -22,7 +22,7 @@ A better way to navigate directories
 
 `br -s`
 
-![overview](website/docs/img/20200629-overview.png)
+![overview](website/docs/img/20230129-overview.png)
 
 Notice the *unlisted*?
 

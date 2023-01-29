@@ -9,7 +9,7 @@
 
 `br -s`
 
-![overview](img/20200629-overview.png)
+![overview](img/20230129-overview.png)
 
 Notice the *unlisted*?
 
@@ -133,7 +133,7 @@ If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which ge
 
 ![replace ls](img/20210425-sdp.png)
 
-You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or a space, then `h` then enter and you see hidden files.
+You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or hit <kbd>alt</kbd><kbd>h</kbd> and you see hidden files.
 
 # Sort, see what takes space:
 
