@@ -1,8 +1,10 @@
 ### next
 - unless overriden, `/proc` is now no-enter - See #639
+- SVG files now rendered as images in the preview panel
 - preview can now be opened on directories, showing their first level - Fix #405
 - new version of the nushell function. You should be prompted for an update
 - "no-hide" special paths - Thanks @Avlllo
+- better determine whether the terminal is white or dark in some (probably rare) cases - See https://github.com/Canop/terminal-light/issues/2
 
 ### v1.19.0 - 2023-01-03
 <a name="v1.19.0"></a>

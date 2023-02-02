@@ -2091,9 +2091,9 @@ dependencies = [
 
 [[package]]
 name = "terminal-light"
-version = "1.0.1"
+version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "23aa36b802b37d7bade42edd49a543579a864fe7740afd233ecb0720e35b0ddb"
+checksum = "ee11937392ee28dc61a34de5e7dfb26b9bea6db45bc9c44f4b6570290d6a1452"
 dependencies = [
  "coolor",
  "crossterm",
