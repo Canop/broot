@@ -50,6 +50,7 @@ pathdiff = "0.2"
 phf = { version = "0.10", features = ["macros"] }
 rayon = "1.5"
 regex = "1.5"
+resvg = "0.28.0"
 secular = { version = "1.0", features = ["normalization"] }
 serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.9"
@@ -60,9 +61,12 @@ tempfile = "3.2"
 termimad = "0.20.6"
 terminal-clipboard = { version = "0.3.1", optional = true }
 terminal-light = "1.1"
+tiny-skia = "0.8.2"
 toml = "0.5"
 umask = "2.0.0"
 unicode-width = "0.1.8"
+usvg = "0.28.0"
+usvg-text-layout = { version = "0.28.0", default-features = false }
 xterm-query = { version = "0.1", optional = true }
 
 [dev-dependencies]

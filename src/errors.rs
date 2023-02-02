@@ -21,6 +21,7 @@ custom_error! {pub ProgramError
     NetError {source: NetError} = "{source}",
     OpenError { source: opener::OpenError } = "Open error: {source}",
     ShelInstall { source: ShellInstallError } = "{source}",
+    Svg {source: SvgError} = "SVG error: {source}",
     SyntectCrashed { details: String } = "Syntect crashed on {details:?}",
     Termimad {source: termimad::Error} = "Termimad Error : {source}",
     TreeBuild {source: TreeBuildError} = "{source}",
@@ -115,3 +116,8 @@ custom_error! {pub NetError
     InvalidMessage                       = "invalid message received",
 }
 
+custom_error! {pub SvgError
+    Io {source: io::Error} = "IO Error : {source}",
+    Internal { message: &'static str } = "Internal error : {message}",
+    Svg {source: usvg::Error} = "SVG Error: {source}",
+}

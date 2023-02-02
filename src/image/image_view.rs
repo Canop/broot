@@ -16,7 +16,6 @@ use {
         QueueableCommand,
     },
     image::{
-        io::Reader,
         DynamicImage,
         GenericImageView,
         imageops::FilterType,
@@ -62,7 +61,7 @@ impl ImageView {
         let source_img = time!(
             "decode image",
             path,
-            Reader::open(path)?.decode()?
+            super::load(path)?
         );
         Ok(Self {
             path: path.to_path_buf(),

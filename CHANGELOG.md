@@ -1,5 +1,6 @@
 ### next
 - unless overriden, `/proc` is now no-enter - See #639
+- SVG files now rendered as images in the preview panel
 - preview can now be opened on directories, showing their first level - Fix #405
 - new version of the nushell function. You should be prompted for an update
 - "no-hide" special paths - Thanks @Avlllo
