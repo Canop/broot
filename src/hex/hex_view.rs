@@ -163,12 +163,12 @@ impl HexView {
                     cw.queue_g_string(
                         &styles.preview_line_number,
                         match (addresses_len, margin_around_adresses) {
-                            (4, false) => format!("{:04x}", addr),
-                            (6, false) => format!("{:06x}", addr),
-                            (_, false) => format!("{:08x}", addr),
-                            (4, true) => format!(" {:04x} ", addr),
-                            (6, true) => format!(" {:06x} ", addr),
-                            (_, true) => format!(" {:08x} ", addr),
+                            (4, false) => format!("{addr:04x}"),
+                            (6, false) => format!("{addr:06x}"),
+                            (_, false) => format!("{addr:08x}"),
+                            (4, true) => format!(" {addr:04x} "),
+                            (6, true) => format!(" {addr:06x} "),
+                            (_, true) => format!(" {addr:08x} "),
                         },
                     )?;
                 }
@@ -183,9 +183,9 @@ impl HexView {
                     if let Some(b) = line.bytes.get(x) {
                         let byte = Byte::from(*b);
                         if inter_hex {
-                            cw.queue_g_string(byte.style(styles), format!("{:02x} ", b))?;
+                            cw.queue_g_string(byte.style(styles), format!("{b:02x} "))?;
                         } else {
-                            cw.queue_g_string(byte.style(styles), format!("{:02x}", b))?;
+                            cw.queue_g_string(byte.style(styles), format!("{b:02x}"))?;
                         }
                     } else {
                         cw.queue_str(&styles.default, if inter_hex { "   " } else { "  " })?;
@@ -228,9 +228,9 @@ impl HexView {
             return Ok(());
         }
         if s.len() + " bytes".len() < width {
-            s = format!("{} bytes", s);
+            s = format!("{s} bytes");
         } else if s.len() + 1 < width {
-            s = format!("{}b", s);
+            s = format!("{s}b");
         }
         w.queue(cursor::MoveTo(
             area.left + area.width - s.len() as u16,

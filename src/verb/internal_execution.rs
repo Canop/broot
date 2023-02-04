@@ -55,7 +55,7 @@ impl fmt::Display for InternalExecution {
             write!(f, "!")?;
         }
         if let Some(arg) = &self.arg {
-            write!(f, " {}", arg)?;
+            write!(f, " {arg}")?;
         }
         Ok(())
     }

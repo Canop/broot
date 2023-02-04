@@ -79,6 +79,6 @@ pub fn do_exec_replacement(
             repl.to_string()
         }
     } else {
-        format!("{{{}}}", name)
+        format!("{{{name}}}")
     }
 }

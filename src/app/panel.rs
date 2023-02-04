@@ -158,7 +158,7 @@ impl Panel {
         let mut command_parts = CommandParts::from(self.input.get_content());
         if command_parts.verb_invocation.is_some() {
             command_parts.verb_invocation = None;
-            let new_input = format!("{}", command_parts);
+            let new_input = format!("{command_parts}");
             self.input.set_content(&new_input);
         }
         self.mut_state().set_mode(initial_mode(con));
@@ -177,7 +177,7 @@ impl Panel {
         let mut command_parts = CommandParts::from(self.input.get_content());
         if let Some(invocation) = &mut command_parts.verb_invocation {
             invocation.args = Some(arg);
-            let new_input = format!("{}", command_parts);
+            let new_input = format!("{command_parts}");
             self.input.set_content(&new_input);
         }
     }
@@ -263,7 +263,7 @@ impl Panel {
                 .next()
                 .unwrap_or_else(|| ":start_end_panel".to_string());
 
-            let md = format!("hit *{}* to fill arg ", shortcut);
+            let md = format!("hit *{shortcut}* to fill arg ");
             // Add verbindex in purpose ?
             screen.goto(w, area.left, area.top)?;
             panel_skin.purpose_skin.write_composite_fill(

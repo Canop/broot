@@ -83,7 +83,7 @@ impl SearchMode {
         con
             .search_modes
             .key(self)
-            .map_or_else(|| "".to_string(), |k| format!("{}/", k))
+            .map_or_else(|| "".to_string(), |k| format!("{k}/"))
     }
     pub fn object(self) -> SearchObject {
         match self {
@@ -140,7 +140,7 @@ impl SearchModeMapEntry {
                 "path" => search_objects.push(SearchObject::Path),
                 _ => {
                     return Err(ConfError::InvalidSearchMode {
-                        details: format!("{:?} not understood in search mode definition", t),
+                        details: format!("{t:?} not understood in search mode definition"),
                     });
                 }
             }
@@ -247,7 +247,7 @@ impl SearchModeMap {
         }
         Err(PatternError::InvalidMode {
             mode: if let Some(key) = key {
-                format!("{}/", key)
+                format!("{key}/")
             } else {
                 "".to_string()
             },

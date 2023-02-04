@@ -24,7 +24,7 @@ pub fn write(
     screen.goto(w, area.left, y)?;
     let mut x = area.left;
     if let Some(pending_task) = task {
-        let pending_task = format!(" {}… ", pending_task);
+        let pending_task = format!(" {pending_task}… ");
         x += pending_task.chars().count() as u16;
         panel_skin.styles.status_job.queue(w, pending_task)?;
     }

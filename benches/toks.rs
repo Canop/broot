@@ -9,7 +9,7 @@ static PATTERNS: &[&str] = &["a", "réveil", "bro,c", "e,jenc,arec,ehro", "broot
 
 fn bench_score_of_toks(gb: &mut Bench) {
     for pattern in PATTERNS {
-        let task_name = format!("TokPattern({:?})::score_of", pattern);
+        let task_name = format!("TokPattern({pattern:?})::score_of");
         gb.task(task_name, |b| {
             let fp = TokPattern::new(pattern);
             b.iter(|| {

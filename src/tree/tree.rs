@@ -56,10 +56,8 @@ impl Tree {
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
         self.scroll = 0;
-        if !self.try_select_path(&selected_path) {
-            if self.selection >= self.lines.len() {
-                self.selection = 0;
-            }
+        if !self.try_select_path(&selected_path) && self.selection >= self.lines.len() {
+            self.selection = 0;
         }
         self.make_selection_visible(page_height);
         Ok(())
@@ -267,11 +265,9 @@ impl Tree {
     /// (works if y+scroll falls on a selectable line)
     pub fn try_select_y(&mut self, y: usize) -> bool {
         let y = y + self.scroll;
-        if y < self.lines.len() {
-            if self.lines[y].is_selectable() {
-                self.selection = y;
-                return true;
-            }
+        if y < self.lines.len() && self.lines[y].is_selectable() {
+            self.selection = y;
+            return true;
         }
         false
     }

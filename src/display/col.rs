@@ -89,7 +89,7 @@ impl FromStr for Col {
             "staged" => Ok(Self::Staged),
             "n" | "name" => Ok(Self::Name),
             _ => Err(ConfError::InvalidCols {
-                details: format!("column not recognized : {}", s),
+                details: format!("column not recognized : {s}"),
             }),
         }
     }
@@ -161,7 +161,7 @@ pub fn parse_cols(arr: &Vec<String>) -> Result<Cols, ConfError> {
     for (idx, s) in arr.iter().enumerate() {
         if idx >= COLS_COUNT {
             return Err(ConfError::InvalidCols {
-                details: format!("too long: {:?}", arr),
+                details: format!("too long: {arr:?}"),
             });
         }
         // we swap the cols, to ensure both keeps being present

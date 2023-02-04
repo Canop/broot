@@ -364,10 +364,8 @@ impl PanelInput {
                 }
 
                 // input field management
-                if mode == Mode::Input {
-                    if self.input_field.apply_timed_event(timed_event) {
-                        return Command::from_raw(self.input_field.get_content(), false);
-                    }
+                if mode == Mode::Input && self.input_field.apply_timed_event(timed_event) {
+                    return Command::from_raw(self.input_field.get_content(), false);
                 }
                 Command::None
             }

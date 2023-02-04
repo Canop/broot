@@ -158,7 +158,7 @@ impl BrowserState {
                     info!("open returned with exit_status {:?}", exit_status);
                     Ok(CmdResult::Keep)
                 }
-                Err(e) => Ok(CmdResult::error(format!("{:?}", e))),
+                Err(e) => Ok(CmdResult::error(format!("{e:?}"))),
             }
         }
     }
@@ -436,7 +436,7 @@ impl PanelState for BrowserState {
             }
             Internal::page_up => {
                 let tree = self.displayed_tree_mut();
-                if !tree.try_scroll(page_height as i32 * -1, page_height) {
+                if !tree.try_scroll(-(page_height as i32), page_height) {
                     tree.try_select_first();
                 }
                 CmdResult::Keep
@@ -501,7 +501,7 @@ impl PanelState for BrowserState {
                         con,
                     )
                 } else {
-                    CmdResult::error(format!("{:?} has no parent", root))
+                    CmdResult::error(format!("{root:?} has no parent"))
                 }
             }
             Internal::root_down => {
@@ -615,18 +615,16 @@ impl PanelState for BrowserState {
         con: &AppContext,
     ) -> Status {
         let tree = self.displayed_tree();
-        if tree.is_empty() {
-            if tree.build_report.hidden_count > 0 {
-                let mut parts = Vec::new();
-                if let Some(md) = con.standard_status.all_files_hidden.clone() {
-                    parts.push(md);
-                }
-                if let Some(md) = con.standard_status.all_files_git_ignored.clone() {
-                    parts.push(md);
-                }
-                if !parts.is_empty() {
-                    return Status::from_error(parts.join(". "));
-                }
+        if tree.is_empty() && tree.build_report.hidden_count > 0 {
+            let mut parts = Vec::new();
+            if let Some(md) = con.standard_status.all_files_hidden.clone() {
+                parts.push(md);
+            }
+            if let Some(md) = con.standard_status.all_files_git_ignored.clone() {
+                parts.push(md);
+            }
+            if !parts.is_empty() {
+                return Status::from_error(parts.join(". "));
             }
         }
         let mut ssb = con.standard_status.builder(

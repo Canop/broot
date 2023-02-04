@@ -123,9 +123,9 @@ impl fmt::Display for ExecPattern {
                         write!(f, " ")?;
                     }
                     if s.contains(' ') {
-                        write!(f, "\"{}\"", s)?;
+                        write!(f, "\"{s}\"")?;
                     } else {
-                        write!(f, "{}", s)?;
+                        write!(f, "{s}")?;
                     }
                 }
                 Ok(())

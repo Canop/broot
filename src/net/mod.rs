@@ -9,5 +9,5 @@ pub use {
 };
 
 pub fn socket_file_path(server_name: &str) -> String {
-    format!("/tmp/broot-server-{}.sock", server_name)
+    format!("/tmp/broot-server-{server_name}.sock")
 }

@@ -9,7 +9,7 @@ static PATTERNS: &[&str] = &["réveil", "AB", "e", "brt", "brootz"];
 
 fn bench_score_of_fuzzy(gb: &mut Bench) {
     for pattern in PATTERNS {
-        let task_name = format!("Fuzzy({:?})::score_of", pattern);
+        let task_name = format!("Fuzzy({pattern:?})::score_of");
         gb.task(task_name, |b| {
             let fp = FuzzyPattern::from(pattern);
             b.iter(|| {

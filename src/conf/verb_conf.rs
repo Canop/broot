@@ -170,7 +170,7 @@ impl VerbConf {
             None => SelectionType::Any,
             Some(s) => {
                 return Err(ConfError::InvalidVerbConf {
-                    details: format!("{:?} isn't a valid value of apply_to", s),
+                    details: format!("{s:?} isn't a valid value of apply_to"),
                 });
             }
         };

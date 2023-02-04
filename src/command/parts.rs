@@ -19,7 +19,7 @@ impl fmt::Display for CommandParts {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "{}", self.raw_pattern)?;
         if let Some(invocation) = &self.verb_invocation {
-            write!(f, "{}", invocation)?;
+            write!(f, "{invocation}")?;
         }
         Ok(())
     }
@@ -171,7 +171,7 @@ mod test_command_parts {
         let right = CommandParts {
             raw_pattern: raw_pattern.to_string(),
             pattern,
-            verb_invocation: verb_invocation.map(|s| VerbInvocation::from(s)),
+            verb_invocation: verb_invocation.map(VerbInvocation::from),
         };
         dbg!(&right);
         assert_eq!(left, right);

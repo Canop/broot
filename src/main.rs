@@ -9,14 +9,14 @@ fn main() {
             if let Err(e) = launchable.execute(None) {
                 warn!("Failed to launch {:?}", &launchable);
                 warn!("Error: {:?}", e);
-                eprintln!("{}", e);
+                eprintln!("{e}");
             }
         }
         Ok(None) => {}
         Err(e) => {
             // this usually happens when the passed path isn't of a directory
             warn!("Error: {}", e);
-            eprintln!("{}", e);
+            eprintln!("{e}");
         }
     };
     log_mem(Level::Info);

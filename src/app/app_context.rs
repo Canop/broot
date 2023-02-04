@@ -122,7 +122,7 @@ impl AppContext {
             .map_err(ConfError::from)?;
         let file_sum_threads_count = config.file_sum_threads_count
             .unwrap_or(file_sum::DEFAULT_THREAD_COUNT);
-        if file_sum_threads_count < 1 || file_sum_threads_count > 50 {
+        if !(1..=50).contains(&file_sum_threads_count) {
             return Err(ConfError::InvalidThreadsCount{ count: file_sum_threads_count }.into());
         }
         let max_panels_count = config.max_panels_count

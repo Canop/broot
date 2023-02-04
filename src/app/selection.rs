@@ -80,7 +80,7 @@ impl Selection<'_> {
             if let Some(export_path) = &con.launch_args.outcmd {
                 // broot was launched as br, we can launch the executable from the shell
                 let f = OpenOptions::new().append(true).open(export_path)?;
-                writeln!(&f, "{}", path)?;
+                writeln!(&f, "{path}")?;
                 CmdResult::Quit
             } else {
                 CmdResult::from(Launchable::program(

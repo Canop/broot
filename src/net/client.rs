@@ -35,7 +35,7 @@ impl Client {
                 Ok(answer) => {
                     debug!("got an answer: {:?}", &answer);
                     if let Message::Root(root) = answer {
-                        println!("{}", root);
+                        println!("{root}");
                     }
                 }
                 Err(e) => {

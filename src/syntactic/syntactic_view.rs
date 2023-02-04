@@ -436,7 +436,7 @@ impl SyntacticView {
             return Ok(());
         }
         if s.len() + "lines: ".len() < width {
-            s = format!("lines: {}", s);
+            s = format!("lines: {s}");
         }
         w.queue(cursor::MoveTo(
             area.left + area.width - s.len() as u16,

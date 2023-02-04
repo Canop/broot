@@ -420,7 +420,7 @@ impl PanelState for FilesystemState {
                             let pb = ProgressBar::new(stats.use_share() as f32, w_use_bar);
                             let mut bar_style = styles.default.clone();
                             bar_style.set_bg(share_color);
-                            cw.queue_g_string(&bar_style, format!("{:<width$}", pb, width=w_use_bar))?;
+                            cw.queue_g_string(&bar_style, format!("{pb:<w_use_bar$}"))?;
                         }
                         cw.queue_char(border_style, '│')?;
                     }

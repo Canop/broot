@@ -95,10 +95,8 @@ impl VerbStore {
                     continue;
                 }
             }
-            if !verb.file_extensions.is_empty() {
-                if !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
-                    continue;
-                }
+            if !verb.file_extensions.is_empty() && !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
+                continue;
             }
             for name in &verb.names {
                 if name.starts_with(prefix) {

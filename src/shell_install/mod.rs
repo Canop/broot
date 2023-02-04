@@ -104,7 +104,7 @@ impl ShellInstall {
         info!("Shell installation state: {install_state:?}");
         if self.force_install {
             self.skin.print_text("You requested a clean (re)install.");
-            ShellInstallState::remove(&self)?;
+            ShellInstallState::remove(self)?;
         } else {
             match install_state {
                 ShellInstallState::Refused => {
@@ -129,7 +129,7 @@ impl ShellInstall {
             // even if the installation isn't really complete (for example
             // when no bash file was found), we don't want to ask the user
             // again, we'll assume it's done
-            ShellInstallState::UpToDate.write(&self)?;
+            ShellInstallState::UpToDate.write(self)?;
         }
         debug!("Starting install");
         bash::install(self)?;
@@ -184,7 +184,7 @@ impl ShellInstall {
         debug!("proceed: {:?}", proceed);
         self.authorization = Some(proceed);
         if !proceed {
-            ShellInstallState::Refused.write(&self)?;
+            ShellInstallState::Refused.write(self)?;
             self.skin.print_text(MD_INSTALL_CANCELLED);
         }
         Ok(proceed)

@@ -126,7 +126,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                 sel.map(|s| s.path)
                 .and_then(|path| path.extension())
                 .and_then(|oss| oss.to_str())
-                .map(|ext| format!(".{}", ext))
+                .map(|ext| format!(".{ext}"))
                 .or_else(|| Some("".to_string()))
             }
             "directory" => sel.map(|s| path::closest_dir(s.path))

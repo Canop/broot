@@ -33,32 +33,32 @@ impl StandardStatus {
         let tree_dir_focus = "*enter* to focus".to_string();
         let tree_dir_cd = verb_store
             .key_desc_of_internal_stype(Internal::open_leave, SelectionType::Directory)
-            .map(|k| format!("*{}* to cd", k));
+            .map(|k| format!("*{k}* to cd"));
         let tree_file_open_stay = verb_store
             .key_desc_of_internal_stype(Internal::open_stay, SelectionType::File)
-            .map(|k| format!("*{}* to open the file", k));
+            .map(|k| format!("*{k}* to open the file"));
         let tree_file_open_leave = verb_store
             .key_desc_of_internal_stype(Internal::open_leave, SelectionType::File)
-            .map(|k| format!("*{}* to open and quit", k));
+            .map(|k| format!("*{k}* to open and quit"));
         //let tree_file_enter = None; // TODO (for when enter is customized)
         let tree_unfiltered = "a few letters to search".to_string();
         let tree_filtered = "*esc* to clear the filter".to_string();
         let preview_unfiltered = "a pattern to filter".to_string();
         let preview_filtered = verb_store
             .key_desc_of_internal(Internal::panel_right)
-            .map(|k| format!("*{}* to reveal the text", k));
+            .map(|k| format!("*{k}* to reveal the text"));
         let preview_restorable_filter = verb_store
             .key_desc_of_internal(Internal::panel_left_no_open)
-            .map(|k| format!("*{}* to restore the filter", k));
+            .map(|k| format!("*{k}* to restore the filter"));
         let not_first_state = "*esc* to go back".to_string();
         let help = "*?* for help".to_string();
         let no_verb = "a space then a verb".to_string();
         let all_files_hidden = verb_store
             .key_desc_of_internal(Internal::toggle_hidden)
-            .map(|k| format!("Some files are hidden, use *{}* to display them", k));
+            .map(|k| format!("Some files are hidden, use *{k}* to display them"));
         let all_files_git_ignored = verb_store
             .key_desc_of_internal(Internal::toggle_git_ignore)
-            .map(|k| format!("Some files are git-ignored, use *{}* to display them", k));
+            .map(|k| format!("Some files are git-ignored, use *{k}* to display them"));
         Self {
             tree_top_focus,
             tree_dir_focus,

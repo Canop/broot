@@ -69,7 +69,7 @@ impl BLine {
             }))
         } else {
             Err(TreeBuildError::FileNotFound {
-                path: format!("{:?}", path),
+                path: format!("{path:?}"),
             })
         }
     }

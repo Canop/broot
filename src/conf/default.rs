@@ -15,7 +15,7 @@ pub fn write_default_conf_in(dir: &Path) -> Result<(), io::Error> {
         if !dir.is_dir() {
             return Err(io::Error::new(
                 io::ErrorKind::Other,
-                format!("{:?} isn't a directory", dir),
+                format!("{dir:?} isn't a directory"),
             ));
         }
     } else {

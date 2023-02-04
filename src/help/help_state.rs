@@ -237,7 +237,7 @@ impl PanelState for HelpState {
                     info!("open returned with exit_status {:?}", exit_status);
                     CmdResult::Keep
                 }
-                Err(e) => CmdResult::DisplayError(format!("{:?}", e)),
+                Err(e) => CmdResult::DisplayError(format!("{e:?}")),
             },
             // FIXME check we can't use the generic one
             open_leave => {

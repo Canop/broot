@@ -47,7 +47,7 @@ fn relativize_path(path: &Path, con: &AppContext) -> io::Result<String> {
         None => {
             return Err(io::Error::new(
                 io::ErrorKind::Other,
-                format!("Cannot relativize {:?}", path), // does this happen ? how ?
+                format!("Cannot relativize {path:?}"), // does this happen ? how ?
             ));
         }
         Some(p) => p,

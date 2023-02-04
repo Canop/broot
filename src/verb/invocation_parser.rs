@@ -43,7 +43,7 @@ impl InvocationParser {
         let mut arg_defs = Vec::new();
         if let Some(args) = &invocation_pattern.args {
             let spec = GROUP.replace_all(args, r"(?P<$1>.+)");
-            let spec = format!("^{}$", spec);
+            let spec = format!("^{spec}$");
             args_parser = match Regex::new(&spec) {
                 Ok(regex) => Some(regex),
                 Err(_) => {

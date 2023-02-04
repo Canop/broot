@@ -185,7 +185,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 sparse_style,
                 if s.is_sparse() && line.is_file() { 's' } else { ' ' },
             )?;
-            cw.queue_g_string(label_style, format!("{:<10}", pb))?;
+            cw.queue_g_string(label_style, format!("{pb:<10}"))?;
             1
         } else {
             16
@@ -258,12 +258,10 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                         } else {
                             "│  "
                         }
+                    } else if staged {
+                        "└◍─"
                     } else {
-                        if staged {
-                            "└◍─"
-                        } else {
-                            "└──"
-                        }
+                        "└──"
                     }
                 } else {
                     "   "

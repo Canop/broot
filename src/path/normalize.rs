@@ -38,7 +38,7 @@ mod path_normalize_tests {
     use super::normalize_path;
 
     fn check(before: &str, after: &str) {
-        println!("-----------------\nnormalizing {:?}", before);
+        println!("-----------------\nnormalizing {before:?}");
         // As seen by Stargateur, the test here doesn't work on Windows
         //
         // There are two problems, at least:
@@ -46,7 +46,7 @@ mod path_normalize_tests {
         // * strings used for test use the '/' separator. This is a test problem
         // * we do a "end with '/'" test in the tested function. This might
         //   lead to suboptimal interaction on windows
-        assert_eq!(normalize_path(before.to_string()).to_string_lossy(), after);
+        assert_eq!(normalize_path(before).to_string_lossy(), after);
     }
 
     #[test]

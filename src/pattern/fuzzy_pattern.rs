@@ -298,9 +298,7 @@ mod fuzzy_pattern_tests {
             let score = fp.find(name).map(|m| m.score);
             assert!(
                 score < last_score,
-                "score({:?}) should be lower than score({:?}) (using find)",
-                name,
-                last_name
+                "score({name:?}) should be lower than score({last_name:?}) (using find)"
             );
             last_name = name;
             last_score = score;
@@ -360,27 +358,23 @@ mod fuzzy_pattern_tests {
             for pattern in arr.iter() {
                 let fp = FuzzyPattern::from(pattern);
                 for name in arr.iter() {
-                    println!("looking for pattern {:?} in name {:?}", pattern, name);
+                    println!("looking for pattern {pattern:?} in name {name:?}");
                     assert!(fp.find(name).unwrap().score > 0);
                 }
             }
         }
-        check_equivalences_in(&vec![
-            "aB",
+        check_equivalences_in(&["aB",
             "ab",
             "àb",
-            "âB",
-        ]);
+            "âB"]);
         let c12 = "Comunicações";
         assert_eq!(c12.len(), 14);
         assert_eq!(c12.chars().count(), 12);
         let c14 = "Comunicações";
         assert_eq!(c14.len(), 16);
         assert_eq!(c14.chars().count(), 14);
-        check_equivalences_in(&vec![
-            "comunicacoes",
+        check_equivalences_in(&["comunicacoes",
             c12,
-            c14,
-        ]);
+            c14]);
     }
 }

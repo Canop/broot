@@ -156,7 +156,7 @@ pub trait PanelState {
                             CmdResult::new_state(Box::new(state))
                         }
                     }
-                    Err(e) => CmdResult::DisplayError(format!("{}", e)),
+                    Err(e) => CmdResult::DisplayError(format!("{e}")),
                 }
             }
             Internal::help => {
@@ -745,7 +745,7 @@ pub trait PanelState {
             Command::PatternEdit { raw, expr } => {
                 match InputPattern::new(raw.clone(), expr, con) {
                     Ok(pattern) => self.on_pattern(pattern, app_state, con),
-                    Err(e) => Ok(CmdResult::DisplayError(format!("{}", e))),
+                    Err(e) => Ok(CmdResult::DisplayError(format!("{e}"))),
                 }
             }
             Command::VerbTrigger {
@@ -809,31 +809,27 @@ pub trait PanelState {
                     validate_purpose: false,
                     panel_ref: PanelReference::Id(id),
                 }
+            } else if prefered_mode.is_some() {
+                // we'll make the preview mode change be
+                // applied on the preview panel
+                CmdResult::ApplyOnPanel { id }
             } else {
-                if prefered_mode.is_some() {
-                    // we'll make the preview mode change be
-                    // applied on the preview panel
-                    CmdResult::ApplyOnPanel { id }
-                } else {
-                    CmdResult::Keep
-                }
+                CmdResult::Keep
+            }
+        } else if let Some(path) = self.selected_path() {
+            CmdResult::NewPanel {
+                state: Box::new(PreviewState::new(
+                    path.to_path_buf(),
+                    InputPattern::none(),
+                    prefered_mode,
+                    self.tree_options(),
+                    cc.app.con,
+                )),
+                purpose: PanelPurpose::Preview,
+                direction: HDir::Right,
             }
         } else {
-            if let Some(path) = self.selected_path() {
-                CmdResult::NewPanel {
-                    state: Box::new(PreviewState::new(
-                        path.to_path_buf(),
-                        InputPattern::none(),
-                        prefered_mode,
-                        self.tree_options(),
-                        cc.app.con,
-                    )),
-                    purpose: PanelPurpose::Preview,
-                    direction: HDir::Right,
-                }
-            } else {
-                CmdResult::error("no selected file")
-            }
+            CmdResult::error("no selected file")
         }
     }
 
@@ -953,7 +949,7 @@ pub trait PanelState {
                                 "Possible verbs: {}",
                                 completions
                                     .iter()
-                                    .map(|c| format!("*{}*", c))
+                                    .map(|c| format!("*{c}*"))
                                     .collect::<Vec<String>>()
                                     .join(", "),
                             ),

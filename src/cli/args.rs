@@ -209,7 +209,7 @@ impl FromStr for CliShellInstallState {
             "installed" => Ok(Self::Installed),
             _ => Err(
                 // not supposed to happen because claps check the values
-                format!("unexpected install state: {:?}", state)
+                format!("unexpected install state: {state:?}")
             ),
         }
     }

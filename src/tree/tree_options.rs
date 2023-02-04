@@ -81,7 +81,7 @@ impl TreeOptions {
     /// change tree options according to configuration
     pub fn apply_config(&mut self, config: &Conf) -> Result<(), ConfError> {
         if let Some(default_flags) = &config.default_flags {
-            let flags_args = format!("-{}", default_flags);
+            let flags_args = format!("-{default_flags}");
             let conf_matches = Args::try_parse_from(vec!["broot", &flags_args])
                 .map_err(|_| ConfError::InvalidDefaultFlags {
                     flags: default_flags.to_string()

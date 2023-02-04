@@ -81,7 +81,7 @@ impl PreviewState {
             }
             Err(e) => {
                 CmdResult::DisplayError(
-                    format!("Can't display as {:?} : {:?}", mode, e)
+                    format!("Can't display as {mode:?} : {e:?}")
                 )
             }
         })
@@ -134,10 +134,8 @@ impl PanelState for PreviewState {
                 }
                 self.removed_pattern = filtered_preview.pattern();
             }
-        } else {
-            if !self.preview.is_filterable() {
-                return Ok(CmdResult::error("this preview can't be searched"));
-            }
+        } else if !self.preview.is_filterable() {
+            return Ok(CmdResult::error("this preview can't be searched"));
         }
         self.pending_pattern = pat;
         Ok(CmdResult::Keep)

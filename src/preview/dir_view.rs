@@ -90,7 +90,7 @@ impl DirView {
             return Ok(());
         }
         if s.len() + "lines: ".len() < width {
-            s = format!("entries: {}", s);
+            s = format!("entries: {s}");
         }
         w.queue(cursor::MoveTo(
             area.left + area.width - s.len() as u16,

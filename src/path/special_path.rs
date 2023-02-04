@@ -44,8 +44,7 @@ impl<'de> Deserialize<'de> for SpecialHandling {
             "hide" => Ok(SpecialHandling::Hide),
             "nohide" => Ok(SpecialHandling::NoHide),   // nohide or no-hide
             _ => Err(D::Error::custom(format!(
-                "unrecognized special handling: {:?}",
-                s
+                "unrecognized special handling: {s:?}"
             ))),
         }
     }
@@ -57,7 +56,7 @@ impl<'de> Deserialize<'de> for Glob {
     {
         let s = String::deserialize(deserializer)?;
         glob::Pattern::new(&s)
-            .map_err(|e| D::Error::custom(format!("invalid glob pattern {:?} : {:?}", s, e)))
+            .map_err(|e| D::Error::custom(format!("invalid glob pattern {s:?} : {e:?}")))
             .map(|pattern| Glob { pattern })
     }
 }

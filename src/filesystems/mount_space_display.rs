@@ -112,7 +112,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
                 }
                 cw.queue_unstyled_char(' ')?;
                 cw.w.queue(SetBackgroundColor(share_color))?;
-                cw.queue_unstyled_g_string(format!("{:<width$}", pb, width = w_bar))?;
+                cw.queue_unstyled_g_string(format!("{pb:<w_bar$}"))?;
             }
             if let Some(bg_color) = bg {
                 cw.w.queue(SetBackgroundColor(bg_color))?;

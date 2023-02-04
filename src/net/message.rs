@@ -50,7 +50,7 @@ impl Message {
         match self {
             Self::Command(c) => {
                 writeln!(w, "CMD")?;
-                writeln!(w, "{}", c)
+                writeln!(w, "{c}")
             }
             Self::GetRoot => {
                 writeln!(w, "GET_ROOT")
@@ -60,12 +60,12 @@ impl Message {
             }
             Self::Root(path) => {
                 writeln!(w, "ROOT")?;
-                writeln!(w, "{}", path)
+                writeln!(w, "{path}")
             }
             Self::Sequence(Sequence { separator, raw }) => {
                 writeln!(w, "SEQ")?;
-                writeln!(w, "{}", raw)?;
-                writeln!(w, "{}", separator)
+                writeln!(w, "{raw}")?;
+                writeln!(w, "{separator}")
             }
         }
     }

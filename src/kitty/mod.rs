@@ -125,7 +125,7 @@ impl KittyManager {
             } else {
                 let id = image.image_id;
                 debug!("erase kitty image {}", id);
-                write!(w, "\u{1b}_Ga=d,d=I,i={}\u{1b}\\", id)?;
+                write!(w, "\u{1b}_Ga=d,d=I,i={id}\u{1b}\\")?;
             }
         }
         self.rendered_images = kept_images;

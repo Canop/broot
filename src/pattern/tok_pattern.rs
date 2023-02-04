@@ -51,12 +51,10 @@ impl TokPattern {
                 .filter(|s| !s.is_empty())
                 .map(norm_chars)
                 .collect()
+        } else if pattern.is_empty() {
+            Vec::new()
         } else {
-            if pattern.is_empty() {
-                Vec::new()
-            } else {
-                vec![norm_chars(pattern)]
-            }
+            vec![norm_chars(pattern)]
         };
         // we sort the tokens from biggest to smallest
         // because the current algorithm stops at the
@@ -163,7 +161,7 @@ mod tok_pattern_tests {
 
     /// check position of the match of the pattern in name
     fn check_pos(pattern: &str, name: &str, pos: &str) {
-        println!("checking pattern={:?} name={:?}", pattern, name);
+        println!("checking pattern={pattern:?} name={name:?}");
         let pat = TokPattern::new(pattern);
         let match_pos = pat.find(name).unwrap().pos;
         let target_pos: Pos = pos.chars()

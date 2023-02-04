@@ -33,7 +33,7 @@ fn build_completion_scripts() {
     write_completions_file(Shell::Fish, &out_dir);
     write_completions_file(Shell::PowerShell, &out_dir);
     write_completions_file(Shell::Zsh, &out_dir);
-    eprintln!("completion scripts generated in {:?}", out_dir);
+    eprintln!("completion scripts generated in {out_dir:?}");
 }
 
 fn main() {

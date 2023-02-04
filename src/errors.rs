@@ -43,12 +43,7 @@ impl ShellInstallError {
             Self::Io { source, .. } => {
                 if source.kind() == io::ErrorKind::PermissionDenied {
                     true
-                } else if cfg!(windows) && source.raw_os_error().unwrap_or(0) == 1314 {
-                    // https://learn.microsoft.com/en-us/windows/win32/debug/system-error-codes--1300-1699-
-                    true
-                } else {
-                    false
-                }
+                } else { cfg!(windows) && source.raw_os_error().unwrap_or(0) == 1314 }
             }
         }
     }

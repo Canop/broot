@@ -122,7 +122,7 @@ impl Launchable {
     ) -> Result<(), ProgramError> {
         match self {
             Launchable::Printer { to_print } => {
-                println!("{}", to_print);
+                println!("{to_print}");
                 Ok(())
             }
             Launchable::TreePrinter { tree, skin, ext_colors, width, height } => {
