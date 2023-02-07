@@ -151,7 +151,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "broot"
-version = "1.20.0"
+version = "1.20.1"
 dependencies = [
  "ahash 0.7.6",
  "ansi_colours",
@@ -194,7 +194,7 @@ dependencies = [
  "strict",
  "syntect-no-panic",
  "tempfile",
- "termimad",
+ "termimad 0.21.0",
  "terminal-clipboard",
  "terminal-light",
  "tiny-skia",
@@ -861,7 +861,7 @@ dependencies = [
  "serde_json",
  "svg 0.8.2",
  "tempfile",
- "termimad",
+ "termimad 0.20.6",
  "thiserror",
 ]
 
@@ -1256,6 +1256,15 @@ name = "minimad"
 version = "0.9.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "277639f0198568f70f8fe4ab88a52a67c96bca12f27ba5c17a76acdcb8b45834"
+dependencies = [
+ "once_cell",
+]
+
+[[package]]
+name = "minimad"
+version = "0.10.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fed1b13e2000bd8e238d97a97de6fc30224f89a08b0aa5aaa09ed1bd68ba2fa1"
 dependencies = [
  "once_cell",
 ]
@@ -2092,7 +2101,21 @@ dependencies = [
  "coolor",
  "crossbeam",
  "crossterm",
- "minimad",
+ "minimad 0.9.1",
+ "thiserror",
+ "unicode-width",
+]
+
+[[package]]
+name = "termimad"
+version = "0.21.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d86d19aafb932e65acc333b49cb0bd7d9c650a94fe3f2550ce91aea00f582a86"
+dependencies = [
+ "coolor",
+ "crossbeam",
+ "crossterm",
+ "minimad 0.10.0",
  "thiserror",
  "unicode-width",
 ]

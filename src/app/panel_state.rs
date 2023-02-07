@@ -924,9 +924,10 @@ pub trait PanelState {
         cc: &CmdContext,
         has_previous_state: bool,
     ) -> Status {
+        info!("get_status cc.cmd={:?}", &cc.cmd);
         match &cc.cmd {
             Command::PatternEdit { .. } => self.no_verb_status(has_previous_state, cc.app.con),
-            Command::VerbEdit(invocation) => {
+            Command::VerbEdit(invocation) | Command::VerbTrigger { input_invocation: Some(invocation), .. } => {
                 if invocation.name.is_empty() {
                     Status::new(
                         "Type a verb then *enter* to execute it (*?* for the list of verbs)",

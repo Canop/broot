@@ -1,3 +1,6 @@
+### next
+- fix status line not always displaying the hint of the input's verb - Fix #665
+
 ### v1.20.0 - 2023-02-03
 <a name="v1.20.0"></a>
 - unless overriden, `/proc` is now `no-enter`, which solves freezes when searchin on `/` in some system - See #639
