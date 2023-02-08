@@ -1,4 +1,5 @@
-### next
+### v1.20.1 - 2023-02-08
+<a name="v1.20.1"></a>
 - fix status line not always displaying the hint of the input's verb - Fix #665
 
 ### v1.20.0 - 2023-02-03
