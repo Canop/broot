@@ -72,7 +72,7 @@ If you're looking for a file whose name you don't remember exactly ("rust_test" 
 
 # More about searches
 
-If you want to know more about the exact pattern syntax, see [reference](../input/#the-filtering-pattern).
+If you want to know more about the exact pattern syntax, see [reference](../input/#the-filtering-pattern) and [examples](../input/#examples).
 
 # Total Search
 

@@ -125,19 +125,20 @@ Verbs are detailed in the [Verbs & Commands](verbs.md) chapter.
 
 # Examples
 
-## A Fuzzy Path search:
+## Fuzzy Path search
 
 `re`
 
 ![fuzzy](img/20210511-fuzzy-re.png)
 
-## A regular expression based search:
+## Regular expression based search
 
 `/R`
 
 ![fuzzy](img/20210511-regex.png)
 
-## A search followed by a command without arguments:
+
+## Search followed by a command without arguments
 
 `re rm` (which is equivalent to `re:rm`)
 
@@ -145,13 +146,13 @@ This is very natural: You use the search to select your element and you don't ne
 
 ![fuzzy](img/20200526-input-fuzzy-rm.png)
 
-## A search followed by a command taking an argument:
+## Search followed by a command taking an argument
 
 `re mv ../regex.rs`
 
 ![fuzzy](img/20200526-input-fuzzy-mv.png)
 
-## A full text search
+## Full text search
 
 In this case with an escaped space:
 
@@ -159,11 +160,21 @@ In this case with an escaped space:
 
 ![content search](img/20210511-twop.png)
 
-## A regular expression based full text search
+## Regular expression based full text search
 
 ![content regex search](img/20201002-cr-search.png)
 
-## A complex composite search
+## Search by name/extension and content
+
+Here's searching files whose name ends in "toml" and containing "crokey":
+
+`/\.toml$/&c/crokey`
+
+![extension & content](img/20230210-extension-content.png)
+
+In practice, you won't usually bother with the `\.`. And if you want to cover `"TOML"` too, you'll add a `i`: `/toml/i&c/crokey`.
+
+## Complex composite search
 
 Here we search for `"carg"` both in file names and file contents, and we exclude `"lock"` files:
 
