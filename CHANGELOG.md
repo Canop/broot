@@ -1,3 +1,7 @@
+### v1.20.2 - 2023-02-19
+<a name="v1.20.2"></a>
+- fix debug statement printed in some cases (mostly on Windows) - Fix #672
+
 ### v1.20.1 - 2023-02-08
 <a name="v1.20.1"></a>
 - fix status line not always displaying the hint of the input's verb - Fix #665

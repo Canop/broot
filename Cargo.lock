@@ -151,7 +151,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "broot"
-version = "1.20.1"
+version = "1.20.2"
 dependencies = [
  "ahash 0.7.6",
  "ansi_colours",
@@ -2134,9 +2134,9 @@ dependencies = [
 
 [[package]]
 name = "terminal-light"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ee11937392ee28dc61a34de5e7dfb26b9bea6db45bc9c44f4b6570290d6a1452"
+checksum = "9077b39afb70f12391e4c1fcf46319999cfc32b45d605a668052bc4d1b4511af"
 dependencies = [
  "coolor",
  "crossterm",
