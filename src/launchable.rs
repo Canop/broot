@@ -26,6 +26,7 @@ use {
         path::PathBuf,
         process::Command,
     },
+    which::which,
 };
 
 /// description of a possible launch of an external program
@@ -70,6 +71,14 @@ fn resolve_env_variables(parts: Vec<String>) -> Vec<String> {
             if let Ok(val) = env::var(var_name) {
                 resolved.extend(val.split(' ').map(|s| s.to_string()));
                 continue;
+            }
+            if var_name == "EDITOR" {
+                if let Ok(editor) = which("editor") {
+                    if let Some(editor) = editor.to_str() {
+                        resolved.push(editor.to_string());
+                        continue;
+                    }
+                }
             }
         }
         resolved.push(part);

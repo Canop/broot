@@ -67,6 +67,7 @@ umask = "2.0.0"
 unicode-width = "0.1.8"
 usvg = "0.28.0"
 usvg-text-layout = { version = "0.28.0", default-features = false }
+which = "4.4.0"
 xterm-query = { version = "0.1", optional = true }
 
 [dev-dependencies]
