@@ -25,7 +25,7 @@ pub use {
 const MD_INSTALL_REQUEST: &str = r#"
 **Broot** should be launched using a shell function.
 This function most notably makes it possible to `cd` from inside broot
-(see *https://dystroy.org/broot/install* for explanations).
+(see *https://dystroy.org/broot/install-br/* for explanations).
 
 Can I install it now? [**Y**/n]
 "#;
@@ -42,7 +42,7 @@ You can still used `broot` but some features won't be available.
 If you want the `br` shell function, you may either
 * do `broot --install`
 * install the various pieces yourself
-(see *https://dystroy.org/broot/install* for details).
+(see *https://dystroy.org/broot/install-br/* for details).
 
 "#;
 
