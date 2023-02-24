@@ -13,6 +13,17 @@ body .col-md-9 p img {
 	background-color: transparent;
 }
 
+.sponsorship {
+	margin-top: 20px;
+	display: flex;
+	flex-direction: row;
+
+}
+.sponsorship a {
+	margin-right: 10px;
+}
+
+
 h1 {
 	font-size: 22px;
 	border-bottom: solid 1px;
