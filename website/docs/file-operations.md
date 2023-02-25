@@ -68,7 +68,7 @@ As there's no argument, you may [define a key binding](../conf_verbs#keyboard-ke
 
 # create a file
 
-The default configuration assumes the `$EDITOR` env variable is set. If it isn't and you can't set it, you should edit the `create` verb in the [configuration file](../conf_file).
+The default configuration assumes a terminal editor is defined either with the `$EDITOR` env variable or with an `editor` command in the paths. If you don't have a default terminal editor, you should edit the `create` verb in the [configuration file](../conf_file).
 
 The desired parent being selected, type `:cr` then hit <kbd>tab</kbd> or a space, then the name of the new file:
 
@@ -120,7 +120,7 @@ You finish by hitting <kbd>enter</kbd>.
 
 # edit a text file
 
-The default configuration assumes the `$EDITOR` env variable is set. If it isn't and you can't set it, you should edit the `edit` verb in the [configuration file](../conf_file).
+The default configuration assumes a terminal editor is defined in your system. If it isn't and you can't set it, you should edit the `edit` verb in the [configuration file](../conf_file).
 
 Select the file you want to edit, type `:e` then hit <kbd>enter</kbd>.
 

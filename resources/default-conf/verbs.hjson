@@ -25,7 +25,7 @@ verbs: [
     # can customize.
     # If $EDITOR isn't set on your computer, you should either set it using
     #  something similar to
-    #   export EDITOR=nvim
+    #   export EDITOR=/usr/local/bin/nvim
     #  or just replace it with your editor of choice in the 'execution'
     #  pattern.
     #  If your editor is able to open a file on a specific line, use {line}

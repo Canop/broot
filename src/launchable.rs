@@ -73,8 +73,10 @@ fn resolve_env_variables(parts: Vec<String>) -> Vec<String> {
                 continue;
             }
             if var_name == "EDITOR" {
+                debug!("Env var $EDITOR not set, looking at editor command for fallback");
                 if let Ok(editor) = which("editor") {
                     if let Some(editor) = editor.to_str() {
+                        debug!("Using editor solved as {editor:?}");
                         resolved.push(editor.to_string());
                         continue;
                     }
