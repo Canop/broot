@@ -168,7 +168,7 @@ export extern broot [
     --version(-V)                   # Print version information
     --whale-spotting(-w)            # Sort by size, show ignored and hidden files
     --write-default-conf: path      # Write default conf files in given directory
-    ...args
+    file?: path                     # Root Directory
 ]
 "#;
 
