@@ -11,7 +11,6 @@
 //!
 //! Please note that this function is in no way perfect:
 //! - it doesn't allow other commands than cd
-//! - it requires you to quote arguments given to broot
 //!
 //! More info at
 //!  https://github.com/Canop/broot/issues/375
@@ -26,16 +25,16 @@ use {
 };
 
 const NAME: &str = "nushell";
-const VERSION: &str = "3";
+const VERSION: &str = "4";
 
 const NU_FUNC: &str = r#"
 # Launch broot
 #
 # Flags for broot must be between quotes:
-#   > br "-hi" some/path
+#   > br -hi some/path
 #   > br
-#   > br "-sdp"
-#   > br "-hi" "-c" "vacheblan.svg;:open_preview"  ..
+#   > br -sdp
+#   > br -hi -c "vacheblan.svg;:open_preview"  ..
 #
 # See https://dystroy.org/broot/install-br/
 def-env br [

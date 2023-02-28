@@ -1,3 +1,6 @@
+### next
+- better nushell integration (no need to quote arguments anymore, fix path extension broken by new version of nushell) - Thanks @stevenxxiu
+
 ### v1.20.2 - 2023-02-19
 <a name="v1.20.2"></a>
 - fix debug statement printed in some cases (mostly on Windows) - Fix #672
