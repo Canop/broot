@@ -9,12 +9,8 @@
 //! - a line to source the link in ~/.config/nushell/config.nu
 //! (exact paths depend on XDG variables)
 //!
-//! Please note that this function is in no way perfect:
-//! - it doesn't allow other commands than cd
-//!
-//! More info at
-//!  https://github.com/Canop/broot/issues/375
-//!  https://github.com/Canop/broot/issues/656
+//! Please note that this function doesn't allow other commands than cd,
+//! contrary to the similar function of other shells.
 
 use {
     super::{util, ShellInstall},
@@ -30,11 +26,11 @@ const VERSION: &str = "4";
 const NU_FUNC: &str = r#"
 # Launch broot
 #
-# Flags for broot must be between quotes:
+# Examples:
 #   > br -hi some/path
 #   > br
 #   > br -sdp
-#   > br -hi -c "vacheblan.svg;:open_preview"  ..
+#   > br -hi -c "vacheblan.svg;:open_preview" ..
 #
 # See https://dystroy.org/broot/install-br/
 def-env br [
