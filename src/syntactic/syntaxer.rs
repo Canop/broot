@@ -36,11 +36,11 @@ impl Syntaxer {
         self.theme_set.themes.keys()
     }
 
-    pub fn highlighter_for<'s, 'p>(
-        &'s self,
-        path: &'p Path,
+    pub fn highlighter_for(
+        &self,
+        path: &Path,
         con: &AppContext,
-    ) -> Option<HighlightLines<'s>> {
+    ) -> Option<HighlightLines<'_>> {
         path.extension()
             .and_then(|e| e.to_str())
             .and_then(|ext| self.syntax_set.find_syntax_by_extension(ext))

@@ -98,9 +98,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         style
     }
 
-    fn write_line_count<'w, W: Write>(
+    fn write_line_count<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         line: &TreeLine,
         count_len: usize,
         selected: bool,
@@ -116,9 +116,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     }
 
     #[cfg(unix)]
-    fn write_line_device_id<'w, W: Write>(
+    fn write_line_device_id<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         line: &TreeLine,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
@@ -132,9 +132,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         Ok(0)
     }
 
-    fn write_line_selection_mark<'w, W: Write>(
+    fn write_line_selection_mark<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         style: &CompoundStyle,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
@@ -146,9 +146,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         })
     }
 
-    fn write_line_size<'w, W: Write>(
+    fn write_line_size<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         line: &TreeLine,
         style: &CompoundStyle,
         _selected: bool,
@@ -166,9 +166,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
     /// only makes sense when there's only one level
     /// (so in sort mode)
-    fn write_line_size_with_bar<'w, W: Write>(
+    fn write_line_size_with_bar<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         line: &TreeLine,
         label_style: &CompoundStyle,
         total_size: FileSum,
@@ -192,9 +192,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         })
     }
 
-    fn write_line_git_status<'w, W: Write>(
+    fn write_line_git_status<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         line: &TreeLine,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
@@ -216,9 +216,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         Ok(0)
     }
 
-    fn write_date<'w, W: Write>(
+    fn write_date<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         seconds: i64,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
@@ -234,9 +234,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         Ok(1)
     }
 
-    fn write_branch<'w, W: Write>(
+    fn write_branch<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         line_index: usize,
         line: &TreeLine,
         selected: bool,
@@ -275,9 +275,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     }
 
     /// write the symbol showing whether the path is staged
-    fn write_line_stage_mark<'w, W: Write>(
+    fn write_line_stage_mark<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         style: &CompoundStyle,
         staged: bool,
     ) -> Result<usize, termimad::Error> {
@@ -290,9 +290,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     }
 
     /// write the name or subpath, depending on the pattern_object
-    fn write_line_label<'w, W: Write>(
+    fn write_line_label<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         line: &TreeLine,
         style: &CompoundStyle,
         pattern_object: PatternObject,
@@ -367,9 +367,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         Ok(1)
     }
 
-    fn write_content_extract<'w, W: Write>(
+    fn write_content_extract<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         extract: ContentMatch,
         selected: bool,
     ) -> Result<(), ProgramError> {
@@ -389,9 +389,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         Ok(())
     }
 
-    pub fn write_root_line<'w, W: Write>(
+    pub fn write_root_line<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         selected: bool,
     ) -> Result<(), ProgramError> {
         cond_bg!(style, self, selected, self.skin.directory);
@@ -432,9 +432,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     }
 
     /// if in app, extend the background till the end of screen row
-    pub fn extend_line_bg<'w, W: Write>(
+    pub fn extend_line_bg<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         selected: bool,
     ) -> Result<(), ProgramError> {
         if self.in_app && !cw.is_full() {

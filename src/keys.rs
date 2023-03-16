@@ -19,6 +19,13 @@ pub fn is_reserved(key: KeyEvent) -> bool {
     key == key!(backspace) || key == key!(delete) || key == key!(esc)
 }
 
+pub fn is_key_only_modal(
+    key: KeyEvent,
+) -> bool {
+    matches!(key, KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::NONE })
+    || matches!(key, KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::SHIFT })
+}
+
 pub fn is_key_allowed_for_verb(
     key: KeyEvent,
     mode: Mode,
@@ -30,10 +37,7 @@ pub fn is_key_allowed_for_verb(
             if key==key!(left) || key==key!(right) {
                 input_is_empty
             } else {
-                !(
-                    matches!(key, KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::NONE })
-                    || matches!(key, KeyEvent { code: KeyCode::Char(_), modifiers: KeyModifiers::SHIFT })
-                )
+                !is_key_only_modal(key)
             }
         }
         Mode::Command => true,

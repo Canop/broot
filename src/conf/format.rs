@@ -13,8 +13,9 @@ use {
 
 
 /// Formats usable for reading configuration files
-#[derive(PartialEq, Eq, Debug, Clone, Copy)]
+#[derive(Default, PartialEq, Eq, Debug, Clone, Copy)]
 pub enum SerdeFormat {
+    #[default]
     Hjson,
     Toml,
 }
@@ -66,11 +67,5 @@ impl SerdeFormat {
                     })
             }
         }
-    }
-}
-
-impl Default for SerdeFormat {
-    fn default() -> Self {
-        SerdeFormat::Hjson
     }
 }

@@ -39,9 +39,9 @@ impl<'s> PermWriter<'s> {
         Self::new(skin, max_user_len, max_group_len)
     }
 
-    fn write_mode<'w, W: Write>(
+    fn write_mode<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         mode: Mode,
         selected: bool,
     ) -> Result<(), termimad::Error> {
@@ -102,9 +102,9 @@ impl<'s> PermWriter<'s> {
     }
 
     #[cfg(not(any(target_family = "windows", target_os = "android")))]
-    pub fn write_permissions<'w, W: Write>(
+    pub fn write_permissions<W: Write>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         line: &TreeLine,
         selected: bool,
     ) -> Result<usize, ProgramError> {

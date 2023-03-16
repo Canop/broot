@@ -3,7 +3,6 @@ use {
     crate::{
         app::*,
         errors::ConfError,
-        keys::KEY_FORMAT,
         path::PathAnchor,
     },
     crokey::crossterm::event::KeyEvent,
@@ -38,9 +37,6 @@ pub struct Verb {
 
     /// key shortcuts
     pub keys: Vec<KeyEvent>,
-
-    /// description of the optional keyboard key(s) triggering that verb
-    pub keys_desc: String,
 
     /// how the input must be checked and interpreted
     /// Can be empty if the verb is only called with a key shortcut.
@@ -114,7 +110,6 @@ impl Verb {
         Ok(Self {
             names,
             keys: Vec::new(),
-            keys_desc: "".to_string(),
             invocation_parser,
             execution,
             description,
@@ -127,24 +122,14 @@ impl Verb {
             panels: Vec::new(),
         })
     }
-    fn update_key_desc(&mut self) {
-        self.keys_desc = self
-            .keys
-            .iter()
-            .map(|&k| KEY_FORMAT.to_string(k))
-            .collect::<Vec<String>>() // no way to join an iterator today ?
-            .join(", ");
-    }
     pub fn with_key(mut self, key: KeyEvent) -> Self {
         self.keys.push(key);
-        self.update_key_desc();
         self
     }
     pub fn add_keys(&mut self, keys: Vec<KeyEvent>) {
         for key in keys {
             self.keys.push(key);
         }
-        self.update_key_desc();
     }
     pub fn no_doc(mut self) -> Self {
         self.show_in_doc = false;

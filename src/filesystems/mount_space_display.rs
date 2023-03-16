@@ -30,9 +30,9 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
         }
     }
 
-    pub fn write<'w, W>(
+    pub fn write<W>(
         &self,
-        cw: &mut CropWriter<'w, W>,
+        cw: &mut CropWriter<W>,
         selected: bool,
     ) -> Result<(), ProgramError>
     where

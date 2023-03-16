@@ -1,6 +1,7 @@
 use {
     crate::{
         app::AppContext,
+        keys,
         pattern::*,
         verb::*,
     },
@@ -12,6 +13,7 @@ pub struct MatchingVerbRow<'v> {
     name: Option<String>,
     shortcut: Option<String>,
     pub verb: &'v Verb,
+    pub keys_desc: String,
 }
 
 impl MatchingVerbRow<'_> {
@@ -68,9 +70,19 @@ pub fn matching_verb_rows<'v>(
                 continue;
             }
         }
+        let keys_desc = verb
+            .keys
+            .iter()
+            .filter(|&&k| {
+                con.modal || !keys::is_key_only_modal(k)
+            })
+            .map(|&k| keys::KEY_FORMAT.to_string(k))
+            .collect::<Vec<String>>() // no way to join an iterator today ?
+            .join(", ");
         rows.push(MatchingVerbRow {
             name,
             shortcut,
+            keys_desc,
             verb,
         });
     }

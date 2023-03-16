@@ -141,7 +141,7 @@ impl PanelState for HelpState {
                 .sub("verb-rows")
                 .set_md("name", row.name())
                 .set_md("shortcut", row.shortcut())
-                .set("key", &row.verb.keys_desc);
+                .set("key", &row.keys_desc);
             if row.verb.description.code {
                 sub.set("description", "");
                 sub.set("execution", &row.verb.description.content);

@@ -34,8 +34,10 @@ pub fn render<P: Into<PathBuf>>(
     max_height: u32,
 ) -> Result<DynamicImage, SvgError> {
     let path: PathBuf = path.into();
-    let mut opt = usvg::Options::default();
-    opt.resources_dir = Some(path.clone());
+    let opt = usvg::Options {
+        resources_dir: Some(path.clone()),
+        ..Default::default()
+    };
     let mut fontdb = fontdb::Database::new();
     fontdb.load_system_fonts();
     let svg_data = std::fs::read(path)?;
