@@ -1,6 +1,6 @@
 ### next
 - better nushell integration (no need to quote arguments anymore, fix path extension broken by new version of nushell) - Thanks @stevenxxiu
-- don't show modal only keys in help page when modal mode isn't enabled
+- don't show modal-only keys in help page when modal mode isn't enabled
 
 ### v1.20.2 - 2023-02-19
 <a name="v1.20.2"></a>
