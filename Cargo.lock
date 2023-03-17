@@ -151,7 +151,7 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 
 [[package]]
 name = "broot"
-version = "1.20.3-dev"
+version = "1.21.0"
 dependencies = [
  "ahash 0.7.6",
  "ansi_colours",
