@@ -1,3 +1,6 @@
+### next
+- resolve ~ in special paths - Fix #685
+
 ### v1.21.0 - 2023-03-17
 <a name="v1.21.0"></a>
 - better nushell integration (no need to quote arguments anymore, fix path extension broken by new version of nushell) - Thanks @stevenxxiu

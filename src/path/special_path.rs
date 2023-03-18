@@ -1,6 +1,7 @@
 use {
+    directories::UserDirs,
     glob,
-    lazy_regex::regex,
+    lazy_regex::*,
     serde::{de::Error, Deserialize, Deserializer},
     std::path::{Path, PathBuf},
 };
@@ -55,6 +56,12 @@ impl<'de> Deserialize<'de> for Glob {
         where D: Deserializer<'de>
     {
         let s = String::deserialize(deserializer)?;
+        let s = regex_replace!(r"^~(/|$)", &s, |_, sep| {
+            match UserDirs::new() {
+                Some(dirs) => format!("{}{}", dirs.home_dir().to_string_lossy(), sep),
+                None => "~/".to_string(),
+            }
+        });
         glob::Pattern::new(&s)
             .map_err(|e| D::Error::custom(format!("invalid glob pattern {s:?} : {e:?}")))
             .map(|pattern| Glob { pattern })
