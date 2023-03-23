@@ -1,4 +1,5 @@
-### next
+### v1.21.1 - 2023-03-23
+<a name="v1.21.1"></a>
 - resolve ~ in special paths - Fix #685
 - better clipboard support on MacOS - thanks @bryan824
 
