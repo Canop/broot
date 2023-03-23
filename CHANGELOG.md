@@ -1,5 +1,6 @@
 ### next
 - resolve ~ in special paths - Fix #685
+- better clipboard support on MacOS - thanks @bryan824
 
 ### v1.21.0 - 2023-03-17
 <a name="v1.21.0"></a>
