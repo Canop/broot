@@ -73,7 +73,14 @@ impl ExternalExecution {
                 builder,
                 con,
             ),
-            ExternalExecutionMode::StayInBroot => self.cmd_result_exec_stay_in_broot(
+            ExternalExecutionMode::StayInBrootTerminal => self.cmd_result_exec_stay_in_broot(
+                true,
+                w,
+                builder,
+                con,
+            ),
+            ExternalExecutionMode::StayInBrootGUI => self.cmd_result_exec_stay_in_broot(
+                false,
                 w,
                 builder,
                 con,
@@ -147,6 +154,7 @@ impl ExternalExecution {
     /// launched by broot
     fn cmd_result_exec_stay_in_broot(
         &self,
+        switch_terminal: bool,
         w: &mut W,
         builder: ExecutionStringBuilder<'_>,
         con: &AppContext,
@@ -161,7 +169,7 @@ impl ExternalExecution {
                     con,
                 )?;
                 info!("Executing not leaving, launchable {:?}", launchable);
-                if let Err(e) = launchable.execute(Some(w)) {
+                if let Err(e) = launchable.execute(switch_terminal, Some(w)) {
                     warn!("launchable failed : {:?}", e);
                     return Ok(CmdResult::error(e.to_string()));
                 }
@@ -181,7 +189,7 @@ impl ExternalExecution {
                         working_dir_path.clone(),
                         con,
                     )?;
-                    if let Err(e) = launchable.execute(Some(w)) {
+                    if let Err(e) = launchable.execute(switch_terminal, Some(w)) {
                         warn!("launchable failed : {:?}", e);
                         return Ok(CmdResult::error(e.to_string()));
                     }

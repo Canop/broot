@@ -42,6 +42,8 @@ pub struct VerbConf {
 
     from_shell: Option<bool>,
 
+    is_terminal: Option<bool>,
+
     apply_to: Option<String>,
 
     set_working_dir: Option<bool>,
@@ -83,7 +85,7 @@ impl VerbConf {
             };
             ExternalExecution::new(
                 s,
-                ExternalExecutionMode::from_conf(vc.from_shell, vc.leave_broot),
+                ExternalExecutionMode::from_conf(vc.from_shell, vc.leave_broot, vc.is_terminal),
             )
             .with_working_dir(working_dir)
         };

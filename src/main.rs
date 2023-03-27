@@ -6,7 +6,7 @@ fn main() {
     match broot::cli::run() {
         Ok(Some(launchable)) => {
             debug!("launching {:#?}", launchable);
-            if let Err(e) = launchable.execute(None) {
+            if let Err(e) = launchable.execute(true, None) {
                 warn!("Failed to launch {:?}", &launchable);
                 warn!("Error: {:?}", e);
                 eprintln!("{e}");

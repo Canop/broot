@@ -88,10 +88,10 @@ pub fn builtin_verbs() -> Vec<Verb> {
             .with_description("change directory and quit"),
 
         #[cfg(unix)]
-        external("chmod {args}", "chmod {args} {file}", StayInBroot)
+        external("chmod {args}", "chmod {args} {file}", StayInBrootTerminal)
             .with_stype(SelectionType::File),
         #[cfg(unix)]
-        external("chmod {args}", "chmod -R {args} {file}", StayInBroot)
+        external("chmod {args}", "chmod -R {args} {file}", StayInBrootTerminal)
             .with_stype(SelectionType::Directory),
         internal(open_preview),
         internal(close_preview),
@@ -109,14 +109,14 @@ pub fn builtin_verbs() -> Vec<Verb> {
         external(
             "copy {newpath}",
             "cp -r {file} {newpath:path-from-parent}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("cp"),
         #[cfg(windows)]
         external(
             "copy {newpath}",
             "xcopy /Q /H /Y /I {file} {newpath:path-from-parent}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("cp"),
         #[cfg(feature = "clipboard")]
@@ -128,14 +128,14 @@ pub fn builtin_verbs() -> Vec<Verb> {
         external(
             "copy_to_panel",
             "cp -r {file} {other-panel-directory}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("cpp"),
         #[cfg(windows)]
         external(
             "copy_to_panel",
             "xcopy /Q /H /Y /I {file} {other-panel-directory}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("cpp"),
         #[cfg(unix)]
@@ -157,49 +157,49 @@ pub fn builtin_verbs() -> Vec<Verb> {
         external(
             "mkdir {subpath}",
             "mkdir -p {subpath:path-from-directory}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("md"),
         #[cfg(windows)]
         external(
             "mkdir {subpath}",
             "cmd /c mkdir {subpath:path-from-directory}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("md"),
         #[cfg(unix)]
         external(
             "move {newpath}",
             "mv {file} {newpath:path-from-parent}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("mv"),
         #[cfg(windows)]
         external(
             "move {newpath}",
             "cmd /c move /Y {file} {newpath:path-from-parent}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("mv"),
         #[cfg(unix)]
         external(
             "move_to_panel",
             "mv {file} {other-panel-directory}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("mvp"),
         #[cfg(windows)]
         external(
             "move_to_panel",
             "cmd /c move /Y {file} {other-panel-directory}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_shortcut("mvp"),
         #[cfg(unix)]
         external(
             "rename {new_filename:file-name}",
             "mv {file} {parent}/{new_filename}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_auto_exec(false)
             .with_key(key!(f2)),
@@ -207,7 +207,7 @@ pub fn builtin_verbs() -> Vec<Verb> {
         external(
             "rename {new_filename:file-name}",
             "cmd /c move /Y {file} {parent}/{new_filename}",
-            StayInBroot,
+            StayInBrootTerminal,
         )
             .with_auto_exec(false)
             .with_key(key!(f2)),
@@ -276,12 +276,12 @@ pub fn builtin_verbs() -> Vec<Verb> {
         internal(sort_by_size).with_shortcut("ss"),
         internal(sort_by_type).with_shortcut("st"),
         #[cfg(unix)]
-        external("rm", "rm -rf {file}", StayInBroot),
+        external("rm", "rm -rf {file}", StayInBrootTerminal),
         #[cfg(windows)]
-        external("rm", "cmd /c rmdir /Q /S {file}", StayInBroot)
+        external("rm", "cmd /c rmdir /Q /S {file}", StayInBrootTerminal)
             .with_stype(SelectionType::Directory),
         #[cfg(windows)]
-        external("rm", "cmd /c del /Q {file}", StayInBroot)
+        external("rm", "cmd /c del /Q {file}", StayInBrootTerminal)
             .with_stype(SelectionType::File),
         internal(toggle_counts).with_shortcut("counts"),
         internal(toggle_dates).with_shortcut("dates"),

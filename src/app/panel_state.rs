@@ -973,7 +973,7 @@ pub trait PanelState {
     ) -> Status {
         if sel_info.count_paths() > 1 {
             if let VerbExecution::External(external) = &verb.execution {
-                if external.exec_mode != ExternalExecutionMode::StayInBroot {
+                if external.exec_mode != ExternalExecutionMode::StayInBrootTerminal {
                     return Status::new(
                         "only verbs returning to broot on end can be executed on a multi-selection".to_owned(),
                         true,

@@ -129,6 +129,7 @@ impl Launchable {
 
     pub fn execute(
         &self,
+        switch_terminal: bool,
         mut w: Option<&mut W>,
     ) -> Result<(), ProgramError> {
         match self {
@@ -147,18 +148,20 @@ impl Launchable {
                 capture_mouse,
             } => {
                 debug!("working_dir: {:?}", &working_dir);
-                // we restore the normal terminal in case the executable
-                // is a terminal application, and we'll switch back to
-                // broot's alternate terminal when we're back to broot
-                // (and this part of the code should be cleaned...)
-                if let Some(ref mut w) = &mut w {
-                    w.queue(cursor::Show).unwrap();
-                    w.queue(LeaveAlternateScreen).unwrap();
-                    if *capture_mouse {
-                        w.queue(DisableMouseCapture).unwrap();
+                if switch_terminal {
+                    // we restore the normal terminal in case the executable
+                    // is a terminal application, and we'll switch back to
+                    // broot's alternate terminal when we're back to broot
+                    // (and this part of the code should be cleaned...)
+                    if let Some(ref mut w) = &mut w {
+                        w.queue(cursor::Show).unwrap();
+                        w.queue(LeaveAlternateScreen).unwrap();
+                        if *capture_mouse {
+                            w.queue(DisableMouseCapture).unwrap();
+                        }
+                        terminal::disable_raw_mode().unwrap();
+                        w.flush().unwrap();
                     }
-                    terminal::disable_raw_mode().unwrap();
-                    w.flush().unwrap();
                 }
                 let mut old_working_dir = None;
                 if let Some(working_dir) = working_dir {
@@ -173,14 +176,16 @@ impl Launchable {
                         program: exe.clone(),
                         source,
                     });
-                if let Some(ref mut w) = &mut w {
-                    terminal::enable_raw_mode().unwrap();
-                    if *capture_mouse {
-                        w.queue(EnableMouseCapture).unwrap();
+                if switch_terminal {
+                    if let Some(ref mut w) = &mut w {
+                        terminal::enable_raw_mode().unwrap();
+                        if *capture_mouse {
+                            w.queue(EnableMouseCapture).unwrap();
+                        }
+                        w.queue(EnterAlternateScreen).unwrap();
+                        w.queue(cursor::Hide).unwrap();
+                        w.flush().unwrap();
                     }
-                    w.queue(EnterAlternateScreen).unwrap();
-                    w.queue(cursor::Hide).unwrap();
-                    w.flush().unwrap();
                 }
                 if let Some(old_working_dir) = old_working_dir {
                     std::env::set_current_dir(old_working_dir).unwrap();
