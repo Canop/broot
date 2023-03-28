@@ -57,6 +57,40 @@ Once it's installed, use cargo to install broot:
 cargo install --locked broot
 ```
 
+or, for clipboard support:
+
+```bash
+cargo install --locked --features clipboard broot
+```
+
+The main cause of compilation error is an outdated rust compiler. Try updating it with `rustup update`.
+
+You may also have problems compiling if you're missing dependencies. Here's how to install them on several distributions:
+
+Debian, Ubuntu:
+
+```bash
+sudo apt install build-essential libxcb1-dev libxcb-render0-dev libxcb-shape0-dev libxcb-xfixes0-dev -y
+```
+
+Fedora, Centos, Red Hat:
+
+```bash
+sudo dnf install libxcb -y
+```
+
+openSUSE:
+
+```bash
+sudo zypper --non-interactive install xorg-x11-util-devel libxcb-composite0 libxcb-render0 libxcb-shape0 libxcb-xfixes0
+```
+
+Arch Linux:
+
+```bash
+sudo pacman -Syu --noconfirm libxcb
+```
+
 # From source
 
 You'll need to have the [Rust development environment](https://www.rustup.rs) installed.
@@ -67,10 +101,10 @@ Fetch the [Canop/broot](https://github.com/Canop/broot) repository, move to the 
 cargo install --locked --path .
 ```
 
-If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/master/features.md).
-
-!!! Note
-	If there's a compilation error, it most often means either that you're missing some compilation dependency (on ubuntu/debian try `sudo apt install build-essential`) or that you have an old version of the compiler, and you should update it (for example with `rustup update`).
+If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/master/features.md). The most common feature is the "clipboard" one:
+```bash
+cargo install --locked --features clipboard --path .
+```
 
 # Third party repositories
 
@@ -78,16 +112,22 @@ Those packages are maintained by third parties and may be less up to date.
 
 ## Homebrew
 
-    brew install broot
+```bash
+brew install broot
+```
 
 ## MacPorts
 
-    sudo port selfupdate
-    sudo port install broot
+```bash
+sudo port selfupdate
+sudo port install broot
+```
 
 ## Alpine Linux
 
-    apk add broot
+```bash
+apk add broot
+```
 
 *note: broot package is available in Alpine 3.13 and newer*
 
@@ -97,11 +137,15 @@ Ubuntu and Debian users may use this apt repository: [https://packages.azlux.fr/
 
 ## NetBSD
 
-    pkgin install broot
+```bash
+pkgin install broot
+```
 
 ## Gentoo Linux
 
-    emerge broot
+```bash
+emerge broot
+```
 
 # Reinstall
 
