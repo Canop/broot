@@ -1,3 +1,7 @@
+### v1.21.2 - 2023-03-30
+<a name="v1.21.2"></a>
+- update dependencies because of some yanked ones
+
 ### v1.21.1 - 2023-03-23
 <a name="v1.21.1"></a>
 - resolve ~ in special paths - Fix #685
