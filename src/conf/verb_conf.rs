@@ -52,6 +52,8 @@ pub struct VerbConf {
 
     auto_exec: Option<bool>,
 
+    switch_terminal: Option<bool>,
+
     #[serde(default)]
     panels: Vec<PanelStateType>,
 }
@@ -81,11 +83,15 @@ impl VerbConf {
                 (Some(true), None) => Some("{directory}".to_owned()),
                 (None, None) => None,
             };
-            ExternalExecution::new(
+            let mut external_execution = ExternalExecution::new(
                 s,
                 ExternalExecutionMode::from_conf(vc.from_shell, vc.leave_broot),
             )
-            .with_working_dir(working_dir)
+            .with_working_dir(working_dir);
+            if let Some(b) = self.switch_terminal {
+                external_execution.switch_terminal = b;
+            }
+            external_execution
         };
         let execution = match (execution, internal, external, cmd) {
             // old definition with "execution": we guess whether it's an internal or

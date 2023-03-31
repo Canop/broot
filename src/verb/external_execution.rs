@@ -36,6 +36,10 @@ pub struct ExternalExecution {
     /// the working directory of the new process, or none if we don't
     /// want to set it
     pub working_dir: Option<String>,
+
+    /// whether we need to switch to the normal terminal for
+    /// the duration of the execution of the process
+    pub switch_terminal: bool,
 }
 
 impl ExternalExecution {
@@ -47,6 +51,7 @@ impl ExternalExecution {
             exec_pattern,
             exec_mode,
             working_dir: None,
+            switch_terminal: true, // by default we switch
         }
     }
 
@@ -138,6 +143,7 @@ impl ExternalExecution {
         let launchable = Launchable::program(
             builder.exec_token(&self.exec_pattern),
             self.working_dir_path(&builder),
+            self.switch_terminal,
             con,
         )?;
         Ok(CmdResult::from(launchable))
@@ -158,6 +164,7 @@ impl ExternalExecution {
                 let launchable = Launchable::program(
                     builder.exec_token(&self.exec_pattern),
                     working_dir_path,
+                    self.switch_terminal,
                     con,
                 )?;
                 info!("Executing not leaving, launchable {:?}", launchable);
@@ -179,6 +186,7 @@ impl ExternalExecution {
                     let launchable = Launchable::program(
                         builder.sel_exec_token(&self.exec_pattern, Some(sel)),
                         working_dir_path.clone(),
+                        self.switch_terminal,
                         con,
                     )?;
                     if let Err(e) = launchable.execute(Some(w)) {
