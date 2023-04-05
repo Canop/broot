@@ -53,6 +53,7 @@ pub enum Launchable {
         exe: String,
         args: Vec<String>,
         working_dir: Option<PathBuf>,
+        switch_terminal: bool,
         capture_mouse: bool,
     },
 
@@ -113,6 +114,7 @@ impl Launchable {
     pub fn program(
         parts: Vec<String>,
         working_dir: Option<PathBuf>,
+        switch_terminal: bool,
         con: &AppContext,
     ) -> io::Result<Launchable> {
         let mut parts = resolve_env_variables(parts).into_iter();
@@ -121,6 +123,7 @@ impl Launchable {
                 exe,
                 args: parts.collect(),
                 working_dir,
+                switch_terminal,
                 capture_mouse: con.capture_mouse,
             }),
             None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
@@ -142,23 +145,26 @@ impl Launchable {
             }
             Launchable::Program {
                 working_dir,
+                switch_terminal,
                 exe,
                 args,
                 capture_mouse,
             } => {
-                debug!("working_dir: {:?}", &working_dir);
-                // we restore the normal terminal in case the executable
-                // is a terminal application, and we'll switch back to
-                // broot's alternate terminal when we're back to broot
-                // (and this part of the code should be cleaned...)
-                if let Some(ref mut w) = &mut w {
-                    w.queue(cursor::Show).unwrap();
-                    w.queue(LeaveAlternateScreen).unwrap();
-                    if *capture_mouse {
-                        w.queue(DisableMouseCapture).unwrap();
+                debug!("working_dir: {working_dir:?}");
+                debug!("switch_terminal: {working_dir:?}");
+                if *switch_terminal {
+                    // we restore the normal terminal in case the executable
+                    // is a terminal application, and we'll switch back to
+                    // broot's alternate terminal when we're back to broot
+                    if let Some(ref mut w) = &mut w {
+                        w.queue(cursor::Show).unwrap();
+                        w.queue(LeaveAlternateScreen).unwrap();
+                        if *capture_mouse {
+                            w.queue(DisableMouseCapture).unwrap();
+                        }
+                        terminal::disable_raw_mode().unwrap();
+                        w.flush().unwrap();
                     }
-                    terminal::disable_raw_mode().unwrap();
-                    w.flush().unwrap();
                 }
                 let mut old_working_dir = None;
                 if let Some(working_dir) = working_dir {
@@ -173,14 +179,16 @@ impl Launchable {
                         program: exe.clone(),
                         source,
                     });
-                if let Some(ref mut w) = &mut w {
-                    terminal::enable_raw_mode().unwrap();
-                    if *capture_mouse {
-                        w.queue(EnableMouseCapture).unwrap();
+                if *switch_terminal {
+                    if let Some(ref mut w) = &mut w {
+                        terminal::enable_raw_mode().unwrap();
+                        if *capture_mouse {
+                            w.queue(EnableMouseCapture).unwrap();
+                        }
+                        w.queue(EnterAlternateScreen).unwrap();
+                        w.queue(cursor::Hide).unwrap();
+                        w.flush().unwrap();
                     }
-                    w.queue(EnterAlternateScreen).unwrap();
-                    w.queue(cursor::Hide).unwrap();
-                    w.flush().unwrap();
                 }
                 if let Some(old_working_dir) = old_working_dir {
                     std::env::set_current_dir(old_working_dir).unwrap();

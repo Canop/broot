@@ -69,8 +69,7 @@ impl SelectionType {
 impl Selection<'_> {
 
     /// build a CmdResult with a launchable which will be used to
-    ///  1/ quit broot
-    ///  2/ open the relevant file the best possible way
+    /// open the relevant file the best possible way
     pub fn to_opener(
         self,
         con: &AppContext,
@@ -86,6 +85,7 @@ impl Selection<'_> {
                 CmdResult::from(Launchable::program(
                     vec![path],
                     None, // we don't set the working directory
+                    true, // we switch the terminal during execution
                     con,
                 )?)
             }
