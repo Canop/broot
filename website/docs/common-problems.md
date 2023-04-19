@@ -36,7 +36,7 @@ Most terminals intercept a few keyboard shortcut for their own features. You may
 
 I've made a small program which tells you what key combinations are available: [print_key](https://github.com/Canop/print_key).
 
-## remap in Windows Terminal
+## Windows Terminal
 
 [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/) binds `alt+enter` to the "toggle fullscreen" command by default. To reclaim `alt+enter` for Broot, [add an 'unbound' entry to the actions array in settings.json](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys):
 
@@ -44,7 +44,7 @@ I've made a small program which tells you what key combinations are available: [
 {"command": "unbound", "keys": "alt+enter"}
 ```
 
-## remap in iTerm2
+## iTerm2
 
 For Mac users, iTerm2 must also be configured to enable this shortcut:
 Go to *Preferences->Profiles->Default->Keys* and add a mapping that maps `⌥Return↩` to `Send Hex Codes: 0x1b 0x0d`. This can be done by clicking the + sign at the bottom to add a mapping, clicking the "Click to Set" area, pressing the desired key combination (⌥Enter a.k.a ⌥Return), choosing the "Send Hex Code" option from the drop-down menu and inserting the following string there: "0x1b 0x0d".
@@ -129,3 +129,11 @@ The output should show an encoding of `System.Text.UTF8Encoding`.
 When using Kitty (and no terminal multiplexer), image preview is normally in high resolution.
 
 If it's not the case, it's probably because the `TERM` environnement variable has been redefined. Set either `TERM` or `TERMINAL` to include `kitty`. This can be done several ways, for example by adding `env TERMINAL=xterm-kitty` in your [kitty.conf](https://sw.kovidgoyal.net/kitty/conf/) file
+
+# Edit
+
+The standard `edit` verb, launched with `:e`, starts your favourite terminal editor to edit the selected file.
+
+It works by executing `"$EDITOR +{line} {file}"` which assumes that the `$EDITOR` variable is defined and that your editor takes the line number as argument.
+
+If it doesn't work on your configuration, you should probably just edit this verb definition with a more suitable command, for example `"hx {file}"` or `"/usr/bin/my-editor --line {line} {file}"`
