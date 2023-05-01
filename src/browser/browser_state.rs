@@ -31,6 +31,7 @@ pub struct BrowserState {
 }
 
 /// A task that can be computed in background
+#[derive(Debug)]
 enum BrowserTask {
     Search {
         pattern: InputPattern,

@@ -676,7 +676,6 @@ impl App {
             // and it may be useful to know which one we have
             debug!("Clipboard backend: {:?}", terminal_clipboard::get_type());
         }
-
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
         let event_source = EventSource::new()?;
@@ -690,6 +689,19 @@ impl App {
         };
 
         self.screen.clear_bottom_right_char(w, &skin.focused)?;
+
+        #[cfg(windows)]
+        if con.launch_args.cmd.is_some() {
+            // Powershell sends to broot a resize event after it was launched
+            // which interrupts its task queue. An easy fix is to wait for a
+            // few ms for the terminal to be stabilized.
+            // It's possible some other terminals, even not on Windows, might
+            // need the same trick in the future
+            let delay = std::time::Duration::from_millis(10);
+            std::thread::sleep(delay);
+            let dropped_events = dam.clear();
+            debug!("Dropped {dropped_events} events");
+        }
 
         if let Some(raw_sequence) = &con.launch_args.cmd {
             self.tx_seqs
