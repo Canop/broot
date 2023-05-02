@@ -1,5 +1,7 @@
-### next
+### v1.21.3 - 2023-05-02
+<a name="v1.21.3"></a>
 - `switch_terminal` verb parameter - Thanks @stevenxxiu
+- on Windows, when using `-c`, clear events after delay - Fix #699
 
 ### v1.21.2 - 2023-03-30
 <a name="v1.21.2"></a>
