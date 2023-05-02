@@ -114,6 +114,16 @@ impl Dam {
         !self.receiver.is_empty()
     }
 
+    /// drop all events, returns the count of removed events
+    pub fn clear(&mut self) -> usize {
+        let mut n = 0;
+        while self.has_event() {
+            n += 1;
+            self.next_event();
+        }
+        n
+    }
+
     /// block until next event (including the one which
     ///  may have been pushed back into the dam).
     /// no event means the source is dead (i.e. we
