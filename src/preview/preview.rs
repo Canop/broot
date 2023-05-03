@@ -34,11 +34,11 @@ impl Preview {
     /// If the preferred mode can't be applied, an other mode is chosen.
     pub fn new(
         path: &Path,
-        prefered_mode: Option<PreviewMode>,
+        preferred_mode: Option<PreviewMode>,
         con: &AppContext,
     ) -> Self {
         if path.is_file() {
-            match prefered_mode {
+            match preferred_mode {
                 Some(PreviewMode::Hex) => Self::hex(path),
                 Some(PreviewMode::Image) => Self::image(path),
                 Some(PreviewMode::Text) => Self::unfiltered_text(path, con),

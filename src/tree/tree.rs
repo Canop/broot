@@ -129,8 +129,8 @@ impl Tree {
             if self.lines[i].score > self.lines[best_index].score {
                 best_index = i;
             }
-            for d in 0..self.lines[i].left_branchs.len() {
-                self.lines[i].left_branchs[d] = false;
+            for d in 0..self.lines[i].left_branches.len() {
+                self.lines[i].left_branches[d] = false;
             }
         }
         // then we discover the branches (for the drawing)
@@ -174,7 +174,7 @@ impl Tree {
                 parent_index + 1
             };
             for i in start_index..=end_index {
-                self.lines[i].left_branchs[depth] = true;
+                self.lines[i].left_branches[depth] = true;
             }
         }
         if self.options.needs_sum() {
@@ -192,7 +192,7 @@ impl Tree {
             return false;
         }
         let line = &self.lines[line_index];
-        depth < usize::from(line.depth) && line.left_branchs[depth]
+        depth < usize::from(line.depth) && line.left_branches[depth]
     }
 
     /// select another line
@@ -485,9 +485,9 @@ impl Tree {
                 // we'll try to keep the same path selected
                 let selected_path = self.selected_line().path.to_path_buf();
                 self.lines[1..].sort_by(|a, b| {
-                    let acount = a.sum.map_or(0, |s| s.to_count());
+                    let account = a.sum.map_or(0, |s| s.to_count());
                     let bcount = b.sum.map_or(0, |s| s.to_count());
-                    bcount.cmp(&acount)
+                    bcount.cmp(&account)
                 });
                 self.try_select_path(&selected_path);
             }
