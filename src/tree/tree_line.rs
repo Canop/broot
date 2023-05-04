@@ -24,7 +24,7 @@ use is_executable::IsExecutable;
 pub struct TreeLine {
     pub bid: BId,
     pub parent_bid: Option<BId>,
-    pub left_branchs: Box<[bool]>, // a depth-sized array telling whether a branch pass
+    pub left_branches: Box<[bool]>, // a depth-sized array telling whether a branch pass
     pub depth: u16,
     pub path: PathBuf,
     pub subpath: String,

@@ -31,7 +31,7 @@ pub struct PreviewState {
     pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     filtered_preview: Option<Preview>,
     removed_pattern: InputPattern,
-    prefered_mode: Option<PreviewMode>,
+    preferred_mode: Option<PreviewMode>,
     tree_options: TreeOptions,
     mode: Mode,
 }
@@ -40,12 +40,12 @@ impl PreviewState {
     pub fn new(
         path: PathBuf,
         pending_pattern: InputPattern,
-        prefered_mode: Option<PreviewMode>,
+        preferred_mode: Option<PreviewMode>,
         tree_options: TreeOptions,
         con: &AppContext,
     ) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
-        let preview = Preview::new(&path, prefered_mode, con);
+        let preview = Preview::new(&path, preferred_mode, con);
         PreviewState {
             preview_area,
             dirty: true,
@@ -54,7 +54,7 @@ impl PreviewState {
             pending_pattern,
             filtered_preview: None,
             removed_pattern: InputPattern::none(),
-            prefered_mode,
+            preferred_mode,
             tree_options,
             mode: initial_mode(con),
         }
@@ -76,7 +76,7 @@ impl PreviewState {
         Ok(match Preview::with_mode(&self.path, mode, con) {
             Ok(preview) => {
                 self.preview = preview;
-                self.prefered_mode = Some(mode);
+                self.preferred_mode = Some(mode);
                 CmdResult::Keep
             }
             Err(e) => {
@@ -183,7 +183,7 @@ impl PanelState for PreviewState {
         if let Some(fp) = &self.filtered_preview {
             self.pending_pattern = fp.pattern();
         };
-        self.preview = Preview::new(&path, self.prefered_mode, con);
+        self.preview = Preview::new(&path, self.preferred_mode, con);
         if let Some(number) = selected_line_number {
             self.preview.try_select_line_number(number);
         }

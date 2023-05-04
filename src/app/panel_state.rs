@@ -459,7 +459,7 @@ pub trait PanelState {
                     } else {
                         o.show_sizes = true;
                         o.show_root_fs = true;
-                        "*now diplaying sizes of files and directories*"
+                        "*now displaying sizes of files and directories*"
                     }
                 },
                 bang,
@@ -799,7 +799,7 @@ pub trait PanelState {
     /// return a cmdresult asking for the opening of a preview
     fn open_preview(
         &mut self,
-        prefered_mode: Option<PreviewMode>,
+        preferred_mode: Option<PreviewMode>,
         close_if_open: bool,
         cc: &CmdContext,
     ) -> CmdResult {
@@ -809,7 +809,7 @@ pub trait PanelState {
                     validate_purpose: false,
                     panel_ref: PanelReference::Id(id),
                 }
-            } else if prefered_mode.is_some() {
+            } else if preferred_mode.is_some() {
                 // we'll make the preview mode change be
                 // applied on the preview panel
                 CmdResult::ApplyOnPanel { id }
@@ -821,7 +821,7 @@ pub trait PanelState {
                 state: Box::new(PreviewState::new(
                     path.to_path_buf(),
                     InputPattern::none(),
-                    prefered_mode,
+                    preferred_mode,
                     self.tree_options(),
                     cc.app.con,
                 )),

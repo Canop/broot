@@ -27,7 +27,7 @@
 
 ### v1.20.0 - 2023-02-03
 <a name="v1.20.0"></a>
-- unless overriden, `/proc` is now `no-enter`, which solves freezes when searchin on `/` in some system - See #639
+- unless overridden, `/proc` is now `no-enter`, which solves freezes when searching on `/` in some system - See #639
 - SVG files now rendered as images in the preview panel
 - new version of the nushell function. You should be prompted for an update - Fix #656 - Thanks @FrancescElies and @mediumrarez
 - `no-hide` special paths - Thanks @Avlllo
@@ -74,7 +74,7 @@
 <a name="v1.15.0"></a>
 - with `show_matching_characters_on_path_searches: false`, it's possible to show only file names even when searching paths - Fix #490
 - `--sort-by-type-dirs-first` and `--sort-by-type-dirs-last` - Fix #602
-- modal: in intput mode, uppercase letters don't trigger verbs anymore - Fix #604
+- modal: in input mode, uppercase letters don't trigger verbs anymore - Fix #604
 - fix :line_down_no_cycle which was cycling - Fix #603
 - selecting lines up or down with the mouse wheel now wraps in both direction (ie going up when your on top brings you to the bottom, and vice-versa)
 - :select internal, which can be used to select a visible file when given a path as argument. Experimental
@@ -440,7 +440,7 @@ If you want it to be changed, add `set_working_dir = true` to the verb definitio
 - it's now possible to launch a terminal as sub process from broot (and be back to broot on exit)
 - the selected directory is now the working dir for subprocess launched from broot
 - images are previewed as such
-- :preview_binay, :preview_text, and :preview_image verbs allow the choice of previewing mode
+- :preview_binary, :preview_text, and :preview_image verbs allow the choice of previewing mode
 - fix a possible panic in previewed files on displaying fuzzy pattern matches
 
 <a name="v0.19.4"></a>

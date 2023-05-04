@@ -128,7 +128,7 @@ The output should show an encoding of `System.Text.UTF8Encoding`.
 
 When using Kitty (and no terminal multiplexer), image preview is normally in high resolution.
 
-If it's not the case, it's probably because the `TERM` environnement variable has been redefined. Set either `TERM` or `TERMINAL` to include `kitty`. This can be done several ways, for example by adding `env TERMINAL=xterm-kitty` in your [kitty.conf](https://sw.kovidgoyal.net/kitty/conf/) file
+If it's not the case, it's probably because the `TERM` environment variable has been redefined. Set either `TERM` or `TERMINAL` to include `kitty`. This can be done several ways, for example by adding `env TERMINAL=xterm-kitty` in your [kitty.conf](https://sw.kovidgoyal.net/kitty/conf/) file
 
 # Edit
 

@@ -3,7 +3,7 @@ pub enum ExternalExecutionMode {
     /// executed in the parent shell, on broot leaving, using the `br` function
     FromParentShell,
 
-    /// executed on broot leaving, not necessarly in the parent shell
+    /// executed on broot leaving, not necessarily in the parent shell
     LeaveBroot,
 
     /// executed in a sub process without quitting broot
