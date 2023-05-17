@@ -82,6 +82,16 @@ skin: {
 	hex_non_ascii: ansi(167) None
 	staging_area_title: gray(22) None / gray(20) None
 	mode_command_mark: gray(5) ansi(204) Bold
+	good_to_bad_0: ansi(28)
+	good_to_bad_1: ansi(29)
+	good_to_bad_2: ansi(29)
+	good_to_bad_3: ansi(29)
+	good_to_bad_4: ansi(29)
+	good_to_bad_5: ansi(100)
+	good_to_bad_6: ansi(136)
+	good_to_bad_7: ansi(172)
+	good_to_bad_8: ansi(166)
+	good_to_bad_9: ansi(196)
 }
 ```
 ```toml
@@ -149,6 +159,16 @@ hex_ascii_other = "ansi(215) None"
 hex_non_ascii = "ansi(167) None"
 staging_area_title = "gray(22) None / gray(20) None"
 mode_command_mark = "gray(5) ansi(204) Bold"
+good_to_bad_0 = "ansi(28)"
+good_to_bad_1 = "ansi(29)"
+good_to_bad_2 = "ansi(29)"
+good_to_bad_3 = "ansi(29)"
+good_to_bad_4 = "ansi(29)"
+good_to_bad_5 = "ansi(100)"
+good_to_bad_6 = "ansi(136)"
+good_to_bad_7 = "ansi(172)"
+good_to_bad_8 = "ansi(166)"
+good_to_bad_9 = "ansi(196)"
 ```
 
 This would look like this:
@@ -211,6 +231,19 @@ default = "gray(23) none / gray(20) none"
 
 ![transparent](img/20200529-transparent-broot.png)
 
+## Good to Bad scale
+
+The `good_to_bad_0` to `good_to_bad_9` entries define a scale used to express the cluttering of filesystems:
+
+![fs](img/20230517-fs.png)
+
+Only the foreground color is used, so you may use the shortened definition, eg
+
+```hjson
+good_to_bad_9: rgb(200, 15, 14)
+```
+
+There's no obligation to really use a green to red scale. You may even use only one color if you like.
 
 # Contribute your own skin
 
