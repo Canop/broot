@@ -2,7 +2,6 @@ use {
     crate::{
         display::cond_bg,
         errors::ProgramError,
-        filesystems::share_color,
         skin::StyleMap,
     },
     crokey::crossterm::{
@@ -60,7 +59,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             let mut e_bar = false;
             let w_percent = 4;
             let mut rem = self.available_width - w_percent;
-            let share_color = share_color(s.use_share());
+            let share_color = self.skin.good_to_bad_color(s.use_share());
             if rem > 1 {
                 // left margin for readability
                 rem -= 1;

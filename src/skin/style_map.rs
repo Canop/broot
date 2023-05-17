@@ -130,6 +130,24 @@ impl StyleMap {
         }
         Ok(())
     }
+    pub fn good_to_bad_color(&self, value: f64) -> Color {
+        debug_assert!((0.0..=1.0).contains(&value));
+        const N: usize = 10;
+        let idx = (value * N as f64) as usize;
+        let cs = match idx {
+            0 => &self.good_to_bad_0,
+            1 => &self.good_to_bad_1,
+            2 => &self.good_to_bad_2,
+            3 => &self.good_to_bad_3,
+            4 => &self.good_to_bad_4,
+            5 => &self.good_to_bad_5,
+            6 => &self.good_to_bad_6,
+            7 => &self.good_to_bad_7,
+            8 => &self.good_to_bad_8,
+            _ => &self.good_to_bad_9,
+        };
+        cs.object_style.foreground_color.unwrap_or(Color::Blue)
+    }
 }
 
 // Default styles defined as
@@ -204,6 +222,16 @@ StyleMap! {
     hex_non_ascii: ansi(167), None, []
     staging_area_title: gray(22), gray(2), [] / gray(20), gray(3), []
     mode_command_mark: gray(5), ansi(204), [Bold]
+    good_to_bad_0: ansi(28), None, []
+    good_to_bad_1: ansi(29), None, []
+    good_to_bad_2: ansi(29), None, []
+    good_to_bad_3: ansi(29), None, []
+    good_to_bad_4: ansi(29), None, []
+    good_to_bad_5: ansi(100), None, []
+    good_to_bad_6: ansi(136), None, []
+    good_to_bad_7: ansi(172), None, []
+    good_to_bad_8: ansi(166), None, []
+    good_to_bad_9: ansi(196), None, []
 }
 
 impl fmt::Debug for StyleMap {

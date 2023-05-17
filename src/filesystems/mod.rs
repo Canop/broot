@@ -11,7 +11,6 @@ pub use {
 };
 
 use {
-    crokey::crossterm::style::Color,
     once_cell::sync::Lazy,
     std::sync::Mutex,
 };
@@ -23,25 +22,3 @@ pub fn clear_cache() {
     mount_list.clear_cache();
 }
 
-static SHARE_COLORS: &[Color] = &[
-    Color::AnsiValue(28),
-    Color::AnsiValue(29),
-    Color::AnsiValue(29),
-    Color::AnsiValue(29),
-    Color::AnsiValue(29),
-    Color::AnsiValue(100),
-    Color::AnsiValue(136),
-    Color::AnsiValue(172),
-    Color::AnsiValue(166),
-    Color::AnsiValue(196),
-];
-
-pub fn share_color(share: f64) -> Color {
-    debug_assert!((0.0..=1.0).contains(&share));
-    let idx = (share * SHARE_COLORS.len() as f64) as usize;
-    if idx >= SHARE_COLORS.len() {
-        SHARE_COLORS[SHARE_COLORS.len() - 1]
-    } else {
-        SHARE_COLORS[idx]
-    }
-}
