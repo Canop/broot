@@ -93,7 +93,7 @@ skin: {
 ###############################################################
 # Syntax Theme
 # 
-# If you want to choose the them used for preview, uncomment
+# If you want to choose the theme used for preview, uncomment
 # one of the following lines:
 # 
 # syntax_theme: GitHub
