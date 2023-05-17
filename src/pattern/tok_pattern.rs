@@ -32,7 +32,7 @@ pub struct TokPattern {
 }
 
 // scoring basis ?
-// - number of parts of the candidats (separated by / for example)
+// - number of parts of the candidates (separated by / for example)
 //   that are touched by a tok ?
 // - malus for adjacent ranges
 // - bonus for ranges starting just after a separator

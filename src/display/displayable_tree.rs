@@ -246,7 +246,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         let mut branch = String::new();
         for depth in 0..line.depth {
             branch.push_str(
-                if line.left_branchs[depth as usize] {
+                if line.left_branches[depth as usize] {
                     if self.tree.has_branch(line_index + 1, depth as usize) {
                         // TODO: If a theme is on, remove the horizontal lines
                         if depth == line.depth - 1 {

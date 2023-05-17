@@ -55,7 +55,7 @@ To display non `json` files containing either `isize` or `i32`, type
 
     !/\.json$/&(c/isize/|c/i32/)
 
-The last closing characters are often unecessary when no ambiguity is possible, so you could have typed this:
+The last closing characters are often unnecessary when no ambiguity is possible, so you could have typed this:
 
     !/\.json$/&(c/isize/|c/i32
 
@@ -83,7 +83,7 @@ If you want to search for the `|` character (or a `&`, or `(`, or `)`), you can'
 An elementary pattern which starts with a `/` can only be ended with a `/`, a space, or a colon.
 That's why you don't have to escape other characters you want to include in your elementary pattern.
 
-This lets you type this regular expression with no unecessary escaping:
+This lets you type this regular expression with no unnecessary escaping:
 
     /(\d-){2}\w
 
@@ -101,7 +101,7 @@ More precisely:
 
 1. After the first `/` of a pattern, only ` `, `:`,  `/` and `\` need escaping.
 2. Otherwise, `&,` `|`, `(`, `)`, `\` need escaping too.
-3. When there's no ambiguity, ending characters are often unecessary
+3. When there's no ambiguity, ending characters are often unnecessary
 
 # Performances
 

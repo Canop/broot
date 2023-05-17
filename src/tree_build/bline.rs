@@ -90,7 +90,7 @@ impl BLine {
         }
         fs::read_dir(&self.path)
     }
-    /// tell whether we should list the childs of the present line
+    /// tell whether we should list the children of the present line
     pub fn can_enter(&self) -> bool {
         if self.file_type.is_dir() && self.special_handling != SpecialHandling::NoEnter {
             return true;
@@ -146,7 +146,7 @@ impl BLine {
         Ok(TreeLine {
             bid,
             parent_bid: self.parent_id,
-            left_branchs: vec![false; self.depth as usize].into_boxed_slice(),
+            left_branches: vec![false; self.depth as usize].into_boxed_slice(),
             depth: self.depth,
             icon,
             name,

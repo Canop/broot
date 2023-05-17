@@ -108,7 +108,7 @@ impl HexView {
         } else {
             8
         };
-        let mut margin_around_adresses = false;
+        let mut margin_around_addresses = false;
         let styles = &panel_skin.styles;
         let mut left_margin = false;
         let mut addresses = false;
@@ -146,7 +146,7 @@ impl HexView {
             rem -= 1;
         }
         if addresses && rem >= 2 {
-            margin_around_adresses = true;
+            margin_around_addresses = true;
             //rem -= 2;
         }
         let scrollbar = area.scrollbar(self.scroll, self.line_count());
@@ -162,7 +162,7 @@ impl HexView {
                     let addr = (self.scroll + y) * 16;
                     cw.queue_g_string(
                         &styles.preview_line_number,
-                        match (addresses_len, margin_around_adresses) {
+                        match (addresses_len, margin_around_addresses) {
                             (4, false) => format!("{addr:04x}"),
                             (6, false) => format!("{addr:06x}"),
                             (_, false) => format!("{addr:08x}"),
