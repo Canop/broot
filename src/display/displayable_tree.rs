@@ -316,12 +316,21 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 );
                 let name_ms = path_ms.split_on_last('/');
                 cond_bg!(parent_style, self, selected, self.skin.parent);
-                if name_ms.is_some() {
-                    path_ms.base_style = parent_style;
-                }
-                path_ms.queue_on(cw)?;
                 if let Some(name_ms) = name_ms {
+                    path_ms.base_style = parent_style;
+                    let allowed = cw.allowed - 2.min(cw.allowed);
+                    let tail_len = name_ms.width();
+                    if tail_len < allowed {
+                        let path_width = path_ms.width();
+                        if path_width > 1 && path_width + tail_len > allowed + 1 {
+                            cw.queue_char(style, '…')?;
+                            path_ms.cut_left_to_fit(allowed - tail_len - 1);
+                        }
+                        path_ms.queue_on(cw)?;
+                    }
                     name_ms.queue_on(cw)?;
+                } else {
+                    path_ms.queue_on(cw)?;
                 }
             } else {
                 cw.queue_str(style, &line.name)?;

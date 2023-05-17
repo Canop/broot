@@ -5,6 +5,7 @@ use {
         minimad::Alignment,
         CompoundStyle, StrFit,
     },
+    unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
 };
 
 pub struct MatchedString<'a> {
@@ -64,6 +65,32 @@ impl<'a, 'w> MatchedString<'a> {
     pub fn fill(&mut self, width: usize, align: Alignment) {
         self.display_width = Some(width);
         self.align = align;
+    }
+    pub fn width(&self) -> usize {
+        UnicodeWidthStr::width(self.string)
+    }
+    /// Remove characters left so that the visible width is equal or
+    /// less to the required width
+    pub fn cut_left_to_fit(&mut self, max_width: usize) -> usize {
+        let mut removed_char_count = 0;
+        let mut break_idx = 0;
+        let mut width = self.width();
+        for (idx, c) in self.string.char_indices() {
+            if width <= max_width { break; }
+            break_idx = idx;
+            let char_width = c.width().unwrap_or(0);
+            if char_width > width {
+                warn!("inconsistent char/str widths");
+                break;
+            }
+            width -= char_width;
+            removed_char_count += 1;
+        }
+        self.string = &self.string[break_idx..];
+        self.name_match = self.name_match
+            .take()
+            .map(|mut nm| nm.cut_after(removed_char_count));
+        removed_char_count
     }
     pub fn queue_on<W>(&self, cw: &mut CropWriter<'w, W>) -> Result<(), termimad::Error>
     where
