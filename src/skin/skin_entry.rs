@@ -90,21 +90,29 @@ fn parse_compound_style(s: &str) -> Result<CompoundStyle, InvalidSkinError> {
         ^
         \s*
         (?P<fg>\w+(\([\d,\s]+\))?)
-        \s+
-        (?P<bg>\w+(\([\d,\s]+\))?)
-        (?P<attributes>.*)
+        (?:
+            \s+
+            (?P<bg>\w+(\([\d,\s]+\))?)
+            (?P<attributes>.*)
+        )?
         \s*
         $
         "
     );
     if let Some(c) = parts_rex.captures(&s) {
         let fg_color = colors::parse(c.name("fg").unwrap().as_str())?;
-        let bg_color = colors::parse(c.name("bg").unwrap().as_str())?;
-        let attrs = parse_attributes(c.name("attributes").unwrap().as_str())?;
+        let bg_color = match c.name("bg") {
+            Some(s) => colors::parse(s.as_str())?,
+            None => None,
+        };
+        let attrs = match c.name("attributes") {
+            Some(s) => Attributes::from(parse_attributes(s.as_str())?.as_slice()),
+            None => Attributes::default(),
+        };
         Ok(CompoundStyle::new(
             fg_color,
             bg_color,
-            Attributes::from(attrs.as_slice()),
+            attrs,
         ))
     } else {
         Err(InvalidSkinError::InvalidStyle {

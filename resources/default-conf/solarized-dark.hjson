@@ -53,4 +53,14 @@ skin: {
 	help_table_border: "none none"                                                    // default default
 	preview_title: "gray(20) rgb(0, 43, 54)"
 	staging_area_title: "gray(22) rgb(0, 43, 54)"
+	good_to_bad_0: ansi(28)															  // green
+	good_to_bad_1: ansi(29)
+	good_to_bad_2: ansi(29)
+	good_to_bad_3: ansi(29)
+	good_to_bad_4: ansi(29)
+	good_to_bad_5: ansi(100)
+	good_to_bad_6: ansi(136)
+	good_to_bad_7: ansi(172)
+	good_to_bad_8: ansi(166)
+	good_to_bad_9: ansi(196)                                                          // red
 }

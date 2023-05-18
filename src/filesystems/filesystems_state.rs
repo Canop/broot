@@ -408,7 +408,7 @@ impl PanelState for FilesystemState {
                 }
                 // size, used, free
                 if let Some(stats) = mount.stats().filter(|s| s.size() > 0) {
-                    let share_color = super::share_color(stats.use_share());
+                    let share_color = styles.good_to_bad_color(stats.use_share());
                     // used
                     if e_use {
                         cw.queue_g_string(txt_style, format!("{:>4}", file_size::fit_4(stats.used())))?;
