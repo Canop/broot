@@ -86,10 +86,12 @@ impl<'a, 'w> MatchedString<'a> {
             width -= char_width;
             removed_char_count += 1;
         }
-        self.string = &self.string[break_idx..];
-        self.name_match = self.name_match
-            .take()
-            .map(|mut nm| nm.cut_after(removed_char_count));
+        if removed_char_count > 0 {
+            self.string = &self.string[break_idx..];
+            self.name_match = self.name_match
+                .take()
+                .map(|mut nm| nm.cut_after(removed_char_count-1));
+        }
         removed_char_count
     }
     pub fn queue_on<W>(&self, cw: &mut CropWriter<'w, W>) -> Result<(), termimad::Error>
