@@ -1,3 +1,8 @@
+### v1.22.0 - 2023-05-18
+<a name="v1.22.0"></a>
+- define disk space availability colors in skin - Fix #705
+- left elision of path when path/name doesn't fit - Fix #700
+
 ### v1.21.3 - 2023-05-02
 <a name="v1.21.3"></a>
 - `switch_terminal` verb parameter - Thanks @stevenxxiu
@@ -9,7 +14,7 @@
 
 ### v1.21.1 - 2023-03-23
 <a name="v1.21.1"></a>
-- resolve ~ in special paths - Fix #685
+- resolve `~` in special paths - Fix #685
 - better clipboard support on MacOS - Thanks @bryan824
 
 ### v1.21.0 - 2023-03-17
@@ -75,9 +80,9 @@
 - with `show_matching_characters_on_path_searches: false`, it's possible to show only file names even when searching paths - Fix #490
 - `--sort-by-type-dirs-first` and `--sort-by-type-dirs-last` - Fix #602
 - modal: in input mode, uppercase letters don't trigger verbs anymore - Fix #604
-- fix :line_down_no_cycle which was cycling - Fix #603
+- fix `:line_down_no_cycle` which was cycling - Fix #603
 - selecting lines up or down with the mouse wheel now wraps in both direction (ie going up when your on top brings you to the bottom, and vice-versa)
-- :select internal, which can be used to select a visible file when given a path as argument. Experimental
+- `:select` internal, which can be used to select a visible file when given a path as argument. Experimental
 
 ### v1.14.3 - 2022-09-12
 <a name="v1.14.3"></a>
@@ -86,7 +91,7 @@
 ### v1.14.2 - 2022-07-11
 <a name="v1.14.2"></a>
 - Terminal background luma determination now works on all tested unixes, including MacOS - Fix #575
-- Allow :focus based verbs to take a pattern - Fix #389
+- Allow `:focus` based verbs to take a pattern - Fix #389
 
 ### v1.14.1 - 2022-07-06
 <a name="v1.14.1"></a>
@@ -103,7 +108,7 @@ You're also encouraged to split your configuration in several files, as is now d
 
 ### v1.13.3 - 2022-06-19
 <a name="v1.13.2"></a>
-- fix default_flags in conf not working anymore - Fix #566
+- fix `default_flags` in conf not working anymore - Fix #566
 
 ### v1.13.2 - 2022-06-18
 <a name="v1.13.2"></a>
