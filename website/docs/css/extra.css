@@ -134,9 +134,13 @@ kbd.b {
 	margin: 10px 0 10px 0px;
 	text-align:center;
 	background: #133d55;
-	border-radius: 5px;
-	padding: 5px 8px;
+	border-radius: 2px;
+	padding: 8px 10px;
+	color: white;
+    box-shadow: 2px 2px 5px #00000047;
 }
 .install-link:hover {
-	background: #acf;
+    box-shadow: 1px 1px 2px #00000047;
+	color: wheat;
+    text-decoration: none;
 }
