@@ -84,7 +84,7 @@ impl DirSummer {
             debug!("not summing in /proc");
             return Some(FileSum::zero());
         }
-        if path.starts_with("/run") {
+        if path.starts_with("/run") && ! path.starts_with("/run/media") {
             debug!("not summing in /run");
             return Some(FileSum::zero());
         }
