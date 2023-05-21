@@ -1,0 +1,169 @@
+###############################################################
+# A skin for a terminal with a dark background
+# This skin uses RGB values so won't work for some
+# terminals.
+#
+# Created by A. Taha Baki <atahabaki@pm.me>
+# Based on the built-in gruvbox theme.
+#
+# Doc at https://dystroy.org/broot/skins/
+###############################################################
+
+skin: {
+    input: rgb(205, 214, 244) none
+    # fg:none bg:$surface2
+    selected_line: none rgb(88, 91, 112) 
+    # fg:$text bg:none
+    default: rgb(205, 214, 244) none
+    # fg:$overlay0 bg:none
+    tree: rgb(108, 112, 134) none
+    # fg:$sapphire bg:none
+    parent: rgb(116, 199, 236) none
+    file: none none
+#
+### PERMISSIONS
+#
+    perm__: rgb(186, 194, 222) none
+    # $peach
+    perm_r: rgb(250, 179, 135) none
+    # $maroon
+    perm_w: rgb(235, 160, 172) none
+    # $green
+    perm_x: rgb(166, 227, 161) none
+    # $teal
+    owner: rgb(148, 226, 213) none
+    # $sky
+    group: rgb(137, 220, 235) none
+#
+### DATE
+#
+    # $subtext1
+    dates: rgb(186, 194, 222) none
+#
+### DIRECTORY
+#
+    # $lavender
+    directory: rgb(180, 190, 254) none Bold
+    # $green
+    exe: rgb(166, 227, 161) none
+    # $yellow
+    link: rgb(249, 226, 175) none
+    # $subtext0
+    pruning: rgb(166, 173, 200) none Italic
+#
+### PREVIEW
+#
+    # fg:$text bg:$mantle
+    preview_title: rgb(205, 214, 244) rgb(24, 24, 37)
+    # fg:$text bg:$mantle
+    preview: rgb(205, 214, 244) rgb(24, 24, 37)
+    # fg:$overlay0
+    preview_line_number: rgb(108, 112, 134) none
+#
+### MATCH
+#
+    char_match: rgb(249, 226, 175) rgb(69, 71, 90) Bold Italic
+    content_match: rgb(249, 226, 175) rgb(69, 71, 90) Bold Italic
+    preview_match: rgb(249, 226, 175) rgb(69, 71, 90) Bold Italic
+
+    # children count
+    # fg:$yellow bg:none
+    count: rgb(249, 226, 175) none
+    sparse: rgb(243, 139, 168) none
+    content_extract: rgb(243, 139, 168) none Italic
+#
+### GIT
+#
+    git_branch: rgb(250, 179, 135) none
+    git_insertions: rgb(250, 179, 135) none
+    git_deletions: rgb(250, 179, 135) none
+    git_status_current: rgb(250, 179, 135) none
+    git_status_modified: rgb(250, 179, 135) none
+    git_status_new: rgb(250, 179, 135) none Bold
+    git_status_ignored: rgb(250, 179, 135) none
+    git_status_conflicted: rgb(250, 179, 135) none
+    git_status_other: rgb(250, 179, 135) none
+    staging_area_title: rgb(250, 179, 135) none
+#
+### FLAG
+#
+    flag_label: rgb(243, 139, 168) none
+    flag_value: rgb(243, 139, 168) none Bold
+#
+### STATUS
+#
+    # fg:none #bg:$mantle
+    status_normal: none rgb(24, 24, 37)
+    # fg:$red bg:$mantle
+    status_italic: rgb(243, 139, 168) rgb(24, 24, 37) Italic
+    # fg:$maroon bg:$mantle
+    status_bold: rgb(235, 160, 172) rgb(24, 24, 37) Bold
+    # fg:$maroon bg:$mantle
+    status_ellipsis: rgb(235, 160, 172) rgb(24, 24, 37) Bold
+    # fg:$text bg:$red
+    status_error: rgb(205, 214, 244) rgb(243, 139, 168)
+    # fg:$maroon bg:$mantle
+    status_job: rgb(235, 160, 172) rgb(40, 38, 37)
+    # fg:$maroon bg:$mantle
+    status_code: rgb(235, 160, 172) rgb(24, 24, 37) Italic
+    # fg:$maroon bg:$mantle
+    mode_command_mark: rgb(235, 160, 172) rgb(24, 24, 37) Bold
+#
+### HELP
+#
+    # fg:$text
+    help_paragraph: rgb(205, 214, 244) none
+    # fg:$red
+    help_headers: rgb(243, 139, 168) none Bold
+    # fg:$peach
+    help_bold: rgb(250, 179, 135) none Bold
+    # fg:$yellow
+    help_italic: rgb(249, 226, 175) none Italic
+    # fg:green bg:$surface0
+    help_code: rgb(166, 227, 161) rgb(49, 50, 68)
+    # fg:$overlay0
+    help_table_border: rgb(108, 112, 134) none
+#
+### HEX
+#
+    # fg:$text
+    hex_null: rgb(205, 214, 244) none
+    # fg:$peach
+    hex_ascii_graphic: rgb(250, 179, 135) none
+    # fg:$green
+    hex_ascii_whitespace: rgb(166, 227, 161) none
+    # fg: teal
+    hex_ascii_other: rgb(148, 226, 213) none
+    # fg: red
+    hex_non_ascii: rgb(243, 139, 168) none
+
+    # fg:$text bg:$red
+    file_error: rgb(251, 73, 52) none
+#
+### PURPOSE
+#
+    purpose_normal: none none
+    purpose_italic: rgb(177, 98, 134) none Italic
+    purpose_bold: rgb(177, 98, 134) none Bold
+    purpose_ellipsis: none none
+#
+### SCROLLBAR
+#
+    # fg:$surface0
+    scrollbar_track: rgb(49, 50, 68) none
+    # fg:$surface1
+    scrollbar_thumb: rgb(88, 91, 112) none
+#
+### GOODTOBAD
+#
+    good_to_bad_0: rgb(166, 227, 161) none
+    good_to_bad_1: rgb(148, 226, 213) none
+    good_to_bad_2: rgb(137, 220, 235) none
+    good_to_bad_3: rgb(116, 199, 236) none
+    good_to_bad_4: rgb(137, 180, 250) none
+    good_to_bad_5: rgb(180, 190, 254) none
+    good_to_bad_6: rgb(203, 166, 247) none
+    good_to_bad_7: rgb(250, 179, 135) none
+    good_to_bad_8: rgb(235, 160, 172) none
+    good_to_bad_9: rgb(243, 139, 168) none
+}
