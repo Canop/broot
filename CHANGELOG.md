@@ -1,3 +1,6 @@
+### next
+- allow dir computations in /run/media - Fix #704 - Thanks @jinliu
+
 ### v1.22.0 - 2023-05-18
 <a name="v1.22.0"></a>
 - define disk space availability colors in skin - Fix #705
