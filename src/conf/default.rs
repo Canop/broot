@@ -32,3 +32,12 @@ pub fn write_default_conf_in(dir: &Path) -> Result<(), io::Error> {
     }
     Ok(())
 }
+
+#[test]
+fn check_default_conf_files() {
+    use crate::conf::*;
+    for file in DEFAULT_CONF_DIR.files() {
+        let file_content = std::str::from_utf8(file.contents()).unwrap();
+        SerdeFormat::read_string::<Conf>(file.path(), file_content).unwrap();
+    }
+}

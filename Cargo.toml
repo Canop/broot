@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.22.0"
+version = "1.22.1-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 homepage = "https://dystroy.org/broot"
@@ -30,7 +30,7 @@ chrono = "0.4"
 clap = { version = "3.2.1", features = ["derive"] }
 cli-log = "2.0"
 crokey = "0.4.3"
-crossbeam = "0.8"
+crossbeam = "=0.8"
 custom_error = "1.6"
 deser-hjson = "1.1"
 directories = "4.0"
@@ -43,14 +43,14 @@ image = "0.24"
 include_dir = "0.7"
 lazy-regex = "2.3.1"
 libc = "0.2"
-memmap2 = "0.5"
+memmap2 = "0.6"
 once_cell = "1.7"
 opener = "0.5"
 pathdiff = "0.2"
 phf = { version = "0.10", features = ["macros"] }
 rayon = "1.5"
 regex = "1.5"
-resvg = "0.28.0"
+resvg = "0.28"
 secular = { version = "1.0", features = ["normalization"] }
 serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.9"
@@ -63,7 +63,7 @@ terminal-clipboard = { version = "0.4.0", optional = true }
 terminal-light = "1.1.1"
 tiny-skia = "0.8.2"
 toml = "0.5"
-umask = "2.0.0"
+umask = "2.1.0"
 unicode-width = "0.1.8"
 usvg = "0.28.0"
 usvg-text-layout = { version = "0.28.0", default-features = false }
@@ -71,7 +71,7 @@ which = "4.4.0"
 xterm-query = { version = "0.1", optional = true }
 
 [dev-dependencies]
-glassbench = "0.3.3"
+glassbench = "0.3.5"
 
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.11.0"

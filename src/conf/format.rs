@@ -46,26 +46,31 @@ impl SerdeFormat {
             .and_then(|key| Self::from_key(&key))
             .ok_or_else(|| ConfError::UnknownFileExtension { path: path.to_string_lossy().to_string() })
     }
-    pub fn read_file<T>(path: &Path) -> Result<T, ProgramError>
+    pub fn read_string<T>(path: &Path, s: &str) -> Result<T, ProgramError>
         where T: DeserializeOwned
     {
         let format = Self::from_path(path)?;
-        let file_content = fs::read_to_string(path)?;
         match format {
             Self::Hjson => {
-                deser_hjson::from_str::<T>(&file_content)
+                deser_hjson::from_str::<T>(s)
                     .map_err(|e| ProgramError::ConfFile {
                         path: path.to_string_lossy().to_string(),
                         details: e.into(),
                     })
             }
             Self::Toml => {
-                toml::from_str::<T>(&file_content)
+                toml::from_str::<T>(s)
                     .map_err(|e| ProgramError::ConfFile {
                         path: path.to_string_lossy().to_string(),
                         details: e.into(),
                     })
             }
         }
+    }
+    pub fn read_file<T>(path: &Path) -> Result<T, ProgramError>
+        where T: DeserializeOwned
+    {
+        let file_content = fs::read_to_string(path)?;
+        Self::read_string(path, &file_content)
     }
 }

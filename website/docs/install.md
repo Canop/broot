@@ -36,7 +36,7 @@ Direct links:
 Target|Details|Download
 -|-|-
 Linux | clipboard support| [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
-Android | clipboard support | [aarch64-linux-android](https://dystroy.org/broot/download/aarch64-linux-android/broot)
+Android | clipboard support, old version (see [#565](https://github.com/Canop/broot/issues/565)) | [aarch64-linux-android](https://dystroy.org/broot/download/aarch64-linux-android/broot)
 Linux/glibc | no clipboard support, compatible with older GLIBC | [x86_64-unknown-linux-gnu](https://dystroy.org/broot/download/x86_64-unknown-linux-gnu/broot)
 Linux/musl | no clipboard support | [x86_64-unknown-linux-musl](https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot)
 Raspberry | no clipboard support | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)

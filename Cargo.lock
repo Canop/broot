@@ -191,7 +191,7 @@ dependencies = [
  "lazy-regex",
  "lfs-core",
  "libc",
- "memmap2",
+ "memmap2 0.6.1",
  "once_cell",
  "opener",
  "pathdiff",
@@ -424,9 +424,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam"
-version = "0.8.2"
+version = "0.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2801af0d36612ae591caa9568261fddce32ce6e08a7275ea334a06a4ad021a2c"
+checksum = "fd01a6eb3daaafa260f6fc94c3a6c36390abc2080e38e3e34ced87393fb77d80"
 dependencies = [
  "cfg-if",
  "crossbeam-channel",
@@ -543,9 +543,9 @@ dependencies = [
 
 [[package]]
 name = "csv2svg"
-version = "0.1.8"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "22bc4e544d47a40c5d62c5583d3df357e40e0a5f5027d38ffc8d4e5c141276a6"
+checksum = "04c54ac47e2618880ac953cbb50dc9c8884d1551dfd64f99c67de5372452f8c0"
 dependencies = [
  "anyhow",
  "argh",
@@ -558,7 +558,7 @@ dependencies = [
  "log",
  "num-traits",
  "open",
- "svg 0.10.0",
+ "svg",
  "tempfile",
 ]
 
@@ -762,7 +762,7 @@ checksum = "8131752b3f3b876a20f42b3d08233ad177d6e7ec6d18aaa6954489a201071be5"
 dependencies = [
  "fontconfig-parser",
  "log",
- "memmap2",
+ "memmap2 0.5.10",
  "ttf-parser",
 ]
 
@@ -835,9 +835,9 @@ dependencies = [
 
 [[package]]
 name = "glassbench"
-version = "0.3.4"
+version = "0.3.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8148e53c7c241a48b9b579000cf699909e6743b7997acfc7b4a87d6be7830e4d"
+checksum = "58c2699a1f5fa67d36f1bc605173801ecdbd223869699132b1f0eb5381207fc1"
 dependencies = [
  "base64 0.13.1",
  "chrono",
@@ -848,7 +848,6 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
- "svg 0.8.2",
  "tempfile",
  "termimad 0.20.6",
  "thiserror",
@@ -1234,6 +1233,15 @@ name = "memmap2"
 version = "0.5.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "83faa42c0a078c393f6b29d5db232d8be22776a891f8f56e5284faee4a20b327"
+dependencies = [
+ "libc",
+]
+
+[[package]]
+name = "memmap2"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a0aa1b505aeecb0adb017db2b6a79a17a38e64f882a201f05e9de8a982cd6096"
 dependencies = [
  "libc",
 ]
@@ -2082,15 +2090,9 @@ checksum = "73473c0e59e6d5812c5dfe2a064a6444949f089e20eec9a2e5506596494e4623"
 
 [[package]]
 name = "svg"
-version = "0.8.2"
+version = "0.13.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3bdb25a4593d6656239319426f4025f7a658157e25e89f0e0319d7516d46042d"
-
-[[package]]
-name = "svg"
-version = "0.10.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e72d8b19ab05827afefcca66bf47040c1e66a0901eb814784c77d4ec118bd309"
+checksum = "02d815ad337e8449d2374d4248448645edfe74e699343dd5719139d93fa87112"
 
 [[package]]
 name = "svgfilters"
