@@ -114,5 +114,5 @@ custom_error! {pub NetError
 custom_error! {pub SvgError
     Io {source: io::Error} = "IO Error : {source}",
     Internal { message: &'static str } = "Internal error : {message}",
-    Svg {source: usvg::Error} = "SVG Error: {source}",
+    Svg {source: resvg::usvg::Error} = "SVG Error: {source}",
 }

@@ -7,13 +7,18 @@ use {
         RgbaImage,
     },
     std::path::PathBuf,
-    usvg::ScreenSize,
-    usvg_text_layout::{fontdb, TreeTextToPath},
+    resvg::{
+        usvg::{
+            self,
+            fontdb,
+            TreeParsing,
+            TreeTextToPath,
+        },
+        tiny_skia,
+    },
 };
 
-fn compute_zoom(width:u32, height:u32, max_width:u32, max_height:u32) -> Result<f32, SvgError> {
-    let w: f32 = width as f32;
-    let h: f32 = height as f32;
+fn compute_zoom(w:f32, h:f32, max_width:u32, max_height:u32) -> Result<f32, SvgError> {
     let mw: f32 = max_width.max(2) as f32;
     let mh: f32 = max_height.max(2) as f32;
     let zoom = 1.0f32
@@ -42,28 +47,27 @@ pub fn render<P: Into<PathBuf>>(
     fontdb.load_system_fonts();
     let svg_data = std::fs::read(path)?;
     let mut tree = usvg::Tree::from_data(&svg_data, &opt)?;
-    debug!("SVG natural size: {} x {}", tree.size.width(), tree.size.height());
-    let px_size = tree.size.to_screen_size();
-    let zoom = compute_zoom(px_size.width(), px_size.height(), max_width, max_height)?;
+    tree.convert_text(&fontdb);
+    let t_width = tree.size.width() as f32;
+    let t_height = tree.size.height() as f32;
+    debug!("SVG natural size: {t_width} x {t_height}");
+    let zoom = compute_zoom(t_width, t_height, max_width, max_height)?;
     debug!("svg rendering zoom: {zoom}");
-    let Some(px_size) = ScreenSize::new(
-        (px_size.width() as f32 * zoom) as u32,
-        (px_size.height() as f32 * zoom) as u32,
-    ) else {
+    let px_width = (t_width * zoom) as u32;
+    let px_height = (t_height * zoom) as u32;
+    if px_width == 0 || px_height == 0 {
         return Err(SvgError::Internal { message: "invalid SVG dimensions" });
     };
-    debug!("px_size: {px_size:?}");
-    tree.convert_text(&fontdb, opt.keep_named_groups);
+    debug!("px_size: ({px_width}, {px_height})");
     let mut pixmap = tiny_skia::Pixmap::new(
-        px_size.width(),
-        px_size.height(),
+        px_width,
+        px_height,
     ).ok_or(SvgError::Internal { message: "unable to create pixmap buffer" })?;
-    resvg::render(
-        &tree,
-        usvg::FitTo::Zoom(zoom),
-        tiny_skia::Transform::default(),
-        pixmap.as_mut(),
-    ).ok_or(SvgError::Internal { message: "resvg doesn't look happy (not sure)" })?;
+    let tree = resvg::Tree::from_usvg(&tree);
+    tree.render(
+        tiny_skia::Transform::from_scale(zoom, zoom),
+        &mut pixmap.as_mut(),
+    );
     let image_buffer = RgbaImage::from_vec(
         pixmap.width(),
         pixmap.height(),
