@@ -1,3 +1,6 @@
+### next
+- prettier, faster SVG rendering
+
 ### v1.22.1 - 2023-05-23
 <a name="v1.22.1"></a>
 - allow dir computations in /run/media - Fix #704 - Thanks @jinliu
