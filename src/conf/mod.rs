@@ -1,5 +1,6 @@
 use {
     directories,
+    once_cell::sync::Lazy,
     std::path::{Path, PathBuf},
 };
 
@@ -15,7 +16,6 @@ pub use {
     default::write_default_conf_in,
     format::*,
     import::*,
-    once_cell::sync::Lazy,
     verb_conf::VerbConf,
 };
 

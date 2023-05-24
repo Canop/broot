@@ -9,9 +9,9 @@ use {
     crate::{
         display::W,
         errors::ProgramError,
+        image::SourceImage,
     },
     crokey::crossterm::style::Color,
-    image::DynamicImage,
     once_cell::sync::Lazy,
     std::{
         io::Write,
@@ -97,13 +97,14 @@ impl KittyManager {
     pub fn try_print_image(
         &mut self,
         w: &mut W,
-        src: &DynamicImage,
+        src: &SourceImage,
         area: &Area,
         bg: Color,
         drawing_count: usize,
     ) -> Result<Option<KittyImageId>, ProgramError> {
         if let Some(renderer) = self.renderer() {
-            let new_id = renderer.print(w, src, area, bg)?;
+            let img = src.optimal()?;
+            let new_id = renderer.print(w, &img, area, bg)?;
             self.rendered_images.push(RenderedImage {
                 image_id: new_id,
                 drawing_count,

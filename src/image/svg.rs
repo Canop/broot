@@ -6,6 +6,7 @@ use {
         DynamicImage,
         RgbaImage,
     },
+    once_cell::sync::Lazy,
     std::path::PathBuf,
     resvg::{
         usvg::{
@@ -17,6 +18,12 @@ use {
         tiny_skia,
     },
 };
+
+static FONT_DB: Lazy<fontdb::Database> = Lazy::new(||{
+    let mut fontdb = fontdb::Database::new();
+    fontdb.load_system_fonts();
+    fontdb
+});
 
 fn compute_zoom(w:f32, h:f32, max_width:u32, max_height:u32) -> Result<f32, SvgError> {
     let mw: f32 = max_width.max(2) as f32;
@@ -31,23 +38,26 @@ fn compute_zoom(w:f32, h:f32, max_width:u32, max_height:u32) -> Result<f32, SvgE
     }
 }
 
-/// Generate a bitmap at the natural dimensions of the SVG unless it's too big
-///  in which case a smaller one is generated to fit into (max_width x max_height).
-pub fn render<P: Into<PathBuf>>(
+pub fn load<P: Into<PathBuf>>(
     path: P,
-    max_width: u32,
-    max_height: u32,
-) -> Result<DynamicImage, SvgError> {
+) -> Result<resvg::Tree, SvgError> {
     let path: PathBuf = path.into();
     let opt = usvg::Options {
         resources_dir: Some(path.clone()),
         ..Default::default()
     };
-    let mut fontdb = fontdb::Database::new();
-    fontdb.load_system_fonts();
     let svg_data = std::fs::read(path)?;
     let mut tree = usvg::Tree::from_data(&svg_data, &opt)?;
-    tree.convert_text(&fontdb);
+    tree.convert_text(&FONT_DB);
+    let tree = resvg::Tree::from_usvg(&tree);
+    Ok(tree)
+}
+pub fn render_tree(
+    tree: &resvg::Tree,
+    max_width: u32,
+    max_height: u32,
+    bg_color: Option<coolor::Color>,
+) -> Result<DynamicImage, SvgError> {
     let t_width = tree.size.width() as f32;
     let t_height = tree.size.height() as f32;
     debug!("SVG natural size: {t_width} x {t_height}");
@@ -63,7 +73,11 @@ pub fn render<P: Into<PathBuf>>(
         px_width,
         px_height,
     ).ok_or(SvgError::Internal { message: "unable to create pixmap buffer" })?;
-    let tree = resvg::Tree::from_usvg(&tree);
+    if let Some(bg_color) = bg_color {
+        let rgb = bg_color.rgb();
+        let bg_color = tiny_skia::Color::from_rgba8(rgb.r, rgb.g, rgb.b, 255);
+        pixmap.fill(bg_color);
+    }
     tree.render(
         tiny_skia::Transform::from_scale(zoom, zoom),
         &mut pixmap.as_mut(),
@@ -74,4 +88,19 @@ pub fn render<P: Into<PathBuf>>(
         pixmap.take(),
     ).ok_or(SvgError::Internal { message: "wrong image buffer size" })?;
     Ok(DynamicImage::ImageRgba8(image_buffer))
+}
+
+/// Generate a bitmap at the natural dimensions of the SVG unless it's too big
+///  in which case a smaller one is generated to fit into (max_width x max_height).
+///
+/// Background will be black.
+#[allow(dead_code)]
+pub fn render<P: Into<PathBuf>>(
+    path: P,
+    max_width: u32,
+    max_height: u32,
+) -> Result<DynamicImage, SvgError> {
+    let tree = load(path)?;
+    let image = render_tree(&tree, max_width, max_height, None)?;
+    Ok(image)
 }

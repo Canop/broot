@@ -29,6 +29,7 @@ char_reader = "0.1"
 chrono = "0.4"
 clap = { version = "3.2.1", features = ["derive"] }
 cli-log = "2.0"
+coolor = { version = "0.5", features = ["crossterm"] }
 crokey = "0.4.3"
 crossbeam = "=0.8"
 custom_error = "1.6"

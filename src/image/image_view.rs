@@ -1,5 +1,8 @@
 use {
-    super::double_line::DoubleLine,
+    super::{
+        double_line::DoubleLine,
+        SourceImage,
+    },
     crate::{
         app::*,
         display::{Screen, W},
@@ -18,7 +21,6 @@ use {
     image::{
         DynamicImage,
         GenericImageView,
-        imageops::FilterType,
     },
     std::path::{Path, PathBuf},
     termimad::{fill_bg, Area},
@@ -50,7 +52,7 @@ struct CachedImage {
 /// a ratio of one pixel per char in width.
 pub struct ImageView {
     path: PathBuf,
-    source_img: DynamicImage,
+    source_img: SourceImage,
     display_img: Option<CachedImage>,
     last_drawing: Option<DrawingInfo>,
     kitty_image_id: Option<KittyImageId>,
@@ -61,7 +63,7 @@ impl ImageView {
         let source_img = time!(
             "decode image",
             path,
-            super::load(path)?
+            SourceImage::new(path)?
         );
         Ok(Self {
             path: path.to_path_buf(),
@@ -85,9 +87,9 @@ impl ImageView {
     ) -> Result<(), ProgramError> {
 
         let styles = &disc.panel_skin.styles;
-        let bg = styles.preview.get_bg()
-            .or_else(|| styles.default.get_bg())
-            .unwrap_or(Color::AnsiValue(238));
+        let bg_color = styles.preview.get_bg()
+            .or_else(|| styles.default.get_bg());
+        let bg = bg_color.unwrap_or(Color::AnsiValue(238));
 
         // we avoid drawing when we were just displayed
         // on the last drawing_count and the area is the same.
@@ -134,8 +136,8 @@ impl ImageView {
             None => {
                 let img = time!(
                     "resize image",
-                    self.source_img.resize(target_width, target_height, FilterType::Triangle),
-                );
+                    self.source_img.fitting(target_width, target_height, bg_color),
+                )?;
                 self.display_img = Some(CachedImage {
                     img,
                     target_width,
