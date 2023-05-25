@@ -33,7 +33,7 @@ coolor = { version = "0.5", features = ["crossterm"] }
 crokey = "0.4.3"
 crossbeam = "=0.8"
 custom_error = "1.6"
-deser-hjson = "1.1"
+deser-hjson = "1.2"
 directories = "4.0"
 file-size = "1.0.3"
 fnv = "1.0.7"
