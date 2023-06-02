@@ -106,7 +106,6 @@ impl Panel {
         self.status = self.state().get_status(app_state, &cc, has_previous_state);
     }
 
-
     /// do the next pending task stopping as soon as there's an event
     /// in the dam
     pub fn do_pending_task(

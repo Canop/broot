@@ -13,7 +13,9 @@
 
 A better way to navigate directories
 
-[**Installation Instructions**](https://dystroy.org/broot/install/)
+[**Complete Documentation**](https://dystroy.org/broot/) -
+[**Installation Instructions**](https://dystroy.org/broot/install/) -
+[**Contributing or Getting Help**](https://dystroy.org/blog/contributing/)
 
 ## Get an overview of a directory, even a big one
 

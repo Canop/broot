@@ -133,7 +133,7 @@ If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which ge
 
 ![replace ls](img/20210425-sdp.png)
 
-You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a `d` then enter shows you the dates. Or hit <kbd>alt</kbd><kbd>h</kbd> and you see hidden files.
+You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a <kbd>d</kbd> then <kbd>enter</kbd> shows you the dates. Or hit <kbd>alt</kbd><kbd>h</kbd> and you see hidden files.
 
 # Sort, see what takes space:
 
@@ -143,6 +143,8 @@ When sorting, the whole content of directories is taken into account. So if you 
 
 If you start broot with the `--whale-spotting` option (or its shortcut `-w`), you get a mode tailored to "whale spotting" navigation, making it easy to determine what files or folders take space.
 
+Sizes, dates, files counts, are computed in the background, you don't have to wait for them when you navigate.
+
 ![size](img/20201020-whale-spotting.png)
 
 And you keep all broot tools, like filtering or the ability to delete or open files and directories.
@@ -151,7 +153,6 @@ If you hit `:fs`, you can check the usage of all filesystems, so that you focus 
 
 ![fs](img/20201020-fs.png)
 
-Sizes, dates, files counts, are computed in the background, you don't have to wait for them when you navigate.
 
 # Check git statuses:
 
