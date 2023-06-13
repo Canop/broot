@@ -102,6 +102,7 @@ cargo install --locked --path .
 ```
 
 If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/master/features.md). The most common feature is the "clipboard" one:
+
 ```bash
 cargo install --locked --features clipboard --path .
 ```
@@ -121,6 +122,12 @@ brew install broot
 ```bash
 sudo port selfupdate
 sudo port install broot
+```
+
+## Scoop
+
+```bash
+scoop install broot
 ```
 
 ## Alpine Linux
