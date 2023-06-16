@@ -1,4 +1,9 @@
 
+# Reset
+
+If you want to get back to the default set of configuration files, delete or rename the `broot` directory in your standard configuration place (e.g. `~/.config/broot`).
+On next launch, broot will recreate all the necessary files.
+
 # Hjson or TOML
 
 Two formats are allowed: [TOML](https://github.com/toml-lang/toml) and [Hjson](https://hjson.github.io/).
@@ -69,7 +74,7 @@ Starting from version 1.14, the default configuration is released in several fil
 	Be careful when installing a configuration file from an unknown source: it may contain an arbitrary command to execute. Check it before importing it
 
 !!! Note
-	Background color determination is currently disabled (always "unknown") on non linux systems. This is expected to be fixed.
+	 On non linux systems, Background color determination is currently disabled (always "unknown"). This is expected to be fixed.
 
 # Default flags
 

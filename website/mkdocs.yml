@@ -24,7 +24,7 @@ nav:
                 - Client - Server: remote.md
                 - Reference - The input: input.md
         - Conf:
-                - Config file: conf_file.md
+                - Config files: conf_file.md
                 - Verbs and shortcuts: conf_verbs.md
                 - Skins: skins.md
                 - Icons: icons.md
