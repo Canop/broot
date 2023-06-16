@@ -17,6 +17,7 @@ use {
         },
         tiny_skia,
     },
+    termimad::coolor,
 };
 
 static FONT_DB: Lazy<fontdb::Database> = Lazy::new(||{

@@ -13,7 +13,10 @@ use {
         borrow::Cow,
         path::Path,
     },
-    termimad::crossterm::style::Color as CrosstermColor,
+    termimad::{
+        coolor,
+        crossterm::style::Color as CrosstermColor,
+    },
 };
 
 // Max dimensions of the SVG image to render. A bigger size just makes it need

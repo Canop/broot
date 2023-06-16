@@ -16,10 +16,11 @@ checksum = "739f4a8db6605981345c5654f3a85b056ce52f37a39d34da03f25bf2151ea16e"
 
 [[package]]
 name = "ahash"
-version = "0.7.6"
+version = "0.8.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcb51a0695d8f838b1ee009b3fbf66bda078cd64590202a864a8f3e8c4315c47"
+checksum = "2c99f64d1e06488f620f932677e24bc6e2897582980441ae90a671415bd7ec2f"
 dependencies = [
+ "cfg-if",
  "getrandom",
  "once_cell",
  "serde",
@@ -163,9 +164,9 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "broot"
-version = "1.22.1"
+version = "1.22.2-dev"
 dependencies = [
- "ahash 0.7.6",
+ "ahash 0.8.3",
  "ansi_colours",
  "base64 0.13.1",
  "bet",
@@ -174,7 +175,6 @@ dependencies = [
  "clap",
  "clap_complete",
  "cli-log",
- "coolor",
  "crokey",
  "crossbeam",
  "custom_error",
@@ -207,7 +207,7 @@ dependencies = [
  "strict",
  "syntect-no-panic",
  "tempfile",
- "termimad 0.22.0",
+ "termimad 0.23.1",
  "terminal-clipboard",
  "terminal-light",
  "toml",
@@ -574,9 +574,9 @@ checksum = "8d7439c3735f405729d52c3fbbe4de140eaf938a1fe47d227c27f8254d4302a5"
 
 [[package]]
 name = "deser-hjson"
-version = "1.1.1"
+version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4141a83522b248ef3f7c5d251ef2702c169400aa9f4312320974ff49d7054e34"
+checksum = "30e1ab99fef4d11b2de312a0650bbf312fb48aa11a00084f35b27bf8c57d4cad"
 dependencies = [
  "serde",
 ]
@@ -1256,9 +1256,9 @@ dependencies = [
 
 [[package]]
 name = "minimad"
-version = "0.11.0"
+version = "0.12.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7f0c6050964e706796ad6e94b036ab0b7ca97e871905e1caab6b6771366e946d"
+checksum = "38b136454924e4d020e55c4992e07c105b40d5c41b84662862f0e15bc0a2efef"
 dependencies = [
  "once_cell",
 ]
@@ -2189,14 +2189,14 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.22.0"
+version = "0.23.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56f87b17ba3babbffcbfe44d5e29fa90d80c5449034a799c9d87017358000e5f"
+checksum = "e7df2ed35b86d796df56633f1bb1f0c15816134e221822d65bbc64d5265ce8d4"
 dependencies = [
  "coolor",
  "crossbeam",
  "crossterm",
- "minimad 0.11.0",
+ "minimad 0.12.0",
  "thiserror",
  "unicode-width",
 ]

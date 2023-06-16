@@ -21,7 +21,7 @@ clipboard = ["terminal-clipboard"]
 kitty-csi-check = ["xterm-query"]
 
 [dependencies]
-ahash = { version = "0.7", features = ["serde"] }
+ahash = { version = "0.8.3", features = ["serde"] }
 ansi_colours = "1.0"
 base64 = "0.13"
 bet = "1.0.2"
@@ -29,7 +29,6 @@ char_reader = "0.1"
 chrono = "0.4"
 clap = { version = "3.2.1", features = ["derive"] }
 cli-log = "2.0"
-coolor = { version = "0.5", features = ["crossterm"] }
 crokey = "0.4.3"
 crossbeam = "=0.8"
 custom_error = "1.6"
@@ -42,7 +41,7 @@ glob = "0.3"
 id-arena = "2.2.1"
 image = "0.24"
 include_dir = "0.7"
-lazy-regex = "2.3.1"
+lazy-regex = "2.5.0"
 libc = "0.2"
 memmap2 = "0.6"
 once_cell = "1.7"
@@ -59,12 +58,12 @@ splitty = "1.0"
 strict = "0.1.4"
 syntect = { package = "syntect-no-panic", version = "4.6.1" } # see issue #485
 tempfile = "3.2"
-termimad = "0.22.0"
+termimad = "0.23.1"
 terminal-clipboard = { version = "0.4.0", optional = true }
 terminal-light = "1.1.1"
 toml = "0.5"
 umask = "2.1.0"
-unicode-width = "0.1.8"
+unicode-width = "0.1.10"
 which = "4.4.0"
 xterm-query = { version = "0.1", optional = true }
 
