@@ -1,5 +1,6 @@
 ### next
 - prettier, faster SVG rendering
+- reorganize default conf files, with a "skins" subfolder
 
 ### v1.22.1 - 2023-05-23
 <a name="v1.22.1"></a>

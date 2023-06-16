@@ -194,7 +194,7 @@ impl Conf {
         self.files.push(path);
         // read the imports
         for import in &conf.imports {
-            let file = import.file();
+            let file = import.file().trim();
             if !import.applies() {
                 debug!("skipping not applying conf file : {:?}", file);
                 continue;
