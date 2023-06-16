@@ -29,7 +29,7 @@ If you see a rust gear icon, your terminal is displaying the correct font.
 If the font isn't installed, you may
 
 * take it in `/resources/icons/vscode/vscode.ttf` if you have broot sources
-* download it from [https://github.com/Canop/broot/blob/master/resources/icons/vscode/vscode.ttf](https://github.com/Canop/broot/blob/master/resources/icons/vscode/vscode.ttf),
+* download it from [https://github.com/Canop/broot/blob/main/resources/icons/vscode/vscode.ttf](https://github.com/Canop/broot/blob/main/resources/icons/vscode/vscode.ttf),
 * or take it in the release archive if you installed broot from its zipped archive.
 
 ### Installation on linux:
@@ -59,7 +59,7 @@ In broot's [config file](../conf_file), add or uncomment the `icon_theme = "vsco
 
 **Q:** Why does broot show a generic icon for this very common file type?
 
-**A:** The icon mappings aren't complete. You can help out very easily without any coding knowledge. Go to the github [repository](https://github.com/Canop/broot/tree/master/resources/icons). Enter the directory corresponding to your theme. Inside `data`, edit `extension_to_icon_name_map.rs` and add a line corresponding to your extension. The first field would be the extensions you would like, and the second field should be referred from `icon_name_to_icon_code_point_map.rs`. Submit a PR.
+**A:** The icon mappings aren't complete. You can help out very easily without any coding knowledge. Go to the github [repository](https://github.com/Canop/broot/tree/main/resources/icons). Enter the directory corresponding to your theme. Inside `data`, edit `extension_to_icon_name_map.rs` and add a line corresponding to your extension. The first field would be the extensions you would like, and the second field should be referred from `icon_name_to_icon_code_point_map.rs`. Submit a PR.
 
 
 **Q:** Can I set up a totally different set of icons or mappings ?

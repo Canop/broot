@@ -101,7 +101,7 @@ Fetch the [Canop/broot](https://github.com/Canop/broot) repository, move to the 
 cargo install --locked --path .
 ```
 
-If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/master/features.md). The most common feature is the "clipboard" one:
+If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/main/features.md). The most common feature is the "clipboard" one:
 
 ```bash
 cargo install --locked --features clipboard --path .
@@ -158,7 +158,7 @@ emerge broot
 
 To reinstall, just change the executable.
 
-It's always been compatible with the previous configuration files but if your previous installation is old (especially if it's pre 1.14), you might want to get the new [configuration files](https://github.com/Canop/broot/tree/master/resources/default-conf) which have more relevant sections.
+It's always been compatible with the previous configuration files but if your previous installation is old (especially if it's pre 1.14), you might want to get the new [configuration files](https://github.com/Canop/broot/tree/main/resources/default-conf) which have more relevant sections.
 
 The simplest solution is to remove your old configuration directory (or rename if you want to keep things) so that broot recreates it.
 

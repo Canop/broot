@@ -7,7 +7,7 @@ To setup a new skin
 2. [import](../conf_file#imports) this file from the main one, either unconditionally or depending on the terminal's luma (dark or light)
 
 If you installed broot since version 1.14, you should already have a few skins in your configuration directory.
-You may look for other ones in the [dev repo](https://github.com/Canop/broot/tree/master/resources/default-conf).
+You may look for other ones in the [dev repo](https://github.com/Canop/broot/tree/main/resources/default-conf).
 
 The default configuration selects the skin according to the light or dark mode.
 
