@@ -105,7 +105,9 @@ impl CommandParts {
         }
         let mut verb_invocation = None;
         if let Some(pos) = invocation_start_pos {
-            verb_invocation = Some(VerbInvocation::from(&raw[pos + 1..]));
+            verb_invocation = Some(VerbInvocation::from(
+                raw[pos + 1..].trim_start() // allowing extra spaces
+            ));
             raw.truncate(pos);
         }
         CommandParts {
@@ -213,6 +215,39 @@ mod test_command_parts {
                 Token::Atom(pp(&["", "r"])),
             ],
             Some("cd /"),
+        );
+    }
+    #[test]
+    fn allow_extra_spaces_before_invocation() {
+        check(
+            "  cd /",
+            "",
+            vec![],
+            Some("cd /"),
+        );
+        check(
+            "/r  cd /",
+            "/r",
+            vec![
+                Token::Atom(pp(&["", "r"])),
+            ],
+            Some("cd /"),
+        );
+        check(
+            r#"a\ b   e"#,
+            r#"a\ b"#,
+            vec![
+                Token::Atom(pp(&["a b"])),
+            ],
+            Some("e"),
+        );
+        check(
+            "/a:   b",
+            "/a",
+            vec![
+                Token::Atom(pp(&["", "a"])),
+            ],
+            Some("b"),
         );
     }
     #[test]
