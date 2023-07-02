@@ -44,6 +44,13 @@ h3 {
 	background: #1b465f;
 }
 
+@media (min-width: 768px) {
+	.navbar-brand, .navbar-nav > li > a {
+		padding-top: 18px;
+		padding-bottom: 12px;
+	}
+}
+
 pre {
 	padding: 0;
 	border-radius: 0;

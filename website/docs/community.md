@@ -16,8 +16,6 @@ If it helps your company make money, consider helping me find time to add featur
 <iframe src="https://github.com/sponsors/Canop/button" title="Sponsor Canop" height="35" width="114" style="border: 0; border-radius: 6px;"></iframe>
 </div>
 
-There's no moral obligation to do so, though, even if you're an avid user.
-
 # Discuss Broot in a chat room
 
 The best place to chat about broot, to talk about features or bugs, is the Miaou chat.
