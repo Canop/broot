@@ -111,6 +111,8 @@ cargo install --locked --features clipboard --path .
 
 Those packages are maintained by third parties and may be less up to date.
 
+[![Packaging status](https://repology.org/badge/vertical-allrepos/broot.svg)](https://repology.org/project/broot/versions)
+
 ## Homebrew
 
 ```bash
