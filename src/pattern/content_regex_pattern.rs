@@ -4,7 +4,7 @@ use {
     crate::{
         content_search::*,
     },
-    regex,
+    lazy_regex::regex,
     std::{
         fmt,
         fs::File,

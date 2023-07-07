@@ -3,7 +3,7 @@
 use {
     custom_error::custom_error,
     image::error::ImageError,
-    regex,
+    lazy_regex::regex,
     std::io,
 };
 

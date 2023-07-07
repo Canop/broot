@@ -3,7 +3,7 @@
 use {
     super::NameMatch,
     crate::errors::PatternError,
-    regex,
+    lazy_regex::regex,
     smallvec::SmallVec,
     std::fmt,
 };

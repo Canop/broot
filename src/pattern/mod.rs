@@ -35,7 +35,10 @@ pub use {
     tok_pattern::*,
 };
 
-use crate::errors::PatternError;
+use {
+    crate::errors::PatternError,
+    lazy_regex::regex,
+};
 
 pub fn build_regex(pat: &str, flags: &str) -> Result<regex::Regex, PatternError> {
     let mut builder = regex::RegexBuilder::new(pat);
