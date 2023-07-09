@@ -3,6 +3,7 @@ mod fish;
 mod nushell;
 mod state;
 mod util;
+mod powershell;
 
 use {
     crate::{
@@ -87,6 +88,7 @@ impl ShellInstall {
             "bash" | "zsh" => println!("{}", bash::get_script()),
             "fish" => println!("{}", fish::get_script()),
             "nushell" => println!("{}", nushell::get_script()),
+            "powershell" => println!("{}", powershell::get_script()),
             _ => {
                 return Err(ProgramError::UnknowShell {
                     shell: shell.to_string(),
@@ -135,6 +137,7 @@ impl ShellInstall {
         bash::install(self)?;
         fish::install(self)?;
         nushell::install(self)?;
+        powershell::install(self)?;
         self.should_quit = true;
         if self.done {
             self.skin.print_text(MD_INSTALL_DONE);
