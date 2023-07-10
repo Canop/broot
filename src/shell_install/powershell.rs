@@ -1,3 +1,13 @@
+//! The goal of this mod is to ensure the launcher shell function
+//! is available for PowerShell i.e. the `br` shell function can
+//! be used to launch broot (and thus make it possible to execute
+//! some commands, like `cd`, from the starting shell.
+//!
+//! In a correct installation, we have:
+//! - a function declaration script in %APPDATA%/dystroy/broot/data/launcher/powershell/1
+//! - a link to that script in %APPDATA%/dystroy/broot/config/launcher/powershell/br.ps1
+//! - a line to source the link in %USERPROFILE%/Documents/WindowsPowerShell/Profile.ps1
+
 use std::fs;
 
 use directories::UserDirs;
@@ -70,7 +80,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
         return Ok(());
     };
     let Some(document_dir) = user_dir.document_dir() else {
-        warn!("Could not find document directory.");
+        warn!("Could not find user documents directory.");
         return Ok(());
     };
 
@@ -86,15 +96,9 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     if !sourcing_path.exists() {
         debug!("Creating missing PowerShell profile file.");
         if let Some(parent) = sourcing_path.parent() {
-            if let Err(_e) = fs::create_dir(parent) {
-                warn!("Error creating WindowsPowerShell directory.");
-                return Ok(());
-            }
+            fs::create_dir(parent).context(&|| format!("creating {parent:?} directory"))?;
         }
-        if let std::io::Result::Err(_err) = fs::File::create(&sourcing_path) {
-            warn!("Error creating PowerShell profile file.");
-            return Ok(());
-        };
+        fs::File::create(&sourcing_path).context(&|| format!("creating {sourcing_path:?}"))?;
     }
     let sourcing_path_str = sourcing_path.to_string_lossy();
     if util::file_contains_line(&sourcing_path, &source_line)? {
@@ -105,11 +109,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
         );
     } else {
         util::append_to_file(&sourcing_path, format!("\n{source_line}\n"))?;
-        mad_print_inline!(
-            &si.skin,
-            "`$0` successfully patched, you can make the function immediately available with `. $0`\n",
-            &sourcing_path_str,
-        );
+        mad_print_inline!(&si.skin, "`$0` successfully patched.\n", &sourcing_path_str,);
     }
     si.done = true;
     Ok(())
