@@ -27,7 +27,7 @@ base64 = "0.13"
 bet = "1.0.2"
 char_reader = "0.1"
 chrono = "0.4"
-clap = { version = "3.2.1", features = ["derive"] }
+clap = { version = "4.3", features = ["derive", "cargo"] }
 cli-log = "2.0"
 crokey = "0.4.3"
 crossbeam = "=0.8"
@@ -77,8 +77,8 @@ users = "0.11"
 is_executable = "1.0.1"
 
 [build-dependencies]
-clap = { version = "3.2.1", features = ["derive"] }
-clap_complete = "3.2.1"
+clap = { version = "4.3", features = ["derive", "cargo"] }
+clap_complete = "4.3"
 
 [profile.dev]
 debug = false

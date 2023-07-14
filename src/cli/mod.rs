@@ -19,7 +19,7 @@ use {
         shell_install::{ShellInstall, ShellInstallState},
         verb::VerbStore,
     },
-    clap::Parser,
+    clap::{CommandFactory, Parser},
     crokey::crossterm::{
         cursor,
         event::{DisableMouseCapture, EnableMouseCapture},
@@ -39,6 +39,15 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     // parse the launch arguments we got from cli
     let args = Args::parse();
     let mut must_quit = false;
+
+    if args.help {
+        let mut cmd = Args::command();
+        termimad::get_default_skin().print_text(
+            &format!("**broot** version *{}*\n\n", env!("CARGO_PKG_VERSION"))
+        );
+        cmd.print_long_help()?;
+        must_quit = true;
+    }
 
     if let Some(dir) = &args.write_default_conf {
         write_default_conf_in(dir)?;
