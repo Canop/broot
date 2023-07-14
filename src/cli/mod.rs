@@ -20,6 +20,7 @@ use {
         verb::VerbStore,
     },
     clap::{CommandFactory, Parser},
+    clap_help::Printer,
     crokey::crossterm::{
         cursor,
         event::{DisableMouseCapture, EnableMouseCapture},
@@ -32,6 +33,12 @@ use {
     },
 };
 
+static INTRO: &str = "
+A tree explorer and a customizable launcher
+Complete documentation lives at https://dystroy.org/broot
+
+";
+
 /// run the application, and maybe return a launchable
 /// which must be run after broot
 pub fn run() -> Result<Option<Launchable>, ProgramError> {
@@ -41,11 +48,9 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     let mut must_quit = false;
 
     if args.help {
-        let mut cmd = Args::command();
-        termimad::get_default_skin().print_text(
-            &format!("**broot** version *{}*\n\n", env!("CARGO_PKG_VERSION"))
-        );
-        cmd.print_long_help()?;
+        Printer::new(Args::command())
+            .with_introduction(INTRO)
+            .print_help();
         must_quit = true;
     }
 

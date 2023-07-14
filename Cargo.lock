@@ -223,6 +223,7 @@ dependencies = [
  "char_reader",
  "chrono",
  "clap",
+ "clap-help",
  "clap_complete",
  "cli-log",
  "crokey",
@@ -342,6 +343,17 @@ dependencies = [
  "clap_builder",
  "clap_derive",
  "once_cell",
+]
+
+[[package]]
+name = "clap-help"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "44ec988f64068922a22fedd28c435c0a5b96024946d93e127bf01f67f16a7761"
+dependencies = [
+ "clap",
+ "termimad 0.23.1",
+ "terminal-light",
 ]
 
 [[package]]
