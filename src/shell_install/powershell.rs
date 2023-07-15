@@ -8,14 +8,14 @@
 //! - a link to that script in %APPDATA%/dystroy/broot/config/launcher/powershell/br.ps1
 //! - a line to source the link in %USERPROFILE%/Documents/WindowsPowerShell/Profile.ps1
 
-use std::fs;
-
-use directories::UserDirs;
-
 use {
     super::{util, ShellInstall},
     crate::{conf, errors::*},
-    std::path::PathBuf,
+    directories::UserDirs,
+    std::{
+        fs,
+        path::PathBuf,
+    },
     termimad::mad_print_inline,
 };
 
@@ -27,7 +27,7 @@ const PS_FUNC: &str = r#"
 Function br {
   $args = $args -join ' '
   $cmd_file = New-TemporaryFile
-  
+
   $process = Start-Process -FilePath 'broot.exe' `
                            -ArgumentList "--outcmd $($cmd_file.FullName) $args" `
                            -NoNewWindow -PassThru -WorkingDirectory $PWD
@@ -68,6 +68,7 @@ fn get_script_path() -> PathBuf {
 /// Check whether the shell function is installed, install
 /// it if it wasn't refused before or if broot is launched
 /// with --install.
+#[allow(unreachable_code, unused_variables)]
 pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     info!("install {NAME}");
     #[cfg(unix)]
