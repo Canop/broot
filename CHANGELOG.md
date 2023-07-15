@@ -1,5 +1,6 @@
 ### next
 - allow extra spaces before the verb
+- installer for the powershell br script on windows
 
 ### v1.23.0 - 2023-06-16
 <a name="v1.23.0"></a>
