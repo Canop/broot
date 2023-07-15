@@ -11,7 +11,10 @@ When you start broot, it checks whether the `br` shell function seems to have be
 
 When it's done, you can do `br` to launch broot, and typing <kbd>alt</kbd><kbd>enter</kbd> will cd for you.
 
-Supported shells today are bash, zsh, fish, and nushell.
+Supported shells today are bash, zsh, fish, nushell, and powershell.
+
+!!! Note
+	**Windows users:** broot may need additional rights at first use in order to write its configuration file. You may also have to allow script execution (`set-executionpolicy unrestricted`)
 
 # Retry the automatic installation
 
