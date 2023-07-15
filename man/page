@@ -22,84 +22,134 @@ Flags and options can be classically passed on launch but also written in the co
 .SH FLAGS
 FLAGS
 .TP
-.B \-d ", " \-\-dates
+\fB\-d\fR, \fB\-\-dates\fR
 Show the last modified date of files and directories
 .TP
-.B \-D ", " \-\-no-dates
-Don't show the last modified date
+\fB\-D\fR, \fB\-\-no\-dates\fR
+Don\*(Aqt show the last modified date
 .TP
-.B \-f ", " \-\-only-folders
+\fB\-f\fR, \fB\-\-only\-folders\fR
 Only show folders
 .TP
-.B \-F ", " \-\-no-only-folders
+\fB\-F\fR, \fB\-\-no\-only\-folders\fR
 Show folders and files alike
 .TP
-.B \-g ", " \-\-show-git-info
-Show git statuses on files and stats of repository
+\fB\-\-show\-root\-fs\fR
+Show filesystem info on top
 .TP
-.B \-G ", " \-\-no-show-git-info
-Don't show git statuses on files nor stats
+\fB\-g\fR, \fB\-\-show\-git\-info\fR
+Show git statuses on files and stats on repo
 .TP
-.B \-h ", " \-\-hidden
+\fB\-G\fR, \fB\-\-no\-show\-git\-info\fR
+Don\*(Aqt show git statuses on files and stats on repo
+.TP
+\fB\-\-git\-status\fR
+Only show files having an interesting git status, including hidden ones
+.TP
+\fB\-\-help\fR
+Print help information
+.TP
+\fB\-h\fR, \fB\-\-hidden\fR
 Show hidden files
 .TP
-.B \-H ", " \-\-no-hidden
-Don't show hidden files
+\fB\-H\fR, \fB\-\-no\-hidden\fR
+Don\*(Aqt show hidden files
 .TP
-.B \-i ", " \-\-show-gitignored
-Show files which should be ignored according to git
+\fB\-i\fR, \fB\-\-git\-ignored\fR
+Show git ignored files
 .TP
-.B \-I ", " \-\-no-show-gitignored
-Don't show gitignored files
+\fB\-I\fR, \fB\-\-no\-git\-ignored\fR
+Don\*(Aqt show git ignored files
 .TP
-.B \-p ", " \-\-permissions
-Show permissions with owner and group
+\fB\-p\fR, \fB\-\-permissions\fR
+Show permissions
 .TP
-.B \-P ", " \-\-no-permissions
-Don't show permissions
+\fB\-P\fR, \fB\-\-no\-permissions\fR
+Don\*(Aqt show permissions
 .TP
-.B \-s ", " \-\-sizes
-Show the sizes of files and directories. When this mode is on, children aren't shown so that the biggest entries at the selected level can be sorted first.
+\fB\-s\fR, \fB\-\-sizes\fR
+Show the size of files and directories
 .TP
-.B \-S ", " \-\-no-sizes
-Don't show sizes
+\fB\-S\fR, \fB\-\-no\-sizes\fR
+Don\*(Aqt show sizes
 .TP
-.B \-t ", " \-\-trim-root
-Trim the root: remove elements which would exceed the screen size. This removes the scrollbar.
+\fB\-\-sort\-by\-count\fR
+Sort by count (only show one level of the tree)
 .TP
-.B \-T ", " \-\-no-trim-root
-Don't trim the root (still trim the deeper levels). A scrollbar may be used when there are too many elements to show on screen.
+\fB\-\-sort\-by\-date\fR
+Sort by date (only show one level of the tree)
 .TP
-.B \-\-install
-Install or reinstall the \fBbr\fR shell function
+\fB\-\-sort\-by\-size\fR
+Sort by size (only show one level of the tree)
 .TP
-.B \-\-color <yes|no|auto>
-Controls styling of the output (default: auto). If set to auto, all styling is removed when output is piped.
+\fB\-\-sort\-by\-type\fR
+Same as sort\-by\-type\-dirs\-first
 .TP
-.B \-\-help
-Prints a help page, with more or less the same content as this man page
+\fB\-\-sort\-by\-type\-dirs\-first\fR
+Sort by type, directories first (only show one level of the tree)
 .TP
-.B \-v ", " \-\-version
-Prints the version of \fBbroot\fR
-.SH PARAMETERS:
+\fB\-\-sort\-by\-type\-dirs\-last\fR
+Sort by type, directories last (only show one level of the tree)
 .TP
-.B \-\-outcmd <cmd-export-path>
-Where to write a command if broot produces one
+\fB\-w\fR, \fB\-\-whale\-spotting\fR
+Sort by size, show ignored and hidden files
 .TP
-.B \-c ", " \-\-cmd <commands>
-Semicolon separated commands to execute on start of \fBbroot\fR
+\fB\-\-no\-sort\fR
+Don\*(Aqt sort
 .TP
-.B \-\-height <height>
-Height to use if you don't want to fill the screen or for file export (by default the terminal height is used)
+\fB\-t\fR, \fB\-\-trim\-root\fR
+Trim the root too and don\*(Aqt show a scrollbar
 .TP
-.B \-o ", " \-\-out <file-export-path>
-Where to write the produced path, if any
+\fB\-T\fR, \fB\-\-no\-trim\-root\fR
+Don\*(Aqt trim the root level, show a scrollbar
 .TP
-.B \-\-set-install-state <undefined|refused|installed>
-Set the installation state. This is mostly useful in installation scripts to override the normal installation process.
+\fB\-\-outcmd\fR=\fIOUTCMD\fR
+Where to write the produced cmd (if any)
 .TP
-.B \-\-print-shell-function <bash|fish|zsh>
-Print to stdout the \fBbr\fR function for the given shell. This can be used in your own installation process overridden the standard one.
+\fB\-c\fR, \fB\-\-cmd\fR=\fICMD\fR
+Semicolon separated commands to execute
+.TP
+\fB\-\-color\fR=\fICOLOR\fR [default: auto]
+Whether to have styles and colors (default is usually OK)
+.br
+
+.br
+[\fIpossible values: \fRauto, yes, no]
+.TP
+\fB\-\-conf\fR=\fICONF\fR
+Semicolon separated paths to specific config files
+.TP
+\fB\-\-height\fR=\fIHEIGHT\fR
+Height (if you don\*(Aqt want to fill the screen or for file export)
+.TP
+\fB\-\-install\fR
+Install or reinstall the br shell function
+.TP
+\fB\-\-set\-install\-state\fR=\fISET_INSTALL_STATE\fR
+Where to write the produced cmd (if any)
+.br
+
+.br
+[\fIpossible values: \fRundefined, refused, installed]
+.TP
+\fB\-\-print\-shell\-function\fR=\fIPRINT_SHELL_FUNCTION\fR
+Print to stdout the br function for a given shell
+.TP
+\fB\-\-listen\fR=\fILISTEN\fR
+A socket to listen to for commands
+.TP
+\fB\-\-get\-root\fR
+Ask for the current root of the remote broot
+.TP
+\fB\-\-write\-default\-conf\fR=\fIWRITE_DEFAULT_CONF\fR
+Write default conf files in given directory
+.TP
+\fB\-\-send\fR=\fISEND\fR
+A socket that broot sends commands to before quitting
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Print version
+.TP
 .SH BUGS
 .PP
 .B broot

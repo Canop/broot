@@ -14,12 +14,12 @@ version=$(./version.sh)
 
 echo -e "${H1}Compilation of all targets for $NAME $version${EH}"
  
-# clean previous build
+# Clean previous build
 rm -rf build
 mkdir build
 echo "   build cleaned"
 
-# build versions for other platforms using cargo cross
+# Build versions for other platforms using cargo cross
 cross_build() {
     target_name="$1"
     target="$2"
@@ -47,7 +47,7 @@ cross_build "Linux GLIBC" "x86_64-unknown-linux-gnu" ""
 # cross_build "Android" "aarch64-linux-android" "clipboard" Doesn't work anymore - See https://github.com/Canop/broot/issues/565
 cross_build "Raspberry 32" "armv7-unknown-linux-gnueabihf" ""
  
-# build the default linux version (with clipboard support)
+# Build the default linux version (with clipboard support)
 # recent glibc
 echo -e "${H2}Compiling the standard linux version${EH}"
 cargo build --release --features "clipboard"
@@ -55,11 +55,11 @@ strip "target/release/$NAME"
 mkdir build/x86_64-linux/
 cp "target/release/$NAME" build/x86_64-linux/
 
-# build, find, and copy the completion scripts
-# (they're built as part of the normal compilation)
-echo -e "${H2}building and copying completion scripts${EH}"
+# Find, and copy the completion scripts
+# (they're built as part of the normal compilation by build.rs)
+echo -e "${H2}Copying completion scripts${EH}"
 mkdir build/completion
-cp "$(broot -c ":gi;release;:focus;broot.bash;:parent;:pp" target)/"* build/completion
+cp "$(broot -c ":gi;release;:focus;/broot.bash;:parent;:pp" target)/"* build/completion
 echo "   Done"
 
 # copy the default conf

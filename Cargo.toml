@@ -80,6 +80,7 @@ is_executable = "1.0.1"
 [build-dependencies]
 clap = { version = "4.3", features = ["derive", "cargo"] }
 clap_complete = "4.3"
+clap_mangen = "0.2.12"
 
 [profile.dev]
 debug = false

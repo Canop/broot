@@ -2,6 +2,7 @@
 - allow extra spaces before the verb
 - installer for the powershell br script on windows
 - new `--help`, more compact
+- updated man page, now distributed in releases as /man/broot.1
 
 ### v1.23.0 - 2023-06-16
 <a name="v1.23.0"></a>
