@@ -1,5 +1,6 @@
 ### next
 - allow extra spaces before the verb
+- new `--help`, more compact
 
 ### v1.23.0 - 2023-06-16
 <a name="v1.23.0"></a>

@@ -69,7 +69,6 @@ pub struct ShellInstall {
     done: bool, // true if the installation was just made
 }
 
-
 impl ShellInstall {
     pub fn new(force_install: bool) -> Self {
         Self {
