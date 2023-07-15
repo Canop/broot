@@ -341,7 +341,7 @@ impl<'c> TreeBuilder<'c> {
                         // we must ensure the ancestors are made Ok
                         let mut id = *next_level_dir_id;
                         loop {
-                            let mut bline = &mut self.blines[id];
+                            let bline = &mut self.blines[id];
                             if !bline.has_match {
                                 bline.has_match = true;
                                 nb_lines_ok += 1;
@@ -405,7 +405,7 @@ impl<'c> TreeBuilder<'c> {
             if let Some(sli) = remove_queue.pop() {
                 self.blines[sli.id].has_match = false;
                 let parent_id = self.blines[sli.id].parent_id.unwrap();
-                let mut parent = &mut self.blines[parent_id];
+                let parent = &mut self.blines[parent_id];
                 parent.nb_kept_children -= 1;
                 parent.next_child_idx -= 1; // to fix the number of "unlisted"
                 if parent.nb_kept_children == 0 {
@@ -458,7 +458,7 @@ impl<'c> TreeBuilder<'c> {
             tree.git_status = ComputationResult::NotComputed;
             // it would make no sense to keep only files having a git status and
             // not display that type
-            for mut line in tree.lines.iter_mut() {
+            for line in tree.lines.iter_mut() {
                 line.git_status = computer.line_status(&line.path);
             }
         }

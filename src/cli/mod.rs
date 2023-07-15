@@ -19,7 +19,8 @@ use {
         shell_install::{ShellInstall, ShellInstallState},
         verb::VerbStore,
     },
-    clap::Parser,
+    clap::{CommandFactory, Parser},
+    clap_help::Printer,
     crokey::crossterm::{
         cursor,
         event::{DisableMouseCapture, EnableMouseCapture},
@@ -32,6 +33,12 @@ use {
     },
 };
 
+static INTRO: &str = "
+A tree explorer and a customizable launcher
+Complete documentation lives at https://dystroy.org/broot
+
+";
+
 /// run the application, and maybe return a launchable
 /// which must be run after broot
 pub fn run() -> Result<Option<Launchable>, ProgramError> {
@@ -39,6 +46,13 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     // parse the launch arguments we got from cli
     let args = Args::parse();
     let mut must_quit = false;
+
+    if args.help {
+        Printer::new(Args::command())
+            .with_introduction(INTRO)
+            .print_help();
+        must_quit = true;
+    }
 
     if let Some(dir) = &args.write_default_conf {
         write_default_conf_in(dir)?;

@@ -1,181 +1,184 @@
 // Warning: this module can't import broot's stuf
 use {
+    clap::{Parser, ValueEnum},
     std::{
         path::PathBuf,
         str::FromStr,
     },
 };
 
-#[derive(Debug, clap::Parser)]
-/// A tree explorer and a customizable launcher
-///
-/// Complete documentation lives at https://dystroy.org/broot"
-#[clap(author, version, about)]
+/// Launch arguments
+#[derive(Debug, Parser)]
+#[command(author, version, about, disable_help_flag = true)]
 pub struct Args {
 
-    /// Show the last modified date of files and directories"
-    #[clap(short, long, action)]
+    /// Show the last modified date of files and directories
+    #[arg(short, long)]
     pub dates: bool,
 
-    /// Don't show the last modified date"
-    #[clap(short='D', long, action)]
+    /// Don't show the last modified date
+    #[arg(short='D', long)]
     pub no_dates: bool,
 
-    #[clap(short='f', long, action)]
+    #[arg(short='f', long)]
     /// Only show folders
     pub only_folders: bool,
 
     /// Show folders and files alike
-    #[clap(short='F', long, action)]
+    #[arg(short='F', long)]
     pub no_only_folders: bool,
 
     /// Show filesystem info on top
-    #[clap(long, action)]
+    #[arg(long)]
     pub show_root_fs: bool,
 
     /// Show git statuses on files and stats on repo
-    #[clap(short='g', long, action)]
+    #[arg(short='g', long)]
     pub show_git_info: bool,
 
     /// Don't show git statuses on files and stats on repo
-    #[clap(short='G', long, action)]
+    #[arg(short='G', long)]
     pub no_show_git_info: bool,
 
-    #[clap(long, action)]
+    #[arg(long)]
     /// Only show files having an interesting git status, including hidden ones
     pub git_status: bool,
 
-    #[clap(short='h', long, action)]
+    /// Print help information
+    #[arg(long)]
+    pub help: bool,
+
+    #[arg(short='h', long)]
     /// Show hidden files
     pub hidden: bool,
 
-    #[clap(short='H', long, action)]
+    #[arg(short='H', long)]
     /// Don't show hidden files
     pub no_hidden: bool,
 
-    #[clap(short='i', long, action)]
+    #[arg(short='i', long)]
     /// Show git ignored files
     pub git_ignored: bool,
 
-    #[clap(short='I', long, action)]
+    #[arg(short='I', long)]
     /// Don't show git ignored files
     pub no_git_ignored: bool,
 
-    #[clap(short='p', long, action)]
+    #[arg(short='p', long)]
     /// Show permissions
     pub permissions: bool,
 
-    #[clap(short='P', long, action)]
+    #[arg(short='P', long)]
     /// Don't show permissions
     pub no_permissions: bool,
 
-    #[clap(short='s', long, action)]
+    #[arg(short='s', long)]
     /// Show the size of files and directories
     pub sizes: bool,
 
-    #[clap(short='S', long, action)]
+    #[arg(short='S', long)]
     /// Don't show sizes
     pub no_sizes: bool,
 
-    #[clap(long, action)]
+    #[arg(long)]
     /// Sort by count (only show one level of the tree)
     pub sort_by_count: bool,
 
-    #[clap(long, action)]
+    #[arg(long)]
     /// Sort by date (only show one level of the tree)
     pub sort_by_date: bool,
 
-    #[clap(long, action)]
+    #[arg(long)]
     /// Sort by size (only show one level of the tree)
     pub sort_by_size: bool,
 
-    #[clap(long, action)]
+    #[arg(long)]
     /// Same as sort-by-type-dirs-first
     pub sort_by_type: bool,
 
-    #[clap(long, action)]
+    #[arg(long)]
     /// Sort by type, directories first (only show one level of the tree)
     pub sort_by_type_dirs_first: bool,
 
-    #[clap(long, action)]
+    #[arg(long)]
     /// Sort by type, directories last (only show one level of the tree)
     pub sort_by_type_dirs_last: bool,
 
     /// Sort by size, show ignored and hidden files
-    #[clap(short, long, action)]
+    #[arg(short, long)]
     pub whale_spotting: bool,
 
     /// Don't sort
-    #[clap(long, action)]
+    #[arg(long)]
     pub no_sort: bool,
 
     /// Trim the root too and don't show a scrollbar
-    #[clap(short='t', long, action)]
+    #[arg(short='t', long)]
     pub trim_root: bool,
 
     /// Don't trim the root level, show a scrollbar
-    #[clap(short='T', long, action)]
+    #[arg(short='T', long)]
     pub no_trim_root: bool,
 
     /// Where to write the produced cmd (if any)
-    #[clap(long, value_parser)]
+    #[arg(long)]
     pub outcmd: Option<PathBuf>,
 
     /// Semicolon separated commands to execute
-    #[clap(short, long, value_parser)]
+    #[arg(short, long)]
     pub cmd: Option<String>,
 
-    /// Whether to have styles and colors (auto is default and usually OK)
-    #[clap(long, arg_enum, value_parser, default_value="auto")]
+    /// Whether to have styles and colors (default is usually OK)
+    #[arg(long, default_value="auto")]
     pub color: TriBool,
 
-    /// Semicolon separated paths to specific config files"),
-    #[clap(long, value_parser)]
+    /// Semicolon separated paths to specific config files
+    #[arg(long)]
     pub conf: Option<String>,
 
     /// Height (if you don't want to fill the screen or for file export)
-    #[clap(long, value_parser)]
+    #[arg(long)]
     pub height: Option<u16>,
 
     /// Install or reinstall the br shell function
-    #[clap(long, action)]
+    #[arg(long)]
     pub install: bool,
 
     /// Where to write the produced cmd (if any)
-    #[clap(long, value_parser)]
+    #[arg(long)]
     pub set_install_state: Option<CliShellInstallState>,
 
     /// Print to stdout the br function for a given shell
-    #[clap(long, value_parser)]
+    #[arg(long)]
     pub print_shell_function: Option<String>,
 
     /// A socket to listen to for commands
     #[cfg(unix)]
-    #[clap(long, value_parser)]
+    #[arg(long)]
     pub listen: Option<String>,
 
     /// Ask for the current root of the remote broot
     #[cfg(unix)]
-    #[clap(long, action)]
+    #[arg(long)]
     pub get_root: bool,
 
     /// Write default conf files in given directory
-    #[clap(long, value_parser)]
+    #[arg(long)]
     pub write_default_conf: Option<PathBuf>,
 
     /// A socket that broot sends commands to before quitting
     #[cfg(unix)]
-    #[clap(long, value_parser)]
+    #[arg(long)]
     pub send: Option<String>,
 
     /// Root Directory
-    #[clap(value_parser, value_name="FILE")]
     pub root: Option<PathBuf>,
 }
 
 /// This is an Option<bool> but I didn't find any way to configure
 /// clap to parse an Option<T> as I want
-#[derive(Debug, Clone, Copy, PartialEq, Eq, clap::ArgEnum)]
+#[derive(ValueEnum)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TriBool {
     Auto,
     Yes,
@@ -208,7 +211,6 @@ impl FromStr for CliShellInstallState {
             "refused" => Ok(Self::Refused),
             "installed" => Ok(Self::Installed),
             _ => Err(
-                // not supposed to happen because claps check the values
                 format!("unexpected install state: {state:?}")
             ),
         }
