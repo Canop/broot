@@ -4,7 +4,7 @@
 
 ### v1.24.0 - 2023-07-16
 <a name="v1.24.0"></a>
-- installer for the powershell br script on windows
+- installer for the powershell br script on windows - Thanks @felixkroemer
 - new `--help`, more compact
 - allow extra spaces before the verb
 - updated man page, now distributed in releases as /man/broot.1
