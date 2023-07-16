@@ -129,7 +129,7 @@ pub struct Args {
     pub outcmd: Option<PathBuf>,
 
     /// Semicolon separated commands to execute
-    #[arg(short, long, value_name = "commands")]
+    #[arg(short, long, value_name = "cmd")]
     pub cmd: Option<String>,
 
     /// Whether to have styles and colors (default is usually OK)

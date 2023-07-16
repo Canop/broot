@@ -214,7 +214,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "broot"
-version = "1.24.1-dev"
+version = "1.24.1"
 dependencies = [
  "ahash 0.8.3",
  "ansi_colours",
@@ -348,9 +348,9 @@ dependencies = [
 
 [[package]]
 name = "clap-help"
-version = "0.3.0"
+version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f4b3eba3ab317a63397bc3fdb01cc06c55be0221e23994d26a41fd9d99facc11"
+checksum = "74090d11d4d740737b1020449d928ae0d91f72dc33a8c6c2f5c9b37659c5d54f"
 dependencies = [
  "clap",
  "termimad 0.23.1",
