@@ -34,9 +34,14 @@ use {
 };
 
 static INTRO: &str = "
-A tree explorer and a customizable launcher
-Complete documentation lives at https://dystroy.org/broot
 
+**broot** lets you explore file hierarchies with a tree-like view, manipulate and preview files, launch actions, and define your own shortcuts.
+
+**broot** is best launched as `br`: this shell function gives you access to more commands, especially `cd.` The br shell function is interactively installed on first broot launch.
+
+Flags and options can be classically passed on launch but also written in the configuration file. Each flag has a counter-flag so that you can cancel at command line a flag which has been set in the configuration file.
+
+Complete documentation and tips at https://dystroy.org/broot
 ";
 
 /// run the application, and maybe return a launchable
@@ -49,8 +54,14 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     if args.help {
         Printer::new(Args::command())
-            .with_introduction(INTRO)
+            .with("introduction", INTRO)
+            .without("author")
             .print_help();
+        must_quit = true;
+    }
+
+    if args.version {
+        println!("broot {}", env!("CARGO_PKG_VERSION"));
         must_quit = true;
     }
 

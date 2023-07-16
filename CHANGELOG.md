@@ -1,3 +1,6 @@
+### next
+- slightly better `--help`
+
 ### v1.24.0 - 2023-07-16
 <a name="v1.24.0"></a>
 - installer for the powershell br script on windows

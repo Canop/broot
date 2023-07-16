@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.24.0"
+version = "1.24.1-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 homepage = "https://dystroy.org/broot"
@@ -28,7 +28,7 @@ bet = "1.0.2"
 char_reader = "0.1"
 chrono = "0.4"
 clap = { version = "4.3", features = ["derive", "cargo"] }
-clap-help = "0.1.0"
+clap-help = "0.3.0"
 cli-log = "2.0"
 crokey = "0.4.3"
 crossbeam = "=0.8"
@@ -107,6 +107,7 @@ harness = false
 [patch.crates-io]
 # bet = { path = "../bet" }
 # crokey = { path = "../crokey" }
+# clap-help = { path = "../clap-help" }
 # cli-log = { path = "../cli-log" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # deser-hjson = { path = "../deser-hjson" }

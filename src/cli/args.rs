@@ -9,8 +9,16 @@ use {
 
 /// Launch arguments
 #[derive(Debug, Parser)]
-#[command(author, version, about, disable_help_flag = true)]
+#[command(author, about, version, disable_version_flag = true, disable_help_flag = true)]
 pub struct Args {
+
+    /// print help information
+    #[arg(long)]
+    pub help: bool,
+
+    /// print the version
+    #[arg(long)]
+    pub version: bool,
 
     /// Show the last modified date of files and directories
     #[arg(short, long)]
@@ -43,10 +51,6 @@ pub struct Args {
     #[arg(long)]
     /// Only show files having an interesting git status, including hidden ones
     pub git_status: bool,
-
-    /// Print help information
-    #[arg(long)]
-    pub help: bool,
 
     #[arg(short='h', long)]
     /// Show hidden files
@@ -121,23 +125,23 @@ pub struct Args {
     pub no_trim_root: bool,
 
     /// Where to write the produced cmd (if any)
-    #[arg(long)]
+    #[arg(long, value_name = "path")]
     pub outcmd: Option<PathBuf>,
 
     /// Semicolon separated commands to execute
-    #[arg(short, long)]
+    #[arg(short, long, value_name = "commands")]
     pub cmd: Option<String>,
 
     /// Whether to have styles and colors (default is usually OK)
-    #[arg(long, default_value="auto")]
+    #[arg(long, default_value="auto", value_name = "color")]
     pub color: TriBool,
 
     /// Semicolon separated paths to specific config files
-    #[arg(long)]
+    #[arg(long, value_name = "paths")]
     pub conf: Option<String>,
 
     /// Height (if you don't want to fill the screen or for file export)
-    #[arg(long)]
+    #[arg(long, value_name = "height")]
     pub height: Option<u16>,
 
     /// Install or reinstall the br shell function
@@ -145,16 +149,16 @@ pub struct Args {
     pub install: bool,
 
     /// Where to write the produced cmd (if any)
-    #[arg(long)]
+    #[arg(long, value_name = "state")]
     pub set_install_state: Option<CliShellInstallState>,
 
     /// Print to stdout the br function for a given shell
-    #[arg(long)]
+    #[arg(long, value_name = "shell")]
     pub print_shell_function: Option<String>,
 
     /// A socket to listen to for commands
     #[cfg(unix)]
-    #[arg(long)]
+    #[arg(long, value_name = "socket")]
     pub listen: Option<String>,
 
     /// Ask for the current root of the remote broot
@@ -163,12 +167,12 @@ pub struct Args {
     pub get_root: bool,
 
     /// Write default conf files in given directory
-    #[arg(long)]
+    #[arg(long, value_name = "path")]
     pub write_default_conf: Option<PathBuf>,
 
-    /// A socket that broot sends commands to before quitting
+    /// A socket to send commands to
     #[cfg(unix)]
-    #[arg(long)]
+    #[arg(long, value_name = "socket")]
     pub send: Option<String>,
 
     /// Root Directory
