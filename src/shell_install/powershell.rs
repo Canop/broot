@@ -12,10 +12,7 @@ use {
     super::{util, ShellInstall},
     crate::{conf, errors::*},
     directories::UserDirs,
-    std::{
-        fs,
-        path::PathBuf,
-    },
+    std::{fs, path::PathBuf},
     termimad::mad_print_inline,
 };
 
@@ -97,7 +94,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     if !sourcing_path.exists() {
         debug!("Creating missing PowerShell profile file.");
         if let Some(parent) = sourcing_path.parent() {
-            fs::create_dir(parent).context(&|| format!("creating {parent:?} directory"))?;
+            fs::create_dir_all(parent).context(&|| format!("creating {parent:?} directory"))?;
         }
         fs::File::create(&sourcing_path).context(&|| format!("creating {sourcing_path:?}"))?;
     }
