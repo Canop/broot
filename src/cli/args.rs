@@ -12,13 +12,17 @@ use {
 #[command(author, about, version, disable_version_flag = true, disable_help_flag = true)]
 pub struct Args {
 
-    /// print help information
+    /// Print help information
     #[arg(long)]
     pub help: bool,
 
     /// print the version
     #[arg(long)]
     pub version: bool,
+
+    /// Semicolon separated paths to specific config files
+    #[arg(long, value_name = "paths")]
+    pub conf: Option<String>,
 
     /// Show the last modified date of files and directories
     #[arg(short, long)]
@@ -108,13 +112,13 @@ pub struct Args {
     /// Sort by type, directories last (only show one level of the tree)
     pub sort_by_type_dirs_last: bool,
 
-    /// Sort by size, show ignored and hidden files
-    #[arg(short, long)]
-    pub whale_spotting: bool,
-
     /// Don't sort
     #[arg(long)]
     pub no_sort: bool,
+
+    /// Sort by size, show ignored and hidden files
+    #[arg(short, long)]
+    pub whale_spotting: bool,
 
     /// Trim the root too and don't show a scrollbar
     #[arg(short='t', long)]
@@ -135,10 +139,6 @@ pub struct Args {
     /// Whether to have styles and colors (default is usually OK)
     #[arg(long, default_value="auto", value_name = "color")]
     pub color: TriBool,
-
-    /// Semicolon separated paths to specific config files
-    #[arg(long, value_name = "paths")]
-    pub conf: Option<String>,
 
     /// Height (if you don't want to fill the screen or for file export)
     #[arg(long, value_name = "height")]
