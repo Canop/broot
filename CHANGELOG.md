@@ -1,3 +1,7 @@
+### v1.24.2 - 2023-07-18
+<a name="v1.24.2"></a>
+- fix a case of br script installation failing on Windows/Powershell
+
 ### v1.24.1 - 2023-07-16
 <a name="v1.24.1"></a>
 - slightly better `--help`
