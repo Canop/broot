@@ -4,7 +4,7 @@
 # For usual compilation do
 #     cargo build --release
 # or read all possible installation solutions on
-# https://dystroy.org/broot/documentation/installation/
+# https://dystroy.org/broot/install
 
 H1="\n\e[30;104;1m\e[2K\n\e[A" # style first header
 H2="\n\e[30;104m\e[1K\n\e[A" # style second header
