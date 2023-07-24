@@ -102,6 +102,7 @@ More precisely:
 1. After the first `/` of a pattern, only ` `, `:`,  `/` and `\` need escaping.
 2. Otherwise, `&,` `|`, `(`, `)`, `\` need escaping too.
 3. When there's no ambiguity, ending characters are often unnecessary
+4. Two successive `:` in pattern position may be left unescaped
 
 # Performances
 
