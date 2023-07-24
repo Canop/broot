@@ -74,7 +74,19 @@ impl CommandParts {
                         pt.mutate_or_create_atom(PatternParts::default).push('\\');
                     }
                 }
-                ' ' | ':' => { // ending the pattern part
+                ':' => {
+                    if matches!(chars.peek(), Some((_,':'))) {
+                        // two successive ':' in pattern position are part of the
+                        // pattern
+                        pt.mutate_or_create_atom(PatternParts::default).push(':');
+                        escape_next_char = true;
+                    } else {
+                        // ending the pattern part
+                        invocation_start_pos = Some(pos);
+                        break;
+                    }
+                }
+                ' ' => { // ending the pattern part
                     invocation_start_pos = Some(pos);
                     break;
                 }
@@ -164,17 +176,17 @@ mod test_command_parts {
         mut pattern_tokens: Vec<Token<PatternOperator, PatternParts>>,
         verb_invocation: Option<&str>,
     ) {
-        let left = CommandParts::from(input);
-        dbg!(&left);
         let mut pattern = BeTree::new();
         for token in pattern_tokens.drain(..) {
             pattern.push(token);
         }
-        let right = CommandParts {
+        let left = CommandParts {
             raw_pattern: raw_pattern.to_string(),
             pattern,
             verb_invocation: verb_invocation.map(VerbInvocation::from),
         };
+        dbg!(&left);
+        let right = CommandParts::from(input);
         dbg!(&right);
         assert_eq!(left, right);
     }
@@ -367,6 +379,59 @@ mod test_command_parts {
                 Token::Atom(pp(&["r", r#"@(\.[^.]+)+"#, ""])),
             ],
             Some("cp .."),
+        );
+    }
+    // two colons in pattern positions are something the user searches
+    #[test]
+    fn allow_non_escaped_double_colon() {
+        check(
+            r#"::"#,
+            r#"::"#,
+            vec![
+                Token::Atom(pp(&[r#"::"#])),
+            ],
+            None,
+        );
+        check(
+            r#":::"#,
+            r#"::"#,
+            vec![
+                Token::Atom(pp(&[r#"::"#])),
+            ],
+            Some(""),
+        );
+        check(
+            r#":::cd c:\"#,
+            r#"::"#,
+            vec![
+                Token::Atom(pp(&[r#"::"#])),
+            ],
+            Some(r#"cd c:\"#),
+        );
+        check(
+            r#"and::Sc:cd c:\"#,
+            r#"and::Sc"#,
+            vec![
+                Token::Atom(pp(&[r#"and::Sc"#])),
+            ],
+            Some(r#"cd c:\"#),
+        );
+        check(
+            r#"!:: "#,
+            r#"!::"#,
+            vec![
+                Token::Operator(PatternOperator::Not),
+                Token::Atom(pp(&[r#"::"#])),
+            ],
+            Some(""),
+        );
+        check(
+            r#"::a:rm"#,
+            r#"::a"#,
+            vec![
+                Token::Atom(pp(&[r#"::a"#])),
+            ],
+            Some("rm"),
         );
     }
 }
