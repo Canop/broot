@@ -1,3 +1,6 @@
+### next
+- allow unescaped '::' in pattern position, experimental (might be removed)
+
 ### v1.24.2 - 2023-07-18
 <a name="v1.24.2"></a>
 - fix a case of br script installation failing on Windows/Powershell
