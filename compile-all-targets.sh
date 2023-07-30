@@ -76,14 +76,7 @@ echo "   Done"
 
 # add a summary of content
 echo '
-This archive contains pre-compiled binaries:
-
-x86_64-linux/broot : standard Linux, clipboard support, most optimized
-aarch64-linux-android/broot : Android, clipboard support
-x86_64-unknown-linux-gnu : Linux/glibc, no clipboard support, compatible with older GLIBC
-x86_64-unknown-linux-musl : Linux/musl, no clipboard support
-armv7-unknown-linux-gnueabihf : Raspberry | no clipboard support
-x86_64-pc-windows-gnu : Windows 10+, clipboard support
+This archive contains pre-compiled binaries.
 
 For more information, or if you prefer to compile yourself, see https://dystroy.org/broot/install
 ' > build/install.md
