@@ -54,6 +54,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     if args.help {
         Printer::new(Args::command())
+            .with_max_width(140)
             .with("introduction", INTRO)
             .without("author")
             .print_help();
