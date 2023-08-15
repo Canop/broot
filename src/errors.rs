@@ -99,10 +99,11 @@ custom_error! {pub PatternError
 }
 
 custom_error! {pub InvalidSkinError
-    InvalidColor { raw : String }  = "'{raw}' is not a valid color",
-    InvalidAttribute { raw : String }  = "'{raw}' is not a valid style attribute",
-    InvalidGreyLevel { level: u8 } = "grey level must be between 0 and 23 (got {level})",
+    InvalidColor {source: termimad::ParseColorError}  = "invalid color: {source}",
+    InvalidAttribute {raw : String}  = "'{raw}' is not a valid style attribute",
+    InvalidGreyLevel {level: u8} = "grey level must be between 0 and 23 (got {level})",
     InvalidStyle {style: String}   = "Invalid skin style : {style}",
+    InvalidStyleToken {source: termimad::ParseStyleTokenError} = "{source}",
 }
 
 custom_error! {pub NetError

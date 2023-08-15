@@ -3,15 +3,12 @@
 //! a string with TTY colors
 
 use {
-    super::*,
     crate::errors::InvalidSkinError,
-    crokey::crossterm::style::{
-        Attribute::{self, *},
-        Attributes,
-    },
-    lazy_regex::regex,
     serde::{de::Error, Deserialize, Deserializer},
-    termimad::CompoundStyle,
+    termimad::{
+        CompoundStyle,
+        parse_compound_style,
+    },
 };
 
 /// Parsed content of a [skin] line of the conf.toml file
@@ -60,63 +57,3 @@ impl<'de> Deserialize<'de> for SkinEntry {
     }
 }
 
-fn parse_attribute(s: &str) -> Result<Attribute, InvalidSkinError> {
-    match s {
-        "bold" => Ok(Bold),
-        "crossedout" => Ok(CrossedOut),
-        "dim" => Ok(Dim), // does it do anything ?
-        "italic" => Ok(Italic),
-        "reverse" => Ok(Reverse),
-        "underlined" => Ok(Underlined),
-        "overlined" => Ok(OverLined),
-        // following ones aren't supported by crossterm yet
-        // "defaultforegroundcolor" => Ok(DefaultForegroundColor),
-        // "defaultbackgroundcolor" => Ok(DefaultBackgroundColor),
-        "slowblink" => Ok(SlowBlink),
-        "rapidblink" => Ok(RapidBlink),
-        _ => Err(InvalidSkinError::InvalidAttribute { raw: s.to_owned() }),
-    }
-}
-
-/// parse a sequence of space separated style attributes
-fn parse_attributes(s: &str) -> Result<Vec<Attribute>, InvalidSkinError> {
-    s.split_whitespace().map(parse_attribute).collect()
-}
-
-fn parse_compound_style(s: &str) -> Result<CompoundStyle, InvalidSkinError> {
-    let s = s.to_ascii_lowercase();
-    let parts_rex = regex!(
-        r"(?x)
-        ^
-        \s*
-        (?P<fg>\w+(\([\d,\s]+\))?)
-        (?:
-            \s+
-            (?P<bg>\w+(\([\d,\s]+\))?)
-            (?P<attributes>.*)
-        )?
-        \s*
-        $
-        "
-    );
-    if let Some(c) = parts_rex.captures(&s) {
-        let fg_color = colors::parse(c.name("fg").unwrap().as_str())?;
-        let bg_color = match c.name("bg") {
-            Some(s) => colors::parse(s.as_str())?,
-            None => None,
-        };
-        let attrs = match c.name("attributes") {
-            Some(s) => Attributes::from(parse_attributes(s.as_str())?.as_slice()),
-            None => Attributes::default(),
-        };
-        Ok(CompoundStyle::new(
-            fg_color,
-            bg_color,
-            attrs,
-        ))
-    } else {
-        Err(InvalidSkinError::InvalidStyle {
-            style: s.to_owned(),
-        })
-    }
-}

@@ -44,8 +44,8 @@ impl SourceImage {
         match self {
             Self::Bitmap(img) => img.dimensions(),
             Self::Svg(tree) => (
-                f64_to_u32(tree.size.width()),
-                f64_to_u32(tree.size.height())
+                f32_to_u32(tree.size.width()),
+                f32_to_u32(tree.size.height())
             )
         }
     }
@@ -80,10 +80,8 @@ impl SourceImage {
     }
 }
 
-// a new trait is supposed to provide try_from::<f64> to u32 but it's
-// not stable yet...
-fn f64_to_u32(v: f64) -> u32 {
-    if v <= 0.0 || v >= u32::MAX as f64 {
+fn f32_to_u32(v: f32) -> u32 {
+    if v <= 0.0 || v >= u32::MAX as f32 {
         0
     } else {
         v as u32

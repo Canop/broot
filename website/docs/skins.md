@@ -22,7 +22,7 @@ skin: {
 	default: gray(23) none / gray(20) none
 	tree: ansi(94) None / gray(3) None
 	file: gray(20) None / gray(15) None
-	directory: ansi(208) None Bold / ansi(172) None bold
+	directory: "#fb0 None Bold / ansi(172) None bold"
 	exe: Cyan None
 	link: Magenta None
 	pruning: gray(12) None Italic
@@ -99,7 +99,7 @@ skin: {
 default = "gray(23) none / gray(20) none"
 tree = "ansi(94) None / gray(3) None"
 file = "gray(20) None / gray(15) None"
-directory = "ansi(208) None Bold / ansi(172) None bold"
+directory = "#fb0 None Bold / ansi(172) None bold"
 exe = "Cyan None"
 link = "Magenta None"
 pruning = "gray(12) None Italic"
@@ -199,9 +199,11 @@ A color in a skin or in the [ext_colors](../conf_file/#colors-by-file-extension)
 * `none`
 * an [Ansi value](https://en.wikipedia.org/wiki/ANSI_escape_code#8-bit), for example `ansi(160)`
 * a grayscale value, with a level between 0 and 23, for example `grey(3)`
-* a RGB color, for example `rgb(255, 187, 0)`
+* a RGB color, for example `rgb(255, 187, 0)` or `#fb0`
 
-Beware that many terminals aren't compatible with RGB 24 bits colors (or aren't usually configured for).
+Warnings:
+* many terminals aren't compatible with RGB 24 bits colors (or aren't usually configured for)
+* when using the hexa notation for colors (eg `#45ff1e`) in Hjson, the skin entry must be between quotes as the `#` character marks comments
 
 ## Style attributes
 

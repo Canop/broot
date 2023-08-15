@@ -1,6 +1,5 @@
 mod app_skin;
 mod cli_mad_skin;
-pub mod colors;
 mod ext_colors;
 mod help_mad_skin;
 mod panel_skin;
