@@ -654,9 +654,9 @@ checksum = "8d7439c3735f405729d52c3fbbe4de140eaf938a1fe47d227c27f8254d4302a5"
 
 [[package]]
 name = "deser-hjson"
-version = "2.0.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b0695da728c87789b03f8c4553100a6397d7eb8397726ec420a65bd414400b51"
+checksum = "edc4f43e1fa39fc7d2e48824106097c78749ee5962e580c1e0b8564de7f138d3"
 dependencies = [
  "serde",
 ]
