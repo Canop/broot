@@ -1,4 +1,5 @@
-### next
+### v1.25.0 - 2023-08-19
+<a name="v1.25.0"></a>
 - allow unescaped '::' in pattern position, experimental (might be removed)
 - allow hexa color notation in skins (eg `#fb0` or `#FFD700`)
 
