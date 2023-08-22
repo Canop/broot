@@ -29,39 +29,35 @@ fetch("../download/version")
 
 Binaries are made available at every release in [download](https://dystroy.org/broot/download).
 
-The archives there contain all precompiled versions, as well as the licenses and other files. They're the preferred distribution way.
+The archives there contain precompiled binaries, as well as the licenses and other files.
 
-Direct links:
+You may also directly download the executable files below, depending on your system:
 
-Target|Details|Download
--|-|-
-Linux | clipboard support| [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
-Android | clipboard support, old version (see [#565](https://github.com/Canop/broot/issues/565)) | [aarch64-linux-android](https://dystroy.org/broot/download/aarch64-linux-android/broot)
-Linux/glibc | no clipboard support, compatible with older GLIBC | [x86_64-unknown-linux-gnu](https://dystroy.org/broot/download/x86_64-unknown-linux-gnu/broot)
-Linux/musl | no clipboard support | [x86_64-unknown-linux-musl](https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot)
-Raspberry | no clipboard support | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)
-Windows 10+ | clipboard support | [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
-Shell completion  | | [completion/](https://dystroy.org/broot/download/completion)
+Target|Details|Clipboard|Download
+-|-|-|-
+x86-64 Linux | Intel/AMD, needs a recent enough linux | yes | [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
+x86-64 Linux old glibc | Intel/AMD, compatible with older glibc | no | [x86_64-unknown-linux-gnu](https://dystroy.org/broot/download/x86_64-unknown-linux-gnu/broot)
+x86-64 Linux musl | Intel/AMD, very compatible | no | [x86_64-unknown-linux-musl](https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot)
+ARM32 Linux |  | no | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)
+ARM32 Linux musl |  | no | [armv7-unknown-linux-musleabi](https://dystroy.org/broot/download/armv7-unknown-linux-musleabi/broot)
+ARM64 Linux |  | no | [aarch64-unknown-linux-gnu](https://dystroy.org/broot/download/aarch64-unknown-linux-gnu/broot)
+ARM64 Linux musl |  | no | [aarch64-unknown-linux-musl](https://dystroy.org/broot/download/aarch64-unknown-linux-musl/broot)
+x86-64 NetBSD | | no | [x86_64-unknown-netbsd](https://dystroy.org/broot/download/x86_64-unknown-netbsd/broot)
+Windows | Intel/AMD 64 Windows 10+ | yes | [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
 
-You may download previous releases on [GitHub releases](https://github.com/Canop/broot/releases).
+Shell completion scripts: [completion](https://dystroy.org/broot/download/completion)
+
+All releases are also available on [GitHub releases](https://github.com/Canop/broot/releases).
 
 When you download executable files, you'll have to ensure the shell can find them. An easy solution on linux is for example to put them in `/usr/local/bin`. You may also have to set them executable using `chmod +x broot`.
 
+As I can't compile myself for all possible systems, you'll need to compile broot yourself or use a third-party repository (see below) if your system isn't in the list above.
+
 # From crates.io
 
+## Dependencies
+
 You'll need to have the [Rust development environment](https://www.rustup.rs) installed and up to date.
-
-Once it's installed, use cargo to install broot:
-
-```bash
-cargo install --locked broot
-```
-
-or, for clipboard support:
-
-```bash
-cargo install --locked --features clipboard broot
-```
 
 The main cause of compilation error is an outdated rust compiler. Try updating it with `rustup update`.
 
@@ -91,9 +87,23 @@ Arch Linux:
 sudo pacman -Syu --noconfirm libxcb
 ```
 
+## Broot installation
+
+Once you have rust and dependencies installed, use cargo to install broot:
+
+```bash
+cargo install --locked broot
+```
+
+or, for clipboard support:
+
+```bash
+cargo install --locked --features clipboard broot
+```
+
 # From source
 
-You'll need to have the [Rust development environment](https://www.rustup.rs) installed.
+As for installing from crates.io, you'll need [rust and other dependencies](#dependencies) first.
 
 Fetch the [Canop/broot](https://github.com/Canop/broot) repository, move to the broot directory, then run
 
