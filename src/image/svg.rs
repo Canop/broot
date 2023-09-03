@@ -59,8 +59,8 @@ pub fn render_tree(
     max_height: u32,
     bg_color: Option<coolor::Color>,
 ) -> Result<DynamicImage, SvgError> {
-    let t_width = tree.size.width() as f32;
-    let t_height = tree.size.height() as f32;
+    let t_width = tree.size.width();
+    let t_height = tree.size.height();
     debug!("SVG natural size: {t_width} x {t_height}");
     let zoom = compute_zoom(t_width, t_height, max_width, max_height)?;
     debug!("svg rendering zoom: {zoom}");

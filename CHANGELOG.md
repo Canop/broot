@@ -1,3 +1,8 @@
+
+### v1.25.1 - 2023-09-03
+<a name="v1.25.1"></a>
+- fix shift-char in input extending the selection - Fix #733
+
 ### v1.25.0 - 2023-08-19
 <a name="v1.25.0"></a>
 - allow unescaped '::' in pattern position, experimental (might be removed)

@@ -42,7 +42,7 @@ pub use {
     cond_bg,
     displayable_tree::DisplayableTree,
     git_status_display::GitStatusDisplay,
-    luma::*,
+    luma::LumaCondition,
     matched_string::MatchedString,
     screen::Screen,
     cell_size::*,
