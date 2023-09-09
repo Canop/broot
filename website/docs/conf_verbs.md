@@ -51,6 +51,35 @@ The execution is defined either by `internal`, `external` or `cmd` so a verb mus
 !!!	Note
 	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example `cd` is a shell builtin which must be executed in the parent shell.
 
+# Call shell scripts
+
+With an external, you call an executable.
+If you want to run a script, you must call an executable able to run it.
+
+For example, if you have this shell script:
+
+```bash
+#!/bin/bash
+echo "Hello, I got argument $1"
+sleep 5
+```
+
+You can call it with this verb definition:
+
+```hjson
+{
+    invocation: hello
+    external: ["sh" "-e" "/path/to/hello.sh" "{file}"]
+    leave_broot: false
+}
+```
+```toml
+[[verbs]]
+invocation = "hello"
+external = ["sh", "-e", "/path/to/hello.sh", "{file}"]
+leave_broot = false
+```
+
 # Using quotes
 
 If you want broot, for example, to execute `xterm -e "nvim {file}"`, you may either escape the quotes as `\"` or use the array format to separate parts.

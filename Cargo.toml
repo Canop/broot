@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.25.1"
+version = "1.25.2-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 homepage = "https://dystroy.org/broot"
@@ -33,7 +33,7 @@ cli-log = "2.0"
 crokey = "0.4.3"
 crossbeam = "=0.8"
 custom_error = "1.6"
-deser-hjson = "2.1"
+deser-hjson = "2.2"
 directories = "4.0"
 file-size = "1.0.3"
 fnv = "1.0.7"
@@ -117,7 +117,6 @@ harness = false
 # lfs-core = { path = "../lfs-core" }
 # secular = { path = "../secular", features=["normalization"] }
 # strict = { path = "../strict" }
-# syntect = { path = "../syntect" }
 # syntect = { path = "../syntect" }
 # syntect-no-panic = { path = "../syntect" }
 # minimad = { path = "../minimad" }
