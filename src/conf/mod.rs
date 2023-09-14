@@ -1,4 +1,5 @@
 use {
+    crate::path::untilde,
     directories,
     once_cell::sync::Lazy,
     std::path::{Path, PathBuf},
@@ -26,14 +27,24 @@ pub fn app_dirs() -> directories::ProjectDirs {
         .expect("Unable to find configuration directories")
 }
 
+fn env_conf_dir() -> Option<PathBuf> {
+    std::env::var("BROOT_CONFIG_DIR")
+        .ok()
+        .as_deref()
+        .map(untilde)
+}
+
 #[cfg(not(target_os = "macos"))]
 fn find_conf_dir() -> PathBuf {
-    app_dirs().config_dir().to_path_buf()
+    env_conf_dir()
+        .unwrap_or_else(|| app_dirs().config_dir().to_path_buf())
 }
 
 #[cfg(target_os = "macos")]
 fn find_conf_dir() -> PathBuf {
-    if let Some(user_dirs) = directories::UserDirs::new() {
+    if let Some(env_dir) = env_conf_dir() {
+        return env_dir;
+    } else if let Some(user_dirs) = directories::UserDirs::new() {
         // We first search in ~/.config/broot which should be the preferred solution
         let preferred = user_dirs.home_dir().join(".config/broot");
         if preferred.exists() {
