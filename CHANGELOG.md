@@ -1,4 +1,7 @@
 
+### next
+- optional BROOT_CONFIG_DIR env var specifies the config directory
+
 ### v1.25.1 - 2023-09-03
 <a name="v1.25.1"></a>
 - fix shift-char in input extending the selection - Fix #733
