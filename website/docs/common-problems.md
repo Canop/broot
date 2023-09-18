@@ -136,4 +136,4 @@ The standard `edit` verb, launched with `:e`, starts your favourite terminal edi
 
 It works by executing `"$EDITOR +{line} {file}"` which assumes that the `$EDITOR` variable is defined and that your editor takes the line number as argument.
 
-If it doesn't work on your configuration, you should probably just edit this verb definition with a more suitable command, for example `"hx {file}"` or `"/usr/bin/my-editor --line {line} {file}"`
+If it doesn't work on your configuration, you should probably just edit this verb definition with a more suitable command, for example `"hx {file}:{line}"` or `"/usr/bin/my-editor --line {line} {file}"`
