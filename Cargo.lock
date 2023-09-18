@@ -207,7 +207,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "broot"
-version = "1.25.2-broot-config-dir"
+version = "1.25.2-dev"
 dependencies = [
  "ahash 0.8.3",
  "ansi_colours",
@@ -646,6 +646,8 @@ checksum = "8d7439c3735f405729d52c3fbbe4de140eaf938a1fe47d227c27f8254d4302a5"
 [[package]]
 name = "deser-hjson"
 version = "2.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9b4fe3d77c19507c98946cbc1077ee3c1b50222b4aafcd248e40f4137913ad98"
 dependencies = [
  "serde",
 ]

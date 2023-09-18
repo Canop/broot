@@ -1,6 +1,7 @@
 
 ### next
 - optional BROOT_CONFIG_DIR env var specifies the config directory
+- `--only-folders` now longer allows symlinks to non directories - Fix #742
 
 ### v1.25.1 - 2023-09-03
 <a name="v1.25.1"></a>

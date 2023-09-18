@@ -181,7 +181,15 @@ impl<'c> TreeBuilder<'c> {
             if !has_match {
                 return None;
             }
-            if self.options.only_folders {
+        }
+        if self.options.only_folders && !file_type.is_dir() {
+            if !file_type.is_symlink() {
+                return None;
+            }
+            let Ok(target_metadata) = fs::metadata(&path) else {
+                return None;
+            };
+            if !target_metadata.is_dir() {
                 return None;
             }
         }
