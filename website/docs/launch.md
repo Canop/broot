@@ -81,3 +81,21 @@ then broot toggles the git_ignore filter, searches for `target` then prints the 
 
 The `--cmd` argument may be the basis for many of your own shell functions or programs.
 
+# Environment Variables
+
+Most users don't have to bother with environment variables.
+
+But they come handy in some cases, so here's a complete reference of the variables read by broot.
+
+Variables whose names doesn't start with `BR_` or `BROOT_` aren't specific to broot and may be already present in your system.
+
+variable | usage
+-|-
+`BROOT_CONFIG_DIR` | Optional path to the config directory. If not set, broot uses the conventions of the system, for example `~/.config/broot`
+`BR_INSTALL` | Setting it to `no` prevents broot for installing the `br` shell function
+`BROOT_CMD_SEPARATOR` | Set the separator to use in command sequences, e.g. `BROOT_CMD_SEPARATOR=',' br -c 'filter,:pp'`
+`BROOT_LOG` | Set up the [log level](../community/#log) (default is none), for example `BROOT_LOG=debug br`
+`COLORTERM` | If this conventional variable contains `24bit` or `truecolor`, then broot won't limit itself to a reduced set of colors when rendering images. This may also be set in conf with `true_colors: true`
+`TERM` or `TERMINAL` | If one of them contains `kitty`, then broot will use Kitty's [terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/) to render images in high definition
+`TERM_PROGRAM` and `TERM_PROGRAM_VERSION` | If the current terminal is [Wezterm](https://wezfurlong.org/wezterm/index.html) with a recent enough version, broot recognizes it with those variables and uses the Kitty's terminal graphics protocol to render images
+`COLORFGBG` | This is one of the ways the [terminal-light](https://github.com/Canop/terminal-light) library uses to detect whether your terminal is set in dark or light mode

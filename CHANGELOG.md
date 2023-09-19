@@ -1,6 +1,6 @@
 
 ### next
-- optional BROOT_CONFIG_DIR env var specifies the config directory
+- optional BROOT_CONFIG_DIR env var specifies the config directory (the site now shows all env variables: https://dystroy.org/broot/launch/#environment-variables)
 - `--only-folders` now longer allows symlinks to non directories - Fix #742
 
 ### v1.25.1 - 2023-09-03
