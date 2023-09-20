@@ -139,7 +139,8 @@ impl Conf {
                 &conf_dir,
                 Attribute::Reset,
             );
-            println!("You should have a look at them.");
+            println!("You should have a look at them: their comments will help you configure broot.");
+            println!("You should especially set up your favourite editor in verbs.hjson.");
         }
         let mut conf = Conf::default();
         conf.read_file(conf_filepath)?;

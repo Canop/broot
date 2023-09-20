@@ -25,22 +25,24 @@ verbs: [
     # can customize.
     # If $EDITOR isn't set on your computer, you should either set it using
     #  something similar to
-    #   export EDITOR=/usr/local/bin/nvim
+    #    export EDITOR=/usr/local/bin/nvim
     #  or just replace it with your editor of choice in the 'execution'
     #  pattern.
-    #  If your editor is able to open a file on a specific line, use {line}
-    #   so that you may jump directly at the right line from a preview.
-    # Example:
-    #  execution: nvim +{line} {file}
+    # If your editor is able to open a file on a specific line, use {line}
+    #  so that you may jump directly at the right line from a preview or
+    #  a content search.
+    # Examples depending on your favourite editor:
+    #    execution: "nvim +{line} {file}"
+    #    execution: "helix {file}:{line}"
     {
         invocation: edit
         shortcut: e
-        execution: "$EDITOR +{line} {file}"
+        execution: "$EDITOR {file}"
         leave_broot: false
     }
 
     # A convenient shortcut to create new text files in
-    # the current directory or below
+    #  the current directory or below
     {
         invocation: create {subpath}
         execution: "$EDITOR {directory}/{subpath}"
