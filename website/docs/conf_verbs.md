@@ -380,7 +380,6 @@ Here's a list of internals: builtin actions you can add an alternate shortcut or
 invocation | default key | default shortcut | behavior / details
 -|-|-|-
 :back | <kbd>Esc</kbd> | - | back to previous app state (see Usage page) |
-:cd | <kbd>alt</kbd><kbd>enter</kbd> | - | leave broot and cd to the selected directory (needs the br shell function)
 :chmod {args} | - | - | execute a chmod
 :clear_stage | - | cls | empty the staging area
 :close_preview | - | - | close the preview panel
