@@ -363,18 +363,34 @@ mod fuzzy_pattern_tests {
                 }
             }
         }
-        check_equivalences_in(&["aB",
+        check_equivalences_in(&[
+            "aB",
             "ab",
             "àb",
-            "âB"]);
+            "âB",
+        ]);
         let c12 = "Comunicações";
         assert_eq!(c12.len(), 14);
         assert_eq!(c12.chars().count(), 12);
         let c14 = "Comunicações";
         assert_eq!(c14.len(), 16);
         assert_eq!(c14.chars().count(), 14);
-        check_equivalences_in(&["comunicacoes",
+        check_equivalences_in(&[
+            "comunicacoes",
             c12,
-            c14]);
+            c14,
+        ]);
+        check_equivalences_in(&[
+            "у",
+            "У",
+        ]);
+    }
+    /// check that there's no problem with ignoring case on cyrillic.
+    /// This problem arises when secular was compiled without the "bmp" feature.
+    /// See https://github.com/Canop/broot/issues/746
+    #[test]
+    fn issue_746() {
+        let fp = FuzzyPattern::from("устр");
+        assert!(fp.find("Устройства").is_some());
     }
 }

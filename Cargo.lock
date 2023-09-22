@@ -234,7 +234,7 @@ dependencies = [
  "image",
  "include_dir",
  "is_executable",
- "lazy-regex 3.0.1",
+ "lazy-regex 3.0.2",
  "lfs-core",
  "libc",
  "memmap2",
@@ -1173,9 +1173,9 @@ dependencies = [
 
 [[package]]
 name = "lazy-regex"
-version = "3.0.1"
+version = "3.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57451d19ad5e289ff6c3d69c2a2424652995c42b79dafa11e9c4d5508c913c01"
+checksum = "e723bd417b2df60a0f6a2b6825f297ea04b245d4ba52b5a22cb679bdf58b05fa"
 dependencies = [
  "lazy-regex-proc_macros 3.0.1",
  "once_cell",
@@ -2266,7 +2266,7 @@ dependencies = [
  "coolor",
  "crossbeam",
  "crossterm",
- "lazy-regex 3.0.1",
+ "lazy-regex 3.0.2",
  "minimad 0.13.0",
  "serde",
  "thiserror",
