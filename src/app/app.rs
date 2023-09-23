@@ -12,6 +12,8 @@ use {
         kitty,
         launchable::Launchable,
         path::closest_dir,
+        pattern::InputPattern,
+        preview::PreviewState,
         skin::*,
         stage::Stage,
         syntactic::SyntaxTheme,
@@ -79,22 +81,26 @@ impl App {
         con: &AppContext,
     ) -> Result<App, ProgramError> {
         let screen = Screen::new(con)?;
+        let mut browser_state = Box::new(
+            BrowserState::new(
+                con.initial_root.clone(),
+                con.initial_tree_options.clone(),
+                screen,
+                con,
+                &Dam::unlimited(),
+            )?
+        );
+        if let Some(path) = con.initial_file.as_ref() {
+            browser_state.tree.try_select_path(path);
+        }
         let panel = Panel::new(
             PanelId::from(0),
-            Box::new(
-                BrowserState::new(
-                    con.initial_root.clone(),
-                    con.initial_tree_options.clone(),
-                    screen,
-                    con,
-                    &Dam::unlimited(),
-                )?
-            ),
+            browser_state,
             Areas::create(&mut Vec::new(), 0, screen, false),
             con,
         );
         let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
-        Ok(App {
+        let mut app = App {
             screen,
             active_panel_idx: 0,
             panels: panel.into(),
@@ -107,7 +113,27 @@ impl App {
             tx_seqs,
             rx_seqs,
             drawing_count: 0,
-        })
+        };
+        if let Some(path) = con.initial_file.as_ref() {
+            // open initial_file in preview
+            let preview_state = Box::new(PreviewState::new(
+                path.to_path_buf(),
+                InputPattern::none(),
+                None,
+                con.initial_tree_options.clone(),
+                con,
+            ));
+            if let Err(err) = app.new_panel(
+                preview_state,
+                PanelPurpose::Preview,
+                HDir::Right,
+                false,
+                con,
+            ) {
+                warn!("could not open preview: {err}");
+            }
+        }
+        Ok(app)
     }
 
     fn panel_ref_to_idx(&self, panel_ref: PanelReference) -> Option<usize> {

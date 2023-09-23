@@ -28,6 +28,9 @@ pub struct AppContext {
     /// The initial tree root
     pub initial_root: PathBuf,
 
+    /// The initial file to select and preview
+    pub initial_file: Option<PathBuf>,
+
     /// Initial tree options
     pub initial_tree_options: TreeOptions,
 
@@ -136,7 +139,7 @@ impl AppContext {
         let max_staged_count = config.max_staged_count
             .unwrap_or(10_000)
             .clamp(10, 100_000);
-        let initial_root = get_root_path(&launch_args)?;
+        let (initial_root, initial_file) = initial_root_file(&launch_args)?;
 
         // tree options are built from the default_flags
         // found in the config file(s) (if any) then overridden
@@ -154,6 +157,7 @@ impl AppContext {
 
         Ok(Self {
             initial_root,
+            initial_file,
             initial_tree_options,
             config_paths,
             launch_args,
@@ -199,11 +203,14 @@ fn are_true_colors_available() -> bool {
     }
 }
 
-fn get_root_path(cli_args: &Args) -> Result<PathBuf, ProgramError> {
-    let mut root = cli_args
-        .root
-        .as_ref()
-        .map_or(std::env::current_dir()?, PathBuf::from);
+/// Determine the initial root folder to show, and the optional
+/// initial file to open in preview
+fn initial_root_file(cli_args: &Args) -> Result<(PathBuf, Option<PathBuf>), ProgramError> {
+    let mut file = None;
+    let mut root = match cli_args.root.as_ref() {
+        Some(path) => canonicalize_root(path)?,
+        None => std::env::current_dir()?,
+    };
     if !root.exists() {
         return Err(TreeBuildError::FileNotFound {
             path: format!("{:?}", &root),
@@ -212,16 +219,17 @@ fn get_root_path(cli_args: &Args) -> Result<PathBuf, ProgramError> {
     if !root.is_dir() {
         // we try to open the parent directory if the passed file isn't one
         if let Some(parent) = root.parent() {
+            file = Some(root.clone());
             info!("Passed path isn't a directory => opening parent instead");
             root = parent.to_path_buf();
         } else {
-            // let's give up
+            // this is a weird filesystem, let's give up
             return Err(TreeBuildError::NotADirectory {
                 path: format!("{:?}", &root),
             }.into());
         }
     }
-    Ok(canonicalize_root(&root)?)
+    Ok((root, file))
 }
 
 #[cfg(not(windows))]
