@@ -131,6 +131,9 @@ impl App {
                 con,
             ) {
                 warn!("could not open preview: {err}");
+            } else {
+                // we focus the preview panel
+                app.active_panel_idx = 1;
             }
         }
         Ok(app)

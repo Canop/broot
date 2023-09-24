@@ -24,7 +24,7 @@ and quit broot with `:pp` on the selected path. But most often you'll more conve
 
 # Launch Arguments
 
-**broot** and **br** can be passed as argument the path to display.
+**broot** and **br** can be passed as argument the path to display, either a directory or a file. When it's a file, it's opened in preview.
 
 They also accept a few other arguments which you can view with `br --help`.
 
