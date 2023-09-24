@@ -179,7 +179,121 @@ impl PanelInput {
         }
     }
 
-    /// consume the event to
+    /// escape (bound to the 'esc' key)
+    ///
+    /// Can't be done as a standard internal for the moment because of
+    /// the necessary position before the 'tab' if/else handling
+    fn escape(
+        &mut self,
+        con: &AppContext,
+        mode: Mode,
+        parts: CommandParts,
+    ) -> Command {
+        self.tab_cycle_count = 0;
+        if let Some(raw) = self.input_before_cycle.take() {
+            // we cancel the tab cycling
+            self.input_field.set_str(&raw);
+            self.input_before_cycle = None;
+            Command::from_raw(raw, false)
+        } else if con.modal && mode == Mode::Input {
+            // leave insertion mode
+            Command::Internal {
+                internal: Internal::mode_command,
+                input_invocation: None,
+            }
+        } else {
+            // general back command
+            self.input_field.clear();
+            let internal = Internal::back;
+            Command::Internal {
+                internal,
+                input_invocation: parts.verb_invocation,
+            }
+        }
+    }
+
+    /// autocomplete a verb (bound to 'tab')
+    fn auto_complete_verb(
+        &mut self,
+        con: &AppContext,
+        sel_info: SelInfo<'_>,
+        raw: String,
+        parts: CommandParts,
+    ) -> Command {
+        let parts_before_cycle;
+        let completable_parts = if let Some(s) = &self.input_before_cycle {
+            parts_before_cycle = CommandParts::from(s.clone());
+            &parts_before_cycle
+        } else {
+            &parts
+        };
+        let completions = Completions::for_input(completable_parts, con, sel_info);
+        info!(" -> completions: {:?}", &completions);
+        let added = match completions {
+            Completions::None => {
+                debug!("nothing to complete!");
+                self.tab_cycle_count = 0;
+                self.input_before_cycle = None;
+                None
+            }
+            Completions::Common(completion) => {
+                self.tab_cycle_count = 0;
+                Some(completion)
+            }
+            Completions::List(mut completions) => {
+                let idx = self.tab_cycle_count % completions.len();
+                if self.tab_cycle_count == 0 {
+                    self.input_before_cycle = Some(raw.to_string());
+                }
+                self.tab_cycle_count += 1;
+                Some(completions.swap_remove(idx))
+            }
+        };
+        if let Some(added) = added {
+            let mut raw = self
+                .input_before_cycle
+                .as_ref()
+                .map_or(raw, |s| s.to_string());
+            raw.push_str(&added);
+            self.input_field.set_str(&raw);
+            Command::from_raw(raw, false)
+        } else {
+            Command::None
+        }
+    }
+
+    fn find_key_verb<'c>(
+        &mut self,
+        key: KeyEvent,
+        con: &'c AppContext,
+        sel_info: SelInfo<'_>,
+        panel_state_type: PanelStateType,
+    ) -> Option<(usize, &'c Verb)> {
+        for (index, verb) in con.verb_store.verbs.iter().enumerate() {
+            // note that there can be several verbs with the same key and
+            // not all of them can apply
+            if !verb.keys.contains(&key) {
+                continue;
+            }
+            if !verb.selection_condition.is_respected_by(sel_info.common_stype()) {
+                continue;
+            }
+            if !verb.can_be_called_in_panel(panel_state_type) {
+                continue;
+            }
+            if !verb.file_extensions.is_empty() {
+                let extension = sel_info.extension();
+                if !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
+                    continue;
+                }
+            }
+            debug!("verb for key: {}", &verb.execution);
+            return Some((index, verb));
+        }
+        None
+    }
+
+    /// Consume the event to
     /// - maybe change the input
     /// - build a command
     fn get_command(
@@ -225,78 +339,22 @@ impl PanelInput {
                 let raw = self.input_field.get_content();
                 let mut parts = CommandParts::from(raw.clone());
 
-                // we first handle the cases that MUST absolutely
-                // not be overridden by configuration
+                // We first handle the cases that MUST absolutely
+                // not be overridden by configuration.
+                // Those handlings must also be done in order: escaping
+                // a cycling must be done before the 'tab' handling (and
+                // its else which resets the cycle)
 
                 if key == key!(esc) {
-                    // tab cycling
-                    self.tab_cycle_count = 0;
-                    if let Some(raw) = self.input_before_cycle.take() {
-                        // we cancel the tab cycling
-                        self.input_field.set_str(&raw);
-                        self.input_before_cycle = None;
-                        return Command::from_raw(raw, false);
-                    } else if con.modal && mode == Mode::Input {
-                        // leave insertion mode
-                        return Command::Internal {
-                            internal: Internal::mode_command,
-                            input_invocation: None,
-                        };
-                    } else {
-                        // general back command
-                        self.input_field.clear();
-                        let internal = Internal::back;
-                        return Command::Internal {
-                            internal,
-                            input_invocation: parts.verb_invocation,
-                        };
-                    }
+                    return self.escape(con, mode, parts);
                 }
 
                 // tab completion
                 if key == key!(tab) {
                     if parts.verb_invocation.is_some() {
-                        let parts_before_cycle;
-                        let completable_parts = if let Some(s) = &self.input_before_cycle {
-                            parts_before_cycle = CommandParts::from(s.clone());
-                            &parts_before_cycle
-                        } else {
-                            &parts
-                        };
-                        let completions = Completions::for_input(completable_parts, con, sel_info);
-                        info!(" -> completions: {:?}", &completions);
-                        let added = match completions {
-                            Completions::None => {
-                                debug!("nothing to complete!");
-                                self.tab_cycle_count = 0;
-                                self.input_before_cycle = None;
-                                None
-                            }
-                            Completions::Common(completion) => {
-                                self.tab_cycle_count = 0;
-                                Some(completion)
-                            }
-                            Completions::List(mut completions) => {
-                                let idx = self.tab_cycle_count % completions.len();
-                                if self.tab_cycle_count == 0 {
-                                    self.input_before_cycle = Some(raw.to_string());
-                                }
-                                self.tab_cycle_count += 1;
-                                Some(completions.swap_remove(idx))
-                            }
-                        };
-                        if let Some(added) = added {
-                            let mut raw = self
-                                .input_before_cycle
-                                .as_ref()
-                                .map_or(raw, |s| s.to_string());
-                            raw.push_str(&added);
-                            self.input_field.set_str(&raw);
-                            return Command::from_raw(raw, false);
-                        } else {
-                            return Command::None;
-                        }
+                        return self.auto_complete_verb(con, sel_info, raw, parts);
                     }
+                    // if no verb is being edited, other bindings may apply (eg :next_match)
                 } else {
                     self.tab_cycle_count = 0;
                     self.input_before_cycle = None;
@@ -318,47 +376,35 @@ impl PanelInput {
 
                 // we now check if the key is the trigger key of one of the verbs
                 if keys::is_key_allowed_for_verb(key, mode, raw.is_empty()) {
-                    for (index, verb) in con.verb_store.verbs.iter().enumerate() {
-                        for verb_key in &verb.keys {
-                            if *verb_key != key {
-                                continue;
-                            }
-                            if self.handle_input_related_verb(verb, con) {
-                                return Command::from_raw(self.input_field.get_content(), false);
-                            }
-                            if !verb.selection_condition.is_respected_by(sel_info.common_stype()) {
-                                continue;
-                            }
-                            if !verb.can_be_called_in_panel(panel_state_type) {
-                                continue;
-                            }
-                            if mode != Mode::Input && verb.is_internal(Internal::mode_input) {
-                                self.enter_input_mode_with_key(key, &parts);
-                            }
-                            if !verb.file_extensions.is_empty() {
-                                let extension = sel_info.extension();
-                                if !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
-                                    continue;
-                                }
-                            }
-                            if verb.auto_exec {
-                                return Command::VerbTrigger {
-                                    index,
-                                    input_invocation: parts.verb_invocation,
-                                };
-                            }
-                            if let Some(invocation_parser) = &verb.invocation_parser {
-                                let exec_builder = ExecutionStringBuilder::without_invocation(
-                                    sel_info,
-                                    app_state,
-                                );
-                                let verb_invocation = exec_builder.invocation_with_default(
-                                    &invocation_parser.invocation_pattern
-                                );
-                                parts.verb_invocation = Some(verb_invocation);
-                                self.set_content(&parts.to_string());
-                                return Command::VerbEdit(parts.verb_invocation.unwrap());
-                            }
+                    if let Some((index, verb)) = self.find_key_verb(
+                        key,
+                        con,
+                        sel_info,
+                        panel_state_type,
+                    ) {
+                        if self.handle_input_related_verb(verb, con) {
+                            return Command::from_raw(self.input_field.get_content(), false);
+                        }
+                        if mode != Mode::Input && verb.is_internal(Internal::mode_input) {
+                            self.enter_input_mode_with_key(key, &parts);
+                        }
+                        if verb.auto_exec {
+                            return Command::VerbTrigger {
+                                index,
+                                input_invocation: parts.verb_invocation,
+                            };
+                        }
+                        if let Some(invocation_parser) = &verb.invocation_parser {
+                            let exec_builder = ExecutionStringBuilder::without_invocation(
+                                sel_info,
+                                app_state,
+                            );
+                            let verb_invocation = exec_builder.invocation_with_default(
+                                &invocation_parser.invocation_pattern
+                            );
+                            parts.verb_invocation = Some(verb_invocation);
+                            self.set_content(&parts.to_string());
+                            return Command::VerbEdit(parts.verb_invocation.unwrap());
                         }
                     }
                 }
