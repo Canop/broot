@@ -278,6 +278,10 @@ impl Verb {
         self.get_internal() == Some(internal)
     }
 
+    pub fn is_some_internal(v: Option<&Verb>, internal: Internal) -> bool {
+        v.map_or(false, |v| v.is_internal(internal))
+    }
+
     pub fn is_sequence(&self) -> bool {
         matches!(self.execution, VerbExecution::Sequence(_))
     }

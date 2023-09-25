@@ -379,7 +379,8 @@ Here's a list of internals: builtin actions you can add an alternate shortcut or
 
 invocation | default key | default shortcut | behavior / details
 -|-|-|-
-:back | <kbd>Esc</kbd> | - | back to previous app state (see Usage page) |
+:back | <kbd>left</kbd> | - | back to previous app state (see Usage page) |
+:escape | <kbd>esc</kbd> | - | escape from completions, current input, page, etc. (this internal can be bound to another key but should not be used in command sequences)
 :chmod {args} | - | - | execute a chmod
 :clear_stage | - | cls | empty the staging area
 :close_preview | - | - | close the preview panel
@@ -396,7 +397,7 @@ invocation | default key | default shortcut | behavior / details
 :mv {newpath} | - | - | move the file or directory to the provided path
 :no_sort | - | ns | remove all sorts
 :next_dir | - | - | select the next directory
-:next_match | <kbd>tab</kbd> | - | select the next matching file
+:next_match | <kbd>tab</kbd> | - | select the next matching file, or matching verb or path in auto-completion
 :open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leave broot
 :open_preview | - | - | open the preview panel
 :open_staging_area | - | osa | open the staging area
