@@ -749,11 +749,11 @@ pub trait PanelState {
                 }
             }
             Command::VerbTrigger {
-                index,
+                verb_id,
                 input_invocation,
             } => self.execute_verb(
                 w,
-                &con.verb_store.verbs[*index],
+                &con.verb_store.verb(*verb_id),
                 input_invocation.as_ref(),
                 TriggerType::Other,
                 app_state,

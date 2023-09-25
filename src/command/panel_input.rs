@@ -268,8 +268,8 @@ impl PanelInput {
         con: &'c AppContext,
         sel_info: SelInfo<'_>,
         panel_state_type: PanelStateType,
-    ) -> Option<(usize, &'c Verb)> {
-        for (index, verb) in con.verb_store.verbs.iter().enumerate() {
+    ) -> Option<&'c Verb> {
+        for verb in con.verb_store.verbs().iter() {
             // note that there can be several verbs with the same key and
             // not all of them can apply
             if !verb.keys.contains(&key) {
@@ -288,7 +288,7 @@ impl PanelInput {
                 }
             }
             debug!("verb for key: {}", &verb.execution);
-            return Some((index, verb));
+            return Some(verb);
         }
         None
     }
@@ -376,7 +376,7 @@ impl PanelInput {
 
                 // we now check if the key is the trigger key of one of the verbs
                 if keys::is_key_allowed_for_verb(key, mode, raw.is_empty()) {
-                    if let Some((index, verb)) = self.find_key_verb(
+                    if let Some(verb) = self.find_key_verb(
                         key,
                         con,
                         sel_info,
@@ -390,7 +390,7 @@ impl PanelInput {
                         }
                         if verb.auto_exec {
                             return Command::VerbTrigger {
-                                index,
+                                verb_id: verb.id,
                                 input_invocation: parts.verb_invocation,
                             };
                         }
