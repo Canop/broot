@@ -189,13 +189,15 @@ impl PanelInput {
 
     /// escape (bound to the 'esc' key)
     ///
-    /// Can't be done as a standard internal for the moment because of
-    /// the necessary position before the 'tab' if/else handling
-    fn escape(
+    /// This function is better called from the on_key method of
+    /// panel input, when a key triggers it, because then it
+    /// can also properly deal with completion sequence.
+    /// When ':escape' is called from a verb's cmd sequence, then
+    /// it's not called on on_key but by the app.
+    pub fn escape(
         &mut self,
         con: &AppContext,
         mode: Mode,
-        parts: CommandParts,
     ) -> Command {
         self.tab_cycle_count = 0;
         if let Some(raw) = self.input_before_cycle.take() {
@@ -211,6 +213,8 @@ impl PanelInput {
             }
         } else {
             // general back command
+            let raw = self.input_field.get_content();
+            let parts = CommandParts::from(raw.clone());
             self.input_field.clear();
             let internal = Internal::back;
             Command::Internal {
@@ -374,7 +378,7 @@ impl PanelInput {
 
         // usually 'esc' key
         if Verb::is_some_internal(verb, Internal::escape) {
-            return self.escape(con, mode, parts);
+            return self.escape(con, mode);
         }
 
         // 'tab' completion of a verb or one of its arguments

@@ -30,7 +30,7 @@ pub struct Panel {
     pub areas: Areas,
     status: Status,
     pub purpose: PanelPurpose,
-    input: PanelInput,
+    pub input: PanelInput,
 }
 
 impl Panel {

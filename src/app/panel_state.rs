@@ -490,6 +490,9 @@ pub trait PanelState {
                     CmdResult::Keep
                 }
             }
+            Internal::escape => {
+                CmdResult::HandleInApp(Internal::escape)
+            }
             Internal::panel_left | Internal::panel_left_no_open => {
                 CmdResult::HandleInApp(Internal::panel_left_no_open)
             }
