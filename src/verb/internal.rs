@@ -54,6 +54,7 @@ macro_rules! Internals {
 //  name: "description" needs_a_path
 Internals! {
     back: "revert to the previous state (mapped to *esc*)" false,
+    escape: "escape from edition, completion, page, etc." false,
     close_panel_ok: "close the panel, validating the selected path" false,
     close_panel_cancel: "close the panel, not using the selected path" false,
     copy_line: "copy selected line (in tree or preview)" true,

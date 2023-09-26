@@ -365,6 +365,12 @@ impl App {
             HandleInApp(internal) => {
                 debug!("handling internal {internal:?} at app level");
                 match internal {
+                    Internal::escape => {
+                        let mode = self.panel().state().get_mode();
+                        let cmd = self.mut_panel().input.escape(con, mode);
+                        debug!("cmd on escape: {cmd:?}");
+                        self.apply_command(w, cmd, panel_skin, app_state, con)?;
+                    }
                     Internal::panel_left_no_open | Internal::panel_right_no_open => {
                         let new_active_panel_idx = if internal == Internal::panel_left_no_open {
                             // we're here because the state wants us to either move to the panel
