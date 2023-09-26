@@ -13,6 +13,7 @@ use {
     },
 };
 
+
 /// what makes a verb.
 ///
 /// Verbs are the engines of broot commands, and apply
@@ -28,6 +29,9 @@ use {
 /// in memory.
 #[derive(Debug)]
 pub struct Verb {
+
+    pub id: VerbId,
+
     /// names (like "cd", "focus", "focus_tab", "c") by which
     /// a verb can be called.
     /// Can be empty if the verb is only called with a key shortcut.
@@ -81,6 +85,7 @@ impl PartialEq for Verb {
 impl Verb {
 
     pub fn new(
+        id: VerbId,
         invocation_str: Option<&str>,
         execution: VerbExecution,
         description: VerbDescription,
@@ -108,6 +113,7 @@ impl Verb {
             )
         };
         Ok(Self {
+            id,
             names,
             keys: Vec::new(),
             invocation_parser,
@@ -122,7 +128,7 @@ impl Verb {
             panels: Vec::new(),
         })
     }
-    pub fn with_key(mut self, key: KeyEvent) -> Self {
+    pub fn with_key(&mut self, key: KeyEvent) -> &mut Self {
         self.keys.push(key);
         self
     }
@@ -131,27 +137,27 @@ impl Verb {
             self.keys.push(key);
         }
     }
-    pub fn no_doc(mut self) -> Self {
+    pub fn no_doc(&mut self) -> &mut Self {
         self.show_in_doc = false;
         self
     }
-    pub fn with_description(mut self, description: &str) -> Self {
+    pub fn with_description(&mut self, description: &str) -> &mut Self {
         self.description = VerbDescription::from_text(description.to_string());
         self
     }
-    pub fn with_shortcut(mut self, shortcut: &str) -> Self {
+    pub fn with_shortcut(&mut self, shortcut: &str) -> &mut Self {
         self.names.push(shortcut.to_string());
         self
     }
-    pub fn with_stype(mut self, stype: SelectionType) -> Self {
+    pub fn with_stype(&mut self, stype: SelectionType) -> &mut Self {
         self.selection_condition = stype;
         self
     }
-    pub fn needing_another_panel(mut self) -> Self {
+    pub fn needing_another_panel(&mut self) -> &mut Self {
         self.needs_another_panel = true;
         self
     }
-    pub fn with_auto_exec(mut self, b: bool) -> Self {
+    pub fn with_auto_exec(&mut self, b: bool) -> &mut Self {
         self.auto_exec = b;
         self
     }
@@ -255,14 +261,6 @@ impl Verb {
         }
     }
 
-    // /// in case the verb take only one argument of type path, return
-    // /// the selection type of this unique argument
-    // pub fn get_arg_selection_type(&self) -> Option<SelectionType> {
-    //     self.invocation_parser
-    //         .as_ref()
-    //         .and_then(|parser| parser.arg_selection_type)
-    // }
-
     pub fn get_unique_arg_anchor(&self) -> PathAnchor {
         self.invocation_parser
             .as_ref()
@@ -278,6 +276,10 @@ impl Verb {
 
     pub fn is_internal(&self, internal: Internal) -> bool {
         self.get_internal() == Some(internal)
+    }
+
+    pub fn is_some_internal(v: Option<&Verb>, internal: Internal) -> bool {
+        v.map_or(false, |v| v.is_internal(internal))
     }
 
     pub fn is_sequence(&self) -> bool {

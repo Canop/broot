@@ -30,7 +30,7 @@ pub struct Panel {
     pub areas: Areas,
     status: Status,
     pub purpose: PanelPurpose,
-    input: PanelInput,
+    pub input: PanelInput,
 }
 
 impl Panel {
@@ -251,7 +251,7 @@ impl Panel {
         if let Some(area) = &self.areas.purpose {
             let shortcut = con
                 .verb_store
-                .verbs
+                .verbs()
                 .iter()
                 .filter(|v| match &v.execution {
                     VerbExecution::Internal(exec) => exec.internal == Internal::start_end_panel,

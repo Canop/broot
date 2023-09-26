@@ -1,5 +1,4 @@
 mod arg_def;
-mod builtin;
 mod exec_pattern;
 mod execution_builder;
 mod external_execution;
@@ -39,6 +38,8 @@ use {
 
 /// the group you find in invocation patterns and execution patterns
 pub static GROUP: Lazy<Regex> = lazy_regex!(r"\{([^{}:]+)(?::([^{}:]+))?\}");
+
+pub type VerbId = usize;
 
 pub fn str_has_selection_group(s: &str) -> bool {
     GROUP.find_iter(s)

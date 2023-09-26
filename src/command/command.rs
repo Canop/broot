@@ -2,7 +2,7 @@ use {
     super::*,
     crate::{
         pattern::*,
-        verb::{Internal, VerbInvocation},
+        verb::{Internal, VerbInvocation, VerbId},
     },
     bet::BeTree,
 };
@@ -35,7 +35,7 @@ pub enum Command {
     /// call of a verb done without the input
     /// (using a trigger key for example)
     VerbTrigger {
-        index: usize,
+        verb_id: VerbId,
         input_invocation: Option<VerbInvocation>,
     },
 
