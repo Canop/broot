@@ -1,7 +1,8 @@
-### next
+### v1.26.0 - 2023-09-27
+<a name="v1.26.0"></a>
+- when given a path to a file at launch, broot now selects it in the tree and opens it in preview - Fix #729
 - allow rebinding of the 'tab' and 'esc' keys with the `:next_match` and `:escape` internals - Fix #740
 - fix fuzzy patterns not case insensitive on some characters - Fix #746
-- when given a path to a file at launch, broot now selects it in the tree and opens it in preview - Fix #729
 
 ### v1.25.2 - 2023-09-20
 <a name="v1.25.2"></a>

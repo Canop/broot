@@ -275,7 +275,7 @@ impl VerbStore {
         #[cfg(unix)]
         self.add_external("rm", "rm -rf {file}", StayInBroot);
         #[cfg(windows)]
-        add_external("rm", "cmd /c rmdir /Q /S {file}", StayInBroot)
+        self.add_external("rm", "cmd /c rmdir /Q /S {file}", StayInBroot)
             .with_stype(SelectionType::Directory);
         #[cfg(windows)]
         self.add_external("rm", "cmd /c del /Q {file}", StayInBroot)
