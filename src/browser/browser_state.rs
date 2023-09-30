@@ -614,6 +614,7 @@ impl PanelState for BrowserState {
         &self,
         has_previous_state: bool,
         con: &AppContext,
+        width: usize,
     ) -> Status {
         let tree = self.displayed_tree();
         if tree.is_empty() && tree.build_report.hidden_count > 0 {
@@ -631,6 +632,7 @@ impl PanelState for BrowserState {
         let mut ssb = con.standard_status.builder(
             PanelStateType::Tree,
             tree.selected_line().as_selection(),
+            width,
         );
         ssb.has_previous_state = has_previous_state;
         ssb.is_filtered = self.filtered_tree.is_some();

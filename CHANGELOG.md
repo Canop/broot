@@ -1,3 +1,6 @@
+### next
+- improved status line
+
 ### v1.26.0 - 2023-09-27
 <a name="v1.26.0"></a>
 - when given a path to a file at launch, broot now selects it in the tree and opens it in preview - Fix #729

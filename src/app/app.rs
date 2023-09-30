@@ -660,6 +660,16 @@ impl App {
             self.update_preview(con, false); // the selection may have changed
             if let Some(error) = &error {
                 self.mut_panel().set_error(error.to_string());
+            } else {
+                let panel_skin = &skin.focused;
+                let app_cmd_context = AppCmdContext {
+                    panel_skin,
+                    preview_panel: self.preview_panel,
+                    stage_panel: self.stage_panel,
+                    screen: self.screen, // it can't change in this function
+                    con,
+                };
+                self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
             }
             self.display_panels(w, skin, app_state, con)?;
             if error.is_some() {

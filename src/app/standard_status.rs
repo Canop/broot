@@ -14,6 +14,7 @@ pub struct StandardStatus {
     tree_dir_focus: String,
     tree_dir_cd: Option<String>, // TODO check outcmd
     tree_file_open_stay: Option<String>,
+    tree_file_open_stay_long: Option<String>,
     tree_file_open_leave: Option<String>,
     tree_unfiltered: String,
     tree_filtered: String,
@@ -35,6 +36,9 @@ impl StandardStatus {
             .key_desc_of_internal_stype(Internal::open_leave, SelectionType::Directory)
             .map(|k| format!("*{k}* to cd"));
         let tree_file_open_stay = verb_store
+            .key_desc_of_internal_stype(Internal::open_stay, SelectionType::File)
+            .map(|k| format!("*{k}* to open"));
+        let tree_file_open_stay_long = verb_store
             .key_desc_of_internal_stype(Internal::open_stay, SelectionType::File)
             .map(|k| format!("*{k}* to open the file"));
         let tree_file_open_leave = verb_store
@@ -64,6 +68,7 @@ impl StandardStatus {
             tree_dir_focus,
             tree_dir_cd,
             tree_file_open_stay,
+            tree_file_open_stay_long,
             tree_file_open_leave,
             //tree_file_enter,
             tree_unfiltered,
@@ -82,8 +87,9 @@ impl StandardStatus {
         &'s self,
         state_type: PanelStateType,
         selection: Selection<'s>,
+        width: usize, // available width
     ) -> StandardStatusBuilder<'s> {
-        StandardStatusBuilder::new(self, state_type, selection)
+        StandardStatusBuilder::new(self, state_type, selection, width)
     }
 }
 
@@ -103,16 +109,30 @@ impl<'b> StatusParts<'b> {
     fn len(&self) -> usize {
         self.md_parts.len()
     }
-    fn to_status(&self) -> Status {
+    /// Build the markdown of the complete status by combining parts
+    /// while not going much over the available width so that we
+    /// don't have too much elision (otherwise it would be too hard to read)
+    fn to_status(&self, available_width: usize) -> Status {
         let mut md = String::new();
+        // notes about the truncation:
+        // - in case of truncation, we don't use the long ", or "
+        //   separator. It's OK, assuming truncation is only for
+        //   when the screen is very small, and not the standard case.
+        let mut sum_len = 0;
+        let max_len = available_width + 3;
         for (i, p) in self.md_parts.iter().enumerate() {
-            md.push_str(if i == 0 {
+            let sep = if i == 0 {
                 "Hit "
             } else if i == self.md_parts.len() - 1 {
                 ", or "
             } else {
                 ", "
-            });
+            };
+            sum_len += sep.len() + p.len() - 2; // -2 is an estimate of hidden chars
+            if i > 0 && sum_len > max_len {
+                break;
+            }
+            md.push_str(sep);
             md.push_str(p);
         }
         Status::from_message(md)
@@ -127,12 +147,14 @@ pub struct StandardStatusBuilder<'s> {
     pub is_filtered: bool,
     pub has_removed_pattern: bool,
     pub on_tree_root: bool, // should this be part of the Selection struct ?
+    pub width: usize, // available width
 }
 impl<'s> StandardStatusBuilder<'s> {
     fn new(
         ss: &'s StandardStatus,
         state_type: PanelStateType,
         selection: Selection<'s>,
+        width: usize, // available width
     ) -> Self {
         Self {
             ss,
@@ -142,6 +164,7 @@ impl<'s> StandardStatusBuilder<'s> {
             is_filtered: false,
             has_removed_pattern: false,
             on_tree_root: false,
+            width,
         }
     }
     pub fn status(self) -> Status {
@@ -162,7 +185,11 @@ impl<'s> StandardStatusBuilder<'s> {
                 } else if self.selection.stype == SelectionType::File {
                     // maybe add "ctrl-right to preview" ? Or just sometimes ?
                     //  (need check no preview)
-                    parts.addo(&ss.tree_file_open_stay);
+                    if self.width > 105 {
+                        parts.addo(&ss.tree_file_open_stay_long);
+                    } else {
+                        parts.addo(&ss.tree_file_open_stay);
+                    }
                     parts.addo(&ss.tree_file_open_leave);
                 }
                 if self.is_filtered {
@@ -202,6 +229,6 @@ impl<'s> StandardStatusBuilder<'s> {
                 warn!("TODO stage status");
             }
         }
-        parts.to_status()
+        parts.to_status(self.width)
     }
 }

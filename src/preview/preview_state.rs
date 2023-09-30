@@ -288,10 +288,12 @@ impl PanelState for PreviewState {
         &self,
         has_previous_state: bool,
         con: &AppContext,
+        width: usize, // available width
     ) -> Status {
         let mut ssb = con.standard_status.builder(
             PanelStateType::Preview,
             self.no_opt_selection(),
+            width,
         );
         ssb.has_previous_state = has_previous_state;
         ssb.is_filtered = self.filtered_preview.is_some();
