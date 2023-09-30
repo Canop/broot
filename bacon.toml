@@ -5,9 +5,6 @@ default_job = "check"
 
 [jobs]
 
-[jobs.win]
-command = ["cargo", "check", "--target", "x86_64-pc-windows-gnu", "--color", "always"]
-
 [jobs.check-all]
 command = ["cargo", "check", "--all-targets", "--color", "always"]
 need_stdout = false
