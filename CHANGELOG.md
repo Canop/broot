@@ -1,3 +1,6 @@
+### next
+- small breaking change: `:stage_all_files` now stages also symlinks - Fix #606
+
 ### v1.26.1 - 2023-09-30
 <a name="v1.26.1"></a>
 - improved status line

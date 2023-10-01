@@ -684,7 +684,7 @@ impl PanelState for BrowserState {
                             time!(builder.build_paths(
                                 total_search,
                                 dam,
-                                |line| line.file_type.is_file(),
+                                |line| line.file_type.is_file() || line.file_type.is_symlink(),
                             ))
                         })?;
                     for path in paths.drain(..) {
