@@ -19,6 +19,9 @@ command = [
 need_stdout = false
 watch = ["benches"]
 
+[jobs.win]
+command = ["cross", "build", "--target", "x86_64-pc-windows-gnu", "--release", "--features", "clipboard"]
+
 [jobs.light]
 command = ["cargo", "check", "--color", "always"]
 need_stdout = false

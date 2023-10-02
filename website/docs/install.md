@@ -25,7 +25,7 @@ fetch("../download/version")
 	Some users on Windows also report problems with the colon; remember that a space can be used instead of a colon.
 	You should also use a modern terminal, for example the [new Microsoft one](https://github.com/microsoft/terminal)
 
-# From precompiled binaries
+# Precompiled binaries
 
 Binaries are made available at every release in [download](https://dystroy.org/broot/download).
 
