@@ -67,7 +67,7 @@ impl DirView {
             self.page_height = Some(page_height);
         }
         let dp = DisplayableTree {
-            app_state: None,
+            display_context: None,
             tree: &self.tree,
             skin: &disc.panel_skin.styles,
             ext_colors: &disc.con.ext_colors,

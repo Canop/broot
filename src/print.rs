@@ -1,5 +1,7 @@
 //! functions printing a tree or a path
 
+use crate::path::relativize_path;
+
 use {
     crate::{
         app::*,
@@ -10,11 +12,7 @@ use {
         tree::Tree,
     },
     crokey::crossterm::tty::IsTty,
-    pathdiff,
-    std::{
-        io::{self, stdout},
-        path::Path,
-    },
+    std::io::{self, stdout},
 };
 
 fn print_string(string: String, _con: &AppContext) -> io::Result<CmdResult> {
@@ -40,25 +38,6 @@ pub fn print_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<CmdResult>
         }
     };
     print_string(string, con)
-}
-
-fn relativize_path(path: &Path, con: &AppContext) -> io::Result<String> {
-    let relative_path = match pathdiff::diff_paths(path, &con.initial_root) {
-        None => {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!("Cannot relativize {path:?}"), // does this happen ? how ?
-            ));
-        }
-        Some(p) => p,
-    };
-    Ok(
-        if relative_path.components().next().is_some() {
-            relative_path.to_string_lossy().to_string()
-        } else {
-            ".".to_string()
-        }
-    )
 }
 
 pub fn print_relative_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<CmdResult> {

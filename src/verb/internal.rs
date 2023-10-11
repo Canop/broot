@@ -140,6 +140,7 @@ Internals! {
     toggle_git_file_info: "toggle display of git file information" false,
     toggle_git_status: "toggle showing only files relevant for git status" false,
     toggle_root_fs: "toggle showing filesystem info on top" false,
+    toggle_root_relative: "toggle displaying root path relative to launch dir" false,
     toggle_hidden: "toggle showing hidden files" false,
     toggle_perm: "toggle showing file permissions" false,
     toggle_sizes: "toggle showing sizes" false,

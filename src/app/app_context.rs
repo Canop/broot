@@ -34,6 +34,9 @@ pub struct AppContext {
     /// Initial tree options
     pub initial_tree_options: TreeOptions,
 
+    /// Initial working directory. This is where `broot` is launched, not the root path!
+    pub initial_working_dir: PathBuf,
+
     /// where's the config file we're using
     /// This vec can't be empty
     pub config_paths: Vec<PathBuf>,
@@ -159,6 +162,7 @@ impl AppContext {
             initial_root,
             initial_file,
             initial_tree_options,
+            initial_working_dir: std::env::current_dir()?,
             config_paths,
             launch_args,
             verb_store,

@@ -44,6 +44,10 @@ pub struct Args {
     #[arg(long)]
     pub show_root_fs: bool,
 
+    /// Show the root path relative to the launch directory.
+    #[arg(long)]
+    pub root_relative_path: bool,
+
     /// Show git statuses on files and stats on repo
     #[arg(short='g', long)]
     pub show_git_info: bool,

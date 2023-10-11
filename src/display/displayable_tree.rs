@@ -1,3 +1,6 @@
+use crate::app::DisplayContext;
+use crate::path::relativize_path;
+
 use {
     super::{
         cond_bg,
@@ -9,7 +12,6 @@ use {
         SPACE_FILLING, BRANCH_FILLING,
     },
     crate::{
-        app::AppState,
         content_search::ContentMatch,
         errors::ProgramError,
         file_sum::FileSum,
@@ -37,7 +39,7 @@ use {
 ///  - a scrollbar may be drawn
 ///  - the empty lines will be erased
 pub struct DisplayableTree<'a, 's, 't> {
-    pub app_state: Option<&'a AppState>,
+    pub display_context: Option<&'a DisplayContext<'a>>,
     pub tree: &'t Tree,
     pub skin: &'s StyleMap,
     pub area: termimad::Area,
@@ -55,7 +57,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         height: u16,
     ) -> DisplayableTree<'a, 's, 't> {
         DisplayableTree {
-            app_state: None,
+            display_context: None,
             tree,
             skin,
             ext_colors,
@@ -413,8 +415,15 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 )?;
             }
         }
-        let title = line.path.to_string_lossy();
-        cw.queue_str(style, &title)?;
+        match self.display_context {
+            Some(context) if self.tree.options.relative_root => {
+                cw.queue_str(style, &relativize_path(&line.path, context.con)?)?;
+            },
+            _ => {
+                cw.queue_str(style, &line.path.to_string_lossy())?;
+            },
+        }
+        
         if self.in_app && !cw.is_full() {
             if let ComputationResult::Done(git_status) = &self.tree.git_status {
                 let git_status_display = GitStatusDisplay::from(
@@ -486,7 +495,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             .options
             .cols_order
             .iter()
-            .filter(|col| col.is_visible(tree, self.app_state))
+            .filter(|col| col.is_visible(tree, self.display_context.map(|con| con.app_state)))
             .cloned()
             .collect();
 
@@ -536,8 +545,8 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 if visible_cols[0].needs_left_margin() {
                     cw.queue_char(space_style, ' ')?;
                 }
-                let staged = self.app_state
-                    .map_or(false, |a| a.stage.contains(&line.path));
+                let staged = self.display_context
+                    .map_or(false, |a| a.app_state.stage.contains(&line.path));
                 for col in &visible_cols {
                     let void_len = match col {
 

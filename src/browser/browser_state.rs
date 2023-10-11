@@ -708,7 +708,7 @@ impl PanelState for BrowserState {
         disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
         let dp = DisplayableTree {
-            app_state: Some(disc.app_state),
+            display_context: Some(disc),
             tree: self.displayed_tree(),
             skin: &disc.panel_skin.styles,
             ext_colors: &disc.con.ext_colors,

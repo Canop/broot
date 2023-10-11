@@ -4,6 +4,7 @@ mod closest;
 mod from;
 mod normalize;
 mod special_path;
+mod relative;
 
 pub use {
     anchor::*,
@@ -12,4 +13,5 @@ pub use {
     from::*,
     normalize::*,
     special_path::*,
+    relative::*,
 };

@@ -443,6 +443,7 @@ invocation | default key | default shortcut | behavior / details
 :toggle_stage | <kbd>ctrl</kbd><kbd>g</kbd> | - | add or remove selection to staging area
 :toggle_staging_area | - | tsa | open/close the staging area panel
 :toggle_trim_root | - | - | toggle trimming of top level files in tree display
+:toggle_root_relative | - | - | toggle display of root path relative to launch dir or absolute
 :unstage | <kbd>-</kbd> | - | remove selection from staging area
 :up_tree | - | - | focus the parent of the current root
 
