@@ -63,11 +63,7 @@ time broot -c "c/memmap;:pt" ~/code
 
 **Broot** is written in [Rust](https://www.rust-lang.org/). The current focus is linux+mac but I try to support Windows too (use a modern terminal like the [new MS one](https://github.com/microsoft/terminal)).
 
-Before starting working on a Pull Request, please join the Miaou room to coordinate the development. There are frequently several feature branches waiting to be merged and adding some wild ones may make the process painful.
-
-A PR must be also be *focused*. Don't touch other code and don't refactor or reformat without discussion.
-
-If you think you might help, as a tester or coder, you're welcome.
+If you think you might help, as a tester or coder, you're welcome, but please read [Contributing to my FOSS projects](https://dystroy.org/blog/contributing/) before starting a PR.
 
 # This documentation...
 
