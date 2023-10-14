@@ -194,10 +194,6 @@ pub fn on_internal(
                 input_arg,
                 app_state,
             );
-            let tree_options = TreeOptions {
-                pattern: InputPattern::none(),
-                ..tree_options
-            };
             on_path(path, screen, tree_options, bang, con)
         }
         _ => {
