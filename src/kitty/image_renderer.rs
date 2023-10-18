@@ -1,5 +1,9 @@
 use {
     super::detect_support::is_kitty_graphics_protocol_supported,
+    base64::{
+        engine::general_purpose::STANDARD as BASE64,
+        Engine,
+    },
     crate::{
         display::{
             cell_size_in_pixels,
@@ -131,7 +135,7 @@ impl<'i> KittyImage<'i> {
         &self,
         w: &mut W,
     ) -> Result<(), ProgramError> {
-        let encoded = base64::encode(self.data.bytes());
+        let encoded = BASE64.encode(self.data.bytes());
         w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
         let mut pos = 0;
         loop {
@@ -178,7 +182,7 @@ impl<'i> KittyImage<'i> {
                 io::ErrorKind::Other,
                 "Path can't be converted to UTF8",
             ))?;
-        let encoded_path = base64::encode(path);
+        let encoded_path = BASE64.encode(path);
         debug!("temp file written: {:?}", path);
         w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
         write!(

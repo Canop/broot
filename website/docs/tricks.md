@@ -118,7 +118,7 @@ If your system is normally configured, doing `alt`-`enter` on an executable will
 
 # Change standard file opening
 
-When you hit enter on a file, broot asks the system to open the file. It's usually the best solution as it selects the program according to the file's type following settings you set system wide.
+When you hit enter on a file, broot asks the system to open the file. It's usually the best solution as it selects the program according to the file's type and settings you set system wide.
 
 You might still wish to change that, for example when you're on a server without xdg-open or equivalent.
 
