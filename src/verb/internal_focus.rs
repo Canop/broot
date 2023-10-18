@@ -1,5 +1,7 @@
 //! utility functions to help handle the `:focus` internal
 
+use crate::pattern::InputPattern;
+
 use {
     super::*,
     crate::{
@@ -122,7 +124,13 @@ fn path_from_input(
             // The given path may be relative hence the need for the
             // state's selection
             // (we assume a check before ensured it doesn't need an input)
-            path::path_from(base_path, PathAnchor::Unspecified, verb_arg)
+            let path_builder = ExecutionStringBuilder::with_invocation(
+                &verb.invocation_parser,
+                SelInfo::from_path(base_path),
+                app_state,
+                None,
+            );
+            path_builder.path(verb_arg)
         }
         (None, None) => {
             // user only wants to open the selected path, either in the same panel or

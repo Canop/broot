@@ -148,6 +148,19 @@ impl<'b> ExecutionStringBuilder<'b> {
                 .other_file
                 .and_then(|p| p.parent())
                 .map(path_to_string),
+            "git-root" => {
+                debug!("finding git root");
+                sel.and_then(|s| match git2::Repository::discover(s.path) {
+                    Ok(repo) => repo.workdir().map(path_to_string),
+                    Err(err) => {
+                        error!(
+                            "Failed to open Git repository at {}: {err}",
+                            s.path.display()
+                        );
+                        None
+                    }
+                })
+            }
             _ => None,
         }
     }
