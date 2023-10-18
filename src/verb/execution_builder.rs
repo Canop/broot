@@ -153,7 +153,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                 sel.and_then(|s| match git2::Repository::discover(s.path) {
                     Ok(repo) => repo.workdir().map(path_to_string),
                     Err(err) => {
-                        error!(
+                        warn!(
                             "Failed to open Git repository at {}: {err}",
                             s.path.display()
                         );

@@ -1,7 +1,4 @@
 //! utility functions to help handle the `:focus` internal
-
-use crate::pattern::InputPattern;
-
 use {
     super::*,
     crate::{
