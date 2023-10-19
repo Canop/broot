@@ -1,11 +1,10 @@
 
 mod content_match;
 mod content_search_result;
-mod magic_numbers;
-mod extensions;
 mod needle;
 
 pub use {
+    crate::content_type::{extensions, magic_numbers},
     content_match::ContentMatch,
     content_search_result::ContentSearchResult,
     needle::Needle,
@@ -53,6 +52,7 @@ pub fn is_path_suitable<P: AsRef<Path>>(path: P, max_size: usize) -> bool {
     matches!(get_mmap_if_suitable(path, max_size), Ok(Some(_)))
 }
 
+/// Return the 1-indexed line number for the byte at position pos
 pub fn line_count_at_pos<P: AsRef<Path>>(path: P, pos: usize) -> io::Result<usize> {
     let mut reader = BufReader::new(File::open(path)?);
     let mut line = String::new();

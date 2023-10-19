@@ -3,6 +3,7 @@ mod exec_pattern;
 mod execution_builder;
 mod external_execution;
 mod external_execution_mode;
+mod file_type_condition;
 mod internal;
 mod internal_execution;
 pub mod internal_focus;
@@ -21,6 +22,7 @@ pub use {
     execution_builder::ExecutionStringBuilder,
     external_execution::ExternalExecution,
     external_execution_mode::ExternalExecutionMode,
+    file_type_condition::*,
     internal::Internal,
     internal_execution::InternalExecution,
     invocation_parser::InvocationParser,

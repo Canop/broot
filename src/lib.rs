@@ -6,6 +6,7 @@ pub mod cli;
 pub mod command;
 pub mod conf;
 pub mod content_search;
+pub mod content_type;
 pub mod display;
 pub mod errors;
 pub mod file_sum;

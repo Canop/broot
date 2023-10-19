@@ -53,7 +53,7 @@ pub struct Verb {
     pub description: VerbDescription,
 
     /// the type of selection this verb applies to
-    pub selection_condition: SelectionType,
+    pub selection_condition: FileTypeCondition,
 
     /// extension filtering. If empty, all extensions apply
     pub file_extensions: Vec<String>,
@@ -119,7 +119,7 @@ impl Verb {
             invocation_parser,
             execution,
             description,
-            selection_condition: SelectionType::Any,
+            selection_condition: FileTypeCondition::Any,
             file_extensions: Vec::new(),
             needs_selection,
             needs_another_panel,
@@ -149,8 +149,8 @@ impl Verb {
         self.names.push(shortcut.to_string());
         self
     }
-    pub fn with_stype(&mut self, stype: SelectionType) -> &mut Self {
-        self.selection_condition = stype;
+    pub fn with_condition(&mut self, selection_condition: FileTypeCondition) -> &mut Self {
+        self.selection_condition = selection_condition;
         self
     }
     pub fn needing_another_panel(&mut self) -> &mut Self {
@@ -288,5 +288,13 @@ impl Verb {
 
     pub fn can_be_called_in_panel(&self, panel_state_type: PanelStateType) -> bool {
         self.panels.is_empty() || self.panels.contains(&panel_state_type)
+    }
+    pub fn accepts_extension(&self, extension: Option<&str>) -> bool {
+        if self.file_extensions.is_empty() {
+            true
+        } else {
+            extension
+                .map_or(false, |ext| self.file_extensions.iter().any(|ve| ve == ext))
+        }
     }
 }

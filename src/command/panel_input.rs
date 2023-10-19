@@ -287,7 +287,7 @@ impl PanelInput {
             if !verb.keys.contains(&key) {
                 continue;
             }
-            if !verb.selection_condition.is_respected_by(sel_info.common_stype()) {
+            if !sel_info.is_accepted_by(verb.selection_condition) {
                 continue;
             }
             if !verb.can_be_called_in_panel(panel_state_type) {
