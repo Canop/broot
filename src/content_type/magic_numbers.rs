@@ -120,6 +120,6 @@ pub fn is_known_binary(bytes: &[u8]) -> bool {
 pub fn is_file_known_binary<P: AsRef<Path>>(path: P) -> io::Result<bool> {
     let mut buf = [0; 4];
     let mut file = File::open(path)?;
-    file.read(&mut buf)?;
-    Ok(is_known_binary(&buf))
+    let n = file.read(&mut buf)?;
+    Ok(is_known_binary(&buf[0..n]))
 }
