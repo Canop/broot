@@ -746,6 +746,7 @@ impl App {
             std::thread::sleep(delay);
             let dropped_events = dam.clear();
             debug!("Dropped {dropped_events} events");
+            event_source.unblock(self.quitting);
         }
 
         if let Some(raw_sequence) = &con.launch_args.cmd {
