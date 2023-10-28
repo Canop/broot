@@ -38,7 +38,8 @@ pub struct VerbConf {
 
     pub from_shell: Option<bool>,
 
-    pub apply_to: Option<String>,
+    #[serde(default)]
+    pub apply_to: FileTypeCondition,
 
     pub set_working_dir: Option<bool>,
 

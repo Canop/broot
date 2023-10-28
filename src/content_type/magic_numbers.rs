@@ -1,7 +1,11 @@
 
 use {
-    memmap2::Mmap,
     phf::{phf_set, Set},
+    std::{
+        path::Path,
+        fs::File,
+        io::{self, Read},
+    },
 };
 
 pub const MIN_FILE_SIZE: usize = 100;
@@ -73,11 +77,11 @@ static SIGNATURES_4: Set<[u8; 4]> = phf_set! {
 ///
 /// If you feel this list should maybe be changed, contact
 /// me on miaou or raise an issue.
-pub fn is_known_binary(hay: &Mmap) -> bool {
-    if hay.len() < MIN_FILE_SIZE {
+pub fn is_known_binary(bytes: &[u8]) -> bool {
+    if bytes.len() < 4 {
         return false;
     }
-    let c = unsafe { *hay.get_unchecked(0) };
+    let c = bytes[0];
     if c < 9 || (c > 13 && c < 32) || c >= 254 {
         // c < 9 include several signatures
         // 14 to 31 includes several signatures among them some variants of zip, gzip, etc.
@@ -87,27 +91,35 @@ pub fn is_known_binary(hay: &Mmap) -> bool {
         return true;
     }
     // for signature in &SIGNATURES_2 {
-    //     if signature == &hay[0..2] {
+    //     if signature == &bytes[0..2] {
     //         return true;
     //     }
     // }
     // for signature in &SIGNATURES_3 {
-    //     if signature == &hay[0..3] {
+    //     if signature == &bytes[0..3] {
     //         return true;
     //     }
     // }
-    if SIGNATURES_4.contains(&hay[0..4]) {
+    if SIGNATURES_4.contains(&bytes[0..4]) {
         return true;
     }
     // for signature in &SIGNATURES_5 {
-    //     if signature == &hay[0..5] {
+    //     if signature == &bytes[0..5] {
     //         return true;
     //     }
     // }
     // for signature in &SIGNATURES_6 {
-    //     if signature == &hay[0..6] {
+    //     if signature == &bytes[0..6] {
     //         return true;
     //     }
     // }
     false
+}
+
+/// Tell whether the file i
+pub fn is_file_known_binary<P: AsRef<Path>>(path: P) -> io::Result<bool> {
+    let mut buf = [0; 4];
+    let mut file = File::open(path)?;
+    let n = file.read(&mut buf)?;
+    Ok(is_known_binary(&buf[0..n]))
 }

@@ -114,37 +114,38 @@ This can be done with the `:focus` verb which can be called with <kbd>ctrl</kbd>
 
 # Run a script or program from broot
 
-If your system is normally configured, doing `alt`-`enter` on an executable will close broot and executes the file.
+If your system is normally configured, doing `alt`-`enter` on an executable will close broot and execute the file.
 
 # Change standard file opening
 
-When you hit enter on a file, broot asks the system to open the file. It's usually the best solution as it selects the program according to the file's type and settings you set system wide.
+When you hit enter on a file, broot asks the system to open the file.
+It's usually the best solution as it selects the program according to the file's type and to settings you set system wide.
 
-You might still wish to change that, for example when you're on a server without xdg-open or equivalent.
+If you're editing text files in your terminal (vi, emacs, helix, etc.), then you'd rather have your editor open in the same terminal on enter, and be back to broot on quitting it.
 
-Here's an example of configuration changing the behaviour on open:
+Here's an example:
 
 ```Hjson
-verbs: [
-    {
-        invocation: edit
-        key: enter
-        external: "$EDITOR {file}"
-        leave_broot: false
-        apply_to: file
-    }
-]
+{
+    invocation: edit
+    key: enter
+    shortcut: e
+    execution: "/usr/bin/nvim +{line} {file}"
+    apply_to: text_file
+    leave_broot: false
+}
 ```
 ```TOML
 [[verbs]]
 invocation = "edit"
 key = "enter"
-external = "$EDITOR {file}"
+shortcut = "e"
+execution = "/usr/bin/nvim +{line} {file}"
+apply_to = "text_file"
 leave_broot = false
-apply_to = "file"
 ```
 
-(the `apply_to` line ensures this verb isn't called when the selected line is a directory)
+You'll also need such kind of setting if your computer is missing xdg-open or equivalent.
 
 If you need to use a different application for some kind(s) of file, you may additionally [filter by extension](../conf_verbs/#file-extensions).
 

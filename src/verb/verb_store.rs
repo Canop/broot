@@ -75,21 +75,21 @@ impl VerbStore {
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
         self.add_internal(open_leave) // calls the system open
-            .with_stype(SelectionType::File)
+            .with_condition(FileTypeCondition::File)
             .with_key(key!(alt-enter))
             .with_shortcut("ol");
         self.add_external("cd", "cd {directory}", FromParentShell)
-            .with_stype(SelectionType::Directory)
+            .with_condition(FileTypeCondition::Directory)
             .with_key(key!(alt-enter))
             .with_shortcut("ol")
             .with_description("change directory and quit");
 
         #[cfg(unix)]
         self.add_external("chmod {args}", "chmod {args} {file}", StayInBroot)
-            .with_stype(SelectionType::File);
+            .with_condition(FileTypeCondition::File);
         #[cfg(unix)]
         self.add_external("chmod {args}", "chmod -R {args} {file}", StayInBroot)
-            .with_stype(SelectionType::Directory);
+            .with_condition(FileTypeCondition::Directory);
         self.add_internal(open_preview);
         self.add_internal(close_preview);
         self.add_internal(toggle_preview);
@@ -276,10 +276,10 @@ impl VerbStore {
         self.add_external("rm", "rm -rf {file}", StayInBroot);
         #[cfg(windows)]
         self.add_external("rm", "cmd /c rmdir /Q /S {file}", StayInBroot)
-            .with_stype(SelectionType::Directory);
+            .with_condition(FileTypeCondition::Directory);
         #[cfg(windows)]
         self.add_external("rm", "cmd /c del /Q {file}", StayInBroot)
-            .with_stype(SelectionType::File);
+            .with_condition(FileTypeCondition::File);
         self.add_internal(toggle_counts).with_shortcut("counts");
         self.add_internal(toggle_dates).with_shortcut("dates");
         self.add_internal(toggle_device_id).with_shortcut("dev");
@@ -469,17 +469,7 @@ impl VerbStore {
         if !vc.panels.is_empty() {
             verb.panels = vc.panels.clone();
         }
-        verb.selection_condition = match vc.apply_to.as_deref() {
-            Some("file") => SelectionType::File,
-            Some("directory") => SelectionType::Directory,
-            Some("any") => SelectionType::Any,
-            None => SelectionType::Any,
-            Some(s) => {
-                return Err(ConfError::InvalidVerbConf {
-                    details: format!("{s:?} isn't a valid value of apply_to"),
-                });
-            }
-        };
+        verb.selection_condition = vc.apply_to;
         Ok(())
     }
 
@@ -488,16 +478,14 @@ impl VerbStore {
         prefix: &str,
         sel_info: SelInfo<'_>,
     ) -> PrefixSearchResult<'v, &Verb> {
-        let stype = sel_info.common_stype();
-        let count = sel_info.count_paths();
-        self.search(prefix, stype, Some(count), sel_info.extension())
+        self.search(prefix, Some(sel_info))
     }
 
     pub fn search_prefix<'v>(
         &'v self,
         prefix: &str,
     ) -> PrefixSearchResult<'v, &Verb> {
-        self.search(prefix, None, None, None)
+        self.search(prefix, None)
     }
 
     /// Return either the only match, or None if there's not
@@ -516,16 +504,16 @@ impl VerbStore {
     pub fn search<'v>(
         &'v self,
         prefix: &str,
-        stype: Option<SelectionType>,
-        sel_count: Option<usize>,
-        extension: Option<&str>,
+        sel_info: Option<SelInfo>,
     ) -> PrefixSearchResult<'v, &Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
         let mut completions: Vec<&str> = Vec::new();
+        let extension = sel_info.as_ref().and_then(|si| si.extension());
+        let sel_count = sel_info.map(|si| si.count_paths());
         for (index, verb) in self.verbs.iter().enumerate() {
-            if let Some(stype) = stype {
-                if !stype.respects(verb.selection_condition) {
+            if let Some(sel_info) = sel_info {
+                if !sel_info.is_accepted_by(verb.selection_condition) {
                     continue;
                 }
             }
@@ -537,7 +525,7 @@ impl VerbStore {
                     continue;
                 }
             }
-            if !verb.file_extensions.is_empty() && !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
+            if !verb.accepts_extension(extension) {
                 continue;
             }
             for name in &verb.names {
@@ -565,7 +553,7 @@ impl VerbStore {
         stype: SelectionType,
     ) -> Option<String> {
         for verb in &self.verbs {
-            if verb.get_internal() == Some(internal) && stype.respects(verb.selection_condition) {
+            if verb.get_internal() == Some(internal) && verb.selection_condition.accepts_selection_type(stype) {
                 return verb.keys.get(0).map(|&k| KEY_FORMAT.to_string(k));
             }
         }

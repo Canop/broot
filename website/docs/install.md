@@ -176,4 +176,7 @@ The simplest solution is to remove your old configuration directory (or rename i
 
 # After installation
 
-Now you should [install the br shell function](../install-br/).
+Now you should
+
+1. [install the br shell function](../install-br/)
+2. have a look at the verbs.hjson configuration file, and especially setup the editor of your choice

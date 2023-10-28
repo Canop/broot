@@ -7,6 +7,7 @@ use {
         errors::ProgramError,
         launchable::Launchable,
         stage::Stage,
+        verb::FileTypeCondition,
     },
     std::{
         fs::OpenOptions,
@@ -110,6 +111,20 @@ impl<'a> SelInfo<'a> {
             SelInfo::None => 0,
             SelInfo::One(_) => 1,
             SelInfo::More(stage) => stage.len(),
+        }
+    }
+    pub fn is_accepted_by(&self, condition: FileTypeCondition) -> bool {
+        match self {
+            SelInfo::None => true,
+            SelInfo::One(sel) => condition.accepts_path(sel.path),
+            SelInfo::More(stage) => {
+                for path in stage.paths().iter() {
+                    if !condition.accepts_path(path) {
+                        return false;
+                    }
+                }
+                true
+            }
         }
     }
     pub fn common_stype(&self) -> Option<SelectionType> {

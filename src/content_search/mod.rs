@@ -1,11 +1,10 @@
 
 mod content_match;
 mod content_search_result;
-mod magic_numbers;
-mod extensions;
 mod needle;
 
 pub use {
+    crate::content_type::{self, extensions, magic_numbers},
     content_match::ContentMatch,
     content_search_result::ContentSearchResult,
     needle::Needle,
@@ -47,12 +46,20 @@ pub fn get_mmap_if_suitable<P: AsRef<Path>>(hay_path: P, max_size: usize) -> io:
 
 /// return true when the file looks suitable for searching as text.
 ///
-/// This function is quite slow as it creates a memmap just to check
-/// a few bytes. If the memmap can be used, prefer `get_mmap_if_not_binary`
+/// If a memmap will be needed afterwards, prefer to use `get_mmap_if_not_binary`
+/// which optimizes testing and getting the mmap.
 pub fn is_path_suitable<P: AsRef<Path>>(path: P, max_size: usize) -> bool {
-    matches!(get_mmap_if_suitable(path, max_size), Ok(Some(_)))
+    let path = path.as_ref();
+    let Ok(metadata) = path.metadata() else {
+        return false;
+    };
+    if metadata.len() > max_size as u64 {
+        return false;
+    }
+    content_type::is_file_text(path).unwrap_or(false)
 }
 
+/// Return the 1-indexed line number for the byte at position pos
 pub fn line_count_at_pos<P: AsRef<Path>>(path: P, pos: usize) -> io::Result<usize> {
     let mut reader = BufReader::new(File::open(path)?);
     let mut line = String::new();
