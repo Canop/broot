@@ -39,7 +39,7 @@ keys | | several keyboard shortcuts triggering execution (if you want to have th
 shortcut | | an alternate way to call the verb (without the arguments part)
 leave_broot | `true` | whether to quit broot on execution
 from_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
-apply_to | | the type of selection this verb applies to, may be `"file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies to only files or only directories
+apply_to | | the type of selection this verb applies to: `"file"`, `"text_file"`, `"binary_file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies, eg, to only text files or only to directories
 working_dir | | the working directory of the external application, for example `"{directory}"` for the closest directory (the working dir isn't set if the directory doesn't exist)
 set_working_dir | `false` | whether the working dir of the process must be set to the currently selected directory (it's equivalent to `workding_dir: "{directory}"`)
 auto_exec | `true` | whether to execute the verb as soon as it's key-triggered (instead of waiting for <kbd>enter</kbd>)

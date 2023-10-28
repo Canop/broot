@@ -18,7 +18,6 @@ pub enum FileTypeCondition {
     File,
     TextFile,
     BinaryFile,
-    //ImageFile, no support yet, unsure whether it could be useful
 }
 
 impl FileTypeCondition {
