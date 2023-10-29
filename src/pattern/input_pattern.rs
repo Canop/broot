@@ -3,9 +3,13 @@ use {
     crate::{
         app::AppContext,
         errors::PatternError,
-        pattern::{Pattern, PatternParts},
+        pattern::{
+            Pattern,
+            PatternParts,
+        },
     },
     bet::BeTree,
+    lazy_regex::*,
 };
 
 /// wraps both
@@ -73,9 +77,15 @@ impl InputPattern {
             _ => None,
         };
         regex_parts
-            .and_then(|rp| RegexPattern::from(&rp.0, &rp.1).ok())
+            .map(|(core, modifiers)|
+                // The regex part is missing the escaping which prevents it from
+                // ending the pattern in the input. We need to restore it
+                // See https://github.com/Canop/broot/issues/778
+                (regex_replace_all!("[ :]", &core, "\\$0").to_string(), modifiers)
+            )
+            .and_then(|(core, modifiers)| RegexPattern::from(&core, &modifiers).ok())
             .map(|rp| InputPattern {
-                raw: rp.to_string(),
+                raw: rp.to_string(), // this adds the initial /
                 pattern: Pattern::NameRegex(rp),
             })
             .unwrap_or_else(InputPattern::none)

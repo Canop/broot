@@ -2,7 +2,8 @@ use {
     std::fmt,
 };
 
-/// An intermediate parsed representation of the raw string
+/// An intermediate parsed representation of the raw string making
+/// a pattern, with up to 3 parts (search mode, core pattern, modifiers)
 #[derive(Debug, Clone, PartialEq)]
 pub struct PatternParts {
     /// can't be empty by construct

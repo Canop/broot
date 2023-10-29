@@ -170,6 +170,10 @@ mod test_command_parts {
         a.try_into().unwrap()
     }
 
+    /// Check that the input is parsed as expected:
+    /// - a raw pattern
+    /// - the token (operators and pattern_parts) of the pattern
+    /// - the verb invocation
     fn check(
         input: &str,
         raw_pattern: &str,
