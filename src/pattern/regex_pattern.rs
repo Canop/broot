@@ -16,7 +16,11 @@ pub struct RegexPattern {
 
 impl fmt::Display for RegexPattern {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "/{}/{}", self.rex, self.flags)
+        if self.flags.is_empty() {
+            write!(f, "/{}", self.rex)
+        } else {
+            write!(f, "/{}/{}", self.rex, self.flags)
+        }
     }
 }
 
