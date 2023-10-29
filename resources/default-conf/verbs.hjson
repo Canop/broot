@@ -1,7 +1,10 @@
 ###############################################################
 # This file contains the verb definitions for broot
 #
-# Doc at https://dystroy.org/broot/verbs/
+# Some verbs here are examples and not enabled by default: you
+#  need to uncomment them if you want to use them.
+#
+# Documentation at https://dystroy.org/broot/verbs/
 ###############################################################
 
 verbs: [
@@ -64,7 +67,7 @@ verbs: [
     # While this might occasionally be useful, this verb is mostly here
     # as an example to demonstrate rare standard groups like {file-stem}
     # and {file-dot-extension} and the auto_exec verb property which
-    # allows verbs not executed until you hit enter
+    # allows verbs to stay unexecuted until you hit enter
     {
         invocation: "backup {version}"
         key: ctrl-b
@@ -82,6 +85,17 @@ verbs: [
         set_working_dir: true
         leave_broot: false
     }
+
+    # Here's an example of a verb needing the shell capabilities.
+    # It copies all children of the currently selected directory
+    #  to a destination you type.
+    # It uses a star, which needs the shell for expansion. That's
+    #  why such verb must have the `from_shell: true` parameter.
+    # {
+    #     invocation: "cpa {dest}"
+    #     external: "cp -r {directory}/* {dest}"
+    #     from_shell: true
+    # }
 
     # Here's an example of a shortcut bringing you to your home directory
     # {
@@ -118,7 +132,7 @@ verbs: [
     # If you develop using git, you might like to often switch
     # to the git status filter:
     # {
-    #     key: ctrl-g
+    #     key: alt-g
     #     execution: ":toggle_git_status"
     # }
 
