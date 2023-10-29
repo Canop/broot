@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.26.2-dev"
+version = "1.27.0"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 homepage = "https://dystroy.org/broot"
