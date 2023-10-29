@@ -42,7 +42,6 @@ ARM32 Linux |  | no | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/
 ARM32 Linux musl |  | no | [armv7-unknown-linux-musleabi](https://dystroy.org/broot/download/armv7-unknown-linux-musleabi/broot)
 ARM64 Linux |  | no | [aarch64-unknown-linux-gnu](https://dystroy.org/broot/download/aarch64-unknown-linux-gnu/broot)
 ARM64 Linux musl |  | no | [aarch64-unknown-linux-musl](https://dystroy.org/broot/download/aarch64-unknown-linux-musl/broot)
-x86-64 NetBSD | | no | [x86_64-unknown-netbsd](https://dystroy.org/broot/download/x86_64-unknown-netbsd/broot)
 Windows | Intel/AMD 64 Windows 10+ | yes | [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
 
 Shell completion scripts: [completion](https://dystroy.org/broot/download/completion)
