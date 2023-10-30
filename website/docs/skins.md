@@ -21,6 +21,7 @@ For example:
 skin: {
 	default: gray(23) none / gray(20) none
 	tree: ansi(94) None / gray(3) None
+	parent: gray(18) None / gray(13) None
 	file: gray(20) None / gray(15) None
 	directory: "#fb0 None Bold / ansi(172) None bold"
 	exe: Cyan None
@@ -37,6 +38,9 @@ skin: {
 	sparse: ansi(214) None
 	content_extract: ansi(29) None
 	content_match: ansi(34) None
+    device_id_major: ansi(138) None
+    device_id_sep: ansi(102) None
+    device_id_minor: ansi(138) None
 	git_branch: ansi(229) None
 	git_insertions: ansi(28) None
 	git_deletions: ansi(160) None
@@ -98,6 +102,7 @@ skin: {
 [skin]
 default = "gray(23) none / gray(20) none"
 tree = "ansi(94) None / gray(3) None"
+parent = "gray(18) None / gray(13) None"
 file = "gray(20) None / gray(15) None"
 directory = "#fb0 None Bold / ansi(172) None bold"
 exe = "Cyan None"
@@ -114,6 +119,9 @@ dates = "ansi(66) None"
 sparse = "ansi(214) None"
 content_extract = "ansi(29) None"
 content_match = "ansi(34) None"
+device_id_major = "ansi(138) None"
+device_id_sep = "ansi(102) None"
+device_id_minor = "ansi(138) None"
 git_branch = "ansi(229) None"
 git_insertions = "ansi(28) None"
 git_deletions = "ansi(160) None"
