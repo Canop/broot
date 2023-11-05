@@ -341,6 +341,21 @@ impl PanelInput {
         }
     }
 
+    fn is_key_allowed_for_verb(
+        &self,
+        key: KeyEvent,
+        mode: Mode,
+    ) -> bool {
+        match mode {
+            Mode::Input => match key {
+                key!(left) => !self.input_field.can_move_left(),
+                key!(right) => !self.input_field.can_move_right(),
+                _ => !keys::is_key_only_modal(key),
+            }
+            Mode::Command => true,
+        }
+    }
+
     /// Consume the event, maybe change the input, return a command
     #[allow(clippy::too_many_arguments)]
     fn on_key(
@@ -353,11 +368,12 @@ impl PanelInput {
         mode: Mode,
         panel_state_type: PanelStateType,
     ) -> Command {
+
         // value of raw and parts before any key related change
         let raw = self.input_field.get_content();
         let parts = CommandParts::from(raw.clone());
 
-        let verb = if keys::is_key_allowed_for_verb(key, mode, raw.is_empty()) {
+        let verb = if self.is_key_allowed_for_verb(key, mode) {
             self.find_key_verb(
                 key,
                 con,
