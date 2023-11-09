@@ -107,6 +107,9 @@ pub struct Conf {
 
     #[serde(alias="content-search-max-file-size", deserialize_with="file_size::deserialize", default)]
     pub content_search_max_file_size: Option<u64>,
+
+    #[serde(alias="root-relative-path")]
+    pub root_relative_path: Option<bool>,
 }
 
 impl Conf {
@@ -187,6 +190,7 @@ impl Conf {
         overwrite!(self, max_staged_count, conf);
         overwrite!(self, show_matching_characters_on_path_searches, conf);
         overwrite!(self, content_search_max_file_size, conf);
+        overwrite!(self, root_relative_path, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense

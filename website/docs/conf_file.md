@@ -307,3 +307,16 @@ show_matching_characters_on_path_searches = false
 which gives this:
 
 ![not shown](img/subpath-match-not-shown.png)
+
+## Show the root path relative to the launch directory
+
+If you'd prefer the root path (the top line in the tree display) to be
+displayed relative to the directory `broot` is launched in (not the root
+directory passed on the command line), you can use this option:
+
+```Hjson
+root-relative-path: true
+```
+```TOML
+root_relative_path = true
+```

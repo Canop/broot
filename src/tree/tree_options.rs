@@ -24,6 +24,8 @@ pub struct TreeOptions {
     pub show_device_id: bool,
     pub show_root_fs: bool, // show information relative to the fs of the root
     pub trim_root: bool,    // whether to cut out direct children of root
+    /// Show root directory relative to the program's current working directory.
+    pub relative_root: bool,
     pub show_permissions: bool, // show classic rwx unix permissions (only on unix)
     pub respect_git_ignore: bool, // hide files as requested by .gitignore ?
     pub filter_by_git_status: bool, // only show files whose git status is not nul
@@ -51,6 +53,7 @@ impl TreeOptions {
             show_device_id: self.show_device_id,
             show_root_fs: self.show_root_fs,
             trim_root: self.trim_root,
+            relative_root: self.relative_root,
             pattern: InputPattern::none(),
             date_time_format: self.date_time_format,
             sort: self.sort,
@@ -85,7 +88,7 @@ impl TreeOptions {
             let conf_matches = Args::try_parse_from(vec!["broot", &flags_args])
                 .map_err(|_| ConfError::InvalidDefaultFlags {
                     flags: default_flags.to_string()
-                })?;
+            })?;
             self.apply_launch_args(&conf_matches);
         }
         if let Some(b) = config.show_selection_mark {
@@ -96,6 +99,9 @@ impl TreeOptions {
         }
         if let Some(b) = config.show_matching_characters_on_path_searches {
             self.show_matching_characters_on_path_searches = b;
+        }
+        if let Some(b) = config.root_relative_path {
+            self.relative_root = b;
         }
         self.cols_order = config
             .cols_order
@@ -183,6 +189,9 @@ impl TreeOptions {
         } else if cli_args.no_trim_root {
             self.trim_root = false;
         }
+        if cli_args.root_relative_path {
+            self.relative_root = true;
+        }
     }
 }
 
@@ -199,6 +208,7 @@ impl Default for TreeOptions {
             show_device_id: false,
             show_root_fs: false,
             trim_root: false,
+            relative_root: false,
             show_permissions: false,
             respect_git_ignore: true,
             filter_by_git_status: false,

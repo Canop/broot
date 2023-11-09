@@ -37,6 +37,9 @@ Show folders and files alike
 \fB\-\-show\-root\-fs\fR
 Show filesystem info on top
 .TP
+\fB\-\-root\-relative\-path\fR
+Show the root path relative to the launch directory
+.TP
 \fB\-g\fR, \fB\-\-show\-git\-info\fR
 Show git statuses on files and stats on repo
 .TP

@@ -390,6 +390,21 @@ pub trait PanelState {
 					con,
 				)
             }
+            Internal::toggle_root_relative => {
+                self.with_new_options(
+					screen,
+					&|o| {
+						o.relative_root ^= true;
+                        if o.relative_root {
+                            "*displaying root relative to launch dir*"
+                        } else {
+                            "*displaying root as absolute path*"
+                        }
+					},
+					bang,
+					con,
+				)
+            }
             Internal::toggle_git_ignore => {
                 self.with_new_options(
 					screen,
