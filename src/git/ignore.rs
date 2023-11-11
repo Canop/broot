@@ -57,11 +57,17 @@ impl GitIgnoreRule {
         );
         if let Some(c) = r.captures(line) {
             if let Some(p) = c.get(2) {
-                let mut p = p.as_str().to_string();
+                let p = p.as_str();
                 let has_separator = p.contains('/');
-                if has_separator && p.starts_with('/') {
-                    p = ref_dir.to_string_lossy().to_string() + &p;
-                }
+                let p = if has_separator {
+                    if p.starts_with('/') {
+                        format!("{}/{}", ref_dir.to_string_lossy(), p)
+                    } else {
+                        format!("**/{}", p)
+                    }
+                } else {
+                    p.to_string()
+                };
                 match glob::Pattern::new(&p) {
                     Ok(pattern) => {
                         let pattern_options = glob::MatchOptions {
