@@ -1,5 +1,6 @@
 ### next
 - left and right keys mapped to verbs can be used when the input isn't empty, if they would have no effect to the input
+- default_flags now accept long parameters, including --cmd - Fix #790
 
 ### v1.27.0 - 2023-1029
 <a name="v1.27.0"></a>
