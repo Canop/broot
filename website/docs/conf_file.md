@@ -78,7 +78,8 @@ Starting from version 1.14, the default configuration is released in several fil
 
 # Default flags
 
-Broot accepts a few flags at launch (the complete list is available with `broot --help`.
+Broot accepts a few flags at launch (the complete list is available with `broot --help`).
+The `default_flags` entry lets you specify them in configuration, with the same syntax.
 
 For example, if you want to see hidden files (the ones whose name starts with a dot) and the status of files related to git, you launch broot with
 
@@ -93,7 +94,7 @@ default_flags: -gh
 default_flags = "-gh"
 ```
 
-Those flags can still be overridden at launch with the negating ones. For example if you don't want to see hidden files at a specific launch, do
+Those flags can still be overridden at launch with the negating ones. For example, with the above `default_flags`, if you don't want to see hidden files on a specific launch, do
 
     br -H
 
