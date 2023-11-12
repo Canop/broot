@@ -18,9 +18,10 @@
 ###############################################################
 # Default flags
 # You can set up flags you want broot to start with by
-# default, for example `default_flags="ihp"` if you usually want
+# default, for example `default_flags="-ihp"` if you usually want
 # to see hidden and gitignored files and the permissions (then
-# if you don't want the hidden files you can launch `br -H`)
+# if you don't want the hidden files at a specific launch,
+# you can launch broot with `br -H`).
 # A popular flag is the `g` one which displays git related info.
 #
 # default_flags:
