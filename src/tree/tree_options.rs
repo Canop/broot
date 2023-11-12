@@ -7,7 +7,6 @@ use {
         errors::ConfError,
         pattern::*,
     },
-    clap::Parser,
     std::convert::TryFrom,
 };
 
@@ -79,15 +78,8 @@ impl TreeOptions {
         self.date_time_format = Box::leak(format.into_boxed_str());
     }
     /// change tree options according to configuration
+    /// (but not the default_flags part, which is handled separately)
     pub fn apply_config(&mut self, config: &Conf) -> Result<(), ConfError> {
-        if let Some(default_flags) = &config.default_flags {
-            let flags_args = format!("-{default_flags}");
-            let conf_matches = Args::try_parse_from(vec!["broot", &flags_args])
-                .map_err(|_| ConfError::InvalidDefaultFlags {
-                    flags: default_flags.to_string()
-                })?;
-            self.apply_launch_args(&conf_matches);
-        }
         if let Some(b) = config.show_selection_mark {
             self.show_selection_mark = b;
         }

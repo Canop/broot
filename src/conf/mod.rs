@@ -7,6 +7,7 @@ use {
 
 mod conf;
 mod default;
+mod default_flags;
 mod format;
 pub mod file_size;
 mod import;
@@ -15,6 +16,7 @@ mod verb_conf;
 pub use {
     conf::Conf,
     default::write_default_conf_in,
+    default_flags::*,
     format::*,
     import::*,
     verb_conf::VerbConf,

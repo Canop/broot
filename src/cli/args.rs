@@ -1,4 +1,4 @@
-// Warning: this module can't import broot's stuf
+// Warning: this module can't import broot's stuf due to its use in build.rs
 use {
     clap::{Parser, ValueEnum},
     std::{
