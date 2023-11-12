@@ -2,7 +2,7 @@ use {
     super::*,
     crate::{
         cli::{Args, TriBool},
-        conf::Conf,
+        conf::*,
         content_search,
         errors::*,
         file_sum,
@@ -40,6 +40,10 @@ pub struct AppContext {
 
     /// all the arguments specified at launch
     pub launch_args: Args,
+
+    /// the "launch arguments" found in the default_flags
+    /// of the config file(s)
+    pub config_default_args: Option<Args>,
 
     /// the verbs in use (builtins and configured ones)
     pub verb_store: VerbStore,
@@ -101,6 +105,11 @@ impl AppContext {
         verb_store: VerbStore,
         config: &Conf,
     ) -> Result<Self, ProgramError> {
+        let config_default_args = config
+            .default_flags
+            .as_ref()
+            .map(|flags| parse_default_flags(flags))
+            .transpose()?;
         let config_paths = config.files.clone();
         let standard_status = StandardStatus::new(&verb_store);
         let true_colors = if let Some(value) = config.true_colors {
@@ -143,9 +152,12 @@ impl AppContext {
 
         // tree options are built from the default_flags
         // found in the config file(s) (if any) then overridden
-        // by the cli args
+        // by the cli args (order is important)
         let mut initial_tree_options = TreeOptions::default();
         initial_tree_options.apply_config(config)?;
+        if let Some(args) = &config_default_args {
+            initial_tree_options.apply_launch_args(args);
+        }
         initial_tree_options.apply_launch_args(&launch_args);
         if launch_args.color == TriBool::No {
             initial_tree_options.show_selection_mark = true;
@@ -161,6 +173,7 @@ impl AppContext {
             initial_tree_options,
             config_paths,
             launch_args,
+            config_default_args,
             verb_store,
             special_paths,
             search_modes,
@@ -178,6 +191,13 @@ impl AppContext {
             max_staged_count,
             content_search_max_file_size,
         })
+    }
+    /// Return the --cmd argument, coming from the launch arguments (prefered)
+    /// or from the default_flags parameter of a config file
+    pub fn cmd(&self) -> Option<&str> {
+        self.launch_args.cmd.as_ref().or(
+            self.config_default_args.as_ref().and_then(|args| args.cmd.as_ref())
+        ).map(|s| s.as_str())
     }
 }
 
