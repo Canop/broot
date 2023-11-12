@@ -736,7 +736,7 @@ impl App {
         self.screen.clear_bottom_right_char(w, &skin.focused)?;
 
         #[cfg(windows)]
-        if con.launch_args.cmd.is_some() {
+        if con.cmd().is_some() {
             // Powershell sends to broot a resize event after it was launched
             // which interrupts its task queue. An easy fix is to wait for a
             // few ms for the terminal to be stabilized.
@@ -749,7 +749,7 @@ impl App {
             event_source.unblock(self.quitting);
         }
 
-        if let Some(raw_sequence) = &con.launch_args.cmd {
+        if let Some(raw_sequence) = &con.cmd() {
             self.tx_seqs
                 .send(Sequence::new_local(raw_sequence.to_string()))
                 .unwrap();
