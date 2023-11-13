@@ -1,5 +1,6 @@
-### next
-- fix regression in rooted gitignore patterns - Fix #795
+### v1.28.1 - 2023-11-13
+<a name="v1.28.1"></a>
+- fix a regression in handling of rooted gitignore patterns - Fix #795
 
 ### v1.28.0 - 2023-11-12
 <a name="v1.28.0"></a>
