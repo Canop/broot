@@ -61,7 +61,7 @@ impl GitIgnoreRule {
                 let has_separator = p.contains('/');
                 let p = if has_separator {
                     if p.starts_with('/') {
-                        format!("{}/{}", ref_dir.to_string_lossy(), p)
+                        format!("{}{}", ref_dir.to_string_lossy(), p)
                     } else {
                         format!("**/{}", p)
                     }

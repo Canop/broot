@@ -1,3 +1,6 @@
+### next
+- fix regression in rooted gitignore patterns - Fix #795
+
 ### v1.28.0 - 2023-11-12
 <a name="v1.28.0"></a>
 - left and right keys bound to verbs can be used when the input isn't empty, if they would have no effect to the input
