@@ -180,7 +180,7 @@ Use `:gf` to display the statuses of files (what are the new ones, the modified 
 
 And if you want to see *only* the files which would be displayed by the `git status` command, do `:gs`. From there it's easy to edit, or diff, selected files.
 
-![size](img/20230930-gg.png)
+![gg](website/docs/img/20230930-gg.png)
 
 From there it's easy to edit, diff,  or revert selected files.
 
