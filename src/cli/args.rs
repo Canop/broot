@@ -105,6 +105,10 @@ pub struct Args {
     pub sort_by_type: bool,
 
     #[arg(long)]
+    /// Toggle tree mode (when false, show only one level of the tree, regardless of sorting)
+    pub toggle_tree: bool,
+
+    #[arg(long)]
     /// Sort by type, directories first (only show one level of the tree)
     pub sort_by_type_dirs_first: bool,
 
@@ -220,4 +224,3 @@ impl FromStr for CliShellInstallState {
         }
     }
 }
-

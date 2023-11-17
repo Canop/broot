@@ -29,6 +29,7 @@ pub struct TreeOptions {
     pub pattern: InputPattern, // an optional filtering/scoring pattern
     pub date_time_format: &'static str,
     pub sort: Sort,
+    pub toggle_tree: bool, // whether to show the tree
     pub cols_order: Cols, // order of columns
     pub show_matching_characters_on_path_searches: bool,
 }
@@ -53,6 +54,7 @@ impl TreeOptions {
             pattern: InputPattern::none(),
             date_time_format: self.date_time_format,
             sort: self.sort,
+            toggle_tree: self.toggle_tree,
             cols_order: self.cols_order,
             show_matching_characters_on_path_searches: self.show_matching_characters_on_path_searches,
         }
@@ -161,6 +163,9 @@ impl TreeOptions {
             self.sort = Sort::Size;
             self.show_sizes = true;
         }
+        if cli_args.toggle_tree {
+            self.toggle_tree = true;
+        }
         if cli_args.sort_by_type_dirs_first || cli_args.sort_by_type {
             self.sort = Sort::TypeDirsFirst;
         }
@@ -197,6 +202,7 @@ impl Default for TreeOptions {
             pattern: InputPattern::none(),
             date_time_format: "%Y/%m/%d %R",
             sort: Sort::None,
+            toggle_tree: false,
             cols_order: DEFAULT_COLS,
             show_matching_characters_on_path_searches: true,
         }

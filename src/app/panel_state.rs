@@ -315,6 +315,21 @@ pub trait PanelState {
 					con,
 				)
             }
+            Internal::toggle_tree => {
+                self.with_new_options(
+                    screen,
+                    &|o| {
+                        o.toggle_tree ^= true;
+                        if o.toggle_tree {
+                            "*allow displaying tree structure*"
+                        } else {
+                            "*prevent tree structure*"
+                        }
+                    },
+                    bang,
+                    con,
+                )
+            }
             Internal::toggle_dates => {
                 self.with_new_options(
 					screen,
