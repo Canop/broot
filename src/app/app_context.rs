@@ -12,7 +12,7 @@ use {
         skin::ExtColorMap,
         syntactic::SyntaxTheme,
         tree::TreeOptions,
-        verb::VerbStore,
+        verb::*,
     },
     std::{
         convert::{TryFrom, TryInto},
@@ -97,6 +97,10 @@ pub struct AppContext {
 
     /// max file size when searching file content
     pub content_search_max_file_size: usize,
+
+    /// the optional pattern used to change the terminal's title
+    /// (if none, the title isn't modified)
+    pub terminal_title_pattern: Option<ExecPattern>,
 }
 
 impl AppContext {
@@ -167,6 +171,8 @@ impl AppContext {
             .map(|u64value| usize::try_from(u64value).unwrap_or(usize::MAX))
             .unwrap_or(content_search::DEFAULT_MAX_FILE_SIZE);
 
+        let terminal_title_pattern = config.terminal_title.clone();
+
         Ok(Self {
             initial_root,
             initial_file,
@@ -190,6 +196,7 @@ impl AppContext {
             file_sum_threads_count,
             max_staged_count,
             content_search_max_file_size,
+            terminal_title_pattern,
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (prefered)

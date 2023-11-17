@@ -27,6 +27,17 @@
 # default_flags:
 
 ###############################################################
+# Terminal's title
+# If you want the terminal's title to be updated when you change
+# directory, set a terminal_title pattern by uncommenting one of
+# the examples below and tuning it to your taste.
+# Note that this may slow down some systems.
+#
+# terminal_title: "[broot] {git-name}"
+# terminal_title: "🐄 {file}"
+# terminal_title: "-= {file-name} =-"
+
+###############################################################
 # Date/Time format
 # If you want to change the format for date/time, uncomment the
 # following line and change it according to

@@ -29,6 +29,7 @@ pub mod shell_install;
 pub mod skin;
 pub mod syntactic;
 pub mod task_sync;
+pub mod terminal;
 pub mod tree;
 pub mod tree_build;
 pub mod verb;

@@ -24,6 +24,9 @@ pub struct ExecutionStringBuilder<'b> {
 
     /// parsed arguments
     invocation_values: Option<AHashMap<String, String>>,
+
+    /// whether to keep groups which can't be solved or remove them
+    keep_groups: bool,
 }
 
 impl<'b> ExecutionStringBuilder<'b> {
@@ -39,6 +42,7 @@ impl<'b> ExecutionStringBuilder<'b> {
             root: &app_state.root,
             other_file: app_state.other_panel_path.as_ref(),
             invocation_values: None,
+            keep_groups: false,
         }
     }
     pub fn with_invocation(
@@ -56,6 +60,7 @@ impl<'b> ExecutionStringBuilder<'b> {
             root: &app_state.root,
             other_file: app_state.other_panel_path.as_ref(),
             invocation_values,
+            keep_groups: false,
         }
     }
     fn get_raw_replacement<F>(
@@ -148,18 +153,20 @@ impl<'b> ExecutionStringBuilder<'b> {
                 .other_file
                 .and_then(|p| p.parent())
                 .map(path_to_string),
-            "git-root" => {
+            "git-root" => { // path to git repo workdir
                 debug!("finding git root");
-                sel.and_then(|s| match git2::Repository::discover(s.path) {
-                    Ok(repo) => repo.workdir().map(path_to_string),
-                    Err(err) => {
-                        warn!(
-                            "Failed to open Git repository at {}: {err}",
-                            s.path.display()
-                        );
-                        None
-                    }
-                })
+                sel
+                    .and_then(|s| git2::Repository::discover(s.path).ok())
+                    .and_then(|repo| repo.workdir().map(path_to_string))
+            }
+            "git-name" => { // name of the git repo workdir
+                sel
+                    .and_then(|s| git2::Repository::discover(s.path).ok())
+                    .and_then(|repo| repo.workdir().and_then(|path| {
+                        path.file_name()
+                        .and_then(|oss| oss.to_str())
+                        .map(|s| s.to_string())
+                    }))
             }
             _ => None,
         }
@@ -195,9 +202,12 @@ impl<'b> ExecutionStringBuilder<'b> {
                     })
             })
     }
+    #[inline]
     fn get_capture_replacement(&self, ec: &Captures<'_>) -> String {
         self.get_raw_capture_replacement(ec)
-            .unwrap_or_else(|| ec[0].to_string())
+            .unwrap_or_else(||
+                if self.keep_groups { ec[0].to_string() } else { "".to_string() }
+            )
     }
     fn get_sel_capture_replacement(
         &self,
@@ -205,7 +215,9 @@ impl<'b> ExecutionStringBuilder<'b> {
         sel: Option<Selection<'_>>,
     ) -> String {
         self.get_raw_sel_capture_replacement(ec, sel)
-            .unwrap_or_else(|| ec[0].to_string())
+            .unwrap_or_else(||
+                if self.keep_groups { ec[0].to_string() } else { "".to_string() }
+            )
     }
     /// fills groups having a default value (after the colon)
     ///
