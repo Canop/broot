@@ -321,9 +321,9 @@ pub trait PanelState {
                     &|o| {
                         o.toggle_tree ^= true;
                         if o.toggle_tree {
-                            "*allow displaying tree structure*"
-                        } else {
                             "*prevent tree structure*"
+                        } else {
+                            "*allow displaying tree structure*"
                         }
                     },
                     bang,
