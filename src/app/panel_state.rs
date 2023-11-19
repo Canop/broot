@@ -319,11 +319,11 @@ pub trait PanelState {
                 self.with_new_options(
                     screen,
                     &|o| {
-                        o.toggle_tree ^= true;
-                        if o.toggle_tree {
-                            "*prevent tree structure*"
+                        o.show_tree ^= true;
+                        if o.show_tree {
+                            "*displaying tree structure (if possible)*"
                         } else {
-                            "*allow displaying tree structure*"
+                            "*displaying only current directory*"
                         }
                     },
                     bang,
