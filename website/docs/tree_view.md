@@ -131,6 +131,7 @@ Each of those toggles lets you alternate between 2 or 3 modes.
  | toggle_perm          | perm     |       | toggle showing file permissions (Unix only)
  | toggle_sizes         | sizes    |       | toggle showing sizes
  | toggle_trim_root     | t        |       | toggle removing nodes at first level too
+ | toggle_tree          | tree     |       | toggle showing file tree (when not affected by sorting mode)
 
 To apply one, type a space (or `:`), then the start of its shortcut, then hit <kbd class=b>⏎</kbd>.
 

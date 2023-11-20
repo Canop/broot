@@ -304,7 +304,7 @@ impl<'c> TreeBuilder<'c> {
         let mut next_level_dirs: Vec<BId> = Vec::new();
         self.load_children(self.root_id);
         open_dirs.push_back(self.root_id);
-        let deep = self.deep && !self.options.sort.prevent_deep_display();
+        let deep = self.deep && self.options.show_tree && !self.options.sort.prevent_deep_display();
         loop {
             if !total_search && (
                 (nb_lines_ok > optimal_size)
