@@ -315,6 +315,21 @@ pub trait PanelState {
 					con,
 				)
             }
+            Internal::toggle_tree => {
+                self.with_new_options(
+                    screen,
+                    &|o| {
+                        o.show_tree ^= true;
+                        if o.show_tree {
+                            "*displaying tree structure (if possible)*"
+                        } else {
+                            "*displaying only current directory*"
+                        }
+                    },
+                    bang,
+                    con,
+                )
+            }
             Internal::toggle_dates => {
                 self.with_new_options(
 					screen,

@@ -1,3 +1,6 @@
+### next
+- `:toggle_tree` internal and `--tree` and `--no-tree` launch flags (experimental, feedback welcome) - Fix #670 - Thanks @eldad
+
 ### v1.28.1 - 2023-11-13
 <a name="v1.28.1"></a>
 - fix a regression in handling of rooted gitignore patterns - Fix #795

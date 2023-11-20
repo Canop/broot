@@ -118,6 +118,7 @@ Internals! {
     select_last: "select the last item" false,
     select: "select a file by path" true,
     set_syntax_theme: "set the theme of code preview" false,
+    toggle_tree: "toggle showing more than one level of the tree" true,
     sort_by_count: "sort by count" false,
     sort_by_date: "sort by date" false,
     sort_by_size: "sort by size" false,
