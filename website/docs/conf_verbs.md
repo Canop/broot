@@ -301,6 +301,7 @@ name | expanded to
 `{other-panel-directory}` | closest directory, either `{file}` or `{parent}` in the other panel
 `{root}` | current tree root (top of the displayed files tree)
 `{git-root}` | The working directory of the Git repository containing the current selection
+`{git-name}` | Name of the working directory of the current Git repository
 
 !!!	Note
 	when you're in the help screen, `{file}` is the configuration file, while `{directory}` is the configuration directory.

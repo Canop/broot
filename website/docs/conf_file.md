@@ -244,6 +244,20 @@ syntax_theme = "OceanLight"
 
 Those themes come from [syntect](https://github.com/trishume/syntect) and are bundled in broot.
 
+
+# Terminal title
+
+If you set the `terminal_title` parameter, broot will change the title of the terminal when the current tree root changes.
+
+The pattern allows using the same arguments than verb execution patterns, eg {file} or {git-name}.
+
+```Hjson
+terminal_title: "{file} 🐄"
+```
+```TOML
+terminal_title = "{file} 🐄"
+```
+
 # Miscellaneous
 
 
