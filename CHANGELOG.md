@@ -1,4 +1,5 @@
-### next
+### v1.29.0 - 2023-11-22
+<a name="v1.29.0"></a>
 - `terminal_title` option in configuration - Fix #794
 - `:toggle_tree` internal and `--tree` and `--no-tree` launch flags (experimental, feedback welcome) - Fix #670 - Thanks @eldad
 - `{git-name}` verb argument
