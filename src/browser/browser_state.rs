@@ -598,6 +598,17 @@ impl PanelState for BrowserState {
                     }
                 }
             }
+            Internal::trash => {
+                let path = self.displayed_tree().selected_line().path.to_path_buf();
+                info!("trash {:?}", &path);
+                match trash::delete(&path) {
+                    Ok(()) => CmdResult::RefreshState { clear_cache: true },
+                    Err(e) => {
+                        warn!("trash error: {:?}", &e);
+                        CmdResult::DisplayError(format!("trash error: {:?}", &e))
+                    }
+                }
+            }
             Internal::quit => CmdResult::Quit,
             _ => self.on_internal_generic(
                 w,

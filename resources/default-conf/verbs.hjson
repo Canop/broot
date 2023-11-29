@@ -76,6 +76,15 @@ verbs: [
         execution: "cp -r {file} {parent}/{file-stem}-{version}{file-dot-extension}"
     }
 
+    # By default, `rm` does the system rm, and completely removes
+    # the file. If you prefer to have the file moved to the system
+    # trash, you may use the ':trash' internal with the verb below:
+    # {
+    #     invocation: "rm"
+    #     internal: "trash {file}"
+    #     leave_broot: false
+    # }
+
     # This verb lets you launch a terminal on ctrl-T
     # (on exit you'll be back in broot)
     {
