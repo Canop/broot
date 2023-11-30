@@ -1,5 +1,6 @@
 ### next
 - `:trash` internal - I'd like feedback on this one - Fix #799
+- solve symlinks on `:panel_right` to display the dest path and the dest filesystem - Fix #804
 - `:panel_right` on a directory now removes the filter
 
 ### v1.29.0 - 2023-11-22
