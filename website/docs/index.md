@@ -21,7 +21,7 @@ As you sometimes want to see gitignored files, or hidden ones, you'll soon get u
 
 (you can ignore them though, see [documentation](../navigation/#toggles)).
 
-# Find a directory then `cd` to it
+# Find a directory then `cd`
 
 type a few letters
 
@@ -111,7 +111,7 @@ Broot displays images in high resolution when the terminal supports Kitty's grap
 
 ![kitty preview](img/20201127-kitty-preview.png)
 
-# Apply a standard or personal command to a file
+# Apply a command to a file
 
 ![size](img/20230930-edit.png)
 
@@ -135,7 +135,7 @@ If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which ge
 
 You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a <kbd>d</kbd> then <kbd>enter</kbd> shows you the dates. Or hit <kbd>alt</kbd><kbd>h</kbd> and you see hidden files.
 
-# Sort, see what takes space:
+# See what takes space:
 
 You may sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
 

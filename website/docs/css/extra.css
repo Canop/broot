@@ -39,9 +39,9 @@ h3 {
 	font-size: 16px;
 }
 
-.navbar {
-	//background-image: linear-gradient(#184965,#02121b);
+body .navbar {
 	background: #1b465f;
+	box-shadow: 0 1px 5px rgba(0,0,0,0.1);
 }
 
 @media (min-width: 768px) {
