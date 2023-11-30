@@ -147,6 +147,7 @@ Internals! {
     toggle_trim_root: "toggle removing nodes at first level too" false,
     toggle_second_tree: "toggle display of a second tree panel" true,
     total_search: "search again but on all children" false,
+    trash: "move file to system trash" true,
     up_tree: "focus the parent of the current root" true,
 }
 
