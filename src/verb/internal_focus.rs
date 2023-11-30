@@ -12,7 +12,10 @@ use {
         task_sync::Dam,
         tree::TreeOptions,
     },
-    std::path::{Path, PathBuf},
+    std::{
+        fs,
+        path::{Path, PathBuf},
+    },
 };
 
 pub fn on_path(
@@ -51,13 +54,19 @@ pub fn new_state_on_path(
 }
 
 pub fn new_panel_on_path(
-    path: PathBuf,
+    mut path: PathBuf,
     screen: Screen,
     mut tree_options: TreeOptions,
     purpose: PanelPurpose,
     con: &AppContext,
     direction: HDir,
 ) -> CmdResult {
+    // We try to canonicalize the path, mostly to resolve links
+    if let Ok(canonic) = fs::canonicalize(&path) {
+        path = canonic;
+        // If it can't be canonicalized, we'll let the panel state
+        // deal with the original path
+    }
     if purpose.is_preview() {
         let pattern = tree_options.pattern.tree_to_preview();
         CmdResult::NewPanel {
@@ -139,7 +148,6 @@ fn path_from_input(
             base_path.to_path_buf()
         }
     }
-
 }
 
 pub fn get_status_markdown(
