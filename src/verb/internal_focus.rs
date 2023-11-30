@@ -7,6 +7,7 @@ use {
         command::TriggerType,
         display::Screen,
         path::{self, PathAnchor},
+        pattern::InputPattern,
         preview::PreviewState,
         task_sync::Dam,
         tree::TreeOptions,
@@ -52,7 +53,7 @@ pub fn new_state_on_path(
 pub fn new_panel_on_path(
     path: PathBuf,
     screen: Screen,
-    tree_options: TreeOptions,
+    mut tree_options: TreeOptions,
     purpose: PanelPurpose,
     con: &AppContext,
     direction: HDir,
@@ -66,6 +67,9 @@ pub fn new_panel_on_path(
         }
     } else {
         let path = path::closest_dir(&path);
+        // We remove the pattern on opening another browser. This will probably
+        // be configuratble with a clear_pattern verb option in the future
+        tree_options.pattern = InputPattern::none();
         match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
             Ok(os) => CmdResult::NewPanel {
                 state: Box::new(os),

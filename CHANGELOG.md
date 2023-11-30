@@ -1,5 +1,6 @@
 ### next
 - `:trash` internal - I'd like feedback on this one - Fix #799
+- `:panel_right` on a directory now removes the filter
 
 ### v1.29.0 - 2023-11-22
 <a name="v1.29.0"></a>
