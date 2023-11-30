@@ -1,3 +1,6 @@
+### next
+- `:trash` internal - I'd like feedback on this one - Fix #799
+
 ### v1.29.0 - 2023-11-22
 <a name="v1.29.0"></a>
 - `terminal_title` option in configuration - Fix #794

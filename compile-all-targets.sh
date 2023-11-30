@@ -65,7 +65,7 @@ cp "target/release/$NAME" build/x86_64-linux/
 # (they're built as part of the normal compilation by build.rs)
 echo -e "${H2}Copying completion scripts${EH}"
 mkdir build/completion
-cp "$(broot -c ":gi;release;:focus;/broot.bash;:parent;:pp" target)/"* build/completion
+cp "$(broot -c "rp/release\/build\/broot-[^\/]+\/out\/broot.bash;:parent;:pp" target)/"* build/completion
 echo "   Done"
 
 # copy the default conf
