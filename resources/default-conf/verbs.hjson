@@ -81,7 +81,7 @@ verbs: [
     # trash, you may use the ':trash' internal with the verb below:
     # {
     #     invocation: "rm"
-    #     internal: "trash {file}"
+    #     internal: "trash"
     #     leave_broot: false
     # }
 

@@ -1,5 +1,6 @@
 use {
     crate::{
+        path::*,
         verb::*,
     },
     serde::Deserialize,
@@ -103,10 +104,18 @@ impl ExecPattern {
 }
 
 fn fix_token_path<T: Into<String> + AsRef<str>>(token: T) -> String {
+    //let s = token.as_ref();
     let path = Path::new(token.as_ref());
     if path.exists() {
         if let Some(path) = path.to_str() {
             return path.to_string();
+        }
+    } else if TILDE_REGEX.is_match(token.as_ref()) {
+        let path = untilde(token.as_ref());
+        if path.exists() {
+            if let Some(path) = path.to_str() {
+                return path.to_string();
+            }
         }
     }
     token.into()
