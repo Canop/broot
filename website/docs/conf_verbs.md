@@ -272,6 +272,8 @@ Then,
 
 Beware that consoles intercept some possible keys. Many keyboard shortcuts aren't available, depending on your configuration. Some keys are also reserved in broot for some uses, for example the <kbd>enter</kbd> key always validate an input command if there's some. The <kbd>Tab</kbd>, <kbd>delete</kbd>, <kbd>backspace</kbd>, <kbd>esc</kbd> keys are reserved too.
 
+If your chosen key doesn't seem to work, see [Key Combination Problem](../common-problems/#key-combination-problem).
+
 ## Verbs not leaving broot
 
 If you set `leave_broot = false`, broot won't quit when executing your command, but it will update the tree.

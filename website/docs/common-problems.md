@@ -30,13 +30,13 @@ Additionally, if backgrounds can't be properly displayed, you may consider [mark
 
 Another problem is the fact the `br` function doesn't set a proper pane name (you'll probably see the name of your shell instead of broot). This may be [solved with a modified shell function](https://github.com/Canop/broot/issues/270).
 
-# Missing shortcut
+# Key combination problem
 
 Most terminals intercept a few keyboard shortcut for their own features. You may need to remap your terminal's default keyboard shortcuts.
 
 I've made a small program which tells you what key combinations are available: [print_key](https://github.com/Canop/print_key).
 
-## Windows Terminal
+**Windows Terminal**
 
 [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/) binds `alt+enter` to the "toggle fullscreen" command by default. To reclaim `alt+enter` for Broot, [add an 'unbound' entry to the actions array in settings.json](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys):
 
@@ -44,14 +44,14 @@ I've made a small program which tells you what key combinations are available: [
 {"command": "unbound", "keys": "alt+enter"}
 ```
 
-## iTerm2
+**iTerm2**
 
 For Mac users, iTerm2 must also be configured to enable this shortcut:
 Go to *Preferences->Profiles->Default->Keys* and add a mapping that maps `⌥Return↩` to `Send Hex Codes: 0x1b 0x0d`. This can be done by clicking the + sign at the bottom to add a mapping, clicking the "Click to Set" area, pressing the desired key combination (⌥Enter a.k.a ⌥Return), choosing the "Send Hex Code" option from the drop-down menu and inserting the following string there: "0x1b 0x0d".
 
 Note that this will change the behavior of `alt+enter` for all terminal windows, and it will no longer send the `return` sequence.
 
-## remap in Broot
+**Remap in Broot**
 
 If a shortcut isn't available for broot and you can't or don't want to remap the one of your terminal, the solution is to change the shortcut in broot.
 
