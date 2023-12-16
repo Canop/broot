@@ -21,7 +21,7 @@ use {
 };
 
 const NAME: &str = "nushell";
-const VERSION: &str = "4";
+const VERSION: &str = "5";
 
 const NU_FUNC: &str = r#"
 # Launch broot

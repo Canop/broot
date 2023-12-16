@@ -1,3 +1,7 @@
+### v1.30.1 - 2023-12-03
+<a name="v1.30.1"></a>
+- nushell script: replace the deprecated `def-env` with `def --env` - Thanks @melMass
+
 ### v1.30.0 - 2023-12-03
 <a name="v1.30.0"></a>
 - `:trash` internal - I'd like feedback on this one - Fix #799
