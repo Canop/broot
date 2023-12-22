@@ -13,7 +13,6 @@ use {
         tree::TreeOptions,
     },
     std::{
-        fs,
         path::{Path, PathBuf},
     },
 };
@@ -53,6 +52,7 @@ pub fn new_state_on_path(
     )
 }
 
+#[allow(unused_mut)]
 pub fn new_panel_on_path(
     mut path: PathBuf,
     screen: Screen,
@@ -61,8 +61,10 @@ pub fn new_panel_on_path(
     con: &AppContext,
     direction: HDir,
 ) -> CmdResult {
+    #[cfg(not(windows))]
     // We try to canonicalize the path, mostly to resolve links
-    if let Ok(canonic) = fs::canonicalize(&path) {
+    // We don't do it on Windows due to issue #809
+    if let Ok(canonic) = std::fs::canonicalize(&path) {
         path = canonic;
         // If it can't be canonicalized, we'll let the panel state
         // deal with the original path
