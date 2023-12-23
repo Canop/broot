@@ -1,4 +1,5 @@
-### next
+### v1.30.2 - 2023-12-23
+<a name="v1.30.2"></a>
 - don't canonicalize paths on windows on new panels - Fix #809
 
 ### v1.30.1 - 2023-12-03
