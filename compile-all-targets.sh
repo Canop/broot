@@ -25,12 +25,12 @@ cross_build() {
     target="$2"
     features="$3"
     echo -e "${H2}Compiling the $target_name version (target=$target, features='$features')${EH}"
-    cargo clean
+    cargo clean --quiet
     if [[ -n $features ]]
     then
-        cross build --target "$target" --release --features "$features"
+        cross build --quiet --target "$target" --release --features "$features"
     else
-        cross build --target "$target" --release
+        cross build --quiet --target "$target" --release
     fi
     mkdir "build/$target"
     if [[ $target_name == 'Windows' ]]
@@ -40,6 +40,7 @@ cross_build() {
         exec="$NAME"
     fi
     cp "target/$target/release/$exec" "build/$target/"
+    echo "   Done"
 }
 
 cross_build "x86-64 GLIBC" "x86_64-unknown-linux-gnu" ""
@@ -56,7 +57,7 @@ cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard"
 # Build the default linux version (with clipboard support, needing a recent GLIBC)
 # recent glibc
 echo -e "${H2}Compiling the standard linux version${EH}"
-cargo build --release --features "clipboard"
+cargo build --quiet --release --features "clipboard"
 strip "target/release/$NAME"
 mkdir build/x86_64-linux/
 cp "target/release/$NAME" build/x86_64-linux/
@@ -88,3 +89,4 @@ For more information, or if you prefer to compile yourself, see https://dystroy.
 ' > build/install.md
 
 echo -e "${H1}FINISHED${EH}"
+
