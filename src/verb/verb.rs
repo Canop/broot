@@ -219,7 +219,7 @@ impl Verb {
         app_state: &AppState,
         invocation: &VerbInvocation,
     ) -> String {
-        let name = self.names.get(0).unwrap_or(&invocation.name);
+        let name = self.names.first().unwrap_or(&invocation.name);
 
         // there's one special case: the ̀ :focus` internal. As long
         // as no other internal takes args, and no other verb can

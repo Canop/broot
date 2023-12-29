@@ -556,7 +556,7 @@ impl VerbStore {
     ) -> Option<String> {
         for verb in &self.verbs {
             if verb.get_internal() == Some(internal) && verb.selection_condition.accepts_selection_type(stype) {
-                return verb.keys.get(0).map(|&k| KEY_FORMAT.to_string(k));
+                return verb.keys.first().map(|&k| KEY_FORMAT.to_string(k));
             }
         }
         None
@@ -568,7 +568,7 @@ impl VerbStore {
     ) -> Option<String> {
         for verb in &self.verbs {
             if verb.get_internal() == Some(internal) {
-                return verb.keys.get(0).map(|&k| KEY_FORMAT.to_string(k));
+                return verb.keys.first().map(|&k| KEY_FORMAT.to_string(k));
             }
         }
         None
