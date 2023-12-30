@@ -1,4 +1,5 @@
 ### next
+- keep broot's work dir synchronized with the root of the current panel. Can be disabled in conf with `update_work_dir: false` - Fix #813
 - fix `:trash` internal not working on staged files
 
 ### v1.30.2 - 2023-12-23
