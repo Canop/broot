@@ -1,4 +1,5 @@
-### next
+### v1.31.0 - 2023-12-30
+<a name="v1.31.0"></a>
 - keep broot's work dir synchronized with the root of the current panel. Can be disabled in conf with `update_work_dir: false` - Fix #813
 - fix `:trash` internal not working on staged files
 
