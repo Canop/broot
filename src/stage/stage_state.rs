@@ -493,6 +493,16 @@ impl PanelState for StageState {
                     CmdResult::error("you must select a path to unstage")
                 }
             }
+            Internal::trash => {
+                info!("trash {} staged files", app_state.stage.len());
+                match trash::delete_all(app_state.stage.paths()) {
+                    Ok(()) => CmdResult::RefreshState { clear_cache: true },
+                    Err(e) => {
+                        warn!("trash error: {:?}", &e);
+                        CmdResult::DisplayError(format!("trash error: {:?}", &e))
+                    }
+                }
+            }
             _ => self.on_internal_generic(
                 w,
                 internal_exec,

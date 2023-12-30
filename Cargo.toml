@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.30.2"
+version = "1.30.3-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 homepage = "https://dystroy.org/broot"
@@ -62,7 +62,7 @@ termimad = "0.26.1"
 terminal-clipboard = { version = "0.4.1", optional = true }
 terminal-light = "1.1.1"
 toml = "0.8"
-trash = "3.1"
+trash = "3.1.2"
 umask = "2.1.0"
 unicode-width = "0.1.10"
 which = "4.4.0"
