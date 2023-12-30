@@ -304,6 +304,19 @@ quit_on_last_cancel: true
 ```TOML
 quit_on_last_cancel = true
 ```
+
+## Update broot's work dir
+
+By default, the work dir of the broot process is synchronized with the root of the current panel.
+If you prefer to keep the work dir unchanged, disable this feature with
+
+```Hjson
+update_work_dir: false
+```
+```TOML
+update_work_dir = false
+```
+
 ## Only show file name even when the pattern is on paths
 
 When your search pattern is applied to a path, the path is shown on each line so that you see why the line matches:

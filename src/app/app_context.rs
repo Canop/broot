@@ -101,6 +101,9 @@ pub struct AppContext {
     /// the optional pattern used to change the terminal's title
     /// (if none, the title isn't modified)
     pub terminal_title_pattern: Option<ExecPattern>,
+
+    /// whether to sync broot's work dir with the current panel's root
+    pub update_work_dir: bool,
 }
 
 impl AppContext {
@@ -197,6 +200,7 @@ impl AppContext {
             max_staged_count,
             content_search_max_file_size,
             terminal_title_pattern,
+            update_work_dir: config.update_work_dir.unwrap_or(true),
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (prefered)
