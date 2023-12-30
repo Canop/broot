@@ -112,6 +112,9 @@ pub struct Conf {
     #[serde(alias="terminal-title")]
     pub terminal_title: Option<ExecPattern>,
 
+    #[serde(alias="update-work-dir")]
+    pub update_work_dir: Option<bool>,
+
     // BEWARE: entries added here won't be usable unless also
     // added in read_file!
 }
@@ -195,6 +198,7 @@ impl Conf {
         overwrite!(self, show_matching_characters_on_path_searches, conf);
         overwrite!(self, content_search_max_file_size, conf);
         overwrite!(self, terminal_title, conf);
+        overwrite!(self, update_work_dir, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense

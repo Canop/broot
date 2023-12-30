@@ -168,6 +168,15 @@ content_search_max_file_size: 10MB
 # max_panels_count: 2
 
 ###############################################################
+# Update work dir
+#
+# By default, broot process' work dir is kept in sync with the
+# current's panel root. If you want to keep it unchanged,
+# uncomment this setting
+#
+# update_work_dir: false
+
+###############################################################
 # Imports
 #
 # While it's possible to have all configuration in one file,

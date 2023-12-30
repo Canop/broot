@@ -589,8 +589,10 @@ impl App {
         if let Some(path) = self.state().tree_root() {
             app_state.root = path.to_path_buf();
             terminal::update_title(w, app_state, con);
-            if let Err(e) = std::env::set_current_dir(&app_state.root) {
-                warn!("Failed to set current dir: {e}");
+            if con.update_work_dir {
+                if let Err(e) = std::env::set_current_dir(&app_state.root) {
+                    warn!("Failed to set current dir: {e}");
+                }
             }
             if let Some(shared_root) = &mut self.shared_root {
                 if let Ok(mut root) = shared_root.lock() {
