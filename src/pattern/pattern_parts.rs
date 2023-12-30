@@ -63,7 +63,7 @@ impl PatternParts {
     }
     pub fn mode(&self) -> Option<&String> {
         if self.parts.len() > 1 {
-            self.parts.get(0)
+            self.parts.first()
         } else {
             None
         }

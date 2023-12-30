@@ -23,7 +23,7 @@ impl MatchingVerbRow<'_> {
         // there should be a better way to write this
         self.name
             .as_deref()
-            .unwrap_or_else(|| match self.verb.names.get(0) {
+            .unwrap_or_else(|| match self.verb.names.first() {
                 Some(s) => s.as_str(),
                 _ => " ",
             })
@@ -54,7 +54,7 @@ pub fn matching_verb_rows<'v>(
         let mut shortcut = None;
         if pat.is_some() {
             let mut ok = false;
-            name = verb.names.get(0).and_then(|s| {
+            name = verb.names.first().and_then(|s| {
                 pat.search_string(s).map(|nm| {
                     ok = true;
                     nm.wrap(s, "**", "**")
