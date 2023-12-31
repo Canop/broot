@@ -379,29 +379,30 @@ You can override the default behavior of broot by giving your verb the same shor
 
 # Internals
 
-Here's a list of internals: builtin actions you can add an alternate shortcut or keyboard key for:
+Here's a list of internals: builtin actions you can add an alternate shortcut or keyboard key for, without refering to an external program or command:
 
 invocation | default key | default shortcut | behavior / details
 -|-|-|-
-:back | <kbd>left</kbd> | - | back to previous app state (see Usage page) |
-:escape | <kbd>esc</kbd> | - | escape from completions, current input, page, etc. (this internal can be bound to another key but should not be used in command sequences)
-:chmod {args} | - | - | execute a chmod
+:back | <kbd>left</kbd> | - | back to previous app state |
 :clear_stage | - | cls | empty the staging area
+:close_panel_cancel | - | - | close the panel, not using the selected path
+:close_panel_ok | - | - | close the panel, validating the selected path
 :close_preview | - | - | close the preview panel
 :close_staging_area | - | csa | close the staging area panel
-:copy_path | <kbd>alt</kbd><kbd>c</kbd> | - | copy path
-:cp {newpath} | - | - | copy the file or directory to the provided name
-:focus | <kbd>enter</kbd> | - | set the selected directory the root of the displayed tree |
-:help | <kbd>F1</kbd> | - | open the help page. Help page can also be open with <kbd>?</kbd>
+:copy_line | <kbd>alt</kbd><kbd>c</kbd> | - | copy selected line (in tree or preview)
+:copy_path | - | - | copy path to system clipboard
+:escape | <kbd>esc</kbd> | - | escape from completions, current input, page, etc. (this internal can be bound to another key but should not be used in command sequences)
+:filesystems | - | fs | list mounted filesystems
+:focus | <kbd>ctrl</kbd><kbd>f</kbd> | - | set the selected directory the root of the displayed tree (don't remove the filtering pattern) |
+:help | <kbd>F1</kbd> | - | open the help page (which can also be open with <kbd>?</kbd>)
 :line_down | <kbd>↓</kbd> | - | scroll one line down or select the next line (can be used with an argument eg `:line_down 4`)
 :line_down_no_cycle | - | - | same as line_down, but doesn't cycle
 :line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
-:line_up_no_cycle | - | - | same as line_down, but doesn't cycle
-:mkdir {subpath} | - | md | create a directory
-:mv {newpath} | - | - | move the file or directory to the provided path
-:no_sort | - | ns | remove all sorts
+:line_up_no_cycle | - | - | same as line_up, but doesn't cycle
 :next_dir | - | - | select the next directory
 :next_match | <kbd>tab</kbd> | - | select the next matching file, or matching verb or path in auto-completion
+:next_same_depth | - | - | select the next file at the same depth
+:no_sort | - | ns | remove all sorts
 :open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leave broot
 :open_preview | - | - | open the preview panel
 :open_staging_area | - | osa | open the staging area
@@ -409,21 +410,28 @@ invocation | default key | default shortcut | behavior / details
 :open_stay_filter | - | - | focus the directory but keeping the current filtering pattern
 :page_down | <kbd>⇟</kbd> | - | scroll one page down
 :page_up | <kbd>⇞</kbd> | - | scroll one page up
-:panel_left | <kbd>ctrl</kbd><kbd>←</kbd>  | - | move to or open a panel to the left
+:panel_left | -  | - | move to or open a panel to the left
 :panel_left_no_open | <kbd>ctrl</kbd><kbd>←</kbd>  | - | move to panel to the left
 :panel_right | <kbd>ctrl</kbd><kbd>→</kbd>  | - | move to or open a panel to the right
-:panel_right_no_open | <kbd>ctrl</kbd><kbd>→</kbd>  | - | move to panel to the right
+:panel_right_no_open | -  | - | move to panel to the right
 :parent | - | - | focus the parent directory
+:preview_binary | - | - | preview the selection as binary
+:preview_image | - | - | preview the selection as image
+:preview_text | - | - | preview the selection as text
 :previous_dir | - | - | select the previous directory
+:previous_match | - | - | select the previous match
+:previous_same_depth | - | - | select the previous file at the same depth
 :print_path | - | pp | print path and leave broot
-:print_relative_path | - | pp | print relative path and leave broot
+:print_relative_path | - | prp | print relative path and leave broot
 :print_tree | - | pt | print tree and leave broot
 :quit | <kbd>ctrl</kbd><kbd>q</kbd> | q | quit broot
 :refresh | <kbd>F5</kbd> | - | refresh the displayed tree and clears the directory sizes cache
-:rm | - | - | remove the selected file or directory. To stay safe, don't define a keyboard key for this action
+:root_down | - | - | move tree root down
+:root_up | - | - | "move tree root up"
+:select | - | - | select a path given as argument, if it's in the visible tree
 :select_first | - | - | select the first line
 :select_last | - | - | select the last line
-:select | - | - | select a path given as argument, if it's in the visible tree
+:set_syntax_theme | - | - | set the [syntect theme](../conf_file/#syntax-theme) of code preview, eg `:set SolarizedDark`
 :sort_by_count | - | sc | sort by count (only one level of the tree is displayed)
 :sort_by_date | - | sd | sort by date
 :sort_by_size | - | ss | sort by size
@@ -432,6 +440,7 @@ invocation | default key | default shortcut | behavior / details
 :sort_by_type_dirs_last | - | - | sort by type, dirs last
 :stage | <kbd>+</kbd> | - | add selection to staging area
 :stage_all_files | <kbd>ctrl</kbd><kbd>a</kbd> | - | add all files verifying the pattern to the staging area
+:start_end_panel | - | - | either open or close an additional panel
 :toggle_counts | - | - | toggle display of total counts of files per directory
 :toggle_dates | - | - | toggle display of last modified dates (looking for the most recently changed file, even deep)
 :toggle_device_id | - | - | toggle display of device id (unix only)
@@ -442,12 +451,15 @@ invocation | default key | default shortcut | behavior / details
 :toggle_hidden | - | - | toggle display of hidden files (the ones whose name starts with a dot on linux)
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_preview | - | - | toggle display of the preview panel
+:toggle_root_fs | - | - | toggle showing filesystem info on top
 :toggle_second_tree | - | - | toggle displaying a second tree
 :toggle_sizes | - | - | toggle the size mode
 :toggle_stage | <kbd>ctrl</kbd><kbd>g</kbd> | - | add or remove selection to staging area
 :toggle_staging_area | - | tsa | open/close the staging area panel
-:toggle_trim_root | - | - | toggle trimming of top level files in tree display
 :toggle_tree | - | - | toggle showing only one level of the tree (when not affected by sorting)
+:toggle_trim_root | - | - | toggle trimming of top level files in tree display
+:total_search | - | <kbd>ctrl</kbd><kbd>s</kbd> | search again but on all children instead of stopping when the results look good enough
+:trash | - | - | move file to system trash
 :unstage | <kbd>-</kbd> | - | remove selection from staging area
 :up_tree | - | - | focus the parent of the current root
 
