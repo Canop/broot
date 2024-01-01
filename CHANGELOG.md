@@ -1,3 +1,6 @@
+### next
+- whith "modal" enabled, `initial_mode` setting lets you choose whether to start in `input` mode or `command` mode (default) - Fix #708
+
 ### v1.31.0 - 2023-12-30
 <a name="v1.31.0"></a>
 - keep broot's work dir synchronized with the root of the current panel. Can be disabled in conf with `update_work_dir: false` - Fix #813

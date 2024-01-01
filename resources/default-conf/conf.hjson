@@ -50,7 +50,10 @@
 # (you really should read https://dystroy.org/broot/modal/
 # before as it may not suit everybody even among vim users)
 #
+# You may start either in 'command' mode, or in 'input' mode
+#
 # modal: true
+# initial_mode: command
 
 ###############################################################
 # Whether to mark the selected line with a triangle

@@ -1030,10 +1030,3 @@ pub fn get_arg<T: Copy + FromStr>(
         .unwrap_or(default)
 }
 
-pub fn initial_mode(con: &AppContext) -> Mode {
-    if con.modal {
-        Mode::Command
-    } else {
-        Mode::Input
-    }
-}

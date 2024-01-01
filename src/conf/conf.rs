@@ -4,6 +4,7 @@
 use {
     super::*,
     crate::{
+        app::Mode,
         display::ColsConf,
         errors::{ConfError, ProgramError},
         path::{
@@ -89,6 +90,10 @@ pub struct Conf {
     pub icon_theme: Option<String>,
 
     pub modal: Option<bool>,
+
+    /// the initial mode (only relevant when modal is true)
+    #[serde(alias="initial-mode")]
+    pub initial_mode: Option<Mode>,
 
     pub max_panels_count: Option<usize>,
 
@@ -192,6 +197,7 @@ impl Conf {
         overwrite!(self, search_modes, conf);
         overwrite!(self, max_panels_count, conf);
         overwrite!(self, modal, conf);
+        overwrite!(self, initial_mode, conf);
         overwrite!(self, quit_on_last_cancel, conf);
         overwrite!(self, file_sum_threads_count, conf);
         overwrite!(self, max_staged_count, conf);

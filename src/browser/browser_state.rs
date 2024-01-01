@@ -64,7 +64,7 @@ impl BrowserState {
         Ok(BrowserState {
             tree,
             filtered_tree: None,
-            mode: initial_mode(con),
+            mode: con.initial_mode(),
             pending_task,
         })
     }

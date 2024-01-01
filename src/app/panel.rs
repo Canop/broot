@@ -160,7 +160,7 @@ impl Panel {
             let new_input = format!("{command_parts}");
             self.input.set_content(&new_input);
         }
-        self.mut_state().set_mode(initial_mode(con));
+        self.mut_state().set_mode(con.initial_mode());
     }
 
     pub fn set_input_content(&mut self, content: &str) {

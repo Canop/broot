@@ -93,7 +93,7 @@ impl FilesystemState {
             page_height: 0,
             tree_options,
             filtered: None,
-            mode: initial_mode(con),
+            mode: con.initial_mode(),
         })
     }
     pub fn count(&self) -> usize {

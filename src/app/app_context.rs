@@ -1,6 +1,7 @@
 use {
     super::*,
     crate::{
+        app::Mode,
         cli::{Args, TriBool},
         conf::*,
         content_search,
@@ -76,6 +77,9 @@ pub struct AppContext {
 
     /// modal (aka "vim) mode enabled
     pub modal: bool,
+
+    /// the initial mode (only relevant when modal is true)
+    pub initial_mode: Mode,
 
     /// Whether to support mouse interactions
     pub capture_mouse: bool,
@@ -193,6 +197,7 @@ impl AppContext {
             true_colors,
             icons,
             modal: config.modal.unwrap_or(false),
+            initial_mode: config.initial_mode.unwrap_or(Mode::Command),
             capture_mouse,
             max_panels_count,
             quit_on_last_cancel: config.quit_on_last_cancel.unwrap_or(false),
@@ -209,6 +214,13 @@ impl AppContext {
         self.launch_args.cmd.as_ref().or(
             self.config_default_args.as_ref().and_then(|args| args.cmd.as_ref())
         ).map(|s| s.as_str())
+    }
+    pub fn initial_mode(&self) -> Mode {
+        if self.modal {
+            self.initial_mode
+        } else {
+            Mode::Input
+        }
     }
 }
 

@@ -57,7 +57,7 @@ impl StageState {
             filtered_stage,
             scroll: 0,
             tree_options,
-            mode: initial_mode(con),
+            mode: con.initial_mode(),
             page_height: 0,
             stage_sum: StageSum::default(),
         }
@@ -252,7 +252,7 @@ impl PanelState for StageState {
             let state = Box::new(StageState {
                 filtered_stage: self.filtered_stage.clone(),
                 scroll: self.scroll,
-                mode: initial_mode(con),
+                mode: con.initial_mode(),
                 tree_options: new_options,
                 page_height: self.page_height,
                 stage_sum: self.stage_sum,

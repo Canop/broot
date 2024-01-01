@@ -47,7 +47,7 @@ impl HelpState {
             pattern: Pattern::None,
             tree_options,
             config_path,
-            mode: initial_mode(con),
+            mode: con.initial_mode(),
         }
     }
 }

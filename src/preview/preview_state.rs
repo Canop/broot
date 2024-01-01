@@ -56,7 +56,7 @@ impl PreviewState {
             removed_pattern: InputPattern::none(),
             preferred_mode,
             tree_options,
-            mode: initial_mode(con),
+            mode: con.initial_mode(),
         }
     }
     fn vis_preview(&self) -> &Preview {
