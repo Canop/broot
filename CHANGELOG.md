@@ -1,4 +1,5 @@
-### next
+### v1.32.0 - 2024-01-02
+<a name="v1.32.0"></a>
 - whith "modal" enabled, `initial_mode` setting lets you choose whether to start in `input` mode or `command` mode (default) - Fix #708
 
 ### v1.31.0 - 2023-12-30
