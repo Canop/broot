@@ -4,7 +4,7 @@ use {
         app::AppContext,
         errors::TreeBuildError,
         git::GitIgnoreChain,
-        path::{normalize_path, SpecialHandling},
+        path::{normalize_path, Directive, SpecialHandling},
         tree::*,
     },
     id_arena::Arena,
@@ -65,7 +65,7 @@ impl BLine {
                 score: 0,
                 nb_kept_children: 0,
                 git_ignore_chain,
-                special_handling: SpecialHandling::None,
+                special_handling: Default::default(),
             }))
         } else {
             Err(TreeBuildError::FileNotFound {
@@ -92,10 +92,10 @@ impl BLine {
     }
     /// tell whether we should list the children of the present line
     pub fn can_enter(&self) -> bool {
-        if self.file_type.is_dir() && self.special_handling != SpecialHandling::NoEnter {
+        if self.file_type.is_dir() && self.special_handling.list != Directive::Never {
             return true;
         }
-        if self.special_handling == SpecialHandling::Enter {
+        if self.special_handling.list == Directive::Always {
             // we must check we're a link to a directory
             if self.file_type.is_symlink() {
                 if let Ok(target) = fs::read_link(&self.path) {

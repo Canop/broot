@@ -99,12 +99,28 @@ show_selection_mark: true
 # Special paths
 # If some paths must be handled specially, uncomment (and change
 # this section as per the examples)
+# Setting "list":"never" on a dir prevents broot from looking at its 
+#  children when searching, unless the dir is the selected root.
+# Setting "sum":"never" on a dir prevents broot from looking at its
+#  children when computing the total size and count of files.
+# Setting "show":"always" makes a file visible even if its name
+#  starts with a dot.
+# Setting "list":"always" may be useful on a link to a directory
+#  (they're otherwise not entered by broot unless selected)
 #
 special_paths: {
-    "/media" : "no-enter" // comment it if desired
-    # "/media/slow-backup-disk"    : no-enter
-    # "/home/dys/useless"    : hide
-    # "/home/dys/my-link-I-want-to-explore"    : enter
+    "/media" : {
+        list: "never"
+        sum: "never"
+    }
+    "~/.config": { "show": "always" }
+    "trav": {
+        show: always
+        list: "always",
+        sum: "never"
+    }
+    # "~/useless": { "show": "never" }
+    # "~/my-link-I-want-to-explore": { "list": "always" }
 }
 
 ###############################################################

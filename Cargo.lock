@@ -217,7 +217,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "broot"
-version = "1.32.0"
+version = "1.32.1-dev"
 dependencies = [
  "ahash 0.8.6",
  "ansi_colours",
@@ -261,7 +261,7 @@ dependencies = [
  "strict",
  "syntect-no-panic",
  "tempfile",
- "termimad 0.26.1",
+ "termimad 0.27.0",
  "terminal-clipboard",
  "terminal-light",
  "toml",
@@ -2144,9 +2144,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.26.1"
+version = "0.27.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c3d19056c90eb12f23da61808c9f8c22b7d031bb5d50400b726ecf2d9718e73"
+checksum = "3d8fd6df3360f61fd890859b94d4a009c2e8dc2d50a6453ad3669fbb0df345f2"
 dependencies = [
  "coolor 0.8.0",
  "crossbeam",

@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.32.0"
+version = "1.32.1-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 homepage = "https://dystroy.org/broot"
@@ -58,7 +58,7 @@ splitty = "1.0"
 strict = "0.1.4"
 syntect = { package = "syntect-no-panic", version = "4.6.1" } # see issue #485
 tempfile = "3.2"
-termimad = "0.26.1"
+termimad = "0.27.0"
 terminal-clipboard = { version = "0.4.1", optional = true }
 terminal-light = "1.1.1"
 toml = "0.8"

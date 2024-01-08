@@ -100,27 +100,40 @@ Those flags can still be overridden at launch with the negating ones. For exampl
 
 # Special Paths
 
-You may map special paths to specific behaviors. You may especially want
+You may map special paths to specific behaviors. You may for example
 
-- to have some link to a directory to always automatically be handled as a normal directory
-- to exclude some path because it's on a slow device or non relevant
+- have some link to a directory to always automatically be handled as a normal directory
+- exclude some path because it's on a slow device or non relevant
+- have a file be visible even while it's normally ignored
+
+A special paths entry is defined by 3 parameters: `show`, `list`, and `sum`.
+Each of them can be `default`, `always`, or `never`.
 
 Example configuration:
 
 ```Hjson
 special_paths: {
-    "/media/slow-backup-disk"             : no-enter
-    "/home/dys/useless"                   : hide
-    "/home/dys/my-link-I-want-to-explore" : enter
-    "/home/dys/.config"                   : no-hide
+    "/media" : {
+        list: "never"
+        sum: "never"
+    }
+    "~/.config": { "show": "always" }
+    "trav": {
+        show: always
+        list: "always",
+        sum: "never"
+    }
+    "~/useless": { "show": "never" }
+    "~/my-link-I-want-to-explore": { "list": "always" }
 }
 ```
 ```TOML
 [special-paths]
-"/media/slow-backup-disk" = "no-enter"
-"/home/dys/useless" = "hide"
-"/home/dys/my-link-I-want-to-explore" = "enter"
-"/home/dys/.config" = "no-hide"
+"/media" = { list = "never", sum = "never" }
+"~/.config" = { show = "always" }
+"trav" = { show = "always", list = "always", sum = "never" }
+"~/useless" = { show = "never" }
+"~/my-link-I-want-to-explore" = { list = "always" }
 ```
 
 Be careful that those paths (globs, in fact) are checked a lot when broot builds trees and that defining a lot of paths will impact the overall speed.
