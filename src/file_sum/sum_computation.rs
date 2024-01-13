@@ -43,14 +43,6 @@ struct NodeId {
     dev: u64,
 }
 
-#[inline(always)]
-fn is_ignored(path: &Path, special_paths: &[SpecialPath]) -> bool {
-    match special_paths.find(path) {
-        SpecialHandling::NoEnter | SpecialHandling::Hide => true,
-        SpecialHandling::None | SpecialHandling::Enter | SpecialHandling::NoHide => false,
-    }
-}
-
 impl DirSummer {
     pub fn new(thread_count: usize) -> Self {
         let thread_pool = ThreadPoolBuilder::new()
@@ -75,7 +67,7 @@ impl DirSummer {
     ) -> Option<FileSum> {
         let threads_count = self.thread_count;
 
-        if is_ignored(path, &con.special_paths) {
+        if con.special_paths.sum(path) == Directive::Never {
             return Some(FileSum::zero());
         }
 
@@ -102,10 +94,7 @@ impl DirSummer {
         // A None means there's nothing left and the thread may send its result and stop
         let (dirs_sender, dirs_receiver) = channel::unbounded();
 
-        let special_paths: Vec<SpecialPath> = con.special_paths.iter()
-            .filter(|sp| sp.can_have_matches_in(path))
-            .cloned()
-            .collect();
+        let special_paths = con.special_paths.reduce(path);
 
         // the first level is managed a little differently: we look at the cache
         // before adding. This enables faster computations in two cases:
@@ -117,7 +106,7 @@ impl DirSummer {
                     if md.is_dir() {
                         let entry_path = e.path();
 
-                        if is_ignored(&entry_path, &special_paths) {
+                        if con.special_paths.sum(&entry_path) == Directive::Never {
                             debug!("not summing special path {:?}", entry_path);
                             continue;
                         }
@@ -188,7 +177,7 @@ impl DirSummer {
 
                                         let path = e.path();
 
-                                        if is_ignored(&path, &special_paths) {
+                                        if special_paths.sum(&path) == Directive::Never {
                                             debug!("not summing (deep) special path {:?}", path);
                                             continue;
                                         }

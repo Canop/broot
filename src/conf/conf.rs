@@ -8,8 +8,6 @@ use {
         display::ColsConf,
         errors::{ConfError, ProgramError},
         path::{
-            Glob,
-            SpecialHandling,
             path_from,
             PathAnchor,
         },
@@ -21,6 +19,7 @@ use {
     crokey::crossterm::style::Attribute,
     fnv::FnvHashMap,
     serde::Deserialize,
+    std::collections::HashMap,
     std::path::PathBuf,
 };
 
@@ -59,7 +58,7 @@ pub struct Conf {
     pub skin: Option<AHashMap<String, SkinEntry>>,
 
     #[serde(default, alias="special-paths")]
-    pub special_paths: AHashMap<Glob, SpecialHandling>,
+    pub special_paths: HashMap<GlobConf, SpecialHandlingConf>,
 
     #[serde(alias="search-modes")]
     pub search_modes: Option<FnvHashMap<String, String>>,

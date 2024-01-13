@@ -1,23 +1,32 @@
 use {
-    directories::UserDirs,
     glob,
-    lazy_regex::*,
-    serde::{de::Error, Deserialize, Deserializer},
-    std::path::{Path, PathBuf},
+    serde::Deserialize,
+    std::path::Path,
 };
 
-#[derive(Debug, Clone, PartialEq, Hash, Eq)]
-pub struct Glob {
-    pattern: glob::Pattern,
+///// Wrap a glob pattern to add the Deserialize trait
+//#[derive(Debug, Clone, PartialEq, Hash, Eq)]
+//pub struct Glob {
+//    pattern: glob::Pattern,
+//}
+
+#[derive(Clone, Copy, Debug, Deserialize, Default, PartialEq)]
+pub struct SpecialHandling {
+    #[serde(default)]
+    pub show: Directive,
+    #[serde(default)]
+    pub list: Directive,
+    #[serde(default)]
+    pub sum: Directive,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum SpecialHandling {
-    None,
-    Enter,
-    NoEnter,
-    Hide,
-    NoHide,
+#[derive(Clone, Debug, Copy, Deserialize, PartialEq, Eq, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum Directive {
+    #[default]
+    Default,
+    Never,
+    Always,
 }
 
 #[derive(Debug, Clone)]
@@ -26,52 +35,67 @@ pub struct SpecialPath {
     pub handling: SpecialHandling,
 }
 
-pub trait SpecialPathList {
-    fn find(self, path: &Path) -> SpecialHandling;
+#[derive(Debug, Clone)]
+pub struct SpecialPaths {
+    pub entries: Vec<SpecialPath>,
 }
 
-impl<'de> Deserialize<'de> for SpecialHandling {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
-    {
-        let s = String::deserialize(deserializer)?;
-        let s = s.to_lowercase();
-        // we remove non letters so to accept eg "no-enter"
-        let s = regex!(r"\W+").replace_all(&s, "");
-        match s.as_ref() {
-            "none" => Ok(SpecialHandling::None),
-            "enter" => Ok(SpecialHandling::Enter),
-            "noenter" => Ok(SpecialHandling::NoEnter), // noenter or no-enter
-            "hide" => Ok(SpecialHandling::Hide),
-            "nohide" => Ok(SpecialHandling::NoHide),   // nohide or no-hide
-            _ => Err(D::Error::custom(format!(
-                "unrecognized special handling: {s:?}"
-            ))),
+impl SpecialPaths {
+    pub fn find<P: AsRef<Path>>(&self, path: P) -> SpecialHandling {
+        self
+            .entries.iter()
+            .find(|sp| sp.pattern.matches_path(path.as_ref()))
+            .map(|sp| sp.handling)
+            .unwrap_or_default()
+    }
+    pub fn show(&self, path: &Path) -> Directive {
+        self.find(path).show
+    }
+    pub fn list(&self, path: &Path) -> Directive {
+        self.find(path).list
+    }
+    pub fn sum(&self, path: &Path) -> Directive {
+        self.find(path).sum
+    }
+    /// Add a special handling, if none was previously defined for that path
+    pub fn add_default(&mut self, path: &str, handling: SpecialHandling) {
+        if self.find(path) != Default::default() {
+            return;
+        }
+        match glob::Pattern::new("/proc") {
+            Ok(pattern) => {
+                self.entries.push(SpecialPath { pattern, handling });
+            }
+            Err(e) => {
+                warn!("Invalid glob pattern: {path:?} : {e}");
+            }
         }
     }
-}
-
-impl<'de> Deserialize<'de> for Glob {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-        where D: Deserializer<'de>
-    {
-        let s = String::deserialize(deserializer)?;
-        let s = regex_replace!(r"^~(/|$)", &s, |_, sep| {
-            match UserDirs::new() {
-                Some(dirs) => format!("{}{}", dirs.home_dir().to_string_lossy(), sep),
-                None => "~/".to_string(),
-            }
+    pub fn add_defaults(&mut self) {
+        // see https://github.com/Canop/broot/issues/639
+        self.add_default("/proc", SpecialHandling {
+            show: Directive::Default,
+            list: Directive::Never,
+            sum: Directive::Never,
         });
-        glob::Pattern::new(&s)
-            .map_err(|e| D::Error::custom(format!("invalid glob pattern {s:?} : {e:?}")))
-            .map(|pattern| Glob { pattern })
+    }
+    /// Return a potentially smaller set of special paths, reduced
+    /// to what can be in path
+    pub fn reduce(&self, path: &Path) -> Self {
+        let entries = self
+            .entries
+            .iter()
+            .filter(|sp| sp.can_have_matches_in(path))
+            .cloned()
+            .collect();
+        Self { entries }
     }
 }
 
 impl SpecialPath {
-    pub fn new(glob: Glob, handling: SpecialHandling) -> Self {
+    pub fn new(pattern: glob::Pattern, handling: SpecialHandling) -> Self {
         Self {
-            pattern: glob.pattern,
+            pattern,
             handling,
         }
     }
@@ -81,31 +105,4 @@ impl SpecialPath {
     }
 }
 
-impl SpecialPathList for &[SpecialPath] {
-    fn find(self, path: &Path) -> SpecialHandling {
-        for sp in self {
-            if sp.pattern.matches_path(path) {
-                return sp.handling;
-            }
-        }
-        SpecialHandling::None
-    }
-}
 
-/// Add a special handling, if none was previously defined for that path
-fn add_default(list: &mut Vec<SpecialPath>, path: &str, handling: SpecialHandling) {
-    if list.find(&PathBuf::from("/proc")) == SpecialHandling::None {
-        match glob::Pattern::new("/proc") {
-            Ok(pattern) => {
-                list.push(SpecialPath { pattern, handling });
-            }
-            Err(e) => {
-                warn!("Invalid glob pattern: {path:?} : {e}");
-            }
-        }
-    }
-}
-pub fn add_defaults(list: &mut Vec<SpecialPath>) {
-    // see https://github.com/Canop/broot/issues/639
-    add_default(list, "/proc", SpecialHandling::NoEnter);
-}

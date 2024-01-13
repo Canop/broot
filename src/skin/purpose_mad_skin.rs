@@ -8,10 +8,10 @@ use {
 /// when there's no error
 pub fn make_purpose_mad_skin(skin: &StyleMap) -> MadSkin {
     MadSkin {
-        paragraph: LineStyle {
-            compound_style: skin.purpose_normal.clone(),
-            align: Alignment::Left,
-        },
+        paragraph: LineStyle::new(
+            skin.purpose_normal.clone(),
+            Alignment::Left,
+        ),
         italic: skin.purpose_italic.clone(),
         bold: skin.purpose_bold.clone(),
         ellipsis: skin.purpose_ellipsis.clone(),

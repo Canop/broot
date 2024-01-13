@@ -8,8 +8,8 @@ use {
         errors::*,
         file_sum,
         icon::*,
-        path,
         pattern::SearchModeMap,
+        path::SpecialPaths,
         skin::ExtColorMap,
         syntactic::SyntaxTheme,
         tree::TreeOptions,
@@ -50,7 +50,7 @@ pub struct AppContext {
     pub verb_store: VerbStore,
 
     /// the paths for which there's a special behavior to follow (comes from conf)
-    pub special_paths: Vec<path::SpecialPath>,
+    pub special_paths: SpecialPaths,
 
     /// the map between search prefixes and the search mode to apply
     pub search_modes: SearchModeMap,
@@ -130,11 +130,8 @@ impl AppContext {
         };
         let icons = config.icon_theme.as_ref()
             .and_then(|itn| icon_plugin(itn));
-        let mut special_paths = config.special_paths
-            .iter()
-            .map(|(k, v)| path::SpecialPath::new(k.clone(), *v))
-            .collect();
-        path::add_defaults(&mut special_paths);
+        let mut special_paths: SpecialPaths = (&config.special_paths).try_into()?;
+        special_paths.add_defaults();
         let search_modes = config
             .search_modes
             .as_ref()

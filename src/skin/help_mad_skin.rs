@@ -14,10 +14,10 @@ pub fn make_help_mad_skin(skin: &StyleMap) -> MadSkin {
     ms.code_block.compound_style = ms.inline_code.clone();
     ms.bold = skin.help_bold.clone();
     ms.italic = skin.help_italic.clone();
-    ms.table = LineStyle {
-        compound_style: skin.help_table_border.clone(),
-        align: Alignment::Center,
-    };
+    ms.table = LineStyle::new(
+        skin.help_table_border.clone(),
+        Alignment::Center,
+    );
     if let Some(c) = skin.help_headers.get_fg() {
         ms.set_headers_fg(c);
     }
