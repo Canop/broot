@@ -773,6 +773,7 @@ impl App {
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
         let event_source = EventSource::new()?;
+        info!("event source is combining: {}", event_source.supports_multi_key_combinations());
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
         let skin = AppSkin::new(conf, con.launch_args.color == TriBool::No);

@@ -30,7 +30,7 @@ chrono = "0.4"
 clap = { version = "4.4", features = ["derive", "cargo"] }
 clap-help = "1.0"
 cli-log = "2.0"
-crokey = "0.4.3"
+crokey = "0.6"
 crossbeam = "0.8"
 custom_error = "1.6"
 deser-hjson = "2.2.3"
@@ -58,9 +58,9 @@ splitty = "1.0"
 strict = "0.1.4"
 syntect = { package = "syntect-no-panic", version = "4.6.1" } # see issue #485
 tempfile = "3.2"
-termimad = "0.26.1"
+termimad = "0.28.0"
 terminal-clipboard = { version = "0.4.1", optional = true }
-terminal-light = "1.1.1"
+terminal-light = "1.2.0"
 toml = "0.8"
 trash = "3.1.2"
 umask = "2.1.0"
@@ -107,13 +107,13 @@ harness = false
 
 [patch.crates-io]
 # bet = { path = "../bet" }
-# crokey = { path = "../crokey" }
-# clap-help = { path = "../clap-help" }
+crokey = { path = "../crokey" }
+clap-help = { path = "../clap-help" }
 # cli-log = { path = "../cli-log" }
-# csv2svg = { path = "../csv2svg" }
+csv2svg = { path = "../csv2svg" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # deser-hjson = { path = "../deser-hjson" }
-# glassbench = { path = "../glassbench" }
+glassbench = { path = "../glassbench" }
 # lazy-regex = { path = "../lazy-regex" }
 # lazy-regex-proc_macros = { path = "../lazy-regex/src/proc_macros" }
 # lfs-core = { path = "../lfs-core" }
@@ -122,7 +122,7 @@ harness = false
 # syntect = { path = "../syntect" }
 # syntect-no-panic = { path = "../syntect" }
 # minimad = { path = "../minimad" }
-# termimad = { path = "../termimad" }
-# terminal-light = { path = "../terminal-light" }
+termimad = { path = "../termimad" }
+terminal-light = { path = "../terminal-light" }
 # terminal-clipboard = { path = "../terminal-clipboard" }
 # umask = { path = "../umask" }
