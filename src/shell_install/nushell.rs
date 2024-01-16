@@ -115,7 +115,7 @@ def --env br [
     if ($file == null) {
         ^broot --outcmd $cmd_file ...$args
     } else {
-        ^broot --outcmd $cmd_file $args $file
+        ^broot --outcmd $cmd_file ...$args $file
     }
     let $cmd = (open $cmd_file)
     rm -p -f $cmd_file
