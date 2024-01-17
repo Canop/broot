@@ -113,9 +113,9 @@ def --env br [
     let cmd_file = ([ $nu.temp-path, $"broot-(random chars).tmp" ] | path join)
     touch $cmd_file
     if ($file == null) {
-        ^broot --outcmd $cmd_file $args
+        ^broot --outcmd $cmd_file ...$args
     } else {
-        ^broot --outcmd $cmd_file $args $file
+        ^broot --outcmd $cmd_file ...$args $file
     }
     let $cmd = (open $cmd_file)
     rm -p -f $cmd_file
