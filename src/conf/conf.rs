@@ -119,6 +119,9 @@ pub struct Conf {
     #[serde(alias="update-work-dir")]
     pub update_work_dir: Option<bool>,
 
+    #[serde(alias="enable-keyboard-enhancements")]
+    pub enable_kitty_keyboard: Option<bool>,
+
     // BEWARE: entries added here won't be usable unless also
     // added in read_file!
 }
@@ -204,6 +207,7 @@ impl Conf {
         overwrite!(self, content_search_max_file_size, conf);
         overwrite!(self, terminal_title, conf);
         overwrite!(self, update_work_dir, conf);
+        overwrite!(self, enable_kitty_keyboard, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense

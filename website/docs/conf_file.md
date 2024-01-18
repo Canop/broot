@@ -273,6 +273,23 @@ terminal_title = "{file} 🐄"
 
 # Miscellaneous
 
+## Disable keyboard enhancements
+
+By default, ANSI terminals make a lot of keyboard combinations impossible, for example <kbd>space</kbd><kbd>n</kbd>, or <kbd>a</kbd><kbd>b</kbd>, or <kbd>shift</kbd><kbd>a</kbd><kbd>b</kbd>, etc.
+Some terminals implement [Kitty's keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) and basically make it possible to bind verbs to such combinations.
+
+Broot tests whether the terminal supports those enhancements, and if it's the case, tries to enable them.
+
+The only known downside is that broot will react on key release instead of key press (so that you may press other keys before you release the first one), which may feel less instant. If the Kitty protocol isn't supported by your terminal, broot will react on key press.
+
+If you prefer to disable those keyboard enhancements (and make it impossible for broot to detect multi non-modifier keys combinations), add this to your configuration:
+
+```Hjson
+enable_kitty_keyboard: false
+```
+```TOML
+enable_kitty_keyboard = false
+```
 
 ## Maximal number of files added by a :stage_all_files command
 
