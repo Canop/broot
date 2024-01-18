@@ -6,7 +6,6 @@ use {
         path::PathAnchor,
     },
     crokey::{
-        crossterm::event::KeyEvent,
         KeyCombination,
     },
     std::{

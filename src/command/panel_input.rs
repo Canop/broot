@@ -13,7 +13,6 @@ use {
         cursor,
         event::{
             Event,
-            KeyEvent,
             KeyModifiers,
             MouseButton,
             MouseEvent,

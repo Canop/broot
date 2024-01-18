@@ -2,7 +2,6 @@ use {
     crokey::*,
     crossterm::event::{
         KeyCode,
-        KeyEvent,
         KeyModifiers,
     },
     once_cell::sync::Lazy,
