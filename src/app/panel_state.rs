@@ -944,7 +944,6 @@ pub trait PanelState {
         has_previous_state: bool,
         width: usize,
     ) -> Status {
-        info!("get_status cc.cmd={:?}", &cc.cmd);
         match &cc.cmd {
             Command::PatternEdit { .. } => self.no_verb_status(has_previous_state, cc.app.con, width),
             Command::VerbEdit(invocation) | Command::VerbTrigger { input_invocation: Some(invocation), .. } => {

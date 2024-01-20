@@ -275,7 +275,7 @@ terminal_title = "{file} 🐄"
 
 ## Disable keyboard enhancements
 
-By default, ANSI terminals make a lot of keyboard combinations impossible, for example <kbd>space</kbd><kbd>n</kbd>, or <kbd>a</kbd><kbd>b</kbd>, or <kbd>shift</kbd><kbd>a</kbd><kbd>b</kbd>, etc.
+By default, ANSI terminals make a lot of keyboard combinations impossible, for example <kbd>space</kbd><kbd>n</kbd>, or <kbd>alt</kbd><kbd>a</kbd><kbd>b</kbd>, or <kbd>shift</kbd><kbd>space</kbd>, etc.
 Some terminals implement [Kitty's keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) and basically make it possible to bind verbs to such combinations.
 
 Broot tests whether the terminal supports those enhancements, and if it's the case, tries to enable them.

@@ -245,7 +245,6 @@ impl PanelInput {
             &parts
         };
         let completions = Completions::for_input(completable_parts, con, sel_info);
-        info!(" -> completions: {:?}", &completions);
         let added = match completions {
             Completions::None => {
                 debug!("nothing to complete!");

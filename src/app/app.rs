@@ -843,9 +843,9 @@ impl App {
             #[allow(unused_mut)]
             match dam.next(&self.rx_seqs) {
                 Either::First(Some(event)) => {
-                    info!("event: {:?}", &event);
+                    //info!("event: {:?}", &event);
                     if let Some(key_combination) = event.key_combination {
-                        info!("Received key combination: {}", &key_combination);
+                        info!("key combination: {}", key_combination);
                     }
                     let mut handled = false;
 
@@ -912,7 +912,6 @@ impl App {
                 }
             }
         }
-
         Ok(self.launch_at_end.take())
     }
 }
