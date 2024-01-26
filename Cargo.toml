@@ -58,7 +58,7 @@ splitty = "1.0"
 strict = "0.1.4"
 syntect = { package = "syntect-no-panic", version = "4.6.1" } # see issue #485
 tempfile = "3.2"
-termimad = "0.28.1"
+termimad = "0.28.2"
 terminal-clipboard = { version = "0.4.1", optional = true }
 terminal-light = "1.2.0"
 toml = "0.8"
