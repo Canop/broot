@@ -15,6 +15,7 @@ use {
         tree::TreeOptions,
         verb::*,
     },
+    crokey::crossterm::tty::IsTty,
     std::{
         convert::{TryFrom, TryInto},
         io,
@@ -25,6 +26,9 @@ use {
 /// The container that can be passed around to provide the configuration things
 /// for the whole life of the App
 pub struct AppContext {
+
+    /// Whether the application is running in a normal TTY context
+    pub is_tty: bool,
 
     /// The initial tree root
     pub initial_root: PathBuf,
@@ -122,6 +126,7 @@ impl AppContext {
         verb_store: VerbStore,
         config: &Conf,
     ) -> Result<Self, ProgramError> {
+        let is_tty = std::io::stdout().is_tty();
         let config_default_args = config
             .default_flags
             .as_ref()
@@ -184,6 +189,7 @@ impl AppContext {
         let terminal_title_pattern = config.terminal_title.clone();
 
         Ok(Self {
+            is_tty,
             initial_root,
             initial_file,
             initial_tree_options,

@@ -773,9 +773,10 @@ impl App {
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
         w.flush()?;
+        let combine_keys = conf.enable_kitty_keyboard.unwrap_or(true) && con.is_tty;
         let event_source = EventSource::with_options(
             EventSourceOptions {
-                combine_keys: conf.enable_kitty_keyboard.unwrap_or(true),
+                combine_keys,
                 ..Default::default()
             }
         )?;
