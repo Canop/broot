@@ -261,7 +261,7 @@ dependencies = [
  "strict 0.1.4",
  "syntect-no-panic",
  "tempfile",
- "termimad",
+ "termimad 0.29.0",
  "terminal-clipboard",
  "terminal-light",
  "toml",
@@ -356,7 +356,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b5ca685fc35478f79629023bfd33c6ff80bbb25dfe974dd495521deaa8e3545d"
 dependencies = [
  "clap",
- "termimad",
+ "termimad 0.28.2",
  "terminal-light",
 ]
 
@@ -901,9 +901,9 @@ dependencies = [
 
 [[package]]
 name = "glassbench"
-version = "0.4.0"
+version = "0.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1528d5eba102860949d301309ab09896c4248e4078c76bd1584e667c4d5181a6"
+checksum = "afdba36fcc234421fb6d1e8ab20080a71a72782dd8321f31c3b7edcaaf843579"
 dependencies = [
  "base64 0.13.1",
  "chrono",
@@ -915,7 +915,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tempfile",
- "termimad",
+ "termimad 0.29.0",
  "thiserror",
 ]
 
@@ -2092,6 +2092,22 @@ name = "termimad"
 version = "0.28.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b043fcd6def04c40b0ccce109af4107ab7949d2a6824cb5c1971dbfdac4bce20"
+dependencies = [
+ "coolor",
+ "crokey",
+ "crossbeam",
+ "lazy-regex",
+ "minimad",
+ "serde",
+ "thiserror",
+ "unicode-width",
+]
+
+[[package]]
+name = "termimad"
+version = "0.29.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2c2c80aaaa313ad8b73018a94b82751b7a78cb3cceadf02cb8cfc9decff3d9b9"
 dependencies = [
  "coolor",
  "crokey",

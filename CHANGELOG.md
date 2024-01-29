@@ -1,4 +1,5 @@
 ### next
+- on terminals supporting the kitty keyboard protocol, you can now define and use key combinations like `space-n`, `ctrl-alt-a-b`, `shift-space-c`, `ctrl-enter`, etc.
 - new syntax for special paths - Fix #687, #669
 
 ### v1.32.0 - 2024-01-02
