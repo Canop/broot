@@ -280,15 +280,17 @@ Some terminals implement [Kitty's keyboard protocol](https://sw.kovidgoyal.net/k
 
 Broot tests whether the terminal supports those enhancements, and if it's the case, tries to enable them.
 
-The only known downside is that broot will react on key release instead of key press (so that you may press other keys before you release the first one), which may feel less instant. If the Kitty protocol isn't supported by your terminal, broot will react on key press.
+A small downside is that broot will react on key release instead of key press (so that you may press other keys before you release the first one), which may feel less instant. If the Kitty protocol isn't supported by your terminal, broot will react on key press.
+Another problem is that it may push you towards key combinations that you wouldn't be able to reuse when switching terminal.
+And finally, some terminals have buggy implementations (at time of writing).
 
-If you prefer to disable those keyboard enhancements (and make it impossible for broot to detect multi non-modifier keys combinations), add this to your configuration:
+To enable those keyboard enhancements (and make it impossible for broot to detect multi non-modifier keys combinations), change this setting to true
 
 ```Hjson
-enable_kitty_keyboard: false
+enable_kitty_keyboard: true
 ```
 ```TOML
-enable_kitty_keyboard = false
+enable_kitty_keyboard = true
 ```
 
 ## Maximal number of files added by a :stage_all_files command
