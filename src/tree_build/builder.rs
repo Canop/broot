@@ -9,7 +9,7 @@ use {
         errors::TreeBuildError,
         git::{GitIgnoreChain, GitIgnorer, LineStatusComputer},
         pattern::Candidate,
-        path::{SpecialHandling, SpecialPathList},
+        path::Directive,
         task_sync::ComputationResult,
         task_sync::Dam,
         tree::*,
@@ -128,13 +128,13 @@ impl<'c> TreeBuilder<'c> {
             return None;
         }
         let path = e.path();
+        let special_handling = self.con.special_paths.find(&path);
+        if special_handling.show == Directive::Never {
+            return None;
+        }
         if !self.options.show_hidden
             && name.as_bytes()[0] == b'.'
-            // if not matches any SpecialHandling::NoHide pattern
-            && !self.con.special_paths
-            .iter()
-            .filter(|sp| sp.handling == SpecialHandling::NoHide)
-            .any(|sp| sp.pattern.matches_path(&path))
+            && special_handling.show != Directive::Always
         {
             self.report.hidden_count += 1;
             return None;
@@ -193,17 +193,15 @@ impl<'c> TreeBuilder<'c> {
                 return None;
             }
         }
-        let special_handling = self.con.special_paths.find(&path);
-        if special_handling == SpecialHandling::Hide {
-            return None;
-        }
         if self.options.respect_git_ignore {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
             if !self
                 .git_ignorer
                 .accepts(parent_chain, &path, &name, file_type.is_dir())
             {
-                return None;
+                if special_handling.show != Directive::Always {
+                    return None;
+                }
             }
         };
         Some(BLine {

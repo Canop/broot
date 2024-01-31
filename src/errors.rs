@@ -87,6 +87,7 @@ custom_error! {pub ConfError
     InvalidThreadsCount { count: usize }            = "invalid threads count: {count}",
     InvalidDefaultFlags { flags: String }           = "invalid default flags: {flags:?}",
     InvalidSyntaxTheme { name: String }             = "invalid syntax theme: {name:?}",
+    InvalidGlobPattern { pattern: String }          = "invalid glob pattern: {pattern:?}",
 }
 
 // error which can be raised when parsing a pattern the user typed

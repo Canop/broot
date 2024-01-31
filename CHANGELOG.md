@@ -1,6 +1,9 @@
+### next
+- new syntax for special paths - Fix #687, #669
+
 ### v1.32.0 - 2024-01-02
 <a name="v1.32.0"></a>
-- whith "modal" enabled, `initial_mode` setting lets you choose whether to start in `input` mode or `command` mode (default) - Fix #708
+- with "modal" enabled, `initial_mode` setting lets you choose whether to start in `input` mode or `command` mode (default) - Fix #708
 
 ### v1.31.0 - 2023-12-30
 <a name="v1.31.0"></a>

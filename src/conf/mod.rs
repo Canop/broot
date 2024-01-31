@@ -11,6 +11,7 @@ mod default_flags;
 mod format;
 pub mod file_size;
 mod import;
+mod special_handling_conf;
 mod verb_conf;
 
 pub use {
@@ -19,6 +20,7 @@ pub use {
     default_flags::*,
     format::*,
     import::*,
+    special_handling_conf::*,
     verb_conf::VerbConf,
 };
 
