@@ -13,14 +13,16 @@ You may be an avid vim user, as I am, and still prefer not to use modality in br
 
 # Configuration
 
-You need first to enable the "modal mode" with this line in the configuration:
+You need first to enable the "modal mode" and to decide whether you want to start in `command` or `input` mode:
 
 ```hjson
 modal: true
+initial_mode: command
 ```
 ```TOML
 # note that this must be near the start of the configuration file
 modal = true
+initial_mode = "command"
 ```
 
 If `modal` isn't set to `true`, the single letter shortcuts you define in configuration will be ignored (so you don't have to remove them if you don't want modality anymore).
