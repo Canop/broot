@@ -1,4 +1,5 @@
-### next
+### v1.33.0 - 2024-02-03
+<a name="v1.33.0"></a>
 - on terminals supporting the kitty keyboard protocol, you can now define and use key combinations like `space-n`, `ctrl-alt-a-b`, `shift-space-c`, `ctrl-enter`, etc.
 - new syntax for special paths - Fix #687, #669
 
