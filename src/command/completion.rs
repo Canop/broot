@@ -241,7 +241,6 @@ impl Completions {
         con: &AppContext,
         sel_info: SelInfo<'_>,
     ) -> Self {
-        info!("Looking for completions");
         match &parts.verb_invocation {
             Some(invocation) if !invocation.is_empty() => {
                 match &invocation.args {

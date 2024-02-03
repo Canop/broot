@@ -185,12 +185,6 @@ pub fn on_internal(
 ) -> CmdResult {
     let con = &cc.app.con;
     let screen = cc.app.screen;
-    info!(
-        "internal_focus.on_internal internal_exec={:?} input_invocation={:?} trygger_type={:?}",
-        internal_exec,
-        input_invocation,
-        trigger_type,
-    );
     let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);

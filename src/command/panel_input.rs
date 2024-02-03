@@ -8,12 +8,11 @@ use {
         skin::PanelSkin,
         verb::*,
     },
-    crokey::key,
+    crokey::{key, KeyCombination},
     crokey::crossterm::{
         cursor,
         event::{
             Event,
-            KeyEvent,
             KeyModifiers,
             MouseButton,
             MouseEvent,
@@ -85,11 +84,17 @@ impl PanelInput {
         mode: Mode,
         panel_state_type: PanelStateType,
     ) -> Result<Command, ProgramError> {
-        let cmd = match timed_event.event {
-            Event::Mouse(MouseEvent { kind, column, row, modifiers: KeyModifiers::NONE }) => {
+        let cmd = match timed_event {
+            TimedEvent {
+                event: Event::Mouse(MouseEvent { kind, column, row, modifiers: KeyModifiers::NONE }),
+                ..
+            } => {
                 self.on_mouse(timed_event, kind, column, row)
             }
-            Event::Key(key) => {
+            TimedEvent {
+                key_combination: Some(key),
+                ..
+            } => {
                 self.on_key(timed_event, key, con, sel_info, app_state, mode, panel_state_type)
             }
             _ => Command::None,
@@ -171,10 +176,10 @@ impl PanelInput {
     /// should be added to the input
     fn enter_input_mode_with_key(
         &mut self,
-        key: KeyEvent,
+        key: KeyCombination,
         parts: &CommandParts,
     ) {
-        if let Some(c) = crokey::as_letter(key) {
+        if let Some(c) = key.as_letter() {
             let add = match c {
                 // '/' if !parts.raw_pattern.is_empty() => true,
                 ' ' if parts.verb_invocation.is_none() => true,
@@ -240,7 +245,6 @@ impl PanelInput {
             &parts
         };
         let completions = Completions::for_input(completable_parts, con, sel_info);
-        info!(" -> completions: {:?}", &completions);
         let added = match completions {
             Completions::None => {
                 debug!("nothing to complete!");
@@ -276,7 +280,7 @@ impl PanelInput {
 
     fn find_key_verb<'c>(
         &mut self,
-        key: KeyEvent,
+        key: KeyCombination,
         con: &'c AppContext,
         sel_info: SelInfo<'_>,
         panel_state_type: PanelStateType,
@@ -313,7 +317,7 @@ impl PanelInput {
         column: u16,
         row: u16,
     ) -> Command {
-        if self.input_field.apply_timed_event(timed_event) {
+        if self.input_field.apply_timed_event(&timed_event) {
             Command::empty()
         } else {
             match kind {
@@ -343,7 +347,7 @@ impl PanelInput {
 
     fn is_key_allowed_for_verb(
         &self,
-        key: KeyEvent,
+        key: KeyCombination,
         mode: Mode,
     ) -> bool {
         match mode {
@@ -361,7 +365,7 @@ impl PanelInput {
     fn on_key(
         &mut self,
         timed_event: TimedEvent,
-        key: KeyEvent,
+        key: KeyCombination,
         con: &AppContext,
         sel_info: SelInfo<'_>,
         app_state: &AppState,
@@ -455,7 +459,7 @@ impl PanelInput {
         }
 
         // input field management
-        if mode == Mode::Input && self.input_field.apply_timed_event(timed_event) {
+        if mode == Mode::Input && self.input_field.apply_timed_event(&timed_event) {
             return Command::from_raw(self.input_field.get_content(), false);
         }
         Command::None

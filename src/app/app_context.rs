@@ -15,6 +15,7 @@ use {
         tree::TreeOptions,
         verb::*,
     },
+    crokey::crossterm::tty::IsTty,
     std::{
         convert::{TryFrom, TryInto},
         io,
@@ -25,6 +26,9 @@ use {
 /// The container that can be passed around to provide the configuration things
 /// for the whole life of the App
 pub struct AppContext {
+
+    /// Whether the application is running in a normal TTY context
+    pub is_tty: bool,
 
     /// The initial tree root
     pub initial_root: PathBuf,
@@ -108,6 +112,12 @@ pub struct AppContext {
 
     /// whether to sync broot's work dir with the current panel's root
     pub update_work_dir: bool,
+
+    /// Whether Kitty keyboard enhancement flags are pushed, so that
+    /// we know whether we need to temporarily disable them during
+    /// the execution of a terminal program.
+    /// This is determined by app::run on launching the event source.
+    pub keyboard_enhanced: bool,
 }
 
 impl AppContext {
@@ -116,6 +126,7 @@ impl AppContext {
         verb_store: VerbStore,
         config: &Conf,
     ) -> Result<Self, ProgramError> {
+        let is_tty = std::io::stdout().is_tty();
         let config_default_args = config
             .default_flags
             .as_ref()
@@ -178,6 +189,7 @@ impl AppContext {
         let terminal_title_pattern = config.terminal_title.clone();
 
         Ok(Self {
+            is_tty,
             initial_root,
             initial_file,
             initial_tree_options,
@@ -203,6 +215,7 @@ impl AppContext {
             content_search_max_file_size,
             terminal_title_pattern,
             update_work_dir: config.update_work_dir.unwrap_or(true),
+            keyboard_enhanced: false,
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (prefered)

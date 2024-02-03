@@ -134,7 +134,7 @@ pub fn on_path(
     screen: Screen,
     in_new_panel: bool,
 ) -> CmdResult {
-    info!("executing :select on path {:?}", &path);
+    debug!("executing :select on path {:?}", &path);
     if in_new_panel {
         warn!("bang in :select isn't supported yet");
     }

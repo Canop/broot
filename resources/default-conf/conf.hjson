@@ -196,6 +196,17 @@ content_search_max_file_size: 10MB
 # update_work_dir: false
 
 ###############################################################
+# Kitty Keyboard extension
+#
+# If you want to use advanced keyboard shortcuts in Kitty
+# compatible terminals (Kitty, Wezterm), set this to true.
+# 
+# This makes it possible to use shortcuts like 'space-n', 
+# 'ctrl-alt-a-b', 'shift-space', etc.
+#
+enable_kitty_keyboard: false
+
+###############################################################
 # Imports
 #
 # While it's possible to have all configuration in one file,

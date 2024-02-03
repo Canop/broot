@@ -47,7 +47,7 @@ use {
         },
     },
     strict::NonEmptyVec,
-    termimad::EventSource,
+    termimad::{EventSource, EventSourceOptions},
 };
 
 /// The GUI
@@ -772,7 +772,17 @@ impl App {
         }
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
-        let event_source = EventSource::new()?;
+        w.flush()?;
+        let combine_keys = conf.enable_kitty_keyboard.unwrap_or(false) && con.is_tty;
+        let event_source = EventSource::with_options(
+            EventSourceOptions {
+                combine_keys,
+                ..Default::default()
+            }
+        )?;
+        con.keyboard_enhanced = event_source.supports_multi_key_combinations();
+        info!("event source is combining: {}", event_source.supports_multi_key_combinations());
+
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
         let skin = AppSkin::new(conf, con.launch_args.color == TriBool::No);
@@ -834,7 +844,10 @@ impl App {
             #[allow(unused_mut)]
             match dam.next(&self.rx_seqs) {
                 Either::First(Some(event)) => {
-                    info!("event: {:?}", &event);
+                    //info!("event: {:?}", &event);
+                    if let Some(key_combination) = event.key_combination {
+                        info!("key combination: {}", key_combination);
+                    }
                     let mut handled = false;
 
                     // app level handling
@@ -900,7 +913,6 @@ impl App {
                 }
             }
         }
-
         Ok(self.launch_at_end.take())
     }
 }

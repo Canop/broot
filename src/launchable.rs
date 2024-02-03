@@ -55,6 +55,7 @@ pub enum Launchable {
         working_dir: Option<PathBuf>,
         switch_terminal: bool,
         capture_mouse: bool,
+        keyboard_enhanced: bool,
     },
 
     /// open a path
@@ -125,6 +126,7 @@ impl Launchable {
                 working_dir,
                 switch_terminal,
                 capture_mouse: con.capture_mouse,
+                keyboard_enhanced: con.keyboard_enhanced,
             }),
             None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
         }
@@ -149,14 +151,18 @@ impl Launchable {
                 exe,
                 args,
                 capture_mouse,
+                keyboard_enhanced,
             } => {
                 debug!("working_dir: {working_dir:?}");
-                debug!("switch_terminal: {working_dir:?}");
+                debug!("switch_terminal: {switch_terminal:?}");
                 if *switch_terminal {
                     // we restore the normal terminal in case the executable
                     // is a terminal application, and we'll switch back to
                     // broot's alternate terminal when we're back to broot
                     if let Some(ref mut w) = &mut w {
+                        if *keyboard_enhanced {
+                            crokey::pop_keyboard_enhancement_flags()?;
+                        }
                         w.queue(cursor::Show).unwrap();
                         w.queue(LeaveAlternateScreen).unwrap();
                         if *capture_mouse {
@@ -188,6 +194,9 @@ impl Launchable {
                         w.queue(EnterAlternateScreen).unwrap();
                         w.queue(cursor::Hide).unwrap();
                         w.flush().unwrap();
+                        if *keyboard_enhanced {
+                            crokey::push_keyboard_enhancement_flags()?;
+                        }
                     }
                 }
                 if let Some(old_working_dir) = old_working_dir {

@@ -5,7 +5,9 @@ use {
         errors::ConfError,
         path::PathAnchor,
     },
-    crokey::crossterm::event::KeyEvent,
+    crokey::{
+        KeyCombination,
+    },
     std::{
         cmp::PartialEq,
         path::PathBuf,
@@ -40,7 +42,7 @@ pub struct Verb {
     pub names: Vec<String>,
 
     /// key shortcuts
-    pub keys: Vec<KeyEvent>,
+    pub keys: Vec<KeyCombination>,
 
     /// how the input must be checked and interpreted
     /// Can be empty if the verb is only called with a key shortcut.
@@ -128,11 +130,11 @@ impl Verb {
             panels: Vec::new(),
         })
     }
-    pub fn with_key(&mut self, key: KeyEvent) -> &mut Self {
+    pub fn with_key(&mut self, key: KeyCombination) -> &mut Self {
         self.keys.push(key);
         self
     }
-    pub fn add_keys(&mut self, keys: Vec<KeyEvent>) {
+    pub fn add_keys(&mut self, keys: Vec<KeyCombination>) {
         for key in keys {
             self.keys.push(key);
         }
