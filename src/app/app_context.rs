@@ -8,6 +8,7 @@ use {
         errors::*,
         file_sum,
         icon::*,
+        kitty::TransmissionMedium,
         pattern::SearchModeMap,
         path::SpecialPaths,
         skin::ExtColorMap,
@@ -118,6 +119,8 @@ pub struct AppContext {
     /// the execution of a terminal program.
     /// This is determined by app::run on launching the event source.
     pub keyboard_enhanced: bool,
+
+    pub kitty_graphics_transmission: TransmissionMedium,
 }
 
 impl AppContext {
@@ -216,6 +219,8 @@ impl AppContext {
             terminal_title_pattern,
             update_work_dir: config.update_work_dir.unwrap_or(true),
             keyboard_enhanced: false,
+            kitty_graphics_transmission: config.kitty_graphics_transmission
+                .unwrap_or_default(),
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (prefered)

@@ -7,6 +7,7 @@ pub use {
 
 use {
     crate::{
+        app::AppContext,
         display::W,
         errors::ProgramError,
         image::SourceImage,
@@ -64,15 +65,21 @@ impl KittyManager {
             _ => None,
         }
     }
-    pub fn renderer(&mut self) -> Option<&mut KittyImageRenderer> {
+    pub fn renderer(
+        &mut self,
+        con: &AppContext,
+    ) -> Option<&mut KittyImageRenderer> {
         if matches!(self.renderer, MaybeRenderer::Disabled) {
             return None;
         }
         if matches!(self.renderer, MaybeRenderer::Enabled { .. }) {
             return self.renderer_if_tested();
         }
+        let options = KittyImageRendererOptions {
+            transmission_medium: con.kitty_graphics_transmission,
+        };
         // we're in the Untested branch
-        match KittyImageRenderer::new() {
+        match KittyImageRenderer::new(&options) {
             Some(renderer) => {
                 self.renderer = MaybeRenderer::Enabled { renderer };
                 self.renderer_if_tested()
@@ -101,8 +108,9 @@ impl KittyManager {
         area: &Area,
         bg: Color,
         drawing_count: usize,
+        con: &AppContext,
     ) -> Result<Option<KittyImageId>, ProgramError> {
-        if let Some(renderer) = self.renderer() {
+        if let Some(renderer) = self.renderer(con) {
             let img = src.optimal()?;
             let new_id = renderer.print(w, &img, area, bg)?;
             self.rendered_images.push(RenderedImage {
