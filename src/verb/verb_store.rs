@@ -301,6 +301,9 @@ impl VerbStore {
         self.add_internal(trash);
         self.add_internal(total_search).with_key(key!(ctrl-s));
         self.add_internal(up_tree).with_shortcut("up");
+
+        self.add_internal(clear_output);
+        self.add_internal(write_output);
     }
 
     fn build_add_internal(

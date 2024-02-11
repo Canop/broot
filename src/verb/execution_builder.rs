@@ -46,7 +46,7 @@ impl<'b> ExecutionStringBuilder<'b> {
         }
     }
     pub fn with_invocation(
-        invocation_parser: &Option<InvocationParser>,
+        invocation_parser: Option<&InvocationParser>,
         sel_info: SelInfo<'b>,
         app_state: &'b AppState,
         invocation_args: Option<&String>,
@@ -253,7 +253,18 @@ impl<'b> ExecutionStringBuilder<'b> {
             .one_sel()
             .map_or(self.root, |sel| sel.path)
     }
-
+    /// build a raw string, without escapings
+    pub fn string(
+        &self,
+        pattern: &str,
+    ) -> String {
+        GROUP
+            .replace_all(
+                pattern,
+                |ec: &Captures<'_>| self.get_capture_replacement(ec),
+            )
+            .to_string()
+    }
     /// build a path
     pub fn path(
         &self,

@@ -20,7 +20,6 @@ pub fn file_contains_line(path: &Path, searched_line: &str) -> Result<bool, Shel
 
 pub fn append_to_file<S: AsRef<str>>(path: &Path, content: S) -> Result<(), ShellInstallError> {
     let mut shellrc = OpenOptions::new()
-        .write(true)
         .append(true)
         .open(path)
         .context(&|| format!("opening {path:?} for append"))?;

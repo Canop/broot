@@ -95,7 +95,7 @@ fn path_from_input(
             // }
             // (or that input is useless)
             let path_builder = ExecutionStringBuilder::with_invocation(
-                &verb.invocation_parser,
+                verb.invocation_parser.as_ref(),
                 SelInfo::from_path(base_path),
                 app_state,
                 Some(input_arg),

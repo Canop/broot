@@ -158,6 +158,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         w.queue(EnableMouseCapture)?;
     }
     let r = app.run(&mut w, &mut context, &config);
+    w.flush()?;
     if context.capture_mouse {
         w.queue(DisableMouseCapture)?;
     }
