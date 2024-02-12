@@ -4,11 +4,11 @@ use {
         content_type,
         tree::{TreeLine, TreeLineType},
     },
-    serde::Deserialize,
+    serde::{Deserialize, Serialize},
     std::path::Path,
 };
 
-#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize)]
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum FileTypeCondition {
     #[default]
@@ -21,6 +21,9 @@ pub enum FileTypeCondition {
 }
 
 impl FileTypeCondition {
+    pub fn is_default(&self) -> bool {
+        self == &Self::default()
+    }
     pub fn accepts_path(self, path: &Path) -> bool {
         match self {
             Self::Any => true,

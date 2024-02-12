@@ -38,7 +38,17 @@ impl VerbStore {
     pub fn new(conf: &mut Conf) -> Result<Self, ConfError> {
         let mut store = Self { verbs: Vec::new() };
         for vc in &conf.verbs {
-            store.add_from_conf(vc)?;
+            if let Err(e) = store.add_from_conf(vc) {
+                eprintln!("Invalid verb configuration: {}", e);
+                warn!("Faulty parsed configuration: {:#?}", vc);
+                if let Ok(toml) = toml::to_string(&vc) {
+                    eprintln!("Faulty configuration:\n{}", toml);
+                }
+                eprintln!("Configuration files:");
+                for path in &conf.files {
+                    eprintln!("  - {}", path.display());
+                }
+            }
         }
         store.add_builtin_verbs(); // at the end so that we can override them
         Ok(store)

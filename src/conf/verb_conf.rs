@@ -5,11 +5,11 @@ use {
         },
         verb::*,
     },
-    serde::Deserialize,
+    serde::{Deserialize, Serialize},
 };
 
 /// A deserializable verb entry in the configuration
-#[derive(Default, Debug, Clone, Deserialize)]
+#[derive(Default, Debug, Clone, Deserialize, Serialize)]
 pub struct VerbConf {
 
     pub invocation: Option<String>,
@@ -26,10 +26,10 @@ pub struct VerbConf {
 
     pub key: Option<String>,
 
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub keys: Vec<String>,
 
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub extensions: Vec<String>,
 
     pub shortcut: Option<String>,
@@ -38,7 +38,7 @@ pub struct VerbConf {
 
     pub from_shell: Option<bool>,
 
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "FileTypeCondition::is_default")]
     pub apply_to: FileTypeCondition,
 
     pub set_working_dir: Option<bool>,
@@ -51,7 +51,7 @@ pub struct VerbConf {
 
     pub switch_terminal: Option<bool>,
 
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub panels: Vec<PanelStateType>,
 }
 

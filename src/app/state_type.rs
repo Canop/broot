@@ -1,10 +1,10 @@
 use {
-    serde::Deserialize,
+    serde::{Deserialize, Serialize},
 };
 
 /// one of the types of state that you could
 /// find in a panel today
-#[derive(Debug, Clone, Copy, PartialEq, Deserialize)]
+#[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PanelStateType {
 

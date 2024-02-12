@@ -3,7 +3,7 @@ use {
         path::*,
         verb::*,
     },
-    serde::Deserialize,
+    serde::{Deserialize, Serialize},
     std::{
         path::Path,
         fmt,
@@ -11,7 +11,7 @@ use {
 };
 
 /// A pattern which can be expanded into an executable
-#[derive(Debug, Clone, Deserialize)]
+#[derive(Debug, Clone, Deserialize, Serialize)]
 #[serde(untagged)]
 pub enum ExecPattern {
     String(String),
