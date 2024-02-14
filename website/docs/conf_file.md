@@ -273,7 +273,25 @@ terminal_title = "{file} 🐄"
 
 # Miscellaneous
 
-## Disable keyboard enhancements
+## Kitty Graphics
+
+Whenever possible, previewed images will be displayed in high resolution using [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/).
+
+Two transmission media are possible:
+
+* `chunks`: slow but works remotely
+* `temp_file`: faster but doesn't work when broot is remotely executed, default
+
+```Hjson
+kitty_graphics_transmission: chunks
+#kitty_graphics_transmission: temp_file
+```
+```TOML
+kitty_graphics_transmission = "chunks"
+#kitty_graphics_transmission = "temp_file"
+```
+
+## Keyboard enhancements
 
 By default, ANSI terminals make a lot of keyboard combinations impossible, for example <kbd>space</kbd><kbd>n</kbd>, or <kbd>alt</kbd><kbd>a</kbd><kbd>b</kbd>, or <kbd>shift</kbd><kbd>space</kbd>, etc.
 Some terminals implement [Kitty's keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) and basically make it possible to bind verbs to such combinations.
@@ -293,7 +311,9 @@ enable_kitty_keyboard: true
 enable_kitty_keyboard = true
 ```
 
-## Maximal number of files added by a :stage_all_files command
+## Max staged count
+
+This is the maximal number of files added by a :stage_all_files command
 
 ```Hjson
 max_staged_count: 1234
@@ -313,8 +333,9 @@ capture_mouse: false
 capture_mouse = false
 ```
 
-## Number of threads for directory size computation
+## File Sum Threads Count
 
+This is the number of threads used for directory size computation.
 Most users should not change this. In my measurements a number of 4 to 6 looks optimal.
 
 ```Hjson
@@ -349,7 +370,7 @@ update_work_dir: false
 update_work_dir = false
 ```
 
-## Only show file name even when the pattern is on paths
+## Pattern match display
 
 When your search pattern is applied to a path, the path is shown on each line so that you see why the line matches:
 
