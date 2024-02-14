@@ -24,6 +24,7 @@ use {
         RgbImage,
         RgbaImage,
     },
+    serde::Deserialize,
     std::{
         io::{self, Write},
     },
@@ -35,18 +36,27 @@ use {
 ///
 /// Note that I didn't test yet the named shared memory
 /// solution offered by kitty.
-#[derive(Debug)]
+///
+/// Documentation:
+///  https://sw.kovidgoyal.net/kitty/graphics-protocol/#the-transmission-medium
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum TransmissionMedium {
     /// write a temp file, then give its path to kitty
     /// in the payload of the escape sequence. It's quite
     /// fast on SSD but a big downside is that it doesn't
     /// work if you're distant
+    #[default]
     TempFile,
     /// send the whole rgb or rgba data, encoded in base64,
     /// in the payloads of several escape sequence (each one
     /// containing at most 4096 bytes). Works if broot runs
     /// on remote.
     Chunks,
+}
+
+pub struct KittyImageRendererOptions {
+    pub transmission_medium: TransmissionMedium,
 }
 
 enum ImageData<'i> {
@@ -203,7 +213,7 @@ impl<'i> KittyImage<'i> {
 
 impl KittyImageRenderer {
     /// Called only once (at most) by the KittyManager
-    pub fn new() -> Option<Self> {
+    pub fn new(options: &KittyImageRendererOptions) -> Option<Self> {
         if !is_kitty_graphics_protocol_supported() {
             return None;
         }
@@ -213,7 +223,7 @@ impl KittyImageRenderer {
                 cell_width,
                 cell_height,
                 next_id: 1,
-                transmission_medium: TransmissionMedium::Chunks,
+                transmission_medium: options.transmission_medium,
             })
     }
     /// return a new image id
@@ -240,6 +250,7 @@ impl KittyImageRenderer {
 
         let img = KittyImage::new(src, area, self);
         debug!("transmission medium: {:?}", self.transmission_medium);
+        w.flush()?;
         match self.transmission_medium {
             TransmissionMedium::TempFile => img.print_with_temp_file(w)?,
             TransmissionMedium::Chunks => img.print_with_chunks(w)?,

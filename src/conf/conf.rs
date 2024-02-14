@@ -7,6 +7,7 @@ use {
         app::Mode,
         display::ColsConf,
         errors::{ConfError, ProgramError},
+        kitty::TransmissionMedium,
         path::{
             path_from,
             PathAnchor,
@@ -122,6 +123,9 @@ pub struct Conf {
     #[serde(alias="enable-keyboard-enhancements")]
     pub enable_kitty_keyboard: Option<bool>,
 
+    #[serde(alias="kitty-graphics-transmission")]
+    pub kitty_graphics_transmission: Option<TransmissionMedium>,
+
     // BEWARE: entries added here won't be usable unless also
     // added in read_file!
 }
@@ -208,6 +212,7 @@ impl Conf {
         overwrite!(self, terminal_title, conf);
         overwrite!(self, update_work_dir, conf);
         overwrite!(self, enable_kitty_keyboard, conf);
+        overwrite!(self, kitty_graphics_transmission, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense
