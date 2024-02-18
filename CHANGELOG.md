@@ -1,7 +1,8 @@
 ### next
 - don't fail launch in case of bad verb configuration, more helpful error message in such case
 - faster kitty image rendering by default - Fix #789
-
+- `{file-git-relative}` verb argument
+ 
 ### v1.33.1 - 2024-02-03
 <a name="v1.33.1"></a>
 - fix the release's version

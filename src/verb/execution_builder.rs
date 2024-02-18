@@ -168,6 +168,12 @@ impl<'b> ExecutionStringBuilder<'b> {
                         .map(|s| s.to_string())
                     }))
             }
+            "file-git-relative" => { // file path relative to git repo workdir
+                let gitroot = git2::Repository::discover(self.root).ok()
+                    .and_then(|repo| repo.workdir().map(path_to_string));
+                sel.and_then(|f| f.path.strip_prefix(gitroot.unwrap_or_default()).ok())
+                    .map(path_to_string)
+            }
             _ => None,
         }
     }
