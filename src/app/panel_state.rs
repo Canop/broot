@@ -755,7 +755,7 @@ pub trait PanelState {
         seq_ex: &SequenceExecution,
         invocation: Option<&VerbInvocation>,
         app_state: &mut AppState,
-        _cc: &CmdContext,
+        cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         let sel_info = self.sel_info(app_state);
         if matches!(sel_info, SelInfo::More(_)) {
@@ -774,12 +774,7 @@ pub trait PanelState {
                 None
             },
         );
-        // TODO what follows is dangerous: if an inserted group value contains the separator,
-        // the parsing will cut on this separator
-        let sequence = Sequence {
-            raw: exec_builder.shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
-            separator: seq_ex.sequence.separator.clone(),
-        };
+        let sequence = exec_builder.sequence(&seq_ex.sequence, &cc.app.con.verb_store);
         Ok(CmdResult::ExecuteSequence { sequence })
     }
 

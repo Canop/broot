@@ -2,6 +2,7 @@ use {
     super::*,
     crate::{
         app::*,
+        command::*,
         path,
     },
     ahash::AHashMap,
@@ -252,6 +253,48 @@ impl<'b> ExecutionStringBuilder<'b> {
         self.sel_info
             .one_sel()
             .map_or(self.root, |sel| sel.path)
+    }
+    /// replace groups in a sequence
+    ///
+    /// Replacing escapes for the shell for externals, and without
+    /// escaping for internals.
+    ///
+    /// Note that this is *before* asking the (local or remote) panel
+    /// state the sequential execution of the different commands. In
+    /// this secondary execution, new replacements are expected too,
+    /// depending on the verbs.
+    pub fn sequence(
+        &self,
+        sequence: &Sequence,
+        verb_store: &VerbStore,
+    ) -> Sequence {
+        let mut inputs = Vec::new();
+        for input in sequence.raw.split(&sequence.separator) {
+            let raw_parts = CommandParts::from(input.to_string());
+            let (_, verb_invocation) = raw_parts.split();
+            let verb_is_external = verb_invocation
+                .and_then(|vi| {
+                    let command = Command::from_parts(vi, true);
+                    if let Command::VerbInvocate(invocation) = &command {
+                        let search = verb_store.search_prefix(&invocation.name);
+                        if let PrefixSearchResult::Match(_, verb) = search {
+                            return Some(verb);
+                        }
+                    }
+                    None
+                })
+                .map_or(false, |verb| verb.get_internal().is_none());
+            let input = if verb_is_external {
+                self.shell_exec_string(&ExecPattern::from_string(input))
+            } else {
+                self.string(&input)
+            };
+            inputs.push(input);
+        }
+        Sequence {
+            raw: inputs.join(&sequence.separator),
+            separator: sequence.separator.clone(),
+        }
     }
     /// build a raw string, without escapings
     pub fn string(
