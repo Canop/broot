@@ -6,7 +6,7 @@
 //! In a correct installation, we have:
 //! - a function declaration script in ~/.local/share/broot/launcher/nushell/br/1
 //! - a link to that script in ~/.config/broot/launcher/nushell/br/1
-//! - a line to source the link in ~/.config/nushell/config.nu
+//! - a line to use the link in ~/.config/nushell/config.nu
 //! (exact paths depend on XDG variables)
 //!
 //! Please note that this function doesn't allow other commands than cd,
@@ -21,7 +21,7 @@ use {
 };
 
 const NAME: &str = "nushell";
-const VERSION: &str = "5";
+const VERSION: &str = "6";
 
 const NU_FUNC: &str = r#"
 # Launch broot
@@ -33,7 +33,7 @@ const NU_FUNC: &str = r#"
 #   > br -hi -c "vacheblan.svg;:open_preview" ..
 #
 # See https://dystroy.org/broot/install-br/
-def --env br [
+export def --env br [
     --cmd(-c): string               # Semicolon separated commands to execute
     --color: string = "auto"        # Whether to have styles and colors (auto is default and usually OK) [possible values: auto, yes, no]
     --conf: string                  # Semicolon separated paths to specific config files"),
@@ -212,7 +212,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     si.create_link(&link_path, &script_path)?;
 
     let escaped_path = link_path.to_string_lossy().replace(' ', "\\ ");
-    let source_line = format!("source {}", &escaped_path);
+    let source_line = format!("use '{}' *", &escaped_path);
 
     let sourcing_path = nushell_dir.join("config.nu");
     if !sourcing_path.exists() {
@@ -234,7 +234,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
         util::append_to_file(&sourcing_path, format!("\n{source_line}\n"))?;
         mad_print_inline!(
             &si.skin,
-            "`$0` successfully patched, you can make the function immediately available with `source $0`\n",
+            "`$0` successfully patched, you can make the function immediately available with `use '$0' *`\n",
             &sourcing_path_str,
         );
     }
