@@ -1,4 +1,5 @@
 ### next
+- new `--verb-output` launch argument, dedicated to the new `:clear_output` and `:write_output` internals - Fix #825
 - don't fail launch in case of bad verb configuration, more helpful error message in such case
 - faster kitty image rendering by default - Fix #789
 
