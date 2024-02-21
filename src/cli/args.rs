@@ -140,6 +140,10 @@ pub struct Args {
     #[arg(long, value_name = "path")]
     pub outcmd: Option<PathBuf>,
 
+    /// An optional path where to write when a verb uses `:write_output`
+    #[arg(long, value_name = "verb-output")]
+    pub verb_output: Option<PathBuf>,
+
     /// Semicolon separated commands to execute
     #[arg(short, long, value_name = "cmd")]
     pub cmd: Option<String>,

@@ -474,6 +474,7 @@ impl PanelState for FilesystemState {
     fn on_internal(
         &mut self,
         w: &mut W,
+        invocation_parser: Option<&InvocationParser>,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
@@ -578,6 +579,7 @@ impl PanelState for FilesystemState {
             open_leave => CmdResult::PopStateAndReapply,
             _ => self.on_internal_generic(
                 w,
+                invocation_parser,
                 internal_exec,
                 input_invocation,
                 trigger_type,

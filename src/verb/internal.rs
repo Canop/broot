@@ -148,6 +148,8 @@ Internals! {
     trash: "move file to system trash" true,
     unstage: "remove selection from staging area" true,
     up_tree: "focus the parent of the current root" true,
+    write_output: "write the argument to the --verb-output file" false,
+    clear_output: "clear the --verb-output file" false,
     //restore_pattern: "restore a pattern which was just removed" false,
 }
 
@@ -161,6 +163,7 @@ impl Internal {
             Internal::line_down_no_cycle => r"line_down_no_cycle (?P<count>\d*)?",
             Internal::line_up_no_cycle => r"line_up_no_cycle (?P<count>\d*)?",
             Internal::set_syntax_theme => r"set_syntax_theme {theme:theme}",
+            Internal::write_output => r"write_output (?P<line>.*)",
             _ => self.name(),
         }
     }
@@ -171,6 +174,7 @@ impl Internal {
             Internal::line_up => r"line_up {count}",
             Internal::line_down_no_cycle => r"line_down_no_cycle {count}",
             Internal::line_up_no_cycle => r"line_up_no_cycle {count}",
+            Internal::write_output => r"write_output {line}",
             _ => self.name(),
         }
     }

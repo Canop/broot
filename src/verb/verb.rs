@@ -242,7 +242,7 @@ impl Verb {
 
         let builder = || {
             ExecutionStringBuilder::with_invocation(
-                &self.invocation_parser,
+                self.invocation_parser.as_ref(),
                 sel_info,
                 app_state,
                 invocation.args.as_ref(),
