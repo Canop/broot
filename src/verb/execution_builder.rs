@@ -170,10 +170,16 @@ impl<'b> ExecutionStringBuilder<'b> {
                     }))
             }
             "file-git-relative" => { // file path relative to git repo workdir
-                let gitroot = git2::Repository::discover(self.root).ok()
-                    .and_then(|repo| repo.workdir().map(path_to_string));
-                sel.and_then(|f| f.path.strip_prefix(gitroot.unwrap_or_default()).ok())
-                    .map(path_to_string)
+                let Some(sel) = sel else { return None; };
+                let path = git2::Repository::discover(self.root).ok()
+                    .and_then(|repo| repo.workdir().map(path_to_string))
+                    .and_then(|gitroot| sel.path.strip_prefix(gitroot).ok())
+                    .filter(|p| {
+                        // it's empty when the file is both the tree root and the git root
+                        !p.as_os_str().is_empty()
+                    })
+                    .unwrap_or(sel.path);
+                Some(path_to_string(path))
             }
             _ => None,
         }
@@ -293,7 +299,7 @@ impl<'b> ExecutionStringBuilder<'b> {
             let input = if verb_is_external {
                 self.shell_exec_string(&ExecPattern::from_string(input))
             } else {
-                self.string(&input)
+                self.string(input)
             };
             inputs.push(input);
         }
