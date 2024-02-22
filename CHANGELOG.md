@@ -4,6 +4,7 @@
 - don't fail launch in case of bad verb configuration, more helpful error message in such case
 - faster kitty image rendering by default - Fix #789
 - modify nushell function import: `use` instead of `source` - Thanks @texastoland and @ FrancescElies
+- fix some resizing and flickering problems on Windows (appeared with 1.33.0)
 
 ### v1.33.1 - 2024-02-03
 <a name="v1.33.1"></a>
