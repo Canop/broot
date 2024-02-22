@@ -127,11 +127,11 @@ impl ShellInstall {
                     }
                 }
             }
-            // even if the installation isn't really complete (for example
-            // when no bash file was found), we don't want to ask the user
-            // again, we'll assume it's done
-            ShellInstallState::UpToDate.write(self)?;
         }
+        // even if the installation isn't really complete (for example
+        // when no bash file was found), we don't want to ask the user
+        // again, we'll assume it's done
+        ShellInstallState::UpToDate.write(self)?;
         debug!("Starting install");
         bash::install(self)?;
         fish::install(self)?;
