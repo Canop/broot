@@ -202,6 +202,7 @@ impl PanelState for HelpState {
     fn on_internal(
         &mut self,
         w: &mut W,
+        invocation_parser: Option<&InvocationParser>,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
@@ -260,6 +261,7 @@ impl PanelState for HelpState {
             }
             _ => self.on_internal_generic(
                 w,
+                invocation_parser,
                 internal_exec,
                 input_invocation,
                 trigger_type,

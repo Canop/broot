@@ -463,6 +463,8 @@ invocation | default key | default shortcut | behavior / details
 :trash | - | - | move file to system trash
 :unstage | <kbd>-</kbd> | - | remove selection from staging area
 :up_tree | - | - | focus the parent of the current root
+:write_output | - | - |  write to the `--verb-output` file
+:clear_output | - | - |  clear the `--verb-output` file
 
 Note that
 

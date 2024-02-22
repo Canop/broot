@@ -79,9 +79,11 @@ pub trait PanelState {
     /// The invocation comes from the input and may be related
     /// to a different verb (the verb may have been triggered
     /// by a key shortcut)
+    #[allow(clippy::too_many_arguments)]
     fn on_internal(
         &mut self,
         w: &mut W,
+        invocation_parser: Option<&InvocationParser>,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         trigger_type: TriggerType,
@@ -92,9 +94,11 @@ pub trait PanelState {
     /// a generic implementation of on_internal which may be
     /// called by states when they don't have a specific
     /// behavior to execute
+    #[allow(clippy::too_many_arguments)]
     fn on_internal_generic(
         &mut self,
         _w: &mut W,
+        invocation_parser: Option<&InvocationParser>,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
         _trigger_type: TriggerType,
@@ -571,6 +575,37 @@ pub trait PanelState {
             Internal::print_relative_path => print::print_relative_paths(self.sel_info(app_state), con)?,
             Internal::refresh => CmdResult::RefreshState { clear_cache: true },
             Internal::quit => CmdResult::Quit,
+            Internal::clear_output => {
+                verb_clear_output(con)
+                    .unwrap_or_else(|e| CmdResult::DisplayError(format!("{e}")))
+            }
+            Internal::write_output => {
+                let sel_info = self.sel_info(app_state);
+                let exec_builder = match input_invocation {
+                    Some(inv) => {
+                        ExecutionStringBuilder::with_invocation(
+                            invocation_parser,
+                            sel_info,
+                            app_state,
+                            inv.args.as_ref(),
+                        )
+                    }
+                    None => {
+                        ExecutionStringBuilder::without_invocation(sel_info, app_state)
+                    }
+                };
+                if let Some(pattern) = internal_exec.arg.as_ref() {
+                    let line = exec_builder.string(pattern);
+                    verb_write(con, &line)?;
+                } else {
+                    let line = input_invocation
+                        .and_then(|inv| inv.args.as_ref())
+                        .map(|s| s.as_str())
+                        .unwrap_or("");
+                    verb_write(con, line)?;
+                }
+                CmdResult::Keep
+            }
             _ => CmdResult::Keep,
         })
     }
@@ -653,6 +688,7 @@ pub trait PanelState {
             VerbExecution::Internal(internal_exec) => {
                 self.on_internal(
                     w,
+                    verb.invocation_parser.as_ref(),
                     internal_exec,
                     invocation,
                     trigger_type,
@@ -700,7 +736,7 @@ pub trait PanelState {
             }
         }
         let exec_builder = ExecutionStringBuilder::with_invocation(
-            &verb.invocation_parser,
+            verb.invocation_parser.as_ref(),
             sel_info,
             app_state,
             if let Some(inv) = invocation {
@@ -719,7 +755,7 @@ pub trait PanelState {
         seq_ex: &SequenceExecution,
         invocation: Option<&VerbInvocation>,
         app_state: &mut AppState,
-        _cc: &CmdContext,
+        cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         let sel_info = self.sel_info(app_state);
         if matches!(sel_info, SelInfo::More(_)) {
@@ -729,7 +765,7 @@ pub trait PanelState {
             return Ok(CmdResult::error("sequences can't be executed on multiple selections"));
         }
         let exec_builder = ExecutionStringBuilder::with_invocation(
-            &verb.invocation_parser,
+            verb.invocation_parser.as_ref(),
             sel_info,
             app_state,
             if let Some(inv) = invocation {
@@ -738,12 +774,7 @@ pub trait PanelState {
                 None
             },
         );
-        // TODO what follows is dangerous: if an inserted group value contains the separator,
-        // the parsing will cut on this separator
-        let sequence = Sequence {
-            raw: exec_builder.shell_exec_string(&ExecPattern::from_string(&seq_ex.sequence.raw)),
-            separator: seq_ex.sequence.separator.clone(),
-        };
+        let sequence = exec_builder.sequence(&seq_ex.sequence, &cc.app.con.verb_store);
         Ok(CmdResult::ExecuteSequence { sequence })
     }
 
@@ -782,6 +813,7 @@ pub trait PanelState {
                 input_invocation,
             } => self.on_internal(
                 w,
+                None,
                 &InternalExecution::from_internal(*internal),
                 input_invocation.as_ref(),
                 TriggerType::Other,

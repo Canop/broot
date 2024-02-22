@@ -858,13 +858,6 @@ impl App {
                             handled = true;
                         }
                     } else if let Event::Resize(mut width, mut height) = event.event {
-                        // I don't know why but Crossterm seems to always report an
-                        // understimated size on Windows
-                        #[cfg(windows)]
-                        {
-                            width += 1;
-                            height += 1;
-                        }
                         self.screen.set_terminal_size(width, height, con);
                         Areas::resize_all(
                             self.panels.as_mut_slice(),
