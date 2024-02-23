@@ -1,11 +1,12 @@
 ### next
-- verb sequences (based on `cmd`) can take arguments from the verb invocation
 - new `--verb-output` launch argument, dedicated to the new `:clear_output` and `:write_output` internals - Fix #825
+- verb sequences (based on `cmd`) can take arguments from the verb invocation
 - don't fail launch in case of bad verb configuration, more helpful error message in such case
 - faster kitty image rendering by default - Fix #789
 - `{file-git-relative}` verb argument - Thanks @VasilisManol
 - modify nushell function import: `use` instead of `source` - Thanks @texastoland and @FrancescElies
 - fix some resizing and flickering problems on Windows (appeared with 1.33.0) - Fix #840
+- write `installed` flag file on `--install` - Fix #837
 
 ### v1.33.1 - 2024-02-03
 <a name="v1.33.1"></a>
