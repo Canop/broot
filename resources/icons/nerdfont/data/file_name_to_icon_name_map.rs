@@ -1,7 +1,9 @@
 [
 	( "LICENCE"                    , "file_type_license"                  ),
+	( "LICENSE"                    , "file_type_license"                  ),
 	( "VERSION"                    , "file_type_version"                  ),
 	( "licence"                    , "file_type_license"                  ),
+	( "license"                    , "file_type_license"                  ),
 	( "readme"                     , "file_type_text"                     ),
 	( "todo"                       , "file_type_todo"                     ),
 	( "version"                    , "file_type_version"                  ),

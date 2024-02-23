@@ -1,6 +1,6 @@
 use {super::*, crate::tree::TreeLineType, ahash::AHashMap};
 
-pub struct NerdfontIconPlugin {
+pub struct FontPlugin {
     icon_name_to_icon_codepoint_map: AHashMap<&'static str, u32>,
     file_name_to_icon_name_map: AHashMap<&'static str, &'static str>,
     double_extension_to_icon_name_map: AHashMap<&'static str, &'static str>,
@@ -8,7 +8,7 @@ pub struct NerdfontIconPlugin {
     default_icon_point: u32,
 }
 
-impl NerdfontIconPlugin {
+impl FontPlugin {
     #[cfg(debug_assertions)]
     fn sanity_check(
         part_to_icon_name_map: &AHashMap<&str, &str>,
@@ -34,30 +34,20 @@ impl NerdfontIconPlugin {
         }
     }
 
-    pub fn new() -> Self {
-        let icon_name_to_icon_codepoint_map: AHashMap<&'static str, u32> =
-            (include!("../../resources/icons/nerdfont/data/icon_name_to_icon_code_point_map.rs"))
-                .iter()
-                .cloned()
-                .collect();
-
-        let double_extension_to_icon_name_map: AHashMap<&'static str, &'static str> =
-            (include!("../../resources/icons/nerdfont/data/double_extension_to_icon_name_map.rs"))
-                .iter()
-                .cloned()
-                .collect();
-
-        let extension_to_icon_name_map: AHashMap<&'static str, &'static str> =
-            (include!("../../resources/icons/nerdfont/data/extension_to_icon_name_map.rs"))
-                .iter()
-                .cloned()
-                .collect();
-
-        let file_name_to_icon_name_map: AHashMap<&'static str, &'static str> =
-            (include!("../../resources/icons/nerdfont/data/file_name_to_icon_name_map.rs"))
-                .iter()
-                .cloned()
-                .collect();
+    pub fn new(
+        icon_name_to_icon_codepoint_map: &'static [(&'static str, u32)],
+        double_extension_to_icon_name_map: &'static [(&'static str, &'static str)],
+        extension_to_icon_name_map: &'static [(&'static str, &'static str)],
+        file_name_to_icon_name_map: &'static [(&'static str, &'static str)],
+    ) -> Self {
+        let icon_name_to_icon_codepoint_map: AHashMap<_, _> =
+            icon_name_to_icon_codepoint_map.iter().cloned().collect();
+        let double_extension_to_icon_name_map: AHashMap<_, _> =
+            double_extension_to_icon_name_map.iter().cloned().collect();
+        let extension_to_icon_name_map: AHashMap<_, _> =
+            extension_to_icon_name_map.iter().cloned().collect();
+        let file_name_to_icon_name_map: AHashMap<_, _> =
+            file_name_to_icon_name_map.iter().cloned().collect();
 
         #[cfg(debug_assertions)]
         {
@@ -125,7 +115,7 @@ impl NerdfontIconPlugin {
     }
 }
 
-impl IconPlugin for NerdfontIconPlugin {
+impl IconPlugin for FontPlugin {
     fn get_icon(
         &self,
         tree_line_type: &TreeLineType,
