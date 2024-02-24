@@ -1,4 +1,5 @@
-### next
+### v1.34.0 - 2024-02-24
+<a name="v1.34.0"></a>
 - new `--verb-output` launch argument, dedicated to the new `:clear_output` and `:write_output` internals - Fix #825
 - verb sequences (based on `cmd`) can take arguments from the verb invocation
 - don't fail launch in case of bad verb configuration, more helpful error message in such case
