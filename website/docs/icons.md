@@ -1,6 +1,28 @@
 # Icons Overview
 
-You may configure broot to display icons in two ways. Here is a comparison, with nerdfont to the left and vscode at right:
+You may configure broot to display icons in two ways.
+
+For this you need one of those in your broot config:
+
+
+```hjson
+icon_theme: vscode
+```
+```toml
+icon_theme = "vscode"
+```
+
+or
+
+```hjson
+icon_theme: nerdfont
+```
+```toml
+icon_theme = "nerdfont"
+```
+
+
+Here is a comparison, with nerdfont to the left and vscode at right:
 
 ![Broot icon comparison](img/20240225-icon-comparison.png)
 
@@ -10,11 +32,8 @@ You may configure broot to display icons in two ways. Here is a comparison, with
 
 1. In order for the nerdfont setting to work you need to have a <a href="https://github.com/ryanoasis/nerd-fonts" target="_blank">patched nerdfont
 </a> installed and set as your font in the terminal emulator of your choice.
-
-2. After a successful installation, you need to add or uncomment the `icon_theme = "nerdfont"` line  in [broots config file](../conf_file). (it won't work if it's after the verbs or skin in the toml file)
-
-3. Congratulations! You should now be able to see icons when opening broot
-in your terminal.
+2. After a successful installation, you need to add or uncomment the `icon_theme: "nerdfont"` line  in broot's config file
+3. You should now be able to see icons when opening broot in your terminal.
 
 ## Checking the font
 
@@ -31,15 +50,12 @@ This should display a rust icon
 
 **Q:** I don't see icons for my favourite common file type.
 
-**A:** There could be tree reasons why you don't see your file type icon
-<ol>
-  <li>check if your font was setup correctly. See #installation and #checking the font</li>
-  <li>
-    The iconset is limited by available nerdfont icons. Some icons simply don't exist as of yet.
-    Eg. a vite or prettier icon. You can find available icons in the nerdfont <a href="https://www.nerdfonts.com/cheat-sheet" target="_blank">cheat-sheet</a>
-  </li>
-  <li>If both of those are true and you think you found an icon we mapped wrong or is missing, we welcome your contribution! Send us a message in <a href="https://miaou.dystroy.org/3490?broot" target="_blank">Miaou Chat!</a> or create a pull request!</li>
-</ol>
+**A:** There could be three reasons why you don't see your file type icon
+
+1. check if your font was setup correctly. See [Installation](icons.md#minstallation) and #checking the font
+2. The iconset is limited by available nerdfont icons. Some icons simply don't exist as of yet.
+    Eg. a vite or prettier icon. You can find available icons in the nerdfont [cheat-sheet](https://www.nerdfonts.com/cheat-sheet)
+3. If both of those are true and you think you found an icon we mapped wrong or is missing, we welcome your contribution! Send us a message in the [Miaou chat](https://miaou.dystroy.org/3490?broot) or create a pull request
 
 **Q:** Why does broot show a generic icon for this very common file type?
 
@@ -105,7 +121,7 @@ Double click  the `vscode.ttf` file icon and click on "Install font".
 
 ## Setting up your broot config
 
-In broot's [config file](../conf_file), add or uncomment the `icon_theme = "vscode"` line (it won't work if it's after the verbs or skin in the toml file).
+In broot's config file, add or uncomment the `icon_theme: "vscode"` line.
 
 
 ## FAQ
