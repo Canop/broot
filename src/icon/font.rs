@@ -1,10 +1,6 @@
-use {
-    super::*,
-    crate::tree::TreeLineType,
-    ahash::AHashMap,
-};
+use {super::*, crate::tree::TreeLineType, ahash::AHashMap};
 
-pub struct VsCodeIconPlugin {
+pub struct FontPlugin {
     icon_name_to_icon_codepoint_map: AHashMap<&'static str, u32>,
     file_name_to_icon_name_map: AHashMap<&'static str, &'static str>,
     double_extension_to_icon_name_map: AHashMap<&'static str, &'static str>,
@@ -12,7 +8,7 @@ pub struct VsCodeIconPlugin {
     default_icon_point: u32,
 }
 
-impl VsCodeIconPlugin {
+impl FontPlugin {
     #[cfg(debug_assertions)]
     fn sanity_check(
         part_to_icon_name_map: &AHashMap<&str, &str>,
@@ -20,9 +16,12 @@ impl VsCodeIconPlugin {
     ) {
         let offending_entries = part_to_icon_name_map
             .iter()
-            .map(|(_k, icon_name)|
-                (icon_name, icon_name_to_icon_codepoint_map.contains_key(icon_name))
-            )
+            .map(|(_k, icon_name)| {
+                (
+                    icon_name,
+                    icon_name_to_icon_codepoint_map.contains_key(icon_name),
+                )
+            })
             // Find if any entry is not present
             .filter(|(_entry, entry_present)| !entry_present)
             .collect::<Vec<_>>();
@@ -35,30 +34,20 @@ impl VsCodeIconPlugin {
         }
     }
 
-    pub fn new() -> Self {
-        let icon_name_to_icon_codepoint_map: AHashMap<&'static str, u32> =
-            (include!("../../resources/icons/vscode/data/icon_name_to_icon_code_point_map.rs"))
-                .iter()
-                .cloned()
-                .collect();
-
-        let double_extension_to_icon_name_map: AHashMap<&'static str, &'static str> =
-            (include!("../../resources/icons/vscode/data/double_extension_to_icon_name_map.rs"))
-                .iter()
-                .cloned()
-                .collect();
-
-        let extension_to_icon_name_map: AHashMap<&'static str, &'static str> =
-            (include!("../../resources/icons/vscode/data/extension_to_icon_name_map.rs"))
-                .iter()
-                .cloned()
-                .collect();
-
-        let file_name_to_icon_name_map: AHashMap<&'static str, &'static str> =
-            (include!("../../resources/icons/vscode/data/file_name_to_icon_name_map.rs"))
-                .iter()
-                .cloned()
-                .collect();
+    pub fn new(
+        icon_name_to_icon_codepoint_map: &'static [(&'static str, u32)],
+        double_extension_to_icon_name_map: &'static [(&'static str, &'static str)],
+        extension_to_icon_name_map: &'static [(&'static str, &'static str)],
+        file_name_to_icon_name_map: &'static [(&'static str, &'static str)],
+    ) -> Self {
+        let icon_name_to_icon_codepoint_map: AHashMap<_, _> =
+            icon_name_to_icon_codepoint_map.iter().cloned().collect();
+        let double_extension_to_icon_name_map: AHashMap<_, _> =
+            double_extension_to_icon_name_map.iter().cloned().collect();
+        let extension_to_icon_name_map: AHashMap<_, _> =
+            extension_to_icon_name_map.iter().cloned().collect();
+        let file_name_to_icon_name_map: AHashMap<_, _> =
+            file_name_to_icon_name_map.iter().cloned().collect();
 
         #[cfg(debug_assertions)]
         {
@@ -86,7 +75,10 @@ impl VsCodeIconPlugin {
         }
     }
 
-    fn handle_single_extension(&self, ext: Option<String>) -> &'static str {
+    fn handle_single_extension(
+        &self,
+        ext: Option<String>,
+    ) -> &'static str {
         match ext {
             None => "default_file",
             Some(ref e) => match self.extension_to_icon_name_map.get(e as &str) {
@@ -123,7 +115,7 @@ impl VsCodeIconPlugin {
     }
 }
 
-impl IconPlugin for VsCodeIconPlugin {
+impl IconPlugin for FontPlugin {
     fn get_icon(
         &self,
         tree_line_type: &TreeLineType,
