@@ -86,7 +86,7 @@ As for other searches, it's interrupted as soon as you type anything.
 
 Other than executing a command leaving broot, there are several ways to quit:
 
-* if the current root is selected, just hit `enter`
 * hit <kbd>ctrl</kbd>+<kbd>Q</kbd>
 * type `:q` or `space` `q` then `enter`
+* call any other verb whose action quits broot, for example `:print_path`
 
