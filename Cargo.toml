@@ -28,7 +28,7 @@ bet = "1.0.2"
 char_reader = "0.1"
 chrono = "0.4"
 clap = { version = "4.4", features = ["derive", "cargo"] }
-clap-help = "1.1"
+clap-help = "1.1.2"
 cli-log = "2.0"
 crokey = "0.6.3"
 crossbeam = "0.8"
@@ -107,6 +107,7 @@ harness = false
 
 [patch.crates-io]
 # bet = { path = "../bet" }
+# clap-help = { path = "../clap-help" }
 # cli-log = { path = "../cli-log" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # csv2svg = { path = "../csv2svg" }
@@ -121,7 +122,6 @@ harness = false
 # terminal-clipboard = { path = "../terminal-clipboard" }
 # terminal-light = { path = "../terminal-light" }
 # umask = { path = "../umask" }
-# clap-help = { path = "../clap-help" }
 # crokey = { path = "../crokey" }
 # lazy-regex = { path = "../lazy-regex" }
 # lazy-regex-proc_macros = { path = "../lazy-regex/src/proc_macros" }
