@@ -1,3 +1,8 @@
+
+### v1.35.0 - 2024-03-01
+<a name="v1.35.0"></a>
+- Nerdfont icon theme - Fix #333 - Thanks @JonasLeonhard, @cho-m, @texastoland, @asdf8dfafjk and others
+
 ### v1.34.0 - 2024-02-24
 <a name="v1.34.0"></a>
 - new `--verb-output` launch argument, dedicated to the new `:clear_output` and `:write_output` internals - Fix #825
