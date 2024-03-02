@@ -108,7 +108,7 @@ impl Launchable {
             skin: Box::new(style_map),
             ext_colors,
             width: screen.width,
-            height: (tree.lines.len() as u16).min(screen.height),
+            height: (tree.lines.len() as u16).min(screen.height - 1),
         }
     }
 
