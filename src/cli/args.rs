@@ -9,7 +9,7 @@ use {
 
 /// Launch arguments
 #[derive(Debug, Parser)]
-#[command(author, about, version, disable_version_flag = true, disable_help_flag = true)]
+#[command(about, version, disable_version_flag = true, disable_help_flag = true)]
 pub struct Args {
 
     /// Print help information
@@ -140,7 +140,7 @@ pub struct Args {
     #[arg(long, value_name = "path")]
     pub outcmd: Option<PathBuf>,
 
-    /// An optional path where to write when a verb uses `:write_output`
+    /// Optional path for verbs using `:write_output`
     #[arg(long, value_name = "verb-output")]
     pub verb_output: Option<PathBuf>,
 
@@ -148,7 +148,7 @@ pub struct Args {
     #[arg(short, long, value_name = "cmd")]
     pub cmd: Option<String>,
 
-    /// Whether to have styles and colors (default is usually OK)
+    /// Whether to have styles and colors
     #[arg(long, default_value="auto", value_name = "color")]
     pub color: TriBool,
 
@@ -160,7 +160,7 @@ pub struct Args {
     #[arg(long)]
     pub install: bool,
 
-    /// Where to write the produced cmd (if any)
+    /// Manually set installation state
     #[arg(long, value_name = "state")]
     pub set_install_state: Option<CliShellInstallState>,
 
