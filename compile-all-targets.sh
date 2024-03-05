@@ -32,14 +32,14 @@ cross_build() {
     else
         cross build --quiet --target "$target" --release
     fi
-    mkdir "build/$target"
+    mkdir "build/broot-$target"
     if [[ $target_name == 'Windows' ]]
     then
         exec="$NAME.exe"
     else
         exec="$NAME"
     fi
-    cp "target/$target/release/$exec" "build/$target/"
+    cp "target/$target/release/$exec" "build/broot-$target/"
     echo "   Done"
 }
 

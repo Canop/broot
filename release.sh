@@ -24,8 +24,14 @@ echo "$version" > build/version
 rm broot_*.zip
 cd build
 zip -r "../broot_$version.zip" *
+rm broot*.zip
+# make one zip file for each architecture (cargo binstall needs that)
+find . -type d -name "broot-*" -exec zip -rj "{}.zip" "{}" \; 
 cd -
 
 # copy it to releases folder
-mkdir releases
-cp "broot_$version.zip" releases
+mkdir -p releases/broot-$version
+cp "broot_$version.zip" releases/broot-$version
+cp build/broot-*.zip releases/broot-$version
+rm broot*.zip
+rm build/broot-*.zip
