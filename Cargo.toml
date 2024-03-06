@@ -126,6 +126,3 @@ harness = false
 # lazy-regex = { path = "../lazy-regex" }
 # lazy-regex-proc_macros = { path = "../lazy-regex/src/proc_macros" }
 # strict = { path = "../strict" }
-
-[package.metadata.binstall]
-pkg-fmt = "zip"
