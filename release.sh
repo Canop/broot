@@ -23,16 +23,15 @@ echo "$version" > build/version
 # prepare the release archive
 rm broot_*.zip
 cd build
-find . -type d -empty -delete
 zip -r "../broot_$version.zip" *
 rm broot*.zip
 # make one zip file for each architecture (cargo binstall needs that)
-find . -type d -name "broot_*" -exec zip -rj "{}.zip" "{}" \; 
+find . -type d -name "broot-*" -exec zip -rj "{}.zip" "{}" \; 
 cd -
 
 # copy it to releases folder
-mkdir -p releases/broot_$version
-cp "broot_$version.zip" releases/broot_$version
-cp build/broot_*.zip releases/broot_$version
+mkdir -p releases/broot-$version
+cp "broot_$version.zip" releases/broot-$version
+cp build/broot-*.zip releases/broot-$version
 rm broot*.zip
-rm build/broot_*.zip
+rm build/broot-*.zip

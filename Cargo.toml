@@ -128,5 +128,4 @@ harness = false
 # strict = { path = "../strict" }
 
 [package.metadata.binstall]
-pkg-url = "{ repo }/releases/download/v{ version }/{ name }_{ version }_{ target }{ archive-suffix }"
 pkg-fmt = "zip"
