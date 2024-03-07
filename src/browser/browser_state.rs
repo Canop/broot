@@ -37,7 +37,10 @@ enum BrowserTask {
         pattern: InputPattern,
         total: bool,
     },
-    StageAll(InputPattern),
+    StageAll {
+        pattern: InputPattern,
+        file_type_condition: FileTypeCondition,
+    },
 }
 
 impl BrowserState {
@@ -215,7 +218,7 @@ impl PanelState for BrowserState {
             self
                 .pending_task.as_ref().map(|task| match task {
                     BrowserTask::Search{ .. } => "searching",
-                    BrowserTask::StageAll(_) => "staging",
+                    BrowserTask::StageAll{ .. } => "staging",
                 })
         }
     }
@@ -526,9 +529,25 @@ impl PanelState for BrowserState {
                     CmdResult::error("No selected line")
                 }
             }
+            Internal::stage_all_directories => {
+                let pattern = self.displayed_tree().options.pattern.clone();
+                let file_type_condition = FileTypeCondition::Directory;
+                self.pending_task = Some(BrowserTask::StageAll{pattern, file_type_condition});
+                if cc.app.stage_panel.is_none() {
+                    let stage_options = self.tree.options.without_pattern();
+                    CmdResult::NewPanel {
+                        state: Box::new(StageState::new(app_state, stage_options, con)),
+                        purpose: PanelPurpose::None,
+                        direction: HDir::Right,
+                    }
+                } else {
+                    CmdResult::Keep
+                }
+            }
             Internal::stage_all_files => {
                 let pattern = self.displayed_tree().options.pattern.clone();
-                self.pending_task = Some(BrowserTask::StageAll(pattern));
+                let file_type_condition = FileTypeCondition::File;
+                self.pending_task = Some(BrowserTask::StageAll{pattern, file_type_condition});
                 if cc.app.stage_panel.is_none() {
                     let stage_options = self.tree.options.without_pattern();
                     CmdResult::NewPanel {
@@ -684,7 +703,8 @@ impl PanelState for BrowserState {
                         self.filtered_tree = Some(ft);
                     }
                 }
-                BrowserTask::StageAll(pattern) => {
+                BrowserTask::StageAll { pattern, file_type_condition } => {
+                    info!("stage all pattern: {:?}", pattern);
                     let tree = self.displayed_tree();
                     let root = tree.root().clone();
                     let mut options = tree.options.clone();
@@ -697,7 +717,10 @@ impl PanelState for BrowserState {
                             time!(builder.build_paths(
                                 total_search,
                                 dam,
-                                |line| line.file_type.is_file() || line.file_type.is_symlink(),
+                                |line| {
+                                    info!("??staging {:?}", &line.path);
+                                    file_type_condition.accepts_path(&line.path)
+                                }
                             ))
                         })?;
                     for path in paths.drain(..) {
