@@ -107,7 +107,7 @@ harness = false
 
 [patch.crates-io]
 # bet = { path = "../bet" }
-clap-help = { path = "../clap-help" }
+# clap-help = { path = "../clap-help" }
 # cli-log = { path = "../cli-log" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # csv2svg = { path = "../csv2svg" }
