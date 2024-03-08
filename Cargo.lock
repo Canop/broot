@@ -2140,14 +2140,14 @@ dependencies = [
 
 [[package]]
 name = "terminal-light"
-version = "1.2.0"
+version = "1.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b748946b488b3be8a53d90d71692b43e3b2389401a678a2b44a460ea4d295451"
+checksum = "0095344331f9bb7a38c69704aaea95f6de495a226a20a524a916ef617c6fed43"
 dependencies = [
  "coolor",
  "crossterm",
  "thiserror",
- "xterm-query 0.2.0",
+ "xterm-query 0.3.0",
 ]
 
 [[package]]
@@ -2880,9 +2880,9 @@ dependencies = [
 
 [[package]]
 name = "xterm-query"
-version = "0.2.0"
+version = "0.3.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec02abe9c7efbcb010adc0d90bc4a054653477cd4a3eb8eef5a689799c146a13"
+checksum = "5a6af094c5a26cf7663e97d92f69dd6f4c131e90e95ac64308289fce9168c066"
 dependencies = [
  "mio",
  "nix 0.22.3",

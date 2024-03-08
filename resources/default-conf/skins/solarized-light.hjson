@@ -4,11 +4,15 @@
 // The Solarized Light skin uses RGB values, so it might not work well with some
 // terminals
 //
+// If you prefer to keep the background the same as your terminal background, change
+// the "default" entry to
+//  default: "none none / rgb(147, 161, 161) none"
+//
 // Doc at https://dystroy.org/broot/skins/
 
 skin: {
-	// base00 base3 / base1 base2
-	default: "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)"
+	// base00 default / base1 base2
+	default: "rgb(101, 123, 131) none / rgb(147, 161, 161) none"
 	// base1 default
 	tree: "rgb(147, 161, 161) none"
 	// default default
