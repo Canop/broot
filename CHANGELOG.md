@@ -1,3 +1,7 @@
+### next
+- releases at github should be more `cargo binstall` friendly - Thanks @FrancescElies
+- improved `--help`
+- `:print_tree` is one line shorter, so as to let the original shell command visible without scroll
 
 ### v1.35.0 - 2024-03-01
 <a name="v1.35.0"></a>
