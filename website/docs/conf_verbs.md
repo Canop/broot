@@ -440,6 +440,7 @@ invocation | default key | default shortcut | behavior / details
 :sort_by_type_dirs_first | - | - | sort by type, dirs first
 :sort_by_type_dirs_last | - | - | sort by type, dirs last
 :stage | <kbd>+</kbd> | - | add selection to staging area
+:stage_all_directories | - | - | add all directories verifying the pattern to the staging area
 :stage_all_files | <kbd>ctrl</kbd><kbd>a</kbd> | - | add all files verifying the pattern to the staging area
 :start_end_panel | - | - | either open or close an additional panel
 :toggle_counts | - | - | toggle display of total counts of files per directory
