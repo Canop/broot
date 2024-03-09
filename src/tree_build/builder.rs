@@ -499,7 +499,9 @@ impl<'c> TreeBuilder<'c> {
             .map(|mut blines_ids| {
                 blines_ids
                     .drain(..)
-                    .filter(|&bid| filter(&self.blines[bid]))
+                    .filter(|&bid| {
+                        self.blines[bid].direct_match && filter(&self.blines[bid])
+                    })
                     .map(|id| self.blines[id].path.clone())
                     .collect()
             })

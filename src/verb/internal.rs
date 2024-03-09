@@ -125,6 +125,7 @@ Internals! {
     sort_by_type_dirs_first: "sort by type, dirs first" false,
     sort_by_type_dirs_last: "sort by type, dirs last" false,
     stage: "add selection to staging area" true,
+    stage_all_directories: "stage all matching directories" true,
     stage_all_files: "stage all matching files" true,
     start_end_panel: "either open or close an additional panel" true,
     toggle_counts: "toggle showing number of files in directories" false,

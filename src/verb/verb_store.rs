@@ -271,6 +271,7 @@ impl VerbStore {
             .with_key(key!('+'));
         self.add_internal(unstage)
             .with_key(key!('-'));
+        self.add_internal(stage_all_directories);
         self.add_internal(stage_all_files)
             .with_key(key!(ctrl-a));
         self.add_internal(toggle_stage)
