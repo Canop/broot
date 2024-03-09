@@ -61,8 +61,12 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
     #[cfg(feature = "kitty-csi-check")]
     {
         let start = std::time::Instant::now();
-        const TIMEOUT_MS: isize = 400;
-        let s = match xterm_query::query("\x1b_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1b\\\x1b[c", TIMEOUT_MS) {
+        const TIMEOUT_MS: u64 = 200;
+        let response = xterm_query::query(
+            "\x1b_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1b\\\x1b[c",
+            TIMEOUT_MS,
+        );
+        let s = match response {
             Err(e) => {
                 debug!("xterm querying failed: {}", e);
                 false

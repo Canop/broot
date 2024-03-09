@@ -1,7 +1,10 @@
-### next
+### v1.36.0 - 2024-03-01
+<a name="v1.36.0"></a>
 - releases at github should be more `cargo binstall` friendly - Thanks @FrancescElies
 - improved `--help`
+- new `:stage_all_directories` internal - Fix #844
 - `:print_tree` is one line shorter, so as to let the original shell command visible without scroll
+- fix and document the "kitty-csi-check" optional feature which can be enabled at compilation
 
 ### v1.35.0 - 2024-03-01
 <a name="v1.35.0"></a>

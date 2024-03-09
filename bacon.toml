@@ -14,7 +14,7 @@ watch = ["tests", "benches", "examples"]
 command = [
 	"cargo", "check",
 	"--color", "always",
-	"--features", "clipboard",
+	"--features", "clipboard, kitty-csi-check",
 ]
 need_stdout = false
 watch = ["benches"]

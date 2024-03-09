@@ -217,7 +217,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "broot"
-version = "1.35.1-dev"
+version = "1.36.0"
 dependencies = [
  "ahash 0.8.11",
  "ansi_colours",
@@ -270,7 +270,7 @@ dependencies = [
  "unicode-width",
  "uzers",
  "which",
- "xterm-query 0.1.0",
+ "xterm-query",
 ]
 
 [[package]]
@@ -2147,7 +2147,7 @@ dependencies = [
  "coolor",
  "crossterm",
  "thiserror",
- "xterm-query 0.3.0",
+ "xterm-query",
 ]
 
 [[package]]
@@ -2867,16 +2867,6 @@ name = "xmlwriter"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec7a2a501ed189703dba8b08142f057e887dfc4b2cc4db2d343ac6376ba3e0b9"
-
-[[package]]
-name = "xterm-query"
-version = "0.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fcf3ae9267e2d939a754366532ed14fc9c4eeb08eb4f51884c3036c85e9120b4"
-dependencies = [
- "nix 0.22.3",
- "thiserror",
-]
 
 [[package]]
 name = "xterm-query"
