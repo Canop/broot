@@ -376,7 +376,6 @@
 ( "qvw"                     , "file_type_qlikview"                ),
 ( "r"                       , "file_type_r"                       ),
 ( "ra"                      , "file_type_audio"                   ),
-( "ra"                      , "file_type_audio"                   ),
 ( "rake"                    , "file_type_rake"                    ),
 ( "rakefile"                , "file_type_rake"                    ),
 ( "rar"                     , "file_type_zip2"                    ),
