@@ -217,7 +217,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "broot"
-version = "1.36.0"
+version = "1.36.1"
 dependencies = [
  "ahash 0.8.11",
  "ansi_colours",
@@ -270,7 +270,7 @@ dependencies = [
  "unicode-width",
  "uzers",
  "which",
- "xterm-query",
+ "xterm-query 0.3.0",
 ]
 
 [[package]]
@@ -317,6 +317,12 @@ name = "cfg-if"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
+
+[[package]]
+name = "cfg_aliases"
+version = "0.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fd16c4719339c4530435d38e511904438d07cce7950afa3718a84ac36c10e89e"
 
 [[package]]
 name = "char_reader"
@@ -1370,6 +1376,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nix"
+version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab2156c4fce2f8df6c499cc1c763e4394b7482525bf2a9701c9d79d215f519e4"
+dependencies = [
+ "bitflags 2.4.2",
+ "cfg-if",
+ "cfg_aliases",
+ "libc",
+]
+
+[[package]]
 name = "normpath"
 version = "1.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2140,14 +2158,14 @@ dependencies = [
 
 [[package]]
 name = "terminal-light"
-version = "1.3.0"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0095344331f9bb7a38c69704aaea95f6de495a226a20a524a916ef617c6fed43"
+checksum = "a2ecb7b6ab8a3eeff2b61770d313d1e971f184e29321785c62ef523b132437b7"
 dependencies = [
  "coolor",
  "crossterm",
  "thiserror",
- "xterm-query",
+ "xterm-query 0.4.0",
 ]
 
 [[package]]
@@ -2876,6 +2894,16 @@ checksum = "5a6af094c5a26cf7663e97d92f69dd6f4c131e90e95ac64308289fce9168c066"
 dependencies = [
  "mio",
  "nix 0.22.3",
+ "thiserror",
+]
+
+[[package]]
+name = "xterm-query"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2f29504d0a2ca8c1714781c1395a8a660d2557b2cf9c9669433153fc903e9bfc"
+dependencies = [
+ "nix 0.28.0",
  "thiserror",
 ]
 

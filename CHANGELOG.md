@@ -1,3 +1,7 @@
+### v1.36.1 - 2024-03-11
+<a name="v1.36.1"></a>
+- fix ANSI code leaking to the input on start on Mac - Fix #854
+
 ### v1.36.0 - 2024-03-01
 <a name="v1.36.0"></a>
 - releases at github should be more `cargo binstall` friendly - Thanks @FrancescElies
