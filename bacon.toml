@@ -35,16 +35,16 @@ command = [
 	"-A", "clippy::collapsible_else_if",
 	"-A", "clippy::collapsible_if",
 	"-A", "clippy::derive_partial_eq_without_eq",
+	"-A", "clippy::if_same_then_else",
 	"-A", "clippy::len_without_is_empty",
+	"-A", "clippy::manual_clamp",
 	"-A", "clippy::manual_range_contains",
 	"-A", "clippy::manual_unwrap_or",
 	"-A", "clippy::match_like_matches_macro",
 	"-A", "clippy::module_inception",
+	"-A", "clippy::needless_bool",
 	"-A", "clippy::neg_multiply",
 	"-A", "clippy::vec_init_then_push",
-	"-A", "clippy::if_same_then_else",
-	"-A", "clippy::manual_clamp",
-	"-A", "clippy::needless_bool",
 ]
 need_stdout = false
 
