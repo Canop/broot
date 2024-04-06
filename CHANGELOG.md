@@ -1,3 +1,6 @@
+### next
+- display setuid, setgid and sticky bits in permission - Fix #863
+
 ### v1.36.1 - 2024-03-11
 <a name="v1.36.1"></a>
 - fix ANSI code leaking to the input on start on Mac - Fix #854
