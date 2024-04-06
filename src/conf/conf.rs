@@ -43,88 +43,94 @@ macro_rules! overwrite_map {
 /// The configuration read from conf.toml or conf.hjson file(s)
 #[derive(Default, Clone, Debug, Deserialize)]
 pub struct Conf {
-    /// the files used to load this configuration
-    #[serde(skip)]
-    pub files: Vec<PathBuf>,
-
-    #[serde(alias="default-flags")]
-    pub default_flags: Option<String>, // the flags to apply before cli ones
-
-    #[serde(alias="date-time-format")]
-    pub date_time_format: Option<String>,
-
-    #[serde(default)]
-    pub verbs: Vec<VerbConf>,
-
-    pub skin: Option<AHashMap<String, SkinEntry>>,
-
-    #[serde(default, alias="special-paths")]
-    pub special_paths: HashMap<GlobConf, SpecialHandlingConf>,
-
-    #[serde(alias="search-modes")]
-    pub search_modes: Option<FnvHashMap<String, String>>,
-
-    /// Obsolete, kept for compatibility: you should now use capture_mouse
-    #[serde(alias="disable-mouse-capture")]
-    pub disable_mouse_capture: Option<bool>,
-
     #[serde(alias="capture-mouse")]
     pub capture_mouse: Option<bool>,
 
     #[serde(alias="cols-order")]
     pub cols_order: Option<ColsConf>,
 
-    #[serde(alias="show-selection-mark")]
-    pub show_selection_mark: Option<bool>,
+    #[serde(alias="content-search-max-file-size", deserialize_with="file_size::deserialize", default)]
+    pub content_search_max_file_size: Option<u64>,
+
+    #[serde(alias="date-time-format")]
+    pub date_time_format: Option<String>,
+
+    #[serde(alias="default-flags")]
+    pub default_flags: Option<String>, // the flags to apply before cli ones
+
+    /// Obsolete, kept for compatibility: you should now use capture_mouse
+    #[serde(alias="disable-mouse-capture")]
+    pub disable_mouse_capture: Option<bool>,
+
+    #[serde(alias="enable-keyboard-enhancements")]
+    pub enable_kitty_keyboard: Option<bool>,
 
     #[serde(default, alias="ext-colors")]
     pub ext_colors: AHashMap<String, String>,
 
-    #[serde(alias="syntax-theme")]
-    pub syntax_theme: Option<SyntaxTheme>,
+    pub file_sum_threads_count: Option<usize>,
 
-    #[serde(alias="true-colors")]
-    pub true_colors: Option<bool>,
+    /// the files used to load this configuration
+    #[serde(skip)]
+    pub files: Vec<PathBuf>,
 
     #[serde(alias="icon-theme")]
     pub icon_theme: Option<String>,
 
-    pub modal: Option<bool>,
+    #[serde(default)]
+    pub imports: Vec<Import>,
 
     /// the initial mode (only relevant when modal is true)
     #[serde(alias="initial-mode")]
     pub initial_mode: Option<Mode>,
 
+    #[serde(alias="kitty-graphics-transmission")]
+    pub kitty_graphics_transmission: Option<TransmissionMedium>,
+
+    #[serde(alias="lines-after-match-in-preview")]
+    pub lines_after_match_in_preview: Option<usize>,
+
+    #[serde(alias="lines-before-match-in-preview")]
+    pub lines_before_match_in_preview: Option<usize>,
+
     pub max_panels_count: Option<usize>,
-
-    #[serde(alias="quit-on-last-cancel")]
-    pub quit_on_last_cancel: Option<bool>,
-
-    pub file_sum_threads_count: Option<usize>,
 
     #[serde(alias="max_staged_count")]
     pub max_staged_count: Option<usize>,
 
-    #[serde(default)]
-    pub imports: Vec<Import>,
+    pub modal: Option<bool>,
+
+    #[serde(alias="quit-on-last-cancel")]
+    pub quit_on_last_cancel: Option<bool>,
+
+    #[serde(alias="search-modes")]
+    pub search_modes: Option<FnvHashMap<String, String>>,
 
     #[serde(alias="show-matching-characters-on-path-searches")]
     pub show_matching_characters_on_path_searches: Option<bool>,
 
-    #[serde(alias="content-search-max-file-size", deserialize_with="file_size::deserialize", default)]
-    pub content_search_max_file_size: Option<u64>,
+    #[serde(alias="show-selection-mark")]
+    pub show_selection_mark: Option<bool>,
+
+    pub skin: Option<AHashMap<String, SkinEntry>>,
+
+    #[serde(default, alias="special-paths")]
+    pub special_paths: HashMap<GlobConf, SpecialHandlingConf>,
+
+    #[serde(alias="syntax-theme")]
+    pub syntax_theme: Option<SyntaxTheme>,
 
     #[serde(alias="terminal-title")]
     pub terminal_title: Option<ExecPattern>,
 
+    #[serde(alias="true-colors")]
+    pub true_colors: Option<bool>,
+
     #[serde(alias="update-work-dir")]
     pub update_work_dir: Option<bool>,
 
-    #[serde(alias="enable-keyboard-enhancements")]
-    pub enable_kitty_keyboard: Option<bool>,
-
-    #[serde(alias="kitty-graphics-transmission")]
-    pub kitty_graphics_transmission: Option<TransmissionMedium>,
+    #[serde(default)]
+    pub verbs: Vec<VerbConf>,
 
     // BEWARE: entries added here won't be usable unless also
     // added in read_file!
@@ -213,6 +219,8 @@ impl Conf {
         overwrite!(self, update_work_dir, conf);
         overwrite!(self, enable_kitty_keyboard, conf);
         overwrite!(self, kitty_graphics_transmission, conf);
+        overwrite!(self, lines_after_match_in_preview, conf);
+        overwrite!(self, lines_before_match_in_preview, conf);
         self.verbs.append(&mut conf.verbs);
         // the following maps are "additive": we can add entries from several
         // config files and they still make sense

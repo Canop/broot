@@ -146,31 +146,42 @@ impl SyntacticView {
             // We don't remove '\n' or '\r' at this point because some syntax sets
             // need them for correct detection of comments. See #477
             // Those chars are removed on printing
-            if pattern.is_empty() || pattern.score_of_string(&line).is_some() {
-                let name_match = pattern.search_string(&line);
-                let regions = if let Some(highlighter) = highlighter.as_mut() {
-                    highlighter
-                        .highlight(&line, &SYNTAXER.syntax_set)
-                        .map_err(|e| ProgramError::SyntectCrashed { details: e.to_string() })?
-                        .iter()
-                        .map(Region::from_syntect)
-                        .collect()
-                } else {
-                    Vec::new()
-                };
-                self.lines.push(Line {
-                    regions,
-                    start,
-                    len: line.len(),
-                    name_match,
-                    number,
-                });
-            }
+            let name_match = pattern.search_string(&line);
+            let regions = if let Some(highlighter) = highlighter.as_mut() {
+                highlighter
+                    .highlight(&line, &SYNTAXER.syntax_set)
+                    .map_err(|e| ProgramError::SyntectCrashed { details: e.to_string() })?
+                    .iter()
+                    .map(Region::from_syntect)
+                    .collect()
+            } else {
+                Vec::new()
+            };
+            self.lines.push(Line {
+                regions,
+                start,
+                len: line.len(),
+                name_match,
+                number,
+            });
             line.clear();
             if dam.has_event() {
                 info!("event interrupted preview filtering");
                 return Ok(false);
             }
+        }
+        let lines_before = con.lines_before_match_in_preview;
+        let lines_after = con.lines_after_match_in_preview;
+        if !pattern.is_empty() {
+            let mut kept = vec![false; self.lines.len()];
+            for (i, line) in self.lines.iter().enumerate() {
+                if line.name_match.is_some() {
+                    for j in i.saturating_sub(lines_before)..(i + lines_after + 1).min(self.lines.len()) {
+                        kept[j] = true;
+                    }
+                }
+            }
+            self.lines.retain(|line| kept[line.number - 1]);
         }
         Ok(true)
     }

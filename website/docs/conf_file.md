@@ -388,3 +388,16 @@ show_matching_characters_on_path_searches = false
 which gives this:
 
 ![not shown](img/subpath-match-not-shown.png)
+
+## Lines surrounding a match in preview
+
+If you want to have more than just the matching lines displayed in preview, you may changes those parameters in config:
+
+```Hjson
+lines_before_match_in_preview: 0
+lines_after_match_in_preview: 0
+```
+```TOML
+lines_before_match_in_preview = 0
+lines_after_match_in_preview = 0
+```

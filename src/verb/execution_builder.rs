@@ -170,7 +170,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                     }))
             }
             "file-git-relative" => { // file path relative to git repo workdir
-                let Some(sel) = sel else { return None; };
+                let sel = sel?;
                 let path = git2::Repository::discover(self.root).ok()
                     .and_then(|repo| repo.workdir().map(path_to_string))
                     .and_then(|gitroot| sel.path.strip_prefix(gitroot).ok())
