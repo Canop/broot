@@ -102,6 +102,7 @@ skin: {
 	preview_title: "rgb(147, 161, 161) rgb(238, 232, 213)"
 	preview: "rgb(101, 123, 131) rgb(253, 246, 227) / rgb(147, 161, 161) rgb(238, 232, 213)"
 	preview_line_number: "rgb(147, 161, 161) rgb(238, 232, 213)"
+	preview_separator: "rgb(147, 161, 161) rgb(238, 232, 213)"
 	preview_match: "None ansi(29)"
 	staging_area_title: "gray(22) rgb(253, 246, 227)"
 	good_to_bad_0: ansi(28)

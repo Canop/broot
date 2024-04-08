@@ -62,6 +62,7 @@ skin: {
 	preview_title: gray(3) None / gray(5) None
 	preview: gray(5) gray(23) / gray(7) gray(23)
 	preview_line_number: gray(6) gray(20)
+	preview_separator: gray(7) None / gray(18) None
 	preview_match: None ansi(29) Underlined
 	hex_null: gray(15) None
 	hex_ascii_graphic: gray(2) None

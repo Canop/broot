@@ -59,6 +59,8 @@ skin: {
     preview: rgb(202, 211, 245) rgb(30, 32, 48)
     # fg:$overlay0
     preview_line_number: rgb(110, 115, 141) none
+    # fg:$overlay0
+    preview_separator: rgb(110, 115, 141) none
 #
 ### MATCH
 #

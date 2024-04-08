@@ -23,8 +23,11 @@ use {
         str,
     },
     syntect::highlighting::Style,
-    termimad::{Area, CropWriter, SPACE_FILLING},
+    termimad::{Area, CropWriter, Filling, SPACE_FILLING},
 };
+
+pub static SEPARATOR_FILLING: Lazy<Filling> = Lazy::new(|| { Filling::from_char('─') });
+
 
 /// Homogeneously colored piece of a line
 #[derive(Debug)]
@@ -51,6 +54,12 @@ impl Region {
 }
 
 #[derive(Debug)]
+pub enum DisplayLine {
+    Content(Line),
+    Separator,
+}
+
+#[derive(Debug)]
 pub struct Line {
     pub number: LineNumber,   // starting at 1
     pub start: usize,         // offset in the file, in bytes
@@ -62,11 +71,21 @@ pub struct Line {
 pub struct SyntacticView {
     pub path: PathBuf,
     pub pattern: InputPattern,
-    lines: Vec<Line>,
+    lines: Vec<DisplayLine>,
     scroll: usize,
     page_height: usize,
     selection_idx: Option<usize>, // index in lines of the selection, if any
+    content_lines_count: usize,  // number of lines excluding separators
     total_lines_count: usize,     // including lines not filtered out
+}
+
+impl DisplayLine {
+    pub fn line_number(&self) -> Option<LineNumber> {
+        match self {
+            DisplayLine::Content(line) => Some(line.number),
+            DisplayLine::Separator => None,
+        }
+    }
 }
 
 impl SyntacticView {
@@ -88,6 +107,7 @@ impl SyntacticView {
             scroll: 0,
             page_height: 0,
             selection_idx: None,
+            content_lines_count: 0,
             total_lines_count: 0,
         };
         if sv.read_lines(dam, con, no_style)? {
@@ -120,7 +140,7 @@ impl SyntacticView {
         }
         let with_style = !no_style && md.len() < MAX_SIZE_FOR_STYLING;
         let mut reader = BufReader::new(f);
-        self.lines.clear();
+        let mut content_lines = Vec::new();
         let mut line = String::new();
         self.total_lines_count = 0;
         let mut offset = 0;
@@ -157,7 +177,7 @@ impl SyntacticView {
             } else {
                 Vec::new()
             };
-            self.lines.push(Line {
+            content_lines.push(Line {
                 regions,
                 start,
                 len: line.len(),
@@ -170,18 +190,36 @@ impl SyntacticView {
                 return Ok(false);
             }
         }
-        let lines_before = con.lines_before_match_in_preview;
-        let lines_after = con.lines_after_match_in_preview;
+        let mut must_add_separators = false;
         if !pattern.is_empty() {
-            let mut kept = vec![false; self.lines.len()];
-            for (i, line) in self.lines.iter().enumerate() {
-                if line.name_match.is_some() {
-                    for j in i.saturating_sub(lines_before)..(i + lines_after + 1).min(self.lines.len()) {
-                        kept[j] = true;
+            let lines_before = con.lines_before_match_in_preview;
+            let lines_after = con.lines_after_match_in_preview;
+            if lines_before + lines_after > 0 {
+                let mut kept = vec![false; content_lines.len()];
+                for (i, line) in content_lines.iter().enumerate() {
+                    if line.name_match.is_some() {
+                        for j in i.saturating_sub(lines_before)..(i + lines_after + 1).min(content_lines.len()) {
+                            kept[j] = true;
+                        }
+                    }
+                }
+                content_lines.retain(|line| kept[line.number - 1]);
+                must_add_separators = true;
+            } else {
+                content_lines.retain(|line| line.name_match.is_some());
+            }
+        }
+        self.lines.clear();
+        self.content_lines_count = content_lines.len();
+        for line in content_lines {
+            if must_add_separators {
+                if let Some(last_number) = self.lines.last().and_then(|l| l.line_number()) {
+                    if line.number > last_number + 1 {
+                        self.lines.push(DisplayLine::Separator);
                     }
                 }
             }
-            self.lines.retain(|line| kept[line.number - 1]);
+            self.lines.push(DisplayLine::Content(line));
         }
         Ok(true)
     }
@@ -218,6 +256,10 @@ impl SyntacticView {
     pub fn get_selected_line(&self) -> Option<String> {
         self.selection_idx
             .and_then(|idx| self.lines.get(idx))
+            .and_then(|line| match line {
+                DisplayLine::Content(line) => Some(line),
+                DisplayLine::Separator => None,
+            })
             .and_then(|line| {
                 File::open(&self.path)
                     .and_then(|file| unsafe { Mmap::map(&file) })
@@ -233,7 +275,7 @@ impl SyntacticView {
 
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {
         self.selection_idx
-            .map(|idx| self.lines[idx].number)
+            .and_then(|idx| self.lines[idx].line_number())
     }
     pub fn unselect(&mut self) {
         self.selection_idx = None;
@@ -264,7 +306,7 @@ impl SyntacticView {
     pub fn try_select_line_number(&mut self, number: LineNumber) -> bool {
         // this could obviously be optimized
         for (idx, line) in self.lines.iter().enumerate() {
-            if line.number == number {
+            if line.line_number() == Some(number) {
                 self.selection_idx = Some(idx);
                 self.ensure_selection_is_visible();
                 return true;
@@ -310,6 +352,22 @@ impl SyntacticView {
         self.scroll != old_scroll
     }
 
+    pub fn max_line_number(&self) -> Option<LineNumber> {
+        for line in self.lines.iter().rev() {
+            if let Some(n) = line.line_number() {
+                return Some(n);
+            }
+        }
+        None
+    }
+
+    pub fn get_content_line(&self, idx: usize) -> Option<&Line> {
+        self.lines.get(idx).and_then(|line| match line {
+            DisplayLine::Content(line) => Some(line),
+            DisplayLine::Separator => None,
+        })
+    }
+
     pub fn display(
         &mut self,
         w: &mut W,
@@ -322,7 +380,10 @@ impl SyntacticView {
             self.page_height = area.height as usize;
             self.ensure_selection_is_visible();
         }
-        let max_number_len = self.lines.last().map_or(0, |l|l.number).to_string().len();
+        let max_number_len = self.max_line_number()
+            .unwrap_or(0)
+            .to_string()
+            .len();
         let show_line_number = area.width > 55 || ( self.pattern.is_some() && area.width > 8 );
         let line_count = area.height as usize;
         let styles = &panel_skin.styles;
@@ -347,73 +408,81 @@ impl SyntacticView {
             let selected = self.selection_idx == Some(line_idx);
             let bg = if selected { selection_bg } else { normal_bg };
             let mut op_mmap: Option<Mmap> = None;
-            if let Some(line) = self.lines.get(line_idx) {
-                let mut regions = &line.regions;
-                let regions_ur;
-                if regions.is_empty() && line.len > 0 {
-                    if op_mmap.is_none() {
-                        let file = File::open(&self.path)?;
-                        let mmap = unsafe { Mmap::map(&file)? };
-                        op_mmap = Some(mmap);
-                    }
-                    if op_mmap.as_ref().unwrap().len() < line.start + line.len {
-                        warn!("file truncated since parsing");
-                    } else {
-                        // an UTF8 error can only happen if file modified during display
-                        let string = String::from_utf8(
-                            // we copy the memmap slice, as it's not immutable
-                            (op_mmap.unwrap()[line.start..line.start + line.len]).to_vec(),
-                        )
-                        .unwrap_or_else(|_| "Bad UTF8".to_string());
-                        regions_ur = vec![Region {
-                            fg: normal_fg,
-                            string,
-                        }];
-                        regions = &regions_ur;
-                    }
-                }
-                cw.w.queue(SetBackgroundColor(bg))?;
-                if show_line_number {
-                    cw.queue_g_string(
-                        &styles.preview_line_number,
-                        format!(" {:w$} ", line.number, w = max_number_len),
-                    )?;
-                } else {
+            match self.lines.get(line_idx) {
+                Some(DisplayLine::Separator) => {
+                    cw.w.queue(SetBackgroundColor(bg))?;
                     cw.queue_unstyled_str(" ")?;
+                    cw.fill(&styles.preview_separator, &SEPARATOR_FILLING)?;
                 }
-                cw.w.queue(SetBackgroundColor(bg))?;
-                if con.show_selection_mark {
-                    cw.queue_unstyled_char(if selected { '▶' } else { ' ' })?;
-                }
-                if let Some(nm) = &line.name_match {
-                    let mut dec = 0;
-                    let pos = &nm.pos;
-                    let mut pos_idx: usize = 0;
-                    for content in regions {
-                        let s = content.string.trim_end_matches(is_char_end_of_line);
-                        cw.w.queue(SetForegroundColor(content.fg))?;
-                        if pos_idx < pos.len() {
-                            for (cand_idx, cand_char) in s.chars().enumerate() {
-                                if pos_idx < pos.len() && pos[pos_idx] == cand_idx + dec {
-                                    cw.w.queue(SetBackgroundColor(match_bg))?;
-                                    cw.queue_unstyled_char(cand_char)?;
-                                    cw.w.queue(SetBackgroundColor(bg))?;
-                                    pos_idx += 1;
-                                } else {
-                                    cw.queue_unstyled_char(cand_char)?;
-                                }
-                            }
-                            dec += s.chars().count();
+                Some(DisplayLine::Content(line)) => {
+                    let mut regions = &line.regions;
+                    let regions_ur;
+                    if regions.is_empty() && line.len > 0 {
+                        if op_mmap.is_none() {
+                            let file = File::open(&self.path)?;
+                            let mmap = unsafe { Mmap::map(&file)? };
+                            op_mmap = Some(mmap);
+                        }
+                        if op_mmap.as_ref().unwrap().len() < line.start + line.len {
+                            warn!("file truncated since parsing");
                         } else {
-                            cw.queue_unstyled_str(s)?;
+                            // an UTF8 error can only happen if file modified during display
+                            let string = String::from_utf8(
+                                // we copy the memmap slice, as it's not immutable
+                                (op_mmap.unwrap()[line.start..line.start + line.len]).to_vec(),
+                            )
+                            .unwrap_or_else(|_| "Bad UTF8".to_string());
+                            regions_ur = vec![Region {
+                                fg: normal_fg,
+                                string,
+                            }];
+                            regions = &regions_ur;
                         }
                     }
-                } else {
-                    for content in regions {
-                        cw.w.queue(SetForegroundColor(content.fg))?;
-                        cw.queue_unstyled_str(content.string.trim_end_matches(is_char_end_of_line))?;
+                    cw.w.queue(SetBackgroundColor(bg))?;
+                    if show_line_number {
+                        cw.queue_g_string(
+                            &styles.preview_line_number,
+                            format!(" {:w$} ", line.number, w = max_number_len),
+                        )?;
+                    } else {
+                        cw.queue_unstyled_str(" ")?;
+                    }
+                    cw.w.queue(SetBackgroundColor(bg))?;
+                    if con.show_selection_mark {
+                        cw.queue_unstyled_char(if selected { '▶' } else { ' ' })?;
+                    }
+                    if let Some(nm) = &line.name_match {
+                        let mut dec = 0;
+                        let pos = &nm.pos;
+                        let mut pos_idx: usize = 0;
+                        for content in regions {
+                            let s = content.string.trim_end_matches(is_char_end_of_line);
+                            cw.w.queue(SetForegroundColor(content.fg))?;
+                            if pos_idx < pos.len() {
+                                for (cand_idx, cand_char) in s.chars().enumerate() {
+                                    if pos_idx < pos.len() && pos[pos_idx] == cand_idx + dec {
+                                        cw.w.queue(SetBackgroundColor(match_bg))?;
+                                        cw.queue_unstyled_char(cand_char)?;
+                                        cw.w.queue(SetBackgroundColor(bg))?;
+                                        pos_idx += 1;
+                                    } else {
+                                        cw.queue_unstyled_char(cand_char)?;
+                                    }
+                                }
+                                dec += s.chars().count();
+                            } else {
+                                cw.queue_unstyled_str(s)?;
+                            }
+                        }
+                    } else {
+                        for content in regions {
+                            cw.w.queue(SetForegroundColor(content.fg))?;
+                            cw.queue_unstyled_str(content.string.trim_end_matches(is_char_end_of_line))?;
+                        }
                     }
                 }
+                None => {}
             }
             cw.fill(
                 if selected { &styles.selected_line } else { &styles.preview },
@@ -439,7 +508,7 @@ impl SyntacticView {
     ) -> Result<(), ProgramError> {
         let width = area.width as usize;
         let mut s = if self.pattern.is_some() {
-            format!("{}/{}", self.lines.len(), self.total_lines_count)
+            format!("{}/{}", self.content_lines_count, self.total_lines_count)
         } else {
             format!("{}", self.total_lines_count)
         };
