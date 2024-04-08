@@ -86,6 +86,12 @@ impl DisplayLine {
             DisplayLine::Separator => None,
         }
     }
+    pub fn is_match(&self) -> bool {
+        match self {
+            DisplayLine::Content(line) => line.name_match.is_some(),
+            DisplayLine::Separator => false,
+        }
+    }
 }
 
 impl SyntacticView {
@@ -327,6 +333,29 @@ impl SyntacticView {
             self.selection_idx = Some(0)
         }
         self.ensure_selection_is_visible();
+    }
+
+    pub fn previous_match(&mut self) {
+        let s = self.selection_idx.unwrap_or(0);
+        for d in  1..self.lines.len() {
+            let idx = (self.lines.len() + s - d) % self.lines.len();
+            if self.lines[idx].is_match() {
+                self.selection_idx = Some(idx);
+                self.ensure_selection_is_visible();
+                return;
+            }
+        }
+    }
+    pub fn next_match(&mut self) {
+        let s = self.selection_idx.unwrap_or(0);
+        for d in  1..self.lines.len() {
+            let idx = (s + d) % self.lines.len();
+            if self.lines[idx].is_match() {
+                self.selection_idx = Some(idx);
+                self.ensure_selection_is_visible();
+                return;
+            }
+        }
     }
 
     pub fn try_scroll(

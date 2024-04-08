@@ -393,6 +393,14 @@ impl PanelState for PreviewState {
                 self.mut_preview().select_last();
                 Ok(CmdResult::Keep)
             }
+            Internal::previous_match => {
+                self.mut_preview().previous_match();
+                Ok(CmdResult::Keep)
+            }
+            Internal::next_match => {
+                self.mut_preview().next_match();
+                Ok(CmdResult::Keep)
+            }
             Internal::preview_image => self.set_mode(PreviewMode::Image, con),
             Internal::preview_text => self.set_mode(PreviewMode::Text, con),
             Internal::preview_binary => self.set_mode(PreviewMode::Hex, con),
