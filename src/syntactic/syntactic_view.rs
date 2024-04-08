@@ -203,6 +203,11 @@ impl SyntacticView {
                         }
                     }
                 }
+                for i in 1..kept.len() - 1 {
+                    if !kept[i] && kept[i - 1] && kept[i + 1] {
+                        kept[i] = true;
+                    }
+                }
                 content_lines.retain(|line| kept[line.number - 1]);
                 must_add_separators = true;
             } else {
