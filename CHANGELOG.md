@@ -1,5 +1,6 @@
 ### next
 - optionally display lines surrounding a matching one in display, with `lines_before_match_in_preview` and  `lines_after_match_in_preview` - Fix #756
+- display setuid, setgid and sticky bits in permission - Fix #863
 
 ### v1.36.1 - 2024-03-11
 <a name="v1.36.1"></a>

@@ -7,10 +7,7 @@ use {
         skin::StyleMap,
         tree::{Tree, TreeLine},
     },
-    std::{
-        io::Write,
-        os::unix::fs::MetadataExt,
-    },
+    std::{io::Write, os::unix::fs::MetadataExt},
     umask::*,
 };
 
@@ -22,13 +19,16 @@ pub struct PermWriter<'s> {
 }
 
 impl<'s> PermWriter<'s> {
-
     pub fn new(
         skin: &'s StyleMap,
         max_user_len: usize,
         max_group_len: usize,
     ) -> Self {
-        Self { skin, max_user_len, max_group_len }
+        Self {
+            skin,
+            max_user_len,
+            max_group_len,
+        }
     }
 
     pub fn for_tree(
@@ -61,9 +61,9 @@ impl<'s> PermWriter<'s> {
             cw.queue_char(n_style, '_')?;
         }
         if mode.has(USER_EXEC) {
-            cw.queue_char(x_style, 'x')?;
+            cw.queue_char(x_style, if mode.has_extra(SETUID) { 's' } else { 'x' })?;
         } else {
-            cw.queue_char(n_style, '_')?;
+            cw.queue_char(n_style, if mode.has_extra(SETUID) { 'S' } else { '_' })?;
         }
 
         if mode.has(GROUP_READ) {
@@ -77,9 +77,9 @@ impl<'s> PermWriter<'s> {
             cw.queue_char(n_style, '_')?;
         }
         if mode.has(GROUP_EXEC) {
-            cw.queue_char(x_style, 'x')?;
+            cw.queue_char(x_style, if mode.has_extra(SETGID) { 's' } else { 'x' })?;
         } else {
-            cw.queue_char(n_style, '_')?;
+            cw.queue_char(n_style, if mode.has_extra(SETGID) { 'S' } else { '_' })?;
         }
 
         if mode.has(OTHERS_READ) {
@@ -93,9 +93,9 @@ impl<'s> PermWriter<'s> {
             cw.queue_char(n_style, '_')?;
         }
         if mode.has(OTHERS_EXEC) {
-            cw.queue_char(x_style, 'x')?;
+            cw.queue_char(x_style, if mode.has_extra(STICKY) { 't' } else { 'x' })?;
         } else {
-            cw.queue_char(n_style, '_')?;
+            cw.queue_char(n_style, if mode.has_extra(STICKY) { 'T' } else { '_' })?;
         }
 
         Ok(())
@@ -127,7 +127,6 @@ impl<'s> PermWriter<'s> {
             9 + 1 + self.max_user_len + 1 + self.max_group_len + 1
         })
     }
-
 }
 
 fn user_group_max_lengths(tree: &Tree) -> (usize, usize) {
