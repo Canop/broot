@@ -213,8 +213,8 @@ enable_kitty_keyboard: false
 # only the matching lines displayed, or some of the surrounding
 # ones too.
 #
-lines_before_match_in_preview: 0
-lines_after_match_in_preview: 0
+lines_before_match_in_preview: 1
+lines_after_match_in_preview: 1
 
 ###############################################################
 # Imports
