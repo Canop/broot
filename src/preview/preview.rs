@@ -256,6 +256,22 @@ impl Preview {
             _ => {}
         }
     }
+
+    pub fn previous_match(&mut self) {
+        if let Self::Syntactic(sv) = self {
+            sv.previous_match();
+        } else {
+            self.move_selection(-1, true);
+        }
+    }
+    pub fn next_match(&mut self) {
+        if let Self::Syntactic(sv) = self {
+            sv.next_match();
+        } else {
+            self.move_selection(1, true);
+        }
+    }
+
     pub fn select_first(&mut self) {
         match self {
             Self::Dir(dv) => dv.select_first(),

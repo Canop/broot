@@ -207,6 +207,16 @@ content_search_max_file_size: 10MB
 enable_kitty_keyboard: false
 
 ###############################################################
+# lines around matching line in filtered preview
+#
+# When searching the content of a file, you can have either
+# only the matching lines displayed, or some of the surrounding
+# ones too.
+#
+lines_before_match_in_preview: 1
+lines_after_match_in_preview: 1
+
+###############################################################
 # Imports
 #
 # While it's possible to have all configuration in one file,

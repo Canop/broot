@@ -214,6 +214,7 @@ StyleMap! {
     preview: gray(20), gray(1), [] / gray(18), gray(2), []
     preview_title: gray(23), gray(2), [] / gray(21), gray(2), []
     preview_line_number: gray(12), gray(3), []
+    preview_separator: gray(7), None, []
     preview_match: None, ansi(29), []
     hex_null: gray(8), None, []
     hex_ascii_graphic: gray(18), None, []

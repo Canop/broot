@@ -121,6 +121,12 @@ pub struct AppContext {
     pub keyboard_enhanced: bool,
 
     pub kitty_graphics_transmission: TransmissionMedium,
+
+    /// Number of lines to display after a match in the preview
+    pub lines_after_match_in_preview: usize,
+
+    /// Number of lines to display before a match in the preview
+    pub lines_before_match_in_preview: usize,
 }
 
 impl AppContext {
@@ -221,6 +227,8 @@ impl AppContext {
             keyboard_enhanced: false,
             kitty_graphics_transmission: config.kitty_graphics_transmission
                 .unwrap_or_default(),
+            lines_after_match_in_preview: config.lines_after_match_in_preview.unwrap_or(0),
+            lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (prefered)

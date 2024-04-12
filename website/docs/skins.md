@@ -77,6 +77,7 @@ skin: {
 	help_table_border: ansi(239) None
 	preview_title: gray(23) None / gray(21) None
 	preview: gray(20) gray(1) / gray(18) gray(2)
+	preview_separator: ansi(94) None / gray(3) None
 	preview_line_number: gray(12) gray(3)
 	preview_match: None ansi(29)
 	hex_null: gray(11) None
@@ -159,6 +160,7 @@ help_table_border = "ansi(239) None"
 preview_title = "gray(23) None / gray(21) None"
 preview = "gray(20) gray(1) / gray(18) gray(2)"
 preview_line_number = "gray(12) gray(3)"
+preview_separator: "ansi(94) None / gray(3) None"
 preview_match = "None ansi(29)"
 hex_null = "gray(11) None"
 hex_ascii_graphic = "gray(18) None"
