@@ -24,13 +24,13 @@ kitty-csi-check = ["xterm-query"]
 ahash = { version = "0.8.3", features = ["serde"] }
 ansi_colours = "1.2"
 base64 = "0.21"
-bet = "1.0.2"
+bet = "1.0.3"
 char_reader = "0.1"
 chrono = "0.4"
 clap = { version = "4.4", features = ["derive", "cargo"] }
 clap-help = "1.2.0"
 cli-log = "2.0"
-crokey = "0.6.3"
+crokey = "1.0.0"
 crossbeam = "0.8"
 custom_error = "1.6"
 deser-hjson = "2.2.3"
@@ -58,7 +58,7 @@ splitty = "1.0"
 strict = "0.1.4"
 syntect = { package = "syntect-no-panic", version = "4.6.1" } # see issue #485
 tempfile = "3.2"
-termimad = "0.29.0"
+termimad = "0.29.2"
 terminal-clipboard = { version = "0.4.1", optional = true }
 terminal-light = "1.4.0"
 toml = "0.8"
@@ -122,7 +122,7 @@ harness = false
 # terminal-clipboard = { path = "../terminal-clipboard" }
 # terminal-light = { path = "../terminal-light" }
 # umask = { path = "../umask" }
-# crokey = { path = "../crokey" }
+# crokey = { path = "../crokey" }
 # lazy-regex = { path = "../lazy-regex" }
 # lazy-regex-proc_macros = { path = "../lazy-regex/src/proc_macros" }
 # strict = { path = "../strict" }
