@@ -1,13 +1,13 @@
 # Icons Overview
 
-Broot supports showing icons in terminal if a supported font is installed. 
-Currently, two fonts are supported, `nerdfonts` and `vscode`. 
+Broot supports showing icons in terminal if a supported font is installed.
+Currently, two fonts are supported, `nerdfonts` and `vscode`.
 
 Here is a screenshot, with nerdfont to the left and vscode at right:
 
 ![Broot icon comparison](img/20240225-icon-comparison.png)
 
-# Configuration 
+# Configuration
 
 First add the appropriate lines to your broot config.
 
@@ -27,7 +27,7 @@ icon_theme: nerdfont
 icon_theme = "nerdfont"
 ```
 
-If the appropriate fonts are already installed correctly on your system then new instances of broot will show icons correctly. 
+If the appropriate fonts are already installed correctly on your system then new instances of broot will show icons correctly.
 
 # Installation and checking for presence
 
@@ -56,7 +56,7 @@ echo -e "file_type_rust looks like \ue7a8"
 
 This should display a rust icon
 
-Unless you're really unlucky (there is some font that has the rust gear icon at the exact unicode point as the query but doesn't have other glyphs), you probably have the font installed correctly. If not, move to the installation section. 
+Unless you're really unlucky (there is some font that has the rust gear icon at the exact unicode point as the query but doesn't have other glyphs), you probably have the font installed correctly. If not, move to the installation section.
 
 
 ## Installation
@@ -105,7 +105,7 @@ To get started, have a look at look at the resources/icons/nerdfont directory an
 **A:** For performance reasons, icon mapping is hardcoded. If this looks like a problem, please come and chat with us on miaou.
 
 
-**Q:** How do I remap in nerdfont? 
+**Q:** How do I remap in nerdfont?
 
 **A:** If you want to map or remap icons, please go to <a href="https://www.nerdfonts.com/cheat-sheet" target="_blank">nerdfont-cheat-sheet</a> and search for an icon you would like to set in its place.
 In order to correctly fix the icon mapping you need a FILE_EXTENSION and a NERDFONT_ICON_CODE. For this example we are remapping the json file extension.

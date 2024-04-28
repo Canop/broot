@@ -24,19 +24,32 @@ body .col-md-9 p img {
 }
 
 
+h1, h2, h3, h4 {
+	/*color: #1b465f;*/
+}
 h1 {
 	font-size: 22px;
+	border-top: solid 1px;
+	padding-top: 8px;
 	border-bottom: solid 1px;
-	padding-bottom: 8px;
+	padding-bottom: 9px;
 	margin: 30px 0 20px 0;
-	border-image-source: linear-gradient(to right, #178acc, #fff);
+	border-image-source: linear-gradient(to right, #178accff, #fff0);
 	border-image-slice: 1;
 }
 h2 {
-	font-size: 19px;
+	font-size: 20px;
+	border-bottom: solid 1px;
+	padding-bottom: 7px;
+	margin: 20px 0 10px 0;
+	border-image-source: linear-gradient(to right, #178accaa, #fff0, #fff0, #fff0);
+	border-image-slice: 1;
 }
 h3 {
-	font-size: 16px;
+	font-size: 20px;
+}
+h4 {
+	font-size: 18px;
 }
 
 body .navbar {
