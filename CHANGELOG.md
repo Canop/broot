@@ -1,7 +1,8 @@
-### next
-- optionally display lines surrounding a matching one in display, with `lines_before_match_in_preview` and  `lines_after_match_in_preview` - Fix #756
+### v1.37.0 - 2024-04-28
+<a name="v1.37.0"></a>
+- optionally display lines surrounding a matching line in preview, with `lines_before_match_in_preview` and  `lines_after_match_in_preview` - Fix #756
 - filtered preview: jump between matches with `:next_match` (default: `tab`) and `:previous_match` (default `shift-tab`)
-- display setuid, setgid and sticky bits in permission - Fix #863
+- display setuid, setgid and sticky bits in permission - Fix #863, Thanks @Jisu-Woniu
 
 ### v1.36.1 - 2024-03-11
 <a name="v1.36.1"></a>

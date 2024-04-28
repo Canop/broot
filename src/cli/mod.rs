@@ -54,7 +54,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     if args.help {
         Printer::new(Args::command())
-            .with_max_width(140)
+            .with_max_width(110)
             .with("introduction", INTRO)
             .with("options", clap_help::TEMPLATE_OPTIONS_MERGED_VALUE)
             .without("author")
