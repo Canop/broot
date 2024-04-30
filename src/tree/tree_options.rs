@@ -7,6 +7,8 @@ use {
         errors::ConfError,
         pattern::*,
     },
+    clap::Parser,
+    lazy_regex::regex_is_match,
     std::convert::TryFrom,
 };
 
@@ -99,6 +101,21 @@ impl TreeOptions {
             .unwrap_or(DEFAULT_COLS);
         Ok(())
     }
+    /// apply flags like "sdp"
+    pub fn apply_flags(&mut self, flags: &str) -> Result<(), &'static str> {
+        if !regex_is_match!("^[a-zA-Z]+$", flags) {
+            return Err("Flags must be a sequence of letters");
+        }
+        let prefixed = format!("-{flags}");
+        let tokens = vec!["broot", &prefixed];
+        let args = Args::try_parse_from(tokens)
+            .map_err(|_| {
+                warn!("invalid flags: {:?}", flags);
+                "invalid flag (valid flags are -dDfFgGhHiIpPsSwWtT)"
+            })?;
+        self.apply_launch_args(&args);
+        Ok(())
+    }
     /// change tree options according to broot launch arguments
     pub fn apply_launch_args(&mut self, cli_args: &Args) {
         if cli_args.sizes {
@@ -113,6 +130,13 @@ impl TreeOptions {
             self.sort = Sort::Size;
             self.show_sizes = true;
             self.show_root_fs = true;
+        }
+        if cli_args.no_whale_spotting {
+            self.show_hidden = false;
+            self.respect_git_ignore = true;
+            self.sort = Sort::None;
+            self.show_sizes = false;
+            self.show_root_fs = false;
         }
         if cli_args.only_folders {
             self.only_folders = true;

@@ -67,19 +67,20 @@ impl From<&str> for VerbInvocation {
     /// arguments and optional bang. The leading space or colon must
     /// have been stripped before.
     fn from(invocation: &str) -> Self {
-        let caps = regex!(
+        let rex = regex!(
             r"(?x)
                 ^
                 (?P<bang_before>!)?
-                (?P<name>[^!\s]*)
+                (?P<name>([@$%\#~-]+|[^@$%\#~-][^!\s]+))
                 (?P<bang_after>!(?P<post_bang>[^\s:]+)?)?
-                (?:[\s:]+(?P<args>.*))?
+                (?:[\s:]*(?P<args>.*))?
                 \s*
                 $
             "
-        )
-        .captures(invocation)
-        .unwrap();
+        );
+        let Some(caps) = rex.captures(invocation) else {
+            return VerbInvocation::new("", None, false);
+        };
         let bang_before = caps.name("bang_before").is_some();
         let bang_after = caps.name("bang_after").is_some();
         let bang = bang_before || bang_after;

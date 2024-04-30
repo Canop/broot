@@ -82,6 +82,8 @@ impl VerbStore {
 
         self.add_internal(set_syntax_theme);
 
+        self.add_internal(apply_flags).with_name("apply_flags");
+
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
         self.add_internal(open_leave) // calls the system open

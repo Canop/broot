@@ -143,6 +143,10 @@ impl Verb {
         self.show_in_doc = false;
         self
     }
+    pub fn with_name(&mut self, name: &str) -> &mut Self {
+        self.names.insert(0, name.to_string());
+        self
+    }
     pub fn with_description(&mut self, description: &str) -> &mut Self {
         self.description = VerbDescription::from_text(description.to_string());
         self
