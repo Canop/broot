@@ -149,9 +149,11 @@ Add files to the [staging area](staging-area) then execute any command on all of
 
 If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which gets you this:
 
-![replace ls](website/docs/img/20230930-sdp.png)
+![replace ls](website/docs/img/20240501-sdp.png)
 
-You may also toggle options with a few keystrokes while inside broot. For example hitting a space, a <kbd>d</kbd> then <kbd>enter</kbd> shows you the dates. Or hit <kbd>alt</kbd><kbd>h</kbd> and you see hidden files.
+You may also toggle options with a few keystrokes while inside broot.
+For example you could have typed this `-sdp` while in broot.
+Or hit <kbd>alt</kbd><kbd>h</kbd> and you see hidden files.
 
 ## Sort, see what takes space:
 
