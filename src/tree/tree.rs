@@ -302,6 +302,9 @@ impl Tree {
     pub fn root(&self) -> &PathBuf {
         &self.lines[0].path
     }
+    pub fn is_root_selected(&self) -> bool {
+        self.selection == 0
+    }
     /// select the line with the best matching score
     pub fn try_select_best_match(&mut self) {
         let mut best_score = 0;
