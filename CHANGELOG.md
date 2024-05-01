@@ -1,3 +1,6 @@
+### next
+- calling `:focus` on the tree root now goes up the tree
+
 ### v1.37.0 - 2024-04-28
 <a name="v1.37.0"></a>
 - optionally display lines surrounding a matching line in preview, with `lines_before_match_in_preview` and  `lines_after_match_in_preview` - Fix #756
