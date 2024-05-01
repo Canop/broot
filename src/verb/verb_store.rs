@@ -80,8 +80,8 @@ impl VerbStore {
         self.add_internal(line_down).with_key(key!(down)).with_key(key!('j'));
         self.add_internal(line_up).with_key(key!(up)).with_key(key!('k'));
 
+        // changing display
         self.add_internal(set_syntax_theme);
-
         self.add_internal(apply_flags).with_name("apply_flags");
 
         // those two operations are mapped on ALT-ENTER, one
@@ -598,4 +598,10 @@ impl VerbStore {
         &self.verbs[id]
     }
 
+}
+
+#[test]
+fn check_builtin_verbs() {
+    let mut conf = Conf::default();
+    let _store = VerbStore::new(&mut conf).unwrap();
 }
