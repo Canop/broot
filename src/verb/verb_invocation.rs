@@ -1,6 +1,5 @@
 use {
     std::fmt,
-    lazy_regex::regex,
 };
 
 /// the verb and its arguments, making the invocation.
@@ -63,34 +62,80 @@ impl VerbInvocation {
 }
 
 impl From<&str> for VerbInvocation {
-    /// parse a string being or describing the invocation of a verb with its
+    /// Parse a string being or describing the invocation of a verb with its
     /// arguments and optional bang. The leading space or colon must
     /// have been stripped before.
+    ///
+    /// Examples:
+    ///  "mv"       -> name: "mv"
+    ///  "!mv"      -> name: "mv", bang
+    ///  "mv a b"   -> name: "mv", args: "a b"
+    ///  "mv!a b"   -> name: "mv", args: "a b", bang
+    ///  "a-b  c"   -> name: "a-b", args: "c", bang
+    ///  "-sp"      -> name: "-", args: "sp"
+    ///  "-a b"     -> name: "-", args: "a b"
+    ///  "-a b"     -> name: "-", args: "a b"
+    ///  "--a"      -> name: "--", args: "a"
+    ///
+    /// Notes:
+    /// 1. A name is either "special" (only made of non alpha characters)
+    ///    or normal (starting with an alpha character). Special names don't
+    ///    need a space afterwards, as the first alpha character will start
+    ///    the args.
+    /// 2. The space or colon after the name is optional if there's a bang
+    ///    after the name: the bang is the separator.
+    /// 3. Duplicate separators before args are ignored (they're usually typos)
+    /// 4. An opening parenthesis starts args
     fn from(invocation: &str) -> Self {
-        let caps = regex!(
-            r"(?x)
-                ^
-                (?P<bang_before>!)?
-                (?P<name>[^!\s]*)
-                (?P<bang_after>!(?P<post_bang>[^\s:]+)?)?
-                (?:[\s:]+(?P<args>.*))?
-                \s*
-                $
-            "
-        )
-        .captures(invocation)
-        .unwrap();
-        let bang_before = caps.name("bang_before").is_some();
-        let bang_after = caps.name("bang_after").is_some();
-        let bang = bang_before || bang_after;
-        if let Some(post_bang) = caps.name("post_bang") {
-            // If there's a non space character just after the "bang_after"
-            // (a bang which isn't the first character of the invocation)
-            // it falls into a kind of void, having no meaning.
-            info!("ignored post_bang: {:?}", post_bang);
+        let mut bang_before = false;
+        let mut name = String::new();
+        let mut bang_after = false;
+        let mut args: Option<String> = None;
+        let mut name_is_special = false;
+        for c in invocation.chars() {
+            if let Some(args) = args.as_mut() {
+                if args.is_empty() && (c == ' ' || c == ':') {
+                    // we don't want args starting with a space just because
+                    // they're doubled or are optional after a special name
+                } else {
+                    args.push(c);
+                }
+                continue;
+            }
+            if c == ' ' || c == ':' {
+                args = Some(String::new());
+                continue;
+            }
+            if c == '(' {
+                args = Some(c.to_string());
+                continue;
+            }
+            if c == '!' {
+                if !name.is_empty() {
+                    bang_after = true;
+                    args = Some(String::new());
+                } else {
+                    bang_before = true;
+                }
+                continue;
+            }
+            if name.is_empty() {
+                if c.is_alphabetic() {
+                    name.push(c);
+                } else {
+                    name.push(c);
+                    name_is_special = true;
+                }
+                continue;
+            }
+            if c.is_alphabetic() && name_is_special {
+                // this isn't part of the name anymore, it's part of the args
+                args = Some(c.to_string());
+                continue;
+            }
+            name.push(c);
         }
-        let name = caps.name("name").unwrap().as_str().to_string();
-        let args = caps.name("args").map(|c| c.as_str().to_string());
+        let bang = bang_before || bang_after;
         VerbInvocation { name, args, bang }
     }
 }
@@ -98,6 +143,54 @@ impl From<&str> for VerbInvocation {
 #[cfg(test)]
 mod verb_invocation_tests {
     use super::*;
+
+    #[test]
+    fn check_special_chars() {
+        assert_eq!(
+            VerbInvocation::from("-sdp"),
+            VerbInvocation::new("-", Some("sdp"), false),
+        );
+        assert_eq!(
+            VerbInvocation::from("!-sdp"),
+            VerbInvocation::new("-", Some("sdp"), true),
+        );
+        assert_eq!(
+            VerbInvocation::from("-!sdp"),
+            VerbInvocation::new("-", Some("sdp"), true),
+        );
+        assert_eq!(
+            VerbInvocation::from("-! sdp"),
+            VerbInvocation::new("-", Some("sdp"), true),
+        );
+        assert_eq!(
+            VerbInvocation::from("!@a b"),
+            VerbInvocation::new("@", Some("a b"), true),
+        );
+        assert_eq!(
+            VerbInvocation::from("!@%a b"),
+            VerbInvocation::new("@%", Some("a b"), true),
+        );
+        assert_eq!(
+            VerbInvocation::from("22a b"),
+            VerbInvocation::new("22", Some("a b"), false),
+        );
+        assert_eq!(
+            VerbInvocation::from("22!a b"),
+            VerbInvocation::new("22", Some("a b"), true),
+        );
+        assert_eq!(
+            VerbInvocation::from("22 !a b"),
+            VerbInvocation::new("22", Some("!a b"), false),
+        );
+        assert_eq!(
+            VerbInvocation::from("a$b4!r"),
+            VerbInvocation::new("a$b4", Some("r"), true),
+        );
+        assert_eq!(
+            VerbInvocation::from("a-b c"),
+            VerbInvocation::new("a-b", Some("c"), false),
+        );
+    }
 
     #[test]
     fn check_verb_invocation_parsing_empty_arg() {
@@ -110,7 +203,7 @@ mod verb_invocation_tests {
         );
         assert_eq!(
             VerbInvocation::from("mva!"),
-            VerbInvocation::new("mva", None, true),
+            VerbInvocation::new("mva", Some(""), true),
         );
         assert_eq!(
             VerbInvocation::from("cp "),
@@ -127,7 +220,7 @@ mod verb_invocation_tests {
         // ignoring post_bang (see issue #326)
         assert_eq!(
             VerbInvocation::from("mva!a"),
-            VerbInvocation::new("mva", None, true),
+            VerbInvocation::new("mva", Some("a"), true),
         );
         assert_eq!(
             VerbInvocation::from("!!!"),
@@ -149,14 +242,6 @@ mod verb_invocation_tests {
             VerbInvocation::new("", None, true),
         );
         assert_eq!(
-            VerbInvocation::from("!!"),
-            VerbInvocation::new("", None, true),
-        );
-        assert_eq!(
-            VerbInvocation::from("!!a"), // case of post_bang
-            VerbInvocation::new("", None, true),
-        );
-        assert_eq!(
             VerbInvocation::from("!! "),
             VerbInvocation::new("", Some(""), true),
         );
@@ -169,6 +254,14 @@ mod verb_invocation_tests {
     #[test]
     fn check_verb_invocation_parsing_oddities() {
         // checking some corner cases
+        assert_eq!(
+            VerbInvocation::from("!!a"), // the second bang is ignored
+            VerbInvocation::new("a", None, true),
+        );
+        assert_eq!(
+            VerbInvocation::from("!!"), // the second bang is ignored
+            VerbInvocation::new("", None, true),
+        );
         assert_eq!(
             VerbInvocation::from("a ! !"),
             VerbInvocation::new("a", Some("! !"), false),

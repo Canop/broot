@@ -34,7 +34,7 @@ custom_error! {pub ProgramError
     ZeroLenFile = "File seems empty",
 }
 
-custom_error!{pub ShellInstallError
+custom_error! {pub ShellInstallError
     Io {source: io::Error, when: String} = "IO Error {source} on {when}",
 }
 impl ShellInstallError {
@@ -43,19 +43,25 @@ impl ShellInstallError {
             Self::Io { source, .. } => {
                 if source.kind() == io::ErrorKind::PermissionDenied {
                     true
-                } else { cfg!(windows) && source.raw_os_error().unwrap_or(0) == 1314 }
+                } else {
+                    cfg!(windows) && source.raw_os_error().unwrap_or(0) == 1314
+                }
             }
         }
     }
 }
 pub trait IoToShellInstallError<Ok> {
-    fn context(self, f: &dyn Fn() -> String) -> Result<Ok, ShellInstallError>;
+    fn context(
+        self,
+        f: &dyn Fn() -> String,
+    ) -> Result<Ok, ShellInstallError>;
 }
 impl<Ok> IoToShellInstallError<Ok> for Result<Ok, io::Error> {
-    fn context(self, f: &dyn Fn() -> String) -> Result<Ok, ShellInstallError> {
-        self.map_err(|source| ShellInstallError::Io {
-            source, when: f()
-        })
+    fn context(
+        self,
+        f: &dyn Fn() -> String,
+    ) -> Result<Ok, ShellInstallError> {
+        self.map_err(|source| ShellInstallError::Io { source, when: f() })
     }
 }
 
@@ -88,6 +94,7 @@ custom_error! {pub ConfError
     InvalidDefaultFlags { flags: String }           = "invalid default flags: {flags:?}",
     InvalidSyntaxTheme { name: String }             = "invalid syntax theme: {name:?}",
     InvalidGlobPattern { pattern: String }          = "invalid glob pattern: {pattern:?}",
+    InvalidVerbName { name: String }                = "invalid verb name: {name:?} (must either not start with a special character or be only made of special characters)",
 }
 
 // error which can be raised when parsing a pattern the user typed

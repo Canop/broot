@@ -59,7 +59,6 @@ impl LineStatusComputer {
     }
 }
 
-///
 #[derive(Debug, Clone)]
 pub struct TreeGitStatus {
     pub current_branch_name: Option<String>,

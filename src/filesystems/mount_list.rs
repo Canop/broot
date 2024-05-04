@@ -11,14 +11,12 @@ use {
     },
 };
 
+#[derive(Default)]
 pub struct MountList {
     mounts: Option<Vec<Mount>>,
 }
 
 impl MountList {
-    pub const fn new() -> Self {
-        Self { mounts: None }
-    }
     pub fn clear_cache(&mut self) {
         self.mounts = None;
     }

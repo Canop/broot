@@ -128,6 +128,10 @@ pub struct Args {
     #[arg(short, long)]
     pub whale_spotting: bool,
 
+    /// No sort, no show hidden, no show git ignored
+    #[arg(short='W', long)]
+    pub no_whale_spotting: bool,
+
     /// Trim the root too and don't show a scrollbar
     #[arg(short='t', long)]
     pub trim_root: bool,

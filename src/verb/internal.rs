@@ -53,7 +53,9 @@ macro_rules! Internals {
 // internals:
 //  name: "description" needs_a_path
 Internals! {
+    apply_flags: "apply flags (eg `-sd` to show sizes and dates)" false,
     back: "revert to the previous state (mapped to *esc*)" false,
+    clear_output: "clear the --verb-output file" false,
     clear_stage: "empty the staging area" false,
     close_panel_cancel: "close the panel, not using the selected path" false,
     close_panel_ok: "close the panel, validating the selected path" false,
@@ -150,13 +152,13 @@ Internals! {
     unstage: "remove selection from staging area" true,
     up_tree: "focus the parent of the current root" true,
     write_output: "write the argument to the --verb-output file" false,
-    clear_output: "clear the --verb-output file" false,
     //restore_pattern: "restore a pattern which was just removed" false,
 }
 
 impl Internal {
     pub fn invocation_pattern(self) -> &'static str {
         match self {
+            Internal::apply_flags => r"-(?P<flags>\w+)?",
             Internal::focus => r"focus (?P<path>.*)?",
             Internal::select => r"select (?P<path>.*)?",
             Internal::line_down => r"line_down (?P<count>\d*)?",
@@ -170,6 +172,7 @@ impl Internal {
     }
     pub fn exec_pattern(self) -> &'static str {
         match self {
+            Internal::apply_flags => r"apply_flags {flags}",
             Internal::focus => r"focus {path}",
             Internal::line_down => r"line_down {count}",
             Internal::line_up => r"line_up {count}",
