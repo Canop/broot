@@ -596,7 +596,7 @@ impl App {
             }
             if let Some(shared_root) = &mut self.shared_root {
                 if let Ok(mut root) = shared_root.lock() {
-                    *root = app_state.root.clone();
+                    root.clone_from(&app_state.root);
                 }
             }
         }

@@ -50,13 +50,13 @@ impl VerbStore {
                 }
             }
         }
-        store.add_builtin_verbs(); // at the end so that we can override them
+        store.add_builtin_verbs()?; // at the end so that we can override them
         Ok(store)
     }
 
     fn add_builtin_verbs(
         &mut self,
-    ) {
+    ) -> Result<(), ConfError> {
         use super::{ExternalExecutionMode::*, Internal::*};
         self.add_internal(escape).with_key(key!(esc));
 
@@ -82,7 +82,7 @@ impl VerbStore {
 
         // changing display
         self.add_internal(set_syntax_theme);
-        self.add_internal(apply_flags).with_name("apply_flags");
+        self.add_internal(apply_flags).with_name("apply_flags")?;
 
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
@@ -317,6 +317,7 @@ impl VerbStore {
 
         self.add_internal(clear_output);
         self.add_internal(write_output);
+        Ok(())
     }
 
     fn build_add_internal(
@@ -485,7 +486,7 @@ impl VerbStore {
             verb.auto_exec = false;
         }
         if !vc.panels.is_empty() {
-            verb.panels = vc.panels.clone();
+            verb.panels.clone_from(&vc.panels);
         }
         verb.selection_condition = vc.apply_to;
         Ok(())

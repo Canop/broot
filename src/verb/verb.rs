@@ -95,7 +95,9 @@ impl Verb {
         let invocation_parser = invocation_str.map(InvocationParser::new).transpose()?;
         let mut names = Vec::new();
         if let Some(ref invocation_parser) = invocation_parser {
-            names.push(invocation_parser.name().to_string());
+            let name = invocation_parser.name().to_string();
+            check_verb_name(&name)?;
+            names.push(name);
         }
         let (
             needs_selection,
@@ -143,9 +145,10 @@ impl Verb {
         self.show_in_doc = false;
         self
     }
-    pub fn with_name(&mut self, name: &str) -> &mut Self {
+    pub fn with_name(&mut self, name: &str) -> Result<&mut Self, ConfError> {
+        check_verb_name(name)?;
         self.names.insert(0, name.to_string());
-        self
+        Ok(self)
     }
     pub fn with_description(&mut self, description: &str) -> &mut Self {
         self.description = VerbDescription::from_text(description.to_string());
@@ -302,5 +305,13 @@ impl Verb {
             extension
                 .map_or(false, |ext| self.file_extensions.iter().any(|ve| ve == ext))
         }
+    }
+}
+
+pub fn check_verb_name(name: &str) -> Result<(), ConfError> {
+    if regex_is_match!(r"^([@,#~&'%$\dù_-]+|[\w][\w_@,#~&'%$\dù_-]*)+$", name) {
+        Ok(())
+    } else {
+        Err(ConfError::InvalidVerbName{ name: name.to_string() })
     }
 }

@@ -486,7 +486,6 @@ impl<'c> TreeBuilder<'c> {
             })
     }
 
-    ///
     pub fn build_paths<F>(
         mut self,
         total_search: bool,
