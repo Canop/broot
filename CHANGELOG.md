@@ -1,4 +1,5 @@
-### next
+### v1.38.0 - 2024-05-04
+<a name="v1.38.0"></a>
 - `-{flags}` verb lets you change the state the same way you do it at start, eg `:-sd` to show sizes and dates
 - calling `:focus` on the tree root now goes up the tree (experimental)
 
