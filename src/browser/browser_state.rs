@@ -347,15 +347,26 @@ impl PanelState for BrowserState {
                     CmdResult::PopState
                 }
             }
-            Internal::focus => internal_focus::on_internal(
-                internal_exec,
-                input_invocation,
-                trigger_type,
-                &self.displayed_tree().selected_line().path,
-                self.displayed_tree().options.clone(),
-                app_state,
-                cc,
-            ),
+            Internal::focus => {
+                let tree = self.displayed_tree();
+                let mut path = &tree.selected_line().path;
+                let parent;
+                if tree.is_root_selected() {
+                    if let Some(parent_path) = path.parent() {
+                        parent = parent_path.to_path_buf();
+                        path = &parent;
+                    }
+                }
+                internal_focus::on_internal(
+                    internal_exec,
+                    input_invocation,
+                    trigger_type,
+                    path,
+                    tree.options.clone(),
+                    app_state,
+                    cc,
+                )
+            }
             Internal::select => internal_select::on_internal(
                 internal_exec,
                 input_invocation,
