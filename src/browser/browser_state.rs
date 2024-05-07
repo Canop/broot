@@ -632,6 +632,8 @@ impl PanelState for BrowserState {
             Internal::trash => {
                 let path = self.displayed_tree().selected_line().path.to_path_buf();
                 info!("trash {:?}", &path);
+
+                #[cfg(feature = "trash")]
                 match trash::delete(&path) {
                     Ok(()) => CmdResult::RefreshState { clear_cache: true },
                     Err(e) => {
@@ -639,6 +641,9 @@ impl PanelState for BrowserState {
                         CmdResult::DisplayError(format!("trash error: {:?}", &e))
                     }
                 }
+
+                #[cfg(not(feature = "trash"))]
+                CmdResult::DisplayError("feature not enabled or platform does not support trash".into())
             }
             Internal::quit => CmdResult::Quit,
             _ => self.on_internal_generic(

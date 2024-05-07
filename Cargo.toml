@@ -17,8 +17,10 @@ exclude = ["website", "broot*.zip"]
 
 [features]
 default = []
+
 clipboard = ["terminal-clipboard"]
 kitty-csi-check = ["xterm-query"]
+trash = ["dep:trash"]
 
 [dependencies]
 ahash = { version = "0.8.3", features = ["serde"] }
@@ -62,7 +64,7 @@ termimad = "0.29.2"
 terminal-clipboard = { version = "0.4.1", optional = true }
 terminal-light = "1.4.0"
 toml = "0.8"
-trash = "3.1.2"
+trash = { version = "3.1.2", optional = true }
 umask = "2.1.0"
 unicode-width = "0.1.10"
 which = "4.4.0"

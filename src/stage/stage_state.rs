@@ -496,6 +496,8 @@ impl PanelState for StageState {
             }
             Internal::trash => {
                 info!("trash {} staged files", app_state.stage.len());
+
+                #[cfg(feature = "trash")]
                 match trash::delete_all(app_state.stage.paths()) {
                     Ok(()) => CmdResult::RefreshState { clear_cache: true },
                     Err(e) => {
@@ -503,6 +505,9 @@ impl PanelState for StageState {
                         CmdResult::DisplayError(format!("trash error: {:?}", &e))
                     }
                 }
+
+                #[cfg(not(feature = "trash"))]
+                CmdResult::DisplayError("feature not enabled or platform does not support trash".into())
             }
             _ => self.on_internal_generic(
                 w,
