@@ -43,15 +43,15 @@ cross_build() {
     echo "   Done"
 }
 
-cross_build "x86-64 GLIBC" "x86_64-unknown-linux-gnu" ""
-cross_build "NetBSD/amd64" "x86_64-unknown-netbsd" ""
-cross_build "MUSL" "x86_64-unknown-linux-musl" ""
-cross_build "ARM 32" "armv7-unknown-linux-gnueabihf" ""
-cross_build "ARM 32 MUSL" "armv7-unknown-linux-musleabi" ""
-cross_build "ARM 64" "aarch64-unknown-linux-gnu" ""
-cross_build "ARM 64 MUSL" "aarch64-unknown-linux-musl" ""
+cross_build "x86-64 GLIBC" "x86_64-unknown-linux-gnu" "trash"
+cross_build "NetBSD/amd64" "x86_64-unknown-netbsd" "trash"
+cross_build "MUSL" "x86_64-unknown-linux-musl" "trash"
+cross_build "ARM 32" "armv7-unknown-linux-gnueabihf" "trash"
+cross_build "ARM 32 MUSL" "armv7-unknown-linux-musleabi" "trash"
+cross_build "ARM 64" "aarch64-unknown-linux-gnu" "trash"
+cross_build "ARM 64 MUSL" "aarch64-unknown-linux-musl" "trash"
 cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard,trash"
-# cross_build "Android" "aarch64-linux-android" "clipboard" Doesn't work anymore - See https://github.com/Canop/broot/issues/565
+# cross_build "Android" "aarch64-linux-android" "clipboard" Does not work anymore - See https://github.com/Canop/broot/issues/565
 
 
 # Build the default linux version (with clipboard support, needing a recent GLIBC)
@@ -63,7 +63,7 @@ mkdir build/x86_64-linux/
 cp "target/release/$NAME" build/x86_64-linux/
 
 # Find, and copy the completion scripts
-# (they're built as part of the normal compilation by build.rs)
+# (they are re built as part of the normal compilation by build.rs)
 echo -e "${H2}Copying completion scripts${EH}"
 mkdir build/completion
 cp "$(broot -c 'rp/release\/build\/broot-[^\/]+\/out\/broot.bash;:parent;:pp' target)/"* build/completion

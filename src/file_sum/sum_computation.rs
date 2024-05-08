@@ -35,6 +35,7 @@ struct DirSummer {
 
 /// a node id, taking the device into account to be sure to discriminate
 /// nodes with the same inode but on different devices
+#[cfg(unix)]
 #[derive(Debug, Clone, Copy, PartialEq, Hash, Eq)]
 struct NodeId {
     /// inode number

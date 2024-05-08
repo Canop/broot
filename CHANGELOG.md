@@ -1,3 +1,6 @@
+### next
+- fix build on Android - thanks @dead10ck
+
 ### v1.38.0 - 2024-05-04
 <a name="v1.38.0"></a>
 - `-{flags}` verb lets you change the state the same way you do it at start, eg `:-sd` to show sizes and dates
