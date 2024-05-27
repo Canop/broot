@@ -30,6 +30,7 @@ pub mod skin;
 pub mod syntactic;
 pub mod task_sync;
 pub mod terminal;
+pub mod trash;
 pub mod tree;
 pub mod tree_build;
 pub mod verb;

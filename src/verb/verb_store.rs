@@ -147,6 +147,18 @@ impl VerbStore {
             StayInBroot,
         )
             .with_shortcut("cpp");
+        #[cfg(feature = "trash")]
+        self.add_internal(open_trash)
+            .with_shortcut("ot");
+        #[cfg(feature = "trash")]
+        self.add_internal(restore_trashed_file)
+            .with_shortcut("rt");
+        #[cfg(feature = "trash")]
+        self.add_internal(delete_trashed_file)
+            .with_shortcut("dt");
+        #[cfg(feature = "trash")]
+        self.add_internal(purge_trash)
+            .with_shortcut("pt");
         #[cfg(unix)]
         self.add_internal(filesystems)
             .with_shortcut("fs");

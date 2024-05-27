@@ -1,5 +1,6 @@
 ### next
 - fix build on Android - thanks @dead10ck
+- `:open_trash` shows the content of the trash. Other new internals & verbs: `:delete_trashed_file`, `:restore_trashed_file`, `:purge_trash` - Fix #855
 
 ### v1.38.0 - 2024-05-04
 <a name="v1.38.0"></a>

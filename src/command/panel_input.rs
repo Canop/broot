@@ -377,8 +377,6 @@ impl PanelInput {
         let raw = self.input_field.get_content();
         let parts = CommandParts::from(raw.clone());
 
-        info!("parts: {:#?}", parts);
-
         let verb = if self.is_key_allowed_for_verb(key, mode) {
             self.find_key_verb(
                 key,

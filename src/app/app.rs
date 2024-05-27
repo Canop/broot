@@ -512,6 +512,12 @@ impl App {
                     self.mut_panel().clear_input_invocation(con);
                 }
             }
+            Message(md) => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input_invocation(con);
+                }
+                self.mut_panel().set_message(md);
+            }
             Launch(launchable) => {
                 self.launch_at_end = Some(*launchable);
                 self.quitting = true;

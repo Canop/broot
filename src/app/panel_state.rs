@@ -157,6 +157,41 @@ pub trait PanelState {
                 validate_purpose: false,
                 panel_ref: PanelReference::Active,
             },
+            #[cfg(feature = "trash")]
+            Internal::purge_trash => {
+                let res = trash::os_limited::list()
+                    .and_then(|items| {
+                        trash::os_limited::purge_all(items)
+                    });
+                match res {
+                    Ok(()) => CmdResult::RefreshState { clear_cache: false },
+                    Err(e) => CmdResult::DisplayError(format!("{e}")),
+                }
+            }
+            #[cfg(feature = "trash")]
+            Internal::open_trash => {
+                let trash_state = crate::trash::TrashState::new(
+                    self.tree_options(),
+                    con,
+                );
+                match trash_state {
+                    Ok(state) => {
+                        let bang = input_invocation
+                            .map(|inv| inv.bang)
+                            .unwrap_or(internal_exec.bang);
+                        if bang && cc.app.preview_panel.is_none() {
+                            CmdResult::NewPanel {
+                                state: Box::new(state),
+                                purpose: PanelPurpose::None,
+                                direction: HDir::Right,
+                            }
+                        } else {
+                            CmdResult::new_state(Box::new(state))
+                        }
+                    }
+                    Err(e) => CmdResult::DisplayError(format!("{e}")),
+                }
+            }
             #[cfg(unix)]
             Internal::filesystems => {
                 let fs_state = crate::filesystems::FilesystemState::new(

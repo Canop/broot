@@ -77,7 +77,7 @@ impl<'a, 'w> MatchedString<'a> {
         let mut width = self.width();
         for (idx, c) in self.string.char_indices() {
             if width <= max_width { break; }
-            break_idx = idx;
+            break_idx = idx + c.len_utf8();
             let char_width = c.width().unwrap_or(0);
             if char_width > width {
                 warn!("inconsistent char/str widths");
