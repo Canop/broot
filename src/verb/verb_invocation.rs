@@ -120,10 +120,8 @@ impl From<&str> for VerbInvocation {
                 continue;
             }
             if name.is_empty() {
-                if c.is_alphabetic() {
-                    name.push(c);
-                } else {
-                    name.push(c);
+                name.push(c);
+                if !c.is_alphabetic() {
                     name_is_special = true;
                 }
                 continue;

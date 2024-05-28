@@ -112,7 +112,7 @@ pub trait PanelState {
             .unwrap_or(internal_exec.bang);
         Ok(match internal_exec.internal {
             Internal::apply_flags => {
-                info!("applying flags input_invocation: {:#?}", input_invocation);
+                debug!("applying flags input_invocation: {:#?}", input_invocation);
                 let flags = input_invocation.and_then(|inv| inv.args.as_ref());
                 if let Some(flags) = flags {
                     self.with_new_options(
@@ -1005,7 +1005,6 @@ pub trait PanelState {
                     )
                 } else {
                     let sel_info = self.sel_info(app_state);
-                    info!("invocation: {:#?}", invocation);
                     match cc.app.con.verb_store.search_sel_info(
                         &invocation.name,
                         sel_info,
