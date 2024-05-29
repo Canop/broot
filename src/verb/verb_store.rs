@@ -147,6 +147,20 @@ impl VerbStore {
             StayInBroot,
         )
             .with_shortcut("cpp");
+        #[cfg(feature = "trash")]
+        self.add_internal(trash);
+        #[cfg(feature = "trash")]
+        self.add_internal(open_trash)
+            .with_shortcut("ot");
+        #[cfg(feature = "trash")]
+        self.add_internal(restore_trashed_file)
+            .with_shortcut("rt");
+        #[cfg(feature = "trash")]
+        self.add_internal(delete_trashed_file)
+            .with_shortcut("dt");
+        #[cfg(feature = "trash")]
+        self.add_internal(purge_trash)
+            .with_shortcut("pt");
         #[cfg(unix)]
         self.add_internal(filesystems)
             .with_shortcut("fs");
@@ -311,7 +325,6 @@ impl VerbStore {
         self.add_internal(toggle_perm).with_shortcut("perm");
         self.add_internal(toggle_sizes).with_shortcut("sizes");
         self.add_internal(toggle_trim_root);
-        self.add_internal(trash);
         self.add_internal(total_search).with_key(key!(ctrl-s));
         self.add_internal(up_tree).with_shortcut("up");
 

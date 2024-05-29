@@ -223,10 +223,13 @@ impl<'s> StandardStatusBuilder<'s> {
                 }
             }
             PanelStateType::Fs => {
-                warn!("TODO fs status");
+                // TODO fs status
             }
             PanelStateType::Stage => {
-                warn!("TODO stage status");
+                // TODO stage status
+            }
+            PanelStateType::Trash => {
+                // TODO stage status ? Maybe the shortcuts to restore or delete ?
             }
         }
         parts.to_status(self.width)

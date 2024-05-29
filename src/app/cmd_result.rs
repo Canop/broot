@@ -42,6 +42,7 @@ pub enum CmdResult {
     },
     HandleInApp(Internal), // command must be handled at the app level
     Keep,
+    Message(String),
     Launch(Box<Launchable>),
     NewPanel {
         state: Box<dyn PanelState>,
@@ -118,6 +119,7 @@ impl fmt::Debug for CmdResult {
                 CmdResult::DisplayError(_) => "DisplayError",
                 CmdResult::ExecuteSequence{ .. } => "ExecuteSequence",
                 CmdResult::Keep => "Keep",
+                CmdResult::Message { .. } => "Message",
                 CmdResult::Launch(_) => "Launch",
                 CmdResult::NewState { .. } => "NewState",
                 CmdResult::NewPanel { .. } => "NewPanel",
