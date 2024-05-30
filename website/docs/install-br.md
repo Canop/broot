@@ -14,7 +14,8 @@ When it's done, you can do `br` to launch broot, and typing <kbd>alt</kbd><kbd>e
 Supported shells today are bash, zsh, fish, nushell, and powershell.
 
 !!! Note
-	**Windows users:** broot may need additional rights at first use in order to write its configuration file. You may also have to allow script execution (`set-executionpolicy unrestricted`)
+	**Windows users:** broot may need additional rights at first use in order to write its configuration file. You may also have to allow script execution (`set-executionpolicy unrestricted`)   
+	**Nushell users:** use either `alias` or `def --env` when aliasing the `br` shell function. `def` alone won't enable the shell function to perform `cd`.
 
 # Retry the automatic installation
 
