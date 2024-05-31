@@ -1,7 +1,6 @@
 /// compute consolidated data for directories: modified date, size, and count.
 /// A cache is used to avoid recomputing the same directories again and again.
 /// On unix, hard links are checked to avoid counting twice an inode.
-
 mod sum_computation;
 
 use {
@@ -9,20 +8,22 @@ use {
         app::*,
         task_sync::Dam,
     },
-    ahash::AHashMap,
     once_cell::sync::Lazy,
+    rustc_hash::FxHashMap,
     std::{
         ops::AddAssign,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
         sync::Mutex,
     },
 };
 
 pub const DEFAULT_THREAD_COUNT: usize = 5;
 
-static SUM_CACHE: Lazy<Mutex<AHashMap<PathBuf, FileSum>>> = Lazy::new(|| {
-    Mutex::new(AHashMap::default())
-});
+static SUM_CACHE: Lazy<Mutex<FxHashMap<PathBuf, FileSum>>> =
+    Lazy::new(|| Mutex::new(FxHashMap::default()));
 
 pub fn clear_cache() {
     SUM_CACHE.lock().unwrap().clear();
@@ -44,7 +45,12 @@ impl FileSum {
         count: usize,
         modified: u32,
     ) -> Self {
-        Self { real_size, count, modified, sparse }
+        Self {
+            real_size,
+            count,
+            modified,
+            sparse,
+        }
     }
 
     pub fn zero() -> Self {
@@ -64,7 +70,11 @@ impl FileSum {
     /// Return the sum of the directory, either by computing it of by
     ///  fetching it from cache.
     /// If the lifetime expires before complete computation, None is returned.
-    pub fn from_dir(path: &Path, dam: &Dam, con: &AppContext) -> Option<Self> {
+    pub fn from_dir(
+        path: &Path,
+        dam: &Dam,
+        con: &AppContext,
+    ) -> Option<Self> {
         let mut sum_cache = SUM_CACHE.lock().unwrap();
         match sum_cache.get(path) {
             Some(sum) => Some(*sum),
@@ -82,7 +92,10 @@ impl FileSum {
         }
     }
 
-    pub fn part_of_size(self, total: Self) -> f32 {
+    pub fn part_of_size(
+        self,
+        total: Self,
+    ) -> f32 {
         if total.real_size == 0 {
             0.0
         } else {
@@ -119,7 +132,10 @@ impl FileSum {
 
 impl AddAssign for FileSum {
     #[allow(clippy::suspicious_op_assign_impl)]
-    fn add_assign(&mut self, other: Self) {
+    fn add_assign(
+        &mut self,
+        other: Self,
+    ) {
         *self = Self::new(
             self.real_size + other.real_size,
             self.sparse | other.sparse,
@@ -128,4 +144,3 @@ impl AddAssign for FileSum {
         );
     }
 }
-

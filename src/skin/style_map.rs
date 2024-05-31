@@ -17,7 +17,7 @@ use {
         },
         QueueableCommand,
     },
-    ahash::AHashMap,
+    rustc_hash::FxHashMap,
     std::{
         fmt,
         io::Write,
@@ -68,7 +68,7 @@ macro_rules! StyleMap {
             }
         }
         impl StyleMaps {
-            pub fn create(skin_conf: &AHashMap<String, SkinEntry>) -> Self {
+            pub fn create(skin_conf: &FxHashMap<String, SkinEntry>) -> Self {
                 let mut focused = StyleMap {
                     styled: true,
                     $($name: skin_conf

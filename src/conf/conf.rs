@@ -16,7 +16,7 @@ use {
         syntactic::SyntaxTheme,
         verb::ExecPattern,
     },
-    ahash::AHashMap,
+    rustc_hash::FxHashMap,
     crokey::crossterm::style::Attribute,
     fnv::FnvHashMap,
     serde::Deserialize,
@@ -66,7 +66,7 @@ pub struct Conf {
     pub enable_kitty_keyboard: Option<bool>,
 
     #[serde(default, alias="ext-colors")]
-    pub ext_colors: AHashMap<String, String>,
+    pub ext_colors: FxHashMap<String, String>,
 
     pub file_sum_threads_count: Option<usize>,
 
@@ -112,7 +112,7 @@ pub struct Conf {
     #[serde(alias="show-selection-mark")]
     pub show_selection_mark: Option<bool>,
 
-    pub skin: Option<AHashMap<String, SkinEntry>>,
+    pub skin: Option<FxHashMap<String, SkinEntry>>,
 
     #[serde(default, alias="special-paths")]
     pub special_paths: HashMap<GlobConf, SpecialHandlingConf>,

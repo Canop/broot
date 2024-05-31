@@ -160,7 +160,7 @@ impl VerbStore {
             .with_shortcut("dt");
         #[cfg(feature = "trash")]
         self.add_internal(purge_trash)
-            .with_shortcut("pt");
+            .with_shortcut("et");
         #[cfg(unix)]
         self.add_internal(filesystems)
             .with_shortcut("fs");

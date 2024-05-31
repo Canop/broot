@@ -2,14 +2,21 @@ use {
     super::TreeGitStatus,
     crate::{
         git,
-        task_sync::{Computation, ComputationResult, Dam},
+        task_sync::{
+            Computation,
+            ComputationResult,
+            Dam,
+        },
     },
     crossbeam::channel::bounded,
-    ahash::AHashMap,
     git2::Repository,
     once_cell::sync::Lazy,
+    rustc_hash::FxHashMap,
     std::{
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
         sync::Mutex,
     },
 };
@@ -30,10 +37,9 @@ fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {
     }
 }
 
-    // the key is the path of the repository
-static TS_CACHE_MX: Lazy<Mutex<AHashMap<PathBuf, Computation<TreeGitStatus>>>> = Lazy::new(|| {
-        Mutex::new(AHashMap::default())
-});
+// the key is the path of the repository
+static TS_CACHE_MX: Lazy<Mutex<FxHashMap<PathBuf, Computation<TreeGitStatus>>>> =
+    Lazy::new(|| Mutex::new(FxHashMap::default()));
 
 /// try to get the result of the computation of the tree git status.
 /// This may be immediate if a previous computation was finished.
@@ -43,7 +49,10 @@ static TS_CACHE_MX: Lazy<Mutex<AHashMap<PathBuf, Computation<TreeGitStatus>>>> =
 /// - this function returns as soon as the dam asks for it (ie when there's an event)
 /// - computations are never dropped unless the program ends: they continue in background
 ///    and the result may be available for following queries
-pub fn get_tree_status(root_path: &Path, dam: &mut Dam) -> ComputationResult<TreeGitStatus> {
+pub fn get_tree_status(
+    root_path: &Path,
+    dam: &mut Dam,
+) -> ComputationResult<TreeGitStatus> {
     match git::closest_repo_dir(root_path) {
         None => ComputationResult::None,
         Some(repo_path) => {

@@ -1,18 +1,22 @@
-use {super::*, crate::tree::TreeLineType, ahash::AHashMap};
+use {
+    super::*,
+    crate::tree::TreeLineType,
+    rustc_hash::FxHashMap,
+};
 
 pub struct FontPlugin {
-    icon_name_to_icon_codepoint_map: AHashMap<&'static str, u32>,
-    file_name_to_icon_name_map: AHashMap<&'static str, &'static str>,
-    double_extension_to_icon_name_map: AHashMap<&'static str, &'static str>,
-    extension_to_icon_name_map: AHashMap<&'static str, &'static str>,
+    icon_name_to_icon_codepoint_map: FxHashMap<&'static str, u32>,
+    file_name_to_icon_name_map: FxHashMap<&'static str, &'static str>,
+    double_extension_to_icon_name_map: FxHashMap<&'static str, &'static str>,
+    extension_to_icon_name_map: FxHashMap<&'static str, &'static str>,
     default_icon_point: u32,
 }
 
 impl FontPlugin {
     #[cfg(debug_assertions)]
     fn sanity_check(
-        part_to_icon_name_map: &AHashMap<&str, &str>,
-        icon_name_to_icon_codepoint_map: &AHashMap<&str, u32>,
+        part_to_icon_name_map: &FxHashMap<&str, &str>,
+        icon_name_to_icon_codepoint_map: &FxHashMap<&str, u32>,
     ) {
         let offending_entries = part_to_icon_name_map
             .iter()
@@ -40,13 +44,13 @@ impl FontPlugin {
         extension_to_icon_name_map: &'static [(&'static str, &'static str)],
         file_name_to_icon_name_map: &'static [(&'static str, &'static str)],
     ) -> Self {
-        let icon_name_to_icon_codepoint_map: AHashMap<_, _> =
+        let icon_name_to_icon_codepoint_map: FxHashMap<_, _> =
             icon_name_to_icon_codepoint_map.iter().cloned().collect();
-        let double_extension_to_icon_name_map: AHashMap<_, _> =
+        let double_extension_to_icon_name_map: FxHashMap<_, _> =
             double_extension_to_icon_name_map.iter().cloned().collect();
-        let extension_to_icon_name_map: AHashMap<_, _> =
+        let extension_to_icon_name_map: FxHashMap<_, _> =
             extension_to_icon_name_map.iter().cloned().collect();
-        let file_name_to_icon_name_map: AHashMap<_, _> =
+        let file_name_to_icon_name_map: FxHashMap<_, _> =
             file_name_to_icon_name_map.iter().cloned().collect();
 
         #[cfg(debug_assertions)]

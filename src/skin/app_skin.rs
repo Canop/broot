@@ -3,7 +3,7 @@ use {
     crate::{
         conf::Conf,
     },
-    ahash::AHashMap,
+    rustc_hash::FxHashMap,
 };
 
 
@@ -30,7 +30,7 @@ impl AppSkin {
             let skin = if let Some(skin) = &conf.skin {
                 skin
             } else {
-                def_skin = AHashMap::default();
+                def_skin = FxHashMap::default();
                 &def_skin
             };
             let StyleMaps { focused, unfocused } = StyleMaps::create(skin);

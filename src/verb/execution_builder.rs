@@ -5,7 +5,7 @@ use {
         command::*,
         path,
     },
-    ahash::AHashMap,
+    rustc_hash::FxHashMap,
     regex::Captures,
     std::path::{Path, PathBuf},
 };
@@ -24,7 +24,7 @@ pub struct ExecutionStringBuilder<'b> {
     other_file: Option<&'b PathBuf>,
 
     /// parsed arguments
-    invocation_values: Option<AHashMap<String, String>>,
+    invocation_values: Option<FxHashMap<String, String>>,
 
     /// whether to keep groups which can't be solved or remove them
     keep_groups: bool,
@@ -446,7 +446,7 @@ mod execution_builder_test {
             SelInfo::One(sel),
             &app_state,
         );
-        let mut map = AHashMap::default();
+        let mut map = FxHashMap::default();
         for (k, v) in replacements {
             map.insert(k.to_owned(), v.to_owned());
         }

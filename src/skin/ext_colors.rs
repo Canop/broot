@@ -2,7 +2,7 @@ use {
     crate::{
         errors::InvalidSkinError,
     },
-    ahash::AHashMap,
+    rustc_hash::FxHashMap,
     crokey::crossterm::style::Color,
     lazy_regex::*,
     std::convert::TryFrom,
@@ -14,7 +14,7 @@ use {
 /// color to use when drawing the tree
 #[derive(Debug, Clone, Default)]
 pub struct ExtColorMap {
-    map: AHashMap<String, Color>,
+    map: FxHashMap<String, Color>,
 }
 
 impl ExtColorMap {
@@ -32,9 +32,9 @@ impl ExtColorMap {
     }
 }
 
-impl TryFrom<&AHashMap<String, String>> for ExtColorMap {
+impl TryFrom<&FxHashMap<String, String>> for ExtColorMap {
     type Error = InvalidSkinError;
-    fn try_from(raw_map: &AHashMap<String, String>) -> Result<Self, Self::Error> {
+    fn try_from(raw_map: &FxHashMap<String, String>) -> Result<Self, Self::Error> {
         let mut map = ExtColorMap::default();
         for (k, v) in raw_map {
             map.set(k.to_string(), v)?;

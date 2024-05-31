@@ -1,7 +1,7 @@
 use {
     super::*,
     directories::UserDirs,
-    ahash::AHashMap,
+    rustc_hash::FxHashMap,
     lazy_regex::*,
     std::path::{Path, PathBuf},
 };
@@ -73,7 +73,7 @@ pub fn path_str_from<P: AsRef<Path> + std::fmt::Debug>(
 ///  data from the user input and from the selected line
 pub fn do_exec_replacement(
     ec: &Captures<'_>,
-    replacement_map: &AHashMap<String, String>,
+    replacement_map: &FxHashMap<String, String>,
 ) -> String {
     let name = ec.get(1).unwrap().as_str();
     if let Some(repl) = replacement_map.get(name) {

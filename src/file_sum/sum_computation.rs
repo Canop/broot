@@ -5,15 +5,24 @@ use {
         path::*,
         task_sync::Dam,
     },
-    ahash::AHashMap,
     crossbeam::channel,
-    rayon::{ThreadPool, ThreadPoolBuilder},
+    rayon::{
+        ThreadPool,
+        ThreadPoolBuilder,
+    },
+    rustc_hash::FxHashMap,
     std::{
         convert::TryInto,
         fs,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
         sync::{
-            atomic::{AtomicIsize, Ordering},
+            atomic::{
+                AtomicIsize,
+                Ordering,
+            },
             Arc,
             Mutex,
         },
@@ -23,9 +32,7 @@ use {
 #[cfg(unix)]
 use {
     fnv::FnvHashSet,
-    std::{
-        os::unix::fs::MetadataExt,
-    },
+    std::os::unix::fs::MetadataExt,
 };
 
 struct DirSummer {
@@ -62,7 +69,7 @@ impl DirSummer {
     pub fn compute_dir_sum(
         &mut self,
         path: &Path,
-        cache: &mut AHashMap<PathBuf, FileSum>,
+        cache: &mut FxHashMap<PathBuf, FileSum>,
         dam: &Dam,
         con: &AppContext,
     ) -> Option<FileSum> {
@@ -77,7 +84,7 @@ impl DirSummer {
             debug!("not summing in /proc");
             return Some(FileSum::zero());
         }
-        if path.starts_with("/run") && ! path.starts_with("/run/media") {
+        if path.starts_with("/run") && !path.starts_with("/run/media") {
             debug!("not summing in /run");
             return Some(FileSum::zero());
         }
@@ -123,7 +130,6 @@ impl DirSummer {
                         busy += 1;
                         dirs_sender.send(Some(entry_path)).unwrap();
                     } else {
-
                         #[cfg(unix)]
                         if md.nlink() > 1 {
                             let mut nodes = nodes.lock().unwrap();
@@ -136,7 +142,6 @@ impl DirSummer {
                                 continue;
                             }
                         }
-
                     }
                     sum += md_sum(&md);
                 }
@@ -175,7 +180,6 @@ impl DirSummer {
                             for e in entries.flatten() {
                                 if let Ok(md) = e.metadata() {
                                     if md.is_dir() {
-
                                         let path = e.path();
 
                                         if special_paths.sum(&path) == Directive::Never {
@@ -188,7 +192,6 @@ impl DirSummer {
                                         busy.fetch_add(1, Ordering::Relaxed);
                                         dirs_sender.send(Some(path)).unwrap();
                                     } else {
-
                                         #[cfg(unix)]
                                         if md.nlink() > 1 {
                                             let mut nodes = nodes.lock().unwrap();
@@ -201,7 +204,6 @@ impl DirSummer {
                                                 continue;
                                             }
                                         }
-
                                     }
                                     thread_sum += md_sum(&md);
                                 } else {
@@ -242,24 +244,22 @@ impl DirSummer {
     }
 }
 
-
 /// compute the consolidated numbers for a directory, with implementation
 /// varying depending on the OS:
 /// On unix, the computation is done on blocks of 512 bytes
 /// see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
 pub fn compute_dir_sum(
     path: &Path,
-    cache: &mut AHashMap<PathBuf, FileSum>,
+    cache: &mut FxHashMap<PathBuf, FileSum>,
     dam: &Dam,
     con: &AppContext,
 ) -> Option<FileSum> {
     use once_cell::sync::OnceCell;
     static DIR_SUMMER: OnceCell<Mutex<DirSummer>> = OnceCell::new();
     DIR_SUMMER
-        .get_or_init(|| {
-            Mutex::new(DirSummer::new(con.file_sum_threads_count))
-        })
-        .lock().unwrap()
+        .get_or_init(|| Mutex::new(DirSummer::new(con.file_sum_threads_count)))
+        .lock()
+        .unwrap()
         .compute_dir_sum(path, cache, dam, con)
 }
 
@@ -306,7 +306,6 @@ fn extract_seconds(md: &fs::Metadata) -> u32 {
     }
     0
 }
-
 
 #[inline(always)]
 fn md_sum(md: &fs::Metadata) -> FileSum {
