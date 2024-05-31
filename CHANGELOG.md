@@ -1,6 +1,8 @@
-### next
-- fix build on Android - thanks @dead10ck
+### v1.39.0 - 2024-05-31
+<a name="v1.39.0"></a>
 - `:open_trash` shows the content of the trash. Other new internals & verbs: `:delete_trashed_file`, `:restore_trashed_file`, `:purge_trash` - Fix #855
+- it's now possible to remove a default keybinding by defining a verb with no execution - Fix #632
+- fix build on Android - thanks @dead10ck
 
 ### v1.38.0 - 2024-05-04
 <a name="v1.38.0"></a>

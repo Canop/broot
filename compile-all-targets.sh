@@ -57,7 +57,7 @@ cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard,trash"
 # Build the default linux version (with clipboard support, needing a recent GLIBC)
 # recent glibc
 echo -e "${H2}Compiling the standard linux version${EH}"
-cargo build --quiet --release --features "clipboard"
+cargo build --quiet --release --features "clipboard trash"
 strip "target/release/$NAME"
 mkdir build/x86_64-linux/
 cp "target/release/$NAME" build/x86_64-linux/

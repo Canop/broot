@@ -14,5 +14,11 @@ pub fn list() -> Vec<(&'static str, &'static str)> {
         ":copy_path (copying the current path), and :input_paste (pasting into the input)",
     ));
 
+    #[cfg(feature = "trash")]
+    features.push((
+        "trash",
+        ":trash, :open_trash, :restore_trashed_file, :purge_trash, :delete_trashed_file",
+    ));
+
     features
 }
