@@ -31,12 +31,18 @@ pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
     };
     #[allow(clippy::useless_conversion)]
     let r = unsafe { ioctl(STDOUT_FILENO, TIOCGWINSZ.into(), &w) };
+
+    // Note: the following debug! line is useful: it prevents the optimizer
+    // from breaking the ioctl call when compiling in release mode
+    debug!("ioctl answer: r={} dims={}x{}", r, w.ws_col, w.ws_row);
+
     if r == 0 && w.ws_xpixel > w.ws_col && w.ws_ypixel > w.ws_row {
         Ok((
             (w.ws_xpixel / w.ws_col) as u32,
             (w.ws_ypixel / w.ws_row) as u32,
         ))
     } else {
+        warn!("failed to fetch cell dimension with ioctl");
         Err(io::Error::new(
             io::ErrorKind::Other,
             "failed to fetch terminal dimension with ioctl",
