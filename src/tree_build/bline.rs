@@ -1,7 +1,6 @@
 use {
     super::bid::BId,
     crate::{
-        app::AppContext,
         errors::TreeBuildError,
         git::GitIgnoreChain,
         path::{normalize_path, Directive, SpecialHandling},
@@ -22,8 +21,6 @@ pub struct BLine {
     pub parent_id: Option<BId>,
     pub path: PathBuf,
     pub depth: u16,
-    pub subpath: String,
-    pub name: String,
     pub file_type: fs::FileType,
     pub children: Option<Vec<BId>>, // sorted and filtered
     pub next_child_idx: usize,      // index for iteration, among the children
@@ -37,6 +34,15 @@ pub struct BLine {
 }
 
 impl BLine {
+    pub fn name(
+        &self
+    ) -> &str {
+        self
+            .path
+            .file_name()
+            .and_then(|os_str| os_str.to_str())
+            .unwrap_or("")
+    }
     /// a special constructor, checking nothing
     pub fn from_root(
         blines: &mut Arena<BLine>,
@@ -44,18 +50,12 @@ impl BLine {
         git_ignore_chain: GitIgnoreChain,
         _options: &TreeOptions,
     ) -> Result<BId, TreeBuildError> {
-        let name = match path.file_name() {
-            Some(name) => name.to_string_lossy().to_string(),
-            None => String::from("???"), // should not happen
-        };
         if let Ok(md) = fs::metadata(&path) {
             let file_type = md.file_type();
             Ok(blines.alloc(BLine {
                 parent_id: None,
                 path,
                 depth: 0,
-                name,
-                subpath: String::new(),
                 children: None,
                 next_child_idx: 0,
                 file_type,
@@ -117,50 +117,5 @@ impl BLine {
             }
         }
         false
-    }
-    pub fn to_tree_line(&self, bid: BId, con: &AppContext) -> std::io::Result<TreeLine> {
-        let has_error = self.has_error;
-        let line_type = TreeLineType::new(&self.path, &self.file_type);
-        let unlisted = if let Some(children) = &self.children {
-            // number of not listed children
-            children.len() - self.next_child_idx
-        } else {
-            0
-        };
-        let metadata = fs::symlink_metadata(&self.path)?;
-        let subpath = self.subpath.replace('\n', "");
-        let name = self.name.replace('\n', "");
-        let icon = con.icons.as_ref()
-            .map(|icon_plugin| {
-                let extension = TreeLine::extension_from_name(&name);
-                let double_extension = extension
-                    .and_then(|_| TreeLine::double_extension_from_name(&name));
-                icon_plugin.get_icon(
-                    &line_type,
-                    &name,
-                    double_extension,
-                    extension,
-                )
-            });
-
-        Ok(TreeLine {
-            bid,
-            parent_bid: self.parent_id,
-            left_branches: vec![false; self.depth as usize].into_boxed_slice(),
-            depth: self.depth,
-            icon,
-            name,
-            subpath,
-            path: self.path.clone(),
-            line_type,
-            has_error,
-            nb_kept_children: self.nb_kept_children as usize,
-            unlisted,
-            score: self.score,
-            direct_match: self.direct_match,
-            sum: None,
-            metadata,
-            git_status: None,
-        })
     }
 }

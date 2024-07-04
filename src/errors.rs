@@ -70,6 +70,7 @@ custom_error! {pub TreeBuildError
     NotADirectory { path: String } = "Not a directory: {path}",
     FileNotFound { path: String } = "File not found: {path}",
     Interrupted = "Task Interrupted",
+    InvalidUtf8 { path: String } = "Invalid UTF-8 in {path}",
     TooManyMatches { max: usize } = "Too many matches (max allowed: {max})",
 }
 

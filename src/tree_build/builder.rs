@@ -19,7 +19,9 @@ use {
     std::{
         collections::{BinaryHeap, VecDeque},
         fs,
-        path::PathBuf,
+        path::{
+            PathBuf,
+        },
         result::Result,
         time::{Duration, Instant},
     },
@@ -58,6 +60,7 @@ pub struct TreeBuilder<'c> {
     targeted_size: usize, // the number of lines we should fill (height of the screen)
     blines: Arena<BLine>,
     root_id: BId,
+    subpath_offset: usize,
     total_search: bool,
     git_ignorer: GitIgnorer,
     line_status_computer: Option<LineStatusComputer>,
@@ -76,6 +79,11 @@ impl<'c> TreeBuilder<'c> {
         con: &'c AppContext,
     ) -> Result<TreeBuilder<'c>, TreeBuildError> {
         let mut blines = Arena::new();
+        let subpath_offset = path
+            .as_os_str()
+            .as_bytes()
+            .len()
+            + 1; // +1 for the separator
         let mut git_ignorer = time!(GitIgnorer::default());
         let root_ignore_chain = git_ignorer.root_chain(&path);
         let line_status_computer = if options.filter_by_git_status || options.show_git_file_info {
@@ -104,6 +112,7 @@ impl<'c> TreeBuilder<'c> {
             targeted_size,
             blines,
             root_id,
+            subpath_offset,
             total_search: true, // we'll set it to false if we don't look at all children
             git_ignorer,
             line_status_computer,
@@ -116,7 +125,7 @@ impl<'c> TreeBuilder<'c> {
     }
 
     /// Return a bline if the dir_entry directly matches the options and there's no error
-    fn make_line(
+    fn make_bline(
         &mut self,
         parent_id: BId,
         e: &fs::DirEntry,
@@ -124,6 +133,8 @@ impl<'c> TreeBuilder<'c> {
     ) -> Option<BLine> {
         let name = e.file_name();
         if name.is_empty() {
+            // this should not really happen as the only path with an empty name is the root
+            // and we don't call this function for the tree root
             self.report.error_count += 1;
             return None;
         }
@@ -139,7 +150,11 @@ impl<'c> TreeBuilder<'c> {
             self.report.hidden_count += 1;
             return None;
         }
-        let name = name.to_string_lossy();
+        let Some(name) = name.to_str() else {
+            warn!("invalid utf8 file name: {:?}", name);
+            self.report.error_count += 1;
+            return None;
+        };
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
         let file_type = match e.file_type() {
@@ -149,15 +164,16 @@ impl<'c> TreeBuilder<'c> {
                 return None;
             }
         };
-        let parent_subpath = &self.blines[parent_id].subpath;
-        let subpath = if !parent_subpath.is_empty() {
-            format!("{}/{}", parent_subpath, &name)
-        } else {
-            name.to_string()
+
+        let subpath_bytes = &path
+            .as_os_str()
+            .as_bytes()[self.subpath_offset..];
+        let subpath = unsafe {
+            std::str::from_utf8_unchecked(subpath_bytes)
         };
         let candidate = Candidate {
-            name: &name,
-            subpath: &subpath,
+            name,
+            subpath,
             path: &path,
             regular_file: file_type.is_file(),
         };
@@ -169,7 +185,6 @@ impl<'c> TreeBuilder<'c> {
             has_match = false;
             false
         };
-        let name = name.to_string();
         if has_match && self.options.filter_by_git_status {
             if let Some(line_status_computer) = &self.line_status_computer {
                 if !line_status_computer.is_interesting(&path) {
@@ -197,7 +212,7 @@ impl<'c> TreeBuilder<'c> {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
             if !self
                 .git_ignorer
-                .accepts(parent_chain, &path, &name, file_type.is_dir())
+                .accepts(parent_chain, &path, name, file_type.is_dir())
             {
                 if special_handling.show != Directive::Always {
                     return None;
@@ -208,8 +223,6 @@ impl<'c> TreeBuilder<'c> {
             parent_id: Some(parent_id),
             path,
             depth,
-            subpath,
-            name,
             file_type,
             children: None,
             next_child_idx: 0,
@@ -223,6 +236,8 @@ impl<'c> TreeBuilder<'c> {
         })
     }
 
+    /// Fill the bline's children vec of blines.
+    ///
     /// Return true when there are direct matches among children
     fn load_children(&mut self, bid: BId) -> bool {
         let mut has_child_match = false;
@@ -232,7 +247,7 @@ impl<'c> TreeBuilder<'c> {
                 let child_depth = self.blines[bid].depth + 1;
                 let mut lines = Vec::new();
                 for e in entries.flatten() {
-                    if let Some(line) = self.make_line(bid, &e, child_depth) {
+                    if let Some(line) = self.make_bline(bid, &e, child_depth) {
                         lines.push(line);
                     }
                 }
@@ -254,9 +269,9 @@ impl<'c> TreeBuilder<'c> {
                 }
                 children.sort_by(|&a, &b| {
                     self.blines[a]
-                        .name
+                        .name()
                         .to_lowercase()
-                        .cmp(&self.blines[b].name.to_lowercase())
+                        .cmp(&self.blines[b].name().to_lowercase())
                 });
                 self.blines[bid].children = Some(children);
             }
@@ -428,6 +443,70 @@ impl<'c> TreeBuilder<'c> {
         }
     }
 
+    fn make_tree_line(
+        &self,
+        bid: BId,
+    ) -> Result<TreeLine, TreeBuildError> {
+        let bline = &self.blines[bid];
+        let line_type = TreeLineType::new(&bline.path, &bline.file_type);
+        let unlisted = bline.children.as_ref()
+            .map_or(0, |children| children.len() - bline.next_child_idx);
+        let metadata = fs::symlink_metadata(&bline.path)
+            .map_err(|_| TreeBuildError::FileNotFound {
+                path: bline.path.to_string_lossy().to_string(),
+            })?;
+        let subpath_bytes = bline.path.as_os_str().as_bytes();
+        let subpath = if self.subpath_offset > subpath_bytes.len() {
+            // This should be the root line
+            bline.path.to_string_lossy().to_string()
+        } else {
+            String::from_utf8(subpath_bytes[self.subpath_offset..].to_vec())
+                .map_err(|_| TreeBuildError::InvalidUtf8 {
+                    path: bline.path.to_string_lossy().to_string(),
+                })?
+        };
+        let name = bline
+            .path
+            .file_name()
+            .and_then(|os_str| os_str.to_str())
+            .unwrap_or("")
+            .replace('\n', "");
+        let icon = self.con.icons.as_ref()
+            .map(|icon_plugin| {
+                let extension = TreeLine::extension_from_name(&name);
+                let double_extension = extension
+                    .and_then(|_| TreeLine::double_extension_from_name(&name));
+                icon_plugin.get_icon(
+                    &line_type,
+                    &name,
+                    double_extension,
+                    extension,
+                )
+            });
+
+        Ok(TreeLine {
+            bid,
+            parent_bid: bline.parent_id,
+            left_branches: vec![false; bline.depth as usize].into_boxed_slice(),
+            depth: bline.depth,
+            icon,
+            name,
+            subpath,
+            path: bline.path.clone(),
+            line_type,
+            has_error: bline.has_error,
+            nb_kept_children: bline.nb_kept_children as usize,
+            unlisted,
+            score: bline.score,
+            direct_match: bline.direct_match,
+            sum: None,
+            metadata,
+            git_status: None,
+        })
+
+
+    }
+
     /// make a tree from the builder's specific structure
     fn take_as_tree(mut self, out_blines: &[BId]) -> Tree {
         let mut lines: Vec<TreeLine> = Vec::new();
@@ -437,7 +516,7 @@ impl<'c> TreeBuilder<'c> {
                 if self.blines[*id].can_enter() && self.blines[*id].children.is_none() {
                     self.load_children(*id);
                 }
-                if let Ok(tree_line) = self.blines[*id].to_tree_line(*id, self.con) {
+                if let Ok(tree_line) = self.make_tree_line(*id) {
                     lines.push(tree_line);
                 } else {
                     // I guess the file went missing during tree computation
