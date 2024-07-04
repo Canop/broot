@@ -221,7 +221,6 @@ dependencies = [
  "deser-hjson",
  "directories 4.0.1",
  "file-size",
- "fnv",
  "git2",
  "glassbench",
  "glob",

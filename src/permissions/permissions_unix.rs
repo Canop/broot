@@ -1,5 +1,5 @@
 use {
-    fnv::FnvHashMap,
+    rustc_hash::FxHashMap,
     once_cell::sync::Lazy,
     std::sync::Mutex,
 };
@@ -9,8 +9,8 @@ pub fn supported() -> bool {
 }
 
 pub fn user_name(uid: u32) -> String {
-    static USERS_CACHE_MUTEX: Lazy<Mutex<FnvHashMap<u32, String>>> = Lazy::new(|| {
-            Mutex::new(FnvHashMap::default())
+    static USERS_CACHE_MUTEX: Lazy<Mutex<FxHashMap<u32, String>>> = Lazy::new(|| {
+            Mutex::new(FxHashMap::default())
     });
     let mut users_cache = USERS_CACHE_MUTEX.lock().unwrap();
     let name = users_cache
@@ -25,8 +25,8 @@ pub fn user_name(uid: u32) -> String {
 }
 
 pub fn group_name(gid: u32) -> String {
-    static GROUPS_CACHE_MUTEX: Lazy<Mutex<FnvHashMap<u32, String>>> = Lazy::new(|| {
-        Mutex::new(FnvHashMap::default())
+    static GROUPS_CACHE_MUTEX: Lazy<Mutex<FxHashMap<u32, String>>> = Lazy::new(|| {
+        Mutex::new(FxHashMap::default())
     });
     let mut groups_cache = GROUPS_CACHE_MUTEX.lock().unwrap();
     let name = groups_cache

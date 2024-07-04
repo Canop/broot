@@ -37,7 +37,6 @@ custom_error = "1.6"
 deser-hjson = "2.2.3"
 directories = "4.0"
 file-size = "1.0.3"
-fnv = "1.0.7"
 git2 = { version = "0.14", default-features = false }
 glob = "0.3"
 id-arena = "2.2.1"

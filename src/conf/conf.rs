@@ -18,7 +18,6 @@ use {
     },
     rustc_hash::FxHashMap,
     crokey::crossterm::style::Attribute,
-    fnv::FnvHashMap,
     serde::Deserialize,
     std::collections::HashMap,
     std::path::PathBuf,
@@ -104,7 +103,7 @@ pub struct Conf {
     pub quit_on_last_cancel: Option<bool>,
 
     #[serde(alias="search-modes")]
-    pub search_modes: Option<FnvHashMap<String, String>>,
+    pub search_modes: Option<FxHashMap<String, String>>,
 
     #[serde(alias="show-matching-characters-on-path-searches")]
     pub show_matching_characters_on_path_searches: Option<bool>,

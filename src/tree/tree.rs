@@ -9,7 +9,7 @@ use {
         task_sync::Dam,
         tree_build::{BId, BuildReport, TreeBuilder},
     },
-    fnv::FnvHashMap,
+    rustc_hash::FxHashMap,
     std::{
         cmp::Ord,
         mem,
@@ -73,15 +73,15 @@ impl Tree {
         //  - we want a case insensitive sort
         //  - we still don't want to confuse the children of AA and Aa
         //  - a node can come from a not parent node, when we followed a link
-        let mut bid_parents: FnvHashMap<BId, BId> = FnvHashMap::default();
-        let mut bid_lines: FnvHashMap<BId, &TreeLine> = FnvHashMap::default();
+        let mut bid_parents: FxHashMap<BId, BId> = FxHashMap::default();
+        let mut bid_lines: FxHashMap<BId, &TreeLine> = FxHashMap::default();
         for line in self.lines[..].iter() {
             if let Some(parent_bid) = line.parent_bid {
                 bid_parents.insert(line.bid, parent_bid);
             }
             bid_lines.insert(line.bid, line);
         }
-        let mut sort_paths: FnvHashMap<BId, String> = FnvHashMap::default();
+        let mut sort_paths: FxHashMap<BId, String> = FxHashMap::default();
         for line in self.lines[1..].iter() {
             let mut sort_path = String::new();
             let mut bid = line.bid;

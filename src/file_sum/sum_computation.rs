@@ -10,7 +10,10 @@ use {
         ThreadPool,
         ThreadPoolBuilder,
     },
-    rustc_hash::FxHashMap,
+    rustc_hash::{
+        FxHashMap,
+        FxHashSet,
+    },
     std::{
         convert::TryInto,
         fs,
@@ -31,7 +34,6 @@ use {
 
 #[cfg(unix)]
 use {
-    fnv::FnvHashSet,
     std::os::unix::fs::MetadataExt,
 };
 
@@ -91,7 +93,7 @@ impl DirSummer {
 
         // to avoid counting twice a node, we store their id in a set
         #[cfg(unix)]
-        let nodes = Arc::new(Mutex::new(FnvHashSet::<NodeId>::default()));
+        let nodes = Arc::new(Mutex::new(FxHashSet::<NodeId>::default()));
 
         // busy is the number of directories which are either being processed or queued
         // We use this count to determine when threads can stop waiting for tasks

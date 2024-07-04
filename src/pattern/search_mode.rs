@@ -4,7 +4,7 @@ use {
         app::AppContext,
         errors::{ConfError, PatternError},
     },
-    fnv::FnvHashMap,
+    rustc_hash::FxHashMap,
     lazy_regex::regex_is_match,
     std::convert::TryFrom,
 };
@@ -214,9 +214,9 @@ impl Default for SearchModeMap {
     }
 }
 
-impl TryFrom<&FnvHashMap<String, String>> for SearchModeMap {
+impl TryFrom<&FxHashMap<String, String>> for SearchModeMap {
     type Error = ConfError;
-    fn try_from(map: &FnvHashMap<String, String>) -> Result<Self, Self::Error> {
+    fn try_from(map: &FxHashMap<String, String>) -> Result<Self, Self::Error> {
         let mut smm = Self::default();
         for (k, v) in map {
             smm.entries.push(SearchModeMapEntry::parse(k, v)?);
