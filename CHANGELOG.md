@@ -1,3 +1,9 @@
+### v1.39.1 - 2024-07-05
+<a name="v1.39.1"></a>
+- fix high-resolution (kitty protocole) image broken in release mode - Fix #885
+- canonicalize paths when focusing them (mostly useful when following links)
+- a few minor internal optimizations
+
 ### v1.39.0 - 2024-05-31
 <a name="v1.39.0"></a>
 - `:open_trash` shows the content of the trash. Other new internals & verbs: `:delete_trashed_file`, `:restore_trashed_file`, `:purge_trash` - Fix #855
