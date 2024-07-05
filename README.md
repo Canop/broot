@@ -37,7 +37,7 @@ That's what makes it usable where the old `tree` command would produce pages of 
 
 As you sometimes want to see gitignored files, or hidden ones, you'll soon get used to the <kbd>alt</kbd><kbd>i</kbd> and <kbd>alt</kbd><kbd>h</kbd> shortcuts to toggle those visibilities.
 
-(you can ignore them though, see [documentation](../navigation/#toggles)).
+(you can ignore them though, see [documentation](https://dystroy.org/broot/navigation/#toggles)).
 
 ## Find a directory then `cd` to it
 
@@ -135,7 +135,7 @@ Broot displays images in high resolution when the terminal supports Kitty's grap
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then <kbd>enter</kbd>.
 
-You can add verbs or configure the existing ones; see [documentation](conf_file/#verbs-shortcuts-and-keys).
+You can add verbs or configure the existing ones; see [documentation](https://dystroy.org/broot/conf_file/#verbs-shortcuts-and-keys).
 
 And you can add shortcuts, for example a <kbd>ctrl</kbd> sequence or a function key
 
