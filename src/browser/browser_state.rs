@@ -53,6 +53,7 @@ impl BrowserState {
         con: &AppContext,
         dam: &Dam,
     ) -> Result<BrowserState, TreeBuildError> {
+        let path = path.canonicalize().unwrap_or(path);
         let pending_task = options.pattern
             .take()
             .as_option()
