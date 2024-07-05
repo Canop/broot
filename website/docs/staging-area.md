@@ -41,6 +41,10 @@ You can filter, select, scroll, as in other panels. This may be convenient eithe
 
 ![staging filter](img/20210425-staging-filter.png)
 
+# Tips
+
+All files from left panel can be added at once to the staging panel with `ctrl-a`.
+
 # Evolutions
 
 The staging area is a new feature of broot. Some features (staging with globs for example) may be added, some may be changed, depending on your feedback.
