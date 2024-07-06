@@ -11,6 +11,7 @@ use {
         kitty::TransmissionMedium,
         pattern::SearchModeMap,
         path::SpecialPaths,
+        preview::PreviewTransformers,
         skin::ExtColorMap,
         syntactic::SyntaxTheme,
         tree::TreeOptions,
@@ -127,6 +128,9 @@ pub struct AppContext {
 
     /// Number of lines to display before a match in the preview
     pub lines_before_match_in_preview: usize,
+
+    /// The set of transformers called before previewing a file
+    pub preview_transformers: PreviewTransformers,
 }
 
 impl AppContext {
@@ -197,6 +201,8 @@ impl AppContext {
 
         let terminal_title_pattern = config.terminal_title.clone();
 
+        let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
+
         Ok(Self {
             is_tty,
             initial_root,
@@ -229,6 +235,7 @@ impl AppContext {
                 .unwrap_or_default(),
             lines_after_match_in_preview: config.lines_after_match_in_preview.unwrap_or(0),
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),
+            preview_transformers,
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (prefered)

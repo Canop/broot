@@ -26,7 +26,8 @@ use {
 pub struct PreviewState {
     pub preview_area: Area,
     dirty: bool,   // true when background must be cleared
-    path: PathBuf, // path to the previewed file
+    source_path: PathBuf, // path to the file whose preview is requested
+    transform: Option<PreviewTransform>,
     preview: Preview,
     pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     filtered_preview: Option<Preview>,
@@ -38,18 +39,21 @@ pub struct PreviewState {
 
 impl PreviewState {
     pub fn new(
-        path: PathBuf,
+        source_path: PathBuf,
         pending_pattern: InputPattern,
         preferred_mode: Option<PreviewMode>,
         tree_options: TreeOptions,
         con: &AppContext,
     ) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
-        let preview = Preview::new(&path, preferred_mode, con);
+        let transform = con.preview_transformers.transform(&source_path, preferred_mode);
+        let preview_path = transform.as_ref().map(|c| &c.output_path).unwrap_or(&source_path);
+        let preview = Preview::new(preview_path, preferred_mode, con);
         PreviewState {
             preview_area,
             dirty: true,
-            path,
+            source_path,
+            transform,
             preview,
             pending_pattern,
             filtered_preview: None,
@@ -58,6 +62,9 @@ impl PreviewState {
             tree_options,
             mode: con.initial_mode(),
         }
+    }
+    pub fn preview_path(&self) -> &Path {
+        self.transform.as_ref().map(|c| &c.output_path).unwrap_or(&self.source_path)
     }
     fn vis_preview(&self) -> &Preview {
         self.filtered_preview.as_ref().unwrap_or(&self.preview)
@@ -73,7 +80,7 @@ impl PreviewState {
         if self.preview.get_mode() == Some(mode) {
             return Ok(CmdResult::Keep);
         }
-        Ok(match Preview::with_mode(&self.path, mode, con) {
+        Ok(match Preview::with_mode(self.preview_path(), mode, con) {
             Ok(preview) => {
                 self.preview = preview;
                 self.preferred_mode = Some(mode);
@@ -88,11 +95,20 @@ impl PreviewState {
     }
 
     fn no_opt_selection(&self) -> Selection<'_> {
-        Selection {
-            path: &self.path,
-            stype: SelectionType::File,
-            is_exe: false, // not always true. It means :open_leave won't execute it
-            line: self.vis_preview().get_selected_line_number().unwrap_or(0),
+        match self.transform.as_ref() {
+            // When there's a transform, we can't assume the line number makes sense
+            Some(transform) => Selection {
+                path: &transform.output_path,
+                stype: SelectionType::File,
+                is_exe: false,
+                line: 0,
+            },
+            None => Selection {
+                path: &self.source_path,
+                stype: SelectionType::File,
+                is_exe: false,
+                line: self.vis_preview().get_selected_line_number().unwrap_or(0),
+            },
         }
     }
 
@@ -159,7 +175,7 @@ impl PanelState for PreviewState {
             self.filtered_preview = time!(
                 Info,
                 "preview filtering",
-                self.preview.filtered(&self.path, pattern, dam, con),
+                self.preview.filtered(self.preview_path(), pattern, dam, con),
             ); // can be None if a cancellation was required
             if let Some(ref mut filtered_preview) = self.filtered_preview {
                 if let Some(number) = old_selection {
@@ -171,11 +187,11 @@ impl PanelState for PreviewState {
     }
 
     fn selected_path(&self) -> Option<&Path> {
-        Some(&self.path)
+        Some(&self.source_path)
     }
 
     fn set_selected_path(&mut self, path: PathBuf, con: &AppContext) {
-        let selected_line_number = if self.path == path {
+        let selected_line_number = if self.preview_path() == path {
             self.preview.get_selected_line_number()
         } else {
             None
@@ -183,11 +199,13 @@ impl PanelState for PreviewState {
         if let Some(fp) = &self.filtered_preview {
             self.pending_pattern = fp.pattern();
         };
-        self.preview = Preview::new(&path, self.preferred_mode, con);
+        self.transform = con.preview_transformers.transform(&path, self.preferred_mode);
+        let preview_path = self.transform.as_ref().map(|c| &c.output_path).unwrap_or(&path);
+        self.preview = Preview::new(preview_path, self.preferred_mode, con);
         if let Some(number) = selected_line_number {
             self.preview.try_select_line_number(number);
         }
-        self.path = path;
+        self.source_path = path;
     }
 
     fn selection(&self) -> Option<Selection<'_>> {
@@ -211,7 +229,7 @@ impl PanelState for PreviewState {
 
     fn refresh(&mut self, _screen: Screen, con: &AppContext) -> Command {
         self.dirty = true;
-        self.set_selected_path(self.path.clone(), con);
+        self.set_selected_path(self.source_path.clone(), con);
         Command::empty()
     }
 
@@ -255,7 +273,7 @@ impl PanelState for PreviewState {
         w.queue(cursor::MoveTo(state_area.left, 0))?;
         let mut cw = CropWriter::new(w, state_area.width as usize);
         let file_name = self
-            .path
+            .source_path
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());

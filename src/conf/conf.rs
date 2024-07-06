@@ -12,6 +12,7 @@ use {
             path_from,
             PathAnchor,
         },
+        preview::PreviewTransformer,
         skin::SkinEntry,
         syntactic::SyntaxTheme,
         verb::ExecPattern,
@@ -35,6 +36,14 @@ macro_rules! overwrite_map {
     ($dst: ident, $prop: ident, $src: ident) => {
         for (k, v) in $src.$prop {
             $dst.$prop.insert(k, v);
+        }
+    };
+}
+
+macro_rules! overwrite_vec {
+    ($dst: ident, $prop: ident, $src: ident) => {
+        for v in $src.$prop {
+            $dst.$prop.push(v);
         }
     };
 }
@@ -85,6 +94,9 @@ pub struct Conf {
 
     #[serde(alias="kitty-graphics-transmission")]
     pub kitty_graphics_transmission: Option<TransmissionMedium>,
+
+    #[serde(default, alias="preview-transformers")]
+    pub preview_transformers: Vec<PreviewTransformer>,
 
     #[serde(alias="lines-after-match-in-preview")]
     pub lines_after_match_in_preview: Option<usize>,
@@ -221,10 +233,11 @@ impl Conf {
         overwrite!(self, lines_after_match_in_preview, conf);
         overwrite!(self, lines_before_match_in_preview, conf);
         self.verbs.append(&mut conf.verbs);
-        // the following maps are "additive": we can add entries from several
+        // the following prefs are "additive": we can add entries from several
         // config files and they still make sense
         overwrite_map!(self, special_paths, conf);
         overwrite_map!(self, ext_colors, conf);
+        overwrite_vec!(self, preview_transformers, conf);
         self.files.push(path);
         // read the imports
         for import in &conf.imports {
