@@ -118,7 +118,7 @@ impl PreviewTransformer {
         &self,
         input_path: &Path,
         temp_dir: &Path,
-    ) -> Result<PathBuf, ProgramError> {
+    ) -> Result<PathBuf, PreviewTransformerError> {
         let hash = {
             let mut hasher = DefaultHasher::new();
             input_path.hash(&mut hasher);
@@ -149,14 +149,21 @@ impl PreviewTransformer {
         } else {
             process.stdout(std::fs::File::create(&output_path)?);
         }
-        let res = process
+        let exit_status = process
             .spawn()
-            .and_then(|mut p| p.wait())
-            .map_err(|source| ProgramError::LaunchError {
-                program: self.command[0].clone(),
-                source,
-            });
-        info!("conversion result: {:?}", res);
-        Ok(output_path)
+            .and_then(|mut p| p.wait())?;
+        if exit_status.success() {
+            Ok(output_path)
+        } else {
+            // we remove the output file if the process failed, so that
+            // it's not returned on the next call
+            let _ = std::fs::remove_file(&output_path);
+            match exit_status.code() {
+                Some(code) => Err(PreviewTransformerError::ProcessFailed {
+                    code,
+                }),
+                None => Err(PreviewTransformerError::ProcessInterrupted),
+            }
+        }
     }
 }
