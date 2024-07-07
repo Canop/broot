@@ -53,7 +53,13 @@ impl BrowserState {
         con: &AppContext,
         dam: &Dam,
     ) -> Result<BrowserState, TreeBuildError> {
+
+        // on windows, canonicalize the path produces UNC paths, so we don't do it.
+        // On other platforms, it's a desirable step, mainly because it simplifies the
+        // paths you'd get for example when focusing a relative symlink containing "..".
+        #[cfg(not(target_os = "windows"))]
         let path = path.canonicalize().unwrap_or(path);
+
         let pending_task = options.pattern
             .take()
             .as_option()
