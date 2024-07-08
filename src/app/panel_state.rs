@@ -97,7 +97,7 @@ pub trait PanelState {
     #[allow(clippy::too_many_arguments)]
     fn on_internal_generic(
         &mut self,
-        _w: &mut W,
+        w: &mut W,
         invocation_parser: Option<&InvocationParser>,
         internal_exec: &InternalExecution,
         input_invocation: Option<&VerbInvocation>,
@@ -634,34 +634,57 @@ pub trait PanelState {
                     .unwrap_or_else(|e| CmdResult::DisplayError(format!("{e}")))
             }
             Internal::write_output => {
-                let sel_info = self.sel_info(app_state);
-                let exec_builder = match input_invocation {
-                    Some(inv) => {
-                        ExecutionStringBuilder::with_invocation(
-                            invocation_parser,
-                            sel_info,
-                            app_state,
-                            inv.args.as_ref(),
-                        )
-                    }
-                    None => {
-                        ExecutionStringBuilder::without_invocation(sel_info, app_state)
-                    }
-                };
-                if let Some(pattern) = internal_exec.arg.as_ref() {
-                    let line = exec_builder.string(pattern);
-                    verb_write(con, &line)?;
-                } else {
-                    let line = input_invocation
-                        .and_then(|inv| inv.args.as_ref())
-                        .map(|s| s.as_str())
-                        .unwrap_or("");
-                    verb_write(con, line)?;
-                }
+                let line = self.line_to_write(invocation_parser, internal_exec, input_invocation, app_state);
+                verb_write_output(con, &line)?;
+                CmdResult::Keep
+            }
+            Internal::write_stdout => {
+                let line = self.line_to_write(invocation_parser, internal_exec, input_invocation, app_state);
+                verb_write_stdout(w, &line)?;
+                CmdResult::Keep
+            }
+            Internal::writeln_stdout => {
+                let line = format!(
+                    "{}\n",
+                    self.line_to_write(invocation_parser, internal_exec, input_invocation, app_state),
+                );
+                verb_write_stdout(w, &line)?;
                 CmdResult::Keep
             }
             _ => CmdResult::Keep,
         })
+    }
+
+    fn line_to_write(
+        &self,
+        invocation_parser: Option<&InvocationParser>,
+        internal_exec: &InternalExecution,
+        input_invocation: Option<&VerbInvocation>,
+        app_state: &mut AppState,
+    ) -> String {
+        let sel_info = self.sel_info(app_state);
+        let exec_builder = match input_invocation {
+            Some(inv) => {
+                ExecutionStringBuilder::with_invocation(
+                    invocation_parser,
+                    sel_info,
+                    app_state,
+                    inv.args.as_ref(),
+                )
+            }
+            None => {
+                ExecutionStringBuilder::without_invocation(sel_info, app_state)
+            }
+        };
+        if let Some(pattern) = internal_exec.arg.as_ref() {
+            exec_builder.string(pattern)
+        } else {
+            let line = input_invocation
+                .and_then(|inv| inv.args.as_ref())
+                .map(|s| s.as_str())
+                .unwrap_or("");
+            line.to_string()
+        }
     }
 
     fn stage(

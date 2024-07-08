@@ -1,7 +1,12 @@
 use {
     crate::{
         app::*,
+        display::W,
         errors::ProgramError,
+    },
+    crokey::crossterm::{
+        terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
+        QueueableCommand,
     },
     std::{
         fs::{File, OpenOptions},
@@ -12,7 +17,7 @@ use {
 /// Intended to verbs, this function writes the passed string to the file
 /// provided to broot with `--verb-output`, creating a new line if the
 /// file is not empty.
-pub fn verb_write(
+pub fn verb_write_output(
     con: &AppContext,
     line: &str,
 ) -> Result<CmdResult, ProgramError> {
@@ -38,5 +43,19 @@ pub fn verb_clear_output(
         return Ok(CmdResult::error("No --verb-output provided".to_string()));
     };
     File::create(path)?;
+    Ok(CmdResult::Keep)
+}
+
+pub fn verb_write_stdout(
+    w: &mut W,
+    line: &str,
+) -> Result<CmdResult, ProgramError> {
+    w.queue(LeaveAlternateScreen).unwrap();
+    terminal::disable_raw_mode().unwrap();
+    w.flush().unwrap();
+    print!("{}", line);
+    terminal::enable_raw_mode().unwrap();
+    w.queue(EnterAlternateScreen).unwrap();
+    w.flush().unwrap();
     Ok(CmdResult::Keep)
 }

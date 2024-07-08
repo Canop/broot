@@ -334,6 +334,8 @@ impl VerbStore {
 
         self.add_internal(clear_output);
         self.add_internal(write_output);
+        self.add_internal(write_stdout);
+        self.add_internal(writeln_stdout);
         Ok(())
     }
 
