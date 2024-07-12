@@ -230,7 +230,7 @@ preview_transformers: [
     //     input_extensions: [ "pdf" ] // case doesn't matter
     //     output_extension: png
     //     mode: image
-    //     command: [ "mutool", "draw", "-o", "{output-path}", "{input-path}" ]
+    //     command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
     // }
 
     // # Use jq to beautify JSON
