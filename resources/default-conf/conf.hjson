@@ -217,6 +217,34 @@ lines_before_match_in_preview: 1
 lines_after_match_in_preview: 1
 
 ###############################################################
+# transformations before preview
+#
+# It's possible to define transformations to apply to some files
+# before calling one of the default preview renderers in broot.
+# Below are two examples that you may uncomment and adapt:
+#
+preview_transformers: [
+    // # Use mutool to render any PDF file as an image
+    // # In this example we use placeholders for the input and output files
+    // {
+    //     input_extensions: [ "pdf" ] // case doesn't matter
+    //     output_extension: png
+    //     mode: image
+    //     command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
+    // }
+
+    // # Use jq to beautify JSON
+    // # In this example, the command refers to neither the input nor the output,
+    // # so broot pipes them to the stdin and stdout of the jq process
+    // {
+    //     input_extensions: [ "json" ] 
+    //     output_extension: json
+    //     mode: text
+    //     command: [ "jq" ]
+    // }
+]
+
+###############################################################
 # Imports
 #
 # While it's possible to have all configuration in one file,
