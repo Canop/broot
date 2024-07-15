@@ -12,7 +12,7 @@ use {
             path_from,
             PathAnchor,
         },
-        preview::PreviewTransformer,
+        preview::PreviewTransformerConf,
         skin::SkinEntry,
         syntactic::SyntaxTheme,
         verb::ExecPattern,
@@ -96,7 +96,7 @@ pub struct Conf {
     pub kitty_graphics_transmission: Option<TransmissionMedium>,
 
     #[serde(default, alias="preview-transformers")]
-    pub preview_transformers: Vec<PreviewTransformer>,
+    pub preview_transformers: Vec<PreviewTransformerConf>,
 
     #[serde(alias="lines-after-match-in-preview")]
     pub lines_after_match_in_preview: Option<usize>,

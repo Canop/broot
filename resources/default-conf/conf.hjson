@@ -233,6 +233,20 @@ preview_transformers: [
     //     command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
     // }
 
+    // # Use LibreOffice to render Office files as images
+    // # In this example, {output-dir} is used to specify where LibreOffice must write the result
+    // {
+    //     input_extensions: [ "xls", "xlsx", "doc", "docx", "ppt", "pptx", "ods", "odt", "odp" ]
+    //     output_extension: png
+    //     mode: image
+    //     command: [
+    //         "libreoffice", "--headless",
+    //         "--convert-to", "png",
+    //         "--outdir", "{output-dir}",
+    //         "{input-path}"
+    //     ]
+    // }
+
     // # Use jq to beautify JSON
     // # In this example, the command refers to neither the input nor the output,
     // # so broot pipes them to the stdin and stdout of the jq process

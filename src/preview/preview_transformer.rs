@@ -5,6 +5,7 @@ use {
     },
     serde::Deserialize,
     std::{
+        fs,
         hash::{
             DefaultHasher,
             Hash,
@@ -29,7 +30,7 @@ pub struct PreviewTransformers {
     temp_dir: TempDir,
 }
 #[derive(Debug, Clone, Deserialize)]
-pub struct PreviewTransformer {
+pub struct PreviewTransformerConf {
     pub input_extensions: Vec<String>,
     pub output_extension: String,
     /// The command generating an output file from an input file
@@ -37,20 +38,45 @@ pub struct PreviewTransformer {
     pub command: Vec<String>,
     pub mode: PreviewMode,
 }
+#[derive(Debug, Clone)]
+pub struct PreviewTransformer {
+    pub input_extensions: Vec<String>,
+    pub output_extension: String,
+    /// The command generating an output file from an input file
+    /// eg "mutool draw -o {output-path} {input-path}"
+    pub command: Vec<String>,
+    pub mode: PreviewMode,
+    pub input_kind: ProcessInputKind,
+    pub output_kind: ProcessOutputKind,
+}
+/// Specified how the input of the transformation is provided to the
+/// external process.
+#[derive(Debug, Clone, Copy)]
+pub enum ProcessInputKind {
+    File,
+    Stdin,
+}
+/// Specifies how the output of the transformation is read:
+/// - read from {output-path} if it's in the command, or
+/// - read from the first file found in {output-dir} if it's in the command, or
+/// - read from stdout if neither is in the command
+#[derive(Debug, Clone, Copy)]
+pub enum ProcessOutputKind {
+    File,
+    Dir,
+    Stdout,
+}
 pub struct PreviewTransform {
     pub transformer_id: TransformerId,
+    /// Path to the generated file
     pub output_path: PathBuf,
 }
 
 impl PreviewTransformers {
-    pub fn new(transformers: &[PreviewTransformer]) -> Result<Self, ConfError> {
-        let transformers = transformers.to_vec();
-        for transformer in &transformers {
-            if transformer.command.is_empty() {
-                return Err(ConfError::MissingField {
-                    txt: "empty command in preview transformer".to_string(),
-                });
-            }
+    pub fn new(transformer_confs: &[PreviewTransformerConf]) -> Result<Self, ConfError> {
+        let mut transformers = Vec::with_capacity(transformer_confs.len());
+        for transformer_conf in transformer_confs {
+            transformers.push(PreviewTransformer::from_conf(transformer_conf)?);
         }
         let temp_dir = tempfile::Builder::new()
             .prefix("broot-conversions")
@@ -114,6 +140,45 @@ impl PreviewTransformers {
 }
 
 impl PreviewTransformer {
+    pub fn from_conf(conf: &PreviewTransformerConf) -> Result<Self, ConfError> {
+        if conf.command.is_empty() {
+            return Err(ConfError::MissingField {
+                txt: "empty command in preview transformer".to_string(),
+            });
+        }
+        let has_input_path = conf.command.iter().any(|c| c.contains("{input-path}"));
+        let has_output_path = conf.command.iter().any(|c| c.contains("{output-path}"));
+        let has_output_dir = conf.command.iter().any(|c| c.contains("{output-dir}"));
+        let input_kind = if has_input_path {
+            ProcessInputKind::File
+        } else {
+            ProcessInputKind::Stdin
+        };
+        let output_kind = if has_output_path {
+            ProcessOutputKind::File
+        } else if has_output_dir {
+            ProcessOutputKind::Dir
+        } else {
+            ProcessOutputKind::Stdout
+        };
+        Ok(Self {
+            input_extensions: conf.input_extensions.clone(),
+            output_extension: conf.output_extension.clone(),
+            command: conf.command.clone(),
+            mode: conf.mode,
+            input_kind,
+            output_kind,
+        })
+    }
+    /// Call the external process to transform the input file into an output file
+    ///
+    /// Input is given to the process either as a file or as stdin, depending on
+    /// whether the command contains "{input-path}".
+    ///
+    /// Output is
+    /// - read from {output-path} if it's in the command, or
+    /// - read from the first file found in {output-dir} if it's in the command, or
+    /// - read from stdout if neither is in the command
     pub fn transform(
         &self,
         input_path: &Path,
@@ -124,34 +189,57 @@ impl PreviewTransformer {
             input_path.hash(&mut hasher);
             hasher.finish()
         };
-        let output_path = temp_dir.join(format!("{:x}.{}", hash, self.output_extension,));
-        if output_path.exists() {
-            return Ok(output_path);
+        let input_stem = input_path
+            .file_stem()
+            .ok_or(PreviewTransformerError::InvalidInput)?
+            .to_string_lossy();
+        let output_dir = temp_dir.join(format!("{:x}", hash));
+        if output_dir.exists() {
+            // if there's a file in the output directory, it's the result of a previous
+            // transformation of the same input file
+            if let Some(path) = first_file_in_dir(&output_dir)? {
+                return Ok(path);
+            }
+        } else {
+            fs::create_dir(&output_dir)?;
         }
 
-        let explicit_input = self.command.iter().any(|c| c.contains("{input-path}"));
-        let explicit_output = self.command.iter().any(|c| c.contains("{output-path}"));
+        let mut output_path = output_dir.join(format!("{}.{}", input_stem, self.output_extension));
 
         let mut command = self.command.iter().map(|part| {
             part.replace("{input-path}", &input_path.to_string_lossy())
+                .replace("{output-dir}", &output_dir.to_string_lossy())
                 .replace("{output-path}", &output_path.to_string_lossy())
         });
+
         info!("transforming {:?} to {:?}", input_path, output_path);
+
         let executable = command.next().unwrap();
         let mut process = Command::new(executable);
         process.stderr(std::process::Stdio::null());
         process.args(command);
-        if !explicit_input {
-            process.stdin(std::fs::File::open(input_path)?);
+
+        match self.input_kind {
+            ProcessInputKind::File => {
+                process.stdin(std::process::Stdio::null());
+            }
+            ProcessInputKind::Stdin => {
+                process.stdin(std::fs::File::open(input_path)?);
+            }
         }
-        if explicit_output {
-            process.stdout(std::process::Stdio::null());
-        } else {
-            process.stdout(std::fs::File::create(&output_path)?);
+
+        match self.output_kind {
+            ProcessOutputKind::File | ProcessOutputKind::Dir => {
+                process.stdout(std::process::Stdio::null());
+            }
+            ProcessOutputKind::Stdout => {
+                process.stdout(std::fs::File::create(&output_path)?);
+            }
         }
-        let exit_status = process
-            .spawn()
-            .and_then(|mut p| p.wait())?;
+
+        let exit_status = process.spawn().and_then(|mut p| p.wait())?;
+
+        output_path = first_file_in_dir(&output_dir)?.ok_or(PreviewTransformerError::NoOutput)?;
         if exit_status.success() {
             Ok(output_path)
         } else {
@@ -159,11 +247,20 @@ impl PreviewTransformer {
             // it's not returned on the next call
             let _ = std::fs::remove_file(&output_path);
             match exit_status.code() {
-                Some(code) => Err(PreviewTransformerError::ProcessFailed {
-                    code,
-                }),
+                Some(code) => Err(PreviewTransformerError::ProcessFailed { code }),
                 None => Err(PreviewTransformerError::ProcessInterrupted),
             }
         }
     }
+}
+
+fn first_file_in_dir(dir: &Path) -> Result<Option<PathBuf>, PreviewTransformerError> {
+    for entry in fs::read_dir(dir)? {
+        let entry = entry?;
+        let path = entry.path();
+        if path.is_file() {
+            return Ok(Some(path));
+        }
+    }
+    Ok(None)
 }

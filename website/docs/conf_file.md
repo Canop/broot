@@ -279,23 +279,41 @@ It's possible to define transformers to apply to some files before preview.
 
 This makes it possible for example to render a specific kind of files as images, or to beautify some text ones.
 
-Below are two examples that you may adapt to your needs and prefered tools.
+Below are examples that you may adapt to your needs and prefered tools.
+They must be included in a .preview_transformers` array, as shown in the [default conf.hjson](https://github.com/Canop/broot/blob/main/resources/default-conf/conf.hjson).
+
 
 ### Render PDF using mutool:
 
 ![preview pdf](img/20240706-preview-pdf.png)
 
 ```Hjson
-preview_transformers: [
-    # Use mutool to render any PDF file as an image
-    # In this example we use placeholders for the input and output files
-    {
-        input_extensions: [ "pdf" ] // case doesn't matter
-        output_extension: png
-        mode: image
-        command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
-    }
-]
+# Use mutool to render any PDF file as an image
+# In this example we use placeholders for the input and output files
+{
+	input_extensions: [ "pdf" ] // case doesn't matter
+	output_extension: png
+	mode: image
+	command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
+}
+```
+
+### Render Office files using libreoffice:
+
+![preview odt](img/20240715-preview-odt.png)
+
+```Hjson
+{
+    input_extensions: [ "xls", "xlsx", "doc", "docx", "ppt", "pptx", "ods", "odt", "odp" ]
+    output_extension: png
+    mode: image
+    command: [
+        "libreoffice", "--headless",
+        "--convert-to", "png",
+        "--outdir", "{output-dir}",
+        "{input-path}"
+    ]
+}
 ```
 
 ### Beautify JSON using jq
@@ -303,17 +321,15 @@ preview_transformers: [
 ![preview json](img/20240706-preview-json.png)
 
 ```Hjson
-preview_transformers: [
-    # Use jq to beautify JSON
-    # In this example, the command refers to neither the input nor the output,
-    # so broot pipes them to the stdin and stdout of the jq process
-    {
-        input_extensions: [ "json" ]
-        output_extension: json
-        mode: text
-        command: [ "jq" ]
-    }
-]
+# Use jq to beautify JSON
+# In this example, the command refers to neither the input nor the output,
+# so broot pipes them to the stdin and stdout of the jq process
+{
+	input_extensions: [ "json" ]
+	output_extension: json
+	mode: text
+	command: [ "jq" ]
+}
 ```
 
 ## Match surroundings

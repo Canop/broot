@@ -129,6 +129,8 @@ custom_error! {pub SvgError
 }
 
 custom_error! {pub PreviewTransformerError
+    InvalidInput = "Invalid input",
+    NoOutput = "No output",
     Io {source: io::Error} = "IO Error : {source}",
     ProcessInterrupted = "Process interrupted",
     ProcessFailed { code: i32 } = "Execution failed with code {code}",
