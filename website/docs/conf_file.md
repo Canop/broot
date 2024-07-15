@@ -273,6 +273,24 @@ terminal_title = "{file} 🐄"
 
 # Preview
 
+## Kitty Graphics
+
+Whenever possible, previewed images will be displayed in high resolution using [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/).
+
+Two transmission media are possible:
+
+* `chunks`: slow but works remotely
+* `temp_file`: faster but doesn't work when broot is remotely executed, default
+
+```Hjson
+kitty_graphics_transmission: chunks
+#kitty_graphics_transmission: temp_file
+```
+```TOML
+kitty_graphics_transmission = "chunks"
+#kitty_graphics_transmission = "temp_file"
+```
+
 ## Transformers
 
 It's possible to define transformers to apply to some files before preview.
@@ -281,7 +299,6 @@ This makes it possible for example to render a specific kind of files as images,
 
 Below are examples that you may adapt to your needs and prefered tools.
 They must be included in a `preview_transformers` array, as shown in the [default conf.hjson](https://github.com/Canop/broot/blob/main/resources/default-conf/conf.hjson).
-
 
 ### Render PDF using mutool:
 
@@ -354,24 +371,6 @@ And you'll get
 ![1 line around match](img/20240706-match-surrounding-1-1.png)
 
 # Miscellaneous
-
-## Kitty Graphics
-
-Whenever possible, previewed images will be displayed in high resolution using [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/).
-
-Two transmission media are possible:
-
-* `chunks`: slow but works remotely
-* `temp_file`: faster but doesn't work when broot is remotely executed, default
-
-```Hjson
-kitty_graphics_transmission: chunks
-#kitty_graphics_transmission: temp_file
-```
-```TOML
-kitty_graphics_transmission = "chunks"
-#kitty_graphics_transmission = "temp_file"
-```
 
 ## Keyboard enhancements
 
