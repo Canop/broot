@@ -12,7 +12,6 @@ use {
     },
     rustc_hash::{
         FxHashMap,
-        FxHashSet,
     },
     std::{
         convert::TryInto,
@@ -93,7 +92,7 @@ impl DirSummer {
 
         // to avoid counting twice a node, we store their id in a set
         #[cfg(unix)]
-        let nodes = Arc::new(Mutex::new(FxHashSet::<NodeId>::default()));
+        let nodes = Arc::new(Mutex::new(rustc_hash::FxHashSet::<NodeId>::default()));
 
         // busy is the number of directories which are either being processed or queued
         // We use this count to determine when threads can stop waiting for tasks
