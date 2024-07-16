@@ -429,8 +429,7 @@ file_sum_threads_count = 10
 ## Quit on last cancel
 
 You can usually cancel the last state change on escape.
-If you want the escape key to quit broot when there's nothing to cancel (for example when you just opened broot), you can set `quit_on_last_cancel` to true.
-this parameter
+If you want the escape key to quit broot when there's nothing to cancel (for example when you just opened broot), you can set `quit_on_last_cancel` to true:
 
 ```Hjson
 quit_on_last_cancel: true
