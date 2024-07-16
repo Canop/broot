@@ -1,5 +1,6 @@
 ### next
 - You can now define preview transformers to be applied before preview. They allow for example previewing PDF or Office files, or beautifying JSON files. Edit the `preview_transformers` entry in your conf.hjson file (see https://github.com/Canop/broot/blob/main/resources/default-conf/conf.hjson)
+- fix search on root - Fix #904
 
 ### v1.39.2 - 2024-07-08
 <a name="v1.39.2"></a>
