@@ -21,12 +21,13 @@ use {
 
 /// find the longest common start of a and b
 fn common_start<'l>(a: &'l str, b: &str) -> &'l str {
-    for i in 0..a.len().min(b.len()) {
+    let l = a.len().min(b.len());
+    for i in 0..l {
         if a.as_bytes()[i] != b.as_bytes()[i] {
             return &a[..i];
         }
     }
-    a
+    &a[..l]
 }
 
 /// how an input can be completed
@@ -89,7 +90,7 @@ impl Completions {
         con: &AppContext,
         sel_info: SelInfo<'_>,
     ) -> Self {
-        match con.verb_store.search_sel_info(start, sel_info) {
+        match con.verb_store.search(start, Some(sel_info), false) {
             PrefixSearchResult::NoMatch => Self::None,
             PrefixSearchResult::Match(name, _) => {
                 if start.len() >= name.len() {
@@ -113,7 +114,7 @@ impl Completions {
         sel_info: SelInfo<'_>,
         con: &AppContext,
     ) -> io::Result<Vec<String>> {
-        let anchor = match con.verb_store.search_sel_info(verb_name, sel_info) {
+        let anchor = match con.verb_store.search(verb_name, Some(sel_info), false) {
             PrefixSearchResult::Match(_, verb) => verb.get_unique_arg_anchor(),
             _ => PathAnchor::Unspecified,
         };

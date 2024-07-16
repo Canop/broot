@@ -539,14 +539,14 @@ impl VerbStore {
         prefix: &str,
         sel_info: SelInfo<'_>,
     ) -> PrefixSearchResult<'v, &Verb> {
-        self.search(prefix, Some(sel_info))
+        self.search(prefix, Some(sel_info), true)
     }
 
     pub fn search_prefix<'v>(
         &'v self,
         prefix: &str,
     ) -> PrefixSearchResult<'v, &Verb> {
-        self.search(prefix, None)
+        self.search(prefix, None, true)
     }
 
     /// Return either the only match, or None if there's not
@@ -566,6 +566,7 @@ impl VerbStore {
         &'v self,
         prefix: &str,
         sel_info: Option<SelInfo>,
+        short_circuit: bool,
     ) -> PrefixSearchResult<'v, &Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
@@ -591,7 +592,7 @@ impl VerbStore {
             }
             for name in &verb.names {
                 if name.starts_with(prefix) {
-                    if name == prefix {
+                    if short_circuit && name == prefix {
                         return PrefixSearchResult::Match(name, verb);
                     }
                     found_index = index;
