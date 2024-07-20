@@ -31,6 +31,7 @@ pub struct Panel {
     status: Status,
     pub purpose: PanelPurpose,
     pub input: PanelInput,
+    pub last_raw_pattern: Option<String>,
 }
 
 impl Panel {
@@ -51,6 +52,7 @@ impl Panel {
             status,
             purpose: PanelPurpose::None,
             input,
+            last_raw_pattern: None,
         }
     }
 
@@ -71,6 +73,9 @@ impl Panel {
         app_state: &mut AppState,
         app_cmd_context: &'c AppCmdContext<'c>,
     ) -> Result<CmdResult, ProgramError> {
+        if let Command::PatternEdit { raw, .. } = cmd {
+            self.last_raw_pattern = Some(raw.clone());
+        }
         let state_idx = self.states.len() - 1;
         let cc = CmdContext {
             cmd,
@@ -275,4 +280,14 @@ impl Panel {
         Ok(())
     }
 
+    // /// return the last non empty pattern used in a previous state
+    // pub fn last_pattern(&self) -> Option<&InputPattern> {
+    //     for state in self.states.iter().rev().skip(1) {
+    //         let pattern = state.pattern();
+    //         if pattern.is_some() {
+    //             return Some(pattern);
+    //         }
+    //     }
+    //     None
+    // }
 }

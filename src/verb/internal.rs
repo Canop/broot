@@ -152,6 +152,7 @@ Internals! {
     toggle_tree: "toggle showing more than one level of the tree" true,
     toggle_trim_root: "toggle removing nodes at first level too" false,
     total_search: "search again but on all children" false,
+    search_again: "either put pack the search, or search deeper" false,
     trash: "move file to system trash" true,
     unstage: "remove selection from staging area" true,
     up_tree: "focus the parent of the current root" true,
