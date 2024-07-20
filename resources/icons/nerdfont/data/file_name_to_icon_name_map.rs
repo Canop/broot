@@ -1,4 +1,5 @@
 [
+    ( "Dockerfile"                 , "file_type_docker"                   ),
     ( ".scalafix.conf"             , "file_type_config"                   ),
     ( ".scalafmt.conf"             , "file_type_config"                   ),
     ( "LICENCE"                    , "file_type_license"                  ),
@@ -55,6 +56,7 @@
     ( "dependabot.yml"             , "file_type_dependabot"               ),
     ( "dependencies.yml"           , "file_type_dependencies"             ),
     ( "devcontainer.json"          , "file_type_devcontainer"             ),
+    ( "docker-compose.yml"         , "file_type_docker"                   ),
     ( "docker-compose.test.yml"    , "file_type_dockertest2"              ),
     ( "drone.yml"                  , "file_type_drone"                    ),
     ( "drone.yml.sig"              , "file_type_drone"                    ),

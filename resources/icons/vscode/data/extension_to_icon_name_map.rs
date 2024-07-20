@@ -1,5 +1,6 @@
 // SEE ./README on how to edit this file
 [
+( "Dockerfile"              , "file_type_docker"                  ) ,
 ( "3g2"                     , "file_type_video"                   ) ,
 ( "3gp"                     , "file_type_video"                   ) ,
 ( "7z"                      , "file_type_zip2"                    ) ,

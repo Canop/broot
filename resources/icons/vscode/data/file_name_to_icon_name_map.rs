@@ -1,7 +1,9 @@
 [
+    ( "Dockerfile"                 , "file_type_docker" ),
     ( ".scalafix.conf"             , "file_type_config" ),
     ( ".scalafmt.conf"             , "file_type_config" ),
     ( "build.properties"           , "file_type_config" ),
+    ( "docker-compose.yml"         , "file_type_docker" ),
     ( "eslint.config.cjs"          , "file_type_eslint" ),
     ( "eslint.config.js"           , "file_type_eslint" ),
     ( "eslint.config.mjs"          , "file_type_eslint" ),
