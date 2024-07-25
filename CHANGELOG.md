@@ -1,3 +1,9 @@
+### next
+#### Major Feature: :search_again
+ctrl-s now triggers `:search_again` which either
+- brings back the last used search pattern, when no filtering pattern is active
+- does a "total search" if a filtering pattern is active and the search wasn't complete
+
 ### v1.40.0 - 2024-07-16
 <a name="v1.40.0"></a>
 #### Major Feature: preview transformers

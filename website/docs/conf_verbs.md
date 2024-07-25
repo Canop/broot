@@ -428,7 +428,8 @@ invocation | default key | default shortcut | behavior / details
 :quit | <kbd>ctrl</kbd><kbd>q</kbd> | q | quit broot
 :refresh | <kbd>F5</kbd> | - | refresh the displayed tree and clears the directory sizes cache
 :root_down | - | - | move tree root down
-:root_up | - | - | "move tree root up"
+:root_up | - | - | move tree root up
+:search_again | - | <kbd>ctrl</kbd><kbd>s</kbd> | either put back last search, or search deeper
 :select | - | - | select a path given as argument, if it's in the visible tree
 :select_first | - | - | select the first line
 :select_last | - | - | select the last line
@@ -460,7 +461,7 @@ invocation | default key | default shortcut | behavior / details
 :toggle_staging_area | - | tsa | open/close the staging area panel
 :toggle_tree | - | - | toggle showing only one level of the tree (when not affected by sorting)
 :toggle_trim_root | - | - | toggle trimming of top level files in tree display
-:total_search | - | <kbd>ctrl</kbd><kbd>s</kbd> | search again but on all children instead of stopping when the results look good enough
+:total_search | - | - | search again but on all children instead of stopping when the results look good enough
 :trash | - | - | move file to system trash
 :unstage | <kbd>-</kbd> | - | remove selection from staging area
 :up_tree | - | - | focus the parent of the current root
