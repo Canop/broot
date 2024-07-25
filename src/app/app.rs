@@ -435,6 +435,29 @@ impl App {
                                 .refresh_input_status(app_state, &app_cmd_context);
                         }
                     }
+                    Internal::search_again => {
+                        if let Some(raw_pattern) = &self.panel().last_raw_pattern {
+                            let sequence = Sequence::new_single(raw_pattern.clone());
+                            self.tx_seqs.send(sequence).unwrap();
+                        }
+                    }
+                    Internal::set_syntax_theme => {
+                        let arg = cmd.as_verb_invocation().and_then(|vi| vi.args.as_ref());
+                        match arg {
+                            Some(arg) => match SyntaxTheme::from_str(arg) {
+                                Ok(theme) => {
+                                    con.syntax_theme = Some(theme);
+                                    self.update_preview(con, true);
+                                }
+                                Err(e) => {
+                                    error = Some(e.to_string());
+                                }
+                            },
+                            None => {
+                                error = Some("no theme provided".to_string());
+                            }
+                        }
+                    }
                     Internal::toggle_second_tree => {
                         let panels_count = self.panels.len().get();
                         let trees_count = self
@@ -482,23 +505,6 @@ impl App {
                                     self.close_panel(i);
                                     break;
                                 }
-                            }
-                        }
-                    }
-                    Internal::set_syntax_theme => {
-                        let arg = cmd.as_verb_invocation().and_then(|vi| vi.args.as_ref());
-                        match arg {
-                            Some(arg) => match SyntaxTheme::from_str(arg) {
-                                Ok(theme) => {
-                                    con.syntax_theme = Some(theme);
-                                    self.update_preview(con, true);
-                                }
-                                Err(e) => {
-                                    error = Some(e.to_string());
-                                }
-                            },
-                            None => {
-                                error = Some("no theme provided".to_string());
                             }
                         }
                     }
