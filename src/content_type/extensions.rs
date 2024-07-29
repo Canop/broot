@@ -12,7 +12,6 @@ static BINARY_EXTENSIONS: Set<&'static str> = phf_set! {
     "aif", "AIF",
     "ap_",
     "apk",
-    "bak", "BAK",
     "bin", "BIN",
     "bmp", "BMP",
     "bzip", "BZIP",
