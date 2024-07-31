@@ -19,7 +19,9 @@ use {
 /// Provide access to the verbs:
 /// - the built-in ones
 /// - the user defined ones
+///
 /// A user defined verb can replace a built-in.
+///
 /// When the user types some keys, we select a verb
 /// - if the input exactly matches a shortcut or the name
 /// - if only one verb name starts with the input
@@ -298,6 +300,7 @@ impl VerbStore {
             .with_key(key!(ctrl-g));
         self.add_internal(open_staging_area).with_shortcut("osa");
         self.add_internal(close_staging_area).with_shortcut("csa");
+        self.add_internal(set_panel_width);
         self.add_internal(toggle_staging_area).with_shortcut("tsa");
         self.add_internal(toggle_tree).with_shortcut("tree");
         self.add_internal(sort_by_count).with_shortcut("sc");
@@ -333,6 +336,9 @@ impl VerbStore {
         self.add_internal(search_again).with_key(key!(ctrl-s));
         self.add_internal(up_tree).with_shortcut("up");
 
+        self.add_internal_with_args(move_panel_divider, "0 1").with_key(key!(alt-'>'));
+        self.add_internal_with_args(move_panel_divider, "0 -1").with_key(key!(alt-'<'));
+
         self.add_internal(clear_output);
         self.add_internal(write_output);
         Ok(())
@@ -356,6 +362,24 @@ impl VerbStore {
         internal: Internal,
     ) -> &mut Verb {
         self.build_add_internal(internal, false)
+    }
+
+    fn add_internal_with_args(
+        &mut self,
+        internal: Internal,
+        args: &str,
+    ) -> &mut Verb {
+        let command =
+            format!("{} {}", internal.name(), args);
+        let execution = VerbExecution::Internal(
+            InternalExecution {
+                internal,
+                bang: false,
+                arg: Some(args.to_string()),
+            }
+        );
+        let description = VerbDescription::from_text(command.clone());
+        self.add_verb(Some(&command), execution, description).unwrap()
     }
 
      fn add_internal_bang(

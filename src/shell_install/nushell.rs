@@ -7,6 +7,7 @@
 //! - a function declaration script in ~/.local/share/broot/launcher/nushell/br/1
 //! - a link to that script in ~/.config/broot/launcher/nushell/br/1
 //! - a line to use the link in ~/.config/nushell/config.nu
+//!
 //! (exact paths depend on XDG variables)
 //!
 //! Please note that this function doesn't allow other commands than cd,

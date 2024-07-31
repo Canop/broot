@@ -15,7 +15,7 @@ use {
 /// wraps both
 /// - the "pattern" (which may be used to filter and rank file entries)
 /// - the source raw string which was used to build it and which may
-/// be put back in the input.
+///   be put back in the input.
 #[derive(Debug, Clone)]
 pub struct InputPattern {
     pub raw: String,

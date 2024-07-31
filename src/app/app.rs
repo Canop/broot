@@ -8,11 +8,7 @@ use {
             Sequence,
         },
         conf::Conf,
-        display::{
-            Areas,
-            Screen,
-            W,
-        },
+        display::*,
         errors::ProgramError,
         file_sum,
         git,
@@ -58,6 +54,9 @@ pub struct App {
     /// the panels of the application, at least one
     panels: NonEmptyVec<Panel>,
 
+    /// layout modifiers, like divider moves
+    layout_instructions: LayoutInstructions,
+
     /// index of the currently focused panel
     active_panel_idx: usize,
 
@@ -101,10 +100,11 @@ impl App {
         if let Some(path) = con.initial_file.as_ref() {
             browser_state.tree.try_select_path(path);
         }
+        let layout_instructions = Default::default();
         let panel = Panel::new(
             PanelId::from(0),
             browser_state,
-            Areas::create(&mut Vec::new(), 0, screen, false),
+            Areas::create(&mut Vec::new(), &layout_instructions, 0, screen, false),
             con,
         );
         let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
@@ -112,6 +112,7 @@ impl App {
             screen,
             active_panel_idx: 0,
             panels: panel.into(),
+            layout_instructions,
             quitting: false,
             launch_at_end: None,
             created_panels_count: 1,
@@ -214,6 +215,7 @@ impl App {
             }
             Areas::resize_all(
                 self.panels.as_mut_slice(),
+                &self.layout_instructions,
                 self.screen,
                 self.preview_panel.is_some(),
             );
@@ -383,6 +385,15 @@ impl App {
                 } else {
                     self.quitting = true;
                 }
+            }
+            ChangeLayout(instruction) => {
+                self.layout_instructions.add(instruction);
+                Areas::resize_all(
+                    self.panels.as_mut_slice(),
+                    &self.layout_instructions,
+                    self.screen,
+                    self.preview_panel.is_some(),
+                );
             }
             DisplayError(txt) => {
                 error = Some(txt);
@@ -681,6 +692,7 @@ impl App {
         let with_preview = purpose.is_preview() || self.preview_panel.is_some();
         let areas = Areas::create(
             self.panels.as_mut_slice(),
+            &self.layout_instructions,
             insertion_idx,
             self.screen,
             with_preview,
@@ -873,6 +885,7 @@ impl App {
                         self.screen.set_terminal_size(width, height, con);
                         Areas::resize_all(
                             self.panels.as_mut_slice(),
+                            &self.layout_instructions,
                             self.screen,
                             self.preview_panel.is_some(),
                         );
