@@ -10,6 +10,7 @@ pub struct LayoutInstructions {
 
 #[derive(Debug, Clone, Copy)]
 pub enum LayoutInstruction {
+    Clear, // clear all instructions
     MoveDivider { divider: usize, dx: i16 },
     SetPanelWidth { panel: usize, width: u16 },
 }
@@ -74,6 +75,9 @@ impl LayoutInstructions {
     ) {
         use LayoutInstruction::*;
         match new_instruction {
+            Clear => {
+                self.instructions.clear();
+            }
             SetPanelWidth {
                 panel: new_panel, ..
             } => {

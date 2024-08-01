@@ -55,6 +55,7 @@ macro_rules! Internals {
 Internals! {
     apply_flags: "apply flags (eg `-sd` to show sizes and dates)" false,
     back: "revert to the previous state (mapped to *esc*)" false,
+    default_layout: "restore default panel sizes" false,
     clear_output: "clear the --verb-output file" false,
     clear_stage: "empty the staging area" false,
     close_panel_cancel: "close the panel, not using the selected path" false,

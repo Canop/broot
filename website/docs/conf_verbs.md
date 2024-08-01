@@ -385,6 +385,7 @@ Here's a list of internals: builtin actions you can add an alternate shortcut or
 invocation | default key | default shortcut | behavior / details
 -|-|-|-
 :back | <kbd>left</kbd> | - | back to previous app state |
+:default_layout | - | - | restore the default panel sizes
 :clear_stage | - | cls | empty the staging area
 :close_panel_cancel | - | - | close the panel, not using the selected path
 :close_panel_ok | - | - | close the panel, validating the selected path
@@ -400,6 +401,7 @@ invocation | default key | default shortcut | behavior / details
 :line_down_no_cycle | - | - | same as line_down, but doesn't cycle
 :line_up | <kbd>↑</kbd> | - | scroll one line up or select the previous line
 :line_up_no_cycle | - | - | same as line_up, but doesn't cycle
+:move_panel_divider | - | - | ex: `:move_panel_divider 0 -5` reduces the size of the left panel by 5 "characters" (while growing the right panel by 5)
 :next_dir | - | - | select the next directory
 :next_match | <kbd>tab</kbd> | - | select the next matching file, or matching verb or path in auto-completion
 :next_same_depth | - | - | select the next file at the same depth
@@ -433,6 +435,7 @@ invocation | default key | default shortcut | behavior / details
 :select | - | - | select a path given as argument, if it's in the visible tree
 :select_first | - | - | select the first line
 :select_last | - | - | select the last line
+:set_panel_width | - | - | ex: `:set_panel_width 1 150` sets the width of the second panel to 150 "characters"
 :set_syntax_theme | - | - | set the [syntect theme](../conf_file/#syntax-theme) of code preview, eg `:set SolarizedDark`
 :sort_by_count | - | sc | sort by count (only one level of the tree is displayed)
 :sort_by_date | - | sd | sort by date

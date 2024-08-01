@@ -165,6 +165,9 @@ pub trait PanelState {
                 );
                 CmdResult::ChangeLayout(LayoutInstruction::MoveDivider { divider, dx })
             }
+            Internal::default_layout => {
+                CmdResult::ChangeLayout(LayoutInstruction::Clear)
+            }
             Internal::set_panel_width => {
                 let SetPanelWidthArgs { panel, width } = get_arg(
                     input_invocation,

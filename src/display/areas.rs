@@ -113,6 +113,7 @@ impl Areas {
                 debug!("Applying {:?}", instruction);
                 debug!("panel_widths before: {:?}", &panel_widths);
                 match *instruction {
+                    LayoutInstruction::Clear => {} // not supposed to happen
                     LayoutInstruction::MoveDivider { divider, dx } => {
                         if divider + 1 >= nb_pos {
                             continue;

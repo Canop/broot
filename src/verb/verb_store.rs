@@ -89,6 +89,8 @@ impl VerbStore {
         // changing display
         self.add_internal(set_syntax_theme);
         self.add_internal(apply_flags).with_name("apply_flags")?;
+        self.add_internal(set_panel_width);
+        self.add_internal(default_layout);
 
         // those two operations are mapped on ALT-ENTER, one
         // for directories and the other one for the other files
@@ -300,7 +302,6 @@ impl VerbStore {
             .with_key(key!(ctrl-g));
         self.add_internal(open_staging_area).with_shortcut("osa");
         self.add_internal(close_staging_area).with_shortcut("csa");
-        self.add_internal(set_panel_width);
         self.add_internal(toggle_staging_area).with_shortcut("tsa");
         self.add_internal(toggle_tree).with_shortcut("tree");
         self.add_internal(sort_by_count).with_shortcut("sc");
