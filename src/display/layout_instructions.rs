@@ -1,14 +1,17 @@
 use {
     lazy_regex::*,
+    serde::Deserialize,
     std::str::FromStr,
 };
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone, Default, Deserialize)]
+#[serde(transparent)]
 pub struct LayoutInstructions {
     pub instructions: Vec<LayoutInstruction>,
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Deserialize)]
+#[serde(untagged)]
 pub enum LayoutInstruction {
     Clear, // clear all instructions
     MoveDivider { divider: usize, dx: i16 },
@@ -69,7 +72,7 @@ impl LayoutInstruction {
 }
 
 impl LayoutInstructions {
-    pub fn add(
+    pub fn push(
         &mut self,
         new_instruction: LayoutInstruction,
     ) {
