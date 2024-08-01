@@ -22,6 +22,7 @@
     ( "filter.ts"                  , "file_type_nest_filter_ts"           ),
     ( "gateway.js"                 , "file_type_nest_gateway_js"          ),
     ( "gateway.ts"                 , "file_type_nest_gateway_ts"          ),
+    ( "gradle.kts"                 , "file_type_gradle"                   ),
     ( "guard.js"                   , "file_type_nest_guard_js"            ),
     ( "guard.ts"                   , "file_type_nest_guard_ts"            ),
     ( "interceptor.dart"           , "file_type_ng_interceptor_dart"      ),
