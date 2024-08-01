@@ -228,8 +228,8 @@
 ( "file_type_go_white", 0xe626 ), // 
 ( "file_type_go_yellow", 0xe626 ), // 
 ( "file_type_godot", 0xe65f ), // 
-( "file_type_gradle", 0xe738 ), // 
-( "file_type_gradle2", 0xe738 ), // 
+( "file_type_gradle", 0xe660 ), // 
+( "file_type_gradle2", 0xe660 ), // 
 ( "file_type_graphql", 0xf0877 ), // 󰡷
 ( "file_type_graphql_config", 0xf0877 ), // 󰡷
 ( "file_type_graphviz", 0xeb03 ), // 
@@ -612,9 +612,9 @@
 ( "file_type_razor", 0xf1997 ), // 󱦗
 ( "file_type_razzle", 0xf15b ),
 ( "file_type_reactjs", 0xe7ba ), // 
-( "file_type_reacttemplate", 0xe7ba), //
-( "file_type_reactts", 0xe7ba ),
-( "file_type_reason", 0xf15b ),
+( "file_type_reacttemplate", 0xe7ba), // 
+( "file_type_reactts", 0xe7ba ), // 
+( "file_type_reason", 0xe687 ), // 
 ( "file_type_red", 0xf15b ),
 ( "file_type_registry", 0xf15b ),
 ( "file_type_rego", 0xf15b ),
@@ -641,7 +641,7 @@
 ( "file_type_san", 0xf15b ),
 ( "file_type_sas", 0xe74b  ),
 ( "file_type_sass", 0xe74b ), // 
-( "file_type_sbt", 0xf15b ),
+( "file_type_sbt", 0xe68d ), // 
 ( "file_type_scala", 0xe737 ), // 
 ( "file_type_scilab", 0xf15b ),
 ( "file_type_script", 0xf06e6 ),
@@ -712,7 +712,7 @@
 ( "file_type_tox", 0xf15b ),
 ( "file_type_travis", 0xe77e ), // 
 ( "file_type_tsconfig", 0xe628 ), // 
-( "file_type_tslint", 0xe628 ),
+( "file_type_tslint", 0xe628 ), // 
 ( "file_type_tt", 0xf15b ),
 ( "file_type_ttcn", 0xf15b ),
 ( "file_type_twig", 0xe61c ), // 
@@ -741,13 +741,13 @@
 ( "file_type_vlang", 0xe6ac ), // 
 ( "file_type_volt", 0xf15b ),
 ( "file_type_vscode", 0xe70c ), // 
-( "file_type_vscode-insiders", 0xe70c ),
-( "file_type_vscode2", 0xe70c ),
-( "file_type_vscode3", 0xe70c ),
+( "file_type_vscode-insiders", 0xe70c ), // 
+( "file_type_vscode2", 0xe70c ), // 
+( "file_type_vscode3", 0xe70c ), // 
 ( "file_type_vsix", 0xf15b ),
 ( "file_type_vsixmanifest", 0xf15b ),
 ( "file_type_vue", 0xe6a0), // 
-( "file_type_vueconfig", 0xe6a0 ),
+( "file_type_vueconfig", 0xe6a0 ), // 
 ( "file_type_wallaby", 0xf15b ),
 ( "file_type_wasm", 0xe6a1 ), // 
 ( "file_type_watchmanconfig", 0xf15b ),
@@ -772,7 +772,7 @@
 ( "file_type_xsl", 0xf15b ),
 ( "file_type_yacc", 0xf15b ),
 ( "file_type_yaml", 0xf0626 ), // 󰘦
-( "file_type_yamllint", 0xf0626 ),
+( "file_type_yamllint", 0xf0626 ), // 󰘦
 ( "file_type_yandex", 0xf15b ),
 ( "file_type_yang", 0xf15b ),
 ( "file_type_yarn", 0xe6a7 ), // 
@@ -780,5 +780,5 @@
 ( "file_type_zeit", 0xf15b ),
 ( "file_type_zig", 0xe6a9 ), // 
 ( "file_type_zip", 0xf1c6 ), // 
-( "file_type_zip2", 0xf1c6 ),
+( "file_type_zip2", 0xf1c6 ),// 
 ]
