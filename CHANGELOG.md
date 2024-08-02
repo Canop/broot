@@ -8,6 +8,7 @@ ctrl-s now triggers `:search_again` which either
 * `move_panel_divider`, taking as parameter the index of the divider and the desired change
 `ctrl-<` is bound by default to `:move_panel_divider 0 -1`
 `ctrl->` is bound by default to `:move_panel_divider 0 1`
+See http://dystroy.org/broot/panels/#resize-panels
 #### Minor Changes:
 - when git file infos are shown, and git ignored files aren't hidden, those files are flagged with a 'I' - Fix #916
 - Remove .bak extension from content search exclusion list - Fix #915

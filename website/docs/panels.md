@@ -110,4 +110,43 @@ If your terminal is wide enough, you may then open more panels:
 
 ![image](img/20200526-3-panels.png)
 
+# Resize panels
 
+3 verbs are at your disposal if you ever need to change the width of panels:
+
+* `move_panel_divider`: eg `move_panel_divider 0 -4` moves the first divider 4 cells to the left, making the second panel wider
+* `set_panel_width`: eg `set_panel_width 1 50` sets to 50 cells the width of the second panel
+* `default_layout` removes the previous resizing instructions
+
+You may bind keyboard shortcuts, eg (in the `verbs` array of verbs.hjson)
+
+```hjson
+{
+    invocation: move_divider_left
+    key: alt-<
+    execution: ":move_panel_divider 0 -1"
+    leave_broot: false
+}
+{
+    invocation: move_divider_right
+    key: alt->
+    execution: ":move_panel_divider 0 1"
+    leave_broot: false
+}
+```
+
+Resizing instructions can also be provided in a configuration file, eg
+
+```hjson
+layout_instructions: [
+    { panel: 1, width: 80 }
+]
+```
+
+or
+
+```hjson
+layout_instructions: [
+    { divider: 0, dx: 5 }
+]
+```
