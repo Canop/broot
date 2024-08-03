@@ -5,6 +5,7 @@ use {
         cli::{Args, TriBool},
         conf::*,
         content_search,
+        display::LayoutInstructions,
         errors::*,
         file_sum,
         icon::*,
@@ -131,6 +132,9 @@ pub struct AppContext {
 
     /// The set of transformers called before previewing a file
     pub preview_transformers: PreviewTransformers,
+
+    /// layout modifiers, like divider moves
+    pub layout_instructions: LayoutInstructions,
 }
 
 impl AppContext {
@@ -200,8 +204,8 @@ impl AppContext {
             .unwrap_or(content_search::DEFAULT_MAX_FILE_SIZE);
 
         let terminal_title_pattern = config.terminal_title.clone();
-
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
+        let layout_instructions = config.layout_instructions.clone().unwrap_or_default();
 
         Ok(Self {
             is_tty,
@@ -236,6 +240,7 @@ impl AppContext {
             lines_after_match_in_preview: config.lines_after_match_in_preview.unwrap_or(0),
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),
             preview_transformers,
+            layout_instructions,
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (prefered)

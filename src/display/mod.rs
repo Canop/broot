@@ -27,6 +27,7 @@ mod col;
 mod displayable_tree;
 pub mod flags_display;
 mod git_status_display;
+mod layout_instructions;
 mod luma;
 mod matched_string;
 mod num_format;
@@ -42,6 +43,7 @@ pub use {
     cond_bg,
     displayable_tree::DisplayableTree,
     git_status_display::GitStatusDisplay,
+    layout_instructions::*,
     luma::LumaCondition,
     matched_string::MatchedString,
     screen::Screen,

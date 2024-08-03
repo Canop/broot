@@ -32,6 +32,7 @@ use {
 /// A tree wrapper which can be used either
 /// - to write on the screen in the application,
 /// - or to write in a file or an exported string.
+///
 /// Using it in the application (with in_app true) means that
 ///  - the selection is drawn
 ///  - a scrollbar may be drawn

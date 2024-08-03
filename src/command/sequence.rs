@@ -67,12 +67,15 @@ impl Sequence {
     }
 }
 
-/// an input may be made of two parts:
+/// Add commands to a sequence.
+///
+/// An input may be made of two parts:
 ///  - a search pattern
 ///  - a verb followed by its arguments
-/// we need to build a command for each part so
-/// that the search is effectively done before
-/// the verb invocation
+///
+/// We need to build a command for each part so
+///   that the search is effectively done before
+///   the verb invocation
 fn add_commands(
     input: &str,
     commands: &mut Vec<(String, Command)>,

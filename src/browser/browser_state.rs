@@ -2,7 +2,7 @@ use {
     crate::{
         app::*,
         command::*,
-        display::{DisplayableTree, Screen, W},
+        display::*,
         errors::{ProgramError, TreeBuildError},
         flag::Flag,
         git,
