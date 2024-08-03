@@ -160,6 +160,8 @@ Internals! {
     unstage: "remove selection from staging area" true,
     up_tree: "focus the parent of the current root" true,
     write_output: "write the argument to the --verb-output file" false,
+    write_stdout: "write the argument to stdout" false,
+    writeln_stdout: "write the argument to stdout, add a newline" false,
     //restore_pattern: "restore a pattern which was just removed" false,
 }
 
@@ -177,6 +179,8 @@ impl Internal {
             Internal::set_panel_width => r"set_panel_width (?P<idx>\d+) (?P<width>\d+)",
             Internal::set_syntax_theme => r"set_syntax_theme {theme:theme}",
             Internal::write_output => r"write_output (?P<line>.*)",
+            Internal::write_stdout => r"write_stdout (?P<line>.*)",
+            Internal::writeln_stdout => r"writeln_stdout (?P<line>.*)",
             _ => self.name(),
         }
     }
@@ -191,6 +195,8 @@ impl Internal {
             Internal::move_panel_divider => r"move_panel_divider {idx} {dx}",
             Internal::set_panel_width => r"set_panel_width {idx} {width}",
             Internal::write_output => r"write_output {line}",
+            Internal::write_stdout => r"write_stdout {line}",
+            Internal::writeln_stdout => r"writeln_stdout {line}",
             _ => self.name(),
         }
     }
