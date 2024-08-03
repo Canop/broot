@@ -1,8 +1,8 @@
 use {
     crate::{
         app::*,
-        command::{Command, TriggerType},
-        display::{DisplayableTree, Screen, W},
+        command::*,
+        display::*,
         errors::{ProgramError, TreeBuildError},
         flag::Flag,
         git,
@@ -374,34 +374,9 @@ impl PanelState for BrowserState {
                     cc,
                 )
             }
-            Internal::select => internal_select::on_internal(
-                internal_exec,
-                input_invocation,
-                trigger_type,
-                self.displayed_tree_mut(),
-                app_state,
-                cc,
-            ),
-            Internal::up_tree => match self.displayed_tree().root().parent() {
-                Some(path) => internal_focus::on_path(
-                    path.to_path_buf(),
-                    screen,
-                    self.displayed_tree().options.clone(),
-                    bang,
-                    con,
-                ),
-                None => CmdResult::error("no parent found"),
-            },
-            Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang, false)?,
-            Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
             Internal::line_down => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.displayed_tree_mut().move_selection(count, page_height, true);
-                CmdResult::Keep
-            }
-            Internal::line_up => {
-                let count = get_arg(input_invocation, internal_exec, 1);
-                self.displayed_tree_mut().move_selection(-count, page_height, true);
                 CmdResult::Keep
             }
             Internal::line_down_no_cycle => {
@@ -409,28 +384,19 @@ impl PanelState for BrowserState {
                 self.displayed_tree_mut().move_selection(count, page_height, false);
                 CmdResult::Keep
             }
+            Internal::line_up => {
+                let count = get_arg(input_invocation, internal_exec, 1);
+                self.displayed_tree_mut().move_selection(-count, page_height, true);
+                CmdResult::Keep
+            }
             Internal::line_up_no_cycle => {
                 let count = get_arg(input_invocation, internal_exec, 1);
                 self.displayed_tree_mut().move_selection(-count, page_height, false);
                 CmdResult::Keep
             }
-            Internal::previous_dir => {
-                self.displayed_tree_mut().try_select_previous_filtered(
-                    |line| line.is_dir(),
-                    page_height,
-                );
-                CmdResult::Keep
-            }
             Internal::next_dir => {
                 self.displayed_tree_mut().try_select_next_filtered(
                     |line| line.is_dir(),
-                    page_height,
-                );
-                CmdResult::Keep
-            }
-            Internal::previous_match => {
-                self.displayed_tree_mut().try_select_previous_filtered(
-                    |line| line.direct_match,
                     page_height,
                 );
                 CmdResult::Keep
@@ -442,14 +408,12 @@ impl PanelState for BrowserState {
                 );
                 CmdResult::Keep
             }
-            Internal::previous_same_depth => {
-                self.displayed_tree_mut().try_select_previous_same_depth(page_height);
-                CmdResult::Keep
-            }
             Internal::next_same_depth => {
                 self.displayed_tree_mut().try_select_next_same_depth(page_height);
                 CmdResult::Keep
             }
+            Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang, false)?,
+            Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
             Internal::page_down => {
                 let tree = self.displayed_tree_mut();
                 if !tree.try_scroll(page_height as i32, page_height) {
@@ -508,25 +472,28 @@ impl PanelState for BrowserState {
             }
             Internal::panel_right_no_open => CmdResult::HandleInApp(Internal::panel_right_no_open),
             Internal::parent => self.go_to_parent(screen, con, bang),
+            Internal::previous_dir => {
+                self.displayed_tree_mut().try_select_previous_filtered(
+                    |line| line.is_dir(),
+                    page_height,
+                );
+                CmdResult::Keep
+            }
+            Internal::previous_match => {
+                self.displayed_tree_mut().try_select_previous_filtered(
+                    |line| line.direct_match,
+                    page_height,
+                );
+                CmdResult::Keep
+            }
+            Internal::previous_same_depth => {
+                self.displayed_tree_mut().try_select_previous_same_depth(page_height);
+                CmdResult::Keep
+            }
             Internal::print_tree => {
                 print::print_tree(self.displayed_tree(), cc.app.screen, cc.app.panel_skin, con)?
             }
-            Internal::root_up => {
-                let tree = self.displayed_tree();
-                let root = tree.root();
-                if let Some(new_root) = root.parent() {
-                    self.modified(
-                        screen,
-                        new_root.to_path_buf(),
-                        tree.options.clone(),
-                        None,
-                        bang,
-                        con,
-                    )
-                } else {
-                    CmdResult::error(format!("{root:?} has no parent"))
-                }
-            }
+            Internal::quit => CmdResult::Quit,
             Internal::root_down => {
                 let tree = self.displayed_tree();
                 if tree.selection > 0 {
@@ -546,6 +513,55 @@ impl PanelState for BrowserState {
                 } else {
                     CmdResult::error("No selected line")
                 }
+            }
+            Internal::root_up => {
+                let tree = self.displayed_tree();
+                let root = tree.root();
+                if let Some(new_root) = root.parent() {
+                    self.modified(
+                        screen,
+                        new_root.to_path_buf(),
+                        tree.options.clone(),
+                        None,
+                        bang,
+                        con,
+                    )
+                } else {
+                    CmdResult::error(format!("{root:?} has no parent"))
+                }
+            }
+            Internal::search_again => {
+                match self.filtered_tree.as_ref().map(|t| t.total_search) {
+                    None => {
+                        // we delegate to the app the task of looking for a preview pattern
+                        // used before this state
+                        CmdResult::HandleInApp(Internal::search_again)
+                    }
+                    Some(true) => {
+                        CmdResult::error("search was already total: all possible matches have been ranked")
+                    }
+                    Some(false) => {
+                        self.search(self.displayed_tree().options.pattern.clone(), true);
+                        CmdResult::Keep
+                    }
+                }
+            }
+            Internal::select => internal_select::on_internal(
+                internal_exec,
+                input_invocation,
+                trigger_type,
+                self.displayed_tree_mut(),
+                app_state,
+                cc,
+            ),
+            Internal::select_first => {
+                self.displayed_tree_mut().try_select_first();
+                CmdResult::Keep
+            }
+            Internal::select_last => {
+                let page_height = BrowserState::page_height(screen);
+                self.displayed_tree_mut().try_select_last(page_height);
+                CmdResult::Keep
             }
             Internal::stage_all_directories => {
                 let pattern = self.displayed_tree().options.pattern.clone();
@@ -576,15 +592,6 @@ impl PanelState for BrowserState {
                 } else {
                     CmdResult::Keep
                 }
-            }
-            Internal::select_first => {
-                self.displayed_tree_mut().try_select_first();
-                CmdResult::Keep
-            }
-            Internal::select_last => {
-                let page_height = BrowserState::page_height(screen);
-                self.displayed_tree_mut().try_select_last(page_height);
-                CmdResult::Keep
             }
             Internal::start_end_panel => {
                 if cc.panel.purpose.is_arg_edition() {
@@ -652,7 +659,16 @@ impl PanelState for BrowserState {
                 #[cfg(not(feature = "trash"))]
                 CmdResult::DisplayError("feature not enabled or platform does not support trash".into())
             }
-            Internal::quit => CmdResult::Quit,
+            Internal::up_tree => match self.displayed_tree().root().parent() {
+                Some(path) => internal_focus::on_path(
+                    path.to_path_buf(),
+                    screen,
+                    self.displayed_tree().options.clone(),
+                    bang,
+                    con,
+                ),
+                None => CmdResult::error("no parent found"),
+            },
             _ => self.on_internal_generic(
                 w,
                 invocation_parser,

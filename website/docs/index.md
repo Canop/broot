@@ -111,6 +111,8 @@ Broot displays images in high resolution when the terminal supports Kitty's grap
 
 ![kitty preview](img/20201127-kitty-preview.png)
 
+With [transformers](conf_file/#transformers), you can also preview PDF or Office files.
+
 # Apply a command to a file
 
 ![size](img/20230930-edit.png)

@@ -8,11 +8,7 @@ use {
             Sequence,
         },
         conf::Conf,
-        display::{
-            Areas,
-            Screen,
-            W,
-        },
+        display::*,
         errors::ProgramError,
         file_sum,
         git,
@@ -104,7 +100,7 @@ impl App {
         let panel = Panel::new(
             PanelId::from(0),
             browser_state,
-            Areas::create(&mut Vec::new(), 0, screen, false),
+            Areas::create(&mut Vec::new(), &con.layout_instructions, 0, screen, false),
             con,
         );
         let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
@@ -191,6 +187,7 @@ impl App {
     fn close_panel(
         &mut self,
         panel_idx: usize,
+        con: &AppContext,
     ) -> bool {
         let active_panel_id = self.panels[self.active_panel_idx].id;
         if let Some(preview_id) = self.preview_panel {
@@ -214,6 +211,7 @@ impl App {
             }
             Areas::resize_all(
                 self.panels.as_mut_slice(),
+                &con.layout_instructions,
                 self.screen,
                 self.preview_panel.is_some(),
             );
@@ -233,9 +231,9 @@ impl App {
     /// Close the panel too if that was its only state.
     /// Close nothing and return false if there's not
     /// at least two states in the app.
-    fn remove_state(&mut self) -> bool {
+    fn remove_state(&mut self, con: &AppContext) -> bool {
         self.panels[self.active_panel_idx].remove_state()
-            || self.close_panel(self.active_panel_idx)
+            || self.close_panel(self.active_panel_idx, con)
     }
 
     /// redraw the whole screen. All drawing
@@ -363,7 +361,7 @@ impl App {
                             .map(|p| p.to_string_lossy().to_string());
                     }
                 }
-                if self.close_panel(close_idx) {
+                if self.close_panel(close_idx, con) {
                     let screen = self.screen;
                     self.mut_state().refresh(screen, con);
                     if let Some(new_arg) = new_arg {
@@ -383,6 +381,15 @@ impl App {
                 } else {
                     self.quitting = true;
                 }
+            }
+            ChangeLayout(instruction) => {
+                con.layout_instructions.push(instruction);
+                Areas::resize_all(
+                    self.panels.as_mut_slice(),
+                    &con.layout_instructions,
+                    self.screen,
+                    self.preview_panel.is_some(),
+                );
             }
             DisplayError(txt) => {
                 error = Some(txt);
@@ -404,7 +411,7 @@ impl App {
                             // we're here because the state wants us to either move to the panel
                             // to the left, or close the rightest one
                             if self.active_panel_idx == 0 {
-                                self.close_panel(self.panels.len().get() - 1);
+                                self.close_panel(self.panels.len().get() - 1, con);
                                 None
                             } else {
                                 Some(self.active_panel_idx - 1)
@@ -413,7 +420,7 @@ impl App {
                             // panel_right
                             // we either move to the right or close the leftest panel
                             if self.active_panel_idx + 1 == self.panels.len().get() {
-                                self.close_panel(0);
+                                self.close_panel(0, con);
                                 None
                             } else {
                                 Some(self.active_panel_idx + 1)
@@ -435,6 +442,29 @@ impl App {
                                 .refresh_input_status(app_state, &app_cmd_context);
                         }
                     }
+                    Internal::search_again => {
+                        if let Some(raw_pattern) = &self.panel().last_raw_pattern {
+                            let sequence = Sequence::new_single(raw_pattern.clone());
+                            self.tx_seqs.send(sequence).unwrap();
+                        }
+                    }
+                    Internal::set_syntax_theme => {
+                        let arg = cmd.as_verb_invocation().and_then(|vi| vi.args.as_ref());
+                        match arg {
+                            Some(arg) => match SyntaxTheme::from_str(arg) {
+                                Ok(theme) => {
+                                    con.syntax_theme = Some(theme);
+                                    self.update_preview(con, true);
+                                }
+                                Err(e) => {
+                                    error = Some(e.to_string());
+                                }
+                            },
+                            None => {
+                                error = Some("no theme provided".to_string());
+                            }
+                        }
+                    }
                     Internal::toggle_second_tree => {
                         let panels_count = self.panels.len().get();
                         let trees_count = self
@@ -447,7 +477,7 @@ impl App {
                             if panels_count >= con.max_panels_count {
                                 for i in (0..panels_count).rev() {
                                     if self.panels[i].state().get_type() != PanelStateType::Tree {
-                                        self.close_panel(i);
+                                        self.close_panel(i, con);
                                         break;
                                     }
                                 }
@@ -479,26 +509,9 @@ impl App {
                                     if i == self.active_panel_idx {
                                         continue;
                                     }
-                                    self.close_panel(i);
+                                    self.close_panel(i, con);
                                     break;
                                 }
-                            }
-                        }
-                    }
-                    Internal::set_syntax_theme => {
-                        let arg = cmd.as_verb_invocation().and_then(|vi| vi.args.as_ref());
-                        match arg {
-                            Some(arg) => match SyntaxTheme::from_str(arg) {
-                                Ok(theme) => {
-                                    con.syntax_theme = Some(theme);
-                                    self.update_preview(con, true);
-                                }
-                                Err(e) => {
-                                    error = Some(e.to_string());
-                                }
-                            },
-                            None => {
-                                error = Some("no theme provided".to_string());
                             }
                         }
                     }
@@ -545,7 +558,7 @@ impl App {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
-                if self.remove_state() {
+                if self.remove_state(con) {
                     self.mut_state().refresh(app_cmd_context.screen, con);
                     self.mut_panel()
                         .refresh_input_status(app_state, &app_cmd_context);
@@ -557,7 +570,7 @@ impl App {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
-                if self.remove_state() {
+                if self.remove_state(con) {
                     let app_cmd_context = AppCmdContext {
                         panel_skin,
                         preview_panel: self.preview_panel,
@@ -675,6 +688,7 @@ impl App {
         let with_preview = purpose.is_preview() || self.preview_panel.is_some();
         let areas = Areas::create(
             self.panels.as_mut_slice(),
+            &con.layout_instructions,
             insertion_idx,
             self.screen,
             with_preview,
@@ -842,7 +856,7 @@ impl App {
             if !self.quitting {
                 self.display_panels(w, &skin, &app_state, con)?;
                 time!(
-                    Info,
+                    Debug,
                     "pending_tasks",
                     self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
                 );
@@ -867,6 +881,7 @@ impl App {
                         self.screen.set_terminal_size(width, height, con);
                         Areas::resize_all(
                             self.panels.as_mut_slice(),
+                            &con.layout_instructions,
                             self.screen,
                             self.preview_panel.is_some(),
                         );

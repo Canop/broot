@@ -271,7 +271,7 @@ terminal_title: "{file} 🐄"
 terminal_title = "{file} 🐄"
 ```
 
-# Miscellaneous
+# Preview
 
 ## Kitty Graphics
 
@@ -290,6 +290,87 @@ kitty_graphics_transmission: chunks
 kitty_graphics_transmission = "chunks"
 #kitty_graphics_transmission = "temp_file"
 ```
+
+## Transformers
+
+It's possible to define transformers to apply to some files before preview.
+
+This makes it possible for example to render a specific kind of files as images, or to beautify some text ones.
+
+Below are examples that you may adapt to your needs and prefered tools.
+They must be included in a `preview_transformers` array, as shown in the [default conf.hjson](https://github.com/Canop/broot/blob/main/resources/default-conf/conf.hjson).
+
+### Render PDF using mutool:
+
+![preview pdf](img/20240706-preview-pdf.png)
+
+```Hjson
+# Use mutool to render any PDF file as an image
+# In this example we use placeholders for the input and output files
+{
+	input_extensions: [ "pdf" ] // case doesn't matter
+	output_extension: png
+	mode: image
+	command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
+}
+```
+
+### Render Office files using libreoffice:
+
+![preview odt](img/20240715-preview-odt.png)
+
+```Hjson
+{
+    input_extensions: [ "xls", "xlsx", "doc", "docx", "ppt", "pptx", "ods", "odt", "odp" ]
+    output_extension: png
+    mode: image
+    command: [
+        "libreoffice", "--headless",
+        "--convert-to", "png",
+        "--outdir", "{output-dir}",
+        "{input-path}"
+    ]
+}
+```
+
+### Beautify JSON using jq
+
+![preview json](img/20240706-preview-json.png)
+
+```Hjson
+# Use jq to beautify JSON
+# In this example, the command refers to neither the input nor the output,
+# so broot pipes them to the stdin and stdout of the jq process
+{
+	input_extensions: [ "json" ]
+	output_extension: json
+	mode: text
+	command: [ "jq" ]
+}
+```
+
+## Match surroundings
+
+You may limit the filtered view to just the matching lines:
+
+![0 line around match](img/20240706-match-surrounding-0-0.png)
+
+But if you want to have more than just the matching lines displayed in preview, you may set those parameters to
+
+```Hjson
+lines_before_match_in_preview: 1
+lines_after_match_in_preview: 1
+```
+```TOML
+lines_before_match_in_preview = 1
+lines_after_match_in_preview = 1
+```
+
+And you'll get
+
+![1 line around match](img/20240706-match-surrounding-1-1.png)
+
+# Miscellaneous
 
 ## Keyboard enhancements
 
@@ -348,8 +429,7 @@ file_sum_threads_count = 10
 ## Quit on last cancel
 
 You can usually cancel the last state change on escape.
-If you want the escape key to quit broot when there's nothing to cancel (for example when you just opened broot), you can set `quit_on_last_cancel` to true.
-this parameter
+If you want the escape key to quit broot when there's nothing to cancel (for example when you just opened broot), you can set `quit_on_last_cancel` to true:
 
 ```Hjson
 quit_on_last_cancel: true
@@ -388,16 +468,3 @@ show_matching_characters_on_path_searches = false
 which gives this:
 
 ![not shown](img/subpath-match-not-shown.png)
-
-## Lines surrounding a match in preview
-
-If you want to have more than just the matching lines displayed in preview, you may changes those parameters in config:
-
-```Hjson
-lines_before_match_in_preview: 0
-lines_after_match_in_preview: 0
-```
-```TOML
-lines_before_match_in_preview = 0
-lines_after_match_in_preview = 0
-```

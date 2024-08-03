@@ -7,6 +7,7 @@
 //! In a correct installation, we have:
 //! - a function declaration script in ~/.local/share/broot/launcher/fish/br.fish
 //! - a link to that script in ~/.config/fish/functions/br.fish
+//!
 //! (exact paths depend on XDG variables)
 //!
 //! fish stores functions in FISH_CONFIG_DIR/functions (for example,

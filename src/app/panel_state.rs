@@ -2,12 +2,12 @@ use {
     super::*,
     crate::{
         command::*,
-        display::{Screen, W},
+        display::*,
         errors::ProgramError,
         flag::Flag,
         help::HelpState,
         pattern::*,
-        preview::{PreviewMode, PreviewState},
+        preview::*,
         print,
         stage::*,
         task_sync::Dam,
@@ -157,6 +157,25 @@ pub trait PanelState {
                 validate_purpose: false,
                 panel_ref: PanelReference::Active,
             },
+            Internal::move_panel_divider => {
+                let MoveDividerArgs { divider, dx } = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    MoveDividerArgs { divider: 0, dx: 1 },
+                );
+                CmdResult::ChangeLayout(LayoutInstruction::MoveDivider { divider, dx })
+            }
+            Internal::default_layout => {
+                CmdResult::ChangeLayout(LayoutInstruction::Clear)
+            }
+            Internal::set_panel_width => {
+                let SetPanelWidthArgs { panel, width } = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    SetPanelWidthArgs { panel: 0, width: 100 },
+                );
+                CmdResult::ChangeLayout(LayoutInstruction::SetPanelWidth { panel, width })
+            }
             #[cfg(feature = "trash")]
             Internal::purge_trash => {
                 let res = trash::os_limited::list()
@@ -1137,4 +1156,5 @@ pub fn get_arg<T: Copy + FromStr>(
         .and_then(|s| s.parse::<T>().ok())
         .unwrap_or(default)
 }
+
 

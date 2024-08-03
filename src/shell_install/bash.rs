@@ -7,6 +7,7 @@
 //! - a function declaration script in ~/.local/share/broot/launcher/bash/br/1
 //! - a link to that script in ~/.config/broot/launcher/bash/br/1
 //! - a line to source the link in ~/.bashrc and ~/.zshrc
+//!
 //! (exact paths depend on XDG variables)
 
 use {

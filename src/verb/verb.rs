@@ -21,14 +21,17 @@ use {
 /// Verbs are the engines of broot commands, and apply
 /// - to the selected file (if user-defined, then must contain {file}, {parent} or {directory})
 /// - to the current app state
+///
 /// There are two types of verbs executions:
 /// - external programs or commands (cd, mkdir, user defined commands, etc.)
 /// - internal behaviors (focusing a path, going back, showing the help, etc.)
+///
 /// Some verbs are builtins, some other ones are created by configuration.
+///
 /// Both builtins and configured vers can be internal or external based.
 ///
 /// Verbs can't be cloned. Two verbs are equal if they have the same address
-/// in memory.
+///   in memory.
 #[derive(Debug)]
 pub struct Verb {
 

@@ -3,6 +3,7 @@ use {
     crate::{
         browser::BrowserState,
         command::Sequence,
+        display::LayoutInstruction,
         errors::TreeBuildError,
         launchable::Launchable,
         verb::Internal,
@@ -36,6 +37,7 @@ pub enum CmdResult {
         validate_purpose: bool,
         panel_ref: PanelReference,
     },
+    ChangeLayout(LayoutInstruction),
     DisplayError(String),
     ExecuteSequence {
         sequence: Sequence,
@@ -110,6 +112,7 @@ impl fmt::Debug for CmdResult {
             "{}",
             match self {
                 CmdResult::ApplyOnPanel { .. } => "ApplyOnPanel",
+                CmdResult::ChangeLayout(_) => "ChangeLayout",
                 CmdResult::ClosePanel {
                     validate_purpose: false, ..
                 } => "CancelPanel",

@@ -127,3 +127,11 @@ custom_error! {pub SvgError
     Internal { message: &'static str } = "Internal error : {message}",
     Svg {source: resvg::usvg::Error} = "SVG Error: {source}",
 }
+
+custom_error! {pub PreviewTransformerError
+    InvalidInput = "Invalid input",
+    NoOutput = "No output",
+    Io {source: io::Error} = "IO Error : {source}",
+    ProcessInterrupted = "Process interrupted",
+    ProcessFailed { code: i32 } = "Execution failed with code {code}",
+}

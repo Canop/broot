@@ -72,7 +72,7 @@ impl PanelInput {
     /// consume the event to
     /// - maybe change the input
     /// - build a command
-    /// then redraw the input field
+    ///   then redraw the input field
     #[allow(clippy::too_many_arguments)]
     pub fn on_event(
         &mut self,

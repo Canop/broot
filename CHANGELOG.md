@@ -1,3 +1,30 @@
+### next
+#### Major Feature: :search_again
+ctrl-s now triggers `:search_again` which either
+- brings back the last used search pattern, when no filtering pattern is active
+- does a "total search" if a filtering pattern is active and the search wasn't complete
+#### Major Feature: internals changing panel widths
+* `set_panel_width`, taking as parameter the index of the panel and the desired width
+* `move_panel_divider`, taking as parameter the index of the divider and the desired change
+`ctrl-<` is bound by default to `:move_panel_divider 0 -1`
+`ctrl->` is bound by default to `:move_panel_divider 0 1`
+See http://dystroy.org/broot/panels/#resize-panels
+#### Minor Changes:
+- when git file infos are shown, and git ignored files aren't hidden, those files are flagged with a 'I' - Fix #916
+- Remove .bak extension from content search exclusion list - Fix #915
+- Update nerdfont and vscode icons - Thanks @jpaju
+
+### v1.40.0 - 2024-07-16
+<a name="v1.40.0"></a>
+#### Major Feature: preview transformers
+You can now define preview transformers to be applied before preview.
+They allow for example previewing PDF or Office files, or beautifying JSON files.
+Edit the `preview_transformers` array in your conf.hjson file.
+See https://dystroy.org/broot/conf_file/#preview
+#### Fixes
+- fix search on root - Fix #904
+- fix some verb cycling problems - Fix #902
+
 ### v1.39.2 - 2024-07-08
 <a name="v1.39.2"></a>
 - fix UNC paths being displayed on Windows (regression at 1.39.1) - Fix #812 (again)
