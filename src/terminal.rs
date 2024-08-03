@@ -16,7 +16,7 @@ pub fn update_title(
     con: &AppContext,
 ) {
     if let Some(pattern) = &con.terminal_title_pattern {
-        set_title(w, pattern, app_state);
+        set_title(w, pattern, app_state, con);
     }
 }
 
@@ -24,12 +24,13 @@ fn set_title(
     w: &mut W,
     pattern: &ExecPattern,
     app_state: &AppState,
+    con: &AppContext,
 ) {
     let builder = ExecutionStringBuilder::without_invocation(
         SelInfo::from_path(&app_state.root),
         app_state,
     );
-    let title = builder.shell_exec_string(pattern);
+    let title = builder.shell_exec_string(pattern, con);
     set_title_str(w, &title)
 }
 

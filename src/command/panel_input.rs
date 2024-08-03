@@ -449,7 +449,8 @@ impl PanelInput {
                     app_state,
                 );
                 let verb_invocation = exec_builder.invocation_with_default(
-                    &invocation_parser.invocation_pattern
+                    &invocation_parser.invocation_pattern,
+                    con,
                 );
                 let mut parts = parts;
                 parts.verb_invocation = Some(verb_invocation);

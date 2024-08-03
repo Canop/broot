@@ -44,6 +44,7 @@ pub fn on_internal(
                 &tree.selected_line().path,
                 input_arg,
                 app_state,
+                &cc.app.con,
             );
             on_path(path, tree, screen, bang)
         }
@@ -84,6 +85,7 @@ fn path_from_input(
     base_path: &Path, // either the selected path or the root path
     input_arg: Option<&String>,
     app_state: &AppState,
+    con: &AppContext,
 ) -> PathBuf {
     match (input_arg, internal_exec.arg.as_ref()) {
         (Some(input_arg), Some(verb_arg)) => {
@@ -100,7 +102,7 @@ fn path_from_input(
                 app_state,
                 Some(input_arg),
             );
-            path_builder.path(verb_arg)
+            path_builder.path(verb_arg, con)
         }
         (Some(input_arg), None) => {
             // the verb defines nothing
