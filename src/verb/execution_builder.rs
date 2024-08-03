@@ -471,8 +471,9 @@ mod execution_builder_test {
             map.insert(k.to_owned(), v.to_owned());
         }
         builder.invocation_values = Some(map);
+        let con = AppContext::default();
         for exec_pattern in exec_patterns {
-            let exec_token = builder.exec_token(&exec_pattern);
+            let exec_token = builder.exec_token(&exec_pattern, &con);
             assert_eq!(exec_token, chk_exec_token);
         }
     }

@@ -259,6 +259,17 @@ impl AppContext {
     }
 }
 
+/// An unsafe implementation of Default, for tests only
+#[cfg(test)]
+impl Default for AppContext {
+    fn default() -> Self {
+        let mut config = Conf::default();
+        let verb_store = VerbStore::new(&mut config).unwrap();
+        let launch_args = parse_default_flags("").unwrap();
+        Self::from(launch_args, verb_store, &config).unwrap()
+    }
+}
+
 /// try to determine whether the terminal supports true
 /// colors. This doesn't work well, hence the use of an
 /// optional config setting.

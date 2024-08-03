@@ -847,7 +847,7 @@ pub trait PanelState {
                 None
             },
         );
-        let sequence = exec_builder.sequence(&seq_ex.sequence, &cc.app.con.verb_store, &cc.app.con);
+        let sequence = exec_builder.sequence(&seq_ex.sequence, &cc.app.con.verb_store, cc.app.con);
         Ok(CmdResult::ExecuteSequence { sequence })
     }
 
@@ -1114,7 +1114,7 @@ pub trait PanelState {
                     sel_info,
                     app_state,
                     invocation,
-                    &cc.app.con,
+                    cc.app.con,
                 ),
                 false,
             )

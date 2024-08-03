@@ -44,7 +44,7 @@ pub fn on_internal(
                 &tree.selected_line().path,
                 input_arg,
                 app_state,
-                &cc.app.con,
+                cc.app.con,
             );
             on_path(path, tree, screen, bang)
         }

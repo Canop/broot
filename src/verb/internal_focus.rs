@@ -201,7 +201,7 @@ pub fn on_internal(
                 selected_path,
                 input_arg,
                 app_state,
-                &cc.app.con,
+                cc.app.con,
             );
             on_path(path, screen, tree_options, bang, con)
         }
