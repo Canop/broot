@@ -2018,9 +2018,9 @@ dependencies = [
 
 [[package]]
 name = "splitty"
-version = "1.0.1"
+version = "1.0.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8dae68aa5bd5dc2d3a2137b0f6bcdd8255dce1983dc155fe0246572e179c9c3a"
+checksum = "2db70a1e6827e4d71c655b606caf1346862c38ae52ab4f58c32635e7c7aedd67"
 
 [[package]]
 name = "str-buf"
