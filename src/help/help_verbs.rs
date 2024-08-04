@@ -46,7 +46,7 @@ pub fn matching_verb_rows<'v>(
     con: &'v AppContext,
 ) -> Vec<MatchingVerbRow<'v>> {
     let mut rows = Vec::new();
-    for verb in con.verb_store.verbs().iter() {
+    for verb in con.verb_store.verbs() {
         if !verb.show_in_doc {
             continue;
         }

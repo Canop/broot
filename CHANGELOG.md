@@ -1,4 +1,5 @@
-### next
+### v1.41.0 - 2024-08-04
+<a name="v1.41.0"></a>
 #### Major Feature: :search_again
 ctrl-s now triggers `:search_again` which either
 - brings back the last used search pattern, when no filtering pattern is active
@@ -13,6 +14,7 @@ See http://dystroy.org/broot/panels/#resize-panels
 - when git file infos are shown, and git ignored files aren't hidden, those files are flagged with a 'I' - Fix #916
 - Remove .bak extension from content search exclusion list - Fix #915
 - Update nerdfont and vscode icons - Thanks @jpaju
+- `{initial-root}` verb argument
 
 ### v1.40.0 - 2024-07-16
 <a name="v1.40.0"></a>

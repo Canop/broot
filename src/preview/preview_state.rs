@@ -20,9 +20,9 @@ use {
 };
 
 /// an application state dedicated to previewing files.
-/// It's usually the only state in its panel and is kept when
-/// the selection changes (other panels indirectly call
-/// set_selected_path).
+///
+/// It's usually the only state in its panel and is kept when the
+/// selection changes (other panels indirectly call `set_selected_path`).
 pub struct PreviewState {
     pub preview_area: Area,
     dirty: bool,   // true when background must be cleared
@@ -200,7 +200,7 @@ impl PanelState for PreviewState {
             self.pending_pattern = fp.pattern();
         };
         self.transform = con.preview_transformers.transform(&path, self.preferred_mode);
-        let preview_path = self.transform.as_ref().map(|c| &c.output_path).unwrap_or(&path);
+        let preview_path = self.transform.as_ref().map_or(&path, |c| &c.output_path);
         self.preview = Preview::new(preview_path, self.preferred_mode, con);
         if let Some(number) = selected_line_number {
             self.preview.try_select_line_number(number);

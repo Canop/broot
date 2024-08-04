@@ -673,8 +673,7 @@ pub trait PanelState {
                 } else {
                     let line = input_invocation
                         .and_then(|inv| inv.args.as_ref())
-                        .map(|s| s.as_str())
-                        .unwrap_or("");
+                        .map_or("", String::as_str);
                     verb_write(con, line)?;
                 }
                 CmdResult::Keep

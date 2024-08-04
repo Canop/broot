@@ -95,7 +95,7 @@ impl KittyManager {
         kept_id: KittyImageId,
         drawing_count: usize,
     ) {
-        for image in self.rendered_images.iter_mut() {
+        for image in &mut self.rendered_images {
             if image.image_id == kept_id {
                 image.drawing_count = drawing_count;
             }

@@ -396,7 +396,7 @@ impl PanelState for BrowserState {
             }
             Internal::next_dir => {
                 self.displayed_tree_mut().try_select_next_filtered(
-                    |line| line.is_dir(),
+                    TreeLine::is_dir,
                     page_height,
                 );
                 CmdResult::Keep
@@ -474,7 +474,7 @@ impl PanelState for BrowserState {
             Internal::parent => self.go_to_parent(screen, con, bang),
             Internal::previous_dir => {
                 self.displayed_tree_mut().try_select_previous_filtered(
-                    |line| line.is_dir(),
+                    TreeLine::is_dir,
                     page_height,
                 );
                 CmdResult::Keep

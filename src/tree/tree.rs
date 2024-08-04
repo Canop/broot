@@ -75,14 +75,14 @@ impl Tree {
         //  - a node can come from a not parent node, when we followed a link
         let mut bid_parents: FxHashMap<BId, BId> = FxHashMap::default();
         let mut bid_lines: FxHashMap<BId, &TreeLine> = FxHashMap::default();
-        for line in self.lines[..].iter() {
+        for line in &self.lines[..] {
             if let Some(parent_bid) = line.parent_bid {
                 bid_parents.insert(line.bid, parent_bid);
             }
             bid_lines.insert(line.bid, line);
         }
         let mut sort_paths: FxHashMap<BId, String> = FxHashMap::default();
-        for line in self.lines[1..].iter() {
+        for line in &self.lines[1..] {
             let mut sort_path = String::new();
             let mut bid = line.bid;
             while let Some(l) = bid_lines.get(&bid) {

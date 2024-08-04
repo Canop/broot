@@ -118,7 +118,7 @@ impl<'a> SelInfo<'a> {
             SelInfo::None => true,
             SelInfo::One(sel) => condition.accepts_path(sel.path),
             SelInfo::More(stage) => {
-                for path in stage.paths().iter() {
+                for path in stage.paths() {
                     if !condition.accepts_path(path) {
                         return false;
                     }

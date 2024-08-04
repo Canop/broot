@@ -424,7 +424,7 @@ impl<'c> TreeBuilder<'c> {
         out_blines: &[BId],
     ) {
         let mut count = 1;
-        for id in out_blines[1..].iter() {
+        for id in &out_blines[1..] {
             if self.blines[*id].has_match {
                 //debug!("bline before trimming: {:?}", &self.blines[*idx].path);
                 count += 1;
@@ -434,7 +434,7 @@ impl<'c> TreeBuilder<'c> {
             }
         }
         let mut remove_queue: BinaryHeap<SortableBId> = BinaryHeap::new();
-        for id in out_blines[1..].iter() {
+        for id in &out_blines[1..] {
             let bline = &self.blines[*id];
             if bline.has_match
                 && bline.nb_kept_children == 0
@@ -533,7 +533,7 @@ impl<'c> TreeBuilder<'c> {
         out_blines: &[BId],
     ) -> Tree {
         let mut lines: Vec<TreeLine> = Vec::new();
-        for id in out_blines.iter() {
+        for id in out_blines {
             if self.blines[*id].has_match {
                 // we need to count the children, so we load them
                 if self.blines[*id].can_enter() && self.blines[*id].children.is_none() {
@@ -566,7 +566,7 @@ impl<'c> TreeBuilder<'c> {
             tree.git_status = ComputationResult::NotComputed;
             // it would make no sense to keep only files having a git status and
             // not display that type
-            for line in tree.lines.iter_mut() {
+            for line in &mut tree.lines {
                 line.git_status = computer.line_status(&line.path);
             }
         }

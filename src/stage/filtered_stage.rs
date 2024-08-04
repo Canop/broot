@@ -5,7 +5,7 @@ use {
     },
     std::{
         convert::TryFrom,
-        path::Path,
+        path::{Path, PathBuf},
     },
 };
 
@@ -93,7 +93,7 @@ impl FilteredStage {
         self.paths_idx
             .get(idx)
             .and_then(|&idx| stage.paths().get(idx))
-            .map(|p| p.as_path())
+            .map(PathBuf::as_path)
     }
     pub fn path_sel<'s>(&self, stage: &'s Stage, idx: usize) -> Option<(&'s Path, bool)> {
         self.path(stage, idx)

@@ -32,7 +32,7 @@ pub fn print_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<CmdResult>
         SelInfo::One(sel) => sel.path.to_string_lossy().to_string(),
         SelInfo::More(stage) => {
             let mut string = String::new();
-            for path in stage.paths().iter() {
+            for path in stage.paths() {
                 string.push_str(&path.to_string_lossy());
                 string.push('\n');
             }
@@ -67,7 +67,7 @@ pub fn print_relative_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<C
         SelInfo::One(sel) => relativize_path(sel.path, con)?,
         SelInfo::More(stage) => {
             let mut string = String::new();
-            for path in stage.paths().iter() {
+            for path in stage.paths() {
                 string.push_str(&relativize_path(path, con)?);
                 string.push('\n');
             }

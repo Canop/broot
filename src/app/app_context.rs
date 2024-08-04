@@ -163,7 +163,7 @@ impl AppContext {
         let search_modes = config
             .search_modes
             .as_ref()
-            .map(|map| map.try_into())
+            .map(TryInto::try_into)
             .transpose()?
             .unwrap_or_default();
         let ext_colors = ExtColorMap::try_from(&config.ext_colors)
@@ -248,7 +248,7 @@ impl AppContext {
     pub fn cmd(&self) -> Option<&str> {
         self.launch_args.cmd.as_ref().or(
             self.config_default_args.as_ref().and_then(|args| args.cmd.as_ref())
-        ).map(|s| s.as_str())
+        ).map(String::as_str)
     }
     pub fn initial_mode(&self) -> Mode {
         if self.modal {

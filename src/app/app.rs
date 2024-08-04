@@ -35,7 +35,7 @@ use {
     },
     std::{
         io::Write,
-        path::PathBuf,
+        path::{Path, PathBuf},
         str::FromStr,
         sync::{
             Arc,
@@ -280,7 +280,7 @@ impl App {
             if let Some(preview_id) = self.preview_panel {
                 for (idx, panel) in self.panels.iter().enumerate() {
                     if self.active_panel_idx != idx && panel.id != preview_id {
-                        return panel.state().selected_path().map(|p| p.to_path_buf());
+                        return panel.state().selected_path().map(Path::to_path_buf);
                     }
                 }
             }
@@ -290,7 +290,7 @@ impl App {
             self.panels[non_focused_panel_idx]
                 .state()
                 .selected_path()
-                .map(|p| p.to_path_buf())
+                .map(Path::to_path_buf)
         } else {
             None
         }
@@ -774,7 +774,7 @@ impl App {
     }
 
     fn has_pending_task(&mut self) -> bool {
-        self.panels.iter().any(|p| p.has_pending_task())
+        self.panels.iter().any(Panel::has_pending_task)
     }
 
     /// This is the main loop of the application

@@ -46,6 +46,7 @@ command = [
 	"-A", "clippy::needless_range_loop",
 	"-A", "clippy::neg_multiply",
 	"-A", "clippy::vec_init_then_push",
+	"-W", "clippy::explicit_iter_loop",
 ]
 need_stdout = false
 

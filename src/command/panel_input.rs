@@ -285,7 +285,7 @@ impl PanelInput {
         sel_info: SelInfo<'_>,
         panel_state_type: PanelStateType,
     ) -> Option<&'c Verb> {
-        for verb in con.verb_store.verbs().iter() {
+        for verb in con.verb_store.verbs() {
             // note that there can be several verbs with the same key and
             // not all of them can apply
             if !verb.keys.contains(&key) {
