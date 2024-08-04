@@ -89,10 +89,11 @@ impl ExternalExecution {
     fn working_dir_path(
         &self,
         builder: &ExecutionStringBuilder<'_>,
+        con: &AppContext,
     ) -> Option<PathBuf> {
         self.working_dir
             .as_ref()
-            .map(|pattern| builder.path(pattern))
+            .map(|pattern| builder.path(pattern, con))
             .filter(|pb| {
                 if pb.exists() {
                     true
@@ -119,7 +120,7 @@ impl ExternalExecution {
             // Broot was probably launched as br.
             // the whole command is exported in the passed file
             let f = OpenOptions::new().append(true).open(export_path)?;
-            writeln!(&f, "{}", builder.shell_exec_string(&self.exec_pattern))?;
+            writeln!(&f, "{}", builder.shell_exec_string(&self.exec_pattern, con))?;
             Ok(CmdResult::Quit)
         } else {
             Ok(CmdResult::error(
@@ -141,8 +142,8 @@ impl ExternalExecution {
             ));
         }
         let launchable = Launchable::program(
-            builder.exec_token(&self.exec_pattern),
-            self.working_dir_path(&builder),
+            builder.exec_token(&self.exec_pattern, con),
+            self.working_dir_path(&builder, con),
             self.switch_terminal,
             con,
         )?;
@@ -157,12 +158,12 @@ impl ExternalExecution {
         builder: ExecutionStringBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
-        let working_dir_path = self.working_dir_path(&builder);
+        let working_dir_path = self.working_dir_path(&builder, con);
         match &builder.sel_info {
             SelInfo::None | SelInfo::One(_) => {
                 // zero or one selection -> only one execution
                 let launchable = Launchable::program(
-                    builder.exec_token(&self.exec_pattern),
+                    builder.exec_token(&self.exec_pattern, con),
                     working_dir_path,
                     self.switch_terminal,
                     con,
@@ -184,7 +185,7 @@ impl ExternalExecution {
                     });
                 for sel in sels {
                     let launchable = Launchable::program(
-                        builder.sel_exec_token(&self.exec_pattern, Some(sel)),
+                        builder.sel_exec_token(&self.exec_pattern, Some(sel), con),
                         working_dir_path.clone(),
                         self.switch_terminal,
                         con,

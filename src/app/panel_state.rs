@@ -668,7 +668,7 @@ pub trait PanelState {
                     }
                 };
                 if let Some(pattern) = internal_exec.arg.as_ref() {
-                    let line = exec_builder.string(pattern);
+                    let line = exec_builder.string(pattern, con);
                     verb_write(con, &line)?;
                 } else {
                     let line = input_invocation
@@ -847,7 +847,7 @@ pub trait PanelState {
                 None
             },
         );
-        let sequence = exec_builder.sequence(&seq_ex.sequence, &cc.app.con.verb_store);
+        let sequence = exec_builder.sequence(&seq_ex.sequence, &cc.app.con.verb_store, cc.app.con);
         Ok(CmdResult::ExecuteSequence { sequence })
     }
 
@@ -1092,7 +1092,7 @@ pub trait PanelState {
         verb: &Verb,
         invocation: &VerbInvocation,
         sel_info: SelInfo<'_>,
-        _cc: &CmdContext,
+        cc: &CmdContext,
         app_state: &AppState,
     ) -> Status {
         if sel_info.count_paths() > 1 {
@@ -1114,6 +1114,7 @@ pub trait PanelState {
                     sel_info,
                     app_state,
                     invocation,
+                    cc.app.con,
                 ),
                 false,
             )

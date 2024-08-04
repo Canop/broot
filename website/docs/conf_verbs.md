@@ -302,6 +302,7 @@ name | expanded to
 `{other-panel-parent}` | complete path of the current selection's parent in the other panel
 `{other-panel-directory}` | closest directory, either `{file}` or `{parent}` in the other panel
 `{root}` | current tree root (top of the displayed files tree)
+`{initial-root}` | tree root at launch
 `{git-root}` | The working directory of the Git repository containing the current selection
 `{git-name}` | Name of the working directory of the current Git repository
 `{file-git-relative}` | path of the current selection relative to the working directory of the containing Git repository. If the selection is not in a Git repository then the absolute path.

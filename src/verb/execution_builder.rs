@@ -95,9 +95,13 @@ impl<'b> ExecutionStringBuilder<'b> {
             }
         }
     }
-    fn get_raw_capture_replacement(&self, ec: &Captures<'_>) -> Option<String> {
+    fn get_raw_capture_replacement(
+        &self,
+        ec: &Captures<'_>,
+        con: &AppContext,
+    ) -> Option<String> {
         self.get_raw_replacement(|sel| {
-            self.get_raw_sel_capture_replacement(ec, sel)
+            self.get_raw_sel_capture_replacement(ec, sel, con)
         })
     }
     /// return the standard replacement (ie not one from the invocation)
@@ -105,10 +109,12 @@ impl<'b> ExecutionStringBuilder<'b> {
         &self,
         name: &str,
         sel: Option<Selection<'_>>,
+        con: &AppContext,
     ) -> Option<String> {
         debug!("repl name : {:?}", name);
         match name {
             "root" => Some(path_to_string(self.root)),
+            "initial-root" => Some(path_to_string(&con.initial_root)),
             "line" => sel.map(|s| s.line.to_string()),
             "file" => sel.map(|s| s.path)
                 .map(path_to_string),
@@ -188,9 +194,10 @@ impl<'b> ExecutionStringBuilder<'b> {
         &self,
         ec: &Captures<'_>,
         sel: Option<Selection<'_>>,
+        con: &AppContext,
     ) -> Option<String> {
         let name = ec.get(1).unwrap().as_str();
-        self.get_raw_sel_name_standard_replacement(name, sel)
+        self.get_raw_sel_name_standard_replacement(name, sel, con)
             .or_else(||{
                 // it's not one of the standard group names, so we'll look
                 // into the ones provided by the invocation pattern
@@ -216,8 +223,12 @@ impl<'b> ExecutionStringBuilder<'b> {
             })
     }
     #[inline]
-    fn get_capture_replacement(&self, ec: &Captures<'_>) -> String {
-        self.get_raw_capture_replacement(ec)
+    fn get_capture_replacement(
+        &self,
+        ec: &Captures<'_>,
+        con: &AppContext,
+    ) -> String {
+        self.get_raw_capture_replacement(ec, con)
             .unwrap_or_else(||
                 if self.keep_groups { ec[0].to_string() } else { "".to_string() }
             )
@@ -226,8 +237,9 @@ impl<'b> ExecutionStringBuilder<'b> {
         &self,
         ec: &Captures<'_>,
         sel: Option<Selection<'_>>,
+        con: &AppContext,
     ) -> String {
-        self.get_raw_sel_capture_replacement(ec, sel)
+        self.get_raw_sel_capture_replacement(ec, sel, con)
             .unwrap_or_else(||
                 if self.keep_groups { ec[0].to_string() } else { "".to_string() }
             )
@@ -239,6 +251,7 @@ impl<'b> ExecutionStringBuilder<'b> {
     pub fn invocation_with_default(
         &self,
         verb_invocation: &VerbInvocation,
+        con: &AppContext,
     ) -> VerbInvocation {
         VerbInvocation {
             name: verb_invocation.name.clone(),
@@ -250,7 +263,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                             .map(|default_name| default_name.as_str())
                             .and_then(|default_name|
                                 self.get_raw_replacement(|sel|
-                                    self.get_raw_sel_name_standard_replacement(default_name, sel)
+                                    self.get_raw_sel_name_standard_replacement(default_name, sel, con)
                                 )
                             )
                             .unwrap_or_default()
@@ -279,6 +292,7 @@ impl<'b> ExecutionStringBuilder<'b> {
         &self,
         sequence: &Sequence,
         verb_store: &VerbStore,
+        con: &AppContext,
     ) -> Sequence {
         let mut inputs = Vec::new();
         for input in sequence.raw.split(&sequence.separator) {
@@ -297,9 +311,9 @@ impl<'b> ExecutionStringBuilder<'b> {
                 })
                 .map_or(false, |verb| verb.get_internal().is_none());
             let input = if verb_is_external {
-                self.shell_exec_string(&ExecPattern::from_string(input))
+                self.shell_exec_string(&ExecPattern::from_string(input), con)
             } else {
-                self.string(input)
+                self.string(input, con)
             };
             inputs.push(input);
         }
@@ -312,11 +326,12 @@ impl<'b> ExecutionStringBuilder<'b> {
     pub fn string(
         &self,
         pattern: &str,
+        con: &AppContext,
     ) -> String {
         GROUP
             .replace_all(
                 pattern,
-                |ec: &Captures<'_>| self.get_capture_replacement(ec),
+                |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
             )
             .to_string()
     }
@@ -324,13 +339,14 @@ impl<'b> ExecutionStringBuilder<'b> {
     pub fn path(
         &self,
         pattern: &str,
+        con: &AppContext,
     ) -> PathBuf {
         path::path_from(
             self.base_dir(),
             path::PathAnchor::Unspecified,
             &GROUP.replace_all(
                 pattern,
-                |ec: &Captures<'_>| self.get_capture_replacement(ec),
+                |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
             )
         )
     }
@@ -338,12 +354,13 @@ impl<'b> ExecutionStringBuilder<'b> {
     pub fn shell_exec_string(
         &self,
         exec_pattern: &ExecPattern,
+        con: &AppContext,
     ) -> String {
         exec_pattern
             .apply(&|s| {
                 GROUP.replace_all(
                     s,
-                    |ec: &Captures<'_>| self.get_capture_replacement(ec),
+                    |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
                 ).to_string()
             })
             .fix_paths()
@@ -356,12 +373,13 @@ impl<'b> ExecutionStringBuilder<'b> {
         &self,
         exec_pattern: &ExecPattern,
         sel: Option<Selection<'_>>,
+        con: &AppContext,
     ) -> String {
         exec_pattern
             .apply(&|s| {
                 GROUP.replace_all(
                     s,
-                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel),
+                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel, con),
                 ).to_string()
             })
             .fix_paths()
@@ -372,12 +390,13 @@ impl<'b> ExecutionStringBuilder<'b> {
     pub fn exec_token(
         &self,
         exec_pattern: &ExecPattern,
+        con: &AppContext,
     ) -> Vec<String> {
         exec_pattern
             .apply(&|s| {
                 GROUP.replace_all(
                     s,
-                    |ec: &Captures<'_>| self.get_capture_replacement(ec),
+                    |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
                 ).to_string()
             })
             .fix_paths()
@@ -389,12 +408,13 @@ impl<'b> ExecutionStringBuilder<'b> {
         &self,
         exec_pattern: &ExecPattern,
         sel: Option<Selection<'_>>,
+        con: &AppContext,
     ) -> Vec<String> {
         exec_pattern
             .apply(&|s| {
                 GROUP.replace_all(
                     s,
-                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel),
+                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel, con),
                 ).to_string()
             })
             .fix_paths()
@@ -451,8 +471,9 @@ mod execution_builder_test {
             map.insert(k.to_owned(), v.to_owned());
         }
         builder.invocation_values = Some(map);
+        let con = AppContext::default();
         for exec_pattern in exec_patterns {
-            let exec_token = builder.exec_token(&exec_pattern);
+            let exec_token = builder.exec_token(&exec_pattern, &con);
             assert_eq!(exec_token, chk_exec_token);
         }
     }
