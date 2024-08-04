@@ -383,7 +383,7 @@ A small downside is that broot will react on key release instead of key press (s
 Another problem is that it may push you towards key combinations that you wouldn't be able to reuse when switching terminal.
 And finally, some terminals have buggy implementations (at time of writing).
 
-To enable those keyboard enhancements (and make it impossible for broot to detect multi non-modifier keys combinations), change this setting to true
+To enable those keyboard enhancements change this setting to true
 
 ```Hjson
 enable_kitty_keyboard: true
