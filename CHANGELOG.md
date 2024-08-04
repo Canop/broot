@@ -1,3 +1,7 @@
+### v1.41.1 - 2024-08-04
+<a name="v1.41.1"></a>
+- allow compilation with rustc 1.76 - Fix #925
+
 ### v1.41.0 - 2024-08-04
 <a name="v1.41.0"></a>
 #### Major Feature: :search_again
