@@ -566,7 +566,7 @@ impl<'c> TreeBuilder<'c> {
             tree.git_status = ComputationResult::NotComputed;
             // it would make no sense to keep only files having a git status and
             // not display that type
-            for line in &mut tree.lines {
+            for line in tree.lines.iter_mut() {
                 line.git_status = computer.line_status(&line.path);
             }
         }

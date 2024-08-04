@@ -12,7 +12,7 @@ license = "MIT"
 categories = ["command-line-utilities"]
 readme = "README.md"
 build = "build.rs"
-rust-version = "1.65"
+rust-version = "1.76"
 exclude = ["website", "broot*.zip"]
 
 [features]

@@ -30,7 +30,7 @@ pub struct FuzzyPattern {
 
 impl fmt::Display for FuzzyPattern {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        for &c in &self.chars {
+        for &c in self.chars.iter() {
             f.write_char(c)?
         }
         Ok(())
