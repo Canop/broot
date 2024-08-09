@@ -25,7 +25,7 @@ fn write_completions_file<G: Generator + Copy, P: AsRef<OsStr>>(generator: G, ou
         clap_complete::generate_to(
             generator,
             &mut args,
-            name.to_string(),
+            (*name).to_string(),
             &out_dir,
         ).expect("clap complete generation failed");
     }
@@ -49,7 +49,7 @@ fn build_man_page() -> std::io::Result<()> {
     let out_dir = PathBuf::from(out_dir);
     let cmd = Args::command();
     let man = clap_mangen::Man::new(cmd);
-    let mut buffer: Vec<u8> = Default::default();
+    let mut buffer = Vec::<u8>::default();
     man.render(&mut buffer)?;
     let file_path = out_dir.join("broot.1");
     std::fs::write(&file_path, buffer)?;

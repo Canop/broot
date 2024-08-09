@@ -533,10 +533,10 @@
 ( "file_type_opencl", 0xf15b ),
 ( "file_type_org", 0xe633 ), // 
 ( "file_type_outlook", 0xf0d22 ), // 󰴢
-( "file_type_ovpn", 0xf15b ), // 
+( "file_type_ovpn", 0xf15b ), //
 ( "file_type_package", 0xeb29 ), // 
 ( "file_type_paket", 0xf03d7 ), // 󰏗
-( "file_type_patch", 0xf15b ), // 
+( "file_type_patch", 0xf15b ), //
 ( "file_type_pcl", 0xf15b ), //
 ( "file_type_pddl", 0xf15b),
 ( "file_type_pddl_happenings", 0xf1b5 ), //

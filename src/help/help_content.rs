@@ -2,7 +2,7 @@ use {
     termimad::minimad::{TextTemplate, TextTemplateExpander},
 };
 
-static MD: &str = r#"
+static MD: &str = r"
 
 # broot ${version}
 
@@ -74,7 +74,7 @@ ${features
 * **${feature-name}:** ${feature-description}
 }
 
-"#;
+";
 
 /// build a markdown expander which will need to be
 /// completed with data and which then would be used to

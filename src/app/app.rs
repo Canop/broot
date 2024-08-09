@@ -913,13 +913,12 @@ impl App {
                         if self.quitting {
                             // is that a 100% safe way of quitting ?
                             return Ok(self.launch_at_end.take());
-                        } else {
-                            self.display_panels(w, &skin, &app_state, con)?;
-                            time!(
-                                "sequence pending tasks",
-                                self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
-                            );
                         }
+                        self.display_panels(w, &skin, &app_state, con)?;
+                        time!(
+                            "sequence pending tasks",
+                            self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
+                        );
                     }
                 }
                 Either::Second(None) => {

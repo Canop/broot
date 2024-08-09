@@ -15,17 +15,17 @@ use {
 /// specific scripts is upgraded to a new version
 const CURRENT_VERSION: usize = 4;
 
-const REFUSED_FILE_CONTENT: &str = r#"
+const REFUSED_FILE_CONTENT: &str = r"
 This file tells broot you refused the installation of the companion shell function.
 If you want to install it run
     broot -- install
-"#;
+";
 
-const INSTALLED_FILE_CONTENT: &str = r#"
+const INSTALLED_FILE_CONTENT: &str = r"
 This file tells broot the installation of the br function was done.
 If there's a problem and you want to install it again run
     broot -- install
-"#;
+";
 
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
 pub enum ShellInstallState {
