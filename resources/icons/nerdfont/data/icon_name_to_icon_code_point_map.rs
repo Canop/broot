@@ -522,7 +522,7 @@
 ( "file_type_nuget", 0xf15b ),
 ( "file_type_numpy", 0xf15b ),
 ( "file_type_nunjucks", 0xe679 ), // 
-( "file_type_nushell", 0xe691 ), // 
+( "file_type_nushell", 0xf07c6 ), // 󰟆
 ( "file_type_nuxt", 0xf1106 ), // 󱄆
 ( "file_type_nyc", 0xf15b ),
 ( "file_type_objectivec", 0xf0bf3 ), // 󰯳

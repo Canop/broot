@@ -406,6 +406,7 @@
 ( "nsriignore"              , "file_type_nsri"                    ) ,
 ( "nsrirc"                  , "file_type_nsri"                    ) ,
 ( "nsv"                     , "file_type_video"                   ) ,
+( "nu"                      , "file_type_nushell"                 ) ,
 ( "nunj"                    , "file_type_nunjucks"                ) ,
 ( "nupkg"                   , "file_type_nuget"                   ) ,
 ( "nuspec"                  , "file_type_nuget"                   ) ,

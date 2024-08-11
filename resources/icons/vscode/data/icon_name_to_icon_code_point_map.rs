@@ -517,6 +517,7 @@
 ( "file_type_nuget", 0x100260 ),
 ( "file_type_numpy", 0x100261 ),
 ( "file_type_nunjucks", 0x100262 ),
+( "file_type_nushell", 0xf07c6 ),
 ( "file_type_nuxt", 0x100263 ),
 ( "file_type_nyc", 0x100264 ),
 ( "file_type_objectivecpp", 0x100265 ),
