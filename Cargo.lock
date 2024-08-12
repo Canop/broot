@@ -253,7 +253,7 @@ dependencies = [
  "strict 0.1.4",
  "syntect-no-panic",
  "tempfile",
- "termimad 0.30.0",
+ "termimad",
  "terminal-clipboard",
  "terminal-light",
  "toml",
@@ -354,7 +354,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2873923833694e839cce5b846311ba5316e24b6e3726f8106368ebeaf3beb0d5"
 dependencies = [
  "clap",
- "termimad 0.30.0",
+ "termimad",
  "terminal-light",
 ]
 
@@ -455,20 +455,11 @@ checksum = "d3fd119d74b830634cea2a0f58bbd0d54540518a14397557951e79340abc28c0"
 
 [[package]]
 name = "coolor"
-version = "0.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37e93977247fb916abeee1ff8c6594c9b421fd9c26c9b720a3944acb2a7de27b"
-dependencies = [
- "crossterm 0.27.0",
-]
-
-[[package]]
-name = "coolor"
 version = "1.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "691defa50318376447a73ced869862baecfab35f6aabaa91a4cd726b315bfe1a"
 dependencies = [
- "crossterm 0.28.1",
+ "crossterm",
 ]
 
 [[package]]
@@ -493,7 +484,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "520e83558f4c008ac06fa6a86e5c1d4357be6f994cce7434463ebcdaadf47bb1"
 dependencies = [
  "crokey-proc_macros",
- "crossterm 0.28.1",
+ "crossterm",
  "once_cell",
  "serde",
  "strict 0.2.0",
@@ -505,7 +496,7 @@ version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "370956e708a1ce65fe4ac5bb7185791e0ece7485087f17736d54a23a0895049f"
 dependencies = [
- "crossterm 0.28.1",
+ "crossterm",
  "proc-macro2",
  "quote",
  "strict 0.2.0",
@@ -570,22 +561,6 @@ checksum = "22ec99545bb0ed0ea7bb9b8e1e9122ea386ff8a48c0922e43f36d45ab09e0e80"
 
 [[package]]
 name = "crossterm"
-version = "0.27.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f476fe445d41c9e991fd07515a6f463074b782242ccf4a5b7b1d1012e70824df"
-dependencies = [
- "bitflags 2.6.0",
- "crossterm_winapi",
- "libc",
- "mio 0.8.11",
- "parking_lot",
- "signal-hook",
- "signal-hook-mio",
- "winapi",
-]
-
-[[package]]
-name = "crossterm"
 version = "0.28.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "829d955a0bb380ef178a640b91779e3987da38c9aea133b20614cfed8cdea9c6"
@@ -638,15 +613,15 @@ dependencies = [
 
 [[package]]
 name = "csv2svg"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "26b4ebba8e124581334ebfaada676b9e698e52c7c3d5a12f28233100a727f92a"
+checksum = "1cc2a6decf9570c8fb8e9620c1f2f73ed56f63d125bef5bc7d05dd6cedf2c171"
 dependencies = [
  "anyhow",
  "argh",
  "chrono",
  "cli-log",
- "crossterm 0.27.0",
+ "crossterm",
  "csv",
  "directories 5.0.1",
  "libc",
@@ -934,9 +909,9 @@ dependencies = [
 
 [[package]]
 name = "glassbench"
-version = "0.4.1"
+version = "0.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afdba36fcc234421fb6d1e8ab20080a71a72782dd8321f31c3b7edcaaf843579"
+checksum = "40c2b6a1d43e261191d62ca666251340b0932daa5195cbc8d560a0b8e7b4b167"
 dependencies = [
  "base64 0.13.1",
  "chrono",
@@ -948,7 +923,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tempfile",
- "termimad 0.29.4",
+ "termimad",
  "thiserror",
 ]
 
@@ -1980,7 +1955,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "34db1a06d485c9142248b7a054f034b349b212551f3dfd19c94d45a754a217cd"
 dependencies = [
  "libc",
- "mio 0.8.11",
  "mio 1.0.1",
  "signal-hook",
 ]
@@ -2175,27 +2149,11 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.29.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eff854b510d076163c3b8628ebfe6bfbe6f01c3254b8b8e77cac7ad2d8c72b06"
-dependencies = [
- "coolor 0.9.0",
- "crokey",
- "crossbeam",
- "lazy-regex",
- "minimad",
- "serde",
- "thiserror",
- "unicode-width",
-]
-
-[[package]]
-name = "termimad"
 version = "0.30.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "920e7c4671e79f3d9df269da9c8edf0dbc580044fd727d3594f7bfba5eb6107a"
 dependencies = [
- "coolor 1.0.0",
+ "coolor",
  "crokey",
  "crossbeam",
  "lazy-regex",
@@ -2224,8 +2182,8 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "107b76de0f9296a417d77a85fee9e0d57084392d281b0858116b14e6620f255c"
 dependencies = [
- "coolor 1.0.0",
- "crossterm 0.28.1",
+ "coolor",
+ "crossterm",
  "thiserror",
  "xterm-query 0.4.1",
 ]

@@ -69,7 +69,7 @@ which = "4.4.0"
 xterm-query = { version = "0.3", optional = true }
 
 [dev-dependencies]
-glassbench = "0.4"
+glassbench = "0.4.2"
 
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.11.0"
