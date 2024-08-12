@@ -22,7 +22,7 @@ use {
     },
 };
 
-/// A colon on screen containing a stack of states, the top
+/// A column on screen containing a stack of states, the top
 /// one being visible
 pub struct Panel {
     pub id: PanelId,
