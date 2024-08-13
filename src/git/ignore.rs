@@ -168,7 +168,7 @@ impl GitIgnorer {
                     chain.push(self.files.alloc(gif));
                 }
             }
-            for filename in [".gitignore", ".git/info/exclude"] {
+            for filename in [".gitignore", ".git/info/exclude", ".ignore"] {
                 let file = dir.join(filename);
                 if let Ok(gif) = GitIgnoreFile::new(&file, dir) {
                     //debug!("pushing GIF {:#?}", &gif);
@@ -203,9 +203,11 @@ impl GitIgnorer {
             parent_chain.clone()
         };
         if chain.in_repo {
-            let ignore_file = dir.join(".gitignore");
-            if let Ok(gif) = GitIgnoreFile::new(&ignore_file, dir) {
-                chain.push(self.files.alloc(gif));
+            for filename in [".gitignore", ".ignore"] {
+                let ignore_file = dir.join(filename);
+                if let Ok(gif) = GitIgnoreFile::new(&ignore_file, dir) {
+                    chain.push(self.files.alloc(gif));
+                }
             }
         }
         chain
