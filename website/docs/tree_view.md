@@ -9,7 +9,7 @@ It does so with a parallel trimming of child directories to give you a balanced 
 
 This basic representation will probably be the one you'll most frequently use but you'll also want at times
 
-- to show hidden files, or gitignored ones
+- to show hidden files, or ignored ones
 - to show the many properties of the files and directories
 - to sort files
 - to disable trimming
@@ -17,9 +17,9 @@ This basic representation will probably be the one you'll most frequently use bu
 - to show the device's occupation
 - to trim or not
 
-# hidden & gitignored files
+# hidden & ignored files
 
-With default configuration, hidden files (the ones whose name starts with a dot) and gitignored files (when in a git repository) are initially hidden.
+With default configuration, hidden files (the ones whose name starts with a dot), ignored files (due to a `.ignore` or `.gitignore` file) are initially hidden.
 
 If you don't want to hide those files, you may either
 
@@ -126,7 +126,7 @@ Each of those toggles lets you alternate between 2 or 3 modes.
  | toggle_dates         | dates    |       | toggle showing last modified dates (deep computed)
  | toggle_files         | files    |       | toggle showing files (or just folders)
  | toggle_git_file_info | gf       |       | toggle display of git file information
- | toggle_git_ignore    | gi       | <kbd>alt</kbd><kbd>i</kbd> | toggle use of .gitignore
+ | toggle_git_ignore    | gi       | <kbd>alt</kbd><kbd>i</kbd> | toggle use of .gitignore and .ignore
  | toggle_hidden        | h        | <kbd>alt</kbd><kbd>h</kbd> | toggle showing hidden files
  | toggle_perm          | perm     |       | toggle showing file permissions (Unix only)
  | toggle_sizes         | sizes    |       | toggle showing sizes

@@ -142,7 +142,7 @@ Internals! {
     toggle_device_id: "toggle showing device id" false,
     toggle_files: "toggle showing files (or just folders)" false,
     toggle_git_file_info: "toggle display of git file information" false,
-    toggle_git_ignore: "toggle use of .gitignore" false,
+    toggle_git_ignore: "toggle use of .gitignore and .ignore" false,
     toggle_git_status: "toggle showing only files relevant for git status" false,
     toggle_hidden: "toggle showing hidden files" false,
     toggle_perm: "toggle showing file permissions" false,

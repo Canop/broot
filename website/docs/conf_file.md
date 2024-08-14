@@ -136,7 +136,7 @@ special_paths: {
 "~/my-link-I-want-to-explore" = { list = "always" }
 ```
 
-Be careful that those paths (globs, in fact) are checked a lot when broot builds trees and that defining a lot of paths will impact the overall speed.
+Be careful that those paths (globs, in fact) are checked a lot when broot builds trees and that defining a lot of paths will impact the overall speed. When the goal is to have a gitignored file visible, it's more convenient and efficient to use a `.ignore` file.
 
 # Search Modes
 

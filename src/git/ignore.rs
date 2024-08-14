@@ -192,6 +192,9 @@ impl GitIgnorer {
         // we reset the chain to the root one:
         // we don't want the .gitignore files of super repositories
         // (see https://github.com/Canop/broot/issues/160)
+        // TODO do we want to spare .ignore files? If so we should not build a new
+        // chain but just clean the current one from .gitignore files (assuming we
+        // flag the added .gitignore files for easy removal)
         let mut chain = if is_repo(dir) {
             let mut chain = GitIgnoreChain::default();
             if let Some(gif) = GitIgnoreFile::global(dir) {
