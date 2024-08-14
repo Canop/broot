@@ -1,3 +1,6 @@
+### next
+- support of `.ignore` files with the same syntax than `.gitignore`. They have priority over `.gitignore` so that a personal `.ignore` file can override a shared `.gitignore` - Fix #613
+
 ### v1.41.1 - 2024-08-04
 <a name="v1.41.1"></a>
 - allow compilation with rustc 1.76 - Fix #925
