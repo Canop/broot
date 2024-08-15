@@ -25,7 +25,7 @@ pub struct StandardStatus {
     help: String,
     no_verb: String,
     pub all_files_hidden: Option<String>,
-    pub all_files_git_ignored: Option<String>,
+    pub all_files_ignored: Option<String>,
 }
 
 impl StandardStatus {
@@ -60,9 +60,10 @@ impl StandardStatus {
         let all_files_hidden = verb_store
             .key_desc_of_internal(Internal::toggle_hidden)
             .map(|k| format!("Some files are hidden, use *{k}* to display them"));
-        let all_files_git_ignored = verb_store
-            .key_desc_of_internal(Internal::toggle_git_ignore)
-            .map(|k| format!("Some files are git-ignored, use *{k}* to display them"));
+        let all_files_ignored = verb_store
+            .key_desc_of_internal(Internal::toggle_ignore)
+            .or(verb_store.key_desc_of_internal(Internal::toggle_git_ignore))
+            .map(|k| format!("Some files are ignored, use *{k}* to display them"));
         Self {
             tree_top_focus,
             tree_dir_focus,
@@ -80,7 +81,7 @@ impl StandardStatus {
             help,
             no_verb,
             all_files_hidden,
-            all_files_git_ignored,
+            all_files_ignored,
         }
     }
     pub fn builder<'s>(

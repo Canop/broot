@@ -320,7 +320,7 @@ impl VerbStore {
         self.add_internal(toggle_dates).with_shortcut("dates");
         self.add_internal(toggle_device_id).with_shortcut("dev");
         self.add_internal(toggle_files).with_shortcut("files");
-        self.add_internal(toggle_git_ignore)
+        self.add_internal(toggle_ignore)
             .with_key(key!(alt-i))
             .with_shortcut("gi");
         self.add_internal(toggle_git_file_info).with_shortcut("gf");

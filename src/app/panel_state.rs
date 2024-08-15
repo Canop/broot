@@ -482,7 +482,7 @@ pub trait PanelState {
 					con,
 				)
             }
-            Internal::toggle_git_ignore => {
+            Internal::toggle_git_ignore | Internal::toggle_ignore => {
                 self.with_new_options(
 					screen,
 					&|o| {

@@ -145,6 +145,7 @@ Internals! {
     toggle_git_ignore: "toggle use of .gitignore and .ignore" false,
     toggle_git_status: "toggle showing only files relevant for git status" false,
     toggle_hidden: "toggle showing hidden files" false,
+    toggle_ignore: "toggle use of .gitignore and .ignore" false,
     toggle_perm: "toggle showing file permissions" false,
     toggle_preview: "open/close the preview panel" false,
     toggle_root_fs: "toggle showing filesystem info on top" false,

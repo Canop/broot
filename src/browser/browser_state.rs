@@ -693,7 +693,7 @@ impl PanelState for BrowserState {
             if let Some(md) = con.standard_status.all_files_hidden.clone() {
                 parts.push(md);
             }
-            if let Some(md) = con.standard_status.all_files_git_ignored.clone() {
+            if let Some(md) = con.standard_status.all_files_ignored.clone() {
                 parts.push(md);
             }
             if !parts.is_empty() {
