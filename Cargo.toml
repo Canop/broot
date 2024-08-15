@@ -36,7 +36,7 @@ custom_error = "1.6"
 deser-hjson = "2.2.3"
 directories = "4.0"
 file-size = "1.0.3"
-git2 = { version = "0.14", default-features = false } # waiting for a good pure-rust alternative
+git2 = { version = "0.19", default-features = false } # waiting for a good pure-rust alternative
 glob = "0.3"
 id-arena = "2.2.1"
 image = "0.24"
@@ -69,7 +69,7 @@ which = "4.4.0"
 xterm-query = { version = "0.3", optional = true }
 
 [dev-dependencies]
-glassbench = "0.4.2"
+glassbench = "0.4.3"
 
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.11.0"
@@ -113,7 +113,7 @@ harness = false
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # csv2svg = { path = "../csv2svg" }
 # deser-hjson = { path = "../deser-hjson" }
-# glassbench = { path = "../glassbench" }
+# glassbench = { path = "../glassbench" }
 # lfs-core = { path = "../lfs-core" }
 # minimad = { path = "../minimad" }
 # secular = { path = "../secular", features=["normalization"] }

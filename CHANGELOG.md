@@ -1,6 +1,7 @@
 ### next
 - support of `.ignore` files with the same syntax than `.gitignore`. They have priority over `.gitignore` so that a personal `.ignore` file can override a shared `.gitignore` - See https://dystroy.org/broot/tree_view/#hidden-ignored-files - Fix #613
 - `:toggle_ignore` internal, identical to `:toggle_git_ignore`, but with a clearer name so should be preferred
+- many dependencies updated
 
 ### v1.41.1 - 2024-08-04
 <a name="v1.41.1"></a>
