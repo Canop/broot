@@ -46,25 +46,7 @@ And if you forget the combinations, have a look at [the help](../help/#verbs).
 
     `.ignore` files have a bigger priority than `.gitignore` files.
 
-    ---
-
-    Those rules allow for example having personal `my-notes.*` files always ignored by git but visible in broot, with only global files:
-
-    **~/.config/git/ignore*** :
-
-    ```
-    .ignore
-    my-notes.*
-    ```
-
-    **~/.ignore** :
-
-    ```
-    !my-notes.*
-    ```
-
-    (note the `!` before the pattern)
-
+    Later rules override previous rules.
 
 # File Properties
 

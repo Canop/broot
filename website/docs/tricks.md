@@ -12,7 +12,7 @@ This function supports most broot arguments:
 
 ![tree with args](img/20201219-tree-with-args.png)
 
-# Search deeper
+# Search again
 
 The search normally stops after some time, or when it found enough matches (that is a few times what can be displayed, in order to only show the ones with the best ranking).
 
@@ -21,9 +21,11 @@ Sometimes, you want a more exhaustive search:
 - you want to see **all** matches
 - you want the search to go deeper to find better ranked matches, even if it's slower
 
-Then, you can hit <kbd>ctrl</kbd><kbd>s</kbd>, which does a `:total_search` and ensures the whole tree is searched and all matches are displayed.
+Then, you can hit <kbd>ctrl</kbd><kbd>s</kbd>, which calls `:search_again` and ensures the whole tree is searched and all matches are displayed.
 
 The downside is it takes time and the most relevant matches may be hard to find among hundred of less relevant ones which wouldn't be shown otherwise.
+
+<kbd>ctrl</kbd><kbd>s</kbd> is also used to bring back the last used pattern, for example when you focused a directory to search locally
 
 # A generic fuzzy finder
 
@@ -100,23 +102,11 @@ Example:
 
 ![dcd ruleset](img/20190122-dcd_rulset.png)
 
-# Focus a new directory but keep the current filter
-
-When you hit `enter` on a directory, it's focused and the filter is reset.
-
-If you want to keep the filter, for example to search deeper, you may use `:focus` instead (or  you can bind it to a key shortcut).
-
-# Go to the directory containing the selected file
-
-Suppose you filter to find a file, and it's in a deeper directory, you may want to see it "more closely", that is, keeping the filter, to make its parent directory the current root.
-
-This can be done with the `:focus` verb which can be called with <kbd>ctrl</kbd><kbd>f</kbd>.
-
-# Run a script or program from broot
+# Run a script or program
 
 If your system is normally configured, doing `alt`-`enter` on an executable will close broot and execute the file.
 
-# Change standard file opening
+# Change file opening
 
 When you hit enter on a file, broot asks the system to open the file.
 It's usually the best solution as it selects the program according to the file's type and to settings you set system wide.
@@ -163,7 +153,7 @@ From there you may use the `:gd` verb (`:git_diff`) to open the selection into y
 
 If you want more: [Use broot and meld to diff before commit](https://dystroy.org/blog/gg/).
 
-# Use negative filters
+# Negative filters
 
 Here's a (real) example of how negative filters and combination can help you navigate.
 
@@ -185,7 +175,7 @@ We can also select the desired file with arrow keys at this point.
 
 When you grasped the basic logic of [combined filters](../input/#combining-filtering-patterns), navigation is incredibly efficient.
 
-# Use composite searches in preview
+# Composite searches in preview
 
 You can apply composition and negation to searches in the preview panel which is convenient when filtering, for example, a log file.
 
@@ -204,3 +194,25 @@ This brings a lot of comfort, not just in broot.
 In case you want to use broot for opening files fuzzily in vim (and potentially
 replace netrw), check out: [broot.vim](https://github.com/lstwn/broot.vim)
 
+# Unignore files
+
+A gitignored file may be made visible in broot with a `.ignore` file with a negative pattern.
+
+For example, assuming the `.gitignore` file contains `/work`, you may have the `work` directory always visible with a `!/work` entry in a `.ignore` file.
+
+A common pattern is to globally define files that you want gitignored but visible in broot:
+
+In `~/.config/git/ignore` :
+
+```ignore
+.ignore
+my-notes.*
+```
+
+In `~/.ignore` :
+
+```ignore
+!my-notes.*
+```
+
+This way you don't have to specify anything in your git repositories.
