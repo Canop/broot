@@ -42,7 +42,7 @@ And if you forget the combinations, have a look at [the help](../help/#verbs).
     - the `.git/info/exclude` file of the current git repository
     - all the `.gitignore` files found in the current directory and in parents but not outside  the current git repository (i.e. not in git repositories containing the current git repository)
 
-    Deeper file have a bigger priority.
+    Deeper files have a bigger priority.
 
     `.ignore` files have a bigger priority than `.gitignore` files.
 
