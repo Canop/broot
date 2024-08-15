@@ -33,6 +33,38 @@ If you use those toggles frequently enough, you'll remember the <kbd>alt</kbd><k
 
 And if you forget the combinations, have a look at [the help](../help/#verbs).
 
+!!! Note Details
+
+    The files applicable to a directory are:
+
+    - the global `.gitignore` file (if any)
+    - all the `.ignore` files found in the current directory and in parents
+    - the `.git/info/exclude` file of the current git repository
+    - all the `.gitignore` files found in the current directory and in parents but not outside  the current git repository (i.e. not in git repositories containing the current git repository)
+
+    Deeper file have a bigger priority.
+
+    `.ignore` files have a bigger priority than `.gitignore` files.
+
+    ---
+
+    Those rules allow for example having personal `my-notes.*` files always ignored by git but visible in broot, with only global files:
+
+    **~/.config/git/ignore*** :
+
+    ```
+    .ignore
+    my-notes.*
+    ```
+
+    **~/.ignore** :
+
+    ```
+    !my-notes.*
+    ```
+
+    (note the `!` before the pattern)
+
 
 # File Properties
 
