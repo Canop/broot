@@ -44,6 +44,11 @@ impl Sequence {
             raw,
         }
     }
+    /// Parse the sequence into a vec of commands.
+    ///
+    /// Beware: panel_state_type filtering isn't applied (
+    ///   and would be difficult a priori as we can change panel
+    ///   in the middle of a sequence)
     pub fn parse(
         &self,
         con: &AppContext,
@@ -91,7 +96,7 @@ fn add_commands(
         if let Command::VerbInvocate(invocation) = &command {
             // we check that the verb exists to avoid running a sequence
             // of actions with some missing
-            match con.verb_store.search_prefix(&invocation.name) {
+            match con.verb_store.search_prefix(&invocation.name, None) {
                 PrefixSearchResult::NoMatch => {
                     return Err(ProgramError::UnknownVerb {
                         name: invocation.name.to_string(),

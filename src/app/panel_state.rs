@@ -846,7 +846,12 @@ pub trait PanelState {
                 None
             },
         );
-        let sequence = exec_builder.sequence(&seq_ex.sequence, &cc.app.con.verb_store, cc.app.con);
+        let sequence = exec_builder.sequence(
+            &seq_ex.sequence,
+            &cc.app.con.verb_store,
+            cc.app.con,
+            Some(self.get_type()),
+        );
         Ok(CmdResult::ExecuteSequence { sequence })
     }
 
@@ -897,6 +902,7 @@ pub trait PanelState {
                 match con.verb_store.search_sel_info(
                     &invocation.name,
                     sel_info,
+                    Some(self.get_type()),
                 ) {
                     PrefixSearchResult::Match(_, verb) => {
                         self.execute_verb(
@@ -1061,6 +1067,7 @@ pub trait PanelState {
                     match cc.app.con.verb_store.search_sel_info(
                         &invocation.name,
                         sel_info,
+                        Some(self.get_type()),
                     ) {
                         PrefixSearchResult::NoMatch => {
                             Status::new("No matching verb (*?* for the list of verbs)", true)

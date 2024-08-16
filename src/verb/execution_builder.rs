@@ -293,6 +293,7 @@ impl<'b> ExecutionStringBuilder<'b> {
         sequence: &Sequence,
         verb_store: &VerbStore,
         con: &AppContext,
+        panel_state_type: Option<PanelStateType>,
     ) -> Sequence {
         let mut inputs = Vec::new();
         for input in sequence.raw.split(&sequence.separator) {
@@ -302,7 +303,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                 .and_then(|vi| {
                     let command = Command::from_parts(vi, true);
                     if let Command::VerbInvocate(invocation) = &command {
-                        let search = verb_store.search_prefix(&invocation.name);
+                        let search = verb_store.search_prefix(&invocation.name, panel_state_type);
                         if let PrefixSearchResult::Match(_, verb) = search {
                             return Some(verb);
                         }

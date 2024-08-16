@@ -564,15 +564,17 @@ impl VerbStore {
         &'v self,
         prefix: &str,
         sel_info: SelInfo<'_>,
+        panel_state_type: Option<PanelStateType>,
     ) -> PrefixSearchResult<'v, &Verb> {
-        self.search(prefix, Some(sel_info), true)
+        self.search(prefix, Some(sel_info), true, panel_state_type)
     }
 
     pub fn search_prefix<'v>(
         &'v self,
         prefix: &str,
+        panel_state_type: Option<PanelStateType>,
     ) -> PrefixSearchResult<'v, &Verb> {
-        self.search(prefix, None, true)
+        self.search(prefix, None, true, panel_state_type)
     }
 
     /// Return either the only match, or None if there's not
@@ -581,8 +583,9 @@ impl VerbStore {
         &'v self,
         prefix: &str,
         sel_info: SelInfo<'_>,
+        panel_state_type: Option<PanelStateType>,
     ) -> Option<&'v Verb> {
-        match self.search_sel_info(prefix, sel_info) {
+        match self.search_sel_info(prefix, sel_info, panel_state_type) {
             PrefixSearchResult::Match(_, verb) => Some(verb),
             _ => None,
         }
@@ -593,6 +596,7 @@ impl VerbStore {
         prefix: &str,
         sel_info: Option<SelInfo>,
         short_circuit: bool,
+        panel_state_type: Option<PanelStateType>,
     ) -> PrefixSearchResult<'v, &Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
@@ -602,6 +606,11 @@ impl VerbStore {
         for (index, verb) in self.verbs.iter().enumerate() {
             if let Some(sel_info) = sel_info {
                 if !sel_info.is_accepted_by(verb.selection_condition) {
+                    continue;
+                }
+            }
+            if let Some(panel_state_type) = panel_state_type {
+                if !verb.can_be_called_in_panel(panel_state_type) {
                     continue;
                 }
             }
