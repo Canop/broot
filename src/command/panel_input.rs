@@ -236,6 +236,7 @@ impl PanelInput {
         sel_info: SelInfo<'_>,
         raw: String,
         parts: CommandParts,
+        panel_state_type: Option<PanelStateType>,
     ) -> Command {
         let parts_before_cycle;
         let completable_parts = if let Some(s) = &self.input_before_cycle {
@@ -244,7 +245,7 @@ impl PanelInput {
         } else {
             &parts
         };
-        let completions = Completions::for_input(completable_parts, con, sel_info);
+        let completions = Completions::for_input(completable_parts, con, sel_info, panel_state_type);
         let added = match completions {
             Completions::None => {
                 debug!("nothing to complete!");
@@ -405,7 +406,7 @@ impl PanelInput {
         // 'tab' completion of a verb or one of its arguments
         if Verb::is_some_internal(verb, Internal::next_match) {
             if parts.verb_invocation.is_some() {
-                return self.auto_complete_verb(con, sel_info, raw, parts);
+                return self.auto_complete_verb(con, sel_info, raw, parts, Some(panel_state_type));
             }
             // if no verb is being edited, the state may handle this internal
             // in a specific way

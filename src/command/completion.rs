@@ -3,6 +3,7 @@ use {
     crate::{
         app::{
             AppContext,
+            PanelStateType,
             SelInfo,
         },
         path::{self, PathAnchor},
@@ -89,8 +90,9 @@ impl Completions {
         start: &str,
         con: &AppContext,
         sel_info: SelInfo<'_>,
+        panel_state_type: Option<PanelStateType>,
     ) -> Self {
-        match con.verb_store.search(start, Some(sel_info), false) {
+        match con.verb_store.search(start, Some(sel_info), false, panel_state_type) {
             PrefixSearchResult::NoMatch => Self::None,
             PrefixSearchResult::Match(name, _) => {
                 if start.len() >= name.len() {
@@ -113,8 +115,9 @@ impl Completions {
         path: &Path,
         sel_info: SelInfo<'_>,
         con: &AppContext,
+        panel_state_type: Option<PanelStateType>,
     ) -> io::Result<Vec<String>> {
-        let anchor = match con.verb_store.search(verb_name, Some(sel_info), false) {
+        let anchor = match con.verb_store.search(verb_name, Some(sel_info), false, panel_state_type) {
             PrefixSearchResult::Match(_, verb) => verb.get_unique_arg_anchor(),
             _ => PathAnchor::Unspecified,
         };
@@ -150,6 +153,7 @@ impl Completions {
         arg: &str,
         con: &AppContext,
         sel_info: SelInfo<'_>,
+        panel_state_type: Option<PanelStateType>,
     ) -> Self {
         if arg.contains(' ') {
             return Self::None;
@@ -157,13 +161,13 @@ impl Completions {
         // we try to get the type of argument
         let arg_def = con
             .verb_store
-            .search_sel_info_unique(verb_name, sel_info)
+            .search_sel_info_unique(verb_name, sel_info, panel_state_type)
             .and_then(|verb| verb.invocation_parser.as_ref())
             .and_then(|invocation_parser| invocation_parser.get_unique_arg_def());
         if matches!(arg_def, Some(ArgDef::Theme)) {
             Self::for_theme_arg(arg)
         } else {
-            Self::for_path_arg(verb_name, arg, con, sel_info)
+            Self::for_path_arg(verb_name, arg, con, sel_info, panel_state_type)
         }
     }
 
@@ -186,6 +190,7 @@ impl Completions {
         arg: &str,
         con: &AppContext,
         sel_info: SelInfo<'_>,
+        panel_state_type: Option<PanelStateType>,
     ) -> Self {
         // in the future we might offer completion of other types
         // of arguments, maybe user supplied, but there's no use case
@@ -196,7 +201,7 @@ impl Completions {
         match &sel_info {
             SelInfo::None => Self::None,
             SelInfo::One(sel) => {
-                match Self::list_for_path(verb_name, arg, sel.path, sel_info, con) {
+                match Self::list_for_path(verb_name, arg, sel.path, sel_info, con, panel_state_type) {
                     Ok(list) => Self::from_list(list),
                     Err(e) => {
                         warn!("Error while trying to complete path: {:?}", e);
@@ -215,7 +220,8 @@ impl Completions {
                                 arg,
                                 path,
                                 sel_info,
-                                con
+                                con,
+                                panel_state_type,
                         ).ok()
                     });
                 let mut list = match lists.next() {
@@ -241,17 +247,18 @@ impl Completions {
         parts: &CommandParts,
         con: &AppContext,
         sel_info: SelInfo<'_>,
+        panel_state_type: Option<PanelStateType>,
     ) -> Self {
         match &parts.verb_invocation {
             Some(invocation) if !invocation.is_empty() => {
                 match &invocation.args {
                     None => {
                         // looking into verb completion
-                        Self::for_verb(&invocation.name, con, sel_info)
+                        Self::for_verb(&invocation.name, con, sel_info, panel_state_type)
                     }
                     Some(args) if !args.is_empty() => {
                         // looking into arg completion
-                        Self::for_arg(&invocation.name, args, con, sel_info)
+                        Self::for_arg(&invocation.name, args, con, sel_info, panel_state_type)
                     }
                     _ => {
                         // nothing possible
