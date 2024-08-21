@@ -1,6 +1,6 @@
 
 <p align=center style="max-width:600px">
-<img src="img/vache.svg" height=140px>
+<img class=vache src="img/vache.svg" height=140px>
 <br><a class=install-link href=install>Install Broot</a>
 </p>
 
