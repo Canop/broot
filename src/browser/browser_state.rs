@@ -102,7 +102,7 @@ impl BrowserState {
                 bs.displayed_tree_mut().try_select_path(&tree.selected_line().path);
             }
         }
-        CmdResult::from_optional_state(
+        CmdResult::from_optional_browser_state(
             new_state,
             message,
             in_new_panel,
@@ -148,7 +148,7 @@ impl BrowserState {
                 }
             }
             let dam = Dam::unlimited();
-            Ok(CmdResult::from_optional_state(
+            Ok(CmdResult::from_optional_browser_state(
                 BrowserState::new(
                     target,
                     if keep_pattern {
@@ -181,7 +181,7 @@ impl BrowserState {
         in_new_panel: bool,
     ) -> CmdResult {
         match &self.displayed_tree().selected_line().path.parent() {
-            Some(path) => CmdResult::from_optional_state(
+            Some(path) => CmdResult::from_optional_browser_state(
                 BrowserState::new(
                     path.to_path_buf(),
                     self.displayed_tree().options.without_pattern(),

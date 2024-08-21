@@ -1,4 +1,9 @@
 use {
+    super::{
+        item_is_dir,
+        trash_sort::*,
+        trash_state_cols::*,
+    },
     crate::{
         app::*,
         command::*,
@@ -14,6 +19,7 @@ use {
         QueueableCommand,
     },
     std::{
+        ffi::OsString,
         path::Path,
     },
     termimad::{
@@ -49,9 +55,10 @@ impl TrashState {
     pub fn new(
         tree_options: TreeOptions,
         con: &AppContext,
-    ) -> Result<TrashState, ProgramError> {
-        let items = trash::os_limited::list()
+    ) -> Result<Self, ProgramError> {
+        let mut items = trash::os_limited::list()
             .map_err(|e| ProgramError::Trash { message: e.to_string() })?;
+        sort(&mut items, &tree_options);
         let selection_idx = None;
         Ok(TrashState {
             items,
@@ -62,6 +69,33 @@ impl TrashState {
             filtered: None,
             mode: con.initial_mode(),
         })
+    }
+    fn modified(
+        &self,
+        options: TreeOptions,
+        message: Option<&'static str>,
+        in_new_panel: bool,
+        con: &AppContext,
+    ) -> CmdResult {
+        match Self::new(options, con) {
+            Ok(mut ts) => {
+                let old_selection = self.selected_item_id();
+                ts.select_item_by_id(old_selection.as_ref());
+                if in_new_panel {
+                    CmdResult::NewPanel {
+                        state: Box::new(ts),
+                        purpose: PanelPurpose::None,
+                        direction: HDir::Right,
+                    }
+                } else {
+                    CmdResult::NewState {
+                        state: Box::new(ts),
+                        message,
+                    }
+                }
+            }
+            Err(e) => CmdResult::error(e.to_string()),
+        }
     }
     pub fn count(&self) -> usize {
         self.filtered
@@ -158,6 +192,12 @@ impl TrashState {
             self.selection_idx.map(|idx| &self.items[idx])
         }
     }
+    fn selected_item_id(&self) -> Option<OsString> {
+        self.selected_item().map(|i| i.id.clone())
+    }
+    fn select_item_by_id(&mut self, id: Option<&OsString>) {
+        self.selection_idx = id.and_then(|id| self.items.iter().position(|i| &i.id == id));
+    }
 
     fn take_selected_item(&mut self) -> Option<TrashItem> {
         if let Some(f) = self.filtered.as_mut() {
@@ -218,11 +258,18 @@ impl PanelState for TrashState {
         &mut self,
         _screen: Screen,
         change_options: &dyn Fn(&mut TreeOptions) -> &'static str,
-        _in_new_panel: bool, // TODO open tree if true
-        _con: &AppContext,
+        in_new_panel: bool,
+        con: &AppContext,
     ) -> CmdResult {
-        change_options(&mut self.tree_options);
-        CmdResult::Keep
+        let mut options = self.tree_options.clone();
+        let message = change_options(&mut options);
+        let message = Some(message);
+        self.modified(
+            options,
+            message,
+            in_new_panel,
+            con,
+        )
     }
 
     /// We don't want to expose path to verbs because you can't
@@ -236,12 +283,12 @@ impl PanelState for TrashState {
         _screen: Screen,
         _con: &AppContext,
     ) -> Command {
-        // minimal implementation. It would be better to keep filtering, and
-        // also selection & scroll whenever possible
-        if let Ok(items) = trash::os_limited::list() {
+        let old_selection = self.selected_item_id();
+        if let Ok(mut items) = trash::os_limited::list() {
+            sort(&mut items, &self.tree_options);
             self.items = items;
-            self.selection_idx = None;
             self.scroll = 0;
+            self.select_item_by_id(old_selection.as_ref());
         }
         Command::empty()
     }
@@ -293,8 +340,6 @@ impl PanelState for TrashState {
         w: &mut W,
         disc: &DisplayContext,
     ) -> Result<(), ProgramError> {
-        let title_parent = "Original parent";
-        let title_name = "Deleted file name";
         let area = &disc.state_area;
         let con = &disc.con;
         self.page_height = area.height as usize - 2;
@@ -318,59 +363,57 @@ impl PanelState for TrashState {
         selected_border_style.set_bg(selection_bg);
         //- width computations
         let width = area.width as usize;
-        let optimal_parent_width = items
-            .iter()
-            .map(|m| m.original_parent.to_string_lossy().width())
-            .max()
-            .unwrap_or(0)
-            .max(title_parent.len());
-        let optimal_name_width = items
-            .iter()
-            .map(|m| m.name.width())
-            .max()
-            .unwrap_or(0)
-            .max(title_name.len());
         let available_width = if con.show_selection_mark {
             width - 1
         } else {
             width
         };
-        let mut w_parent = optimal_parent_width;
-        let mut w_name = optimal_name_width;
-        if w_name + w_parent > available_width {
-            w_name = (width * 2 / 3).min(optimal_name_width);
-            w_parent = width - w_name;
-        }
-        info!("optimal_parent_width: {}, optimal_name_width: {}", optimal_parent_width, optimal_name_width);
-        info!("available_width: {}, w_parent: {}, w_name: {}", available_width, w_parent, w_name);
+
+        let cols = get_cols(items, available_width, &self.tree_options);
+        let first_col_width = cols.iter().filter_map(|c| c.size()).next().unwrap_or(0);
+
         //- titles
         w.queue(cursor::MoveTo(area.left, area.top))?;
         let mut cw = CropWriter::new(w, width);
         if con.show_selection_mark {
             cw.queue_char(&styles.default, ' ')?;
         }
-        let title = if title_parent.len() > w_parent {
-            &title_parent[..w_parent]
-        } else {
-            title_parent
-        };
-        cw.queue_g_string(&styles.default, format!("{:^w_parent$}", title))?;
-        cw.queue_char(border_style, '│')?;
-        let title = if title_name.len() > w_name {
-            &title_name[..w_name]
-        } else {
-            title_name
-        };
-        cw.queue_g_string(&styles.default, format!("{:^w_name$}", title))?;
+        let mut added = false;
+        for col in &cols {
+            let Some(size) = col.size() else { continue; };
+            if added {
+                cw.queue_char(border_style, '│')?;
+            } else {
+                added = true;
+            }
+            let title = col.content().title();
+            let title = if title.len() > size {
+                &title[..size]
+            } else {
+                title
+            };
+            cw.queue_g_string(&styles.default, format!("{:^size$}", title))?;
+        }
         cw.fill(border_style, &SPACE_FILLING)?;
+
         //- horizontal line
         w.queue(cursor::MoveTo(area.left, 1 + area.top))?;
         let mut cw = CropWriter::new(w, width);
         if con.show_selection_mark {
             cw.queue_char(&styles.default, ' ')?;
         }
-        cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_parent + 1))?;
+        let mut added = false;
+        for col in &cols {
+            let Some(size) = col.size() else { continue; };
+            if added {
+                cw.queue_char(border_style, '┼')?;
+            } else {
+                added = true;
+            }
+            cw.queue_g_string(border_style, format!("{:─>width$}", "", width = size))?;
+        }
         cw.fill(border_style, &BRANCH_FILLING)?;
+
         //- content
         let mut idx = self.scroll;
         for y in 2..area.height {
@@ -383,6 +426,8 @@ impl PanelState for TrashState {
                 &styles.default
             };
             if let Some(item) = items.get(idx) {
+                let is_dir = item_is_dir(item);
+
                 let match_style = if selected {
                     &selected_match_style
                 } else {
@@ -396,45 +441,49 @@ impl PanelState for TrashState {
                 if con.show_selection_mark {
                     cw.queue_char(txt_style, if selected { '▶' } else { ' ' })?;
                 }
-                // parent
-                let s = item.original_parent.to_string_lossy();
-                let mut matched_string = MatchedString::new(
-                    self.filtered
-                        .as_ref()
-                        .and_then(|f| f.pattern.search_string(&s)),
-                    &s,
-                    txt_style,
-                    match_style,
-                );
-                if s.width() > w_parent {
-                    //info!("CUT w_parent: {}, s.width(): {}", w_parent, s.width());
-                    cw.queue_char(txt_style, '…')?;
-                    matched_string.cut_left_to_fit(w_parent - 1);
-                    //info!(" cut string width: {}", matched_string.string.width());
-                    matched_string.queue_on(&mut cw)?;
-                } else {
-                    matched_string.fill(w_parent, Alignment::Left);
-                    matched_string.queue_on(&mut cw)?;
+                let mut added = false;
+                for col in &cols {
+                    let Some(size) = col.size() else { continue; };
+                    if added {
+                        cw.queue_char(border_style, '│')?;
+                    } else {
+                        added = true;
+                    }
+                    let value = col.content().value_of(item, &self.tree_options);
+                    let style = col.content().style(is_dir, styles);
+                    let mut cloned_style;
+                    let style = if selected {
+                        cloned_style = style.clone();
+                        if let Some(c) = styles.selected_line.get_bg() {
+                            cloned_style.set_bg(c);
+                        }
+                        &cloned_style
+                    } else {
+                        &style
+                    };
+                    let mut matched_string = MatchedString::new(
+                        self.filtered
+                            .as_ref()
+                            .and_then(|f| f.pattern.search_string(&value)),
+                        &value,
+                        style,
+                        match_style,
+                    );
+                    if value.width() > size {
+                        cw.queue_char(txt_style, '…')?;
+                        matched_string.cut_left_to_fit(size - 1);
+                        matched_string.queue_on(&mut cw)?;
+                    } else {
+                        matched_string.fill(size, Alignment::Left);
+                        matched_string.queue_on(&mut cw)?;
+                    }
                 }
-                cw.queue_char(border_style, '│')?;
-                // name
-                let s = &item.name;
-                let mut matched_string = MatchedString::new(
-                    self.filtered
-                        .as_ref()
-                        .and_then(|f| f.pattern.search_string(s)),
-                    s,
-                    txt_style,
-                    match_style,
-                );
-                matched_string.fill(w_name, Alignment::Left);
-                matched_string.queue_on(&mut cw)?;
                 idx += 1;
             } else {
                 if con.show_selection_mark {
                     cw.queue_char(&styles.default, ' ')?;
                 }
-                cw.queue_g_string(border_style, format!("{: >width$}", '│', width = w_parent + 1))?;
+                cw.queue_g_string(border_style, format!("{: >width$}", '│', width = first_col_width + 1))?;
             }
             cw.fill(txt_style, &SPACE_FILLING)?;
             let scrollbar_style = if ScrollCommand::is_thumb(y, scrollbar) {
@@ -581,3 +630,4 @@ impl PanelState for TrashState {
         Ok(CmdResult::Keep)
     }
 }
+

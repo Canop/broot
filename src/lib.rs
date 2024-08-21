@@ -30,7 +30,6 @@ pub mod skin;
 pub mod syntactic;
 pub mod task_sync;
 pub mod terminal;
-pub mod trash;
 pub mod tree;
 pub mod tree_build;
 pub mod verb;
@@ -38,6 +37,9 @@ pub mod verb;
 #[cfg(unix)]
 pub mod filesystems;
 
-
 #[cfg(unix)]
 pub mod net;
+
+#[cfg(feature = "trash")]
+pub mod trash;
+
