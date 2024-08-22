@@ -13,6 +13,10 @@ body .col-md-9 p img {
 	background-color: transparent;
 }
 
+p img:not(.vache) {
+	box-shadow: 1px 1px 2px #2229;
+}
+
 .sponsorship {
 	margin-top: 20px;
 	display: flex;

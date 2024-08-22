@@ -67,7 +67,7 @@ impl CmdResult {
     pub fn verb_not_found(text: &str) -> CmdResult {
         CmdResult::DisplayError(format!("verb not found: {:?}", &text))
     }
-    pub fn from_optional_state(
+    pub fn from_optional_browser_state(
         os: Result<BrowserState, TreeBuildError>,
         message: Option<&'static str>,
         in_new_panel: bool,

@@ -234,6 +234,7 @@ dependencies = [
  "deser-hjson",
  "directories 4.0.1",
  "file-size",
+ "flex-grow",
  "git2",
  "glassbench",
  "glob",
@@ -806,6 +807,12 @@ dependencies = [
  "crc32fast",
  "miniz_oxide",
 ]
+
+[[package]]
+name = "flex-grow"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "d504ae1bb01561686fa31189fe56754a5d869392890a1e64e69d198557a8eb78"
 
 [[package]]
 name = "float-cmp"

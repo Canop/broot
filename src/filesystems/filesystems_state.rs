@@ -516,7 +516,7 @@ impl PanelState for FilesystemState {
                 let dam = Dam::unlimited();
                 let mut tree_options = self.tree_options();
                 tree_options.show_root_fs = true;
-                CmdResult::from_optional_state(
+                CmdResult::from_optional_browser_state(
                     BrowserState::new(
                         self.no_opt_selected_path().to_path_buf(),
                         tree_options,
