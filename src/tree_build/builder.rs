@@ -202,10 +202,8 @@ impl<'c> TreeBuilder<'c> {
                 }
             }
         }
-        if file_type.is_file() {
-            if !has_match {
-                return None;
-            }
+        if file_type.is_file() && !has_match {
+            return None;
         }
         if self.options.only_folders && !file_type.is_dir() {
             if !file_type.is_symlink() {

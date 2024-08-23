@@ -56,7 +56,8 @@ h4 {
 
 body .navbar {
 	background: #1b465f;
-	box-shadow: 0 1px 5px rgba(0,0,0,0.1);
+	box-shadow: 0 0 3px rgba(0,0,0,0.7);
+	border-bottom: none;
 }
 
 @media (min-width: 768px) {

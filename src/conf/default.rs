@@ -13,13 +13,11 @@ static DEFAULT_CONF_DIR: Dir = include_dir!("$CARGO_MANIFEST_DIR/resources/defau
 /// overwriting existing ones
 pub fn write_default_conf_in(dir: &Path) -> Result<(), io::Error> {
     info!("writing default conf in {:?}", dir);
-    if dir.exists() {
-        if !dir.is_dir() {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!("{dir:?} isn't a directory"),
-            ));
-        }
+    if dir.exists() && !dir.is_dir() {
+        return Err(io::Error::new(
+            io::ErrorKind::Other,
+            format!("{dir:?} isn't a directory"),
+        ));
     }
     let mut files = Vec::new();
     find_files(&DEFAULT_CONF_DIR, &mut files);

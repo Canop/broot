@@ -242,13 +242,12 @@ impl Tree {
         if dy < 0 { // scroll up
             if self.scroll == 0 {
                 return false;
+            }
+            let ady = -dy as usize;
+            if ady < self.scroll {
+                self.scroll -= ady;
             } else {
-                let ady = -dy as usize;
-                if ady < self.scroll {
-                    self.scroll -= ady;
-                } else {
-                    self.scroll = 0;
-                }
+                self.scroll = 0;
             }
         } else { // scroll down
             let max = self.lines.len() - page_height;
