@@ -290,6 +290,7 @@ impl VerbStore {
         self.add_internal(select_first);
         self.add_internal(select_last);
         self.add_internal(select);
+        self.add_internal(show);
         self.add_internal(clear_stage).with_shortcut("cls");
         self.add_internal(stage)
             .with_key(key!('+'));

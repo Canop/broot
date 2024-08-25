@@ -1,29 +1,41 @@
 use {
     super::*,
     crate::{
-        app::{Selection, SelectionType},
+        app::{
+            AppContext,
+            Selection,
+            SelectionType,
+        },
+        errors::TreeBuildError,
         file_sum::FileSum,
         git::LineGitStatus,
-        tree_build::BId,
     },
     lazy_regex::regex_captures,
     std::{
         fs,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
     },
 };
 
 #[cfg(unix)]
-use {std::os::unix::fs::MetadataExt, umask::Mode};
+use {
+    std::os::unix::fs::MetadataExt,
+    umask::Mode,
+};
 
 #[cfg(windows)]
 use is_executable::IsExecutable;
 
+pub type TreeLineId = usize;
+
 /// a line in the representation of the file hierarchy
 #[derive(Debug, Clone)]
 pub struct TreeLine {
-    pub bid: BId,
-    pub parent_bid: Option<BId>,
+    pub id: TreeLineId,
+    pub parent_id: Option<TreeLineId>,
     pub left_branches: Box<[bool]>, // a depth-sized array telling whether a branch pass
     pub depth: u16,
     pub path: PathBuf,
@@ -41,16 +53,81 @@ pub struct TreeLine {
     pub git_status: Option<LineGitStatus>,
 }
 
-impl TreeLine {
+pub struct TreeLineBuilder {
+    pub path: PathBuf,
+    pub subpath: String,
+    pub id: TreeLineId,
+    pub parent_id: Option<TreeLineId>,
+    pub depth: u16,
+    pub unlisted: usize,
+    pub nb_kept_children: usize,
+    pub has_error: bool,
+    pub score: i32,
+    pub direct_match: bool,
+}
 
+impl TreeLineBuilder {
+    pub fn build(
+        self,
+        con: &AppContext,
+    ) -> Result<TreeLine, TreeBuildError> {
+        let Self {
+            path,
+            subpath,
+            id,
+            parent_id,
+            depth,
+            unlisted,
+            nb_kept_children,
+            has_error,
+            score,
+            direct_match,
+        } = self;
+        let metadata = fs::symlink_metadata(&path).map_err(|_| TreeBuildError::FileNotFound {
+            path: path.to_string_lossy().to_string(),
+        })?;
+        let line_type = TreeLineType::new(&path, metadata.file_type());
+        let name = path
+            .file_name()
+            .and_then(|os_str| os_str.to_str())
+            .unwrap_or("")
+            .replace('\n', "");
+        let icon = con.icons.as_ref().map(|icon_plugin| {
+            let extension = TreeLine::extension_from_name(&name);
+            let double_extension =
+                extension.and_then(|_| TreeLine::double_extension_from_name(&name));
+            icon_plugin.get_icon(&line_type, &name, double_extension, extension)
+        });
+
+        Ok(TreeLine {
+            id,
+            parent_id,
+            left_branches: vec![false; depth as usize].into_boxed_slice(),
+            depth,
+            icon,
+            name,
+            subpath,
+            path,
+            line_type,
+            has_error,
+            nb_kept_children,
+            unlisted,
+            score,
+            direct_match,
+            sum: None,
+            metadata,
+            git_status: None,
+        })
+    }
+}
+
+impl TreeLine {
     pub fn double_extension_from_name(name: &str) -> Option<&str> {
-        regex_captures!(r"\.([^.]+\.[^.]+)", name)
-            .map(|(_, de)| de)
+        regex_captures!(r"\.([^.]+\.[^.]+)", name).map(|(_, de)| de)
     }
 
     pub fn extension_from_name(name: &str) -> Option<&str> {
-        regex_captures!(r"\.([^.]+)$", name)
-            .map(|(_, ext)| ext)
+        regex_captures!(r"\.([^.]+)$", name).map(|(_, ext)| ext)
     }
 
     pub fn is_selectable(&self) -> bool {
@@ -66,7 +143,10 @@ impl TreeLine {
     pub fn is_file(&self) -> bool {
         matches!(&self.line_type, TreeLineType::File)
     }
-    pub fn is_of(&self, selection_type: SelectionType) -> bool {
+    pub fn is_of(
+        &self,
+        selection_type: SelectionType,
+    ) -> bool {
         match selection_type {
             SelectionType::Any => true,
             SelectionType::File => self.is_file(),
@@ -134,6 +214,11 @@ impl TreeLine {
             _ => &self.path,
         }
     }
+    pub fn unprune(&mut self) {
+        self.line_type = TreeLineType::new(&self.path, self.metadata.file_type());
+        self.name = self
+            .path
+            .file_name()
+            .map_or_else(|| "???".to_string(), |n| n.to_string_lossy().to_string());
+    }
 }
-
-
