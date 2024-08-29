@@ -7,7 +7,7 @@ It focuses on the default settings, on the basis that you change the settings on
 
 I'll assume here you know the basics of command line file operations. Broot doesn't hide the operations, it makes them easier and faster to type and shows you immediately the result but you won't be able to do them if you don't know what a `cp` or a `mkdir` does.
 
-For each command here, don't forget you can hit <kbd>esc</kbd> to remove it. It's the fast way to cance.
+For each command here, don't forget you can hit <kbd>esc</kbd> to remove it. It's the fast way to cancel.
 
 !!!	Note
 	To be easier to read, this page uses `:` to start verbs but a space is equivalent and is often more convenient to type.
