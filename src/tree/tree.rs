@@ -2,12 +2,12 @@ use {
     super::*,
     crate::{
         app::AppContext,
-        errors,
+        errors::TreeBuildError,
         file_sum::FileSum,
         git::TreeGitStatus,
         task_sync::ComputationResult,
         task_sync::Dam,
-        tree_build::{BId, BuildReport, TreeBuilder},
+        tree_build::{BuildReport, TreeBuilder},
     },
     rustc_hash::FxHashMap,
     std::{
@@ -17,13 +17,14 @@ use {
     },
 };
 
-/// The tree which may be displayed, with onle line per visible line of the panel.
+/// The tree which may be displayed, with one line per visible line of the panel.
 ///
 /// In the tree structure, every "node" is just a line, there's
 ///  no link from a child to its parent or from a parent to its children.
 #[derive(Debug, Clone)]
 pub struct Tree {
-    pub lines: Box<[TreeLine]>,
+    pub lines: Vec<TreeLine>,
+    pub next_line_id: usize,
     pub selection: usize, // there's always a selection (starts with root, which is 0)
     pub options: TreeOptions,
     pub scroll: usize, // the number of lines at the top hidden because of scrolling
@@ -34,12 +35,13 @@ pub struct Tree {
 
 impl Tree {
 
+
     /// rebuild the tree with the same root, height, and options
     pub fn refresh(
         &mut self,
         page_height: usize,
         con: &AppContext,
-    ) -> Result<(), errors::TreeBuildError> {
+    ) -> Result<(), TreeBuildError> {
         let builder = TreeBuilder::from(
             self.root().to_path_buf(),
             self.options.clone(),
@@ -73,19 +75,19 @@ impl Tree {
         //  - we want a case insensitive sort
         //  - we still don't want to confuse the children of AA and Aa
         //  - a node can come from a not parent node, when we followed a link
-        let mut bid_parents: FxHashMap<BId, BId> = FxHashMap::default();
-        let mut bid_lines: FxHashMap<BId, &TreeLine> = FxHashMap::default();
+        let mut id_parents: FxHashMap<TreeLineId, TreeLineId> = FxHashMap::default();
+        let mut id_lines: FxHashMap<TreeLineId, &TreeLine> = FxHashMap::default();
         for line in &self.lines[..] {
-            if let Some(parent_bid) = line.parent_bid {
-                bid_parents.insert(line.bid, parent_bid);
+            if let Some(parent_id) = line.parent_id {
+                id_parents.insert(line.id, parent_id);
             }
-            bid_lines.insert(line.bid, line);
+            id_lines.insert(line.id, line);
         }
-        let mut sort_paths: FxHashMap<BId, String> = FxHashMap::default();
+        let mut sort_paths: FxHashMap<TreeLineId, String> = FxHashMap::default();
         for line in &self.lines[1..] {
             let mut sort_path = String::new();
-            let mut bid = line.bid;
-            while let Some(l) = bid_lines.get(&bid) {
+            let mut id = line.id;
+            while let Some(l) = id_lines.get(&id) {
                 let lower_name = l.path.file_name().map_or(
                     "".to_string(),
                     |name| name.to_string_lossy().to_lowercase(),
@@ -111,18 +113,18 @@ impl Tree {
                     "{}{}-{}/{}",
                     sort_prefix,
                     lower_name,
-                    bid.index(), // to be sure to separate paths having the same lowercase
+                    id, // to be sure to separate paths having the same lowercase
                     sort_path,
                 );
-                if let Some(&parent_bid) = bid_parents.get(&bid) {
-                    bid = parent_bid;
+                if let Some(&parent_id) = id_parents.get(&id) {
+                    id = parent_id;
                 } else {
                     break;
                 }
             }
-            sort_paths.insert(line.bid, sort_path);
+            sort_paths.insert(line.id, sort_path);
         }
-        self.lines[1..].sort_by_key(|line| sort_paths.get(&line.bid).unwrap());
+        self.lines[1..].sort_by_key(|line| sort_paths.get(&line.id).unwrap());
 
         let mut best_index = 0; // index of the line with the best score
         for i in 1..self.lines.len() {
@@ -139,12 +141,12 @@ impl Tree {
         for end_index in (1..self.lines.len()).rev() {
             let depth = (self.lines[end_index].depth - 1) as usize;
             let start_index = {
-                let parent_index = match self.lines[end_index].parent_bid {
-                    Some(parent_bid) => {
+                let parent_index = match self.lines[end_index].parent_id {
+                    Some(parent_id) => {
                         let mut index = end_index;
                         loop {
                             index -= 1;
-                            if self.lines[index].bid == parent_bid {
+                            if self.lines[index].id == parent_id {
                                 break;
                             }
                             if index == 0 {
@@ -534,5 +536,106 @@ impl Tree {
             sum
         }
     }
+
+    /// Add to the tree the lines which are in the given path but not already in the tree.
+    ///
+    /// Fail if the path is not a descendant of the tree root.
+    fn add_lines_to_path(
+        &mut self,
+        target_path: &Path,
+        con: &AppContext,
+    ) -> Result<(), TreeBuildError> {
+        let mut path = target_path;
+        let mut paths_to_add = Vec::new();
+        // find the closest parent already in the tree
+        let mut present_ancestor_idx = loop {
+            let idx = self
+                .lines
+                .iter()
+                .position(|line| line.path == path);
+            if let Some(idx) = idx {
+                break idx;
+            }
+            paths_to_add.push(path);
+            let Some(parent) = path.parent() else {
+                warn!("no ancestor in the tree for {:?}", path);
+                return Err(TreeBuildError::NotARootDescendant {
+                    path: path.display().to_string(),
+                });
+            };
+            path = parent;
+        };
+
+        let present_ancestor = &mut self.lines[present_ancestor_idx];
+
+        //debug!("present ancestor: {:#?}", &present_ancestor);
+        if present_ancestor.line_type.is_pruning() {
+            info!("unpruning {:?}", &present_ancestor.path);
+            present_ancestor.unprune();
+            // we should in exchange prune another one ?
+        }
+
+        debug!("show -> paths to add: {:?}", paths_to_add);
+        if paths_to_add.is_empty() {
+            return Ok(());
+        }
+        present_ancestor.nb_kept_children += 1;
+
+        // adding the new lines
+        while let Some(path_to_add) = paths_to_add.pop() {
+            info!("adding {:?}", path_to_add);
+            let new_line_id = self.next_line_id;
+            self.next_line_id += 1;
+            let parent = &self.lines[present_ancestor_idx];
+            let depth = parent.depth + 1;
+
+            // The 1 kept_children here might be a trick to avoid the file
+            // being changed to Pruning in the after_lines_changed method...
+            let nb_kept_children = 1;
+
+            let subpath =path_to_add
+                .strip_prefix(self.root())
+                .map_err(|_| {
+                    // not supposed to happen at this point as we're adding a descendant
+                    TreeBuildError::NotARootDescendant {
+                        path: path.display().to_string(),
+                    }
+                })?
+                .to_string_lossy()
+                .to_string();
+
+            let line = TreeLineBuilder {
+                id: new_line_id,
+                path: path_to_add.to_path_buf(),
+                subpath,
+                parent_id: Some(parent.id),
+                depth,
+                unlisted: 0,
+                nb_kept_children,
+                has_error: false,
+                score: 1,
+                direct_match: true,
+            }.build(con)?;
+
+            present_ancestor_idx = self.lines.len();
+            self.lines.push(line);
+        }
+        self.after_lines_changed();
+        Ok(())
+    }
+
+    pub fn show_path(
+        &mut self,
+        path: &Path,
+        con: &AppContext,
+    ) -> Result<(), TreeBuildError> {
+        self.add_lines_to_path(path, con)?;
+        let selected = self.try_select_path(path);
+        if !selected {
+            warn!("failed to select {:?}", path);
+        }
+        Ok(())
+    }
+
 }
 

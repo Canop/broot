@@ -8,6 +8,7 @@ mod internal;
 mod internal_execution;
 pub mod internal_focus;
 pub mod internal_select;
+pub mod internal_path;
 mod invocation_parser;
 mod sequence_execution;
 mod verb;

@@ -1,5 +1,6 @@
 ### next
 - 'Size' and 'Deletion date' columns in trash screen. This screen now supports the `:toggle_date`, `:toggle_size`, `:sort_by_date`, and `:sort_by_size` internals.
+- new `:show` internal make the provided path visible and selected, adding lines to the tree if necessary, does nothing if the provided path is not a descendant of the current tree root (this part may change depending on feedback) - Fix #936
 
 ### v1.42.0 - 2024-08-18
 <a name="v1.42.0"></a>

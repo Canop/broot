@@ -434,9 +434,7 @@ impl<'c> TreeBuilder<'c> {
         let mut remove_queue: BinaryHeap<SortableBId> = BinaryHeap::new();
         for id in &out_blines[1..] {
             let bline = &self.blines[*id];
-            if bline.has_match
-                && bline.nb_kept_children == 0
-                && (bline.depth > 1 || self.trim_root)
+            if bline.has_match && bline.nb_kept_children == 0 && (bline.depth > 1 || self.trim_root)
             {
                 remove_queue.push(SortableBId {
                     id: *id,
@@ -470,15 +468,7 @@ impl<'c> TreeBuilder<'c> {
         bid: BId,
     ) -> Result<TreeLine, TreeBuildError> {
         let bline = &self.blines[bid];
-        let line_type = TreeLineType::new(&bline.path, &bline.file_type);
-        let unlisted = bline
-            .children
-            .as_ref()
-            .map_or(0, |children| children.len() - bline.next_child_idx);
-        let metadata =
-            fs::symlink_metadata(&bline.path).map_err(|_| TreeBuildError::FileNotFound {
-                path: bline.path.to_string_lossy().to_string(),
-            })?;
+        let path = bline.path.clone();
         let subpath = if bline.depth == 0 {
             bline.path.to_string_lossy().to_string()
         } else {
@@ -491,38 +481,23 @@ impl<'c> TreeBuilder<'c> {
                 .to_string_lossy()
                 .to_string()
         };
-        let name = bline
-            .path
-            .file_name()
-            .and_then(|os_str| os_str.to_str())
-            .unwrap_or("")
-            .replace('\n', "");
-        let icon = self.con.icons.as_ref().map(|icon_plugin| {
-            let extension = TreeLine::extension_from_name(&name);
-            let double_extension =
-                extension.and_then(|_| TreeLine::double_extension_from_name(&name));
-            icon_plugin.get_icon(&line_type, &name, double_extension, extension)
-        });
-
-        Ok(TreeLine {
-            bid,
-            parent_bid: bline.parent_id,
-            left_branches: vec![false; bline.depth as usize].into_boxed_slice(),
-            depth: bline.depth,
-            icon,
-            name,
+        let unlisted = bline
+            .children
+            .as_ref()
+            .map_or(0, |children| children.len() - bline.next_child_idx);
+        TreeLineBuilder {
+            path,
             subpath,
-            path: bline.path.clone(),
-            line_type,
-            has_error: bline.has_error,
-            nb_kept_children: bline.nb_kept_children as usize,
+            id: bid.index(),
+            parent_id: bline.parent_id.map(|bid| bid.index()),
+            depth: bline.depth,
             unlisted,
+            nb_kept_children: bline.nb_kept_children as usize,
+            has_error: bline.has_error,
             score: bline.score,
             direct_match: bline.direct_match,
-            sum: None,
-            metadata,
-            git_status: None,
-        })
+        }
+        .build(self.con)
     }
 
     /// make a tree from the builder's specific structure
@@ -548,8 +523,10 @@ impl<'c> TreeBuilder<'c> {
                 }
             }
         }
+        let next_line_id = lines.iter().map(|line| line.id).max().unwrap_or(0) + 1;
         let mut tree = Tree {
-            lines: lines.into_boxed_slice(),
+            lines,
+            next_line_id,
             selection: 0,
             options: self.options.clone(),
             scroll: 0,
@@ -564,7 +541,7 @@ impl<'c> TreeBuilder<'c> {
             tree.git_status = ComputationResult::NotComputed;
             // it would make no sense to keep only files having a git status and
             // not display that type
-            for line in tree.lines.iter_mut() {
+            for line in &mut tree.lines {
                 line.git_status = computer.line_status(&line.path);
             }
         }
@@ -580,13 +557,12 @@ impl<'c> TreeBuilder<'c> {
         total_search: bool,
         dam: &Dam,
     ) -> Result<Tree, TreeBuildError> {
-        self.gather_lines(total_search, dam).map(|blines_ids| {
-            debug!("blines before trimming: {}", blines_ids.len());
-            if !self.total_search {
-                self.trim_excess(&blines_ids);
-            }
-            self.take_as_tree(&blines_ids)
-        })
+        let blines_ids = self.gather_lines(total_search, dam)?;
+        debug!("blines before trimming: {}", blines_ids.len());
+        if !self.total_search {
+            self.trim_excess(&blines_ids);
+        }
+        Ok(self.take_as_tree(&blines_ids))
     }
 
     pub fn build_paths<F>(

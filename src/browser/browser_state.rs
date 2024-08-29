@@ -24,8 +24,6 @@ use {
 pub struct BrowserState {
     pub tree: Tree,
     pub filtered_tree: Option<Tree>,
-    // pub pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
-    // pub total_search_required: bool,   // whether the pending pattern should be in total search mode
     mode: Mode, // whether we're in 'input' or 'normal' mode
     pending_task: Option<BrowserTask>, // note: there are some other pending task, see
 }
@@ -562,6 +560,32 @@ impl PanelState for BrowserState {
                 let page_height = BrowserState::page_height(screen);
                 self.displayed_tree_mut().try_select_last(page_height);
                 CmdResult::Keep
+            }
+            Internal::show => {
+                let path = internal_path::determine_path(
+                    internal_exec,
+                    input_invocation,
+                    trigger_type,
+                    self.displayed_tree(),
+                    app_state,
+                    cc,
+                );
+                match path {
+                    Some(path) => {
+                        let res = self.displayed_tree_mut().show_path(&path, con);
+                        match res {
+                            Ok(()) => {
+                                let page_height = BrowserState::page_height(screen);
+                                self.displayed_tree_mut().make_selection_visible(page_height);
+                                CmdResult::Keep
+                            }
+                            Err(e) => CmdResult::DisplayError(format!("{e}")),
+                        }
+                    }
+                    None => {
+                        CmdResult::Keep
+                    }
+                }
             }
             Internal::stage_all_directories => {
                 let pattern = self.displayed_tree().options.pattern.clone();

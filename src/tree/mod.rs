@@ -8,7 +8,7 @@ mod tree_options;
 pub use {
     sort::Sort,
     tree::Tree,
-    tree_line::TreeLine,
+    tree_line::*,
     tree_line_type::TreeLineType,
     tree_options::TreeOptions,
 };

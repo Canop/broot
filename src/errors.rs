@@ -10,11 +10,10 @@ use {
 custom_error! {pub ProgramError
     AmbiguousVerbName {name: String} = "Ambiguous name: More than one verb matches {name:?}",
     ArgParse {bad: String, valid: String} = "{bad:?} can't be parsed (valid values: {valid:?})",
-    Conf {source: ConfError} = "Bad configuration: {source}",
     ConfFile {path:String, details: ConfError} = "Bad configuration file {path:?} : {details}",
+    Conf {source: ConfError} = "Bad configuration: {source}",
     ImageError {source: ImageError } = "{source}",
     InternalError {details: String} = "Internal error: {details}", // should not happen
-    InvalidGlobError {pattern: String} = "Invalid glob: {pattern}",
     Io {source: io::Error} = "IO Error : {source}",
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
     Lfs {details: String} = "Failed to fetch mounts: {details}",
@@ -24,6 +23,7 @@ custom_error! {pub ProgramError
     Svg {source: SvgError} = "SVG error: {source}",
     SyntectCrashed { details: String } = "Syntect crashed on {details:?}",
     Termimad {source: termimad::Error} = "Termimad Error : {source}",
+    Trash {message: String} = "Trash error: {message}",
     TreeBuild {source: TreeBuildError} = "{source}",
     UnknowShell {shell: String} = "Unknown shell: {shell}",
     UnknownVerb {name: String} = "No verb matches {name:?}",
@@ -32,7 +32,6 @@ custom_error! {pub ProgramError
     UnprintableFile = "File can't be printed", // has characters that can't be printed without escaping
     Unrecognized {token: String} = "Unrecognized: {token}",
     ZeroLenFile = "File seems empty",
-    Trash {message: String} = "Trash error: {message}",
 }
 
 custom_error! {pub ShellInstallError
@@ -67,11 +66,14 @@ impl<Ok> IoToShellInstallError<Ok> for Result<Ok, io::Error> {
 }
 
 custom_error! {pub TreeBuildError
-    NotADirectory { path: String } = "Not a directory: {path}",
     FileNotFound { path: String } = "File not found: {path}",
     Interrupted = "Task Interrupted",
     InvalidUtf8 { path: String } = "Invalid UTF-8 in {path}",
+    //Io {source: io::Error} = "IO Error : {source}",
+    NotADirectory { path: String } = "Not a directory: {path}",
+    NotARootDescendant { path: String } = "Not a descendant of the root: {path}",
     TooManyMatches { max: usize } = "Too many matches (max allowed: {max})",
+    UnconsistentData { message:String } = "Unconsistent data: {message}", // maybe refresh ?
 }
 
 custom_error! {pub ConfError
