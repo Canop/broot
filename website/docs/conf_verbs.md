@@ -438,6 +438,7 @@ invocation | default key | default shortcut | behavior / details
 :select_last | - | - | select the last line
 :set_panel_width | - | - | ex: `:set_panel_width 1 150` sets the width of the second panel to 150 "characters"
 :set_syntax_theme | - | - | set the [syntect theme](../conf_file/#syntax-theme) of code preview, eg `:set SolarizedDark`
+:show | - | - | similar to `:select` but will add missing lines to the tree. Does nothing if the provided path isn't a descendant of the current root
 :sort_by_count | - | sc | sort by count (only one level of the tree is displayed)
 :sort_by_date | - | sd | sort by date
 :sort_by_size | - | ss | sort by size
