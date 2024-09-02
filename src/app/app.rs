@@ -307,6 +307,7 @@ impl App {
     ) -> Result<(), ProgramError> {
         use CmdResult::*;
         let mut error: Option<String> = None;
+        let mut new_active_panel_idx = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
         let app_cmd_context = AppCmdContext {
             panel_skin,
@@ -406,41 +407,30 @@ impl App {
                         debug!("cmd on escape: {cmd:?}");
                         self.apply_command(w, cmd, panel_skin, app_state, con)?;
                     }
-                    Internal::panel_left_no_open | Internal::panel_right_no_open => {
-                        let new_active_panel_idx = if internal == Internal::panel_left_no_open {
-                            // we're here because the state wants us to either move to the panel
-                            // to the left, or close the rightest one
-                            if self.active_panel_idx == 0 {
-                                self.close_panel(self.panels.len().get() - 1, con);
-                                None
-                            } else {
-                                Some(self.active_panel_idx - 1)
-                            }
+                    Internal::focus_staging_area_no_open => {
+                        new_active_panel_idx = self
+                            .panels
+                            .iter()
+                            .position(|p| p.state().get_type() == PanelStateType::Stage);
+                    }
+                    Internal::panel_left_no_open => {
+                        // we're here because the state wants us to either move to the panel
+                        // to the left, or close the rightest one
+                        new_active_panel_idx = if self.active_panel_idx == 0 {
+                            self.close_panel(self.panels.len().get() - 1, con);
+                            None
                         } else {
-                            // panel_right
-                            // we either move to the right or close the leftest panel
-                            if self.active_panel_idx + 1 == self.panels.len().get() {
-                                self.close_panel(0, con);
-                                None
-                            } else {
-                                Some(self.active_panel_idx + 1)
-                            }
+                            Some(self.active_panel_idx - 1)
                         };
-                        if let Some(idx) = new_active_panel_idx {
-                            if is_input_invocation {
-                                self.mut_panel().clear_input();
-                            }
-                            self.active_panel_idx = idx;
-                            let app_cmd_context = AppCmdContext {
-                                panel_skin,
-                                preview_panel: self.preview_panel,
-                                stage_panel: self.stage_panel,
-                                screen: self.screen,
-                                con,
-                            };
-                            self.mut_panel()
-                                .refresh_input_status(app_state, &app_cmd_context);
-                        }
+                    }
+                    Internal::panel_right_no_open => {
+                        // we either move to the right or close the leftest panel
+                        new_active_panel_idx = if self.active_panel_idx + 1 == self.panels.len().get() {
+                            self.close_panel(0, con);
+                            None
+                        } else {
+                            Some(self.active_panel_idx + 1)
+                        };
                     }
                     Internal::search_again => {
                         if let Some(raw_pattern) = &self.panel().last_raw_pattern {
@@ -602,6 +592,22 @@ impl App {
         }
         if let Some(text) = error {
             self.mut_panel().set_error(text);
+        }
+
+        if let Some(idx) = new_active_panel_idx {
+            if is_input_invocation {
+                self.mut_panel().clear_input();
+            }
+            self.active_panel_idx = idx;
+            let app_cmd_context = AppCmdContext {
+                panel_skin,
+                preview_panel: self.preview_panel,
+                stage_panel: self.stage_panel,
+                screen: self.screen,
+                con,
+            };
+            self.mut_panel()
+                .refresh_input_status(app_state, &app_cmd_context);
         }
 
         app_state.other_panel_path = self.get_other_panel_path();
