@@ -172,6 +172,7 @@ impl VerbStore {
         #[cfg(unix)]
         self.add_internal(filesystems)
             .with_shortcut("fs");
+        self.add_internal(focus_staging_area_no_open);
         // :focus is also hardcoded on Enter on directories
         // but ctrl-f is useful for focusing on a file's parent
         // (and keep the filter)

@@ -67,6 +67,7 @@ Internals! {
     escape: "escape from edition, completion, page, etc." false,
     filesystems: "list mounted filesystems" false,
     focus: "display the directory (mapped to *enter*)" true,
+    focus_staging_area_no_open: "focus the staging area if already open" false,
     help: "display broot's help" false,
     input_clear: "empty the input" false,
     input_del_char_below: "delete the char left at the cursor's position" false,

@@ -585,9 +585,16 @@ pub trait PanelState {
             Internal::escape => {
                 CmdResult::HandleInApp(Internal::escape)
             }
+            Internal::focus_staging_area_no_open => {
+                CmdResult::HandleInApp(Internal::focus_staging_area_no_open)
+            }
+            // panel_left depends on the kind of panel and is usually handled
+            // in a specific state, contrary to panel_left_no_open
             Internal::panel_left | Internal::panel_left_no_open => {
                 CmdResult::HandleInApp(Internal::panel_left_no_open)
             }
+            // panel_right depends on the kind of panel and is usually handled
+            // in a specific state, contrary to panel_right_no_open
             Internal::panel_right | Internal::panel_right_no_open => {
                 CmdResult::HandleInApp(Internal::panel_right_no_open)
             }
