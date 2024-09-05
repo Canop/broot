@@ -261,11 +261,9 @@ impl Verb {
             )
         };
         if let VerbExecution::Sequence(seq_ex) = &self.execution {
-            let exec_desc = builder().shell_exec_string(
-                &ExecPattern::from_string(&seq_ex.sequence.raw),
-                con,
-            );
-            format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
+            // We can't determine before execution what will be the arguments, except
+            // for the first item of the sequence. It's cleaner to just not try expand it
+            format!("Hit *enter* to **{}**: `{}`", name, seq_ex.sequence.raw)
         } else if let VerbExecution::External(external_exec) = &self.execution {
             let exec_desc = builder().shell_exec_string(&external_exec.exec_pattern, con);
             format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
