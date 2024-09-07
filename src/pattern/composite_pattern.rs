@@ -4,6 +4,7 @@ use {
         content_search::ContentMatch,
     },
     bet::*,
+    smallvec::smallvec,
     std::path::Path,
 };
 
@@ -91,13 +92,25 @@ impl CompositePattern {
             |pat| pat.search_string(candidate),
             // operator
             |op, a, b| match (op, a, b) {
+                (And, None, _) => None, // normally not called due to short-circuit
+                (And, Some(sa), Some(Some(_))) => Some(sa), // we have to choose a match
+                (Or, None, Some(Some(sb))) => Some(sb),
+                (Or, Some(sa), Some(None)) => Some(sa),
+                (Or, Some(sa), Some(Some(_))) => Some(sa), // we have to choose
                 (Not, Some(_), _) => None,
-                (_, Some(ma), _) => Some(ma),
-                (_, None, Some(omb)) => omb,
+                (Not, None, _) => {
+                    // this is quite arbitrary. Matching the whole string might be
+                    // costly for some use, so we match only the start
+                    Some(NameMatch {
+                        score: 1,
+                        pos: smallvec![0],
+                    })
+                }
                 _ => None,
             },
             |op, a| match (op, a) {
                 (Or, Some(_)) => true,
+                (And, None) => true,
                 _ => false,
             },
         );
@@ -120,13 +133,26 @@ impl CompositePattern {
             |pat| pat.search_content(candidate, desired_len),
             // operator
             |op, a, b| match (op, a, b) {
+                (And, None, _) => None, // normally not called due to short-circuit
+                (And, Some(sa), Some(Some(_))) => Some(sa), // we have to choose
+                (Or, None, Some(Some(sb))) => Some(sb),
+                (Or, Some(sa), Some(None)) => Some(sa),
+                (Or, Some(sa), Some(Some(_))) => Some(sa), // we have to choose
                 (Not, Some(_), _) => None,
-                (_, Some(ma), _) => Some(ma),
-                (_, None, Some(omb)) => omb,
+                (Not, None, _) => {
+                    // We can't generate a content match for a whole file
+                    // content, so we build one of length 0.
+                    Some(ContentMatch {
+                        extract: "".to_string(),
+                        needle_start: 0,
+                        needle_end: 0,
+                    })
+                }
                 _ => None,
             },
             |op, a| match (op, a) {
                 (Or, Some(_)) => true,
+                (And, None) => true,
                 _ => false,
             },
         );

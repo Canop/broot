@@ -177,9 +177,9 @@ checksum = "72b3254f16251a8381aa12e40e3c4d2f0199f8c6508fbecb9d91f575e0fbb8c6"
 
 [[package]]
 name = "bet"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "346ce34c9a1bde8113a8590f3f9c8bcc87532188535066bc6b98c2b69f97cc38"
+checksum = "4a33cd5a98377df6ecfedff9c018c1c1ea92c730c4baf9173cfe0d7c3df20ab6"
 
 [[package]]
 name = "bincode"
@@ -216,7 +216,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "broot"
-version = "1.43.0"
+version = "1.43.1-dev"
 dependencies = [
  "ansi_colours",
  "base64 0.21.7",
