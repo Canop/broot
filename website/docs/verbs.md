@@ -123,9 +123,9 @@ Examples:
 
 command | result
 -|-
-:fo! | focus the current directory in a new panel
-:!he | open the help side to your content
-:!fo ~ | show your home directory in a new panel
+:focus! | focus the current directory in a new panel
+:!help | open the help side to your content
+:!focus ~ | show your home directory in a new panel
 
 It can be used in a verb declaration in configuration too.
 

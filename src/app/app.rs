@@ -937,8 +937,8 @@ impl App {
 }
 
 /// clear the file sizes and git stats cache.
-/// This should be done on Refresh actions and after any external
-/// command.
+///
+/// This should be done on Refresh actions and after any external command.
 fn clear_caches() {
     file_sum::clear_cache();
     git::clear_status_computer_cache();
