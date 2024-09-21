@@ -49,6 +49,9 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
             } else {
                 warn!("$TERM_PROGRAM_VERSION unexpectedly missing");
             }
+        } else if term_program == "ghostty" {
+            debug("Ghostty implements Kitty Graphics protocol");
+            return true;
         }
     }
 
