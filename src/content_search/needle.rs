@@ -1,6 +1,5 @@
-// Don't look here for search functions to reuse or even for
-// efficient or proven tricks. This is fast-made, and not fit
-// for reuse out of broot.
+// Don't look here for search functions to reuse or even for efficient or proven tricks.
+// Benchmarks proved that the approach here was fast in the context of broot but that's all.
 
 use {
     super::*,
@@ -55,6 +54,9 @@ impl Needle {
         hay.iter().position(|&b| b == n)
     }
 
+    /// look for matches of the needle when it's length is 2
+    ///
+    /// Calling this function with a hay of less than 2 bytes may result in undefined behavior.
     fn find_naive_2(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
         let max_pos = hay.len() - 2;
         let b0 = self.bytes[0];
@@ -70,6 +72,9 @@ impl Needle {
         None
     }
 
+    /// look for matches of the needle when it's length is 3
+    ///
+    /// Calling this function with a hay of less than 3 bytes may result in undefined behavior.
     fn find_naive_3(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
         let max_pos = hay.len() - 3;
         let b0 = self.bytes[0];
@@ -89,6 +94,9 @@ impl Needle {
         None
     }
 
+    /// look for matches of the needle when it's length is 4
+    ///
+    /// Calling this function with a hay of less than 4 bytes may result in undefined behavior.
     fn find_naive_4(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
         use std::mem::transmute;
         let max_pos = hay.len() - 4;
@@ -104,6 +112,9 @@ impl Needle {
         None
     }
 
+    /// look for matches of the needle when it's length is 6
+    ///
+    /// Calling this function with a hay of less than 6 bytes may result in undefined behavior.
     fn find_naive_6(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
         let max_pos = hay.len() - 6;
         let b0 = self.bytes[0];
@@ -140,6 +151,7 @@ impl Needle {
         true
     }
 
+    /// look for matches of the needle for any length
     fn find_naive(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
         let max_pos = hay.len() - self.bytes.len();
         while pos <= max_pos {
