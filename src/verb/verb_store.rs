@@ -77,14 +77,20 @@ impl VerbStore {
         self.add_internal(input_go_left).no_doc();
         self.add_internal(input_go_right).no_doc();
         self.add_internal(input_go_to_start).with_key(key!(home)).no_doc();
-        self.add_internal(input_go_word_left).no_doc();
-        self.add_internal(input_go_word_right).no_doc();
+        self.add_internal(input_go_word_left).with_key(key!(alt-b)).no_doc();
+        self.add_internal(input_go_word_right).with_key(key!(alt-f)).no_doc();
 
         // arrow keys bindings
         self.add_internal(back).with_key(key!(left));
         self.add_internal(open_stay).with_key(key!(right));
-        self.add_internal(line_down).with_key(key!(down)).with_key(key!('j'));
-        self.add_internal(line_up).with_key(key!(up)).with_key(key!('k'));
+        self.add_internal(line_down)
+            .with_key(key!(down))
+            .with_key(key!('j'))
+            .with_key(key!(ctrl-j));
+        self.add_internal(line_up)
+            .with_key(key!(up))
+            .with_key(key!('k'))
+            .with_key(key!(ctrl-k));
 
         // changing display
         self.add_internal(set_syntax_theme);
@@ -273,9 +279,11 @@ impl VerbStore {
             .with_key(key!(ctrl-u))
             .with_key(key!(pageup));
         self.add_internal(panel_left_no_open)
-            .with_key(key!(ctrl-left));
+            .with_key(key!(ctrl-left))
+            .with_key(key!(ctrl-h));
         self.add_internal(panel_right)
-            .with_key(key!(ctrl-right));
+            .with_key(key!(ctrl-right))
+            .with_key(key!(ctrl-l));
         self.add_internal(print_path).with_shortcut("pp");
         self.add_internal(print_relative_path).with_shortcut("prp");
         self.add_internal(print_tree).with_shortcut("pt");
