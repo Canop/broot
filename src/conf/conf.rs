@@ -5,8 +5,14 @@ use {
     super::*,
     crate::{
         app::Mode,
-        display::{ColsConf, LayoutInstructions},
-        errors::{ConfError, ProgramError},
+        display::{
+            ColsConf,
+            LayoutInstructions,
+        },
+        errors::{
+            ConfError,
+            ProgramError,
+        },
         kitty::TransmissionMedium,
         path::{
             path_from,
@@ -17,8 +23,8 @@ use {
         syntactic::SyntaxTheme,
         verb::ExecPattern,
     },
-    rustc_hash::FxHashMap,
     crokey::crossterm::style::Attribute,
+    rustc_hash::FxHashMap,
     serde::Deserialize,
     std::collections::HashMap,
     std::path::PathBuf,
@@ -51,29 +57,33 @@ macro_rules! overwrite_vec {
 /// The configuration read from conf.toml or conf.hjson file(s)
 #[derive(Default, Clone, Debug, Deserialize)]
 pub struct Conf {
-    #[serde(alias="capture-mouse")]
+    #[serde(alias = "capture-mouse")]
     pub capture_mouse: Option<bool>,
 
-    #[serde(alias="cols-order")]
+    #[serde(alias = "cols-order")]
     pub cols_order: Option<ColsConf>,
 
-    #[serde(alias="content-search-max-file-size", deserialize_with="file_size::deserialize", default)]
+    #[serde(
+        alias = "content-search-max-file-size",
+        deserialize_with = "file_size::deserialize",
+        default
+    )]
     pub content_search_max_file_size: Option<u64>,
 
-    #[serde(alias="date-time-format")]
+    #[serde(alias = "date-time-format")]
     pub date_time_format: Option<String>,
 
-    #[serde(alias="default-flags")]
+    #[serde(alias = "default-flags")]
     pub default_flags: Option<String>, // the flags to apply before cli ones
 
     /// Obsolete, kept for compatibility: you should now use capture_mouse
-    #[serde(alias="disable-mouse-capture")]
+    #[serde(alias = "disable-mouse-capture")]
     pub disable_mouse_capture: Option<bool>,
 
-    #[serde(alias="enable-keyboard-enhancements")]
+    #[serde(alias = "enable-keyboard-enhancements")]
     pub enable_kitty_keyboard: Option<bool>,
 
-    #[serde(default, alias="ext-colors")]
+    #[serde(default, alias = "ext-colors")]
     pub ext_colors: FxHashMap<String, String>,
 
     pub file_sum_threads_count: Option<usize>,
@@ -82,76 +92,77 @@ pub struct Conf {
     #[serde(skip)]
     pub files: Vec<PathBuf>,
 
-    #[serde(alias="icon-theme")]
+    #[serde(alias = "icon-theme")]
     pub icon_theme: Option<String>,
 
     #[serde(default)]
     pub imports: Vec<Import>,
 
     /// the initial mode (only relevant when modal is true)
-    #[serde(alias="initial-mode")]
+    #[serde(alias = "initial-mode")]
     pub initial_mode: Option<Mode>,
 
-    #[serde(alias="kitty-graphics-transmission")]
+    #[serde(alias = "kitty-graphics-transmission")]
     pub kitty_graphics_transmission: Option<TransmissionMedium>,
 
-    #[serde(default, alias="preview-transformers")]
+    #[serde(default, alias = "preview-transformers")]
     pub preview_transformers: Vec<PreviewTransformerConf>,
 
-    #[serde(alias="lines-after-match-in-preview")]
+    #[serde(alias = "lines-after-match-in-preview")]
     pub lines_after_match_in_preview: Option<usize>,
 
-    #[serde(alias="lines-before-match-in-preview")]
+    #[serde(alias = "lines-before-match-in-preview")]
     pub lines_before_match_in_preview: Option<usize>,
 
     pub max_panels_count: Option<usize>,
 
-    #[serde(alias="max_staged_count")]
+    #[serde(alias = "max_staged_count")]
     pub max_staged_count: Option<usize>,
 
     pub modal: Option<bool>,
 
-    #[serde(alias="quit-on-last-cancel")]
+    #[serde(alias = "quit-on-last-cancel")]
     pub quit_on_last_cancel: Option<bool>,
 
-    #[serde(alias="search-modes")]
+    #[serde(alias = "search-modes")]
     pub search_modes: Option<FxHashMap<String, String>>,
 
-    #[serde(alias="show-matching-characters-on-path-searches")]
+    #[serde(alias = "show-matching-characters-on-path-searches")]
     pub show_matching_characters_on_path_searches: Option<bool>,
 
-    #[serde(alias="show-selection-mark")]
+    #[serde(alias = "show-selection-mark")]
     pub show_selection_mark: Option<bool>,
 
     pub skin: Option<FxHashMap<String, SkinEntry>>,
 
-    #[serde(default, alias="special-paths")]
+    #[serde(default, alias = "special-paths")]
     pub special_paths: HashMap<GlobConf, SpecialHandlingConf>,
 
-    #[serde(alias="syntax-theme")]
+    #[serde(alias = "syntax-theme")]
     pub syntax_theme: Option<SyntaxTheme>,
 
-    #[serde(alias="terminal-title")]
+    #[serde(alias = "terminal-title")]
     pub terminal_title: Option<ExecPattern>,
 
-    #[serde(alias="true-colors")]
+    #[serde(alias = "true-colors")]
     pub true_colors: Option<bool>,
 
-    #[serde(alias="update-work-dir")]
+    #[serde(alias = "update-work-dir")]
     pub update_work_dir: Option<bool>,
 
     #[serde(default)]
     pub verbs: Vec<VerbConf>,
 
-    #[serde(alias="layout-instructions")]
+    #[serde(alias = "layout-instructions")]
     pub layout_instructions: Option<LayoutInstructions>,
 
+    #[serde(alias = "use-cjk-width")]
+    pub use_cjk_width: Option<bool>,
     // BEWARE: entries added here won't be usable unless also
     // added in read_file!
 }
 
 impl Conf {
-
     /// return the path to the default conf.toml file.
     /// If there's no conf.hjson file in the default conf directory,
     /// and if there's a toml file, return this toml file.
@@ -180,7 +191,9 @@ impl Conf {
                 &conf_dir,
                 Attribute::Reset,
             );
-            println!("You should have a look at them: their comments will help you configure broot.");
+            println!(
+                "You should have a look at them: their comments will help you configure broot."
+            );
             println!("You should especially set up your favourite editor in verbs.hjson.");
         }
         let mut conf = Conf::default();
@@ -188,12 +201,15 @@ impl Conf {
         Ok(conf)
     }
 
-    pub fn solve_conf_path(&self, path: &str) -> Option<PathBuf> {
+    pub fn solve_conf_path(
+        &self,
+        path: &str,
+    ) -> Option<PathBuf> {
         if path.ends_with(".toml") || path.ends_with(".hjson") {
             for conf_file in self.files.iter().rev() {
                 let solved = path_from(conf_file, PathAnchor::Parent, path);
                 if solved.exists() {
-                    return Some(solved)
+                    return Some(solved);
                 }
             }
         }
@@ -236,6 +252,7 @@ impl Conf {
         overwrite!(self, lines_after_match_in_preview, conf);
         overwrite!(self, lines_before_match_in_preview, conf);
         overwrite!(self, layout_instructions, conf);
+        overwrite!(self, use_cjk_width, conf);
         self.verbs.append(&mut conf.verbs);
         // the following prefs are "additive": we can add entries from several
         // config files and they still make sense
@@ -250,8 +267,11 @@ impl Conf {
                 debug!("skipping not applying conf file : {:?}", file);
                 continue;
             }
-            let import_path = self.solve_conf_path(file)
-                .ok_or_else(|| ConfError::ImportNotFound { path: file.to_string() })?;
+            let import_path =
+                self.solve_conf_path(file)
+                    .ok_or_else(|| ConfError::ImportNotFound {
+                        path: file.to_string(),
+                    })?;
             if self.files.contains(&import_path) {
                 debug!("skipping import already read: {:?}", import_path);
                 continue;
@@ -261,6 +281,3 @@ impl Conf {
         Ok(())
     }
 }
-
-
-

@@ -286,7 +286,12 @@ impl App {
         let w: &mut W = w;
         let active_panel = &this.panels[this.active_panel_idx];
         let Area { left, top, .. } = active_panel.areas.input;
-        let width = active_panel.input.get_content().width() as u16;
+        let content = active_panel.input.get_content();
+        let width = if con.use_cjk_width {
+            content.width_cjk()
+        } else {
+            content.width()
+        } as u16;
         queue!(w, MoveTo(left + width, top))?;
 
         kitty::manager()

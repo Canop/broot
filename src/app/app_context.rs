@@ -2,7 +2,10 @@ use {
     super::*,
     crate::{
         app::Mode,
-        cli::{Args, TriBool},
+        cli::{
+            Args,
+            TriBool,
+        },
         conf::*,
         content_search,
         display::LayoutInstructions,
@@ -10,8 +13,8 @@ use {
         file_sum,
         icon::*,
         kitty::TransmissionMedium,
-        pattern::SearchModeMap,
         path::SpecialPaths,
+        pattern::SearchModeMap,
         preview::PreviewTransformers,
         skin::ExtColorMap,
         syntactic::SyntaxTheme,
@@ -20,16 +23,21 @@ use {
     },
     crokey::crossterm::tty::IsTty,
     std::{
-        convert::{TryFrom, TryInto},
+        convert::{
+            TryFrom,
+            TryInto,
+        },
         io,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
     },
 };
 
 /// The container that can be passed around to provide the configuration things
 /// for the whole life of the App
 pub struct AppContext {
-
     /// Whether the application is running in a normal TTY context
     pub is_tty: bool,
 
@@ -135,6 +143,9 @@ pub struct AppContext {
 
     /// layout modifiers, like divider moves
     pub layout_instructions: LayoutInstructions,
+
+    /// whether to use double width for CJK ambiguous width characters
+    pub use_cjk_width: bool,
 }
 
 impl AppContext {
@@ -156,8 +167,7 @@ impl AppContext {
         } else {
             are_true_colors_available()
         };
-        let icons = config.icon_theme.as_ref()
-            .and_then(|itn| icon_plugin(itn));
+        let icons = config.icon_theme.as_ref().and_then(|itn| icon_plugin(itn));
         let mut special_paths: SpecialPaths = (&config.special_paths).try_into()?;
         special_paths.add_defaults();
         let search_modes = config
@@ -166,24 +176,23 @@ impl AppContext {
             .map(TryInto::try_into)
             .transpose()?
             .unwrap_or_default();
-        let ext_colors = ExtColorMap::try_from(&config.ext_colors)
-            .map_err(ConfError::from)?;
-        let file_sum_threads_count = config.file_sum_threads_count
+        let ext_colors = ExtColorMap::try_from(&config.ext_colors).map_err(ConfError::from)?;
+        let file_sum_threads_count = config
+            .file_sum_threads_count
             .unwrap_or(file_sum::DEFAULT_THREAD_COUNT);
         if !(1..=50).contains(&file_sum_threads_count) {
-            return Err(ConfError::InvalidThreadsCount{ count: file_sum_threads_count }.into());
+            return Err(ConfError::InvalidThreadsCount {
+                count: file_sum_threads_count,
+            }
+            .into());
         }
-        let max_panels_count = config.max_panels_count
-            .unwrap_or(2)
-            .clamp(2, 100);
+        let max_panels_count = config.max_panels_count.unwrap_or(2).clamp(2, 100);
         let capture_mouse = match (config.capture_mouse, config.disable_mouse_capture) {
             (Some(b), _) => b, // the new "capture_mouse" argument takes precedence
             (_, Some(b)) => !b,
             _ => true,
         };
-        let max_staged_count = config.max_staged_count
-            .unwrap_or(10_000)
-            .clamp(10, 100_000);
+        let max_staged_count = config.max_staged_count.unwrap_or(10_000).clamp(10, 100_000);
         let (initial_root, initial_file) = initial_root_file(&launch_args)?;
 
         // tree options are built from the default_flags
@@ -199,13 +208,16 @@ impl AppContext {
             initial_tree_options.show_selection_mark = true;
         }
 
-        let content_search_max_file_size = config.content_search_max_file_size
+        let content_search_max_file_size = config
+            .content_search_max_file_size
             .map(|u64value| usize::try_from(u64value).unwrap_or(usize::MAX))
             .unwrap_or(content_search::DEFAULT_MAX_FILE_SIZE);
 
         let terminal_title_pattern = config.terminal_title.clone();
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
         let layout_instructions = config.layout_instructions.clone().unwrap_or_default();
+
+        let use_cjk_width = config.use_cjk_width.clone().unwrap_or_default();
 
         Ok(Self {
             is_tty,
@@ -235,20 +247,25 @@ impl AppContext {
             terminal_title_pattern,
             update_work_dir: config.update_work_dir.unwrap_or(true),
             keyboard_enhanced: false,
-            kitty_graphics_transmission: config.kitty_graphics_transmission
-                .unwrap_or_default(),
+            kitty_graphics_transmission: config.kitty_graphics_transmission.unwrap_or_default(),
             lines_after_match_in_preview: config.lines_after_match_in_preview.unwrap_or(0),
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),
             preview_transformers,
             layout_instructions,
+            use_cjk_width,
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (prefered)
     /// or from the default_flags parameter of a config file
     pub fn cmd(&self) -> Option<&str> {
-        self.launch_args.cmd.as_ref().or(
-            self.config_default_args.as_ref().and_then(|args| args.cmd.as_ref())
-        ).map(String::as_str)
+        self.launch_args
+            .cmd
+            .as_ref()
+            .or(self
+                .config_default_args
+                .as_ref()
+                .and_then(|args| args.cmd.as_ref()))
+            .map(String::as_str)
     }
     pub fn initial_mode(&self) -> Mode {
         if self.modal {
@@ -303,7 +320,8 @@ fn initial_root_file(cli_args: &Args) -> Result<(PathBuf, Option<PathBuf>), Prog
     if !root.exists() {
         return Err(TreeBuildError::FileNotFound {
             path: format!("{:?}", &root),
-        }.into());
+        }
+        .into());
     }
     if !root.is_dir() {
         // we try to open the parent directory if the passed file isn't one
@@ -315,7 +333,8 @@ fn initial_root_file(cli_args: &Args) -> Result<(PathBuf, Option<PathBuf>), Prog
             // this is a weird filesystem, let's give up
             return Err(TreeBuildError::NotADirectory {
                 path: format!("{:?}", &root),
-            }.into());
+            }
+            .into());
         }
     }
     Ok((root, file))
@@ -334,5 +353,3 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
         root.to_path_buf()
     })
 }
-
-
