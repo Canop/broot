@@ -217,13 +217,6 @@ lines_before_match_in_preview: 1
 lines_after_match_in_preview: 1
 
 ###############################################################
-# whether to use double width for CJK ambiguous width char
-#
-# By default, broot will use single width for these characters
-#
-# use_cjk_width: false
-
-###############################################################
 # transformations before preview
 #
 # It's possible to define transformations to apply to some files
