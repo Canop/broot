@@ -308,7 +308,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         if pattern_object.subpath {
             if self.tree.options.show_matching_characters_on_path_searches && line.unlisted == 0 {
                 let name_match = self.tree.options.pattern.pattern
-                    .search_string(&line.subpath);
+                    .find_string(&line.subpath);
                 let mut path_ms = MatchedString::new(
                     name_match,
                     &line.subpath,
@@ -338,7 +338,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             }
         } else {
             let name_match = self.tree.options.pattern.pattern
-                .search_string(&line.name);
+                .find_string(&line.name);
             let matched_string = MatchedString::new(
                 name_match,
                 &line.name,
@@ -614,7 +614,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
                 if cw.allowed > 8 && pattern_object.content {
                     let extract = tree.options.pattern.pattern
-                        .search_content(&line.path, cw.allowed - 2);
+                        .find_content(&line.path, cw.allowed - 2);
                     if let Some(extract) = extract {
                         self.write_content_extract(cw, extract, selected)?;
                     }
