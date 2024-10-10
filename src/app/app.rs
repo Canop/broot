@@ -276,8 +276,7 @@ impl App {
                 app_state,
                 con,
             };
-            // time!("display panel", panel.display(w, &disc)?,);
-            if let Some(pos) = panel.display(w, &disc)? {
+            if let Some(pos) = time!("display panel", panel.display(w, &disc)?,) {
                 cursor_pos = Some(pos)
             }
         }

@@ -260,7 +260,7 @@ dependencies = [
  "strict 0.1.4",
  "syntect-no-panic",
  "tempfile",
- "termimad 0.30.0 (git+https://github.com/Canop/termimad?rev=5c691657592fe7798ed32d6f9bb1b36d44c93f87)",
+ "termimad",
  "terminal-clipboard",
  "terminal-light",
  "toml",
@@ -362,7 +362,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "2873923833694e839cce5b846311ba5316e24b6e3726f8106368ebeaf3beb0d5"
 dependencies = [
  "clap",
- "termimad 0.30.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "termimad",
  "terminal-light",
 ]
 
@@ -937,7 +937,7 @@ dependencies = [
  "serde",
  "serde_json",
  "tempfile",
- "termimad 0.30.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "termimad",
  "thiserror",
 ]
 
@@ -2162,24 +2162,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.30.0"
+version = "0.30.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "920e7c4671e79f3d9df269da9c8edf0dbc580044fd727d3594f7bfba5eb6107a"
-dependencies = [
- "coolor",
- "crokey",
- "crossbeam",
- "lazy-regex",
- "minimad",
- "serde",
- "thiserror",
- "unicode-width",
-]
-
-[[package]]
-name = "termimad"
-version = "0.30.0"
-source = "git+https://github.com/Canop/termimad?rev=5c691657592fe7798ed32d6f9bb1b36d44c93f87#5c691657592fe7798ed32d6f9bb1b36d44c93f87"
+checksum = "22117210909e9dfff30a558f554c7fb3edb198ef614e7691386785fb7679677c"
 dependencies = [
  "coolor",
  "crokey",
