@@ -128,6 +128,20 @@ impl Pattern {
         }
     }
 
+    pub fn find_string(
+        &self,
+        candidate: &str,
+    ) -> Option<NameMatch> {
+        match self {
+            Self::NameExact(ep) | Self::PathExact(ep) => ep.find(candidate),
+            Self::NameFuzzy(fp) | Self::PathFuzzy(fp) => fp.find(candidate),
+            Self::NameRegex(rp) | Self::PathRegex(rp) => rp.find(candidate),
+            Self::NameTokens(tp) | Self::PathTokens(tp) => tp.find(candidate),
+            Self::Composite(cp) => cp.find_string(candidate),
+            _ => None,
+        }
+    }
+
     /// find the content to show next to the name of the file
     /// when the search involved a content filtering
     pub fn search_content(
@@ -139,6 +153,22 @@ impl Pattern {
             Self::ContentExact(cp) => cp.get_content_match(candidate, desired_len),
             Self::ContentRegex(cp) => cp.get_content_match(candidate, desired_len),
             Self::Composite(cp) => cp.search_content(candidate, desired_len),
+            _ => None,
+        }
+    }
+
+    /// find the content to show next to the name of the file
+    /// when the search involved a content filtering and you already
+    /// know the content is there so you don't want to filter by name/path
+    pub fn find_content(
+        &self,
+        candidate: &Path,
+        desired_len: usize, // available space for content match display
+    ) -> Option<ContentMatch> {
+        match self {
+            Self::ContentExact(cp) => cp.get_content_match(candidate, desired_len),
+            Self::ContentRegex(cp) => cp.get_content_match(candidate, desired_len),
+            Self::Composite(cp) => cp.find_content(candidate, desired_len),
             _ => None,
         }
     }

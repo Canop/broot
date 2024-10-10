@@ -1,8 +1,6 @@
 use {
     super::*,
-    crate::{
-        content_search::ContentMatch,
-    },
+    crate::content_search::ContentMatch,
     bet::*,
     smallvec::smallvec,
     std::path::Path,
@@ -19,7 +17,10 @@ impl CompositePattern {
         Self { expr }
     }
 
-    pub fn score_of_string(&self, candidate: &str) -> Option<i32> {
+    pub fn score_of_string(
+        &self,
+        candidate: &str,
+    ) -> Option<i32> {
         use PatternOperator::*;
         let composite_result: Option<Option<i32>> = self.expr.eval(
             // score evaluation
@@ -44,14 +45,16 @@ impl CompositePattern {
                 _ => false,
             },
         );
-        composite_result
-            .unwrap_or_else(||{
-                warn!("unexpectedly missing result ");
-                None
-            })
+        composite_result.unwrap_or_else(|| {
+            warn!("unexpectedly missing result ");
+            None
+        })
     }
 
-    pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
+    pub fn score_of(
+        &self,
+        candidate: Candidate,
+    ) -> Option<i32> {
         use PatternOperator::*;
         let composite_result: Option<Option<i32>> = self.expr.eval(
             // score evaluation
@@ -76,11 +79,10 @@ impl CompositePattern {
                 _ => false,
             },
         );
-        composite_result
-            .unwrap_or_else(||{
-                warn!("unexpectedly missing result ");
-                None
-            })
+        composite_result.unwrap_or_else(|| {
+            warn!("unexpectedly missing result ");
+            None
+        })
     }
 
     pub fn search_string(&self, candidate: &str) -> Option<NameMatch> {
@@ -163,6 +165,67 @@ impl CompositePattern {
             })
     }
 
+    // Search for a string, trying to return a match (it's used when a
+    // composite returns something but may be matching also on other parts
+    // that we can't compute, like the content)
+    pub fn find_string(
+        &self,
+        candidate: &str,
+    ) -> Option<NameMatch> {
+        // an ideal algorithm would call score_of on patterns when the object is different
+        // to deal with exclusions but I'll start today with something simpler
+        use PatternOperator::*;
+        let composite_result: Option<Option<NameMatch>> = self.expr.eval(
+            // score evaluation
+            |pat| pat.search_string(candidate),
+            // operator
+            |op, a, b| match (op, a, b) {
+                (Not, Some(_), _) => None,
+                (_, Some(ma), _) => Some(ma),
+                (_, None, Some(omb)) => omb,
+                _ => None,
+            },
+            |op, a| match (op, a) {
+                (Or, Some(_)) => true,
+                _ => false,
+            },
+        );
+        // it's possible we didn't find a result because the composition
+        composite_result.unwrap_or_else(|| {
+            warn!("unexpectedly missing result ");
+            None
+        })
+    }
+
+    // Search for a string in content, trying to return a match as soon as some
+    // part of the composite matches
+    pub fn find_content(
+        &self,
+        candidate: &Path,
+        desired_len: usize, // available space for content match display
+    ) -> Option<ContentMatch> {
+        use PatternOperator::*;
+        let composite_result: Option<Option<ContentMatch>> = self.expr.eval(
+            // score evaluation
+            |pat| pat.search_content(candidate, desired_len),
+            // operator
+            |op, a, b| match (op, a, b) {
+                (Not, Some(_), _) => None,
+                (_, Some(ma), _) => Some(ma),
+                (_, None, Some(omb)) => omb,
+                _ => None,
+            },
+            |op, a| match (op, a) {
+                (Or, Some(_)) => true,
+                _ => false,
+            },
+        );
+        composite_result.unwrap_or_else(|| {
+            warn!("unexpectedly missing result ");
+            None
+        })
+    }
+
     pub fn get_match_line_count(
         &self,
         candidate: &Path,
@@ -183,25 +246,21 @@ impl CompositePattern {
                 _ => false,
             },
         );
-        composite_result
-            .unwrap_or_else(||{
-                warn!("unexpectedly missing result ");
-                None
-            })
+        composite_result.unwrap_or_else(|| {
+            warn!("unexpectedly missing result ");
+            None
+        })
     }
 
     pub fn has_real_scores(&self) -> bool {
-        self.expr.iter_atoms()
-            .fold(false, |r, p| match p {
-                Pattern::NameFuzzy(_) | Pattern::PathFuzzy(_) => true,
-                _ => r,
-            })
+        self.expr.iter_atoms().fold(false, |r, p| match p {
+            Pattern::NameFuzzy(_) | Pattern::PathFuzzy(_) => true,
+            _ => r,
+        })
     }
 
     pub fn is_empty(&self) -> bool {
-        let is_not_empty = self.expr.iter_atoms()
-            .any(|p| p.is_some());
+        let is_not_empty = self.expr.iter_atoms().any(|p| p.is_some());
         !is_not_empty
     }
-
 }
