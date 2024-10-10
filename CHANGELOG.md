@@ -1,3 +1,6 @@
+### next
+-  fix wrong position of IMEs (input method editors) popup - thanks @xubaiwang - See #948
+
 ### v1.44.0 - 2024-09-07
 <a name="v1.44.0"></a>
 - `:focus_staging_area_no_open` internal, focus the staging area if it's already open, does nothing in other case - Fix #926

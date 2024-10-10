@@ -216,7 +216,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "broot"
-version = "1.44.0"
+version = "1.44.1-dev"
 dependencies = [
  "ansi_colours",
  "base64 0.21.7",
