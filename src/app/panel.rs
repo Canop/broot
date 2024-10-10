@@ -3,12 +3,12 @@ use {
     crate::{
         command::*,
         display::{
+            flags_display,
             status_line,
             Areas,
             Screen,
             W,
             WIDE_STATUS,
-            flags_display,
         },
         errors::ProgramError,
         keys::KEY_FORMAT,
@@ -17,7 +17,10 @@ use {
         verb::*,
     },
     termimad::{
-        minimad::{Alignment, Composite},
+        minimad::{
+            Alignment,
+            Composite,
+        },
         TimedEvent,
     },
 };
@@ -35,7 +38,6 @@ pub struct Panel {
 }
 
 impl Panel {
-
     pub fn new(
         id: PanelId,
         state: Box<dyn PanelState>,
@@ -56,10 +58,16 @@ impl Panel {
         }
     }
 
-    pub fn set_error(&mut self, text: String) {
+    pub fn set_error(
+        &mut self,
+        text: String,
+    ) {
         self.status = Status::from_error(text);
     }
-    pub fn set_message<S: Into<String>>(&mut self, md: S) {
+    pub fn set_message<S: Into<String>>(
+        &mut self,
+        md: S,
+    ) {
         self.status = Status::from_message(md.into());
     }
 
@@ -87,7 +95,12 @@ impl Panel {
         };
         let result = self.states[state_idx].on_command(w, app_state, &cc);
         let has_previous_state = self.states.len() > 1;
-        self.status = self.state().get_status(app_state, &cc, has_previous_state, self.areas.status.width as usize);
+        self.status = self.state().get_status(
+            app_state,
+            &cc,
+            has_previous_state,
+            self.areas.status.width as usize,
+        );
         result
     }
 
@@ -108,7 +121,12 @@ impl Panel {
             },
         };
         let has_previous_state = self.states.len() > 1;
-        self.status = self.state().get_status(app_state, &cc, has_previous_state, self.areas.status.width as usize);
+        self.status = self.state().get_status(
+            app_state,
+            &cc,
+            has_previous_state,
+            self.areas.status.width as usize,
+        );
     }
 
     /// do the next pending task stopping as soon as there's an event
@@ -120,7 +138,8 @@ impl Panel {
         con: &AppContext,
         dam: &mut Dam,
     ) -> Result<(), ProgramError> {
-        self.mut_state().do_pending_task(app_state, screen, con, dam)
+        self.mut_state()
+            .do_pending_task(app_state, screen, con, dam)
     }
 
     pub fn has_pending_task(&self) -> bool {
@@ -139,10 +158,14 @@ impl Panel {
         let sel_info = self.states[self.states.len() - 1].sel_info(app_state);
         let mode = self.state().get_mode();
         let panel_state_type = self.state().get_type();
-        self.input.on_event(w, event, con, sel_info, app_state, mode, panel_state_type)
+        self.input
+            .on_event(w, event, con, sel_info, app_state, mode, panel_state_type)
     }
 
-    pub fn push_state(&mut self, new_state: Box<dyn PanelState>) {
+    pub fn push_state(
+        &mut self,
+        new_state: Box<dyn PanelState>,
+    ) {
         self.input.set_content(&new_state.get_starting_input());
         self.states.push(new_state);
     }
@@ -158,7 +181,10 @@ impl Panel {
     }
     /// remove the verb invocation from the input but keep
     /// the filter if there's one
-    pub fn clear_input_invocation(&mut self, con: &AppContext) {
+    pub fn clear_input_invocation(
+        &mut self,
+        con: &AppContext,
+    ) {
         let mut command_parts = CommandParts::from(self.input.get_content());
         if command_parts.verb_invocation.is_some() {
             command_parts.verb_invocation = None;
@@ -168,7 +194,10 @@ impl Panel {
         self.mut_state().set_mode(con.initial_mode());
     }
 
-    pub fn set_input_content(&mut self, content: &str) {
+    pub fn set_input_content(
+        &mut self,
+        content: &str,
+    ) {
         self.input.set_content(content);
     }
 
@@ -177,7 +206,10 @@ impl Panel {
     }
 
     /// change the argument of the verb in the input, if there's one
-    pub fn set_input_arg(&mut self, arg: String) {
+    pub fn set_input_arg(
+        &mut self,
+        arg: String,
+    ) {
         let mut command_parts = CommandParts::from(self.input.get_content());
         if let Some(invocation) = &mut command_parts.verb_invocation {
             invocation.args = Some(arg);
@@ -202,7 +234,7 @@ impl Panel {
         &mut self,
         w: &mut W,
         disc: &DisplayContext,
-    ) -> Result<(), ProgramError> {
+    ) -> Result<Option<(u16, u16)>, ProgramError> {
         self.mut_state().display(w, disc)?;
         if disc.active || !WIDE_STATUS {
             self.write_status(w, disc.panel_skin, disc.screen)?;
@@ -215,12 +247,19 @@ impl Panel {
             let flags_len = flags_display::visible_width(&flags);
             if input_area.width > input_content_len + 1 + flags_len {
                 input_area.width -= flags_len + 1;
-                disc.screen.goto(w, input_area.left + input_area.width, input_area.top)?;
+                disc.screen
+                    .goto(w, input_area.left + input_area.width, input_area.top)?;
                 flags_display::write(w, &flags, disc.panel_skin)?;
             }
         }
-        self.input.display(w, disc.active, self.state().get_mode(), input_area, disc.panel_skin)?;
-        Ok(())
+        let cursor_pos = self.input.display(
+            w,
+            disc.active,
+            self.state().get_mode(),
+            input_area,
+            disc.panel_skin,
+        )?;
+        Ok(cursor_pos)
     }
 
     fn write_status(

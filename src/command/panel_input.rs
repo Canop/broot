@@ -8,7 +8,6 @@ use {
         skin::PanelSkin,
         verb::*,
     },
-    crokey::{key, KeyCombination},
     crokey::crossterm::{
         cursor,
         event::{
@@ -20,7 +19,15 @@ use {
         },
         queue,
     },
-    termimad::{Area, TimedEvent, InputField},
+    crokey::{
+        key,
+        KeyCombination,
+    },
+    termimad::{
+        Area,
+        InputField,
+        TimedEvent,
+    },
 };
 
 /// Wrap the input of a panel, receive events and make commands
@@ -31,7 +38,6 @@ pub struct PanelInput {
 }
 
 impl PanelInput {
-
     pub fn new(area: Area) -> Self {
         Self {
             input_field: InputField::new(area),
@@ -40,7 +46,10 @@ impl PanelInput {
         }
     }
 
-    pub fn set_content(&mut self, content: &str) {
+    pub fn set_content(
+        &mut self,
+        content: &str,
+    ) {
         self.input_field.set_str(content);
     }
 
@@ -55,8 +64,9 @@ impl PanelInput {
         mode: Mode,
         mut area: Area,
         panel_skin: &PanelSkin,
-    ) -> Result<(), ProgramError> {
-        self.input_field.set_normal_style(panel_skin.styles.input.clone());
+    ) -> Result<Option<(u16, u16)>, ProgramError> {
+        self.input_field
+            .set_normal_style(panel_skin.styles.input.clone());
         self.input_field.set_focus(active && mode == Mode::Input);
         if mode == Mode::Command && active {
             queue!(w, cursor::MoveTo(area.left, area.top))?;
@@ -65,8 +75,8 @@ impl PanelInput {
             area.left += 1;
         }
         self.input_field.set_area(area);
-        self.input_field.display_on(w)?;
-        Ok(())
+        let cursor_pos = self.input_field.display_on(w)?;
+        Ok(cursor_pos)
     }
 
     /// consume the event to
@@ -86,17 +96,27 @@ impl PanelInput {
     ) -> Result<Command, ProgramError> {
         let cmd = match timed_event {
             TimedEvent {
-                event: Event::Mouse(MouseEvent { kind, column, row, modifiers: KeyModifiers::NONE }),
+                event:
+                    Event::Mouse(MouseEvent {
+                        kind,
+                        column,
+                        row,
+                        modifiers: KeyModifiers::NONE,
+                    }),
                 ..
-            } => {
-                self.on_mouse(timed_event, kind, column, row)
-            }
+            } => self.on_mouse(timed_event, kind, column, row),
             TimedEvent {
                 key_combination: Some(key),
                 ..
-            } => {
-                self.on_key(timed_event, key, con, sel_info, app_state, mode, panel_state_type)
-            }
+            } => self.on_key(
+                timed_event,
+                key,
+                con,
+                sel_info,
+                app_state,
+                mode,
+                panel_state_type,
+            ),
             _ => Command::None,
         };
         self.input_field.display_on(w)?;
@@ -245,7 +265,8 @@ impl PanelInput {
         } else {
             &parts
         };
-        let completions = Completions::for_input(completable_parts, con, sel_info, panel_state_type);
+        let completions =
+            Completions::for_input(completable_parts, con, sel_info, panel_state_type);
         let added = match completions {
             Completions::None => {
                 debug!("nothing to complete!");
@@ -329,18 +350,14 @@ impl PanelInput {
                         Command::Click(column, row)
                     }
                 }
-                MouseEventKind::ScrollDown => {
-                    Command::Internal {
-                        internal: Internal::line_down,
-                        input_invocation: None,
-                    }
-                }
-                MouseEventKind::ScrollUp => {
-                    Command::Internal {
-                        internal: Internal::line_up,
-                        input_invocation: None,
-                    }
-                }
+                MouseEventKind::ScrollDown => Command::Internal {
+                    internal: Internal::line_down,
+                    input_invocation: None,
+                },
+                MouseEventKind::ScrollUp => Command::Internal {
+                    internal: Internal::line_up,
+                    input_invocation: None,
+                },
                 _ => Command::None,
             }
         }
@@ -356,7 +373,7 @@ impl PanelInput {
                 key!(left) => !self.input_field.can_move_left(),
                 key!(right) => !self.input_field.can_move_right(),
                 _ => !keys::is_key_only_modal(key),
-            }
+            },
             Mode::Command => true,
         }
     }
@@ -373,18 +390,12 @@ impl PanelInput {
         mode: Mode,
         panel_state_type: PanelStateType,
     ) -> Command {
-
         // value of raw and parts before any key related change
         let raw = self.input_field.get_content();
         let parts = CommandParts::from(raw.clone());
 
         let verb = if self.is_key_allowed_for_verb(key, mode) {
-            self.find_key_verb(
-                key,
-                con,
-                sel_info,
-                panel_state_type,
-            )
+            self.find_key_verb(key, con, sel_info, panel_state_type)
         } else {
             None
         };
@@ -423,8 +434,9 @@ impl PanelInput {
 
         // a '?' opens the help when it's the first char or when it's part
         // of the verb invocation. It may be used as a verb name in other cases
-        if (key == key!('?') || key == key!(shift-'?'))
-            && (raw.is_empty() || parts.verb_invocation.is_some()) {
+        if (key == key!('?') || key == key!(shift - '?'))
+            && (raw.is_empty() || parts.verb_invocation.is_some())
+        {
             return Command::Internal {
                 internal: Internal::help,
                 input_invocation: parts.verb_invocation,
@@ -445,14 +457,9 @@ impl PanelInput {
                 };
             }
             if let Some(invocation_parser) = &verb.invocation_parser {
-                let exec_builder = ExecutionStringBuilder::without_invocation(
-                    sel_info,
-                    app_state,
-                );
-                let verb_invocation = exec_builder.invocation_with_default(
-                    &invocation_parser.invocation_pattern,
-                    con,
-                );
+                let exec_builder = ExecutionStringBuilder::without_invocation(sel_info, app_state);
+                let verb_invocation = exec_builder
+                    .invocation_with_default(&invocation_parser.invocation_pattern, con);
                 let mut parts = parts;
                 parts.verb_invocation = Some(verb_invocation);
                 self.set_content(&parts.to_string());
@@ -467,4 +474,3 @@ impl PanelInput {
         Command::None
     }
 }
-

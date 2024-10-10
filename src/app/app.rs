@@ -51,11 +51,9 @@ use {
     },
     strict::NonEmptyVec,
     termimad::{
-        Area,
         EventSource,
         EventSourceOptions,
     },
-    unicode_width::UnicodeWidthStr,
 };
 
 /// The GUI
@@ -261,6 +259,7 @@ impl App {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         self.drawing_count += 1;
+        let mut cursor_pos = None;
         for (idx, panel) in self.panels.as_mut_slice().iter_mut().enumerate() {
             let active = idx == self.active_panel_idx;
             let panel_skin = if active {
@@ -277,17 +276,17 @@ impl App {
                 app_state,
                 con,
             };
-            time!("display panel", panel.display(w, &disc)?,);
+            // time!("display panel", panel.display(w, &disc)?,);
+            if let Some(pos) = panel.display(w, &disc)? {
+                cursor_pos = Some(pos)
+            }
         }
 
         // after drawing all the panels, move cursor to the end of the active panel input,
         // so that input methods can popup at correct position.
-        let this = &mut *self;
-        let w: &mut W = w;
-        let active_panel = &this.panels[this.active_panel_idx];
-        let Area { left, top, .. } = active_panel.areas.input;
-        let width = active_panel.input.get_content().width() as u16;
-        queue!(w, MoveTo(left + width, top))?;
+        if let Some((left, top)) = cursor_pos {
+            queue!(w, MoveTo(left, top))?;
+        }
 
         kitty::manager()
             .lock()
