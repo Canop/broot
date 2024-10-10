@@ -31,6 +31,7 @@ pub struct PanelInput {
 }
 
 impl PanelInput {
+
     pub fn new(area: Area) -> Self {
         Self {
             input_field: InputField::new(area),
@@ -379,9 +380,9 @@ impl PanelInput {
 
         let verb = if self.is_key_allowed_for_verb(key, mode) {
             self.find_key_verb(
-                key, 
-                con, 
-                sel_info, 
+                key,
+                con,
+                sel_info,
                 panel_state_type,
             )
         } else {

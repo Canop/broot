@@ -35,6 +35,7 @@ pub struct Panel {
 }
 
 impl Panel {
+
     pub fn new(
         id: PanelId,
         state: Box<dyn PanelState>,
@@ -58,10 +59,7 @@ impl Panel {
     pub fn set_error(&mut self, text: String) {
         self.status = Status::from_error(text);
     }
-    pub fn set_message<S: Into<String>>(
-        &mut self,
-        md: S,
-    ) {
+    pub fn set_message<S: Into<String>>(&mut self, md: S) {
         self.status = Status::from_message(md.into());
     }
 
