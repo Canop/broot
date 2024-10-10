@@ -39,10 +39,7 @@ use {
     },
     std::{
         io::Write,
-        path::{
-            Path,
-            PathBuf,
-        },
+        path::{Path, PathBuf},
         str::FromStr,
         sync::{
             Arc,
@@ -50,10 +47,7 @@ use {
         },
     },
     strict::NonEmptyVec,
-    termimad::{
-        EventSource,
-        EventSourceOptions,
-    },
+    termimad::{EventSource, EventSourceOptions},
 };
 
 /// The GUI
@@ -241,10 +235,7 @@ impl App {
     /// Close the panel too if that was its only state.
     /// Close nothing and return false if there's not
     /// at least two states in the app.
-    fn remove_state(
-        &mut self,
-        con: &AppContext,
-    ) -> bool {
+    fn remove_state(&mut self, con: &AppContext) -> bool {
         self.panels[self.active_panel_idx].remove_state()
             || self.close_panel(self.active_panel_idx, con)
     }
@@ -448,13 +439,12 @@ impl App {
                     }
                     Internal::panel_right_no_open => {
                         // we either move to the right or close the leftest panel
-                        new_active_panel_idx =
-                            if self.active_panel_idx + 1 == self.panels.len().get() {
-                                self.close_panel(0, con);
-                                None
-                            } else {
-                                Some(self.active_panel_idx + 1)
-                            };
+                        new_active_panel_idx = if self.active_panel_idx + 1 == self.panels.len().get() {
+                            self.close_panel(0, con);
+                            None
+                        } else {
+                            Some(self.active_panel_idx + 1)
+                        };
                     }
                     Internal::search_again => {
                         if let Some(raw_pattern) = &self.panel().last_raw_pattern {
@@ -554,8 +544,7 @@ impl App {
                 purpose,
                 direction,
             } => {
-                if let Err(s) = self.new_panel(state, purpose, direction, is_input_invocation, con)
-                {
+                if let Err(s) = self.new_panel(state, purpose, direction, is_input_invocation, con) {
                     error = Some(s);
                 }
             }
@@ -825,15 +814,14 @@ impl App {
         // when a long search is running, and interrupt it if needed
         w.flush()?;
         let combine_keys = conf.enable_kitty_keyboard.unwrap_or(false) && con.is_tty;
-        let event_source = EventSource::with_options(EventSourceOptions {
-            combine_keys,
-            ..Default::default()
-        })?;
+        let event_source = EventSource::with_options(
+            EventSourceOptions {
+                combine_keys,
+                ..Default::default()
+            }
+        )?;
         con.keyboard_enhanced = event_source.supports_multi_key_combinations();
-        info!(
-            "event source is combining: {}",
-            event_source.supports_multi_key_combinations()
-        );
+        info!("event source is combining: {}", event_source.supports_multi_key_combinations());
 
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
