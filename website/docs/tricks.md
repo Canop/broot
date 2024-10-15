@@ -6,11 +6,11 @@ This bash function gives you a better `tree` optimizing for the height of the sc
 	     br -c :pt "$@"
 	}
 
-![tree](img/20210425-alias-tree.png)
+![tree](img/20241011-alias-tree.png)
 
 This function supports most broot arguments:
 
-![tree with args](img/20201219-tree-with-args.png)
+![tree with args](img/20241011-tree-with-args.png)
 
 # Search again
 
