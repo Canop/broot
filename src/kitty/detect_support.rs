@@ -65,7 +65,7 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
     {
         let start = std::time::Instant::now();
         const TIMEOUT_MS: u64 = 200;
-        let response = xterm_query::query(
+        let response = xterm_query::query_osc(
             "\x1b_Gi=31,s=1,v=1,a=q,t=d,f=24;AAAA\x1b\\\x1b[c",
             TIMEOUT_MS,
         );
@@ -74,9 +74,7 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
                 debug!("xterm querying failed: {}", e);
                 false
             }
-            Ok(response) => {
-                response.starts_with("\x1b_Gi=31;OK\x1b")
-            }
+            Ok(response) => response == "_Gi=31;OK"
         };
         debug!("Xterm querying took {:?}", start.elapsed());
         debug!("kitty protocol support: {:?}", s);
