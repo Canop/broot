@@ -216,7 +216,7 @@ checksum = "0d8c1fef690941d3e7788d328517591fecc684c084084702d6ff1641e993699a"
 
 [[package]]
 name = "broot"
-version = "1.44.1"
+version = "1.44.2-dev"
 dependencies = [
  "ansi_colours",
  "base64 0.21.7",
@@ -417,9 +417,9 @@ dependencies = [
 
 [[package]]
 name = "cli-log"
-version = "2.0.0"
+version = "2.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d2ab00dc4c82ec28af25ac085aecc11ffeabf353755715a3113a7aa044ca5cc"
+checksum = "e220aa46e5395cd473a054f8e7e52403108ce147a4eb68c001afb01672a4e046"
 dependencies = [
  "chrono",
  "file-size",

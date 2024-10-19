@@ -1,3 +1,6 @@
+### next
+- no longer panics when launched with BROOT_LOG=debug but the broot.log file can't be created - Fix #951
+
 ### v1.44.1 - 2024-10-16
 <a name="v1.44.1"></a>
 - fix wrong position of IMEs (input method editors) popup - thanks @xubaiwang - See #948

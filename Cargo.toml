@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.44.1"
+version = "1.44.2-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 homepage = "https://dystroy.org/broot"
@@ -29,7 +29,7 @@ char_reader = "0.1"
 chrono = "0.4"
 clap = { version = "4.4", features = ["derive", "cargo"] }
 clap-help = "1.3"
-cli-log = "2.0"
+cli-log = "2.1"
 crokey = "1.1"
 crossbeam = "0.8"
 custom_error = "1.6"
@@ -91,7 +91,7 @@ debug = false
 debug = false
 lto = "fat"
 codegen-units = 1 # this removes a few hundred bytes from the final exec size
-strip = true
+strip = "symbols"
 
 [[bench]]
 name = "fuzzy"
@@ -109,7 +109,7 @@ harness = false
 [patch.crates-io]
 # bet = { path = "../bet" }
 # clap-help = { path = "../clap-help" }
-# cli-log = { path = "../cli-log" }
+# cli-log = { path = "../cli-log" }
 # coolor = { path = "../coolor" }
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # csv2svg = { path = "../csv2svg" }
