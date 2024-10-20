@@ -166,7 +166,13 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     w.queue(cursor::Show)?;
     w.queue(LeaveAlternateScreen)?;
     w.flush()?;
+    clear_resources();
     r
+}
+
+fn clear_resources() {
+    info!("clearing resources");
+    crate::kitty::manager().lock().unwrap().delete_temp_files();
 }
 
 /// wait for user input, return `true` if they didn't answer 'n'

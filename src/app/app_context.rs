@@ -22,6 +22,7 @@ use {
     std::{
         convert::{TryFrom, TryInto},
         io,
+        num::NonZeroUsize,
         path::{Path, PathBuf},
     },
 };
@@ -124,6 +125,8 @@ pub struct AppContext {
 
     pub kitty_graphics_transmission: TransmissionMedium,
 
+    pub kept_kitty_temp_files: NonZeroUsize,
+
     /// Number of lines to display after a match in the preview
     pub lines_after_match_in_preview: usize,
 
@@ -206,6 +209,9 @@ impl AppContext {
         let terminal_title_pattern = config.terminal_title.clone();
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
         let layout_instructions = config.layout_instructions.clone().unwrap_or_default();
+        let kept_kitty_temp_files = config.kept_kitty_temp_files.unwrap_or(
+            std::num::NonZeroUsize::new(500).unwrap(),
+        );
 
         Ok(Self {
             is_tty,
@@ -237,6 +243,7 @@ impl AppContext {
             keyboard_enhanced: false,
             kitty_graphics_transmission: config.kitty_graphics_transmission
                 .unwrap_or_default(),
+            kept_kitty_temp_files,
             lines_after_match_in_preview: config.lines_after_match_in_preview.unwrap_or(0),
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),
             preview_transformers,

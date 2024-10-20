@@ -20,8 +20,11 @@ use {
     rustc_hash::FxHashMap,
     crokey::crossterm::style::Attribute,
     serde::Deserialize,
-    std::collections::HashMap,
-    std::path::PathBuf,
+    std::{
+        collections::HashMap,
+        num::NonZeroUsize,
+        path::PathBuf,
+    },
 };
 
 macro_rules! overwrite {
@@ -94,6 +97,9 @@ pub struct Conf {
 
     #[serde(alias="kitty-graphics-transmission")]
     pub kitty_graphics_transmission: Option<TransmissionMedium>,
+
+    #[serde(default, alias="kept-kitty-temp-files")]
+    pub kept_kitty_temp_files: Option<NonZeroUsize>,
 
     #[serde(default, alias="preview-transformers")]
     pub preview_transformers: Vec<PreviewTransformerConf>,
@@ -233,6 +239,7 @@ impl Conf {
         overwrite!(self, update_work_dir, conf);
         overwrite!(self, enable_kitty_keyboard, conf);
         overwrite!(self, kitty_graphics_transmission, conf);
+        overwrite!(self, kept_kitty_temp_files, conf);
         overwrite!(self, lines_after_match_in_preview, conf);
         overwrite!(self, lines_before_match_in_preview, conf);
         overwrite!(self, layout_instructions, conf);

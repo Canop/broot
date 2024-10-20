@@ -16,6 +16,7 @@ use {
     once_cell::sync::Lazy,
     std::{
         io::Write,
+        path::Path,
         sync::Mutex,
     },
     termimad::Area,
@@ -65,6 +66,12 @@ impl KittyManager {
             _ => None,
         }
     }
+    pub fn delete_temp_files(&mut self) {
+        match &mut self.renderer {
+            MaybeRenderer::Enabled { renderer } => renderer.delete_temp_files(),
+            _ => {}
+        }
+    }
     pub fn renderer(
         &mut self,
         con: &AppContext,
@@ -77,9 +84,9 @@ impl KittyManager {
         }
         let options = KittyImageRendererOptions {
             transmission_medium: con.kitty_graphics_transmission,
+            kept_temp_files: con.kept_kitty_temp_files,
         };
-        // we're in the Untested branch
-        match KittyImageRenderer::new(&options) {
+        match KittyImageRenderer::new(options) {
             Some(renderer) => {
                 self.renderer = MaybeRenderer::Enabled { renderer };
                 self.renderer_if_tested()
@@ -105,6 +112,7 @@ impl KittyManager {
         &mut self,
         w: &mut W,
         src: &SourceImage,
+        src_path: &Path, // used to build a cache key
         area: &Area,
         bg: Color,
         drawing_count: usize,
@@ -112,7 +120,7 @@ impl KittyManager {
     ) -> Result<Option<KittyImageId>, ProgramError> {
         if let Some(renderer) = self.renderer(con) {
             let img = src.optimal()?;
-            let new_id = renderer.print(w, &img, area, bg)?;
+            let new_id = renderer.print(w, &img, src_path, area, bg)?;
             self.rendered_images.push(RenderedImage {
                 image_id: new_id,
                 drawing_count,
