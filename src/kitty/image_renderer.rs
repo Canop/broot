@@ -225,7 +225,7 @@ impl KittyImageRenderer {
         if !is_kitty_graphics_protocol_supported() {
             return None;
         }
-        let hasher = FxBuildHasher::default();
+        let hasher = FxBuildHasher;
         let temp_files = LruCache::with_hasher(options.kept_temp_files, hasher);
         cell_size_in_pixels()
             .ok()
@@ -240,7 +240,7 @@ impl KittyImageRenderer {
     pub fn delete_temp_files(&mut self) {
         for (_, temp_file_path) in self.temp_files.into_iter() {
             debug!("removing temp file: {:?}", temp_file_path);
-            if let Err(e) = std::fs::remove_file(&temp_file_path) {
+            if let Err(e) = std::fs::remove_file(temp_file_path) {
                 error!("failed to remove temp file: {:?}", e);
             }
         }

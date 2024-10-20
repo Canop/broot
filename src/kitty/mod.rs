@@ -67,9 +67,8 @@ impl KittyManager {
         }
     }
     pub fn delete_temp_files(&mut self) {
-        match &mut self.renderer {
-            MaybeRenderer::Enabled { renderer } => renderer.delete_temp_files(),
-            _ => {}
+        if let MaybeRenderer::Enabled { renderer } = &mut self.renderer {
+            renderer.delete_temp_files();
         }
     }
     pub fn renderer(
@@ -108,6 +107,7 @@ impl KittyManager {
             }
         }
     }
+    #[allow(clippy::too_many_arguments)] // yes, I know
     pub fn try_print_image(
         &mut self,
         w: &mut W,
