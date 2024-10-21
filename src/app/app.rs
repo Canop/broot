@@ -886,7 +886,7 @@ impl App {
                 Either::First(Some(event)) => {
                     //info!("event: {:?}", &event);
                     if let Some(key_combination) = event.key_combination {
-                        info!("key combination: {}", key_combination);
+                        debug!("key combination: {}", key_combination);
                     }
                     let mut handled = false;
 

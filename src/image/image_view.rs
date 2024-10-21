@@ -119,7 +119,7 @@ impl ImageView {
         }
 
         self.kitty_image_id = kitty_manager
-            .try_print_image(w, &self.source_img, area, bg, disc.count, disc.con)?;
+            .try_print_image(w, &self.source_img, &self.path, area, bg, disc.count, disc.con)?;
 
         if self.kitty_image_id.is_some() {
             return Ok(());

@@ -44,6 +44,7 @@ image = "0.24"
 include_dir = "0.7"
 lazy-regex = "3.3"
 libc = "0.2"
+lru = "0.12"
 memmap2 = "0.9"
 once_cell = "1.18" # waiting for https://github.com/rust-lang/rust/issues/109736
 opener = "0.6"
@@ -51,7 +52,7 @@ pathdiff = "0.2"
 phf = { version = "0.11", features = ["macros"] }
 rayon = "1.9"
 resvg = "0.36" # several options behind, as it's always a PITA to upgrade
-rustc-hash = "1" 
+rustc-hash = "2" 
 secular = { version = "1.0", features = ["normalization", "bmp"] }
 serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.11" # version 2 is still alpha
