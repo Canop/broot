@@ -81,8 +81,8 @@ impl VerbStore {
         self.add_internal(input_go_word_right).no_doc();
 
         // arrow keys bindings
-        self.add_internal(back).with_key(key!(left));
-        self.add_internal(open_stay).with_key(key!(right));
+        self.add_internal(back);
+        self.add_internal(open_stay);
         self.add_internal(line_down).with_key(key!(down)).with_key(key!('j'));
         self.add_internal(line_up).with_key(key!(up)).with_key(key!('k'));
 

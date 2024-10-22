@@ -1,3 +1,10 @@
+### next
+- removed default bindings on left and right keys. You may add them back by adding this to your verbs.hjson:
+```Hjson
+    { key: "left", internal: "back" }
+    { key: "right", internal: "open_stay" }
+```
+
 ### v1.44.2 - 2024-10-22
 <a name="v1.44.2"></a>
 - temp files created for kitty now erased on quitting or when too many of them have been written
