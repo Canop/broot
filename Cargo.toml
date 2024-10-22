@@ -75,7 +75,7 @@ glassbench = "0.4.3"
 
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.11.0"
-uzers = "0.11.3"
+uzers = "0.12"
 
 [target.'cfg(windows)'.dependencies]
 is_executable = "1.0.1"
