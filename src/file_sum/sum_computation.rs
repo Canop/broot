@@ -5,7 +5,6 @@ use {
         path::*,
         task_sync::Dam,
     },
-    crossbeam::channel,
     rayon::{
         ThreadPool,
         ThreadPoolBuilder,
@@ -29,6 +28,7 @@ use {
             Mutex,
         },
     },
+    termimad::crossbeam::channel,
 };
 
 #[cfg(unix)]

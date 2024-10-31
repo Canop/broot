@@ -1,7 +1,9 @@
 use {
-    crossbeam::channel::{self, bounded, select, Receiver},
     std::thread,
-    termimad::TimedEvent,
+    termimad::{
+        crossbeam::channel::{self, bounded, select, Receiver},
+        TimedEvent,
+    },
 };
 
 pub enum Either<A, B> {

@@ -8,7 +8,6 @@ use {
             Dam,
         },
     },
-    crossbeam::channel::bounded,
     git2::Repository,
     once_cell::sync::Lazy,
     rustc_hash::FxHashMap,
@@ -19,6 +18,7 @@ use {
         },
         sync::Mutex,
     },
+    termimad::crossbeam::channel::bounded,
 };
 
 fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {

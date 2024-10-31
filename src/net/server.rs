@@ -4,7 +4,6 @@ use {
         errors::NetError,
         command::Sequence,
     },
-    crossbeam::channel::Sender,
     std::{
         fs,
         io::BufReader,
@@ -13,6 +12,7 @@ use {
         sync::{Arc, Mutex},
         thread,
     },
+    termimad::crossbeam::channel::Sender,
 };
 
 pub struct Server {

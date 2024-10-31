@@ -1,8 +1,13 @@
 
+
 <p align=center style="max-width:600px">
 <img class=vache src="img/vache.svg" height=140px>
-<br><a class=install-link href=install>Install Broot</a>
 </p>
+
+Broot is a better way to navigate directories, find files, and launch commands.
+[Install it](install).
+
+![cows](img/20241027-cows.png)
 
 
 # Get an overview of a directory, even a big one

@@ -17,7 +17,9 @@
 [srep]: https://repology.org/badge/tiny-repos/broot.svg
 [lrep]: https://repology.org/project/broot/versions
 
-A better way to navigate directories
+Broot is a better way to navigate directories, find files, and launch commands.
+
+![cows](website/docs/img/20241027-cows.png)
 
 [**Complete Documentation**](https://dystroy.org/broot/) -
 [**Installation Instructions**](https://dystroy.org/broot/install/) -

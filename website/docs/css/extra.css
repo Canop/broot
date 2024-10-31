@@ -27,10 +27,19 @@ p img:not(.vache) {
 	margin-right: 10px;
 }
 
-
-h1, h2, h3, h4 {
-	/*color: #1b465f;*/
+.navbar-default .navbar-nav > .active > a, .navbar-default .navbar-nav > .active > a:hover, .navbar-default .navbar-nav > .active > a:focus {
+  color: #fff;
+  background-color: #5d9abd;
 }
+.navbar-default .navbar-nav > li > a:hover, .navbar-default .navbar-nav > li > a:focus {
+  color: #fff;
+  background-color: #5d9abd;
+}
+
+body a {
+	color: #11699b;
+}
+
 h1 {
 	font-size: 22px;
 	border-bottom: solid 1px;

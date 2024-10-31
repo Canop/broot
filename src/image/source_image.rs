@@ -6,7 +6,7 @@ use {
     image::{
         DynamicImage,
         GenericImageView,
-        io::Reader,
+        ImageReader,
         imageops::FilterType,
     },
     std::{
@@ -36,7 +36,7 @@ impl SourceImage {
         let img = if is_svg {
             Self::Svg(svg::load(path)?)
         } else {
-            Self::Bitmap(Reader::open(path)?.decode()?)
+            Self::Bitmap(ImageReader::open(path)?.decode()?)
         };
         Ok(img)
     }

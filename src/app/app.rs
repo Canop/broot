@@ -32,11 +32,6 @@ use {
         event::Event,
         queue,
     },
-    crossbeam::channel::{
-        unbounded,
-        Receiver,
-        Sender,
-    },
     std::{
         io::Write,
         path::{Path, PathBuf},
@@ -47,7 +42,15 @@ use {
         },
     },
     strict::NonEmptyVec,
-    termimad::{EventSource, EventSourceOptions},
+    termimad::{
+        crossbeam::channel::{
+            unbounded,
+            Receiver,
+            Sender,
+        },
+        EventSource,
+        EventSourceOptions,
+    },
 };
 
 /// The GUI
