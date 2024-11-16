@@ -51,6 +51,8 @@ Go to *Preferences->Profiles->Default->Keys* and add a mapping that maps `⌥Ret
 
 Note that this will change the behavior of `alt+enter` for all terminal windows, and it will no longer send the `return` sequence.
 
+* [relevant issue](https://github.com/Canop/broot/issues/682)
+
 **Remap in Broot**
 
 If a shortcut isn't available for broot and you can't or don't want to remap the one of your terminal, the solution is to change the shortcut in broot.

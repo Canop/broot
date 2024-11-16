@@ -567,7 +567,7 @@ impl VerbStore {
         prefix: &str,
         sel_info: SelInfo<'_>,
         panel_state_type: Option<PanelStateType>,
-    ) -> PrefixSearchResult<'v, &Verb> {
+    ) -> PrefixSearchResult<'v, &'v Verb> {
         self.search(prefix, Some(sel_info), true, panel_state_type)
     }
 
@@ -575,7 +575,7 @@ impl VerbStore {
         &'v self,
         prefix: &str,
         panel_state_type: Option<PanelStateType>,
-    ) -> PrefixSearchResult<'v, &Verb> {
+    ) -> PrefixSearchResult<'v, &'v Verb> {
         self.search(prefix, None, true, panel_state_type)
     }
 
@@ -599,7 +599,7 @@ impl VerbStore {
         sel_info: Option<SelInfo>,
         short_circuit: bool,
         panel_state_type: Option<PanelStateType>,
-    ) -> PrefixSearchResult<'v, &Verb> {
+    ) -> PrefixSearchResult<'v, &'v Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
         let mut completions: Vec<&str> = Vec::new();
