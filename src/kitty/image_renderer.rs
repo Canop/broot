@@ -85,7 +85,7 @@ impl<'i> From<&'i DynamicImage> for ImageData<'i> {
         }
     }
 }
-impl<'i> ImageData<'i> {
+impl ImageData<'_> {
     fn kitty_format(&self) -> &'static str {
         match self {
             Self::RgbaRef(_) => "32",

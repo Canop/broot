@@ -2,34 +2,37 @@
 # More info at https://github.com/Canop/bacon
 
 default_job = "check"
+env.CARGO_TERM_COLOR = "always"
 
 [jobs]
 
 [jobs.check-all]
-command = ["cargo", "check", "--all-targets", "--color", "always"]
+command = ["cargo", "check", "--all-targets"]
 need_stdout = false
 watch = ["tests", "benches", "examples"]
 
 [jobs.check]
 command = [
 	"cargo", "check",
-	"--color", "always",
 	"--features", "clipboard kitty-csi-check trash",
 ]
 need_stdout = false
 watch = ["benches"]
 
+[jobs.miri]
+command = ["cargo", "+nightly", "miri", "run"]
+need_stdout = true
+
 [jobs.win]
 command = ["cross", "build", "--target", "x86_64-pc-windows-gnu", "--release", "--features", "clipboard"]
 
 [jobs.light]
-command = ["cargo", "check", "--color", "always"]
+command = ["cargo", "check"]
 need_stdout = false
 
 [jobs.clippy]
 command = [
 	"cargo", "clippy",
-	"--color", "always",
 	"--",
 	"-A", "clippy::bool_to_int_with_if",
 	"-A", "clippy::collapsible_else_if",
@@ -51,7 +54,7 @@ command = [
 need_stdout = false
 
 [jobs.test]
-command = ["cargo", "test", "--color", "always"]
+command = ["cargo", "test"]
 need_stdout = true
 
 [keybindings]
