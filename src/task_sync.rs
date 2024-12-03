@@ -60,7 +60,6 @@ impl Dam {
     /// after the event listener started again. In any case
     /// using try_compute should be preferred for immediate
     /// return to the ui thread.
-
     pub fn observer(&self) -> DamObserver {
         DamObserver::from(self)
     }
