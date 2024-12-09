@@ -60,7 +60,6 @@ impl Dam {
     /// after the event listener started again. In any case
     /// using try_compute should be preferred for immediate
     /// return to the ui thread.
-
     pub fn observer(&self) -> DamObserver {
         DamObserver::from(self)
     }
@@ -145,7 +144,6 @@ impl Dam {
         }
     }
 
-    // or maybed return either Option<TimedEvent> or Option<T> ?
     pub fn next<T>(&mut self, other: &Receiver<T>) -> Either<Option<TimedEvent>, Option<T>> {
         if self.in_dam.is_some() {
             Either::First(self.in_dam.take())

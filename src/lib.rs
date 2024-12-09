@@ -33,6 +33,7 @@ pub mod terminal;
 pub mod tree;
 pub mod tree_build;
 pub mod verb;
+pub mod watcher;
 
 #[cfg(unix)]
 pub mod filesystems;
