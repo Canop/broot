@@ -191,7 +191,7 @@ Each skin entry value is made of
 * a background color (or `none`)
 * zero, one, or more *attributes*
 
-These tree parts can be repeated, after a `/`, to define the style to use in non focused panels (when more than one panel is used).
+Those three parts can be repeated, after a `/`, to define the style to use in non focused panels (when more than one panel is used).
 
 Example:
 
