@@ -5,6 +5,7 @@
     { key: "right", internal: "open_stay" }
 ```
 - rustc minimal version changed from 1.76 to 1.79, which allows better performing image rendering
+- remove dependency to onig, to allow compatibility with gcc 15 - Fix #956
 
 ### v1.44.2 - 2024-10-22
 <a name="v1.44.2"></a>
