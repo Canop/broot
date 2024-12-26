@@ -1,4 +1,5 @@
-### next
+### v1.44.3 - 2024-12-26
+<a name="v1.44.3"></a>
 - removed default bindings on left and right keys. You may add them back by adding this to your verbs.hjson:
 ```Hjson
     { key: "left", internal: "back" }
