@@ -293,7 +293,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "1.44.3"
+version = "1.44.4-dev"
 dependencies = [
  "ansi_colours",
  "base64 0.21.7",
@@ -335,7 +335,7 @@ dependencies = [
  "smallvec",
  "splitty",
  "strict 0.1.4",
- "syntect-no-panic",
+ "syntect-5-no-panic",
  "tempfile",
  "termimad 0.31.1",
  "terminal-clipboard",
@@ -888,9 +888,9 @@ checksum = "7360491ce676a36bf9bb3c56c1aa791658183a54d2744120f27285738d90465a"
 
 [[package]]
 name = "fancy-regex"
-version = "0.7.1"
+version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9d6b8560a05112eb52f04b00e5d3790c0dd75d9d980eb8a122fb23b92a623ccf"
+checksum = "b95f7c0680e4142284cf8b22c14a476e87d61b004a3a0861872b32ef7ead40a2"
 dependencies = [
  "bit-set",
  "regex",
@@ -2281,7 +2281,7 @@ dependencies = [
  "aho-corasick",
  "memchr",
  "regex-automata",
- "regex-syntax 0.8.5",
+ "regex-syntax",
 ]
 
 [[package]]
@@ -2292,14 +2292,8 @@ checksum = "809e8dc61f6de73b46c85f4c96486310fe304c434cfa43669d7b40f711150908"
 dependencies = [
  "aho-corasick",
  "memchr",
- "regex-syntax 0.8.5",
+ "regex-syntax",
 ]
-
-[[package]]
-name = "regex-syntax"
-version = "0.6.29"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f162c6dd7b008981e4d40210aca20b4bd0f9b60ca9271061b07f78537722f2e1"
 
 [[package]]
 name = "regex-syntax"
@@ -2678,23 +2672,23 @@ dependencies = [
 ]
 
 [[package]]
-name = "syntect-no-panic"
-version = "4.6.1"
+name = "syntect-5-no-panic"
+version = "5.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bee6d840027be11d9fae1432a799c548eaf0332a9a8dbe8526281d55a9600e4f"
+checksum = "3ff30a7ee8b54eddf236a96441915a2a47dc2d5e093cf2e347588962a522ef88"
 dependencies = [
  "bincode",
  "bitflags 1.3.2",
  "fancy-regex",
  "flate2",
  "fnv",
- "lazy_static",
  "once_cell",
  "plist",
- "regex-syntax 0.6.29",
+ "regex-syntax",
  "serde",
  "serde_derive",
  "serde_json",
+ "thiserror",
  "walkdir",
  "yaml-rust",
 ]
