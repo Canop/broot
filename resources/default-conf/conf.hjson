@@ -35,6 +35,7 @@
 # terminal_title: "[broot] {git-name}"
 # terminal_title: "{file} 🐄"
 # terminal_title: "-= {file-name} =-"
+# reset_terminal_title_on_exit: false
 
 ###############################################################
 # Date/Time format

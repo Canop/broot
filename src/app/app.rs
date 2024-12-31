@@ -949,6 +949,7 @@ impl App {
                 }
             }
         }
+        terminal::reset_title(w, con);
         Ok(self.launch_at_end.take())
     }
 }

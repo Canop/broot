@@ -140,6 +140,9 @@ pub struct Conf {
     #[serde(alias="terminal-title")]
     pub terminal_title: Option<ExecPattern>,
 
+    #[serde(alias="reset-terminal-title-on-exit")]
+    pub reset_terminal_title_on_exit: Option<bool>,
+
     #[serde(alias="true-colors")]
     pub true_colors: Option<bool>,
 
@@ -236,6 +239,7 @@ impl Conf {
         overwrite!(self, show_matching_characters_on_path_searches, conf);
         overwrite!(self, content_search_max_file_size, conf);
         overwrite!(self, terminal_title, conf);
+        overwrite!(self, reset_terminal_title_on_exit, conf);
         overwrite!(self, update_work_dir, conf);
         overwrite!(self, enable_kitty_keyboard, conf);
         overwrite!(self, kitty_graphics_transmission, conf);
