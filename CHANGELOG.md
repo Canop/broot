@@ -1,3 +1,7 @@
+### v1.44.4 - 2025-01-01
+<a name="v1.44.4"></a>
+- fix panic in preview on syntax coloring (when a sublime syntax isn't compatible with the regex engine) - Fix #967
+
 ### v1.44.3 - 2024-12-26
 <a name="v1.44.3"></a>
 - removed default bindings on left and right keys. You may add them back by adding this to your verbs.hjson:
