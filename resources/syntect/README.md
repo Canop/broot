@@ -9,4 +9,4 @@ The [bat](https://github.com/sharkdp/bat) project maintains with care an importa
 
 It's the best public list I found, so I've included the resulting syntax set here as `syntaxes.bin`.
 
-You may replace this file with your own, building it with Syntect's [`syntect::dumps::dump_to_file`](https://docs.rs/syntect/4.6.0/syntect/dumps/fn.dump_to_file.html) function.
+You may replace this file with your own, building it with Syntect's [`syntect::dumps::dump_to_uncompressed_file`](https://docs.rs/syntect/latest/syntect/dumps/fn.dump_to_uncompressed_file.html) function.

@@ -174,8 +174,8 @@ impl SyntacticView {
             // Those chars are removed on printing
             let name_match = pattern.search_string(&line);
             let regions = if let Some(highlighter) = highlighter.as_mut() {
-                highlighter
-                    .highlight(&line, &SYNTAXER.syntax_set)
+                    highlighter
+                        .highlight_line(&line, &SYNTAXER.syntax_set)
                     .map_err(|e| ProgramError::SyntectCrashed { details: e.to_string() })?
                     .iter()
                     .map(Region::from_syntect)

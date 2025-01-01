@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.44.3"
+version = "1.44.4-dev"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 homepage = "https://dystroy.org/broot"
@@ -57,7 +57,7 @@ serde = { version = "1.0", features = ["derive"] }
 smallvec = "1.11" # version 2 is still alpha
 splitty = "1.0.2"
 strict = "0.1.4"
-syntect = { package = "syntect-no-panic", version = "4.6.1", default-features = false, features = ["default-fancy"] } # see issues #485 and #956
+syntect = { package = "syntect-5-no-panic", version = "5.2", default-features = false, features = ["default-fancy"] } # see issues #485, #956, #967
 tempfile = "3.2"
 termimad = "0.31"
 terminal-clipboard = { version = "0.4.1", optional = true }
@@ -118,8 +118,7 @@ harness = false
 # lfs-core = { path = "../lfs-core" }
 # minimad = { path = "../minimad" }
 # secular = { path = "../secular", features=["normalization"] }
-# syntect = { path = "../syntect" }
-# syntect-no-panic = { path = "../syntect" }
+# syntect-5-no-panic = { path = "../syntect" }
 # termimad = { path = "../termimad" }
 # terminal-clipboard = { path = "../terminal-clipboard" }
 # terminal-light = { path = "../terminal-light" }

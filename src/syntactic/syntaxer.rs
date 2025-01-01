@@ -23,7 +23,10 @@ pub struct Syntaxer {
 impl Default for Syntaxer {
     fn default() -> Self {
         Self {
-            syntax_set: time!(Debug, syntect::dumps::from_binary(SYNTAXES)),
+            syntax_set: time!(
+                Debug,
+                syntect::dumps::from_uncompressed_data(SYNTAXES).unwrap()
+            ),
             theme_set: ThemeSet::load_defaults(),
         }
     }
