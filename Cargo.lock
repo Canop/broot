@@ -293,7 +293,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "1.44.4"
+version = "1.44.5"
 dependencies = [
  "ansi_colours",
  "base64 0.21.7",
@@ -335,7 +335,7 @@ dependencies = [
  "smallvec",
  "splitty",
  "strict 0.1.4",
- "syntect-5-no-panic",
+ "syntect-no-panic",
  "tempfile",
  "termimad 0.31.1",
  "terminal-clipboard",
@@ -2672,10 +2672,10 @@ dependencies = [
 ]
 
 [[package]]
-name = "syntect-5-no-panic"
+name = "syntect-no-panic"
 version = "5.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3ff30a7ee8b54eddf236a96441915a2a47dc2d5e093cf2e347588962a522ef88"
+checksum = "5c5dfd0574cec0f1144db6f3cfaed22adcadb3d1e24fbf75754e46aa411d08de"
 dependencies = [
  "bincode",
  "bitflags 1.3.2",

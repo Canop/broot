@@ -1,3 +1,7 @@
+### v1.44.5 - 2025-01-02
+<a name="v1.44.5"></a>
+- no real change (just reverting a crate name to ease some packaging)
+
 ### v1.44.4 - 2025-01-01
 <a name="v1.44.4"></a>
 - fix panic in preview on syntax coloring (when a sublime syntax isn't compatible with the regex engine) - Fix #967
