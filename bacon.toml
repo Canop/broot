@@ -11,6 +11,17 @@ command = ["cargo", "check", "--all-targets"]
 need_stdout = false
 watch = ["tests", "benches", "examples"]
 
+[jobs.bacon-ls]
+command = [ "cargo", "check", "--message-format", "json-diagnostic-rendered-ansi" ]
+analyzer = "cargo_json"
+need_stdout = true
+
+[exports.cargo-json-spans]
+auto = true
+exporter = "analyzer"
+line_format = "{diagnostic.level}:{span.file_name}:{span.line_start}:{span.line_end}:{diagnostic.message}"
+path = "bacon-analyzzzer.json"
+
 [jobs.check]
 command = [
 	"cargo", "check",

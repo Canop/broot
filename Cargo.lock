@@ -2673,9 +2673,9 @@ dependencies = [
 
 [[package]]
 name = "syntect-no-panic"
-version = "5.2.0"
+version = "6.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c5dfd0574cec0f1144db6f3cfaed22adcadb3d1e24fbf75754e46aa411d08de"
+checksum = "d5a48fbacf5de9abade2f665fba57c35d1297e9c7c10dbc906873589de3ca4c6"
 dependencies = [
  "bincode",
  "bitflags 1.3.2",
