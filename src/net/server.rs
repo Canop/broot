@@ -24,11 +24,22 @@ impl Server {
         name: &str,
         tx: Sender<Sequence>,
         root: Arc<Mutex<PathBuf>>,
+        force: bool,
     ) -> Result<Self, NetError> {
         let path = super::socket_file_path(name);
         if fs::metadata(&path).is_ok() {
-            return Err(NetError::SocketNotAvailable { path });
+            if force {
+                match fs::remove_file(&path){
+                    Ok(_) => {},
+                    Err(e) => {
+                        return Err(NetError::Io{ source: e })
+                    }
+                }
+            } else {
+                return Err(NetError::SocketNotAvailable { path });
+            }
         }
+
         let listener = UnixListener::bind(&path)?;
         info!("listening on {}", &path);
 

@@ -869,6 +869,7 @@ impl App {
                     server_name,
                     self.tx_seqs.clone(),
                     Arc::clone(&shared_root),
+                    con.launch_args.force,
                 );
                 self.shared_root = Some(shared_root);
                 server
