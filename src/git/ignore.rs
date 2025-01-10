@@ -1,4 +1,6 @@
-//! Implements parsing and applying .gitignore files.
+//! Implements parsing and applying .gitignore and .ignore files.
+
+// TODO rename without the "Git" prefix, as it's not only for gitignore
 
 use {
     git2,
@@ -28,6 +30,8 @@ pub struct GitIgnoreChain {
 #[derive(Debug, Clone)]
 pub struct GitIgnoreFile {
     rules: Vec<GitIgnoreRule>,
+    /// whether this is a git dedicated file (as opposed to a .ignore file)
+    git: bool,
     local_git_ignore: bool,
 }
 /// a simple rule of a gitignore file
@@ -117,6 +121,7 @@ impl GitIgnoreFile {
         local_git_ignore: bool,
     ) -> Result<GitIgnoreFile> {
         let f = File::open(file_path)?;
+        let git = file_path.file_name().map_or(false, |f| f == ".gitignore");
         let mut rules: Vec<GitIgnoreRule> = Vec::new();
         for line in BufReader::new(f).lines() {
             if let Some(rule) = GitIgnoreRule::from(&line?, ref_dir) {
@@ -127,6 +132,7 @@ impl GitIgnoreFile {
         // we reverse the list to easily iterate from the last one to the first one
         rules.reverse();
         Ok(GitIgnoreFile {
+            git,
             rules,
             local_git_ignore,
         })
@@ -183,7 +189,6 @@ impl GitIgnorer {
                 }
                 let file = dir.join(filename);
                 if let Ok(gif) = GitIgnoreFile::new(&file, dir, local_git_ignore) {
-                    debug!("pushing GIF {:#?}", &gif);
                     chain.push(self.files.alloc(gif));
                 }
             }
@@ -222,15 +227,18 @@ impl GitIgnorer {
         } else {
             parent_chain.clone()
         };
-        if chain.in_repo {
-            for (filename, local_git_ignore) in [
-                (".gitignore", true),
-                (".ignore", false),
-            ] {
-                let ignore_file = dir.join(filename);
-                if let Ok(gif) = GitIgnoreFile::new(&ignore_file, dir, local_git_ignore) {
-                    chain.push(self.files.alloc(gif));
-                }
+        for (filename, local_git_ignore) in [
+            (".gitignore", true),
+            (".ignore", false),
+        ] {
+            if local_git_ignore && !chain.in_repo {
+                // we don't add outside .gitignore files when we're in a repo
+                continue;
+            }
+            let ignore_file = dir.join(filename);
+            if let Ok(gif) = GitIgnoreFile::new(&ignore_file, dir, local_git_ignore) {
+                debug!("pushing GIF {:#?}", &gif);
+                chain.push(self.files.alloc(gif));
             }
         }
         chain
@@ -243,14 +251,13 @@ impl GitIgnorer {
         filename: &str,
         directory: bool,
     ) -> bool {
-        if !chain.in_repo {
-            // if we're not in a git repository, then .gitignore files, including
-            // the global ones, are irrelevant
-            return true;
-        }
         // we start with deeper files: deeper rules have a bigger priority
         for id in chain.file_ids.iter().rev() {
             let file = &self.files[*id];
+            if file.git && !chain.in_repo {
+                // git rules are irrelevant outside a git repository
+                continue;
+            }
             for rule in &file.rules {
                 if rule.directory && !directory {
                     continue;
