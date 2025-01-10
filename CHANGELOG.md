@@ -1,3 +1,6 @@
+### next
+Fix .ignore files ignored when not in a git repository - Fix #970
+
 ### v1.44.5 - 2025-01-02
 <a name="v1.44.5"></a>
 - no real change (just reverting a crate name to ease some packaging)
