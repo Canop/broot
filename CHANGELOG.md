@@ -1,5 +1,7 @@
-### next
-Fix .ignore files ignored when not in a git repository - Fix #970
+### v1.44.6 - 2025-01-12
+<a name="v1.44.6"></a>
+ -fix .ignore files ignored when not in a git repository - Fix #970
+ -update git2 dependency to 0.20 - Fix #974
 
 ### v1.44.5 - 2025-01-02
 <a name="v1.44.5"></a>

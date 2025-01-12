@@ -1,6 +1,6 @@
 [package]
 name = "broot"
-version = "1.44.5"
+version = "1.44.6"
 authors = ["dystroy <denys.seguret@gmail.com>"]
 repository = "https://github.com/Canop/broot"
 homepage = "https://dystroy.org/broot"
@@ -36,7 +36,7 @@ deser-hjson = "2.2.3"
 directories = "4.0"
 file-size = "1.0.3"
 flex-grow = "0.1"
-git2 = { version = "0.19", default-features = false } # waiting for a good pure-rust alternative
+git2 = { version = "0.20", default-features = false } # waiting for a good pure-rust alternative
 glob = "0.3"
 id-arena = "2.2.1"
 image = "0.25"
@@ -70,7 +70,7 @@ which = "4.4.0"
 xterm-query = { version = "0.5", optional = true }
 
 [dev-dependencies]
-glassbench = "0.4.3"
+glassbench = "0.4.4"
 
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.11.0"
@@ -114,7 +114,7 @@ harness = false
 # crossterm = { path = "../crossterm-rs/crossterm" }
 # csv2svg = { path = "../csv2svg" }
 # deser-hjson = { path = "../deser-hjson" }
-# glassbench = { path = "../glassbench" }
+# glassbench = { path = "../glassbench" }
 # lfs-core = { path = "../lfs-core" }
 # minimad = { path = "../minimad" }
 # secular = { path = "../secular", features=["normalization"] }
