@@ -300,7 +300,7 @@ impl PanelInput {
             }
             if !verb.file_extensions.is_empty() {
                 let extension = sel_info.extension();
-                if !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
+                if !extension.is_some_and(|ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
                     continue;
                 }
             }

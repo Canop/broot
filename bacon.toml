@@ -61,6 +61,7 @@ command = [
 	"-A", "clippy::neg_multiply",
 	"-A", "clippy::vec_init_then_push",
 	"-W", "clippy::explicit_iter_loop",
+	"-A", "clippy::unnecessary_map_or",
 ]
 need_stdout = false
 

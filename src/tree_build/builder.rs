@@ -11,8 +11,8 @@ use {
         app::AppContext,
         errors::TreeBuildError,
         git::{
-            GitIgnoreChain,
-            GitIgnorer,
+            IgnoreChain,
+            Ignorer,
             LineStatusComputer,
         },
         path::Directive,
@@ -75,7 +75,7 @@ pub struct TreeBuilder<'c> {
     root_id: BId,
     subpath_offset: usize,
     total_search: bool,
-    git_ignorer: GitIgnorer,
+    git_ignorer: Ignorer,
     line_status_computer: Option<LineStatusComputer>,
     con: &'c AppContext,
     pub matches_max: Option<usize>, // optional hard limit
@@ -92,7 +92,7 @@ impl<'c> TreeBuilder<'c> {
     ) -> Result<TreeBuilder<'c>, TreeBuildError> {
         let mut blines = Arena::new();
         let subpath_offset = path.components().count();
-        let mut git_ignorer = time!(GitIgnorer::default());
+        let mut git_ignorer = time!(Ignorer::default());
         let root_ignore_chain = git_ignorer.root_chain(&path);
         let line_status_computer = if options.filter_by_git_status || options.show_git_file_info {
             time!(
@@ -239,7 +239,7 @@ impl<'c> TreeBuilder<'c> {
             direct_match,
             score,
             nb_kept_children: 0,
-            git_ignore_chain: GitIgnoreChain::default(),
+            git_ignore_chain: IgnoreChain::default(),
             special_handling,
         })
     }

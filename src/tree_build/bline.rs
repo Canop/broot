@@ -2,7 +2,7 @@ use {
     super::bid::BId,
     crate::{
         errors::TreeBuildError,
-        git::GitIgnoreChain,
+        git::IgnoreChain,
         path::{normalize_path, Directive, SpecialHandling},
         tree::*,
     },
@@ -29,7 +29,7 @@ pub struct BLine {
     pub direct_match: bool,
     pub score: i32,
     pub nb_kept_children: i32, // used during the trimming step
-    pub git_ignore_chain: GitIgnoreChain,
+    pub git_ignore_chain: IgnoreChain,
     pub special_handling: SpecialHandling,
 }
 
@@ -47,7 +47,7 @@ impl BLine {
     pub fn from_root(
         blines: &mut Arena<BLine>,
         path: PathBuf,
-        git_ignore_chain: GitIgnoreChain,
+        git_ignore_chain: IgnoreChain,
         _options: &TreeOptions,
     ) -> Result<BId, TreeBuildError> {
         if let Ok(md) = fs::metadata(&path) {
