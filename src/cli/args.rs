@@ -177,6 +177,11 @@ pub struct Args {
     #[arg(long, value_name = "socket")]
     pub listen: Option<String>,
 
+    /// Force delete the socket file in case it already exists.
+    #[cfg(unix)]
+    #[arg(long)]
+    pub force: bool,
+
     /// Ask for the current root of the remote broot
     #[cfg(unix)]
     #[arg(long)]
