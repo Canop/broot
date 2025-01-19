@@ -6,25 +6,13 @@ use {
         DynamicImage,
         RgbaImage,
     },
-    once_cell::sync::Lazy,
     std::path::PathBuf,
     resvg::{
-        usvg::{
-            self,
-            fontdb,
-            TreeParsing,
-            TreeTextToPath,
-        },
+        usvg,
         tiny_skia,
     },
     termimad::coolor,
 };
-
-static FONT_DB: Lazy<fontdb::Database> = Lazy::new(||{
-    let mut fontdb = fontdb::Database::new();
-    fontdb.load_system_fonts();
-    fontdb
-});
 
 fn compute_zoom(w:f32, h:f32, max_width:u32, max_height:u32) -> Result<f32, SvgError> {
     let mw: f32 = max_width.max(2) as f32;
@@ -41,26 +29,25 @@ fn compute_zoom(w:f32, h:f32, max_width:u32, max_height:u32) -> Result<f32, SvgE
 
 pub fn load<P: Into<PathBuf>>(
     path: P,
-) -> Result<resvg::Tree, SvgError> {
+) -> Result<usvg::Tree, SvgError> {
     let path: PathBuf = path.into();
-    let opt = usvg::Options {
+    let mut opt = usvg::Options {
         resources_dir: Some(path.clone()),
         ..Default::default()
     };
+    opt.fontdb_mut().load_system_fonts();
     let svg_data = std::fs::read(path)?;
-    let mut tree = usvg::Tree::from_data(&svg_data, &opt)?;
-    tree.convert_text(&FONT_DB);
-    let tree = resvg::Tree::from_usvg(&tree);
+    let tree = usvg::Tree::from_data(&svg_data, &opt)?;
     Ok(tree)
 }
 pub fn render_tree(
-    tree: &resvg::Tree,
+    tree: &usvg::Tree,
     max_width: u32,
     max_height: u32,
     bg_color: Option<coolor::Color>,
 ) -> Result<DynamicImage, SvgError> {
-    let t_width = tree.size.width();
-    let t_height = tree.size.height();
+    let t_width = tree.size().width();
+    let t_height = tree.size().height();
     debug!("SVG natural size: {t_width} x {t_height}");
     let zoom = compute_zoom(t_width, t_height, max_width, max_height)?;
     debug!("svg rendering zoom: {zoom}");
@@ -79,7 +66,8 @@ pub fn render_tree(
         let bg_color = tiny_skia::Color::from_rgba8(rgb.r, rgb.g, rgb.b, 255);
         pixmap.fill(bg_color);
     }
-    tree.render(
+    resvg::render(
+        tree,
         tiny_skia::Transform::from_scale(zoom, zoom),
         &mut pixmap.as_mut(),
     );

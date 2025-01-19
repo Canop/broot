@@ -50,7 +50,7 @@ opener = "0.6"
 pathdiff = "0.2"
 phf = { version = "0.11", features = ["macros"] }
 rayon = "1.9"
-resvg = "0.36" # several options behind, as it's always a PITA to upgrade
+resvg = "0.44"
 rustc-hash = "2" 
 secular = { version = "1.0", features = ["normalization", "bmp"] }
 serde = { version = "1.0", features = ["derive"] }

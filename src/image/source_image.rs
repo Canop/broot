@@ -27,7 +27,7 @@ pub const MAX_SVG_BITMAP_HEIGHT: u32 = 1000;
 
 pub enum SourceImage {
     Bitmap(DynamicImage),
-    Svg(resvg::Tree),
+    Svg(resvg::usvg::Tree),
 }
 
 impl SourceImage {
@@ -44,8 +44,8 @@ impl SourceImage {
         match self {
             Self::Bitmap(img) => img.dimensions(),
             Self::Svg(tree) => (
-                f32_to_u32(tree.size.width()),
-                f32_to_u32(tree.size.height())
+                f32_to_u32(tree.size().width()),
+                f32_to_u32(tree.size().height())
             )
         }
     }
