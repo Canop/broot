@@ -1,3 +1,6 @@
+### next
+- update resvg dependency to 0.44 - Thanks @NoisyCoil
+
 ### v1.44.6 - 2025-01-12
 <a name="v1.44.6"></a>
  -fix .ignore files ignored when not in a git repository - Fix #970
