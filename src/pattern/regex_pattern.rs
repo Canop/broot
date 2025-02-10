@@ -37,8 +37,11 @@ impl RegexPattern {
         //  find over is_match
         self.rex.find(candidate).map(|rm| {
             let mut pos = SmallVec::with_capacity(rm.end() - rm.start());
-            for i in rm.start()..rm.end() {
-                pos.push(i);
+            // What we need isn't byte positions but char positions
+            let mut char_pos = candidate[..rm.start()].chars().count();
+            for _ in rm.as_str().chars() {
+                pos.push(char_pos);
+                char_pos += 1;
             }
             super::NameMatch { score: 1, pos }
         })
