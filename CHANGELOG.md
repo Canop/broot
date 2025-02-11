@@ -1,4 +1,5 @@
 ### next
+- fix bad regex match position - Fix #979
 - update resvg dependency to 0.44 - Thanks @NoisyCoil
 
 ### v1.44.6 - 2025-01-12
