@@ -36,12 +36,11 @@ impl RegexPattern {
         // note that there's no significative cost related to using
         //  find over is_match
         self.rex.find(candidate).map(|rm| {
-            let mut pos = SmallVec::with_capacity(rm.end() - rm.start());
-            // What we need isn't byte positions but char positions
-            let mut char_pos = candidate[..rm.start()].chars().count();
-            for _ in rm.as_str().chars() {
-                pos.push(char_pos);
-                char_pos += 1;
+            let chars_before = candidate[..rm.start()].chars().count();
+            let rm_chars = rm.as_str().chars().count();
+            let mut pos = SmallVec::with_capacity(rm_chars);
+            for i in 0..rm_chars {
+                pos.push(chars_before + i);
             }
             super::NameMatch { score: 1, pos }
         })
