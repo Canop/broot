@@ -1,4 +1,5 @@
-### next
+### v1.44.7 - 2025-02-11
+<a name="v1.44.7"></a>
 - fix bad regex match position - Fix #979
 - update resvg dependency to 0.44 - Thanks @NoisyCoil
 
