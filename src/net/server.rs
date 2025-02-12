@@ -27,7 +27,10 @@ impl Server {
     ) -> Result<Self, NetError> {
         let path = super::socket_file_path(name);
         if fs::metadata(&path).is_ok() {
-            return Err(NetError::SocketNotAvailable { path });
+            match fs::remove_file(&path) {
+                Ok(_) => {}
+                Err(e) => return Err(NetError::Io { source: e }),
+            }
         }
         let listener = UnixListener::bind(&path)?;
         info!("listening on {}", &path);
