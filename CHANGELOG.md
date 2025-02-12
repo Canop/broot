@@ -1,7 +1,8 @@
-### v1.44.7 - 2025-02-11
+### v1.44.7 - 2025-02-12
 <a name="v1.44.7"></a>
 - fix bad regex match position - Fix #979
 - update resvg dependency to 0.44 - Thanks @NoisyCoil
+- on `--server`, remove the existing socket if it already exists - Thanks @VasilisManol
 
 ### v1.44.6 - 2025-01-12
 <a name="v1.44.6"></a>
