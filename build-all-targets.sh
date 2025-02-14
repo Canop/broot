@@ -21,6 +21,7 @@ echo "   build cleaned"
 
 # Build versions for other platforms using cargo cross
 cross_build() {
+    export RUSTFLAGS=""
     target_name="$1"
     target="$2"
     features="$3"
