@@ -27,6 +27,7 @@ use {
     git2::Status,
     std::io::Write,
     termimad::{CompoundStyle, ProgressBar},
+    unicode_width::UnicodeWidthStr,
 };
 
 /// A tree wrapper which can be used either
@@ -415,7 +416,21 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             }
         }
         let title = line.path.to_string_lossy();
-        cw.queue_str(style, &title)?;
+        let allowed = cw.allowed - 2.min(cw.allowed);
+        let title_len = UnicodeWidthStr::width(title.as_ref());
+        let adjusted_title = if title_len > allowed {
+            format!("…{}", title.chars()
+                                .rev()
+                                .take(allowed - 1)
+                                .collect::<String>()
+                                .chars()
+                                .rev()
+                                .collect::<String>())
+        } else {
+            title.into_owned()
+        };
+        cw.queue_str(style, &adjusted_title)?;
+
         if self.in_app && !cw.is_full() {
             if let ComputationResult::Done(git_status) = &self.tree.git_status {
                 let git_status_display = GitStatusDisplay::from(
