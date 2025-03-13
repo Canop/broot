@@ -48,13 +48,13 @@ impl Tree {
             page_height,
             con,
         )?;
+        self.total_search = false; // on refresh we always do a non total search
         let mut tree = builder
             .build_tree(
-                false, // on refresh we always do a non total search
+                self.total_search,
                 &Dam::unlimited(),
             )
             .unwrap(); // should not fail
-                       // we save the old selection to try restore it
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
         self.scroll = 0;
