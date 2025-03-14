@@ -1,3 +1,6 @@
+### next
+-  Fix total search impossible to redo after refresh - Fix #986
+
 ### v1.44.7 - 2025-02-12
 <a name="v1.44.7"></a>
 - fix bad regex match position - Fix #979
