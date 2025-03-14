@@ -474,7 +474,7 @@ impl VerbStore {
             }
             external_execution
         };
-        let execution = match (execution, internal, external, cmd) {
+        let mut execution = match (execution, internal, external, cmd) {
             // old definition with "execution": we guess whether it's an internal or
             // an external
             (Some(ep), None, None, None) => {
@@ -513,6 +513,13 @@ impl VerbStore {
                 return Ok(());
             }
         };
+        if let Some(refresh_after) = vc.refresh_after {
+            if let VerbExecution::External(external_execution) = &mut execution {
+                external_execution.refresh_after = refresh_after;
+            } else {
+                warn!("refresh_after is only relevant for external commands");
+            }
+        }
         let description = vc
             .description
             .clone()

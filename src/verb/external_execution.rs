@@ -40,6 +40,9 @@ pub struct ExternalExecution {
     /// whether we need to switch to the normal terminal for
     /// the duration of the execution of the process
     pub switch_terminal: bool,
+
+    /// whether the tree must be refreshed after the verb is executed
+    pub refresh_after: bool,
 }
 
 impl ExternalExecution {
@@ -52,6 +55,7 @@ impl ExternalExecution {
             exec_mode,
             working_dir: None,
             switch_terminal: true, // by default we switch
+            refresh_after: true, // by default we refresh
         }
     }
 
@@ -197,6 +201,10 @@ impl ExternalExecution {
                 }
             }
         }
-        Ok(CmdResult::RefreshState { clear_cache: true })
+        if self.refresh_after {
+            Ok(CmdResult::RefreshState { clear_cache: true })
+        } else {
+            Ok(CmdResult::Keep)
+        }
     }
 }
