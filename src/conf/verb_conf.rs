@@ -53,5 +53,7 @@ pub struct VerbConf {
 
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub panels: Vec<PanelStateType>,
+
+    pub refresh_after: Option<bool>,
 }
 
