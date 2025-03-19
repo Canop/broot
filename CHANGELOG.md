@@ -1,5 +1,7 @@
-### next
+### v1.45.0 - 2025-03-17
+<a name="v1.45.0"></a>
 -  Fix total search impossible to redo after refresh - Fix #986
+- With `refresh_after: false`, a verb configuration can request that the tree isn't refreshed after its execution - Fix #987
 
 ### v1.44.7 - 2025-02-12
 <a name="v1.44.7"></a>
