@@ -21,6 +21,7 @@ pub struct TreeOptions {
     pub show_counts: bool, // whether to show the number of files (> 1 only for dirs)
     pub show_dates: bool,  // whether to show the last modified date
     pub show_sizes: bool,  // whether to show sizes of files and dirs
+    pub max_depth: Option<usize>,  // the maximum directory depth to recurse to
     pub show_git_file_info: bool,
     pub show_device_id: bool,
     pub show_root_fs: bool, // show information relative to the fs of the root
@@ -43,6 +44,7 @@ impl TreeOptions {
             show_selection_mark: self.show_selection_mark,
             show_hidden: self.show_hidden,
             only_folders: self.only_folders,
+            max_depth: self.max_depth,
             show_counts: self.show_counts,
             show_dates: self.show_dates,
             show_sizes: self.show_sizes,
@@ -143,6 +145,7 @@ impl TreeOptions {
         } else if cli_args.no_only_folders {
             self.only_folders = false;
         }
+        self.max_depth = cli_args.max_depth;
         if cli_args.git_status {
             self.filter_by_git_status = true;
             self.show_hidden = true;
@@ -215,6 +218,7 @@ impl Default for TreeOptions {
             show_selection_mark: false,
             show_hidden: false,
             only_folders: false,
+            max_depth: None,
             show_counts: false,
             show_dates: false,
             show_sizes: false,
