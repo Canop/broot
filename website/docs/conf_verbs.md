@@ -460,6 +460,8 @@ invocation | default key | default shortcut | behavior / details
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_preview | - | - | toggle display of the preview panel
 :toggle_root_fs | - | - | toggle showing filesystem info on top
+:set_max_depth | - | - | set the maximum directory depth shown
+:unset_max_depth | - | - | clear the max_depth
 :toggle_second_tree | - | - | toggle displaying a second tree
 :toggle_sizes | - | - | toggle the size mode
 :toggle_stage | <kbd>ctrl</kbd><kbd>g</kbd> | - | add or remove selection to staging area

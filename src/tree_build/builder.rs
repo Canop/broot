@@ -216,6 +216,9 @@ impl<'c> TreeBuilder<'c> {
                 return None;
             }
         }
+        if self.options.max_depth.map_or(false, |max| depth as usize > max) {
+            return None;
+        }
         if self.options.respect_git_ignore {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
             if !self
