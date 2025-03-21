@@ -482,6 +482,38 @@ pub trait PanelState {
 					con,
 				)
             }
+            Internal::set_max_depth => {
+                let args = input_invocation.and_then(|inv| inv.args.as_ref());
+
+                if let Some(flags) = args {
+                    self.with_new_options(
+                        screen,
+                        &|o| {
+                            if let Ok(max_depth) = flags.parse::<usize>() {
+                                o.max_depth = Some(max_depth);
+                                "*max depth updated*"
+                            } else {
+                                "*depth must be an integer*"
+                            }
+                        },
+                        bang,
+                        con,
+                    )
+                } else {
+                    CmdResult::error(":set_max_depth needs a depth as an argument")
+                }
+            }
+            Internal::unset_max_depth => {
+                self.with_new_options(
+                        screen,
+                        &|o| {
+                        o.max_depth = None;
+                        "*cleared max depth*"
+                    },
+                    bang,
+                    con,
+                )
+            }
             Internal::toggle_git_ignore | Internal::toggle_ignore => {
                 self.with_new_options(
 					screen,
