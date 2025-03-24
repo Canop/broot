@@ -45,7 +45,7 @@ pub struct Args {
     pub show_root_fs: bool,
 
     /// Only show trees up to a certain depth
-    #[arg(short='m', long)]
+    #[arg(long)]
     pub max_depth: Option<u16>,
 
     /// Show git statuses on files and stats on repo
