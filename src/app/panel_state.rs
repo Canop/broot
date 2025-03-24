@@ -489,7 +489,7 @@ pub trait PanelState {
                     self.with_new_options(
                         screen,
                         &|o| {
-                            if let Ok(max_depth) = flags.parse::<usize>() {
+                            if let Ok(max_depth) = flags.parse::<u16>() {
                                 o.max_depth = Some(max_depth);
                                 "*max depth updated*"
                             } else {

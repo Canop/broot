@@ -46,7 +46,7 @@ pub struct Args {
 
     /// Only show trees up to a certain depth
     #[arg(short='m', long)]
-    pub max_depth: Option<usize>,
+    pub max_depth: Option<u16>,
 
     /// Show git statuses on files and stats on repo
     #[arg(short='g', long)]

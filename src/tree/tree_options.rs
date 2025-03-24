@@ -21,7 +21,7 @@ pub struct TreeOptions {
     pub show_counts: bool, // whether to show the number of files (> 1 only for dirs)
     pub show_dates: bool,  // whether to show the last modified date
     pub show_sizes: bool,  // whether to show sizes of files and dirs
-    pub max_depth: Option<usize>,  // the maximum directory depth to recurse to
+    pub max_depth: Option<u16>,  // the maximum directory depth to recurse to
     pub show_git_file_info: bool,
     pub show_device_id: bool,
     pub show_root_fs: bool, // show information relative to the fs of the root

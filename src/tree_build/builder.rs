@@ -216,7 +216,7 @@ impl<'c> TreeBuilder<'c> {
                 return None;
             }
         }
-        if self.options.max_depth.map_or(false, |max| depth as usize > max) {
+        if self.options.max_depth.map_or(false, |max| depth > max) {
             return None;
         }
         if self.options.respect_git_ignore {
