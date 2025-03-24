@@ -523,7 +523,12 @@ impl App {
                         }
                     }
                     _ => {
-                        info!("unhandled propagated internal. cmd={:?}", &cmd);
+                        let cmd = self.mut_panel().input.on_internal(internal);
+                        if cmd.is_none() {
+                            warn!("unhandled propagated internal. internal={internal:?} cmd={cmd:?}");
+                        } else {
+                            self.apply_command(w, cmd, panel_skin, app_state, con)?;
+                        }
                     }
                 }
             }
@@ -931,11 +936,12 @@ impl App {
                 Either::Second(Some(raw_sequence)) => {
                     debug!("got command sequence: {:?}", &raw_sequence);
                     for (input, arg_cmd) in raw_sequence.parse(con)? {
-                        self.mut_panel().set_input_content(&input);
+                        if !matches!(&arg_cmd, Command::Internal{..}) {
+                            self.mut_panel().set_input_content(&input);
+                        }
                         self.apply_command(w, arg_cmd, &skin.focused, &mut app_state, con)?;
                         if self.quitting {
-                            // is that a 100% safe way of quitting ?
-                            return Ok(self.launch_at_end.take());
+                            break;
                         }
                         self.display_panels(w, &skin, &app_state, con)?;
                         time!(

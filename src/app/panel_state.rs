@@ -685,6 +685,9 @@ pub trait PanelState {
                 }
                 CmdResult::Keep
             }
+            internal if internal.is_input_related() => {
+                CmdResult::HandleInApp(internal)
+            }
             _ => CmdResult::Keep,
         })
     }
@@ -869,6 +872,7 @@ pub trait PanelState {
         app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
+        info!("panel_state on_command {:?}", cc.cmd);
         self.clear_pending();
         let con = &cc.app.con;
         let screen = cc.app.screen;

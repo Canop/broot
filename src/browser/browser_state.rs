@@ -767,7 +767,7 @@ impl PanelState for BrowserState {
                     }
                 }
                 BrowserTask::StageAll { pattern, file_type_condition } => {
-                    info!("stage all pattern: {:?}", pattern);
+                    debug!("stage all pattern: {:?}", pattern);
                     let tree = self.displayed_tree();
                     let root = tree.root().clone();
                     let mut options = tree.options.clone();
@@ -781,7 +781,7 @@ impl PanelState for BrowserState {
                                 total_search,
                                 dam,
                                 |line| {
-                                    info!("??staging {:?}", &line.path);
+                                    debug!("??staging {:?}", &line.path);
                                     file_type_condition.accepts_path(&line.path)
                                 }
                             ))

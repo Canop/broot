@@ -169,32 +169,32 @@ Internals! {
 impl Internal {
     pub fn invocation_pattern(self) -> &'static str {
         match self {
-            Internal::apply_flags => r"-(?P<flags>\w+)?",
-            Internal::focus => r"focus (?P<path>.*)?",
-            Internal::select => r"select (?P<path>.*)?",
-            Internal::show => r"show (?P<path>.*)?",
-            Internal::line_down => r"line_down (?P<count>\d*)?",
-            Internal::line_up => r"line_up (?P<count>\d*)?",
-            Internal::line_down_no_cycle => r"line_down_no_cycle (?P<count>\d*)?",
-            Internal::line_up_no_cycle => r"line_up_no_cycle (?P<count>\d*)?",
-            Internal::move_panel_divider => r"move_panel_divider (?P<idx>\d+) (?P-?<dx>\d+)",
-            Internal::set_panel_width => r"set_panel_width (?P<idx>\d+) (?P<width>\d+)",
-            Internal::set_syntax_theme => r"set_syntax_theme {theme:theme}",
-            Internal::write_output => r"write_output (?P<line>.*)",
+            Self::apply_flags => r"-(?P<flags>\w+)?",
+            Self::focus => r"focus (?P<path>.*)?",
+            Self::select => r"select (?P<path>.*)?",
+            Self::show => r"show (?P<path>.*)?",
+            Self::line_down => r"line_down (?P<count>\d*)?",
+            Self::line_up => r"line_up (?P<count>\d*)?",
+            Self::line_down_no_cycle => r"line_down_no_cycle (?P<count>\d*)?",
+            Self::line_up_no_cycle => r"line_up_no_cycle (?P<count>\d*)?",
+            Self::move_panel_divider => r"move_panel_divider (?P<idx>\d+) (?P-?<dx>\d+)",
+            Self::set_panel_width => r"set_panel_width (?P<idx>\d+) (?P<width>\d+)",
+            Self::set_syntax_theme => r"set_syntax_theme {theme:theme}",
+            Self::write_output => r"write_output (?P<line>.*)",
             _ => self.name(),
         }
     }
     pub fn exec_pattern(self) -> &'static str {
         match self {
-            Internal::apply_flags => r"apply_flags {flags}",
-            Internal::focus => r"focus {path}",
-            Internal::line_down => r"line_down {count}",
-            Internal::line_up => r"line_up {count}",
-            Internal::line_down_no_cycle => r"line_down_no_cycle {count}",
-            Internal::line_up_no_cycle => r"line_up_no_cycle {count}",
-            Internal::move_panel_divider => r"move_panel_divider {idx} {dx}",
-            Internal::set_panel_width => r"set_panel_width {idx} {width}",
-            Internal::write_output => r"write_output {line}",
+            Self::apply_flags => r"apply_flags {flags}",
+            Self::focus => r"focus {path}",
+            Self::line_down => r"line_down {count}",
+            Self::line_up => r"line_up {count}",
+            Self::line_down_no_cycle => r"line_down_no_cycle {count}",
+            Self::line_up_no_cycle => r"line_up_no_cycle {count}",
+            Self::move_panel_divider => r"move_panel_divider {idx} {dx}",
+            Self::set_panel_width => r"set_panel_width {idx} {width}",
+            Self::write_output => r"write_output {line}",
             _ => self.name(),
         }
     }
@@ -202,6 +202,25 @@ impl Internal {
         match self {
             Internal::focus => arg.is_none(),
             _ => self.need_path(),
+        }
+    }
+    pub fn is_input_related(self) -> bool {
+        match self {
+            Self::input_clear => true,
+            Self::input_del_char_below => true,
+            Self::input_del_char_left => true,
+            Self::input_del_word_left => true,
+            Self::input_del_word_right => true,
+            Self::input_go_left => true,
+            Self::input_go_right => true,
+            Self::input_go_to_end => true,
+            Self::input_go_to_start => true,
+            Self::input_go_word_left => true,
+            Self::input_go_word_right => true,
+            Self::input_paste => true,
+            Self::input_selection_copy => true,
+            Self::input_selection_cut => true,
+            _ => false,
         }
     }
 }
