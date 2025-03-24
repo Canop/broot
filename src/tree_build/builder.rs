@@ -216,9 +216,6 @@ impl<'c> TreeBuilder<'c> {
                 return None;
             }
         }
-        if self.options.max_depth.map_or(false, |max| depth > max) {
-            return None;
-        }
         if self.options.respect_git_ignore {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
             if !self
@@ -358,6 +355,9 @@ impl<'c> TreeBuilder<'c> {
                     let child = &self.blines[child_id];
                     if child.has_match {
                         nb_lines_ok += 1;
+                    }
+                    if self.options.max_depth.map_or(false, |max| child.depth > max) {
+                        break;
                     }
                     if child.can_enter() {
                         next_level_dirs.push(child_id);
