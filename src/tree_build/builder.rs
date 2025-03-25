@@ -356,6 +356,9 @@ impl<'c> TreeBuilder<'c> {
                     if child.has_match {
                         nb_lines_ok += 1;
                     }
+                    if self.options.max_depth.map_or(false, |max| child.depth > max) {
+                        break;
+                    }
                     if child.can_enter() {
                         next_level_dirs.push(child_id);
                     }
