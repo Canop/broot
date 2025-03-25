@@ -598,7 +598,8 @@ impl PanelState for FilesystemState {
     ) -> Result<CmdResult, ProgramError> {
         if y >= 2 {
             let y = y as usize - 2 + self.scroll;
-            if y < self.mounts.len().into() {
+            let len: usize = self.mounts.len().into();
+            if y < len {
                 self.selection_idx = y;
             }
         }

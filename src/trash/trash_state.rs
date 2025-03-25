@@ -623,7 +623,8 @@ impl PanelState for TrashState {
     ) -> Result<CmdResult, ProgramError> {
         if y >= 2 {
             let y = y as usize - 2 + self.scroll;
-            if y < self.items.len().into() {
+            let len: usize = self.items.len().into();
+            if y < len {
                 self.selection_idx = Some(y);
             }
         }
