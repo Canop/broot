@@ -1,3 +1,6 @@
+### next
+- `:set_max_depth <number>` and `:unset_max_depth` - Fix #843 - Thanks @mcky
+
 ### v1.45.1 - 2025-03-25
 <a name="v1.45.1"></a>
 - Fix compilation failing without `--locked` - Fix #995

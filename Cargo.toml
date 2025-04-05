@@ -119,7 +119,7 @@ harness = false
 # minimad = { path = "../minimad" }
 # secular = { path = "../secular", features=["normalization"] }
 # syntect-no-panic = { path = "../syntect" }
-# termimad = { path = "../termimad" }
+# termimad = { path = "../termimad" }
 # terminal-clipboard = { path = "../terminal-clipboard" }
 # terminal-light = { path = "../terminal-light" }
 # umask = { path = "../umask" }
