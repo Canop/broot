@@ -381,7 +381,7 @@ You can override the default behavior of broot by giving your verb the same shor
 
 # Internals
 
-Here's a list of internals: builtin actions you can add an alternate shortcut or keyboard key for, without refering to an external program or command:
+Here's a list of internals: builtin actions you can add an alternate shortcut or keyboard key for, without referring to an external program or command:
 
 invocation | default key | default shortcut | behavior / details
 -|-|-|-

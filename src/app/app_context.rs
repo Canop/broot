@@ -255,7 +255,7 @@ impl AppContext {
             layout_instructions,
         })
     }
-    /// Return the --cmd argument, coming from the launch arguments (prefered)
+    /// Return the --cmd argument, coming from the launch arguments (preferred)
     /// or from the default_flags parameter of a config file
     pub fn cmd(&self) -> Option<&str> {
         self.launch_args.cmd.as_ref().or(

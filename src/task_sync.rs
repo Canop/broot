@@ -144,7 +144,7 @@ impl Dam {
         }
     }
 
-    // or maybed return either Option<TimedEvent> or Option<T> ?
+    // or maybe return either Option<TimedEvent> or Option<T> ?
     pub fn next<T>(&mut self, other: &Receiver<T>) -> Either<Option<TimedEvent>, Option<T>> {
         if self.in_dam.is_some() {
             Either::First(self.in_dam.take())

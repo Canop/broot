@@ -9,7 +9,7 @@ Feature gating is usually temporary: they may be removed when a technical proble
 
 ## The "clipboard" feature
 
-This feature allows the `:copy_path` verb which copies the currently selected path into the clipboard, as well as copy-pasting from,to,whithin the input.
+This feature allows the `:copy_path` verb which copies the currently selected path into the clipboard, as well as copy-pasting from,to,within the input.
 
 Limits:
 
