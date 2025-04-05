@@ -1153,7 +1153,7 @@ pub trait PanelState {
                     );
                 }
             }
-            // right now there's no check for sequences but they're inherently dangereous
+            // right now there's no check for sequences but they're inherently dangerous
         }
         if let Some(err) = verb.check_args(sel_info, invocation, &app_state.other_panel_path) {
             Status::new(err, true)

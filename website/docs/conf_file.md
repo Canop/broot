@@ -297,7 +297,7 @@ It's possible to define transformers to apply to some files before preview.
 
 This makes it possible for example to render a specific kind of files as images, or to beautify some text ones.
 
-Below are examples that you may adapt to your needs and prefered tools.
+Below are examples that you may adapt to your needs and preferred tools.
 They must be included in a `preview_transformers` array, as shown in the [default conf.hjson](https://github.com/Canop/broot/blob/main/resources/default-conf/conf.hjson).
 
 ### Render PDF using mutool:

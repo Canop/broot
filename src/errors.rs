@@ -73,7 +73,7 @@ custom_error! {pub TreeBuildError
     NotADirectory { path: String } = "Not a directory: {path}",
     NotARootDescendant { path: String } = "Not a descendant of the root: {path}",
     TooManyMatches { max: usize } = "Too many matches (max allowed: {max})",
-    UnconsistentData { message:String } = "Unconsistent data: {message}", // maybe refresh ?
+    InconsistentData { message:String } = "Inconsistent data: {message}", // maybe refresh ?
 }
 
 custom_error! {pub ConfError
