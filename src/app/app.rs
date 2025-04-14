@@ -336,7 +336,7 @@ impl App {
         let cmd_result = self
             .mut_panel()
             .apply_command(w, &cmd, app_state, &app_cmd_context)?;
-        debug!("cmd_result: {:?}", &cmd_result);
+        info!("cmd_result: {:?}", &cmd_result);
         match cmd_result {
             ApplyOnPanel { id } => {
                 if let Some(idx) = self.panel_id_to_idx(id) {
@@ -356,6 +356,7 @@ impl App {
             ClosePanel {
                 validate_purpose,
                 panel_ref,
+                clear_cache,
             } => {
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation(con);
@@ -378,6 +379,9 @@ impl App {
                             .selected_path()
                             .map(|p| p.to_string_lossy().to_string());
                     }
+                }
+                if clear_cache {
+                    clear_caches();
                 }
                 if self.close_panel(close_idx, con) {
                     let screen = self.screen;
@@ -600,6 +604,7 @@ impl App {
                 self.quitting = true;
             }
             RefreshState { clear_cache } => {
+                info!("refreshing, clearing cache={clear_cache}");
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation(con);
                 }

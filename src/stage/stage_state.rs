@@ -499,7 +499,10 @@ impl PanelState for StageState {
 
                 #[cfg(feature = "trash")]
                 match trash::delete_all(app_state.stage.paths()) {
-                    Ok(()) => CmdResult::RefreshState { clear_cache: true },
+                    Ok(()) => {
+                        debug!("trash success");
+                        CmdResult::RefreshState { clear_cache: true }
+                    }
                     Err(e) => {
                         warn!("trash error: {:?}", &e);
                         CmdResult::DisplayError(format!("trash error: {:?}", &e))

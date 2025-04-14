@@ -623,6 +623,7 @@ impl PanelState for BrowserState {
                     CmdResult::ClosePanel {
                         validate_purpose: true,
                         panel_ref: PanelReference::Active,
+                        clear_cache: false,
                     }
                 } else {
                     debug!("start_end understood as start");
