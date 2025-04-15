@@ -152,10 +152,12 @@ pub trait PanelState {
             Internal::close_panel_ok => CmdResult::ClosePanel {
                 validate_purpose: true,
                 panel_ref: PanelReference::Active,
+                clear_cache: true,
             },
             Internal::close_panel_cancel => CmdResult::ClosePanel {
                 validate_purpose: false,
                 panel_ref: PanelReference::Active,
+                clear_cache: false,
             },
             Internal::move_panel_divider => {
                 let MoveDividerArgs { divider, dx } = get_arg(
@@ -609,6 +611,7 @@ pub trait PanelState {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
+                        clear_cache: false,
                     }
                 } else {
                     CmdResult::Keep
@@ -639,6 +642,7 @@ pub trait PanelState {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(panel_id),
+                        clear_cache: false,
                     }
                 } else {
                     CmdResult::Keep
@@ -652,6 +656,7 @@ pub trait PanelState {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
+                        clear_cache: false,
                     }
                 } else {
                     CmdResult::Keep
@@ -673,6 +678,7 @@ pub trait PanelState {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
+                        clear_cache: false,
                     }
                 } else {
                     CmdResult::NewPanel {
@@ -759,6 +765,7 @@ pub trait PanelState {
                     return CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(panel_id),
+                        clear_cache: false,
                     };
                 }
             }
@@ -826,6 +833,7 @@ pub trait PanelState {
                     return Ok(CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
+                        clear_cache: true,
                     });
                 }
             }
@@ -904,7 +912,6 @@ pub trait PanelState {
         app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
-        info!("panel_state on_command {:?}", cc.cmd);
         self.clear_pending();
         let con = &cc.app.con;
         let screen = cc.app.screen;
@@ -979,6 +986,7 @@ pub trait PanelState {
                 CmdResult::ClosePanel {
                     validate_purpose: false,
                     panel_ref: PanelReference::Id(id),
+                    clear_cache: false,
                 }
             } else if preferred_mode.is_some() {
                 // we'll make the preview mode change be
