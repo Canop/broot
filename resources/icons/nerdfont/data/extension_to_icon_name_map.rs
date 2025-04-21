@@ -196,6 +196,7 @@
 ( "jsonld"                  , "file_type_jsonld"                  ),
 ( "jsp"                     , "file_type_jsp"                     ),
 ( "jss"                     , "file_type_jss"                     ),
+( "jl"                      , "file_type_julia"                   ),
 ( "kdl"                     , "file_type_config"                  ),
 ( "key"                     , "file_type_key"                     ),
 ( "kit"                     , "file_type_codekit"                 ),
