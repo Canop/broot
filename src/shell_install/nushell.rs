@@ -60,7 +60,7 @@ export def --env br [
     --no-sizes(-S)                  # Don't show sizes
     --set-install-state: path       # Where to write the produced cmd (if any) [possible values: undefined, refused, installed]
     --show-root-fs                  # Show filesystem info on top
-    --max-depth                     # Only show trees up to a certain depth
+    --max-depth: int                # Only show trees up to a certain depth
     --sort-by-count                 # Sort by count (only show one level of the tree)
     --sort-by-date                  # Sort by date (only show one level of the tree)
     --sort-by-size                  # Sort by size (only show one level of the tree)
@@ -159,7 +159,7 @@ export extern broot [
     --no-sizes(-S)                  # Don't show sizes
     --set-install-state: path       # Where to write the produced cmd (if any) [possible values: undefined, refused, installed]
     --show-root-fs                  # Show filesystem info on top
-    --max-depth                     # Only show trees up to a certain depth
+    --max-depth: int                # Only show trees up to a certain depth
     --sort-by-count                 # Sort by count (only show one level of the tree)
     --sort-by-date                  # Sort by date (only show one level of the tree)
     --sort-by-size                  # Sort by size (only show one level of the tree)
