@@ -294,7 +294,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "1.46.1"
+version = "1.46.2"
 dependencies = [
  "ansi_colours",
  "base64 0.21.7",

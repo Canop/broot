@@ -1,3 +1,7 @@
+### v1.46.2 - 2025-04-21
+<a name="v1.46.2"></a>
+- fix broken nushell script (`--max-depth` again) - Thanks @sandyspiers & @amitkot
+
 ### v1.46.1 - 2025-04-20
 <a name="v1.46.1"></a>
 - fix nushell script broken by new `--max-depth` argument - Thanks @lizclipse
