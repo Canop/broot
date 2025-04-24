@@ -1,3 +1,7 @@
+### v1.46.3 - 2025-04-24
+<a name="v1.46.3"></a>
+- fix broot waiting for events on internals like `:quit` - Fix #1006
+
 ### v1.46.2 - 2025-04-21
 <a name="v1.46.2"></a>
 - fix broken nushell script (`--max-depth` again) - Thanks @sandyspiers & @amitkot
