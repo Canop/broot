@@ -946,7 +946,7 @@ impl App {
                         }
                         self.apply_command(w, arg_cmd, &skin.focused, &mut app_state, con)?;
                         if self.quitting {
-                            break;
+                            return Ok(self.launch_at_end.take());
                         }
                         self.display_panels(w, &skin, &app_state, con)?;
                         time!(

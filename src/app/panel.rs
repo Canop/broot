@@ -65,7 +65,6 @@ impl Panel {
 
     /// apply a command on the current state, with no
     /// effect on screen
-    #[allow(clippy::too_many_arguments)] // a refactory could still be useful
     pub fn apply_command<'c>(
         &mut self,
         w: &'c mut W,

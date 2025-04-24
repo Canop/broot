@@ -330,6 +330,7 @@ impl PanelState for BrowserState {
         app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
+        debug!("browser_state on_internal {:?}", internal_exec);
         let con = &cc.app.con;
         let screen = cc.app.screen;
         let page_height = BrowserState::page_height(cc.app.screen);
