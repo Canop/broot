@@ -1,5 +1,6 @@
 ### next
 - support for keys F13 to F24 (if your system supports it)
+- fix `:focus` with argument given in configuration going up one level when root is selected - Fix #1009
 
 ### v1.46.3 - 2025-04-24
 <a name="v1.46.3"></a>
