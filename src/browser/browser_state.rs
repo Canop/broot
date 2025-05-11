@@ -349,19 +349,12 @@ impl PanelState for BrowserState {
             }
             Internal::focus => {
                 let tree = self.displayed_tree();
-                let mut path = &tree.selected_line().path;
-                let parent;
-                if tree.is_root_selected() {
-                    if let Some(parent_path) = path.parent() {
-                        parent = parent_path.to_path_buf();
-                        path = &parent;
-                    }
-                }
                 internal_focus::on_internal(
                     internal_exec,
                     input_invocation,
                     trigger_type,
-                    path,
+                    &tree.selected_line().path,
+                    tree.is_root_selected(),
                     tree.options.clone(),
                     app_state,
                     cc,

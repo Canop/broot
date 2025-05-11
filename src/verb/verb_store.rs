@@ -496,14 +496,14 @@ impl VerbStore {
         &'v self,
         prefix: &str,
         sel_info: SelInfo<'_>,
-    ) -> PrefixSearchResult<'v, &Verb> {
+    ) -> PrefixSearchResult<'v, &'v Verb> {
         self.search(prefix, Some(sel_info))
     }
 
     pub fn search_prefix<'v>(
         &'v self,
         prefix: &str,
-    ) -> PrefixSearchResult<'v, &Verb> {
+    ) -> PrefixSearchResult<'v, &'v Verb> {
         self.search(prefix, None)
     }
 
@@ -524,7 +524,7 @@ impl VerbStore {
         &'v self,
         prefix: &str,
         sel_info: Option<SelInfo>,
-    ) -> PrefixSearchResult<'v, &Verb> {
+    ) -> PrefixSearchResult<'v, &'v Verb> {
         let mut found_index = 0;
         let mut nb_found = 0;
         let mut completions: Vec<&str> = Vec::new();

@@ -179,6 +179,7 @@ pub fn on_internal(
     input_invocation: Option<&VerbInvocation>,
     trigger_type: TriggerType,
     selected_path: &Path,
+    is_root_selected: bool,
     tree_options: TreeOptions,
     app_state: & AppState,
     cc: &CmdContext,
@@ -226,7 +227,15 @@ pub fn on_internal(
             } else {
                 // user only wants to open the selected path, either in the same panel or
                 // in a new one
-                on_path(selected_path.to_path_buf(), screen, tree_options, bang, con)
+                let mut path = selected_path.to_path_buf();
+                if !bang && is_root_selected {
+                    // the selected path is the root, focusing it would do nothing, so
+                    // we rather go up one level
+                    if let Some(parent_path) = selected_path.parent() {
+                        path = parent_path.to_path_buf();
+                    }
+                }
+                on_path(path, screen, tree_options, bang, con)
             }
         }
     }
