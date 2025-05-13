@@ -145,7 +145,9 @@ impl TreeOptions {
         } else if cli_args.no_only_folders {
             self.only_folders = false;
         }
-        self.max_depth = cli_args.max_depth;
+        if let Some(max_depth) = cli_args.max_depth {
+            self.max_depth = Some(max_depth);
+        }
         if cli_args.git_status {
             self.filter_by_git_status = true;
             self.show_hidden = true;
