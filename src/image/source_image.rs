@@ -25,6 +25,7 @@ use {
 pub const MAX_SVG_BITMAP_WIDTH: u32 = 1000;
 pub const MAX_SVG_BITMAP_HEIGHT: u32 = 1000;
 
+#[allow(clippy::large_enum_variant)]
 pub enum SourceImage {
     Bitmap(DynamicImage),
     Svg(resvg::usvg::Tree),

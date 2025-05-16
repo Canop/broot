@@ -128,7 +128,7 @@ impl Launchable {
                 capture_mouse: con.capture_mouse,
                 keyboard_enhanced: con.keyboard_enhanced,
             }),
-            None => Err(io::Error::new(io::ErrorKind::Other, "Empty launch string")),
+            None => Err(io::Error::other("Empty launch string")),
         }
     }
 

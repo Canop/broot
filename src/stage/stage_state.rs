@@ -80,11 +80,7 @@ impl StageState {
     pub fn fix_scroll(&mut self) {
         let len = self.filtered_stage.len();
         if self.scroll + self.page_height > len {
-            self.scroll = if len > self.page_height {
-                len - self.page_height
-            } else {
-                0
-            };
+            self.scroll = len.saturating_sub(self.page_height);
         }
     }
 

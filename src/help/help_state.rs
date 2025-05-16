@@ -226,11 +226,7 @@ impl PanelState for HelpState {
             }
             line_up | line_up_no_cycle => {
                 let dy = get_arg(input_invocation, internal_exec, 1);
-                self.scroll = if self.scroll > dy {
-                    self.scroll - dy
-                } else {
-                    0
-                };
+                self.scroll = self.scroll.saturating_sub(dy);
                 CmdResult::Keep
             }
             open_stay => match opener::open(Conf::default_location()) {

@@ -43,14 +43,14 @@ impl DirView {
             options,
             100,
             con,
-        ).map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+        ).map_err(io::Error::other)?;
         builder.deep = false;
         let tree = builder
             .build_tree(
                 false, // on refresh we always do a non total search
                 dam,
             )
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+            .map_err(io::Error::other)?;
         Ok(Self {
             tree,
             page_height: None,

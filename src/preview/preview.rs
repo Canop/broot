@@ -20,6 +20,7 @@ use {
     termimad::{Area, CropWriter, SPACE_FILLING},
 };
 
+#[allow(clippy::large_enum_variant)]
 pub enum Preview {
     Dir(DirView),
     Image(ImageView),

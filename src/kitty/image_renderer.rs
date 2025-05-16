@@ -195,10 +195,7 @@ impl<'i> KittyImage<'i> {
             debug!("file len: {}", temp_file.metadata().unwrap().len());
         }
         let path = temp_file_path.to_str()
-            .ok_or_else(|| io::Error::new(
-                io::ErrorKind::Other,
-                "Path can't be converted to UTF8",
-            ))?;
+            .ok_or_else(|| io::Error::other("Path can't be converted to UTF8"))?;
         let encoded_path = BASE64.encode(path);
         debug!("temp file written: {:?}", path);
         w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
@@ -297,10 +294,7 @@ impl KittyImageRenderer {
                         .prefix("broot-img-preview")
                         .tempfile()?
                         .keep()
-                        .map_err(|_| io::Error::new(
-                            io::ErrorKind::Other,
-                            "temp file can't be kept",
-                        ))?;
+                        .map_err(|_| io::Error::other("temp file can't be kept"))?;
                     img.print_with_temp_file(w, Some(temp_file), &path)?;
                     path
                 };
