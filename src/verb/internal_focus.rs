@@ -225,14 +225,19 @@ pub fn on_internal(
                     .unwrap_or(internal_exec.bang);
                 on_path(path, screen, tree_options, bang, con)
             } else if let Some(input_arg) = input_arg {
-                // the :focus internal was triggered by a key, and without internal arg,
-                // which means the user wants to explore the arg with purpose
-                // of selecting a path
                 let base_dir = selected_path.to_string_lossy();
                 let path = path::path_from(&*base_dir, PathAnchor::Unspecified, input_arg);
-                let arg_type = SelectionType::Any; // We might do better later
-                let purpose = PanelPurpose::ArgEdition { arg_type };
-                new_panel_on_path(path, screen, tree_options, purpose, con, HDir::Right)
+                if bang {
+                    // Unsure this special behavior is really needed. It was based
+                    // on the assumption that the user wanted to edit an argument
+                    // of a verb, and that the trigering was a key (but it can also
+                    // be another medium, like a command sequence or with the server)
+                    let arg_type = SelectionType::Any; // We might do better later
+                    let purpose = PanelPurpose::ArgEdition { arg_type };
+                    new_panel_on_path(path, screen, tree_options, purpose, con, HDir::Right)
+                } else {
+                    on_path(path, screen, tree_options, bang, con)
+                }
             } else {
                 // user only wants to open the selected path, either in the same panel or
                 // in a new one
@@ -244,7 +249,8 @@ pub fn on_internal(
                         path = parent_path.to_path_buf();
                     }
                 }
-                on_path(path, screen, tree_options, bang, con)}
+                on_path(path, screen, tree_options, bang, con)
+            }
         }
     }
 }
