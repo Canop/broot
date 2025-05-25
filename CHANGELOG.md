@@ -1,3 +1,6 @@
+### next
+- fix `:focus some/path` called with `--listen`/`--send` always opening new panel - Fix #1014
+
 ### v1.46.4 - 2025-05-14
 <a name="v1.46.4"></a>
 - support for keys F13 to F24 (if your system supports it)
