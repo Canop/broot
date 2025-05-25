@@ -43,7 +43,7 @@ impl Server {
                         let mut br = BufReader::new(&stream);
                         if let Some(sequence) = match Message::read(&mut br) {
                             Ok(Message::Command(command)) => {
-                                debug!("got single command {:?}", &command);
+                                info!("got single command {:?}", &command);
                                 // we convert it to a sequence
                                 Some(Sequence::new_single(command))
                             }
