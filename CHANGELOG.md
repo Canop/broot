@@ -1,5 +1,6 @@
-### next
-- fix `:focus some/path` called with `--listen`/`--send` always opening new panel - Fix #1014
+### v1.46.5 - 2025-05-30
+<a name="v1.46.5"></a>
+- fix `:focus some/path` called in a command sequence always opening new panel - Fix #1014
 
 ### v1.46.4 - 2025-05-14
 <a name="v1.46.4"></a>
