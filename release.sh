@@ -29,6 +29,3 @@ cd -
 # copy it to releases folder
 mkdir -p releases/broot_${version}
 cp "broot_$version.zip" releases/broot_${version}
-
-# create zip files for `cargo binstall broot`
-./release-for-binstall.sh
