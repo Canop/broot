@@ -128,3 +128,8 @@ harness = false
 # termimad = { path = "../termimad" }
 # terminal-light = { path = "../terminal-light" }
 # xterm-query = { path = "../xterm-query" }
+
+[package.metadata.binstall]
+pkg-url = "{ repo }/releases/download/v{ version }/{ name }_{ version }{ archive-suffix }"
+bin-dir = "{ target }/{ bin }{ binary-ext }"
+pkg-fmt = "zip"
