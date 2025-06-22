@@ -60,6 +60,7 @@
 ( "bcmx"                    , "file_type_outlook"                 ) ,
 ( "berksfile"               , "file_type_chef"                    ) ,
 ( "berksfile.lock"          , "file_type_chef"                    ) ,
+( "bat"                     , "file_type_bat"                     ) ,
 ( "bin"                     , "file_type_binary"                  ) ,
 ( "bitbucket-pipelines.yml" , "file_type_bitbucketpipeline"       ) ,
 ( "bithoundrc"              , "file_type_bithound"                ) ,
