@@ -110,6 +110,7 @@ Internals! {
     preview_binary: "preview the selection as binary" true,
     preview_image: "preview the selection as image" true,
     preview_text: "preview the selection as text" true,
+    preview_tty: "preview the selection as tty" true,
     previous_dir: "select the previous directory" false,
     previous_match: "select the previous match" false,
     previous_same_depth: "select the previous file at the same depth" false,

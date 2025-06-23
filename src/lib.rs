@@ -32,6 +32,7 @@ pub mod task_sync;
 pub mod terminal;
 pub mod tree;
 pub mod tree_build;
+pub mod tty;
 pub mod verb;
 
 #[cfg(unix)]
