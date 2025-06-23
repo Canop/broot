@@ -692,6 +692,7 @@
 ( "xls"                     , "file_type_excel2"                  ) ,
 ( "xlsm"                    , "file_type_excel2"                  ) ,
 ( "xlsx"                    , "file_type_excel2"                  ) ,
+( "xml"                     , "file_type_xml"                     ) ,
 ( "xsf"                     , "file_type_infopath"                ) ,
 ( "xsn"                     , "file_type_infopath"                ) ,
 ( "xtp2"                    , "file_type_infopath"                ) ,
