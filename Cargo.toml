@@ -59,7 +59,7 @@ splitty = "1.0.2"
 strict = "0.1.4"
 syntect = { package = "syntect-no-panic", version = "6.0", default-features = false, features = ["default-fancy"] } # see https://github.com/Canop/broot/pull/968
 tempfile = "3.2"
-termimad = "0.32"
+termimad = "0.33"
 terminal-clipboard = { version = "0.4.1", optional = true }
 terminal-light = "1.8"
 toml = "0.8"
