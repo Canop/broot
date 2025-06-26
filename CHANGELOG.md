@@ -1,3 +1,8 @@
+### next
+- text files with control chars were previously displayed as binary. They're now displayed as text with some '�' when needed - Fix #977
+- files with ANSI escape codes (such as the one you would obtain with `dysk --color yes > ansi.txt` can now be previewed with `:preview_tty` - Fix #1019
+- first line of the tree is cropped (right aligned) when it doesn't fit
+
 ### v1.46.5 - 2025-05-30
 <a name="v1.46.5"></a>
 - fix `:focus some/path` called in a command sequence always opening new panel - Fix #1014
