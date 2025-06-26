@@ -422,6 +422,7 @@ invocation | default key | default shortcut | behavior / details
 :preview_binary | - | - | preview the selection as binary
 :preview_image | - | - | preview the selection as image
 :preview_text | - | - | preview the selection as text
+:preview_tty | - | - | preview the selection as tty (with ANSI escape codes)
 :previous_dir | - | - | select the previous directory
 :previous_match | - | - | select the previous match
 :previous_same_depth | - | - | select the previous file at the same depth

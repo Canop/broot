@@ -66,6 +66,7 @@ toml = "0.8"
 trash = { version = "3.1.2", optional = true }
 umask = "2.1.0"
 unicode-width = "0.1.10"
+vte = "0.15"
 which = "4.4.0"
 xterm-query = { version = "0.5", optional = true }
 

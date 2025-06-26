@@ -421,6 +421,7 @@ impl PanelState for PreviewState {
             }
             Internal::preview_image => self.set_mode(PreviewMode::Image, con),
             Internal::preview_text => self.set_mode(PreviewMode::Text, con),
+            Internal::preview_tty => self.set_mode(PreviewMode::Tty, con),
             Internal::preview_binary => self.set_mode(PreviewMode::Hex, con),
             _ => self.on_internal_generic(
                 w,
