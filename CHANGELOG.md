@@ -1,5 +1,6 @@
-### next
-- text files with control chars were previously displayed as binary. They're now displayed as text with some '�' when needed - Fix #977
+### v1.47.0 - 2025-06-26
+<a name="v1.47.0"></a>
+- text files with control chars were previously previewed as binary. They're now displayed as text with some '�' when needed - Fix #977
 - files with ANSI escape codes (such as the one you would obtain with `dysk --color yes > ansi.txt` can now be previewed with `:preview_tty` - Fix #1019
 - first line of the tree is cropped (right aligned) when it doesn't fit
 
