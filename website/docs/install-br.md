@@ -13,14 +13,14 @@ When it's done, you can do `br` to launch broot, and typing <kbd>alt</kbd><kbd>e
 
 Supported shells today are bash, zsh, fish, nushell, and powershell.
 
-!!! Note
-	**Mac / Zsh users:** If your shell is zsh and there's no `.zshrc` file yet, broot won't patch it. The solution is to create it with `touch ~/.zshrc` then run `broot --install`
+!!! note "Mac / Zsh users"
+    If your shell is zsh and there's no `.zshrc` file yet, broot won't patch it. The solution is to create it with `touch ~/.zshrc` then run `broot --install`
 
-!!! Note
-	**Windows users:** broot may need additional rights at first use in order to write its configuration file. You may also have to allow script execution (`set-executionpolicy unrestricted`)
+!!! note "Windows users"
+    broot may need additional rights at first use in order to write its configuration file. You may also have to allow script execution (`set-executionpolicy unrestricted`)
 
-!!! Note
-	**Nushell users:** use either `alias` or `def --env` when aliasing the `br` shell function. `def` alone won't enable the shell function to perform `cd`.
+!!! note "Nushell users"
+    Use either `alias` or `def --env` when aliasing the `br` shell function. `def` alone won't enable the shell function to perform `cd`.
 
 # Retry the automatic installation
 
