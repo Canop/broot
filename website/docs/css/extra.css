@@ -140,6 +140,19 @@ kbd.b {
     /*font-weight: bold;*/
 }
 
+body div.admonition.note {
+	padding: 0;
+}
+body div.admonition.note p {
+	padding: 10px;
+	background: #fff8;
+	margin: 0;
+}
+body div.admonition.note p.admonition-title {
+	background: transparent;
+	font-weight: normal;
+}
+
 /******************/
 /* custom classes */
 
