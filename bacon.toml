@@ -62,6 +62,7 @@ command = [
 	"-A", "clippy::vec_init_then_push",
 	"-W", "clippy::explicit_iter_loop",
 	"-A", "clippy::unnecessary_map_or",
+	"-A", "clippy::uninlined_format_args",
 ]
 need_stdout = false
 

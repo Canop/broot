@@ -1545,9 +1545,9 @@ checksum = "03087c2bad5e1034e8cace5926dec053fb3790248370865f5117a7d0213354c8"
 
 [[package]]
 name = "lfs-core"
-version = "0.11.2"
+version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75aa9f1a56e1178a04270bdd6f28b3a9cc34bc5429a3139cd03e2eae2ecb455a"
+checksum = "c65ff159d43e4251dfe020bd7d3e99cf1fa6ae8acc4060f54a3be329fd9b2c3b"
 dependencies = [
  "lazy-regex",
  "libc",

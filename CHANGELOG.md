@@ -1,3 +1,9 @@
+### next
+"filesystem" features have been made available for Mac:
+- the `:fs` screen, listing filesystems
+- filesystem free space & total space displayed when size computations are requested
+- device id displayed with `:toggle_device_id` (shortcut: "dev")
+
 ### v1.47.0 - 2025-06-26
 <a name="v1.47.0"></a>
 - text files with control chars were previously previewed as binary. They're now displayed as text with some '�' when needed - Fix #977

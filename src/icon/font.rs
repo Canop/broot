@@ -19,8 +19,8 @@ impl FontPlugin {
         icon_name_to_icon_codepoint_map: &FxHashMap<&str, u32>,
     ) {
         let offending_entries = part_to_icon_name_map
-            .iter()
-            .map(|(_k, icon_name)| {
+            .values()
+            .map(|icon_name| {
                 (
                     icon_name,
                     icon_name_to_icon_codepoint_map.contains_key(icon_name),
