@@ -62,6 +62,7 @@ pub enum TransmissionMedium {
 
 #[derive(Debug, Clone)]
 pub struct KittyImageRendererOptions {
+    pub force: bool,
     pub transmission_medium: TransmissionMedium,
     pub kept_temp_files: NonZeroUsize,
 }
@@ -219,7 +220,7 @@ impl KittyImageRenderer {
     pub fn new(
         options: KittyImageRendererOptions,
     ) -> Option<Self> {
-        if !is_kitty_graphics_protocol_supported() {
+        if !options.force && !is_kitty_graphics_protocol_supported() {
             return None;
         }
         let hasher = FxBuildHasher;
