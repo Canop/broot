@@ -10,4 +10,5 @@
     ( "package.json"               , "file_type_npm"    ),
     ( "readme"                     , "file_type_text"   ),
     ( "todo"                       , "file_type_todo"   ),
+    ( "jenkinsfile"                , "file_type_jenkins"),
 ]
