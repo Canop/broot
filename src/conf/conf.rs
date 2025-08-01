@@ -108,6 +108,9 @@ pub struct Conf {
     #[serde(alias = "kitty-graphics-transmission")]
     pub kitty_graphics_transmission: Option<TransmissionMedium>,
 
+    #[serde(alias = "kitty-graphics-force")]
+    pub kitty_graphics_force: Option<bool>,
+
     #[serde(default, alias = "kept-kitty-temp-files")]
     pub kept_kitty_temp_files: Option<NonZeroUsize>,
 
@@ -256,6 +259,7 @@ impl Conf {
         overwrite!(self, update_work_dir, conf);
         overwrite!(self, enable_kitty_keyboard, conf);
         overwrite!(self, kitty_graphics_transmission, conf);
+        overwrite!(self, kitty_graphics_force, conf);
         overwrite!(self, kept_kitty_temp_files, conf);
         overwrite!(self, lines_after_match_in_preview, conf);
         overwrite!(self, lines_before_match_in_preview, conf);

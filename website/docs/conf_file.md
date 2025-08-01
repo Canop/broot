@@ -291,6 +291,15 @@ kitty_graphics_transmission = "chunks"
 #kitty_graphics_transmission = "temp_file"
 ```
 
+If your terminal emulator supports Kitty Graphics but isn't detected, force this on:
+
+```Hjson
+kitty_graphics_force:  true
+```
+```TOML
+kitty_graphics_force = true
+```
+
 ## Transformers
 
 It's possible to define transformers to apply to some files before preview.

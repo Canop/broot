@@ -78,6 +78,7 @@ impl KittyManager {
             return self.renderer_if_tested();
         }
         let options = KittyImageRendererOptions {
+            force: con.kitty_graphics_force,
             transmission_medium: con.kitty_graphics_transmission,
             kept_temp_files: con.kept_kitty_temp_files,
         };
