@@ -298,7 +298,7 @@ impl KittyImageRenderer {
                     // cache entry has been removed, or we just never viewed this image
                     // with this size before
                     let (temp_file, path) = tempfile::Builder::new()
-                        .prefix("broot-img-preview")
+                        .prefix("broot-tty-graphics-protocol-")
                         .tempfile()?
                         .keep()
                         .map_err(|_| io::Error::other("temp file can't be kept"))?;
