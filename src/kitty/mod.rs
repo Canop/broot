@@ -1,5 +1,6 @@
 mod detect_support;
 mod image_renderer;
+mod terminal_esc;
 
 pub use image_renderer::*;
 
@@ -9,6 +10,9 @@ use {
         display::W,
         errors::ProgramError,
         image::SourceImage,
+        kitty::detect_support::is_tmux,
+        tmux_write_header,
+        tmux_write_tail,
     },
     crokey::crossterm::style::Color,
     once_cell::sync::Lazy,
@@ -81,6 +85,7 @@ impl KittyManager {
             force: con.kitty_graphics_force,
             transmission_medium: con.kitty_graphics_transmission,
             kept_temp_files: con.kept_kitty_temp_files,
+            is_tmux: is_tmux(),
         };
         match KittyImageRenderer::new(options) {
             Some(renderer) => {
@@ -133,13 +138,21 @@ impl KittyManager {
         drawing_count: usize,
     ) -> Result<(), ProgramError> {
         let mut kept_images = Vec::new();
+        let is_tmux = detect_support::is_tmux();
+        let esc = terminal_esc::get_esc_seq(is_tmux);
         for image in self.rendered_images.drain(..) {
             if image.drawing_count >= drawing_count {
                 kept_images.push(image);
             } else {
                 let id = image.image_id;
-                debug!("erase kitty image {}", id);
-                write!(w, "\u{1b}_Ga=d,d=I,i={id}\u{1b}\\")?;
+                debug!("erase kitty image {id}");
+                if is_tmux {
+                    tmux_write_header!(w)?;
+                }
+                write!(w, "{}_Ga=d,d=I,i={}{}\\", &esc, id, &esc)?;
+                if is_tmux {
+                    tmux_write_tail!(w)?;
+                }
             }
         }
         self.rendered_images = kept_images;

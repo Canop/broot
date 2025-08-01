@@ -80,3 +80,23 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
     }
     false
 }
+
+/// Determine whether we're in tmux.
+///
+/// This is called only once, and cached in KittyImageRenderer
+#[allow(unreachable_code)]
+pub fn is_tmux() -> bool {
+    debug!("is_tmux ?");
+
+    for env_var in ["TERM", "TERMINAL"] {
+        if let Ok(env_val) = env::var(env_var) {
+            debug!("${} = {:?}", env_var, env_val);
+            let env_val = env_val.to_ascii_lowercase();
+            if env_val.contains("tmux") {
+                debug!(" -> this terminal seems to be Tmux");
+                return true;
+            }
+        }
+    }
+    false
+}

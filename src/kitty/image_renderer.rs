@@ -1,11 +1,16 @@
 use {
-    super::detect_support::is_kitty_graphics_protocol_supported,
+    super::{
+        detect_support::is_kitty_graphics_protocol_supported,
+        terminal_esc::get_esc_seq,
+    },
     crate::{
         display::{
             W,
             cell_size_in_pixels,
         },
         errors::ProgramError,
+        tmux_write_header,
+        tmux_write_tail,
     },
     base64::{
         self,
@@ -74,6 +79,7 @@ pub struct KittyImageRendererOptions {
     pub force: bool,
     pub transmission_medium: TransmissionMedium,
     pub kept_temp_files: NonZeroUsize,
+    pub is_tmux: bool,
 }
 
 enum ImageData<'i> {
@@ -141,7 +147,10 @@ struct KittyImage<'i> {
     data: ImageData<'i>,
     img_width: u32,
     img_height: u32,
+    cell_width: u32,
+    cell_height: u32,
     area: Area,
+    is_tmux: bool,
 }
 impl<'i> KittyImage<'i> {
     fn new<'r>(
@@ -158,8 +167,23 @@ impl<'i> KittyImage<'i> {
             data,
             img_width,
             img_height,
+            cell_width: renderer.cell_width,
+            cell_height: renderer.cell_height,
             area,
+            is_tmux: renderer.options.is_tmux,
         }
+    }
+    /// Print X and Y escape sequence options for tmux. Inserting at the
+    /// cursor doesn't show the image at the right position.
+    fn get_tmux_xy_seq(&self) -> String {
+        if !self.is_tmux {
+            return "".into();
+        }
+        format!(
+            ",X={},Y={}",
+            self.area.left * self.cell_width as u16,
+            self.area.top * self.cell_height as u16,
+        )
     }
     /// Render the image by sending multiple kitty escape sequences, each
     /// one with part of the image raw data (encoded as base64)
@@ -167,26 +191,61 @@ impl<'i> KittyImage<'i> {
         &self,
         w: &mut W,
     ) -> Result<(), ProgramError> {
+        let esc = get_esc_seq(self.is_tmux);
         let encoded = BASE64.encode(self.data.bytes());
-        w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
+        if !self.is_tmux {
+            w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
+        }
         let mut pos = 0;
         loop {
+            if self.is_tmux {
+                tmux_write_header!(w)?;
+            }
             if pos + CHUNK_SIZE < encoded.len() {
                 write!(
                     w,
-                    "\u{1b}_Ga=T,f={},t=d,i={},s={},v={},c={},r={},m=1;{}\u{1b}\\",
+                    "{}_Ga=t,f={},t=d,i={},s={},v={},m=1;{}{}\\",
+                    &esc,
                     self.data.kitty_format(),
                     self.id,
                     self.img_width,
                     self.img_height,
-                    self.area.width,
-                    self.area.height,
                     &encoded[pos..pos + CHUNK_SIZE],
+                    &esc,
                 )?;
                 pos += CHUNK_SIZE;
+                if self.is_tmux {
+                    tmux_write_tail!(w)?;
+                }
             } else {
                 // last chunk
-                write!(w, "\u{1b}_Gm=0;{}\u{1b}\\", &encoded[pos..encoded.len()],)?;
+                write!(
+                    w,
+                    "{}_Gm=0;{}{}\\",
+                    &esc,
+                    &encoded[pos..encoded.len()],
+                    &esc
+                )?;
+                if self.is_tmux {
+                    tmux_write_tail!(w)?
+                }
+                // display image
+                if self.is_tmux {
+                    tmux_write_header!(w)?
+                }
+                write!(
+                    w,
+                    "{}_Ga=p,i={},c={},r={}{}{}\\",
+                    &esc,
+                    self.id,
+                    self.area.width,
+                    self.area.height,
+                    &self.get_tmux_xy_seq(),
+                    &esc,
+                )?;
+                if self.is_tmux {
+                    tmux_write_tail!(w)?
+                }
                 break;
             }
         }
@@ -201,6 +260,7 @@ impl<'i> KittyImage<'i> {
         temp_file: Option<File>, // if None, no need to write it
         temp_file_path: &Path,
     ) -> Result<(), ProgramError> {
+        let esc = get_esc_seq(self.is_tmux);
         if let Some(mut temp_file) = temp_file {
             temp_file.write_all(self.data.bytes())?;
             temp_file.flush()?;
@@ -212,17 +272,39 @@ impl<'i> KittyImage<'i> {
         let encoded_path = BASE64.encode(path);
         debug!("temp file written: {:?}", path);
         w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
+        if self.is_tmux {
+            tmux_write_header!(w)?;
+        }
         write!(
             w,
-            "\u{1b}_Ga=T,f={},t=t,i={},s={},v={},c={},r={};{}\u{1b}\\",
+            "{}_Ga=t,f={},t=t,i={},s={},v={};{}{}\\",
+            &esc,
             self.data.kitty_format(),
             self.id,
             self.img_width,
             self.img_height,
+            encoded_path,
+            &esc,
+        )?;
+        if self.is_tmux {
+            tmux_write_tail!(w)?;
+        }
+        if self.is_tmux {
+            tmux_write_header!(w)?;
+        }
+        write!(
+            w,
+            "{}_Ga=p,i={},c={},r={}{}{}\\",
+            &esc,
+            self.id,
             self.area.width,
             self.area.height,
-            encoded_path,
+            self.get_tmux_xy_seq(),
+            &esc,
         )?;
+        if self.is_tmux {
+            tmux_write_tail!(w)?;
+        }
         Ok(())
     }
 }
