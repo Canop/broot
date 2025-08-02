@@ -1,5 +1,11 @@
 use {
-    super::{detect_support::is_kitty_graphics_protocol_supported, terminal_esc::get_esc_seq},
+    super::{
+        detect_support::{
+            is_kitty_graphics_protocol_supported,
+            is_ssh,
+        },
+        terminal_esc::get_esc_seq,
+    },
     base64::{
         engine::general_purpose::STANDARD as BASE64,
         Engine,
@@ -280,6 +286,14 @@ impl KittyImageRenderer {
         }
         let hasher = FxBuildHasher;
         let temp_files = LruCache::with_hasher(options.kept_temp_files, hasher);
+        let options = if is_ssh() {
+            KittyImageRendererOptions {
+                transmission_medium: TransmissionMedium::Chunks,
+                ..options
+            }
+        } else {
+            options
+        };
         cell_size_in_pixels()
             .ok()
             .map(|(cell_width, cell_height)| Self {
