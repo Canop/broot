@@ -100,3 +100,19 @@ pub fn is_tmux() -> bool {
     }
     false
 }
+
+/// Determine whether we're in SSH.
+///
+/// This is called only once, and cached in KittyImageRenderer
+#[allow(unreachable_code)]
+pub fn is_ssh() -> bool {
+    debug!("is_ssh ?");
+
+    for env_var in ["SSH_CLIENT", "SSH_CONNECTION"] {
+        if env::var(env_var).is_ok() {
+            debug!(" -> this seems to be under SSH");
+            return true;
+        }
+    }
+    false
+}
