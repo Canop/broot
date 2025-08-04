@@ -3,8 +3,13 @@ use {
         detect_support::{
             is_kitty_graphics_protocol_supported,
             is_ssh,
+            get_tmux_nest_count,
         },
-        terminal_esc::get_esc_seq,
+        terminal_esc::{
+            get_esc_seq,
+            get_tmux_header,
+            get_tmux_tail,
+        },
     },
     base64::{
         engine::general_purpose::STANDARD as BASE64,
@@ -16,8 +21,6 @@ use {
             W,
         },
         errors::ProgramError,
-        tmux_write_header,
-        tmux_write_tail
     },
     base64,
     cli_log::*,
@@ -184,6 +187,7 @@ struct KittyImage<'i> {
     img_height: u32,
     area: Area,
     is_tmux: bool,
+    tmux_nest_count: u32,
 }
 impl<'i> KittyImage<'i> {
     fn new<'r>(
@@ -195,13 +199,16 @@ impl<'i> KittyImage<'i> {
         let area = renderer.rendering_area(img_width, img_height, available_area);
         let data = src.into();
         let id = renderer.new_id();
+        let is_tmux = renderer.options.is_tmux;
+        let tmux_nest_count = if is_tmux { get_tmux_nest_count() } else { 0 };
         Self {
             id,
             data,
             img_width,
             img_height,
             area,
-            is_tmux: renderer.options.is_tmux,
+            is_tmux,
+            tmux_nest_count,
         }
     }
     fn print_placeholder_grid(
@@ -224,11 +231,13 @@ impl<'i> KittyImage<'i> {
         &self,
         w: &mut W,
     ) -> Result<(), ProgramError> {
-        let esc = get_esc_seq(self.is_tmux);
+        let esc = get_esc_seq(self.tmux_nest_count);
+        let tmux_header = self.is_tmux.then_some(get_tmux_header(self.tmux_nest_count));
+        let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
         let encoded = BASE64.encode(self.data.bytes());
         let mut pos = 0;
         loop {
-            if self.is_tmux { tmux_write_header!(w)?; }
+            if let Some(s) = &tmux_header { write!(w, "{s}")?; }
             if pos + CHUNK_SIZE < encoded.len() {
                 write!(
                     w,
@@ -242,13 +251,13 @@ impl<'i> KittyImage<'i> {
                     &esc,
                 )?;
                 pos += CHUNK_SIZE;
-                if self.is_tmux { tmux_write_tail!(w)?; }
+                if let Some(s) = &tmux_tail { write!(w, "{s}")?; }
             } else {
                 // last chunk
                 write!(w, "{}_Gq=2,m=0;{}{}\\", &esc, &encoded[pos..encoded.len()], &esc)?;
-                if self.is_tmux { tmux_write_tail!(w)? };
+                if let Some(s) = &tmux_tail { write!(w, "{s}")?; }
                 // display image
-                if self.is_tmux { tmux_write_header!(w)? };
+                if let Some(s) = &tmux_header { write!(w, "{s}")?; }
                 write!(
                     w,
                     "{}_Gq=2,a=p,U=1,i={},c={},r={}{}\\",
@@ -258,7 +267,7 @@ impl<'i> KittyImage<'i> {
                     self.area.height,
                     &esc,
                 )?;
-                if self.is_tmux { tmux_write_tail!(w)? };
+                if let Some(s) = &tmux_tail { write!(w, "{s}")?; }
                 self.print_placeholder_grid(w)?;
                 break;
             }
@@ -274,7 +283,9 @@ impl<'i> KittyImage<'i> {
         temp_file: Option<File>, // if None, no need to write it
         temp_file_path: &Path,
     ) -> Result<(), ProgramError> {
-        let esc = get_esc_seq(self.is_tmux);
+        let esc = get_esc_seq(self.tmux_nest_count);
+        let tmux_header = self.is_tmux.then_some(get_tmux_header(self.tmux_nest_count));
+        let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
         if let Some(mut temp_file) = temp_file {
             temp_file.write_all(self.data.bytes())?;
             temp_file.flush()?;
@@ -284,7 +295,7 @@ impl<'i> KittyImage<'i> {
             .ok_or_else(|| io::Error::other("Path can't be converted to UTF8"))?;
         let encoded_path = BASE64.encode(path);
         debug!("temp file written: {:?}", path);
-        if self.is_tmux { tmux_write_header!(w)?; }
+        if let Some(s) = &tmux_header { write!(w, "{s}")?; }
         write!(
             w,
             "{}_Gq=2,a=T,U=1,f={},t=t,i={},s={},v={},c={},r={};{}{}\\",
@@ -298,7 +309,7 @@ impl<'i> KittyImage<'i> {
             encoded_path,
             &esc,
         )?;
-        if self.is_tmux { tmux_write_tail!(w)?; }
+        if let Some(s) = &tmux_tail { write!(w, "{s}")?; }
         self.print_placeholder_grid(w)?;
         Ok(())
     }
