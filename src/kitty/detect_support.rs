@@ -101,6 +101,13 @@ pub fn is_tmux() -> bool {
     false
 }
 
+/// Custom environment variable to store how deeply tmux is nested. Starts at 1 when there's no nesting.
+pub fn get_tmux_nest_count() -> u32 {
+   std::env::var("TMUX_NEST_COUNT")
+       .map(|s| str::parse(&s).unwrap_or(1))
+       .unwrap_or(1)
+}
+
 /// Determine whether we're in SSH.
 ///
 /// This is called only once, and cached in KittyImageRenderer

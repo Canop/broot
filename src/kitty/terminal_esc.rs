@@ -1,20 +1,21 @@
-pub fn get_esc_seq(is_tmux: bool) -> &'static str {
-    if is_tmux {
-        return "\u{1b}\u{1b}";
+pub fn get_esc_seq(tmux_nest_count: u32) -> String {
+    "\u{1b}".repeat(2usize.pow(tmux_nest_count))
+}
+
+pub fn get_tmux_header(tmux_nest_count: u32) -> String {
+    let mut header: String = "".into();
+    for i in 0..tmux_nest_count {
+        header.push_str(&"\u{1b}".repeat(2usize.pow(i)));
+        header.push_str("\u{1b}Ptmux;");
     }
-    "\u{1b}"
+    header
 }
 
-#[macro_export]
-macro_rules! tmux_write_header {
-    ($w:expr) => {
-        write!($w, "\u{1b}Ptmux;")
-    };
-}
-
-#[macro_export]
-macro_rules! tmux_write_tail {
-    ($w:expr) => {
-        write!($w, "\u{1b}\\")
-    };
+pub fn get_tmux_tail(tmux_nest_count: u32) -> String {
+    let mut tail: String = "".into();
+    for i in (0..tmux_nest_count).rev() {
+        tail.push_str(&"\u{1b}".repeat(2usize.pow(i)));
+        tail.push('\\');
+    }
+    tail
 }
