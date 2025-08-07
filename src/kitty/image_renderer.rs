@@ -42,6 +42,7 @@ use {
         fs::File,
         io::{
             self,
+            Read,
             Write,
         },
         num::NonZeroUsize,
@@ -192,10 +193,15 @@ pub struct KittyImageRenderer {
     temp_files: LruCache<String, PathBuf, FxBuildHasher>,
 }
 
+enum KittyImageData<'i> {
+    PNG { path: PathBuf },
+    Image { data: ImageData<'i> },
+}
+
 /// An image prepared for a precise area on screen
 struct KittyImage<'i> {
     id: usize,
-    data: ImageData<'i>,
+    data: KittyImageData<'i>,
     img_width: u32,
     img_height: u32,
     area: Area,
@@ -205,12 +211,17 @@ struct KittyImage<'i> {
 impl<'i> KittyImage<'i> {
     fn new<'r>(
         src: &'i DynamicImage,
+        png_path: Option<PathBuf>,
         available_area: &Area,
         renderer: &'r mut KittyImageRenderer,
     ) -> Self {
         let (img_width, img_height) = src.dimensions();
         let area = renderer.rendering_area(img_width, img_height, available_area);
-        let data = src.into();
+        let data = if let Some(path) = png_path {
+            KittyImageData::PNG { path }
+        } else {
+            KittyImageData::Image { data: src.into() }
+        };
         let id = renderer.new_id();
         let is_tmux = renderer.options.is_tmux;
         let tmux_nest_count = if is_tmux { get_tmux_nest_count() } else { 0 };
@@ -253,7 +264,14 @@ impl<'i> KittyImage<'i> {
             .is_tmux
             .then_some(get_tmux_header(self.tmux_nest_count));
         let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
-        let encoded = BASE64.encode(self.data.bytes());
+        let (encoded, format) = match &self.data {
+            KittyImageData::PNG { path } => {
+                let mut buf = Vec::new();
+                File::open(path)?.read_to_end(&mut buf)?;
+                (BASE64.encode(buf), "100")
+            }
+            KittyImageData::Image { data } => (BASE64.encode(data.bytes()), data.kitty_format()),
+        };
         let mut pos = 0;
         loop {
             if let Some(s) = &tmux_header {
@@ -264,7 +282,7 @@ impl<'i> KittyImage<'i> {
                     w,
                     "{}_Gq=2,a=t,f={},t=d,i={},s={},v={},m=1;{}{}\\",
                     &esc,
-                    self.data.kitty_format(),
+                    format,
                     self.id,
                     self.img_width,
                     self.img_height,
@@ -319,24 +337,33 @@ impl<'i> KittyImage<'i> {
             .is_tmux
             .then_some(get_tmux_header(self.tmux_nest_count));
         let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
-        if let Some(mut temp_file) = temp_file {
-            temp_file.write_all(self.data.bytes())?;
-            temp_file.flush()?;
-            debug!("file len: {}", temp_file.metadata().unwrap().len());
-        }
-        let path = temp_file_path
+        let (path, format, transmission) = match &self.data {
+            KittyImageData::PNG { path } => (path.as_path(), "100", "f"),
+            KittyImageData::Image { data } => {
+                if let Some(mut temp_file) = temp_file {
+                    temp_file.write_all(data.bytes())?;
+                    temp_file.flush()?;
+                    debug!("file len: {}", temp_file.metadata().unwrap().len());
+                }
+                (temp_file_path, data.kitty_format(), "t")
+            }
+        };
+        let path = path
             .to_str()
             .ok_or_else(|| io::Error::other("Path can't be converted to UTF8"))?;
         let encoded_path = BASE64.encode(path);
-        debug!("temp file written: {:?}", path);
+        if let KittyImageData::Image { data: _ } = self.data {
+            debug!("temp file written: {:?}", path);
+        }
         if let Some(s) = &tmux_header {
             write!(w, "{s}")?;
         }
         write!(
             w,
-            "{}_Gq=2,a=T,U=1,f={},t=t,i={},s={},v={},c={},r={};{}{}\\",
+            "{}_Gq=2,a=T,U=1,f={},t={},i={},s={},v={},c={},r={};{}{}\\",
             &esc,
-            self.data.kitty_format(),
+            format,
+            transmission,
             self.id,
             self.img_width,
             self.img_height,
@@ -393,6 +420,12 @@ impl KittyImageRenderer {
         self.next_id += 1;
         new_id
     }
+    fn is_path_png(path: &Path) -> bool {
+        match path.extension() {
+            Some(ext) => ext == "png" || ext == "PNG",
+            None => false,
+        }
+    }
     /// Clean the area, then print the dynamicImage and
     /// return the KittyImageId for later removal from screen
     pub fn print(
@@ -409,7 +442,8 @@ impl KittyImageRenderer {
             fill_bg(w, area.width as usize, bg)?;
         }
 
-        let img = KittyImage::new(src, area, self);
+        let png_path = KittyImageRenderer::is_path_png(src_path).then_some(src_path.to_path_buf());
+        let img = KittyImage::new(src, png_path, area, self);
         debug!(
             "transmission medium: {:?}",
             self.options.transmission_medium
