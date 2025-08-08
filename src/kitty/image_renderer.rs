@@ -35,6 +35,7 @@ use {
         RgbImage,
         RgbaImage,
     },
+    flate2::{Compression, write::ZlibEncoder},
     lru::LruCache,
     rustc_hash::FxBuildHasher,
     serde::Deserialize,
@@ -239,6 +240,11 @@ impl<'i> KittyImage<'i> {
         }
         Ok(())
     }
+    fn compress(data: &[u8]) -> Result<Vec<u8>, ProgramError> {
+        let mut encoder = ZlibEncoder::new(Vec::new(), Compression::default());
+        encoder.write_all(data).expect("Zlib encoder error");
+        Ok(encoder.finish().expect("Zlib encoder error"))
+    }
     /// Render the image by sending multiple kitty escape sequences, each
     /// one with part of the image raw data (encoded as base64)
     fn print_with_chunks(
@@ -248,28 +254,31 @@ impl<'i> KittyImage<'i> {
         let esc = get_esc_seq(self.tmux_nest_count);
         let tmux_header = self.is_tmux.then_some(get_tmux_header(self.tmux_nest_count));
         let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
-        let (encoded, format) = match &self.data {
+        let mut png_buf = Vec::new();
+        let (bytes, compression_tag, format) = match &self.data {
             KittyImageData::PNG { path } => {
-                let mut buf = Vec::new();
-                File::open(path)?.read_to_end(&mut buf)?;
-                (BASE64.encode(buf), "100")
+                // Compressing PNG files increases the size
+                File::open(path)?.read_to_end(&mut png_buf)?;
+                (png_buf, "", "100")
             },
             KittyImageData::Image { data } => {
-                (BASE64.encode(data.bytes()), data.kitty_format())
+                (KittyImage::compress(data.bytes())?, "o=z,", data.kitty_format())
             },
         };
+        let encoded = BASE64.encode(bytes);
         let mut pos = 0;
         loop {
             if let Some(s) = &tmux_header { write!(w, "{s}")?; }
             if pos + CHUNK_SIZE < encoded.len() {
                 write!(
                     w,
-                    "{}_Gq=2,a=t,f={},t=d,i={},s={},v={},m=1;{}{}\\",
+                    "{}_Gq=2,a=t,f={},t=d,i={},s={},v={},{}m=1;{}{}\\",
                     &esc,
                     format,
                     self.id,
                     self.img_width,
                     self.img_height,
+                    compression_tag,
                     &encoded[pos..pos + CHUNK_SIZE],
                     &esc,
                 )?;
@@ -309,6 +318,7 @@ impl<'i> KittyImage<'i> {
         let esc = get_esc_seq(self.tmux_nest_count);
         let tmux_header = self.is_tmux.then_some(get_tmux_header(self.tmux_nest_count));
         let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
+        // Compression slows things down
         let (path, format, transmission) = match &self.data {
             KittyImageData::PNG { path } => {
                 (path.as_path(), "100", "f")
