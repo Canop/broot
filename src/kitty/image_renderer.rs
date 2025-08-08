@@ -288,36 +288,30 @@ impl<'i> KittyImage<'i> {
         };
         let encoded = BASE64.encode(bytes);
         let mut pos = 0;
+        if let Some(s) = &tmux_header {
+            write!(w, "{s}")?;
+        }
+        write!(
+            w,
+            "{}_Gq=2,a=t,f={},t=d,i={},s={},v={},{}",
+            &esc, format, self.id, self.img_width, self.img_height, compression_tag,
+        )?;
         loop {
-            if let Some(s) = &tmux_header {
-                write!(w, "{s}")?;
+            if pos != 0 {
+                if let Some(s) = &tmux_header {
+                    write!(w, "{s}")?;
+                }
+                write!(w, "{}_Gq=2,", &esc)?;
             }
             if pos + CHUNK_SIZE < encoded.len() {
-                write!(
-                    w,
-                    "{}_Gq=2,a=t,f={},t=d,i={},s={},v={},{}m=1;{}{}\\",
-                    &esc,
-                    format,
-                    self.id,
-                    self.img_width,
-                    self.img_height,
-                    compression_tag,
-                    &encoded[pos..pos + CHUNK_SIZE],
-                    &esc,
-                )?;
+                write!(w, "m=1;{}{}\\", &encoded[pos..pos + CHUNK_SIZE], &esc)?;
                 pos += CHUNK_SIZE;
                 if let Some(s) = &tmux_tail {
                     write!(w, "{s}")?;
                 }
             } else {
                 // last chunk
-                write!(
-                    w,
-                    "{}_Gq=2,m=0;{}{}\\",
-                    &esc,
-                    &encoded[pos..encoded.len()],
-                    &esc
-                )?;
+                write!(w, "m=0;{}{}\\", &encoded[pos..encoded.len()], &esc)?;
                 if let Some(s) = &tmux_tail {
                     write!(w, "{s}")?;
                 }
