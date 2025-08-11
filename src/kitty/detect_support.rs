@@ -3,6 +3,7 @@ use {
     std::{
         env,
     },
+    crate::kitty::KittyGraphicsDisplay,
 };
 
 /// Determine whether Kitty's graphics protocol is supported
@@ -11,7 +12,7 @@ use {
 /// This is called only once, and cached in the KittyManager's
 /// MaybeRenderer state
 #[allow(unreachable_code)]
-pub fn is_kitty_graphics_protocol_supported() -> bool {
+pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
     debug!("is_kitty_graphics_protocol_supported ?");
 
     #[cfg(not(unix))]
@@ -28,7 +29,7 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
             let env_val = env_val.to_ascii_lowercase();
             if env_val.contains("kitty") {
                 debug!(" -> this terminal seems to be Kitty");
-                return true;
+                return KittyGraphicsDisplay::Unicode;
             }
         }
     }
@@ -44,14 +45,14 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
                     debug!("WezTerm's version predates Kitty Graphics protocol support");
                 } else {
                     debug!("this looks like a compatible version");
-                    return true;
+                    return KittyGraphicsDisplay::Direct;
                 }
             } else {
                 warn!("$TERM_PROGRAM_VERSION unexpectedly missing");
             }
         } else if term_program == "ghostty" {
             debug!("Ghostty implements Kitty Graphics protocol");
-            return true;
+            return KittyGraphicsDisplay::Direct;
         }
     }
 
@@ -72,15 +73,15 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
         let s = match response {
             Err(e) => {
                 debug!("xterm querying failed: {}", e);
-                false
+                KittyGraphicsDisplay::None
             }
-            Ok(response) => response == "_Gi=31;OK"
+            Ok(response) if response == "_Gi=31;OK" => KittyGraphicsDisplay::Direct,
         };
         debug!("Xterm querying took {:?}", start.elapsed());
         debug!("kitty protocol support: {:?}", s);
         return s;
     }
-    false
+    KittyGraphicsDisplay::None
 }
 
 /// Determine whether we're in tmux.

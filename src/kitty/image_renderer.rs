@@ -1,7 +1,7 @@
 use {
     super::{
         detect_support::{
-            is_kitty_graphics_protocol_supported,
+            detect_kitty_graphics_protocol_display,
             is_ssh,
             get_tmux_nest_count,
         },
@@ -72,9 +72,24 @@ pub enum TransmissionMedium {
     Chunks,
 }
 
+/// How to display the image
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum KittyGraphicsDisplay {
+    /// Not supported
+    None,
+    /// detect support automatically
+    #[default]
+    Detect,
+    /// display directly
+    Direct,
+    /// use Unicode placeholders
+    Unicode,
+}
+
 #[derive(Debug, Clone)]
 pub struct KittyImageRendererOptions {
-    pub force: bool,
+    pub display: KittyGraphicsDisplay,
     pub transmission_medium: TransmissionMedium,
     pub kept_temp_files: NonZeroUsize,
     pub is_tmux: bool,
@@ -196,6 +211,7 @@ struct KittyImage<'i> {
     img_width: u32,
     img_height: u32,
     area: Area,
+    display: KittyGraphicsDisplay,
     is_tmux: bool,
     tmux_nest_count: u32,
 }
@@ -214,6 +230,7 @@ impl<'i> KittyImage<'i> {
             KittyImageData::Image { data: src.into() }
         };
         let id = renderer.new_id();
+        let display = renderer.options.display;
         let is_tmux = renderer.options.is_tmux;
         let tmux_nest_count = if is_tmux { get_tmux_nest_count() } else { 0 };
         Self {
@@ -222,6 +239,7 @@ impl<'i> KittyImage<'i> {
             img_width,
             img_height,
             area,
+            display,
             is_tmux,
             tmux_nest_count,
         }
@@ -254,6 +272,10 @@ impl<'i> KittyImage<'i> {
         let esc = get_esc_seq(self.tmux_nest_count);
         let tmux_header = self.is_tmux.then_some(get_tmux_header(self.tmux_nest_count));
         let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
+        let display_tag = match self.display {
+            KittyGraphicsDisplay::Unicode => "q=2,U=1,",
+            _ => "",
+        };
         let mut png_buf = Vec::new();
         let (bytes, compression_tag, format) = match &self.data {
             KittyImageData::Png { path } => {
@@ -267,6 +289,9 @@ impl<'i> KittyImage<'i> {
         };
         let encoded = BASE64.encode(bytes);
         let mut pos = 0;
+        if self.display == KittyGraphicsDisplay::Direct {
+            w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
+        }
         if let Some(s) = &tmux_header { write!(w, "{s}")?; }
         write!(
             w,
@@ -295,15 +320,18 @@ impl<'i> KittyImage<'i> {
                 if let Some(s) = &tmux_header { write!(w, "{s}")?; }
                 write!(
                     w,
-                    "{}_Gq=2,a=p,U=1,i={},c={},r={}{}\\",
+                    "{}_G{}a=p,i={},c={},r={}{}\\",
                     &esc,
+                    display_tag,
                     self.id,
                     self.area.width,
                     self.area.height,
                     &esc,
                 )?;
                 if let Some(s) = &tmux_tail { write!(w, "{s}")?; }
-                self.print_placeholder_grid(w)?;
+                if self.display == KittyGraphicsDisplay::Unicode {
+                    self.print_placeholder_grid(w)?;
+                }
                 break;
             }
         }
@@ -321,6 +349,13 @@ impl<'i> KittyImage<'i> {
         let esc = get_esc_seq(self.tmux_nest_count);
         let tmux_header = self.is_tmux.then_some(get_tmux_header(self.tmux_nest_count));
         let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
+        if self.display == KittyGraphicsDisplay::Direct {
+            w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
+        }
+        let display_tag = match self.display {
+            KittyGraphicsDisplay::Unicode => "q=2,U=1,",
+            _ => "",
+        };
         // Compression slows things down
         let (path, format, transmission) = match &self.data {
             KittyImageData::Png { path } => {
@@ -345,8 +380,9 @@ impl<'i> KittyImage<'i> {
         if let Some(s) = &tmux_header { write!(w, "{s}")?; }
         write!(
             w,
-            "{}_Gq=2,a=T,U=1,f={},t={},i={},s={},v={},c={},r={};{}{}\\",
+            "{}_G{}a=T,f={},t={},i={},s={},v={},c={},r={};{}{}\\",
             &esc,
+            display_tag,
             format,
             transmission,
             self.id,
@@ -358,7 +394,9 @@ impl<'i> KittyImage<'i> {
             &esc,
         )?;
         if let Some(s) = &tmux_tail { write!(w, "{s}")?; }
-        self.print_placeholder_grid(w)?;
+        if self.display == KittyGraphicsDisplay::Unicode {
+            self.print_placeholder_grid(w)?;
+        }
         Ok(())
     }
 }
@@ -366,10 +404,13 @@ impl<'i> KittyImage<'i> {
 impl KittyImageRenderer {
     /// Called only once (at most) by the KittyManager
     pub fn new(
-        options: KittyImageRendererOptions,
+        mut options: KittyImageRendererOptions,
     ) -> Option<Self> {
-        if !options.force && !is_kitty_graphics_protocol_supported() {
-            return None;
+        if options.display == KittyGraphicsDisplay::Detect {
+            options.display = detect_kitty_graphics_protocol_display();
+        }
+        if options.display == KittyGraphicsDisplay::None {
+            return None
         }
         let hasher = FxBuildHasher;
         let temp_files = LruCache::with_hasher(options.kept_temp_files, hasher);

@@ -9,7 +9,7 @@ use {
         errors::*,
         file_sum,
         icon::*,
-        kitty::TransmissionMedium,
+        kitty::{KittyGraphicsDisplay, TransmissionMedium},
         pattern::SearchModeMap,
         path::SpecialPaths,
         preview::PreviewTransformers,
@@ -128,8 +128,8 @@ pub struct AppContext {
 
     pub kitty_graphics_transmission: TransmissionMedium,
 
-    /// whether to force Kitty image protocol to be enabled
-    pub kitty_graphics_force: bool,
+    /// How Kitty images are displayed
+    pub kitty_graphics_display: KittyGraphicsDisplay,
 
     pub kept_kitty_temp_files: NonZeroUsize,
 
@@ -251,7 +251,7 @@ impl AppContext {
             keyboard_enhanced: false,
             kitty_graphics_transmission: config.kitty_graphics_transmission
                 .unwrap_or_default(),
-            kitty_graphics_force: config.kitty_graphics_force.unwrap_or(false),
+            kitty_graphics_display: config.kitty_graphics_display.unwrap_or_default(),
             kept_kitty_temp_files,
             lines_after_match_in_preview: config.lines_after_match_in_preview.unwrap_or(0),
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),
