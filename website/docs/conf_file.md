@@ -291,13 +291,18 @@ kitty_graphics_transmission = "chunks"
 #kitty_graphics_transmission = "temp_file"
 ```
 
-If your terminal emulator supports Kitty Graphics but isn't detected, force this on:
+Possible display methods:
+
+* `none`: don't display images
+* `auto`: automatically detect how to display the image, default
+* `direct`: display the image directly
+* `unicode`: the more flexible way, works with tmux
 
 ```Hjson
-kitty_graphics_force:  true
+kitty_graphics_display: auto
 ```
 ```TOML
-kitty_graphics_force = true
+kitty_graphics_display = "auto"
 ```
 
 ## Transformers
