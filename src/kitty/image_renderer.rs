@@ -181,7 +181,7 @@ pub struct KittyImageRenderer {
 }
 
 enum KittyImageData<'i> {
-    PNG {
+    Png {
         path: PathBuf,
     },
     Image {
@@ -209,7 +209,7 @@ impl<'i> KittyImage<'i> {
         let (img_width, img_height) = src.dimensions();
         let area = renderer.rendering_area(img_width, img_height, available_area);
         let data = if let Some(path) = png_path {
-            KittyImageData::PNG { path }
+            KittyImageData::Png { path }
         } else {
             KittyImageData::Image { data: src.into() }
         };
@@ -256,7 +256,7 @@ impl<'i> KittyImage<'i> {
         let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
         let mut png_buf = Vec::new();
         let (bytes, compression_tag, format) = match &self.data {
-            KittyImageData::PNG { path } => {
+            KittyImageData::Png { path } => {
                 // Compressing PNG files increases the size
                 File::open(path)?.read_to_end(&mut png_buf)?;
                 (png_buf, "", "100")
@@ -323,7 +323,7 @@ impl<'i> KittyImage<'i> {
         let tmux_tail = self.is_tmux.then_some(get_tmux_tail(self.tmux_nest_count));
         // Compression slows things down
         let (path, format, transmission) = match &self.data {
-            KittyImageData::PNG { path } => {
+            KittyImageData::Png { path } => {
                 (path.as_path(), "100", "f")
             },
             KittyImageData::Image { data } => {
