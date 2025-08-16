@@ -1,8 +1,9 @@
 ### next
-"filesystem" features have been made available for Mac:
-- the `:fs` screen, listing filesystems
-- filesystem free space & total space displayed when size computations are requested
-- device id displayed with `:toggle_device_id` (shortcut: "dev")
+- "filesystem" features have been made available for Mac:
+    - the `:fs` screen, listing filesystems
+    - filesystem free space & total space displayed when size computations are requested
+    - device id displayed with `:toggle_device_id` (shortcut: "dev")
+- Fix `.config/git/ignore` not being loaded on Mac - Fix #1032 - Thanks @9999years
 
 ### v1.47.0 - 2025-06-26
 <a name="v1.47.0"></a>
@@ -44,7 +45,7 @@
 
 ### v1.45.0 - 2025-03-17
 <a name="v1.45.0"></a>
--  Fix total search impossible to redo after refresh - Fix #986
+- Fix total search impossible to redo after refresh - Fix #986
 - With `refresh_after: false`, a verb configuration can request that the tree isn't refreshed after its execution - Fix #987
 
 ### v1.44.7 - 2025-02-12

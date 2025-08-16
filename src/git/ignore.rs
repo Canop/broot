@@ -154,11 +154,14 @@ pub fn find_global_ignore() -> Option<PathBuf> {
         .and_then(|global_config| global_config.get_path("core.excludesfile"))
         .ok()
         .or_else(|| {
-            directories::BaseDirs::new().map(|base_dirs| base_dirs.config_dir().join("git/ignore")).filter(|path| path.exists())
+            directories::BaseDirs::new()
+                .map(|base_dirs| base_dirs.config_dir().join("git/ignore"))
+                .filter(|path| path.exists())
         })
         .or_else(|| {
             directories::UserDirs::new()
-                .map(|user_dirs| user_dirs.home_dir().join(".config/git/ignore")).filter(|path| path.exists())
+                .map(|user_dirs| user_dirs.home_dir().join(".config/git/ignore"))
+                .filter(|path| path.exists())
         })
 }
 
