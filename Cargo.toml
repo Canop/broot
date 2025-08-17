@@ -74,7 +74,7 @@ xterm-query = { version = "0.5", optional = true }
 glassbench = "0.4.4"
 
 [target.'cfg(macos)'.dependencies]
-lfs-core = "0.13"
+lfs-core = "0.13.1"
 
 [target.'cfg(unix)'.dependencies]
 lfs-core = "0.13"
