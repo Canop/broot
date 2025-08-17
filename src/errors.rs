@@ -25,7 +25,7 @@ custom_error! {pub ProgramError
     Termimad {source: termimad::Error} = "Termimad Error : {source}",
     Trash {message: String} = "Trash error: {message}",
     TreeBuild {source: TreeBuildError} = "{source}",
-    UnknowShell {shell: String} = "Unknown shell: {shell}",
+    UnknownShell {shell: String} = "Unknown shell: {shell}",
     UnknownVerb {name: String} = "No verb matches {name:?}",
     UnmappableFile = "File can't be mapped",
     UnmatchingVerbArgs {name: String} = "No matching argument found for verb {name:?}",

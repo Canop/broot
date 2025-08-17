@@ -182,7 +182,7 @@ impl<'i> KittyImage<'i> {
     }
     /// Render the image by writing the raw data in a temporary file
     /// then giving to kitty the path to this file in the payload of
-    /// a unique kitty ecape sequence
+    /// a unique kitty escape sequence
     pub fn print_with_temp_file(
         &self,
         w: &mut W,

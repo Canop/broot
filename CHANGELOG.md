@@ -543,7 +543,7 @@ Note: The released archive doesn't include an Android build - see https://github
 - fix `:filesystems` view not listing disks whose mount point has a space character
 - fix panic on searching `cr/.*` if a file starts with an empty line - Fix #406
 - fix preview of linux pseudo-files
-- identify "RAM" and "crypted" disks in `:filesystems` view
+- identify "RAM" and "encrypted" disks in `:filesystems` view
 
 <a name="v1.6.0"></a>
 ### v1.6.0 - 2021-06-16
