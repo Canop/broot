@@ -18,6 +18,20 @@ But you may want to have something more similar to your usual terminal colors, o
 * [set a transparent background](../skins/#transparent-background)
 * [set file extension dependent colors](../conf_file/#colors-by-file-extension)
 
+# Weird chars in input
+
+Some users [reported](https://github.com/Canop/broot/issues/1031) the input being populated with ANSI escape sequences at launch.
+
+This may be due to the terminal being too slow to answer to ANSI queries.
+In such case, you may simplify importing in your conf.hjson to skip color testing. For example replace the whole `imports` with
+
+```TOML
+imports: [
+        verbs.hjson
+        skins/dark-gruvbox.hjson
+]
+```
+
 # Tmux
 
 The first problem you might see is the presence of artifacts. This may happen in other terminal multiplexers too and it seems related to their bad proxying of some style related codes.
@@ -60,7 +74,6 @@ If a shortcut isn't available for broot and you can't or don't want to remap the
 * [specific solution for alt-enter](https://github.com/Canop/broot/issues/86#issuecomment-635974557)
 * [general shortcut configuration](../conf_verbs/#keyboard-key)
 
-
 # Slow remote disk
 
 Broot dives into all visible directories to look for the best matches.
@@ -70,9 +83,9 @@ The solution is to tell broot not to automatically enter the directory. It will 
 * [define a special-path in configuration](../conf_file/#special-paths)
 * [relevant issue](https://github.com/Canop/broot/issues/251)
 
-# Open files without xdg-open (or equivalent)
+# No xdg-open
 
-In such a case, which isn't rare in server systems, you can rebind <kbd>enter</kbd> to the program of your choice.
+If your system doesn't have a standard file opener, you can rebind <kbd>enter</kbd> to the program of your choice.
 
 * [change standard file opening](../tricks/#change-standard-file-opening)
 
@@ -126,7 +139,7 @@ This will ensure your profile is loaded in new terminals/sessions.
 You can check it by opening a new terminal then running `[Console]::Out`.
 The output should show an encoding of `System.Text.UTF8Encoding`.
 
-# High-Resolution images in Kitty
+# Hi-Res images in Kitty
 
 When using Kitty (and no terminal multiplexer), image preview is normally in high resolution.
 
