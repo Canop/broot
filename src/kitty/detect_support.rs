@@ -3,6 +3,7 @@ use {
     std::{
         env,
     },
+    crate::kitty::KittyGraphicsDisplay,
 };
 
 /// Determine whether Kitty's graphics protocol is supported
@@ -11,7 +12,7 @@ use {
 /// This is called only once, and cached in the KittyManager's
 /// MaybeRenderer state
 #[allow(unreachable_code)]
-pub fn is_kitty_graphics_protocol_supported() -> bool {
+pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
     debug!("is_kitty_graphics_protocol_supported ?");
 
     #[cfg(not(unix))]
@@ -28,7 +29,7 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
             let env_val = env_val.to_ascii_lowercase();
             if env_val.contains("kitty") {
                 debug!(" -> this terminal seems to be Kitty");
-                return true;
+                return KittyGraphicsDisplay::Unicode;
             }
         }
     }
@@ -44,14 +45,14 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
                     debug!("WezTerm's version predates Kitty Graphics protocol support");
                 } else {
                     debug!("this looks like a compatible version");
-                    return true;
+                    return KittyGraphicsDisplay::Direct;
                 }
             } else {
                 warn!("$TERM_PROGRAM_VERSION unexpectedly missing");
             }
         } else if term_program == "ghostty" {
             debug!("Ghostty implements Kitty Graphics protocol");
-            return true;
+            return KittyGraphicsDisplay::Direct;
         }
     }
 
@@ -72,14 +73,56 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
         let s = match response {
             Err(e) => {
                 debug!("xterm querying failed: {}", e);
-                false
+                KittyGraphicsDisplay::None
             }
-            Ok(response) => response == "_Gi=31;OK"
+            Ok(response) if response == "_Gi=31;OK" => KittyGraphicsDisplay::Direct,
         };
         debug!("Xterm querying took {:?}", start.elapsed());
         debug!("kitty protocol support: {:?}", s);
         return s;
     }
+    KittyGraphicsDisplay::None
+}
+
+/// Determine whether we're in tmux.
+///
+/// This is called only once, and cached in KittyImageRenderer
+#[allow(unreachable_code)]
+pub fn is_tmux() -> bool {
+    debug!("is_tmux ?");
+
+    for env_var in ["TERM", "TERMINAL"] {
+        if let Ok(env_val) = env::var(env_var) {
+            debug!("${} = {:?}", env_var, env_val);
+            let env_val = env_val.to_ascii_lowercase();
+            if env_val.contains("tmux") {
+                debug!(" -> this terminal seems to be Tmux");
+                return true;
+            }
+        }
+    }
     false
 }
 
+/// Custom environment variable to store how deeply tmux is nested. Starts at 1 when there's no nesting.
+pub fn get_tmux_nest_count() -> u32 {
+   std::env::var("TMUX_NEST_COUNT")
+       .map(|s| str::parse(&s).unwrap_or(1))
+       .unwrap_or(1)
+}
+
+/// Determine whether we're in SSH.
+///
+/// This is called only once, and cached in KittyImageRenderer
+#[allow(unreachable_code)]
+pub fn is_ssh() -> bool {
+    debug!("is_ssh ?");
+
+    for env_var in ["SSH_CLIENT", "SSH_CONNECTION"] {
+        if env::var(env_var).is_ok() {
+            debug!(" -> this seems to be under SSH");
+            return true;
+        }
+    }
+    false
+}

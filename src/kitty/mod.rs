@@ -1,5 +1,6 @@
 mod detect_support;
 mod image_renderer;
+mod terminal_esc;
 
 pub use {
     image_renderer::*,
@@ -11,6 +12,7 @@ use {
         display::W,
         errors::ProgramError,
         image::SourceImage,
+        kitty::detect_support::is_tmux,
     },
     crokey::crossterm::style::Color,
     once_cell::sync::Lazy,
@@ -82,8 +84,10 @@ impl KittyManager {
             return self.renderer_if_tested();
         }
         let options = KittyImageRendererOptions {
+            display: con.kitty_graphics_display,
             transmission_medium: con.kitty_graphics_transmission,
             kept_temp_files: con.kept_kitty_temp_files,
+            is_tmux: is_tmux(),
         };
         match KittyImageRenderer::new(options) {
             Some(renderer) => {
@@ -136,13 +140,20 @@ impl KittyManager {
         drawing_count: usize,
     ) -> Result<(), ProgramError> {
         let mut kept_images = Vec::new();
+        let is_tmux = detect_support::is_tmux();
+        let tmux_nest_count = if is_tmux { detect_support::get_tmux_nest_count() } else { 0 };
+        let tmux_header = is_tmux.then_some(terminal_esc::get_tmux_header(tmux_nest_count));
+        let tmux_tail = is_tmux.then_some(terminal_esc::get_tmux_tail(tmux_nest_count));
+        let esc = terminal_esc::get_esc_seq(tmux_nest_count);
         for image in self.rendered_images.drain(..) {
             if image.drawing_count >= drawing_count {
                 kept_images.push(image);
             } else {
                 let id = image.image_id;
-                debug!("erase kitty image {}", id);
-                write!(w, "\u{1b}_Ga=d,d=I,i={id}\u{1b}\\")?;
+                debug!("erase kitty image {id}");
+                if let Some(s) = &tmux_header { write!(w, "{s}")?; }
+                write!(w, "{}_Ga=d,d=I,i={}{}\\", &esc, id, &esc)?;
+                if let Some(s) = &tmux_tail { write!(w, "{s}")?; }
             }
         }
         self.rendered_images = kept_images;

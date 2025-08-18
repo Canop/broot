@@ -2,12 +2,11 @@
 //! initializing if if it doesn't yet exist
 
 use {
-    super::*,
-    crate::{
+    super::*, crate::{
         app::Mode,
         display::{ColsConf, LayoutInstructions},
         errors::{ConfError, ProgramError},
-        kitty::TransmissionMedium,
+        kitty::{KittyGraphicsDisplay, TransmissionMedium},
         path::{
             path_from,
             PathAnchor,
@@ -16,15 +15,11 @@ use {
         skin::SkinEntry,
         syntactic::SyntaxTheme,
         verb::ExecPattern,
-    },
-    rustc_hash::FxHashMap,
-    crokey::crossterm::style::Attribute,
-    serde::Deserialize,
-    std::{
+    }, crokey::crossterm::style::Attribute, rustc_hash::FxHashMap, serde::Deserialize, std::{
         collections::HashMap,
         num::NonZeroUsize,
         path::PathBuf,
-    },
+    }
 };
 
 macro_rules! overwrite {
@@ -97,6 +92,9 @@ pub struct Conf {
 
     #[serde(alias="kitty-graphics-transmission")]
     pub kitty_graphics_transmission: Option<TransmissionMedium>,
+
+    #[serde(alias="kitty-graphics-display")]
+    pub kitty_graphics_display: Option<KittyGraphicsDisplay>,
 
     #[serde(default, alias="kept-kitty-temp-files")]
     pub kept_kitty_temp_files: Option<NonZeroUsize>,
@@ -243,6 +241,7 @@ impl Conf {
         overwrite!(self, update_work_dir, conf);
         overwrite!(self, enable_kitty_keyboard, conf);
         overwrite!(self, kitty_graphics_transmission, conf);
+        overwrite!(self, kitty_graphics_display, conf);
         overwrite!(self, kept_kitty_temp_files, conf);
         overwrite!(self, lines_after_match_in_preview, conf);
         overwrite!(self, lines_before_match_in_preview, conf);
