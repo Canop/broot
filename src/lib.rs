@@ -35,7 +35,7 @@ pub mod tree_build;
 pub mod tty;
 pub mod verb;
 
-#[cfg(unix)]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 pub mod filesystems;
 
 #[cfg(unix)]

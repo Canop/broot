@@ -213,7 +213,7 @@ pub trait PanelState {
                     Err(e) => CmdResult::DisplayError(format!("{e}")),
                 }
             }
-            #[cfg(unix)]
+            #[cfg(any(target_os = "macos", target_os = "linux"))]
             Internal::filesystems => {
                 let fs_state = crate::filesystems::FilesystemState::new(
                     self.selected_path(),

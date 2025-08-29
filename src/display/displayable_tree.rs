@@ -120,7 +120,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         })
     }
 
-    #[cfg(unix)]
+    #[cfg(any(target_os="linux", target_os = "macos"))]
     fn write_line_device_id<W: Write>(
         &self,
         cw: &mut CropWriter<W>,
@@ -449,7 +449,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 );
                 git_status_display.write(cw, selected)?;
             }
-            #[cfg(unix)]
+            #[cfg(any(target_os="linux", target_os = "macos"))]
             if self.tree.options.show_root_fs {
                 if let Some(mount) = line.mount() {
                     let fs_space_display = crate::filesystems::MountSpaceDisplay::from(
@@ -580,10 +580,10 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                         }
 
                         Col::DeviceId => {
-                            #[cfg(not(unix))]
+                            #[cfg(not(any(target_os="linux", target_os = "macos")))]
                             { 0 }
 
-                            #[cfg(unix)]
+                            #[cfg(any(target_os="linux", target_os = "macos"))]
                             self.write_line_device_id(cw, line, selected)?
                         }
 

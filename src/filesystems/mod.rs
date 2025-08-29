@@ -1,4 +1,4 @@
-//! The whole module is only available on unix now
+//! The whole module is only available on linux and macos
 
 mod filesystems_state;
 mod mount_list;
