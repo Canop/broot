@@ -80,11 +80,7 @@ impl StageState {
     pub fn fix_scroll(&mut self) {
         let len = self.filtered_stage.len();
         if self.scroll + self.page_height > len {
-            self.scroll = if len > self.page_height {
-                len - self.page_height
-            } else {
-                0
-            };
+            self.scroll = len.saturating_sub(self.page_height);
         }
     }
 
@@ -499,7 +495,10 @@ impl PanelState for StageState {
 
                 #[cfg(feature = "trash")]
                 match trash::delete_all(app_state.stage.paths()) {
-                    Ok(()) => CmdResult::RefreshState { clear_cache: true },
+                    Ok(()) => {
+                        debug!("trash success");
+                        CmdResult::RefreshState { clear_cache: true }
+                    }
                     Err(e) => {
                         warn!("trash error: {:?}", &e);
                         CmdResult::DisplayError(format!("trash error: {:?}", &e))

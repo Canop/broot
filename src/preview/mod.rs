@@ -25,4 +25,7 @@ pub enum PreviewMode {
 
     /// show the content of the file as hex
     Hex,
+
+    /// Show the content with ANSI escape codes
+    Tty,
 }

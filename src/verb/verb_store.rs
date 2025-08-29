@@ -119,6 +119,8 @@ impl VerbStore {
             .with_shortcut("txt");
         self.add_internal(preview_binary)
             .with_shortcut("hex");
+        self.add_internal(preview_tty)
+            .with_shortcut("tty");
         self.add_internal(close_panel_ok);
         self.add_internal(close_panel_cancel)
             .with_key(key!(ctrl-w));
@@ -328,6 +330,8 @@ impl VerbStore {
         self.add_internal(toggle_git_file_info).with_shortcut("gf");
         self.add_internal(toggle_git_status).with_shortcut("gs");
         self.add_internal(toggle_root_fs).with_shortcut("rfs");
+        self.add_internal(set_max_depth);
+        self.add_internal(unset_max_depth);
         self.add_internal(toggle_hidden)
             .with_key(key!(alt-h))
             .with_shortcut("h");
@@ -474,7 +478,7 @@ impl VerbStore {
             }
             external_execution
         };
-        let execution = match (execution, internal, external, cmd) {
+        let mut execution = match (execution, internal, external, cmd) {
             // old definition with "execution": we guess whether it's an internal or
             // an external
             (Some(ep), None, None, None) => {
@@ -513,6 +517,13 @@ impl VerbStore {
                 return Ok(());
             }
         };
+        if let Some(refresh_after) = vc.refresh_after {
+            if let VerbExecution::External(external_execution) = &mut execution {
+                external_execution.refresh_after = refresh_after;
+            } else {
+                warn!("refresh_after is only relevant for external commands");
+            }
+        }
         let description = vc
             .description
             .clone()

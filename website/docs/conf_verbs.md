@@ -381,7 +381,7 @@ You can override the default behavior of broot by giving your verb the same shor
 
 # Internals
 
-Here's a list of internals: builtin actions you can add an alternate shortcut or keyboard key for, without refering to an external program or command:
+Here's a list of internals: builtin actions you can add an alternate shortcut or keyboard key for, without referring to an external program or command:
 
 invocation | default key | default shortcut | behavior / details
 -|-|-|-
@@ -422,6 +422,7 @@ invocation | default key | default shortcut | behavior / details
 :preview_binary | - | - | preview the selection as binary
 :preview_image | - | - | preview the selection as image
 :preview_text | - | - | preview the selection as text
+:preview_tty | - | - | preview the selection as tty (with ANSI escape codes)
 :previous_dir | - | - | select the previous directory
 :previous_match | - | - | select the previous match
 :previous_same_depth | - | - | select the previous file at the same depth
@@ -460,6 +461,8 @@ invocation | default key | default shortcut | behavior / details
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_preview | - | - | toggle display of the preview panel
 :toggle_root_fs | - | - | toggle showing filesystem info on top
+:set_max_depth | - | - | set the maximum directory depth shown
+:unset_max_depth | - | - | clear the max_depth
 :toggle_second_tree | - | - | toggle displaying a second tree
 :toggle_sizes | - | - | toggle the size mode
 :toggle_stage | <kbd>ctrl</kbd><kbd>g</kbd> | - | add or remove selection to staging area

@@ -89,7 +89,7 @@ impl ShellInstall {
             "nushell" => println!("{}", nushell::get_script()),
             "powershell" => println!("{}", powershell::get_script()),
             _ => {
-                return Err(ProgramError::UnknowShell {
+                return Err(ProgramError::UnknownShell {
                     shell: shell.to_string(),
                 });
             }

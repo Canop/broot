@@ -3,7 +3,7 @@ mod status;
 mod status_computer;
 
 pub use {
-    ignore::{GitIgnoreChain, GitIgnorer},
+    ignore::{IgnoreChain, Ignorer},
     status::{LineGitStatus, LineStatusComputer, TreeGitStatus},
     status_computer::{clear_status_computer_cache, get_tree_status},
 };

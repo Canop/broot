@@ -1,4 +1,4 @@
-// Warning: this module can't import broot's stuf due to its use in build.rs
+// Warning: this module can't import broot's stuff due to its use in build.rs
 use {
     clap::{Parser, ValueEnum},
     std::{
@@ -43,6 +43,10 @@ pub struct Args {
     /// Show filesystem info on top
     #[arg(long)]
     pub show_root_fs: bool,
+
+    /// Only show trees up to a certain depth
+    #[arg(long)]
+    pub max_depth: Option<u16>,
 
     /// Show git statuses on files and stats on repo
     #[arg(short='g', long)]

@@ -17,6 +17,7 @@ use {
     memmap2::Mmap,
     once_cell::sync::Lazy,
     std::{
+        borrow::Cow,
         fs::File,
         io::{BufRead, BufReader},
         path::{Path, PathBuf},
@@ -163,19 +164,15 @@ impl SyntacticView {
             self.total_lines_count += 1;
             let start = offset;
             offset += line.len();
-            for c in line.chars() {
-                if !is_char_printable(c) {
-                    debug!("unprintable char: {:?}", c);
-                    return Err(ProgramError::UnprintableFile);
-                }
-            }
+            // We clean the line to prevent TTY rendering from being broken.
             // We don't remove '\n' or '\r' at this point because some syntax sets
             // need them for correct detection of comments. See #477
-            // Those chars are removed on printing
-            let name_match = pattern.search_string(&line);
+            // Those chars are removed on printing, later on.
+            let clean_line = printable_line(&line);
+            let name_match = pattern.search_string(&clean_line);
             let regions = if let Some(highlighter) = highlighter.as_mut() {
-                highlighter
-                    .highlight(&line, &SYNTAXER.syntax_set)
+                    highlighter
+                        .highlight_line(&clean_line, &SYNTAXER.syntax_set)
                     .map_err(|e| ProgramError::SyntectCrashed { details: e.to_string() })?
                     .iter()
                     .map(Region::from_syntect)
@@ -186,7 +183,7 @@ impl SyntacticView {
             content_lines.push(Line {
                 regions,
                 start,
-                len: line.len(),
+                len: clean_line.len(),
                 name_match,
                 number,
             });
@@ -568,11 +565,25 @@ fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
     })
 }
 
-/// Tell whether the character is normal enough to be displayed by the
-/// syntactic view (if not we'll use a hex view)
-fn is_char_printable(c: char) -> bool {
-    // the tab is printable because it's replaced by spaces
-    c == '\t' || c == '\n' || c == '\r' || !c.is_control()
+/// Tell whether the character must be replaced to prevent rendering from being broken
+fn is_char_unprintable(c: char) -> bool {
+    match c {
+        '\u{8}' => true, // backspace
+        '\u{b}'..='\u{e}' => true,
+        '\u{84}'..='\u{85}' => true,
+        '\u{1a}'..'\u{1c}' => true,
+        '\u{89}'..='\u{9f}' => true,
+        _ => false,
+    }
+}
+
+fn printable_line(line: &str) -> Cow<'_, str> {
+    if line.chars().any(is_char_unprintable) {
+        let replacement = line.replace(is_char_unprintable, "�");
+        Cow::Owned(replacement)
+    } else {
+        Cow::Borrowed(line)
+    }
 }
 
 fn is_char_end_of_line(c: char) -> bool {

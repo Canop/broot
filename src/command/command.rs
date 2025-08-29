@@ -59,6 +59,10 @@ impl Command {
         Command::None
     }
 
+    pub fn is_none(&self) -> bool {
+        matches!(self, Command::None)
+    }
+
     pub fn as_verb_invocation(&self) -> Option<&VerbInvocation> {
         match self {
             Self::VerbEdit(vi) => Some(vi),

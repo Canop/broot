@@ -114,6 +114,9 @@ pub struct AppContext {
     /// (if none, the title isn't modified)
     pub terminal_title_pattern: Option<ExecPattern>,
 
+    /// whether to reset the terminal's title on exit
+    pub reset_terminal_title_on_exit: bool,
+
     /// whether to sync broot's work dir with the current panel's root
     pub update_work_dir: bool,
 
@@ -207,6 +210,7 @@ impl AppContext {
             .unwrap_or(content_search::DEFAULT_MAX_FILE_SIZE);
 
         let terminal_title_pattern = config.terminal_title.clone();
+        let reset_terminal_title_on_exit = config.reset_terminal_title_on_exit.unwrap_or(false);
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
         let layout_instructions = config.layout_instructions.clone().unwrap_or_default();
         let kept_kitty_temp_files = config.kept_kitty_temp_files.unwrap_or(
@@ -239,6 +243,7 @@ impl AppContext {
             max_staged_count,
             content_search_max_file_size,
             terminal_title_pattern,
+            reset_terminal_title_on_exit,
             update_work_dir: config.update_work_dir.unwrap_or(true),
             keyboard_enhanced: false,
             kitty_graphics_transmission: config.kitty_graphics_transmission
@@ -250,7 +255,7 @@ impl AppContext {
             layout_instructions,
         })
     }
-    /// Return the --cmd argument, coming from the launch arguments (prefered)
+    /// Return the --cmd argument, coming from the launch arguments (preferred)
     /// or from the default_flags parameter of a config file
     pub fn cmd(&self) -> Option<&str> {
         self.launch_args.cmd.as_ref().or(

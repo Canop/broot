@@ -2,7 +2,10 @@
 //! one or several commands into a vec of parsed commands
 
 use {
-    super::{Command, CommandParts},
+    super::{
+        Command,
+        CommandParts,
+    },
     crate::{
         app::AppContext,
         errors::ProgramError,
@@ -26,7 +29,10 @@ impl Sequence {
             _ => String::from(";"),
         }
     }
-    pub fn new<S: Into<String>>(raw: S, separator: Option<S>) -> Self {
+    pub fn new<S: Into<String>>(
+        raw: S,
+        separator: Option<S>,
+    ) -> Self {
         Self {
             raw: raw.into(),
             separator: separator.map_or_else(Sequence::local_separator, |s| s.into()),
@@ -92,7 +98,7 @@ fn add_commands(
         commands.push((input.to_string(), Command::from_parts(pattern, false)));
     }
     if let Some(verb_invocation) = verb_invocation {
-        let command = Command::from_parts(verb_invocation, true);
+        let mut command = Command::from_parts(verb_invocation, true);
         if let Command::VerbInvocate(invocation) = &command {
             // we check that the verb exists to avoid running a sequence
             // of actions with some missing
@@ -107,9 +113,16 @@ fn add_commands(
                         name: invocation.name.to_string(),
                     });
                 }
-                _ => {}
+                PrefixSearchResult::Match(_, verb) => {
+                    if let Some(internal) = verb.get_internal() {
+                        command = Command::Internal {
+                            internal,
+                            input_invocation: Some(invocation.clone()),
+                        };
+                    }
+                    commands.push((input.to_string(), command));
+                }
             }
-            commands.push((input.to_string(), command));
         }
     }
     Ok(())

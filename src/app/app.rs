@@ -336,7 +336,7 @@ impl App {
         let cmd_result = self
             .mut_panel()
             .apply_command(w, &cmd, app_state, &app_cmd_context)?;
-        debug!("cmd_result: {:?}", &cmd_result);
+        info!("cmd_result: {:?}", &cmd_result);
         match cmd_result {
             ApplyOnPanel { id } => {
                 if let Some(idx) = self.panel_id_to_idx(id) {
@@ -356,6 +356,7 @@ impl App {
             ClosePanel {
                 validate_purpose,
                 panel_ref,
+                clear_cache,
             } => {
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation(con);
@@ -378,6 +379,9 @@ impl App {
                             .selected_path()
                             .map(|p| p.to_string_lossy().to_string());
                     }
+                }
+                if clear_cache {
+                    clear_caches();
                 }
                 if self.close_panel(close_idx, con) {
                     let screen = self.screen;
@@ -523,7 +527,12 @@ impl App {
                         }
                     }
                     _ => {
-                        info!("unhandled propagated internal. cmd={:?}", &cmd);
+                        let cmd = self.mut_panel().input.on_internal(internal);
+                        if cmd.is_none() {
+                            warn!("unhandled propagated internal. internal={internal:?} cmd={cmd:?}");
+                        } else {
+                            self.apply_command(w, cmd, panel_skin, app_state, con)?;
+                        }
                     }
                 }
             }
@@ -595,6 +604,7 @@ impl App {
                 self.quitting = true;
             }
             RefreshState { clear_cache } => {
+                info!("refreshing, clearing cache={clear_cache}");
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation(con);
                 }
@@ -931,10 +941,11 @@ impl App {
                 Either::Second(Some(raw_sequence)) => {
                     debug!("got command sequence: {:?}", &raw_sequence);
                     for (input, arg_cmd) in raw_sequence.parse(con)? {
-                        self.mut_panel().set_input_content(&input);
+                        if !matches!(&arg_cmd, Command::Internal{..}) {
+                            self.mut_panel().set_input_content(&input);
+                        }
                         self.apply_command(w, arg_cmd, &skin.focused, &mut app_state, con)?;
                         if self.quitting {
-                            // is that a 100% safe way of quitting ?
                             return Ok(self.launch_at_end.take());
                         }
                         self.display_panels(w, &skin, &app_state, con)?;
@@ -949,6 +960,7 @@ impl App {
                 }
             }
         }
+        terminal::reset_title(w, con);
         Ok(self.launch_at_end.take())
     }
 }
@@ -959,6 +971,6 @@ impl App {
 fn clear_caches() {
     file_sum::clear_cache();
     git::clear_status_computer_cache();
-    #[cfg(unix)]
+    #[cfg(any(target_os = "macos", target_os = "linux"))]
     crate::filesystems::clear_cache();
 }

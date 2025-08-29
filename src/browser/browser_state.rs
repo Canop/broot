@@ -330,6 +330,7 @@ impl PanelState for BrowserState {
         app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
+        debug!("browser_state on_internal {:?}", internal_exec);
         let con = &cc.app.con;
         let screen = cc.app.screen;
         let page_height = BrowserState::page_height(cc.app.screen);
@@ -354,19 +355,12 @@ impl PanelState for BrowserState {
             }
             Internal::focus => {
                 let tree = self.displayed_tree();
-                let mut path = &tree.selected_line().path;
-                let parent;
-                if tree.is_root_selected() {
-                    if let Some(parent_path) = path.parent() {
-                        parent = parent_path.to_path_buf();
-                        path = &parent;
-                    }
-                }
                 internal_focus::on_internal(
                     internal_exec,
                     input_invocation,
                     trigger_type,
-                    path,
+                    &tree.selected_line().path,
+                    tree.is_root_selected(),
                     tree.options.clone(),
                     app_state,
                     cc,
@@ -623,6 +617,7 @@ impl PanelState for BrowserState {
                     CmdResult::ClosePanel {
                         validate_purpose: true,
                         panel_ref: PanelReference::Active,
+                        clear_cache: false,
                     }
                 } else {
                     debug!("start_end understood as start");
@@ -767,7 +762,7 @@ impl PanelState for BrowserState {
                     }
                 }
                 BrowserTask::StageAll { pattern, file_type_condition } => {
-                    info!("stage all pattern: {:?}", pattern);
+                    debug!("stage all pattern: {:?}", pattern);
                     let tree = self.displayed_tree();
                     let root = tree.root().clone();
                     let mut options = tree.options.clone();
@@ -781,7 +776,7 @@ impl PanelState for BrowserState {
                                 total_search,
                                 dam,
                                 |line| {
-                                    info!("??staging {:?}", &line.path);
+                                    debug!("??staging {:?}", &line.path);
                                     file_type_condition.accepts_path(&line.path)
                                 }
                             ))

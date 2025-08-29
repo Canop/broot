@@ -107,7 +107,7 @@ fn path_from_input(
 ) -> PathBuf {
     match (input_arg, internal_exec.arg.as_ref()) {
         (Some(input_arg), Some(verb_arg)) => {
-            // The verb probably defines some patttern which uses the input.
+            // The verb probably defines some pattern which uses the input.
             // For example:
             // {
             //     invocation: "gotar {path}"
@@ -177,11 +177,13 @@ pub fn get_status_markdown(
 
 /// general implementation for verbs based on the :focus internal with optionally
 /// a bang or an argument.
+#[allow(clippy::too_many_arguments)]
 pub fn on_internal(
     internal_exec: &InternalExecution,
     input_invocation: Option<&VerbInvocation>,
     trigger_type: TriggerType,
     selected_path: &Path,
+    is_root_selected: bool,
     tree_options: TreeOptions,
     app_state: & AppState,
     cc: &CmdContext,
@@ -223,18 +225,31 @@ pub fn on_internal(
                     .unwrap_or(internal_exec.bang);
                 on_path(path, screen, tree_options, bang, con)
             } else if let Some(input_arg) = input_arg {
-                // the :focus internal was triggered by a key, and without internal arg,
-                // which means the user wants to explore the arg with purpose
-                // of selecting a path
                 let base_dir = selected_path.to_string_lossy();
                 let path = path::path_from(&*base_dir, PathAnchor::Unspecified, input_arg);
-                let arg_type = SelectionType::Any; // We might do better later
-                let purpose = PanelPurpose::ArgEdition { arg_type };
-                new_panel_on_path(path, screen, tree_options, purpose, con, HDir::Right)
+                if bang {
+                    // Unsure this special behavior is really needed. It was based
+                    // on the assumption that the user wanted to edit an argument
+                    // of a verb, and that the trigering was a key (but it can also
+                    // be another medium, like a command sequence or with the server)
+                    let arg_type = SelectionType::Any; // We might do better later
+                    let purpose = PanelPurpose::ArgEdition { arg_type };
+                    new_panel_on_path(path, screen, tree_options, purpose, con, HDir::Right)
+                } else {
+                    on_path(path, screen, tree_options, bang, con)
+                }
             } else {
                 // user only wants to open the selected path, either in the same panel or
                 // in a new one
-                on_path(selected_path.to_path_buf(), screen, tree_options, bang, con)
+                let mut path = selected_path.to_path_buf();
+                if !bang && is_root_selected {
+                    // the selected path is the root, focusing it would do nothing, so
+                    // we rather go up one level
+                    if let Some(parent_path) = selected_path.parent() {
+                        path = parent_path.to_path_buf();
+                    }
+                }
+                on_path(path, screen, tree_options, bang, con)
             }
         }
     }

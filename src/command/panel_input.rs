@@ -112,62 +112,86 @@ impl PanelInput {
         _con: &AppContext,
     ) -> bool {
         if let VerbExecution::Internal(internal_exec) = &verb.execution {
-            match internal_exec.internal {
-                Internal::input_clear => {
-                    if self.input_field.get_content().is_empty() {
-                        false
-                    } else {
-                        self.input_field.clear();
-                        true
-                    }
-                }
-                Internal::input_del_char_left => self.input_field.del_char_left(),
-                Internal::input_del_char_below => self.input_field.del_char_below(),
-                Internal::input_del_word_left => self.input_field.del_word_left(),
-                Internal::input_del_word_right => self.input_field.del_word_right(),
-                Internal::input_go_left => self.input_field.move_left(),
-                Internal::input_go_right => self.input_field.move_right(),
-                Internal::input_go_word_left => self.input_field.move_word_left(),
-                Internal::input_go_word_right => self.input_field.move_word_right(),
-                Internal::input_go_to_start => self.input_field.move_to_start(),
-                Internal::input_go_to_end => self.input_field.move_to_end(),
-                #[cfg(feature = "clipboard")]
-                Internal::input_selection_cut => {
-                    let s = self.input_field.cut_selection();
-                    if let Err(err) = terminal_clipboard::set_string(s) {
-                        warn!("error in writing into clipboard: {}", err);
-                    }
-                    true
-                }
-                #[cfg(feature = "clipboard")]
-                Internal::input_selection_copy => {
-                    let s = self.input_field.copy_selection();
-                    if let Err(err) = terminal_clipboard::set_string(s) {
-                        warn!("error in writing into clipboard: {}", err);
-                    }
-                    true
-                }
-                #[cfg(feature = "clipboard")]
-                Internal::input_paste => {
-                    match terminal_clipboard::get_string() {
-                        Ok(pasted) => {
-                            for c in pasted
-                                .chars()
-                                .filter(|c| c.is_alphanumeric() || c.is_ascii_punctuation())
-                            {
-                                self.input_field.put_char(c);
-                            }
-                        }
-                        Err(e) => {
-                            warn!("Error in reading clipboard: {:?}", e);
-                        }
-                    }
-                    true
-                }
-                _ => false,
-            }
+            self.handle_input_related_internal(internal_exec.internal)
         } else {
             false
+        }
+    }
+
+    /// Supporting direct calls of internals not on key events (eg from a verb
+    /// having a cmd, or from a --cmd), update the input and build a command
+    /// if the internal is an action on the input (like deleting a word)
+    pub fn on_internal(
+        &mut self,
+        internal: Internal,
+    ) -> Command {
+        if self.handle_input_related_internal(internal) {
+            Command::from_raw(self.input_field.get_content(), false)
+        } else {
+            Command::None
+        }
+    }
+
+    /// check whether the internal is an action on the input (like
+    /// deleting a word) and if it's the case, applies it and
+    /// return true
+    fn handle_input_related_internal(
+        &mut self,
+        internal: Internal,
+    ) -> bool {
+        match internal {
+            Internal::input_clear => {
+                if self.input_field.get_content().is_empty() {
+                    false
+                } else {
+                    self.input_field.clear();
+                    true
+                }
+            }
+            Internal::input_del_char_left => self.input_field.del_char_left(),
+            Internal::input_del_char_below => self.input_field.del_char_below(),
+            Internal::input_del_word_left => self.input_field.del_word_left(),
+            Internal::input_del_word_right => self.input_field.del_word_right(),
+            Internal::input_go_left => self.input_field.move_left(),
+            Internal::input_go_right => self.input_field.move_right(),
+            Internal::input_go_word_left => self.input_field.move_word_left(),
+            Internal::input_go_word_right => self.input_field.move_word_right(),
+            Internal::input_go_to_start => self.input_field.move_to_start(),
+            Internal::input_go_to_end => self.input_field.move_to_end(),
+            #[cfg(feature = "clipboard")]
+            Internal::input_selection_cut => {
+                let s = self.input_field.cut_selection();
+                if let Err(err) = terminal_clipboard::set_string(s) {
+                    warn!("error in writing into clipboard: {}", err);
+                }
+                true
+            }
+            #[cfg(feature = "clipboard")]
+            Internal::input_selection_copy => {
+                let s = self.input_field.copy_selection();
+                if let Err(err) = terminal_clipboard::set_string(s) {
+                    warn!("error in writing into clipboard: {}", err);
+                }
+                true
+            }
+            #[cfg(feature = "clipboard")]
+            Internal::input_paste => {
+                match terminal_clipboard::get_string() {
+                    Ok(pasted) => {
+                        for c in pasted
+                            .chars()
+                            .filter(|c| c.is_alphanumeric() || c.is_ascii_punctuation())
+                        {
+                            self.input_field.put_char(c);
+                        }
+                    }
+                    Err(e) => {
+                        warn!("Error in reading clipboard: {:?}", e);
+                    }
+                }
+                true
+            }
+            _ => false,
         }
     }
 
@@ -300,7 +324,7 @@ impl PanelInput {
             }
             if !verb.file_extensions.is_empty() {
                 let extension = sel_info.extension();
-                if !extension.map_or(false, |ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
+                if !extension.is_some_and(|ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
                     continue;
                 }
             }

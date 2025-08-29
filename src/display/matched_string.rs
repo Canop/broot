@@ -17,7 +17,7 @@ pub struct MatchedString<'a> {
     pub align: Alignment,
 }
 
-impl<'a, 'w> MatchedString<'a> {
+impl<'a> MatchedString<'a> {
 
     pub fn new(
         name_match: Option<NameMatch>,
@@ -94,7 +94,7 @@ impl<'a, 'w> MatchedString<'a> {
         }
         removed_char_count
     }
-    pub fn queue_on<W>(&self, cw: &mut CropWriter<'w, W>) -> Result<(), termimad::Error>
+    pub fn queue_on<W>(&self, cw: &mut CropWriter<'_, W>) -> Result<(), termimad::Error>
     where
         W: std::io::Write,
     {

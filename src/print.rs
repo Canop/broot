@@ -45,10 +45,7 @@ pub fn print_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<CmdResult>
 fn relativize_path(path: &Path, con: &AppContext) -> io::Result<String> {
     let relative_path = match pathdiff::diff_paths(path, &con.initial_root) {
         None => {
-            return Err(io::Error::new(
-                io::ErrorKind::Other,
-                format!("Cannot relativize {path:?}"), // does this happen ? how ?
-            ));
+            return Err(io::Error::other(format!("Cannot relativize {path:?}")));
         }
         Some(p) => p,
     };

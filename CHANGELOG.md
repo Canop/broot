@@ -1,10 +1,83 @@
-### next
+### v1.48.0 - 2025-08-29
+<a name="v1.48.0"></a>
+- Support for the 'Cmd' modifier in key shortcuts (the key is called 'Command', 'Super', 'Apple', 'Windows', depending on systems and users)
+- "filesystem" features have been made available for Mac:
+    - the `:fs` screen, listing filesystems
+    - filesystem free space & total space displayed when size computations are requested
+    - device id displayed with `:toggle_device_id` (shortcut: "dev")
+- Fix `.config/git/ignore` not being loaded on Mac - Fix #1032 - Thanks @9999years
+
+### v1.47.0 - 2025-06-26
+<a name="v1.47.0"></a>
+- text files with control chars were previously previewed as binary. They're now displayed as text with some '�' when needed - Fix #977
+- files with ANSI escape codes (such as the one you would obtain with `dysk --color yes > ansi.txt` can now be previewed with `:preview_tty` - Fix #1019
+- first line of the tree is cropped (right aligned) when it doesn't fit
+
+### v1.46.5 - 2025-05-30
+<a name="v1.46.5"></a>
+- fix `:focus some/path` called in a command sequence always opening new panel - Fix #1014
+
+### v1.46.4 - 2025-05-14
+<a name="v1.46.4"></a>
+- support for keys F13 to F24 (if your system supports it)
+- fix `:focus` with argument given in configuration going up one level when root is selected - Fix #1009
+- fix `--max-depth` ignored when in `default_flags` - Fix #1013
+
+### v1.46.3 - 2025-04-24
+<a name="v1.46.3"></a>
+- fix broot waiting for events on internals like `:quit` - Fix #1006
+
+### v1.46.2 - 2025-04-21
+<a name="v1.46.2"></a>
+- fix broken nushell script (`--max-depth` again) - Thanks @sandyspiers & @amitkot
+
+### v1.46.1 - 2025-04-20
+<a name="v1.46.1"></a>
+- fix nushell script broken by new `--max-depth` argument - Thanks @lizclipse
+
+### v1.46.0 - 2025-04-16
+<a name="v1.46.0"></a>
+- `:set_max_depth <number>` and `:unset_max_depth` - Fix #843 - Thanks @mcky
+- clear cache when files are deleted in staging area - Fix #999
+- recompute preview transform when source file changed since last preview
+
+### v1.45.1 - 2025-03-25
+<a name="v1.45.1"></a>
+- Fix compilation failing without `--locked` - Fix #995
+
+### v1.45.0 - 2025-03-17
+<a name="v1.45.0"></a>
+- Fix total search impossible to redo after refresh - Fix #986
+- With `refresh_after: false`, a verb configuration can request that the tree isn't refreshed after its execution - Fix #987
+
+### v1.44.7 - 2025-02-12
+<a name="v1.44.7"></a>
+- fix bad regex match position - Fix #979
+- update resvg dependency to 0.44 - Thanks @NoisyCoil
+- on `--server`, remove the existing socket if it already exists - Thanks @VasilisManol
+
+### v1.44.6 - 2025-01-12
+<a name="v1.44.6"></a>
+ -fix .ignore files ignored when not in a git repository - Fix #970
+ -update git2 dependency to 0.20 - Fix #974
+
+### v1.44.5 - 2025-01-02
+<a name="v1.44.5"></a>
+- no real change (just reverting a crate name to ease some packaging)
+
+### v1.44.4 - 2025-01-01
+<a name="v1.44.4"></a>
+- fix panic in preview on syntax coloring (when a sublime syntax isn't compatible with the regex engine) - Fix #967
+
+### v1.44.3 - 2024-12-26
+<a name="v1.44.3"></a>
 - removed default bindings on left and right keys. You may add them back by adding this to your verbs.hjson:
 ```Hjson
     { key: "left", internal: "back" }
     { key: "right", internal: "open_stay" }
 ```
 - rustc minimal version changed from 1.76 to 1.79, which allows better performing image rendering
+- remove dependency to onig, to allow compatibility with gcc 15 - Fix #956
 
 ### v1.44.2 - 2024-10-22
 <a name="v1.44.2"></a>
@@ -472,7 +545,7 @@ Note: The released archive doesn't include an Android build - see https://github
 - fix `:filesystems` view not listing disks whose mount point has a space character
 - fix panic on searching `cr/.*` if a file starts with an empty line - Fix #406
 - fix preview of linux pseudo-files
-- identify "RAM" and "crypted" disks in `:filesystems` view
+- identify "RAM" and "encrypted" disks in `:filesystems` view
 
 <a name="v1.6.0"></a>
 ### v1.6.0 - 2021-06-16

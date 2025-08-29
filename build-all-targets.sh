@@ -21,6 +21,7 @@ echo "   build cleaned"
 
 # Build versions for other platforms using cargo cross
 cross_build() {
+    export RUSTFLAGS=""
     target_name="$1"
     target="$2"
     features="$3"
@@ -69,7 +70,7 @@ cp "target/release/$NAME" build/x86_64-linux/
 # (they are re built as part of the normal compilation by build.rs)
 echo -e "${H2}Copying completion scripts${EH}"
 mkdir build/completion
-cp "$(broot -c 'rp/release\/build\/broot-[^\/]+\/out\/broot.bash;:parent;:pp' target)/"* build/completion
+cp "$(broot -c 'rp/release\/build\/broot-[^\/]+\/out\/broot.bash;:parent;:print_path' target)/"* build/completion
 echo "   Done"
 
 # copy the default conf

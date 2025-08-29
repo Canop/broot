@@ -65,7 +65,6 @@ impl Panel {
 
     /// apply a command on the current state, with no
     /// effect on screen
-    #[allow(clippy::too_many_arguments)] // a refactory could still be useful
     pub fn apply_command<'c>(
         &mut self,
         w: &'c mut W,
@@ -87,7 +86,8 @@ impl Panel {
         };
         let result = self.states[state_idx].on_command(w, app_state, &cc);
         let has_previous_state = self.states.len() > 1;
-        self.status = self.state().get_status(app_state, &cc, has_previous_state, self.areas.status.width as usize);
+        self.status = self.state()
+            .get_status(app_state, &cc, has_previous_state, self.areas.status.width as usize);
         result
     }
 

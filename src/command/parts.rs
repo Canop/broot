@@ -29,7 +29,7 @@ impl CommandParts {
     pub fn has_not_empty_verb_invocation(&self) -> bool {
         self.verb_invocation
             .as_ref()
-            .map_or(false, |vi| !vi.is_empty())
+            .is_some_and(|vi| !vi.is_empty())
     }
     pub fn from<S: Into<String>>(raw: S) -> Self {
         let mut raw = raw.into();
@@ -41,8 +41,7 @@ impl CommandParts {
         // we loop on chars and build the pattern tree until we reach an unescaped ' ' or ':'
         while let Some((pos, cur_char)) = chars.next() {
             let between_slashes = pt.current_atom()
-                .map_or(
-                    false,
+                .is_some_and(
                     |pp: &PatternParts| pp.is_between_slashes(),
                 );
             match cur_char {

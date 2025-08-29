@@ -11,6 +11,7 @@ use {
         skin::PanelSkin,
         syntactic::SyntacticView,
         task_sync::Dam,
+        tty::TtyView,
     },
     crokey::crossterm::{cursor, QueueableCommand},
     std::{
@@ -20,11 +21,13 @@ use {
     termimad::{Area, CropWriter, SPACE_FILLING},
 };
 
+#[allow(clippy::large_enum_variant)]
 pub enum Preview {
     Dir(DirView),
     Image(ImageView),
     Syntactic(SyntacticView),
     Hex(HexView),
+    Tty(TtyView),
     ZeroLen(ZeroLenFileView),
     IoError(io::Error),
 }
@@ -42,6 +45,7 @@ impl Preview {
                 Some(PreviewMode::Hex) => Self::hex(path),
                 Some(PreviewMode::Image) => Self::image(path),
                 Some(PreviewMode::Text) => Self::unfiltered_text(path, con),
+                Some(PreviewMode::Tty) => Self::tty(path),
                 None => {
                     // automatic behavior: image, text, hex
                     ImageView::new(path)
@@ -67,6 +71,11 @@ impl Preview {
                 }
                 PreviewMode::Image => {
                     ImageView::new(path).map(Self::Image)
+                }
+                PreviewMode::Tty => {
+                    TtyView::new(path)
+                        .map(Self::Tty)
+                        .map_err(ProgramError::from)
                 }
                 PreviewMode::Text => {
                     Ok(
@@ -99,6 +108,15 @@ impl Preview {
             .unwrap_or_else(|| Self::hex(path))
 
     }
+
+    /// build an tty view, unless there's an IO error
+    pub fn tty(path: &Path) -> Self {
+        match TtyView::new(path) {
+            Ok(tv) => Self::Tty(tv),
+            Err(e) => Self::IoError(e),
+        }
+    }
+
     /// build a text preview (maybe with syntaxic coloring) if possible,
     /// a hex (binary) view if content isnt't UTF8, a ZeroLen file if there's
     /// no length (it's probably a linux pseudofile) or a IOError when
@@ -189,6 +207,7 @@ impl Preview {
             Self::Syntactic(_) => Some(PreviewMode::Text),
             Self::ZeroLen(_) => Some(PreviewMode::Text),
             Self::Hex(_) => Some(PreviewMode::Hex),
+            Self::Tty(_) => Some(PreviewMode::Tty),
             Self::IoError(_) => None,
             Self::Dir(_) => None,
         }
@@ -208,6 +227,7 @@ impl Preview {
             Self::Dir(dv) => dv.try_scroll(cmd),
             Self::Syntactic(sv) => sv.try_scroll(cmd),
             Self::Hex(hv) => hv.try_scroll(cmd),
+            Self::Tty(v) => v.try_scroll(cmd),
             _ => false,
         }
     }
@@ -234,15 +254,17 @@ impl Preview {
         }
     }
     pub fn unselect(&mut self) {
-        // it's not possible to unselect in a dir_view
-        if let Self::Syntactic(sv) = self {
-            sv.unselect();
+        match self {
+            Self::Syntactic(sv) => sv.unselect(),
+            Self::Tty(tv) => tv.unselect(),
+            _ => {}
         }
     }
     pub fn try_select_y(&mut self, y: u16) -> bool {
         match self {
             Self::Dir(dv) => dv.try_select_y(y),
             Self::Syntactic(sv) => sv.try_select_y(y),
+            Self::Tty(v) => v.try_select_y(y),
             _ => false,
         }
     }
@@ -250,6 +272,7 @@ impl Preview {
         match self {
             Self::Dir(dv) => dv.move_selection(dy, cycle),
             Self::Syntactic(sv) => sv.move_selection(dy, cycle),
+            Self::Tty(v) => v.move_selection(dy, cycle),
             Self::Hex(hv) => {
                 hv.try_scroll(ScrollCommand::Lines(dy));
             }
@@ -277,6 +300,7 @@ impl Preview {
             Self::Dir(dv) => dv.select_first(),
             Self::Syntactic(sv) => sv.select_first(),
             Self::Hex(hv) => hv.select_first(),
+            Self::Tty(v) => v.select_first(),
             _ => {}
         }
     }
@@ -284,6 +308,7 @@ impl Preview {
         match self {
             Self::Syntactic(sv) => sv.select_last(),
             Self::Hex(hv) => hv.select_last(),
+            Self::Tty(v) => v.select_last(),
             _ => {}
         }
     }
@@ -302,6 +327,7 @@ impl Preview {
             Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area, con),
             Self::ZeroLen(zlv) => zlv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
+            Self::Tty(v) => v.display(w, screen, panel_skin, area),
             Self::IoError(err) => {
                 let mut y = area.top;
                 w.queue(cursor::MoveTo(area.left, y))?;

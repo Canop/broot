@@ -48,7 +48,7 @@ static TS_CACHE_MX: Lazy<Mutex<FxHashMap<PathBuf, Computation<TreeGitStatus>>>> 
 /// In any case:
 /// - this function returns as soon as the dam asks for it (ie when there's an event)
 /// - computations are never dropped unless the program ends: they continue in background
-///    and the result may be available for following queries
+///   and the result may be available for following queries
 pub fn get_tree_status(
     root_path: &Path,
     dam: &mut Dam,

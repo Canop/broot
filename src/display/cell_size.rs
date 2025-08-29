@@ -38,10 +38,7 @@ pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
         ))
     } else {
         warn!("failed to fetch cell dimension with ioctl");
-        Err(io::Error::new(
-            io::ErrorKind::Other,
-            "failed to fetch terminal dimension with ioctl",
-        ))
+        Err(io::Error::other("failed to fetch terminal dimension with ioctl"))
     }
 }
 

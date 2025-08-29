@@ -32,10 +32,11 @@ pub mod task_sync;
 pub mod terminal;
 pub mod tree;
 pub mod tree_build;
+pub mod tty;
 pub mod verb;
 pub mod watcher;
 
-#[cfg(unix)]
+#[cfg(any(target_os = "macos", target_os = "linux"))]
 pub mod filesystems;
 
 #[cfg(unix)]

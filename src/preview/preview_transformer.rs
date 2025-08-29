@@ -198,7 +198,22 @@ impl PreviewTransformer {
             // if there's a file in the output directory, it's the result of a previous
             // transformation of the same input file
             if let Some(path) = first_file_in_dir(&output_dir)? {
-                return Ok(path);
+                // we check that the transformed file isn't older than the file
+                // to preview (or changes would be ignored)
+                let input_modified = input_path.metadata().and_then(|m| m.modified());
+                let transformed_modified = path.metadata().and_then(|m| m.modified());
+                match (input_modified, transformed_modified) {
+                    (Ok(input_date), Ok(transformed_date)) if input_date <= transformed_date => {
+                        // the transformed file is up to date
+                        debug!("preview transform {:?} up to date", path);
+                        return Ok(path);
+                    }
+                    _ => {
+                        // the transformed file is obsolete
+                        debug!("preview transform {:?} obsolete", path);
+                        fs::remove_file(&path)?;
+                    }
+                }
             }
         } else {
             fs::create_dir(&output_dir)?;

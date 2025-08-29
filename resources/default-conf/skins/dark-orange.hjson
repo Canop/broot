@@ -102,9 +102,8 @@ skin: {
 # one of the following lines:
 # 
 # syntax_theme: GitHub
-# syntax_theme: SolarizedDark
-# syntax_theme: SolarizedLight
 syntax_theme: SolarizedDark
+# syntax_theme: SolarizedLight
 # syntax_theme: MochaDark
 # syntax_theme: OceanDark
 # syntax_theme: OceanLight

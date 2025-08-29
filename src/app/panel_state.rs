@@ -152,10 +152,12 @@ pub trait PanelState {
             Internal::close_panel_ok => CmdResult::ClosePanel {
                 validate_purpose: true,
                 panel_ref: PanelReference::Active,
+                clear_cache: true,
             },
             Internal::close_panel_cancel => CmdResult::ClosePanel {
                 validate_purpose: false,
                 panel_ref: PanelReference::Active,
+                clear_cache: false,
             },
             Internal::move_panel_divider => {
                 let MoveDividerArgs { divider, dx } = get_arg(
@@ -211,7 +213,7 @@ pub trait PanelState {
                     Err(e) => CmdResult::DisplayError(format!("{e}")),
                 }
             }
-            #[cfg(unix)]
+            #[cfg(any(target_os = "macos", target_os = "linux"))]
             Internal::filesystems => {
                 let fs_state = crate::filesystems::FilesystemState::new(
                     self.selected_path(),
@@ -264,6 +266,7 @@ pub trait PanelState {
             Internal::open_preview => self.open_preview(None, false, cc),
             Internal::preview_image => self.open_preview(Some(PreviewMode::Image), false, cc),
             Internal::preview_text => self.open_preview(Some(PreviewMode::Text), false, cc),
+            Internal::preview_tty => self.open_preview(Some(PreviewMode::Tty), false, cc),
             Internal::preview_binary => self.open_preview(Some(PreviewMode::Hex), false, cc),
             Internal::toggle_preview => self.open_preview(None, true, cc),
             Internal::sort_by_count => self.with_new_options(
@@ -482,6 +485,38 @@ pub trait PanelState {
 					con,
 				)
             }
+            Internal::set_max_depth => {
+                let args = input_invocation.and_then(|inv| inv.args.as_ref());
+
+                if let Some(flags) = args {
+                    self.with_new_options(
+                        screen,
+                        &|o| {
+                            if let Ok(max_depth) = flags.parse::<u16>() {
+                                o.max_depth = Some(max_depth);
+                                "*max depth updated*"
+                            } else {
+                                "*depth must be an integer*"
+                            }
+                        },
+                        bang,
+                        con,
+                    )
+                } else {
+                    CmdResult::error(":set_max_depth needs a depth as an argument")
+                }
+            }
+            Internal::unset_max_depth => {
+                self.with_new_options(
+                        screen,
+                        &|o| {
+                        o.max_depth = None;
+                        "*cleared max depth*"
+                    },
+                    bang,
+                    con,
+                )
+            }
             Internal::toggle_git_ignore | Internal::toggle_ignore => {
                 self.with_new_options(
 					screen,
@@ -577,6 +612,7 @@ pub trait PanelState {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
+                        clear_cache: false,
                     }
                 } else {
                     CmdResult::Keep
@@ -607,6 +643,7 @@ pub trait PanelState {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(panel_id),
+                        clear_cache: false,
                     }
                 } else {
                     CmdResult::Keep
@@ -620,6 +657,7 @@ pub trait PanelState {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
+                        clear_cache: false,
                     }
                 } else {
                     CmdResult::Keep
@@ -641,6 +679,7 @@ pub trait PanelState {
                     CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
+                        clear_cache: false,
                     }
                 } else {
                     CmdResult::NewPanel {
@@ -685,6 +724,9 @@ pub trait PanelState {
                 }
                 CmdResult::Keep
             }
+            internal if internal.is_input_related() => {
+                CmdResult::HandleInApp(internal)
+            }
             _ => CmdResult::Keep,
         })
     }
@@ -724,6 +766,7 @@ pub trait PanelState {
                     return CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(panel_id),
+                        clear_cache: false,
                     };
                 }
             }
@@ -791,6 +834,7 @@ pub trait PanelState {
                     return Ok(CmdResult::ClosePanel {
                         validate_purpose: false,
                         panel_ref: PanelReference::Id(id),
+                        clear_cache: true,
                     });
                 }
             }
@@ -943,6 +987,7 @@ pub trait PanelState {
                 CmdResult::ClosePanel {
                     validate_purpose: false,
                     panel_ref: PanelReference::Id(id),
+                    clear_cache: false,
                 }
             } else if preferred_mode.is_some() {
                 // we'll make the preview mode change be
@@ -1117,7 +1162,7 @@ pub trait PanelState {
                     );
                 }
             }
-            // right now there's no check for sequences but they're inherently dangereous
+            // right now there's no check for sequences but they're inherently dangerous
         }
         if let Some(err) = verb.check_args(sel_info, invocation, &app_state.other_panel_path) {
             Status::new(err, true)

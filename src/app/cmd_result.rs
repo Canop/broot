@@ -36,6 +36,7 @@ pub enum CmdResult {
     ClosePanel {
         validate_purpose: bool,
         panel_ref: PanelReference,
+        clear_cache: bool,
     },
     ChangeLayout(LayoutInstruction),
     DisplayError(String),
