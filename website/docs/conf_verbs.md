@@ -455,9 +455,9 @@ invocation | default key | default shortcut | behavior / details
 :toggle_device_id | - | - | toggle display of device id (unix only)
 :toggle_files | - | - | toggle showing files (or just folders)
 :toggle_git_file_info | - | - | toggle display of git file information
-:toggle_git_ignore | - | - | toggle git ignore handling (auto, no or yes)
 :toggle_git_status | - | - | toggle showing only the file which would show up on `git status`
 :toggle_hidden | - | - | toggle display of hidden files (the ones whose name starts with a dot on linux)
+:toggle_ignore | - | - | toggle display of files in .gitignore and .ignore
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_preview | - | - | toggle display of the preview panel
 :toggle_root_fs | - | - | toggle showing filesystem info on top
