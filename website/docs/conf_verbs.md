@@ -49,7 +49,7 @@ switch_terminal | `true` | whether to switch from alternate to normal terminal d
 The execution is defined either by `internal`, `external` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
 
 !!!	Note
-	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example `cd` is a shell builtin which must be executed in the parent shell.
+	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example, `cd` is a shell builtin which must be executed in the parent shell.
 
 # Call shell scripts
 
@@ -118,7 +118,7 @@ external = ["xterm", "-e", "nvim {file}"]
 
 You may filter the execution of a verb with file extensions.
 
-For example, if you'd want <kbd>enter</kbd> to work as predefined in most cases but just choose a specific action for some files, you might add this verb definition:
+For example, if you want <kbd>enter</kbd> to work as predefined in most cases but just choose a specific action for some files, you might add this verb definition:
 
 ```hjson
 {
@@ -144,8 +144,8 @@ working_dir = "{root}"
 leave_broot = false
 ```
 
-Verbs are tried in order (the default ones after the user defined ones).
-You may thus define first verbs with extension filter and then a catching-all one.
+Verb definitions are tried in order until one has been executed, starting with user-defined verbs, then built-in verbs.
+Thus you may define both verbs with extension filters and a catch-all verb.
 
 # Shortcuts and Verb search
 
@@ -487,7 +487,7 @@ Some internal actions can be bound to a key shortcut but can't be called explici
 
 name | default binding | behavior
 -|-|-
-:input_clear | | empty the input,
+:input_clear | | empty the input
 :input_del_char_left | <kbd>delete</kbd> | delete the char left of the cursor
 :input_del_char_below | <kbd>suppr</kbd> | delete the char left at the cursor's position
 :input_del_word_left | - | delete the word left of the cursor
@@ -609,7 +609,7 @@ apply_to = "directory"
 This verb, which is only available when a directory is selected, copies this directory with a name partially composed from the command and focus the new directory in a new panel
 
 !!!	Note
-	The `cmd` execution type is still experimental in verbs and the precise behavior may change in future minor versions of broot
+	The `cmd` execution type is still experimental in verbs and the precise behavior may change in future minor versions of broot.
 
 
 
