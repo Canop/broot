@@ -1,10 +1,11 @@
-### next
+### v1.48.0 - 2025-08-29
+<a name="v1.48.0"></a>
+- Support for the 'Cmd' modifier in key shortcuts (the key is called 'Command', 'Super', 'Apple', 'Windows', depending on systems and users)
 - "filesystem" features have been made available for Mac:
     - the `:fs` screen, listing filesystems
     - filesystem free space & total space displayed when size computations are requested
     - device id displayed with `:toggle_device_id` (shortcut: "dev")
 - Fix `.config/git/ignore` not being loaded on Mac - Fix #1032 - Thanks @9999years
-- Support for the 'Cmd' modifier in key shortcuts (the key is called 'Command', 'Super', 'Apple', 'Windows', depending on systems and users)
 
 ### v1.47.0 - 2025-06-26
 <a name="v1.47.0"></a>
