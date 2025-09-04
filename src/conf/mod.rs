@@ -47,7 +47,7 @@ fn find_conf_dir() -> PathBuf {
 #[cfg(target_os = "macos")]
 fn find_conf_dir() -> PathBuf {
     if let Some(env_dir) = env_conf_dir() {
-        return env_dir;
+        env_dir
     } else if let Some(user_dirs) = directories::UserDirs::new() {
         // We first search in ~/.config/broot which should be the preferred solution
         let preferred = user_dirs.home_dir().join(".config/broot");
@@ -65,7 +65,7 @@ fn find_conf_dir() -> PathBuf {
             return second_choice;
         }
         // Either the config has been scraped or it's a new installation
-        return preferred;
+        preferred
     } else {
         // there's no home. There are probably other problems too but here we
         // are just looking for a place for our config, not for a shelter for all

@@ -70,7 +70,7 @@ impl SourceImage {
         };
         Ok(img)
     }
-    pub fn optimal(&self) -> Result<Cow<DynamicImage>, ProgramError> {
+    pub fn optimal(&self) -> Result<Cow<'_, DynamicImage>, ProgramError> {
         let cow = match self {
             Self::Bitmap(img) => Cow::Borrowed(img),
             Self::Svg(tree) => Cow::Owned(

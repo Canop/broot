@@ -49,7 +49,7 @@ switch_terminal | `true` | whether to switch from alternate to normal terminal d
 The execution is defined either by `internal`, `external` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
 
 !!!	Note
-	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example `cd` is a shell builtin which must be executed in the parent shell.
+	The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example, `cd` is a shell builtin which must be executed in the parent shell.
 
 # Call shell scripts
 
@@ -118,7 +118,7 @@ external = ["xterm", "-e", "nvim {file}"]
 
 You may filter the execution of a verb with file extensions.
 
-For example, if you'd want <kbd>enter</kbd> to work as predefined in most cases but just choose a specific action for some files, you might add this verb definition:
+For example, if you want <kbd>enter</kbd> to work as predefined in most cases but just choose a specific action for some files, you might add this verb definition:
 
 ```hjson
 {
@@ -144,8 +144,8 @@ working_dir = "{root}"
 leave_broot = false
 ```
 
-Verbs are tried in order (the default ones after the user defined ones).
-You may thus define first verbs with extension filter and then a catching-all one.
+Verb definitions are tried in order until one has been executed, starting with user-defined verbs, then built-in verbs.
+Thus you may define both verbs with extension filters and a catch-all verb.
 
 # Shortcuts and Verb search
 
@@ -422,6 +422,7 @@ invocation | default key | default shortcut | behavior / details
 :preview_binary | - | - | preview the selection as binary
 :preview_image | - | - | preview the selection as image
 :preview_text | - | - | preview the selection as text
+:preview_tty | - | - | preview the selection as tty (with ANSI escape codes)
 :previous_dir | - | - | select the previous directory
 :previous_match | - | - | select the previous match
 :previous_same_depth | - | - | select the previous file at the same depth
@@ -454,9 +455,9 @@ invocation | default key | default shortcut | behavior / details
 :toggle_device_id | - | - | toggle display of device id (unix only)
 :toggle_files | - | - | toggle showing files (or just folders)
 :toggle_git_file_info | - | - | toggle display of git file information
-:toggle_git_ignore | - | - | toggle git ignore handling (auto, no or yes)
 :toggle_git_status | - | - | toggle showing only the file which would show up on `git status`
 :toggle_hidden | - | - | toggle display of hidden files (the ones whose name starts with a dot on linux)
+:toggle_ignore | - | - | toggle display of files in .gitignore and .ignore
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_preview | - | - | toggle display of the preview panel
 :toggle_root_fs | - | - | toggle showing filesystem info on top
@@ -486,7 +487,7 @@ Some internal actions can be bound to a key shortcut but can't be called explici
 
 name | default binding | behavior
 -|-|-
-:input_clear | | empty the input,
+:input_clear | | empty the input
 :input_del_char_left | <kbd>delete</kbd> | delete the char left of the cursor
 :input_del_char_below | <kbd>suppr</kbd> | delete the char left at the cursor's position
 :input_del_word_left | - | delete the word left of the cursor
@@ -608,7 +609,7 @@ apply_to = "directory"
 This verb, which is only available when a directory is selected, copies this directory with a name partially composed from the command and focus the new directory in a new panel
 
 !!!	Note
-	The `cmd` execution type is still experimental in verbs and the precise behavior may change in future minor versions of broot
+	The `cmd` execution type is still experimental in verbs and the precise behavior may change in future minor versions of broot.
 
 
 

@@ -27,6 +27,10 @@ use {
     git2::Status,
     std::io::Write,
     termimad::{CompoundStyle, ProgressBar},
+    unicode_width::{
+        UnicodeWidthStr,
+        UnicodeWidthChar,
+    },
 };
 
 /// A tree wrapper which can be used either
@@ -116,7 +120,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         })
     }
 
-    #[cfg(unix)]
+    #[cfg(any(target_os="linux", target_os = "macos"))]
     fn write_line_device_id<W: Write>(
         &self,
         cw: &mut CropWriter<W>,
@@ -415,7 +419,27 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             }
         }
         let title = line.path.to_string_lossy();
-        cw.queue_str(style, &title)?;
+        let title_len = UnicodeWidthStr::width(title.as_ref());
+        if title_len > cw.allowed {
+            cw.queue_char(style, '…')?;
+            // we take the last chars making up to allowed - 1 columns
+            // we'll assume there's no backspace
+            let mut width = 0;
+            let mut bytes = 0;
+            for c in title.chars().rev() {
+                let char_width = c.width().unwrap_or(0);
+                if width + char_width > cw.allowed - 1 {
+                    break;
+                }
+                width += char_width;
+                bytes += c.len_utf8();
+            }
+            let right_cropped_title = &title[title.len() - bytes..];
+            cw.queue_str(style, right_cropped_title)?;
+        } else {
+            cw.queue_str(style, &title)?;
+        }
+
         if self.in_app && !cw.is_full() {
             if let ComputationResult::Done(git_status) = &self.tree.git_status {
                 let git_status_display = GitStatusDisplay::from(
@@ -425,7 +449,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 );
                 git_status_display.write(cw, selected)?;
             }
-            #[cfg(unix)]
+            #[cfg(any(target_os="linux", target_os = "macos"))]
             if self.tree.options.show_root_fs {
                 if let Some(mount) = line.mount() {
                     let fs_space_display = crate::filesystems::MountSpaceDisplay::from(
@@ -556,10 +580,10 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                         }
 
                         Col::DeviceId => {
-                            #[cfg(not(unix))]
+                            #[cfg(not(any(target_os="linux", target_os = "macos")))]
                             { 0 }
 
-                            #[cfg(unix)]
+                            #[cfg(any(target_os="linux", target_os = "macos"))]
                             self.write_line_device_id(cw, line, selected)?
                         }
 

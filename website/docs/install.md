@@ -20,8 +20,8 @@ fetch("../download/version")
 [CHANGELOG](https://github.com/Canop/broot/blob/main/CHANGELOG.md)
 
 
-!!! Note
-	**Windows users:** broot may need additional rights at first use in order to write its configuration file.
+!!! note "Windows users"
+    broot may need additional rights at first use in order to write its configuration file.
 	Some users on Windows also report problems with the colon; remember that a space can be used instead of a colon.
 	You should also use a modern terminal, for example the [new Microsoft one](https://github.com/microsoft/terminal)
 

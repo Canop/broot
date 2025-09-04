@@ -27,7 +27,7 @@ If you don't want to hide those files, you may either
 2. set the flags directly in your config file: see [default flags](../conf_file/#default-flags)
 3. toggle hiding when in the application
 
-The toggle commands are `:toggle_hidden` (shortcut: `:h`)  and `:toggle_git_ignore` (shortcut: `:gi`).
+The toggle commands are `:toggle_hidden` (shortcut: `:h`)  and `:toggle_ignore` (shortcut: `:gi`).
 
 If you use those toggles frequently enough, you'll remember the <kbd>alt</kbd><kbd>h</kbd> <kbd>alt</kbd><kbd>i</kbd> key combinations.
 
@@ -140,7 +140,7 @@ Each of those toggles lets you alternate between 2 or 3 modes.
  | toggle_dates         | dates    |       | toggle showing last modified dates (deep computed)
  | toggle_files         | files    |       | toggle showing files (or just folders)
  | toggle_git_file_info | gf       |       | toggle display of git file information
- | toggle_git_ignore    | gi       | <kbd>alt</kbd><kbd>i</kbd> | toggle use of .gitignore and .ignore
+ | toggle_ignore        | gi       | <kbd>alt</kbd><kbd>i</kbd> | toggle use of .gitignore and .ignore
  | toggle_hidden        | h        | <kbd>alt</kbd><kbd>h</kbd> | toggle showing hidden files
  | toggle_perm          | perm     |       | toggle showing file permissions (Unix only)
  | toggle_sizes         | sizes    |       | toggle showing sizes

@@ -1,3 +1,18 @@
+### v1.48.0 - 2025-08-29
+<a name="v1.48.0"></a>
+- Support for the 'Cmd' modifier in key shortcuts (the key is called 'Command', 'Super', 'Apple', 'Windows', depending on systems and users)
+- "filesystem" features have been made available for Mac:
+    - the `:fs` screen, listing filesystems
+    - filesystem free space & total space displayed when size computations are requested
+    - device id displayed with `:toggle_device_id` (shortcut: "dev")
+- Fix `.config/git/ignore` not being loaded on Mac - Fix #1032 - Thanks @9999years
+
+### v1.47.0 - 2025-06-26
+<a name="v1.47.0"></a>
+- text files with control chars were previously previewed as binary. They're now displayed as text with some '�' when needed - Fix #977
+- files with ANSI escape codes (such as the one you would obtain with `dysk --color yes > ansi.txt` can now be previewed with `:preview_tty` - Fix #1019
+- first line of the tree is cropped (right aligned) when it doesn't fit
+
 ### v1.46.5 - 2025-05-30
 <a name="v1.46.5"></a>
 - fix `:focus some/path` called in a command sequence always opening new panel - Fix #1014
@@ -32,7 +47,7 @@
 
 ### v1.45.0 - 2025-03-17
 <a name="v1.45.0"></a>
--  Fix total search impossible to redo after refresh - Fix #986
+- Fix total search impossible to redo after refresh - Fix #986
 - With `refresh_after: false`, a verb configuration can request that the tree isn't refreshed after its execution - Fix #987
 
 ### v1.44.7 - 2025-02-12
@@ -530,7 +545,7 @@ Note: The released archive doesn't include an Android build - see https://github
 - fix `:filesystems` view not listing disks whose mount point has a space character
 - fix panic on searching `cr/.*` if a file starts with an empty line - Fix #406
 - fix preview of linux pseudo-files
-- identify "RAM" and "crypted" disks in `:filesystems` view
+- identify "RAM" and "encrypted" disks in `:filesystems` view
 
 <a name="v1.6.0"></a>
 ### v1.6.0 - 2021-06-16

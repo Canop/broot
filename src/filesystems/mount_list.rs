@@ -23,8 +23,8 @@ impl MountList {
     /// try to load the mounts if they aren't loaded.
     pub fn load(&mut self) -> Result<&Vec<Mount>, ProgramError> {
         if self.mounts.is_none() {
-            let mut options = ReadOptions::default();
-            options.remote_stats(false);
+            let options = ReadOptions::default()
+                .remote_stats(false);
             match read_mounts(&options) {
                 Ok(mut vec) => {
                     debug!("{} mounts loaded", vec.len());

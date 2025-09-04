@@ -489,9 +489,9 @@ impl Tree {
                 // we'll try to keep the same path selected
                 let selected_path = self.selected_line().path.to_path_buf();
                 self.lines[1..].sort_by(|a, b| {
-                    let acount = a.sum.map_or(0, |s| s.to_count());
+                    let account = a.sum.map_or(0, |s| s.to_count());
                     let bcount = b.sum.map_or(0, |s| s.to_count());
-                    bcount.cmp(&acount)
+                    bcount.cmp(&account)
                 });
                 self.try_select_path(&selected_path);
             }

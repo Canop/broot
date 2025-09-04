@@ -107,7 +107,7 @@ fn path_from_input(
 ) -> PathBuf {
     match (input_arg, internal_exec.arg.as_ref()) {
         (Some(input_arg), Some(verb_arg)) => {
-            // The verb probably defines some patttern which uses the input.
+            // The verb probably defines some pattern which uses the input.
             // For example:
             // {
             //     invocation: "gotar {path}"

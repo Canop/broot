@@ -34,8 +34,21 @@ watch = ["benches"]
 command = ["cargo", "+nightly", "miri", "run"]
 need_stdout = true
 
-[jobs.win]
-command = ["cross", "build", "--target", "x86_64-pc-windows-gnu", "--release", "--features", "clipboard"]
+[jobs.windows]
+command = [
+	"cross", "build",
+	"--target", "x86_64-pc-windows-gnu",
+	"--release",
+	"--features", "clipboard"
+]
+
+[jobs.netbsd]
+command = [
+	"cross", "build",
+	"--target", "x86_64-unknown-netbsd",
+	"--release",
+	"--features", "clipboard, trash"
+]
 
 [jobs.light]
 command = ["cargo", "check"]
@@ -62,6 +75,7 @@ command = [
 	"-A", "clippy::vec_init_then_push",
 	"-W", "clippy::explicit_iter_loop",
 	"-A", "clippy::unnecessary_map_or",
+	"-A", "clippy::uninlined_format_args",
 ]
 need_stdout = false
 
@@ -75,4 +89,4 @@ i = "job:initial"
 c = "job:clippy"
 d = "job:doc-open"
 t = "job:test"
-r = "job:run"
+r = "job:check-all"

@@ -38,7 +38,7 @@ impl Default for Syntaxer {
 impl Syntaxer {
     pub fn available_themes(
         &self
-    ) -> std::collections::btree_map::Keys<String, Theme> {
+    ) -> std::collections::btree_map::Keys<'_, String, Theme> {
         self.theme_set.themes.keys()
     }
 
