@@ -30,7 +30,7 @@ If there's a problem and you want to install it again run
 #[derive(Debug, Clone, Copy, clap::ValueEnum)]
 pub enum ShellInstallState {
     NotInstalled, // before any install, this is the initial state
-    Refused, // user doesn't want anything to be installed
+    Refused,      // user doesn't want anything to be installed
     Obsolete,
     UpToDate,
 }
@@ -50,7 +50,9 @@ impl ShellInstallState {
         conf::dir().join("launcher").join("refused")
     }
     pub fn get_installed_path(version: usize) -> PathBuf {
-        conf::dir().join("launcher").join(format!("installed-v{version}"))
+        conf::dir()
+            .join("launcher")
+            .join(format!("installed-v{version}"))
     }
     pub fn detect() -> Self {
         let current = Self::get_installed_path(CURRENT_VERSION);
@@ -83,7 +85,10 @@ impl ShellInstallState {
     /// or test scripts when we don't want the user to be prompted
     /// to install the function, or in case something doesn't properly
     /// work in shell detections
-    pub fn write(self, si: &ShellInstall) -> Result<(), ShellInstallError> {
+    pub fn write(
+        self,
+        si: &ShellInstall,
+    ) -> Result<(), ShellInstallError> {
         Self::remove(si)?;
         match self {
             ShellInstallState::Refused => {
@@ -107,4 +112,3 @@ impl ShellInstallState {
         Ok(())
     }
 }
-

@@ -45,10 +45,16 @@ pub enum SelInfo<'s> {
 }
 
 impl SelectionType {
-    pub fn respects(self, constraint: Self) -> bool {
+    pub fn respects(
+        self,
+        constraint: Self,
+    ) -> bool {
         constraint == Self::Any || self == constraint
     }
-    pub fn is_respected_by(self, sel_type: Option<Self>) -> bool {
+    pub fn is_respected_by(
+        self,
+        sel_type: Option<Self>,
+    ) -> bool {
         match (self, sel_type) {
             (Self::File, Some(Self::File)) => true,
             (Self::Directory, Some(Self::Directory)) => true,
@@ -65,9 +71,7 @@ impl SelectionType {
     }
 }
 
-
 impl Selection<'_> {
-
     /// build a CmdResult with a launchable which will be used to
     /// open the relevant file the best possible way
     pub fn to_opener(
@@ -97,14 +101,12 @@ impl Selection<'_> {
 
 impl<'a> SelInfo<'a> {
     pub fn from_path(path: &'a Path) -> Self {
-        Self::One(
-            Selection {
-                stype: SelectionType::from(path),
-                line: 0,
-                path,
-                is_exe: false, // OK, I don't know
-            }
-        )
+        Self::One(Selection {
+            stype: SelectionType::from(path),
+            line: 0,
+            path,
+            is_exe: false, // OK, I don't know
+        })
     }
     pub fn count_paths(&self) -> usize {
         match self {
@@ -113,7 +115,10 @@ impl<'a> SelInfo<'a> {
             SelInfo::More(stage) => stage.len(),
         }
     }
-    pub fn is_accepted_by(&self, condition: FileTypeCondition) -> bool {
+    pub fn is_accepted_by(
+        &self,
+        condition: FileTypeCondition,
+    ) -> bool {
         match self {
             SelInfo::None => true,
             SelInfo::One(sel) => condition.accepts_path(sel.path),
@@ -156,8 +161,7 @@ impl<'a> SelInfo<'a> {
             SelInfo::None => None,
             SelInfo::One(sel) => sel.path.extension().and_then(|e| e.to_str()),
             SelInfo::More(stage) => {
-                let common_extension = stage.paths()[0]
-                    .extension().and_then(|e| e.to_str());
+                let common_extension = stage.paths()[0].extension().and_then(|e| e.to_str());
                 #[allow(clippy::question_mark)]
                 if common_extension.is_none() {
                     return None;

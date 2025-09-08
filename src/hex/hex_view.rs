@@ -2,14 +2,21 @@ use {
     super::byte::Byte,
     crate::{
         command::ScrollCommand,
-        display::{Screen, W},
+        display::{
+            Screen,
+            W,
+        },
         errors::ProgramError,
         skin::PanelSkin,
     },
     crokey::crossterm::{
-        cursor,
-        style::{Color, Print, SetForegroundColor},
         QueueableCommand,
+        cursor,
+        style::{
+            Color,
+            Print,
+            SetForegroundColor,
+        },
     },
     memmap2::Mmap,
     std::{
@@ -17,9 +24,12 @@ use {
         io,
         path::PathBuf,
     },
-    termimad::{Area, CropWriter, SPACE_FILLING},
+    termimad::{
+        Area,
+        CropWriter,
+        SPACE_FILLING,
+    },
 };
-
 
 pub struct HexLine {
     pub bytes: Vec<u8>, // from 1 to 16 bytes
@@ -75,7 +85,10 @@ impl HexView {
         let mmap = unsafe { Mmap::map(&file)? };
         let new_len = mmap.len();
         if new_len != self.len {
-            warn!("previewed file len changed from {} to {}", self.len, new_len);
+            warn!(
+                "previewed file len changed from {} to {}",
+                self.len, new_len
+            );
             self.len = new_len;
         }
         let mut start_idx = 16 * start_line_idx;
@@ -116,8 +129,7 @@ impl HexView {
         let mut chars_middle_space = false;
         let mut inter_hex = false;
         let mut chars = false;
-        const MIN: i32 =
-            1    // margin
+        const MIN: i32 = 1    // margin
             + 32 // 32 hex
             + 1; // scrollbar
         let mut rem = area.width as i32 - MIN;
@@ -150,7 +162,9 @@ impl HexView {
             //rem -= 2;
         }
         let scrollbar = area.scrollbar(self.scroll, self.line_count());
-        let scrollbar_fg = styles.scrollbar_thumb.get_fg()
+        let scrollbar_fg = styles
+            .scrollbar_thumb
+            .get_fg()
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
         for y in 0..line_count {
@@ -241,7 +255,10 @@ impl HexView {
     }
 }
 
-fn is_thumb(y: u16, scrollbar: Option<(u16, u16)>) -> bool {
+fn is_thumb(
+    y: u16,
+    scrollbar: Option<(u16, u16)>,
+) -> bool {
     if let Some((sctop, scbottom)) = scrollbar {
         if sctop <= y && y <= scbottom {
             return true;

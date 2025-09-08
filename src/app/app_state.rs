@@ -1,10 +1,7 @@
 use {
-    crate::{
-        stage::Stage,
-    },
+    crate::stage::Stage,
     std::path::PathBuf,
 };
-
 
 /// global mutable state
 #[derive(Debug)]
@@ -25,9 +22,7 @@ pub struct AppState {
 }
 
 impl AppState {
-    pub fn new<P: Into<PathBuf>>(
-        root: P,
-    ) -> Self {
+    pub fn new<P: Into<PathBuf>>(root: P) -> Self {
         Self {
             stage: Stage::default(),
             root: root.into(),

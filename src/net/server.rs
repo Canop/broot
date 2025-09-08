@@ -1,15 +1,18 @@
 use {
     super::Message,
     crate::{
-        errors::NetError,
         command::Sequence,
+        errors::NetError,
     },
     std::{
         fs,
         io::BufReader,
         os::unix::net::UnixListener,
         path::PathBuf,
-        sync::{Arc, Mutex},
+        sync::{
+            Arc,
+            Mutex,
+        },
         thread,
     },
     termimad::crossbeam::channel::Sender,

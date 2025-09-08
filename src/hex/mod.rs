@@ -1,5 +1,3 @@
-
-
 mod byte;
 mod hex_view;
 

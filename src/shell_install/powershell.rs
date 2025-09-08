@@ -9,10 +9,19 @@
 //! - a line to source the link in %USERPROFILE%/Documents/WindowsPowerShell/Profile.ps1
 
 use {
-    super::{util, ShellInstall},
-    crate::{conf, errors::*},
+    super::{
+        ShellInstall,
+        util,
+    },
+    crate::{
+        conf,
+        errors::*,
+    },
     directories::UserDirs,
-    std::{fs, path::PathBuf},
+    std::{
+        fs,
+        path::PathBuf,
+    },
     termimad::mad_print_inline,
 };
 

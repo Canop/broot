@@ -3,7 +3,10 @@ use {
     crate::{
         cli::Args,
         conf::Conf,
-        display::{Cols, DEFAULT_COLS},
+        display::{
+            Cols,
+            DEFAULT_COLS,
+        },
         errors::ConfError,
         pattern::*,
     },
@@ -16,12 +19,12 @@ use {
 #[derive(Debug, Clone)]
 pub struct TreeOptions {
     pub show_selection_mark: bool, // whether to have a triangle left of selected line
-    pub show_hidden: bool, // whether files whose name starts with a dot should be shown
-    pub only_folders: bool, // whether to hide normal files and links
-    pub show_counts: bool, // whether to show the number of files (> 1 only for dirs)
-    pub show_dates: bool,  // whether to show the last modified date
-    pub show_sizes: bool,  // whether to show sizes of files and dirs
-    pub max_depth: Option<u16>,  // the maximum directory depth to recurse to
+    pub show_hidden: bool,         // whether files whose name starts with a dot should be shown
+    pub only_folders: bool,        // whether to hide normal files and links
+    pub show_counts: bool,         // whether to show the number of files (> 1 only for dirs)
+    pub show_dates: bool,          // whether to show the last modified date
+    pub show_sizes: bool,          // whether to show sizes of files and dirs
+    pub max_depth: Option<u16>,    // the maximum directory depth to recurse to
     pub show_git_file_info: bool,
     pub show_device_id: bool,
     pub show_root_fs: bool, // show information relative to the fs of the root
@@ -32,7 +35,7 @@ pub struct TreeOptions {
     pub pattern: InputPattern, // an optional filtering/scoring pattern
     pub date_time_format: &'static str,
     pub sort: Sort,
-    pub show_tree: bool, // whether to show the tree
+    pub show_tree: bool,  // whether to show the tree
     pub cols_order: Cols, // order of columns
     pub show_matching_characters_on_path_searches: bool,
 }
@@ -60,7 +63,8 @@ impl TreeOptions {
             sort: self.sort,
             show_tree: self.show_tree,
             cols_order: self.cols_order,
-            show_matching_characters_on_path_searches: self.show_matching_characters_on_path_searches,
+            show_matching_characters_on_path_searches: self
+                .show_matching_characters_on_path_searches,
         }
     }
     /// counts must be computed, either for sorting or just for display
@@ -80,12 +84,18 @@ impl TreeOptions {
     }
     /// this method does not exist, you saw nothing
     /// (at least don't call it other than with the config, once)
-    pub fn set_date_time_format(&mut self, format: String) {
+    pub fn set_date_time_format(
+        &mut self,
+        format: String,
+    ) {
         self.date_time_format = Box::leak(format.into_boxed_str());
     }
     /// change tree options according to configuration
     /// (but not the default_flags part, which is handled separately)
-    pub fn apply_config(&mut self, config: &Conf) -> Result<(), ConfError> {
+    pub fn apply_config(
+        &mut self,
+        config: &Conf,
+    ) -> Result<(), ConfError> {
         if let Some(b) = config.show_selection_mark {
             self.show_selection_mark = b;
         }
@@ -104,22 +114,27 @@ impl TreeOptions {
         Ok(())
     }
     /// apply flags like "sdp"
-    pub fn apply_flags(&mut self, flags: &str) -> Result<(), &'static str> {
+    pub fn apply_flags(
+        &mut self,
+        flags: &str,
+    ) -> Result<(), &'static str> {
         if !regex_is_match!("^[a-zA-Z]+$", flags) {
             return Err("Flags must be a sequence of letters");
         }
         let prefixed = format!("-{flags}");
         let tokens = vec!["broot", &prefixed];
-        let args = Args::try_parse_from(tokens)
-            .map_err(|_| {
-                warn!("invalid flags: {:?}", flags);
-                "invalid flag (valid flags are -dDfFgGhHiIpPsSwWtT)"
-            })?;
+        let args = Args::try_parse_from(tokens).map_err(|_| {
+            warn!("invalid flags: {:?}", flags);
+            "invalid flag (valid flags are -dDfFgGhHiIpPsSwWtT)"
+        })?;
         self.apply_launch_args(&args);
         Ok(())
     }
     /// change tree options according to broot launch arguments
-    pub fn apply_launch_args(&mut self, cli_args: &Args) {
+    pub fn apply_launch_args(
+        &mut self,
+        cli_args: &Args,
+    ) {
         if cli_args.sizes {
             self.show_sizes = true;
             self.show_root_fs = true;

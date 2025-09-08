@@ -1,8 +1,6 @@
 use {
     super::svg,
-    crate::{
-        errors::ProgramError,
-    },
+    crate::errors::ProgramError,
     image::{
         DynamicImage,
         GenericImageView,
@@ -46,8 +44,8 @@ impl SourceImage {
             Self::Bitmap(img) => img.dimensions(),
             Self::Svg(tree) => (
                 f32_to_u32(tree.size().width()),
-                f32_to_u32(tree.size().height())
-            )
+                f32_to_u32(tree.size().height()),
+            ),
         }
     }
     pub fn fitting(
@@ -73,9 +71,12 @@ impl SourceImage {
     pub fn optimal(&self) -> Result<Cow<'_, DynamicImage>, ProgramError> {
         let cow = match self {
             Self::Bitmap(img) => Cow::Borrowed(img),
-            Self::Svg(tree) => Cow::Owned(
-                svg::render_tree(tree, MAX_SVG_BITMAP_WIDTH, MAX_SVG_BITMAP_HEIGHT, None)?
-            ),
+            Self::Svg(tree) => Cow::Owned(svg::render_tree(
+                tree,
+                MAX_SVG_BITMAP_WIDTH,
+                MAX_SVG_BITMAP_HEIGHT,
+                None,
+            )?),
         };
         Ok(cow)
     }

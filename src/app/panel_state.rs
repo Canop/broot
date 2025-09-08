@@ -15,7 +15,10 @@ use {
         verb::*,
     },
     std::{
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
         str::FromStr,
     },
 };
@@ -23,10 +26,12 @@ use {
 /// a panel state, stackable to allow reverting
 ///  to a previous one
 pub trait PanelState {
-
     fn get_type(&self) -> PanelStateType;
 
-    fn set_mode(&mut self, mode: Mode);
+    fn set_mode(
+        &mut self,
+        mode: Mode,
+    );
     fn get_mode(&self) -> Mode;
 
     /// called on start of on_command
@@ -117,11 +122,9 @@ pub trait PanelState {
                 if let Some(flags) = flags {
                     self.with_new_options(
                         screen,
-                        &|o| {
-                            match o.apply_flags(flags) {
-                                Ok(()) => "*flags applied*",
-                                Err(e) => e,
-                            }
+                        &|o| match o.apply_flags(flags) {
+                            Ok(()) => "*flags applied*",
+                            Err(e) => e,
                         },
                         bang,
                         con,
@@ -167,34 +170,48 @@ pub trait PanelState {
                 );
                 CmdResult::ChangeLayout(LayoutInstruction::MoveDivider { divider, dx })
             }
-            Internal::default_layout => {
-                CmdResult::ChangeLayout(LayoutInstruction::Clear)
-            }
+            Internal::default_layout => CmdResult::ChangeLayout(LayoutInstruction::Clear),
             Internal::set_panel_width => {
                 let SetPanelWidthArgs { panel, width } = get_arg(
                     input_invocation,
                     internal_exec,
-                    SetPanelWidthArgs { panel: 0, width: 100 },
+                    SetPanelWidthArgs {
+                        panel: 0,
+                        width: 100,
+                    },
                 );
                 CmdResult::ChangeLayout(LayoutInstruction::SetPanelWidth { panel, width })
             }
             #[cfg(feature = "trash")]
+            #[cfg(any(
+                target_os = "windows",
+                all(
+                    unix,
+                    not(target_os = "macos"),
+                    not(target_os = "ios"),
+                    not(target_os = "android")
+                )
+            ))]
             Internal::purge_trash => {
-                let res = trash::os_limited::list()
-                    .and_then(|items| {
-                        trash::os_limited::purge_all(items)
-                    });
+                let res =
+                    trash::os_limited::list().and_then(|items| trash::os_limited::purge_all(items));
                 match res {
                     Ok(()) => CmdResult::RefreshState { clear_cache: false },
                     Err(e) => CmdResult::DisplayError(format!("{e}")),
                 }
             }
             #[cfg(feature = "trash")]
+            #[cfg(any(
+                target_os = "windows",
+                all(
+                    unix,
+                    not(target_os = "macos"),
+                    not(target_os = "ios"),
+                    not(target_os = "android")
+                )
+            ))]
             Internal::open_trash => {
-                let trash_state = crate::trash::TrashState::new(
-                    self.tree_options(),
-                    con,
-                );
+                let trash_state = crate::trash::TrashState::new(self.tree_options(), con);
                 match trash_state {
                     Ok(state) => {
                         let bang = input_invocation
@@ -249,9 +266,7 @@ pub trait PanelState {
                         direction: HDir::Right,
                     }
                 } else {
-                    CmdResult::new_state(Box::new(
-                            HelpState::new(self.tree_options(), screen, con)
-                    ))
+                    CmdResult::new_state(Box::new(HelpState::new(self.tree_options(), screen, con)))
                 }
             }
             Internal::mode_input => self.on_mode_verb(Mode::Input, con),
@@ -320,20 +335,18 @@ pub trait PanelState {
             ),
             Internal::sort_by_type => self.with_new_options(
                 screen,
-                &|o| {
-                    match o.sort {
-                        Sort::TypeDirsFirst => {
-                           o.sort = Sort::TypeDirsLast;
-                           "*sorting by type, directories last*"
-                        }
-                        Sort::TypeDirsLast => {
-                            o.sort = Sort::None;
-                            "*not sorting anymore*"
-                        }
-                        _ => {
-                            o.sort = Sort::TypeDirsFirst;
-                           "*sorting by type, directories first*"
-                        }
+                &|o| match o.sort {
+                    Sort::TypeDirsFirst => {
+                        o.sort = Sort::TypeDirsLast;
+                        "*sorting by type, directories last*"
+                    }
+                    Sort::TypeDirsLast => {
+                        o.sort = Sort::None;
+                        "*not sorting anymore*"
+                    }
+                    _ => {
+                        o.sort = Sort::TypeDirsFirst;
+                        "*sorting by type, directories first*"
                     }
                 },
                 bang,
@@ -380,111 +393,97 @@ pub trait PanelState {
                 bang,
                 con,
             ),
-            Internal::toggle_counts => {
-                self.with_new_options(
-					screen,
-					&|o| {
-						o.show_counts ^= true;
-                        if o.show_counts {
-                            "*displaying file counts*"
-                        } else {
-                            "*hiding file counts*"
-                        }
-					},
-					bang,
-					con,
-				)
-            }
-            Internal::toggle_tree => {
-                self.with_new_options(
-                    screen,
-                    &|o| {
-                        o.show_tree ^= true;
-                        if o.show_tree {
-                            "*displaying tree structure (if possible)*"
-                        } else {
-                            "*displaying only current directory*"
-                        }
-                    },
-                    bang,
-                    con,
-                )
-            }
-            Internal::toggle_dates => {
-                self.with_new_options(
-					screen,
-					&|o| {
-						o.show_dates ^= true;
-                        if o.show_dates {
-                            "*displaying last modified dates*"
-                        } else {
-                            "*hiding last modified dates*"
-                        }
-					},
-					bang,
-					con,
-				)
-            }
-            Internal::toggle_device_id => {
-                self.with_new_options(
-					screen,
-					&|o| {
-						o.show_device_id ^= true;
-                        if o.show_device_id {
-                            "*displaying device id*"
-                        } else {
-                            "*hiding device id*"
-                        }
-					},
-					bang,
-					con,
-				)
-            }
-            Internal::toggle_files => {
-                self.with_new_options(
-					screen,
-					&|o| {
-                        o.only_folders ^= true;
-                        if o.only_folders {
-                            "*displaying only directories*"
-                        } else {
-                            "*displaying both files and directories*"
-                        }
-                    },
-					bang,
-					con,
-				)
-            }
-            Internal::toggle_hidden => {
-                self.with_new_options(
-					screen,
-					&|o| {
-						o.show_hidden ^= true;
-                        if o.show_hidden {
-                            "h:**y** - *Hidden files displayed*"
-                        } else {
-                            "h:**n** - *Hidden files not displayed*"
-                        }
-					},
-					bang,
-					con,
-				)
-            }
-            Internal::toggle_root_fs => {
-                self.with_new_options(
-					screen,
-					&|o| {
-						o.show_root_fs ^= true;
-                        if o.show_root_fs {
-                            "*displaying filesystem info for the tree's root directory*"
-                        } else {
-                            "*removing filesystem info*"
-                        }
-					},
-					bang,
-					con,
-				)
-            }
+            Internal::toggle_counts => self.with_new_options(
+                screen,
+                &|o| {
+                    o.show_counts ^= true;
+                    if o.show_counts {
+                        "*displaying file counts*"
+                    } else {
+                        "*hiding file counts*"
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_tree => self.with_new_options(
+                screen,
+                &|o| {
+                    o.show_tree ^= true;
+                    if o.show_tree {
+                        "*displaying tree structure (if possible)*"
+                    } else {
+                        "*displaying only current directory*"
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_dates => self.with_new_options(
+                screen,
+                &|o| {
+                    o.show_dates ^= true;
+                    if o.show_dates {
+                        "*displaying last modified dates*"
+                    } else {
+                        "*hiding last modified dates*"
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_device_id => self.with_new_options(
+                screen,
+                &|o| {
+                    o.show_device_id ^= true;
+                    if o.show_device_id {
+                        "*displaying device id*"
+                    } else {
+                        "*hiding device id*"
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_files => self.with_new_options(
+                screen,
+                &|o| {
+                    o.only_folders ^= true;
+                    if o.only_folders {
+                        "*displaying only directories*"
+                    } else {
+                        "*displaying both files and directories*"
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_hidden => self.with_new_options(
+                screen,
+                &|o| {
+                    o.show_hidden ^= true;
+                    if o.show_hidden {
+                        "h:**y** - *Hidden files displayed*"
+                    } else {
+                        "h:**n** - *Hidden files not displayed*"
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_root_fs => self.with_new_options(
+                screen,
+                &|o| {
+                    o.show_root_fs ^= true;
+                    if o.show_root_fs {
+                        "*displaying filesystem info for the tree's root directory*"
+                    } else {
+                        "*removing filesystem info*"
+                    }
+                },
+                bang,
+                con,
+            ),
             Internal::set_max_depth => {
                 let args = input_invocation.and_then(|inv| inv.args.as_ref());
 
@@ -506,76 +505,69 @@ pub trait PanelState {
                     CmdResult::error(":set_max_depth needs a depth as an argument")
                 }
             }
-            Internal::unset_max_depth => {
-                self.with_new_options(
-                        screen,
-                        &|o| {
-                        o.max_depth = None;
-                        "*cleared max depth*"
-                    },
-                    bang,
-                    con,
-                )
-            }
-            Internal::toggle_git_ignore | Internal::toggle_ignore => {
-                self.with_new_options(
-					screen,
-					&|o| {
-						o.respect_git_ignore ^= true;
-                        if o.respect_git_ignore {
-                            "gi:**y** - *applying gitignore rules*"
-                        } else {
-                            "gi:**n** - *not applying gitignore rules*"
-                        }
-					},
-					bang,
-					con,
-				)
-            }
-            Internal::toggle_git_file_info => {
-                self.with_new_options(
-					screen,
-					&|o| {
-						o.show_git_file_info ^= true;
-                        if o.show_git_file_info {
-                            "*displaying git info next to files*"
-                        } else {
-                            "*removing git file info*"
-                        }
-					},
-					bang,
-					con,
-				)
-            }
-            Internal::toggle_git_status => {
-                self.with_new_options(
-                    screen, &|o| {
-                        if o.filter_by_git_status {
-                            o.filter_by_git_status = false;
-                            "*not filtering according to git status anymore*"
-                        } else {
-                            o.filter_by_git_status = true;
-                            o.show_hidden = true;
-                            "*only displaying new or modified files*"
-                        }
-                    }, bang, con
-                )
-            }
-            Internal::toggle_perm => {
-                self.with_new_options(
-					screen,
-					&|o| {
-						o.show_permissions ^= true;
-                        if o.show_permissions {
-                            "*displaying file permissions*"
-                        } else {
-                            "*removing file permissions*"
-                        }
-					},
-					bang,
-					con,
-				)
-            }
+            Internal::unset_max_depth => self.with_new_options(
+                screen,
+                &|o| {
+                    o.max_depth = None;
+                    "*cleared max depth*"
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_git_ignore | Internal::toggle_ignore => self.with_new_options(
+                screen,
+                &|o| {
+                    o.respect_git_ignore ^= true;
+                    if o.respect_git_ignore {
+                        "gi:**y** - *applying gitignore rules*"
+                    } else {
+                        "gi:**n** - *not applying gitignore rules*"
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_git_file_info => self.with_new_options(
+                screen,
+                &|o| {
+                    o.show_git_file_info ^= true;
+                    if o.show_git_file_info {
+                        "*displaying git info next to files*"
+                    } else {
+                        "*removing git file info*"
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_git_status => self.with_new_options(
+                screen,
+                &|o| {
+                    if o.filter_by_git_status {
+                        o.filter_by_git_status = false;
+                        "*not filtering according to git status anymore*"
+                    } else {
+                        o.filter_by_git_status = true;
+                        o.show_hidden = true;
+                        "*only displaying new or modified files*"
+                    }
+                },
+                bang,
+                con,
+            ),
+            Internal::toggle_perm => self.with_new_options(
+                screen,
+                &|o| {
+                    o.show_permissions ^= true;
+                    if o.show_permissions {
+                        "*displaying file permissions*"
+                    } else {
+                        "*removing file permissions*"
+                    }
+                },
+                bang,
+                con,
+            ),
             Internal::toggle_sizes => self.with_new_options(
                 screen,
                 &|o| {
@@ -592,21 +584,19 @@ pub trait PanelState {
                 bang,
                 con,
             ),
-            Internal::toggle_trim_root => {
-                self.with_new_options(
-					screen,
-					&|o| {
-						o.trim_root ^= true;
-                        if o.trim_root {
-                            "*now trimming root from excess files*"
-                        } else {
-                            "*not trimming root files anymore*"
-                        }
-					},
-					bang,
-					con,
-				)
-            }
+            Internal::toggle_trim_root => self.with_new_options(
+                screen,
+                &|o| {
+                    o.trim_root ^= true;
+                    if o.trim_root {
+                        "*now trimming root from excess files*"
+                    } else {
+                        "*not trimming root files anymore*"
+                    }
+                },
+                bang,
+                con,
+            ),
             Internal::close_preview => {
                 if let Some(id) = cc.app.preview_panel {
                     CmdResult::ClosePanel {
@@ -618,9 +608,7 @@ pub trait PanelState {
                     CmdResult::Keep
                 }
             }
-            Internal::escape => {
-                CmdResult::HandleInApp(Internal::escape)
-            }
+            Internal::escape => CmdResult::HandleInApp(Internal::escape),
             Internal::focus_staging_area_no_open => {
                 CmdResult::HandleInApp(Internal::focus_staging_area_no_open)
             }
@@ -634,12 +622,8 @@ pub trait PanelState {
             Internal::panel_right | Internal::panel_right_no_open => {
                 CmdResult::HandleInApp(Internal::panel_right_no_open)
             }
-            Internal::toggle_second_tree => {
-                CmdResult::HandleInApp(Internal::toggle_second_tree)
-            }
-            Internal::toggle_watch => {
-                CmdResult::HandleInApp(Internal::toggle_watch)
-            }
+            Internal::toggle_second_tree => CmdResult::HandleInApp(Internal::toggle_second_tree),
+            Internal::toggle_watch => CmdResult::HandleInApp(Internal::toggle_watch),
             Internal::clear_stage => {
                 app_state.stage.clear();
                 if let Some(panel_id) = cc.app.stage_panel {
@@ -694,27 +678,24 @@ pub trait PanelState {
             }
             Internal::set_syntax_theme => CmdResult::HandleInApp(Internal::set_syntax_theme),
             Internal::print_path => print::print_paths(self.sel_info(app_state), con)?,
-            Internal::print_relative_path => print::print_relative_paths(self.sel_info(app_state), con)?,
+            Internal::print_relative_path => {
+                print::print_relative_paths(self.sel_info(app_state), con)?
+            }
             Internal::refresh => CmdResult::RefreshState { clear_cache: true },
             Internal::quit => CmdResult::Quit,
             Internal::clear_output => {
-                verb_clear_output(con)
-                    .unwrap_or_else(|e| CmdResult::DisplayError(format!("{e}")))
+                verb_clear_output(con).unwrap_or_else(|e| CmdResult::DisplayError(format!("{e}")))
             }
             Internal::write_output => {
                 let sel_info = self.sel_info(app_state);
                 let exec_builder = match input_invocation {
-                    Some(inv) => {
-                        ExecutionStringBuilder::with_invocation(
-                            invocation_parser,
-                            sel_info,
-                            app_state,
-                            inv.args.as_ref(),
-                        )
-                    }
-                    None => {
-                        ExecutionStringBuilder::without_invocation(sel_info, app_state)
-                    }
+                    Some(inv) => ExecutionStringBuilder::with_invocation(
+                        invocation_parser,
+                        sel_info,
+                        app_state,
+                        inv.args.as_ref(),
+                    ),
+                    None => ExecutionStringBuilder::without_invocation(sel_info, app_state),
                 };
                 if let Some(pattern) = internal_exec.arg.as_ref() {
                     let line = exec_builder.string(pattern, con);
@@ -727,9 +708,7 @@ pub trait PanelState {
                 }
                 CmdResult::Keep
             }
-            internal if internal.is_input_related() => {
-                CmdResult::HandleInApp(internal)
-            }
+            internal if internal.is_input_related() => CmdResult::HandleInApp(internal),
             _ => CmdResult::Keep,
         })
     }
@@ -810,17 +789,15 @@ pub trait PanelState {
             return Ok(CmdResult::error("This verb needs another panel"));
         }
         let res = match &verb.execution {
-            VerbExecution::Internal(internal_exec) => {
-                self.on_internal(
-                    w,
-                    verb.invocation_parser.as_ref(),
-                    internal_exec,
-                    invocation,
-                    trigger_type,
-                    app_state,
-                    cc,
-                )
-            }
+            VerbExecution::Internal(internal_exec) => self.on_internal(
+                w,
+                verb.invocation_parser.as_ref(),
+                internal_exec,
+                invocation,
+                trigger_type,
+                app_state,
+                cc,
+            ),
             VerbExecution::External(external) => {
                 self.execute_external(w, verb, external, invocation, app_state, cc)
             }
@@ -856,7 +833,8 @@ pub trait PanelState {
     ) -> Result<CmdResult, ProgramError> {
         let sel_info = self.sel_info(app_state);
         if let Some(invocation) = &invocation {
-            if let Some(error) = verb.check_args(sel_info, invocation, &app_state.other_panel_path) {
+            if let Some(error) = verb.check_args(sel_info, invocation, &app_state.other_panel_path)
+            {
                 debug!("verb.check_args prevented execution: {:?}", &error);
                 return Ok(CmdResult::error(error));
             }
@@ -888,7 +866,9 @@ pub trait PanelState {
             // sequences would be hard to execute as the execution on a file can change the
             // state in too many ways (changing selection, focused panel, parent, unstage or
             // stage files, removing the staged paths, etc.)
-            return Ok(CmdResult::error("sequences can't be executed on multiple selections"));
+            return Ok(CmdResult::error(
+                "sequences can't be executed on multiple selections",
+            ));
         }
         let exec_builder = ExecutionStringBuilder::with_invocation(
             verb.invocation_parser.as_ref(),
@@ -922,12 +902,10 @@ pub trait PanelState {
         match &cc.cmd {
             Command::Click(x, y) => self.on_click(*x, *y, screen, con),
             Command::DoubleClick(x, y) => self.on_double_click(*x, *y, screen, con),
-            Command::PatternEdit { raw, expr } => {
-                match InputPattern::new(raw.clone(), expr, con) {
-                    Ok(pattern) => self.on_pattern(pattern, app_state, con),
-                    Err(e) => Ok(CmdResult::DisplayError(format!("{e}"))),
-                }
-            }
+            Command::PatternEdit { raw, expr } => match InputPattern::new(raw.clone(), expr, con) {
+                Ok(pattern) => self.on_pattern(pattern, app_state, con),
+                Err(e) => Ok(CmdResult::DisplayError(format!("{e}"))),
+            },
             Command::VerbTrigger {
                 verb_id,
                 input_invocation,
@@ -958,16 +936,14 @@ pub trait PanelState {
                     sel_info,
                     Some(self.get_type()),
                 ) {
-                    PrefixSearchResult::Match(_, verb) => {
-                        self.execute_verb(
-                            w,
-                            verb,
-                            Some(invocation),
-                            TriggerType::Input(verb),
-                            app_state,
-                            cc,
-                        )
-                    }
+                    PrefixSearchResult::Match(_, verb) => self.execute_verb(
+                        w,
+                        verb,
+                        Some(invocation),
+                        TriggerType::Input(verb),
+                        app_state,
+                        cc,
+                    ),
                     _ => Ok(CmdResult::verb_not_found(&invocation.name)),
                 }
             }
@@ -1025,7 +1001,10 @@ pub trait PanelState {
 
     fn selection(&self) -> Option<Selection<'_>>;
 
-    fn sel_info<'c>(&'c self, _app_state: &'c AppState) -> SelInfo<'c> {
+    fn sel_info<'c>(
+        &'c self,
+        _app_state: &'c AppState,
+    ) -> SelInfo<'c> {
         // overloaded in stage_state
         match self.selection() {
             None => SelInfo::None,
@@ -1033,11 +1012,18 @@ pub trait PanelState {
         }
     }
 
-    fn has_at_least_one_selection(&self, _app_state: &AppState) -> bool {
+    fn has_at_least_one_selection(
+        &self,
+        _app_state: &AppState,
+    ) -> bool {
         true // overloaded in stage_state
     }
 
-    fn refresh(&mut self, screen: Screen, con: &AppContext) -> Command;
+    fn refresh(
+        &mut self,
+        screen: Screen,
+        con: &AppContext,
+    ) -> Command;
 
     fn tree_options(&self) -> TreeOptions;
 
@@ -1065,9 +1051,7 @@ pub trait PanelState {
         unreachable!();
     }
 
-    fn get_pending_task(
-        &self,
-    ) -> Option<&'static str> {
+    fn get_pending_task(&self) -> Option<&'static str> {
         None
     }
 
@@ -1086,7 +1070,11 @@ pub trait PanelState {
         String::new()
     }
 
-    fn set_selected_path(&mut self, _path: PathBuf, _con: &AppContext) {
+    fn set_selected_path(
+        &mut self,
+        _path: PathBuf,
+        _con: &AppContext,
+    ) {
         // this function is useful for preview states
     }
 
@@ -1097,9 +1085,7 @@ pub trait PanelState {
         _con: &AppContext,
         _width: usize, // available width
     ) -> Status {
-        Status::from_message(
-            "Hit *esc* to get back, or a space to start a verb"
-        )
+        Status::from_message("Hit *esc* to get back, or a space to start a verb")
     }
 
     fn get_status(
@@ -1110,8 +1096,14 @@ pub trait PanelState {
         width: usize,
     ) -> Status {
         match &cc.cmd {
-            Command::PatternEdit { .. } => self.no_verb_status(has_previous_state, cc.app.con, width),
-            Command::VerbEdit(invocation) | Command::VerbTrigger { input_invocation: Some(invocation), .. } => {
+            Command::PatternEdit { .. } => {
+                self.no_verb_status(has_previous_state, cc.app.con, width)
+            }
+            Command::VerbEdit(invocation)
+            | Command::VerbTrigger {
+                input_invocation: Some(invocation),
+                ..
+            } => {
                 if invocation.name.is_empty() {
                     Status::new(
                         "Type a verb then *enter* to execute it (*?* for the list of verbs)",
@@ -1160,7 +1152,8 @@ pub trait PanelState {
             if let VerbExecution::External(external) = &verb.execution {
                 if external.exec_mode != ExternalExecutionMode::StayInBroot {
                     return Status::new(
-                        "only verbs returning to broot on end can be executed on a multi-selection".to_owned(),
+                        "only verbs returning to broot on end can be executed on a multi-selection"
+                            .to_owned(),
                         true,
                     );
                 }
@@ -1171,18 +1164,12 @@ pub trait PanelState {
             Status::new(err, true)
         } else {
             Status::new(
-                verb.get_status_markdown(
-                    sel_info,
-                    app_state,
-                    invocation,
-                    cc.app.con,
-                ),
+                verb.get_status_markdown(sel_info, app_state, invocation, cc.app.con),
                 false,
             )
         }
     }
 }
-
 
 pub fn get_arg<T: Copy + FromStr>(
     verb_invocation: Option<&VerbInvocation>,
@@ -1195,5 +1182,3 @@ pub fn get_arg<T: Copy + FromStr>(
         .and_then(|s| s.parse::<T>().ok())
         .unwrap_or(default)
 }
-
-

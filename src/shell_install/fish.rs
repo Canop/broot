@@ -16,9 +16,14 @@
 
 use {
     super::ShellInstall,
-    crate::{conf, errors::*},
-    directories::BaseDirs,
-    directories::ProjectDirs,
+    crate::{
+        conf,
+        errors::*,
+    },
+    directories::{
+        BaseDirs,
+        ProjectDirs,
+    },
     std::path::PathBuf,
 };
 

@@ -7,4 +7,3 @@ pub use {
     image_view::ImageView,
     source_image::SourceImage,
 };
-

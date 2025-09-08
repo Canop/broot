@@ -1,6 +1,9 @@
 // Warning: this module can't import broot's stuff due to its use in build.rs
 use {
-    clap::{Parser, ValueEnum},
+    clap::{
+        Parser,
+        ValueEnum,
+    },
     std::{
         path::PathBuf,
         str::FromStr,
@@ -11,7 +14,6 @@ use {
 #[derive(Debug, Parser)]
 #[command(about, version, disable_version_flag = true, disable_help_flag = true)]
 pub struct Args {
-
     /// Print help information
     #[arg(long)]
     pub help: bool,
@@ -29,15 +31,15 @@ pub struct Args {
     pub dates: bool,
 
     /// Don't show the last modified date
-    #[arg(short='D', long)]
+    #[arg(short = 'D', long)]
     pub no_dates: bool,
 
-    #[arg(short='f', long)]
+    #[arg(short = 'f', long)]
     /// Only show folders
     pub only_folders: bool,
 
     /// Show folders and files alike
-    #[arg(short='F', long)]
+    #[arg(short = 'F', long)]
     pub no_only_folders: bool,
 
     /// Show filesystem info on top
@@ -49,46 +51,46 @@ pub struct Args {
     pub max_depth: Option<u16>,
 
     /// Show git statuses on files and stats on repo
-    #[arg(short='g', long)]
+    #[arg(short = 'g', long)]
     pub show_git_info: bool,
 
     /// Don't show git statuses on files and stats on repo
-    #[arg(short='G', long)]
+    #[arg(short = 'G', long)]
     pub no_show_git_info: bool,
 
     #[arg(long)]
     /// Only show files having an interesting git status, including hidden ones
     pub git_status: bool,
 
-    #[arg(short='h', long)]
+    #[arg(short = 'h', long)]
     /// Show hidden files
     pub hidden: bool,
 
-    #[arg(short='H', long)]
+    #[arg(short = 'H', long)]
     /// Don't show hidden files
     pub no_hidden: bool,
 
-    #[arg(short='i', long)]
+    #[arg(short = 'i', long)]
     /// Show git ignored files
     pub git_ignored: bool,
 
-    #[arg(short='I', long)]
+    #[arg(short = 'I', long)]
     /// Don't show git ignored files
     pub no_git_ignored: bool,
 
-    #[arg(short='p', long)]
+    #[arg(short = 'p', long)]
     /// Show permissions
     pub permissions: bool,
 
-    #[arg(short='P', long)]
+    #[arg(short = 'P', long)]
     /// Don't show permissions
     pub no_permissions: bool,
 
-    #[arg(short='s', long)]
+    #[arg(short = 's', long)]
     /// Show the size of files and directories
     pub sizes: bool,
 
-    #[arg(short='S', long)]
+    #[arg(short = 'S', long)]
     /// Don't show sizes
     pub no_sizes: bool,
 
@@ -133,15 +135,15 @@ pub struct Args {
     pub whale_spotting: bool,
 
     /// No sort, no show hidden, no show git ignored
-    #[arg(short='W', long)]
+    #[arg(short = 'W', long)]
     pub no_whale_spotting: bool,
 
     /// Trim the root too and don't show a scrollbar
-    #[arg(short='t', long)]
+    #[arg(short = 't', long)]
     pub trim_root: bool,
 
     /// Don't trim the root level, show a scrollbar
-    #[arg(short='T', long)]
+    #[arg(short = 'T', long)]
     pub no_trim_root: bool,
 
     /// Where to write the produced cmd (if any)
@@ -157,7 +159,7 @@ pub struct Args {
     pub cmd: Option<String>,
 
     /// Whether to have styles and colors
-    #[arg(long, default_value="auto", value_name = "color")]
+    #[arg(long, default_value = "auto", value_name = "color")]
     pub color: TriBool,
 
     /// Height (if you don't want to fill the screen or for file export)
@@ -201,17 +203,19 @@ pub struct Args {
 
 /// This is an Option<bool> but I didn't find any way to configure
 /// clap to parse an Option<T> as I want
-#[derive(ValueEnum)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(ValueEnum, Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TriBool {
     Auto,
     Yes,
     No,
 }
 impl TriBool {
-    pub fn unwrap_or_else<F>(self, f: F) -> bool
+    pub fn unwrap_or_else<F>(
+        self,
+        f: F,
+    ) -> bool
     where
-        F: FnOnce() -> bool
+        F: FnOnce() -> bool,
     {
         match self {
             Self::Auto => f(),
@@ -234,9 +238,7 @@ impl FromStr for CliShellInstallState {
             "undefined" => Ok(Self::Undefined),
             "refused" => Ok(Self::Refused),
             "installed" => Ok(Self::Installed),
-            _ => Err(
-                format!("unexpected install state: {state:?}")
-            ),
+            _ => Err(format!("unexpected install state: {state:?}")),
         }
     }
 }

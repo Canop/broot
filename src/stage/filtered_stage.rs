@@ -1,19 +1,20 @@
 use {
     super::*,
-    crate::{
-        pattern::*,
-    },
+    crate::pattern::*,
     std::{
         convert::TryFrom,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
     },
 };
 
 #[derive(Clone)]
 pub struct FilteredStage {
     stage_version: usize,
-    paths_idx: Vec<usize>, // indexes of the matching paths in the stage
-    pattern: InputPattern, // an optional filtering pattern
+    paths_idx: Vec<usize>,    // indexes of the matching paths in the stage
+    pattern: InputPattern,    // an optional filtering pattern
     selection: Option<usize>, // index in paths_idx, always in [0, paths_idx.len()[
 }
 
@@ -22,9 +23,14 @@ impl FilteredStage {
         Self::filtered(stage, InputPattern::none())
     }
     /// compute the paths_idx and maybe change the selection
-    fn compute(&mut self, stage: &Stage) {
+    fn compute(
+        &mut self,
+        stage: &Stage,
+    ) {
         if self.pattern.is_none() {
-            self.paths_idx = stage.paths().iter()
+            self.paths_idx = stage
+                .paths()
+                .iter()
                 .enumerate()
                 .map(|(idx, _)| idx)
                 .collect();
@@ -58,7 +64,10 @@ impl FilteredStage {
             }
         }
     }
-    pub fn filtered(stage: &Stage, pattern: InputPattern) -> Self {
+    pub fn filtered(
+        stage: &Stage,
+        pattern: InputPattern,
+    ) -> Self {
         let mut fs = Self {
             stage_version: stage.version(),
             paths_idx: Vec::new(),
@@ -70,7 +79,10 @@ impl FilteredStage {
     }
     /// check whether the stage has changed, and update the
     /// filtered list if necessary
-    pub fn update(&mut self, stage: &Stage) -> bool {
+    pub fn update(
+        &mut self,
+        stage: &Stage,
+    ) -> bool {
         if stage.version() == self.stage_version {
             false
         } else {
@@ -81,7 +93,11 @@ impl FilteredStage {
     /// change the pattern, keeping the selection if possible
     /// Assumes the stage didn't change (if it changed, we lose the
     /// selection)
-    pub fn set_pattern(&mut self, stage: &Stage, pattern: InputPattern) {
+    pub fn set_pattern(
+        &mut self,
+        stage: &Stage,
+        pattern: InputPattern,
+    ) {
         self.stage_version = stage.version(); // in case it changed
         self.pattern = pattern;
         self.compute(stage);
@@ -89,15 +105,23 @@ impl FilteredStage {
     pub fn len(&self) -> usize {
         self.paths_idx.len()
     }
-    pub fn path<'s>(&self, stage: &'s Stage, idx: usize) -> Option<&'s Path> {
+    pub fn path<'s>(
+        &self,
+        stage: &'s Stage,
+        idx: usize,
+    ) -> Option<&'s Path> {
         self.paths_idx
             .get(idx)
             .and_then(|&idx| stage.paths().get(idx))
             .map(PathBuf::as_path)
     }
-    pub fn path_sel<'s>(&self, stage: &'s Stage, idx: usize) -> Option<(&'s Path, bool)> {
+    pub fn path_sel<'s>(
+        &self,
+        stage: &'s Stage,
+        idx: usize,
+    ) -> Option<(&'s Path, bool)> {
         self.path(stage, idx)
-            .map(|p| (p, self.selection.map_or(false, |si| idx==si)))
+            .map(|p| (p, self.selection.map_or(false, |si| idx == si)))
     }
     pub fn pattern(&self) -> &InputPattern {
         &self.pattern
@@ -108,7 +132,10 @@ impl FilteredStage {
     pub fn has_selection(&self) -> bool {
         self.selection.is_some()
     }
-    pub fn try_select_idx(&mut self, idx: usize) -> bool {
+    pub fn try_select_idx(
+        &mut self,
+        idx: usize,
+    ) -> bool {
         if idx < self.paths_idx.len() {
             self.selection = Some(idx);
             true
@@ -116,7 +143,10 @@ impl FilteredStage {
             false
         }
     }
-    pub fn selected_path<'s>(&self, stage: &'s Stage) -> Option<&'s Path> {
+    pub fn selected_path<'s>(
+        &self,
+        stage: &'s Stage,
+    ) -> Option<&'s Path> {
         self.selection
             .and_then(|pi| self.paths_idx.get(pi))
             .and_then(|&idx| stage.paths().get(idx))
@@ -128,7 +158,10 @@ impl FilteredStage {
     /// unstage the selection, if any, or return false.
     /// If possible we select the item below so that the user
     /// may easily remove a few items
-    pub fn unstage_selection(&mut self, stage: &mut Stage) -> bool {
+    pub fn unstage_selection(
+        &mut self,
+        stage: &mut Stage,
+    ) -> bool {
         if let Some(spi) = self.selection {
             stage.remove_idx(self.paths_idx[spi]);
             self.stage_version = stage.version();
@@ -141,28 +174,30 @@ impl FilteredStage {
             false
         }
     }
-    pub fn move_selection(&mut self, dy: i32, cycle: bool) {
+    pub fn move_selection(
+        &mut self,
+        dy: i32,
+        cycle: bool,
+    ) {
         self.selection = if self.paths_idx.is_empty() {
             None
         } else if let Some(sel_idx) = self.selection.and_then(|i| i32::try_from(i).ok()) {
             let new_sel_idx = sel_idx + dy;
-            Some(
-                if new_sel_idx < 0 {
-                    if cycle && sel_idx == 0 {
-                        self.paths_idx.len() - 1
-                    } else {
-                        0
-                    }
-                } else if new_sel_idx as usize >= self.paths_idx.len() {
-                    if cycle && sel_idx == self.paths_idx.len() as i32 - 1 {
-                        0
-                    } else {
-                        self.paths_idx.len() - 1
-                    }
+            Some(if new_sel_idx < 0 {
+                if cycle && sel_idx == 0 {
+                    self.paths_idx.len() - 1
                 } else {
-                    new_sel_idx as usize
+                    0
                 }
-            )
+            } else if new_sel_idx as usize >= self.paths_idx.len() {
+                if cycle && sel_idx == self.paths_idx.len() as i32 - 1 {
+                    0
+                } else {
+                    self.paths_idx.len() - 1
+                }
+            } else {
+                new_sel_idx as usize
+            })
         } else if dy < 0 {
             Some(self.paths_idx.len() - 1)
         } else {

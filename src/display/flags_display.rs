@@ -1,4 +1,3 @@
-
 use {
     super::W,
     crate::{
@@ -25,7 +24,10 @@ pub fn write(
     panel_skin: &PanelSkin,
 ) -> Result<(), ProgramError> {
     for flag in flags {
-        panel_skin.styles.flag_label.queue_str(w, format!( " {}:", flag.name))?;
+        panel_skin
+            .styles
+            .flag_label
+            .queue_str(w, format!(" {}:", flag.name))?;
         panel_skin.styles.flag_value.queue(w, flag.value)?;
         panel_skin.styles.flag_label.queue(w, ' ')?;
     }

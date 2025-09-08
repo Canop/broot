@@ -1,10 +1,7 @@
 use {
-    crate::{
-        display::LumaCondition,
-    },
+    crate::display::LumaCondition,
     serde::Deserialize,
 };
-
 
 /// A file to import, with optionally a condition
 #[derive(Clone, Debug, Deserialize)]
@@ -14,10 +11,8 @@ pub enum Import {
     Detailed(DetailedImport),
 }
 
-
 #[derive(Clone, Debug, Deserialize)]
 pub struct DetailedImport {
-
     /// a condition on terminal light
     pub luma: Option<LumaCondition>,
 
@@ -39,7 +34,7 @@ impl Import {
     pub fn file(&self) -> &str {
         match self {
             Self::Simple(s) => s,
-            Self::Detailed(detailed) => &detailed.file
+            Self::Detailed(detailed) => &detailed.file,
         }
     }
 }

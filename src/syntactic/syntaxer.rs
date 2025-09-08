@@ -1,7 +1,5 @@
 use {
-    crate::{
-        app::AppContext,
-    },
+    crate::app::AppContext,
     once_cell::sync::Lazy,
     std::path::Path,
     syntect::{
@@ -9,8 +7,11 @@ use {
             HighlightLines,
             HighlightOptions,
         },
+        highlighting::{
+            Theme,
+            ThemeSet,
+        },
         parsing::SyntaxSet,
-        highlighting::{Theme, ThemeSet},
     },
 };
 
@@ -36,9 +37,7 @@ impl Default for Syntaxer {
 }
 
 impl Syntaxer {
-    pub fn available_themes(
-        &self
-    ) -> std::collections::btree_map::Keys<'_, String, Theme> {
+    pub fn available_themes(&self) -> std::collections::btree_map::Keys<'_, String, Theme> {
         self.theme_set.themes.keys()
     }
 
@@ -52,7 +51,10 @@ impl Syntaxer {
             .and_then(|ext| self.syntax_set.find_syntax_by_extension(ext))
             .map(|syntax| {
                 let theme = con.syntax_theme.unwrap_or_default();
-                let theme = self.theme_set.themes.get(theme.syntect_name())
+                let theme = self
+                    .theme_set
+                    .themes
+                    .get(theme.syntect_name())
                     .unwrap_or_else(|| self.theme_set.themes.iter().next().unwrap().1);
                 let options = HighlightOptions {
                     ignore_errors: true,

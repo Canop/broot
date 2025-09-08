@@ -15,17 +15,26 @@ pub struct SortableBId {
 }
 impl Eq for SortableBId {}
 impl PartialEq for SortableBId {
-    fn eq(&self, other: &SortableBId) -> bool {
+    fn eq(
+        &self,
+        other: &SortableBId,
+    ) -> bool {
         self.score == other.score // unused but required by spec of Ord
     }
 }
 impl Ord for SortableBId {
-    fn cmp(&self, other: &SortableBId) -> Ordering {
+    fn cmp(
+        &self,
+        other: &SortableBId,
+    ) -> Ordering {
         other.score.cmp(&self.score)
     }
 }
 impl PartialOrd for SortableBId {
-    fn partial_cmp(&self, other: &SortableBId) -> Option<Ordering> {
+    fn partial_cmp(
+        &self,
+        other: &SortableBId,
+    ) -> Option<Ordering> {
         Some(self.cmp(other))
     }
 }

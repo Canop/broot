@@ -1,5 +1,6 @@
-use {
-    termimad::minimad::{TextTemplate, TextTemplateExpander},
+use termimad::minimad::{
+    TextTemplate,
+    TextTemplateExpander,
 };
 
 static MD: &str = r"

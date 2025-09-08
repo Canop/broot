@@ -7,12 +7,17 @@ use {
         browser::BrowserState,
         command::TriggerType,
         display::Screen,
-        path::{self, PathAnchor},
+        path::{
+            self,
+            PathAnchor,
+        },
         tree::Tree,
     },
-    std::path::{Path, PathBuf},
+    std::path::{
+        Path,
+        PathBuf,
+    },
 };
-
 
 /// general implementation for verbs on the form ":some_internal path"
 pub fn determine_path(
@@ -20,16 +25,15 @@ pub fn determine_path(
     input_invocation: Option<&VerbInvocation>,
     trigger_type: TriggerType,
     tree: &Tree,
-    app_state: & AppState,
+    app_state: &AppState,
     cc: &CmdContext,
 ) -> Option<PathBuf> {
     info!(
         "internal_path::determine_path internal_exec={:?} input_invocation={:?} trygger_type={:?}",
-        internal_exec,
-        input_invocation,
-        trigger_type,
+        internal_exec, input_invocation, trigger_type,
     );
-    let input_arg = input_invocation.as_ref()
+    let input_arg = input_invocation
+        .as_ref()
         .and_then(|invocation| invocation.args.as_ref());
     match trigger_type {
         TriggerType::Input(verb) => {
@@ -51,11 +55,8 @@ pub fn determine_path(
                 //  `:select some/path`).
                 // The given path may be relative hence the need for the
                 // state's selection
-                let path = path::path_from(
-                    &tree.selected_line().path,
-                    PathAnchor::Unspecified,
-                    arg,
-                );
+                let path =
+                    path::path_from(&tree.selected_line().path, PathAnchor::Unspecified, arg);
                 Some(path)
             } else {
                 // there's nothing really to do here
@@ -64,7 +65,6 @@ pub fn determine_path(
         }
     }
 }
-
 
 /// Compute the path to go to in case of the internal being triggered from
 /// the input.
@@ -119,7 +119,6 @@ fn path_from_input(
             base_path.to_path_buf()
         }
     }
-
 }
 
 pub fn on_path(

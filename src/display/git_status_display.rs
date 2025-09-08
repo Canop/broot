@@ -18,7 +18,11 @@ pub struct GitStatusDisplay<'a, 's> {
 }
 
 impl<'a, 's> GitStatusDisplay<'a, 's> {
-    pub fn from(status: &'a TreeGitStatus, skin: &'s StyleMap, available_width: usize) -> Self {
+    pub fn from(
+        status: &'a TreeGitStatus,
+        skin: &'s StyleMap,
+        available_width: usize,
+    ) -> Self {
         let mut show_branch = false;
         let mut width = 0;
         if let Some(branch) = &status.current_branch_name {

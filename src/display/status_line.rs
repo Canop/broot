@@ -1,13 +1,20 @@
 use {
-    super::{Screen, W},
+    super::{
+        Screen,
+        W,
+    },
     crate::{
         app::Status,
         errors::ProgramError,
         skin::PanelSkin,
     },
     termimad::{
-        minimad::{Alignment, Composite},
-        Area, StyledChar,
+        Area,
+        StyledChar,
+        minimad::{
+            Alignment,
+            Composite,
+        },
     },
     unicode_width::UnicodeWidthStr,
 };
@@ -61,7 +68,12 @@ pub fn erase(
 ) -> Result<(), ProgramError> {
     screen.goto(w, area.left, area.top)?;
     let sc = StyledChar::new(
-        panel_skin.status_skin.normal.paragraph.compound_style.clone(),
+        panel_skin
+            .status_skin
+            .normal
+            .paragraph
+            .compound_style
+            .clone(),
         ' ',
     );
     sc.queue_repeat(w, area.width as usize)?;

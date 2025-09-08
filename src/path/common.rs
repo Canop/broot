@@ -1,5 +1,6 @@
-use {
-    std::path::{Components, PathBuf},
+use std::path::{
+    Components,
+    PathBuf,
 };
 
 pub fn longest_common_ancestor(paths: &[PathBuf]) -> PathBuf {
@@ -8,11 +9,7 @@ pub fn longest_common_ancestor(paths: &[PathBuf]) -> PathBuf {
         1 => paths[0].clone(),
         _ => {
             let cs0 = paths[0].components();
-            let mut csi: Vec<Components> = paths
-                .iter()
-                .skip(1)
-                .map(|p| p.components())
-                .collect();
+            let mut csi: Vec<Components> = paths.iter().skip(1).map(|p| p.components()).collect();
             let mut lca = PathBuf::new();
             for component in cs0 {
                 for cs in &mut csi {

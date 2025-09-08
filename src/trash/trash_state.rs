@@ -14,9 +14,9 @@ use {
         verb::*,
     },
     crokey::crossterm::{
+        QueueableCommand,
         cursor,
         style::Color,
-        QueueableCommand,
     },
     std::{
         ffi::OsString,
@@ -56,8 +56,9 @@ impl TrashState {
         tree_options: TreeOptions,
         con: &AppContext,
     ) -> Result<Self, ProgramError> {
-        let mut items = trash::os_limited::list()
-            .map_err(|e| ProgramError::Trash { message: e.to_string() })?;
+        let mut items = trash::os_limited::list().map_err(|e| ProgramError::Trash {
+            message: e.to_string(),
+        })?;
         sort(&mut items, &tree_options);
         let selection_idx = None;
         Ok(TrashState {
@@ -195,7 +196,10 @@ impl TrashState {
     fn selected_item_id(&self) -> Option<OsString> {
         self.selected_item().map(|i| i.id.clone())
     }
-    fn select_item_by_id(&mut self, id: Option<&OsString>) {
+    fn select_item_by_id(
+        &mut self,
+        id: Option<&OsString>,
+    ) {
         self.selection_idx = id.and_then(|id| self.items.iter().position(|i| &i.id == id));
     }
 
@@ -264,12 +268,7 @@ impl PanelState for TrashState {
         let mut options = self.tree_options.clone();
         let message = change_options(&mut options);
         let message = Some(message);
-        self.modified(
-            options,
-            message,
-            in_new_panel,
-            con,
-        )
+        self.modified(options, message, in_new_panel, con)
     }
 
     /// We don't want to expose path to verbs because you can't
@@ -302,9 +301,7 @@ impl PanelState for TrashState {
         if pattern.is_none() {
             if let Some(f) = self.filtered.take() {
                 if let Some(idx) = f.selection_idx {
-                    self.selection_idx = self.items
-                        .iter()
-                        .position(|m| m.id == f.items[idx].id);
+                    self.selection_idx = self.items.iter().position(|m| m.id == f.items[idx].id);
                 }
             }
         } else {
@@ -380,7 +377,9 @@ impl PanelState for TrashState {
         }
         let mut added = false;
         for col in &cols {
-            let Some(size) = col.size() else { continue; };
+            let Some(size) = col.size() else {
+                continue;
+            };
             if added {
                 cw.queue_char(border_style, '│')?;
             } else {
@@ -404,7 +403,9 @@ impl PanelState for TrashState {
         }
         let mut added = false;
         for col in &cols {
-            let Some(size) = col.size() else { continue; };
+            let Some(size) = col.size() else {
+                continue;
+            };
             if added {
                 cw.queue_char(border_style, '┼')?;
             } else {
@@ -443,7 +444,9 @@ impl PanelState for TrashState {
                 }
                 let mut added = false;
                 for col in &cols {
-                    let Some(size) = col.size() else { continue; };
+                    let Some(size) = col.size() else {
+                        continue;
+                    };
                     if added {
                         cw.queue_char(border_style, '│')?;
                     } else {
@@ -483,7 +486,10 @@ impl PanelState for TrashState {
                 if con.show_selection_mark {
                     cw.queue_char(&styles.default, ' ')?;
                 }
-                cw.queue_g_string(border_style, format!("{: >width$}", '│', width = first_col_width + 1))?;
+                cw.queue_g_string(
+                    border_style,
+                    format!("{: >width$}", '│', width = first_col_width + 1),
+                )?;
             }
             cw.fill(txt_style, &SPACE_FILLING)?;
             let scrollbar_style = if ScrollCommand::is_thumb(y, scrollbar) {
@@ -526,16 +532,11 @@ impl PanelState for TrashState {
                             ))
                         }
                         Err(e) => {
-                            CmdResult::DisplayError(format!(
-                                "restore failed: {}",
-                                e.to_string(),
-                            ))
+                            CmdResult::DisplayError(format!("restore failed: {}", e.to_string(),))
                         }
                     }
                 } else {
-                    CmdResult::DisplayError(
-                        "an item must be selected".to_string(),
-                    )
+                    CmdResult::DisplayError("an item must be selected".to_string())
                 }
             }
             Internal::delete_trashed_file => {
@@ -550,24 +551,18 @@ impl PanelState for TrashState {
                             ))
                         }
                         Err(e) => {
-                            CmdResult::DisplayError(format!(
-                                "deletion failed: {}",
-                                e.to_string(),
-                            ))
+                            CmdResult::DisplayError(format!("deletion failed: {}", e.to_string(),))
                         }
                     }
                 } else {
-                    CmdResult::DisplayError(
-                        "an item must be selected".to_string(),
-                    )
+                    CmdResult::DisplayError("an item must be selected".to_string())
                 }
             }
             Internal::back => {
                 if let Some(f) = self.filtered.take() {
                     if let Some(idx) = f.selection_idx {
-                        self.selection_idx = self.items
-                            .iter()
-                            .position(|m| m.id == f.items[idx].id);
+                        self.selection_idx =
+                            self.items.iter().position(|m| m.id == f.items[idx].id);
                     }
                     self.show_selection();
                     CmdResult::Keep
@@ -631,4 +626,3 @@ impl PanelState for TrashState {
         Ok(CmdResult::Keep)
     }
 }
-

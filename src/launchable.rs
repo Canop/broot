@@ -14,15 +14,25 @@ use {
         tree::Tree,
     },
     crokey::crossterm::{
-        cursor,
-        event::{DisableMouseCapture, EnableMouseCapture},
-        terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
+        cursor,
+        event::{
+            DisableMouseCapture,
+            EnableMouseCapture,
+        },
+        terminal::{
+            self,
+            EnterAlternateScreen,
+            LeaveAlternateScreen,
+        },
     },
     opener,
     std::{
         env,
-        io::{self, Write},
+        io::{
+            self,
+            Write,
+        },
         path::PathBuf,
         process::Command,
     },
@@ -33,11 +43,8 @@ use {
 /// A launchable can only be executed on end of life of broot.
 #[derive(Debug)]
 pub enum Launchable {
-
     /// just print something on stdout on end of broot
-    Printer {
-        to_print: String,
-    },
+    Printer { to_print: String },
 
     /// print the tree on end of broot
     TreePrinter {
@@ -59,9 +66,7 @@ pub enum Launchable {
     },
 
     /// open a path
-    SystemOpen {
-        path: PathBuf,
-    },
+    SystemOpen { path: PathBuf },
 }
 
 /// If a part starts with a '$', replace it by the environment variable of the same name.
@@ -141,7 +146,13 @@ impl Launchable {
                 println!("{to_print}");
                 Ok(())
             }
-            Launchable::TreePrinter { tree, skin, ext_colors, width, height } => {
+            Launchable::TreePrinter {
+                tree,
+                skin,
+                ext_colors,
+                width,
+                height,
+            } => {
                 let dp = DisplayableTree::out_of_app(tree, skin, ext_colors, *width, *height);
                 dp.write_on(&mut std::io::stdout())
             }

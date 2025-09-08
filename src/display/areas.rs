@@ -128,7 +128,9 @@ impl Areas {
                         panel_widths[incr] += diff;
                     }
                     LayoutInstruction::SetPanelWidth { panel, width } => {
-                        if panel >= nb_pos { continue; }
+                        if panel >= nb_pos {
+                            continue;
+                        }
                         let width = width.max(MINIMAL_PANEL_WIDTH);
                         if width > panel_widths[panel] {
                             let mut diff = width - panel_widths[panel];
@@ -144,7 +146,9 @@ impl Areas {
                                         freed += step;
                                     }
                                 }
-                                if freed == 0 { break; }
+                                if freed == 0 {
+                                    break;
+                                }
                                 diff -= freed;
                                 panel_widths[panel] += freed;
                             }

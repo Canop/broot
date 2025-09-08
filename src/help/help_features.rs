@@ -1,5 +1,3 @@
-
-
 /// find the list of optional features which are enabled
 pub fn list() -> Vec<(&'static str, &'static str)> {
     #[allow(unused_mut)]

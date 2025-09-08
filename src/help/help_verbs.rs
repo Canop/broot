@@ -1,10 +1,8 @@
-use {
-    crate::{
-        app::AppContext,
-        keys,
-        pattern::*,
-        verb::*,
-    },
+use crate::{
+    app::AppContext,
+    keys,
+    pattern::*,
+    verb::*,
 };
 
 /// what should be shown for a verb in the help screen, after
@@ -73,9 +71,7 @@ pub fn matching_verb_rows<'v>(
         let keys_desc = verb
             .keys
             .iter()
-            .filter(|&&k| {
-                con.modal || !keys::is_key_only_modal(k)
-            })
+            .filter(|&&k| con.modal || !keys::is_key_only_modal(k))
             .map(|&k| keys::KEY_FORMAT.to_string(k))
             .collect::<Vec<String>>() // no way to join an iterator today ?
             .join(", ");

@@ -49,9 +49,9 @@ impl Watcher {
                 }
                 nw
             }
-            None => {
-                self.notify_watcher.insert(Self::make_notify_watcher(self.tx_seqs.clone())?)
-            }
+            None => self
+                .notify_watcher
+                .insert(Self::make_notify_watcher(self.tx_seqs.clone())?),
         };
         if !path.exists() {
             warn!("watch path doesn't exist: {:?}", path);
@@ -59,12 +59,10 @@ impl Watcher {
         }
         let res = if path.is_dir() {
             debug!("add watch dir {:?}", &path);
-            notify_watcher
-                .watch(&path, RecursiveMode::Recursive)
+            notify_watcher.watch(&path, RecursiveMode::Recursive)
         } else if path.is_file() {
             debug!("add watch file {:?}", &path);
-            notify_watcher
-                .watch(&path, RecursiveMode::NonRecursive)
+            notify_watcher.watch(&path, RecursiveMode::NonRecursive)
         } else {
             warn!("watch path is neither file nor directory: {:?}", path);
             Ok(())
@@ -81,9 +79,7 @@ impl Watcher {
         }
         Ok(res?)
     }
-    fn make_notify_watcher(
-        tx_seqs: Sender<Sequence>,
-    ) -> Result<RecommendedWatcher, ProgramError> {
+    fn make_notify_watcher(tx_seqs: Sender<Sequence>) -> Result<RecommendedWatcher, ProgramError> {
         let mut notify_watcher =
             notify::recommended_watcher(move |res: notify::Result<notify::Event>| match res {
                 Ok(we) => {

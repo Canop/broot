@@ -9,9 +9,7 @@ use {
         ThreadPool,
         ThreadPoolBuilder,
     },
-    rustc_hash::{
-        FxHashMap,
-    },
+    rustc_hash::FxHashMap,
     std::{
         convert::TryInto,
         fs,
@@ -20,21 +18,19 @@ use {
             PathBuf,
         },
         sync::{
+            Arc,
+            Mutex,
             atomic::{
                 AtomicIsize,
                 Ordering,
             },
-            Arc,
-            Mutex,
         },
     },
     termimad::crossbeam::channel,
 };
 
 #[cfg(unix)]
-use {
-    std::os::unix::fs::MetadataExt,
-};
+use std::os::unix::fs::MetadataExt;
 
 struct DirSummer {
     thread_count: usize,

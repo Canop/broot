@@ -1,8 +1,6 @@
-use {
-    crate::{
-        app::SelectionType,
-        path::PathAnchor,
-    },
+use crate::{
+    app::SelectionType,
+    path::PathAnchor,
 };
 
 /// The definition of an argument given to a verb

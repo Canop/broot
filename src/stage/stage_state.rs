@@ -3,7 +3,11 @@ use {
     crate::{
         app::*,
         command::*,
-        display::{MatchedString, Screen, W},
+        display::{
+            MatchedString,
+            Screen,
+            W,
+        },
         errors::ProgramError,
         pattern::*,
         skin::*,
@@ -12,12 +16,19 @@ use {
         verb::*,
     },
     crokey::crossterm::{
-        cursor,
         QueueableCommand,
+        cursor,
     },
-    std::path::{Path},
-    termimad::{Area, CropWriter, SPACE_FILLING},
-    unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
+    std::path::Path,
+    termimad::{
+        Area,
+        CropWriter,
+        SPACE_FILLING,
+    },
+    unicode_width::{
+        UnicodeWidthChar,
+        UnicodeWidthStr,
+    },
 };
 
 static TITLE: &str = "Staging Area"; // no wide char allowed here
@@ -26,7 +37,6 @@ static SIZE_LABEL: &str = " size: ";
 static ELLIPSIS: char = '…';
 
 pub struct StageState {
-
     filtered_stage: FilteredStage,
 
     scroll: usize,
@@ -39,20 +49,16 @@ pub struct StageState {
     page_height: usize,
 
     stage_sum: StageSum,
-
 }
 
 impl StageState {
-
     pub fn new(
         app_state: &AppState,
         tree_options: TreeOptions,
         con: &AppContext,
     ) -> StageState {
-        let filtered_stage = FilteredStage::filtered(
-            &app_state.stage,
-            tree_options.pattern.clone(),
-        );
+        let filtered_stage =
+            FilteredStage::filtered(&app_state.stage, tree_options.pattern.clone());
         Self {
             filtered_stage,
             scroll: 0,
@@ -66,7 +72,6 @@ impl StageState {
     fn need_sum_computation(&self) -> bool {
         self.tree_options.show_sizes && !self.stage_sum.is_up_to_date()
     }
-
 
     pub fn try_scroll(
         &mut self,
@@ -99,10 +104,7 @@ impl StageState {
             return Ok(());
         }
         if TITLE.len() + 1 + count_len <= cw.allowed {
-            cw.queue_str(
-                &styles.staging_area_title,
-                TITLE,
-            )?;
+            cw.queue_str(&styles.staging_area_title, TITLE)?;
         }
         let mut show_count_label = false;
         let mut rem = cw.allowed - count_len;
@@ -116,63 +118,47 @@ impl StageState {
                     if size_len < rem {
                         rem -= size_len;
                         // we display the size in the middle, so we cut rem in two
-                        let left_rem  = rem / 2;
+                        let left_rem = rem / 2;
                         rem -= left_rem;
                         cw.repeat(&styles.staging_area_title, &SPACE_FILLING, left_rem)?;
-                        cw.queue_g_string(
-                            &styles.staging_area_title,
-                            SIZE_LABEL.to_string(),
-                        )?;
-                        cw.queue_g_string(
-                            &styles.staging_area_title,
-                            size,
-                        )?;
+                        cw.queue_g_string(&styles.staging_area_title, SIZE_LABEL.to_string())?;
+                        cw.queue_g_string(&styles.staging_area_title, size)?;
                     }
                 }
             }
         }
         cw.repeat(&styles.staging_area_title, &SPACE_FILLING, rem)?;
         if show_count_label {
-            cw.queue_g_string(
-                &styles.staging_area_title,
-                COUNT_LABEL.to_string(),
-            )?;
+            cw.queue_g_string(&styles.staging_area_title, COUNT_LABEL.to_string())?;
         }
         if self.filtered_stage.pattern().is_some() {
-            cw.queue_g_string(
-                &styles.char_match,
-                format!("{}", self.filtered_stage.len()),
-            )?;
-            cw.queue_char(
-                &styles.staging_area_title,
-                '/',
-            )?;
+            cw.queue_g_string(&styles.char_match, format!("{}", self.filtered_stage.len()))?;
+            cw.queue_char(&styles.staging_area_title, '/')?;
         }
-        cw.queue_g_string(
-            &styles.staging_area_title,
-            total_count,
-        )?;
+        cw.queue_g_string(&styles.staging_area_title, total_count)?;
         cw.fill(&styles.staging_area_title, &SPACE_FILLING)?;
         Ok(())
     }
 
-    fn move_selection(&mut self, dy: i32, cycle: bool) -> CmdResult {
+    fn move_selection(
+        &mut self,
+        dy: i32,
+        cycle: bool,
+    ) -> CmdResult {
         self.filtered_stage.move_selection(dy, cycle);
         if let Some(sel) = self.filtered_stage.selection() {
             if sel < self.scroll + 5 {
-                self.scroll = (sel as i32 -5).max(0) as usize;
+                self.scroll = (sel as i32 - 5).max(0) as usize;
             } else if sel > self.scroll + self.page_height - 5 {
-                self.scroll = (sel + 5 - self.page_height)
-                    .min(self.filtered_stage.len() - self.page_height);
+                self.scroll =
+                    (sel + 5 - self.page_height).min(self.filtered_stage.len() - self.page_height);
             }
         }
         CmdResult::Keep
     }
-
 }
 
 impl PanelState for StageState {
-
     fn get_type(&self) -> PanelStateType {
         PanelStateType::Stage
     }
@@ -209,7 +195,10 @@ impl PanelState for StageState {
         }
     }
 
-    fn sel_info<'c>(&'c self, app_state: &'c AppState) -> SelInfo<'c> {
+    fn sel_info<'c>(
+        &'c self,
+        app_state: &'c AppState,
+    ) -> SelInfo<'c> {
         match app_state.stage.len() {
             0 => SelInfo::None,
             1 => SelInfo::One(Selection {
@@ -222,7 +211,10 @@ impl PanelState for StageState {
         }
     }
 
-    fn has_at_least_one_selection(&self, app_state: &AppState) -> bool {
+    fn has_at_least_one_selection(
+        &self,
+        app_state: &AppState,
+    ) -> bool {
         !app_state.stage.is_empty()
     }
 
@@ -243,7 +235,7 @@ impl PanelState for StageState {
         if in_new_panel {
             CmdResult::error("stage can't be displayed in two panels")
         } else {
-            let mut new_options= self.tree_options();
+            let mut new_options = self.tree_options();
             let message = change_options(&mut new_options);
             let state = Box::new(StageState {
                 filtered_stage: self.filtered_stage.clone(),
@@ -253,7 +245,10 @@ impl PanelState for StageState {
                 page_height: self.page_height,
                 stage_sum: self.stage_sum,
             });
-            CmdResult::NewState { state, message: Some(message) }
+            CmdResult::NewState {
+                state,
+                message: Some(message),
+            }
         }
     }
 
@@ -266,7 +261,8 @@ impl PanelState for StageState {
     ) -> Result<CmdResult, ProgramError> {
         if y > 0 {
             // the list starts on the second row
-            self.filtered_stage.try_select_idx(y as usize - 1 + self.scroll);
+            self.filtered_stage
+                .try_select_idx(y as usize - 1 + self.scroll);
         }
         Ok(CmdResult::Keep)
     }
@@ -340,12 +336,7 @@ impl PanelState for StageState {
                     // we must display the matching on the whole path
                     // (subpath is the path for the staging area)
                     let name_match = pattern.search_string(&label);
-                    let matched_string = MatchedString::new(
-                        name_match,
-                        &label,
-                        style,
-                        style_match,
-                    );
+                    let matched_string = MatchedString::new(name_match, &label, style, style_match);
                     matched_string.queue_on(cw)?;
                 } else if let Some(file_name) = path.file_name() {
                     let label = file_name.to_string_lossy();
@@ -365,10 +356,7 @@ impl PanelState for StageState {
                             let parent_path = parent_path.to_string_lossy();
                             let parent_cols = parent_path.width();
                             if parent_cols <= cols_max {
-                                cw.queue_str(
-                                    parent_style,
-                                    &parent_path,
-                                )?;
+                                cw.queue_str(parent_style, &parent_path)?;
                             } else {
                                 // TODO move to (crop_writer ? termimad ?)
                                 // we'll compute the size of the tail fitting
@@ -384,28 +372,17 @@ impl PanelState for StageState {
                                     cols_count = next_str_width;
                                     bytes_count += c.len_utf8();
                                 }
-                                cw.queue_char(
-                                    parent_style,
-                                    ELLIPSIS,
-                                )?;
+                                cw.queue_char(parent_style, ELLIPSIS)?;
                                 cw.queue_str(
                                     parent_style,
-                                    &parent_path[parent_path.len()-bytes_count..],
+                                    &parent_path[parent_path.len() - bytes_count..],
                                 )?;
                             }
-                            cw.queue_char(
-                                parent_style,
-                                '/',
-                            )?;
+                            cw.queue_char(parent_style, '/')?;
                         }
                     }
                     let name_match = pattern.search_string(&label);
-                    let matched_string = MatchedString::new(
-                        name_match,
-                        &label,
-                        style,
-                        style_match,
-                    );
+                    let matched_string = MatchedString::new(name_match, &label, style, style_match);
                     matched_string.queue_on(cw)?;
                 } else {
                     // this should not happen
@@ -424,11 +401,18 @@ impl PanelState for StageState {
         Ok(())
     }
 
-    fn refresh(&mut self, _screen: Screen, _con: &AppContext) -> Command {
+    fn refresh(
+        &mut self,
+        _screen: Screen,
+        _con: &AppContext,
+    ) -> Command {
         Command::empty()
     }
 
-    fn set_mode(&mut self, mode: Mode) {
+    fn set_mode(
+        &mut self,
+        mode: Mode,
+    ) {
         self.mode = mode;
     }
 
@@ -506,7 +490,9 @@ impl PanelState for StageState {
                 }
 
                 #[cfg(not(feature = "trash"))]
-                CmdResult::DisplayError("feature not enabled or platform does not support trash".into())
+                CmdResult::DisplayError(
+                    "feature not enabled or platform does not support trash".into(),
+                )
             }
             _ => self.on_internal_generic(
                 w,
@@ -520,4 +506,3 @@ impl PanelState for StageState {
         })
     }
 }
-

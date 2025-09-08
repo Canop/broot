@@ -5,8 +5,14 @@
 use {
     super::NameMatch,
     secular,
-    smallvec::{smallvec, SmallVec},
-    std::fmt::{self, Write},
+    smallvec::{
+        SmallVec,
+        smallvec,
+    },
+    std::fmt::{
+        self,
+        Write,
+    },
 };
 
 type CandChars = SmallVec<[char; 32]>;
@@ -29,7 +35,10 @@ pub struct FuzzyPattern {
 }
 
 impl fmt::Display for FuzzyPattern {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         for &c in self.chars.iter() {
             f.write_char(c)?
         }
@@ -98,9 +107,9 @@ impl FuzzyPattern {
                         if pat_idx < rev_idx {
                             break;
                         }
-                        if cand_chars[cand_idx-rev_idx] == self.chars[pat_idx-rev_idx] {
+                        if cand_chars[cand_idx - rev_idx] == self.chars[pat_idx - rev_idx] {
                             // we move the pos forward
-                            pos[pat_idx-rev_idx] = cand_idx-rev_idx;
+                            pos[pat_idx - rev_idx] = cand_idx - rev_idx;
                         } else {
                             break;
                         }
@@ -124,15 +133,15 @@ impl FuzzyPattern {
         let mut nb_holes = 0;
         let mut nb_singled_chars = 0;
         for idx in 1..pos.len() {
-            if pos[idx] > 1 + pos[idx-1] {
+            if pos[idx] > 1 + pos[idx - 1] {
                 nb_holes += 1;
-                if idx > 1 && pos[idx-1] > 1 + pos[idx-2] {
+                if idx > 1 && pos[idx - 1] > 1 + pos[idx - 2] {
                     // we improve a simple case: the one of a singleton which was created
                     // by pushing forward a char
-                    if cand_chars[pos[idx-2]+1] == cand_chars[pos[idx-1]] {
+                    if cand_chars[pos[idx - 2] + 1] == cand_chars[pos[idx - 1]] {
                         // in some cases we're really removing another singletons but
                         // let's forget this
-                        pos[idx-1] = pos[idx-2]+1;
+                        pos[idx - 1] = pos[idx - 2] + 1;
                         nb_holes -= 1;
                     } else {
                         nb_singled_chars += 1;
@@ -170,7 +179,10 @@ impl FuzzyPattern {
     /// return a match if the pattern can be found in the candidate string.
     /// The algorithm tries to return the best one. For example if you search
     /// "abc" in "ababca-abc", the returned match would be at the end.
-    pub fn find(&self, candidate: &str) -> Option<NameMatch> {
+    pub fn find(
+        &self,
+        candidate: &str,
+    ) -> Option<NameMatch> {
         if candidate.len() < self.chars.len() {
             return None;
         }
@@ -206,9 +218,11 @@ impl FuzzyPattern {
     }
 
     /// compute the score of the best match
-    pub fn score_of(&self, candidate: &str) -> Option<i32> {
-        self.find(candidate)
-            .map(|nm| nm.score)
+    pub fn score_of(
+        &self,
+        candidate: &str,
+    ) -> Option<i32> {
+        self.find(candidate).map(|nm| nm.score)
     }
 }
 
@@ -221,12 +235,17 @@ mod fuzzy_pattern_tests {
     };
 
     /// check position of the match of the pattern in name
-    fn check_pos(pattern: &str, name: &str, pos: &str) {
+    fn check_pos(
+        pattern: &str,
+        name: &str,
+        pos: &str,
+    ) {
         let pat = FuzzyPattern::from(pattern);
         let match_pos = pat.find(name).unwrap().pos;
-        let target_pos: Pos = pos.chars()
+        let target_pos: Pos = pos
+            .chars()
             .enumerate()
-            .filter(|(_, c)| *c=='^')
+            .filter(|(_, c)| *c == '^')
             .map(|(i, _)| i)
             .collect();
         assert_eq!(match_pos, target_pos);
@@ -235,36 +254,12 @@ mod fuzzy_pattern_tests {
     /// test the quality of match length and groups number minimization
     #[test]
     fn check_match_pos() {
-        check_pos(
-            "ba",
-            "babababaaa",
-            "^^        ",
-        );
-        check_pos(
-            "baa",
-            "babababaaa",
-            "      ^^^ ",
-        );
-        check_pos(
-            "bbabaa",
-            "babababaaa",
-            "  ^ ^^^^^ ",
-        );
-        check_pos(
-            "aoml",
-            "bacon.coml",
-            " ^     ^^^",
-        );
-        check_pos(
-            "broot",
-            "ab br bro oxt ",
-            "      ^^^ ^ ^ ",
-        );
-        check_pos(
-            "broot",
-            "b_broooooot_broot",
-            "            ^^^^^",
-        );
+        check_pos("ba", "babababaaa", "^^        ");
+        check_pos("baa", "babababaaa", "      ^^^ ");
+        check_pos("bbabaa", "babababaaa", "  ^ ^^^^^ ");
+        check_pos("aoml", "bacon.coml", " ^     ^^^");
+        check_pos("broot", "ab br bro oxt ", "      ^^^ ^ ^ ");
+        check_pos("broot", "b_broooooot_broot", "            ^^^^^");
         check_pos(
             "buityp",
             "builder-styles-less-typing.d.ts",
@@ -280,17 +275,16 @@ mod fuzzy_pattern_tests {
             "brbroorrbbbbbrrooorobrototooooot.txt",
             "                    ^^^ ^^          ",
         );
-        check_pos(
-            "besh",
-            "benches/shared",
-            "^^      ^^    ",
-        );
+        check_pos("besh", "benches/shared", "^^      ^^    ");
     }
 
     /// check that the scores of all names are strictly decreasing
     /// (pattern is first tested against itself).
     /// We verify this property with both computation functions.
-    fn check_ordering_for(pattern: &str, names: &[&str]) {
+    fn check_ordering_for(
+        pattern: &str,
+        names: &[&str],
+    ) {
         let fp = FuzzyPattern::from(pattern);
         let mut last_score = fp.find(pattern).map(|m| m.score);
         let mut last_name = pattern;
@@ -322,14 +316,7 @@ mod fuzzy_pattern_tests {
         );
         check_ordering_for(
             "Abc",
-            &[
-                "abCd",
-                "aBdc",
-                " abdc",
-                " abdbccccc",
-                " a b c",
-                "nothing",
-            ],
+            &["abCd", "aBdc", " abdc", " abdbccccc", " a b c", "nothing"],
         );
         check_ordering_for(
             "réveil",
@@ -363,27 +350,15 @@ mod fuzzy_pattern_tests {
                 }
             }
         }
-        check_equivalences_in(&[
-            "aB",
-            "ab",
-            "àb",
-            "âB",
-        ]);
+        check_equivalences_in(&["aB", "ab", "àb", "âB"]);
         let c12 = "Comunicações";
         assert_eq!(c12.len(), 14);
         assert_eq!(c12.chars().count(), 12);
         let c14 = "Comunicações";
         assert_eq!(c14.len(), 16);
         assert_eq!(c14.chars().count(), 14);
-        check_equivalences_in(&[
-            "comunicacoes",
-            c12,
-            c14,
-        ]);
-        check_equivalences_in(&[
-            "у",
-            "У",
-        ]);
+        check_equivalences_in(&["comunicacoes", c12, c14]);
+        check_equivalences_in(&["у", "У"]);
     }
     /// check that there's no problem with ignoring case on cyrillic.
     /// This problem arises when secular was compiled without the "bmp" feature.

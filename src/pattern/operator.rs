@@ -5,4 +5,3 @@ pub enum PatternOperator {
     Or,
     Not,
 }
-

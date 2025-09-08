@@ -1,26 +1,42 @@
 use {
     super::*,
     crate::{
-        command::{ScrollCommand, move_sel},
-        display::{Screen, W},
+        command::{
+            ScrollCommand,
+            move_sel,
+        },
+        display::{
+            Screen,
+            W,
+        },
         errors::*,
         skin::PanelSkin,
     },
     crokey::crossterm::{
-        cursor,
-        style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
+        cursor,
+        style::{
+            Color,
+            Print,
+            SetBackgroundColor,
+            SetForegroundColor,
+        },
     },
     memmap2::Mmap,
     std::{
         fs::File,
-        io::{self, BufRead, BufReader},
-        path::{Path, PathBuf},
+        io::{
+            self,
+            BufRead,
+            BufReader,
+        },
+        path::{
+            Path,
+            PathBuf,
+        },
     },
     termimad::Area,
 };
-
-
 
 pub struct TtyView {
     pub path: PathBuf,
@@ -32,10 +48,7 @@ pub struct TtyView {
 }
 
 impl TtyView {
-
-    pub fn new(
-        path: &Path,
-    ) -> Result<Self, io::Error> {
+    pub fn new(path: &Path) -> Result<Self, io::Error> {
         let mut sv = Self {
             path: path.to_path_buf(),
             lines: Vec::new(),
@@ -49,21 +62,19 @@ impl TtyView {
         Ok(sv)
     }
 
-    fn read_lines(
-        &mut self,
-    ) -> Result<(), io::Error> {
+    fn read_lines(&mut self) -> Result<(), io::Error> {
         let f = File::open(&self.path)?;
         {
             // if we detect the file isn't mappable, we'll
             // let the ZeroLenFilePreview try to read it
             let mmap = unsafe { Mmap::map(&f) };
             if mmap.is_err() {
-                return Err(io::Error::other("unmappable file"))
+                return Err(io::Error::other("unmappable file"));
             }
         }
         let md = f.metadata()?;
         if md.len() == 0 {
-            return Err(io::Error::other("zero length file"))
+            return Err(io::Error::other("zero length file"));
         }
         let mut reader = BufReader::new(f);
         self.lines.clear();
@@ -104,7 +115,10 @@ impl TtyView {
     pub fn unselect(&mut self) {
         self.selection_idx = None;
     }
-    pub fn try_select_y(&mut self, y: u16) -> bool {
+    pub fn try_select_y(
+        &mut self,
+        y: u16,
+    ) -> bool {
         let idx = y as usize + self.scroll;
         if idx < self.lines.len() {
             self.selection_idx = Some(idx);
@@ -127,7 +141,11 @@ impl TtyView {
         }
     }
 
-    pub fn move_selection(&mut self, dy: i32, cycle: bool) {
+    pub fn move_selection(
+        &mut self,
+        dy: i32,
+        cycle: bool,
+    ) {
         if let Some(idx) = self.selection_idx {
             self.selection_idx = Some(move_sel(idx, self.lines.len(), dy, cycle));
         } else if !self.lines.is_empty() {
@@ -151,7 +169,7 @@ impl TtyView {
                     self.selection_idx = Some(self.lines.len() - 1);
                 }
                 return self.selection_idx == old_selection;
-            } else  if idx >= old_scroll && idx < old_scroll + self.page_height {
+            } else if idx >= old_scroll && idx < old_scroll + self.page_height {
                 if idx + self.scroll < old_scroll {
                     self.selection_idx = Some(0);
                 } else if idx + self.scroll - old_scroll >= self.lines.len() {
@@ -177,12 +195,16 @@ impl TtyView {
         }
         let line_count = area.height as usize;
         let styles = &panel_skin.styles;
-        let bg = styles.preview.get_bg()
+        let bg = styles
+            .preview
+            .get_bg()
             .or_else(|| styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
         let content_width = area.width as usize - 1; // 1 char left for scrollbar
         let scrollbar = area.scrollbar(self.scroll, self.lines.len());
-        let scrollbar_fg = styles.scrollbar_thumb.get_fg()
+        let scrollbar_fg = styles
+            .scrollbar_thumb
+            .get_fg()
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
         for y in 0..line_count {
@@ -231,10 +253,12 @@ impl TtyView {
     }
 }
 
-fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
+fn is_thumb(
+    y: usize,
+    scrollbar: Option<(u16, u16)>,
+) -> bool {
     scrollbar.map_or(false, |(sctop, scbottom)| {
         let y = y as u16;
         sctop <= y && y <= scbottom
     })
 }
-

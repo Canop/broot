@@ -1,11 +1,18 @@
 use {
-    super::{CropWriter, SPACE_FILLING},
+    super::{
+        CropWriter,
+        SPACE_FILLING,
+    },
     crate::pattern::NameMatch,
     termimad::{
+        CompoundStyle,
+        StrFit,
         minimad::Alignment,
-        CompoundStyle, StrFit,
     },
-    unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
+    unicode_width::{
+        UnicodeWidthChar,
+        UnicodeWidthStr,
+    },
 };
 
 pub struct MatchedString<'a> {
@@ -18,7 +25,6 @@ pub struct MatchedString<'a> {
 }
 
 impl<'a> MatchedString<'a> {
-
     pub fn new(
         name_match: Option<NameMatch>,
         string: &'a str,
@@ -38,31 +44,38 @@ impl<'a> MatchedString<'a> {
     /// string and return it.
     /// Note: a non none display_width currently prevents splitting
     /// (i.e. it's not yet implemented and would involve compute width)
-    pub fn split_on_last(&mut self, sep: char) -> Option<Self> {
+    pub fn split_on_last(
+        &mut self,
+        sep: char,
+    ) -> Option<Self> {
         if self.display_width.is_some() {
             // the proper algo would need measuring the left part I guess
             None
         } else {
-            self.string
-                .rfind(sep)
-                .map(|sep_idx| {
-                    let right = &self.string[sep_idx+1..];
-                    self.string = &self.string[..sep_idx+1];
-                    let left_chars_count = self.string.chars().count();
-                    let right_name_match = self.name_match.as_mut()
-                        .map(|nm| nm.cut_after(left_chars_count));
-                    MatchedString {
-                        name_match: right_name_match,
-                        string: right,
-                        base_style: self.base_style,
-                        match_style: self.match_style,
-                        display_width: None,
-                        align: self.align,
-                    }
-                })
+            self.string.rfind(sep).map(|sep_idx| {
+                let right = &self.string[sep_idx + 1..];
+                self.string = &self.string[..sep_idx + 1];
+                let left_chars_count = self.string.chars().count();
+                let right_name_match = self
+                    .name_match
+                    .as_mut()
+                    .map(|nm| nm.cut_after(left_chars_count));
+                MatchedString {
+                    name_match: right_name_match,
+                    string: right,
+                    base_style: self.base_style,
+                    match_style: self.match_style,
+                    display_width: None,
+                    align: self.align,
+                }
+            })
         }
     }
-    pub fn fill(&mut self, width: usize, align: Alignment) {
+    pub fn fill(
+        &mut self,
+        width: usize,
+        align: Alignment,
+    ) {
         self.display_width = Some(width);
         self.align = align;
     }
@@ -71,12 +84,17 @@ impl<'a> MatchedString<'a> {
     }
     /// Remove characters left so that the visible width is equal or
     /// less to the required width
-    pub fn cut_left_to_fit(&mut self, max_width: usize) -> usize {
+    pub fn cut_left_to_fit(
+        &mut self,
+        max_width: usize,
+    ) -> usize {
         let mut removed_char_count = 0;
         let mut break_idx = 0;
         let mut width = self.width();
         for (idx, c) in self.string.char_indices() {
-            if width <= max_width { break; }
+            if width <= max_width {
+                break;
+            }
             break_idx = idx + c.len_utf8();
             let char_width = c.width().unwrap_or(0);
             if char_width > width {
@@ -88,13 +106,17 @@ impl<'a> MatchedString<'a> {
         }
         if removed_char_count > 0 {
             self.string = &self.string[break_idx..];
-            self.name_match = self.name_match
+            self.name_match = self
+                .name_match
                 .take()
-                .map(|mut nm| nm.cut_after(removed_char_count-1));
+                .map(|mut nm| nm.cut_after(removed_char_count - 1));
         }
         removed_char_count
     }
-    pub fn queue_on<W>(&self, cw: &mut CropWriter<'_, W>) -> Result<(), termimad::Error>
+    pub fn queue_on<W>(
+        &self,
+        cw: &mut CropWriter<'_, W>,
+    ) -> Result<(), termimad::Error>
     where
         W: std::io::Write,
     {

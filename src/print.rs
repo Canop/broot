@@ -6,27 +6,39 @@ use {
         display::Screen,
         errors::ProgramError,
         launchable::Launchable,
-        skin::{PanelSkin, StyleMap},
+        skin::{
+            PanelSkin,
+            StyleMap,
+        },
         tree::Tree,
     },
     crokey::crossterm::tty::IsTty,
     pathdiff,
     std::{
-        io::{self, stdout},
+        io::{
+            self,
+            stdout,
+        },
         path::Path,
     },
 };
 
-fn print_string(string: String, _con: &AppContext) -> io::Result<CmdResult> {
+fn print_string(
+    string: String,
+    _con: &AppContext,
+) -> io::Result<CmdResult> {
     Ok(
         // We write on stdout, but we must do it after app closing
         // to have the desired stdout (it may be the normal terminal
         // or a file, or other output)
-        CmdResult::from(Launchable::printer(string))
+        CmdResult::from(Launchable::printer(string)),
     )
 }
 
-pub fn print_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<CmdResult> {
+pub fn print_paths(
+    sel_info: SelInfo,
+    con: &AppContext,
+) -> io::Result<CmdResult> {
     let string = match sel_info {
         SelInfo::None => "".to_string(), // better idea ?
         SelInfo::One(sel) => sel.path.to_string_lossy().to_string(),
@@ -42,23 +54,27 @@ pub fn print_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<CmdResult>
     print_string(string, con)
 }
 
-fn relativize_path(path: &Path, con: &AppContext) -> io::Result<String> {
+fn relativize_path(
+    path: &Path,
+    con: &AppContext,
+) -> io::Result<String> {
     let relative_path = match pathdiff::diff_paths(path, &con.initial_root) {
         None => {
             return Err(io::Error::other(format!("Cannot relativize {path:?}")));
         }
         Some(p) => p,
     };
-    Ok(
-        if relative_path.components().next().is_some() {
-            relative_path.to_string_lossy().to_string()
-        } else {
-            ".".to_string()
-        }
-    )
+    Ok(if relative_path.components().next().is_some() {
+        relative_path.to_string_lossy().to_string()
+    } else {
+        ".".to_string()
+    })
 }
 
-pub fn print_relative_paths(sel_info: SelInfo, con: &AppContext) -> io::Result<CmdResult> {
+pub fn print_relative_paths(
+    sel_info: SelInfo,
+    con: &AppContext,
+) -> io::Result<CmdResult> {
     let string = match sel_info {
         SelInfo::None => "".to_string(),
         SelInfo::One(sel) => relativize_path(sel.path, con)?,

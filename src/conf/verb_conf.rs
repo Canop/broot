@@ -1,17 +1,17 @@
 use {
     crate::{
-        app::{
-            PanelStateType,
-        },
+        app::PanelStateType,
         verb::*,
     },
-    serde::{Deserialize, Serialize},
+    serde::{
+        Deserialize,
+        Serialize,
+    },
 };
 
 /// A deserializable verb entry in the configuration
 #[derive(Default, Debug, Clone, Deserialize, Serialize)]
 pub struct VerbConf {
-
     pub invocation: Option<String>,
 
     pub internal: Option<String>,
@@ -56,4 +56,3 @@ pub struct VerbConf {
 
     pub refresh_after: Option<bool>,
 }
-

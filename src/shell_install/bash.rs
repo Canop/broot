@@ -11,7 +11,10 @@
 //! (exact paths depend on XDG variables)
 
 use {
-    super::{util, ShellInstall},
+    super::{
+        ShellInstall,
+        util,
+    },
     crate::{
         conf,
         errors::*,
@@ -19,10 +22,11 @@ use {
     directories::UserDirs,
     lazy_regex::regex,
     regex::Captures,
-    std::{env, path::PathBuf},
-    termimad::{
-        mad_print_inline,
+    std::{
+        env,
+        path::PathBuf,
     },
+    termimad::mad_print_inline,
 };
 
 const NAME: &str = "bash";

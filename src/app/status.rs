@@ -1,4 +1,3 @@
-
 /// the status contains information written on the grey line
 ///  near the bottom of the screen
 #[derive(Debug, Clone)]
@@ -8,7 +7,10 @@ pub struct Status {
 }
 
 impl Status {
-    pub fn new<S: Into<String>>(message: S, error: bool) -> Status {
+    pub fn new<S: Into<String>>(
+        message: S,
+        error: bool,
+    ) -> Status {
         Self {
             message: message.into(),
             error,

@@ -2,7 +2,10 @@ use {
     super::*,
     crate::{
         command::*,
-        display::{Areas, Screen},
+        display::{
+            Areas,
+            Screen,
+        },
         skin::PanelSkin,
     },
 };
@@ -19,7 +22,7 @@ pub struct CmdContext<'c> {
 pub struct AppCmdContext<'c> {
     pub panel_skin: &'c PanelSkin,
     pub preview_panel: Option<PanelId>, // id of the app's preview panel
-    pub stage_panel: Option<PanelId>, // id of the app's preview panel
+    pub stage_panel: Option<PanelId>,   // id of the app's preview panel
     pub screen: Screen,
     pub con: &'c AppContext,
 }

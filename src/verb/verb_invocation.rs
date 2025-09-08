@@ -1,6 +1,4 @@
-use {
-    std::fmt,
-};
+use std::fmt;
 
 /// the verb and its arguments, making the invocation.
 /// When coming from parsing, the args is Some as soon
@@ -13,7 +11,10 @@ pub struct VerbInvocation {
 }
 
 impl fmt::Display for VerbInvocation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, ":")?;
         if self.bang {
             write!(f, "!")?;
@@ -27,7 +28,11 @@ impl fmt::Display for VerbInvocation {
 }
 
 impl VerbInvocation {
-    pub fn new<T: Into<String>>(name: T, args: Option<T>, bang: bool) -> Self {
+    pub fn new<T: Into<String>>(
+        name: T,
+        args: Option<T>,
+        bang: bool,
+    ) -> Self {
         Self {
             name: name.into(),
             args: args.map(|s| s.into()),
@@ -47,7 +52,10 @@ impl VerbInvocation {
     }
     /// basically return the invocation but allow another name (the shortcut
     /// or a variant)
-    pub fn to_string_for_name(&self, name: &str) -> String {
+    pub fn to_string_for_name(
+        &self,
+        name: &str,
+    ) -> String {
         let mut s = String::new();
         if self.bang {
             s.push('!');
