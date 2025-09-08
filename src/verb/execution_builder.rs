@@ -440,9 +440,6 @@ mod execution_builder_test {
 
     use {
         super::*,
-        crate::{
-            stage::*,
-        },
     };
 
     fn check_build_execution_from_sel(
@@ -458,11 +455,7 @@ mod execution_builder_test {
             stype: SelectionType::File,
             is_exe: false,
         };
-        let app_state = AppState {
-            stage: Stage::default(),
-            root: PathBuf::from("/".to_owned()),
-            other_panel_path: None,
-        };
+        let app_state = AppState::new(PathBuf::from("/".to_owned()));
         let mut builder = ExecutionStringBuilder::without_invocation(
             SelInfo::One(sel),
             &app_state,
