@@ -9,11 +9,13 @@ use {
         minimad::{Alignment, Composite},
         Area, StyledChar,
     },
+    unicode_width::UnicodeWidthStr,
 };
 
 /// write the whole status line (task + status)
 pub fn write(
     w: &mut W,
+    watching: bool,
     task: Option<&str>,
     status: &Status,
     area: &Area,
@@ -23,6 +25,11 @@ pub fn write(
     let y = area.top;
     screen.goto(w, area.left, y)?;
     let mut x = area.left;
+    if watching {
+        let eye = "👁 ";
+        x += eye.width() as u16;
+        panel_skin.styles.status_job.queue(w, eye)?;
+    }
     if let Some(pending_task) = task {
         let pending_task = format!(" {pending_task}… ");
         x += pending_task.chars().count() as u16;

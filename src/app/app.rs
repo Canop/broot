@@ -18,7 +18,6 @@ use {
         pattern::InputPattern,
         preview::PreviewState,
         skin::*,
-        stage::Stage,
         syntactic::SyntaxTheme,
         task_sync::{
             Dam,
@@ -26,6 +25,7 @@ use {
         },
         terminal,
         verb::Internal,
+        watcher::Watcher,
     },
     crokey::crossterm::{
         cursor::MoveTo,
@@ -34,7 +34,10 @@ use {
     },
     std::{
         io::Write,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
         str::FromStr,
         sync::{
             Arc,
@@ -43,13 +46,13 @@ use {
     },
     strict::NonEmptyVec,
     termimad::{
-        crossbeam::channel::{
-            unbounded,
-            Receiver,
-            Sender,
-        },
         EventSource,
         EventSourceOptions,
+        crossbeam::channel::{
+            Receiver,
+            Sender,
+            unbounded,
+        },
     },
 };
 
@@ -89,6 +92,9 @@ pub struct App {
 
     /// counter incremented at every draw
     drawing_count: usize,
+
+    /// a watcher for notify events
+    watcher: Watcher,
 }
 
 impl App {
@@ -111,6 +117,7 @@ impl App {
             con,
         );
         let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
+        let watcher = Watcher::new(tx_seqs.clone())?;
         let mut app = App {
             screen,
             active_panel_idx: 0,
@@ -124,6 +131,7 @@ impl App {
             tx_seqs,
             rx_seqs,
             drawing_count: 0,
+            watcher,
         };
         if let Some(path) = con.initial_file.as_ref() {
             // open initial_file in preview
@@ -238,7 +246,10 @@ impl App {
     /// Close the panel too if that was its only state.
     /// Close nothing and return false if there's not
     /// at least two states in the app.
-    fn remove_state(&mut self, con: &AppContext) -> bool {
+    fn remove_state(
+        &mut self,
+        con: &AppContext,
+    ) -> bool {
         self.panels[self.active_panel_idx].remove_state()
             || self.close_panel(self.active_panel_idx, con)
     }
@@ -446,12 +457,13 @@ impl App {
                     }
                     Internal::panel_right_no_open => {
                         // we either move to the right or close the leftest panel
-                        new_active_panel_idx = if self.active_panel_idx + 1 == self.panels.len().get() {
-                            self.close_panel(0, con);
-                            None
-                        } else {
-                            Some(self.active_panel_idx + 1)
-                        };
+                        new_active_panel_idx =
+                            if self.active_panel_idx + 1 == self.panels.len().get() {
+                                self.close_panel(0, con);
+                                None
+                            } else {
+                                Some(self.active_panel_idx + 1)
+                            };
                     }
                     Internal::search_again => {
                         if let Some(raw_pattern) = &self.panel().last_raw_pattern {
@@ -526,10 +538,18 @@ impl App {
                             }
                         }
                     }
+                    Internal::toggle_watch => {
+                        app_state.watch_root ^= true;
+                        if is_input_invocation {
+                            self.mut_panel().clear_input_invocation(con);
+                        }
+                    }
                     _ => {
                         let cmd = self.mut_panel().input.on_internal(internal);
                         if cmd.is_none() {
-                            warn!("unhandled propagated internal. internal={internal:?} cmd={cmd:?}");
+                            warn!(
+                                "unhandled propagated internal. internal={internal:?} cmd={cmd:?}"
+                            );
                         } else {
                             self.apply_command(w, cmd, panel_skin, app_state, con)?;
                         }
@@ -556,7 +576,8 @@ impl App {
                 purpose,
                 direction,
             } => {
-                if let Err(s) = self.new_panel(state, purpose, direction, is_input_invocation, con) {
+                if let Err(s) = self.new_panel(state, purpose, direction, is_input_invocation, con)
+                {
                     error = Some(s);
                 }
             }
@@ -827,23 +848,20 @@ impl App {
         // when a long search is running, and interrupt it if needed
         w.flush()?;
         let combine_keys = conf.enable_kitty_keyboard.unwrap_or(false) && con.is_tty;
-        let event_source = EventSource::with_options(
-            EventSourceOptions {
-                combine_keys,
-                ..Default::default()
-            }
-        )?;
+        let event_source = EventSource::with_options(EventSourceOptions {
+            combine_keys,
+            ..Default::default()
+        })?;
         con.keyboard_enhanced = event_source.supports_multi_key_combinations();
-        info!("event source is combining: {}", event_source.supports_multi_key_combinations());
+        info!(
+            "event source is combining: {}",
+            event_source.supports_multi_key_combinations()
+        );
 
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
         let skin = AppSkin::new(conf, con.launch_args.color == TriBool::No);
-        let mut app_state = AppState {
-            stage: Stage::default(),
-            root: con.initial_root.clone(),
-            other_panel_path: None,
-        };
+        let mut app_state = AppState::new(&con.initial_root);
         terminal::update_title(w, &app_state, con);
 
         self.screen.clear_bottom_right_char(w, &skin.focused)?;
@@ -894,8 +912,25 @@ impl App {
                     self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
                 );
             }
+
+            // before starting to wait for events, we enable the watcher if needed
+            if app_state.watch_root {
+                if let Err(e) = self.watcher.watch(app_state.root.clone()) {
+                    // errors aren't uncommon, especially on huge directories
+                    warn!("Failed to watch root {:?}: {e}", &app_state.root);
+                    // we disable watching
+                    app_state.watch_root = false;
+                }
+            }
+            let event = dam.next(&self.rx_seqs);
+            if app_state.watch_root {
+                // we must unwatch before applying the command, as it will probably do many system
+                // calls that would trigger events
+                self.watcher.stop_watching()?;
+            }
+
             #[allow(unused_mut)]
-            match dam.next(&self.rx_seqs) {
+            match event {
                 Either::First(Some(event)) => {
                     //info!("event: {:?}", &event);
                     if let Some(key_combination) = event.key_combination {
@@ -941,7 +976,7 @@ impl App {
                 Either::Second(Some(raw_sequence)) => {
                     debug!("got command sequence: {:?}", &raw_sequence);
                     for (input, arg_cmd) in raw_sequence.parse(con)? {
-                        if !matches!(&arg_cmd, Command::Internal{..}) {
+                        if !matches!(&arg_cmd, Command::Internal { .. }) {
                             self.mut_panel().set_input_content(&input);
                         }
                         self.apply_command(w, arg_cmd, &skin.focused, &mut app_state, con)?;

@@ -637,6 +637,9 @@ pub trait PanelState {
             Internal::toggle_second_tree => {
                 CmdResult::HandleInApp(Internal::toggle_second_tree)
             }
+            Internal::toggle_watch => {
+                CmdResult::HandleInApp(Internal::toggle_watch)
+            }
             Internal::clear_stage => {
                 app_state.stage.clear();
                 if let Some(panel_id) = cc.app.stage_panel {

@@ -166,6 +166,8 @@ Internals! {
     unstage: "remove selection from staging area" true,
     up_tree: "focus the parent of the current root" true,
     write_output: "write the argument to the --verb-output file" false,
+    toggle_watch: "toggle watching the current root for changes" false,
+
     //restore_pattern: "restore a pattern which was just removed" false,
 }
 

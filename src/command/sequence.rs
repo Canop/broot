@@ -38,10 +38,10 @@ impl Sequence {
             separator: separator.map_or_else(Sequence::local_separator, |s| s.into()),
         }
     }
-    pub fn new_single(cmd: String) -> Self {
+    pub fn new_single<S: Into<String>>(cmd: S) -> Self {
         Self {
             separator: "".to_string(),
-            raw: cmd,
+            raw: cmd.into(),
         }
     }
     pub fn new_local(raw: String) -> Self {

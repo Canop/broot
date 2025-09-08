@@ -205,7 +205,8 @@ impl Panel {
     ) -> Result<Option<(u16, u16)>, ProgramError> {
         self.mut_state().display(w, disc)?;
         if disc.active || !WIDE_STATUS {
-            self.write_status(w, disc.panel_skin, disc.screen)?;
+            let watching = disc.app_state.watch_root;
+            self.write_status(w, watching, disc.panel_skin, disc.screen)?;
         }
         let mut input_area = self.areas.input.clone();
         if disc.active {
@@ -232,12 +233,14 @@ impl Panel {
     fn write_status(
         &self,
         w: &mut W,
+        watching: bool,
         panel_skin: &PanelSkin,
         screen: Screen,
     ) -> Result<(), ProgramError> {
         let task = self.state().get_pending_task();
         status_line::write(
             w,
+            watching,
             task,
             &self.status,
             &self.areas.status,
