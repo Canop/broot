@@ -5,9 +5,12 @@ use {
         command::*,
         path,
     },
-    rustc_hash::FxHashMap,
     regex::Captures,
-    std::path::{Path, PathBuf},
+    rustc_hash::FxHashMap,
+    std::path::{
+        Path,
+        PathBuf,
+    },
 };
 
 /// a temporary structure gathering selection and invocation
@@ -35,8 +38,8 @@ impl<'b> ExecutionStringBuilder<'b> {
     /// (because we're in the process of building one, for example
     /// when a verb is triggered from a key shortcut)
     pub fn without_invocation(
-         sel_info: SelInfo<'b>,
-         app_state: &'b AppState,
+        sel_info: SelInfo<'b>,
+        app_state: &'b AppState,
     ) -> Self {
         Self {
             sel_info,
@@ -66,32 +69,30 @@ impl<'b> ExecutionStringBuilder<'b> {
     }
     fn get_raw_replacement<F>(
         &self,
-        f: F
+        f: F,
     ) -> Option<String>
     where
-        F: Fn(Option<Selection<'_>>) -> Option<String>
+        F: Fn(Option<Selection<'_>>) -> Option<String>,
     {
         match self.sel_info {
             SelInfo::None => f(None),
             SelInfo::One(sel) => f(Some(sel)),
             SelInfo::More(stage) => {
-                let mut sels = stage.paths().iter()
-                    .map(|path| Selection {
-                        path,
-                        line: 0,
-                        stype: SelectionType::from(path),
-                        is_exe: false,
-                    });
-                f(sels.next())
-                    .filter(|first_rcr| {
-                        for sel in sels {
-                            let rcr = f(Some(sel));
-                            if rcr.as_ref() != Some(first_rcr) {
-                                return false;
-                            }
+                let mut sels = stage.paths().iter().map(|path| Selection {
+                    path,
+                    line: 0,
+                    stype: SelectionType::from(path),
+                    is_exe: false,
+                });
+                f(sels.next()).filter(|first_rcr| {
+                    for sel in sels {
+                        let rcr = f(Some(sel));
+                        if rcr.as_ref() != Some(first_rcr) {
+                            return false;
                         }
-                        true
-                    })
+                    }
+                    true
+                })
             }
         }
     }
@@ -100,9 +101,7 @@ impl<'b> ExecutionStringBuilder<'b> {
         ec: &Captures<'_>,
         con: &AppContext,
     ) -> Option<String> {
-        self.get_raw_replacement(|sel| {
-            self.get_raw_sel_capture_replacement(ec, sel, con)
-        })
+        self.get_raw_replacement(|sel| self.get_raw_sel_capture_replacement(ec, sel, con))
     }
     /// return the standard replacement (ie not one from the invocation)
     fn get_raw_sel_name_standard_replacement(
@@ -116,38 +115,37 @@ impl<'b> ExecutionStringBuilder<'b> {
             "root" => Some(path_to_string(self.root)),
             "initial-root" => Some(path_to_string(&con.initial_root)),
             "line" => sel.map(|s| s.line.to_string()),
-            "file" => sel.map(|s| s.path)
-                .map(path_to_string),
-            "file-name" => sel.map(|s| s.path)
+            "file" => sel.map(|s| s.path).map(path_to_string),
+            "file-name" => sel
+                .map(|s| s.path)
                 .and_then(|path| path.file_name())
                 .and_then(|oss| oss.to_str())
                 .map(|s| s.to_string()),
-            "file-stem" => sel.map(|s| s.path)
+            "file-stem" => sel
+                .map(|s| s.path)
                 .and_then(|path| path.file_stem())
                 .and_then(|oss| oss.to_str())
                 .map(|s| s.to_string()),
             "file-extension" => {
                 debug!("expending file extension");
                 sel.map(|s| s.path)
-                .and_then(|path| path.extension())
-                .and_then(|oss| oss.to_str())
-                .map(|s| s.to_string())
+                    .and_then(|path| path.extension())
+                    .and_then(|oss| oss.to_str())
+                    .map(|s| s.to_string())
             }
             "file-dot-extension" => {
                 debug!("expending file dot extension");
                 sel.map(|s| s.path)
-                .and_then(|path| path.extension())
-                .and_then(|oss| oss.to_str())
-                .map(|ext| format!(".{ext}"))
-                .or_else(|| Some("".to_string()))
+                    .and_then(|path| path.extension())
+                    .and_then(|oss| oss.to_str())
+                    .map(|ext| format!(".{ext}"))
+                    .or_else(|| Some("".to_string()))
             }
-            "directory" => sel.map(|s| path::closest_dir(s.path))
-                .map(path_to_string),
-            "parent" => sel.and_then(|s| s.path.parent())
-                .map(path_to_string),
-            "other-panel-file" => self.other_file
-                .map(path_to_string),
-            "other-panel-filename" => self.other_file
+            "directory" => sel.map(|s| path::closest_dir(s.path)).map(path_to_string),
+            "parent" => sel.and_then(|s| s.path.parent()).map(path_to_string),
+            "other-panel-file" => self.other_file.map(path_to_string),
+            "other-panel-filename" => self
+                .other_file
                 .and_then(|path| path.file_name())
                 .and_then(|oss| oss.to_str())
                 .map(|s| s.to_string()),
@@ -156,28 +154,29 @@ impl<'b> ExecutionStringBuilder<'b> {
                 .map(|p| path::closest_dir(p))
                 .as_ref()
                 .map(path_to_string),
-            "other-panel-parent" => self
-                .other_file
-                .and_then(|p| p.parent())
-                .map(path_to_string),
-            "git-root" => { // path to git repo workdir
+            "other-panel-parent" => self.other_file.and_then(|p| p.parent()).map(path_to_string),
+            "git-root" => {
+                // path to git repo workdir
                 debug!("finding git root");
-                sel
-                    .and_then(|s| git2::Repository::discover(s.path).ok())
+                sel.and_then(|s| git2::Repository::discover(s.path).ok())
                     .and_then(|repo| repo.workdir().map(path_to_string))
             }
-            "git-name" => { // name of the git repo workdir
-                sel
-                    .and_then(|s| git2::Repository::discover(s.path).ok())
-                    .and_then(|repo| repo.workdir().and_then(|path| {
-                        path.file_name()
-                        .and_then(|oss| oss.to_str())
-                        .map(|s| s.to_string())
-                    }))
+            "git-name" => {
+                // name of the git repo workdir
+                sel.and_then(|s| git2::Repository::discover(s.path).ok())
+                    .and_then(|repo| {
+                        repo.workdir().and_then(|path| {
+                            path.file_name()
+                                .and_then(|oss| oss.to_str())
+                                .map(|s| s.to_string())
+                        })
+                    })
             }
-            "file-git-relative" => { // file path relative to git repo workdir
+            "file-git-relative" => {
+                // file path relative to git repo workdir
                 let sel = sel?;
-                let path = git2::Repository::discover(self.root).ok()
+                let path = git2::Repository::discover(self.root)
+                    .ok()
                     .and_then(|repo| repo.workdir().map(path_to_string))
                     .and_then(|gitroot| sel.path.strip_prefix(gitroot).ok())
                     .filter(|p| {
@@ -198,22 +197,21 @@ impl<'b> ExecutionStringBuilder<'b> {
     ) -> Option<String> {
         let name = ec.get(1).unwrap().as_str();
         self.get_raw_sel_name_standard_replacement(name, sel, con)
-            .or_else(||{
+            .or_else(|| {
                 // it's not one of the standard group names, so we'll look
                 // into the ones provided by the invocation pattern
-                self.invocation_values.as_ref()
+                self.invocation_values
+                    .as_ref()
                     .and_then(|map| map.get(name))
                     .and_then(|value| {
                         if let Some(fmt) = ec.get(2) {
                             match fmt.as_str() {
-                                "path-from-directory" => {
-                                    sel.map(|s| path::closest_dir(s.path))
-                                        .map(|dir| path::path_str_from(dir, value))
-                                }
-                                "path-from-parent" => {
-                                     sel.and_then(|s| s.path.parent())
-                                        .map(|dir| path::path_str_from(dir, value))
-                                }
+                                "path-from-directory" => sel
+                                    .map(|s| path::closest_dir(s.path))
+                                    .map(|dir| path::path_str_from(dir, value)),
+                                "path-from-parent" => sel
+                                    .and_then(|s| s.path.parent())
+                                    .map(|dir| path::path_str_from(dir, value)),
                                 _ => Some(format!("invalid format: {:?}", fmt.as_str())),
                             }
                         } else {
@@ -229,9 +227,13 @@ impl<'b> ExecutionStringBuilder<'b> {
         con: &AppContext,
     ) -> String {
         self.get_raw_capture_replacement(ec, con)
-            .unwrap_or_else(||
-                if self.keep_groups { ec[0].to_string() } else { "".to_string() }
-            )
+            .unwrap_or_else(|| {
+                if self.keep_groups {
+                    ec[0].to_string()
+                } else {
+                    "".to_string()
+                }
+            })
     }
     fn get_sel_capture_replacement(
         &self,
@@ -240,9 +242,13 @@ impl<'b> ExecutionStringBuilder<'b> {
         con: &AppContext,
     ) -> String {
         self.get_raw_sel_capture_replacement(ec, sel, con)
-            .unwrap_or_else(||
-                if self.keep_groups { ec[0].to_string() } else { "".to_string() }
-            )
+            .unwrap_or_else(|| {
+                if self.keep_groups {
+                    ec[0].to_string()
+                } else {
+                    "".to_string()
+                }
+            })
     }
     /// fills groups having a default value (after the colon)
     ///
@@ -256,28 +262,29 @@ impl<'b> ExecutionStringBuilder<'b> {
         VerbInvocation {
             name: verb_invocation.name.clone(),
             args: verb_invocation.args.as_ref().map(|a| {
-                GROUP.replace_all(
-                    a.as_str(),
-                    |ec: &Captures<'_>| {
+                GROUP
+                    .replace_all(a.as_str(), |ec: &Captures<'_>| {
                         ec.get(2)
                             .map(|default_name| default_name.as_str())
-                            .and_then(|default_name|
-                                self.get_raw_replacement(|sel|
-                                    self.get_raw_sel_name_standard_replacement(default_name, sel, con)
-                                )
-                            )
+                            .and_then(|default_name| {
+                                self.get_raw_replacement(|sel| {
+                                    self.get_raw_sel_name_standard_replacement(
+                                        default_name,
+                                        sel,
+                                        con,
+                                    )
+                                })
+                            })
                             .unwrap_or_default()
-                    },
-                ).to_string()
+                    })
+                    .to_string()
             }),
             bang: verb_invocation.bang,
         }
     }
 
     fn base_dir(&self) -> &Path {
-        self.sel_info
-            .one_sel()
-            .map_or(self.root, |sel| sel.path)
+        self.sel_info.one_sel().map_or(self.root, |sel| sel.path)
     }
     /// replace groups in a sequence
     ///
@@ -330,10 +337,9 @@ impl<'b> ExecutionStringBuilder<'b> {
         con: &AppContext,
     ) -> String {
         GROUP
-            .replace_all(
-                pattern,
-                |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
-            )
+            .replace_all(pattern, |ec: &Captures<'_>| {
+                self.get_capture_replacement(ec, con)
+            })
             .to_string()
     }
     /// build a path
@@ -345,10 +351,9 @@ impl<'b> ExecutionStringBuilder<'b> {
         path::path_from(
             self.base_dir(),
             path::PathAnchor::Unspecified,
-            &GROUP.replace_all(
-                pattern,
-                |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
-            )
+            &GROUP.replace_all(pattern, |ec: &Captures<'_>| {
+                self.get_capture_replacement(ec, con)
+            }),
         )
     }
     /// build a shell compatible command, with escapings
@@ -359,10 +364,9 @@ impl<'b> ExecutionStringBuilder<'b> {
     ) -> String {
         exec_pattern
             .apply(&|s| {
-                GROUP.replace_all(
-                    s,
-                    |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
-                ).to_string()
+                GROUP
+                    .replace_all(s, |ec: &Captures<'_>| self.get_capture_replacement(ec, con))
+                    .to_string()
             })
             .fix_paths()
             .to_string()
@@ -378,10 +382,11 @@ impl<'b> ExecutionStringBuilder<'b> {
     ) -> String {
         exec_pattern
             .apply(&|s| {
-                GROUP.replace_all(
-                    s,
-                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel, con),
-                ).to_string()
+                GROUP
+                    .replace_all(s, |ec: &Captures<'_>| {
+                        self.get_sel_capture_replacement(ec, sel, con)
+                    })
+                    .to_string()
             })
             .fix_paths()
             .to_string()
@@ -395,10 +400,9 @@ impl<'b> ExecutionStringBuilder<'b> {
     ) -> Vec<String> {
         exec_pattern
             .apply(&|s| {
-                GROUP.replace_all(
-                    s,
-                    |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
-                ).to_string()
+                GROUP
+                    .replace_all(s, |ec: &Captures<'_>| self.get_capture_replacement(ec, con))
+                    .to_string()
             })
             .fix_paths()
             .into_array()
@@ -413,10 +417,11 @@ impl<'b> ExecutionStringBuilder<'b> {
     ) -> Vec<String> {
         exec_pattern
             .apply(&|s| {
-                GROUP.replace_all(
-                    s,
-                    |ec: &Captures<'_>| self.get_sel_capture_replacement(ec, sel, con),
-                ).to_string()
+                GROUP
+                    .replace_all(s, |ec: &Captures<'_>| {
+                        self.get_sel_capture_replacement(ec, sel, con)
+                    })
+                    .to_string()
             })
             .fix_paths()
             .into_array()
@@ -437,10 +442,7 @@ mod execution_builder_test {
         }}
     }
 
-
-    use {
-        super::*,
-    };
+    use super::*;
 
     fn check_build_execution_from_sel(
         exec_patterns: Vec<ExecPattern>,
@@ -456,10 +458,7 @@ mod execution_builder_test {
             is_exe: false,
         };
         let app_state = AppState::new(PathBuf::from("/".to_owned()));
-        let mut builder = ExecutionStringBuilder::without_invocation(
-            SelInfo::One(sel),
-            &app_state,
-        );
+        let mut builder = ExecutionStringBuilder::without_invocation(SelInfo::One(sel), &app_state);
         let mut map = FxHashMap::default();
         for (k, v) in replacements {
             map.insert(k.to_owned(), v.to_owned());
@@ -483,11 +482,17 @@ mod execution_builder_test {
         check_build_execution_from_sel(
             vec![
                 ExecPattern::from_string("/bin/e.exe -a {arg} -e {file}"),
-                ExecPattern::from_array(vo!["/bin/e.exe","-a", "{arg}", "-e", "{file}"]),
+                ExecPattern::from_array(vo!["/bin/e.exe", "-a", "{arg}", "-e", "{file}"]),
             ],
             "expérimental & 试验性",
             vec![("arg", "deux mots")],
-            vec!["/bin/e.exe", "-a", "deux mots", "-e", "expérimental & 试验性"],
+            vec![
+                "/bin/e.exe",
+                "-a",
+                "deux mots",
+                "-e",
+                "expérimental & 试验性",
+            ],
         );
         check_build_execution_from_sel(
             vec![

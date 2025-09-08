@@ -1,8 +1,13 @@
 use {
     std::thread,
     termimad::{
-        crossbeam::channel::{self, bounded, select, Receiver},
         TimedEvent,
+        crossbeam::channel::{
+            self,
+            Receiver,
+            bounded,
+            select,
+        },
     },
 };
 
@@ -144,7 +149,10 @@ impl Dam {
         }
     }
 
-    pub fn next<T>(&mut self, other: &Receiver<T>) -> Either<Option<TimedEvent>, Option<T>> {
+    pub fn next<T>(
+        &mut self,
+        other: &Receiver<T>,
+    ) -> Either<Option<TimedEvent>, Option<T>> {
         if self.in_dam.is_some() {
             Either::First(self.in_dam.take())
         } else {

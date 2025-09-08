@@ -38,10 +38,8 @@ fn set_title(
     app_state: &AppState,
     con: &AppContext,
 ) {
-    let builder = ExecutionStringBuilder::without_invocation(
-        SelInfo::from_path(&app_state.root),
-        app_state,
-    );
+    let builder =
+        ExecutionStringBuilder::without_invocation(SelInfo::from_path(&app_state.root), app_state);
     let title = builder.shell_exec_string(pattern, con);
     set_title_str(w, &title)
 }
@@ -54,4 +52,3 @@ fn set_title_str(
     let _ = write!(w, "\u{1b}]0;{title}\u{07}");
     let _ = w.flush();
 }
-

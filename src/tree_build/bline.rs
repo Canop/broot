@@ -3,7 +3,11 @@ use {
     crate::{
         errors::TreeBuildError,
         git::IgnoreChain,
-        path::{normalize_path, Directive, SpecialHandling},
+        path::{
+            Directive,
+            SpecialHandling,
+            normalize_path,
+        },
         tree::*,
     },
     id_arena::Arena,
@@ -34,11 +38,8 @@ pub struct BLine {
 }
 
 impl BLine {
-    pub fn name(
-        &self
-    ) -> &str {
-        self
-            .path
+    pub fn name(&self) -> &str {
+        self.path
             .file_name()
             .and_then(|os_str| os_str.to_str())
             .unwrap_or("")

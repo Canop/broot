@@ -11,24 +11,45 @@ pub use {
 
 use {
     crate::{
-        app::{App, AppContext},
-        conf::{Conf, write_default_conf_in},
+        app::{
+            App,
+            AppContext,
+        },
+        conf::{
+            Conf,
+            write_default_conf_in,
+        },
         display,
         errors::ProgramError,
         launchable::Launchable,
-        shell_install::{ShellInstall, ShellInstallState},
+        shell_install::{
+            ShellInstall,
+            ShellInstallState,
+        },
         verb::VerbStore,
     },
-    clap::{CommandFactory, Parser},
+    clap::{
+        CommandFactory,
+        Parser,
+    },
     clap_help::Printer,
     crokey::crossterm::{
-        cursor,
-        event::{DisableMouseCapture, EnableMouseCapture},
-        terminal::{EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
+        cursor,
+        event::{
+            DisableMouseCapture,
+            EnableMouseCapture,
+        },
+        terminal::{
+            EnterAlternateScreen,
+            LeaveAlternateScreen,
+        },
     },
     std::{
-        io::{self, Write},
+        io::{
+            self,
+            Write,
+        },
         path::PathBuf,
     },
 };
@@ -47,7 +68,6 @@ Complete documentation and tips at https://dystroy.org/broot
 /// run the application, and maybe return a launchable
 /// which must be run after broot
 pub fn run() -> Result<Option<Launchable>, ProgramError> {
-
     // parse the launch arguments we got from cli
     let args = Args::parse();
     let mut must_quit = false;
@@ -92,7 +112,8 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     }
 
     // read the list of specific config files
-    let specific_conf: Option<Vec<PathBuf>> = args.conf
+    let specific_conf: Option<Vec<PathBuf>> = args
+        .conf
         .as_ref()
         .map(|s| s.split(';').map(PathBuf::from).collect());
 
@@ -133,16 +154,18 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     if let Some(server_name) = &context.launch_args.send {
         use crate::{
             command::Sequence,
-            net::{Client, Message},
+            net::{
+                Client,
+                Message,
+            },
         };
         let client = Client::new(server_name);
         if let Some(seq) = &context.launch_args.cmd {
             let message = Message::Sequence(Sequence::new_local(seq.to_string()));
             client.send(&message)?;
         } else if !context.launch_args.get_root {
-            let message = Message::Command(
-                format!(":focus {}", context.initial_root.to_string_lossy())
-            );
+            let message =
+                Message::Command(format!(":focus {}", context.initial_root.to_string_lossy()));
             client.send(&message)?;
         };
         if context.launch_args.get_root {

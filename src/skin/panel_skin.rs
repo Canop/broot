@@ -15,7 +15,6 @@ pub struct PanelSkin {
     pub help_skin: MadSkin,
 }
 
-
 impl PanelSkin {
     pub fn new(styles: StyleMap) -> Self {
         let purpose_skin = make_purpose_mad_skin(&styles);

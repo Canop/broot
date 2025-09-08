@@ -85,7 +85,10 @@ impl CompositePattern {
         })
     }
 
-    pub fn search_string(&self, candidate: &str) -> Option<NameMatch> {
+    pub fn search_string(
+        &self,
+        candidate: &str,
+    ) -> Option<NameMatch> {
         // an ideal algorithm would call score_of on patterns when the object is different
         // to deal with exclusions but I'll start today with something simpler
         use PatternOperator::*;
@@ -117,11 +120,10 @@ impl CompositePattern {
             },
         );
         // it's possible we didn't find a result because the composition
-        composite_result
-            .unwrap_or_else(||{
-                warn!("unexpectedly missing result ");
-                None
-            })
+        composite_result.unwrap_or_else(|| {
+            warn!("unexpectedly missing result ");
+            None
+        })
     }
 
     pub fn search_content(
@@ -158,11 +160,10 @@ impl CompositePattern {
                 _ => false,
             },
         );
-        composite_result
-            .unwrap_or_else(||{
-                warn!("unexpectedly missing result ");
-                None
-            })
+        composite_result.unwrap_or_else(|| {
+            warn!("unexpectedly missing result ");
+            None
+        })
     }
 
     // Search for a string, trying to return a match (it's used when a

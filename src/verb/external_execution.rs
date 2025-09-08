@@ -55,11 +55,14 @@ impl ExternalExecution {
             exec_mode,
             working_dir: None,
             switch_terminal: true, // by default we switch
-            refresh_after: true, // by default we refresh
+            refresh_after: true,   // by default we refresh
         }
     }
 
-    pub fn with_working_dir(mut self, b: Option<String>) -> Self {
+    pub fn with_working_dir(
+        mut self,
+        b: Option<String>,
+    ) -> Self {
         self.working_dir = b;
         self
     }
@@ -74,19 +77,13 @@ impl ExternalExecution {
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         match self.exec_mode {
-            ExternalExecutionMode::FromParentShell => self.cmd_result_exec_from_parent_shell(
-                builder,
-                con,
-            ),
-            ExternalExecutionMode::LeaveBroot => self.cmd_result_exec_leave_broot(
-                builder,
-                con,
-            ),
-            ExternalExecutionMode::StayInBroot => self.cmd_result_exec_stay_in_broot(
-                w,
-                builder,
-                con,
-            ),
+            ExternalExecutionMode::FromParentShell => {
+                self.cmd_result_exec_from_parent_shell(builder, con)
+            }
+            ExternalExecutionMode::LeaveBroot => self.cmd_result_exec_leave_broot(builder, con),
+            ExternalExecutionMode::StayInBroot => {
+                self.cmd_result_exec_stay_in_broot(w, builder, con)
+            }
         }
     }
 
@@ -117,7 +114,7 @@ impl ExternalExecution {
     ) -> Result<CmdResult, ProgramError> {
         if builder.sel_info.count_paths() > 1 {
             return Ok(CmdResult::error(
-                "only verbs returning to broot on end can be executed on a multi-selection"
+                "only verbs returning to broot on end can be executed on a multi-selection",
             ));
         }
         if let Some(ref export_path) = con.launch_args.outcmd {
@@ -128,7 +125,7 @@ impl ExternalExecution {
             Ok(CmdResult::Quit)
         } else {
             Ok(CmdResult::error(
-                "this verb needs broot to be launched as `br`. Try `broot --install` if necessary."
+                "this verb needs broot to be launched as `br`. Try `broot --install` if necessary.",
             ))
         }
     }
@@ -142,7 +139,7 @@ impl ExternalExecution {
     ) -> Result<CmdResult, ProgramError> {
         if builder.sel_info.count_paths() > 1 {
             return Ok(CmdResult::error(
-                "only verbs returning to broot on end can be executed on a multi-selection"
+                "only verbs returning to broot on end can be executed on a multi-selection",
             ));
         }
         let launchable = Launchable::program(
@@ -180,13 +177,12 @@ impl ExternalExecution {
             }
             SelInfo::More(stage) => {
                 // multiselection -> we must execute on all paths
-                let sels = stage.paths().iter()
-                    .map(|path| Selection {
-                        path,
-                        line: 0,
-                        stype: SelectionType::from(path),
-                        is_exe: false,
-                    });
+                let sels = stage.paths().iter().map(|path| Selection {
+                    path,
+                    line: 0,
+                    stype: SelectionType::from(path),
+                    is_exe: false,
+                });
                 for sel in sels {
                     let launchable = Launchable::program(
                         builder.sel_exec_token(&self.exec_pattern, Some(sel), con),

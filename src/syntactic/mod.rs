@@ -4,6 +4,9 @@ mod syntaxer;
 
 pub use {
     syntactic_view::SyntacticView,
-    syntaxer::{SYNTAXER, Syntaxer},
     syntax_theme::*,
+    syntaxer::{
+        SYNTAXER,
+        Syntaxer,
+    },
 };

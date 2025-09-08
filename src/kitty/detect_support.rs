@@ -1,8 +1,6 @@
 use {
     cli_log::*,
-    std::{
-        env,
-    },
+    std::env,
 };
 
 /// Determine whether Kitty's graphics protocol is supported
@@ -74,7 +72,7 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
                 debug!("xterm querying failed: {}", e);
                 false
             }
-            Ok(response) => response == "_Gi=31;OK"
+            Ok(response) => response == "_Gi=31;OK",
         };
         debug!("Xterm querying took {:?}", start.elapsed());
         debug!("kitty protocol support: {:?}", s);
@@ -82,4 +80,3 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
     }
     false
 }
-

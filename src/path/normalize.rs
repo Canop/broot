@@ -1,4 +1,8 @@
-use std::path::{Component, Path, PathBuf};
+use std::path::{
+    Component,
+    Path,
+    PathBuf,
+};
 
 /// Improve the path to try remove and solve .. token.
 ///
@@ -11,9 +15,7 @@ use std::path::{Component, Path, PathBuf};
 /// This function ensures a given path ending with '/' still
 /// ends with '/' after normalization.
 pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    let ends_with_slash = path.as_ref()
-        .to_str()
-        .map_or(false, |s| s.ends_with('/'));
+    let ends_with_slash = path.as_ref().to_str().map_or(false, |s| s.ends_with('/'));
     let mut normalized = PathBuf::new();
     for component in path.as_ref().components() {
         match &component {
@@ -37,7 +39,10 @@ pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
 mod path_normalize_tests {
     use super::normalize_path;
 
-    fn check(before: &str, after: &str) {
+    fn check(
+        before: &str,
+        after: &str,
+    ) {
         println!("-----------------\nnormalizing {before:?}");
         // As seen by Stargateur, the test here doesn't work on Windows
         //

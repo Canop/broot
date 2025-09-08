@@ -20,7 +20,10 @@ pub enum VerbExecution {
 }
 
 impl fmt::Display for VerbExecution {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             Self::Internal(ie) => ie.fmt(f),
             Self::External(ee) => ee.exec_pattern.fmt(f),
@@ -28,4 +31,3 @@ impl fmt::Display for VerbExecution {
         }
     }
 }
-

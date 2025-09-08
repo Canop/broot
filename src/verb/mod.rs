@@ -7,8 +7,8 @@ mod file_type_condition;
 mod internal;
 mod internal_execution;
 pub mod internal_focus;
-pub mod internal_select;
 pub mod internal_path;
+pub mod internal_select;
 mod invocation_parser;
 mod sequence_execution;
 mod verb;
@@ -18,6 +18,7 @@ mod verb_invocation;
 mod verb_store;
 mod write;
 
+use lazy_regex::*;
 pub use {
     arg_def::*,
     exec_pattern::*,
@@ -34,11 +35,11 @@ pub use {
     verb_description::VerbDescription,
     verb_execution::VerbExecution,
     verb_invocation::*,
-    verb_store::{PrefixSearchResult, VerbStore},
+    verb_store::{
+        PrefixSearchResult,
+        VerbStore,
+    },
     write::*,
-};
-use {
-    lazy_regex::*,
 };
 
 /// the group you find in invocation patterns and execution patterns
@@ -47,11 +48,12 @@ pub static GROUP: Lazy<Regex> = lazy_regex!(r"\{([^{}:]+)(?::([^{}:]+))?\}");
 pub type VerbId = usize;
 
 pub fn str_has_selection_group(s: &str) -> bool {
-    GROUP.find_iter(s)
-        .any(|group| matches!(
+    GROUP.find_iter(s).any(|group| {
+        matches!(
             group.as_str(),
             "{file}" | "{file-name}" | "{parent}" | "{directory}",
-        ))
+        )
+    })
 }
 pub fn str_has_other_panel_group(s: &str) -> bool {
     for group in GROUP.find_iter(s) {
@@ -61,4 +63,3 @@ pub fn str_has_other_panel_group(s: &str) -> bool {
     }
     false
 }
-

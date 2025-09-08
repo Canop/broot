@@ -1,10 +1,15 @@
-
 use {
-    phf::{phf_set, Set},
+    phf::{
+        Set,
+        phf_set,
+    },
     std::{
-        path::Path,
         fs::File,
-        io::{self, Read},
+        io::{
+            self,
+            Read,
+        },
+        path::Path,
     },
 };
 
@@ -67,7 +72,6 @@ static SIGNATURES_4: Set<[u8; 4]> = phf_set! {
 //     [ 0x21, 0x3C, 0x61, 0x72, 0x63, 0x68 ], // deb
 //     [ 0x7B, 0x5C, 0x72, 0x74, 0x66, 0x31 ], // rtf
 // ];
-
 
 /// return true when the first bytes of the file aren't polite or match one
 /// of the known binary signatures.

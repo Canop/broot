@@ -5,9 +5,15 @@ use {
         errors::ProgramError,
         permissions,
         skin::StyleMap,
-        tree::{Tree, TreeLine},
+        tree::{
+            Tree,
+            TreeLine,
+        },
     },
-    std::{io::Write, os::unix::fs::MetadataExt},
+    std::{
+        io::Write,
+        os::unix::fs::MetadataExt,
+    },
     umask::*,
 };
 

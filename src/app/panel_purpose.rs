@@ -1,14 +1,10 @@
-use {
-    super::SelectionType,
-};
+use super::SelectionType;
 
 /// the possible special reason the panel was open
 #[derive(Debug, Clone, Copy)]
 pub enum PanelPurpose {
     None,
-    ArgEdition {
-        arg_type: SelectionType,
-    },
+    ArgEdition { arg_type: SelectionType },
     Preview,
 }
 

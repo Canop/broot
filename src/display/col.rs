@@ -97,7 +97,10 @@ impl FromStr for Col {
 
 impl Col {
     /// return the index of the column among the complete Cols ordered list
-    pub fn index_in(self, cols: &Cols) -> Option<usize> {
+    pub fn index_in(
+        self,
+        cols: &Cols,
+    ) -> Option<usize> {
         for (idx, col) in cols.iter().enumerate() {
             if *col == self {
                 return Some(idx);
@@ -139,7 +142,6 @@ impl Col {
             Col::Staged => false,
             Col::Name => true,
         }
-
     }
 }
 
@@ -179,4 +181,3 @@ pub fn parse_cols(arr: &Vec<String>) -> Result<Cols, ConfError> {
 pub fn parse_cols_single_str(s: &str) -> Result<Cols, ConfError> {
     parse_cols(&s.chars().map(String::from).collect())
 }
-

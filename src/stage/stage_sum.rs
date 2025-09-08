@@ -16,7 +16,10 @@ pub struct StageSum {
 impl StageSum {
     /// invalidates the computed sum if the version at compilation
     /// time is older than the current one
-    pub fn see_stage(&mut self, stage: &Stage) {
+    pub fn see_stage(
+        &mut self,
+        stage: &Stage,
+    ) {
         if stage.version() != self.stage_version {
             self.sum = None;
         }
@@ -27,7 +30,12 @@ impl StageSum {
     pub fn clear(&mut self) {
         self.sum = None;
     }
-    pub fn compute(&mut self, stage: &Stage, dam: &Dam, con: &AppContext) -> Option<FileSum> {
+    pub fn compute(
+        &mut self,
+        stage: &Stage,
+        dam: &Dam,
+        con: &AppContext,
+    ) -> Option<FileSum> {
         if self.stage_version != stage.version() {
             self.sum = None;
         }

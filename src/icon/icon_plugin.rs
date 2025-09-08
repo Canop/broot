@@ -1,6 +1,4 @@
-use {
-    crate::tree::TreeLineType,
-};
+use crate::tree::TreeLineType;
 
 pub trait IconPlugin {
     fn get_icon(
@@ -11,5 +9,3 @@ pub trait IconPlugin {
         ext: Option<&str>,
     ) -> char;
 }
-
-

@@ -21,4 +21,3 @@ pub fn clear_cache() {
     let mut mount_list = MOUNTS.lock().unwrap();
     mount_list.clear_cache();
 }
-

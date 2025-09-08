@@ -1,4 +1,3 @@
-
 /// a displayable representation of where
 /// the needle was found, with some text around
 #[derive(Debug, Clone)]

@@ -1,5 +1,6 @@
-use {
-    serde::{Deserialize, Serialize},
+use serde::{
+    Deserialize,
+    Serialize,
 };
 
 /// one of the types of state that you could
@@ -7,7 +8,6 @@ use {
 #[derive(Debug, Clone, Copy, PartialEq, Deserialize, Serialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PanelStateType {
-
     /// filesystems
     Fs,
 

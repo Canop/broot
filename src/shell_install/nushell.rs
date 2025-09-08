@@ -14,8 +14,14 @@
 //! contrary to the similar function of other shells.
 
 use {
-    super::{util, ShellInstall},
-    crate::{conf, errors::*},
+    super::{
+        ShellInstall,
+        util,
+    },
+    crate::{
+        conf,
+        errors::*,
+    },
     directories::BaseDirs,
     std::path::PathBuf,
     termimad::mad_print_inline,

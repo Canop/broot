@@ -9,7 +9,6 @@ use {
     std::collections::HashMap,
 };
 
-
 type SpecialPathsConf = HashMap<GlobConf, SpecialHandlingConf>;
 
 #[derive(Clone, Debug, Deserialize, Hash, PartialEq, Eq)]
@@ -42,19 +41,29 @@ impl From<SpecialHandlingShortcut> for SpecialHandling {
         use Directive::*;
         match shortcut {
             SpecialHandlingShortcut::None => SpecialHandling {
-                show: Default, list: Default, sum: Default,
+                show: Default,
+                list: Default,
+                sum: Default,
             },
             SpecialHandlingShortcut::Enter => SpecialHandling {
-                show: Always, list: Always, sum: Always,
+                show: Always,
+                list: Always,
+                sum: Always,
             },
             SpecialHandlingShortcut::NoEnter => SpecialHandling {
-                show: Default, list: Never, sum: Never,
+                show: Default,
+                list: Never,
+                sum: Never,
             },
             SpecialHandlingShortcut::Hide => SpecialHandling {
-                show: Never, list: Default, sum: Never,
+                show: Never,
+                list: Default,
+                sum: Never,
             },
             SpecialHandlingShortcut::NoHide => SpecialHandling {
-                show: Always, list: Default, sum: Default,
+                show: Always,
+                list: Default,
+                sum: Default,
             },
         }
     }

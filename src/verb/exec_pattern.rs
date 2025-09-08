@@ -3,10 +3,13 @@ use {
         path::*,
         verb::*,
     },
-    serde::{Deserialize, Serialize},
+    serde::{
+        Deserialize,
+        Serialize,
+    },
     std::{
-        path::Path,
         fmt,
+        path::Path,
     },
 };
 
@@ -51,12 +54,10 @@ impl ExecPattern {
     }
     pub fn into_array(self) -> Vec<String> {
         match self {
-            Self::String(s) => {
-                splitty::split_unquoted_whitespace(&s)
-                    .unwrap_quotes(true)
-                    .map(|s| s.to_string())
-                    .collect()
-            }
+            Self::String(s) => splitty::split_unquoted_whitespace(&s)
+                .unwrap_quotes(true)
+                .map(|s| s.to_string())
+                .collect(),
             Self::Array(v) => v,
         }
     }
@@ -69,22 +70,17 @@ impl ExecPattern {
     pub fn tokenize(self) -> Self {
         Self::Array(self.into_array())
     }
-    pub fn apply(&self, f: &dyn Fn(&str) -> String) -> Self {
-        Self::Array(
-            match self {
-                Self::String(s) => {
-                    splitty::split_unquoted_whitespace(s)
-                        .unwrap_quotes(true)
-                        .map(f)
-                        .collect()
-                }
-                Self::Array(v) => {
-                    v.iter()
-                        .map(|s| f(s))
-                        .collect()
-                }
-            }
-        )
+    pub fn apply(
+        &self,
+        f: &dyn Fn(&str) -> String,
+    ) -> Self {
+        Self::Array(match self {
+            Self::String(s) => splitty::split_unquoted_whitespace(s)
+                .unwrap_quotes(true)
+                .map(f)
+                .collect(),
+            Self::Array(v) => v.iter().map(|s| f(s)).collect(),
+        })
     }
     pub fn fix_paths(self) -> Self {
         match self {
@@ -92,13 +88,9 @@ impl ExecPattern {
                 splitty::split_unquoted_whitespace(&s)
                     .unwrap_quotes(true)
                     .map(fix_token_path)
-                    .collect()
+                    .collect(),
             ),
-            Self::Array(v) => Self::Array(
-                v.iter()
-                    .map(fix_token_path)
-                    .collect()
-            ),
+            Self::Array(v) => Self::Array(v.iter().map(fix_token_path).collect()),
         }
     }
 }
@@ -123,7 +115,10 @@ fn fix_token_path<T: Into<String> + AsRef<str>>(token: T) -> String {
 
 // this implementation builds a string usable for exect
 impl fmt::Display for ExecPattern {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             Self::String(s) => s.fmt(f),
             Self::Array(v) => {

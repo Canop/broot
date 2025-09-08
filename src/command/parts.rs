@@ -16,7 +16,10 @@ pub struct CommandParts {
 }
 
 impl fmt::Display for CommandParts {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, "{}", self.raw_pattern)?;
         if let Some(invocation) = &self.verb_invocation {
             write!(f, "{invocation}")?;
@@ -40,10 +43,9 @@ impl CommandParts {
         let mut escape_next_char = false;
         // we loop on chars and build the pattern tree until we reach an unescaped ' ' or ':'
         while let Some((pos, cur_char)) = chars.next() {
-            let between_slashes = pt.current_atom()
-                .is_some_and(
-                    |pp: &PatternParts| pp.is_between_slashes(),
-                );
+            let between_slashes = pt
+                .current_atom()
+                .is_some_and(|pp: &PatternParts| pp.is_between_slashes());
             match cur_char {
                 c if escape_cur_char => {
                     // Escaping is used to prevent characters from being consumed at the
@@ -66,7 +68,7 @@ impl CommandParts {
                             (' ' | ':' | '/' | '\\', _) => true,
                             ('&' | '|' | '!' | '(' | ')', false) => true,
                             _ => false,
-                        }
+                        },
                     };
                     if !escape_next_char {
                         // if the '\' isn't used for escaping, it's used as its char value
@@ -74,7 +76,7 @@ impl CommandParts {
                     }
                 }
                 ':' => {
-                    if matches!(chars.peek(), Some((_,':'))) {
+                    if matches!(chars.peek(), Some((_, ':'))) {
                         // two successive ':' in pattern position are part of the
                         // pattern
                         pt.mutate_or_create_atom(PatternParts::default).push(':');
@@ -85,11 +87,13 @@ impl CommandParts {
                         break;
                     }
                 }
-                ' ' => { // ending the pattern part
+                ' ' => {
+                    // ending the pattern part
                     invocation_start_pos = Some(pos);
                     break;
                 }
-                '/' => { // starting an atom part
+                '/' => {
+                    // starting an atom part
                     pt.mutate_or_create_atom(PatternParts::default).add_part();
                 }
                 '|' if !between_slashes && pt.accept_binary_operator() => {
@@ -108,7 +112,8 @@ impl CommandParts {
                     pt.close_par();
                 }
                 _ => {
-                    pt.mutate_or_create_atom(PatternParts::default).push(cur_char);
+                    pt.mutate_or_create_atom(PatternParts::default)
+                        .push(cur_char);
                 }
             }
             escape_cur_char = escape_next_char;
@@ -117,7 +122,7 @@ impl CommandParts {
         let mut verb_invocation = None;
         if let Some(pos) = invocation_start_pos {
             verb_invocation = Some(VerbInvocation::from(
-                raw[pos + 1..].trim_start() // allowing extra spaces
+                raw[pos + 1..].trim_start(), // allowing extra spaces
             ));
             raw.truncate(pos);
         }
@@ -150,7 +155,6 @@ impl CommandParts {
             }),
         )
     }
-
 }
 
 #[cfg(test)]
@@ -162,7 +166,10 @@ mod test_command_parts {
             pattern::*,
             verb::VerbInvocation,
         },
-        bet::{BeTree, Token},
+        bet::{
+            BeTree,
+            Token,
+        },
     };
 
     fn pp(a: &[&str]) -> PatternParts {
@@ -196,85 +203,50 @@ mod test_command_parts {
 
     #[test]
     fn parse_empty() {
-        check(
-            "",
-            "",
-            vec![],
-            None,
-        );
+        check("", "", vec![], None);
     }
     #[test]
     fn parse_just_semicolon() {
-        check(
-            ":",
-            "",
-            vec![],
-            Some(""),
-        );
+        check(":", "", vec![], Some(""));
     }
     #[test]
     fn parse_no_pattern() {
-        check(
-            " cd /",
-            "",
-            vec![],
-            Some("cd /"),
-        );
+        check(" cd /", "", vec![], Some("cd /"));
     }
     #[test]
     fn parse_pattern_and_invocation() {
         check(
             "/r cd /",
             "/r",
-            vec![
-                Token::Atom(pp(&["", "r"])),
-            ],
+            vec![Token::Atom(pp(&["", "r"]))],
             Some("cd /"),
         );
     }
     #[test]
     fn allow_extra_spaces_before_invocation() {
-        check(
-            "  cd /",
-            "",
-            vec![],
-            Some("cd /"),
-        );
+        check("  cd /", "", vec![], Some("cd /"));
         check(
             "/r  cd /",
             "/r",
-            vec![
-                Token::Atom(pp(&["", "r"])),
-            ],
+            vec![Token::Atom(pp(&["", "r"]))],
             Some("cd /"),
         );
         check(
             r#"a\ b   e"#,
             r#"a\ b"#,
-            vec![
-                Token::Atom(pp(&["a b"])),
-            ],
+            vec![Token::Atom(pp(&["a b"]))],
             Some("e"),
         );
         check(
             "/a:   b",
             "/a",
-            vec![
-                Token::Atom(pp(&["", "a"])),
-            ],
+            vec![Token::Atom(pp(&["", "a"]))],
             Some("b"),
         );
     }
     #[test]
     fn parse_pattern_between_slashes() {
-        check(
-            r#"/&"#,
-            r#"/&"#,
-            vec![
-                Token::Atom(pp(&["", "&"])),
-            ],
-            None,
-        );
+        check(r#"/&"#, r#"/&"#, vec![Token::Atom(pp(&["", "&"]))], None);
         check(
             r#"/&/&r/a(\w-)+/ rm"#,
             r#"/&/&r/a(\w-)+/"#,
@@ -288,45 +260,27 @@ mod test_command_parts {
     }
     #[test]
     fn parse_pattern_with_space() {
-        check(
-            r#"a\ b"#,
-            r#"a\ b"#,
-            vec![
-                Token::Atom(pp(&["a b"])),
-            ],
-            None,
-        );
+        check(r#"a\ b"#, r#"a\ b"#, vec![Token::Atom(pp(&["a b"]))], None);
     }
     #[test]
     fn parse_pattern_with_slash() {
         check(
             r#"r/a\ b\//i cd /"#,
             r#"r/a\ b\//i"#,
-            vec![
-                Token::Atom(pp(&["r", "a b/", "i"])),
-            ],
+            vec![Token::Atom(pp(&["r", "a b/", "i"]))],
             Some("cd /"),
         );
     }
     #[test]
     fn parse_fuzzy_pattern_searching_parenthesis() {
-        check(
-            r#"\("#,
-            r#"\("#,
-            vec![
-                Token::Atom(pp(&["("])),
-            ],
-            None,
-        );
+        check(r#"\("#, r#"\("#, vec![Token::Atom(pp(&["("]))], None);
     }
     #[test]
     fn parse_regex_pattern_searching_parenthesis() {
         check(
             r#"/\("#,
             r#"/\("#,
-            vec![
-                Token::Atom(pp(&["", r#"\("#])),
-            ],
+            vec![Token::Atom(pp(&["", r#"\("#]))],
             None,
         );
     }
@@ -345,7 +299,7 @@ mod test_command_parts {
                 Token::Operator(PatternOperator::And),
                 Token::Atom(pp(&["c", "rex"])),
             ],
-            None
+            None,
         );
     }
     #[test]
@@ -366,57 +320,36 @@ mod test_command_parts {
         );
     }
     #[test]
-    fn issue_592() { // https://github.com/Canop/broot/issues/592
-        check(
-            r#"\t"#,
-            r#"\t"#,
-            vec![
-                Token::Atom(pp(&[r#"\t"#])),
-            ],
-            None,
-        );
+    fn issue_592() {
+        // https://github.com/Canop/broot/issues/592
+        check(r#"\t"#, r#"\t"#, vec![Token::Atom(pp(&[r#"\t"#]))], None);
         check(
             r#"r/@(\.[^.]+)+/ cp .."#,
             r#"r/@(\.[^.]+)+/"#,
-            vec![
-                Token::Atom(pp(&["r", r#"@(\.[^.]+)+"#, ""])),
-            ],
+            vec![Token::Atom(pp(&["r", r#"@(\.[^.]+)+"#, ""]))],
             Some("cp .."),
         );
     }
     // two colons in pattern positions are something the user searches
     #[test]
     fn allow_non_escaped_double_colon() {
-        check(
-            r#"::"#,
-            r#"::"#,
-            vec![
-                Token::Atom(pp(&[r#"::"#])),
-            ],
-            None,
-        );
+        check(r#"::"#, r#"::"#, vec![Token::Atom(pp(&[r#"::"#]))], None);
         check(
             r#":::"#,
             r#"::"#,
-            vec![
-                Token::Atom(pp(&[r#"::"#])),
-            ],
+            vec![Token::Atom(pp(&[r#"::"#]))],
             Some(""),
         );
         check(
             r#":::cd c:\"#,
             r#"::"#,
-            vec![
-                Token::Atom(pp(&[r#"::"#])),
-            ],
+            vec![Token::Atom(pp(&[r#"::"#]))],
             Some(r#"cd c:\"#),
         );
         check(
             r#"and::Sc:cd c:\"#,
             r#"and::Sc"#,
-            vec![
-                Token::Atom(pp(&[r#"and::Sc"#])),
-            ],
+            vec![Token::Atom(pp(&[r#"and::Sc"#]))],
             Some(r#"cd c:\"#),
         );
         check(
@@ -431,11 +364,8 @@ mod test_command_parts {
         check(
             r#"::a:rm"#,
             r#"::a"#,
-            vec![
-                Token::Atom(pp(&[r#"::a"#])),
-            ],
+            vec![Token::Atom(pp(&[r#"::a"#]))],
             Some("rm"),
         );
     }
 }
-

@@ -13,12 +13,19 @@ use {
         task_sync::Dam,
         tty::TtyView,
     },
-    crokey::crossterm::{cursor, QueueableCommand},
+    crokey::crossterm::{
+        QueueableCommand,
+        cursor,
+    },
     std::{
         io,
         path::Path,
     },
-    termimad::{Area, CropWriter, SPACE_FILLING},
+    termimad::{
+        Area,
+        CropWriter,
+        SPACE_FILLING,
+    },
 };
 
 #[allow(clippy::large_enum_variant)]
@@ -66,33 +73,39 @@ impl Preview {
     ) -> Result<Self, ProgramError> {
         if path.is_file() {
             match mode {
-                PreviewMode::Hex => {
-                    Ok(HexView::new(path.to_path_buf()).map(Self::Hex)?)
-                }
-                PreviewMode::Image => {
-                    ImageView::new(path).map(Self::Image)
-                }
-                PreviewMode::Tty => {
-                    TtyView::new(path)
-                        .map(Self::Tty)
-                        .map_err(ProgramError::from)
-                }
-                PreviewMode::Text => {
-                    Ok(
-                        SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con, false)
-                            .transpose()
-                            .expect("syntactic view without pattern shouldn't be none")
-                            .map(Self::Syntactic)?,
-                    )
-                }
+                PreviewMode::Hex => Ok(HexView::new(path.to_path_buf()).map(Self::Hex)?),
+                PreviewMode::Image => ImageView::new(path).map(Self::Image),
+                PreviewMode::Tty => TtyView::new(path)
+                    .map(Self::Tty)
+                    .map_err(ProgramError::from),
+                PreviewMode::Text => Ok(SyntacticView::new(
+                    path,
+                    InputPattern::none(),
+                    &mut Dam::unlimited(),
+                    con,
+                    false,
+                )
+                .transpose()
+                .expect("syntactic view without pattern shouldn't be none")
+                .map(Self::Syntactic)?),
             }
         } else {
-            Ok(Self::dir(path, InputPattern::none(), &Dam::unlimited(), con))
+            Ok(Self::dir(
+                path,
+                InputPattern::none(),
+                &Dam::unlimited(),
+                con,
+            ))
         }
     }
 
     /// build a dir preview
-    pub fn dir(path: &Path, pattern: InputPattern, dam: &Dam, con: &AppContext) -> Self {
+    pub fn dir(
+        path: &Path,
+        pattern: InputPattern,
+        dam: &Dam,
+        con: &AppContext,
+    ) -> Self {
         match DirView::new(path.to_path_buf(), pattern, dam, con) {
             Ok(dv) => Self::Dir(dv),
             Err(e) => Self::IoError(e),
@@ -106,7 +119,6 @@ impl Preview {
             .ok()
             .map(Self::Image)
             .unwrap_or_else(|| Self::hex(path))
-
     }
 
     /// build an tty view, unless there's an IO error
@@ -125,7 +137,13 @@ impl Preview {
         path: &Path,
         con: &AppContext,
     ) -> Self {
-        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con, false) {
+        match SyntacticView::new(
+            path,
+            InputPattern::none(),
+            &mut Dam::unlimited(),
+            con,
+            false,
+        ) {
             Ok(Some(sv)) => Self::Syntactic(sv),
             Err(ProgramError::ZeroLenFile | ProgramError::UnmappableFile) => {
                 debug!("zero len or unmappable file - check if system file");
@@ -170,7 +188,6 @@ impl Preview {
             match self {
                 Self::Syntactic(_) => {
                     match SyntacticView::new(path, pattern, dam, con, false) {
-
                         // normal finished loading
                         Ok(Some(sv)) => Some(Self::Syntactic(sv)),
 
@@ -247,7 +264,10 @@ impl Preview {
             _ => None,
         }
     }
-    pub fn try_select_line_number(&mut self, number: usize) -> bool {
+    pub fn try_select_line_number(
+        &mut self,
+        number: usize,
+    ) -> bool {
         match self {
             Self::Syntactic(sv) => sv.try_select_line_number(number),
             _ => false,
@@ -260,7 +280,10 @@ impl Preview {
             _ => {}
         }
     }
-    pub fn try_select_y(&mut self, y: u16) -> bool {
+    pub fn try_select_y(
+        &mut self,
+        y: u16,
+    ) -> bool {
         match self {
             Self::Dir(dv) => dv.try_select_y(y),
             Self::Syntactic(sv) => sv.try_select_y(y),
@@ -268,7 +291,11 @@ impl Preview {
             _ => false,
         }
     }
-    pub fn move_selection(&mut self, dy: i32, cycle: bool) {
+    pub fn move_selection(
+        &mut self,
+        dy: i32,
+        cycle: bool,
+    ) {
         match self {
             Self::Dir(dv) => dv.move_selection(dy, cycle),
             Self::Syntactic(sv) => sv.move_selection(dy, cycle),

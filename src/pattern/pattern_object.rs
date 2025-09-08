@@ -1,6 +1,4 @@
-use {
-    std::ops,
-};
+use std::ops;
 
 /// on what the search applies
 /// (a composite pattern may apply to several topic
@@ -14,7 +12,10 @@ pub struct PatternObject {
 
 impl ops::BitOr for PatternObject {
     type Output = Self;
-    fn bitor(self, o: Self) -> Self::Output {
+    fn bitor(
+        self,
+        o: Self,
+    ) -> Self::Output {
         Self {
             name: self.name | o.name,
             subpath: self.subpath | o.subpath,
@@ -24,7 +25,10 @@ impl ops::BitOr for PatternObject {
 }
 
 impl ops::BitOrAssign for PatternObject {
-    fn bitor_assign(&mut self, rhs: Self) {
+    fn bitor_assign(
+        &mut self,
+        rhs: Self,
+    ) {
         self.name |= rhs.name;
         self.subpath |= rhs.subpath;
         self.content |= rhs.content;

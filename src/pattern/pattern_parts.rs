@@ -1,6 +1,4 @@
-use {
-    std::fmt,
-};
+use std::fmt;
 
 /// An intermediate parsed representation of the raw string making
 /// a pattern, with up to 3 parts (search mode, core pattern, modifiers)
@@ -11,11 +9,18 @@ pub struct PatternParts {
 }
 
 impl fmt::Display for PatternParts {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self.parts.len() {
             1 => write!(f, "{}", &self.parts[0]),
             2 => write!(f, "{}/{}", &self.parts[0], &self.parts[1]),
-            _ => write!(f, "{}/{}/{}", &self.parts[0], &self.parts[1], &self.parts[2]),
+            _ => write!(
+                f,
+                "{}/{}/{}",
+                &self.parts[0], &self.parts[1], &self.parts[2]
+            ),
         }
     }
 }
@@ -41,7 +46,10 @@ impl TryFrom<&[&str]> for PatternParts {
 }
 
 impl PatternParts {
-    pub fn push(&mut self, c: char) {
+    pub fn push(
+        &mut self,
+        c: char,
+    ) {
         // self.parts can't be empty, by construct
         self.parts.last_mut().unwrap().push(c);
     }
@@ -76,4 +84,3 @@ impl PatternParts {
         }
     }
 }
-

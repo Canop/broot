@@ -8,7 +8,11 @@ use {
     std::{
         fmt,
         fs::File,
-        io::{self, BufRead, BufReader},
+        io::{
+            self,
+            BufRead,
+            BufReader,
+        },
         path::Path,
     },
 };
@@ -30,7 +34,10 @@ pub struct ExactPattern {
 }
 
 impl fmt::Display for ExactPattern {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         self.pattern.fmt(f)
     }
 }
@@ -53,7 +60,11 @@ impl ExactPattern {
         self.chars_count == 0
     }
 
-    fn score(&self, start: usize, candidate: &str) -> i32 {
+    fn score(
+        &self,
+        start: usize,
+        candidate: &str,
+    ) -> i32 {
         // start is the byte index
         let mut score = BONUS_MATCH + BONUS_CANDIDATE_LENGTH * candidate.len() as i32;
         if start == 0 {
@@ -71,25 +82,24 @@ impl ExactPattern {
     }
 
     /// return a match if the pattern can be found in the candidate string.
-    pub fn find(&self, candidate: &str) -> Option<NameMatch> {
-        candidate.find(&self.pattern)
-            .map(|start| {
-                let score = self.score(start, candidate);
-                // we must find the start in chars, not bytes
-                for (char_idx, (byte_idx, _)) in candidate.char_indices().enumerate() {
-                    if byte_idx == start {
-                        let mut pos = SmallVec::with_capacity(self.chars_count);
-                        for i in 0..self.chars_count {
-                            pos.push(i + char_idx);
-                        }
-                        return NameMatch {
-                            score,
-                            pos,
-                        };
+    pub fn find(
+        &self,
+        candidate: &str,
+    ) -> Option<NameMatch> {
+        candidate.find(&self.pattern).map(|start| {
+            let score = self.score(start, candidate);
+            // we must find the start in chars, not bytes
+            for (char_idx, (byte_idx, _)) in candidate.char_indices().enumerate() {
+                if byte_idx == start {
+                    let mut pos = SmallVec::with_capacity(self.chars_count);
+                    for i in 0..self.chars_count {
+                        pos.push(i + char_idx);
                     }
+                    return NameMatch { score, pos };
                 }
-                unreachable!(); // if there was a match, pos should have been reached
-            })
+            }
+            unreachable!(); // if there was a match, pos should have been reached
+        })
     }
 
     /// get the line of the first match, if any
@@ -115,15 +125,16 @@ impl ExactPattern {
         &self,
         path: &Path,
     ) -> Option<usize> {
-        self.try_get_match_line_count(path)
-            .unwrap_or(None)
+        self.try_get_match_line_count(path).unwrap_or(None)
     }
 
     /// compute the score of the best match
-    pub fn score_of(&self, candidate: &str) -> Option<i32> {
+    pub fn score_of(
+        &self,
+        candidate: &str,
+    ) -> Option<i32> {
         candidate
             .find(&self.pattern)
             .map(|start| self.score(start, candidate))
     }
 }
-

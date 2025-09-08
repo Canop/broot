@@ -1,10 +1,8 @@
 use {
     super::*,
-    crate::{
-        verb::{
-            Internal,
-            VerbStore,
-        },
+    crate::verb::{
+        Internal,
+        VerbStore,
     },
 };
 
@@ -99,10 +97,16 @@ struct StatusParts<'b> {
     md_parts: Vec<&'b str>,
 }
 impl<'b> StatusParts<'b> {
-    fn add(&mut self, md: &'b str) {
+    fn add(
+        &mut self,
+        md: &'b str,
+    ) {
         self.md_parts.push(md);
     }
-    fn addo(&mut self, md: &'b Option<String>) {
+    fn addo(
+        &mut self,
+        md: &'b Option<String>,
+    ) {
         if let Some(md) = md {
             self.md_parts.push(md);
         }
@@ -113,7 +117,10 @@ impl<'b> StatusParts<'b> {
     /// Build the markdown of the complete status by combining parts
     /// while not going much over the available width so that we
     /// don't have too much elision (otherwise it would be too hard to read)
-    fn to_status(&self, available_width: usize) -> Status {
+    fn to_status(
+        &self,
+        available_width: usize,
+    ) -> Status {
         let mut md = String::new();
         // notes about the truncation:
         // - in case of truncation, we don't use the long ", or "
@@ -148,7 +155,7 @@ pub struct StandardStatusBuilder<'s> {
     pub is_filtered: bool,
     pub has_removed_pattern: bool,
     pub on_tree_root: bool, // should this be part of the Selection struct ?
-    pub width: usize, // available width
+    pub width: usize,       // available width
 }
 impl<'s> StandardStatusBuilder<'s> {
     fn new(
@@ -177,7 +184,8 @@ impl<'s> StandardStatusBuilder<'s> {
         match self.state_type {
             PanelStateType::Tree => {
                 if self.on_tree_root {
-                    if self.selection.path.file_name().is_some() { // it's not '/'
+                    if self.selection.path.file_name().is_some() {
+                        // it's not '/'
                         parts.add(&ss.tree_top_focus);
                     }
                 } else if self.selection.stype == SelectionType::Directory {

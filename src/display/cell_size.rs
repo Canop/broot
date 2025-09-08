@@ -1,4 +1,3 @@
-
 /// find and return the size of a cell (a char location) in pixels
 /// as (width, height).
 /// Many terminals don't fill this information correctly, so an
@@ -8,10 +7,10 @@
 pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
     use {
         libc::{
-            c_ushort,
-            ioctl,
             STDOUT_FILENO,
             TIOCGWINSZ,
+            c_ushort,
+            ioctl,
         },
         std::io,
     };
@@ -38,7 +37,9 @@ pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
         ))
     } else {
         warn!("failed to fetch cell dimension with ioctl");
-        Err(io::Error::other("failed to fetch terminal dimension with ioctl"))
+        Err(io::Error::other(
+            "failed to fetch terminal dimension with ioctl",
+        ))
     }
 }
 
