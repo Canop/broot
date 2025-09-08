@@ -89,7 +89,7 @@ impl ImageView {
         let styles = &disc.panel_skin.styles;
         let bg_color = styles.preview.get_bg()
             .or_else(|| styles.default.get_bg());
-        let bg = bg_color.unwrap_or(Color::AnsiValue(238));
+        let bg = bg_color.unwrap_or(Color::Reset);
 
         // we avoid drawing when we were just displayed
         // on the last drawing_count and the area is the same.
