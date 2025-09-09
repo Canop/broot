@@ -45,31 +45,28 @@ impl Watcher {
         let (notify_sender, notify_receiver) = channel::unbounded();
         let sequence = Sequence::new_single(":refresh");
         thread::spawn(move || {
-            let mut event_sent_in_period = false;
-            let mut pending_events = 0;
+            let mut period_events = 0;
             loop {
                 match notify_receiver.recv_timeout(DEBOUNCE_MAX_DELAY) {
                     Ok(()) => {
-                        if event_sent_in_period {
-                            pending_events += 1;
+                        period_events += 1;
+                        if period_events > 1 {
                             continue;
                         }
-                        event_sent_in_period = true;
-                        debug!("sending single event");
+                        info!("sending single event");
                         if let Err(e) = tx_seqs.send(sequence.clone()) {
                             warn!("error when sending sequence from watcher: {}", e);
                         }
                     }
                     Err(channel::RecvTimeoutError::Timeout) => {
-                        if pending_events == 0 {
+                        if period_events <= 1 {
                             continue;
                         }
-                        debug!("sending aggregation of {} pending events", pending_events);
+                        info!("sending aggregation of {} pending events", period_events - 1);
                         if let Err(e) = tx_seqs.send(sequence.clone()) {
                             warn!("error when sending sequence from watcher: {}", e);
                         }
-                        pending_events = 0;
-                        event_sent_in_period = false;
+                        period_events = 0;
                     }
                     Err(channel::RecvTimeoutError::Disconnected) => {
                         debug!("notify sender disconnected, stopping notify watcher thread");
