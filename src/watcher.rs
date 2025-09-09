@@ -55,7 +55,7 @@ impl Watcher {
                             continue;
                         }
                         event_sent_in_period = true;
-                        info!("sending single event");
+                        debug!("sending single event");
                         if let Err(e) = tx_seqs.send(sequence.clone()) {
                             warn!("error when sending sequence from watcher: {}", e);
                         }
@@ -64,7 +64,7 @@ impl Watcher {
                         if pending_events == 0 {
                             continue;
                         }
-                        info!("sending aggregation of {} pending events", pending_events);
+                        debug!("sending aggregation of {} pending events", pending_events);
                         if let Err(e) = tx_seqs.send(sequence.clone()) {
                             warn!("error when sending sequence from watcher: {}", e);
                         }
@@ -72,7 +72,7 @@ impl Watcher {
                         event_sent_in_period = false;
                     }
                     Err(channel::RecvTimeoutError::Disconnected) => {
-                        info!("notify sender disconnected, stopping notify watcher thread");
+                        debug!("notify sender disconnected, stopping notify watcher thread");
                         break;
                     }
                 }
