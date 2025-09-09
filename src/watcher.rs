@@ -41,6 +41,7 @@ impl Watcher {
         &mut self,
         path: PathBuf,
     ) -> Result<(), ProgramError> {
+        debug!("start watching path {:?}", path);
         let notify_watcher = match self.notify_watcher.as_mut() {
             Some(nw) => {
                 if let Some(path) = self.watched.take() {
@@ -125,7 +126,9 @@ impl Watcher {
         if let Some(path) = self.watched.take() {
             if let Some(nw) = self.notify_watcher.as_mut() {
                 debug!("stop watching path {:?}", path);
-                nw.unwatch(&path)?;
+                if let Err(e) = nw.unwatch(&path) {
+                    warn!("error when unwatching path {:?}: {}", path, e);
+                }
             }
         }
         Ok(())
