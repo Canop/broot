@@ -43,7 +43,6 @@ pub struct Watcher {
 impl Watcher {
     pub fn new(tx_seqs: channel::Sender<Sequence>) -> Self {
         let (notify_sender, notify_receiver) = channel::unbounded();
-        let sequence = Sequence::new_single(":refresh");
         thread::spawn(move || {
             let mut period_events = 0;
             loop {
@@ -53,19 +52,15 @@ impl Watcher {
                         if period_events > 1 {
                             continue;
                         }
-                        info!("sending single event");
-                        if let Err(e) = tx_seqs.send(sequence.clone()) {
-                            warn!("error when sending sequence from watcher: {}", e);
-                        }
+                        debug!("sending single event");
+                        Self::send_refresh(&tx_seqs);
                     }
                     Err(channel::RecvTimeoutError::Timeout) => {
                         if period_events <= 1 {
                             continue;
                         }
-                        info!("sending aggregation of {} pending events", period_events - 1);
-                        if let Err(e) = tx_seqs.send(sequence.clone()) {
-                            warn!("error when sending sequence from watcher: {}", e);
-                        }
+                        debug!("sending aggregation of {} pending events", period_events - 1);
+                        Self::send_refresh(&tx_seqs);
                         period_events = 0;
                     }
                     Err(channel::RecvTimeoutError::Disconnected) => {
@@ -79,6 +74,19 @@ impl Watcher {
             notify_sender,
             notify_watcher: None,
             watched: None,
+        }
+    }
+    fn send_refresh(
+        tx_seqs: &channel::Sender<Sequence>,
+    ) {
+        if !tx_seqs.is_empty() {
+            // let's avoid accumulating refreshes when the tree is long to update
+            debug!("skipping refresh, channel full");
+            return;
+        }
+        let sequence = Sequence::new_single(":refresh");
+        if let Err(e) = tx_seqs.send(sequence) {
+            warn!("error when sending sequence from watcher: {}", e);
         }
     }
     /// stop watching the previous path, watch new one.
