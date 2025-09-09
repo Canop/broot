@@ -15,21 +15,71 @@ use {
             ModifyKind,
         },
     },
-    std::path::PathBuf,
-    termimad::crossbeam::channel::Sender,
+    std::{
+        path::PathBuf,
+        thread,
+    },
+    termimad::crossbeam::channel,
 };
 
+const DEBOUNCE_MAX_DELAY: std::time::Duration = std::time::Duration::from_millis(500);
+
 /// Watch for notify events on a path, and send a :refresh sequence when a change is detected
+///
+/// inotify events are debounced:
+/// - an isolated event sends a refresh immediately
+/// - successive events after the first one will have to wait a little
+/// - there's at most one refrest sent every DEBOUNCE_MAX_DELAY
+/// - if there's a long sequence of events, it's guaranteed that there's one
+///    refresh sent every DEBOUNCE_MAX_DELAY
+/// - the last event of the sequence is always sent (with a delay of
+///    at most DEBOUNCE_MAX_DELAY), ensuring we don't miss any change
 pub struct Watcher {
-    tx_seqs: Sender<Sequence>,
+    notify_sender: channel::Sender<()>,
     notify_watcher: Option<RecommendedWatcher>,
     watched: Option<PathBuf>,
 }
 
 impl Watcher {
-    pub fn new(tx_seqs: Sender<Sequence>) -> Self {
+    pub fn new(tx_seqs: channel::Sender<Sequence>) -> Self {
+        let (notify_sender, notify_receiver) = channel::unbounded();
+        let sequence = Sequence::new_single(":refresh");
+        thread::spawn(move || {
+            let mut event_sent_in_period = false;
+            let mut pending_events = 0;
+            loop {
+                match notify_receiver.recv_timeout(DEBOUNCE_MAX_DELAY) {
+                    Ok(()) => {
+                        if event_sent_in_period {
+                            pending_events += 1;
+                            continue;
+                        }
+                        event_sent_in_period = true;
+                        info!("sending single event");
+                        if let Err(e) = tx_seqs.send(sequence.clone()) {
+                            warn!("error when sending sequence from watcher: {}", e);
+                        }
+                    }
+                    Err(channel::RecvTimeoutError::Timeout) => {
+                        if pending_events == 0 {
+                            continue;
+                        }
+                        info!("sending aggregation of {} pending events", pending_events);
+                        if let Err(e) = tx_seqs.send(sequence.clone()) {
+                            warn!("error when sending sequence from watcher: {}", e);
+                        }
+                        pending_events = 0;
+                        event_sent_in_period = false;
+                    }
+                    Err(channel::RecvTimeoutError::Disconnected) => {
+                        info!("notify sender disconnected, stopping notify watcher thread");
+                        break;
+                    }
+                }
+            }
+        });
         Self {
-            tx_seqs,
+            notify_sender,
             notify_watcher: None,
             watched: None,
         }
@@ -52,7 +102,7 @@ impl Watcher {
             }
             None => self
                 .notify_watcher
-                .insert(Self::make_notify_watcher(self.tx_seqs.clone())?),
+                .insert(Self::make_notify_watcher(self.notify_sender.clone())?),
         };
         if !path.exists() {
             warn!("watch path doesn't exist: {:?}", path);
@@ -80,7 +130,7 @@ impl Watcher {
         }
         Ok(res?)
     }
-    fn make_notify_watcher(tx_seqs: Sender<Sequence>) -> Result<RecommendedWatcher, ProgramError> {
+    fn make_notify_watcher(sender: channel::Sender<()>) -> Result<RecommendedWatcher, ProgramError> {
         let mut notify_watcher =
             notify::recommended_watcher(move |res: notify::Result<notify::Event>| match res {
                 Ok(we) => {
@@ -108,8 +158,7 @@ impl Watcher {
                             debug!("notify event: {we:?}");
                         }
                     }
-                    let sequence = Sequence::new_single(":refresh");
-                    if let Err(e) = tx_seqs.send(sequence) {
+                    if let Err(e) = sender.send(()) {
                         debug!("error when notifying on notify event: {}", e);
                     }
                 }
