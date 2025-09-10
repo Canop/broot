@@ -1,19 +1,28 @@
 use {
-    super::{Screen, W},
+    super::{
+        Screen,
+        W,
+    },
     crate::{
         app::Status,
         errors::ProgramError,
         skin::PanelSkin,
     },
     termimad::{
-        minimad::{Alignment, Composite},
-        Area, StyledChar,
+        Area,
+        StyledChar,
+        minimad::{
+            Alignment,
+            Composite,
+        },
     },
+    unicode_width::UnicodeWidthStr,
 };
 
 /// write the whole status line (task + status)
 pub fn write(
     w: &mut W,
+    watching: bool,
     task: Option<&str>,
     status: &Status,
     area: &Area,
@@ -23,6 +32,11 @@ pub fn write(
     let y = area.top;
     screen.goto(w, area.left, y)?;
     let mut x = area.left;
+    if watching {
+        let eye = "👁 ";
+        x += eye.width() as u16;
+        panel_skin.styles.status_job.queue(w, eye)?;
+    }
     if let Some(pending_task) = task {
         let pending_task = format!(" {pending_task}… ");
         x += pending_task.chars().count() as u16;
@@ -54,7 +68,12 @@ pub fn erase(
 ) -> Result<(), ProgramError> {
     screen.goto(w, area.left, area.top)?;
     let sc = StyledChar::new(
-        panel_skin.status_skin.normal.paragraph.compound_style.clone(),
+        panel_skin
+            .status_skin
+            .normal
+            .paragraph
+            .compound_style
+            .clone(),
         ' ',
     );
     sc.queue_repeat(w, area.width as usize)?;

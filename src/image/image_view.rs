@@ -1,29 +1,41 @@
 use {
     super::{
-        double_line::DoubleLine,
         SourceImage,
+        double_line::DoubleLine,
     },
     crate::{
         app::*,
-        display::{Screen, W},
+        display::{
+            Screen,
+            W,
+        },
         errors::ProgramError,
-        kitty::{self, KittyImageId},
+        kitty::{
+            self,
+            KittyImageId,
+        },
         skin::PanelSkin,
     },
     crokey::crossterm::{
+        QueueableCommand,
         cursor,
         style::{
             Color,
             SetBackgroundColor,
         },
-        QueueableCommand,
     },
     image::{
         DynamicImage,
         GenericImageView,
     },
-    std::path::{Path, PathBuf},
-    termimad::{fill_bg, Area},
+    std::path::{
+        Path,
+        PathBuf,
+    },
+    termimad::{
+        Area,
+        fill_bg,
+    },
 };
 
 #[derive(Debug)]
@@ -33,9 +45,11 @@ struct DrawingInfo {
 }
 
 impl DrawingInfo {
-    pub fn follows_in_place(&self, previous: &DrawingInfo) -> bool {
-        self.drawing_count == previous.drawing_count + 1
-            && self.area == previous.area
+    pub fn follows_in_place(
+        &self,
+        previous: &DrawingInfo,
+    ) -> bool {
+        self.drawing_count == previous.drawing_count + 1 && self.area == previous.area
     }
 }
 
@@ -60,11 +74,7 @@ pub struct ImageView {
 
 impl ImageView {
     pub fn new(path: &Path) -> Result<Self, ProgramError> {
-        let source_img = time!(
-            "decode image",
-            path,
-            SourceImage::new(path)?
-        );
+        let source_img = time!("decode image", path, SourceImage::new(path)?);
         Ok(Self {
             path: path.to_path_buf(),
             source_img,
@@ -85,7 +95,6 @@ impl ImageView {
         disc: &DisplayContext,
         area: &Area,
     ) -> Result<(), ProgramError> {
-
         let styles = &disc.panel_skin.styles;
         let bg_color = styles.preview.get_bg()
             .or_else(|| styles.default.get_bg());
@@ -97,7 +106,8 @@ impl ImageView {
             drawing_count: disc.count,
             area: area.clone(),
         };
-        let must_draw = self.last_drawing
+        let must_draw = self
+            .last_drawing
             .as_ref()
             .map_or(true, |previous| !drawing_info.follows_in_place(previous));
         if must_draw {
@@ -118,8 +128,15 @@ impl ImageView {
             return Ok(());
         }
 
-        self.kitty_image_id = kitty_manager
-            .try_print_image(w, &self.source_img, &self.path, area, bg, disc.count, disc.con)?;
+        self.kitty_image_id = kitty_manager.try_print_image(
+            w,
+            &self.source_img,
+            &self.path,
+            area,
+            bg,
+            disc.count,
+            disc.con,
+        )?;
 
         if self.kitty_image_id.is_some() {
             return Ok(());
@@ -136,7 +153,8 @@ impl ImageView {
             None => {
                 let img = time!(
                     "resize image",
-                    self.source_img.fitting(target_width, target_height, bg_color),
+                    self.source_img
+                        .fitting(target_width, target_height, bg_color),
                 )?;
                 self.display_img = Some(CachedImage {
                     img,
@@ -200,4 +218,3 @@ impl ImageView {
         Ok(())
     }
 }
-

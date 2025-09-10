@@ -1,4 +1,7 @@
-use std::path::{Path, PathBuf};
+use std::path::{
+    Path,
+    PathBuf,
+};
 
 /// return the closest enclosing directory
 pub fn closest_dir(mut path: &Path) -> PathBuf {

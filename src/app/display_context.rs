@@ -18,4 +18,3 @@ pub struct DisplayContext<'c> {
     pub app_state: &'c AppState,
     pub con: &'c AppContext,
 }
-

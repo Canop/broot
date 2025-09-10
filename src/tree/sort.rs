@@ -1,4 +1,3 @@
-
 /// A sort key.
 /// A non None sort mode implies only one level of the tree
 /// is displayed.

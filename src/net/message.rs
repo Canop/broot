@@ -1,14 +1,12 @@
 use {
     crate::{
-        errors::NetError,
         command::Sequence,
+        errors::NetError,
     },
-    std::{
-        io::{
-            self,
-            BufRead,
-            Write,
-        },
+    std::io::{
+        self,
+        BufRead,
+        Write,
     },
 };
 
@@ -46,7 +44,10 @@ impl Message {
             _ => Err(NetError::InvalidMessage),
         }
     }
-    pub fn write<W: Write>(&self, w: &mut W) -> io::Result<()> {
+    pub fn write<W: Write>(
+        &self,
+        w: &mut W,
+    ) -> io::Result<()> {
         match self {
             Self::Command(c) => {
                 writeln!(w, "CMD")?;

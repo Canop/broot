@@ -6,7 +6,10 @@ use {
             PanelStateType,
             SelInfo,
         },
-        path::{self, PathAnchor},
+        path::{
+            self,
+            PathAnchor,
+        },
         syntactic::SYNTAX_THEMES,
         verb::{
             ArgDef,
@@ -21,7 +24,10 @@ use {
 };
 
 /// find the longest common start of a and b
-fn common_start<'l>(a: &'l str, b: &str) -> &'l str {
+fn common_start<'l>(
+    a: &'l str,
+    b: &str,
+) -> &'l str {
     let l = a.len().min(b.len());
     for i in 0..l {
         if a.as_bytes()[i] != b.as_bytes()[i] {
@@ -34,7 +40,6 @@ fn common_start<'l>(a: &'l str, b: &str) -> &'l str {
 /// how an input can be completed
 #[derive(Debug)]
 pub enum Completions {
-
     /// no completion found
     None,
 
@@ -53,7 +58,9 @@ impl Completions {
         let mut iter = completions.iter();
         let mut common: &str = match iter.next() {
             Some(s) => s,
-            _ => { return Self::None; }
+            _ => {
+                return Self::None;
+            }
         };
         for c in iter {
             common = common_start(common, c);
@@ -63,7 +70,6 @@ impl Completions {
         } else {
             Self::Common(common.to_string())
         }
-
     }
 
     /// the wholes are assumed to all start with start.
@@ -71,8 +77,9 @@ impl Completions {
         start: &str,
         wholes: Vec<&str>,
     ) -> Self {
-        let completions = wholes.iter()
-            .map(|w|
+        let completions = wholes
+            .iter()
+            .map(|w| {
                 if let Some(stripped) = w.strip_prefix(start) {
                     stripped
                 } else {
@@ -80,7 +87,7 @@ impl Completions {
                     warn!("unexpected non completing whole: {:?}", w);
                     *w
                 }
-            )
+            })
             .map(|c| c.to_string())
             .collect();
         Self::from_list(completions)
@@ -92,7 +99,10 @@ impl Completions {
         sel_info: SelInfo<'_>,
         panel_state_type: Option<PanelStateType>,
     ) -> Self {
-        match con.verb_store.search(start, Some(sel_info), false, panel_state_type) {
+        match con
+            .verb_store
+            .search(start, Some(sel_info), false, panel_state_type)
+        {
             PrefixSearchResult::NoMatch => Self::None,
             PrefixSearchResult::Match(name, _) => {
                 if start.len() >= name.len() {
@@ -102,10 +112,7 @@ impl Completions {
                     Self::Common(name[start.len()..].to_string())
                 }
             }
-            PrefixSearchResult::Matches(completions) => Self::for_wholes(
-                start,
-                completions,
-            ),
+            PrefixSearchResult::Matches(completions) => Self::for_wholes(start, completions),
         }
     }
 
@@ -117,7 +124,10 @@ impl Completions {
         con: &AppContext,
         panel_state_type: Option<PanelStateType>,
     ) -> io::Result<Vec<String>> {
-        let anchor = match con.verb_store.search(verb_name, Some(sel_info), false, panel_state_type) {
+        let anchor = match con
+            .verb_store
+            .search(verb_name, Some(sel_info), false, panel_state_type)
+        {
             PrefixSearchResult::Match(_, verb) => verb.get_unique_arg_anchor(),
             _ => PathAnchor::Unspecified,
         };
@@ -125,7 +135,10 @@ impl Completions {
         let parent = path::path_from(path, anchor, parent_part);
         let mut children = Vec::new();
         if !parent.exists() {
-            debug!("no path completion possible because {:?} doesn't exist", &parent);
+            debug!(
+                "no path completion possible because {:?} doesn't exist",
+                &parent
+            );
         } else {
             for entry in parent.read_dir()? {
                 let entry = entry?;
@@ -145,7 +158,6 @@ impl Completions {
         }
         Ok(children)
     }
-
 
     /// we have a verb, we try to complete one of the args
     fn for_arg(
@@ -172,9 +184,7 @@ impl Completions {
     }
 
     /// we have a verb and it asks for a theme
-    fn for_theme_arg(
-        arg: &str,
-    ) -> Self {
+    fn for_theme_arg(arg: &str) -> Self {
         let arg = arg.to_lowercase();
         let completions: Vec<String> = SYNTAX_THEMES
             .iter()
@@ -201,7 +211,8 @@ impl Completions {
         match &sel_info {
             SelInfo::None => Self::None,
             SelInfo::One(sel) => {
-                match Self::list_for_path(verb_name, arg, sel.path, sel_info, con, panel_state_type) {
+                match Self::list_for_path(verb_name, arg, sel.path, sel_info, con, panel_state_type)
+                {
                     Ok(list) => Self::from_list(list),
                     Err(e) => {
                         warn!("Error while trying to complete path: {:?}", e);
@@ -212,18 +223,9 @@ impl Completions {
             SelInfo::More(stage) => {
                 // We're looking for the possible completions which
                 // are valid for all elements of the stage
-                let mut lists = stage.paths()
-                    .iter()
-                    .filter_map(|path| {
-                        Self::list_for_path(
-                                verb_name,
-                                arg,
-                                path,
-                                sel_info,
-                                con,
-                                panel_state_type,
-                        ).ok()
-                    });
+                let mut lists = stage.paths().iter().filter_map(|path| {
+                    Self::list_for_path(verb_name, arg, path, sel_info, con, panel_state_type).ok()
+                });
                 let mut list = match lists.next() {
                     Some(list) => list,
                     None => {
@@ -269,5 +271,4 @@ impl Completions {
             _ => Self::None, // no possible completion if no verb invocation
         }
     }
-
 }

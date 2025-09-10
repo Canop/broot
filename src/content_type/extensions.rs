@@ -1,5 +1,6 @@
-use {
-    phf::{phf_set, Set},
+use phf::{
+    Set,
+    phf_set,
 };
 
 /// a short list of extensions that shouldn't be searched
@@ -87,4 +88,3 @@ static BINARY_EXTENSIONS: Set<&'static str> = phf_set! {
 pub fn is_known_binary(ext: &str) -> bool {
     BINARY_EXTENSIONS.contains(ext)
 }
-

@@ -1,8 +1,6 @@
-use {
-    crate::{
-        app::AppContext,
-        pattern::*,
-    },
+use crate::{
+    app::AppContext,
+    pattern::*,
 };
 
 /// what should be shown for a search_mode in the help screen, after
@@ -14,7 +12,10 @@ pub struct SearchModeHelp {
 }
 
 /// return the rows of the "Search Modes" table in help.
-pub fn search_mode_help(mode: SearchMode, con: &AppContext) -> SearchModeHelp {
+pub fn search_mode_help(
+    mode: SearchMode,
+    con: &AppContext,
+) -> SearchModeHelp {
     let prefix = mode.prefix(con);
     let description = format!(
         "{} search on {}",
@@ -39,8 +40,12 @@ pub fn search_mode_help(mode: SearchMode, con: &AppContext) -> SearchModeHelp {
         SearchMode::PathFuzzy => format!("`{prefix}flam` matches *src/flag/mod.rs*"),
         SearchMode::PathRegex => format!(r#"`{prefix}\d{{3}}.*txt` matches *dir/a123/b.txt*"#),
         SearchMode::PathTokens => format!("`{prefix}help,doc` matches *website/docs/help.md*"),
-        SearchMode::ContentExact => format!("`{prefix}find(` matches a file containing *a.find(b);*"),
-        SearchMode::ContentRegex => format!("`{prefix}find/i` matches a file containing *A::Find(b)*"),
+        SearchMode::ContentExact => {
+            format!("`{prefix}find(` matches a file containing *a.find(b);*")
+        }
+        SearchMode::ContentRegex => {
+            format!("`{prefix}find/i` matches a file containing *A::Find(b)*")
+        }
     };
     SearchModeHelp {
         prefix,
@@ -48,4 +53,3 @@ pub fn search_mode_help(mode: SearchMode, con: &AppContext) -> SearchModeHelp {
         example,
     }
 }
-

@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone, Copy)]
 pub enum ScrollCommand {
     Lines(i32),
@@ -6,7 +5,10 @@ pub enum ScrollCommand {
 }
 
 impl ScrollCommand {
-    pub fn to_lines(self, page_height: usize) -> i32 {
+    pub fn to_lines(
+        self,
+        page_height: usize,
+    ) -> i32 {
         match self {
             Self::Lines(n) => n,
             Self::Pages(n) => n * page_height as i32,
@@ -29,7 +31,10 @@ impl ScrollCommand {
             .min(content_height as i32 - page_height as i32 + 1)
             .max(0) as usize
     }
-    pub fn is_thumb(y: u16, scrollbar: Option<(u16, u16)>) -> bool {
+    pub fn is_thumb(
+        y: u16,
+        scrollbar: Option<(u16, u16)>,
+    ) -> bool {
         if let Some((sctop, scbottom)) = scrollbar {
             if sctop <= y && y <= scbottom {
                 return true;
@@ -38,4 +43,3 @@ impl ScrollCommand {
         false
     }
 }
-

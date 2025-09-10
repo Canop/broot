@@ -1,6 +1,9 @@
 use {
     crokey::crossterm::style::Color,
-    termimad::{gray, MadSkin},
+    termimad::{
+        MadSkin,
+        gray,
+    },
 };
 
 /// build a termimad skin for cli output (mostly

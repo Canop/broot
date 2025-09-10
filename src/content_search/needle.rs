@@ -8,7 +8,7 @@ use {
         convert::TryInto,
         fmt,
         io,
-        path::{Path},
+        path::Path,
     },
 };
 
@@ -16,7 +16,6 @@ use {
 /// be searched in file contents
 #[derive(Clone)]
 pub struct Needle {
-
     /// bytes of the searched string
     /// (guaranteed to be valid UTF8 by construct)
     bytes: Box<[u8]>,
@@ -25,19 +24,26 @@ pub struct Needle {
 }
 
 impl fmt::Debug for Needle {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         f.debug_struct("Needle")
             .field("bytes", &self.bytes)
             .finish()
     }
 }
 
-
 impl Needle {
-
-    pub fn new(pat: &str, max_file_size: usize) -> Self {
+    pub fn new(
+        pat: &str,
+        max_file_size: usize,
+    ) -> Self {
         let bytes = pat.as_bytes().to_vec().into_boxed_slice();
-        Self { bytes, max_file_size }
+        Self {
+            bytes,
+            max_file_size,
+        }
     }
 
     pub fn is_empty(&self) -> bool {
@@ -49,7 +55,10 @@ impl Needle {
     }
 
     // no, it doesn't bring more than a few % in speed
-    fn find_naive_1(&self, hay: &Mmap) -> Option<usize> {
+    fn find_naive_1(
+        &self,
+        hay: &Mmap,
+    ) -> Option<usize> {
         let n = self.bytes[0];
         hay.iter().position(|&b| b == n)
     }
@@ -57,7 +66,11 @@ impl Needle {
     /// look for matches of the needle when it's length is 2
     ///
     /// Calling this function with a hay of less than 2 bytes may result in undefined behavior.
-    fn find_naive_2(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+    fn find_naive_2(
+        &self,
+        mut pos: usize,
+        hay: &Mmap,
+    ) -> Option<usize> {
         let max_pos = hay.len() - 2;
         let b0 = self.bytes[0];
         let b1 = self.bytes[1];
@@ -75,7 +88,11 @@ impl Needle {
     /// look for matches of the needle when it's length is 3
     ///
     /// Calling this function with a hay of less than 3 bytes may result in undefined behavior.
-    fn find_naive_3(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+    fn find_naive_3(
+        &self,
+        mut pos: usize,
+        hay: &Mmap,
+    ) -> Option<usize> {
         let max_pos = hay.len() - 3;
         let b0 = self.bytes[0];
         let b1 = self.bytes[1];
@@ -97,7 +114,11 @@ impl Needle {
     /// look for matches of the needle when it's length is 4
     ///
     /// Calling this function with a hay of less than 4 bytes may result in undefined behavior.
-    fn find_naive_4(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+    fn find_naive_4(
+        &self,
+        mut pos: usize,
+        hay: &Mmap,
+    ) -> Option<usize> {
         let max_pos = hay.len() - 4;
         let needle = u32::from_ne_bytes((&*self.bytes).try_into().unwrap());
         while pos <= max_pos {
@@ -112,7 +133,11 @@ impl Needle {
     /// look for matches of the needle when it's length is 6
     ///
     /// Calling this function with a hay of less than 6 bytes may result in undefined behavior.
-    fn find_naive_6(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+    fn find_naive_6(
+        &self,
+        mut pos: usize,
+        hay: &Mmap,
+    ) -> Option<usize> {
         let max_pos = hay.len() - 6;
         let b0 = self.bytes[0];
         let b1 = self.bytes[1];
@@ -137,7 +162,11 @@ impl Needle {
         None
     }
 
-    fn is_at_pos(&self, hay_stack: &Mmap, pos: usize) -> bool {
+    fn is_at_pos(
+        &self,
+        hay_stack: &Mmap,
+        pos: usize,
+    ) -> bool {
         unsafe {
             for (i, b) in self.bytes.iter().enumerate() {
                 if hay_stack.get_unchecked(i + pos) != b {
@@ -149,7 +178,11 @@ impl Needle {
     }
 
     /// look for matches of the needle for any length
-    fn find_naive(&self, mut pos: usize, hay: &Mmap) -> Option<usize> {
+    fn find_naive(
+        &self,
+        mut pos: usize,
+        hay: &Mmap,
+    ) -> Option<usize> {
         let max_pos = hay.len() - self.bytes.len();
         while pos <= max_pos {
             if self.is_at_pos(hay, pos) {
@@ -174,7 +207,10 @@ impl Needle {
     /// as their impact is dwarfed by the whole mem map related set
     /// of problems. An alternate implementation should probably focus
     /// on avoiding mem maps.
-    fn search_mmap(&self, hay: &Mmap) -> ContentSearchResult {
+    fn search_mmap(
+        &self,
+        hay: &Mmap,
+    ) -> ContentSearchResult {
         if hay.len() < self.bytes.len() {
             return ContentSearchResult::NotFound;
         }
@@ -200,19 +236,21 @@ impl Needle {
             6 => self.find_naive_6(0, hay),
             _ => self.find_naive(0, hay),
         };
-        pos.map_or(
-            ContentSearchResult::NotFound,
-            |pos| ContentSearchResult::Found { pos },
-        )
+        pos.map_or(ContentSearchResult::NotFound, |pos| {
+            ContentSearchResult::Found { pos }
+        })
     }
 
     /// determine whether the file contains the needle
-    pub fn search<P: AsRef<Path>>(&self, hay_path: P) -> io::Result<ContentSearchResult> {
-        super::get_mmap_if_suitable(hay_path, self.max_file_size)
-            .map(|om| om.map_or(
-                ContentSearchResult::NotSuitable,
-                |hay| self.search_mmap(&hay),
-            ))
+    pub fn search<P: AsRef<Path>>(
+        &self,
+        hay_path: P,
+    ) -> io::Result<ContentSearchResult> {
+        super::get_mmap_if_suitable(hay_path, self.max_file_size).map(|om| {
+            om.map_or(ContentSearchResult::NotSuitable, |hay| {
+                self.search_mmap(&hay)
+            })
+        })
     }
 
     /// this is supposed to be called only when it's known that there's
@@ -224,7 +262,9 @@ impl Needle {
     ) -> Option<ContentMatch> {
         let hay = match get_mmap(hay_path) {
             Ok(hay) => hay,
-            _ => { return None; }
+            _ => {
+                return None;
+            }
         };
         match self.search_mmap(&hay) {
             ContentSearchResult::Found { pos } => {

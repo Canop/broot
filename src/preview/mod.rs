@@ -1,21 +1,20 @@
 mod dir_view;
 mod preview;
-mod preview_transformer;
 mod preview_state;
+mod preview_transformer;
 mod zero_len_file_view;
 
 pub use {
     dir_view::DirView,
     preview::Preview,
-    preview_transformer::*,
     preview_state::PreviewState,
+    preview_transformer::*,
     zero_len_file_view::ZeroLenFileView,
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum PreviewMode {
-
     /// image
     Image,
 

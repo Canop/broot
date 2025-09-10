@@ -5,15 +5,23 @@ use {
         errors::TreeBuildError,
         file_sum::FileSum,
         git::TreeGitStatus,
-        task_sync::ComputationResult,
-        task_sync::Dam,
-        tree_build::{BuildReport, TreeBuilder},
+        task_sync::{
+            ComputationResult,
+            Dam,
+        },
+        tree_build::{
+            BuildReport,
+            TreeBuilder,
+        },
     },
     rustc_hash::FxHashMap,
     std::{
         cmp::Ord,
         mem,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
     },
 };
 
@@ -34,8 +42,6 @@ pub struct Tree {
 }
 
 impl Tree {
-
-
     /// rebuild the tree with the same root, height, and options
     pub fn refresh(
         &mut self,
@@ -50,10 +56,7 @@ impl Tree {
         )?;
         self.total_search = false; // on refresh we always do a non total search
         let mut tree = builder
-            .build_tree(
-                self.total_search,
-                &Dam::unlimited(),
-            )
+            .build_tree(self.total_search, &Dam::unlimited())
             .unwrap(); // should not fail
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
@@ -69,7 +72,6 @@ impl Tree {
     /// - sort the lines
     /// - compute left branches
     pub fn after_lines_changed(&mut self) {
-
         // we need to order the lines to build the tree.
         // It's a little complicated because
         //  - we want a case insensitive sort
@@ -88,10 +90,10 @@ impl Tree {
             let mut sort_path = String::new();
             let mut id = line.id;
             while let Some(l) = id_lines.get(&id) {
-                let lower_name = l.path.file_name().map_or(
-                    "".to_string(),
-                    |name| name.to_string_lossy().to_lowercase(),
-                );
+                let lower_name = l
+                    .path
+                    .file_name()
+                    .map_or("".to_string(), |name| name.to_string_lossy().to_lowercase());
                 let sort_prefix = match self.options.sort {
                     Sort::TypeDirsFirst => {
                         if l.is_dir() {
@@ -107,7 +109,7 @@ impl Tree {
                             l.path.extension().and_then(|s| s.to_str()).unwrap_or("")
                         }
                     }
-                    _ => { "" }
+                    _ => "",
                 };
                 sort_path = format!(
                     "{}{}-{}/{}",
@@ -189,7 +191,11 @@ impl Tree {
         self.lines.len() == 1
     }
 
-    pub fn has_branch(&self, line_index: usize, depth: usize) -> bool {
+    pub fn has_branch(
+        &self,
+        line_index: usize,
+        depth: usize,
+    ) -> bool {
         if line_index >= self.lines.len() {
             return false;
         }
@@ -200,7 +206,12 @@ impl Tree {
     /// select another line
     ///
     /// For example the following one if dy is 1.
-    pub fn move_selection(&mut self, dy: i32, page_height: usize, cycle: bool) {
+    pub fn move_selection(
+        &mut self,
+        dy: i32,
+        page_height: usize,
+        cycle: bool,
+    ) {
         let l = self.lines.len();
         // we find the new line to select
         loop {
@@ -237,11 +248,16 @@ impl Tree {
 
     /// Scroll the desired amount and return true, or return false if it's
     /// already at end or the tree fits the page
-    pub fn try_scroll(&mut self, dy: i32, page_height: usize) -> bool {
+    pub fn try_scroll(
+        &mut self,
+        dy: i32,
+        page_height: usize,
+    ) -> bool {
         if self.lines.len() <= page_height {
             return false;
         }
-        if dy < 0 { // scroll up
+        if dy < 0 {
+            // scroll up
             if self.scroll == 0 {
                 return false;
             }
@@ -251,7 +267,8 @@ impl Tree {
             } else {
                 self.scroll = 0;
             }
-        } else { // scroll down
+        } else {
+            // scroll down
             let max = self.lines.len() - page_height;
             if self.scroll >= max {
                 return false;
@@ -264,7 +281,10 @@ impl Tree {
 
     /// try to select a line by index of visible line
     /// (works if y+scroll falls on a selectable line)
-    pub fn try_select_y(&mut self, y: usize) -> bool {
+    pub fn try_select_y(
+        &mut self,
+        y: usize,
+    ) -> bool {
         let y = y + self.scroll;
         if y < self.lines.len() && self.lines[y].is_selectable() {
             self.selection = y;
@@ -273,7 +293,10 @@ impl Tree {
         false
     }
     /// fix the selection so that it's a selectable visible line
-    fn select_visible_line(&mut self, page_height: usize) {
+    fn select_visible_line(
+        &mut self,
+        page_height: usize,
+    ) {
         if self.selection < self.scroll || self.selection >= self.scroll + page_height {
             self.selection = self.scroll;
             let l = self.lines.len();
@@ -286,7 +309,10 @@ impl Tree {
         }
     }
 
-    pub fn make_selection_visible(&mut self, page_height: usize) {
+    pub fn make_selection_visible(
+        &mut self,
+        page_height: usize,
+    ) {
         if page_height >= self.lines.len() || self.selection < 3 {
             self.scroll = 0;
         } else if self.selection <= self.scroll {
@@ -327,7 +353,10 @@ impl Tree {
         }
     }
     /// return true when we could select the given path
-    pub fn try_select_path(&mut self, path: &Path) -> bool {
+    pub fn try_select_path(
+        &mut self,
+        path: &Path,
+    ) -> bool {
         for (idx, line) in self.lines.iter().enumerate() {
             if !line.is_selectable() {
                 continue;
@@ -350,7 +379,10 @@ impl Tree {
         }
         false
     }
-    pub fn try_select_last(&mut self, page_height: usize) -> bool {
+    pub fn try_select_last(
+        &mut self,
+        page_height: usize,
+    ) -> bool {
         for idx in (0..self.lines.len()).rev() {
             let line = &self.lines[idx];
             if line.is_selectable() {
@@ -361,7 +393,10 @@ impl Tree {
         }
         false
     }
-    pub fn try_select_previous_same_depth(&mut self, page_height: usize) -> bool {
+    pub fn try_select_previous_same_depth(
+        &mut self,
+        page_height: usize,
+    ) -> bool {
         let depth = self.lines[self.selection].depth;
         for di in (0..self.lines.len()).rev() {
             let idx = (self.selection + di) % self.lines.len();
@@ -375,7 +410,10 @@ impl Tree {
         }
         false
     }
-    pub fn try_select_next_same_depth(&mut self, page_height: usize) -> bool {
+    pub fn try_select_next_same_depth(
+        &mut self,
+        page_height: usize,
+    ) -> bool {
         let depth = self.lines[self.selection].depth;
         for di in 0..self.lines.len() {
             let idx = (self.selection + di + 1) % self.lines.len();
@@ -393,7 +431,8 @@ impl Tree {
         &mut self,
         filter: F,
         page_height: usize,
-    ) -> bool where
+    ) -> bool
+    where
         F: Fn(&TreeLine) -> bool,
     {
         for di in (0..self.lines.len()).rev() {
@@ -417,7 +456,8 @@ impl Tree {
         &mut self,
         filter: F,
         page_height: usize,
-    ) -> bool where
+    ) -> bool
+    where
         F: Fn(&TreeLine) -> bool,
     {
         for di in 0..self.lines.len() {
@@ -468,7 +508,11 @@ impl Tree {
     ///
     /// To compute the size of all of them, this should be called until
     ///  has_dir_missing_sum returns false
-    pub fn fetch_some_missing_dir_sum(&mut self, dam: &Dam, con: &AppContext) {
+    pub fn fetch_some_missing_dir_sum(
+        &mut self,
+        dam: &Dam,
+        con: &AppContext,
+    ) {
         // we prefer to compute the root directory last: its computation
         // is faster when its first level children are already computed
         for i in (0..self.lines.len()).rev() {
@@ -549,10 +593,7 @@ impl Tree {
         let mut paths_to_add = Vec::new();
         // find the closest parent already in the tree
         let mut present_ancestor_idx = loop {
-            let idx = self
-                .lines
-                .iter()
-                .position(|line| line.path == path);
+            let idx = self.lines.iter().position(|line| line.path == path);
             if let Some(idx) = idx {
                 break idx;
             }
@@ -593,7 +634,7 @@ impl Tree {
             // being changed to Pruning in the after_lines_changed method...
             let nb_kept_children = 1;
 
-            let subpath =path_to_add
+            let subpath = path_to_add
                 .strip_prefix(self.root())
                 .map_err(|_| {
                     // not supposed to happen at this point as we're adding a descendant
@@ -615,7 +656,8 @@ impl Tree {
                 has_error: false,
                 score: 1,
                 direct_match: true,
-            }.build(con)?;
+            }
+            .build(con)?;
 
             present_ancestor_idx = self.lines.len();
             self.lines.push(line);
@@ -636,6 +678,4 @@ impl Tree {
         }
         Ok(())
     }
-
 }
-

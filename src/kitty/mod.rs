@@ -1,9 +1,7 @@
 mod detect_support;
 mod image_renderer;
 
-pub use {
-    image_renderer::*,
-};
+pub use image_renderer::*;
 
 use {
     crate::{
@@ -52,9 +50,7 @@ struct RenderedImage {
 enum MaybeRenderer {
     Untested,
     Disabled,
-    Enabled {
-        renderer: KittyImageRenderer,
-    },
+    Enabled { renderer: KittyImageRenderer },
 }
 
 impl KittyManager {

@@ -1,7 +1,10 @@
 use {
     super::NameMatch,
     secular,
-    smallvec::{smallvec, SmallVec},
+    smallvec::{
+        SmallVec,
+        smallvec,
+    },
     std::{
         cmp::Reverse,
         ops::Range,
@@ -38,7 +41,6 @@ pub struct TokPattern {
 // - bonus for ranges starting just after a separator
 // - bonus for order ?
 impl TokPattern {
-
     pub fn new(pattern: &str) -> Self {
         // we accept several separators. The first one
         // we encounter among the possible ones is the
@@ -47,7 +49,8 @@ impl TokPattern {
         // as a separator but as part of a tok
         let sep = pattern.chars().find(|c| SEPARATORS.contains(c));
         let mut toks: Vec<Box<[char]>> = if let Some(sep) = sep {
-            pattern.split(sep)
+            pattern
+                .split(sep)
                 .filter(|s| !s.is_empty())
                 .map(norm_chars)
                 .collect()
@@ -63,10 +66,7 @@ impl TokPattern {
         // at the "b" token
         toks.sort_by_key(|t| Reverse(t.len()));
         let sum_len = toks.iter().map(|s| s.len()).sum();
-        Self {
-            toks,
-            sum_len,
-        }
+        Self { toks, sum_len }
     }
 
     /// an "empty" pattern is one which accepts everything because
@@ -77,7 +77,10 @@ impl TokPattern {
 
     /// return either None (no match) or a vec whose size is the number
     /// of tokens
-    fn find_ranges(&self, candidate: &str) -> Option<Vec<Range<usize>>> {
+    fn find_ranges(
+        &self,
+        candidate: &str,
+    ) -> Option<Vec<Range<usize>>> {
         let mut cand_chars: CandChars = SmallVec::with_capacity(candidate.len());
         cand_chars.extend(candidate.chars().map(secular::lower_lay_char));
         if cand_chars.len() < self.sum_len || self.sum_len == 0 {
@@ -86,66 +89,69 @@ impl TokPattern {
         // we first look for the first tok, it's simpler
         let first_tok = &self.toks[0];
         let l = first_tok.len();
-        let first_matching_range = (0..cand_chars.len()+1-l)
-            .map(|idx| idx..idx+l)
-            .find(|r| {
-                &cand_chars[r.start..r.end] == first_tok.as_ref()
-            });
+        let first_matching_range = (0..cand_chars.len() + 1 - l)
+            .map(|idx| idx..idx + l)
+            .find(|r| &cand_chars[r.start..r.end] == first_tok.as_ref());
         // we initialize the vec only when the first tok is found
-        first_matching_range
-            .and_then(|first_matching_range| {
-                let mut matching_ranges = vec![first_matching_range];
-                for tok in self.toks.iter().skip(1) {
-                    let l = tok.len();
-                    let matching_range = (0..cand_chars.len()+1-l)
-                        .map(|idx| idx..idx+l)
-                        .filter(|r| {
-                            &cand_chars[r.start..r.end] == tok.as_ref()
-                        })
-                        .find(|r| {
-                            // check we're not intersecting a previous range
-                            for pr in &matching_ranges {
-                                if pr.contains(&r.start) || pr.contains(&(r.end-1)) {
-                                    return false;
-                                }
+        first_matching_range.and_then(|first_matching_range| {
+            let mut matching_ranges = vec![first_matching_range];
+            for tok in self.toks.iter().skip(1) {
+                let l = tok.len();
+                let matching_range = (0..cand_chars.len() + 1 - l)
+                    .map(|idx| idx..idx + l)
+                    .filter(|r| &cand_chars[r.start..r.end] == tok.as_ref())
+                    .find(|r| {
+                        // check we're not intersecting a previous range
+                        for pr in &matching_ranges {
+                            if pr.contains(&r.start) || pr.contains(&(r.end - 1)) {
+                                return false;
                             }
-                            true
-                        });
-                    if let Some(r) = matching_range {
-                        matching_ranges.push(r);
-                    } else {
-                        return None;
-                    }
+                        }
+                        true
+                    });
+                if let Some(r) = matching_range {
+                    matching_ranges.push(r);
+                } else {
+                    return None;
                 }
-                Some(matching_ranges)
-            })
+            }
+            Some(matching_ranges)
+        })
     }
 
-    fn score_of_matching(&self, candidate: &str) -> i32 {
+    fn score_of_matching(
+        &self,
+        candidate: &str,
+    ) -> i32 {
         BONUS_MATCH + BONUS_CANDIDATE_LENGTH * candidate.len() as i32
     }
 
     /// note that it should not be called on empty patterns
-    pub fn find(&self, candidate: &str) -> Option<NameMatch> {
-        self.find_ranges(candidate)
-            .map(|matching_ranges| {
-                let mut pos = smallvec![0; self.sum_len];
-                let mut i = 0;
-                for r in matching_ranges {
-                    for p in r {
-                        pos[i] = p;
-                        i += 1;
-                    }
+    pub fn find(
+        &self,
+        candidate: &str,
+    ) -> Option<NameMatch> {
+        self.find_ranges(candidate).map(|matching_ranges| {
+            let mut pos = smallvec![0; self.sum_len];
+            let mut i = 0;
+            for r in matching_ranges {
+                for p in r {
+                    pos[i] = p;
+                    i += 1;
                 }
-                pos.sort_unstable();
-                let score = self.score_of_matching(candidate);
-                NameMatch { score, pos }
-            })
+            }
+            pos.sort_unstable();
+            let score = self.score_of_matching(candidate);
+            NameMatch { score, pos }
+        })
     }
 
     /// compute the score of the best match
     /// Note that it should not be called on empty patterns
-    pub fn score_of(&self, candidate: &str) -> Option<i32> {
+    pub fn score_of(
+        &self,
+        candidate: &str,
+    ) -> Option<i32> {
         self.find_ranges(candidate)
             .map(|_| self.score_of_matching(candidate))
     }
@@ -160,13 +166,18 @@ mod tok_pattern_tests {
     };
 
     /// check position of the match of the pattern in name
-    fn check_pos(pattern: &str, name: &str, pos: &str) {
+    fn check_pos(
+        pattern: &str,
+        name: &str,
+        pos: &str,
+    ) {
         println!("checking pattern={pattern:?} name={name:?}");
         let pat = TokPattern::new(pattern);
         let match_pos = pat.find(name).unwrap().pos;
-        let target_pos: Pos = pos.chars()
+        let target_pos: Pos = pos
+            .chars()
             .enumerate()
-            .filter(|(_, c)| *c=='^')
+            .filter(|(_, c)| *c == '^')
             .map(|(i, _)| i)
             .collect();
         assert_eq!(match_pos, target_pos);
@@ -174,43 +185,24 @@ mod tok_pattern_tests {
 
     #[test]
     fn check_match_pos() {
-        check_pos(
-            "m,",
-            "miaou",
-            "^   ",
-        );
-        check_pos(
-            "bat",
-            "cabat",
-            "  ^^^",
-        );
-        check_pos(
-            ";ba",
-            "babababaaa",
-            "^^        ",
-        );
-        check_pos(
-            "ba,ca",
-            "bababacaa",
-            "^^    ^^ ",
-        );
+        check_pos("m,", "miaou", "^   ");
+        check_pos("bat", "cabat", "  ^^^");
+        check_pos(";ba", "babababaaa", "^^        ");
+        check_pos("ba,ca", "bababacaa", "^^    ^^ ");
         check_pos(
             "sub,doc,2",
             "/home/user/path2/subpath/Documents/",
             "               ^ ^^^     ^^^",
         );
-        check_pos(
-            "ab,abc",
-            "0123/abc/ab/cdg",
-            "     ^^^ ^^    ",
-        );
+        check_pos("ab,abc", "0123/abc/ab/cdg", "     ^^^ ^^    ");
     }
 
-    fn check_match(pattern: &str, name: &str, do_match: bool) {
-        assert_eq!(
-            TokPattern::new(pattern).find(name).is_some(),
-            do_match,
-        );
+    fn check_match(
+        pattern: &str,
+        name: &str,
+        do_match: bool,
+    ) {
+        assert_eq!(TokPattern::new(pattern).find(name).is_some(), do_match,);
     }
 
     #[test]
@@ -244,5 +236,4 @@ mod tok_pattern_tests {
         check_match("ghi,abc,def,ccc", "abccc/Defghi", false);
         check_match("ghi,abc,def,ccc", "abcccc/Defghi", true);
     }
-
 }

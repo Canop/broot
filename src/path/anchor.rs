@@ -4,4 +4,3 @@ pub enum PathAnchor {
     Parent,
     Directory,
 }
-

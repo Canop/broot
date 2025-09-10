@@ -1,16 +1,9 @@
-
 use {
-    super::{
-        Message,
-    },
-    crate::{
-        errors::NetError,
-    },
+    super::Message,
+    crate::errors::NetError,
     std::{
         io::BufReader,
-        os::unix::net::{
-            UnixStream,
-        },
+        os::unix::net::UnixStream,
     },
 };
 
@@ -24,7 +17,10 @@ impl Client {
             path: super::socket_file_path(socket_name),
         }
     }
-    pub fn send(&self, message: &Message) -> Result<(), NetError> {
+    pub fn send(
+        &self,
+        message: &Message,
+    ) -> Result<(), NetError> {
         debug!("try connecting {:?}", &self.path);
         let mut stream = UnixStream::connect(&self.path)?;
         message.write(&mut stream)?;

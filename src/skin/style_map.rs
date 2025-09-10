@@ -5,17 +5,15 @@
 /// one (there are thus two instances in the application)
 use {
     super::*,
-    crate::{
-        errors::ProgramError,
-    },
+    crate::errors::ProgramError,
     crokey::crossterm::{
+        QueueableCommand,
         style::{
             Attribute::*,
             Attributes,
             Color::*,
             SetBackgroundColor,
         },
-        QueueableCommand,
     },
     rustc_hash::FxHashMap,
     std::{
@@ -124,13 +122,19 @@ macro_rules! StyleMap {
 }
 
 impl StyleMap {
-    pub fn queue_reset<W: Write>(&self, f: &mut W) -> Result<(), ProgramError> {
+    pub fn queue_reset<W: Write>(
+        &self,
+        f: &mut W,
+    ) -> Result<(), ProgramError> {
         if self.styled {
             f.queue(SetBackgroundColor(Color::Reset))?;
         }
         Ok(())
     }
-    pub fn good_to_bad_color(&self, value: f64) -> Color {
+    pub fn good_to_bad_color(
+        &self,
+        value: f64,
+    ) -> Color {
         debug_assert!((0.0..=1.0).contains(&value));
         const N: usize = 10;
         let idx = (value * N as f64) as usize;
@@ -236,7 +240,10 @@ StyleMap! {
 }
 
 impl fmt::Debug for StyleMap {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, "Skin")
     }
 }

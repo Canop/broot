@@ -23,7 +23,10 @@ pub struct InputPattern {
 }
 
 impl PartialEq for InputPattern {
-    fn eq(&self, other: &Self) -> bool {
+    fn eq(
+        &self,
+        other: &Self,
+    ) -> bool {
         self.raw == other.raw
     }
 }
@@ -40,7 +43,11 @@ impl InputPattern {
         parts_expr: &BeTree<PatternOperator, PatternParts>,
         con: &AppContext,
     ) -> Result<Self, PatternError> {
-        let pattern = Pattern::new(parts_expr, &con.search_modes, con.content_search_max_file_size)?;
+        let pattern = Pattern::new(
+            parts_expr,
+            &con.search_modes,
+            con.content_search_max_file_size,
+        )?;
         Ok(Self { raw, pattern })
     }
     pub fn is_none(&self) -> bool {
@@ -55,11 +62,7 @@ impl InputPattern {
         std::mem::replace(self, Self::none())
     }
     pub fn as_option(self) -> Option<Self> {
-        if self.is_some() {
-            Some(self)
-        } else {
-            None
-        }
+        if self.is_some() { Some(self) } else { None }
     }
     /// from a pattern used to filter a tree, build a pattern
     /// which would make sense to filter a previewed file
@@ -67,13 +70,11 @@ impl InputPattern {
         let regex_parts: Option<(String, String)> = match &self.pattern {
             Pattern::ContentExact(cp) => Some(cp.to_regex_parts()),
             Pattern::ContentRegex(rp) => Some(rp.to_regex_parts()),
-            Pattern::Composite(cp) => cp.expr
-                .iter_atoms()
-                .find_map(|p| match p {
-                    Pattern::ContentExact(ce) => Some(ce.to_regex_parts()),
-                    Pattern::ContentRegex(cp) => Some(cp.to_regex_parts()),
-                    _ => None
-                }),
+            Pattern::Composite(cp) => cp.expr.iter_atoms().find_map(|p| match p {
+                Pattern::ContentExact(ce) => Some(ce.to_regex_parts()),
+                Pattern::ContentRegex(cp) => Some(cp.to_regex_parts()),
+                _ => None,
+            }),
             _ => None,
         };
         regex_parts
@@ -81,8 +82,7 @@ impl InputPattern {
                 // The regex part is missing the escaping which prevents it from
                 // ending the pattern in the input. We need to restore it
                 // See https://github.com/Canop/broot/issues/778
-                (regex_replace_all!("[ :]", &core, "\\$0").to_string(), modifiers)
-            )
+                (regex_replace_all!("[ :]", &core, "\\$0").to_string(), modifiers))
             .and_then(|(core, modifiers)| RegexPattern::from(&core, &modifiers).ok())
             .map(|rp| InputPattern {
                 raw: rp.to_string(), // this adds the initial /

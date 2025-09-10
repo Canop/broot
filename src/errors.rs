@@ -32,6 +32,7 @@ custom_error! {pub ProgramError
     UnprintableFile = "File can't be printed", // has characters that can't be printed without escaping
     Unrecognized {token: String} = "Unrecognized: {token}",
     ZeroLenFile = "File seems empty",
+    Notify { source: notify::Error } = "Notify error: {source}",
 }
 
 custom_error! {pub ShellInstallError

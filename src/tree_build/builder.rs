@@ -1,11 +1,11 @@
 use {
     super::{
+        BuildReport,
         bid::{
             BId,
             SortableBId,
         },
         bline::BLine,
-        BuildReport,
     },
     crate::{
         app::AppContext,
@@ -356,7 +356,11 @@ impl<'c> TreeBuilder<'c> {
                     if child.has_match {
                         nb_lines_ok += 1;
                     }
-                    if self.options.max_depth.map_or(false, |max| child.depth > max) {
+                    if self
+                        .options
+                        .max_depth
+                        .map_or(false, |max| child.depth > max)
+                    {
                         break;
                     }
                     if child.can_enter() {

@@ -2,7 +2,11 @@ use {
     super::*,
     crate::{
         pattern::*,
-        verb::{Internal, VerbInvocation, VerbId},
+        verb::{
+            Internal,
+            VerbId,
+            VerbInvocation,
+        },
     },
     bet::BeTree,
 };
@@ -13,7 +17,6 @@ use {
 /// given on launch.
 #[derive(Debug, Clone)]
 pub enum Command {
-
     /// no command
     None,
 
@@ -54,7 +57,6 @@ pub enum Command {
 }
 
 impl Command {
-
     pub fn empty() -> Command {
         Command::None
     }
@@ -67,8 +69,12 @@ impl Command {
         match self {
             Self::VerbEdit(vi) => Some(vi),
             Self::VerbInvocate(vi) => Some(vi),
-            Self::Internal { input_invocation, .. } =>  input_invocation.as_ref(),
-            Self::VerbTrigger { input_invocation, .. } =>  input_invocation.as_ref(),
+            Self::Internal {
+                input_invocation, ..
+            } => input_invocation.as_ref(),
+            Self::VerbTrigger {
+                input_invocation, ..
+            } => input_invocation.as_ref(),
             _ => None,
         }
     }
@@ -78,7 +84,10 @@ impl Command {
     /// The command being finished is the difference between
     /// a command being edited and a command launched (which
     /// happens on enter in the input).
-    pub fn from_parts(mut cp: CommandParts, finished: bool) -> Self {
+    pub fn from_parts(
+        mut cp: CommandParts,
+        finished: bool,
+    ) -> Self {
         if let Some(verb_invocation) = cp.verb_invocation.take() {
             if finished {
                 Self::VerbInvocate(verb_invocation)
@@ -108,7 +117,10 @@ impl Command {
     ///
     /// `finished` makes the command an executed form,
     /// it's equivalent to using the Enter key in the Gui.
-    pub fn from_raw(raw: String, finished: bool) -> Self {
+    pub fn from_raw(
+        raw: String,
+        finished: bool,
+    ) -> Self {
         let parts = CommandParts::from(raw);
         Self::from_parts(parts, finished)
     }

@@ -1,4 +1,5 @@
-#[macro_use] extern crate cli_log;
+#[macro_use]
+extern crate cli_log;
 
 pub mod app;
 pub mod browser;
@@ -12,8 +13,8 @@ pub mod errors;
 pub mod file_sum;
 pub mod flag;
 pub mod git;
-pub mod hex;
 pub mod help;
+pub mod hex;
 pub mod icon;
 pub mod image;
 pub mod keys;
@@ -24,9 +25,9 @@ pub mod pattern;
 pub mod permissions;
 pub mod preview;
 pub mod print;
-pub mod stage;
 pub mod shell_install;
 pub mod skin;
+pub mod stage;
 pub mod syntactic;
 pub mod task_sync;
 pub mod terminal;
@@ -34,6 +35,7 @@ pub mod tree;
 pub mod tree_build;
 pub mod tty;
 pub mod verb;
+pub mod watcher;
 
 #[cfg(any(target_os = "macos", target_os = "linux"))]
 pub mod filesystems;
@@ -42,5 +44,13 @@ pub mod filesystems;
 pub mod net;
 
 #[cfg(feature = "trash")]
+#[cfg(any(
+    target_os = "windows",
+    all(
+        unix,
+        not(target_os = "macos"),
+        not(target_os = "ios"),
+        not(target_os = "android")
+    )
+))]
 pub mod trash;
-

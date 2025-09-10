@@ -13,9 +13,9 @@ use {
 
 const INTERESTING: Status = Status::from_bits_truncate(
     Status::WT_NEW.bits()
-    | Status::CONFLICTED.bits()
-    | Status::WT_MODIFIED.bits()
-    | Status::IGNORED.bits()
+        | Status::CONFLICTED.bits()
+        | Status::WT_MODIFIED.bits()
+        | Status::IGNORED.bits(),
 );
 
 /// A git status

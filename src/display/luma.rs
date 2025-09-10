@@ -49,7 +49,10 @@ impl LumaCondition {
         };
         self.includes(luma)
     }
-    pub fn includes(&self, other: Luma) -> bool {
+    pub fn includes(
+        &self,
+        other: Luma,
+    ) -> bool {
         match self {
             Self::Simple(luma) => other == *luma,
             Self::Array(arr) => arr.contains(&other),

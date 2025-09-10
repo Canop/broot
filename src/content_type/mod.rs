@@ -1,11 +1,9 @@
-pub mod magic_numbers;
 pub mod extensions;
+pub mod magic_numbers;
 
-use {
-    std::{
-        io,
-        path::Path,
-    },
+use std::{
+    io,
+    path::Path,
 };
 
 /// Assuming the path is already checked to be to a file

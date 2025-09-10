@@ -1,16 +1,12 @@
 use {
     super::*,
-    crate::{
-        conf::Conf,
-    },
+    crate::conf::Conf,
     rustc_hash::FxHashMap,
 };
-
 
 /// all the skin things used by the broot application
 /// during running
 pub struct AppSkin {
-
     /// the skin used in the focused panel
     pub focused: PanelSkin,
 
@@ -19,7 +15,10 @@ pub struct AppSkin {
 }
 
 impl AppSkin {
-    pub fn new(conf: &Conf, no_style: bool) -> Self {
+    pub fn new(
+        conf: &Conf,
+        no_style: bool,
+    ) -> Self {
         if no_style {
             Self {
                 focused: PanelSkin::new(StyleMap::no_term()),
@@ -40,5 +39,4 @@ impl AppSkin {
             }
         }
     }
-
 }

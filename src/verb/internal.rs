@@ -4,9 +4,7 @@
 //! They can be called as ":some_name" from builtin verbs and
 //! from configured verbs.
 
-use {
-    crate::errors::ConfError,
-};
+use crate::errors::ConfError;
 
 macro_rules! Internals {
     (
@@ -48,7 +46,6 @@ macro_rules! Internals {
         }
     }
 }
-
 
 // internals:
 //  name: "description" needs_a_path
@@ -166,6 +163,8 @@ Internals! {
     unstage: "remove selection from staging area" true,
     up_tree: "focus the parent of the current root" true,
     write_output: "write the argument to the --verb-output file" false,
+    toggle_watch: "toggle watching the current root for changes" false,
+
     //restore_pattern: "restore a pattern which was just removed" false,
 }
 
@@ -202,7 +201,10 @@ impl Internal {
             _ => self.name(),
         }
     }
-    pub fn needs_selection(self, arg: &Option<String>) -> bool {
+    pub fn needs_selection(
+        self,
+        arg: &Option<String>,
+    ) -> bool {
         match self {
             Internal::focus => arg.is_none(),
             _ => self.need_path(),

@@ -34,11 +34,12 @@ mod num_format;
 mod screen;
 pub mod status_line;
 
-#[cfg(not(any(target_family="windows",target_os="android")))]
+#[cfg(not(any(target_family = "windows", target_os = "android")))]
 mod permissions;
 
 pub use {
     areas::Areas,
+    cell_size::*,
     col::*,
     cond_bg,
     displayable_tree::DisplayableTree,
@@ -47,19 +48,16 @@ pub use {
     luma::LumaCondition,
     matched_string::MatchedString,
     screen::Screen,
-    cell_size::*,
 };
 use {
     once_cell::sync::Lazy,
     termimad::*,
 };
 
-#[cfg(not(any(target_family="windows",target_os="android")))]
-pub use {
-    permissions::PermWriter,
-};
+#[cfg(not(any(target_family = "windows", target_os = "android")))]
+pub use permissions::PermWriter;
 
-pub static BRANCH_FILLING: Lazy<Filling> = Lazy::new(|| { Filling::from_char('─') });
+pub static BRANCH_FILLING: Lazy<Filling> = Lazy::new(|| Filling::from_char('─'));
 
 /// if true then the status of a panel covers the whole width
 /// of the terminal (over the other panels)
