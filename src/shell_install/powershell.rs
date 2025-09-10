@@ -35,7 +35,7 @@ Function br {
   $cmd_file = New-TemporaryFile
 
   $process = Start-Process -FilePath 'broot.exe' `
-                           -ArgumentList "--outcmd $($cmd_file.FullName) $args" `
+                           -ArgumentList "--outcmd `"$($cmd_file.FullName)`" $args" `
                            -NoNewWindow -PassThru -WorkingDirectory $PWD
 
   Wait-Process -InputObject $process #Faster than Start-Process -Wait
