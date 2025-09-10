@@ -1,3 +1,6 @@
+### next
+- fallback to a transparent background for images in image preview instead of a specific color - Fix #1040 - Thanks @letmeiiiin
+
 ### v1.48.0 - 2025-08-29
 <a name="v1.48.0"></a>
 - Support for the 'Cmd' modifier in key shortcuts (the key is called 'Command', 'Super', 'Apple', 'Windows', depending on systems and users)
