@@ -643,6 +643,7 @@
 ( "tslint.yml"              , "file_type_tslint"                  ) ,
 ( "ts.snap"                 , "file_type_jest_snapshot"           ) ,
 ( "tst"                     , "file_type_test"                    ) ,
+( "tsx"                     , "file_type_typescript"              ) ,
 ( "tsx.snap"                , "file_type_jest_snapshot"           ) ,
 ( "tt2"                     , "file_type_tt"                      ) ,
 ( "tta"                     , "file_type_audio"                   ) ,
