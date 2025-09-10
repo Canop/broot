@@ -76,7 +76,8 @@ impl CmdResult {
         match os {
             Ok(os) => {
                 if in_new_panel {
-                    CmdResult::NewPanel { // TODO keep the message ?
+                    CmdResult::NewPanel {
+                        // TODO keep the message ?
                         state: Box::new(os),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
@@ -93,7 +94,10 @@ impl CmdResult {
         }
     }
     pub fn new_state(state: Box<dyn PanelState>) -> Self {
-        Self::NewState { state, message: None }
+        Self::NewState {
+            state,
+            message: None,
+        }
     }
     pub fn error<S: Into<String>>(message: S) -> Self {
         Self::DisplayError(message.into())
@@ -107,31 +111,48 @@ impl From<Launchable> for CmdResult {
 }
 
 impl fmt::Debug for CmdResult {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter,
+    ) -> fmt::Result {
         write!(
             f,
             "{}",
             match self {
-                CmdResult::ApplyOnPanel { .. } => "ApplyOnPanel",
+                CmdResult::ApplyOnPanel {
+                    ..
+                } => "ApplyOnPanel",
                 CmdResult::ChangeLayout(_) => "ChangeLayout",
                 CmdResult::ClosePanel {
-                    validate_purpose: false, ..
+                    validate_purpose: false,
+                    ..
                 } => "CancelPanel",
                 CmdResult::ClosePanel {
-                    validate_purpose: true, ..
+                    validate_purpose: true,
+                    ..
                 } => "OkPanel",
                 CmdResult::DisplayError(_) => "DisplayError",
-                CmdResult::ExecuteSequence{ .. } => "ExecuteSequence",
+                CmdResult::ExecuteSequence {
+                    ..
+                } => "ExecuteSequence",
                 CmdResult::Keep => "Keep",
-                CmdResult::Message { .. } => "Message",
+                CmdResult::Message {
+                    ..
+                } => "Message",
                 CmdResult::Launch(_) => "Launch",
-                CmdResult::NewState { .. } => "NewState",
-                CmdResult::NewPanel { .. } => "NewPanel",
+                CmdResult::NewState {
+                    ..
+                } => "NewState",
+                CmdResult::NewPanel {
+                    ..
+                } => "NewPanel",
                 CmdResult::PopStateAndReapply => "PopStateAndReapply",
                 CmdResult::PopState => "PopState",
                 CmdResult::HandleInApp(_) => "HandleInApp",
                 CmdResult::Quit => "Quit",
-                CmdResult::RefreshState { .. } => "RefreshState",
+                CmdResult::RefreshState {
+                    ..
+                } => "RefreshState",
             }
         )
     }

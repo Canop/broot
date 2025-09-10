@@ -86,11 +86,9 @@ impl TrashItemProperty {
     ) -> usize {
         match self {
             Self::Size => 4,
-            _ => items
-                .iter()
-                .map(|m| self.value_of(m, options).width())
-                .max()
-                .unwrap_or(0),
+            _ => {
+                items.iter().map(|m| self.value_of(m, options).width()).max().unwrap_or(0)
+            }
         }
     }
     pub fn column_constraints(
@@ -113,12 +111,11 @@ pub fn get_cols(
     available_width: usize,
     tree_options: &TreeOptions,
 ) -> Vec<flex_grow::Child<TrashItemProperty>> {
-    let mut cols_builder = flex_grow::Container::builder_in(available_width).with_margin_between(1);
+    let mut cols_builder =
+        flex_grow::Container::builder_in(available_width).with_margin_between(1);
     if tree_options.show_sizes {
         cols_builder.add(
-            TrashItemProperty::Size
-                .column_constraints(items, tree_options)
-                .optional(),
+            TrashItemProperty::Size.column_constraints(items, tree_options).optional(),
         );
     }
     if tree_options.show_dates {

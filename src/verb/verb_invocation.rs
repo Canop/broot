@@ -1,6 +1,4 @@
-use {
-    std::fmt,
-};
+use std::fmt;
 
 /// the verb and its arguments, making the invocation.
 /// When coming from parsing, the args is Some as soon
@@ -13,7 +11,10 @@ pub struct VerbInvocation {
 }
 
 impl fmt::Display for VerbInvocation {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, ":")?;
         if self.bang {
             write!(f, "!")?;
@@ -27,7 +28,11 @@ impl fmt::Display for VerbInvocation {
 }
 
 impl VerbInvocation {
-    pub fn new<T: Into<String>>(name: T, args: Option<T>, bang: bool) -> Self {
+    pub fn new<T: Into<String>>(
+        name: T,
+        args: Option<T>,
+        bang: bool,
+    ) -> Self {
         Self {
             name: name.into(),
             args: args.map(|s| s.into()),
@@ -47,7 +52,10 @@ impl VerbInvocation {
     }
     /// basically return the invocation but allow another name (the shortcut
     /// or a variant)
-    pub fn to_string_for_name(&self, name: &str) -> String {
+    pub fn to_string_for_name(
+        &self,
+        name: &str,
+    ) -> String {
         let mut s = String::new();
         if self.bang {
             s.push('!');
@@ -134,7 +142,11 @@ impl From<&str> for VerbInvocation {
             name.push(c);
         }
         let bang = bang_before || bang_after;
-        VerbInvocation { name, args, bang }
+        VerbInvocation {
+            name,
+            args,
+            bang,
+        }
     }
 }
 
@@ -195,10 +207,7 @@ mod verb_invocation_tests {
         // those tests focus mainly on the distinction between
         // None and Some("") for the args, distinction which matters
         // for inline help
-        assert_eq!(
-            VerbInvocation::from("!mv"),
-            VerbInvocation::new("mv", None, true),
-        );
+        assert_eq!(VerbInvocation::from("!mv"), VerbInvocation::new("mv", None, true),);
         assert_eq!(
             VerbInvocation::from("mva!"),
             VerbInvocation::new("mva", Some(""), true),
@@ -220,10 +229,7 @@ mod verb_invocation_tests {
             VerbInvocation::from("mva!a"),
             VerbInvocation::new("mva", Some("a"), true),
         );
-        assert_eq!(
-            VerbInvocation::from("!!!"),
-            VerbInvocation::new("", None, true),
-        );
+        assert_eq!(VerbInvocation::from("!!!"), VerbInvocation::new("", None, true),);
     }
 
     #[test]
@@ -231,18 +237,9 @@ mod verb_invocation_tests {
         // there's currently no meaning for the empty verb, it's "reserved"
         // and will probably not be used as it may need a distinction between
         // one and two initial spaces in the input
-        assert_eq!(
-            VerbInvocation::from(""),
-            VerbInvocation::new("", None, false),
-        );
-        assert_eq!(
-            VerbInvocation::from("!"),
-            VerbInvocation::new("", None, true),
-        );
-        assert_eq!(
-            VerbInvocation::from("!! "),
-            VerbInvocation::new("", Some(""), true),
-        );
+        assert_eq!(VerbInvocation::from(""), VerbInvocation::new("", None, false),);
+        assert_eq!(VerbInvocation::from("!"), VerbInvocation::new("", None, true),);
+        assert_eq!(VerbInvocation::from("!! "), VerbInvocation::new("", Some(""), true),);
         assert_eq!(
             VerbInvocation::from("!! a"),
             VerbInvocation::new("", Some("a"), true),

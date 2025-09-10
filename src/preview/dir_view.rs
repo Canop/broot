@@ -1,18 +1,28 @@
 use {
     crate::{
-        app::{AppContext, DisplayContext},
+        app::{
+            AppContext,
+            DisplayContext,
+        },
         command::ScrollCommand,
-        display::{DisplayableTree, Screen, W},
+        display::{
+            DisplayableTree,
+            Screen,
+            W,
+        },
         errors::ProgramError,
         pattern::InputPattern,
         skin::PanelSkin,
         task_sync::Dam,
-        tree_build::{TreeBuilder},
-        tree::{Tree, TreeOptions},
+        tree::{
+            Tree,
+            TreeOptions,
+        },
+        tree_build::TreeBuilder,
     },
     crokey::crossterm::{
-        cursor,
         QueueableCommand,
+        cursor,
     },
     std::{
         io,
@@ -38,12 +48,8 @@ impl DirView {
             pattern,
             ..Default::default()
         };
-        let mut builder = TreeBuilder::from(
-            dir,
-            options,
-            100,
-            con,
-        ).map_err(io::Error::other)?;
+        let mut builder =
+            TreeBuilder::from(dir, options, 100, con).map_err(io::Error::other)?;
         builder.deep = false;
         let tree = builder
             .build_tree(
@@ -92,10 +98,7 @@ impl DirView {
         if s.len() + "lines: ".len() < width {
             s = format!("entries: {s}");
         }
-        w.queue(cursor::MoveTo(
-            area.left + area.width - s.len() as u16,
-            area.top,
-        ))?;
+        w.queue(cursor::MoveTo(area.left + area.width - s.len() as u16, area.top))?;
         panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }
@@ -109,10 +112,17 @@ impl DirView {
         let dy = cmd.to_lines(page_height);
         self.tree.try_scroll(dy, page_height)
     }
-    pub fn try_select_y(&mut self, y: u16) -> bool {
+    pub fn try_select_y(
+        &mut self,
+        y: u16,
+    ) -> bool {
         self.tree.try_select_y(y as usize)
     }
-    pub fn move_selection(&mut self, dy: i32, cycle: bool) {
+    pub fn move_selection(
+        &mut self,
+        dy: i32,
+        cycle: bool,
+    ) {
         if let Some(page_height) = self.page_height {
             self.tree.move_selection(dy, page_height, cycle);
         }

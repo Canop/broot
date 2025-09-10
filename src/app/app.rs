@@ -34,7 +34,10 @@ use {
     },
     std::{
         io::Write,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
         str::FromStr,
         sync::{
             Arc,
@@ -43,13 +46,13 @@ use {
     },
     strict::NonEmptyVec,
     termimad::{
-        crossbeam::channel::{
-            unbounded,
-            Receiver,
-            Sender,
-        },
         EventSource,
         EventSourceOptions,
+        crossbeam::channel::{
+            Receiver,
+            Sender,
+            unbounded,
+        },
     },
 };
 
@@ -159,7 +162,9 @@ impl App {
             PanelReference::Leftest => Some(0),
             PanelReference::Rightest => Some(self.panels.len().get() - 1),
             PanelReference::Id(id) => self.panel_id_to_idx(id),
-            PanelReference::Preview => self.preview_panel.and_then(|id| self.panel_id_to_idx(id)),
+            PanelReference::Preview => {
+                self.preview_panel.and_then(|id| self.panel_id_to_idx(id))
+            }
         }
     }
 
@@ -181,11 +186,7 @@ impl App {
         &self.panels[self.active_panel_idx]
     }
     fn mut_panel(&mut self) -> &mut Panel {
-        unsafe {
-            self.panels
-                .as_mut_slice()
-                .get_unchecked_mut(self.active_panel_idx)
-        }
+        unsafe { self.panels.as_mut_slice().get_unchecked_mut(self.active_panel_idx) }
     }
 
     /// close the panel if it's not the last one
@@ -238,7 +239,10 @@ impl App {
     /// Close the panel too if that was its only state.
     /// Close nothing and return false if there's not
     /// at least two states in the app.
-    fn remove_state(&mut self, con: &AppContext) -> bool {
+    fn remove_state(
+        &mut self,
+        con: &AppContext,
+    ) -> bool {
         self.panels[self.active_panel_idx].remove_state()
             || self.close_panel(self.active_panel_idx, con)
     }
@@ -281,10 +285,7 @@ impl App {
             queue!(w, MoveTo(left, top))?;
         }
 
-        kitty::manager()
-            .lock()
-            .unwrap()
-            .erase_images_before(w, self.drawing_count)?;
+        kitty::manager().lock().unwrap().erase_images_before(w, self.drawing_count)?;
         w.flush()?;
         Ok(())
     }
@@ -303,7 +304,11 @@ impl App {
             }
             None
         } else if self.panels.len().get() == 2 && self.preview_panel.is_none() {
-            let non_focused_panel_idx = if self.active_panel_idx == 0 { 1 } else { 0 };
+            let non_focused_panel_idx = if self.active_panel_idx == 0 {
+                1
+            } else {
+                0
+            };
             self.panels[non_focused_panel_idx]
                 .state()
                 .selected_path()
@@ -333,16 +338,20 @@ impl App {
             screen: self.screen, // it can't change in this function
             con,
         };
-        let cmd_result = self
-            .mut_panel()
-            .apply_command(w, &cmd, app_state, &app_cmd_context)?;
+        let cmd_result =
+            self.mut_panel().apply_command(w, &cmd, app_state, &app_cmd_context)?;
         info!("cmd_result: {:?}", &cmd_result);
         match cmd_result {
-            ApplyOnPanel { id } => {
+            ApplyOnPanel {
+                id,
+            } => {
                 if let Some(idx) = self.panel_id_to_idx(id) {
-                    if let DisplayError(txt) =
-                        self.panels[idx].apply_command(w, &cmd, app_state, &app_cmd_context)?
-                    {
+                    if let DisplayError(txt) = self.panels[idx].apply_command(
+                        w,
+                        &cmd,
+                        app_state,
+                        &app_cmd_context,
+                    )? {
                         // we should probably handle other results
                         // which implies the possibility of a recursion
                         error = Some(txt);
@@ -373,7 +382,10 @@ impl App {
                 let mut new_arg = None;
                 if validate_purpose {
                     let purpose = &self.panels[close_idx].purpose;
-                    if let PanelPurpose::ArgEdition { .. } = purpose {
+                    if let PanelPurpose::ArgEdition {
+                        ..
+                    } = purpose
+                    {
                         new_arg = self.panels[close_idx]
                             .state()
                             .selected_path()
@@ -397,8 +409,12 @@ impl App {
                             screen,
                             con,
                         };
-                        self.mut_panel()
-                            .apply_command(w, &cmd, app_state, &app_cmd_context)?;
+                        self.mut_panel().apply_command(
+                            w,
+                            &cmd,
+                            app_state,
+                            &app_cmd_context,
+                        )?;
                     }
                 } else {
                     self.quitting = true;
@@ -416,7 +432,9 @@ impl App {
             DisplayError(txt) => {
                 error = Some(txt);
             }
-            ExecuteSequence { sequence } => {
+            ExecuteSequence {
+                sequence,
+            } => {
                 self.tx_seqs.send(sequence).unwrap();
             }
             HandleInApp(internal) => {
@@ -446,12 +464,13 @@ impl App {
                     }
                     Internal::panel_right_no_open => {
                         // we either move to the right or close the leftest panel
-                        new_active_panel_idx = if self.active_panel_idx + 1 == self.panels.len().get() {
-                            self.close_panel(0, con);
-                            None
-                        } else {
-                            Some(self.active_panel_idx + 1)
-                        };
+                        new_active_panel_idx =
+                            if self.active_panel_idx + 1 == self.panels.len().get() {
+                                self.close_panel(0, con);
+                                None
+                            } else {
+                                Some(self.active_panel_idx + 1)
+                            };
                     }
                     Internal::search_again => {
                         if let Some(raw_pattern) = &self.panel().last_raw_pattern {
@@ -460,7 +479,8 @@ impl App {
                         }
                     }
                     Internal::set_syntax_theme => {
-                        let arg = cmd.as_verb_invocation().and_then(|vi| vi.args.as_ref());
+                        let arg =
+                            cmd.as_verb_invocation().and_then(|vi| vi.args.as_ref());
                         match arg {
                             Some(arg) => match SyntaxTheme::from_str(arg) {
                                 Ok(theme) => {
@@ -487,7 +507,9 @@ impl App {
                             // we open a tree, closing a (non tree) panel if necessary
                             if panels_count >= con.max_panels_count {
                                 for i in (0..panels_count).rev() {
-                                    if self.panels[i].state().get_type() != PanelStateType::Tree {
+                                    if self.panels[i].state().get_type()
+                                        != PanelStateType::Tree
+                                    {
                                         self.close_panel(i, con);
                                         break;
                                     }
@@ -516,7 +538,9 @@ impl App {
                         } else {
                             // we close the rightest inactive tree
                             for i in (0..panels_count).rev() {
-                                if self.panels[i].state().get_type() == PanelStateType::Tree {
+                                if self.panels[i].state().get_type()
+                                    == PanelStateType::Tree
+                                {
                                     if i == self.active_panel_idx {
                                         continue;
                                     }
@@ -529,7 +553,9 @@ impl App {
                     _ => {
                         let cmd = self.mut_panel().input.on_internal(internal);
                         if cmd.is_none() {
-                            warn!("unhandled propagated internal. internal={internal:?} cmd={cmd:?}");
+                            warn!(
+                                "unhandled propagated internal. internal={internal:?} cmd={cmd:?}"
+                            );
                         } else {
                             self.apply_command(w, cmd, panel_skin, app_state, con)?;
                         }
@@ -556,18 +582,22 @@ impl App {
                 purpose,
                 direction,
             } => {
-                if let Err(s) = self.new_panel(state, purpose, direction, is_input_invocation, con) {
+                if let Err(s) =
+                    self.new_panel(state, purpose, direction, is_input_invocation, con)
+                {
                     error = Some(s);
                 }
             }
-            NewState { state, message } => {
+            NewState {
+                state,
+                message,
+            } => {
                 self.mut_panel().clear_input();
                 self.mut_panel().push_state(state);
                 if let Some(md) = message {
                     self.mut_panel().set_message(md);
                 } else {
-                    self.mut_panel()
-                        .refresh_input_status(app_state, &app_cmd_context);
+                    self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
                 }
             }
             PopState => {
@@ -576,8 +606,7 @@ impl App {
                 }
                 if self.remove_state(con) {
                     self.mut_state().refresh(app_cmd_context.screen, con);
-                    self.mut_panel()
-                        .refresh_input_status(app_state, &app_cmd_context);
+                    self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
                 } else if con.quit_on_last_cancel {
                     self.quitting = true;
                 }
@@ -594,8 +623,12 @@ impl App {
                         screen: self.screen,
                         con,
                     };
-                    self.mut_panel()
-                        .apply_command(w, &cmd, app_state, &app_cmd_context)?;
+                    self.mut_panel().apply_command(
+                        w,
+                        &cmd,
+                        app_state,
+                        &app_cmd_context,
+                    )?;
                 } else if con.quit_on_last_cancel {
                     self.quitting = true;
                 }
@@ -603,7 +636,9 @@ impl App {
             Quit => {
                 self.quitting = true;
             }
-            RefreshState { clear_cache } => {
+            RefreshState {
+                clear_cache,
+            } => {
                 info!("refreshing, clearing cache={clear_cache}");
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation(con);
@@ -633,8 +668,7 @@ impl App {
                 screen: self.screen,
                 con,
             };
-            self.mut_panel()
-                .refresh_input_status(app_state, &app_cmd_context);
+            self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
         }
 
         app_state.other_panel_path = self.get_other_panel_path();
@@ -670,9 +704,7 @@ impl App {
                 let old_path = self.panels[preview_idx].state().selected_path();
                 if refresh || Some(path) != old_path {
                     let path = path.to_path_buf();
-                    self.panels[preview_idx]
-                        .mut_state()
-                        .set_selected_path(path, con);
+                    self.panels[preview_idx].mut_state().set_selected_path(path, con);
                 }
             }
         }
@@ -768,8 +800,7 @@ impl App {
                     screen: self.screen, // it can't change in this function
                     con,
                 };
-                self.mut_panel()
-                    .refresh_input_status(app_state, &app_cmd_context);
+                self.mut_panel().refresh_input_status(app_state, &app_cmd_context);
             }
             self.display_panels(w, skin, app_state, con)?;
             if error.is_some() {
@@ -789,9 +820,7 @@ impl App {
         let screen = self.screen;
         // we start with the focused panel
         if self.panel().has_pending_task() {
-            return self
-                .mut_panel()
-                .do_pending_task(app_state, screen, con, dam);
+            return self.mut_panel().do_pending_task(app_state, screen, con, dam);
         }
         // then the other ones
         for idx in 0..self.panels.len().get() {
@@ -827,14 +856,15 @@ impl App {
         // when a long search is running, and interrupt it if needed
         w.flush()?;
         let combine_keys = conf.enable_kitty_keyboard.unwrap_or(false) && con.is_tty;
-        let event_source = EventSource::with_options(
-            EventSourceOptions {
-                combine_keys,
-                ..Default::default()
-            }
-        )?;
+        let event_source = EventSource::with_options(EventSourceOptions {
+            combine_keys,
+            ..Default::default()
+        })?;
         con.keyboard_enhanced = event_source.supports_multi_key_combinations();
-        info!("event source is combining: {}", event_source.supports_multi_key_combinations());
+        info!(
+            "event source is combining: {}",
+            event_source.supports_multi_key_combinations()
+        );
 
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
@@ -863,9 +893,7 @@ impl App {
         }
 
         if let Some(raw_sequence) = &con.cmd() {
-            self.tx_seqs
-                .send(Sequence::new_local(raw_sequence.to_string()))
-                .unwrap();
+            self.tx_seqs.send(Sequence::new_local(raw_sequence.to_string())).unwrap();
         }
 
         #[cfg(unix)]
@@ -926,7 +954,8 @@ impl App {
 
                     // event handled by the panel
                     if !handled {
-                        let cmd = self.mut_panel().add_event(w, event, &app_state, con)?;
+                        let cmd =
+                            self.mut_panel().add_event(w, event, &app_state, con)?;
                         debug!("command after add_event: {:?}", &cmd);
                         self.apply_command(w, cmd, &skin.focused, &mut app_state, con)?;
                     }
@@ -941,17 +970,29 @@ impl App {
                 Either::Second(Some(raw_sequence)) => {
                     debug!("got command sequence: {:?}", &raw_sequence);
                     for (input, arg_cmd) in raw_sequence.parse(con)? {
-                        if !matches!(&arg_cmd, Command::Internal{..}) {
+                        if !matches!(&arg_cmd, Command::Internal { .. }) {
                             self.mut_panel().set_input_content(&input);
                         }
-                        self.apply_command(w, arg_cmd, &skin.focused, &mut app_state, con)?;
+                        self.apply_command(
+                            w,
+                            arg_cmd,
+                            &skin.focused,
+                            &mut app_state,
+                            con,
+                        )?;
                         if self.quitting {
                             return Ok(self.launch_at_end.take());
                         }
                         self.display_panels(w, &skin, &app_state, con)?;
                         time!(
                             "sequence pending tasks",
-                            self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
+                            self.do_pending_tasks(
+                                w,
+                                &skin,
+                                &mut dam,
+                                &mut app_state,
+                                con
+                            )?,
                         );
                     }
                 }

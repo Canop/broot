@@ -21,10 +21,7 @@ impl FontPlugin {
         let offending_entries = part_to_icon_name_map
             .values()
             .map(|icon_name| {
-                (
-                    icon_name,
-                    icon_name_to_icon_codepoint_map.contains_key(icon_name),
-                )
+                (icon_name, icon_name_to_icon_codepoint_map.contains_key(icon_name))
             })
             // Find if any entry is not present
             .filter(|(_entry, entry_present)| !entry_present)
@@ -69,7 +66,8 @@ impl FontPlugin {
             );
         }
 
-        let default_icon_point = *icon_name_to_icon_codepoint_map.get("default_file").unwrap();
+        let default_icon_point =
+            *icon_name_to_icon_codepoint_map.get("default_file").unwrap();
         Self {
             icon_name_to_icon_codepoint_map,
             file_name_to_icon_name_map,
@@ -111,10 +109,12 @@ impl FontPlugin {
     ) -> &'static str {
         match double_ext {
             None => self.handle_single_extension(ext),
-            Some(ref de) => match self.double_extension_to_icon_name_map.get(de as &str) {
-                None => self.handle_single_extension(ext),
-                Some(icon_name) => icon_name,
-            },
+            Some(ref de) => {
+                match self.double_extension_to_icon_name_map.get(de as &str) {
+                    None => self.handle_single_extension(ext),
+                    Some(icon_name) => icon_name,
+                }
+            }
         }
     }
 }
@@ -129,7 +129,9 @@ impl IconPlugin for FontPlugin {
     ) -> char {
         let icon_name = match tree_line_type {
             TreeLineType::Dir => "default_folder",
-            TreeLineType::SymLink { .. } => "emoji_type_link", //bad but nothing better
+            TreeLineType::SymLink {
+                ..
+            } => "emoji_type_link", //bad but nothing better
             TreeLineType::File => self.handle_file(
                 &name.to_ascii_lowercase(),
                 double_ext.map(|de| de.to_ascii_lowercase()),

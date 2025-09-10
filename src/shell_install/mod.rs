@@ -1,9 +1,9 @@
 mod bash;
 mod fish;
 mod nushell;
+mod powershell;
 mod state;
 mod util;
-mod powershell;
 
 use {
     crate::{
@@ -16,12 +16,13 @@ use {
         os,
         path::Path,
     },
-    termimad::{mad_print_inline, MadSkin},
+    termimad::{
+        MadSkin,
+        mad_print_inline,
+    },
 };
 
-pub use {
-    state::ShellInstallState,
-};
+pub use state::ShellInstallState;
 
 const MD_INSTALL_REQUEST: &str = r#"
 **Broot** should be launched using a shell function.
@@ -75,7 +76,11 @@ impl ShellInstall {
             force_install,
             skin: skin::make_cli_mad_skin(),
             should_quit: false,
-            authorization: if force_install { Some(true) } else { None },
+            authorization: if force_install {
+                Some(true)
+            } else {
+                None
+            },
             done: false,
         }
     }
@@ -146,20 +151,25 @@ impl ShellInstall {
 
     /// print some additional information on the error (typically before
     /// the error itself is dumped)
-    pub fn comment_error(&self, err: &ShellInstallError) {
+    pub fn comment_error(
+        &self,
+        err: &ShellInstallError,
+    ) {
         if err.is_permission_denied() {
             self.skin.print_text(MD_PERMISSION_DENIED);
         }
     }
 
-    pub fn remove(&self, path: &Path) -> Result<(), ShellInstallError> {
+    pub fn remove(
+        &self,
+        path: &Path,
+    ) -> Result<(), ShellInstallError> {
         // path.exists() doesn't work when the file is a link (it checks whether
         // the link destination exists instead of checking the link exists
         // so we first check whether the link exists
         if fs::read_link(path).is_ok() || path.exists() {
             mad_print_inline!(self.skin, "Removing `$0`.\n", path.to_string_lossy());
-            fs::remove_file(path)
-                .context(&|| format!("removing {path:?}"))?;
+            fs::remove_file(path).context(&|| format!("removing {path:?}"))?;
         }
         Ok(())
     }
@@ -171,7 +181,10 @@ impl ShellInstall {
     fn can_upgrade(&mut self) -> Result<bool, ShellInstallError> {
         self.can_do(true)
     }
-    fn can_do(&mut self, upgrade: bool) -> Result<bool, ShellInstallError> {
+    fn can_do(
+        &mut self,
+        upgrade: bool,
+    ) -> Result<bool, ShellInstallError> {
         if let Some(authorization) = self.authorization {
             return Ok(authorization);
         }
@@ -180,9 +193,12 @@ impl ShellInstall {
             debug!("User already refused the installation");
             return Ok(false);
         }
-        self.skin.print_text(if upgrade { MD_UPGRADE_REQUEST } else { MD_INSTALL_REQUEST });
-        let proceed = cli::ask_authorization()
-            .context(&|| "asking user".to_string())?; // read_line failure
+        self.skin.print_text(if upgrade {
+            MD_UPGRADE_REQUEST
+        } else {
+            MD_INSTALL_REQUEST
+        });
+        let proceed = cli::ask_authorization().context(&|| "asking user".to_string())?; // read_line failure
         debug!("proceed: {:?}", proceed);
         self.authorization = Some(proceed);
         if !proceed {
@@ -193,7 +209,11 @@ impl ShellInstall {
     }
 
     /// write the script at the given path
-    fn write_script(&self, script_path: &Path, content: &str) -> Result<(), ShellInstallError> {
+    fn write_script(
+        &self,
+        script_path: &Path,
+        content: &str,
+    ) -> Result<(), ShellInstallError> {
         self.remove(script_path)?;
         info!("Writing `br` shell function in `{:?}`", &script_path);
         mad_print_inline!(
@@ -209,7 +229,11 @@ impl ShellInstall {
     }
 
     /// create a link
-    fn create_link(&self, link_path: &Path, script_path: &Path) -> Result<(), ShellInstallError> {
+    fn create_link(
+        &self,
+        link_path: &Path,
+        script_path: &Path,
+    ) -> Result<(), ShellInstallError> {
         info!("Creating link from {:?} to {:?}", &link_path, &script_path);
         self.remove(link_path)?;
         let link_path_str = link_path.to_string_lossy();

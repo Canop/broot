@@ -1,34 +1,61 @@
 use {
     super::*,
     crate::{
-        app::{AppContext, LineNumber},
-        command::{ScrollCommand, move_sel},
-        display::{Screen, W},
+        app::{
+            AppContext,
+            LineNumber,
+        },
+        command::{
+            ScrollCommand,
+            move_sel,
+        },
+        display::{
+            Screen,
+            W,
+        },
         errors::*,
-        pattern::{InputPattern, NameMatch},
+        pattern::{
+            InputPattern,
+            NameMatch,
+        },
         skin::PanelSkin,
         task_sync::Dam,
     },
     crokey::crossterm::{
-        cursor,
-        style::{Color, Print, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
+        cursor,
+        style::{
+            Color,
+            Print,
+            SetBackgroundColor,
+            SetForegroundColor,
+        },
     },
     memmap2::Mmap,
     once_cell::sync::Lazy,
     std::{
         borrow::Cow,
         fs::File,
-        io::{BufRead, BufReader},
-        path::{Path, PathBuf},
+        io::{
+            BufRead,
+            BufReader,
+        },
+        path::{
+            Path,
+            PathBuf,
+        },
         str,
     },
     syntect::highlighting::Style,
-    termimad::{Area, CropWriter, Filling, SPACE_FILLING},
+    termimad::{
+        Area,
+        CropWriter,
+        Filling,
+        SPACE_FILLING,
+    },
 };
 
-pub static SEPARATOR_FILLING: Lazy<Filling> = Lazy::new(|| { Filling::from_char('─') });
-
+pub static SEPARATOR_FILLING: Lazy<Filling> = Lazy::new(|| Filling::from_char('─'));
 
 /// Homogeneously colored piece of a line
 #[derive(Debug)]
@@ -50,7 +77,10 @@ impl Region {
             b: region.0.foreground.b,
         };
         let string = region.1.to_string();
-        Self { fg, string }
+        Self {
+            fg,
+            string,
+        }
     }
 }
 
@@ -76,7 +106,7 @@ pub struct SyntacticView {
     scroll: usize,
     page_height: usize,
     selection_idx: Option<usize>, // index in lines of the selection, if any
-    content_lines_count: usize,  // number of lines excluding separators
+    content_lines_count: usize,   // number of lines excluding separators
     total_lines_count: usize,     // including lines not filtered out
 }
 
@@ -96,7 +126,6 @@ impl DisplayLine {
 }
 
 impl SyntacticView {
-
     /// Return a prepared text view with syntax coloring if possible.
     /// May return Ok(None) only when a pattern is given and there
     /// was an event before the end of filtering.
@@ -171,9 +200,11 @@ impl SyntacticView {
             let clean_line = printable_line(&line);
             let name_match = pattern.search_string(&clean_line);
             let regions = if let Some(highlighter) = highlighter.as_mut() {
-                    highlighter
-                        .highlight_line(&clean_line, &SYNTAXER.syntax_set)
-                    .map_err(|e| ProgramError::SyntectCrashed { details: e.to_string() })?
+                highlighter
+                    .highlight_line(&clean_line, &SYNTAXER.syntax_set)
+                    .map_err(|e| ProgramError::SyntectCrashed {
+                        details: e.to_string(),
+                    })?
                     .iter()
                     .map(Region::from_syntect)
                     .collect()
@@ -201,7 +232,9 @@ impl SyntacticView {
                 let mut kept = vec![false; content_lines.len()];
                 for (i, line) in content_lines.iter().enumerate() {
                     if line.name_match.is_some() {
-                        for j in i.saturating_sub(lines_before)..(i + lines_after + 1).min(content_lines.len()) {
+                        for j in i.saturating_sub(lines_before)
+                            ..(i + lines_after + 1).min(content_lines.len())
+                        {
                             kept[j] = true;
                         }
                     }
@@ -221,7 +254,8 @@ impl SyntacticView {
         self.content_lines_count = content_lines.len();
         for line in content_lines {
             if must_add_separators {
-                if let Some(last_number) = self.lines.last().and_then(|l| l.line_number()) {
+                if let Some(last_number) = self.lines.last().and_then(|l| l.line_number())
+                {
                     if line.number > last_number + 1 {
                         self.lines.push(DisplayLine::Separator);
                     }
@@ -243,7 +277,9 @@ impl SyntacticView {
             self.scroll = 0;
         } else if let Some(idx) = self.selection_idx {
             let padding = self.padding();
-            if idx < self.scroll + padding || idx + padding > self.scroll + self.page_height {
+            if idx < self.scroll + padding
+                || idx + padding > self.scroll + self.page_height
+            {
                 if idx <= padding {
                     self.scroll = 0;
                 } else if idx + padding > self.lines.len() {
@@ -276,19 +312,22 @@ impl SyntacticView {
                     .and_then(|mmap| {
                         String::from_utf8(
                             (mmap[line.start..line.start + line.len]).to_vec(),
-                        ).ok()
+                        )
+                        .ok()
                     })
             })
     }
 
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {
-        self.selection_idx
-            .and_then(|idx| self.lines[idx].line_number())
+        self.selection_idx.and_then(|idx| self.lines[idx].line_number())
     }
     pub fn unselect(&mut self) {
         self.selection_idx = None;
     }
-    pub fn try_select_y(&mut self, y: u16) -> bool {
+    pub fn try_select_y(
+        &mut self,
+        y: u16,
+    ) -> bool {
         let idx = y as usize + self.scroll;
         if idx < self.lines.len() {
             self.selection_idx = Some(idx);
@@ -311,7 +350,10 @@ impl SyntacticView {
         }
     }
 
-    pub fn try_select_line_number(&mut self, number: LineNumber) -> bool {
+    pub fn try_select_line_number(
+        &mut self,
+        number: LineNumber,
+    ) -> bool {
         // this could obviously be optimized
         for (idx, line) in self.lines.iter().enumerate() {
             if line.line_number() == Some(number) {
@@ -323,7 +365,11 @@ impl SyntacticView {
         false
     }
 
-    pub fn move_selection(&mut self, dy: i32, cycle: bool) {
+    pub fn move_selection(
+        &mut self,
+        dy: i32,
+        cycle: bool,
+    ) {
         if let Some(idx) = self.selection_idx {
             self.selection_idx = Some(move_sel(idx, self.lines.len(), dy, cycle));
         } else if !self.lines.is_empty() {
@@ -334,7 +380,7 @@ impl SyntacticView {
 
     pub fn previous_match(&mut self) {
         let s = self.selection_idx.unwrap_or(0);
-        for d in  1..self.lines.len() {
+        for d in 1..self.lines.len() {
             let idx = (self.lines.len() + s - d) % self.lines.len();
             if self.lines[idx].is_match() {
                 self.selection_idx = Some(idx);
@@ -345,7 +391,7 @@ impl SyntacticView {
     }
     pub fn next_match(&mut self) {
         let s = self.selection_idx.unwrap_or(0);
-        for d in  1..self.lines.len() {
+        for d in 1..self.lines.len() {
             let idx = (s + d) % self.lines.len();
             if self.lines[idx].is_match() {
                 self.selection_idx = Some(idx);
@@ -370,7 +416,7 @@ impl SyntacticView {
                     self.selection_idx = Some(self.lines.len() - 1);
                 }
                 return self.selection_idx == old_selection;
-            } else  if idx >= old_scroll && idx < old_scroll + self.page_height {
+            } else if idx >= old_scroll && idx < old_scroll + self.page_height {
                 if idx + self.scroll < old_scroll {
                     self.selection_idx = Some(0);
                 } else if idx + self.scroll - old_scroll >= self.lines.len() {
@@ -392,7 +438,10 @@ impl SyntacticView {
         None
     }
 
-    pub fn get_content_line(&self, idx: usize) -> Option<&Line> {
+    pub fn get_content_line(
+        &self,
+        idx: usize,
+    ) -> Option<&Line> {
         self.lines.get(idx).and_then(|line| match line {
             DisplayLine::Content(line) => Some(line),
             DisplayLine::Separator => None,
@@ -411,25 +460,28 @@ impl SyntacticView {
             self.page_height = area.height as usize;
             self.ensure_selection_is_visible();
         }
-        let max_number_len = self.max_line_number()
-            .unwrap_or(0)
-            .to_string()
-            .len();
-        let show_line_number = area.width > 55 || ( self.pattern.is_some() && area.width > 8 );
+        let max_number_len = self.max_line_number().unwrap_or(0).to_string().len();
+        let show_line_number =
+            area.width > 55 || (self.pattern.is_some() && area.width > 8);
         let line_count = area.height as usize;
         let styles = &panel_skin.styles;
-        let normal_fg  = styles.preview.get_fg()
+        let normal_fg = styles
+            .preview
+            .get_fg()
             .or_else(|| styles.default.get_fg())
             .unwrap_or(Color::AnsiValue(252));
-        let normal_bg = styles.preview.get_bg()
+        let normal_bg = styles
+            .preview
+            .get_bg()
             .or_else(|| styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
-        let selection_bg = styles.selected_line.get_bg()
-            .unwrap_or(Color::AnsiValue(240));
+        let selection_bg = styles.selected_line.get_bg().unwrap_or(Color::AnsiValue(240));
         let match_bg = styles.preview_match.get_bg().unwrap_or(Color::AnsiValue(28));
         let code_width = area.width as usize - 1; // 1 char left for scrollbar
         let scrollbar = area.scrollbar(self.scroll, self.lines.len());
-        let scrollbar_fg = styles.scrollbar_thumb.get_fg()
+        let scrollbar_fg = styles
+            .scrollbar_thumb
+            .get_fg()
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
         for y in 0..line_count {
@@ -437,7 +489,11 @@ impl SyntacticView {
             let mut cw = CropWriter::new(w, code_width);
             let line_idx = self.scroll + y;
             let selected = self.selection_idx == Some(line_idx);
-            let bg = if selected { selection_bg } else { normal_bg };
+            let bg = if selected {
+                selection_bg
+            } else {
+                normal_bg
+            };
             let mut op_mmap: Option<Mmap> = None;
             match self.lines.get(line_idx) {
                 Some(DisplayLine::Separator) => {
@@ -460,7 +516,8 @@ impl SyntacticView {
                             // an UTF8 error can only happen if file modified during display
                             let string = String::from_utf8(
                                 // we copy the memmap slice, as it's not immutable
-                                (op_mmap.unwrap()[line.start..line.start + line.len]).to_vec(),
+                                (op_mmap.unwrap()[line.start..line.start + line.len])
+                                    .to_vec(),
                             )
                             .unwrap_or_else(|_| "Bad UTF8".to_string());
                             regions_ur = vec![Region {
@@ -481,7 +538,11 @@ impl SyntacticView {
                     }
                     cw.w.queue(SetBackgroundColor(bg))?;
                     if con.show_selection_mark {
-                        cw.queue_unstyled_char(if selected { '▶' } else { ' ' })?;
+                        cw.queue_unstyled_char(if selected {
+                            '▶'
+                        } else {
+                            ' '
+                        })?;
                     }
                     if let Some(nm) = &line.name_match {
                         let mut dec = 0;
@@ -492,7 +553,9 @@ impl SyntacticView {
                             cw.w.queue(SetForegroundColor(content.fg))?;
                             if pos_idx < pos.len() {
                                 for (cand_idx, cand_char) in s.chars().enumerate() {
-                                    if pos_idx < pos.len() && pos[pos_idx] == cand_idx + dec {
+                                    if pos_idx < pos.len()
+                                        && pos[pos_idx] == cand_idx + dec
+                                    {
                                         cw.w.queue(SetBackgroundColor(match_bg))?;
                                         cw.queue_unstyled_char(cand_char)?;
                                         cw.w.queue(SetBackgroundColor(bg))?;
@@ -509,14 +572,20 @@ impl SyntacticView {
                     } else {
                         for content in regions {
                             cw.w.queue(SetForegroundColor(content.fg))?;
-                            cw.queue_unstyled_str(content.string.trim_end_matches(is_char_end_of_line))?;
+                            cw.queue_unstyled_str(
+                                content.string.trim_end_matches(is_char_end_of_line),
+                            )?;
                         }
                     }
                 }
                 None => {}
             }
             cw.fill(
-                if selected { &styles.selected_line } else { &styles.preview },
+                if selected {
+                    &styles.selected_line
+                } else {
+                    &styles.preview
+                },
                 &SPACE_FILLING,
             )?;
             w.queue(SetBackgroundColor(bg))?;
@@ -549,16 +618,16 @@ impl SyntacticView {
         if s.len() + "lines: ".len() < width {
             s = format!("lines: {s}");
         }
-        w.queue(cursor::MoveTo(
-            area.left + area.width - s.len() as u16,
-            area.top,
-        ))?;
+        w.queue(cursor::MoveTo(area.left + area.width - s.len() as u16, area.top))?;
         panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }
 }
 
-fn is_thumb(y: usize, scrollbar: Option<(u16, u16)>) -> bool {
+fn is_thumb(
+    y: usize,
+    scrollbar: Option<(u16, u16)>,
+) -> bool {
     scrollbar.map_or(false, |(sctop, scbottom)| {
         let y = y as u16;
         sctop <= y && y <= scbottom
@@ -589,4 +658,3 @@ fn printable_line(line: &str) -> Cow<'_, str> {
 fn is_char_end_of_line(c: char) -> bool {
     c == '\n' || c == '\r'
 }
-

@@ -7,18 +7,14 @@ use {
     },
     regex::Regex,
     rustc_hash::FxHashMap,
-    std::{
-        path::PathBuf,
-    },
+    std::path::PathBuf,
 };
-
 
 /// Definition of how the user input should be checked
 /// and maybe parsed to provide the arguments used
 /// for execution or description.
 #[derive(Debug)]
 pub struct InvocationParser {
-
     /// pattern of how the command is supposed to be typed in the input
     pub invocation_pattern: VerbInvocation,
 
@@ -29,15 +25,10 @@ pub struct InvocationParser {
     args_parser: Option<Regex>,
 
     pub arg_defs: Vec<ArgDef>,
-
 }
 
-
 impl InvocationParser {
-
-    pub fn new(
-        invocation_str: &str,
-    ) -> Result<Self, ConfError> {
+    pub fn new(invocation_str: &str) -> Result<Self, ConfError> {
         let invocation_pattern = VerbInvocation::from(invocation_str);
         let mut args_parser = None;
         let mut arg_defs = Vec::new();
@@ -47,33 +38,33 @@ impl InvocationParser {
             args_parser = match Regex::new(&spec) {
                 Ok(regex) => Some(regex),
                 Err(_) => {
-                    return Err(ConfError::InvalidVerbInvocation { invocation: spec });
+                    return Err(ConfError::InvalidVerbInvocation {
+                        invocation: spec,
+                    });
                 }
             };
             for group in GROUP.find_iter(args) {
                 let group_str = group.as_str();
-                arg_defs.push(
-                    if group_str.ends_with("path-from-parent}") {
-                        ArgDef::Path {
-                            anchor: PathAnchor::Parent,
-                            selection_type: SelectionType::Any,
-                        }
-                    } else if group_str.ends_with("path-from-directory}") {
-                        ArgDef::Path {
-                            anchor: PathAnchor::Directory,
-                            selection_type: SelectionType::Any,
-                        }
-                    } else if group_str.ends_with("path}") {
-                        ArgDef::Path {
-                            anchor: PathAnchor::Unspecified,
-                            selection_type: SelectionType::Any,
-                        }
-                    } else if group_str.ends_with("theme}") {
-                        ArgDef::Theme
-                    } else {
-                        ArgDef::Unspecified // still probably a path
+                arg_defs.push(if group_str.ends_with("path-from-parent}") {
+                    ArgDef::Path {
+                        anchor: PathAnchor::Parent,
+                        selection_type: SelectionType::Any,
                     }
-                );
+                } else if group_str.ends_with("path-from-directory}") {
+                    ArgDef::Path {
+                        anchor: PathAnchor::Directory,
+                        selection_type: SelectionType::Any,
+                    }
+                } else if group_str.ends_with("path}") {
+                    ArgDef::Path {
+                        anchor: PathAnchor::Unspecified,
+                        selection_type: SelectionType::Any,
+                    }
+                } else if group_str.ends_with("theme}") {
+                    ArgDef::Theme
+                } else {
+                    ArgDef::Unspecified // still probably a path
+                });
             }
         }
         Ok(Self {
@@ -88,13 +79,16 @@ impl InvocationParser {
     }
 
     pub fn get_unique_arg_def(&self) -> Option<ArgDef> {
-        (self.arg_defs.len() == 1)
-            .then(|| self.arg_defs[0])
+        (self.arg_defs.len() == 1).then(|| self.arg_defs[0])
     }
 
     pub fn get_unique_arg_anchor(&self) -> PathAnchor {
         if self.arg_defs.len() == 1 {
-            if let ArgDef::Path { anchor, .. } = self.arg_defs[0] {
+            if let ArgDef::Path {
+                anchor,
+                ..
+            } = self.arg_defs[0]
+            {
                 return anchor;
             }
         }
@@ -125,23 +119,26 @@ impl InvocationParser {
                     Some(self.invocation_pattern.to_string_for_name(&invocation.name))
                 }
             }
-            (Some(_), None) => Some(format!("{} doesn't take arguments", invocation.name)),
+            (Some(_), None) => {
+                Some(format!("{} doesn't take arguments", invocation.name))
+            }
         }
     }
 
-    pub fn parse(&self, args: &str) -> Option<FxHashMap<String, String>> {
-        self.args_parser.as_ref()
-            .map(|r| {
-                let mut map = FxHashMap::default();
-                if let Some(input_cap) = r.captures(args) {
-                    for name in r.capture_names().flatten() {
-                        if let Some(c) = input_cap.name(name) {
-                            map.insert(name.to_string(), c.as_str().to_string());
-                        }
+    pub fn parse(
+        &self,
+        args: &str,
+    ) -> Option<FxHashMap<String, String>> {
+        self.args_parser.as_ref().map(|r| {
+            let mut map = FxHashMap::default();
+            if let Some(input_cap) = r.captures(args) {
+                for name in r.capture_names().flatten() {
+                    if let Some(c) = input_cap.name(name) {
+                        map.insert(name.to_string(), c.as_str().to_string());
                     }
                 }
-                map
-            })
+            }
+            map
+        })
     }
-
 }

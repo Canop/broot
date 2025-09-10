@@ -2,14 +2,17 @@ use {
     crate::path::untilde,
     directories,
     once_cell::sync::Lazy,
-    std::path::{Path, PathBuf},
+    std::path::{
+        Path,
+        PathBuf,
+    },
 };
 
 mod conf;
 mod default;
 mod default_flags;
-mod format;
 pub mod file_size;
+mod format;
 mod import;
 mod special_handling_conf;
 mod verb_conf;
@@ -24,7 +27,6 @@ pub use {
     verb_conf::VerbConf,
 };
 
-
 /// return the instance of ProjectDirs holding broot's specific paths
 pub fn app_dirs() -> directories::ProjectDirs {
     directories::ProjectDirs::from("org", "dystroy", "broot")
@@ -32,16 +34,12 @@ pub fn app_dirs() -> directories::ProjectDirs {
 }
 
 fn env_conf_dir() -> Option<PathBuf> {
-    std::env::var("BROOT_CONFIG_DIR")
-        .ok()
-        .as_deref()
-        .map(untilde)
+    std::env::var("BROOT_CONFIG_DIR").ok().as_deref().map(untilde)
 }
 
 #[cfg(not(target_os = "macos"))]
 fn find_conf_dir() -> PathBuf {
-    env_conf_dir()
-        .unwrap_or_else(|| app_dirs().config_dir().to_path_buf())
+    env_conf_dir().unwrap_or_else(|| app_dirs().config_dir().to_path_buf())
 }
 
 #[cfg(target_os = "macos")]

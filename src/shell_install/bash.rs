@@ -11,7 +11,10 @@
 //! (exact paths depend on XDG variables)
 
 use {
-    super::{util, ShellInstall},
+    super::{
+        ShellInstall,
+        util,
+    },
     crate::{
         conf,
         errors::*,
@@ -19,14 +22,16 @@ use {
     directories::UserDirs,
     lazy_regex::regex,
     regex::Captures,
-    std::{env, path::PathBuf},
-    termimad::{
-        mad_print_inline,
+    std::{
+        env,
+        path::PathBuf,
     },
+    termimad::mad_print_inline,
 };
 
 const NAME: &str = "bash";
-const SOURCING_FILES: &[&str] = &[".bashrc", ".bash_profile", ".zshrc", "$ZDOTDIR/.zshrc"];
+const SOURCING_FILES: &[&str] =
+    &[".bashrc", ".bash_profile", ".zshrc", "$ZDOTDIR/.zshrc"];
 const VERSION: &str = "1";
 
 // This script has been tested on bash and zsh.
@@ -75,21 +80,15 @@ fn get_link_path() -> PathBuf {
 /// It was previously with the link, but it's now in
 /// XDG_DATA_HOME (typically ~/.local/share on linux)
 fn get_script_path() -> PathBuf {
-    conf::app_dirs()
-        .data_dir()
-        .join("launcher")
-        .join(NAME)
-        .join(VERSION)
+    conf::app_dirs().data_dir().join("launcher").join(NAME).join(VERSION)
 }
 
 /// return the paths to the files in which the br function is sourced.
 /// Paths in SOURCING_FILES can be absolute or relative to the home
 /// directory. Environment variables designed as $NAME are interpolated.
 fn get_sourcing_paths() -> Vec<PathBuf> {
-    let homedir_path = UserDirs::new()
-        .expect("no home directory!")
-        .home_dir()
-        .to_path_buf();
+    let homedir_path =
+        UserDirs::new().expect("no home directory!").home_dir().to_path_buf();
     SOURCING_FILES
         .iter()
         .map(|name| {

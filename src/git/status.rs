@@ -13,9 +13,9 @@ use {
 
 const INTERESTING: Status = Status::from_bits_truncate(
     Status::WT_NEW.bits()
-    | Status::CONFLICTED.bits()
-    | Status::WT_MODIFIED.bits()
-    | Status::IGNORED.bits()
+        | Status::CONFLICTED.bits()
+        | Status::WT_MODIFIED.bits()
+        | Status::IGNORED.bits(),
 );
 
 /// A git status
@@ -29,9 +29,9 @@ impl LineGitStatus {
         repo: &Repository,
         relative_path: &Path,
     ) -> Option<LineGitStatus> {
-        repo.status_file(relative_path)
-            .ok()
-            .map(|status| LineGitStatus { status })
+        repo.status_file(relative_path).ok().map(|status| LineGitStatus {
+            status,
+        })
     }
     pub fn is_interesting(self) -> bool {
         self.status.intersects(INTERESTING)
@@ -66,9 +66,9 @@ impl LineStatusComputer {
         &self,
         path: &Path,
     ) -> Option<LineGitStatus> {
-        self.interesting_statuses
-            .get(path)
-            .map(|&status| LineGitStatus { status })
+        self.interesting_statuses.get(path).map(|&status| LineGitStatus {
+            status,
+        })
     }
     pub fn is_interesting(
         &self,
@@ -87,10 +87,8 @@ pub struct TreeGitStatus {
 
 impl TreeGitStatus {
     pub fn from(repo: &Repository) -> Option<Self> {
-        let current_branch_name = repo
-            .head()
-            .ok()
-            .and_then(|head| head.shorthand().map(String::from));
+        let current_branch_name =
+            repo.head().ok().and_then(|head| head.shorthand().map(String::from));
         let stats = match repo.diff_index_to_workdir(None, None) {
             Ok(diff) => match diff.stats() {
                 Ok(stats) => stats,

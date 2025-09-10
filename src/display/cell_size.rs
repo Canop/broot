@@ -1,4 +1,3 @@
-
 /// find and return the size of a cell (a char location) in pixels
 /// as (width, height).
 /// Many terminals don't fill this information correctly, so an
@@ -8,10 +7,10 @@
 pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
     use {
         libc::{
-            c_ushort,
-            ioctl,
             STDOUT_FILENO,
             TIOCGWINSZ,
+            c_ushort,
+            ioctl,
         },
         std::io,
     };
@@ -32,10 +31,7 @@ pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
     #[allow(clippy::useless_conversion)]
     let r = unsafe { ioctl(STDOUT_FILENO, TIOCGWINSZ.into(), &mut w) };
     if r == 0 && w.ws_xpixel > w.ws_col && w.ws_ypixel > w.ws_row {
-        Ok((
-            (w.ws_xpixel / w.ws_col) as u32,
-            (w.ws_ypixel / w.ws_row) as u32,
-        ))
+        Ok(((w.ws_xpixel / w.ws_col) as u32, (w.ws_ypixel / w.ws_row) as u32))
     } else {
         warn!("failed to fetch cell dimension with ioctl");
         Err(io::Error::other("failed to fetch terminal dimension with ioctl"))

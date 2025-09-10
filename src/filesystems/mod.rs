@@ -15,10 +15,10 @@ use {
     std::sync::Mutex,
 };
 
-pub static MOUNTS: Lazy<Mutex<MountList>> = Lazy::new(|| Mutex::new(MountList::default()));
+pub static MOUNTS: Lazy<Mutex<MountList>> =
+    Lazy::new(|| Mutex::new(MountList::default()));
 
 pub fn clear_cache() {
     let mut mount_list = MOUNTS.lock().unwrap();
     mount_list.clear_cache();
 }
-

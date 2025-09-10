@@ -74,13 +74,7 @@ impl Areas {
         for i in 0..panels.len() {
             slots.push(Slot::Panel(i));
         }
-        Self::compute_areas(
-            panels,
-            layout_instructions,
-            &mut slots,
-            screen,
-            with_preview,
-        )
+        Self::compute_areas(panels, layout_instructions, &mut slots, screen, with_preview)
     }
 
     fn compute_areas(
@@ -114,7 +108,10 @@ impl Areas {
                 debug!("panel_widths before: {:?}", &panel_widths);
                 match *instruction {
                     LayoutInstruction::Clear => {} // not supposed to happen
-                    LayoutInstruction::MoveDivider { divider, dx } => {
+                    LayoutInstruction::MoveDivider {
+                        divider,
+                        dx,
+                    } => {
                         if divider + 1 >= nb_pos {
                             continue;
                         }
@@ -127,8 +124,13 @@ impl Areas {
                         panel_widths[decr] -= diff;
                         panel_widths[incr] += diff;
                     }
-                    LayoutInstruction::SetPanelWidth { panel, width } => {
-                        if panel >= nb_pos { continue; }
+                    LayoutInstruction::SetPanelWidth {
+                        panel,
+                        width,
+                    } => {
+                        if panel >= nb_pos {
+                            continue;
+                        }
                         let width = width.max(MINIMAL_PANEL_WIDTH);
                         if width > panel_widths[panel] {
                             let mut diff = width - panel_widths[panel];
@@ -139,12 +141,15 @@ impl Areas {
                                 let step = diff / (nb_pos as u16 - 1);
                                 for i in 0..nb_pos {
                                     if i != panel {
-                                        let step = step.min(panel_widths[i] - MINIMAL_PANEL_WIDTH);
+                                        let step = step
+                                            .min(panel_widths[i] - MINIMAL_PANEL_WIDTH);
                                         panel_widths[i] -= step;
                                         freed += step;
                                     }
                                 }
-                                if freed == 0 { break; }
+                                if freed == 0 {
+                                    break;
+                                }
                                 diff -= freed;
                                 panel_widths[panel] += freed;
                             }

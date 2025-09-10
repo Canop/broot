@@ -2,8 +2,15 @@ use {
     super::*,
     crate::{
         app::*,
-        command::{Command, ScrollCommand, TriggerType},
-        display::{Screen, W},
+        command::{
+            Command,
+            ScrollCommand,
+            TriggerType,
+        },
+        display::{
+            Screen,
+            W,
+        },
         errors::ProgramError,
         flag::Flag,
         pattern::InputPattern,
@@ -12,11 +19,18 @@ use {
         verb::*,
     },
     crokey::crossterm::{
-        cursor,
         QueueableCommand,
+        cursor,
     },
-    std::path::{Path, PathBuf},
-    termimad::{Area, CropWriter, SPACE_FILLING},
+    std::path::{
+        Path,
+        PathBuf,
+    },
+    termimad::{
+        Area,
+        CropWriter,
+        SPACE_FILLING,
+    },
 };
 
 /// an application state dedicated to previewing files.
@@ -25,7 +39,7 @@ use {
 /// selection changes (other panels indirectly call `set_selected_path`).
 pub struct PreviewState {
     pub preview_area: Area,
-    dirty: bool,   // true when background must be cleared
+    dirty: bool,          // true when background must be cleared
     source_path: PathBuf, // path to the file whose preview is requested
     transform: Option<PreviewTransform>,
     preview: Preview,
@@ -47,7 +61,8 @@ impl PreviewState {
     ) -> PreviewState {
         let preview_area = Area::uninitialized(); // will be fixed at drawing time
         let transform = con.preview_transformers.transform(&source_path, preferred_mode);
-        let preview_path = transform.as_ref().map(|c| &c.output_path).unwrap_or(&source_path);
+        let preview_path =
+            transform.as_ref().map(|c| &c.output_path).unwrap_or(&source_path);
         let preview = Preview::new(preview_path, preferred_mode, con);
         PreviewState {
             preview_area,
@@ -87,9 +102,7 @@ impl PreviewState {
                 CmdResult::Keep
             }
             Err(e) => {
-                CmdResult::DisplayError(
-                    format!("Can't display as {mode:?} : {e:?}")
-                )
+                CmdResult::DisplayError(format!("Can't display as {mode:?} : {e:?}"))
             }
         })
     }
@@ -111,16 +124,17 @@ impl PreviewState {
             },
         }
     }
-
 }
 
 impl PanelState for PreviewState {
-
     fn get_type(&self) -> PanelStateType {
         PanelStateType::Preview
     }
 
-    fn set_mode(&mut self, mode: Mode) {
+    fn set_mode(
+        &mut self,
+        mode: Mode,
+    ) {
         self.mode = mode;
     }
 
@@ -190,7 +204,11 @@ impl PanelState for PreviewState {
         Some(&self.source_path)
     }
 
-    fn set_selected_path(&mut self, path: PathBuf, con: &AppContext) {
+    fn set_selected_path(
+        &mut self,
+        path: PathBuf,
+        con: &AppContext,
+    ) {
         let selected_line_number = if self.preview_path() == path {
             self.preview.get_selected_line_number()
         } else {
@@ -227,7 +245,11 @@ impl PanelState for PreviewState {
         CmdResult::Keep
     }
 
-    fn refresh(&mut self, _screen: Screen, con: &AppContext) -> Command {
+    fn refresh(
+        &mut self,
+        _screen: Screen,
+        con: &AppContext,
+    ) -> Command {
         self.dirty = true;
         self.set_selected_path(self.source_path.clone(), con);
         Command::empty()
@@ -240,7 +262,9 @@ impl PanelState for PreviewState {
         _screen: Screen,
         _con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
-        if y >= self.preview_area.top && y < self.preview_area.top + self.preview_area.height {
+        if y >= self.preview_area.top
+            && y < self.preview_area.top + self.preview_area.height
+        {
             let y = y - self.preview_area.top;
             self.mut_preview().try_select_y(y);
         }
@@ -291,7 +315,10 @@ impl PanelState for PreviewState {
             warn!("error while displaying file: {:?}", &err);
             if preview.get_mode().is_some() {
                 // means it's not an error already
-                if let ProgramError::Io { source } = err {
+                if let ProgramError::Io {
+                    source,
+                } = err
+                {
                     // we mutate the preview to Preview::IOError
                     self.preview = Preview::IoError(source);
                     return self.display(w, disc);
@@ -346,12 +373,12 @@ impl PanelState for PreviewState {
                 #[cfg(feature = "clipboard")]
                 {
                     Ok(match self.mut_preview().get_selected_line() {
-                        Some(line) => {
-                            match terminal_clipboard::set_string(line) {
-                                Ok(()) => CmdResult::Keep,
-                                Err(_) => CmdResult::error("Clipboard error while copying path"),
+                        Some(line) => match terminal_clipboard::set_string(line) {
+                            Ok(()) => CmdResult::Keep,
+                            Err(_) => {
+                                CmdResult::error("Clipboard error while copying path")
                             }
-                        }
+                        },
                         None => CmdResult::error("No selected line in preview"),
                     })
                 }
@@ -446,5 +473,4 @@ impl PanelState for PreviewState {
             self.pending_pattern.raw.clone()
         }
     }
-
 }

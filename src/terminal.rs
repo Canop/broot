@@ -54,4 +54,3 @@ fn set_title_str(
     let _ = write!(w, "\u{1b}]0;{title}\u{07}");
     let _ = w.flush();
 }
-

@@ -1,4 +1,3 @@
-
 mod candidate;
 mod composite_pattern;
 mod content_pattern;
@@ -25,11 +24,11 @@ pub use {
     fuzzy_pattern::FuzzyPattern,
     input_pattern::InputPattern,
     name_match::NameMatch,
+    operator::PatternOperator,
     pattern::Pattern,
     pattern_object::PatternObject,
     pattern_parts::PatternParts,
     pos::*,
-    operator::PatternOperator,
     regex_pattern::RegexPattern,
     search_mode::*,
     tok_pattern::*,
@@ -40,7 +39,10 @@ use {
     lazy_regex::regex,
 };
 
-pub fn build_regex(pat: &str, flags: &str) -> Result<regex::Regex, PatternError> {
+pub fn build_regex(
+    pat: &str,
+    flags: &str,
+) -> Result<regex::Regex, PatternError> {
     let mut builder = regex::RegexBuilder::new(pat);
     for c in flags.chars() {
         match c {
@@ -51,7 +53,9 @@ pub fn build_regex(pat: &str, flags: &str) -> Result<regex::Regex, PatternError>
                 builder.swap_greed(true);
             }
             _ => {
-                return Err(PatternError::UnknownRegexFlag { bad: c });
+                return Err(PatternError::UnknownRegexFlag {
+                    bad: c,
+                });
             }
         }
     }

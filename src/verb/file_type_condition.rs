@@ -2,9 +2,15 @@ use {
     crate::{
         app::SelectionType,
         content_type,
-        tree::{TreeLine, TreeLineType},
+        tree::{
+            TreeLine,
+            TreeLineType,
+        },
     },
-    serde::{Deserialize, Serialize},
+    serde::{
+        Deserialize,
+        Serialize,
+    },
     std::path::Path,
 };
 
@@ -24,7 +30,10 @@ impl FileTypeCondition {
     pub fn is_default(&self) -> bool {
         self == &Self::default()
     }
-    pub fn accepts_path(self, path: &Path) -> bool {
+    pub fn accepts_path(
+        self,
+        path: &Path,
+    ) -> bool {
         match self {
             Self::Any => true,
             Self::Directory => path.is_dir(),
@@ -37,16 +46,21 @@ impl FileTypeCondition {
             }
         }
     }
-    pub fn accepts_line(self, line: &TreeLine) -> bool {
+    pub fn accepts_line(
+        self,
+        line: &TreeLine,
+    ) -> bool {
         match self {
             Self::Any => true,
             Self::Directory => line.is_dir(),
             Self::File => matches!(line.line_type, TreeLineType::File),
             Self::TextFile => {
-                line.is_file() && matches!(content_type::is_file_text(&line.path), Ok(true))
+                line.is_file()
+                    && matches!(content_type::is_file_text(&line.path), Ok(true))
             }
             Self::BinaryFile => {
-                line.is_file() && matches!(content_type::is_file_binary(&line.path), Ok(true))
+                line.is_file()
+                    && matches!(content_type::is_file_binary(&line.path), Ok(true))
             }
         }
     }

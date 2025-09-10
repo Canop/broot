@@ -1,12 +1,13 @@
 use {
     super::{
-        cond_bg,
+        BRANCH_FILLING,
         Col,
         CropWriter,
         GitStatusDisplay,
         MatchedString,
+        SPACE_FILLING,
+        cond_bg,
         num_format::format_count,
-        SPACE_FILLING, BRANCH_FILLING,
     },
     crate::{
         app::AppState,
@@ -14,22 +15,37 @@ use {
         errors::ProgramError,
         file_sum::FileSum,
         pattern::PatternObject,
-        skin::{ExtColorMap, StyleMap},
+        skin::{
+            ExtColorMap,
+            StyleMap,
+        },
         task_sync::ComputationResult,
-        tree::{Tree, TreeLine, TreeLineType},
+        tree::{
+            Tree,
+            TreeLine,
+            TreeLineType,
+        },
     },
-    chrono::{DateTime, Local, LocalResult, TimeZone},
+    chrono::{
+        DateTime,
+        Local,
+        LocalResult,
+        TimeZone,
+    },
     crokey::crossterm::{
-        cursor,
         QueueableCommand,
+        cursor,
     },
     file_size,
     git2::Status,
     std::io::Write,
-    termimad::{CompoundStyle, ProgressBar},
+    termimad::{
+        CompoundStyle,
+        ProgressBar,
+    },
     unicode_width::{
-        UnicodeWidthStr,
         UnicodeWidthChar,
+        UnicodeWidthStr,
     },
 };
 
@@ -51,7 +67,6 @@ pub struct DisplayableTree<'a, 's, 't> {
 }
 
 impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
-
     pub fn out_of_app(
         tree: &'t Tree,
         skin: &'s StyleMap,
@@ -88,11 +103,15 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     &self.skin.file
                 }
             }
-            TreeLineType::BrokenSymLink(_) | TreeLineType::SymLink { .. } => &self.skin.link,
+            TreeLineType::BrokenSymLink(_)
+            | TreeLineType::SymLink {
+                ..
+            } => &self.skin.link,
             TreeLineType::Pruning => &self.skin.pruning,
         };
         let mut style = style.clone();
-        if let Some(ext_color) = line.extension().and_then(|ext| self.ext_colors.get(ext)) {
+        if let Some(ext_color) = line.extension().and_then(|ext| self.ext_colors.get(ext))
+        {
             style.set_fg(ext_color);
         }
         if selected {
@@ -120,7 +139,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         })
     }
 
-    #[cfg(any(target_os="linux", target_os = "macos"))]
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     fn write_line_device_id<W: Write>(
         &self,
         cw: &mut CropWriter<W>,
@@ -159,10 +178,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         _selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
-            cw.queue_g_string(
-                style,
-                format!("{:>4}", file_size::fit_4(s.to_size())),
-            )?;
+            cw.queue_g_string(style, format!("{:>4}", file_size::fit_4(s.to_size())))?;
             1
         } else {
             5
@@ -188,7 +204,11 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             )?;
             cw.queue_char(
                 sparse_style,
-                if s.is_sparse() && line.is_file() { 's' } else { ' ' },
+                if s.is_sparse() && line.is_file() {
+                    's'
+                } else {
+                    ' '
+                },
             )?;
             cw.queue_g_string(label_style, format!("{pb:<10}"))?;
             1
@@ -231,9 +251,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             cond_bg!(date_style, self, selected, self.skin.dates);
             cw.queue_g_string(
                 date_style,
-                date_time
-                    .format(self.tree.options.date_time_format)
-                    .to_string(),
+                date_time.format(self.tree.options.date_time_format).to_string(),
             )?;
         }
         Ok(1)
@@ -250,28 +268,26 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         cond_bg!(branch_style, self, selected, self.skin.tree);
         let mut branch = String::new();
         for depth in 0..line.depth {
-            branch.push_str(
-                if line.left_branches[depth as usize] {
-                    if self.tree.has_branch(line_index + 1, depth as usize) {
-                        // TODO: If a theme is on, remove the horizontal lines
-                        if depth == line.depth - 1 {
-                            if staged {
-                                "├◍─"
-                            } else {
-                                "├──"
-                            }
+            branch.push_str(if line.left_branches[depth as usize] {
+                if self.tree.has_branch(line_index + 1, depth as usize) {
+                    // TODO: If a theme is on, remove the horizontal lines
+                    if depth == line.depth - 1 {
+                        if staged {
+                            "├◍─"
                         } else {
-                            "│  "
+                            "├──"
                         }
-                    } else if staged {
-                        "└◍─"
                     } else {
-                        "└──"
+                        "│  "
                     }
+                } else if staged {
+                    "└◍─"
                 } else {
-                    "   "
-                },
-            );
+                    "└──"
+                }
+            } else {
+                "   "
+            });
         }
         if !branch.is_empty() {
             cw.queue_g_string(branch_style, branch)?;
@@ -310,9 +326,11 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             cw.queue_char(style, ' ')?;
         }
         if pattern_object.subpath {
-            if self.tree.options.show_matching_characters_on_path_searches && line.unlisted == 0 {
-                let name_match = self.tree.options.pattern.pattern
-                    .find_string(&line.subpath);
+            if self.tree.options.show_matching_characters_on_path_searches
+                && line.unlisted == 0
+            {
+                let name_match =
+                    self.tree.options.pattern.pattern.find_string(&line.subpath);
                 let mut path_ms = MatchedString::new(
                     name_match,
                     &line.subpath,
@@ -341,14 +359,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 cw.queue_str(style, &line.name)?;
             }
         } else {
-            let name_match = self.tree.options.pattern.pattern
-                .find_string(&line.name);
-            let matched_string = MatchedString::new(
-                name_match,
-                &line.name,
-                style,
-                char_match_style,
-            );
+            let name_match = self.tree.options.pattern.pattern.find_string(&line.name);
+            let matched_string =
+                MatchedString::new(name_match, &line.name, style, char_match_style);
             matched_string.queue_on(cw)?;
         }
         match &line.line_type {
@@ -442,20 +455,15 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
         if self.in_app && !cw.is_full() {
             if let ComputationResult::Done(git_status) = &self.tree.git_status {
-                let git_status_display = GitStatusDisplay::from(
-                    git_status,
-                    self.skin,
-                    cw.allowed,
-                );
+                let git_status_display =
+                    GitStatusDisplay::from(git_status, self.skin, cw.allowed);
                 git_status_display.write(cw, selected)?;
             }
-            #[cfg(any(target_os="linux", target_os = "macos"))]
+            #[cfg(any(target_os = "linux", target_os = "macos"))]
             if self.tree.options.show_root_fs {
                 if let Some(mount) = line.mount() {
                     let fs_space_display = crate::filesystems::MountSpaceDisplay::from(
-                        &mount,
-                        self.skin,
-                        cw.allowed,
+                        &mount, self.skin, cw.allowed,
                     );
                     fs_space_display.write(cw, selected)?;
                 }
@@ -483,7 +491,10 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     }
 
     /// write the whole tree on the given `W`
-    pub fn write_on<W: Write>(&self, f: &mut W) -> Result<(), ProgramError> {
+    pub fn write_on<W: Write>(
+        &self,
+        f: &mut W,
+    ) -> Result<(), ProgramError> {
         #[cfg(not(any(target_family = "windows", target_os = "android")))]
         let perm_writer = super::PermWriter::for_tree(self.skin, self.tree);
 
@@ -517,7 +528,8 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
         // if necessary we compute the width of the count column
         let count_len = if tree.options.show_counts {
-            tree.lines.iter()
+            tree.lines
+                .iter()
                 .skip(1) // we don't show the counts of the root
                 .map(|l| l.sum.map_or(0, |s| s.to_count()))
                 .max()
@@ -561,18 +573,15 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 if visible_cols[0].needs_left_margin() {
                     cw.queue_char(space_style, ' ')?;
                 }
-                let staged = self.app_state
-                    .map_or(false, |a| a.stage.contains(&line.path));
+                let staged =
+                    self.app_state.map_or(false, |a| a.stage.contains(&line.path));
                 for col in &visible_cols {
                     let void_len = match col {
-
                         Col::Mark => {
                             self.write_line_selection_mark(cw, &label_style, selected)?
                         }
 
-                        Col::Git => {
-                            self.write_line_git_status(cw, line, selected)?
-                        }
+                        Col::Git => self.write_line_git_status(cw, line, selected)?,
 
                         Col::Branch => {
                             in_branch = true;
@@ -580,23 +589,32 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                         }
 
                         Col::DeviceId => {
-                            #[cfg(not(any(target_os="linux", target_os = "macos")))]
-                            { 0 }
+                            #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+                            {
+                                0
+                            }
 
-                            #[cfg(any(target_os="linux", target_os = "macos"))]
+                            #[cfg(any(target_os = "linux", target_os = "macos"))]
                             self.write_line_device_id(cw, line, selected)?
                         }
 
                         Col::Permission => {
                             #[cfg(any(target_family = "windows", target_os = "android"))]
-                            { 0 }
+                            {
+                                0
+                            }
 
-                            #[cfg(not(any(target_family = "windows", target_os = "android")))]
+                            #[cfg(not(any(
+                                target_family = "windows",
+                                target_os = "android"
+                            )))]
                             perm_writer.write_permissions(cw, line, selected)?
                         }
 
                         Col::Date => {
-                            if let Some(seconds) = line.sum.and_then(|sum| sum.to_valid_seconds()) {
+                            if let Some(seconds) =
+                                line.sum.and_then(|sum| sum.to_valid_seconds())
+                            {
                                 self.write_date(cw, seconds, selected)?
                             } else {
                                 date_len + 1
@@ -606,7 +624,13 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                         Col::Size => {
                             if tree.options.sort.prevent_deep_display() {
                                 // as soon as there's only one level displayed we can show the size bars
-                                self.write_line_size_with_bar(cw, line, &label_style, total_size, selected)?
+                                self.write_line_size_with_bar(
+                                    cw,
+                                    line,
+                                    &label_style,
+                                    total_size,
+                                    selected,
+                                )?
                             } else {
                                 self.write_line_size(cw, line, &label_style, selected)?
                             }
@@ -622,9 +646,14 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
                         Col::Name => {
                             in_branch = false;
-                            self.write_line_label(cw, line, &label_style, pattern_object, selected)?
+                            self.write_line_label(
+                                cw,
+                                line,
+                                &label_style,
+                                pattern_object,
+                                selected,
+                            )?
                         }
-
                     };
                     // void: intercol & replacing missing cells
                     if in_branch && void_len > 2 {
@@ -637,7 +666,10 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 }
 
                 if cw.allowed > 8 && pattern_object.content {
-                    let extract = tree.options.pattern.pattern
+                    let extract = tree
+                        .options
+                        .pattern
+                        .pattern
                         .find_content(&line.path, cw.allowed - 2);
                     if let Some(extract) = extract {
                         self.write_content_extract(cw, extract, selected)?;
@@ -664,4 +696,3 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         Ok(())
     }
 }
-

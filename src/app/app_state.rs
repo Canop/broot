@@ -1,10 +1,7 @@
 use {
-    crate::{
-        stage::Stage,
-    },
+    crate::stage::Stage,
     std::path::PathBuf,
 };
-
 
 /// global mutable state
 #[derive(Debug)]
@@ -20,5 +17,4 @@ pub struct AppState {
     pub other_panel_path: Option<PathBuf>,
 }
 
-impl AppState {
-}
+impl AppState {}

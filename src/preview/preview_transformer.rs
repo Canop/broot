@@ -78,9 +78,7 @@ impl PreviewTransformers {
         for transformer_conf in transformer_confs {
             transformers.push(PreviewTransformer::from_conf(transformer_conf)?);
         }
-        let temp_dir = tempfile::Builder::new()
-            .prefix("broot-conversions")
-            .tempdir()?;
+        let temp_dir = tempfile::Builder::new().prefix("broot-conversions").tempdir()?;
         Ok(Self {
             transformers,
             temp_dir,
@@ -133,7 +131,9 @@ impl PreviewTransformers {
                     continue;
                 }
             }
-            return Some(TransformerId { idx });
+            return Some(TransformerId {
+                idx,
+            });
         }
         None
     }
@@ -203,7 +203,9 @@ impl PreviewTransformer {
                 let input_modified = input_path.metadata().and_then(|m| m.modified());
                 let transformed_modified = path.metadata().and_then(|m| m.modified());
                 match (input_modified, transformed_modified) {
-                    (Ok(input_date), Ok(transformed_date)) if input_date <= transformed_date => {
+                    (Ok(input_date), Ok(transformed_date))
+                        if input_date <= transformed_date =>
+                    {
                         // the transformed file is up to date
                         debug!("preview transform {:?} up to date", path);
                         return Ok(path);
@@ -219,7 +221,8 @@ impl PreviewTransformer {
             fs::create_dir(&output_dir)?;
         }
 
-        let mut output_path = output_dir.join(format!("{}.{}", input_stem, self.output_extension));
+        let mut output_path =
+            output_dir.join(format!("{}.{}", input_stem, self.output_extension));
 
         let mut command = self.command.iter().map(|part| {
             part.replace("{input-path}", &input_path.to_string_lossy())
@@ -254,7 +257,8 @@ impl PreviewTransformer {
 
         let exit_status = process.spawn().and_then(|mut p| p.wait())?;
 
-        output_path = first_file_in_dir(&output_dir)?.ok_or(PreviewTransformerError::NoOutput)?;
+        output_path =
+            first_file_in_dir(&output_dir)?.ok_or(PreviewTransformerError::NoOutput)?;
         if exit_status.success() {
             Ok(output_path)
         } else {
@@ -262,7 +266,9 @@ impl PreviewTransformer {
             // it's not returned on the next call
             let _ = std::fs::remove_file(&output_path);
             match exit_status.code() {
-                Some(code) => Err(PreviewTransformerError::ProcessFailed { code }),
+                Some(code) => Err(PreviewTransformerError::ProcessFailed {
+                    code,
+                }),
                 None => Err(PreviewTransformerError::ProcessInterrupted),
             }
         }

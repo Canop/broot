@@ -1,8 +1,13 @@
 use {
     std::thread,
     termimad::{
-        crossbeam::channel::{self, bounded, select, Receiver},
         TimedEvent,
+        crossbeam::channel::{
+            self,
+            Receiver,
+            bounded,
+            select,
+        },
     },
 };
 
@@ -72,7 +77,10 @@ impl Dam {
     /// to be launched (or it would result in many working
     /// threads uselessly working in the background) : use
     /// dam.has_event from inside the task whenever possible.
-    pub fn try_compute<V: Send + 'static, F: Send + 'static + FnOnce() -> ComputationResult<V>>(
+    pub fn try_compute<
+        V: Send + 'static,
+        F: Send + 'static + FnOnce() -> ComputationResult<V>,
+    >(
         &mut self,
         f: F,
     ) -> ComputationResult<V> {
@@ -145,7 +153,10 @@ impl Dam {
     }
 
     // or maybe return either Option<TimedEvent> or Option<T> ?
-    pub fn next<T>(&mut self, other: &Receiver<T>) -> Either<Option<TimedEvent>, Option<T>> {
+    pub fn next<T>(
+        &mut self,
+        other: &Receiver<T>,
+    ) -> Either<Option<TimedEvent>, Option<T>> {
         if self.in_dam.is_some() {
             Either::First(self.in_dam.take())
         } else {

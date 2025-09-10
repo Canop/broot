@@ -1,15 +1,18 @@
 use {
     super::Message,
     crate::{
-        errors::NetError,
         command::Sequence,
+        errors::NetError,
     },
     std::{
         fs,
         io::BufReader,
         os::unix::net::UnixListener,
         path::PathBuf,
-        sync::{Arc, Mutex},
+        sync::{
+            Arc,
+            Mutex,
+        },
         thread,
     },
     termimad::crossbeam::channel::Sender,
@@ -29,7 +32,11 @@ impl Server {
         if fs::metadata(&path).is_ok() {
             match fs::remove_file(&path) {
                 Ok(_) => {}
-                Err(e) => return Err(NetError::Io { source: e }),
+                Err(e) => {
+                    return Err(NetError::Io {
+                        source: e,
+                    });
+                }
             }
         }
         let listener = UnixListener::bind(&path)?;
@@ -50,7 +57,8 @@ impl Server {
                             Ok(Message::GetRoot) => {
                                 debug!("got get root query");
                                 let root = root.lock().unwrap();
-                                let answer = Message::Root(root.to_string_lossy().to_string());
+                                let answer =
+                                    Message::Root(root.to_string_lossy().to_string());
                                 match answer.write(&mut stream) {
                                     Ok(()) => debug!("root path successfully returned"),
                                     Err(e) => warn!("error while answering: {:?}", e),
@@ -82,7 +90,9 @@ impl Server {
                 }
             }
         });
-        Ok(Self { path })
+        Ok(Self {
+            path,
+        })
     }
 }
 

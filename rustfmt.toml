@@ -1,5 +1,8 @@
 edition = "2021"
-version = "Two"
+style_edition = "2024"
+imports_granularity = "One"
 imports_layout = "Vertical"
 fn_params_layout = "Vertical"
-newline_style = "Unix"
+max_width = 90
+struct_lit_single_line = false
+use_small_heuristics = "Off"

@@ -14,8 +14,14 @@
 //! contrary to the similar function of other shells.
 
 use {
-    super::{util, ShellInstall},
-    crate::{conf, errors::*},
+    super::{
+        ShellInstall,
+        util,
+    },
+    crate::{
+        conf,
+        errors::*,
+    },
     directories::BaseDirs,
     std::path::PathBuf,
     termimad::mad_print_inline,
@@ -195,11 +201,7 @@ fn get_nushell_dir() -> Option<PathBuf> {
 ///
 /// In XDG_DATA_HOME (typically ~/.local/share on linux)
 fn get_script_path() -> PathBuf {
-    conf::app_dirs()
-        .data_dir()
-        .join("launcher")
-        .join(NAME)
-        .join(VERSION)
+    conf::app_dirs().data_dir().join("launcher").join(NAME).join(VERSION)
 }
 
 /// Check for nushell.

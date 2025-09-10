@@ -1,6 +1,4 @@
-use {
-    serde::Deserialize,
-};
+use serde::Deserialize;
 
 /// modes are used when the application is configured to
 /// be "modal". If not, the only mode is the `Input` mode.

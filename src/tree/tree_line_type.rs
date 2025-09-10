@@ -3,7 +3,10 @@ use {
     std::{
         fs,
         io,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
     },
 };
 
@@ -34,7 +37,6 @@ pub fn read_link(path: &Path) -> io::Result<PathBuf> {
 }
 
 impl TreeLineType {
-
     pub fn is_pruning(&self) -> bool {
         matches!(self, Self::Pruning)
     }
@@ -78,15 +80,17 @@ impl TreeLineType {
         })
     }
 
-    pub fn new(path: &Path, ft: fs::FileType) -> Self {
+    pub fn new(
+        path: &Path,
+        ft: fs::FileType,
+    ) -> Self {
         if ft.is_dir() {
             Self::Dir
         } else if ft.is_symlink() {
             if let Ok(direct_target) = read_link(path) {
-                Self::resolve(&direct_target)
-                    .unwrap_or_else(|_| {
-                        Self::BrokenSymLink(direct_target.to_string_lossy().to_string()
-                    )})
+                Self::resolve(&direct_target).unwrap_or_else(|_| {
+                    Self::BrokenSymLink(direct_target.to_string_lossy().to_string())
+                })
             } else {
                 Self::BrokenSymLink("???".to_string())
             }

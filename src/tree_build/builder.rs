@@ -1,11 +1,11 @@
 use {
     super::{
+        BuildReport,
         bid::{
             BId,
             SortableBId,
         },
         bline::BLine,
-        BuildReport,
     },
     crate::{
         app::AppContext,
@@ -94,16 +94,15 @@ impl<'c> TreeBuilder<'c> {
         let subpath_offset = path.components().count();
         let mut git_ignorer = time!(Ignorer::default());
         let root_ignore_chain = git_ignorer.root_chain(&path);
-        let line_status_computer = if options.filter_by_git_status || options.show_git_file_info {
-            time!(
-                "init line_status_computer",
-                Repository::discover(&path)
-                    .ok()
-                    .and_then(LineStatusComputer::from),
-            )
-        } else {
-            None
-        };
+        let line_status_computer =
+            if options.filter_by_git_status || options.show_git_file_info {
+                time!(
+                    "init line_status_computer",
+                    Repository::discover(&path).ok().and_then(LineStatusComputer::from),
+                )
+            } else {
+                None
+            };
         let root_id = BLine::from_root(&mut blines, path, root_ignore_chain, &options)?;
         let trim_root = match (
             options.trim_root,
@@ -176,25 +175,23 @@ impl<'c> TreeBuilder<'c> {
                 return None;
             }
         };
-        let subpath = path
-            .components()
-            .skip(self.subpath_offset)
-            .collect::<PathBuf>();
+        let subpath = path.components().skip(self.subpath_offset).collect::<PathBuf>();
         let candidate = Candidate {
             name,
             subpath: &subpath.to_string_lossy(),
             path: &path,
             regular_file: file_type.is_file(),
         };
-        let direct_match =
-            if let Some(pattern_score) = self.options.pattern.pattern.score_of(candidate) {
-                // we dope direct matches to compensate for depth doping of parent folders
-                score += pattern_score + 10;
-                true
-            } else {
-                has_match = false;
-                false
-            };
+        let direct_match = if let Some(pattern_score) =
+            self.options.pattern.pattern.score_of(candidate)
+        {
+            // we dope direct matches to compensate for depth doping of parent folders
+            score += pattern_score + 10;
+            true
+        } else {
+            has_match = false;
+            false
+        };
         if has_match && self.options.filter_by_git_status {
             if let Some(line_status_computer) = &self.line_status_computer {
                 if !line_status_computer.is_interesting(&path) {
@@ -218,10 +215,7 @@ impl<'c> TreeBuilder<'c> {
         }
         if self.options.respect_git_ignore {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
-            if !self
-                .git_ignorer
-                .accepts(parent_chain, &path, name, file_type.is_dir())
-            {
+            if !self.git_ignorer.accepts(parent_chain, &path, name, file_type.is_dir()) {
                 if special_handling.show != Directive::Always {
                     return None;
                 }
@@ -335,7 +329,9 @@ impl<'c> TreeBuilder<'c> {
         let mut next_level_dirs: Vec<BId> = Vec::new();
         self.load_children(self.root_id);
         open_dirs.push_back(self.root_id);
-        let deep = self.deep && self.options.show_tree && !self.options.sort.prevent_deep_display();
+        let deep = self.deep
+            && self.options.show_tree
+            && !self.options.sort.prevent_deep_display();
         loop {
             if !total_search
                 && ((nb_lines_ok > optimal_size)
@@ -346,7 +342,9 @@ impl<'c> TreeBuilder<'c> {
             }
             if let Some(max) = self.matches_max {
                 if nb_lines_ok > max {
-                    return Err(TreeBuildError::TooManyMatches { max });
+                    return Err(TreeBuildError::TooManyMatches {
+                        max,
+                    });
                 }
             }
             if let Some(open_dir_id) = open_dirs.pop_front() {
@@ -402,7 +400,9 @@ impl<'c> TreeBuilder<'c> {
         }
         if let Some(max) = self.matches_max {
             if nb_lines_ok > max {
-                return Err(TreeBuildError::TooManyMatches { max });
+                return Err(TreeBuildError::TooManyMatches {
+                    max,
+                });
             }
         }
         if !self.trim_root {
@@ -437,7 +437,9 @@ impl<'c> TreeBuilder<'c> {
         let mut remove_queue: BinaryHeap<SortableBId> = BinaryHeap::new();
         for id in &out_blines[1..] {
             let bline = &self.blines[*id];
-            if bline.has_match && bline.nb_kept_children == 0 && (bline.depth > 1 || self.trim_root)
+            if bline.has_match
+                && bline.nb_kept_children == 0
+                && (bline.depth > 1 || self.trim_root)
             {
                 remove_queue.push(SortableBId {
                     id: *id,
@@ -519,10 +521,7 @@ impl<'c> TreeBuilder<'c> {
                     lines.push(tree_line);
                 } else {
                     // I guess the file went missing during tree computation
-                    warn!(
-                        "Error while builind treeline for {:?}",
-                        self.blines[*id].path,
-                    );
+                    warn!("Error while builind treeline for {:?}", self.blines[*id].path,);
                 }
             }
         }

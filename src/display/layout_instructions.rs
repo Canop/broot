@@ -14,8 +14,14 @@ pub struct LayoutInstructions {
 #[serde(untagged)]
 pub enum LayoutInstruction {
     Clear, // clear all instructions
-    MoveDivider { divider: usize, dx: i16 },
-    SetPanelWidth { panel: usize, width: u16 },
+    MoveDivider {
+        divider: usize,
+        dx: i16,
+    },
+    SetPanelWidth {
+        panel: usize,
+        width: u16,
+    },
 }
 
 /// arguments for moving a divider, read from a string eg "0 -5"
@@ -28,7 +34,8 @@ pub struct MoveDividerArgs {
 impl FromStr for MoveDividerArgs {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Some((_, divider, dx)) = regex_captures!(r"^\s*(\d)\s+(-?\d{1,3})\s*$", s) {
+        if let Some((_, divider, dx)) = regex_captures!(r"^\s*(\d)\s+(-?\d{1,3})\s*$", s)
+        {
             Ok(Self {
                 divider: divider.parse().unwrap(),
                 dx: dx.parse().unwrap(),
@@ -65,7 +72,10 @@ impl LayoutInstruction {
         idx: usize,
     ) -> bool {
         match self {
-            Self::MoveDivider { divider, .. } => divider == idx,
+            Self::MoveDivider {
+                divider,
+                ..
+            } => divider == idx,
             _ => false,
         }
     }
@@ -82,11 +92,15 @@ impl LayoutInstructions {
                 self.instructions.clear();
             }
             SetPanelWidth {
-                panel: new_panel, ..
+                panel: new_panel,
+                ..
             } => {
                 // all previous SetPanelWidth for the same panel are now irrelevant
                 self.instructions.retain(|i| match i {
-                    SetPanelWidth { panel, .. } => *panel != new_panel,
+                    SetPanelWidth {
+                        panel,
+                        ..
+                    } => *panel != new_panel,
                     _ => true,
                 });
             }
@@ -95,7 +109,11 @@ impl LayoutInstructions {
                 dx: new_dx,
             } => {
                 // if the last instruction is a move of the same divider, we adjust it
-                if let Some(MoveDivider { divider, dx }) = self.instructions.last_mut() {
+                if let Some(MoveDivider {
+                    divider,
+                    dx,
+                }) = self.instructions.last_mut()
+                {
                     if *divider == new_divider {
                         *dx += new_dx;
                         return;

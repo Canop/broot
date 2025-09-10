@@ -5,9 +5,15 @@ use {
         errors::ProgramError,
         permissions,
         skin::StyleMap,
-        tree::{Tree, TreeLine},
+        tree::{
+            Tree,
+            TreeLine,
+        },
     },
-    std::{io::Write, os::unix::fs::MetadataExt},
+    std::{
+        io::Write,
+        os::unix::fs::MetadataExt,
+    },
     umask::*,
 };
 
@@ -61,9 +67,23 @@ impl<'s> PermWriter<'s> {
             cw.queue_char(n_style, '_')?;
         }
         if mode.has(USER_EXEC) {
-            cw.queue_char(x_style, if mode.has_extra(SETUID) { 's' } else { 'x' })?;
+            cw.queue_char(
+                x_style,
+                if mode.has_extra(SETUID) {
+                    's'
+                } else {
+                    'x'
+                },
+            )?;
         } else {
-            cw.queue_char(n_style, if mode.has_extra(SETUID) { 'S' } else { '_' })?;
+            cw.queue_char(
+                n_style,
+                if mode.has_extra(SETUID) {
+                    'S'
+                } else {
+                    '_'
+                },
+            )?;
         }
 
         if mode.has(GROUP_READ) {
@@ -77,9 +97,23 @@ impl<'s> PermWriter<'s> {
             cw.queue_char(n_style, '_')?;
         }
         if mode.has(GROUP_EXEC) {
-            cw.queue_char(x_style, if mode.has_extra(SETGID) { 's' } else { 'x' })?;
+            cw.queue_char(
+                x_style,
+                if mode.has_extra(SETGID) {
+                    's'
+                } else {
+                    'x'
+                },
+            )?;
         } else {
-            cw.queue_char(n_style, if mode.has_extra(SETGID) { 'S' } else { '_' })?;
+            cw.queue_char(
+                n_style,
+                if mode.has_extra(SETGID) {
+                    'S'
+                } else {
+                    '_'
+                },
+            )?;
         }
 
         if mode.has(OTHERS_READ) {
@@ -93,9 +127,23 @@ impl<'s> PermWriter<'s> {
             cw.queue_char(n_style, '_')?;
         }
         if mode.has(OTHERS_EXEC) {
-            cw.queue_char(x_style, if mode.has_extra(STICKY) { 't' } else { 'x' })?;
+            cw.queue_char(
+                x_style,
+                if mode.has_extra(STICKY) {
+                    't'
+                } else {
+                    'x'
+                },
+            )?;
         } else {
-            cw.queue_char(n_style, if mode.has_extra(STICKY) { 'T' } else { '_' })?;
+            cw.queue_char(
+                n_style,
+                if mode.has_extra(STICKY) {
+                    'T'
+                } else {
+                    '_'
+                },
+            )?;
         }
 
         Ok(())

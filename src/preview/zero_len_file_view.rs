@@ -1,19 +1,26 @@
 use {
     crate::{
-        display::{Screen, W},
+        display::{
+            Screen,
+            W,
+        },
         errors::ProgramError,
         skin::PanelSkin,
     },
     char_reader::CharReader,
     crokey::crossterm::{
-        cursor,
         QueueableCommand,
+        cursor,
     },
     std::{
         fs::File,
         path::PathBuf,
     },
-    termimad::{Area, CropWriter, SPACE_FILLING},
+    termimad::{
+        Area,
+        CropWriter,
+        SPACE_FILLING,
+    },
 };
 
 /// a (light) display for a file declaring a size 0,
@@ -24,7 +31,9 @@ pub struct ZeroLenFileView {
 
 impl ZeroLenFileView {
     pub fn new(path: PathBuf) -> Self {
-        Self { path }
+        Self {
+            path,
+        }
     }
     pub fn display(
         &mut self,

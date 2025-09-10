@@ -1,4 +1,3 @@
-
 /// a displayable representation of where
 /// the needle was found, with some text around
 #[derive(Debug, Clone)]
@@ -51,7 +50,8 @@ impl ContentMatch {
         }
         // at this point we're unsure whether we start at a correct char boundary, hence
         // the from_utf8_lossy
-        let extract = String::from_utf8_lossy(&hay[extract_start..extract_end]).to_string();
+        let extract =
+            String::from_utf8_lossy(&hay[extract_start..extract_end]).to_string();
         let needle_start = extract.find(needle).unwrap_or(0);
         Self {
             extract,

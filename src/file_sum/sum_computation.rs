@@ -9,9 +9,7 @@ use {
         ThreadPool,
         ThreadPoolBuilder,
     },
-    rustc_hash::{
-        FxHashMap,
-    },
+    rustc_hash::FxHashMap,
     std::{
         convert::TryInto,
         fs,
@@ -20,21 +18,19 @@ use {
             PathBuf,
         },
         sync::{
+            Arc,
+            Mutex,
             atomic::{
                 AtomicIsize,
                 Ordering,
             },
-            Arc,
-            Mutex,
         },
     },
     termimad::crossbeam::channel,
 };
 
 #[cfg(unix)]
-use {
-    std::os::unix::fs::MetadataExt,
-};
+use std::os::unix::fs::MetadataExt;
 
 struct DirSummer {
     thread_count: usize,
@@ -54,10 +50,8 @@ struct NodeId {
 
 impl DirSummer {
     pub fn new(thread_count: usize) -> Self {
-        let thread_pool = ThreadPoolBuilder::new()
-            .num_threads(thread_count)
-            .build()
-            .unwrap();
+        let thread_pool =
+            ThreadPoolBuilder::new().num_threads(thread_count).build().unwrap();
         Self {
             thread_count,
             thread_pool,
@@ -163,7 +157,8 @@ impl DirSummer {
         // at the end (this avoids waiting for a mutex during computation)
         for _ in 0..threads_count {
             let busy = Arc::clone(&busy);
-            let (dirs_sender, dirs_receiver) = (dirs_sender.clone(), dirs_receiver.clone());
+            let (dirs_sender, dirs_receiver) =
+                (dirs_sender.clone(), dirs_receiver.clone());
 
             #[cfg(unix)]
             let nodes = nodes.clone();
@@ -184,7 +179,10 @@ impl DirSummer {
                                         let path = e.path();
 
                                         if special_paths.sum(&path) == Directive::Never {
-                                            debug!("not summing (deep) special path {:?}", path);
+                                            debug!(
+                                                "not summing (deep) special path {:?}",
+                                                path
+                                            );
                                             continue;
                                         }
 

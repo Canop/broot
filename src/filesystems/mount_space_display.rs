@@ -5,8 +5,12 @@ use {
         skin::StyleMap,
     },
     crokey::crossterm::{
-        style::{ResetColor, SetBackgroundColor, SetForegroundColor},
         QueueableCommand,
+        style::{
+            ResetColor,
+            SetBackgroundColor,
+            SetForegroundColor,
+        },
     },
     lfs_core::Mount,
     termimad::*,
@@ -21,7 +25,11 @@ pub struct MountSpaceDisplay<'m, 's> {
 }
 
 impl<'m, 's> MountSpaceDisplay<'m, 's> {
-    pub fn from(mount: &'m Mount, skin: &'s StyleMap, available_width: usize) -> Self {
+    pub fn from(
+        mount: &'m Mount,
+        skin: &'s StyleMap,
+        available_width: usize,
+    ) -> Self {
         Self {
             mount,
             skin,
@@ -128,4 +136,3 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
         Ok(())
     }
 }
-

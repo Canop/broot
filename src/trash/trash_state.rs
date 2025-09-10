@@ -14,9 +14,9 @@ use {
         verb::*,
     },
     crokey::crossterm::{
+        QueueableCommand,
         cursor,
         style::Color,
-        QueueableCommand,
     },
     std::{
         ffi::OsString,
@@ -56,8 +56,9 @@ impl TrashState {
         tree_options: TreeOptions,
         con: &AppContext,
     ) -> Result<Self, ProgramError> {
-        let mut items = trash::os_limited::list()
-            .map_err(|e| ProgramError::Trash { message: e.to_string() })?;
+        let mut items = trash::os_limited::list().map_err(|e| ProgramError::Trash {
+            message: e.to_string(),
+        })?;
         sort(&mut items, &tree_options);
         let selection_idx = None;
         Ok(TrashState {
@@ -160,7 +161,11 @@ impl TrashState {
             selection_idx = if let Some(idx) = f.selection_idx {
                 Some(move_sel(idx, f.items.len(), dec, cycle))
             } else if !f.items.is_empty() {
-                Some(if dec > 0 { 0 } else { f.items.len() - 1 })
+                Some(if dec > 0 {
+                    0
+                } else {
+                    f.items.len() - 1
+                })
             } else {
                 None
             };
@@ -169,7 +174,11 @@ impl TrashState {
             selection_idx = if let Some(idx) = self.selection_idx {
                 Some(move_sel(idx, self.items.len(), dec, cycle))
             } else if !self.items.is_empty() {
-                Some(if dec > 0 { 0 } else { self.items.len() - 1 })
+                Some(if dec > 0 {
+                    0
+                } else {
+                    self.items.len() - 1
+                })
             } else {
                 None
             };
@@ -195,8 +204,12 @@ impl TrashState {
     fn selected_item_id(&self) -> Option<OsString> {
         self.selected_item().map(|i| i.id.clone())
     }
-    fn select_item_by_id(&mut self, id: Option<&OsString>) {
-        self.selection_idx = id.and_then(|id| self.items.iter().position(|i| &i.id == id));
+    fn select_item_by_id(
+        &mut self,
+        id: Option<&OsString>,
+    ) {
+        self.selection_idx =
+            id.and_then(|id| self.items.iter().position(|i| &i.id == id));
     }
 
     fn take_selected_item(&mut self) -> Option<TrashItem> {
@@ -264,12 +277,7 @@ impl PanelState for TrashState {
         let mut options = self.tree_options.clone();
         let message = change_options(&mut options);
         let message = Some(message);
-        self.modified(
-            options,
-            message,
-            in_new_panel,
-            con,
-        )
+        self.modified(options, message, in_new_panel, con)
     }
 
     /// We don't want to expose path to verbs because you can't
@@ -302,9 +310,8 @@ impl PanelState for TrashState {
         if pattern.is_none() {
             if let Some(f) = self.filtered.take() {
                 if let Some(idx) = f.selection_idx {
-                    self.selection_idx = self.items
-                        .iter()
-                        .position(|m| m.id == f.items[idx].id);
+                    self.selection_idx =
+                        self.items.iter().position(|m| m.id == f.items[idx].id);
                 }
             }
         } else {
@@ -351,10 +358,7 @@ impl PanelState for TrashState {
         let scrollbar = area.scrollbar(self.scroll, items.len());
         //- style preparation
         let styles = &disc.panel_skin.styles;
-        let selection_bg = styles
-            .selected_line
-            .get_bg()
-            .unwrap_or(Color::AnsiValue(240));
+        let selection_bg = styles.selected_line.get_bg().unwrap_or(Color::AnsiValue(240));
         let match_style = &styles.char_match;
         let mut selected_match_style = styles.char_match.clone();
         selected_match_style.set_bg(selection_bg);
@@ -380,7 +384,9 @@ impl PanelState for TrashState {
         }
         let mut added = false;
         for col in &cols {
-            let Some(size) = col.size() else { continue; };
+            let Some(size) = col.size() else {
+                continue;
+            };
             if added {
                 cw.queue_char(border_style, '│')?;
             } else {
@@ -404,7 +410,9 @@ impl PanelState for TrashState {
         }
         let mut added = false;
         for col in &cols {
-            let Some(size) = col.size() else { continue; };
+            let Some(size) = col.size() else {
+                continue;
+            };
             if added {
                 cw.queue_char(border_style, '┼')?;
             } else {
@@ -439,11 +447,20 @@ impl PanelState for TrashState {
                     border_style
                 };
                 if con.show_selection_mark {
-                    cw.queue_char(txt_style, if selected { '▶' } else { ' ' })?;
+                    cw.queue_char(
+                        txt_style,
+                        if selected {
+                            '▶'
+                        } else {
+                            ' '
+                        },
+                    )?;
                 }
                 let mut added = false;
                 for col in &cols {
-                    let Some(size) = col.size() else { continue; };
+                    let Some(size) = col.size() else {
+                        continue;
+                    };
                     if added {
                         cw.queue_char(border_style, '│')?;
                     } else {
@@ -483,7 +500,10 @@ impl PanelState for TrashState {
                 if con.show_selection_mark {
                     cw.queue_char(&styles.default, ' ')?;
                 }
-                cw.queue_g_string(border_style, format!("{: >width$}", '│', width = first_col_width + 1))?;
+                cw.queue_g_string(
+                    border_style,
+                    format!("{: >width$}", '│', width = first_col_width + 1),
+                )?;
             }
             cw.fill(txt_style, &SPACE_FILLING)?;
             let scrollbar_style = if ScrollCommand::is_thumb(y, scrollbar) {
@@ -519,23 +539,20 @@ impl PanelState for TrashState {
                                 path.to_string_lossy(),
                             ))
                         }
-                        Err(trash_crate::Error::RestoreCollision { path, .. }) => {
-                            CmdResult::DisplayError(format!(
-                                "collision: *{}* already exists",
-                                path.to_string_lossy(),
-                            ))
-                        }
-                        Err(e) => {
-                            CmdResult::DisplayError(format!(
-                                "restore failed: {}",
-                                e.to_string(),
-                            ))
-                        }
+                        Err(trash_crate::Error::RestoreCollision {
+                            path,
+                            ..
+                        }) => CmdResult::DisplayError(format!(
+                            "collision: *{}* already exists",
+                            path.to_string_lossy(),
+                        )),
+                        Err(e) => CmdResult::DisplayError(format!(
+                            "restore failed: {}",
+                            e.to_string(),
+                        )),
                     }
                 } else {
-                    CmdResult::DisplayError(
-                        "an item must be selected".to_string(),
-                    )
+                    CmdResult::DisplayError("an item must be selected".to_string())
                 }
             }
             Internal::delete_trashed_file => {
@@ -549,25 +566,20 @@ impl PanelState for TrashState {
                                 path.to_string_lossy(),
                             ))
                         }
-                        Err(e) => {
-                            CmdResult::DisplayError(format!(
-                                "deletion failed: {}",
-                                e.to_string(),
-                            ))
-                        }
+                        Err(e) => CmdResult::DisplayError(format!(
+                            "deletion failed: {}",
+                            e.to_string(),
+                        )),
                     }
                 } else {
-                    CmdResult::DisplayError(
-                        "an item must be selected".to_string(),
-                    )
+                    CmdResult::DisplayError("an item must be selected".to_string())
                 }
             }
             Internal::back => {
                 if let Some(f) = self.filtered.take() {
                     if let Some(idx) = f.selection_idx {
-                        self.selection_idx = self.items
-                            .iter()
-                            .position(|m| m.id == f.items[idx].id);
+                        self.selection_idx =
+                            self.items.iter().position(|m| m.id == f.items[idx].id);
                     }
                     self.show_selection();
                     CmdResult::Keep
@@ -575,8 +587,12 @@ impl PanelState for TrashState {
                     CmdResult::PopState
                 }
             }
-            Internal::line_down => self.move_line(internal_exec, input_invocation, 1, true),
-            Internal::line_up => self.move_line(internal_exec, input_invocation, -1, true),
+            Internal::line_down => {
+                self.move_line(internal_exec, input_invocation, 1, true)
+            }
+            Internal::line_up => {
+                self.move_line(internal_exec, input_invocation, -1, true)
+            }
             Internal::line_down_no_cycle => {
                 self.move_line(internal_exec, input_invocation, 1, false)
             }
@@ -587,8 +603,12 @@ impl PanelState for TrashState {
                 // it would probably be a good idea to bind enter to restore_trash_file ?
                 CmdResult::DisplayError("can't open a file from the trash".to_string())
             }
-            Internal::panel_left_no_open => CmdResult::HandleInApp(Internal::panel_left_no_open),
-            Internal::panel_right_no_open => CmdResult::HandleInApp(Internal::panel_right_no_open),
+            Internal::panel_left_no_open => {
+                CmdResult::HandleInApp(Internal::panel_left_no_open)
+            }
+            Internal::panel_right_no_open => {
+                CmdResult::HandleInApp(Internal::panel_right_no_open)
+            }
             Internal::page_down => {
                 if !self.try_scroll(ScrollCommand::Pages(1)) {
                     self.selection_idx = Some(self.count() - 1);
@@ -631,4 +651,3 @@ impl PanelState for TrashState {
         Ok(CmdResult::Keep)
     }
 }
-

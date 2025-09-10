@@ -1,14 +1,15 @@
-
 use {
     super::*,
-    crate::{
-        content_search::*,
-    },
+    crate::content_search::*,
     lazy_regex::regex,
     std::{
         fmt,
         fs::File,
-        io::{self, BufReader, BufRead},
+        io::{
+            self,
+            BufRead,
+            BufReader,
+        },
         path::Path,
     },
 };
@@ -18,18 +19,24 @@ use {
 pub struct ContentRegexPattern {
     rex: regex::Regex,
     flags: String,
-    max_file_size: usize
+    max_file_size: usize,
 }
 
 impl fmt::Display for ContentRegexPattern {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, "cr/{}/{}", self.rex, self.flags)
     }
 }
 
 impl ContentRegexPattern {
-
-    pub fn new(pat: &str, flags: &str, max_file_size: usize) -> Result<Self, PatternError> {
+    pub fn new(
+        pat: &str,
+        flags: &str,
+        max_file_size: usize,
+    ) -> Result<Self, PatternError> {
         Ok(Self {
             rex: super::build_regex(pat, flags)?,
             flags: flags.to_string(),
@@ -46,7 +53,10 @@ impl ContentRegexPattern {
     }
 
     // TODO optimize with regex::bytes ?
-    fn has_match(&self, path: &Path) -> io::Result<bool> {
+    fn has_match(
+        &self,
+        path: &Path,
+    ) -> io::Result<bool> {
         for line in BufReader::new(File::open(path)?).lines() {
             if self.rex.is_match(line?.as_str()) {
                 return Ok(true);
@@ -55,8 +65,13 @@ impl ContentRegexPattern {
         Ok(false)
     }
 
-    pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
-        if !candidate.regular_file || !is_path_suitable(candidate.path, self.max_file_size) {
+    pub fn score_of(
+        &self,
+        candidate: Candidate,
+    ) -> Option<i32> {
+        if !candidate.regular_file
+            || !is_path_suitable(candidate.path, self.max_file_size)
+        {
             return None;
         }
         match self.has_match(candidate.path) {
@@ -108,8 +123,7 @@ impl ContentRegexPattern {
         &self,
         path: &Path,
     ) -> Option<usize> {
-        self.try_get_match_line_count(path)
-            .unwrap_or(None)
+        self.try_get_match_line_count(path).unwrap_or(None)
     }
 
     pub fn get_content_match(
@@ -120,4 +134,3 @@ impl ContentRegexPattern {
         self.try_get_content_match(path, desired_len).ok().flatten()
     }
 }
-

@@ -5,17 +5,26 @@
 use {
     git2,
     glob,
-    id_arena::{Arena, Id},
+    id_arena::{
+        Arena,
+        Id,
+    },
     lazy_regex::regex,
     once_cell::sync::Lazy,
     std::{
         fmt,
         fs::File,
-        io::{BufRead, BufReader, Result},
-        path::{Path, PathBuf},
+        io::{
+            BufRead,
+            BufReader,
+            Result,
+        },
+        path::{
+            Path,
+            PathBuf,
+        },
     },
 };
-
 
 #[derive(Default)]
 pub struct Ignorer {
@@ -37,15 +46,18 @@ pub struct IgnoreFile {
 /// a simple rule of a gitignore file
 #[derive(Clone)]
 struct IgnoreRule {
-    ok: bool,        // does this rule when matched means the file is good? (usually false)
+    ok: bool, // does this rule when matched means the file is good? (usually false)
     directory: bool, // whether this rule only applies to directories
-    filename: bool,  // does this rule apply to just the filename
+    filename: bool, // does this rule apply to just the filename
     pattern: glob::Pattern,
     pattern_options: glob::MatchOptions,
 }
 
 impl fmt::Debug for IgnoreRule {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         f.debug_struct("IgnoreRule")
             .field("ok", &self.ok)
             .field("directory", &self.directory)
@@ -58,7 +70,10 @@ impl fmt::Debug for IgnoreRule {
 impl IgnoreRule {
     /// parse a line of a .gitignore file.
     /// The ref_dir is used if the line starts with '/'
-    fn from(line: &str, ref_dir: &Path) -> Option<IgnoreRule> {
+    fn from(
+        line: &str,
+        ref_dir: &Path,
+    ) -> Option<IgnoreRule> {
         if line.starts_with('#') {
             return None; // comment line
         }
@@ -166,13 +181,19 @@ pub fn find_global_ignore() -> Option<PathBuf> {
 }
 
 impl IgnoreChain {
-    pub fn push(&mut self, id: Id<IgnoreFile>) {
+    pub fn push(
+        &mut self,
+        id: Id<IgnoreFile>,
+    ) {
         self.file_ids.push(id);
     }
 }
 
 impl Ignorer {
-    pub fn root_chain(&mut self, mut dir: &Path) -> IgnoreChain {
+    pub fn root_chain(
+        &mut self,
+        mut dir: &Path,
+    ) -> IgnoreChain {
         let mut chain = IgnoreChain::default();
         loop {
             let is_repo = is_repo(dir);
@@ -181,11 +202,9 @@ impl Ignorer {
                     chain.push(self.files.alloc(gif));
                 }
             }
-            for (filename, local_git_ignore) in [
-                (".gitignore", true),
-                (".git/info/exclude", true),
-                (".ignore", false),
-            ] {
+            for (filename, local_git_ignore) in
+                [(".gitignore", true), (".git/info/exclude", true), (".ignore", false)]
+            {
                 if chain.in_repo && local_git_ignore {
                     // we don't add outside .gitignore files when we're in a repo
                     continue;
@@ -217,7 +236,11 @@ impl Ignorer {
     ///
     /// Deeper file have a bigger priority.
     /// .ignore files have a bigger priority than .gitignore files.
-    pub fn deeper_chain(&mut self, parent_chain: &IgnoreChain, dir: &Path) -> IgnoreChain {
+    pub fn deeper_chain(
+        &mut self,
+        parent_chain: &IgnoreChain,
+        dir: &Path,
+    ) -> IgnoreChain {
         let mut chain = if is_repo(dir) {
             let mut chain = IgnoreChain::default();
             for &id in &parent_chain.file_ids {
@@ -230,10 +253,7 @@ impl Ignorer {
         } else {
             parent_chain.clone()
         };
-        for (filename, local_git_ignore) in [
-            (".gitignore", true),
-            (".ignore", false),
-        ] {
+        for (filename, local_git_ignore) in [(".gitignore", true), (".ignore", false)] {
             if local_git_ignore && !chain.in_repo {
                 // we don't add outside .gitignore files when we're in a repo
                 continue;
@@ -283,4 +303,3 @@ impl Ignorer {
 pub fn is_repo(root: &Path) -> bool {
     root.join(".git").exists()
 }
-

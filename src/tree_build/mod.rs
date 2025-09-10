@@ -5,6 +5,6 @@ mod builder;
 
 pub use {
     bid::BId,
-    builder::TreeBuilder,
     build_report::BuildReport,
+    builder::TreeBuilder,
 };

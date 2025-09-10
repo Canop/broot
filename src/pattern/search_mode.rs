@@ -1,11 +1,13 @@
-
 use {
     crate::{
         app::AppContext,
-        errors::{ConfError, PatternError},
+        errors::{
+            ConfError,
+            PatternError,
+        },
     },
-    rustc_hash::FxHashMap,
     lazy_regex::regex_is_match,
+    rustc_hash::FxHashMap,
     std::convert::TryFrom,
 };
 
@@ -55,10 +57,13 @@ pub static SEARCH_MODES: &[SearchMode] = &[
 ];
 
 impl SearchMode {
-    fn new(search_object: SearchObject, search_kind: SearchKind) -> Option<Self> {
+    fn new(
+        search_object: SearchObject,
+        search_kind: SearchKind,
+    ) -> Option<Self> {
         use {
-            SearchObject::*,
             SearchKind::*,
+            SearchObject::*,
         };
         match (search_object, search_kind) {
             (Name, Exact) => Some(Self::NameExact),
@@ -79,16 +84,20 @@ impl SearchMode {
     }
     /// Return the prefix to type, eg "/" in standard for a name-regex,
     /// "" for a name-fuzzy, and "ep" for a path-exact
-    pub fn prefix(self, con: &AppContext) -> String {
-        con
-            .search_modes
-            .key(self)
-            .map_or_else(|| "".to_string(), |k| format!("{k}/"))
+    pub fn prefix(
+        self,
+        con: &AppContext,
+    ) -> String {
+        con.search_modes.key(self).map_or_else(|| "".to_string(), |k| format!("{k}/"))
     }
     pub fn object(self) -> SearchObject {
         match self {
-            Self::NameExact | Self::NameFuzzy | Self::NameRegex | Self::NameTokens => SearchObject::Name,
-            Self::PathExact | Self::PathFuzzy | Self::PathRegex | Self::PathTokens => SearchObject::Path,
+            Self::NameExact | Self::NameFuzzy | Self::NameRegex | Self::NameTokens => {
+                SearchObject::Name
+            }
+            Self::PathExact | Self::PathFuzzy | Self::PathRegex | Self::PathTokens => {
+                SearchObject::Path
+            }
             Self::ContentExact | Self::ContentRegex => SearchObject::Content,
         }
     }
@@ -124,7 +133,10 @@ pub struct SearchModeMap {
 }
 
 impl SearchModeMapEntry {
-    pub fn parse(conf_key: &str, conf_mode: &str) -> Result<Self, ConfError> {
+    pub fn parse(
+        conf_key: &str,
+        conf_mode: &str,
+    ) -> Result<Self, ConfError> {
         let mut search_kinds = Vec::new();
         let mut search_objects = Vec::new();
 
@@ -140,7 +152,9 @@ impl SearchModeMapEntry {
                 "path" => search_objects.push(SearchObject::Path),
                 _ => {
                     return Err(ConfError::InvalidSearchMode {
-                        details: format!("{t:?} not understood in search mode definition"),
+                        details: format!(
+                            "{t:?} not understood in search mode definition"
+                        ),
                     });
                 }
             }
@@ -148,23 +162,27 @@ impl SearchModeMapEntry {
         if search_kinds.is_empty() {
             return Err(ConfError::InvalidSearchMode {
                 details: "missing search kind in search mode definition\
-                    (the search kind must be one of 'exact', 'fuzzy', 'regex', 'tokens')".to_string()
+                    (the search kind must be one of 'exact', 'fuzzy', 'regex', 'tokens')"
+                    .to_string(),
             });
         }
         if search_kinds.len() > 1 {
             return Err(ConfError::InvalidSearchMode {
-                details: "only one search kind can be specified in a search mode".to_string()
+                details: "only one search kind can be specified in a search mode"
+                    .to_string(),
             });
         }
         if search_objects.is_empty() {
             return Err(ConfError::InvalidSearchMode {
                 details: "missing search object in search mode definition\
-                    (the search object must be one of 'name', 'path', 'content')".to_string()
+                    (the search object must be one of 'name', 'path', 'content')"
+                    .to_string(),
             });
         }
         if search_objects.len() > 1 {
             return Err(ConfError::InvalidSearchMode {
-                details: "only one search object can be specified in a search mode".to_string()
+                details: "only one search object can be specified in a search mode"
+                    .to_string(),
             });
         }
 
@@ -172,9 +190,10 @@ impl SearchModeMapEntry {
             Some(mode) => mode,
             None => {
                 return Err(ConfError::InvalidSearchMode {
-                    details: "Unsupported combination of search object and kind".to_string()
+                    details: "Unsupported combination of search object and kind"
+                        .to_string(),
                 });
-            },
+            }
         };
 
         let key = if conf_key.is_empty() || conf_key == "<empty>" {
@@ -189,7 +208,10 @@ impl SearchModeMapEntry {
                 raw: conf_key.to_string(),
             });
         };
-        Ok(SearchModeMapEntry { key, mode })
+        Ok(SearchModeMapEntry {
+            key,
+            mode,
+        })
     }
 }
 
@@ -209,7 +231,10 @@ impl Default for SearchModeMap {
         smm.setm(&["rx", "cr"], SearchMode::ContentRegex);
         smm.setm(&["pt", "tp", "t"], SearchMode::PathTokens);
         smm.setm(&["tn", "nt"], SearchMode::NameTokens);
-        smm.set(SearchModeMapEntry { key: None, mode: SearchMode::PathFuzzy });
+        smm.set(SearchModeMapEntry {
+            key: None,
+            mode: SearchMode::PathFuzzy,
+        });
         smm
     }
 }
@@ -226,7 +251,11 @@ impl TryFrom<&FxHashMap<String, String>> for SearchModeMap {
 }
 
 impl SearchModeMap {
-    pub fn setm(&mut self, keys: &[&str], mode: SearchMode) {
+    pub fn setm(
+        &mut self,
+        keys: &[&str],
+        mode: SearchMode,
+    ) {
         for key in keys {
             self.set(SearchModeMapEntry {
                 key: Some(key.to_string()),
@@ -236,10 +265,16 @@ impl SearchModeMap {
     }
     /// we don't remove existing entries to ensure there's always a matching entry in
     /// mode->key (but search iterations will be done in reverse)
-    pub fn set(&mut self, entry: SearchModeMapEntry) {
+    pub fn set(
+        &mut self,
+        entry: SearchModeMapEntry,
+    ) {
         self.entries.push(entry);
     }
-    pub fn search_mode(&self, key: Option<&String>) -> Result<SearchMode, PatternError> {
+    pub fn search_mode(
+        &self,
+        key: Option<&String>,
+    ) -> Result<SearchMode, PatternError> {
         for entry in self.entries.iter().rev() {
             if entry.key.as_ref() == key {
                 return Ok(entry.mode);
@@ -253,7 +288,10 @@ impl SearchModeMap {
             },
         })
     }
-    pub fn key(&self, search_mode: SearchMode) -> Option<&String> {
+    pub fn key(
+        &self,
+        search_mode: SearchMode,
+    ) -> Option<&String> {
         for entry in self.entries.iter().rev() {
             if entry.mode == search_mode {
                 return entry.key.as_ref();
@@ -263,4 +301,3 @@ impl SearchModeMap {
         None
     }
 }
-

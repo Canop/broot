@@ -5,7 +5,10 @@
 //!     cargo -vv build --release
 use {
     clap::CommandFactory,
-    clap_complete::{Generator, Shell},
+    clap_complete::{
+        Generator,
+        Shell,
+    },
     std::{
         env,
         ffi::OsStr,
@@ -19,15 +22,14 @@ include!("src/cli/args.rs");
 /// so this generation is usually not needed
 pub const BUILD_MAN_PAGE: bool = false;
 
-fn write_completions_file<G: Generator + Copy, P: AsRef<OsStr>>(generator: G, out_dir: P) {
+fn write_completions_file<G: Generator + Copy, P: AsRef<OsStr>>(
+    generator: G,
+    out_dir: P,
+) {
     let mut args = Args::command();
     for name in &["broot", "br"] {
-        clap_complete::generate_to(
-            generator,
-            &mut args,
-            (*name).to_string(),
-            &out_dir,
-        ).expect("clap complete generation failed");
+        clap_complete::generate_to(generator, &mut args, (*name).to_string(), &out_dir)
+            .expect("clap complete generation failed");
     }
 }
 

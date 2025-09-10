@@ -14,15 +14,25 @@ use {
         tree::Tree,
     },
     crokey::crossterm::{
-        cursor,
-        event::{DisableMouseCapture, EnableMouseCapture},
-        terminal::{self, EnterAlternateScreen, LeaveAlternateScreen},
         QueueableCommand,
+        cursor,
+        event::{
+            DisableMouseCapture,
+            EnableMouseCapture,
+        },
+        terminal::{
+            self,
+            EnterAlternateScreen,
+            LeaveAlternateScreen,
+        },
     },
     opener,
     std::{
         env,
-        io::{self, Write},
+        io::{
+            self,
+            Write,
+        },
         path::PathBuf,
         process::Command,
     },
@@ -33,7 +43,6 @@ use {
 /// A launchable can only be executed on end of life of broot.
 #[derive(Debug)]
 pub enum Launchable {
-
     /// just print something on stdout on end of broot
     Printer {
         to_print: String,
@@ -92,10 +101,14 @@ fn resolve_env_variables(parts: Vec<String>) -> Vec<String> {
 
 impl Launchable {
     pub fn opener(path: PathBuf) -> Launchable {
-        Launchable::SystemOpen { path }
+        Launchable::SystemOpen {
+            path,
+        }
     }
     pub fn printer(to_print: String) -> Launchable {
-        Launchable::Printer { to_print }
+        Launchable::Printer {
+            to_print,
+        }
     }
     pub fn tree_printer(
         tree: &Tree,
@@ -137,12 +150,21 @@ impl Launchable {
         mut w: Option<&mut W>,
     ) -> Result<(), ProgramError> {
         match self {
-            Launchable::Printer { to_print } => {
+            Launchable::Printer {
+                to_print,
+            } => {
                 println!("{to_print}");
                 Ok(())
             }
-            Launchable::TreePrinter { tree, skin, ext_colors, width, height } => {
-                let dp = DisplayableTree::out_of_app(tree, skin, ext_colors, *width, *height);
+            Launchable::TreePrinter {
+                tree,
+                skin,
+                ext_colors,
+                width,
+                height,
+            } => {
+                let dp =
+                    DisplayableTree::out_of_app(tree, skin, ext_colors, *width, *height);
                 dp.write_on(&mut std::io::stdout())
             }
             Launchable::Program {
@@ -205,7 +227,9 @@ impl Launchable {
                 exec_res?; // we trigger the error display after restoration
                 Ok(())
             }
-            Launchable::SystemOpen { path } => {
+            Launchable::SystemOpen {
+                path,
+            } => {
                 opener::open(path)?;
                 Ok(())
             }

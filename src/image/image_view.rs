@@ -1,29 +1,41 @@
 use {
     super::{
-        double_line::DoubleLine,
         SourceImage,
+        double_line::DoubleLine,
     },
     crate::{
         app::*,
-        display::{Screen, W},
+        display::{
+            Screen,
+            W,
+        },
         errors::ProgramError,
-        kitty::{self, KittyImageId},
+        kitty::{
+            self,
+            KittyImageId,
+        },
         skin::PanelSkin,
     },
     crokey::crossterm::{
+        QueueableCommand,
         cursor,
         style::{
             Color,
             SetBackgroundColor,
         },
-        QueueableCommand,
     },
     image::{
         DynamicImage,
         GenericImageView,
     },
-    std::path::{Path, PathBuf},
-    termimad::{fill_bg, Area},
+    std::path::{
+        Path,
+        PathBuf,
+    },
+    termimad::{
+        Area,
+        fill_bg,
+    },
 };
 
 #[derive(Debug)]
@@ -33,9 +45,11 @@ struct DrawingInfo {
 }
 
 impl DrawingInfo {
-    pub fn follows_in_place(&self, previous: &DrawingInfo) -> bool {
-        self.drawing_count == previous.drawing_count + 1
-            && self.area == previous.area
+    pub fn follows_in_place(
+        &self,
+        previous: &DrawingInfo,
+    ) -> bool {
+        self.drawing_count == previous.drawing_count + 1 && self.area == previous.area
     }
 }
 
@@ -60,11 +74,7 @@ pub struct ImageView {
 
 impl ImageView {
     pub fn new(path: &Path) -> Result<Self, ProgramError> {
-        let source_img = time!(
-            "decode image",
-            path,
-            SourceImage::new(path)?
-        );
+        let source_img = time!("decode image", path, SourceImage::new(path)?);
         Ok(Self {
             path: path.to_path_buf(),
             source_img,
@@ -85,10 +95,8 @@ impl ImageView {
         disc: &DisplayContext,
         area: &Area,
     ) -> Result<(), ProgramError> {
-
         let styles = &disc.panel_skin.styles;
-        let bg_color = styles.preview.get_bg()
-            .or_else(|| styles.default.get_bg());
+        let bg_color = styles.preview.get_bg().or_else(|| styles.default.get_bg());
         let bg = bg_color.unwrap_or(Color::Reset);
 
         // we avoid drawing when we were just displayed
@@ -97,7 +105,8 @@ impl ImageView {
             drawing_count: disc.count,
             area: area.clone(),
         };
-        let must_draw = self.last_drawing
+        let must_draw = self
+            .last_drawing
             .as_ref()
             .map_or(true, |previous| !drawing_info.follows_in_place(previous));
         if must_draw {
@@ -118,8 +127,15 @@ impl ImageView {
             return Ok(());
         }
 
-        self.kitty_image_id = kitty_manager
-            .try_print_image(w, &self.source_img, &self.path, area, bg, disc.count, disc.con)?;
+        self.kitty_image_id = kitty_manager.try_print_image(
+            w,
+            &self.source_img,
+            &self.path,
+            area,
+            bg,
+            disc.count,
+            disc.con,
+        )?;
 
         if self.kitty_image_id.is_some() {
             return Ok(());
@@ -127,10 +143,9 @@ impl ImageView {
 
         let target_width = area.width as u32;
         let target_height = (area.height * 2) as u32;
-        let cached = self
-            .display_img
-            .as_ref()
-            .filter(|ci| ci.target_width == target_width && ci.target_height == target_height);
+        let cached = self.display_img.as_ref().filter(|ci| {
+            ci.target_width == target_width && ci.target_height == target_height
+        });
         let img = match cached {
             Some(ci) => &ci.img,
             None => {
@@ -192,12 +207,8 @@ impl ImageView {
         if s.len() > area.width as usize {
             return Ok(());
         }
-        w.queue(cursor::MoveTo(
-            area.left + area.width - s.len() as u16,
-            area.top,
-        ))?;
+        w.queue(cursor::MoveTo(area.left + area.width - s.len() as u16, area.top))?;
         panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }
 }
-

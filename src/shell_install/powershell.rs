@@ -9,10 +9,19 @@
 //! - a line to source the link in %USERPROFILE%/Documents/WindowsPowerShell/Profile.ps1
 
 use {
-    super::{util, ShellInstall},
-    crate::{conf, errors::*},
+    super::{
+        ShellInstall,
+        util,
+    },
+    crate::{
+        conf,
+        errors::*,
+    },
     directories::UserDirs,
-    std::{fs, path::PathBuf},
+    std::{
+        fs,
+        path::PathBuf,
+    },
     termimad::mad_print_inline,
 };
 
@@ -55,11 +64,7 @@ fn get_link_path() -> PathBuf {
 ///
 /// In XDG_DATA_HOME (typically ~/.local/share on linux)
 fn get_script_path() -> PathBuf {
-    conf::app_dirs()
-        .data_dir()
-        .join("launcher")
-        .join(NAME)
-        .join(VERSION)
+    conf::app_dirs().data_dir().join("launcher").join(NAME).join(VERSION)
 }
 
 /// Check whether the shell function is installed, install
@@ -94,9 +99,11 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     if !sourcing_path.exists() {
         debug!("Creating missing PowerShell profile file.");
         if let Some(parent) = sourcing_path.parent() {
-            fs::create_dir_all(parent).context(&|| format!("creating {parent:?} directory"))?;
+            fs::create_dir_all(parent)
+                .context(&|| format!("creating {parent:?} directory"))?;
         }
-        fs::File::create(&sourcing_path).context(&|| format!("creating {sourcing_path:?}"))?;
+        fs::File::create(&sourcing_path)
+            .context(&|| format!("creating {sourcing_path:?}"))?;
     }
     let sourcing_path_str = sourcing_path.to_string_lossy();
     if util::file_contains_line(&sourcing_path, &source_line)? {

@@ -1,13 +1,10 @@
-
 use {
-    crate::{
-        errors::ProgramError,
-    },
+    crate::errors::ProgramError,
     lfs_core::{
         DeviceId,
         Mount,
-        read_mounts,
         ReadOptions,
+        read_mounts,
     },
 };
 
@@ -23,8 +20,7 @@ impl MountList {
     /// try to load the mounts if they aren't loaded.
     pub fn load(&mut self) -> Result<&Vec<Mount>, ProgramError> {
         if self.mounts.is_none() {
-            let options = ReadOptions::default()
-                .remote_stats(false);
+            let options = ReadOptions::default().remote_stats(false);
             match read_mounts(&options) {
                 Ok(mut vec) => {
                     debug!("{} mounts loaded", vec.len());
@@ -44,11 +40,13 @@ impl MountList {
         }
         Ok(
             // this unwrap will be fixed as soon as there's option.insert in stable
-            self.mounts.as_ref().unwrap()
+            self.mounts.as_ref().unwrap(),
         )
     }
-    pub fn get_by_device_id(&self, dev: DeviceId) -> Option<&Mount> {
-        self.mounts.as_ref()
-            .and_then(|mounts| mounts.iter().find(|m| m.info.dev == dev))
+    pub fn get_by_device_id(
+        &self,
+        dev: DeviceId,
+    ) -> Option<&Mount> {
+        self.mounts.as_ref().and_then(|mounts| mounts.iter().find(|m| m.info.dev == dev))
     }
 }

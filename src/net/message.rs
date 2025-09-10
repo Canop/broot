@@ -1,14 +1,12 @@
 use {
     crate::{
-        errors::NetError,
         command::Sequence,
+        errors::NetError,
     },
-    std::{
-        io::{
-            self,
-            BufRead,
-            Write,
-        },
+    std::io::{
+        self,
+        BufRead,
+        Write,
     },
 };
 
@@ -39,14 +37,16 @@ impl Message {
             "CMD" => Ok(Self::Command(read_line(r)?)),
             "GET_ROOT" => Ok(Self::GetRoot),
             "ROOT" => Ok(Self::Root(read_line(r)?)),
-            "SEQ" => Ok(Self::Sequence(Sequence::new(
-                read_line(r)?,
-                Some(read_line(r)?),
-            ))),
+            "SEQ" => {
+                Ok(Self::Sequence(Sequence::new(read_line(r)?, Some(read_line(r)?))))
+            }
             _ => Err(NetError::InvalidMessage),
         }
     }
-    pub fn write<W: Write>(&self, w: &mut W) -> io::Result<()> {
+    pub fn write<W: Write>(
+        &self,
+        w: &mut W,
+    ) -> io::Result<()> {
         match self {
             Self::Command(c) => {
                 writeln!(w, "CMD")?;
@@ -62,7 +62,10 @@ impl Message {
                 writeln!(w, "ROOT")?;
                 writeln!(w, "{path}")
             }
-            Self::Sequence(Sequence { separator, raw }) => {
+            Self::Sequence(Sequence {
+                separator,
+                raw,
+            }) => {
                 writeln!(w, "SEQ")?;
                 writeln!(w, "{raw}")?;
                 writeln!(w, "{separator}")

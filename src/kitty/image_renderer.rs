@@ -1,21 +1,21 @@
 use {
     super::detect_support::is_kitty_graphics_protocol_supported,
-    base64::{
-        engine::general_purpose::STANDARD as BASE64,
-        Engine,
-    },
     crate::{
         display::{
-            cell_size_in_pixels,
             W,
+            cell_size_in_pixels,
         },
         errors::ProgramError,
     },
-    base64,
+    base64::{
+        self,
+        Engine,
+        engine::general_purpose::STANDARD as BASE64,
+    },
     cli_log::*,
     crokey::crossterm::{
-        cursor,
         QueueableCommand,
+        cursor,
         style::Color,
     },
     image::{
@@ -29,12 +29,21 @@ use {
     serde::Deserialize,
     std::{
         fs::File,
-        io::{self, Write},
+        io::{
+            self,
+            Write,
+        },
         num::NonZeroUsize,
-        path::{Path, PathBuf},
+        path::{
+            Path,
+            PathBuf,
+        },
     },
     tempfile,
-    termimad::{fill_bg, Area},
+    termimad::{
+        Area,
+        fill_bg,
+    },
 };
 
 /// How to send the image to kitty
@@ -105,8 +114,10 @@ impl ImageData<'_> {
 /// according to kitty's documentation
 const CHUNK_SIZE: usize = 4096;
 
-
-fn div_ceil(a: u32, b: u32) -> u32 {
+fn div_ceil(
+    a: u32,
+    b: u32,
+) -> u32 {
     a / b + (0 != a % b) as u32
 }
 
@@ -194,7 +205,8 @@ impl<'i> KittyImage<'i> {
             temp_file.flush()?;
             debug!("file len: {}", temp_file.metadata().unwrap().len());
         }
-        let path = temp_file_path.to_str()
+        let path = temp_file_path
+            .to_str()
             .ok_or_else(|| io::Error::other("Path can't be converted to UTF8"))?;
         let encoded_path = BASE64.encode(path);
         debug!("temp file written: {:?}", path);
@@ -216,23 +228,19 @@ impl<'i> KittyImage<'i> {
 
 impl KittyImageRenderer {
     /// Called only once (at most) by the KittyManager
-    pub fn new(
-        options: KittyImageRendererOptions,
-    ) -> Option<Self> {
+    pub fn new(options: KittyImageRendererOptions) -> Option<Self> {
         if !is_kitty_graphics_protocol_supported() {
             return None;
         }
         let hasher = FxBuildHasher;
         let temp_files = LruCache::with_hasher(options.kept_temp_files, hasher);
-        cell_size_in_pixels()
-            .ok()
-            .map(|(cell_width, cell_height)| Self {
-                cell_width,
-                cell_height,
-                next_id: 1,
-                options,
-                temp_files,
-            })
+        cell_size_in_pixels().ok().map(|(cell_width, cell_height)| Self {
+            cell_width,
+            cell_height,
+            next_id: 1,
+            options,
+            temp_files,
+        })
     }
     pub fn delete_temp_files(&mut self) {
         for (_, temp_file_path) in self.temp_files.into_iter() {
@@ -258,7 +266,6 @@ impl KittyImageRenderer {
         area: &Area,
         bg: Color,
     ) -> Result<usize, ProgramError> {
-
         // clean the background below (and around) the image
         for y in area.top..area.top + area.height {
             w.queue(cursor::MoveTo(area.left, y))?;
@@ -270,12 +277,8 @@ impl KittyImageRenderer {
         w.flush()?;
         match self.options.transmission_medium {
             TransmissionMedium::TempFile => {
-                let temp_file_key = format!(
-                    "{:?}-{}x{}",
-                    src_path,
-                    img.img_width,
-                    img.img_height,
-                );
+                let temp_file_key =
+                    format!("{:?}-{}x{}", src_path, img.img_width, img.img_height,);
                 let mut old_path = None;
                 if let Some(cached_path) = self.temp_files.pop(&temp_file_key) {
                     if cached_path.exists() {
@@ -298,7 +301,9 @@ impl KittyImageRenderer {
                     img.print_with_temp_file(w, Some(temp_file), &path)?;
                     path
                 };
-                if let Some((_, old_path)) = self.temp_files.push(temp_file_key, temp_file_path) {
+                if let Some((_, old_path)) =
+                    self.temp_files.push(temp_file_key, temp_file_path)
+                {
                     debug!("removing temp file: {:?}", &old_path);
                     if let Err(e) = std::fs::remove_file(&old_path) {
                         error!("failed to remove temp file: {:?}", e);
@@ -350,4 +355,3 @@ impl KittyImageRenderer {
         }
     }
 }
-

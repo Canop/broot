@@ -83,9 +83,10 @@ impl TreeLineBuilder {
             score,
             direct_match,
         } = self;
-        let metadata = fs::symlink_metadata(&path).map_err(|_| TreeBuildError::FileNotFound {
-            path: path.to_string_lossy().to_string(),
-        })?;
+        let metadata =
+            fs::symlink_metadata(&path).map_err(|_| TreeBuildError::FileNotFound {
+                path: path.to_string_lossy().to_string(),
+            })?;
         let line_type = TreeLineType::new(&path, metadata.file_type());
         let name = path
             .file_name()
@@ -136,7 +137,10 @@ impl TreeLine {
     pub fn is_dir(&self) -> bool {
         match &self.line_type {
             TreeLineType::Dir => true,
-            TreeLineType::SymLink { final_is_dir, .. } if *final_is_dir => true,
+            TreeLineType::SymLink {
+                final_is_dir,
+                ..
+            } if *final_is_dir => true,
             _ => false,
         }
     }
@@ -161,7 +165,10 @@ impl TreeLine {
         match &self.line_type {
             File => SelectionType::File,
             Dir | BrokenSymLink(_) => SelectionType::Directory,
-            SymLink { final_is_dir, .. } => {
+            SymLink {
+                final_is_dir,
+                ..
+            } => {
                 if *final_is_dir {
                     SelectionType::Directory
                 } else {
@@ -183,18 +190,16 @@ impl TreeLine {
     pub fn mode(&self) -> Mode {
         Mode::from(self.metadata.mode())
     }
-    #[cfg(any(target_os="linux", target_os = "macos"))]
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     pub fn device_id(&self) -> lfs_core::DeviceId {
         self.metadata.dev().into()
     }
-    #[cfg(any(target_os="linux", target_os = "macos"))]
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
     pub fn mount(&self) -> Option<lfs_core::Mount> {
         use crate::filesystems::*;
         let mut mount_list = MOUNTS.lock().unwrap();
         if mount_list.load().is_ok() {
-            mount_list
-                .get_by_device_id(self.metadata.dev().into())
-                .cloned()
+            mount_list.get_by_device_id(self.metadata.dev().into()).cloned()
         } else {
             None
         }
@@ -210,7 +215,10 @@ impl TreeLine {
     ///  solved canonicalized symlink
     pub fn target(&self) -> &Path {
         match &self.line_type {
-            TreeLineType::SymLink { final_target, .. } => final_target,
+            TreeLineType::SymLink {
+                final_target,
+                ..
+            } => final_target,
             _ => &self.path,
         }
     }

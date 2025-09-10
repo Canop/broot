@@ -5,9 +5,7 @@ use {
         errors::PatternError,
     },
     bet::BeTree,
-    std::{
-        path::Path,
-    },
+    std::path::Path,
 };
 
 /// a pattern for filtering and sorting files.
@@ -28,7 +26,6 @@ pub enum Pattern {
 }
 
 impl Pattern {
-
     pub fn new(
         raw_expr: &BeTree<PatternOperator, PatternParts>,
         search_modes: &SearchModeMap,
@@ -37,51 +34,47 @@ impl Pattern {
         let expr: BeTree<PatternOperator, Pattern> = raw_expr
             .try_map_atoms::<_, PatternError, _>(|pattern_parts| {
                 let core = pattern_parts.core();
-                Ok(
-                    if core.is_empty() {
-                        Pattern::None
-                    } else {
-                        let parts_mode = pattern_parts.mode();
-                        let mode = search_modes.search_mode(parts_mode)?;
-                        let flags = pattern_parts.flags();
-                        match mode {
-                            SearchMode::NameExact => Self::NameExact(
-                                ExactPattern::from(core)
-                            ),
-                            SearchMode::NameFuzzy => Self::NameFuzzy(
-                                FuzzyPattern::from(core)
-                            ),
-                            SearchMode::NameRegex => Self::NameRegex(
-                                RegexPattern::from(core, flags.unwrap_or(""))?
-                            ),
-                            SearchMode::NameTokens => Self::NameTokens(
-                                TokPattern::new(core)
-                            ),
-                            SearchMode::PathExact => Self::PathExact(
-                                ExactPattern::from(core)
-                            ),
-                            SearchMode::PathFuzzy => Self::PathFuzzy(
-                                FuzzyPattern::from(core)
-                            ),
-                            SearchMode::PathRegex => Self::PathRegex(
-                                RegexPattern::from(core, flags.unwrap_or(""))?
-                            ),
-                            SearchMode::PathTokens => Self::PathTokens(
-                                TokPattern::new(core)
-                            ),
-                            SearchMode::ContentExact => Self::ContentExact(
-                                ContentExactPattern::new(core, content_search_max_file_size)
-                            ),
-                            SearchMode::ContentRegex => Self::ContentRegex(
-                                ContentRegexPattern::new(
-                                    core,
-                                    flags.unwrap_or(""),
-                                    content_search_max_file_size,
-                                )?
-                            ),
+                Ok(if core.is_empty() {
+                    Pattern::None
+                } else {
+                    let parts_mode = pattern_parts.mode();
+                    let mode = search_modes.search_mode(parts_mode)?;
+                    let flags = pattern_parts.flags();
+                    match mode {
+                        SearchMode::NameExact => {
+                            Self::NameExact(ExactPattern::from(core))
+                        }
+                        SearchMode::NameFuzzy => {
+                            Self::NameFuzzy(FuzzyPattern::from(core))
+                        }
+                        SearchMode::NameRegex => Self::NameRegex(RegexPattern::from(
+                            core,
+                            flags.unwrap_or(""),
+                        )?),
+                        SearchMode::NameTokens => Self::NameTokens(TokPattern::new(core)),
+                        SearchMode::PathExact => {
+                            Self::PathExact(ExactPattern::from(core))
+                        }
+                        SearchMode::PathFuzzy => {
+                            Self::PathFuzzy(FuzzyPattern::from(core))
+                        }
+                        SearchMode::PathRegex => Self::PathRegex(RegexPattern::from(
+                            core,
+                            flags.unwrap_or(""),
+                        )?),
+                        SearchMode::PathTokens => Self::PathTokens(TokPattern::new(core)),
+                        SearchMode::ContentExact => Self::ContentExact(
+                            ContentExactPattern::new(core, content_search_max_file_size),
+                        ),
+                        SearchMode::ContentRegex => {
+                            Self::ContentRegex(ContentRegexPattern::new(
+                                core,
+                                flags.unwrap_or(""),
+                                content_search_max_file_size,
+                            )?)
                         }
                     }
-                )
+                })
             })?;
         Ok(if expr.is_empty() {
             Pattern::None
@@ -96,10 +89,16 @@ impl Pattern {
         let mut object = PatternObject::default();
         match self {
             Self::None => {}
-            Self::NameExact(_) | Self::NameFuzzy(_) | Self::NameRegex(_) | Self::NameTokens(_) => {
+            Self::NameExact(_)
+            | Self::NameFuzzy(_)
+            | Self::NameRegex(_)
+            | Self::NameTokens(_) => {
                 object.name = true;
             }
-            Self::PathExact(_) | Self::PathFuzzy(_) | Self::PathRegex(_) | Self::PathTokens(_) => {
+            Self::PathExact(_)
+            | Self::PathFuzzy(_)
+            | Self::PathRegex(_)
+            | Self::PathTokens(_) => {
                 object.subpath = true;
             }
             Self::ContentExact(_) | Self::ContentRegex(_) => {
@@ -186,7 +185,10 @@ impl Pattern {
         }
     }
 
-    pub fn score_of(&self, candidate: Candidate) -> Option<i32> {
+    pub fn score_of(
+        &self,
+        candidate: Candidate,
+    ) -> Option<i32> {
         match self {
             Self::NameExact(ep) => ep.score_of(candidate.name),
             Self::NameFuzzy(fp) => fp.score_of(candidate.name),
@@ -203,7 +205,10 @@ impl Pattern {
         }
     }
 
-    pub fn score_of_string(&self, candidate: &str) -> Option<i32> {
+    pub fn score_of_string(
+        &self,
+        candidate: &str,
+    ) -> Option<i32> {
         match self {
             Self::NameExact(ep) => ep.score_of(candidate),
             Self::NameFuzzy(fp) => fp.score_of(candidate),
@@ -250,6 +255,4 @@ impl Pattern {
             _ => false,
         }
     }
-
 }
-

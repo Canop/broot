@@ -8,7 +8,6 @@ pub const CSI_RESET: &str = "\u{1b}[0m";
 pub const CSI_BOLD: &str = "\u{1b}[1m";
 pub const CSI_ITALIC: &str = "\u{1b}[3m";
 
-
 static TAB_REPLACEMENT: &str = "    ";
 
 use {

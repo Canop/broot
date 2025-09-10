@@ -1,6 +1,4 @@
-use {
-    crate::verb::Verb,
-};
+use crate::verb::Verb;
 
 /// This rather vague enum might be precised or removed. It
 ///  serves today to characterize whether a verb execution

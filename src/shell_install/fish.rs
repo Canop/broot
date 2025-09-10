@@ -16,9 +16,14 @@
 
 use {
     super::ShellInstall,
-    crate::{conf, errors::*},
-    directories::BaseDirs,
-    directories::ProjectDirs,
+    crate::{
+        conf,
+        errors::*,
+    },
+    directories::{
+        BaseDirs,
+        ProjectDirs,
+    },
     std::path::PathBuf,
 };
 
@@ -83,11 +88,7 @@ fn get_link_path() -> PathBuf {
 /// It was previously with the link, but it's now in
 /// ~/.local/share/broot/launcher/fish/br.fish
 fn get_script_path() -> PathBuf {
-    conf::app_dirs()
-        .data_dir()
-        .join("launcher")
-        .join(NAME)
-        .join(SCRIPT_FILENAME)
+    conf::app_dirs().data_dir().join("launcher").join(NAME).join(SCRIPT_FILENAME)
 }
 
 /// check for fish shell

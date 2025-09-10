@@ -1,6 +1,6 @@
 mod anchor;
-mod common;
 mod closest;
+mod common;
 mod from;
 mod normalize;
 mod special_path;

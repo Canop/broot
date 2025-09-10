@@ -1,9 +1,12 @@
 use {
     super::*,
     directories::UserDirs,
-    rustc_hash::FxHashMap,
     lazy_regex::*,
-    std::path::{Path, PathBuf},
+    rustc_hash::FxHashMap,
+    std::path::{
+        Path,
+        PathBuf,
+    },
 };
 
 pub static TILDE_REGEX: Lazy<Regex> = lazy_regex!(r"^~(/|$)");
@@ -12,21 +15,14 @@ pub static TILDE_REGEX: Lazy<Regex> = lazy_regex!(r"^~(/|$)");
 /// with the user's home directory. Return the input as a path without
 /// transformation in other cases
 pub fn untilde(input: &str) -> PathBuf {
-    PathBuf::from(
-        &*TILDE_REGEX
-            .replace(input, |c: &Captures| {
-                if let Some(user_dirs) = UserDirs::new() {
-                    format!(
-                        "{}{}",
-                        user_dirs.home_dir().to_string_lossy(),
-                        &c[1],
-                    )
-                } else {
-                    warn!("no user dirs found, no expansion of ~");
-                    c[0].to_string()
-                }
-            })
-    )
+    PathBuf::from(&*TILDE_REGEX.replace(input, |c: &Captures| {
+        if let Some(user_dirs) = UserDirs::new() {
+            format!("{}{}", user_dirs.home_dir().to_string_lossy(), &c[1],)
+        } else {
+            warn!("no user dirs found, no expansion of ~");
+            c[0].to_string()
+        }
+    }))
 }
 
 /// Build a usable path from a user input which may be absolute
@@ -64,9 +60,7 @@ pub fn path_str_from<P: AsRef<Path> + std::fmt::Debug>(
     base_dir: P,
     input: &str,
 ) -> String {
-    path_from(base_dir, PathAnchor::Unspecified, input)
-        .to_string_lossy()
-        .to_string()
+    path_from(base_dir, PathAnchor::Unspecified, input).to_string_lossy().to_string()
 }
 
 /// Replace a group in the execution string, using
@@ -79,8 +73,12 @@ pub fn do_exec_replacement(
     if let Some(repl) = replacement_map.get(name) {
         if let Some(fmt) = ec.get(2) {
             match fmt.as_str() {
-                "path-from-directory" => path_str_from(replacement_map.get("directory").unwrap(), repl),
-                "path-from-parent" => path_str_from(replacement_map.get("parent").unwrap(), repl),
+                "path-from-directory" => {
+                    path_str_from(replacement_map.get("directory").unwrap(), repl)
+                }
+                "path-from-parent" => {
+                    path_str_from(replacement_map.get("parent").unwrap(), repl)
+                }
                 _ => format!("invalid format: {:?}", fmt.as_str()),
             }
         } else {

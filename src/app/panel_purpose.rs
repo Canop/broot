@@ -1,6 +1,4 @@
-use {
-    super::SelectionType,
-};
+use super::SelectionType;
 
 /// the possible special reason the panel was open
 #[derive(Debug, Clone, Copy)]

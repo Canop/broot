@@ -3,7 +3,11 @@ use {
     crate::{
         errors::TreeBuildError,
         git::IgnoreChain,
-        path::{normalize_path, Directive, SpecialHandling},
+        path::{
+            Directive,
+            SpecialHandling,
+            normalize_path,
+        },
         tree::*,
     },
     id_arena::Arena,
@@ -34,14 +38,8 @@ pub struct BLine {
 }
 
 impl BLine {
-    pub fn name(
-        &self
-    ) -> &str {
-        self
-            .path
-            .file_name()
-            .and_then(|os_str| os_str.to_str())
-            .unwrap_or("")
+    pub fn name(&self) -> &str {
+        self.path.file_name().and_then(|os_str| os_str.to_str()).unwrap_or("")
     }
     /// a special constructor, checking nothing
     pub fn from_root(
@@ -108,7 +106,10 @@ impl BLine {
                             if self.path.starts_with(target_path) {
                                 debug!("not entering link because it's a parent"); // lets's not cycle
                             } else {
-                                debug!("entering {:?} because of special path rule", &self.path);
+                                debug!(
+                                    "entering {:?} because of special path rule",
+                                    &self.path
+                                );
                                 return true;
                             }
                         }

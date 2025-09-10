@@ -40,7 +40,10 @@ custom_error! {pub ShellInstallError
 impl ShellInstallError {
     pub fn is_permission_denied(&self) -> bool {
         match self {
-            Self::Io { source, .. } => {
+            Self::Io {
+                source,
+                ..
+            } => {
                 if source.kind() == io::ErrorKind::PermissionDenied {
                     true
                 } else {
@@ -61,7 +64,10 @@ impl<Ok> IoToShellInstallError<Ok> for Result<Ok, io::Error> {
         self,
         f: &dyn Fn() -> String,
     ) -> Result<Ok, ShellInstallError> {
-        self.map_err(|source| ShellInstallError::Io { source, when: f() })
+        self.map_err(|source| ShellInstallError::Io {
+            source,
+            when: f(),
+        })
     }
 }
 

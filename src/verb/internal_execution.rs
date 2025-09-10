@@ -7,7 +7,6 @@ use {
 /// A verb execution definition based on an internal
 #[derive(Debug, Clone)]
 pub struct InternalExecution {
-
     /// the internal to use
     pub internal: Internal,
 
@@ -28,7 +27,10 @@ impl InternalExecution {
             arg: None,
         }
     }
-    pub fn from_internal_bang(internal: Internal, bang: bool) -> Self {
+    pub fn from_internal_bang(
+        internal: Internal,
+        bang: bool,
+    ) -> Self {
         Self {
             internal,
             bang,
@@ -49,7 +51,10 @@ impl InternalExecution {
     }
 }
 impl fmt::Display for InternalExecution {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         write!(f, ":{}", self.internal.name())?;
         if self.bang {
             write!(f, "!")?;

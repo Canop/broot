@@ -1,10 +1,8 @@
-use {
-    crate::{
-        app::AppContext,
-        keys,
-        pattern::*,
-        verb::*,
-    },
+use crate::{
+    app::AppContext,
+    keys,
+    pattern::*,
+    verb::*,
 };
 
 /// what should be shown for a verb in the help screen, after
@@ -21,21 +19,17 @@ impl MatchingVerbRow<'_> {
     /// some filtering occurred)
     pub fn name(&self) -> &str {
         // there should be a better way to write this
-        self.name
-            .as_deref()
-            .unwrap_or_else(|| match self.verb.names.first() {
-                Some(s) => s.as_str(),
-                _ => " ",
-            })
+        self.name.as_deref().unwrap_or_else(|| match self.verb.names.first() {
+            Some(s) => s.as_str(),
+            _ => " ",
+        })
     }
     pub fn shortcut(&self) -> &str {
         // there should be a better way to write this
-        self.shortcut
-            .as_deref()
-            .unwrap_or_else(|| match self.verb.names.get(1) {
-                Some(s) => s.as_str(),
-                _ => " ",
-            })
+        self.shortcut.as_deref().unwrap_or_else(|| match self.verb.names.get(1) {
+            Some(s) => s.as_str(),
+            _ => " ",
+        })
     }
 }
 
@@ -73,9 +67,7 @@ pub fn matching_verb_rows<'v>(
         let keys_desc = verb
             .keys
             .iter()
-            .filter(|&&k| {
-                con.modal || !keys::is_key_only_modal(k)
-            })
+            .filter(|&&k| con.modal || !keys::is_key_only_modal(k))
             .map(|&k| keys::KEY_FORMAT.to_string(k))
             .collect::<Vec<String>>() // no way to join an iterator today ?
             .join(", ");

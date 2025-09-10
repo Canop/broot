@@ -1,13 +1,20 @@
 use {
-    super::{Screen, W},
+    super::{
+        Screen,
+        W,
+    },
     crate::{
         app::Status,
         errors::ProgramError,
         skin::PanelSkin,
     },
     termimad::{
-        minimad::{Alignment, Composite},
-        Area, StyledChar,
+        Area,
+        StyledChar,
+        minimad::{
+            Alignment,
+            Composite,
+        },
     },
 };
 

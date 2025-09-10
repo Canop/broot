@@ -1,9 +1,7 @@
 mod detect_support;
 mod image_renderer;
 
-pub use {
-    image_renderer::*,
-};
+pub use image_renderer::*;
 
 use {
     crate::{
@@ -62,12 +60,17 @@ impl KittyManager {
     /// it's disabled or if it hasn't been tested yet
     pub fn renderer_if_tested(&mut self) -> Option<&mut KittyImageRenderer> {
         match &mut self.renderer {
-            MaybeRenderer::Enabled { renderer } => Some(renderer),
+            MaybeRenderer::Enabled {
+                renderer,
+            } => Some(renderer),
             _ => None,
         }
     }
     pub fn delete_temp_files(&mut self) {
-        if let MaybeRenderer::Enabled { renderer } = &mut self.renderer {
+        if let MaybeRenderer::Enabled {
+            renderer,
+        } = &mut self.renderer
+        {
             renderer.delete_temp_files();
         }
     }
@@ -87,7 +90,9 @@ impl KittyManager {
         };
         match KittyImageRenderer::new(options) {
             Some(renderer) => {
-                self.renderer = MaybeRenderer::Enabled { renderer };
+                self.renderer = MaybeRenderer::Enabled {
+                    renderer,
+                };
                 self.renderer_if_tested()
             }
             None => {

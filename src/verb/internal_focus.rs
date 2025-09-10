@@ -6,14 +6,18 @@ use {
         browser::BrowserState,
         command::TriggerType,
         display::Screen,
-        path::{self, PathAnchor},
+        path::{
+            self,
+            PathAnchor,
+        },
         pattern::InputPattern,
         preview::PreviewState,
         task_sync::Dam,
         tree::TreeOptions,
     },
-    std::{
-        path::{Path, PathBuf},
+    std::path::{
+        Path,
+        PathBuf,
     },
 };
 
@@ -161,9 +165,7 @@ pub fn get_status_markdown(
     app_state: &AppState,
     con: &AppContext,
 ) -> String {
-    let base_path = sel_info
-        .one_path()
-        .unwrap_or(&app_state.root);
+    let base_path = sel_info.one_path().unwrap_or(&app_state.root);
     let path = path_from_input(
         verb,
         internal_exec,
@@ -185,16 +187,14 @@ pub fn on_internal(
     selected_path: &Path,
     is_root_selected: bool,
     tree_options: TreeOptions,
-    app_state: & AppState,
+    app_state: &AppState,
     cc: &CmdContext,
 ) -> CmdResult {
     let con = &cc.app.con;
     let screen = cc.app.screen;
-    let bang = input_invocation
-            .map(|inv| inv.bang)
-            .unwrap_or(internal_exec.bang);
-    let input_arg = input_invocation.as_ref()
-        .and_then(|invocation| invocation.args.as_ref());
+    let bang = input_invocation.map(|inv| inv.bang).unwrap_or(internal_exec.bang);
+    let input_arg =
+        input_invocation.as_ref().and_then(|invocation| invocation.args.as_ref());
     match trigger_type {
         TriggerType::Input(verb) => {
             let path = path_from_input(
@@ -220,21 +220,30 @@ pub fn on_internal(
                     app_state,
                 );
                 let path = path_builder.path(arg, con);
-                let bang = input_invocation
-                    .map(|inv| inv.bang)
-                    .unwrap_or(internal_exec.bang);
+                let bang =
+                    input_invocation.map(|inv| inv.bang).unwrap_or(internal_exec.bang);
                 on_path(path, screen, tree_options, bang, con)
             } else if let Some(input_arg) = input_arg {
                 let base_dir = selected_path.to_string_lossy();
-                let path = path::path_from(&*base_dir, PathAnchor::Unspecified, input_arg);
+                let path =
+                    path::path_from(&*base_dir, PathAnchor::Unspecified, input_arg);
                 if bang {
                     // Unsure this special behavior is really needed. It was based
                     // on the assumption that the user wanted to edit an argument
                     // of a verb, and that the trigering was a key (but it can also
                     // be another medium, like a command sequence or with the server)
                     let arg_type = SelectionType::Any; // We might do better later
-                    let purpose = PanelPurpose::ArgEdition { arg_type };
-                    new_panel_on_path(path, screen, tree_options, purpose, con, HDir::Right)
+                    let purpose = PanelPurpose::ArgEdition {
+                        arg_type,
+                    };
+                    new_panel_on_path(
+                        path,
+                        screen,
+                        tree_options,
+                        purpose,
+                        con,
+                        HDir::Right,
+                    )
                 } else {
                     on_path(path, screen, tree_options, bang, con)
                 }

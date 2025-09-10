@@ -1,4 +1,3 @@
-
 /// compute a new selection index for the given list len,
 /// taking into account whether we should cycle or not
 pub fn move_sel(

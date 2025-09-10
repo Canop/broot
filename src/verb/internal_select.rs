@@ -12,7 +12,6 @@ use {
     std::path::PathBuf,
 };
 
-
 /// general implementation for verbs based on the :select internal with optionally
 /// a bang or an argument.
 pub fn on_internal(
@@ -20,7 +19,7 @@ pub fn on_internal(
     input_invocation: Option<&VerbInvocation>,
     trigger_type: TriggerType,
     tree: &mut Tree,
-    app_state: & AppState,
+    app_state: &AppState,
     cc: &CmdContext,
 ) -> CmdResult {
     let Some(path) = internal_path::determine_path(
@@ -34,9 +33,7 @@ pub fn on_internal(
         return CmdResult::Keep;
     };
     let screen = cc.app.screen;
-    let bang = input_invocation
-            .map(|inv| inv.bang)
-            .unwrap_or(internal_exec.bang);
+    let bang = input_invocation.map(|inv| inv.bang).unwrap_or(internal_exec.bang);
     on_path(path, tree, screen, bang)
 }
 

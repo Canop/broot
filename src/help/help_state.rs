@@ -1,21 +1,34 @@
 use {
     super::{
-        help_content,
         SearchModeHelp,
+        help_content,
     },
     crate::{
         app::*,
-        command::{Command, TriggerType},
+        command::{
+            Command,
+            TriggerType,
+        },
         conf::Conf,
-        display::{Screen, W},
+        display::{
+            Screen,
+            W,
+        },
         errors::ProgramError,
         launchable::Launchable,
         pattern::*,
         tree::TreeOptions,
         verb::*,
     },
-    std::path::{Path, PathBuf},
-    termimad::{Area, FmtText, TextView},
+    std::path::{
+        Path,
+        PathBuf,
+    },
+    termimad::{
+        Area,
+        FmtText,
+        TextView,
+    },
 };
 
 /// an application state dedicated to help
@@ -36,10 +49,8 @@ impl HelpState {
         con: &AppContext,
     ) -> HelpState {
         let text_area = Area::uninitialized(); // will be fixed at drawing time
-        let config_path = con.config_paths
-            .first()
-            .cloned()
-            .unwrap_or_else(Conf::default_location);
+        let config_path =
+            con.config_paths.first().cloned().unwrap_or_else(Conf::default_location);
         HelpState {
             text_area,
             scroll: 0,
@@ -53,12 +64,14 @@ impl HelpState {
 }
 
 impl PanelState for HelpState {
-
     fn get_type(&self) -> PanelStateType {
         PanelStateType::Help
     }
 
-    fn set_mode(&mut self, mode: Mode) {
+    fn set_mode(
+        &mut self,
+        mode: Mode,
+    ) {
         self.mode = mode;
     }
 
@@ -94,7 +107,11 @@ impl PanelState for HelpState {
         })
     }
 
-    fn refresh(&mut self, _screen: Screen, _con: &AppContext) -> Command {
+    fn refresh(
+        &mut self,
+        _screen: Screen,
+        _con: &AppContext,
+    ) -> Command {
         self.dirty = true;
         Command::empty()
     }
@@ -128,12 +145,10 @@ impl PanelState for HelpState {
         }
         let mut expander = help_content::expander();
         expander.set("version", env!("CARGO_PKG_VERSION"));
-        let config_paths: Vec<String> = con.config_paths.iter()
-            .map(|p| p.to_string_lossy().to_string())
-            .collect();
+        let config_paths: Vec<String> =
+            con.config_paths.iter().map(|p| p.to_string_lossy().to_string()).collect();
         for path in &config_paths {
-            expander.sub("config-files")
-                .set("path", path);
+            expander.sub("config-files").set("path", path);
         }
         let verb_rows = super::help_verbs::matching_verb_rows(&self.pattern, con);
         for row in &verb_rows {
@@ -157,10 +172,8 @@ impl PanelState for HelpState {
                 .sub("default-search")
                 .set_md("default-search-example", &mode_help.example);
         }
-        let search_rows: Vec<SearchModeHelp> = SEARCH_MODES
-            .iter()
-            .map(|mode| super::search_mode_help(*mode, con))
-            .collect();
+        let search_rows: Vec<SearchModeHelp> =
+            SEARCH_MODES.iter().map(|mode| super::search_mode_help(*mode, con)).collect();
         for row in &search_rows {
             expander
                 .sub("search-mode-rows")
@@ -170,9 +183,7 @@ impl PanelState for HelpState {
         }
         let nr_prefix = SearchMode::NameRegex.prefix(con);
         let ce_prefix = SearchMode::ContentExact.prefix(con);
-        expander
-            .set("nr-prefix", &nr_prefix)
-            .set("ce-prefix", &ce_prefix);
+        expander.set("nr-prefix", &nr_prefix).set("ce-prefix", &ce_prefix);
         let features = super::help_features::list();
         expander.set(
             "features-text",
@@ -237,11 +248,7 @@ impl PanelState for HelpState {
                 Err(e) => CmdResult::DisplayError(format!("{e:?}")),
             },
             // FIXME check we can't use the generic one
-            open_leave => {
-                CmdResult::from(Launchable::opener(
-                    Conf::default_location()
-                ))
-            }
+            open_leave => CmdResult::from(Launchable::opener(Conf::default_location())),
             page_down => {
                 self.scroll += self.text_area.height as usize;
                 CmdResult::Keep
@@ -267,4 +274,3 @@ impl PanelState for HelpState {
         })
     }
 }
-

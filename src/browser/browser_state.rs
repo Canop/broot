@@ -3,11 +3,17 @@ use {
         app::*,
         command::*,
         display::*,
-        errors::{ProgramError, TreeBuildError},
+        errors::{
+            ProgramError,
+            TreeBuildError,
+        },
         flag::Flag,
         git,
+        path::{
+            self,
+            PathAnchor,
+        },
         pattern::*,
-        path::{self, PathAnchor},
         print,
         stage::*,
         task_sync::Dam,
@@ -16,7 +22,10 @@ use {
         verb::*,
     },
     opener,
-    std::path::{Path, PathBuf},
+    std::path::{
+        Path,
+        PathBuf,
+    },
 };
 
 /// An application state dedicated to displaying a tree.
@@ -42,7 +51,6 @@ enum BrowserTask {
 }
 
 impl BrowserState {
-
     /// build a new tree state if there's no error and there's no cancellation.
     pub fn new(
         path: PathBuf,
@@ -51,23 +59,19 @@ impl BrowserState {
         con: &AppContext,
         dam: &Dam,
     ) -> Result<BrowserState, TreeBuildError> {
-
         // on windows, canonicalize the path produces UNC paths, so we don't do it.
         // On other platforms, it's a desirable step, mainly because it simplifies the
         // paths you'd get for example when focusing a relative symlink containing "..".
         #[cfg(not(target_os = "windows"))]
         let path = path.canonicalize().unwrap_or(path);
 
-        let pending_task = options.pattern
-            .take()
-            .as_option()
-            .map(|pattern| BrowserTask::Search { pattern, total: false });
-        let builder = TreeBuilder::from(
-            path,
-            options,
-            BrowserState::page_height(screen),
-            con,
-        )?;
+        let pending_task =
+            options.pattern.take().as_option().map(|pattern| BrowserTask::Search {
+                pattern,
+                total: false,
+            });
+        let builder =
+            TreeBuilder::from(path, options, BrowserState::page_height(screen), con)?;
         let tree = builder.build_tree(false, dam)?;
         Ok(BrowserState {
             tree,
@@ -77,8 +81,15 @@ impl BrowserState {
         })
     }
 
-    fn search(&mut self, pattern: InputPattern, total: bool) {
-        self.pending_task = Some(BrowserTask::Search { pattern, total });
+    fn search(
+        &mut self,
+        pattern: InputPattern,
+        total: bool,
+    ) {
+        self.pending_task = Some(BrowserTask::Search {
+            pattern,
+            total,
+        });
     }
 
     /// build a cmdResult asking for the addition of a new state
@@ -94,17 +105,14 @@ impl BrowserState {
         con: &AppContext,
     ) -> CmdResult {
         let tree = self.displayed_tree();
-        let mut new_state = BrowserState::new(root, options, screen, con, &Dam::unlimited());
+        let mut new_state =
+            BrowserState::new(root, options, screen, con, &Dam::unlimited());
         if let Ok(bs) = &mut new_state {
             if tree.selection != 0 {
                 bs.displayed_tree_mut().try_select_path(&tree.selected_line().path);
             }
         }
-        CmdResult::from_optional_browser_state(
-            new_state,
-            message,
-            in_new_panel,
-        )
+        CmdResult::from_optional_browser_state(new_state, message, in_new_panel)
     }
 
     pub fn root(&self) -> &Path {
@@ -193,11 +201,9 @@ impl BrowserState {
             None => CmdResult::error("no parent found"),
         }
     }
-
 }
 
 impl PanelState for BrowserState {
-
     fn tree_root(&self) -> Option<&Path> {
         Some(self.root())
     }
@@ -206,7 +212,10 @@ impl PanelState for BrowserState {
         PanelStateType::Tree
     }
 
-    fn set_mode(&mut self, mode: Mode) {
+    fn set_mode(
+        &mut self,
+        mode: Mode,
+    ) {
         self.mode = mode;
     }
 
@@ -220,11 +229,14 @@ impl PanelState for BrowserState {
         } else if self.displayed_tree().is_missing_git_status_computation() {
             Some("computing git status")
         } else {
-            self
-                .pending_task.as_ref().map(|task| match task {
-                    BrowserTask::Search{ .. } => "searching",
-                    BrowserTask::StageAll{ .. } => "staging",
-                })
+            self.pending_task.as_ref().map(|task| match task {
+                BrowserTask::Search {
+                    ..
+                } => "searching",
+                BrowserTask::StageAll {
+                    ..
+                } => "staging",
+            })
         }
     }
 
@@ -235,7 +247,10 @@ impl PanelState for BrowserState {
     fn selection(&self) -> Option<Selection<'_>> {
         let tree = self.displayed_tree();
         let mut selection = tree.selected_line().as_selection();
-        selection.line = tree.options.pattern.pattern
+        selection.line = tree
+            .options
+            .pattern
+            .pattern
             .get_match_line_count(selection.path)
             .unwrap_or(0);
         Some(selection)
@@ -259,14 +274,7 @@ impl PanelState for BrowserState {
         let mut options = tree.options.clone();
         let message = change_options(&mut options);
         let message = Some(message);
-        self.modified(
-            screen,
-            tree.root().clone(),
-            options,
-            message,
-            in_new_panel,
-            con,
-        )
+        self.modified(screen, tree.root().clone(), options, message, in_new_panel, con)
     }
 
     fn clear_pending(&mut self) {
@@ -334,9 +342,7 @@ impl PanelState for BrowserState {
         let con = &cc.app.con;
         let screen = cc.app.screen;
         let page_height = BrowserState::page_height(cc.app.screen);
-        let bang = input_invocation
-            .map(|inv| inv.bang)
-            .unwrap_or(internal_exec.bang);
+        let bang = input_invocation.map(|inv| inv.bang).unwrap_or(internal_exec.bang);
         Ok(match internal_exec.internal {
             Internal::back => {
                 if let Some(filtered_tree) = &self.filtered_tree {
@@ -387,25 +393,25 @@ impl PanelState for BrowserState {
                 CmdResult::Keep
             }
             Internal::next_dir => {
-                self.displayed_tree_mut().try_select_next_filtered(
-                    TreeLine::is_dir,
-                    page_height,
-                );
+                self.displayed_tree_mut()
+                    .try_select_next_filtered(TreeLine::is_dir, page_height);
                 CmdResult::Keep
             }
             Internal::next_match => {
-                self.displayed_tree_mut().try_select_next_filtered(
-                    |line| line.direct_match,
-                    page_height,
-                );
+                self.displayed_tree_mut()
+                    .try_select_next_filtered(|line| line.direct_match, page_height);
                 CmdResult::Keep
             }
             Internal::next_same_depth => {
                 self.displayed_tree_mut().try_select_next_same_depth(page_height);
                 CmdResult::Keep
             }
-            Internal::open_stay => self.open_selection_stay_in_broot(screen, con, bang, false)?,
-            Internal::open_stay_filter => self.open_selection_stay_in_broot(screen, con, bang, true)?,
+            Internal::open_stay => {
+                self.open_selection_stay_in_broot(screen, con, bang, false)?
+            }
+            Internal::open_stay_filter => {
+                self.open_selection_stay_in_broot(screen, con, bang, true)?
+            }
             Internal::page_down => {
                 let tree = self.displayed_tree_mut();
                 if !tree.try_scroll(page_height as i32, page_height) {
@@ -422,7 +428,7 @@ impl PanelState for BrowserState {
             }
             Internal::panel_left => {
                 let areas = &cc.panel.areas;
-                if areas.is_first() && areas.nb_pos < con.max_panels_count  {
+                if areas.is_first() && areas.nb_pos < con.max_panels_count {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
                         self.displayed_tree().selected_line().path.to_path_buf(),
@@ -437,16 +443,19 @@ impl PanelState for BrowserState {
                     CmdResult::HandleInApp(Internal::panel_left_no_open)
                 }
             }
-            Internal::panel_left_no_open => CmdResult::HandleInApp(Internal::panel_left_no_open),
+            Internal::panel_left_no_open => {
+                CmdResult::HandleInApp(Internal::panel_left_no_open)
+            }
             Internal::panel_right => {
                 let areas = &cc.panel.areas;
                 let selected_path = &self.displayed_tree().selected_line().path;
                 if areas.is_last() && areas.nb_pos < con.max_panels_count {
-                    let purpose = if selected_path.is_file() && cc.app.preview_panel.is_none() {
-                        PanelPurpose::Preview
-                    } else {
-                        PanelPurpose::None
-                    };
+                    let purpose =
+                        if selected_path.is_file() && cc.app.preview_panel.is_none() {
+                            PanelPurpose::Preview
+                        } else {
+                            PanelPurpose::None
+                        };
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
                         selected_path.to_path_buf(),
@@ -462,46 +471,42 @@ impl PanelState for BrowserState {
                     CmdResult::HandleInApp(Internal::panel_right_no_open)
                 }
             }
-            Internal::panel_right_no_open => CmdResult::HandleInApp(Internal::panel_right_no_open),
+            Internal::panel_right_no_open => {
+                CmdResult::HandleInApp(Internal::panel_right_no_open)
+            }
             Internal::parent => self.go_to_parent(screen, con, bang),
             Internal::previous_dir => {
-                self.displayed_tree_mut().try_select_previous_filtered(
-                    TreeLine::is_dir,
-                    page_height,
-                );
+                self.displayed_tree_mut()
+                    .try_select_previous_filtered(TreeLine::is_dir, page_height);
                 CmdResult::Keep
             }
             Internal::previous_match => {
-                self.displayed_tree_mut().try_select_previous_filtered(
-                    |line| line.direct_match,
-                    page_height,
-                );
+                self.displayed_tree_mut()
+                    .try_select_previous_filtered(|line| line.direct_match, page_height);
                 CmdResult::Keep
             }
             Internal::previous_same_depth => {
                 self.displayed_tree_mut().try_select_previous_same_depth(page_height);
                 CmdResult::Keep
             }
-            Internal::print_tree => {
-                print::print_tree(self.displayed_tree(), cc.app.screen, cc.app.panel_skin, con)?
-            }
+            Internal::print_tree => print::print_tree(
+                self.displayed_tree(),
+                cc.app.screen,
+                cc.app.panel_skin,
+                con,
+            )?,
             Internal::quit => CmdResult::Quit,
             Internal::root_down => {
                 let tree = self.displayed_tree();
                 if tree.selection > 0 {
                     let root_len = tree.root().components().count();
-                    let new_root = tree.selected_line().path
+                    let new_root = tree
+                        .selected_line()
+                        .path
                         .components()
                         .take(root_len + 1)
                         .collect();
-                    self.modified(
-                        screen,
-                        new_root,
-                        tree.options.clone(),
-                        None,
-                        bang,
-                        con,
-                    )
+                    self.modified(screen, new_root, tree.options.clone(), None, bang, con)
                 } else {
                     CmdResult::error("No selected line")
                 }
@@ -529,9 +534,9 @@ impl PanelState for BrowserState {
                         // used before this state
                         CmdResult::HandleInApp(Internal::search_again)
                     }
-                    Some(true) => {
-                        CmdResult::error("search was already total: all possible matches have been ranked")
-                    }
+                    Some(true) => CmdResult::error(
+                        "search was already total: all possible matches have been ranked",
+                    ),
                     Some(false) => {
                         self.search(self.displayed_tree().options.pattern.clone(), true);
                         CmdResult::Keep
@@ -570,21 +575,23 @@ impl PanelState for BrowserState {
                         match res {
                             Ok(()) => {
                                 let page_height = BrowserState::page_height(screen);
-                                self.displayed_tree_mut().make_selection_visible(page_height);
+                                self.displayed_tree_mut()
+                                    .make_selection_visible(page_height);
                                 CmdResult::Keep
                             }
                             Err(e) => CmdResult::DisplayError(format!("{e}")),
                         }
                     }
-                    None => {
-                        CmdResult::Keep
-                    }
+                    None => CmdResult::Keep,
                 }
             }
             Internal::stage_all_directories => {
                 let pattern = self.displayed_tree().options.pattern.clone();
                 let file_type_condition = FileTypeCondition::Directory;
-                self.pending_task = Some(BrowserTask::StageAll{pattern, file_type_condition});
+                self.pending_task = Some(BrowserTask::StageAll {
+                    pattern,
+                    file_type_condition,
+                });
                 if cc.app.stage_panel.is_none() {
                     let stage_options = self.tree.options.without_pattern();
                     CmdResult::NewPanel {
@@ -599,7 +606,10 @@ impl PanelState for BrowserState {
             Internal::stage_all_files => {
                 let pattern = self.displayed_tree().options.pattern.clone();
                 let file_type_condition = FileTypeCondition::File;
-                self.pending_task = Some(BrowserTask::StageAll{pattern, file_type_condition});
+                self.pending_task = Some(BrowserTask::StageAll {
+                    pattern,
+                    file_type_condition,
+                });
                 if cc.app.stage_panel.is_none() {
                     let stage_options = self.tree.options.without_pattern();
                     CmdResult::NewPanel {
@@ -625,14 +635,25 @@ impl PanelState for BrowserState {
                     if let Some(input_invocation) = input_invocation {
                         // we'll go for input arg editing
                         let path = if let Some(input_arg) = &input_invocation.args {
-                            path::path_from(self.root(), PathAnchor::Unspecified, input_arg)
+                            path::path_from(
+                                self.root(),
+                                PathAnchor::Unspecified,
+                                input_arg,
+                            )
                         } else {
                             self.root().to_path_buf()
                         };
                         let arg_type = SelectionType::Any; // We might do better later
-                        let purpose = PanelPurpose::ArgEdition { arg_type };
+                        let purpose = PanelPurpose::ArgEdition {
+                            arg_type,
+                        };
                         internal_focus::new_panel_on_path(
-                            path, screen, tree_options, purpose, con, HDir::Right,
+                            path,
+                            screen,
+                            tree_options,
+                            purpose,
+                            con,
+                            HDir::Right,
                         )
                     } else {
                         // we just open a new panel on the selected path,
@@ -650,12 +671,10 @@ impl PanelState for BrowserState {
             }
             Internal::total_search => {
                 match self.filtered_tree.as_ref().map(|t| t.total_search) {
-                    None => {
-                        CmdResult::error("this verb can be used only after a search")
-                    }
-                    Some(true) => {
-                        CmdResult::error("search was already total: all possible matches have been ranked")
-                    }
+                    None => CmdResult::error("this verb can be used only after a search"),
+                    Some(true) => CmdResult::error(
+                        "search was already total: all possible matches have been ranked",
+                    ),
                     Some(false) => {
                         self.search(self.displayed_tree().options.pattern.clone(), true);
                         CmdResult::Keep
@@ -668,7 +687,9 @@ impl PanelState for BrowserState {
 
                 #[cfg(feature = "trash")]
                 match trash::delete(&path) {
-                    Ok(()) => CmdResult::RefreshState { clear_cache: true },
+                    Ok(()) => CmdResult::RefreshState {
+                        clear_cache: true,
+                    },
                     Err(e) => {
                         warn!("trash error: {:?}", &e);
                         CmdResult::DisplayError(format!("trash error: {:?}", &e))
@@ -676,7 +697,9 @@ impl PanelState for BrowserState {
                 }
 
                 #[cfg(not(feature = "trash"))]
-                CmdResult::DisplayError("feature not enabled or platform does not support trash".into())
+                CmdResult::DisplayError(
+                    "feature not enabled or platform does not support trash".into(),
+                )
             }
             Internal::up_tree => match self.displayed_tree().root().parent() {
                 Some(path) => internal_focus::on_path(
@@ -742,7 +765,10 @@ impl PanelState for BrowserState {
     ) -> Result<(), ProgramError> {
         if let Some(pending_task) = self.pending_task.take() {
             match pending_task {
-                BrowserTask::Search { pattern, total } => {
+                BrowserTask::Search {
+                    pattern,
+                    total,
+                } => {
                     let pattern_str = pattern.raw.clone();
                     let mut options = self.tree.options.clone();
                     options.pattern = pattern;
@@ -761,26 +787,25 @@ impl PanelState for BrowserState {
                         self.filtered_tree = Some(ft);
                     }
                 }
-                BrowserTask::StageAll { pattern, file_type_condition } => {
+                BrowserTask::StageAll {
+                    pattern,
+                    file_type_condition,
+                } => {
                     debug!("stage all pattern: {:?}", pattern);
                     let tree = self.displayed_tree();
                     let root = tree.root().clone();
                     let mut options = tree.options.clone();
                     let total_search = true;
                     options.pattern = pattern; // should be the same
-                    let builder = TreeBuilder::from(root, options, con.max_staged_count, con);
-                    let mut paths = builder
-                        .and_then(|mut builder| {
-                            builder.matches_max = Some(con.max_staged_count);
-                            time!(builder.build_paths(
-                                total_search,
-                                dam,
-                                |line| {
-                                    debug!("??staging {:?}", &line.path);
-                                    file_type_condition.accepts_path(&line.path)
-                                }
-                            ))
-                        })?;
+                    let builder =
+                        TreeBuilder::from(root, options, con.max_staged_count, con);
+                    let mut paths = builder.and_then(|mut builder| {
+                        builder.matches_max = Some(con.max_staged_count);
+                        time!(builder.build_paths(total_search, dam, |line| {
+                            debug!("??staging {:?}", &line.path);
+                            file_type_condition.accepts_path(&line.path)
+                        }))
+                    })?;
                     for path in paths.drain(..) {
                         app_state.stage.add(path);
                     }
@@ -812,7 +837,11 @@ impl PanelState for BrowserState {
         dp.write_on(w)
     }
 
-    fn refresh(&mut self, screen: Screen, con: &AppContext) -> Command {
+    fn refresh(
+        &mut self,
+        screen: Screen,
+        con: &AppContext,
+    ) -> Command {
         let page_height = BrowserState::page_height(screen);
         // refresh the base tree
         if let Err(e) = self.tree.refresh(page_height, con) {
@@ -835,21 +864,32 @@ impl PanelState for BrowserState {
         vec![
             Flag {
                 name: "h",
-                value: if options.show_hidden { "y" } else { "n" },
+                value: if options.show_hidden {
+                    "y"
+                } else {
+                    "n"
+                },
             },
             Flag {
                 name: "gi",
-                value: if options.respect_git_ignore { "y" } else { "n" },
+                value: if options.respect_git_ignore {
+                    "y"
+                } else {
+                    "n"
+                },
             },
         ]
     }
 
     fn get_starting_input(&self) -> String {
-        if let Some(BrowserTask::Search { pattern, .. }) = self.pending_task.as_ref() {
+        if let Some(BrowserTask::Search {
+            pattern,
+            ..
+        }) = self.pending_task.as_ref()
+        {
             pattern.raw.clone()
         } else {
             self.displayed_tree().options.pattern.raw.clone()
         }
     }
 }
-

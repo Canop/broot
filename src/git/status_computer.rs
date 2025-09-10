@@ -56,11 +56,7 @@ pub fn get_tree_status(
     match git::closest_repo_dir(root_path) {
         None => ComputationResult::None,
         Some(repo_path) => {
-            let comp = TS_CACHE_MX
-                .lock()
-                .unwrap()
-                .get(&repo_path)
-                .map(|c| (*c).clone());
+            let comp = TS_CACHE_MX.lock().unwrap().get(&repo_path).map(|c| (*c).clone());
             match comp {
                 Some(Computation::Finished(comp_res)) => {
                     // already computed
@@ -88,10 +84,10 @@ pub fn get_tree_status(
                         .insert(repo_path.clone(), Computation::InProgress(r));
                     dam.try_compute(move || {
                         let comp_res = compute_tree_status(&repo_path);
-                        TS_CACHE_MX
-                            .lock()
-                            .unwrap()
-                            .insert(repo_path.clone(), Computation::Finished(comp_res.clone()));
+                        TS_CACHE_MX.lock().unwrap().insert(
+                            repo_path.clone(),
+                            Computation::Finished(comp_res.clone()),
+                        );
                         if let Err(e) = s.send(comp_res.clone()) {
                             debug!("error while sending comp result: {:?}", e);
                         }

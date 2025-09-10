@@ -1,10 +1,8 @@
 //! This checks some edge cases of pattern searches, especially composite patterns.
 //! Don't hesitate to suggest more tests for clarification or to prevent regressions.
-use {
-    broot::{
-        command::CommandParts,
-        pattern::*,
-    },
+use broot::{
+    command::CommandParts,
+    pattern::*,
 };
 
 fn build_pattern(s: &str) -> Pattern {
@@ -15,7 +13,8 @@ fn build_pattern(s: &str) -> Pattern {
         &cp.pattern,
         &search_modes,
         0, // we don't do content search here
-    ).unwrap()
+    )
+    .unwrap()
 }
 
 fn check(

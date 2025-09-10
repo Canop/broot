@@ -2,9 +2,9 @@ mod command;
 mod completion;
 mod panel_input;
 mod parts;
-mod sequence;
-mod sel;
 mod scroll;
+mod sel;
+mod sequence;
 mod trigger_type;
 
 pub use {
@@ -12,8 +12,8 @@ pub use {
     completion::Completions,
     panel_input::PanelInput,
     parts::CommandParts,
-    sequence::Sequence,
-    sel::move_sel,
     scroll::ScrollCommand,
+    sel::move_sel,
+    sequence::Sequence,
     trigger_type::TriggerType,
 };

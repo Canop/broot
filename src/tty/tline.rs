@@ -58,8 +58,9 @@ impl TLine {
         }
         self.strings[string_idx].csi = new_csi;
         if has_before {
-            self.strings[string_idx].raw =
-                self.strings[string_idx].raw[start_byte_in_string..end_byte_in_string].to_string();
+            self.strings[string_idx].raw = self.strings[string_idx].raw
+                [start_byte_in_string..end_byte_in_string]
+                .to_string();
         } else {
             // we can just truncate the string
             self.strings[string_idx].raw.truncate(end_byte_in_string);
@@ -149,10 +150,7 @@ impl TLine {
     // if this line has no style, return its content
     pub fn if_unstyled(&self) -> Option<&str> {
         if self.strings.len() == 1 {
-            self.strings
-                .first()
-                .filter(|s| s.csi.is_empty())
-                .map(|s| s.raw.as_str())
+            self.strings.first().filter(|s| s.csi.is_empty()).map(|s| s.raw.as_str())
         } else {
             None
         }
