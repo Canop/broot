@@ -360,14 +360,14 @@ impl<'i> KittyImage<'i> {
         }
         Ok(())
     }
-    /// Render the image by writing the raw data in a temporary file
-    /// then giving to kitty the path to this file in the payload of
-    /// a unique kitty escape sequence
-    pub fn print_with_temp_file(
+    /// Render the image by giving to kitty the path to a file in the
+    /// payload of a unique kitty escape sequence
+    fn print_with_path(
         &self,
         w: &mut W,
-        temp_file: Option<File>, // if None, no need to write it
-        temp_file_path: &Path,
+        path: &Path,
+        format: &str,
+        transmission: &str,
     ) -> Result<(), ProgramError> {
         let esc = get_esc_seq(self.tmux_nest_count);
         let tmux_header = self
@@ -380,18 +380,6 @@ impl<'i> KittyImage<'i> {
         let display_tag = match self.display {
             KittyGraphicsDisplay::Unicode => "q=2,U=1,",
             _ => "",
-        };
-        // Compression slows things down
-        let (path, format, transmission) = match &self.data {
-            KittyImageData::Png { path } => (path.as_path(), "100", "f"),
-            KittyImageData::Image { data } => {
-                if let Some(mut temp_file) = temp_file {
-                    temp_file.write_all(data.bytes())?;
-                    temp_file.flush()?;
-                    debug!("file len: {}", temp_file.metadata().unwrap().len());
-                }
-                (temp_file_path, data.kitty_format(), "t")
-            }
         };
         let path = path
             .to_str()
@@ -424,6 +412,38 @@ impl<'i> KittyImage<'i> {
         if self.display == KittyGraphicsDisplay::Unicode {
             self.print_placeholder_grid(w)?;
         }
+        Ok(())
+    }
+    /// Render the image by giving to kitty the path to a PNG file in
+    /// the payload of a unique kitty escape sequence
+    pub fn print_with_png(
+        &self,
+        w: &mut W,
+    ) -> Result<(), ProgramError> {
+        // Compression slows things down
+        if let KittyImageData::Png { path } = &self.data {
+            self.print_with_path(w, path.as_path(), "100", "f")?;
+        };
+        Ok(())
+    }
+    /// Render the image by writing the raw data in a temporary file
+    /// then giving to kitty the path to this file in the payload of
+    /// a unique kitty escape sequence
+    pub fn print_with_temp_file(
+        &self,
+        w: &mut W,
+        temp_file: Option<File>, // if None, no need to write it
+        temp_file_path: &Path,
+    ) -> Result<(), ProgramError> {
+        // Compression slows things down
+        if let KittyImageData::Image { data } = &self.data {
+            if let Some(mut temp_file) = temp_file {
+                temp_file.write_all(data.bytes())?;
+                temp_file.flush()?;
+                debug!("file len: {}", temp_file.metadata().unwrap().len());
+            }
+            self.print_with_path(w, temp_file_path, data.kitty_format(), "t")?;
+        };
         Ok(())
     }
 }
@@ -494,6 +514,7 @@ impl KittyImageRenderer {
         }
 
         let png_path = KittyImageRenderer::is_path_png(src_path).then_some(src_path.to_path_buf());
+        let is_png = png_path.is_some();
         let img = KittyImage::new(src, png_path, area, self);
         debug!(
             "transmission medium: {:?}",
@@ -501,6 +522,9 @@ impl KittyImageRenderer {
         );
         w.flush()?;
         match self.options.transmission_medium {
+            TransmissionMedium::TempFile if is_png => {
+                img.print_with_png(w)?;
+            }
             TransmissionMedium::TempFile => {
                 let temp_file_key = format!("{:?}-{}x{}", src_path, img.img_width, img.img_height,);
                 let mut old_path = None;
