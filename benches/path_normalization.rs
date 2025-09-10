@@ -30,4 +30,7 @@ fn bench_normalization(gb: &mut Bench) {
     });
 }
 
-glassbench!("Path Normalization", bench_normalization,);
+glassbench!(
+    "Path Normalization",
+    bench_normalization,
+);

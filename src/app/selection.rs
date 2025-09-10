@@ -94,7 +94,9 @@ impl Selection<'_> {
                 )?)
             }
         } else {
-            CmdResult::from(Launchable::opener(self.path.to_path_buf()))
+            CmdResult::from(Launchable::opener(
+                self.path.to_path_buf(),
+            ))
         })
     }
 }

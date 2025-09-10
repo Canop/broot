@@ -38,7 +38,12 @@ pub fn on_path(
             HDir::Right,
         )
     } else {
-        new_state_on_path(path, screen, tree_options, con)
+        new_state_on_path(
+            path,
+            screen,
+            tree_options,
+            con,
+        )
     }
 }
 
@@ -50,7 +55,13 @@ pub fn new_state_on_path(
 ) -> CmdResult {
     let path = path::closest_dir(&path);
     CmdResult::from_optional_browser_state(
-        BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()),
+        BrowserState::new(
+            path,
+            tree_options,
+            screen,
+            con,
+            &Dam::unlimited(),
+        ),
         None,
         false,
     )
@@ -76,7 +87,13 @@ pub fn new_panel_on_path(
     if purpose.is_preview() {
         let pattern = tree_options.pattern.tree_to_preview();
         CmdResult::NewPanel {
-            state: Box::new(PreviewState::new(path, pattern, None, tree_options, con)),
+            state: Box::new(PreviewState::new(
+                path,
+                pattern,
+                None,
+                tree_options,
+                con,
+            )),
             purpose,
             direction,
         }
@@ -85,7 +102,13 @@ pub fn new_panel_on_path(
         // We remove the pattern on opening another browser. This will probably
         // be configuratble with a clear_pattern verb option in the future
         tree_options.pattern = InputPattern::none();
-        match BrowserState::new(path, tree_options, screen, con, &Dam::unlimited()) {
+        match BrowserState::new(
+            path,
+            tree_options,
+            screen,
+            con,
+            &Dam::unlimited(),
+        ) {
             Ok(os) => CmdResult::NewPanel {
                 state: Box::new(os),
                 purpose,
@@ -109,7 +132,10 @@ fn path_from_input(
     app_state: &AppState,
     con: &AppContext,
 ) -> PathBuf {
-    match (input_arg, internal_exec.arg.as_ref()) {
+    match (
+        input_arg,
+        internal_exec.arg.as_ref(),
+    ) {
         (Some(input_arg), Some(verb_arg)) => {
             // The verb probably defines some pattern which uses the input.
             // For example:
@@ -131,7 +157,11 @@ fn path_from_input(
             // The :focus internal execution was triggered from the
             // input (which must be a kind of alias for :focus)
             // so we do exactly what the input asks for
-            path::path_from(base_path, PathAnchor::Unspecified, input_arg)
+            path::path_from(
+                base_path,
+                PathAnchor::Unspecified,
+                input_arg,
+            )
         }
         (None, Some(verb_arg)) => {
             // the verb defines the path where to go..
@@ -174,7 +204,10 @@ pub fn get_status_markdown(
         app_state,
         con,
     );
-    format!("Hit *enter* to focus `{}`", path.to_string_lossy())
+    format!(
+        "Hit *enter* to focus `{}`",
+        path.to_string_lossy()
+    )
 }
 
 /// general implementation for verbs based on the :focus internal with optionally
@@ -205,7 +238,13 @@ pub fn on_internal(
                 app_state,
                 cc.app.con,
             );
-            on_path(path, screen, tree_options, bang, con)
+            on_path(
+                path,
+                screen,
+                tree_options,
+                bang,
+                con,
+            )
         }
         _ => {
             // the :focus internal was triggered by a key
@@ -222,11 +261,20 @@ pub fn on_internal(
                 let path = path_builder.path(arg, con);
                 let bang =
                     input_invocation.map(|inv| inv.bang).unwrap_or(internal_exec.bang);
-                on_path(path, screen, tree_options, bang, con)
+                on_path(
+                    path,
+                    screen,
+                    tree_options,
+                    bang,
+                    con,
+                )
             } else if let Some(input_arg) = input_arg {
                 let base_dir = selected_path.to_string_lossy();
-                let path =
-                    path::path_from(&*base_dir, PathAnchor::Unspecified, input_arg);
+                let path = path::path_from(
+                    &*base_dir,
+                    PathAnchor::Unspecified,
+                    input_arg,
+                );
                 if bang {
                     // Unsure this special behavior is really needed. It was based
                     // on the assumption that the user wanted to edit an argument
@@ -245,7 +293,13 @@ pub fn on_internal(
                         HDir::Right,
                     )
                 } else {
-                    on_path(path, screen, tree_options, bang, con)
+                    on_path(
+                        path,
+                        screen,
+                        tree_options,
+                        bang,
+                        con,
+                    )
                 }
             } else {
                 // user only wants to open the selected path, either in the same panel or
@@ -258,7 +312,13 @@ pub fn on_internal(
                         path = parent_path.to_path_buf();
                     }
                 }
-                on_path(path, screen, tree_options, bang, con)
+                on_path(
+                    path,
+                    screen,
+                    tree_options,
+                    bang,
+                    con,
+                )
             }
         }
     }

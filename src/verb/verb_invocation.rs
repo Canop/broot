@@ -207,7 +207,10 @@ mod verb_invocation_tests {
         // those tests focus mainly on the distinction between
         // None and Some("") for the args, distinction which matters
         // for inline help
-        assert_eq!(VerbInvocation::from("!mv"), VerbInvocation::new("mv", None, true),);
+        assert_eq!(
+            VerbInvocation::from("!mv"),
+            VerbInvocation::new("mv", None, true),
+        );
         assert_eq!(
             VerbInvocation::from("mva!"),
             VerbInvocation::new("mva", Some(""), true),
@@ -229,7 +232,10 @@ mod verb_invocation_tests {
             VerbInvocation::from("mva!a"),
             VerbInvocation::new("mva", Some("a"), true),
         );
-        assert_eq!(VerbInvocation::from("!!!"), VerbInvocation::new("", None, true),);
+        assert_eq!(
+            VerbInvocation::from("!!!"),
+            VerbInvocation::new("", None, true),
+        );
     }
 
     #[test]
@@ -237,9 +243,18 @@ mod verb_invocation_tests {
         // there's currently no meaning for the empty verb, it's "reserved"
         // and will probably not be used as it may need a distinction between
         // one and two initial spaces in the input
-        assert_eq!(VerbInvocation::from(""), VerbInvocation::new("", None, false),);
-        assert_eq!(VerbInvocation::from("!"), VerbInvocation::new("", None, true),);
-        assert_eq!(VerbInvocation::from("!! "), VerbInvocation::new("", Some(""), true),);
+        assert_eq!(
+            VerbInvocation::from(""),
+            VerbInvocation::new("", None, false),
+        );
+        assert_eq!(
+            VerbInvocation::from("!"),
+            VerbInvocation::new("", None, true),
+        );
+        assert_eq!(
+            VerbInvocation::from("!! "),
+            VerbInvocation::new("", Some(""), true),
+        );
         assert_eq!(
             VerbInvocation::from("!! a"),
             VerbInvocation::new("", Some("a"), true),

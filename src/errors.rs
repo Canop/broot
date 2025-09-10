@@ -64,10 +64,12 @@ impl<Ok> IoToShellInstallError<Ok> for Result<Ok, io::Error> {
         self,
         f: &dyn Fn() -> String,
     ) -> Result<Ok, ShellInstallError> {
-        self.map_err(|source| ShellInstallError::Io {
-            source,
-            when: f(),
-        })
+        self.map_err(
+            |source| ShellInstallError::Io {
+                source,
+                when: f(),
+            },
+        )
     }
 }
 

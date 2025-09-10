@@ -25,7 +25,10 @@ impl InstallLaunchArgs {
             } else if s == "no" {
                 install = Some(false);
             } else {
-                warn!("Unexpected value of BR_INSTALL: {:?}", s);
+                warn!(
+                    "Unexpected value of BR_INSTALL: {:?}",
+                    s
+                );
             }
         }
         // the cli arguments may override the env var value

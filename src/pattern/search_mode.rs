@@ -88,7 +88,10 @@ impl SearchMode {
         self,
         con: &AppContext,
     ) -> String {
-        con.search_modes.key(self).map_or_else(|| "".to_string(), |k| format!("{k}/"))
+        con.search_modes.key(self).map_or_else(
+            || "".to_string(),
+            |k| format!("{k}/"),
+        )
     }
     pub fn object(self) -> SearchObject {
         match self {
@@ -186,7 +189,10 @@ impl SearchModeMapEntry {
             });
         }
 
-        let mode = match SearchMode::new(search_objects[0], search_kinds[0]) {
+        let mode = match SearchMode::new(
+            search_objects[0],
+            search_kinds[0],
+        ) {
             Some(mode) => mode,
             None => {
                 return Err(ConfError::InvalidSearchMode {
@@ -221,16 +227,46 @@ impl Default for SearchModeMap {
             entries: Vec::new(),
         };
         // the last keys are preferred
-        smm.setm(&["ne", "en", "e"], SearchMode::NameExact);
-        smm.setm(&["nf", "fn", "n", "f"], SearchMode::NameFuzzy);
-        smm.setm(&["r", "nr", "rn", ""], SearchMode::NameRegex);
-        smm.setm(&["pe", "ep"], SearchMode::PathExact);
-        smm.setm(&["pf", "fp", "p"], SearchMode::PathFuzzy);
-        smm.setm(&["pr", "rp"], SearchMode::PathRegex);
-        smm.setm(&["ce", "ec", "c"], SearchMode::ContentExact);
-        smm.setm(&["rx", "cr"], SearchMode::ContentRegex);
-        smm.setm(&["pt", "tp", "t"], SearchMode::PathTokens);
-        smm.setm(&["tn", "nt"], SearchMode::NameTokens);
+        smm.setm(
+            &["ne", "en", "e"],
+            SearchMode::NameExact,
+        );
+        smm.setm(
+            &["nf", "fn", "n", "f"],
+            SearchMode::NameFuzzy,
+        );
+        smm.setm(
+            &["r", "nr", "rn", ""],
+            SearchMode::NameRegex,
+        );
+        smm.setm(
+            &["pe", "ep"],
+            SearchMode::PathExact,
+        );
+        smm.setm(
+            &["pf", "fp", "p"],
+            SearchMode::PathFuzzy,
+        );
+        smm.setm(
+            &["pr", "rp"],
+            SearchMode::PathRegex,
+        );
+        smm.setm(
+            &["ce", "ec", "c"],
+            SearchMode::ContentExact,
+        );
+        smm.setm(
+            &["rx", "cr"],
+            SearchMode::ContentRegex,
+        );
+        smm.setm(
+            &["pt", "tp", "t"],
+            SearchMode::PathTokens,
+        );
+        smm.setm(
+            &["tn", "nt"],
+            SearchMode::NameTokens,
+        );
         smm.set(SearchModeMapEntry {
             key: None,
             mode: SearchMode::PathFuzzy,
@@ -244,7 +280,9 @@ impl TryFrom<&FxHashMap<String, String>> for SearchModeMap {
     fn try_from(map: &FxHashMap<String, String>) -> Result<Self, Self::Error> {
         let mut smm = Self::default();
         for (k, v) in map {
-            smm.entries.push(SearchModeMapEntry::parse(k, v)?);
+            smm.entries.push(SearchModeMapEntry::parse(
+                k, v,
+            )?);
         }
         Ok(smm)
     }
@@ -297,7 +335,10 @@ impl SearchModeMap {
                 return entry.key.as_ref();
             }
         }
-        warn!("search mode key not found for {:?}", search_mode); // should not happen
+        warn!(
+            "search mode key not found for {:?}",
+            search_mode
+        ); // should not happen
         None
     }
 }

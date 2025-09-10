@@ -83,7 +83,10 @@ impl TryFrom<&SpecialPathsConf> for SpecialPaths {
     fn try_from(map: &SpecialPathsConf) -> Result<Self, ConfError> {
         let mut entries = Vec::new();
         for (k, v) in map {
-            entries.push(SpecialPath::new(k.to_glob()?, (*v).into()));
+            entries.push(SpecialPath::new(
+                k.to_glob()?,
+                (*v).into(),
+            ));
         }
         Ok(Self {
             entries,
@@ -93,20 +96,30 @@ impl TryFrom<&SpecialPathsConf> for SpecialPaths {
 
 impl GlobConf {
     pub fn to_glob(&self) -> Result<glob::Pattern, ConfError> {
-        let s = regex_replace!(r"^~(/|$)", &self.pattern, |_, sep| {
-            match UserDirs::new() {
-                Some(dirs) => format!("{}{}", dirs.home_dir().to_string_lossy(), sep),
-                None => "~/".to_string(),
+        let s = regex_replace!(
+            r"^~(/|$)",
+            &self.pattern,
+            |_, sep| {
+                match UserDirs::new() {
+                    Some(dirs) => format!(
+                        "{}{}",
+                        dirs.home_dir().to_string_lossy(),
+                        sep
+                    ),
+                    None => "~/".to_string(),
+                }
             }
-        });
+        );
         let glob = if s.starts_with('/') || s.starts_with('~') {
             glob::Pattern::new(&s)
         } else {
             let pattern = format!("**/{}", &s);
             glob::Pattern::new(&pattern)
         };
-        glob.map_err(|_| ConfError::InvalidGlobPattern {
-            pattern: self.pattern.to_string(),
-        })
+        glob.map_err(
+            |_| ConfError::InvalidGlobPattern {
+                pattern: self.pattern.to_string(),
+            },
+        )
     }
 }

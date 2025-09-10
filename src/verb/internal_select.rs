@@ -43,12 +43,17 @@ pub fn on_path(
     screen: Screen,
     in_new_panel: bool,
 ) -> CmdResult {
-    debug!("executing :select on path {:?}", &path);
+    debug!(
+        "executing :select on path {:?}",
+        &path
+    );
     if in_new_panel {
         warn!("bang in :select isn't supported yet");
     }
     if tree.try_select_path(&path) {
-        tree.make_selection_visible(BrowserState::page_height(screen));
+        tree.make_selection_visible(BrowserState::page_height(
+            screen,
+        ));
     }
     CmdResult::Keep
 }

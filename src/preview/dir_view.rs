@@ -98,7 +98,10 @@ impl DirView {
         if s.len() + "lines: ".len() < width {
             s = format!("entries: {s}");
         }
-        w.queue(cursor::MoveTo(area.left + area.width - s.len() as u16, area.top))?;
+        w.queue(cursor::MoveTo(
+            area.left + area.width - s.len() as u16,
+            area.top,
+        ))?;
         panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }

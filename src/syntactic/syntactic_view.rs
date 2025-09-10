@@ -201,10 +201,15 @@ impl SyntacticView {
             let name_match = pattern.search_string(&clean_line);
             let regions = if let Some(highlighter) = highlighter.as_mut() {
                 highlighter
-                    .highlight_line(&clean_line, &SYNTAXER.syntax_set)
-                    .map_err(|e| ProgramError::SyntectCrashed {
-                        details: e.to_string(),
-                    })?
+                    .highlight_line(
+                        &clean_line,
+                        &SYNTAXER.syntax_set,
+                    )
+                    .map_err(
+                        |e| ProgramError::SyntectCrashed {
+                            details: e.to_string(),
+                        },
+                    )?
                     .iter()
                     .map(Region::from_syntect)
                     .collect()
@@ -269,7 +274,10 @@ impl SyntacticView {
     /// Give the count of lines which can be seen when scrolling,
     /// total count including filtered ones
     pub fn line_counts(&self) -> (usize, usize) {
-        (self.lines.len(), self.total_lines_count)
+        (
+            self.lines.len(),
+            self.total_lines_count,
+        )
     }
 
     fn ensure_selection_is_visible(&mut self) {
@@ -371,7 +379,12 @@ impl SyntacticView {
         cycle: bool,
     ) {
         if let Some(idx) = self.selection_idx {
-            self.selection_idx = Some(move_sel(idx, self.lines.len(), dy, cycle));
+            self.selection_idx = Some(move_sel(
+                idx,
+                self.lines.len(),
+                dy,
+                cycle,
+            ));
         } else if !self.lines.is_empty() {
             self.selection_idx = Some(0)
         }
@@ -406,7 +419,11 @@ impl SyntacticView {
         cmd: ScrollCommand,
     ) -> bool {
         let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.lines.len(), self.page_height);
+        self.scroll = cmd.apply(
+            self.scroll,
+            self.lines.len(),
+            self.page_height,
+        );
         if let Some(idx) = self.selection_idx {
             if self.scroll == old_scroll {
                 let old_selection = self.selection_idx;
@@ -485,7 +502,10 @@ impl SyntacticView {
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
         for y in 0..line_count {
-            w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
+            w.queue(cursor::MoveTo(
+                area.left,
+                y as u16 + area.top,
+            ))?;
             let mut cw = CropWriter::new(w, code_width);
             let line_idx = self.scroll + y;
             let selected = self.selection_idx == Some(line_idx);
@@ -499,7 +519,10 @@ impl SyntacticView {
                 Some(DisplayLine::Separator) => {
                     cw.w.queue(SetBackgroundColor(bg))?;
                     cw.queue_unstyled_str(" ")?;
-                    cw.fill(&styles.preview_separator, &SEPARATOR_FILLING)?;
+                    cw.fill(
+                        &styles.preview_separator,
+                        &SEPARATOR_FILLING,
+                    )?;
                 }
                 Some(DisplayLine::Content(line)) => {
                     let mut regions = &line.regions;
@@ -531,7 +554,11 @@ impl SyntacticView {
                     if show_line_number {
                         cw.queue_g_string(
                             &styles.preview_line_number,
-                            format!(" {:w$} ", line.number, w = max_number_len),
+                            format!(
+                                " {:w$} ",
+                                line.number,
+                                w = max_number_len
+                            ),
                         )?;
                     } else {
                         cw.queue_unstyled_str(" ")?;
@@ -589,8 +616,13 @@ impl SyntacticView {
                 &SPACE_FILLING,
             )?;
             w.queue(SetBackgroundColor(bg))?;
-            if is_thumb(y + area.top as usize, scrollbar) {
-                w.queue(SetForegroundColor(scrollbar_fg))?;
+            if is_thumb(
+                y + area.top as usize,
+                scrollbar,
+            ) {
+                w.queue(SetForegroundColor(
+                    scrollbar_fg,
+                ))?;
                 w.queue(Print('▐'))?;
             } else {
                 w.queue(Print(' '))?;
@@ -608,7 +640,10 @@ impl SyntacticView {
     ) -> Result<(), ProgramError> {
         let width = area.width as usize;
         let mut s = if self.pattern.is_some() {
-            format!("{}/{}", self.content_lines_count, self.total_lines_count)
+            format!(
+                "{}/{}",
+                self.content_lines_count, self.total_lines_count
+            )
         } else {
             format!("{}", self.total_lines_count)
         };
@@ -618,7 +653,10 @@ impl SyntacticView {
         if s.len() + "lines: ".len() < width {
             s = format!("lines: {s}");
         }
-        w.queue(cursor::MoveTo(area.left + area.width - s.len() as u16, area.top))?;
+        w.queue(cursor::MoveTo(
+            area.left + area.width - s.len() as u16,
+            area.top,
+        ))?;
         panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }

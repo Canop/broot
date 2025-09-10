@@ -149,7 +149,11 @@ impl<'i> KittyImage<'i> {
         renderer: &'r mut KittyImageRenderer,
     ) -> Self {
         let (img_width, img_height) = src.dimensions();
-        let area = renderer.rendering_area(img_width, img_height, available_area);
+        let area = renderer.rendering_area(
+            img_width,
+            img_height,
+            available_area,
+        );
         let data = src.into();
         let id = renderer.new_id();
         Self {
@@ -167,7 +171,10 @@ impl<'i> KittyImage<'i> {
         w: &mut W,
     ) -> Result<(), ProgramError> {
         let encoded = BASE64.encode(self.data.bytes());
-        w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
+        w.queue(cursor::MoveTo(
+            self.area.left,
+            self.area.top,
+        ))?;
         let mut pos = 0;
         loop {
             if pos + CHUNK_SIZE < encoded.len() {
@@ -185,7 +192,11 @@ impl<'i> KittyImage<'i> {
                 pos += CHUNK_SIZE;
             } else {
                 // last chunk
-                write!(w, "\u{1b}_Gm=0;{}\u{1b}\\", &encoded[pos..encoded.len()],)?;
+                write!(
+                    w,
+                    "\u{1b}_Gm=0;{}\u{1b}\\",
+                    &encoded[pos..encoded.len()],
+                )?;
                 break;
             }
         }
@@ -203,14 +214,23 @@ impl<'i> KittyImage<'i> {
         if let Some(mut temp_file) = temp_file {
             temp_file.write_all(self.data.bytes())?;
             temp_file.flush()?;
-            debug!("file len: {}", temp_file.metadata().unwrap().len());
+            debug!(
+                "file len: {}",
+                temp_file.metadata().unwrap().len()
+            );
         }
         let path = temp_file_path
             .to_str()
             .ok_or_else(|| io::Error::other("Path can't be converted to UTF8"))?;
         let encoded_path = BASE64.encode(path);
-        debug!("temp file written: {:?}", path);
-        w.queue(cursor::MoveTo(self.area.left, self.area.top))?;
+        debug!(
+            "temp file written: {:?}",
+            path
+        );
+        w.queue(cursor::MoveTo(
+            self.area.left,
+            self.area.top,
+        ))?;
         write!(
             w,
             "\u{1b}_Ga=T,f={},t=t,i={},s={},v={},c={},r={};{}\u{1b}\\",
@@ -233,20 +253,31 @@ impl KittyImageRenderer {
             return None;
         }
         let hasher = FxBuildHasher;
-        let temp_files = LruCache::with_hasher(options.kept_temp_files, hasher);
-        cell_size_in_pixels().ok().map(|(cell_width, cell_height)| Self {
-            cell_width,
-            cell_height,
-            next_id: 1,
-            options,
-            temp_files,
-        })
+        let temp_files = LruCache::with_hasher(
+            options.kept_temp_files,
+            hasher,
+        );
+        cell_size_in_pixels().ok().map(
+            |(cell_width, cell_height)| Self {
+                cell_width,
+                cell_height,
+                next_id: 1,
+                options,
+                temp_files,
+            },
+        )
     }
     pub fn delete_temp_files(&mut self) {
         for (_, temp_file_path) in self.temp_files.into_iter() {
-            debug!("removing temp file: {:?}", temp_file_path);
+            debug!(
+                "removing temp file: {:?}",
+                temp_file_path
+            );
             if let Err(e) = std::fs::remove_file(temp_file_path) {
-                error!("failed to remove temp file: {:?}", e);
+                error!(
+                    "failed to remove temp file: {:?}",
+                    e
+                );
             }
         }
     }
@@ -273,12 +304,17 @@ impl KittyImageRenderer {
         }
 
         let img = KittyImage::new(src, area, self);
-        debug!("transmission medium: {:?}", self.options.transmission_medium);
+        debug!(
+            "transmission medium: {:?}",
+            self.options.transmission_medium
+        );
         w.flush()?;
         match self.options.transmission_medium {
             TransmissionMedium::TempFile => {
-                let temp_file_key =
-                    format!("{:?}-{}x{}", src_path, img.img_width, img.img_height,);
+                let temp_file_key = format!(
+                    "{:?}-{}x{}",
+                    src_path, img.img_width, img.img_height,
+                );
                 let mut old_path = None;
                 if let Some(cached_path) = self.temp_files.pop(&temp_file_key) {
                     if cached_path.exists() {
@@ -304,9 +340,15 @@ impl KittyImageRenderer {
                 if let Some((_, old_path)) =
                     self.temp_files.push(temp_file_key, temp_file_path)
                 {
-                    debug!("removing temp file: {:?}", &old_path);
+                    debug!(
+                        "removing temp file: {:?}",
+                        &old_path
+                    );
                     if let Err(e) = std::fs::remove_file(&old_path) {
-                        error!("failed to remove temp file: {:?}", e);
+                        error!(
+                            "failed to remove temp file: {:?}",
+                            e
+                        );
                     }
                 }
             }
@@ -322,7 +364,9 @@ impl KittyImageRenderer {
     ) -> Area {
         let area_cols: u32 = area.width.into();
         let area_rows: u32 = area.height.into();
-        let rdim = self.rendering_dim(img_width, img_height, area_cols, area_rows);
+        let rdim = self.rendering_dim(
+            img_width, img_height, area_cols, area_rows,
+        );
         Area::new(
             area.left + ((area_cols - rdim.0) / 2) as u16,
             area.top + ((area_rows - rdim.1) / 2) as u16,
@@ -339,19 +383,31 @@ impl KittyImageRenderer {
     ) -> (u32, u32) {
         let optimal_cols = div_ceil(img_width, self.cell_width);
         let optimal_rows = div_ceil(img_height, self.cell_height);
-        debug!("area: {:?}", (area_cols, area_rows));
-        debug!("optimal: {:?}", (optimal_cols, optimal_rows));
+        debug!(
+            "area: {:?}",
+            (area_cols, area_rows)
+        );
+        debug!(
+            "optimal: {:?}",
+            (optimal_cols, optimal_rows)
+        );
         if optimal_cols <= area_cols && optimal_rows <= area_rows {
             // no constraint (TODO center?)
             (optimal_cols, optimal_rows)
         } else if optimal_cols * area_rows > optimal_rows * area_cols {
             // we're constrained in width
             debug!("constrained in width");
-            (area_cols, optimal_rows * area_cols / optimal_cols)
+            (
+                area_cols,
+                optimal_rows * area_cols / optimal_cols,
+            )
         } else {
             // we're constrained in height
             debug!("constrained in height");
-            (optimal_cols * area_rows / optimal_rows, area_rows)
+            (
+                optimal_cols * area_rows / optimal_rows,
+                area_rows,
+            )
         }
     }
 }

@@ -81,7 +81,10 @@ fn path_from_input(
     app_state: &AppState,
     con: &AppContext,
 ) -> PathBuf {
-    match (input_arg, internal_exec.arg.as_ref()) {
+    match (
+        input_arg,
+        internal_exec.arg.as_ref(),
+    ) {
         (Some(input_arg), Some(verb_arg)) => {
             // The verb probably defines some pattern which uses the input.
             // For example:
@@ -103,7 +106,11 @@ fn path_from_input(
             // The :select internal execution was triggered from the
             // input (which must be a kind of alias for :select)
             // so we do exactly what the input asks for
-            path::path_from(base_path, PathAnchor::Unspecified, input_arg)
+            path::path_from(
+                base_path,
+                PathAnchor::Unspecified,
+                input_arg,
+            )
         }
         (None, Some(verb_arg)) => {
             // the verb defines the path where to go..
@@ -113,7 +120,11 @@ fn path_from_input(
             // The given path may be relative hence the need for the
             // state's selection
             // (we assume a check before ensured it doesn't need an input)
-            path::path_from(base_path, PathAnchor::Unspecified, verb_arg)
+            path::path_from(
+                base_path,
+                PathAnchor::Unspecified,
+                verb_arg,
+            )
         }
         (None, None) => {
             // This doesn't really make sense: we're selecting the currently
@@ -129,12 +140,17 @@ pub fn on_path(
     screen: Screen,
     in_new_panel: bool,
 ) -> CmdResult {
-    debug!("executing :select on path {:?}", &path);
+    debug!(
+        "executing :select on path {:?}",
+        &path
+    );
     if in_new_panel {
         warn!("bang in :select isn't supported yet");
     }
     if tree.try_select_path(&path) {
-        tree.make_selection_visible(BrowserState::page_height(screen));
+        tree.make_selection_visible(BrowserState::page_height(
+            screen,
+        ));
     }
     CmdResult::Keep
 }

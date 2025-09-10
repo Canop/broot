@@ -234,9 +234,12 @@ impl Needle {
             6 => self.find_naive_6(0, hay),
             _ => self.find_naive(0, hay),
         };
-        pos.map_or(ContentSearchResult::NotFound, |pos| ContentSearchResult::Found {
-            pos,
-        })
+        pos.map_or(
+            ContentSearchResult::NotFound,
+            |pos| ContentSearchResult::Found {
+                pos,
+            },
+        )
     }
 
     /// determine whether the file contains the needle
@@ -245,7 +248,10 @@ impl Needle {
         hay_path: P,
     ) -> io::Result<ContentSearchResult> {
         super::get_mmap_if_suitable(hay_path, self.max_file_size).map(|om| {
-            om.map_or(ContentSearchResult::NotSuitable, |hay| self.search_mmap(&hay))
+            om.map_or(
+                ContentSearchResult::NotSuitable,
+                |hay| self.search_mmap(&hay),
+            )
         })
     }
 
@@ -265,7 +271,12 @@ impl Needle {
         match self.search_mmap(&hay) {
             ContentSearchResult::Found {
                 pos,
-            } => Some(ContentMatch::build(&hay, pos, self.as_str(), desired_len)),
+            } => Some(ContentMatch::build(
+                &hay,
+                pos,
+                self.as_str(),
+                desired_len,
+            )),
             _ => None,
         }
     }

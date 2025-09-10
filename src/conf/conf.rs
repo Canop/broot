@@ -215,7 +215,11 @@ impl Conf {
     ) -> Option<PathBuf> {
         if path.ends_with(".toml") || path.ends_with(".hjson") {
             for conf_file in self.files.iter().rev() {
-                let solved = path_from(conf_file, PathAnchor::Parent, path);
+                let solved = path_from(
+                    conf_file,
+                    PathAnchor::Parent,
+                    path,
+                );
                 if solved.exists() {
                     return Some(solved);
                 }
@@ -232,48 +236,110 @@ impl Conf {
         &mut self,
         path: PathBuf,
     ) -> Result<(), ProgramError> {
-        debug!("reading conf file: {:?}", &path);
+        debug!(
+            "reading conf file: {:?}",
+            &path
+        );
         let mut conf: Conf = SerdeFormat::read_file(&path)?;
         overwrite!(self, default_flags, conf);
         overwrite!(self, date_time_format, conf);
         overwrite!(self, icon_theme, conf);
         overwrite!(self, syntax_theme, conf);
-        overwrite!(self, disable_mouse_capture, conf);
+        overwrite!(
+            self,
+            disable_mouse_capture,
+            conf
+        );
         overwrite!(self, capture_mouse, conf);
         overwrite!(self, true_colors, conf);
-        overwrite!(self, show_selection_mark, conf);
+        overwrite!(
+            self,
+            show_selection_mark,
+            conf
+        );
         overwrite!(self, cols_order, conf);
         overwrite!(self, skin, conf);
         overwrite!(self, search_modes, conf);
         overwrite!(self, max_panels_count, conf);
         overwrite!(self, modal, conf);
         overwrite!(self, initial_mode, conf);
-        overwrite!(self, quit_on_last_cancel, conf);
-        overwrite!(self, file_sum_threads_count, conf);
+        overwrite!(
+            self,
+            quit_on_last_cancel,
+            conf
+        );
+        overwrite!(
+            self,
+            file_sum_threads_count,
+            conf
+        );
         overwrite!(self, max_staged_count, conf);
-        overwrite!(self, show_matching_characters_on_path_searches, conf);
-        overwrite!(self, content_search_max_file_size, conf);
+        overwrite!(
+            self,
+            show_matching_characters_on_path_searches,
+            conf
+        );
+        overwrite!(
+            self,
+            content_search_max_file_size,
+            conf
+        );
         overwrite!(self, terminal_title, conf);
-        overwrite!(self, reset_terminal_title_on_exit, conf);
+        overwrite!(
+            self,
+            reset_terminal_title_on_exit,
+            conf
+        );
         overwrite!(self, update_work_dir, conf);
-        overwrite!(self, enable_kitty_keyboard, conf);
-        overwrite!(self, kitty_graphics_transmission, conf);
-        overwrite!(self, kept_kitty_temp_files, conf);
-        overwrite!(self, lines_after_match_in_preview, conf);
-        overwrite!(self, lines_before_match_in_preview, conf);
-        overwrite!(self, layout_instructions, conf);
+        overwrite!(
+            self,
+            enable_kitty_keyboard,
+            conf
+        );
+        overwrite!(
+            self,
+            kitty_graphics_transmission,
+            conf
+        );
+        overwrite!(
+            self,
+            kept_kitty_temp_files,
+            conf
+        );
+        overwrite!(
+            self,
+            lines_after_match_in_preview,
+            conf
+        );
+        overwrite!(
+            self,
+            lines_before_match_in_preview,
+            conf
+        );
+        overwrite!(
+            self,
+            layout_instructions,
+            conf
+        );
         self.verbs.append(&mut conf.verbs);
         // the following prefs are "additive": we can add entries from several
         // config files and they still make sense
         overwrite_map!(self, special_paths, conf);
         overwrite_map!(self, ext_colors, conf);
-        overwrite_vec!(self, preview_transformers, conf);
+        overwrite_vec!(
+            self,
+            preview_transformers,
+            conf
+        );
         self.files.push(path);
         // read the imports
         for import in &conf.imports {
             let file = import.file().trim();
             if !import.applies() {
-                debug!("skipping not applying conf file : {:?}", file);
+                debug!(
+                    "skipping not applying conf file : {:?}",
+                    file
+                );
                 continue;
             }
             let import_path =
@@ -281,7 +347,10 @@ impl Conf {
                     path: file.to_string(),
                 })?;
             if self.files.contains(&import_path) {
-                debug!("skipping import already read: {:?}", import_path);
+                debug!(
+                    "skipping import already read: {:?}",
+                    import_path
+                );
                 continue;
             }
             self.read_file(import_path)?;

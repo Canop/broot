@@ -46,7 +46,11 @@ impl Panel {
     ) -> Self {
         let mut input = PanelInput::new(areas.input.clone());
         input.set_content(&state.get_starting_input());
-        let status = state.no_verb_status(false, con, areas.status.width as usize);
+        let status = state.no_verb_status(
+            false,
+            con,
+            areas.status.width as usize,
+        );
         Self {
             id,
             states: vec![state],
@@ -114,7 +118,10 @@ impl Panel {
         app_state: &AppState,
         app_cmd_context: &'c AppCmdContext<'c>,
     ) {
-        let cmd = Command::from_raw(self.input.get_content(), false);
+        let cmd = Command::from_raw(
+            self.input.get_content(),
+            false,
+        );
         let cc = CmdContext {
             cmd: &cmd,
             app: app_cmd_context,
@@ -160,7 +167,15 @@ impl Panel {
         let sel_info = self.states[self.states.len() - 1].sel_info(app_state);
         let mode = self.state().get_mode();
         let panel_state_type = self.state().get_type();
-        self.input.on_event(w, event, con, sel_info, app_state, mode, panel_state_type)
+        self.input.on_event(
+            w,
+            event,
+            con,
+            sel_info,
+            app_state,
+            mode,
+            panel_state_type,
+        )
     }
 
     pub fn push_state(
@@ -238,11 +253,20 @@ impl Panel {
     ) -> Result<Option<(u16, u16)>, ProgramError> {
         self.mut_state().display(w, disc)?;
         if disc.active || !WIDE_STATUS {
-            self.write_status(w, disc.panel_skin, disc.screen)?;
+            self.write_status(
+                w,
+                disc.panel_skin,
+                disc.screen,
+            )?;
         }
         let mut input_area = self.areas.input.clone();
         if disc.active {
-            self.write_purpose(w, disc.panel_skin, disc.screen, disc.con)?;
+            self.write_purpose(
+                w,
+                disc.panel_skin,
+                disc.screen,
+                disc.con,
+            )?;
             let flags = self.state().get_flags();
             let input_content_len = self.input.get_content().len() as u16;
             let flags_len = flags_display::visible_width(&flags);
@@ -273,7 +297,14 @@ impl Panel {
         screen: Screen,
     ) -> Result<(), ProgramError> {
         let task = self.state().get_pending_task();
-        status_line::write(w, task, &self.status, &self.areas.status, panel_skin, screen)
+        status_line::write(
+            w,
+            task,
+            &self.status,
+            &self.areas.status,
+            panel_skin,
+            screen,
+        )
     }
 
     /// if a panel has a specific purpose (i.e. is here for

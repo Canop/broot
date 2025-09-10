@@ -103,7 +103,12 @@ impl<'c> TreeBuilder<'c> {
             } else {
                 None
             };
-        let root_id = BLine::from_root(&mut blines, path, root_ignore_chain, &options)?;
+        let root_id = BLine::from_root(
+            &mut blines,
+            path,
+            root_ignore_chain,
+            &options,
+        )?;
         let trim_root = match (
             options.trim_root,
             options.pattern.is_some(),
@@ -162,7 +167,10 @@ impl<'c> TreeBuilder<'c> {
             return None;
         }
         let Some(name) = name.to_str() else {
-            warn!("invalid utf8 file name: {:?}", name);
+            warn!(
+                "invalid utf8 file name: {:?}",
+                name
+            );
             self.report.error_count += 1;
             return None;
         };
@@ -215,7 +223,12 @@ impl<'c> TreeBuilder<'c> {
         }
         if self.options.respect_git_ignore {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
-            if !self.git_ignorer.accepts(parent_chain, &path, name, file_type.is_dir()) {
+            if !self.git_ignorer.accepts(
+                parent_chain,
+                &path,
+                name,
+                file_type.is_dir(),
+            ) {
                 if special_handling.show != Directive::Always {
                     return None;
                 }
@@ -342,9 +355,11 @@ impl<'c> TreeBuilder<'c> {
             }
             if let Some(max) = self.matches_max {
                 if nb_lines_ok > max {
-                    return Err(TreeBuildError::TooManyMatches {
-                        max,
-                    });
+                    return Err(
+                        TreeBuildError::TooManyMatches {
+                            max,
+                        },
+                    );
                 }
             }
             if let Some(open_dir_id) = open_dirs.pop_front() {
@@ -400,9 +415,11 @@ impl<'c> TreeBuilder<'c> {
         }
         if let Some(max) = self.matches_max {
             if nb_lines_ok > max {
-                return Err(TreeBuildError::TooManyMatches {
-                    max,
-                });
+                return Err(
+                    TreeBuildError::TooManyMatches {
+                        max,
+                    },
+                );
             }
         }
         if !self.trim_root {
@@ -486,10 +503,9 @@ impl<'c> TreeBuilder<'c> {
                 .to_string_lossy()
                 .to_string()
         };
-        let unlisted = bline
-            .children
-            .as_ref()
-            .map_or(0, |children| children.len() - bline.next_child_idx);
+        let unlisted = bline.children.as_ref().map_or(0, |children| {
+            children.len() - bline.next_child_idx
+        });
         TreeLineBuilder {
             path,
             subpath,
@@ -521,7 +537,10 @@ impl<'c> TreeBuilder<'c> {
                     lines.push(tree_line);
                 } else {
                     // I guess the file went missing during tree computation
-                    warn!("Error while builind treeline for {:?}", self.blines[*id].path,);
+                    warn!(
+                        "Error while builind treeline for {:?}",
+                        self.blines[*id].path,
+                    );
                 }
             }
         }
@@ -560,7 +579,10 @@ impl<'c> TreeBuilder<'c> {
         dam: &Dam,
     ) -> Result<Tree, TreeBuildError> {
         let blines_ids = self.gather_lines(total_search, dam)?;
-        debug!("blines before trimming: {}", blines_ids.len());
+        debug!(
+            "blines before trimming: {}",
+            blines_ids.len()
+        );
         if !self.total_search {
             self.trim_excess(&blines_ids);
         }

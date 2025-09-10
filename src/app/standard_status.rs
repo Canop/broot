@@ -31,16 +31,28 @@ impl StandardStatus {
         let tree_top_focus = "*enter* to go up".to_string(); // enter is hardcoded on focus
         let tree_dir_focus = "*enter* to focus".to_string();
         let tree_dir_cd = verb_store
-            .key_desc_of_internal_stype(Internal::open_leave, SelectionType::Directory)
+            .key_desc_of_internal_stype(
+                Internal::open_leave,
+                SelectionType::Directory,
+            )
             .map(|k| format!("*{k}* to cd"));
         let tree_file_open_stay = verb_store
-            .key_desc_of_internal_stype(Internal::open_stay, SelectionType::File)
+            .key_desc_of_internal_stype(
+                Internal::open_stay,
+                SelectionType::File,
+            )
             .map(|k| format!("*{k}* to open"));
         let tree_file_open_stay_long = verb_store
-            .key_desc_of_internal_stype(Internal::open_stay, SelectionType::File)
+            .key_desc_of_internal_stype(
+                Internal::open_stay,
+                SelectionType::File,
+            )
             .map(|k| format!("*{k}* to open the file"));
         let tree_file_open_leave = verb_store
-            .key_desc_of_internal_stype(Internal::open_leave, SelectionType::File)
+            .key_desc_of_internal_stype(
+                Internal::open_leave,
+                SelectionType::File,
+            )
             .map(|k| format!("*{k}* to open and quit"));
         //let tree_file_enter = None; // TODO (for when enter is customized)
         let tree_unfiltered = "a few letters to search".to_string();
@@ -88,7 +100,9 @@ impl StandardStatus {
         selection: Selection<'s>,
         width: usize, // available width
     ) -> StandardStatusBuilder<'s> {
-        StandardStatusBuilder::new(self, state_type, selection, width)
+        StandardStatusBuilder::new(
+            self, state_type, selection, width,
+        )
     }
 }
 

@@ -98,7 +98,10 @@ impl ExternalExecution {
             if pb.exists() {
                 true
             } else {
-                warn!("workding dir doesn't exist: {:?}", pb);
+                warn!(
+                    "workding dir doesn't exist: {:?}",
+                    pb
+                );
                 false
             }
         })
@@ -120,7 +123,11 @@ impl ExternalExecution {
             // Broot was probably launched as br.
             // the whole command is exported in the passed file
             let f = OpenOptions::new().append(true).open(export_path)?;
-            writeln!(&f, "{}", builder.shell_exec_string(&self.exec_pattern, con))?;
+            writeln!(
+                &f,
+                "{}",
+                builder.shell_exec_string(&self.exec_pattern, con)
+            )?;
             Ok(CmdResult::Quit)
         } else {
             Ok(CmdResult::error(
@@ -168,10 +175,15 @@ impl ExternalExecution {
                     self.switch_terminal,
                     con,
                 )?;
-                info!("Executing not leaving, launchable {:?}", launchable);
+                info!(
+                    "Executing not leaving, launchable {:?}",
+                    launchable
+                );
                 if let Err(e) = launchable.execute(Some(w)) {
                     warn!("launchable failed : {:?}", e);
-                    return Ok(CmdResult::error(e.to_string()));
+                    return Ok(CmdResult::error(
+                        e.to_string(),
+                    ));
                 }
             }
             SelInfo::More(stage) => {
@@ -184,14 +196,20 @@ impl ExternalExecution {
                 });
                 for sel in sels {
                     let launchable = Launchable::program(
-                        builder.sel_exec_token(&self.exec_pattern, Some(sel), con),
+                        builder.sel_exec_token(
+                            &self.exec_pattern,
+                            Some(sel),
+                            con,
+                        ),
                         working_dir_path.clone(),
                         self.switch_terminal,
                         con,
                     )?;
                     if let Err(e) = launchable.execute(Some(w)) {
                         warn!("launchable failed : {:?}", e);
-                        return Ok(CmdResult::error(e.to_string()));
+                        return Ok(CmdResult::error(
+                            e.to_string(),
+                        ));
                     }
                 }
             }

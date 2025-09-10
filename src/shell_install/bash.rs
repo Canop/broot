@@ -107,7 +107,10 @@ fn get_sourcing_paths() -> Vec<PathBuf> {
             }
         })
         .filter(|path| {
-            debug!("considering path: {:?}", &path);
+            debug!(
+                "considering path: {:?}",
+                &path
+            );
             path.exists()
         })
         .collect()
@@ -139,7 +142,10 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
                 &sourcing_path_str,
             );
         } else {
-            util::append_to_file(sourcing_path, format!("\n{source_line}\n"))?;
+            util::append_to_file(
+                sourcing_path,
+                format!("\n{source_line}\n"),
+            )?;
             let is_zsh = sourcing_path_str.contains(".zshrc");
             if is_zsh {
                 mad_print_inline!(

@@ -78,10 +78,16 @@ impl KittyManager {
         &mut self,
         con: &AppContext,
     ) -> Option<&mut KittyImageRenderer> {
-        if matches!(self.renderer, MaybeRenderer::Disabled) {
+        if matches!(
+            self.renderer,
+            MaybeRenderer::Disabled
+        ) {
             return None;
         }
-        if matches!(self.renderer, MaybeRenderer::Enabled { .. }) {
+        if matches!(
+            self.renderer,
+            MaybeRenderer::Enabled { .. }
+        ) {
             return self.renderer_if_tested();
         }
         let options = KittyImageRendererOptions {
@@ -147,7 +153,10 @@ impl KittyManager {
             } else {
                 let id = image.image_id;
                 debug!("erase kitty image {}", id);
-                write!(w, "\u{1b}_Ga=d,d=I,i={id}\u{1b}\\")?;
+                write!(
+                    w,
+                    "\u{1b}_Ga=d,d=I,i={id}\u{1b}\\"
+                )?;
             }
         }
         self.rendered_images = kept_images;

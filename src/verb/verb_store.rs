@@ -50,10 +50,19 @@ impl VerbStore {
         };
         for vc in &conf.verbs {
             if let Err(e) = store.add_from_conf(vc) {
-                eprintln!("Invalid verb configuration: {}", e);
-                warn!("Faulty parsed configuration: {:#?}", vc);
+                eprintln!(
+                    "Invalid verb configuration: {}",
+                    e
+                );
+                warn!(
+                    "Faulty parsed configuration: {:#?}",
+                    vc
+                );
                 if let Ok(toml) = toml::to_string(&vc) {
-                    eprintln!("Faulty configuration:\n{}", toml);
+                    eprintln!(
+                        "Faulty configuration:\n{}",
+                        toml
+                    );
                 }
                 eprintln!("Configuration files:");
                 for path in &conf.files {
@@ -107,18 +116,30 @@ impl VerbStore {
             .with_condition(FileTypeCondition::File)
             .with_key(key!(alt - enter))
             .with_shortcut("ol");
-        self.add_external("cd", "cd {directory}", FromParentShell)
-            .with_condition(FileTypeCondition::Directory)
-            .with_key(key!(alt - enter))
-            .with_shortcut("ol")
-            .with_description("change directory and quit");
+        self.add_external(
+            "cd",
+            "cd {directory}",
+            FromParentShell,
+        )
+        .with_condition(FileTypeCondition::Directory)
+        .with_key(key!(alt - enter))
+        .with_shortcut("ol")
+        .with_description("change directory and quit");
 
         #[cfg(unix)]
-        self.add_external("chmod {args}", "chmod {args} {file}", StayInBroot)
-            .with_condition(FileTypeCondition::File);
+        self.add_external(
+            "chmod {args}",
+            "chmod {args} {file}",
+            StayInBroot,
+        )
+        .with_condition(FileTypeCondition::File);
         #[cfg(unix)]
-        self.add_external("chmod {args}", "chmod -R {args} {file}", StayInBroot)
-            .with_condition(FileTypeCondition::Directory);
+        self.add_external(
+            "chmod {args}",
+            "chmod -R {args} {file}",
+            StayInBroot,
+        )
+        .with_condition(FileTypeCondition::Directory);
         self.add_internal(open_preview);
         self.add_internal(close_preview);
         self.add_internal(toggle_preview);
@@ -288,13 +309,25 @@ impl VerbStore {
         self.add_internal(sort_by_size).with_shortcut("ss");
         self.add_internal(sort_by_type).with_shortcut("st");
         #[cfg(unix)]
-        self.add_external("rm", "rm -rf {file}", StayInBroot);
+        self.add_external(
+            "rm",
+            "rm -rf {file}",
+            StayInBroot,
+        );
         #[cfg(windows)]
-        self.add_external("rm", "cmd /c rmdir /Q /S {file}", StayInBroot)
-            .with_condition(FileTypeCondition::Directory);
+        self.add_external(
+            "rm",
+            "cmd /c rmdir /Q /S {file}",
+            StayInBroot,
+        )
+        .with_condition(FileTypeCondition::Directory);
         #[cfg(windows)]
-        self.add_external("rm", "cmd /c del /Q {file}", StayInBroot)
-            .with_condition(FileTypeCondition::File);
+        self.add_external(
+            "rm",
+            "cmd /c del /Q {file}",
+            StayInBroot,
+        )
+        .with_condition(FileTypeCondition::File);
         self.add_internal(toggle_counts).with_shortcut("counts");
         self.add_internal(toggle_dates).with_shortcut("dates");
         self.add_internal(toggle_device_id).with_shortcut("dev");
@@ -328,11 +361,16 @@ impl VerbStore {
         bang: bool,
     ) -> &mut Verb {
         let invocation = internal.invocation_pattern();
-        let execution = VerbExecution::Internal(InternalExecution::from_internal_bang(
-            internal, bang,
-        ));
+        let execution = VerbExecution::Internal(
+            InternalExecution::from_internal_bang(internal, bang),
+        );
         let description = VerbDescription::from_text(internal.description().to_string());
-        self.add_verb(Some(invocation), execution, description).unwrap()
+        self.add_verb(
+            Some(invocation),
+            execution,
+            description,
+        )
+        .unwrap()
     }
 
     fn add_internal(
@@ -354,7 +392,12 @@ impl VerbStore {
             arg: Some(args.to_string()),
         });
         let description = VerbDescription::from_text(command.clone());
-        self.add_verb(Some(&command), execution, description).unwrap()
+        self.add_verb(
+            Some(&command),
+            execution,
+            description,
+        )
+        .unwrap()
     }
 
     fn add_internal_bang(
@@ -389,7 +432,12 @@ impl VerbStore {
         description: VerbDescription,
     ) -> Result<&mut Verb, ConfError> {
         let id = self.verbs.len();
-        self.verbs.push(Verb::new(id, invocation_str, execution, description)?);
+        self.verbs.push(Verb::new(
+            id,
+            invocation_str,
+            execution,
+            description,
+        )?);
         Ok(&mut self.verbs[id])
     }
 
@@ -429,7 +477,10 @@ impl VerbStore {
         let cmd_separator = vc.cmd_separator.as_ref().filter(|i| !i.is_empty());
         let execution = vc.execution.as_ref().filter(|i| !i.is_empty());
         let make_external_execution = |s| {
-            let working_dir = match (vc.set_working_dir, &vc.working_dir) {
+            let working_dir = match (
+                vc.set_working_dir,
+                &vc.working_dir,
+            ) {
                 (Some(false), _) => None,
                 (_, Some(s)) => Some(s.clone()),
                 (Some(true), None) => Some("{directory}".to_owned()),
@@ -445,7 +496,9 @@ impl VerbStore {
             }
             external_execution
         };
-        let mut execution = match (execution, internal, external, cmd) {
+        let mut execution = match (
+            execution, internal, external, cmd,
+        ) {
             // old definition with "execution": we guess whether it's an internal or
             // an external
             (Some(ep), None, None, None) => {
@@ -460,21 +513,23 @@ impl VerbStore {
                         )?)
                     }
                 } else {
-                    VerbExecution::External(make_external_execution(ep.clone()))
+                    VerbExecution::External(make_external_execution(
+                        ep.clone(),
+                    ))
                 }
             }
             // "internal": the leading `:` or ` ` is optional
-            (None, Some(s), None, None) => {
-                VerbExecution::Internal(if s.starts_with(':') || s.starts_with(' ') {
+            (None, Some(s), None, None) => VerbExecution::Internal(
+                if s.starts_with(':') || s.starts_with(' ') {
                     InternalExecution::try_from(&s[1..])?
                 } else {
                     InternalExecution::try_from(s)?
-                })
-            }
+                },
+            ),
             // "external": it can be about any form
-            (None, None, Some(ep), None) => {
-                VerbExecution::External(make_external_execution(ep.clone()))
-            }
+            (None, None, Some(ep), None) => VerbExecution::External(
+                make_external_execution(ep.clone()),
+            ),
             // "cmd": it's a sequence
             (None, None, None, Some(s)) => VerbExecution::Sequence(SequenceExecution {
                 sequence: Sequence::new(s, cmd_separator),
@@ -500,7 +555,11 @@ impl VerbStore {
             .clone()
             .map(VerbDescription::from_text)
             .unwrap_or_else(|| VerbDescription::from_code(execution.to_string()));
-        let verb = self.add_verb(invocation.as_deref(), execution, description)?;
+        let verb = self.add_verb(
+            invocation.as_deref(),
+            execution,
+            description,
+        )?;
         for extension in &vc.extensions {
             verb.file_extensions.push(extension.clone());
         }
@@ -546,7 +605,12 @@ impl VerbStore {
         sel_info: SelInfo<'_>,
         panel_state_type: Option<PanelStateType>,
     ) -> PrefixSearchResult<'v, &'v Verb> {
-        self.search(prefix, Some(sel_info), true, panel_state_type)
+        self.search(
+            prefix,
+            Some(sel_info),
+            true,
+            panel_state_type,
+        )
     }
 
     pub fn search_prefix<'v>(
@@ -554,7 +618,12 @@ impl VerbStore {
         prefix: &str,
         panel_state_type: Option<PanelStateType>,
     ) -> PrefixSearchResult<'v, &'v Verb> {
-        self.search(prefix, None, true, panel_state_type)
+        self.search(
+            prefix,
+            None,
+            true,
+            panel_state_type,
+        )
     }
 
     /// Return either the only match, or None if there's not
@@ -565,7 +634,11 @@ impl VerbStore {
         sel_info: SelInfo<'_>,
         panel_state_type: Option<PanelStateType>,
     ) -> Option<&'v Verb> {
-        match self.search_sel_info(prefix, sel_info, panel_state_type) {
+        match self.search_sel_info(
+            prefix,
+            sel_info,
+            panel_state_type,
+        ) {
             PrefixSearchResult::Match(_, verb) => Some(verb),
             _ => None,
         }
@@ -619,7 +692,10 @@ impl VerbStore {
         }
         match nb_found {
             0 => PrefixSearchResult::NoMatch,
-            1 => PrefixSearchResult::Match(completions[0], &self.verbs[found_index]),
+            1 => PrefixSearchResult::Match(
+                completions[0],
+                &self.verbs[found_index],
+            ),
             _ => PrefixSearchResult::Matches(completions),
         }
     }

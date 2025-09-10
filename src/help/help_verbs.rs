@@ -19,17 +19,21 @@ impl MatchingVerbRow<'_> {
     /// some filtering occurred)
     pub fn name(&self) -> &str {
         // there should be a better way to write this
-        self.name.as_deref().unwrap_or_else(|| match self.verb.names.first() {
-            Some(s) => s.as_str(),
-            _ => " ",
-        })
+        self.name.as_deref().unwrap_or_else(
+            || match self.verb.names.first() {
+                Some(s) => s.as_str(),
+                _ => " ",
+            },
+        )
     }
     pub fn shortcut(&self) -> &str {
         // there should be a better way to write this
-        self.shortcut.as_deref().unwrap_or_else(|| match self.verb.names.get(1) {
-            Some(s) => s.as_str(),
-            _ => " ",
-        })
+        self.shortcut.as_deref().unwrap_or_else(
+            || match self.verb.names.get(1) {
+                Some(s) => s.as_str(),
+                _ => " ",
+            },
+        )
     }
 }
 

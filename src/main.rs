@@ -2,12 +2,18 @@ use cli_log::*;
 
 fn main() {
     init_cli_log!();
-    debug!("env::args(): {:#?}", std::env::args().collect::<Vec<String>>());
+    debug!(
+        "env::args(): {:#?}",
+        std::env::args().collect::<Vec<String>>()
+    );
     match broot::cli::run() {
         Ok(Some(launchable)) => {
             debug!("launching {:#?}", launchable);
             if let Err(e) = launchable.execute(None) {
-                warn!("Failed to launch {:?}", &launchable);
+                warn!(
+                    "Failed to launch {:?}",
+                    &launchable
+                );
                 warn!("Error: {:?}", e);
                 eprintln!("{e}");
             }

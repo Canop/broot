@@ -116,7 +116,12 @@ impl FilteredStage {
         stage: &'s Stage,
         idx: usize,
     ) -> Option<(&'s Path, bool)> {
-        self.path(stage, idx).map(|p| (p, self.selection.map_or(false, |si| idx == si)))
+        self.path(stage, idx).map(|p| {
+            (
+                p,
+                self.selection.map_or(false, |si| idx == si),
+            )
+        })
     }
     pub fn pattern(&self) -> &InputPattern {
         &self.pattern

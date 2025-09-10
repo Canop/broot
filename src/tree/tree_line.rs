@@ -84,9 +84,11 @@ impl TreeLineBuilder {
             direct_match,
         } = self;
         let metadata =
-            fs::symlink_metadata(&path).map_err(|_| TreeBuildError::FileNotFound {
-                path: path.to_string_lossy().to_string(),
-            })?;
+            fs::symlink_metadata(&path).map_err(
+                |_| TreeBuildError::FileNotFound {
+                    path: path.to_string_lossy().to_string(),
+                },
+            )?;
         let line_type = TreeLineType::new(&path, metadata.file_type());
         let name = path
             .file_name()
@@ -97,7 +99,12 @@ impl TreeLineBuilder {
             let extension = TreeLine::extension_from_name(&name);
             let double_extension =
                 extension.and_then(|_| TreeLine::double_extension_from_name(&name));
-            icon_plugin.get_icon(&line_type, &name, double_extension, extension)
+            icon_plugin.get_icon(
+                &line_type,
+                &name,
+                double_extension,
+                extension,
+            )
         });
 
         Ok(TreeLine {
@@ -132,7 +139,10 @@ impl TreeLine {
     }
 
     pub fn is_selectable(&self) -> bool {
-        !matches!(&self.line_type, TreeLineType::Pruning)
+        !matches!(
+            &self.line_type,
+            TreeLineType::Pruning
+        )
     }
     pub fn is_dir(&self) -> bool {
         match &self.line_type {
@@ -145,7 +155,10 @@ impl TreeLine {
         }
     }
     pub fn is_file(&self) -> bool {
-        matches!(&self.line_type, TreeLineType::File)
+        matches!(
+            &self.line_type,
+            TreeLineType::File
+        )
     }
     pub fn is_of(
         &self,
@@ -223,10 +236,13 @@ impl TreeLine {
         }
     }
     pub fn unprune(&mut self) {
-        self.line_type = TreeLineType::new(&self.path, self.metadata.file_type());
-        self.name = self
-            .path
-            .file_name()
-            .map_or_else(|| "???".to_string(), |n| n.to_string_lossy().to_string());
+        self.line_type = TreeLineType::new(
+            &self.path,
+            self.metadata.file_type(),
+        );
+        self.name = self.path.file_name().map_or_else(
+            || "???".to_string(),
+            |n| n.to_string_lossy().to_string(),
+        );
     }
 }

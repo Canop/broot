@@ -133,6 +133,8 @@ impl SpecialPath {
         &self,
         path: &Path,
     ) -> bool {
-        path.to_str().map_or(false, |p| self.pattern.as_str().starts_with(p))
+        path.to_str().map_or(false, |p| {
+            self.pattern.as_str().starts_with(p)
+        })
     }
 }

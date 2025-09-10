@@ -27,7 +27,11 @@ impl fmt::Display for ContentRegexPattern {
         &self,
         f: &mut fmt::Formatter<'_>,
     ) -> fmt::Result {
-        write!(f, "cr/{}/{}", self.rex, self.flags)
+        write!(
+            f,
+            "cr/{}/{}",
+            self.rex, self.flags
+        )
     }
 }
 
@@ -49,7 +53,10 @@ impl ContentRegexPattern {
     }
 
     pub fn to_regex_parts(&self) -> (String, String) {
-        (self.rex.to_string(), self.flags.clone())
+        (
+            self.rex.to_string(),
+            self.flags.clone(),
+        )
     }
 
     // TODO optimize with regex::bytes ?
@@ -70,7 +77,10 @@ impl ContentRegexPattern {
         candidate: Candidate,
     ) -> Option<i32> {
         if !candidate.regular_file
-            || !is_path_suitable(candidate.path, self.max_file_size)
+            || !is_path_suitable(
+                candidate.path,
+                self.max_file_size,
+            )
         {
             return None;
         }
@@ -78,7 +88,10 @@ impl ContentRegexPattern {
             Ok(true) => Some(1),
             Ok(false) => None,
             Err(e) => {
-                debug!("error while scanning {:?} : {:?}", candidate.path, e);
+                debug!(
+                    "error while scanning {:?} : {:?}",
+                    candidate.path, e
+                );
                 None
             }
         }

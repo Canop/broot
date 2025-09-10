@@ -63,7 +63,11 @@ impl PreviewState {
         let transform = con.preview_transformers.transform(&source_path, preferred_mode);
         let preview_path =
             transform.as_ref().map(|c| &c.output_path).unwrap_or(&source_path);
-        let preview = Preview::new(preview_path, preferred_mode, con);
+        let preview = Preview::new(
+            preview_path,
+            preferred_mode,
+            con,
+        );
         PreviewState {
             preview_area,
             dirty: true,
@@ -95,16 +99,18 @@ impl PreviewState {
         if self.preview.get_mode() == Some(mode) {
             return Ok(CmdResult::Keep);
         }
-        Ok(match Preview::with_mode(self.preview_path(), mode, con) {
-            Ok(preview) => {
-                self.preview = preview;
-                self.preferred_mode = Some(mode);
-                CmdResult::Keep
-            }
-            Err(e) => {
-                CmdResult::DisplayError(format!("Can't display as {mode:?} : {e:?}"))
-            }
-        })
+        Ok(
+            match Preview::with_mode(self.preview_path(), mode, con) {
+                Ok(preview) => {
+                    self.preview = preview;
+                    self.preferred_mode = Some(mode);
+                    CmdResult::Keep
+                }
+                Err(e) => CmdResult::DisplayError(format!(
+                    "Can't display as {mode:?} : {e:?}"
+                )),
+            },
+        )
     }
 
     fn no_opt_selection(&self) -> Selection<'_> {
@@ -165,7 +171,9 @@ impl PanelState for PreviewState {
                 self.removed_pattern = filtered_preview.pattern();
             }
         } else if !self.preview.is_filterable() {
-            return Ok(CmdResult::error("this preview can't be searched"));
+            return Ok(CmdResult::error(
+                "this preview can't be searched",
+            ));
         }
         self.pending_pattern = pat;
         Ok(CmdResult::Keep)
@@ -189,7 +197,12 @@ impl PanelState for PreviewState {
             self.filtered_preview = time!(
                 Info,
                 "preview filtering",
-                self.preview.filtered(self.preview_path(), pattern, dam, con),
+                self.preview.filtered(
+                    self.preview_path(),
+                    pattern,
+                    dam,
+                    con
+                ),
             ); // can be None if a cancellation was required
             if let Some(ref mut filtered_preview) = self.filtered_preview {
                 if let Some(number) = old_selection {
@@ -219,7 +232,11 @@ impl PanelState for PreviewState {
         };
         self.transform = con.preview_transformers.transform(&path, self.preferred_mode);
         let preview_path = self.transform.as_ref().map_or(&path, |c| &c.output_path);
-        self.preview = Preview::new(preview_path, self.preferred_mode, con);
+        self.preview = Preview::new(
+            preview_path,
+            self.preferred_mode,
+            con,
+        );
         if let Some(number) = selected_line_number {
             self.preview.try_select_line_number(number);
         }
@@ -294,25 +311,42 @@ impl PanelState for PreviewState {
             self.dirty = false;
         }
         let styles = &disc.panel_skin.styles;
-        w.queue(cursor::MoveTo(state_area.left, 0))?;
+        w.queue(cursor::MoveTo(
+            state_area.left,
+            0,
+        ))?;
         let mut cw = CropWriter::new(w, state_area.width as usize);
         let file_name = self
             .source_path
             .file_name()
             .map(|n| n.to_string_lossy().to_string())
             .unwrap_or_else(|| "???".to_string());
-        cw.queue_str(&styles.preview_title, &file_name)?;
+        cw.queue_str(
+            &styles.preview_title,
+            &file_name,
+        )?;
         let info_area = Area::new(
             state_area.left + state_area.width - cw.allowed as u16,
             state_area.top,
             cw.allowed as u16,
             1,
         );
-        cw.fill(&styles.preview_title, &SPACE_FILLING)?;
+        cw.fill(
+            &styles.preview_title,
+            &SPACE_FILLING,
+        )?;
         let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
-        preview.display_info(w, disc.screen, disc.panel_skin, &info_area)?;
+        preview.display_info(
+            w,
+            disc.screen,
+            disc.panel_skin,
+            &info_area,
+        )?;
         if let Err(err) = preview.display(w, disc, &self.preview_area) {
-            warn!("error while displaying file: {:?}", &err);
+            warn!(
+                "error while displaying file: {:?}",
+                &err
+            );
             if preview.get_mode().is_some() {
                 // means it's not an error already
                 if let ProgramError::Io {
@@ -360,7 +394,11 @@ impl PanelState for PreviewState {
         match internal_exec.internal {
             Internal::back => {
                 if self.filtered_preview.is_some() {
-                    self.on_pattern(InputPattern::none(), app_state, con)
+                    self.on_pattern(
+                        InputPattern::none(),
+                        app_state,
+                        con,
+                    )
                 } else {
                     Ok(CmdResult::PopState)
                 }
@@ -368,38 +406,58 @@ impl PanelState for PreviewState {
             Internal::copy_line => {
                 #[cfg(not(feature = "clipboard"))]
                 {
-                    Ok(CmdResult::error("Clipboard feature not enabled at compilation"))
+                    Ok(CmdResult::error(
+                        "Clipboard feature not enabled at compilation",
+                    ))
                 }
                 #[cfg(feature = "clipboard")]
                 {
-                    Ok(match self.mut_preview().get_selected_line() {
-                        Some(line) => match terminal_clipboard::set_string(line) {
-                            Ok(()) => CmdResult::Keep,
-                            Err(_) => {
-                                CmdResult::error("Clipboard error while copying path")
-                            }
+                    Ok(
+                        match self.mut_preview().get_selected_line() {
+                            Some(line) => match terminal_clipboard::set_string(line) {
+                                Ok(()) => CmdResult::Keep,
+                                Err(_) => {
+                                    CmdResult::error("Clipboard error while copying path")
+                                }
+                            },
+                            None => CmdResult::error("No selected line in preview"),
                         },
-                        None => CmdResult::error("No selected line in preview"),
-                    })
+                    )
                 }
             }
             Internal::line_down => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.mut_preview().move_selection(count, true);
                 Ok(CmdResult::Keep)
             }
             Internal::line_up => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.mut_preview().move_selection(-count, true);
                 Ok(CmdResult::Keep)
             }
             Internal::line_down_no_cycle => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.mut_preview().move_selection(count, false);
                 Ok(CmdResult::Keep)
             }
             Internal::line_up_no_cycle => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.mut_preview().move_selection(-count, false);
                 Ok(CmdResult::Keep)
             }
@@ -424,12 +482,17 @@ impl PanelState for PreviewState {
                 self.pending_pattern = self.removed_pattern.take();
                 Ok(CmdResult::Keep)
             }
-            Internal::panel_right if self.filtered_preview.is_some() => {
-                self.on_pattern(InputPattern::none(), app_state, con)
-            }
-            Internal::panel_right_no_open if self.filtered_preview.is_some() => {
-                self.on_pattern(InputPattern::none(), app_state, con)
-            }
+            Internal::panel_right if self.filtered_preview.is_some() => self.on_pattern(
+                InputPattern::none(),
+                app_state,
+                con,
+            ),
+            Internal::panel_right_no_open if self.filtered_preview.is_some() => self
+                .on_pattern(
+                    InputPattern::none(),
+                    app_state,
+                    con,
+                ),
             Internal::select_first => {
                 self.mut_preview().select_first();
                 Ok(CmdResult::Keep)

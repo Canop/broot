@@ -43,9 +43,10 @@ impl SourceImage {
     pub fn dimensions(&self) -> (u32, u32) {
         match self {
             Self::Bitmap(img) => img.dimensions(),
-            Self::Svg(tree) => {
-                (f32_to_u32(tree.size().width()), f32_to_u32(tree.size().height()))
-            }
+            Self::Svg(tree) => (
+                f32_to_u32(tree.size().width()),
+                f32_to_u32(tree.size().height()),
+            ),
         }
     }
     pub fn fitting(
@@ -59,11 +60,17 @@ impl SourceImage {
                 let dim = self.dimensions();
                 max_width = max_width.min(dim.0);
                 max_height = max_height.min(dim.1);
-                img.resize(max_width, max_height, FilterType::Triangle)
+                img.resize(
+                    max_width,
+                    max_height,
+                    FilterType::Triangle,
+                )
             }
             Self::Svg(tree) => {
                 let bg_color: Option<coolor::Color> = bg_color.map(|cc| cc.into());
-                svg::render_tree(tree, max_width, max_height, bg_color)?
+                svg::render_tree(
+                    tree, max_width, max_height, bg_color,
+                )?
             }
         };
         Ok(img)

@@ -241,7 +241,10 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
             &sourcing_path_str,
         );
     } else {
-        util::append_to_file(&sourcing_path, format!("\n{source_line}\n"))?;
+        util::append_to_file(
+            &sourcing_path,
+            format!("\n{source_line}\n"),
+        )?;
         mad_print_inline!(
             &si.skin,
             "`$0` successfully patched, you can make the function immediately available with `use '$0' *`\n",

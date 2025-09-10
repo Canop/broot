@@ -21,4 +21,7 @@ fn bench_score_of_toks(gb: &mut Bench) {
     }
 }
 
-glassbench!("Tokens Patterns", bench_score_of_toks,);
+glassbench!(
+    "Tokens Patterns",
+    bench_score_of_toks,
+);

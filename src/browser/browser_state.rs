@@ -66,12 +66,18 @@ impl BrowserState {
         let path = path.canonicalize().unwrap_or(path);
 
         let pending_task =
-            options.pattern.take().as_option().map(|pattern| BrowserTask::Search {
-                pattern,
-                total: false,
-            });
-        let builder =
-            TreeBuilder::from(path, options, BrowserState::page_height(screen), con)?;
+            options.pattern.take().as_option().map(
+                |pattern| BrowserTask::Search {
+                    pattern,
+                    total: false,
+                },
+            );
+        let builder = TreeBuilder::from(
+            path,
+            options,
+            BrowserState::page_height(screen),
+            con,
+        )?;
         let tree = builder.build_tree(false, dam)?;
         Ok(BrowserState {
             tree,
@@ -105,14 +111,23 @@ impl BrowserState {
         con: &AppContext,
     ) -> CmdResult {
         let tree = self.displayed_tree();
-        let mut new_state =
-            BrowserState::new(root, options, screen, con, &Dam::unlimited());
+        let mut new_state = BrowserState::new(
+            root,
+            options,
+            screen,
+            con,
+            &Dam::unlimited(),
+        );
         if let Ok(bs) = &mut new_state {
             if tree.selection != 0 {
                 bs.displayed_tree_mut().try_select_path(&tree.selected_line().path);
             }
         }
-        CmdResult::from_optional_browser_state(new_state, message, in_new_panel)
+        CmdResult::from_optional_browser_state(
+            new_state,
+            message,
+            in_new_panel,
+        )
     }
 
     pub fn root(&self) -> &Path {
@@ -154,28 +169,35 @@ impl BrowserState {
                 }
             }
             let dam = Dam::unlimited();
-            Ok(CmdResult::from_optional_browser_state(
-                BrowserState::new(
-                    target,
-                    if keep_pattern {
-                        tree.options.clone()
-                    } else {
-                        tree.options.without_pattern()
-                    },
-                    screen,
-                    con,
-                    &dam,
+            Ok(
+                CmdResult::from_optional_browser_state(
+                    BrowserState::new(
+                        target,
+                        if keep_pattern {
+                            tree.options.clone()
+                        } else {
+                            tree.options.without_pattern()
+                        },
+                        screen,
+                        con,
+                        &dam,
+                    ),
+                    None,
+                    in_new_panel,
                 ),
-                None,
-                in_new_panel,
-            ))
+            )
         } else {
             match opener::open(&target) {
                 Ok(exit_status) => {
-                    info!("open returned with exit_status {:?}", exit_status);
+                    info!(
+                        "open returned with exit_status {:?}",
+                        exit_status
+                    );
                     Ok(CmdResult::Keep)
                 }
-                Err(e) => Ok(CmdResult::error(format!("{e:?}"))),
+                Err(e) => Ok(CmdResult::error(format!(
+                    "{e:?}"
+                ))),
             }
         }
     }
@@ -274,7 +296,14 @@ impl PanelState for BrowserState {
         let mut options = tree.options.clone();
         let message = change_options(&mut options);
         let message = Some(message);
-        self.modified(screen, tree.root().clone(), options, message, in_new_panel, con)
+        self.modified(
+            screen,
+            tree.root().clone(),
+            options,
+            message,
+            in_new_panel,
+            con,
+        )
     }
 
     fn clear_pending(&mut self) {
@@ -338,7 +367,10 @@ impl PanelState for BrowserState {
         app_state: &mut AppState,
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
-        debug!("browser_state on_internal {:?}", internal_exec);
+        debug!(
+            "browser_state on_internal {:?}",
+            internal_exec
+        );
         let con = &cc.app.con;
         let screen = cc.app.screen;
         let page_height = BrowserState::page_height(cc.app.screen);
@@ -373,22 +405,38 @@ impl PanelState for BrowserState {
                 )
             }
             Internal::line_down => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.displayed_tree_mut().move_selection(count, page_height, true);
                 CmdResult::Keep
             }
             Internal::line_down_no_cycle => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.displayed_tree_mut().move_selection(count, page_height, false);
                 CmdResult::Keep
             }
             Internal::line_up => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.displayed_tree_mut().move_selection(-count, page_height, true);
                 CmdResult::Keep
             }
             Internal::line_up_no_cycle => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.displayed_tree_mut().move_selection(-count, page_height, false);
                 CmdResult::Keep
             }
@@ -398,8 +446,10 @@ impl PanelState for BrowserState {
                 CmdResult::Keep
             }
             Internal::next_match => {
-                self.displayed_tree_mut()
-                    .try_select_next_filtered(|line| line.direct_match, page_height);
+                self.displayed_tree_mut().try_select_next_filtered(
+                    |line| line.direct_match,
+                    page_height,
+                );
                 CmdResult::Keep
             }
             Internal::next_same_depth => {
@@ -414,14 +464,20 @@ impl PanelState for BrowserState {
             }
             Internal::page_down => {
                 let tree = self.displayed_tree_mut();
-                if !tree.try_scroll(page_height as i32, page_height) {
+                if !tree.try_scroll(
+                    page_height as i32,
+                    page_height,
+                ) {
                     tree.try_select_last(page_height);
                 }
                 CmdResult::Keep
             }
             Internal::page_up => {
                 let tree = self.displayed_tree_mut();
-                if !tree.try_scroll(-(page_height as i32), page_height) {
+                if !tree.try_scroll(
+                    -(page_height as i32),
+                    page_height,
+                ) {
                     tree.try_select_first();
                 }
                 CmdResult::Keep
@@ -481,8 +537,10 @@ impl PanelState for BrowserState {
                 CmdResult::Keep
             }
             Internal::previous_match => {
-                self.displayed_tree_mut()
-                    .try_select_previous_filtered(|line| line.direct_match, page_height);
+                self.displayed_tree_mut().try_select_previous_filtered(
+                    |line| line.direct_match,
+                    page_height,
+                );
                 CmdResult::Keep
             }
             Internal::previous_same_depth => {
@@ -506,7 +564,14 @@ impl PanelState for BrowserState {
                         .components()
                         .take(root_len + 1)
                         .collect();
-                    self.modified(screen, new_root, tree.options.clone(), None, bang, con)
+                    self.modified(
+                        screen,
+                        new_root,
+                        tree.options.clone(),
+                        None,
+                        bang,
+                        con,
+                    )
                 } else {
                     CmdResult::error("No selected line")
                 }
@@ -524,7 +589,9 @@ impl PanelState for BrowserState {
                         con,
                     )
                 } else {
-                    CmdResult::error(format!("{root:?} has no parent"))
+                    CmdResult::error(format!(
+                        "{root:?} has no parent"
+                    ))
                 }
             }
             Internal::search_again => {
@@ -538,7 +605,10 @@ impl PanelState for BrowserState {
                         "search was already total: all possible matches have been ranked",
                     ),
                     Some(false) => {
-                        self.search(self.displayed_tree().options.pattern.clone(), true);
+                        self.search(
+                            self.displayed_tree().options.pattern.clone(),
+                            true,
+                        );
                         CmdResult::Keep
                     }
                 }
@@ -595,7 +665,11 @@ impl PanelState for BrowserState {
                 if cc.app.stage_panel.is_none() {
                     let stage_options = self.tree.options.without_pattern();
                     CmdResult::NewPanel {
-                        state: Box::new(StageState::new(app_state, stage_options, con)),
+                        state: Box::new(StageState::new(
+                            app_state,
+                            stage_options,
+                            con,
+                        )),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
                     }
@@ -613,7 +687,11 @@ impl PanelState for BrowserState {
                 if cc.app.stage_panel.is_none() {
                     let stage_options = self.tree.options.without_pattern();
                     CmdResult::NewPanel {
-                        state: Box::new(StageState::new(app_state, stage_options, con)),
+                        state: Box::new(StageState::new(
+                            app_state,
+                            stage_options,
+                            con,
+                        )),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
                     }
@@ -676,7 +754,10 @@ impl PanelState for BrowserState {
                         "search was already total: all possible matches have been ranked",
                     ),
                     Some(false) => {
-                        self.search(self.displayed_tree().options.pattern.clone(), true);
+                        self.search(
+                            self.displayed_tree().options.pattern.clone(),
+                            true,
+                        );
                         CmdResult::Keep
                     }
                 }
@@ -692,7 +773,10 @@ impl PanelState for BrowserState {
                     },
                     Err(e) => {
                         warn!("trash error: {:?}", &e);
-                        CmdResult::DisplayError(format!("trash error: {:?}", &e))
+                        CmdResult::DisplayError(format!(
+                            "trash error: {:?}",
+                            &e
+                        ))
                     }
                 }
 
@@ -774,7 +858,12 @@ impl PanelState for BrowserState {
                     options.pattern = pattern;
                     let root = self.tree.root().clone();
                     let page_height = BrowserState::page_height(screen);
-                    let builder = TreeBuilder::from(root, options, page_height, con)?;
+                    let builder = TreeBuilder::from(
+                        root,
+                        options,
+                        page_height,
+                        con,
+                    )?;
                     let filtered_tree = time!(
                         Info,
                         "tree filtering",
@@ -783,7 +872,9 @@ impl PanelState for BrowserState {
                     );
                     if let Ok(mut ft) = filtered_tree {
                         ft.try_select_best_match();
-                        ft.make_selection_visible(BrowserState::page_height(screen));
+                        ft.make_selection_visible(BrowserState::page_height(
+                            screen,
+                        ));
                         self.filtered_tree = Some(ft);
                     }
                 }
@@ -791,20 +882,29 @@ impl PanelState for BrowserState {
                     pattern,
                     file_type_condition,
                 } => {
-                    debug!("stage all pattern: {:?}", pattern);
+                    debug!(
+                        "stage all pattern: {:?}",
+                        pattern
+                    );
                     let tree = self.displayed_tree();
                     let root = tree.root().clone();
                     let mut options = tree.options.clone();
                     let total_search = true;
                     options.pattern = pattern; // should be the same
-                    let builder =
-                        TreeBuilder::from(root, options, con.max_staged_count, con);
+                    let builder = TreeBuilder::from(
+                        root,
+                        options,
+                        con.max_staged_count,
+                        con,
+                    );
                     let mut paths = builder.and_then(|mut builder| {
                         builder.matches_max = Some(con.max_staged_count);
-                        time!(builder.build_paths(total_search, dam, |line| {
-                            debug!("??staging {:?}", &line.path);
-                            file_type_condition.accepts_path(&line.path)
-                        }))
+                        time!(
+                            builder.build_paths(total_search, dam, |line| {
+                                debug!("??staging {:?}", &line.path);
+                                file_type_condition.accepts_path(&line.path)
+                            })
+                        )
                     })?;
                     for path in paths.drain(..) {
                         app_state.stage.add(path);
@@ -845,13 +945,19 @@ impl PanelState for BrowserState {
         let page_height = BrowserState::page_height(screen);
         // refresh the base tree
         if let Err(e) = self.tree.refresh(page_height, con) {
-            warn!("refreshing base tree failed : {:?}", e);
+            warn!(
+                "refreshing base tree failed : {:?}",
+                e
+            );
         }
         // refresh the filtered tree, if any
         Command::from_pattern(match self.filtered_tree {
             Some(ref mut tree) => {
                 if let Err(e) = tree.refresh(page_height, con) {
-                    warn!("refreshing filtered tree failed : {:?}", e);
+                    warn!(
+                        "refreshing filtered tree failed : {:?}",
+                        e
+                    );
                 }
                 &tree.options.pattern
             }

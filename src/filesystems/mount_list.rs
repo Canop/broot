@@ -31,7 +31,10 @@ impl MountList {
                     self.mounts = Some(vec);
                 }
                 Err(e) => {
-                    warn!("Failed to load mounts: {:?}", e);
+                    warn!(
+                        "Failed to load mounts: {:?}",
+                        e
+                    );
                     return Err(ProgramError::Lfs {
                         details: e.to_string(),
                     });

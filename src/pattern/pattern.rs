@@ -63,9 +63,12 @@ impl Pattern {
                             flags.unwrap_or(""),
                         )?),
                         SearchMode::PathTokens => Self::PathTokens(TokPattern::new(core)),
-                        SearchMode::ContentExact => Self::ContentExact(
-                            ContentExactPattern::new(core, content_search_max_file_size),
-                        ),
+                        SearchMode::ContentExact => {
+                            Self::ContentExact(ContentExactPattern::new(
+                                core,
+                                content_search_max_file_size,
+                            ))
+                        }
                         SearchMode::ContentRegex => {
                             Self::ContentRegex(ContentRegexPattern::new(
                                 core,

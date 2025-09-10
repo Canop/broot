@@ -15,8 +15,16 @@ impl fmt::Display for PatternParts {
     ) -> fmt::Result {
         match self.parts.len() {
             1 => write!(f, "{}", &self.parts[0]),
-            2 => write!(f, "{}/{}", &self.parts[0], &self.parts[1]),
-            _ => write!(f, "{}/{}/{}", &self.parts[0], &self.parts[1], &self.parts[2]),
+            2 => write!(
+                f,
+                "{}/{}",
+                &self.parts[0], &self.parts[1]
+            ),
+            _ => write!(
+                f,
+                "{}/{}/{}",
+                &self.parts[0], &self.parts[1], &self.parts[2]
+            ),
         }
     }
 }

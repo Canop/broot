@@ -238,7 +238,9 @@ impl FromStr for CliShellInstallState {
             "undefined" => Ok(Self::Undefined),
             "refused" => Ok(Self::Refused),
             "installed" => Ok(Self::Installed),
-            _ => Err(format!("unexpected install state: {state:?}")),
+            _ => Err(format!(
+                "unexpected install state: {state:?}"
+            )),
         }
     }
 }

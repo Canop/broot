@@ -53,9 +53,11 @@ pub fn build_regex(
                 builder.swap_greed(true);
             }
             _ => {
-                return Err(PatternError::UnknownRegexFlag {
-                    bad: c,
-                });
+                return Err(
+                    PatternError::UnknownRegexFlag {
+                        bad: c,
+                    },
+                );
             }
         }
     }

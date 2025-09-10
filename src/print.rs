@@ -60,15 +60,19 @@ fn relativize_path(
 ) -> io::Result<String> {
     let relative_path = match pathdiff::diff_paths(path, &con.initial_root) {
         None => {
-            return Err(io::Error::other(format!("Cannot relativize {path:?}")));
+            return Err(io::Error::other(format!(
+                "Cannot relativize {path:?}"
+            )));
         }
         Some(p) => p,
     };
-    Ok(if relative_path.components().next().is_some() {
-        relative_path.to_string_lossy().to_string()
-    } else {
-        ".".to_string()
-    })
+    Ok(
+        if relative_path.components().next().is_some() {
+            relative_path.to_string_lossy().to_string()
+        } else {
+            ".".to_string()
+        },
+    )
 }
 
 pub fn print_relative_paths(
@@ -103,10 +107,12 @@ pub fn print_tree(
     } else {
         StyleMap::no_term()
     };
-    Ok(CmdResult::from(Launchable::tree_printer(
-        tree,
-        screen,
-        styles,
-        con.ext_colors.clone(),
-    )))
+    Ok(CmdResult::from(
+        Launchable::tree_printer(
+            tree,
+            screen,
+            styles,
+            con.ext_colors.clone(),
+        ),
+    ))
 }

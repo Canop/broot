@@ -109,7 +109,11 @@ impl TrashState {
         cmd: ScrollCommand,
     ) -> bool {
         let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.count(), self.page_height);
+        self.scroll = cmd.apply(
+            self.scroll,
+            self.count(),
+            self.page_height,
+        );
         // move selection to an item in view
         if let Some(f) = self.filtered.as_mut() {
             if let Some(idx) = f.selection_idx {
@@ -154,12 +158,21 @@ impl TrashState {
         dir: i32, // -1 for up, 1 for down
         cycle: bool,
     ) -> CmdResult {
-        let count = get_arg(input_invocation, internal_exec, 1);
+        let count = get_arg(
+            input_invocation,
+            internal_exec,
+            1,
+        );
         let dec = dir * count;
         let selection_idx;
         if let Some(f) = self.filtered.as_mut() {
             selection_idx = if let Some(idx) = f.selection_idx {
-                Some(move_sel(idx, f.items.len(), dec, cycle))
+                Some(move_sel(
+                    idx,
+                    f.items.len(),
+                    dec,
+                    cycle,
+                ))
             } else if !f.items.is_empty() {
                 Some(if dec > 0 {
                     0
@@ -172,7 +185,12 @@ impl TrashState {
             f.selection_idx = selection_idx;
         } else {
             selection_idx = if let Some(idx) = self.selection_idx {
-                Some(move_sel(idx, self.items.len(), dec, cycle))
+                Some(move_sel(
+                    idx,
+                    self.items.len(),
+                    dec,
+                    cycle,
+                ))
             } else if !self.items.is_empty() {
                 Some(if dec > 0 {
                     0
@@ -277,7 +295,12 @@ impl PanelState for TrashState {
         let mut options = self.tree_options.clone();
         let message = change_options(&mut options);
         let message = Some(message);
-        self.modified(options, message, in_new_panel, con)
+        self.modified(
+            options,
+            message,
+            in_new_panel,
+            con,
+        )
     }
 
     /// We don't want to expose path to verbs because you can't
@@ -351,9 +374,15 @@ impl PanelState for TrashState {
         let con = &disc.con;
         self.page_height = area.height as usize - 2;
         let (items, selection_idx) = if let Some(filtered) = &self.filtered {
-            (filtered.items.as_slice(), filtered.selection_idx)
+            (
+                filtered.items.as_slice(),
+                filtered.selection_idx,
+            )
         } else {
-            (self.items.as_slice(), self.selection_idx)
+            (
+                self.items.as_slice(),
+                self.selection_idx,
+            )
         };
         let scrollbar = area.scrollbar(self.scroll, items.len());
         //- style preparation
@@ -373,11 +402,17 @@ impl PanelState for TrashState {
             width
         };
 
-        let cols = get_cols(items, available_width, &self.tree_options);
+        let cols = get_cols(
+            items,
+            available_width,
+            &self.tree_options,
+        );
         let first_col_width = cols.iter().filter_map(|c| c.size()).next().unwrap_or(0);
 
         //- titles
-        w.queue(cursor::MoveTo(area.left, area.top))?;
+        w.queue(cursor::MoveTo(
+            area.left, area.top,
+        ))?;
         let mut cw = CropWriter::new(w, width);
         if con.show_selection_mark {
             cw.queue_char(&styles.default, ' ')?;
@@ -398,12 +433,18 @@ impl PanelState for TrashState {
             } else {
                 title
             };
-            cw.queue_g_string(&styles.default, format!("{:^size$}", title))?;
+            cw.queue_g_string(
+                &styles.default,
+                format!("{:^size$}", title),
+            )?;
         }
         cw.fill(border_style, &SPACE_FILLING)?;
 
         //- horizontal line
-        w.queue(cursor::MoveTo(area.left, 1 + area.top))?;
+        w.queue(cursor::MoveTo(
+            area.left,
+            1 + area.top,
+        ))?;
         let mut cw = CropWriter::new(w, width);
         if con.show_selection_mark {
             cw.queue_char(&styles.default, ' ')?;
@@ -418,14 +459,24 @@ impl PanelState for TrashState {
             } else {
                 added = true;
             }
-            cw.queue_g_string(border_style, format!("{:─>width$}", "", width = size))?;
+            cw.queue_g_string(
+                border_style,
+                format!(
+                    "{:─>width$}",
+                    "",
+                    width = size
+                ),
+            )?;
         }
         cw.fill(border_style, &BRANCH_FILLING)?;
 
         //- content
         let mut idx = self.scroll;
         for y in 2..area.height {
-            w.queue(cursor::MoveTo(area.left, y + area.top))?;
+            w.queue(cursor::MoveTo(
+                area.left,
+                y + area.top,
+            ))?;
             let selected = selection_idx == Some(idx);
             let mut cw = CropWriter::new(w, width - 1); // -1 for scrollbar
             let txt_style = if selected {
@@ -502,7 +553,11 @@ impl PanelState for TrashState {
                 }
                 cw.queue_g_string(
                     border_style,
-                    format!("{: >width$}", '│', width = first_col_width + 1),
+                    format!(
+                        "{: >width$}",
+                        '│',
+                        width = first_col_width + 1
+                    ),
                 )?;
             }
             cw.fill(txt_style, &SPACE_FILLING)?;
@@ -587,18 +642,30 @@ impl PanelState for TrashState {
                     CmdResult::PopState
                 }
             }
-            Internal::line_down => {
-                self.move_line(internal_exec, input_invocation, 1, true)
-            }
-            Internal::line_up => {
-                self.move_line(internal_exec, input_invocation, -1, true)
-            }
-            Internal::line_down_no_cycle => {
-                self.move_line(internal_exec, input_invocation, 1, false)
-            }
-            Internal::line_up_no_cycle => {
-                self.move_line(internal_exec, input_invocation, -1, false)
-            }
+            Internal::line_down => self.move_line(
+                internal_exec,
+                input_invocation,
+                1,
+                true,
+            ),
+            Internal::line_up => self.move_line(
+                internal_exec,
+                input_invocation,
+                -1,
+                true,
+            ),
+            Internal::line_down_no_cycle => self.move_line(
+                internal_exec,
+                input_invocation,
+                1,
+                false,
+            ),
+            Internal::line_up_no_cycle => self.move_line(
+                internal_exec,
+                input_invocation,
+                -1,
+                false,
+            ),
             Internal::open_stay => {
                 // it would probably be a good idea to bind enter to restore_trash_file ?
                 CmdResult::DisplayError("can't open a file from the trash".to_string())

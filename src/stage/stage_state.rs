@@ -57,8 +57,10 @@ impl StageState {
         tree_options: TreeOptions,
         con: &AppContext,
     ) -> StageState {
-        let filtered_stage =
-            FilteredStage::filtered(&app_state.stage, tree_options.pattern.clone());
+        let filtered_stage = FilteredStage::filtered(
+            &app_state.stage,
+            tree_options.pattern.clone(),
+        );
         Self {
             filtered_stage,
             scroll: 0,
@@ -78,7 +80,11 @@ impl StageState {
         cmd: ScrollCommand,
     ) -> bool {
         let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.filtered_stage.len(), self.page_height);
+        self.scroll = cmd.apply(
+            self.scroll,
+            self.filtered_stage.len(),
+            self.page_height,
+        );
         self.scroll != old_scroll
     }
 
@@ -104,7 +110,10 @@ impl StageState {
             return Ok(());
         }
         if TITLE.len() + 1 + count_len <= cw.allowed {
-            cw.queue_str(&styles.staging_area_title, TITLE)?;
+            cw.queue_str(
+                &styles.staging_area_title,
+                TITLE,
+            )?;
         }
         let mut show_count_label = false;
         let mut rem = cw.allowed - count_len;
@@ -120,29 +129,55 @@ impl StageState {
                         // we display the size in the middle, so we cut rem in two
                         let left_rem = rem / 2;
                         rem -= left_rem;
-                        cw.repeat(&styles.staging_area_title, &SPACE_FILLING, left_rem)?;
+                        cw.repeat(
+                            &styles.staging_area_title,
+                            &SPACE_FILLING,
+                            left_rem,
+                        )?;
                         cw.queue_g_string(
                             &styles.staging_area_title,
                             SIZE_LABEL.to_string(),
                         )?;
-                        cw.queue_g_string(&styles.staging_area_title, size)?;
+                        cw.queue_g_string(
+                            &styles.staging_area_title,
+                            size,
+                        )?;
                     }
                 }
             }
         }
-        cw.repeat(&styles.staging_area_title, &SPACE_FILLING, rem)?;
+        cw.repeat(
+            &styles.staging_area_title,
+            &SPACE_FILLING,
+            rem,
+        )?;
         if show_count_label {
-            cw.queue_g_string(&styles.staging_area_title, COUNT_LABEL.to_string())?;
+            cw.queue_g_string(
+                &styles.staging_area_title,
+                COUNT_LABEL.to_string(),
+            )?;
         }
         if self.filtered_stage.pattern().is_some() {
             cw.queue_g_string(
                 &styles.char_match,
-                format!("{}", self.filtered_stage.len()),
+                format!(
+                    "{}",
+                    self.filtered_stage.len()
+                ),
             )?;
-            cw.queue_char(&styles.staging_area_title, '/')?;
+            cw.queue_char(
+                &styles.staging_area_title,
+                '/',
+            )?;
         }
-        cw.queue_g_string(&styles.staging_area_title, total_count)?;
-        cw.fill(&styles.staging_area_title, &SPACE_FILLING)?;
+        cw.queue_g_string(
+            &styles.staging_area_title,
+            total_count,
+        )?;
+        cw.fill(
+            &styles.staging_area_title,
+            &SPACE_FILLING,
+        )?;
         Ok(())
     }
 
@@ -299,11 +334,19 @@ impl PanelState for StageState {
         w.queue(cursor::MoveTo(area.left, 0))?;
         let mut cw = CropWriter::new(w, width);
         self.write_title_line(stage, &mut cw, styles)?;
-        let list_area = Area::new(area.left, area.top + 1, area.width, area.height - 1);
+        let list_area = Area::new(
+            area.left,
+            area.top + 1,
+            area.width,
+            area.height - 1,
+        );
         self.page_height = list_area.height as usize;
         let pattern = &self.filtered_stage.pattern().pattern;
         let pattern_object = pattern.object();
-        let scrollbar = list_area.scrollbar(self.scroll, self.filtered_stage.len());
+        let scrollbar = list_area.scrollbar(
+            self.scroll,
+            self.filtered_stage.len(),
+        );
         for idx in 0..self.page_height {
             let y = list_area.top + idx as u16;
             let stage_idx = idx + self.scroll;
@@ -349,8 +392,12 @@ impl PanelState for StageState {
                     // we must display the matching on the whole path
                     // (subpath is the path for the staging area)
                     let name_match = pattern.search_string(&label);
-                    let matched_string =
-                        MatchedString::new(name_match, &label, style, style_match);
+                    let matched_string = MatchedString::new(
+                        name_match,
+                        &label,
+                        style,
+                        style_match,
+                    );
                     matched_string.queue_on(cw)?;
                 } else if let Some(file_name) = path.file_name() {
                     let label = file_name.to_string_lossy();
@@ -397,8 +444,12 @@ impl PanelState for StageState {
                         }
                     }
                     let name_match = pattern.search_string(&label);
-                    let matched_string =
-                        MatchedString::new(name_match, &label, style, style_match);
+                    let matched_string = MatchedString::new(
+                        name_match,
+                        &label,
+                        style,
+                        style_match,
+                    );
                     matched_string.queue_on(cw)?;
                 } else {
                     // this should not happen
@@ -406,7 +457,10 @@ impl PanelState for StageState {
                 }
                 cw.fill(style, &SPACE_FILLING)?;
             }
-            cw.fill(&styles.default, &SPACE_FILLING)?;
+            cw.fill(
+                &styles.default,
+                &SPACE_FILLING,
+            )?;
             let scrollbar_style = if ScrollCommand::is_thumb(y, scrollbar) {
                 &styles.scrollbar_thumb
             } else {
@@ -456,19 +510,35 @@ impl PanelState for StageState {
                 CmdResult::Keep
             }
             Internal::line_down => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.move_selection(count, true)
             }
             Internal::line_up => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.move_selection(-count, true)
             }
             Internal::line_down_no_cycle => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.move_selection(count, false)
             }
             Internal::line_up_no_cycle => {
-                let count = get_arg(input_invocation, internal_exec, 1);
+                let count = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.move_selection(-count, false)
             }
             Internal::page_down => {
@@ -491,7 +561,10 @@ impl PanelState for StageState {
                 }
             }
             Internal::trash => {
-                info!("trash {} staged files", app_state.stage.len());
+                info!(
+                    "trash {} staged files",
+                    app_state.stage.len()
+                );
 
                 #[cfg(feature = "trash")]
                 match trash::delete_all(app_state.stage.paths()) {
@@ -503,7 +576,10 @@ impl PanelState for StageState {
                     }
                     Err(e) => {
                         warn!("trash error: {:?}", &e);
-                        CmdResult::DisplayError(format!("trash error: {:?}", &e))
+                        CmdResult::DisplayError(format!(
+                            "trash error: {:?}",
+                            &e
+                        ))
                     }
                 }
 

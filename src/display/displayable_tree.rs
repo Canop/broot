@@ -130,9 +130,17 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
-            cond_bg!(count_style, self, selected, self.skin.count);
+            cond_bg!(
+                count_style,
+                self,
+                selected,
+                self.skin.count
+            );
             let s = format_count(s.to_count());
-            cw.queue_g_string(count_style, format!("{s:>count_len$}"))?;
+            cw.queue_g_string(
+                count_style,
+                format!("{s:>count_len$}"),
+            )?;
             1
         } else {
             count_len + 1
@@ -147,12 +155,33 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         let device_id = line.device_id();
-        cond_bg!(style, self, selected, self.skin.device_id_major);
-        cw.queue_g_string(style, format!("{:>3}", device_id.major))?;
-        cond_bg!(style, self, selected, self.skin.device_id_sep);
+        cond_bg!(
+            style,
+            self,
+            selected,
+            self.skin.device_id_major
+        );
+        cw.queue_g_string(
+            style,
+            format!("{:>3}", device_id.major),
+        )?;
+        cond_bg!(
+            style,
+            self,
+            selected,
+            self.skin.device_id_sep
+        );
         cw.queue_char(style, ':')?;
-        cond_bg!(style, self, selected, self.skin.device_id_minor);
-        cw.queue_g_string(style, format!("{:<3}", device_id.minor))?;
+        cond_bg!(
+            style,
+            self,
+            selected,
+            self.skin.device_id_minor
+        );
+        cw.queue_g_string(
+            style,
+            format!("{:<3}", device_id.minor),
+        )?;
         Ok(0)
     }
 
@@ -178,7 +207,13 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         _selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
-            cw.queue_g_string(style, format!("{:>4}", file_size::fit_4(s.to_size())))?;
+            cw.queue_g_string(
+                style,
+                format!(
+                    "{:>4}",
+                    file_size::fit_4(s.to_size())
+                ),
+            )?;
             1
         } else {
             5
@@ -197,10 +232,18 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
             let pb = ProgressBar::new(s.part_of_size(total_size), 10);
-            cond_bg!(sparse_style, self, selected, self.skin.sparse);
+            cond_bg!(
+                sparse_style,
+                self,
+                selected,
+                self.skin.sparse
+            );
             cw.queue_g_string(
                 label_style,
-                format!("{:>4}", file_size::fit_4(s.to_size())),
+                format!(
+                    "{:>4}",
+                    file_size::fit_4(s.to_size())
+                ),
             )?;
             cw.queue_char(
                 sparse_style,
@@ -210,7 +253,10 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     ' '
                 },
             )?;
-            cw.queue_g_string(label_style, format!("{pb:<10}"))?;
+            cw.queue_g_string(
+                label_style,
+                format!("{pb:<10}"),
+            )?;
             1
         } else {
             16
@@ -227,16 +273,33 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             (&self.skin.tree, ' ')
         } else {
             match line.git_status.map(|s| s.status) {
-                Some(Status::CURRENT) => (&self.skin.git_status_current, ' '),
+                Some(Status::CURRENT) => (
+                    &self.skin.git_status_current,
+                    ' ',
+                ),
                 Some(Status::WT_NEW) => (&self.skin.git_status_new, 'N'),
-                Some(Status::CONFLICTED) => (&self.skin.git_status_conflicted, 'C'),
-                Some(Status::WT_MODIFIED) => (&self.skin.git_status_modified, 'M'),
-                Some(Status::IGNORED) => (&self.skin.git_status_ignored, 'I'),
+                Some(Status::CONFLICTED) => (
+                    &self.skin.git_status_conflicted,
+                    'C',
+                ),
+                Some(Status::WT_MODIFIED) => (
+                    &self.skin.git_status_modified,
+                    'M',
+                ),
+                Some(Status::IGNORED) => (
+                    &self.skin.git_status_ignored,
+                    'I',
+                ),
                 None => (&self.skin.tree, ' '),
-                _ => (&self.skin.git_status_other, '?'),
+                _ => (
+                    &self.skin.git_status_other,
+                    '?',
+                ),
             }
         };
-        cond_bg!(git_style, self, selected, style);
+        cond_bg!(
+            git_style, self, selected, style
+        );
         cw.queue_char(git_style, char)?;
         Ok(0)
     }
@@ -248,7 +311,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         if let LocalResult::Single(date_time) = Local.timestamp_opt(seconds, 0) {
-            cond_bg!(date_style, self, selected, self.skin.dates);
+            cond_bg!(
+                date_style,
+                self,
+                selected,
+                self.skin.dates
+            );
             cw.queue_g_string(
                 date_style,
                 date_time.format(self.tree.options.date_time_format).to_string(),
@@ -265,29 +333,36 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
         staged: bool,
     ) -> Result<usize, ProgramError> {
-        cond_bg!(branch_style, self, selected, self.skin.tree);
+        cond_bg!(
+            branch_style,
+            self,
+            selected,
+            self.skin.tree
+        );
         let mut branch = String::new();
         for depth in 0..line.depth {
-            branch.push_str(if line.left_branches[depth as usize] {
-                if self.tree.has_branch(line_index + 1, depth as usize) {
-                    // TODO: If a theme is on, remove the horizontal lines
-                    if depth == line.depth - 1 {
-                        if staged {
-                            "├◍─"
+            branch.push_str(
+                if line.left_branches[depth as usize] {
+                    if self.tree.has_branch(line_index + 1, depth as usize) {
+                        // TODO: If a theme is on, remove the horizontal lines
+                        if depth == line.depth - 1 {
+                            if staged {
+                                "├◍─"
+                            } else {
+                                "├──"
+                            }
                         } else {
-                            "├──"
+                            "│  "
                         }
+                    } else if staged {
+                        "└◍─"
                     } else {
-                        "│  "
+                        "└──"
                     }
-                } else if staged {
-                    "└◍─"
                 } else {
-                    "└──"
-                }
-            } else {
-                "   "
-            });
+                    "   "
+                },
+            );
         }
         if !branch.is_empty() {
             cw.queue_g_string(branch_style, branch)?;
@@ -319,7 +394,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         pattern_object: PatternObject,
         selected: bool,
     ) -> Result<usize, ProgramError> {
-        cond_bg!(char_match_style, self, selected, self.skin.char_match);
+        cond_bg!(
+            char_match_style,
+            self,
+            selected,
+            self.skin.char_match
+        );
         if let Some(icon) = line.icon {
             cw.queue_char(style, icon)?;
             cw.queue_char(style, ' ')?;
@@ -338,7 +418,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     char_match_style,
                 );
                 let name_ms = path_ms.split_on_last('/');
-                cond_bg!(parent_style, self, selected, self.skin.parent);
+                cond_bg!(
+                    parent_style,
+                    self,
+                    selected,
+                    self.skin.parent
+                );
                 if let Some(name_ms) = name_ms {
                     path_ms.base_style = parent_style;
                     let allowed = cw.allowed - 2.min(cw.allowed);
@@ -360,8 +445,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             }
         } else {
             let name_match = self.tree.options.pattern.pattern.find_string(&line.name);
-            let matched_string =
-                MatchedString::new(name_match, &line.name, style, char_match_style);
+            let matched_string = MatchedString::new(
+                name_match,
+                &line.name,
+                style,
+                char_match_style,
+            );
             matched_string.queue_on(cw)?;
         }
         match &line.line_type {
@@ -372,7 +461,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             }
             TreeLineType::BrokenSymLink(direct_path) => {
                 cw.queue_str(style, " -> ")?;
-                cond_bg!(error_style, self, selected, self.skin.file_error);
+                cond_bg!(
+                    error_style,
+                    self,
+                    selected,
+                    self.skin.file_error
+                );
                 cw.queue_str(error_style, direct_path)?;
             }
             TreeLineType::SymLink {
@@ -386,7 +480,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 } else {
                     &self.skin.file
                 };
-                cond_bg!(target_style, self, selected, target_style);
+                cond_bg!(
+                    target_style,
+                    self,
+                    selected,
+                    target_style
+                );
                 cw.queue_str(target_style, direct_target)?;
             }
             _ => {}
@@ -400,18 +499,34 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         extract: ContentMatch,
         selected: bool,
     ) -> Result<(), ProgramError> {
-        cond_bg!(extract_style, self, selected, self.skin.content_extract);
-        cond_bg!(match_style, self, selected, self.skin.content_match);
+        cond_bg!(
+            extract_style,
+            self,
+            selected,
+            self.skin.content_extract
+        );
+        cond_bg!(
+            match_style,
+            self,
+            selected,
+            self.skin.content_match
+        );
         cw.queue_str(extract_style, "  ")?;
         if extract.needle_start > 0 {
-            cw.queue_str(extract_style, &extract.extract[0..extract.needle_start])?;
+            cw.queue_str(
+                extract_style,
+                &extract.extract[0..extract.needle_start],
+            )?;
         }
         cw.queue_str(
             match_style,
             &extract.extract[extract.needle_start..extract.needle_end],
         )?;
         if extract.needle_end < extract.extract.len() {
-            cw.queue_str(extract_style, &extract.extract[extract.needle_end..])?;
+            cw.queue_str(
+                extract_style,
+                &extract.extract[extract.needle_end..],
+            )?;
         }
         Ok(())
     }
@@ -421,13 +536,21 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         cw: &mut CropWriter<W>,
         selected: bool,
     ) -> Result<(), ProgramError> {
-        cond_bg!(style, self, selected, self.skin.directory);
+        cond_bg!(
+            style,
+            self,
+            selected,
+            self.skin.directory
+        );
         let line = &self.tree.lines[0];
         if self.tree.options.show_sizes {
             if let Some(s) = line.sum {
                 cw.queue_g_string(
                     style,
-                    format!("{:>4} ", file_size::fit_4(s.to_size())),
+                    format!(
+                        "{:>4} ",
+                        file_size::fit_4(s.to_size())
+                    ),
                 )?;
             }
         }
@@ -455,8 +578,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
         if self.in_app && !cw.is_full() {
             if let ComputationResult::Done(git_status) = &self.tree.git_status {
-                let git_status_display =
-                    GitStatusDisplay::from(git_status, self.skin, cw.allowed);
+                let git_status_display = GitStatusDisplay::from(
+                    git_status, self.skin, cw.allowed,
+                );
                 git_status_display.write(cw, selected)?;
             }
             #[cfg(any(target_os = "linux", target_os = "macos"))]
@@ -511,11 +635,17 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             None
         };
         if self.in_app {
-            f.queue(cursor::MoveTo(self.area.left, self.area.top))?;
+            f.queue(cursor::MoveTo(
+                self.area.left,
+                self.area.top,
+            ))?;
         }
         let mut cw = CropWriter::new(f, self.area.width as usize);
         let pattern_object = tree.options.pattern.pattern.object();
-        self.write_root_line(&mut cw, self.in_app && tree.selection == 0)?;
+        self.write_root_line(
+            &mut cw,
+            self.in_app && tree.selection == 0,
+        )?;
         self.skin.queue_reset(f)?;
 
         let visible_cols: Vec<Col> = tree
@@ -549,7 +679,10 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
         for y in 1..self.area.height {
             if self.in_app {
-                f.queue(cursor::MoveTo(self.area.left, y + self.area.top))?;
+                f.queue(cursor::MoveTo(
+                    self.area.left,
+                    y + self.area.top,
+                ))?;
             } else {
                 write!(f, "\r\n")?;
             }
@@ -573,8 +706,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 if visible_cols[0].needs_left_margin() {
                     cw.queue_char(space_style, ' ')?;
                 }
-                let staged =
-                    self.app_state.map_or(false, |a| a.stage.contains(&line.path));
+                let staged = self.app_state.map_or(false, |a| {
+                    a.stage.contains(&line.path)
+                });
                 for col in &visible_cols {
                     let void_len = match col {
                         Col::Mark => {
@@ -585,7 +719,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
                         Col::Branch => {
                             in_branch = true;
-                            self.write_branch(cw, line_index, line, selected, staged)?
+                            self.write_branch(
+                                cw, line_index, line, selected, staged,
+                            )?
                         }
 
                         Col::DeviceId => {
@@ -632,7 +768,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                                     selected,
                                 )?
                             } else {
-                                self.write_line_size(cw, line, &label_style, selected)?
+                                self.write_line_size(
+                                    cw,
+                                    line,
+                                    &label_style,
+                                    selected,
+                                )?
                             }
                         }
 
@@ -657,11 +798,29 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     };
                     // void: intercol & replacing missing cells
                     if in_branch && void_len > 2 {
-                        cond_bg!(void_style, self, selected, self.skin.tree);
-                        cw.repeat(void_style, &BRANCH_FILLING, void_len)?;
+                        cond_bg!(
+                            void_style,
+                            self,
+                            selected,
+                            self.skin.tree
+                        );
+                        cw.repeat(
+                            void_style,
+                            &BRANCH_FILLING,
+                            void_len,
+                        )?;
                     } else {
-                        cond_bg!(void_style, self, selected, self.skin.default);
-                        cw.repeat(void_style, &SPACE_FILLING, void_len)?;
+                        cond_bg!(
+                            void_style,
+                            self,
+                            selected,
+                            self.skin.default
+                        );
+                        cw.repeat(
+                            void_style,
+                            &SPACE_FILLING,
+                            void_len,
+                        )?;
                     }
                 }
 
@@ -680,7 +839,10 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             self.skin.queue_reset(f)?;
             if self.in_app {
                 if let Some((sctop, scbottom)) = scrollbar {
-                    f.queue(cursor::MoveTo(self.area.left + self.area.width - 1, y))?;
+                    f.queue(cursor::MoveTo(
+                        self.area.left + self.area.width - 1,
+                        y,
+                    ))?;
                     let style = if sctop <= y && y <= scbottom {
                         &self.skin.scrollbar_thumb
                     } else {

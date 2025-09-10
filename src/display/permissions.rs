@@ -42,7 +42,11 @@ impl<'s> PermWriter<'s> {
         tree: &Tree,
     ) -> Self {
         let (max_user_len, max_group_len) = user_group_max_lengths(tree);
-        Self::new(skin, max_user_len, max_group_len)
+        Self::new(
+            skin,
+            max_user_len,
+            max_group_len,
+        )
     }
 
     fn write_mode<W: Write>(
@@ -51,10 +55,30 @@ impl<'s> PermWriter<'s> {
         mode: Mode,
         selected: bool,
     ) -> Result<(), termimad::Error> {
-        cond_bg!(n_style, self, selected, self.skin.perm__);
-        cond_bg!(r_style, self, selected, self.skin.perm_r);
-        cond_bg!(w_style, self, selected, self.skin.perm_w);
-        cond_bg!(x_style, self, selected, self.skin.perm_x);
+        cond_bg!(
+            n_style,
+            self,
+            selected,
+            self.skin.perm__
+        );
+        cond_bg!(
+            r_style,
+            self,
+            selected,
+            self.skin.perm_r
+        );
+        cond_bg!(
+            w_style,
+            self,
+            selected,
+            self.skin.perm_w
+        );
+        cond_bg!(
+            x_style,
+            self,
+            selected,
+            self.skin.perm_x
+        );
 
         if mode.has(USER_READ) {
             cw.queue_char(r_style, 'r')?;
@@ -159,16 +183,34 @@ impl<'s> PermWriter<'s> {
         Ok(if line.is_selectable() {
             self.write_mode(cw, line.mode(), selected)?;
             let owner = permissions::user_name(line.metadata.uid());
-            cond_bg!(owner_style, self, selected, self.skin.owner);
+            cond_bg!(
+                owner_style,
+                self,
+                selected,
+                self.skin.owner
+            );
             cw.queue_g_string(
                 owner_style,
-                format!(" {:w$}", &owner, w = self.max_user_len),
+                format!(
+                    " {:w$}",
+                    &owner,
+                    w = self.max_user_len
+                ),
             )?;
             let group = permissions::group_name(line.metadata.gid());
-            cond_bg!(group_style, self, selected, self.skin.group);
+            cond_bg!(
+                group_style,
+                self,
+                selected,
+                self.skin.group
+            );
             cw.queue_g_string(
                 group_style,
-                format!(" {:w$}", &group, w = self.max_group_len),
+                format!(
+                    " {:w$}",
+                    &group,
+                    w = self.max_group_len
+                ),
             )?;
             1
         } else {

@@ -66,7 +66,10 @@ impl TrashItemProperty {
                 }
             }
             Self::Size => match item_unified_size(item) {
-                Some(size) => format!("{:>4}", file_size::fit_4(size)),
+                Some(size) => format!(
+                    "{:>4}",
+                    file_size::fit_4(size)
+                ),
                 None => "????".to_string(),
             },
         }
@@ -140,6 +143,9 @@ pub fn get_cols(
     let Ok(cols) = cols_builder.build() else {
         return Vec::new(); // should not happen
     };
-    debug!("trash_state cols: {:?}", cols.sizes());
+    debug!(
+        "trash_state cols: {:?}",
+        cols.sizes()
+    );
     cols.to_children()
 }

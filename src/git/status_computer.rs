@@ -31,7 +31,10 @@ fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {
             }
         }
         Err(e) => {
-            debug!("failed to discover repo: {:?}", e);
+            debug!(
+                "failed to discover repo: {:?}",
+                e
+            );
             ComputationResult::None
         }
     }
@@ -78,10 +81,10 @@ pub fn get_tree_status(
                     //
                     // note: must also update the TS_CACHE entry at end
                     let (s, r) = bounded(1);
-                    TS_CACHE_MX
-                        .lock()
-                        .unwrap()
-                        .insert(repo_path.clone(), Computation::InProgress(r));
+                    TS_CACHE_MX.lock().unwrap().insert(
+                        repo_path.clone(),
+                        Computation::InProgress(r),
+                    );
                     dam.try_compute(move || {
                         let comp_res = compute_tree_status(&repo_path);
                         TS_CACHE_MX.lock().unwrap().insert(
@@ -89,7 +92,10 @@ pub fn get_tree_status(
                             Computation::Finished(comp_res.clone()),
                         );
                         if let Err(e) = s.send(comp_res.clone()) {
-                            debug!("error while sending comp result: {:?}", e);
+                            debug!(
+                                "error while sending comp result: {:?}",
+                                e
+                            );
                         }
                         comp_res
                     })

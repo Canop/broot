@@ -69,12 +69,16 @@ impl TtyView {
             // let the ZeroLenFilePreview try to read it
             let mmap = unsafe { Mmap::map(&f) };
             if mmap.is_err() {
-                return Err(io::Error::other("unmappable file"));
+                return Err(io::Error::other(
+                    "unmappable file",
+                ));
             }
         }
         let md = f.metadata()?;
         if md.len() == 0 {
-            return Err(io::Error::other("zero length file"));
+            return Err(io::Error::other(
+                "zero length file",
+            ));
         }
         let mut reader = BufReader::new(f);
         self.lines.clear();
@@ -149,7 +153,12 @@ impl TtyView {
         cycle: bool,
     ) {
         if let Some(idx) = self.selection_idx {
-            self.selection_idx = Some(move_sel(idx, self.lines.len(), dy, cycle));
+            self.selection_idx = Some(move_sel(
+                idx,
+                self.lines.len(),
+                dy,
+                cycle,
+            ));
         } else if !self.lines.is_empty() {
             self.selection_idx = Some(0)
         }
@@ -161,7 +170,11 @@ impl TtyView {
         cmd: ScrollCommand,
     ) -> bool {
         let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.lines.len(), self.page_height);
+        self.scroll = cmd.apply(
+            self.scroll,
+            self.lines.len(),
+            self.page_height,
+        );
         if let Some(idx) = self.selection_idx {
             if self.scroll == old_scroll {
                 let old_selection = self.selection_idx;
@@ -212,7 +225,10 @@ impl TtyView {
         for y in 0..line_count {
             let line_idx = self.scroll + y;
             let mut allowed = content_width;
-            w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
+            w.queue(cursor::MoveTo(
+                area.left,
+                y as u16 + area.top,
+            ))?;
             if let Some(tline) = self.lines.get(line_idx) {
                 w.queue(SetBackgroundColor(bg))?;
                 allowed -= tline.draw_in(w, allowed)?;
@@ -221,8 +237,13 @@ impl TtyView {
             for _ in 0..allowed {
                 w.queue(Print(' '))?;
             }
-            if is_thumb(y + area.top as usize, scrollbar) {
-                w.queue(SetForegroundColor(scrollbar_fg))?;
+            if is_thumb(
+                y + area.top as usize,
+                scrollbar,
+            ) {
+                w.queue(SetForegroundColor(
+                    scrollbar_fg,
+                ))?;
                 w.queue(Print('▐'))?;
             } else {
                 w.queue(Print(' '))?;
@@ -246,7 +267,10 @@ impl TtyView {
         if s.len() + "lines: ".len() < width {
             s = format!("lines: {s}");
         }
-        w.queue(cursor::MoveTo(area.left + area.width - s.len() as u16, area.top))?;
+        w.queue(cursor::MoveTo(
+            area.left + area.width - s.len() as u16,
+            area.top,
+        ))?;
         panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }

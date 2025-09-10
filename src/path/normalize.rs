@@ -51,22 +51,40 @@ mod path_normalize_tests {
         // * strings used for test use the '/' separator. This is a test problem
         // * we do a "end with '/'" test in the tested function. This might
         //   lead to suboptimal interaction on windows
-        assert_eq!(normalize_path(before).to_string_lossy(), after);
+        assert_eq!(
+            normalize_path(before).to_string_lossy(),
+            after
+        );
     }
 
     #[test]
     fn test_path_normalization() {
-        check("/abc/test/../thing.png", "/abc/thing.png");
-        check("/abc/def/../../thing.png", "/thing.png");
-        check("/home/dys/test", "/home/dys/test");
+        check(
+            "/abc/test/../thing.png",
+            "/abc/thing.png",
+        );
+        check(
+            "/abc/def/../../thing.png",
+            "/thing.png",
+        );
+        check(
+            "/home/dys/test",
+            "/home/dys/test",
+        );
         check("/home/dys", "/home/dys");
         check("/home/dys/", "/home/dys/");
         check("/home/dys/..", "/home");
         check("/home/dys/../", "/home/");
         check("/..", "/..");
         check("../test", "../test");
-        check("/home/dys/../../../test", "/../test");
+        check(
+            "/home/dys/../../../test",
+            "/../test",
+        );
         check("π/2", "π/2");
-        check("/home/dys/dev/broot/../../../canop/test", "/home/canop/test");
+        check(
+            "/home/dys/dev/broot/../../../canop/test",
+            "/home/canop/test",
+        );
     }
 }

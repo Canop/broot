@@ -62,7 +62,10 @@ impl fmt::Debug for IgnoreRule {
             .field("ok", &self.ok)
             .field("directory", &self.directory)
             .field("filename", &self.filename)
-            .field("pattern", &self.pattern.as_str())
+            .field(
+                "pattern",
+                &self.pattern.as_str(),
+            )
             .finish()
     }
 }
@@ -92,7 +95,11 @@ impl IgnoreRule {
                 let has_separator = p.contains('/');
                 let p = if has_separator {
                     if p.starts_with('/') {
-                        format!("{}{}", ref_dir.to_string_lossy(), p)
+                        format!(
+                            "{}{}",
+                            ref_dir.to_string_lossy(),
+                            p
+                        )
                     } else {
                         format!("**/{}", p)
                     }
@@ -115,7 +122,10 @@ impl IgnoreRule {
                         });
                     }
                     Err(e) => {
-                        info!(" wrong glob pattern {:?} : {}", &p, e);
+                        info!(
+                            " wrong glob pattern {:?} : {}",
+                            &p, e
+                        );
                     }
                 }
             }
@@ -259,7 +269,11 @@ impl Ignorer {
                 continue;
             }
             let ignore_file = dir.join(filename);
-            if let Ok(gif) = IgnoreFile::new(&ignore_file, dir, local_git_ignore) {
+            if let Ok(gif) = IgnoreFile::new(
+                &ignore_file,
+                dir,
+                local_git_ignore,
+            ) {
                 debug!("pushing GIF {:#?}", &gif);
                 chain.push(self.files.alloc(gif));
             }

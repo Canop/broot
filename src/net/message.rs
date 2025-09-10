@@ -37,9 +37,10 @@ impl Message {
             "CMD" => Ok(Self::Command(read_line(r)?)),
             "GET_ROOT" => Ok(Self::GetRoot),
             "ROOT" => Ok(Self::Root(read_line(r)?)),
-            "SEQ" => {
-                Ok(Self::Sequence(Sequence::new(read_line(r)?, Some(read_line(r)?))))
-            }
+            "SEQ" => Ok(Self::Sequence(Sequence::new(
+                read_line(r)?,
+                Some(read_line(r)?),
+            ))),
             _ => Err(NetError::InvalidMessage),
         }
     }

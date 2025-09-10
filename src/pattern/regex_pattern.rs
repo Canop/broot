@@ -22,7 +22,11 @@ impl fmt::Display for RegexPattern {
         if self.flags.is_empty() {
             write!(f, "/{}", self.rex)
         } else {
-            write!(f, "/{}/{}", self.rex, self.flags)
+            write!(
+                f,
+                "/{}/{}",
+                self.rex, self.flags
+            )
         }
     }
 }

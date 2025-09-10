@@ -144,7 +144,10 @@ impl PanelState for HelpState {
             self.dirty = false;
         }
         let mut expander = help_content::expander();
-        expander.set("version", env!("CARGO_PKG_VERSION"));
+        expander.set(
+            "version",
+            env!("CARGO_PKG_VERSION"),
+        );
         let config_paths: Vec<String> =
             con.config_paths.iter().map(|p| p.to_string_lossy().to_string()).collect();
         for path in &config_paths {
@@ -159,18 +162,25 @@ impl PanelState for HelpState {
                 .set("key", &row.keys_desc);
             if row.verb.description.code {
                 sub.set("description", "");
-                sub.set("execution", &row.verb.description.content);
+                sub.set(
+                    "execution",
+                    &row.verb.description.content,
+                );
             } else {
-                sub.set_md("description", &row.verb.description.content);
+                sub.set_md(
+                    "description",
+                    &row.verb.description.content,
+                );
                 sub.set("execution", "");
             }
         }
         let mode_help;
         if let Ok(default_mode) = con.search_modes.search_mode(None) {
             mode_help = super::search_mode_help(default_mode, con);
-            expander
-                .sub("default-search")
-                .set_md("default-search-example", &mode_help.example);
+            expander.sub("default-search").set_md(
+                "default-search-example",
+                &mode_help.example,
+            );
         }
         let search_rows: Vec<SearchModeHelp> =
             SEARCH_MODES.iter().map(|mode| super::search_mode_help(*mode, con)).collect();
@@ -178,7 +188,10 @@ impl PanelState for HelpState {
             expander
                 .sub("search-mode-rows")
                 .set("search-prefix", &row.prefix)
-                .set("search-type", &row.description)
+                .set(
+                    "search-type",
+                    &row.description,
+                )
                 .set_md("search-example", &row.example);
         }
         let nr_prefix = SearchMode::NameRegex.prefix(con);
@@ -194,10 +207,10 @@ impl PanelState for HelpState {
             },
         );
         for feature in &features {
-            expander
-                .sub("features")
-                .set("feature-name", feature.0)
-                .set("feature-description", feature.1);
+            expander.sub("features").set("feature-name", feature.0).set(
+                "feature-description",
+                feature.1,
+            );
         }
         let text = expander.expand();
         let fmt_text = FmtText::from_text(
@@ -232,23 +245,36 @@ impl PanelState for HelpState {
             }
             help => CmdResult::Keep,
             line_down | line_down_no_cycle => {
-                self.scroll += get_arg(input_invocation, internal_exec, 1);
+                self.scroll += get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 CmdResult::Keep
             }
             line_up | line_up_no_cycle => {
-                let dy = get_arg(input_invocation, internal_exec, 1);
+                let dy = get_arg(
+                    input_invocation,
+                    internal_exec,
+                    1,
+                );
                 self.scroll = self.scroll.saturating_sub(dy);
                 CmdResult::Keep
             }
             open_stay => match opener::open(Conf::default_location()) {
                 Ok(exit_status) => {
-                    info!("open returned with exit_status {:?}", exit_status);
+                    info!(
+                        "open returned with exit_status {:?}",
+                        exit_status
+                    );
                     CmdResult::Keep
                 }
                 Err(e) => CmdResult::DisplayError(format!("{e:?}")),
             },
             // FIXME check we can't use the generic one
-            open_leave => CmdResult::from(Launchable::opener(Conf::default_location())),
+            open_leave => CmdResult::from(Launchable::opener(
+                Conf::default_location(),
+            )),
             page_down => {
                 self.scroll += self.text_area.height as usize;
                 CmdResult::Keep

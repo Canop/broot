@@ -88,5 +88,8 @@ pub fn line_count_at_pos<P: AsRef<Path>>(
         line_count += 1;
         line.clear();
     }
-    Err(io::Error::new(io::ErrorKind::UnexpectedEof, "too short".to_string()))
+    Err(io::Error::new(
+        io::ErrorKind::UnexpectedEof,
+        "too short".to_string(),
+    ))
 }

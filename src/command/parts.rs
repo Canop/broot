@@ -133,7 +133,12 @@ impl CommandParts {
     /// split an input into its two possible parts, the pattern
     /// and the verb invocation. Each part, when defined, is
     /// suitable to create a command on its own.
-    pub fn split(mut self) -> (Option<CommandParts>, Option<CommandParts>) {
+    pub fn split(
+        mut self
+    ) -> (
+        Option<CommandParts>,
+        Option<CommandParts>,
+    ) {
         let verb_invocation = self.verb_invocation.take();
         (
             if self.raw_pattern.is_empty() {
@@ -145,11 +150,13 @@ impl CommandParts {
                     verb_invocation: None,
                 })
             },
-            verb_invocation.map(|verb_invocation| CommandParts {
-                raw_pattern: String::new(),
-                pattern: BeTree::new(),
-                verb_invocation: Some(verb_invocation),
-            }),
+            verb_invocation.map(
+                |verb_invocation| CommandParts {
+                    raw_pattern: String::new(),
+                    pattern: BeTree::new(),
+                    verb_invocation: Some(verb_invocation),
+                },
+            ),
         )
     }
 }
@@ -208,22 +215,57 @@ mod test_command_parts {
     }
     #[test]
     fn parse_no_pattern() {
-        check(" cd /", "", vec![], Some("cd /"));
+        check(
+            " cd /",
+            "",
+            vec![],
+            Some("cd /"),
+        );
     }
     #[test]
     fn parse_pattern_and_invocation() {
-        check("/r cd /", "/r", vec![Token::Atom(pp(&["", "r"]))], Some("cd /"));
+        check(
+            "/r cd /",
+            "/r",
+            vec![Token::Atom(pp(&["", "r"]))],
+            Some("cd /"),
+        );
     }
     #[test]
     fn allow_extra_spaces_before_invocation() {
-        check("  cd /", "", vec![], Some("cd /"));
-        check("/r  cd /", "/r", vec![Token::Atom(pp(&["", "r"]))], Some("cd /"));
-        check(r#"a\ b   e"#, r#"a\ b"#, vec![Token::Atom(pp(&["a b"]))], Some("e"));
-        check("/a:   b", "/a", vec![Token::Atom(pp(&["", "a"]))], Some("b"));
+        check(
+            "  cd /",
+            "",
+            vec![],
+            Some("cd /"),
+        );
+        check(
+            "/r  cd /",
+            "/r",
+            vec![Token::Atom(pp(&["", "r"]))],
+            Some("cd /"),
+        );
+        check(
+            r#"a\ b   e"#,
+            r#"a\ b"#,
+            vec![Token::Atom(pp(&["a b"]))],
+            Some("e"),
+        );
+        check(
+            "/a:   b",
+            "/a",
+            vec![Token::Atom(pp(&["", "a"]))],
+            Some("b"),
+        );
     }
     #[test]
     fn parse_pattern_between_slashes() {
-        check(r#"/&"#, r#"/&"#, vec![Token::Atom(pp(&["", "&"]))], None);
+        check(
+            r#"/&"#,
+            r#"/&"#,
+            vec![Token::Atom(pp(&["", "&"]))],
+            None,
+        );
         check(
             r#"/&/&r/a(\w-)+/ rm"#,
             r#"/&/&r/a(\w-)+/"#,
@@ -237,7 +279,12 @@ mod test_command_parts {
     }
     #[test]
     fn parse_pattern_with_space() {
-        check(r#"a\ b"#, r#"a\ b"#, vec![Token::Atom(pp(&["a b"]))], None);
+        check(
+            r#"a\ b"#,
+            r#"a\ b"#,
+            vec![Token::Atom(pp(&["a b"]))],
+            None,
+        );
     }
     #[test]
     fn parse_pattern_with_slash() {
@@ -250,11 +297,21 @@ mod test_command_parts {
     }
     #[test]
     fn parse_fuzzy_pattern_searching_parenthesis() {
-        check(r#"\("#, r#"\("#, vec![Token::Atom(pp(&["("]))], None);
+        check(
+            r#"\("#,
+            r#"\("#,
+            vec![Token::Atom(pp(&["("]))],
+            None,
+        );
     }
     #[test]
     fn parse_regex_pattern_searching_parenthesis() {
-        check(r#"/\("#, r#"/\("#, vec![Token::Atom(pp(&["", r#"\("#]))], None);
+        check(
+            r#"/\("#,
+            r#"/\("#,
+            vec![Token::Atom(pp(&["", r#"\("#]))],
+            None,
+        );
     }
     #[test]
     fn parse_composite_pattern() {
@@ -294,19 +351,38 @@ mod test_command_parts {
     #[test]
     fn issue_592() {
         // https://github.com/Canop/broot/issues/592
-        check(r#"\t"#, r#"\t"#, vec![Token::Atom(pp(&[r#"\t"#]))], None);
+        check(
+            r#"\t"#,
+            r#"\t"#,
+            vec![Token::Atom(pp(&[r#"\t"#]))],
+            None,
+        );
         check(
             r#"r/@(\.[^.]+)+/ cp .."#,
             r#"r/@(\.[^.]+)+/"#,
-            vec![Token::Atom(pp(&["r", r#"@(\.[^.]+)+"#, ""]))],
+            vec![Token::Atom(pp(&[
+                "r",
+                r#"@(\.[^.]+)+"#,
+                "",
+            ]))],
             Some("cp .."),
         );
     }
     // two colons in pattern positions are something the user searches
     #[test]
     fn allow_non_escaped_double_colon() {
-        check(r#"::"#, r#"::"#, vec![Token::Atom(pp(&[r#"::"#]))], None);
-        check(r#":::"#, r#"::"#, vec![Token::Atom(pp(&[r#"::"#]))], Some(""));
+        check(
+            r#"::"#,
+            r#"::"#,
+            vec![Token::Atom(pp(&[r#"::"#]))],
+            None,
+        );
+        check(
+            r#":::"#,
+            r#"::"#,
+            vec![Token::Atom(pp(&[r#"::"#]))],
+            Some(""),
+        );
         check(
             r#":::cd c:\"#,
             r#"::"#,
@@ -325,6 +401,11 @@ mod test_command_parts {
             vec![Token::Operator(PatternOperator::Not), Token::Atom(pp(&[r#"::"#]))],
             Some(""),
         );
-        check(r#"::a:rm"#, r#"::a"#, vec![Token::Atom(pp(&[r#"::a"#]))], Some("rm"));
+        check(
+            r#"::a:rm"#,
+            r#"::a"#,
+            vec![Token::Atom(pp(&[r#"::a"#]))],
+            Some("rm"),
+        );
     }
 }

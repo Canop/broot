@@ -17,8 +17,20 @@ fn test_format_count() {
     assert_eq!(&format_count(123), "123");
     assert_eq!(&format_count(1234), "1,234");
     assert_eq!(&format_count(12345), "12,345");
-    assert_eq!(&format_count(123456), "123,456");
-    assert_eq!(&format_count(1234567), "1,234,567");
-    assert_eq!(&format_count(12345678), "12,345,678");
-    assert_eq!(&format_count(1234567890), "1,234,567,890");
+    assert_eq!(
+        &format_count(123456),
+        "123,456"
+    );
+    assert_eq!(
+        &format_count(1234567),
+        "1,234,567"
+    );
+    assert_eq!(
+        &format_count(12345678),
+        "12,345,678"
+    );
+    assert_eq!(
+        &format_count(1234567890),
+        "1,234,567,890"
+    );
 }

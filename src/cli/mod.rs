@@ -76,14 +76,20 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         Printer::new(Args::command())
             .with_max_width(110)
             .with("introduction", INTRO)
-            .with("options", clap_help::TEMPLATE_OPTIONS_MERGED_VALUE)
+            .with(
+                "options",
+                clap_help::TEMPLATE_OPTIONS_MERGED_VALUE,
+            )
             .without("author")
             .print_help();
         must_quit = true;
     }
 
     if args.version {
-        println!("broot {}", env!("CARGO_PKG_VERSION"));
+        println!(
+            "broot {}",
+            env!("CARGO_PKG_VERSION")
+        );
         must_quit = true;
     }
 
@@ -159,7 +165,9 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         };
         let client = Client::new(server_name);
         if let Some(seq) = &context.launch_args.cmd {
-            let message = Message::Sequence(Sequence::new_local(seq.to_string()));
+            let message = Message::Sequence(Sequence::new_local(
+                seq.to_string(),
+            ));
             client.send(&message)?;
         } else if !context.launch_args.get_root {
             let message = Message::Command(format!(

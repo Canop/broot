@@ -34,8 +34,10 @@ pub struct MoveDividerArgs {
 impl FromStr for MoveDividerArgs {
     type Err = &'static str;
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if let Some((_, divider, dx)) = regex_captures!(r"^\s*(\d)\s+(-?\d{1,3})\s*$", s)
-        {
+        if let Some((_, divider, dx)) = regex_captures!(
+            r"^\s*(\d)\s+(-?\d{1,3})\s*$",
+            s
+        ) {
             Ok(Self {
                 divider: divider.parse().unwrap(),
                 dx: dx.parse().unwrap(),

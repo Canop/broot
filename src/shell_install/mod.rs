@@ -168,7 +168,11 @@ impl ShellInstall {
         // the link destination exists instead of checking the link exists
         // so we first check whether the link exists
         if fs::read_link(path).is_ok() || path.exists() {
-            mad_print_inline!(self.skin, "Removing `$0`.\n", path.to_string_lossy());
+            mad_print_inline!(
+                self.skin,
+                "Removing `$0`.\n",
+                path.to_string_lossy()
+            );
             fs::remove_file(path).context(&|| format!("removing {path:?}"))?;
         }
         Ok(())
@@ -215,7 +219,10 @@ impl ShellInstall {
         content: &str,
     ) -> Result<(), ShellInstallError> {
         self.remove(script_path)?;
-        info!("Writing `br` shell function in `{:?}`", &script_path);
+        info!(
+            "Writing `br` shell function in `{:?}`",
+            &script_path
+        );
         mad_print_inline!(
             &self.skin,
             "Writing *br* shell function in `$0`.\n",
@@ -234,7 +241,10 @@ impl ShellInstall {
         link_path: &Path,
         script_path: &Path,
     ) -> Result<(), ShellInstallError> {
-        info!("Creating link from {:?} to {:?}", &link_path, &script_path);
+        info!(
+            "Creating link from {:?} to {:?}",
+            &link_path, &script_path
+        );
         self.remove(link_path)?;
         let link_path_str = link_path.to_string_lossy();
         let script_path_str = script_path.to_string_lossy();

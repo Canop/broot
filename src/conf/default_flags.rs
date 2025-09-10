@@ -18,7 +18,9 @@ pub fn parse_default_flags(s: &str) -> Result<Args, ConfError> {
         splitty::split_unquoted_whitespace(s).collect()
     };
     tokens.insert(0, "broot");
-    Args::try_parse_from(&tokens).map_err(|_| ConfError::InvalidDefaultFlags {
-        flags: s.to_string(),
-    })
+    Args::try_parse_from(&tokens).map_err(
+        |_| ConfError::InvalidDefaultFlags {
+            flags: s.to_string(),
+        },
+    )
 }

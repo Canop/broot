@@ -50,7 +50,9 @@ impl ShellInstallState {
         conf::dir().join("launcher").join("refused")
     }
     pub fn get_installed_path(version: usize) -> PathBuf {
-        conf::dir().join("launcher").join(format!("installed-v{version}"))
+        conf::dir().join("launcher").join(format!(
+            "installed-v{version}"
+        ))
     }
     pub fn detect() -> Self {
         let current = Self::get_installed_path(CURRENT_VERSION);
@@ -93,15 +95,21 @@ impl ShellInstallState {
                 let refused_path = Self::get_refused_path();
                 fs::create_dir_all(refused_path.parent().unwrap())
                     .context(&|| format!("creating parents of {refused_path:?}"))?;
-                fs::write(&refused_path, REFUSED_FILE_CONTENT)
-                    .context(&|| format!("writing in {refused_path:?}"))?;
+                fs::write(
+                    &refused_path,
+                    REFUSED_FILE_CONTENT,
+                )
+                .context(&|| format!("writing in {refused_path:?}"))?;
             }
             ShellInstallState::UpToDate => {
                 let installed_path = Self::get_installed_path(CURRENT_VERSION);
                 fs::create_dir_all(installed_path.parent().unwrap())
                     .context(&|| format!("creating parents of {installed_path:?}"))?;
-                fs::write(&installed_path, INSTALLED_FILE_CONTENT)
-                    .context(&|| format!("writing in {installed_path:?}"))?;
+                fs::write(
+                    &installed_path,
+                    INSTALLED_FILE_CONTENT,
+                )
+                .context(&|| format!("writing in {installed_path:?}"))?;
             }
             _ => {
                 warn!("not writing state {self:?}");

@@ -74,7 +74,13 @@ impl Areas {
         for i in 0..panels.len() {
             slots.push(Slot::Panel(i));
         }
-        Self::compute_areas(panels, layout_instructions, &mut slots, screen, with_preview)
+        Self::compute_areas(
+            panels,
+            layout_instructions,
+            &mut slots,
+            screen,
+            with_preview,
+        )
     }
 
     fn compute_areas(
@@ -105,7 +111,10 @@ impl Areas {
         if nb_pos > 1 {
             for instruction in &layout_instructions.instructions {
                 debug!("Applying {:?}", instruction);
-                debug!("panel_widths before: {:?}", &panel_widths);
+                debug!(
+                    "panel_widths before: {:?}",
+                    &panel_widths
+                );
                 match *instruction {
                     LayoutInstruction::Clear => {} // not supposed to happen
                     LayoutInstruction::MoveDivider {
@@ -116,9 +125,17 @@ impl Areas {
                             continue;
                         }
                         let (decr, incr, diff) = if dx < 0 {
-                            (divider, divider + 1, (-dx) as u16)
+                            (
+                                divider,
+                                divider + 1,
+                                (-dx) as u16,
+                            )
                         } else {
-                            (divider + 1, divider, dx as u16)
+                            (
+                                divider + 1,
+                                divider,
+                                dx as u16,
+                            )
                         };
                         let diff = diff.min(panel_widths[decr] - MINIMAL_PANEL_WIDTH);
                         panel_widths[decr] -= diff;
@@ -173,7 +190,10 @@ impl Areas {
                         }
                     }
                 }
-                debug!("panel_widths after: {:?}", &panel_widths);
+                debug!(
+                    "panel_widths after: {:?}",
+                    &panel_widths
+                );
             }
         }
 
@@ -203,7 +223,12 @@ impl Areas {
             areas.purpose = if slot_idx > 0 {
                 // the purpose area is over the panel at left
                 let area_width = panel_widths[slot_idx - 1] / 2;
-                Some(Area::new(x - area_width, y, area_width, 1))
+                Some(Area::new(
+                    x - area_width,
+                    y,
+                    area_width,
+                    1,
+                ))
             } else {
                 None
             };

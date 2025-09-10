@@ -106,9 +106,10 @@ impl Verb {
                 ee.exec_pattern.has_selection_group(),
                 ee.exec_pattern.has_other_panel_group(),
             ),
-            VerbExecution::Sequence(se) => {
-                (se.sequence.has_selection_group(), se.sequence.has_other_panel_group())
-            }
+            VerbExecution::Sequence(se) => (
+                se.sequence.has_selection_group(),
+                se.sequence.has_other_panel_group(),
+            ),
         };
         Ok(Self {
             id,
@@ -204,7 +205,11 @@ impl Verb {
     ) -> Option<String> {
         match sel_info {
             SelInfo::None => self.check_sel_args(None, invocation, other_path),
-            SelInfo::One(sel) => self.check_sel_args(Some(sel), invocation, other_path),
+            SelInfo::One(sel) => self.check_sel_args(
+                Some(sel),
+                invocation,
+                other_path,
+            ),
             SelInfo::More(stage) => stage
                 .paths()
                 .iter()
@@ -215,7 +220,11 @@ impl Verb {
                         stype: SelectionType::from(path),
                         is_exe: false,
                     };
-                    self.check_sel_args(Some(sel), invocation, other_path)
+                    self.check_sel_args(
+                        Some(sel),
+                        invocation,
+                        other_path,
+                    )
                 })
                 .next(),
         }
@@ -278,21 +287,37 @@ impl Verb {
         if let VerbExecution::Sequence(seq_ex) = &self.execution {
             // We can't determine before execution what will be the arguments, except
             // for the first item of the sequence. It's cleaner to just not try expand it
-            format!("Hit *enter* to **{}**: `{}`", name, seq_ex.sequence.raw)
+            format!(
+                "Hit *enter* to **{}**: `{}`",
+                name, seq_ex.sequence.raw
+            )
         } else if let VerbExecution::External(external_exec) = &self.execution {
-            let exec_desc = builder().shell_exec_string(&external_exec.exec_pattern, con);
-            format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
+            let exec_desc = builder().shell_exec_string(
+                &external_exec.exec_pattern,
+                con,
+            );
+            format!(
+                "Hit *enter* to **{}**: `{}`",
+                name, &exec_desc
+            )
         } else if self.description.code {
-            format!("Hit *enter* to **{}**: `{}`", name, &self.description.content)
+            format!(
+                "Hit *enter* to **{}**: `{}`",
+                name, &self.description.content
+            )
         } else {
-            format!("Hit *enter* to **{}**: {}", name, &self.description.content)
+            format!(
+                "Hit *enter* to **{}**: {}",
+                name, &self.description.content
+            )
         }
     }
 
     pub fn get_unique_arg_anchor(&self) -> PathAnchor {
-        self.invocation_parser
-            .as_ref()
-            .map_or(PathAnchor::Unspecified, InvocationParser::get_unique_arg_anchor)
+        self.invocation_parser.as_ref().map_or(
+            PathAnchor::Unspecified,
+            InvocationParser::get_unique_arg_anchor,
+        )
     }
 
     pub fn get_internal(&self) -> Option<Internal> {
@@ -313,11 +338,16 @@ impl Verb {
         v: Option<&Verb>,
         internal: Internal,
     ) -> bool {
-        v.map_or(false, |v| v.is_internal(internal))
+        v.map_or(false, |v| {
+            v.is_internal(internal)
+        })
     }
 
     pub fn is_sequence(&self) -> bool {
-        matches!(self.execution, VerbExecution::Sequence(_))
+        matches!(
+            self.execution,
+            VerbExecution::Sequence(_)
+        )
     }
 
     pub fn can_be_called_in_panel(
@@ -333,13 +363,18 @@ impl Verb {
         if self.file_extensions.is_empty() {
             true
         } else {
-            extension.map_or(false, |ext| self.file_extensions.iter().any(|ve| ve == ext))
+            extension.map_or(false, |ext| {
+                self.file_extensions.iter().any(|ve| ve == ext)
+            })
         }
     }
 }
 
 pub fn check_verb_name(name: &str) -> Result<(), ConfError> {
-    if regex_is_match!(r"^([@,#~&'%$\dù_-]+|[\w][\w_@,#~&'%$\dù_-]*)+$", name) {
+    if regex_is_match!(
+        r"^([@,#~&'%$\dù_-]+|[\w][\w_@,#~&'%$\dù_-]*)+$",
+        name
+    ) {
         Ok(())
     } else {
         Err(ConfError::InvalidVerbName {

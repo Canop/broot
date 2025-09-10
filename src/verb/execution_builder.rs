@@ -113,7 +113,9 @@ impl<'b> ExecutionStringBuilder<'b> {
         debug!("repl name : {:?}", name);
         match name {
             "root" => Some(path_to_string(self.root)),
-            "initial-root" => Some(path_to_string(&con.initial_root)),
+            "initial-root" => Some(path_to_string(
+                &con.initial_root,
+            )),
             "line" => sel.map(|s| s.line.to_string()),
             "file" => sel.map(|s| s.path).map(path_to_string),
             "file-name" => sel
@@ -210,7 +212,10 @@ impl<'b> ExecutionStringBuilder<'b> {
                             "path-from-parent" => sel
                                 .and_then(|s| s.path.parent())
                                 .map(|dir| path::path_str_from(dir, value)),
-                            _ => Some(format!("invalid format: {:?}", fmt.as_str())),
+                            _ => Some(format!(
+                                "invalid format: {:?}",
+                                fmt.as_str()
+                            )),
                         }
                     } else {
                         Some(value.to_string())
@@ -260,20 +265,23 @@ impl<'b> ExecutionStringBuilder<'b> {
             name: verb_invocation.name.clone(),
             args: verb_invocation.args.as_ref().map(|a| {
                 GROUP
-                    .replace_all(a.as_str(), |ec: &Captures<'_>| {
-                        ec.get(2)
-                            .map(|default_name| default_name.as_str())
-                            .and_then(|default_name| {
-                                self.get_raw_replacement(|sel| {
-                                    self.get_raw_sel_name_standard_replacement(
-                                        default_name,
-                                        sel,
-                                        con,
-                                    )
+                    .replace_all(
+                        a.as_str(),
+                        |ec: &Captures<'_>| {
+                            ec.get(2)
+                                .map(|default_name| default_name.as_str())
+                                .and_then(|default_name| {
+                                    self.get_raw_replacement(|sel| {
+                                        self.get_raw_sel_name_standard_replacement(
+                                            default_name,
+                                            sel,
+                                            con,
+                                        )
+                                    })
                                 })
-                            })
-                            .unwrap_or_default()
-                    })
+                                .unwrap_or_default()
+                        },
+                    )
                     .to_string()
             }),
             bang: verb_invocation.bang,
@@ -307,17 +315,24 @@ impl<'b> ExecutionStringBuilder<'b> {
                 .and_then(|vi| {
                     let command = Command::from_parts(vi, true);
                     if let Command::VerbInvocate(invocation) = &command {
-                        let search =
-                            verb_store.search_prefix(&invocation.name, panel_state_type);
+                        let search = verb_store.search_prefix(
+                            &invocation.name,
+                            panel_state_type,
+                        );
                         if let PrefixSearchResult::Match(_, verb) = search {
                             return Some(verb);
                         }
                     }
                     None
                 })
-                .map_or(false, |verb| verb.get_internal().is_none());
+                .map_or(false, |verb| {
+                    verb.get_internal().is_none()
+                });
             let input = if verb_is_external {
-                self.shell_exec_string(&ExecPattern::from_string(input), con)
+                self.shell_exec_string(
+                    &ExecPattern::from_string(input),
+                    con,
+                )
             } else {
                 self.string(input, con)
             };
@@ -335,9 +350,10 @@ impl<'b> ExecutionStringBuilder<'b> {
         con: &AppContext,
     ) -> String {
         GROUP
-            .replace_all(pattern, |ec: &Captures<'_>| {
-                self.get_capture_replacement(ec, con)
-            })
+            .replace_all(
+                pattern,
+                |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
+            )
             .to_string()
     }
     /// build a path
@@ -349,9 +365,10 @@ impl<'b> ExecutionStringBuilder<'b> {
         path::path_from(
             self.base_dir(),
             path::PathAnchor::Unspecified,
-            &GROUP.replace_all(pattern, |ec: &Captures<'_>| {
-                self.get_capture_replacement(ec, con)
-            }),
+            &GROUP.replace_all(
+                pattern,
+                |ec: &Captures<'_>| self.get_capture_replacement(ec, con),
+            ),
         )
     }
     /// build a shell compatible command, with escapings
@@ -492,7 +509,13 @@ mod execution_builder_test {
         check_build_execution_from_sel(
             vec![
                 ExecPattern::from_string("/bin/e.exe -a {arg} -e {file}"),
-                ExecPattern::from_array(vo!["/bin/e.exe", "-a", "{arg}", "-e", "{file}"]),
+                ExecPattern::from_array(vo![
+                    "/bin/e.exe",
+                    "-a",
+                    "{arg}",
+                    "-e",
+                    "{file}"
+                ]),
             ],
             "expérimental & 试验性",
             vec![("arg", "deux mots")],
@@ -501,7 +524,11 @@ mod execution_builder_test {
         check_build_execution_from_sel(
             vec![
                 ExecPattern::from_string("xterm -e \"kak {file}\""),
-                ExecPattern::from_array(vo!["xterm", "-e", "kak {file}"]),
+                ExecPattern::from_array(vo![
+                    "xterm",
+                    "-e",
+                    "kak {file}"
+                ]),
             ],
             "/path/to/file",
             vec![],

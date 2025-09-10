@@ -61,7 +61,11 @@ impl HexView {
         cmd: ScrollCommand,
     ) -> bool {
         let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.line_count(), self.page_height);
+        self.scroll = cmd.apply(
+            self.scroll,
+            self.line_count(),
+            self.page_height,
+        );
         self.scroll != old_scroll
     }
     pub fn select_first(&mut self) {
@@ -85,7 +89,10 @@ impl HexView {
         let mmap = unsafe { Mmap::map(&file)? };
         let new_len = mmap.len();
         if new_len != self.len {
-            warn!("previewed file len changed from {} to {}", self.len, new_len);
+            warn!(
+                "previewed file len changed from {} to {}",
+                self.len, new_len
+            );
             self.len = new_len;
         }
         let mut start_idx = 16 * start_line_idx;
@@ -167,7 +174,10 @@ impl HexView {
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
         for y in 0..line_count {
-            w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
+            w.queue(cursor::MoveTo(
+                area.left,
+                y as u16 + area.top,
+            ))?;
             let mut cw = CropWriter::new(w, area.width as usize - 1); // -1 for scrollbar
             let cw = &mut cw;
             if y < page.len() {
@@ -175,7 +185,10 @@ impl HexView {
                     let addr = (self.scroll + y) * 16;
                     cw.queue_g_string(
                         &styles.preview_line_number,
-                        match (addresses_len, margin_around_addresses) {
+                        match (
+                            addresses_len,
+                            margin_around_addresses,
+                        ) {
                             (4, false) => format!("{addr:04x}"),
                             (6, false) => format!("{addr:06x}"),
                             (_, false) => format!("{addr:08x}"),
@@ -196,9 +209,15 @@ impl HexView {
                     if let Some(b) = line.bytes.get(x) {
                         let byte = Byte::from(*b);
                         if inter_hex {
-                            cw.queue_g_string(byte.style(styles), format!("{b:02x} "))?;
+                            cw.queue_g_string(
+                                byte.style(styles),
+                                format!("{b:02x} "),
+                            )?;
                         } else {
-                            cw.queue_g_string(byte.style(styles), format!("{b:02x}"))?;
+                            cw.queue_g_string(
+                                byte.style(styles),
+                                format!("{b:02x}"),
+                            )?;
                         }
                     } else {
                         cw.queue_str(
@@ -219,14 +238,22 @@ impl HexView {
                         }
                         if let Some(b) = line.bytes.get(x) {
                             let byte = Byte::from(*b);
-                            cw.queue_char(byte.style(styles), byte.as_char())?;
+                            cw.queue_char(
+                                byte.style(styles),
+                                byte.as_char(),
+                            )?;
                         }
                     }
                 }
             }
-            cw.fill(&styles.default, &SPACE_FILLING)?;
+            cw.fill(
+                &styles.default,
+                &SPACE_FILLING,
+            )?;
             if is_thumb(y as u16 + area.top, scrollbar) {
-                w.queue(SetForegroundColor(scrollbar_fg))?;
+                w.queue(SetForegroundColor(
+                    scrollbar_fg,
+                ))?;
                 w.queue(Print('▐'))?;
             } else {
                 w.queue(Print(' '))?;
@@ -252,7 +279,10 @@ impl HexView {
         } else if s.len() + 1 < width {
             s = format!("{s}b");
         }
-        w.queue(cursor::MoveTo(area.left + area.width - s.len() as u16, area.top))?;
+        w.queue(cursor::MoveTo(
+            area.left + area.width - s.len() as u16,
+            area.top,
+        ))?;
         panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }

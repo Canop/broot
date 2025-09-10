@@ -50,7 +50,9 @@ pub fn render_tree(
     let t_width = tree.size().width();
     let t_height = tree.size().height();
     debug!("SVG natural size: {t_width} x {t_height}");
-    let zoom = compute_zoom(t_width, t_height, max_width, max_height)?;
+    let zoom = compute_zoom(
+        t_width, t_height, max_width, max_height,
+    )?;
     debug!("svg rendering zoom: {zoom}");
     let px_width = (t_width * zoom) as u32;
     let px_height = (t_height * zoom) as u32;
@@ -74,13 +76,17 @@ pub fn render_tree(
         tiny_skia::Transform::from_scale(zoom, zoom),
         &mut pixmap.as_mut(),
     );
-    let image_buffer =
-        RgbaImage::from_vec(pixmap.width(), pixmap.height(), pixmap.take()).ok_or(
-            SvgError::Internal {
-                message: "wrong image buffer size",
-            },
-        )?;
-    Ok(DynamicImage::ImageRgba8(image_buffer))
+    let image_buffer = RgbaImage::from_vec(
+        pixmap.width(),
+        pixmap.height(),
+        pixmap.take(),
+    )
+    .ok_or(SvgError::Internal {
+        message: "wrong image buffer size",
+    })?;
+    Ok(DynamicImage::ImageRgba8(
+        image_buffer,
+    ))
 }
 
 /// Generate a bitmap at the natural dimensions of the SVG unless it's too big
@@ -94,6 +100,8 @@ pub fn render<P: Into<PathBuf>>(
     max_height: u32,
 ) -> Result<DynamicImage, SvgError> {
     let tree = load(path)?;
-    let image = render_tree(&tree, max_width, max_height, None)?;
+    let image = render_tree(
+        &tree, max_width, max_height, None,
+    )?;
     Ok(image)
 }

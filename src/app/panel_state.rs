@@ -115,7 +115,10 @@ pub trait PanelState {
         let bang = input_invocation.map(|inv| inv.bang).unwrap_or(internal_exec.bang);
         Ok(match internal_exec.internal {
             Internal::apply_flags => {
-                debug!("applying flags input_invocation: {:#?}", input_invocation);
+                debug!(
+                    "applying flags input_invocation: {:#?}",
+                    input_invocation
+                );
                 let flags = input_invocation.and_then(|inv| inv.args.as_ref());
                 if let Some(flags) = flags {
                     self.with_new_options(
@@ -174,10 +177,12 @@ pub trait PanelState {
                         dx: 1,
                     },
                 );
-                CmdResult::ChangeLayout(LayoutInstruction::MoveDivider {
-                    divider,
-                    dx,
-                })
+                CmdResult::ChangeLayout(
+                    LayoutInstruction::MoveDivider {
+                        divider,
+                        dx,
+                    },
+                )
             }
             Internal::default_layout => CmdResult::ChangeLayout(LayoutInstruction::Clear),
             Internal::set_panel_width => {
@@ -192,10 +197,12 @@ pub trait PanelState {
                         width: 100,
                     },
                 );
-                CmdResult::ChangeLayout(LayoutInstruction::SetPanelWidth {
-                    panel,
-                    width,
-                })
+                CmdResult::ChangeLayout(
+                    LayoutInstruction::SetPanelWidth {
+                        panel,
+                        width,
+                    },
+                )
             }
             #[cfg(feature = "trash")]
             Internal::purge_trash => {
@@ -259,7 +266,11 @@ pub trait PanelState {
                     input_invocation.map(|inv| inv.bang).unwrap_or(internal_exec.bang);
                 if bang && cc.app.preview_panel.is_none() {
                     CmdResult::NewPanel {
-                        state: Box::new(HelpState::new(self.tree_options(), screen, con)),
+                        state: Box::new(HelpState::new(
+                            self.tree_options(),
+                            screen,
+                            con,
+                        )),
                         purpose: PanelPurpose::None,
                         direction: HDir::Right,
                     }
@@ -281,16 +292,26 @@ pub trait PanelState {
                 }
             }
             Internal::open_preview => self.open_preview(None, false, cc),
-            Internal::preview_image => {
-                self.open_preview(Some(PreviewMode::Image), false, cc)
-            }
-            Internal::preview_text => {
-                self.open_preview(Some(PreviewMode::Text), false, cc)
-            }
-            Internal::preview_tty => self.open_preview(Some(PreviewMode::Tty), false, cc),
-            Internal::preview_binary => {
-                self.open_preview(Some(PreviewMode::Hex), false, cc)
-            }
+            Internal::preview_image => self.open_preview(
+                Some(PreviewMode::Image),
+                false,
+                cc,
+            ),
+            Internal::preview_text => self.open_preview(
+                Some(PreviewMode::Text),
+                false,
+                cc,
+            ),
+            Internal::preview_tty => self.open_preview(
+                Some(PreviewMode::Tty),
+                false,
+                cc,
+            ),
+            Internal::preview_binary => self.open_preview(
+                Some(PreviewMode::Hex),
+                false,
+                cc,
+            ),
             Internal::toggle_preview => self.open_preview(None, true, cc),
             Internal::sort_by_count => self.with_new_options(
                 screen,
@@ -747,7 +768,11 @@ pub trait PanelState {
             app_state.stage.add(path);
             if cc.app.stage_panel.is_none() {
                 return CmdResult::NewPanel {
-                    state: Box::new(StageState::new(app_state, self.tree_options(), con)),
+                    state: Box::new(StageState::new(
+                        app_state,
+                        self.tree_options(),
+                        con,
+                    )),
                     purpose: PanelPurpose::None,
                     direction: HDir::Right,
                 };
@@ -806,10 +831,14 @@ pub trait PanelState {
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError> {
         if verb.needs_selection && !self.has_at_least_one_selection(app_state) {
-            return Ok(CmdResult::error("This verb needs a selection"));
+            return Ok(CmdResult::error(
+                "This verb needs a selection",
+            ));
         }
         if verb.needs_another_panel && app_state.other_panel_path.is_none() {
-            return Ok(CmdResult::error("This verb needs another panel"));
+            return Ok(CmdResult::error(
+                "This verb needs another panel",
+            ));
         }
         let res = match &verb.execution {
             VerbExecution::Internal(internal_exec) => self.on_internal(
@@ -821,12 +850,12 @@ pub trait PanelState {
                 app_state,
                 cc,
             ),
-            VerbExecution::External(external) => {
-                self.execute_external(w, verb, external, invocation, app_state, cc)
-            }
-            VerbExecution::Sequence(seq_ex) => {
-                self.execute_sequence(w, verb, seq_ex, invocation, app_state, cc)
-            }
+            VerbExecution::External(external) => self.execute_external(
+                w, verb, external, invocation, app_state, cc,
+            ),
+            VerbExecution::Sequence(seq_ex) => self.execute_sequence(
+                w, verb, seq_ex, invocation, app_state, cc,
+            ),
         };
         if res.is_ok() {
             // if the stage has been emptied by the operation (eg a "rm"), we
@@ -856,10 +885,15 @@ pub trait PanelState {
     ) -> Result<CmdResult, ProgramError> {
         let sel_info = self.sel_info(app_state);
         if let Some(invocation) = &invocation {
-            if let Some(error) =
-                verb.check_args(sel_info, invocation, &app_state.other_panel_path)
-            {
-                debug!("verb.check_args prevented execution: {:?}", &error);
+            if let Some(error) = verb.check_args(
+                sel_info,
+                invocation,
+                &app_state.other_panel_path,
+            ) {
+                debug!(
+                    "verb.check_args prevented execution: {:?}",
+                    &error
+                );
                 return Ok(CmdResult::error(error));
             }
         }
@@ -933,7 +967,9 @@ pub trait PanelState {
                 expr,
             } => match InputPattern::new(raw.clone(), expr, con) {
                 Ok(pattern) => self.on_pattern(pattern, app_state, con),
-                Err(e) => Ok(CmdResult::DisplayError(format!("{e}"))),
+                Err(e) => Ok(CmdResult::DisplayError(
+                    format!("{e}"),
+                )),
             },
             Command::VerbTrigger {
                 verb_id,
@@ -973,7 +1009,9 @@ pub trait PanelState {
                         app_state,
                         cc,
                     ),
-                    _ => Ok(CmdResult::verb_not_found(&invocation.name)),
+                    _ => Ok(CmdResult::verb_not_found(
+                        &invocation.name,
+                    )),
                 }
             }
             Command::None | Command::VerbEdit(_) => {
@@ -1129,7 +1167,11 @@ pub trait PanelState {
         match &cc.cmd {
             Command::PatternEdit {
                 ..
-            } => self.no_verb_status(has_previous_state, cc.app.con, width),
+            } => self.no_verb_status(
+                has_previous_state,
+                cc.app.con,
+                width,
+            ),
             Command::VerbEdit(invocation)
             | Command::VerbTrigger {
                 input_invocation: Some(invocation),
@@ -1151,8 +1193,9 @@ pub trait PanelState {
                             "No matching verb (*?* for the list of verbs)",
                             true,
                         ),
-                        PrefixSearchResult::Match(_, verb) => self
-                            .get_verb_status(verb, invocation, sel_info, cc, app_state),
+                        PrefixSearchResult::Match(_, verb) => self.get_verb_status(
+                            verb, invocation, sel_info, cc, app_state,
+                        ),
                         PrefixSearchResult::Matches(completions) => Status::new(
                             format!(
                                 "Possible verbs: {}",
@@ -1167,7 +1210,11 @@ pub trait PanelState {
                     }
                 }
             }
-            _ => self.no_verb_status(has_previous_state, cc.app.con, width),
+            _ => self.no_verb_status(
+                has_previous_state,
+                cc.app.con,
+                width,
+            ),
         }
     }
 
@@ -1191,13 +1238,17 @@ pub trait PanelState {
             }
             // right now there's no check for sequences but they're inherently dangerous
         }
-        if let Some(err) =
-            verb.check_args(sel_info, invocation, &app_state.other_panel_path)
-        {
+        if let Some(err) = verb.check_args(
+            sel_info,
+            invocation,
+            &app_state.other_panel_path,
+        ) {
             Status::new(err, true)
         } else {
             Status::new(
-                verb.get_status_markdown(sel_info, app_state, invocation, cc.app.con),
+                verb.get_status_markdown(
+                    sel_info, app_state, invocation, cc.app.con,
+                ),
                 false,
             )
         }

@@ -28,8 +28,13 @@ fn write_completions_file<G: Generator + Copy, P: AsRef<OsStr>>(
 ) {
     let mut args = Args::command();
     for name in &["broot", "br"] {
-        clap_complete::generate_to(generator, &mut args, (*name).to_string(), &out_dir)
-            .expect("clap complete generation failed");
+        clap_complete::generate_to(
+            generator,
+            &mut args,
+            (*name).to_string(),
+            &out_dir,
+        )
+        .expect("clap complete generation failed");
     }
 }
 

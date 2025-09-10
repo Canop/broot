@@ -12,7 +12,10 @@ pub enum PanelPurpose {
 
 impl PanelPurpose {
     pub fn is_arg_edition(self) -> bool {
-        matches!(self, PanelPurpose::ArgEdition { .. })
+        matches!(
+            self,
+            PanelPurpose::ArgEdition { .. }
+        )
     }
     pub fn is_preview(self) -> bool {
         matches!(self, PanelPurpose::Preview)

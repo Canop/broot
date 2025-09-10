@@ -110,7 +110,13 @@ impl App {
         let panel = Panel::new(
             PanelId::from(0),
             browser_state,
-            Areas::create(&mut Vec::new(), &con.layout_instructions, 0, screen, false),
+            Areas::create(
+                &mut Vec::new(),
+                &con.layout_instructions,
+                0,
+                screen,
+                false,
+            ),
             con,
         );
         let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
@@ -274,7 +280,10 @@ impl App {
                 app_state,
                 con,
             };
-            if let Some(pos) = time!("display panel", panel.display(w, &disc)?,) {
+            if let Some(pos) = time!(
+                "display panel",
+                panel.display(w, &disc)?,
+            ) {
                 cursor_pos = Some(pos)
             }
         }
@@ -338,9 +347,16 @@ impl App {
             screen: self.screen, // it can't change in this function
             con,
         };
-        let cmd_result =
-            self.mut_panel().apply_command(w, &cmd, app_state, &app_cmd_context)?;
-        info!("cmd_result: {:?}", &cmd_result);
+        let cmd_result = self.mut_panel().apply_command(
+            w,
+            &cmd,
+            app_state,
+            &app_cmd_context,
+        )?;
+        info!(
+            "cmd_result: {:?}",
+            &cmd_result
+        );
         match cmd_result {
             ApplyOnPanel {
                 id,
@@ -444,7 +460,9 @@ impl App {
                         let mode = self.panel().state().get_mode();
                         let cmd = self.mut_panel().input.escape(con, mode);
                         debug!("cmd on escape: {cmd:?}");
-                        self.apply_command(w, cmd, panel_skin, app_state, con)?;
+                        self.apply_command(
+                            w, cmd, panel_skin, app_state, con,
+                        )?;
                     }
                     Internal::focus_staging_area_no_open => {
                         new_active_panel_idx = self
@@ -456,7 +474,10 @@ impl App {
                         // we're here because the state wants us to either move to the panel
                         // to the left, or close the rightest one
                         new_active_panel_idx = if self.active_panel_idx == 0 {
-                            self.close_panel(self.panels.len().get() - 1, con);
+                            self.close_panel(
+                                self.panels.len().get() - 1,
+                                con,
+                            );
                             None
                         } else {
                             Some(self.active_panel_idx - 1)
@@ -557,7 +578,9 @@ impl App {
                                 "unhandled propagated internal. internal={internal:?} cmd={cmd:?}"
                             );
                         } else {
-                            self.apply_command(w, cmd, panel_skin, app_state, con)?;
+                            self.apply_command(
+                                w, cmd, panel_skin, app_state, con,
+                            )?;
                         }
                     }
                 }
@@ -582,9 +605,13 @@ impl App {
                 purpose,
                 direction,
             } => {
-                if let Err(s) =
-                    self.new_panel(state, purpose, direction, is_input_invocation, con)
-                {
+                if let Err(s) = self.new_panel(
+                    state,
+                    purpose,
+                    direction,
+                    is_input_invocation,
+                    con,
+                ) {
                     error = Some(s);
                 }
             }
@@ -850,7 +877,10 @@ impl App {
         {
             // different systems have different clipboard capabilities
             // and it may be useful to know which one we have
-            debug!("Clipboard backend: {:?}", terminal_clipboard::get_type());
+            debug!(
+                "Clipboard backend: {:?}",
+                terminal_clipboard::get_type()
+            );
         }
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
@@ -868,7 +898,10 @@ impl App {
 
         let rx_events = event_source.receiver();
         let mut dam = Dam::from(rx_events);
-        let skin = AppSkin::new(conf, con.launch_args.color == TriBool::No);
+        let skin = AppSkin::new(
+            conf,
+            con.launch_args.color == TriBool::No,
+        );
         let mut app_state = AppState {
             stage: Stage::default(),
             root: con.initial_root.clone(),
@@ -893,7 +926,11 @@ impl App {
         }
 
         if let Some(raw_sequence) = &con.cmd() {
-            self.tx_seqs.send(Sequence::new_local(raw_sequence.to_string())).unwrap();
+            self.tx_seqs
+                .send(Sequence::new_local(
+                    raw_sequence.to_string(),
+                ))
+                .unwrap();
         }
 
         #[cfg(unix)]
@@ -902,7 +939,9 @@ impl App {
             .listen
             .as_ref()
             .map(|server_name| {
-                let shared_root = Arc::new(Mutex::new(app_state.root.clone()));
+                let shared_root = Arc::new(Mutex::new(
+                    app_state.root.clone(),
+                ));
                 let server = crate::net::Server::new(
                     server_name,
                     self.tx_seqs.clone(),
@@ -919,7 +958,13 @@ impl App {
                 time!(
                     Debug,
                     "pending_tasks",
-                    self.do_pending_tasks(w, &skin, &mut dam, &mut app_state, con)?,
+                    self.do_pending_tasks(
+                        w,
+                        &skin,
+                        &mut dam,
+                        &mut app_state,
+                        con
+                    )?,
                 );
             }
             #[allow(unused_mut)]
@@ -927,7 +972,10 @@ impl App {
                 Either::First(Some(event)) => {
                     //info!("event: {:?}", &event);
                     if let Some(key_combination) = event.key_combination {
-                        debug!("key combination: {}", key_combination);
+                        debug!(
+                            "key combination: {}",
+                            key_combination
+                        );
                     }
                     let mut handled = false;
 
@@ -956,8 +1004,17 @@ impl App {
                     if !handled {
                         let cmd =
                             self.mut_panel().add_event(w, event, &app_state, con)?;
-                        debug!("command after add_event: {:?}", &cmd);
-                        self.apply_command(w, cmd, &skin.focused, &mut app_state, con)?;
+                        debug!(
+                            "command after add_event: {:?}",
+                            &cmd
+                        );
+                        self.apply_command(
+                            w,
+                            cmd,
+                            &skin.focused,
+                            &mut app_state,
+                            con,
+                        )?;
                     }
 
                     event_source.unblock(self.quitting);
@@ -968,9 +1025,15 @@ impl App {
                     break;
                 }
                 Either::Second(Some(raw_sequence)) => {
-                    debug!("got command sequence: {:?}", &raw_sequence);
+                    debug!(
+                        "got command sequence: {:?}",
+                        &raw_sequence
+                    );
                     for (input, arg_cmd) in raw_sequence.parse(con)? {
-                        if !matches!(&arg_cmd, Command::Internal { .. }) {
+                        if !matches!(
+                            &arg_cmd,
+                            Command::Internal { .. }
+                        ) {
                             self.mut_panel().set_input_content(&input);
                         }
                         self.apply_command(

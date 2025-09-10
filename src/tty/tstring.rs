@@ -62,7 +62,11 @@ impl TString {
         if self.csi.is_empty() {
             write!(w, "{}", &fit.0)?;
         } else {
-            write!(w, "{}{}{}", &self.csi, &fit.0, CSI_RESET)?;
+            write!(
+                w,
+                "{}{}{}",
+                &self.csi, &fit.0, CSI_RESET
+            )?;
         }
         Ok(fit.1)
     }

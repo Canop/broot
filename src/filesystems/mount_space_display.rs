@@ -53,7 +53,12 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
         } else {
             self.skin.default.get_bg()
         };
-        cond_bg!(txt_style, self, selected, self.skin.default);
+        cond_bg!(
+            txt_style,
+            self,
+            selected,
+            self.skin.default
+        );
         let w_fs = self.mount.info.fs.chars().count();
         if let Some(s) = &self.mount.stats() {
             //- width computation
@@ -94,7 +99,10 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             }
             //- display
             if e_fs {
-                cw.queue_g_string(txt_style, format!(" {}", &self.mount.info.fs))?;
+                cw.queue_g_string(
+                    txt_style,
+                    format!(" {}", &self.mount.info.fs),
+                )?;
             }
             if e_dsk {
                 cw.queue_char(txt_style, ' ')?;
@@ -106,10 +114,18 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
                 } else {
                     cw.w.queue(ResetColor {})?;
                 }
-                cw.w.queue(SetForegroundColor(share_color))?;
+                cw.w.queue(SetForegroundColor(
+                    share_color,
+                ))?;
                 cw.queue_unstyled_char(' ')?;
                 cw.queue_unstyled_g_string(file_size::fit_4(s.used()))?;
-                cw.queue_g_string(txt_style, format!("/{}", file_size::fit_4(s.size())))?;
+                cw.queue_g_string(
+                    txt_style,
+                    format!(
+                        "/{}",
+                        file_size::fit_4(s.size())
+                    ),
+                )?;
             }
             if e_bar {
                 let pb = ProgressBar::new(s.use_share() as f32, w_bar);
@@ -118,7 +134,9 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
                     cw.w.queue(SetBackgroundColor(bg_color))?;
                 }
                 cw.queue_unstyled_char(' ')?;
-                cw.w.queue(SetBackgroundColor(share_color))?;
+                cw.w.queue(SetBackgroundColor(
+                    share_color,
+                ))?;
                 cw.queue_unstyled_g_string(format!("{pb:<w_bar$}"))?;
             }
             if let Some(bg_color) = bg {
@@ -126,11 +144,19 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             } else {
                 cw.w.queue(ResetColor {})?;
             }
-            cw.w.queue(SetForegroundColor(share_color))?;
-            cw.queue_unstyled_g_string(format!("{:>3.0}%", 100.0 * s.use_share()))?;
+            cw.w.queue(SetForegroundColor(
+                share_color,
+            ))?;
+            cw.queue_unstyled_g_string(format!(
+                "{:>3.0}%",
+                100.0 * s.use_share()
+            ))?;
         } else {
             // there's not much to print if there's no size info
-            cw.queue_g_string(txt_style, format!(" {}", &self.mount.info.fs))?;
+            cw.queue_g_string(
+                txt_style,
+                format!(" {}", &self.mount.info.fs),
+            )?;
         }
         cw.w.queue(ResetColor {})?;
         Ok(())

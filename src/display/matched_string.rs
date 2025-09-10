@@ -131,7 +131,11 @@ impl<'a> MatchedString<'a> {
                 } else if w < dw {
                     match self.align {
                         Alignment::Right => {
-                            cw.repeat(self.base_style, &SPACE_FILLING, dw - w)?;
+                            cw.repeat(
+                                self.base_style,
+                                &SPACE_FILLING,
+                                dw - w,
+                            )?;
                         }
                         Alignment::Center => {
                             right_filling = (dw - w) / 2;
@@ -158,7 +162,11 @@ impl<'a> MatchedString<'a> {
                 }
             }
             if right_filling > 0 {
-                cw.repeat(self.base_style, &SPACE_FILLING, right_filling)?;
+                cw.repeat(
+                    self.base_style,
+                    &SPACE_FILLING,
+                    right_filling,
+                )?;
             }
         } else if let Some(w) = self.display_width {
             match self.align {

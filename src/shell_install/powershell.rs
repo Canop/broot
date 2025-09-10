@@ -113,8 +113,15 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
             &sourcing_path_str,
         );
     } else {
-        util::append_to_file(&sourcing_path, format!("\n{source_line}\n"))?;
-        mad_print_inline!(&si.skin, "`$0` successfully patched.\n", &sourcing_path_str,);
+        util::append_to_file(
+            &sourcing_path,
+            format!("\n{source_line}\n"),
+        )?;
+        mad_print_inline!(
+            &si.skin,
+            "`$0` successfully patched.\n",
+            &sourcing_path_str,
+        );
     }
     si.done = true;
     Ok(())

@@ -84,7 +84,10 @@ impl Completions {
                     stripped
                 } else {
                     // this might become a feature but right now it's a bug
-                    warn!("unexpected non completing whole: {:?}", w);
+                    warn!(
+                        "unexpected non completing whole: {:?}",
+                        w
+                    );
                     *w
                 }
             })
@@ -99,7 +102,12 @@ impl Completions {
         sel_info: SelInfo<'_>,
         panel_state_type: Option<PanelStateType>,
     ) -> Self {
-        match con.verb_store.search(start, Some(sel_info), false, panel_state_type) {
+        match con.verb_store.search(
+            start,
+            Some(sel_info),
+            false,
+            panel_state_type,
+        ) {
             PrefixSearchResult::NoMatch => Self::None,
             PrefixSearchResult::Match(name, _) => {
                 if start.len() >= name.len() {
@@ -137,7 +145,10 @@ impl Completions {
         let parent = path::path_from(path, anchor, parent_part);
         let mut children = Vec::new();
         if !parent.exists() {
-            debug!("no path completion possible because {:?} doesn't exist", &parent);
+            debug!(
+                "no path completion possible because {:?} doesn't exist",
+                &parent
+            );
         } else {
             for entry in parent.read_dir()? {
                 let entry = entry?;
@@ -172,13 +183,23 @@ impl Completions {
         // we try to get the type of argument
         let arg_def = con
             .verb_store
-            .search_sel_info_unique(verb_name, sel_info, panel_state_type)
+            .search_sel_info_unique(
+                verb_name,
+                sel_info,
+                panel_state_type,
+            )
             .and_then(|verb| verb.invocation_parser.as_ref())
             .and_then(|invocation_parser| invocation_parser.get_unique_arg_def());
         if matches!(arg_def, Some(ArgDef::Theme)) {
             Self::for_theme_arg(arg)
         } else {
-            Self::for_path_arg(verb_name, arg, con, sel_info, panel_state_type)
+            Self::for_path_arg(
+                verb_name,
+                arg,
+                con,
+                sel_info,
+                panel_state_type,
+            )
         }
     }
 
@@ -220,7 +241,10 @@ impl Completions {
                 ) {
                     Ok(list) => Self::from_list(list),
                     Err(e) => {
-                        warn!("Error while trying to complete path: {:?}", e);
+                        warn!(
+                            "Error while trying to complete path: {:?}",
+                            e
+                        );
                         Self::None
                     }
                 }
@@ -269,7 +293,12 @@ impl Completions {
                 match &invocation.args {
                     None => {
                         // looking into verb completion
-                        Self::for_verb(&invocation.name, con, sel_info, panel_state_type)
+                        Self::for_verb(
+                            &invocation.name,
+                            con,
+                            sel_info,
+                            panel_state_type,
+                        )
                     }
                     Some(args) if !args.is_empty() => {
                         // looking into arg completion

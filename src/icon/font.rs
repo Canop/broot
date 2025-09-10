@@ -21,13 +21,19 @@ impl FontPlugin {
         let offending_entries = part_to_icon_name_map
             .values()
             .map(|icon_name| {
-                (icon_name, icon_name_to_icon_codepoint_map.contains_key(icon_name))
+                (
+                    icon_name,
+                    icon_name_to_icon_codepoint_map.contains_key(icon_name),
+                )
             })
             // Find if any entry is not present
             .filter(|(_entry, entry_present)| !entry_present)
             .collect::<Vec<_>>();
         for oe in &offending_entries {
-            eprintln!("{} is not a valid icon name", oe.0);
+            eprintln!(
+                "{} is not a valid icon name",
+                oe.0
+            );
         }
         if !offending_entries.is_empty() {
             eprintln!("Terminating execution");

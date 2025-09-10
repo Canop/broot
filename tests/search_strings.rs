@@ -22,7 +22,10 @@ fn check(
     haystack: &str,
     expected: bool,
 ) {
-    println!("applying pattern {:?} on {:?}", pattern, haystack);
+    println!(
+        "applying pattern {:?} on {:?}",
+        pattern, haystack
+    );
     let pattern = build_pattern(pattern);
     //dbg!(&pattern);
     let found = pattern.search_string(haystack).is_some();
@@ -49,9 +52,17 @@ fn simple_regex() {
     check("/toto", "toto", true);
     check("/to{3,5}to", "toto", false);
     check("/to{3,5}to", "tooooto", true);
-    check("/to{3,5}to", "toooooooto", false);
+    check(
+        "/to{3,5}to",
+        "toooooooto",
+        false,
+    );
     check("/to{3,5}to", "tooOoto", false);
-    check("/to{3,5}to/i", "tooOoto", true);
+    check(
+        "/to{3,5}to/i",
+        "tooOoto",
+        true,
+    );
 }
 
 #[test]
@@ -82,7 +93,11 @@ fn multiple_operators_no_parenthesis() {
     check("ab|ac|ad", "ab", true);
     check("ab|ac|ad", "ac", true);
     check("ab|ac|ad", "ad", true);
-    check("ab|ac|ad|af|ag|er", "ad", true);
+    check(
+        "ab|ac|ad|af|ag|er",
+        "ad",
+        true,
+    );
     check("ab&ac&ad", "ad", false);
     check("ab&ac&ad", "abcd", true);
     check("ab|ac|ad|ae", "ad", true);

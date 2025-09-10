@@ -61,7 +61,12 @@ impl Preview {
                 }
             }
         } else {
-            Self::dir(path, InputPattern::none(), &Dam::unlimited(), con)
+            Self::dir(
+                path,
+                InputPattern::none(),
+                &Dam::unlimited(),
+                con,
+            )
         }
     }
     /// try to build a preview with the designed mode, return an error
@@ -90,7 +95,12 @@ impl Preview {
                 .map(Self::Syntactic)?),
             }
         } else {
-            Ok(Self::dir(path, InputPattern::none(), &Dam::unlimited(), con))
+            Ok(Self::dir(
+                path,
+                InputPattern::none(),
+                &Dam::unlimited(),
+                con,
+            ))
         }
     }
 
@@ -101,7 +111,12 @@ impl Preview {
         dam: &Dam,
         con: &AppContext,
     ) -> Self {
-        match DirView::new(path.to_path_buf(), pattern, dam, con) {
+        match DirView::new(
+            path.to_path_buf(),
+            pattern,
+            dam,
+            con,
+        ) {
             Ok(dv) => Self::Dir(dv),
             Err(e) => Self::IoError(e),
         }
@@ -139,7 +154,9 @@ impl Preview {
             Ok(Some(sv)) => Self::Syntactic(sv),
             Err(ProgramError::ZeroLenFile | ProgramError::UnmappableFile) => {
                 debug!("zero len or unmappable file - check if system file");
-                Self::ZeroLen(ZeroLenFileView::new(path.to_path_buf()))
+                Self::ZeroLen(ZeroLenFileView::new(
+                    path.to_path_buf(),
+                ))
             }
             Err(ProgramError::SyntectCrashed {
                 details,
@@ -168,7 +185,9 @@ impl Preview {
             Ok(Some(sv)) => Self::Syntactic(sv),
             Err(ProgramError::ZeroLenFile | ProgramError::UnmappableFile) => {
                 debug!("zero len or unmappable file - check if system file");
-                Self::ZeroLen(ZeroLenFileView::new(path.to_path_buf()))
+                Self::ZeroLen(ZeroLenFileView::new(
+                    path.to_path_buf(),
+                ))
             }
             // not previewable as UTF8 text - we'll try reading it as binary
             Err(ProgramError::UnprintableFile) => Self::hex(path),
@@ -202,7 +221,9 @@ impl Preview {
                 _ => None, // not filterable
             }
         } else {
-            Some(Self::dir(path, pattern, dam, con))
+            Some(Self::dir(
+                path, pattern, dam, con,
+            ))
         }
     }
     /// return a hex_view, suitable for binary, or Self::IOError
@@ -212,7 +233,10 @@ impl Preview {
             Ok(reader) => Self::Hex(reader),
             Err(e) => {
                 // it's unlikely as the file isn't open at this point
-                warn!("error while previewing {:?} : {:?}", path, e);
+                warn!(
+                    "error while previewing {:?} : {:?}",
+                    path, e
+                );
                 Self::IoError(e)
             }
         }
@@ -249,7 +273,10 @@ impl Preview {
         }
     }
     pub fn is_filterable(&self) -> bool {
-        matches!(self, Self::Syntactic(_) | Self::Dir(_))
+        matches!(
+            self,
+            Self::Syntactic(_) | Self::Dir(_)
+        )
     }
 
     pub fn get_selected_line(&self) -> Option<String> {
@@ -351,7 +378,9 @@ impl Preview {
         match self {
             Self::Dir(dv) => dv.display(w, disc, area),
             Self::Image(iv) => iv.display(w, disc, area),
-            Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area, con),
+            Self::Syntactic(sv) => sv.display(
+                w, screen, panel_skin, area, con,
+            ),
             Self::ZeroLen(zlv) => zlv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
             Self::Tty(v) => v.display(w, screen, panel_skin, area),
@@ -363,17 +392,29 @@ impl Preview {
                     &panel_skin.styles.default,
                     "An error prevents the preview:",
                 )?;
-                cw.fill(&panel_skin.styles.default, &SPACE_FILLING)?;
+                cw.fill(
+                    &panel_skin.styles.default,
+                    &SPACE_FILLING,
+                )?;
                 y += 1;
                 w.queue(cursor::MoveTo(area.left, y))?;
                 let mut cw = CropWriter::new(w, area.width as usize);
-                cw.queue_g_string(&panel_skin.styles.status_error, err.to_string())?;
-                cw.fill(&panel_skin.styles.default, &SPACE_FILLING)?;
+                cw.queue_g_string(
+                    &panel_skin.styles.status_error,
+                    err.to_string(),
+                )?;
+                cw.fill(
+                    &panel_skin.styles.default,
+                    &SPACE_FILLING,
+                )?;
                 y += 1;
                 while y < area.top + area.height {
                     w.queue(cursor::MoveTo(area.left, y))?;
                     let mut cw = CropWriter::new(w, area.width as usize);
-                    cw.fill(&panel_skin.styles.default, &SPACE_FILLING)?;
+                    cw.fill(
+                        &panel_skin.styles.default,
+                        &SPACE_FILLING,
+                    )?;
                     y += 1;
                 }
                 Ok(())

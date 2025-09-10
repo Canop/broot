@@ -33,7 +33,10 @@ impl<'a, 's> GitStatusDisplay<'a, 's> {
             }
         }
         let mut show_stats = false;
-        let unstyled_stats = format!("+{}-{}", status.insertions, status.deletions);
+        let unstyled_stats = format!(
+            "+{}-{}",
+            status.insertions, status.deletions
+        );
         let stats_width = unstyled_stats.len();
         if width + stats_width < available_width {
             width += stats_width;
@@ -62,7 +65,12 @@ impl<'a, 's> GitStatusDisplay<'a, 's> {
         W: std::io::Write,
     {
         if self.show_branch {
-            cond_bg!(branch_style, self, selected, self.skin.git_branch);
+            cond_bg!(
+                branch_style,
+                self,
+                selected,
+                self.skin.git_branch
+            );
             if let Some(name) = &self.status.current_branch_name {
                 if self.show_wide {
                     cw.queue_str(branch_style, " ᚜ ")?;
@@ -74,10 +82,26 @@ impl<'a, 's> GitStatusDisplay<'a, 's> {
             }
         }
         if self.show_stats {
-            cond_bg!(insertions_style, self, selected, self.skin.git_insertions);
-            cw.queue_g_string(insertions_style, format!("+{}", self.status.insertions))?;
-            cond_bg!(deletions_style, self, selected, self.skin.git_deletions);
-            cw.queue_g_string(deletions_style, format!("-{}", self.status.deletions))?;
+            cond_bg!(
+                insertions_style,
+                self,
+                selected,
+                self.skin.git_insertions
+            );
+            cw.queue_g_string(
+                insertions_style,
+                format!("+{}", self.status.insertions),
+            )?;
+            cond_bg!(
+                deletions_style,
+                self,
+                selected,
+                self.skin.git_deletions
+            );
+            cw.queue_g_string(
+                deletions_style,
+                format!("-{}", self.status.deletions),
+            )?;
         }
         Ok(())
     }

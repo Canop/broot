@@ -55,9 +55,17 @@ impl Tree {
             con,
         )?;
         self.total_search = false; // on refresh we always do a non total search
-        let mut tree = builder.build_tree(self.total_search, &Dam::unlimited()).unwrap(); // should not fail
+        let mut tree = builder
+            .build_tree(
+                self.total_search,
+                &Dam::unlimited(),
+            )
+            .unwrap(); // should not fail
         let selected_path = self.selected_line().path.to_path_buf();
-        mem::swap(&mut self.lines, &mut tree.lines);
+        mem::swap(
+            &mut self.lines,
+            &mut tree.lines,
+        );
         self.scroll = 0;
         if !self.try_select_path(&selected_path) && self.selection >= self.lines.len() {
             self.selection = 0;
@@ -88,10 +96,9 @@ impl Tree {
             let mut sort_path = String::new();
             let mut id = line.id;
             while let Some(l) = id_lines.get(&id) {
-                let lower_name = l
-                    .path
-                    .file_name()
-                    .map_or("".to_string(), |name| name.to_string_lossy().to_lowercase());
+                let lower_name = l.path.file_name().map_or("".to_string(), |name| {
+                    name.to_string_lossy().to_lowercase()
+                });
                 let sort_prefix = match self.options.sort {
                     Sort::TypeDirsFirst => {
                         if l.is_dir() {
@@ -181,7 +188,10 @@ impl Tree {
             }
         }
         if self.options.needs_sum() {
-            time!("fetch_file_sum", self.fetch_regular_file_sums()); // not the dirs, only simple files
+            time!(
+                "fetch_file_sum",
+                self.fetch_regular_file_sums()
+            ); // not the dirs, only simple files
             self.sort_siblings(); // does nothing when sort mode is None
         }
     }
@@ -496,7 +506,9 @@ impl Tree {
             match self.lines[i].line_type {
                 TreeLineType::Dir | TreeLineType::Pruning => {}
                 _ => {
-                    self.lines[i].sum = Some(FileSum::from_file(&self.lines[i].path));
+                    self.lines[i].sum = Some(FileSum::from_file(
+                        &self.lines[i].path,
+                    ));
                 }
             }
         }
@@ -599,10 +611,15 @@ impl Tree {
             }
             paths_to_add.push(path);
             let Some(parent) = path.parent() else {
-                warn!("no ancestor in the tree for {:?}", path);
-                return Err(TreeBuildError::NotARootDescendant {
-                    path: path.display().to_string(),
-                });
+                warn!(
+                    "no ancestor in the tree for {:?}",
+                    path
+                );
+                return Err(
+                    TreeBuildError::NotARootDescendant {
+                        path: path.display().to_string(),
+                    },
+                );
             };
             path = parent;
         };
@@ -611,12 +628,18 @@ impl Tree {
 
         //debug!("present ancestor: {:#?}", &present_ancestor);
         if present_ancestor.line_type.is_pruning() {
-            info!("unpruning {:?}", &present_ancestor.path);
+            info!(
+                "unpruning {:?}",
+                &present_ancestor.path
+            );
             present_ancestor.unprune();
             // we should in exchange prune another one ?
         }
 
-        debug!("show -> paths to add: {:?}", paths_to_add);
+        debug!(
+            "show -> paths to add: {:?}",
+            paths_to_add
+        );
         if paths_to_add.is_empty() {
             return Ok(());
         }

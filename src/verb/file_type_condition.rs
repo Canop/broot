@@ -39,10 +39,18 @@ impl FileTypeCondition {
             Self::Directory => path.is_dir(),
             Self::File => path.is_file(),
             Self::TextFile => {
-                path.is_file() && matches!(content_type::is_file_text(path), Ok(true))
+                path.is_file()
+                    && matches!(
+                        content_type::is_file_text(path),
+                        Ok(true)
+                    )
             }
             Self::BinaryFile => {
-                path.is_file() && matches!(content_type::is_file_binary(path), Ok(true))
+                path.is_file()
+                    && matches!(
+                        content_type::is_file_binary(path),
+                        Ok(true)
+                    )
             }
         }
     }
@@ -53,14 +61,23 @@ impl FileTypeCondition {
         match self {
             Self::Any => true,
             Self::Directory => line.is_dir(),
-            Self::File => matches!(line.line_type, TreeLineType::File),
+            Self::File => matches!(
+                line.line_type,
+                TreeLineType::File
+            ),
             Self::TextFile => {
                 line.is_file()
-                    && matches!(content_type::is_file_text(&line.path), Ok(true))
+                    && matches!(
+                        content_type::is_file_text(&line.path),
+                        Ok(true)
+                    )
             }
             Self::BinaryFile => {
                 line.is_file()
-                    && matches!(content_type::is_file_binary(&line.path), Ok(true))
+                    && matches!(
+                        content_type::is_file_binary(&line.path),
+                        Ok(true)
+                    )
             }
         }
     }

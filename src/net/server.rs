@@ -50,7 +50,10 @@ impl Server {
                         let mut br = BufReader::new(&stream);
                         if let Some(sequence) = match Message::read(&mut br) {
                             Ok(Message::Command(command)) => {
-                                info!("got single command {:?}", &command);
+                                info!(
+                                    "got single command {:?}",
+                                    &command
+                                );
                                 // we convert it to a sequence
                                 Some(Sequence::new_single(command))
                             }
@@ -61,7 +64,10 @@ impl Server {
                                     Message::Root(root.to_string_lossy().to_string());
                                 match answer.write(&mut stream) {
                                     Ok(()) => debug!("root path successfully returned"),
-                                    Err(e) => warn!("error while answering: {:?}", e),
+                                    Err(e) => warn!(
+                                        "error while answering: {:?}",
+                                        e
+                                    ),
                                 }
                                 None
                             }
@@ -70,7 +76,10 @@ impl Server {
                                 Some(sequence)
                             }
                             Ok(message) => {
-                                debug!("got something not yet handled: {:?}", message);
+                                debug!(
+                                    "got something not yet handled: {:?}",
+                                    message
+                                );
                                 None
                             }
                             Err(e) => {

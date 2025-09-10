@@ -184,14 +184,26 @@ mod tok_pattern_tests {
     fn check_match_pos() {
         check_pos("m,", "miaou", "^   ");
         check_pos("bat", "cabat", "  ^^^");
-        check_pos(";ba", "babababaaa", "^^        ");
-        check_pos("ba,ca", "bababacaa", "^^    ^^ ");
+        check_pos(
+            ";ba",
+            "babababaaa",
+            "^^        ",
+        );
+        check_pos(
+            "ba,ca",
+            "bababacaa",
+            "^^    ^^ ",
+        );
         check_pos(
             "sub,doc,2",
             "/home/user/path2/subpath/Documents/",
             "               ^ ^^^     ^^^",
         );
-        check_pos("ab,abc", "0123/abc/ab/cdg", "     ^^^ ^^    ");
+        check_pos(
+            "ab,abc",
+            "0123/abc/ab/cdg",
+            "     ^^^ ^^    ",
+        );
     }
 
     fn check_match(
@@ -199,7 +211,10 @@ mod tok_pattern_tests {
         name: &str,
         do_match: bool,
     ) {
-        assert_eq!(TokPattern::new(pattern).find(name).is_some(), do_match,);
+        assert_eq!(
+            TokPattern::new(pattern).find(name).is_some(),
+            do_match,
+        );
     }
 
     #[test]
@@ -217,7 +232,11 @@ mod tok_pattern_tests {
 
     #[test]
     fn test_match() {
-        check_match("mia", "android/phonegap", false);
+        check_match(
+            "mia",
+            "android/phonegap",
+            false,
+        );
         check_match("mi", "a", false);
         check_match("mi", "π", false);
         check_match("mi", "miaou/a", true);
@@ -229,8 +248,20 @@ mod tok_pattern_tests {
         check_match("sub", "rasub", true);
         check_match("sub,sub", "rasub", false);
         check_match("sub,sub", "rasubandsub", true);
-        check_match("sub,sub,sub", "rasubandsub", false);
-        check_match("ghi,abc,def,ccc", "abccc/Defghi", false);
-        check_match("ghi,abc,def,ccc", "abcccc/Defghi", true);
+        check_match(
+            "sub,sub,sub",
+            "rasubandsub",
+            false,
+        );
+        check_match(
+            "ghi,abc,def,ccc",
+            "abccc/Defghi",
+            false,
+        );
+        check_match(
+            "ghi,abc,def,ccc",
+            "abcccc/Defghi",
+            true,
+        );
     }
 }

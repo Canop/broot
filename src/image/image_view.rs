@@ -74,7 +74,11 @@ pub struct ImageView {
 
 impl ImageView {
     pub fn new(path: &Path) -> Result<Self, ProgramError> {
-        let source_img = time!("decode image", path, SourceImage::new(path)?);
+        let source_img = time!(
+            "decode image",
+            path,
+            SourceImage::new(path)?
+        );
         Ok(Self {
             path: path.to_path_buf(),
             source_img,
@@ -105,10 +109,9 @@ impl ImageView {
             drawing_count: disc.count,
             area: area.clone(),
         };
-        let must_draw = self
-            .last_drawing
-            .as_ref()
-            .map_or(true, |previous| !drawing_info.follows_in_place(previous));
+        let must_draw = self.last_drawing.as_ref().map_or(true, |previous| {
+            !drawing_info.follows_in_place(previous)
+        });
         if must_draw {
             debug!("image_view must be cleared");
         } else {
@@ -151,7 +154,11 @@ impl ImageView {
             None => {
                 let img = time!(
                     "resize image",
-                    self.source_img.fitting(target_width, target_height, bg_color),
+                    self.source_img.fitting(
+                        target_width,
+                        target_height,
+                        bg_color
+                    ),
                 )?;
                 self.display_img = Some(CachedImage {
                     img,
@@ -162,9 +169,15 @@ impl ImageView {
             }
         };
         let (width, height) = img.dimensions();
-        debug!("resized image dimensions: {},{}", width, height);
+        debug!(
+            "resized image dimensions: {},{}",
+            width, height
+        );
         debug_assert!(width <= area.width as u32);
-        let mut double_line = DoubleLine::new(width as usize, disc.con.true_colors);
+        let mut double_line = DoubleLine::new(
+            width as usize,
+            disc.con.true_colors,
+        );
         let mut y = area.top;
         let img_top_offset = (area.height - (height / 2) as u16) / 2;
         for _ in 0..img_top_offset {
@@ -179,13 +192,23 @@ impl ImageView {
         for pixel in img.pixels() {
             double_line.push(pixel.2);
             if double_line.is_full() {
-                double_line.write(w, left_margin, right_margin, bg)?;
+                double_line.write(
+                    w,
+                    left_margin,
+                    right_margin,
+                    bg,
+                )?;
                 y += 1;
                 w.queue(cursor::MoveTo(area.left, y))?;
             }
         }
         if !double_line.is_empty() {
-            double_line.write(w, left_margin, right_margin, bg)?;
+            double_line.write(
+                w,
+                left_margin,
+                right_margin,
+                bg,
+            )?;
             y += 1;
         }
         w.queue(SetBackgroundColor(bg))?;
@@ -207,7 +230,10 @@ impl ImageView {
         if s.len() > area.width as usize {
             return Ok(());
         }
-        w.queue(cursor::MoveTo(area.left + area.width - s.len() as u16, area.top))?;
+        w.queue(cursor::MoveTo(
+            area.left + area.width - s.len() as u16,
+            area.top,
+        ))?;
         panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }

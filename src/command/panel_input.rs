@@ -68,7 +68,10 @@ impl PanelInput {
         self.input_field.set_normal_style(panel_skin.styles.input.clone());
         self.input_field.set_focus(active && mode == Mode::Input);
         if mode == Mode::Command && active {
-            queue!(w, cursor::MoveTo(area.left, area.top))?;
+            queue!(
+                w,
+                cursor::MoveTo(area.left, area.top)
+            )?;
             panel_skin.styles.mode_command_mark.queue_str(w, "C")?;
             area.width -= 1;
             area.left += 1;
@@ -145,7 +148,10 @@ impl PanelInput {
         internal: Internal,
     ) -> Command {
         if self.handle_input_related_internal(internal) {
-            Command::from_raw(self.input_field.get_content(), false)
+            Command::from_raw(
+                self.input_field.get_content(),
+                false,
+            )
         } else {
             Command::None
         }
@@ -181,7 +187,10 @@ impl PanelInput {
             Internal::input_selection_cut => {
                 let s = self.input_field.cut_selection();
                 if let Err(err) = terminal_clipboard::set_string(s) {
-                    warn!("error in writing into clipboard: {}", err);
+                    warn!(
+                        "error in writing into clipboard: {}",
+                        err
+                    );
                 }
                 true
             }
@@ -189,7 +198,10 @@ impl PanelInput {
             Internal::input_selection_copy => {
                 let s = self.input_field.copy_selection();
                 if let Err(err) = terminal_clipboard::set_string(s) {
-                    warn!("error in writing into clipboard: {}", err);
+                    warn!(
+                        "error in writing into clipboard: {}",
+                        err
+                    );
                 }
                 true
             }
@@ -205,7 +217,10 @@ impl PanelInput {
                         }
                     }
                     Err(e) => {
-                        warn!("Error in reading clipboard: {:?}", e);
+                        warn!(
+                            "Error in reading clipboard: {:?}",
+                            e
+                        );
                     }
                 }
                 true
@@ -288,8 +303,12 @@ impl PanelInput {
         } else {
             &parts
         };
-        let completions =
-            Completions::for_input(completable_parts, con, sel_info, panel_state_type);
+        let completions = Completions::for_input(
+            completable_parts,
+            con,
+            sel_info,
+            panel_state_type,
+        );
         let added = match completions {
             Completions::None => {
                 debug!("nothing to complete!");
@@ -347,7 +366,10 @@ impl PanelInput {
                     continue;
                 }
             }
-            debug!("verb for key: {}", &verb.execution);
+            debug!(
+                "verb for key: {}",
+                &verb.execution
+            );
             return Some(verb);
         }
         None
@@ -417,7 +439,12 @@ impl PanelInput {
         let parts = CommandParts::from(raw.clone());
 
         let verb = if self.is_key_allowed_for_verb(key, mode) {
-            self.find_key_verb(key, con, sel_info, panel_state_type)
+            self.find_key_verb(
+                key,
+                con,
+                sel_info,
+                panel_state_type,
+            )
         } else {
             None
         };
@@ -473,7 +500,10 @@ impl PanelInput {
 
         if let Some(verb) = verb {
             if self.handle_input_related_verb(verb, con) {
-                return Command::from_raw(self.input_field.get_content(), false);
+                return Command::from_raw(
+                    self.input_field.get_content(),
+                    false,
+                );
             }
             if mode != Mode::Input && verb.is_internal(Internal::mode_input) {
                 self.enter_input_mode_with_key(key, &parts);
@@ -487,8 +517,10 @@ impl PanelInput {
             if let Some(invocation_parser) = &verb.invocation_parser {
                 let exec_builder =
                     ExecutionStringBuilder::without_invocation(sel_info, app_state);
-                let verb_invocation = exec_builder
-                    .invocation_with_default(&invocation_parser.invocation_pattern, con);
+                let verb_invocation = exec_builder.invocation_with_default(
+                    &invocation_parser.invocation_pattern,
+                    con,
+                );
                 let mut parts = parts;
                 parts.verb_invocation = Some(verb_invocation);
                 self.set_content(&parts.to_string());
@@ -498,7 +530,10 @@ impl PanelInput {
 
         // input field management
         if mode == Mode::Input && self.input_field.apply_timed_event(&timed_event) {
-            return Command::from_raw(self.input_field.get_content(), false);
+            return Command::from_raw(
+                self.input_field.get_content(),
+                false,
+            );
         }
         Command::None
     }

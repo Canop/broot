@@ -25,7 +25,9 @@ pub fn parse_file_size(input: &str) -> Result<u64, String> {
                 ("t", true) => 1024 * 1024 * 1024 * 1024,
                 _ => {
                     // it's not a number
-                    return Err(format!("{input:?} can't be parsed as file size"));
+                    return Err(format!(
+                        "{input:?} can't be parsed as file size"
+                    ));
                 }
             },
         ),
@@ -33,16 +35,27 @@ pub fn parse_file_size(input: &str) -> Result<u64, String> {
     };
     match digits.parse::<f64>() {
         Ok(n) => Ok((n * factor as f64).ceil() as u64),
-        _ => Err(format!("{input:?} can't be parsed as file size")),
+        _ => Err(format!(
+            "{input:?} can't be parsed as file size"
+        )),
     }
 }
 
 #[test]
 fn test_parse_file_size() {
     assert_eq!(parse_file_size("33"), Ok(33));
-    assert_eq!(parse_file_size("55G"), Ok(55_000_000_000));
-    assert_eq!(parse_file_size("2kb"), Ok(2_000));
-    assert_eq!(parse_file_size("1.23kiB"), Ok(1260));
+    assert_eq!(
+        parse_file_size("55G"),
+        Ok(55_000_000_000)
+    );
+    assert_eq!(
+        parse_file_size("2kb"),
+        Ok(2_000)
+    );
+    assert_eq!(
+        parse_file_size("1.23kiB"),
+        Ok(1260)
+    );
 }
 
 pub fn deserialize<'de, D>(d: D) -> Result<Option<u64>, D::Error>

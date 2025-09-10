@@ -86,7 +86,9 @@ impl DirSummer {
 
         // to avoid counting twice a node, we store their id in a set
         #[cfg(unix)]
-        let nodes = Arc::new(Mutex::new(rustc_hash::FxHashSet::<NodeId>::default()));
+        let nodes = Arc::new(Mutex::new(
+            rustc_hash::FxHashSet::<NodeId>::default(),
+        ));
 
         // busy is the number of directories which are either being processed or queued
         // We use this count to determine when threads can stop waiting for tasks
@@ -110,7 +112,10 @@ impl DirSummer {
                         let entry_path = e.path();
 
                         if con.special_paths.sum(&entry_path) == Directive::Never {
-                            debug!("not summing special path {:?}", entry_path);
+                            debug!(
+                                "not summing special path {:?}",
+                                entry_path
+                            );
                             continue;
                         }
 
@@ -157,8 +162,10 @@ impl DirSummer {
         // at the end (this avoids waiting for a mutex during computation)
         for _ in 0..threads_count {
             let busy = Arc::clone(&busy);
-            let (dirs_sender, dirs_receiver) =
-                (dirs_sender.clone(), dirs_receiver.clone());
+            let (dirs_sender, dirs_receiver) = (
+                dirs_sender.clone(),
+                dirs_receiver.clone(),
+            );
 
             #[cfg(unix)]
             let nodes = nodes.clone();
@@ -232,7 +239,10 @@ impl DirSummer {
                     sum += thread_sum;
                 }
                 Err(e) => {
-                    warn!("Error while recv summing thread result : {:?}", e);
+                    warn!(
+                        "Error while recv summing thread result : {:?}",
+                        e
+                    );
                 }
             }
         }
@@ -256,7 +266,11 @@ pub fn compute_dir_sum(
     use once_cell::sync::OnceCell;
     static DIR_SUMMER: OnceCell<Mutex<DirSummer>> = OnceCell::new();
     DIR_SUMMER
-        .get_or_init(|| Mutex::new(DirSummer::new(con.file_sum_threads_count)))
+        .get_or_init(|| {
+            Mutex::new(DirSummer::new(
+                con.file_sum_threads_count,
+            ))
+        })
         .lock()
         .unwrap()
         .compute_dir_sum(path, cache, dam, con)

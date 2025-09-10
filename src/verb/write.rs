@@ -20,7 +20,9 @@ pub fn verb_write(
     line: &str,
 ) -> Result<CmdResult, ProgramError> {
     let Some(path) = &con.launch_args.verb_output else {
-        return Ok(CmdResult::error("No --verb-output provided".to_string()));
+        return Ok(CmdResult::error(
+            "No --verb-output provided".to_string(),
+        ));
     };
     let mut file = OpenOptions::new().create(true).append(true).open(path)?;
     if file.metadata().map(|m| m.len() > 0).unwrap_or(false) {
@@ -33,7 +35,9 @@ pub fn verb_write(
 /// Remove the content of the file provided to broot with `--verb-output`.
 pub fn verb_clear_output(con: &AppContext) -> Result<CmdResult, ProgramError> {
     let Some(path) = &con.launch_args.verb_output else {
-        return Ok(CmdResult::error("No --verb-output provided".to_string()));
+        return Ok(CmdResult::error(
+            "No --verb-output provided".to_string(),
+        ));
     };
     File::create(path)?;
     Ok(CmdResult::Keep)

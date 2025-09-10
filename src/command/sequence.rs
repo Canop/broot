@@ -35,7 +35,10 @@ impl Sequence {
     ) -> Self {
         Self {
             raw: raw.into(),
-            separator: separator.map_or_else(Sequence::local_separator, |s| s.into()),
+            separator: separator.map_or_else(
+                Sequence::local_separator,
+                |s| s.into(),
+            ),
         }
     }
     pub fn new_single(cmd: String) -> Self {
@@ -59,7 +62,10 @@ impl Sequence {
         &self,
         con: &AppContext,
     ) -> Result<Vec<(String, Command)>, ProgramError> {
-        debug!("Splitting cmd sequence with {:?}", &self.separator);
+        debug!(
+            "Splitting cmd sequence with {:?}",
+            &self.separator
+        );
         let mut commands = Vec::new();
         if self.separator.is_empty() {
             add_commands(&self.raw, &mut commands, con)?;
@@ -95,7 +101,10 @@ fn add_commands(
     let raw_parts = CommandParts::from(input.to_string());
     let (pattern, verb_invocation) = raw_parts.split();
     if let Some(pattern) = pattern {
-        commands.push((input.to_string(), Command::from_parts(pattern, false)));
+        commands.push((
+            input.to_string(),
+            Command::from_parts(pattern, false),
+        ));
     }
     if let Some(verb_invocation) = verb_invocation {
         let mut command = Command::from_parts(verb_invocation, true);
@@ -109,9 +118,11 @@ fn add_commands(
                     });
                 }
                 PrefixSearchResult::Matches(_) => {
-                    return Err(ProgramError::AmbiguousVerbName {
-                        name: invocation.name.to_string(),
-                    });
+                    return Err(
+                        ProgramError::AmbiguousVerbName {
+                            name: invocation.name.to_string(),
+                        },
+                    );
                 }
                 PrefixSearchResult::Match(_, verb) => {
                     if let Some(internal) = verb.get_internal() {

@@ -34,10 +34,16 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
     // we detect Wezterm with the $TERM_PROGRAM env var and we
     // check its version to be sure it's one with support
     if let Ok(term_program) = env::var("TERM_PROGRAM") {
-        debug!("$TERM_PROGRAM = {:?}", term_program);
+        debug!(
+            "$TERM_PROGRAM = {:?}",
+            term_program
+        );
         if term_program == "WezTerm" {
             if let Ok(version) = env::var("TERM_PROGRAM_VERSION") {
-                debug!("$TERM_PROGRAM_VERSION = {:?}", version);
+                debug!(
+                    "$TERM_PROGRAM_VERSION = {:?}",
+                    version
+                );
                 if &*version < "20220105-201556-91a423da" {
                     debug!("WezTerm's version predates Kitty Graphics protocol support");
                 } else {
@@ -74,8 +80,14 @@ pub fn is_kitty_graphics_protocol_supported() -> bool {
             }
             Ok(response) => response == "_Gi=31;OK",
         };
-        debug!("Xterm querying took {:?}", start.elapsed());
-        debug!("kitty protocol support: {:?}", s);
+        debug!(
+            "Xterm querying took {:?}",
+            start.elapsed()
+        );
+        debug!(
+            "kitty protocol support: {:?}",
+            s
+        );
         return s;
     }
     false

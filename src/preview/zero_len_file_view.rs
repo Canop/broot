@@ -50,13 +50,19 @@ impl ZeroLenFileView {
         // are usually identical for system files and we crop later anyway
         let line_len = area.width as usize;
         for y in 0..line_count {
-            w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
+            w.queue(cursor::MoveTo(
+                area.left,
+                y as u16 + area.top,
+            ))?;
             let mut cw = CropWriter::new(w, area.width as usize);
             let cw = &mut cw;
             if let Some(line) = reader.next_line(line_len, 15_000)? {
                 cw.queue_str(&styles.default, &line)?;
             }
-            cw.fill(&styles.default, &SPACE_FILLING)?;
+            cw.fill(
+                &styles.default,
+                &SPACE_FILLING,
+            )?;
         }
         Ok(())
     }

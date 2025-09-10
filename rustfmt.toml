@@ -6,3 +6,4 @@ fn_params_layout = "Vertical"
 max_width = 90
 struct_lit_single_line = false
 use_small_heuristics = "Off"
+fn_call_width = 30

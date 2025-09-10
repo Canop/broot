@@ -4,7 +4,10 @@ pub fn list() -> Vec<(&'static str, &'static str)> {
     let mut features: Vec<(&'static str, &'static str)> = Vec::new();
 
     #[cfg(not(any(target_family = "windows", target_os = "android")))]
-    features.push(("permissions", "allow showing file mode, owner and group"));
+    features.push((
+        "permissions",
+        "allow showing file mode, owner and group",
+    ));
 
     #[cfg(feature = "clipboard")]
     features.push((

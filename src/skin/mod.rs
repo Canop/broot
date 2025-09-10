@@ -31,7 +31,10 @@ use crokey::crossterm::style::Color::{
 pub fn gray(mut level: u8) -> Option<Color> {
     if level > 23 {
         // this only happens when I mess the literals in style_map.rs
-        warn!("fixed invalid gray level: {}", level);
+        warn!(
+            "fixed invalid gray level: {}",
+            level
+        );
         level = 23
     }
     Some(AnsiValue(0xE8 + level))

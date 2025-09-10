@@ -76,7 +76,9 @@ impl PreviewTransformers {
     pub fn new(transformer_confs: &[PreviewTransformerConf]) -> Result<Self, ConfError> {
         let mut transformers = Vec::with_capacity(transformer_confs.len());
         for transformer_conf in transformer_confs {
-            transformers.push(PreviewTransformer::from_conf(transformer_conf)?);
+            transformers.push(PreviewTransformer::from_conf(
+                transformer_conf,
+            )?);
         }
         let temp_dir = tempfile::Builder::new().prefix("broot-conversions").tempdir()?;
         Ok(Self {
@@ -202,17 +204,26 @@ impl PreviewTransformer {
                 // to preview (or changes would be ignored)
                 let input_modified = input_path.metadata().and_then(|m| m.modified());
                 let transformed_modified = path.metadata().and_then(|m| m.modified());
-                match (input_modified, transformed_modified) {
+                match (
+                    input_modified,
+                    transformed_modified,
+                ) {
                     (Ok(input_date), Ok(transformed_date))
                         if input_date <= transformed_date =>
                     {
                         // the transformed file is up to date
-                        debug!("preview transform {:?} up to date", path);
+                        debug!(
+                            "preview transform {:?} up to date",
+                            path
+                        );
                         return Ok(path);
                     }
                     _ => {
                         // the transformed file is obsolete
-                        debug!("preview transform {:?} obsolete", path);
+                        debug!(
+                            "preview transform {:?} obsolete",
+                            path
+                        );
                         fs::remove_file(&path)?;
                     }
                 }
@@ -221,16 +232,30 @@ impl PreviewTransformer {
             fs::create_dir(&output_dir)?;
         }
 
-        let mut output_path =
-            output_dir.join(format!("{}.{}", input_stem, self.output_extension));
+        let mut output_path = output_dir.join(format!(
+            "{}.{}",
+            input_stem, self.output_extension
+        ));
 
         let mut command = self.command.iter().map(|part| {
-            part.replace("{input-path}", &input_path.to_string_lossy())
-                .replace("{output-dir}", &output_dir.to_string_lossy())
-                .replace("{output-path}", &output_path.to_string_lossy())
+            part.replace(
+                "{input-path}",
+                &input_path.to_string_lossy(),
+            )
+            .replace(
+                "{output-dir}",
+                &output_dir.to_string_lossy(),
+            )
+            .replace(
+                "{output-path}",
+                &output_path.to_string_lossy(),
+            )
         });
 
-        info!("transforming {:?} to {:?}", input_path, output_path);
+        info!(
+            "transforming {:?} to {:?}",
+            input_path, output_path
+        );
 
         let executable = command.next().unwrap();
         let mut process = Command::new(executable);
@@ -242,7 +267,9 @@ impl PreviewTransformer {
                 process.stdin(std::process::Stdio::null());
             }
             ProcessInputKind::Stdin => {
-                process.stdin(std::fs::File::open(input_path)?);
+                process.stdin(std::fs::File::open(
+                    input_path,
+                )?);
             }
         }
 
@@ -251,7 +278,9 @@ impl PreviewTransformer {
                 process.stdout(std::process::Stdio::null());
             }
             ProcessOutputKind::Stdout => {
-                process.stdout(std::fs::File::create(&output_path)?);
+                process.stdout(std::fs::File::create(
+                    &output_path,
+                )?);
             }
         }
 
@@ -266,9 +295,11 @@ impl PreviewTransformer {
             // it's not returned on the next call
             let _ = std::fs::remove_file(&output_path);
             match exit_status.code() {
-                Some(code) => Err(PreviewTransformerError::ProcessFailed {
-                    code,
-                }),
+                Some(code) => Err(
+                    PreviewTransformerError::ProcessFailed {
+                        code,
+                    },
+                ),
                 None => Err(PreviewTransformerError::ProcessInterrupted),
             }
         }

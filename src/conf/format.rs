@@ -41,9 +41,11 @@ impl SerdeFormat {
             .and_then(|os| os.to_str())
             .map(|ext| ext.to_lowercase())
             .and_then(|key| Self::from_key(&key))
-            .ok_or_else(|| ConfError::UnknownFileExtension {
-                path: path.to_string_lossy().to_string(),
-            })
+            .ok_or_else(
+                || ConfError::UnknownFileExtension {
+                    path: path.to_string_lossy().to_string(),
+                },
+            )
     }
     pub fn read_string<T>(
         path: &Path,

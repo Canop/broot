@@ -107,7 +107,11 @@ impl FilesystemState {
         cmd: ScrollCommand,
     ) -> bool {
         let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.count(), self.page_height);
+        self.scroll = cmd.apply(
+            self.scroll,
+            self.count(),
+            self.page_height,
+        );
         if self.selection_idx < self.scroll {
             self.selection_idx = self.scroll;
         } else if self.selection_idx >= self.scroll + self.page_height {
@@ -124,13 +128,26 @@ impl FilesystemState {
         dir: i32, // -1 for up, 1 for down
         cycle: bool,
     ) -> CmdResult {
-        let count = get_arg(input_invocation, internal_exec, 1);
+        let count = get_arg(
+            input_invocation,
+            internal_exec,
+            1,
+        );
         let dir = dir * count;
         if let Some(f) = self.filtered.as_mut() {
-            f.selection_idx = move_sel(f.selection_idx, f.mounts.len(), dir, cycle);
+            f.selection_idx = move_sel(
+                f.selection_idx,
+                f.mounts.len(),
+                dir,
+                cycle,
+            );
         } else {
-            self.selection_idx =
-                move_sel(self.selection_idx, self.mounts.len().get(), dir, cycle);
+            self.selection_idx = move_sel(
+                self.selection_idx,
+                self.mounts.len().get(),
+                dir,
+                cycle,
+            );
         }
         if self.selection_idx < self.scroll {
             self.scroll = self.selection_idx;
@@ -250,9 +267,15 @@ impl PanelState for FilesystemState {
         let con = &disc.con;
         self.page_height = area.height as usize - 2;
         let (mounts, selection_idx) = if let Some(filtered) = &self.filtered {
-            (filtered.mounts.as_slice(), filtered.selection_idx)
+            (
+                filtered.mounts.as_slice(),
+                filtered.selection_idx,
+            )
         } else {
-            (self.mounts.as_slice(), self.selection_idx)
+            (
+                self.mounts.as_slice(),
+                self.selection_idx,
+            )
         };
         let scrollbar = area.scrollbar(self.scroll, mounts.len());
         //- style preparation
@@ -332,16 +355,27 @@ impl PanelState for FilesystemState {
             }
         }
         //- titles
-        w.queue(cursor::MoveTo(area.left, area.top))?;
+        w.queue(cursor::MoveTo(
+            area.left, area.top,
+        ))?;
         let mut cw = CropWriter::new(w, width);
-        cw.queue_g_string(&styles.default, format!("{:wc_fs$}", "filesystem"))?;
+        cw.queue_g_string(
+            &styles.default,
+            format!("{:wc_fs$}", "filesystem"),
+        )?;
         cw.queue_char(border_style, '│')?;
         if e_dsk {
-            cw.queue_g_string(&styles.default, "disk ".to_string())?;
+            cw.queue_g_string(
+                &styles.default,
+                "disk ".to_string(),
+            )?;
             cw.queue_char(border_style, '│')?;
         }
         if e_type {
-            cw.queue_g_string(&styles.default, format!("{:^w_type$}", "type"))?;
+            cw.queue_g_string(
+                &styles.default,
+                format!("{:^w_type$}", "type"),
+            )?;
             cw.queue_char(border_style, '│')?;
         }
         if e_use {
@@ -359,41 +393,89 @@ impl PanelState for FilesystemState {
             )?;
             cw.queue_char(border_style, '│')?;
         }
-        cw.queue_g_string(&styles.default, "free".to_string())?;
+        cw.queue_g_string(
+            &styles.default,
+            "free".to_string(),
+        )?;
         cw.queue_char(border_style, '│')?;
-        cw.queue_g_string(&styles.default, "size".to_string())?;
+        cw.queue_g_string(
+            &styles.default,
+            "size".to_string(),
+        )?;
         cw.queue_char(border_style, '│')?;
-        cw.queue_g_string(&styles.default, "mount point".to_string())?;
+        cw.queue_g_string(
+            &styles.default,
+            "mount point".to_string(),
+        )?;
         cw.fill(border_style, &SPACE_FILLING)?;
         //- horizontal line
-        w.queue(cursor::MoveTo(area.left, 1 + area.top))?;
+        w.queue(cursor::MoveTo(
+            area.left,
+            1 + area.top,
+        ))?;
         let mut cw = CropWriter::new(w, width);
-        cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = wc_fs + 1))?;
+        cw.queue_g_string(
+            border_style,
+            format!(
+                "{:─>width$}",
+                '┼',
+                width = wc_fs + 1
+            ),
+        )?;
         if e_dsk {
             cw.queue_g_string(
                 border_style,
-                format!("{:─>width$}", '┼', width = w_dsk + 1),
+                format!(
+                    "{:─>width$}",
+                    '┼',
+                    width = w_dsk + 1
+                ),
             )?;
         }
         if e_type {
             cw.queue_g_string(
                 border_style,
-                format!("{:─>width$}", '┼', width = w_type + 1),
+                format!(
+                    "{:─>width$}",
+                    '┼',
+                    width = w_type + 1
+                ),
             )?;
         }
-        cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_size + 1))?;
+        cw.queue_g_string(
+            border_style,
+            format!(
+                "{:─>width$}",
+                '┼',
+                width = w_size + 1
+            ),
+        )?;
         if e_use {
             cw.queue_g_string(
                 border_style,
-                format!("{:─>width$}", '┼', width = wc_use + 1),
+                format!(
+                    "{:─>width$}",
+                    '┼',
+                    width = wc_use + 1
+                ),
             )?;
         }
-        cw.queue_g_string(border_style, format!("{:─>width$}", '┼', width = w_free + 1))?;
+        cw.queue_g_string(
+            border_style,
+            format!(
+                "{:─>width$}",
+                '┼',
+                width = w_free + 1
+            ),
+        )?;
         cw.fill(border_style, &BRANCH_FILLING)?;
         //- content
         let mut idx = self.scroll;
         for y in 2..area.height {
-            w.queue(cursor::MoveTo(area.left, y + area.top))?;
+            w.queue(cursor::MoveTo(
+                area.left,
+                y + area.top,
+            ))?;
             let selected = selection_idx == idx;
             let mut cw = CropWriter::new(w, width - 1); // -1 for scrollbar
             let txt_style = if selected {
@@ -472,21 +554,32 @@ impl PanelState for FilesystemState {
                     if e_use {
                         cw.queue_g_string(
                             txt_style,
-                            format!("{:>4}", file_size::fit_4(stats.used())),
+                            format!(
+                                "{:>4}",
+                                file_size::fit_4(stats.used())
+                            ),
                         )?;
                         if e_use_share {
                             cw.queue_g_string(
                                 txt_style,
-                                format!("{:>3.0}%", 100.0 * stats.use_share()),
+                                format!(
+                                    "{:>3.0}%",
+                                    100.0 * stats.use_share()
+                                ),
                             )?;
                         }
                         if e_use_bar {
                             cw.queue_char(txt_style, ' ')?;
-                            let pb =
-                                ProgressBar::new(stats.use_share() as f32, w_use_bar);
+                            let pb = ProgressBar::new(
+                                stats.use_share() as f32,
+                                w_use_bar,
+                            );
                             let mut bar_style = styles.default.clone();
                             bar_style.set_bg(share_color);
-                            cw.queue_g_string(&bar_style, format!("{pb:<w_use_bar$}"))?;
+                            cw.queue_g_string(
+                                &bar_style,
+                                format!("{pb:<w_use_bar$}"),
+                            )?;
                         }
                         cw.queue_char(border_style, '│')?;
                     }
@@ -495,14 +588,20 @@ impl PanelState for FilesystemState {
                     share_style.set_fg(share_color);
                     cw.queue_g_string(
                         &share_style,
-                        format!("{:>4}", file_size::fit_4(stats.available())),
+                        format!(
+                            "{:>4}",
+                            file_size::fit_4(stats.available())
+                        ),
                     )?;
                     cw.queue_char(border_style, '│')?;
                     // size
                     if let Some(stats) = mount.stats() {
                         cw.queue_g_string(
                             txt_style,
-                            format!("{:>4}", file_size::fit_4(stats.size())),
+                            format!(
+                                "{:>4}",
+                                file_size::fit_4(stats.size())
+                            ),
                         )?;
                     } else {
                         cw.repeat(txt_style, &SPACE_FILLING, 4)?;
@@ -511,14 +610,26 @@ impl PanelState for FilesystemState {
                 } else {
                     // used
                     if e_use {
-                        cw.repeat(txt_style, &SPACE_FILLING, wc_use)?;
+                        cw.repeat(
+                            txt_style,
+                            &SPACE_FILLING,
+                            wc_use,
+                        )?;
                         cw.queue_char(border_style, '│')?;
                     }
                     // free
-                    cw.repeat(txt_style, &SPACE_FILLING, w_free)?;
+                    cw.repeat(
+                        txt_style,
+                        &SPACE_FILLING,
+                        w_free,
+                    )?;
                     cw.queue_char(border_style, '│')?;
                     // size
-                    cw.repeat(txt_style, &SPACE_FILLING, w_size)?;
+                    cw.repeat(
+                        txt_style,
+                        &SPACE_FILLING,
+                        w_size,
+                    )?;
                     cw.queue_char(border_style, '│')?;
                 }
                 // mount point
@@ -571,18 +682,30 @@ impl PanelState for FilesystemState {
                     CmdResult::PopState
                 }
             }
-            Internal::line_down => {
-                self.move_line(internal_exec, input_invocation, 1, true)
-            }
-            Internal::line_up => {
-                self.move_line(internal_exec, input_invocation, -1, true)
-            }
-            Internal::line_down_no_cycle => {
-                self.move_line(internal_exec, input_invocation, 1, false)
-            }
-            Internal::line_up_no_cycle => {
-                self.move_line(internal_exec, input_invocation, -1, false)
-            }
+            Internal::line_down => self.move_line(
+                internal_exec,
+                input_invocation,
+                1,
+                true,
+            ),
+            Internal::line_up => self.move_line(
+                internal_exec,
+                input_invocation,
+                -1,
+                true,
+            ),
+            Internal::line_down_no_cycle => self.move_line(
+                internal_exec,
+                input_invocation,
+                1,
+                false,
+            ),
+            Internal::line_up_no_cycle => self.move_line(
+                internal_exec,
+                input_invocation,
+                -1,
+                false,
+            ),
             Internal::open_stay => {
                 let in_new_panel =
                     input_invocation.map(|inv| inv.bang).unwrap_or(internal_exec.bang);

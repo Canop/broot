@@ -141,7 +141,9 @@ impl Launchable {
                 capture_mouse: con.capture_mouse,
                 keyboard_enhanced: con.keyboard_enhanced,
             }),
-            None => Err(io::Error::other("Empty launch string")),
+            None => Err(io::Error::other(
+                "Empty launch string",
+            )),
         }
     }
 
@@ -163,8 +165,9 @@ impl Launchable {
                 width,
                 height,
             } => {
-                let dp =
-                    DisplayableTree::out_of_app(tree, skin, ext_colors, *width, *height);
+                let dp = DisplayableTree::out_of_app(
+                    tree, skin, ext_colors, *width, *height,
+                );
                 dp.write_on(&mut std::io::stdout())
             }
             Launchable::Program {
@@ -203,10 +206,12 @@ impl Launchable {
                     .args(args.iter())
                     .spawn()
                     .and_then(|mut p| p.wait())
-                    .map_err(|source| ProgramError::LaunchError {
-                        program: exe.clone(),
-                        source,
-                    });
+                    .map_err(
+                        |source| ProgramError::LaunchError {
+                            program: exe.clone(),
+                            source,
+                        },
+                    );
                 if *switch_terminal {
                     if let Some(ref mut w) = &mut w {
                         terminal::enable_raw_mode().unwrap();

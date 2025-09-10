@@ -38,33 +38,37 @@ impl InvocationParser {
             args_parser = match Regex::new(&spec) {
                 Ok(regex) => Some(regex),
                 Err(_) => {
-                    return Err(ConfError::InvalidVerbInvocation {
-                        invocation: spec,
-                    });
+                    return Err(
+                        ConfError::InvalidVerbInvocation {
+                            invocation: spec,
+                        },
+                    );
                 }
             };
             for group in GROUP.find_iter(args) {
                 let group_str = group.as_str();
-                arg_defs.push(if group_str.ends_with("path-from-parent}") {
-                    ArgDef::Path {
-                        anchor: PathAnchor::Parent,
-                        selection_type: SelectionType::Any,
-                    }
-                } else if group_str.ends_with("path-from-directory}") {
-                    ArgDef::Path {
-                        anchor: PathAnchor::Directory,
-                        selection_type: SelectionType::Any,
-                    }
-                } else if group_str.ends_with("path}") {
-                    ArgDef::Path {
-                        anchor: PathAnchor::Unspecified,
-                        selection_type: SelectionType::Any,
-                    }
-                } else if group_str.ends_with("theme}") {
-                    ArgDef::Theme
-                } else {
-                    ArgDef::Unspecified // still probably a path
-                });
+                arg_defs.push(
+                    if group_str.ends_with("path-from-parent}") {
+                        ArgDef::Path {
+                            anchor: PathAnchor::Parent,
+                            selection_type: SelectionType::Any,
+                        }
+                    } else if group_str.ends_with("path-from-directory}") {
+                        ArgDef::Path {
+                            anchor: PathAnchor::Directory,
+                            selection_type: SelectionType::Any,
+                        }
+                    } else if group_str.ends_with("path}") {
+                        ArgDef::Path {
+                            anchor: PathAnchor::Unspecified,
+                            selection_type: SelectionType::Any,
+                        }
+                    } else if group_str.ends_with("theme}") {
+                        ArgDef::Theme
+                    } else {
+                        ArgDef::Unspecified // still probably a path
+                    },
+                );
             }
         }
         Ok(Self {
@@ -103,7 +107,10 @@ impl InvocationParser {
         invocation: &VerbInvocation,
         _other_path: &Option<PathBuf>,
     ) -> Option<String> {
-        match (&invocation.args, &self.args_parser) {
+        match (
+            &invocation.args,
+            &self.args_parser,
+        ) {
             (None, None) => None,
             (None, Some(ref regex)) => {
                 if regex.is_match("") {
@@ -119,9 +126,10 @@ impl InvocationParser {
                     Some(self.invocation_pattern.to_string_for_name(&invocation.name))
                 }
             }
-            (Some(_), None) => {
-                Some(format!("{} doesn't take arguments", invocation.name))
-            }
+            (Some(_), None) => Some(format!(
+                "{} doesn't take arguments",
+                invocation.name
+            )),
         }
     }
 
@@ -134,7 +142,10 @@ impl InvocationParser {
             if let Some(input_cap) = r.captures(args) {
                 for name in r.capture_names().flatten() {
                     if let Some(c) = input_cap.name(name) {
-                        map.insert(name.to_string(), c.as_str().to_string());
+                        map.insert(
+                            name.to_string(),
+                            c.as_str().to_string(),
+                        );
                     }
                 }
             }

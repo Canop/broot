@@ -83,7 +83,10 @@ impl DoubleLine {
             } else {
                 self.pixels[i + self.img_width]
             };
-            w.queue(SetColors(Colors::new(foreground_color, background_color)))?;
+            w.queue(SetColors(Colors::new(
+                foreground_color,
+                background_color,
+            )))?;
             w.queue(Print(UPPER_HALF_BLOCK))?;
         }
         fill_bg(w, right_margin, bg)?;

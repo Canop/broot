@@ -66,7 +66,10 @@ impl TreeLineType {
             final_is_dir = final_ft.is_dir();
             link_chain_length += 1;
             if link_chain_length > MAX_LINK_CHAIN_LENGTH {
-                info!("too long link chain at {}", direct_target.display());
+                info!(
+                    "too long link chain at {}",
+                    direct_target.display()
+                );
                 return Ok(Self::BrokenSymLink(
                     direct_target.to_string_lossy().into_owned(),
                 ));

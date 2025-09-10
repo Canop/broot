@@ -21,4 +21,7 @@ fn bench_score_of_fuzzy(gb: &mut Bench) {
     }
 }
 
-glassbench!("Fuzzy Patterns", bench_score_of_fuzzy,);
+glassbench!(
+    "Fuzzy Patterns",
+    bench_score_of_fuzzy,
+);

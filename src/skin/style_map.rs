@@ -127,7 +127,9 @@ impl StyleMap {
         f: &mut W,
     ) -> Result<(), ProgramError> {
         if self.styled {
-            f.queue(SetBackgroundColor(Color::Reset))?;
+            f.queue(SetBackgroundColor(
+                Color::Reset,
+            ))?;
         }
         Ok(())
     }

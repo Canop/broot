@@ -184,13 +184,18 @@ impl AppContext {
         let file_sum_threads_count =
             config.file_sum_threads_count.unwrap_or(file_sum::DEFAULT_THREAD_COUNT);
         if !(1..=50).contains(&file_sum_threads_count) {
-            return Err(ConfError::InvalidThreadsCount {
-                count: file_sum_threads_count,
-            }
-            .into());
+            return Err(
+                ConfError::InvalidThreadsCount {
+                    count: file_sum_threads_count,
+                }
+                .into(),
+            );
         }
         let max_panels_count = config.max_panels_count.unwrap_or(2).clamp(2, 100);
-        let capture_mouse = match (config.capture_mouse, config.disable_mouse_capture) {
+        let capture_mouse = match (
+            config.capture_mouse,
+            config.disable_mouse_capture,
+        ) {
             (Some(b), _) => b, // the new "capture_mouse" argument takes precedence
             (_, Some(b)) => !b,
             _ => true,
@@ -295,7 +300,12 @@ impl Default for AppContext {
         let mut config = Conf::default();
         let verb_store = VerbStore::new(&mut config).unwrap();
         let launch_args = parse_default_flags("").unwrap();
-        Self::from(launch_args, verb_store, &config).unwrap()
+        Self::from(
+            launch_args,
+            verb_store,
+            &config,
+        )
+        .unwrap()
     }
 }
 
@@ -305,7 +315,10 @@ impl Default for AppContext {
 /// Based on https://gist.github.com/XVilka/8346728#true-color-detection
 fn are_true_colors_available() -> bool {
     if let Ok(colorterm) = std::env::var("COLORTERM") {
-        debug!("COLORTERM env variable = {:?}", colorterm);
+        debug!(
+            "COLORTERM env variable = {:?}",
+            colorterm
+        );
         if colorterm.contains("truecolor") || colorterm.contains("24bit") {
             debug!("true colors are available");
             true
@@ -345,10 +358,12 @@ fn initial_root_file(
             root = parent.to_path_buf();
         } else {
             // this is a weird filesystem, let's give up
-            return Err(TreeBuildError::NotADirectory {
-                path: format!("{:?}", &root),
-            }
-            .into());
+            return Err(
+                TreeBuildError::NotADirectory {
+                    path: format!("{:?}", &root),
+                }
+                .into(),
+            );
         }
     }
     Ok((root, file))
