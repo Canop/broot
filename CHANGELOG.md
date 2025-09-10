@@ -1,4 +1,5 @@
 ### next
+- `:toggle_watch` internal, with `:watch` shortcut, bound by default to `alt-w`. When watching is active, the tree is refreshed whenever any directory/file, even deep, is changed - Fix #730
 - fallback to a transparent background for images in image preview instead of a specific color - Fix #1040 - Thanks @letmeiiiin
 
 ### v1.48.0 - 2025-08-29
