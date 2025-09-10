@@ -461,6 +461,7 @@ invocation | default key | default shortcut | behavior / details
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_preview | - | - | toggle display of the preview panel
 :toggle_root_fs | - | - | toggle showing filesystem info on top
+:toggle_watch | - | - | toggle watching for changes and keeping the tree up to date
 :set_max_depth | - | - | set the maximum directory depth shown
 :unset_max_depth | - | - | clear the max_depth
 :toggle_second_tree | - | - | toggle displaying a second tree

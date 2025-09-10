@@ -130,6 +130,17 @@ The top line tells you on what branch you are and summarizes changes:
 
 With [some customization](https://dystroy.org/blog/gg/) you have the perfect tool for reviewing your changes before a commit.
 
+# Auto-Refresh
+
+With `:toggle_watch`) (shortcut: `:watch`) you can ask broot to watch for changes in the current directory and its descendants, and to automatically refresh the view.
+
+When broot is watching, an eye is visible to the left of the status line:
+
+![watch](img/watch.png)
+
+On some platforms, it's possible for broot to be unable to watch some huge directories.
+In such cases, broot simply leaves watch mode, the eye disappears, and you can try again watching after having moved to a smaller directory.
+
 # All Toggles
 
 Each of those toggles lets you alternate between 2 or 3 modes.
@@ -146,6 +157,7 @@ Each of those toggles lets you alternate between 2 or 3 modes.
  | toggle_sizes         | sizes    |       | toggle showing sizes
  | toggle_trim_root     | t        |       | toggle removing nodes at first level too
  | toggle_tree          | tree     |       | toggle showing file tree (when not affected by sorting mode)
+ | toggle_watch         | watch    | <kbd>alt</kbd><kbd>w</kbd> | toggle refreshing on file/directory changes
 
 To apply one, type a space (or `:`), then the start of its shortcut, then hit <kbd class=b>⏎</kbd>.
 
