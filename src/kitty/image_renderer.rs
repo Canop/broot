@@ -261,14 +261,29 @@ impl<'i> KittyImage<'i> {
         &self,
         w: &mut W,
     ) -> Result<(), ProgramError> {
+        let id_str = if self.id < 256 {
+            format!("\u{1b}[38;5;{}m", self.id)
+        } else {
+            format!(
+                "\u{1b}[38;2;{};{};{}m",
+                (self.id >> 16) & 0xff,
+                (self.id >> 8) & 0xff,
+                self.id & 0xff
+            )
+        };
+        let id_msb_str = if self.id >= (1 << 24) {
+            DIACRITICS[self.id >> 24]
+        } else {
+            ""
+        };
         for y in 0..(self.area.height).min(DIACRITICS.len() as u16) {
             w.queue(cursor::MoveTo(self.area.left, self.area.top + y))?;
-            write!(w, "\u{1b}[38;5;{}m", self.id)?;
+            write!(w, "{}", &id_str)?;
             for x in 0..(self.area.width).min(DIACRITICS.len() as u16) {
                 write!(
                     w,
-                    "{}{}{}",
-                    PLACHOLDER, DIACRITICS[y as usize], DIACRITICS[x as usize]
+                    "{}{}{}{}",
+                    PLACHOLDER, DIACRITICS[y as usize], DIACRITICS[x as usize], id_msb_str
                 )?;
             }
             write!(w, "\u{1b}[39m")?;
