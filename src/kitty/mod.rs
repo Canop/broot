@@ -4,6 +4,8 @@ mod terminal_esc;
 
 pub use image_renderer::*;
 
+use crate::display::cell_size_in_pixels;
+
 use {
     crate::{
         app::AppContext,
@@ -119,7 +121,10 @@ impl KittyManager {
         con: &AppContext,
     ) -> Result<Option<KittyImageId>, ProgramError> {
         if let Some(renderer) = self.renderer(con) {
-            let img = src.optimal()?;
+            let (cell_width, cell_height) = cell_size_in_pixels()?;
+            let area_width = area.width as u32 * cell_width;
+            let area_height = area.height as u32 * cell_height;
+            let img = src.fitting(area_width, area_height, None)?;
             let new_id = renderer.print(w, &img, src_path, area, bg)?;
             self.rendered_images.push(RenderedImage {
                 image_id: new_id,
