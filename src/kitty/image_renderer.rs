@@ -279,13 +279,24 @@ impl<'i> KittyImage<'i> {
         for y in 0..(self.area.height).min(DIACRITICS.len() as u16) {
             w.queue(cursor::MoveTo(self.area.left, self.area.top + y))?;
             write!(w, "{}", &id_str)?;
-            for x in 0..(self.area.width).min(DIACRITICS.len() as u16) {
+            if id_msb_str.is_empty() {
+                write!(
+                    w,
+                    "{}{}",
+                    PLACHOLDER, DIACRITICS[y as usize]
+                )?;
+            } else {
                 write!(
                     w,
                     "{}{}{}{}",
-                    PLACHOLDER, DIACRITICS[y as usize], DIACRITICS[x as usize], id_msb_str
+                    PLACHOLDER, DIACRITICS[y as usize], DIACRITICS[0], id_msb_str
                 )?;
             }
+            write!(
+                w,
+                "{}",
+                PLACHOLDER.repeat(self.area.width as usize - 1),
+            )?;
             write!(w, "\u{1b}[39m")?;
         }
         Ok(())
