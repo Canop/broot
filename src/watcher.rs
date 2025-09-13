@@ -31,9 +31,9 @@ const DEBOUNCE_MAX_DELAY: std::time::Duration = std::time::Duration::from_millis
 /// - successive events after the first one will have to wait a little
 /// - there's at most one refrest sent every DEBOUNCE_MAX_DELAY
 /// - if there's a long sequence of events, it's guaranteed that there's one
-///    refresh sent every DEBOUNCE_MAX_DELAY
+///   refresh sent every DEBOUNCE_MAX_DELAY
 /// - the last event of the sequence is always sent (with a delay of
-///    at most DEBOUNCE_MAX_DELAY), ensuring we don't miss any change
+///   at most DEBOUNCE_MAX_DELAY), ensuring we don't miss any change
 pub struct Watcher {
     notify_sender: channel::Sender<()>,
     notify_watcher: Option<RecommendedWatcher>,
