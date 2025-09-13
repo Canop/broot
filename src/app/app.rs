@@ -996,6 +996,12 @@ impl App {
             }
         }
         terminal::reset_title(w, con);
+        kitty::manager()
+            .lock()
+            .unwrap()
+            .erase_images_before(w, usize::MAX)?;
+        w.flush()?;
+
         Ok(self.launch_at_end.take())
     }
 }
