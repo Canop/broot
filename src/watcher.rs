@@ -172,6 +172,7 @@ impl Watcher {
         notify_watcher.configure(
             notify::Config::default()
                 .with_compare_contents(false)
+                .with_manual_polling()
                 .with_follow_symlinks(false),
         )?;
         Ok(notify_watcher)
