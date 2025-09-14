@@ -37,7 +37,7 @@ const DEBOUNCE_MAX_DELAY: std::time::Duration = std::time::Duration::from_millis
 pub struct Watcher {
     notify_sender: channel::Sender<()>,
     notify_watcher: Option<RecommendedWatcher>,
-    watched: Option<PathBuf>,
+    watched: Vec<PathBuf>,
 }
 
 impl Watcher {
@@ -64,7 +64,7 @@ impl Watcher {
                         period_events = 0;
                     }
                     Err(channel::RecvTimeoutError::Disconnected) => {
-                        debug!("notify sender disconnected, stopping notify watcher thread");
+                        info!("notify sender disconnected, stopping notify watcher thread");
                         break;
                     }
                 }
@@ -73,7 +73,7 @@ impl Watcher {
         Self {
             notify_sender,
             notify_watcher: None,
-            watched: None,
+            watched: Default::default(),
         }
     }
     fn send_refresh(
@@ -94,14 +94,16 @@ impl Watcher {
     /// In case of error, we try to stop watching the previous path anyway.
     pub fn watch(
         &mut self,
-        path: PathBuf,
+        paths: Vec<PathBuf>,
     ) -> Result<(), ProgramError> {
-        debug!("start watching path {:?}", path);
+        debug!("start watching new paths");
         let notify_watcher = match self.notify_watcher.as_mut() {
             Some(nw) => {
-                if let Some(path) = self.watched.take() {
+                for path in self.watched.drain(..) {
                     debug!("stop watching previous path {:?}", path);
-                    nw.unwatch(&path)?;
+                    if let Err(e) = nw.unwatch(&path) {
+                        warn!("error when unwatching path {:?}: {}", path, e);
+                    }
                 }
                 nw
             }
@@ -109,31 +111,28 @@ impl Watcher {
                 .notify_watcher
                 .insert(Self::make_notify_watcher(self.notify_sender.clone())?),
         };
-        if !path.exists() {
-            warn!("watch path doesn't exist: {:?}", path);
-            return Ok(());
+        let mut err = None;
+        for path in &paths {
+            if !path.exists() {
+                warn!("watch path doesn't exist: {:?}", path);
+                return Ok(());
+            }
+            debug!("add watch {:?}", &path);
+            if let Err(e) = notify_watcher.watch(path, RecursiveMode::NonRecursive) {
+                warn!("error when watching path {:?}: {}", path, e);
+                err = Some(e);
+                break;
+            }
         }
-        let res = if path.is_dir() {
-            debug!("add watch dir {:?}", &path);
-            notify_watcher.watch(&path, RecursiveMode::Recursive)
-        } else if path.is_file() {
-            debug!("add watch file {:?}", &path);
-            notify_watcher.watch(&path, RecursiveMode::NonRecursive)
+        if let Some(err) = err {
+            // the RecommendedWatcher sometimes ends in an unconsistent state when failing
+            // to watch a path, so we drop it
+            self.notify_watcher = None;
+            Err(err.into())
         } else {
-            warn!("watch path is neither file nor directory: {:?}", path);
+            self.watched = paths;
             Ok(())
-        };
-        match &res {
-            Ok(()) => {
-                self.watched = Some(path);
-            }
-            Err(_) => {
-                // the RecommendedWatcher sometimes ends in an unconsistent state when failing
-                // to watch a path, so we drop it
-                self.notify_watcher = None;
-            }
         }
-        Ok(res?)
     }
     fn make_notify_watcher(sender: channel::Sender<()>) -> Result<RecommendedWatcher, ProgramError> {
         let mut notify_watcher =
@@ -164,7 +163,7 @@ impl Watcher {
                         }
                     }
                     if let Err(e) = sender.send(()) {
-                        debug!("error when notifying on notify event: {}", e);
+                        info!("error when notifying on notify event: {}", e);
                     }
                 }
                 Err(e) => warn!("watch error: {:?}", e),
@@ -177,9 +176,9 @@ impl Watcher {
         Ok(notify_watcher)
     }
     pub fn stop_watching(&mut self) -> Result<(), ProgramError> {
-        if let Some(path) = self.watched.take() {
+        for path in self.watched.drain(..) {
             if let Some(nw) = self.notify_watcher.as_mut() {
-                debug!("stop watching path {:?}", path);
+                debug!("stop watching previous path {:?}", path);
                 if let Err(e) = nw.unwatch(&path) {
                     warn!("error when unwatching path {:?}: {}", path, e);
                 }

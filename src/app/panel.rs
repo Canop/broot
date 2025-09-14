@@ -236,7 +236,7 @@ impl Panel {
     ) -> Result<Option<(u16, u16)>, ProgramError> {
         self.mut_state().display(w, disc)?;
         if disc.active || !WIDE_STATUS {
-            let watching = disc.app_state.watch_root;
+            let watching = disc.app_state.watch_tree;
             self.write_status(w, watching, disc.panel_skin, disc.screen)?;
         }
         let mut input_area = self.areas.input.clone();
