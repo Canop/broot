@@ -15,6 +15,7 @@ use {
             ModifyKind,
         },
     },
+    serde::Deserialize,
     std::{
         path::PathBuf,
         thread,
@@ -23,6 +24,20 @@ use {
 };
 
 const DEBOUNCE_MAX_DELAY: std::time::Duration = std::time::Duration::from_millis(500);
+
+#[derive(Debug, Clone, Copy, Default, PartialEq, Deserialize)]
+#[serde(rename_all = "kebab-case")]
+pub enum WatchStrategy {
+    /// Choose the best (may be plaform dependent in the future, today is never-poll)
+    #[default]
+    Auto,
+    /// Try to use inotify, gives up if fails (due to platform or number of watches limit)
+    #[serde(alias = "never_poll")]
+    NeverPoll,
+    /// Try to use inotify, fallback to polling if not available
+    #[serde(alias = "allow_poll")]
+    AllowPoll,
+}
 
 /// Watch for notify events on a path, and send a :refresh sequence when a change is detected
 ///
@@ -38,10 +53,14 @@ pub struct Watcher {
     notify_sender: channel::Sender<()>,
     notify_watcher: Option<RecommendedWatcher>,
     watched: Option<PathBuf>,
+    strategy: WatchStrategy,
 }
 
 impl Watcher {
-    pub fn new(tx_seqs: channel::Sender<Sequence>) -> Self {
+    pub fn new(
+        tx_seqs: channel::Sender<Sequence>,
+        strategy: WatchStrategy,
+    ) -> Self {
         let (notify_sender, notify_receiver) = channel::unbounded();
         thread::spawn(move || {
             let mut period_events = 0;
@@ -72,6 +91,7 @@ impl Watcher {
         });
         Self {
             notify_sender,
+            strategy,
             notify_watcher: None,
             watched: None,
         }
@@ -107,7 +127,12 @@ impl Watcher {
             }
             None => self
                 .notify_watcher
-                .insert(Self::make_notify_watcher(self.notify_sender.clone())?),
+                .insert(
+                    Self::make_notify_watcher(
+                        self.notify_sender.clone(),
+                        self.strategy,
+                    )?
+                ),
         };
         if !path.exists() {
             warn!("watch path doesn't exist: {:?}", path);
@@ -135,7 +160,10 @@ impl Watcher {
         }
         Ok(res?)
     }
-    fn make_notify_watcher(sender: channel::Sender<()>) -> Result<RecommendedWatcher, ProgramError> {
+    fn make_notify_watcher(
+        sender: channel::Sender<()>,
+        watch_strategy: WatchStrategy,
+    ) -> Result<RecommendedWatcher, ProgramError> {
         let mut notify_watcher =
             notify::recommended_watcher(move |res: notify::Result<notify::Event>| match res {
                 Ok(we) => {
@@ -169,12 +197,15 @@ impl Watcher {
                 }
                 Err(e) => warn!("watch error: {:?}", e),
             })?;
-        notify_watcher.configure(
-            notify::Config::default()
-                .with_compare_contents(false)
-                .with_manual_polling()
-                .with_follow_symlinks(false),
-        )?;
+        let mut config = notify::Config::default()
+            .with_compare_contents(false)
+            .with_follow_symlinks(false);
+        info!("watch_strategy: {:?}", watch_strategy);
+        if watch_strategy != WatchStrategy::AllowPoll {
+            debug!("watcher polling is disabled");
+            config = config.with_manual_polling();
+        }
+        notify_watcher.configure(config)?;
         Ok(notify_watcher)
     }
     pub fn stop_watching(&mut self) -> Result<(), ProgramError> {

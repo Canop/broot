@@ -22,6 +22,7 @@ use {
         skin::SkinEntry,
         syntactic::SyntaxTheme,
         verb::ExecPattern,
+        watcher::WatchStrategy,
     },
     crokey::crossterm::style::Attribute,
     rustc_hash::FxHashMap,
@@ -164,6 +165,10 @@ pub struct Conf {
 
     #[serde(alias = "layout-instructions")]
     pub layout_instructions: Option<LayoutInstructions>,
+
+    #[serde(alias = "watch-strategy")]
+    pub watch_strategy: Option<WatchStrategy>,
+
     // BEWARE: entries added here won't be usable unless also
     // added in read_file!
 }
@@ -260,6 +265,7 @@ impl Conf {
         overwrite!(self, lines_after_match_in_preview, conf);
         overwrite!(self, lines_before_match_in_preview, conf);
         overwrite!(self, layout_instructions, conf);
+        overwrite!(self, watch_strategy, conf);
         self.verbs.append(&mut conf.verbs);
         // the following prefs are "additive": we can add entries from several
         // config files and they still make sense

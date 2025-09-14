@@ -117,7 +117,7 @@ impl App {
             con,
         );
         let (tx_seqs, rx_seqs) = unbounded::<Sequence>();
-        let watcher = Watcher::new(tx_seqs.clone());
+        let watcher = Watcher::new(tx_seqs.clone(), con.watch_strategy);
         let mut app = App {
             screen,
             active_panel_idx: 0,

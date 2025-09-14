@@ -20,6 +20,7 @@ use {
         syntactic::SyntaxTheme,
         tree::TreeOptions,
         verb::*,
+        watcher::WatchStrategy,
     },
     crokey::crossterm::tty::IsTty,
     std::{
@@ -149,6 +150,9 @@ pub struct AppContext {
 
     /// layout modifiers, like divider moves
     pub layout_instructions: LayoutInstructions,
+
+    /// how the :watch command behaves
+    pub watch_strategy: WatchStrategy,
 }
 
 impl AppContext {
@@ -220,6 +224,7 @@ impl AppContext {
         let reset_terminal_title_on_exit = config.reset_terminal_title_on_exit.unwrap_or(false);
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
         let layout_instructions = config.layout_instructions.clone().unwrap_or_default();
+        let watch_strategy = config.watch_strategy.unwrap_or_default();
         let kept_kitty_temp_files = config
             .kept_kitty_temp_files
             .unwrap_or(std::num::NonZeroUsize::new(500).unwrap());
@@ -259,6 +264,7 @@ impl AppContext {
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),
             preview_transformers,
             layout_instructions,
+            watch_strategy,
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (preferred)
