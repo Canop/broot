@@ -102,7 +102,7 @@ impl TrashState {
         self.filtered
             .as_ref()
             .map(|f| f.items.len())
-            .unwrap_or_else(|| self.items.len().into())
+            .unwrap_or_else(|| self.items.len())
     }
     pub fn try_scroll(
         &mut self,
@@ -310,7 +310,10 @@ impl PanelState for TrashState {
             let mut selection_idx = None;
             let mut items = Vec::new();
             for item in &self.items {
-                let score = pattern.score_of_string(&item.name).unwrap_or(0)
+                let Some(name) = item.name.to_str() else {
+                    continue;
+                };
+                let score = pattern.score_of_string(name).unwrap_or(0)
                     + pattern
                         .score_of_string(&item.original_parent.to_string_lossy())
                         .unwrap_or(0);
@@ -462,7 +465,7 @@ impl PanelState for TrashState {
                         }
                         &cloned_style
                     } else {
-                        &style
+                        style
                     };
                     let mut matched_string = MatchedString::new(
                         self.filtered
@@ -532,7 +535,7 @@ impl PanelState for TrashState {
                             ))
                         }
                         Err(e) => {
-                            CmdResult::DisplayError(format!("restore failed: {}", e.to_string(),))
+                            CmdResult::DisplayError(format!("restore failed: {}", e))
                         }
                     }
                 } else {
@@ -551,7 +554,7 @@ impl PanelState for TrashState {
                             ))
                         }
                         Err(e) => {
-                            CmdResult::DisplayError(format!("deletion failed: {}", e.to_string(),))
+                            CmdResult::DisplayError(format!("deletion failed: {}", e))
                         }
                     }
                 } else {
@@ -618,7 +621,7 @@ impl PanelState for TrashState {
     ) -> Result<CmdResult, ProgramError> {
         if y >= 2 {
             let y = y as usize - 2 + self.scroll;
-            let len: usize = self.items.len().into();
+            let len: usize = self.items.len();
             if y < len {
                 self.selection_idx = Some(y);
             }

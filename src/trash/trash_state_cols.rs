@@ -33,11 +33,11 @@ impl TrashItemProperty {
             Self::Size => "Size",
         }
     }
-    pub fn style<'s>(
+    pub fn style(
         self,
         is_dir: bool,
-        styles: &'s StyleMap,
-    ) -> &'s CompoundStyle {
+        styles: &StyleMap,
+    ) -> &CompoundStyle {
         match self {
             Self::DeletionDate => &styles.dates,
             _ => {
@@ -56,7 +56,7 @@ impl TrashItemProperty {
     ) -> String {
         match self {
             Self::OriginalParent => item.original_parent.to_string_lossy().to_string(),
-            Self::Name => item.name.clone(),
+            Self::Name => item.name.to_string_lossy().to_string(),
             Self::DeletionDate => {
                 let seconds = item.time_deleted;
                 if let LocalResult::Single(date_time) = Local.timestamp_opt(seconds, 0) {

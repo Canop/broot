@@ -53,20 +53,13 @@ cross_build "ARM 64" "aarch64-unknown-linux-gnu" ""
 cross_build "ARM 64 MUSL" "aarch64-unknown-linux-musl" ""
 cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard"
 
-
-# Build the default linux version (with clipboard support, needing a recent GLIBC)
-# recent glibc
-echo -e "${H2}Compiling the standard linux version${EH}"
-cargo build --quiet --release --features "clipboard trash"
-strip "target/release/$NAME"
-mkdir build/x86_64-linux/
-cp "target/release/$NAME" build/x86_64-linux/
-
-# Find, and copy the completion scripts
-# (they are re built as part of the normal compilation by build.rs)
-echo -e "${H2}Copying completion scripts${EH}"
-mkdir build/completion
-cp "$(broot -c 'rp/release\/build\/broot-[^\/]+\/out\/broot.bash;:parent;:print_path' target)/"* build/completion
+# build the local version
+target=$(./target.sh)
+echo -e "${H2}Compiling the local target - $target${EH}"
+cargo clean
+cargo build --release  --features "clipboard"
+mkdir "build/$target/"
+cp "target/release/$NAME" "build/$target/"
 echo "   Done"
 
 # copy the default conf

@@ -193,7 +193,7 @@ pub trait PanelState {
             ))]
             Internal::purge_trash => {
                 let res =
-                    trash::os_limited::list().and_then(|items| trash::os_limited::purge_all(items));
+                    trash::os_limited::list().and_then(trash::os_limited::purge_all);
                 match res {
                     Ok(()) => CmdResult::RefreshState { clear_cache: false },
                     Err(e) => CmdResult::DisplayError(format!("{e}")),
