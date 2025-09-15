@@ -1,3 +1,7 @@
+### next
+- "trash" compilation feature removed: trash related features are built depending on the platform
+- build chain revised. Future official releases should include a Mac binary
+
 ### v1.49.1 - 2025-09-15
 <a name="v1.49.1"></a>
 - watching made much more efficient (some deep changes won't lead to an automatic refresh which only impacts dir size)
