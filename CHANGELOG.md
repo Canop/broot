@@ -1,3 +1,7 @@
+### next
+- watching made much more efficient (some deep changes won't lead to an automatic refresh which only impacts dir size)
+- the name given with `--listen` is now provided to verb as the `{server-name}` verb argument
+
 ### v1.49.0 - 2025-09-13
 <a name="v1.49.0"></a>
 - `:toggle_watch` internal, with `:watch` shortcut, bound by default to `alt-w`. When watching is active, the tree is refreshed whenever any directory/file, even deep, is changed - Fix #730
