@@ -186,6 +186,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                     .unwrap_or(sel.path);
                 Some(path_to_string(path))
             }
+            #[cfg(unix)]
             "server-name" => con.launch_args.listen.clone(),
             _ => None,
         }

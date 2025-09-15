@@ -1,4 +1,5 @@
-### next
+### v1.49.1 - 2025-09-15
+<a name="v1.49.1"></a>
 - watching made much more efficient (some deep changes won't lead to an automatic refresh which only impacts dir size)
 - the name given with `--listen` is now provided to verb as the `{server-name}` verb argument
 
