@@ -53,10 +53,6 @@ cross_build "ARM 64" "aarch64-unknown-linux-gnu" "trash"
 cross_build "ARM 64 MUSL" "aarch64-unknown-linux-musl" "trash"
 cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard,trash"
 
-# cross_build "Android" "aarch64-linux-android" "clipboard" Does not work anymore
-#  See https://github.com/Canop/broot/issues/565
-#  See https://github.com/termux/termux-packages/blob/master/packages/broot/build.sh
-
 
 # Build the default linux version (with clipboard support, needing a recent GLIBC)
 # recent glibc
