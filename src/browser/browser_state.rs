@@ -235,6 +235,14 @@ impl PanelState for BrowserState {
         }
     }
 
+    fn watchable_paths(&self) -> Vec<PathBuf> {
+        let mut paths = Vec::new();
+        for line in &self.tree.lines {
+            paths.push(line.path.clone());
+        }
+        paths
+    }
+
     fn selected_path(&self) -> Option<&Path> {
         Some(&self.displayed_tree().selected_line().path)
     }

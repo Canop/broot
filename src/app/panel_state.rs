@@ -997,6 +997,10 @@ pub trait PanelState {
         None
     }
 
+    fn watchable_paths(&self) -> Vec<PathBuf> {
+        vec![]
+    }
+
     fn selected_path(&self) -> Option<&Path>;
 
     fn selection(&self) -> Option<Selection<'_>>;

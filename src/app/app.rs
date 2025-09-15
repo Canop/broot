@@ -539,7 +539,7 @@ impl App {
                         }
                     }
                     Internal::toggle_watch => {
-                        app_state.watch_root ^= true;
+                        app_state.watch_tree ^= true;
                         if is_input_invocation {
                             self.mut_panel().clear_input_invocation(con);
                         }
@@ -914,16 +914,19 @@ impl App {
             }
 
             // before starting to wait for events, we enable the watcher if needed
-            if app_state.watch_root {
-                if let Err(e) = self.watcher.watch(app_state.root.clone()) {
+            if app_state.watch_tree {
+                let paths = self
+                    .state()
+                    .watchable_paths();
+                if let Err(e) = self.watcher.watch(paths) {
                     // errors aren't uncommon, especially on huge directories
-                    warn!("Failed to watch root {:?}: {e}", &app_state.root);
+                    warn!("Failed to watch tree: {e}");
                     // we disable watching
-                    app_state.watch_root = false;
+                    app_state.watch_tree = false;
                 }
             }
             let event = dam.next(&self.rx_seqs);
-            if app_state.watch_root {
+            if app_state.watch_tree {
                 // we must unwatch before applying the command, as it will probably do many system
                 // calls that would trigger events
                 self.watcher.stop_watching()?;

@@ -14,7 +14,7 @@ pub struct AppState {
 
     /// Whether to refresh the tree view when in case of inotify event
     /// on the current root
-    pub watch_root: bool,
+    pub watch_tree: bool,
 
     /// the selected path in another panel than the currently
     /// active one, if any
@@ -26,7 +26,7 @@ impl AppState {
         Self {
             stage: Stage::default(),
             root: root.into(),
-            watch_root: false,
+            watch_tree: false,
             other_panel_path: None,
         }
     }
