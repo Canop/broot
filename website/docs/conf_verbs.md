@@ -306,6 +306,7 @@ name | expanded to
 `{git-root}` | The working directory of the Git repository containing the current selection
 `{git-name}` | Name of the working directory of the current Git repository
 `{file-git-relative}` | path of the current selection relative to the working directory of the containing Git repository. If the selection is not in a Git repository then the absolute path.
+`{server-name}` | name given with `--listen` at launch
 
 !!!	Note
 	when you're in the help screen, `{file}` is the configuration file, while `{directory}` is the configuration directory.
