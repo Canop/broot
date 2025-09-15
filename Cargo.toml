@@ -19,7 +19,6 @@ exclude = ["website", "broot*.zip"]
 default = []
 clipboard = ["terminal-clipboard"]
 kitty-csi-check = ["xterm-query"]
-trash = ["dep:trash"]
 
 [dependencies]
 ansi_colours = "1.2"
@@ -64,7 +63,7 @@ termimad = "0.34"
 terminal-clipboard = { version = "0.4.1", optional = true }
 terminal-light = "1.8"
 toml = "0.9"
-trash = { version = "3.1.2", optional = true }
+trash = "5.2"
 umask = "2.1.0"
 unicode-width = "0.2"
 vte = "0.15"

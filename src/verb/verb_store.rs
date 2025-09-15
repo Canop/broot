@@ -169,16 +169,22 @@ impl VerbStore {
             StayInBroot,
         )
         .with_shortcut("cpp");
-        #[cfg(feature = "trash")]
         self.add_internal(trash);
-        #[cfg(feature = "trash")]
-        self.add_internal(open_trash).with_shortcut("ot");
-        #[cfg(feature = "trash")]
-        self.add_internal(restore_trashed_file).with_shortcut("rt");
-        #[cfg(feature = "trash")]
-        self.add_internal(delete_trashed_file).with_shortcut("dt");
-        #[cfg(feature = "trash")]
-        self.add_internal(purge_trash).with_shortcut("et");
+        #[cfg(any(
+            target_os = "windows",
+            all(
+                unix,
+                not(target_os = "macos"),
+                not(target_os = "ios"),
+                not(target_os = "android")
+            )
+        ))]
+        {
+            self.add_internal(open_trash).with_shortcut("ot");
+            self.add_internal(restore_trashed_file).with_shortcut("rt");
+            self.add_internal(delete_trashed_file).with_shortcut("dt");
+            self.add_internal(purge_trash).with_shortcut("et");
+        }
         #[cfg(unix)]
         self.add_internal(filesystems).with_shortcut("fs");
         self.add_internal(focus_staging_area_no_open);

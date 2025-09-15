@@ -12,5 +12,5 @@
 # The line below can be safely executed on systems which don't
 # support sh scripts.
 
-cargo build --release --features "trash clipboard"
+cargo build --release --features "clipboard"
 

@@ -182,7 +182,6 @@ pub trait PanelState {
                 );
                 CmdResult::ChangeLayout(LayoutInstruction::SetPanelWidth { panel, width })
             }
-            #[cfg(feature = "trash")]
             #[cfg(any(
                 target_os = "windows",
                 all(
@@ -200,7 +199,6 @@ pub trait PanelState {
                     Err(e) => CmdResult::DisplayError(format!("{e}")),
                 }
             }
-            #[cfg(feature = "trash")]
             #[cfg(any(
                 target_os = "windows",
                 all(

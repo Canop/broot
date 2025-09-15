@@ -43,7 +43,6 @@ pub mod filesystems;
 #[cfg(unix)]
 pub mod net;
 
-#[cfg(feature = "trash")]
 #[cfg(any(
     target_os = "windows",
     all(

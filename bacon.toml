@@ -25,7 +25,7 @@ path = "bacon-analyzzzer.json"
 [jobs.check]
 command = [
 	"cargo", "check",
-	"--features", "clipboard kitty-csi-check trash",
+	"--features", "clipboard kitty-csi-check",
 ]
 need_stdout = false
 watch = ["benches"]
@@ -47,7 +47,7 @@ command = [
 	"cross", "build",
 	"--target", "x86_64-unknown-netbsd",
 	"--release",
-	"--features", "clipboard, trash"
+	"--features", "clipboard"
 ]
 
 [jobs.light]

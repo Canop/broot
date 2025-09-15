@@ -44,14 +44,14 @@ cross_build() {
     echo "   Done"
 }
 
-cross_build "x86-64 GLIBC" "x86_64-unknown-linux-gnu" "trash"
-cross_build "NetBSD/amd64" "x86_64-unknown-netbsd" "trash"
-cross_build "MUSL" "x86_64-unknown-linux-musl" "trash"
-cross_build "ARM 32" "armv7-unknown-linux-gnueabihf" "trash"
-cross_build "ARM 32 MUSL" "armv7-unknown-linux-musleabi" "trash"
-cross_build "ARM 64" "aarch64-unknown-linux-gnu" "trash"
-cross_build "ARM 64 MUSL" "aarch64-unknown-linux-musl" "trash"
-cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard,trash"
+cross_build "x86-64 GLIBC" "x86_64-unknown-linux-gnu" ""
+cross_build "NetBSD/amd64" "x86_64-unknown-netbsd" ""
+cross_build "MUSL" "x86_64-unknown-linux-musl" ""
+cross_build "ARM 32" "armv7-unknown-linux-gnueabihf" ""
+cross_build "ARM 32 MUSL" "armv7-unknown-linux-musleabi" ""
+cross_build "ARM 64" "aarch64-unknown-linux-gnu" ""
+cross_build "ARM 64 MUSL" "aarch64-unknown-linux-musl" ""
+cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard"
 
 
 # Build the default linux version (with clipboard support, needing a recent GLIBC)

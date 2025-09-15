@@ -17,3 +17,4 @@
 /website/site
 deploy.sh
 dev.log
+.DS_Store
