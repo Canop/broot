@@ -98,4 +98,5 @@ variable | usage
 `COLORTERM` | If this conventional variable contains `24bit` or `truecolor`, then broot won't limit itself to a reduced set of colors when rendering images. This may also be set in conf with `true_colors: true`
 `TERM` or `TERMINAL` | If one of them contains `kitty`, then broot will use Kitty's [terminal graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/) to render images in high definition
 `TERM_PROGRAM` and `TERM_PROGRAM_VERSION` | If the current terminal is [Wezterm](https://wezfurlong.org/wezterm/index.html) with a recent enough version, broot recognizes it with those variables and uses the Kitty's terminal graphics protocol to render images
+`TMUX_NEST_COUNT` | When using Kitty's terminal graphics protocol in nested tmux, tell broot how deeply tmux is nested. Starts at 1 when there's no nesting.
 `COLORFGBG` | This is one of the ways the [terminal-light](https://github.com/Canop/terminal-light) library uses to detect whether your terminal is set in dark or light mode

@@ -291,6 +291,20 @@ kitty_graphics_transmission = "chunks"
 #kitty_graphics_transmission = "temp_file"
 ```
 
+Possible display methods:
+
+* `none`: don't display images
+* `auto`: automatically detect how to display the image, default
+* `direct`: display the image directly
+* `unicode`: the more flexible way, works with tmux
+
+```Hjson
+kitty_graphics_display: auto
+```
+```TOML
+kitty_graphics_display = "auto"
+```
+
 ## Transformers
 
 It's possible to define transformers to apply to some files before preview.

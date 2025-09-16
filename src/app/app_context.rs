@@ -12,7 +12,10 @@ use {
         errors::*,
         file_sum,
         icon::*,
-        kitty::TransmissionMedium,
+        kitty::{
+            KittyGraphicsDisplay,
+            TransmissionMedium,
+        },
         path::SpecialPaths,
         pattern::SearchModeMap,
         preview::PreviewTransformers,
@@ -136,6 +139,9 @@ pub struct AppContext {
 
     pub kitty_graphics_transmission: TransmissionMedium,
 
+    /// How Kitty images are displayed
+    pub kitty_graphics_display: KittyGraphicsDisplay,
+
     pub kept_kitty_temp_files: NonZeroUsize,
 
     /// Number of lines to display after a match in the preview
@@ -254,6 +260,7 @@ impl AppContext {
             update_work_dir: config.update_work_dir.unwrap_or(true),
             keyboard_enhanced: false,
             kitty_graphics_transmission: config.kitty_graphics_transmission.unwrap_or_default(),
+            kitty_graphics_display: config.kitty_graphics_display.unwrap_or_default(),
             kept_kitty_temp_files,
             lines_after_match_in_preview: config.lines_after_match_in_preview.unwrap_or(0),
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),

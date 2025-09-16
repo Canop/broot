@@ -83,12 +83,6 @@ impl ImageView {
             kitty_image_id: None,
         })
     }
-    pub fn is_png(&self) -> bool {
-        match self.path.extension() {
-            Some(ext) => ext == "png" || ext == "PNG",
-            None => false,
-        }
-    }
     pub fn display(
         &mut self,
         w: &mut W,

@@ -308,6 +308,7 @@ dependencies = [
  "deser-hjson",
  "directories 4.0.1",
  "file-size",
+ "flate2",
  "flex-grow",
  "git2",
  "glassbench",
