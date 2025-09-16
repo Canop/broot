@@ -58,6 +58,15 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
         }
     }
 
+    // we detect Ghostty by the $TERM env var
+    if let Ok(env_val) = env::var("TERM") {
+        debug!("$TERM = {:?}", env_val);
+        if env_val == "xterm-ghostty" {
+            debug!(" -> this terminal seems to be Ghostty");
+            return KittyGraphicsDisplay::Direct;
+        }
+    }
+
     // we detect Wezterm with the $TERM_PROGRAM env var and we
     // check its version to be sure it's one with support
     if let Ok(term_program) = env::var("TERM_PROGRAM") {
