@@ -32,27 +32,6 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
             let env_val = env_val.to_ascii_lowercase();
             if env_val.contains("kitty") {
                 debug!(" -> this terminal seems to be Kitty");
-                let output_res = Command::new("kitty").arg("--version").output();
-                if let Ok(output) = output_res {
-                    if output.status.success() {
-                        let output_str = String::from_utf8_lossy(&output.stdout).to_string();
-                        if let Some((_, major, minor, _patch)) =
-                            regex_captures!(r"^kitty (\d+)\.(\d+)\.(\d+) ", &output_str)
-                        {
-                            let major = major.parse::<u32>().unwrap();
-                            let minor = minor.parse::<u32>().unwrap();
-                            if major > 0 || (major == 0 && minor >= 28) {
-                                debug!("this looks like a compatible version");
-                                return KittyGraphicsDisplay::Unicode;
-                            }
-                            debug!(
-                                "Kitty's version predates Kitty Graphics Unicode placeholders support"
-                            );
-                            return KittyGraphicsDisplay::Direct;
-                        }
-                    }
-                }
-                debug!("could not get Kitty's version");
                 return KittyGraphicsDisplay::Direct;
             }
         }
