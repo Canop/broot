@@ -29,28 +29,13 @@ fetch("../download/version")
 
 Binaries are made available at every release in [download](https://dystroy.org/broot/download).
 
-The archives there contain precompiled binaries, as well as the licenses and other files.
-
-You may also directly download the executable files below, depending on your system:
-
-Target|Details|Clipboard|Download
--|-|-|-
-x86-64 Linux | Intel/AMD, needs a recent enough linux | yes | [x86_64-linux](https://dystroy.org/broot/download/x86_64-linux/broot)
-x86-64 Linux old glibc | Intel/AMD, compatible with older glibc | no | [x86_64-unknown-linux-gnu](https://dystroy.org/broot/download/x86_64-unknown-linux-gnu/broot)
-x86-64 Linux musl | Intel/AMD, very compatible | no | [x86_64-unknown-linux-musl](https://dystroy.org/broot/download/x86_64-unknown-linux-musl/broot)
-ARM32 Linux |  | no | [armv7-unknown-linux-gnueabihf](https://dystroy.org/broot/download/armv7-unknown-linux-gnueabihf/broot)
-ARM32 Linux musl |  | no | [armv7-unknown-linux-musleabi](https://dystroy.org/broot/download/armv7-unknown-linux-musleabi/broot)
-ARM64 Linux |  | no | [aarch64-unknown-linux-gnu](https://dystroy.org/broot/download/aarch64-unknown-linux-gnu/broot)
-ARM64 Linux musl |  | no | [aarch64-unknown-linux-musl](https://dystroy.org/broot/download/aarch64-unknown-linux-musl/broot)
-Windows | Intel/AMD 64 Windows 10+ | yes | [x86_64-pc-windows-gnu](https://dystroy.org/broot/download/x86_64-pc-windows-gnu/broot.exe)
-
-Shell completion scripts: [completion](https://dystroy.org/broot/download/completion)
+The archives there contain precompiled binaries, as well as licenses, shell completion scripts, and other files.
 
 All releases are also available on [GitHub releases](https://github.com/Canop/broot/releases).
 
 When you download executable files, you'll have to ensure the shell can find them. An easy solution on linux is for example to put them in `/usr/local/bin`. You may also have to set them executable using `chmod +x broot`.
 
-As I can't compile myself for all possible systems, you'll need to compile broot yourself or use a third-party repository (see below) if your system isn't in the list above.
+As I can't compile myself for all possible systems, you'll need to compile broot yourself or use a third-party repository (see below) if your system isn't one I can compile for.
 
 # From crates.io
 
