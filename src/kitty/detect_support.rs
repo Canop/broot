@@ -21,7 +21,7 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
     {
         // because cell_size_in_pixels isn't implemented on Windows
         debug!("no kitty support yet on Windows");
-        return false;
+        return KittyGraphicsDisplay::None;
     }
 
     // we detect Kitty by the $TERM or $TERMINAL env var
@@ -100,7 +100,7 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
                 KittyGraphicsDisplay::None
             }
             Ok(response) if response == "_Gi=31;OK" => KittyGraphicsDisplay::Direct,
-            Ok(response) => KittyGraphicsDisplay::None,
+            Ok(_) => KittyGraphicsDisplay::None,
         };
         debug!("Xterm querying took {:?}", start.elapsed());
         debug!("kitty protocol support: {:?}", s);
