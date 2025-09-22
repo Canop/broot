@@ -65,9 +65,12 @@ pub struct Region {
 }
 
 /// when the file is bigger, we don't style it and we don't keep
-/// it in memory: we just keep the offsets of the lines in the
-/// file.
+/// it in memory: we just keep the offsets of the lines in the file.
 const MAX_SIZE_FOR_STYLING: u64 = 2_000_000;
+
+/// Size of what's initially loaded (rest is loaded when user in background)
+/// Must be greater than MAX_SIZE_FOR_STYLING
+const INITIAL_LOAD: usize = 4_000_000;
 
 impl Region {
     pub fn from_syntect(region: &(Style, &str)) -> Self {
@@ -105,6 +108,7 @@ pub struct SyntacticView {
     selection_idx: Option<usize>, // index in lines of the selection, if any
     content_lines_count: usize,   // number of lines excluding separators
     total_lines_count: usize,     // including lines not filtered out
+    partial: bool,
 }
 
 impl DisplayLine {
@@ -142,13 +146,30 @@ impl SyntacticView {
             selection_idx: None,
             content_lines_count: 0,
             total_lines_count: 0,
+            partial: false,
         };
-        if sv.read_lines(dam, con, no_style)? {
+        if sv.read_lines(dam, con, no_style, true)? {
             sv.select_first();
             Ok(Some(sv))
         } else {
             Ok(None)
         }
+    }
+
+    pub fn is_partial(&self) -> bool {
+        self.partial
+    }
+    /// If the load was partial, complete it now
+    pub fn complete_loading(
+        &mut self,
+        con: &AppContext,
+        dam: &mut Dam,
+    ) -> Result<(), ProgramError> {
+        if self.partial {
+            self.partial = false;
+            self.read_lines(dam, con, true, false)?;
+        }
+        Ok(())
     }
 
     /// Return true when there was no interruption
@@ -157,6 +178,7 @@ impl SyntacticView {
         dam: &mut Dam,
         con: &AppContext,
         no_style: bool,
+        initial_load: bool,
     ) -> Result<bool, ProgramError> {
         let f = File::open(&self.path)?;
         {
@@ -218,7 +240,13 @@ impl SyntacticView {
             line.clear();
             if dam.has_event() {
                 info!("event interrupted preview filtering");
+                self.partial = true;
                 return Ok(false);
+            }
+            if initial_load && offset > INITIAL_LOAD {
+                info!("partial load");
+                self.partial = true;
+                break;
             }
         }
         let mut must_add_separators = false;
@@ -585,6 +613,33 @@ impl SyntacticView {
         Ok(())
     }
 
+    fn info(
+        &self,
+        width: usize,
+    ) -> String {
+        if self.is_partial() {
+            let s = "loading...";
+            let s  = if s.len() > width {
+                ""
+            } else {
+                s
+            };
+            return s.to_string();
+        }
+        let mut s = if self.pattern.is_some() {
+            format!("{}/{}", self.content_lines_count, self.total_lines_count)
+        } else {
+            format!("{}", self.total_lines_count)
+        };
+        if s.len() > width {
+            return "".to_string();
+        }
+        if s.len() + "lines: ".len() < width {
+            s = format!("lines: {s}");
+        }
+        s
+    }
+
     pub fn display_info(
         &mut self,
         w: &mut W,
@@ -593,17 +648,7 @@ impl SyntacticView {
         area: &Area,
     ) -> Result<(), ProgramError> {
         let width = area.width as usize;
-        let mut s = if self.pattern.is_some() {
-            format!("{}/{}", self.content_lines_count, self.total_lines_count)
-        } else {
-            format!("{}", self.total_lines_count)
-        };
-        if s.len() > width {
-            return Ok(());
-        }
-        if s.len() + "lines: ".len() < width {
-            s = format!("lines: {s}");
-        }
+        let s = self.info(width);
         w.queue(cursor::MoveTo(
             area.left + area.width - s.len() as u16,
             area.top,

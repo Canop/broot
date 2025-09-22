@@ -217,6 +217,24 @@ impl Preview {
             }
         }
     }
+    /// Return true when the preview is based on a temporarily incomplete
+    /// loading or computing
+    pub fn is_partial(&self) -> bool {
+        match self {
+            Self::Syntactic(sv) => sv.is_partial(),
+            _ => false,
+        }
+    }
+    pub fn complete_loading(
+        &mut self,
+        con: &AppContext,
+        dam: &mut Dam,
+    ) -> Result<(), ProgramError> {
+        match self {
+            Self::Syntactic(sv) => sv.complete_loading(con, dam),
+            _ => Ok(()),
+        }
+    }
     /// return the preview_mode, or None if we're on IOError or Directory
     pub fn get_mode(&self) -> Option<PreviewMode> {
         match self {

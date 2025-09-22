@@ -34,7 +34,7 @@ pub trait PanelState {
     );
     fn get_mode(&self) -> Mode;
 
-    /// called on start of on_command
+    /// called on start of on_command, remove the pending task
     fn clear_pending(&mut self) {}
 
     fn on_click(

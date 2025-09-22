@@ -129,6 +129,32 @@ impl PreviewState {
             },
         }
     }
+
+    /// do the preview filtering if required and not yet done
+    fn do_pending_search(
+        &mut self,
+        con: &AppContext,
+        dam: &mut Dam,
+    ) -> Result<(), ProgramError> {
+        let old_selection = self
+            .filtered_preview
+            .as_ref()
+            .and_then(|p| p.get_selected_line_number())
+            .or_else(|| self.preview.get_selected_line_number());
+        let pattern = self.pending_pattern.take();
+        self.filtered_preview = time!(
+            Info,
+            "preview filtering",
+            self.preview
+                .filtered(self.preview_path(), pattern, dam, con),
+        ); // can be None if a cancellation was required
+        if let Some(ref mut filtered_preview) = self.filtered_preview {
+            if let Some(number) = old_selection {
+                filtered_preview.try_select_line_number(number);
+            }
+        }
+        Ok(())
+    }
 }
 
 impl PanelState for PreviewState {
@@ -148,7 +174,9 @@ impl PanelState for PreviewState {
     }
 
     fn get_pending_task(&self) -> Option<&'static str> {
-        if self.pending_pattern.is_some() {
+        if self.preview.is_partial() {
+            Some("loading")
+        } else if self.pending_pattern.is_some() {
             Some("searching")
         } else {
             None
@@ -176,7 +204,6 @@ impl PanelState for PreviewState {
         Ok(CmdResult::Keep)
     }
 
-    /// do the preview filtering if required and not yet done
     fn do_pending_task(
         &mut self,
         _app_state: &mut AppState,
@@ -184,24 +211,10 @@ impl PanelState for PreviewState {
         con: &AppContext,
         dam: &mut Dam,
     ) -> Result<(), ProgramError> {
-        if self.pending_pattern.is_some() {
-            let old_selection = self
-                .filtered_preview
-                .as_ref()
-                .and_then(|p| p.get_selected_line_number())
-                .or_else(|| self.preview.get_selected_line_number());
-            let pattern = self.pending_pattern.take();
-            self.filtered_preview = time!(
-                Info,
-                "preview filtering",
-                self.preview
-                    .filtered(self.preview_path(), pattern, dam, con),
-            ); // can be None if a cancellation was required
-            if let Some(ref mut filtered_preview) = self.filtered_preview {
-                if let Some(number) = old_selection {
-                    filtered_preview.try_select_line_number(number);
-                }
-            }
+        if self.preview.is_partial() {
+            self.preview.complete_loading(con, dam)?;
+        } else if self.pending_pattern.is_some() {
+            self.do_pending_search(con, dam)?;
         }
         Ok(())
     }
