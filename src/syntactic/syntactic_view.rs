@@ -137,6 +137,7 @@ impl SyntacticView {
         con: &AppContext,
         no_style: bool,
     ) -> Result<Option<Self>, ProgramError> {
+        let allow_partial = pattern.is_none();
         let mut sv = Self {
             path: path.to_path_buf(),
             pattern,
@@ -148,7 +149,7 @@ impl SyntacticView {
             total_lines_count: 0,
             partial: false,
         };
-        if sv.read_lines(dam, con, no_style, true)? {
+        if sv.read_lines(dam, con, no_style, allow_partial)? {
             sv.select_first();
             Ok(Some(sv))
         } else {
