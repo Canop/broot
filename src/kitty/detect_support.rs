@@ -1,11 +1,7 @@
 use {
     crate::kitty::KittyGraphicsDisplay,
     cli_log::*,
-    lazy_regex::regex_captures,
-    std::{
-        env,
-        process::Command,
-    },
+    std::env,
 };
 
 /// Determine whether Kitty's graphics protocol is supported
