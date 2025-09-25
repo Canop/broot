@@ -489,12 +489,12 @@ impl SyntacticView {
             .preview
             .get_fg()
             .or_else(|| styles.default.get_fg())
-            .unwrap_or(Color::AnsiValue(252));
+            .unwrap_or(Color::Reset);
         let normal_bg = styles
             .preview
             .get_bg()
             .or_else(|| styles.default.get_bg())
-            .unwrap_or(Color::AnsiValue(238));
+            .unwrap_or(Color::Reset);
         let selection_bg = styles
             .selected_line
             .get_bg()
