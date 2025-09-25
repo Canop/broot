@@ -4,6 +4,7 @@
 - "trash" compilation feature removed: trash related features are built depending on the platform
 - build chain revised. Future official releases should include a Mac binary
 - fix crash on double unstage of last entry in stage panel - fix #1057
+- fallback to transparent background for text preview when the skin specifies nothing - Thanks @letmeiiiin
 
 ### v1.49.1 - 2025-09-15
 <a name="v1.49.1"></a>
