@@ -3,6 +3,7 @@
 - better support of kitty image protocol over tmux, ssh or unknown terminals, with  `kitty_graphics_display` option and `$TMUX_NEST_COUNT` env variable - see PR #1034 - Thanks @stevenxxiu
 - "trash" compilation feature removed: trash related features are built depending on the platform
 - build chain revised. Future official releases should include a Mac binary
+- fix crash on double unstage of last entry in stage panel - fix #1057
 
 ### v1.49.1 - 2025-09-15
 <a name="v1.49.1"></a>
