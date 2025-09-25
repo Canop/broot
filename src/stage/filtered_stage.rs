@@ -167,7 +167,7 @@ impl FilteredStage {
             self.stage_version = stage.version();
             self.compute(stage);
             if spi >= self.paths_idx.len() {
-                self.selection = Some(spi);
+                self.selection = None;
             };
             true
         } else {
