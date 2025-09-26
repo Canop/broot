@@ -1,9 +1,9 @@
-mod syntactic_view;
+mod text_view;
 mod syntax_theme;
 mod syntaxer;
 
 pub use {
-    syntactic_view::SyntacticView,
+    text_view::TextView,
     syntax_theme::*,
     syntaxer::{
         SYNTAXER,

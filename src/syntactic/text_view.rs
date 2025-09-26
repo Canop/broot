@@ -99,7 +99,11 @@ pub struct Line {
     pub name_match: Option<NameMatch>,
 }
 
-pub struct SyntacticView {
+/// A text viewer, which can display a text file with syntax coloring if it's not too big.
+///
+/// In some cases, only the beginning of the file is read at first, and the rest is read
+/// in background.
+pub struct TextView {
     pub path: PathBuf,
     pub pattern: InputPattern,
     lines: Vec<DisplayLine>,
@@ -126,7 +130,7 @@ impl DisplayLine {
     }
 }
 
-impl SyntacticView {
+impl TextView {
     /// Return a prepared text view with syntax coloring if possible.
     /// May return Ok(None) only when a pattern is given and there
     /// was an event before the end of filtering.

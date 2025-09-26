@@ -9,7 +9,7 @@ use {
         image::ImageView,
         pattern::InputPattern,
         skin::PanelSkin,
-        syntactic::SyntacticView,
+        syntactic::TextView,
         task_sync::Dam,
         tty::TtyView,
     },
@@ -32,7 +32,7 @@ use {
 pub enum Preview {
     Dir(DirView),
     Image(ImageView),
-    Syntactic(SyntacticView),
+    Text(TextView),
     Hex(HexView),
     Tty(TtyView),
     ZeroLen(ZeroLenFileView),
@@ -78,7 +78,7 @@ impl Preview {
                 PreviewMode::Tty => TtyView::new(path)
                     .map(Self::Tty)
                     .map_err(ProgramError::from),
-                PreviewMode::Text => Ok(SyntacticView::new(
+                PreviewMode::Text => Ok(TextView::new(
                     path,
                     InputPattern::none(),
                     &mut Dam::unlimited(),
@@ -87,7 +87,7 @@ impl Preview {
                 )
                 .transpose()
                 .expect("syntactic view without pattern shouldn't be none")
-                .map(Self::Syntactic)?),
+                .map(Self::Text)?),
             }
         } else {
             Ok(Self::dir(
@@ -137,14 +137,14 @@ impl Preview {
         path: &Path,
         con: &AppContext,
     ) -> Self {
-        match SyntacticView::new(
+        match TextView::new(
             path,
             InputPattern::none(),
             &mut Dam::unlimited(),
             con,
             false,
         ) {
-            Ok(Some(sv)) => Self::Syntactic(sv),
+            Ok(Some(sv)) => Self::Text(sv),
             Err(ProgramError::ZeroLenFile | ProgramError::UnmappableFile) => {
                 debug!("zero len or unmappable file - check if system file");
                 Self::ZeroLen(ZeroLenFileView::new(path.to_path_buf()))
@@ -164,8 +164,8 @@ impl Preview {
         path: &Path,
         con: &AppContext,
     ) -> Self {
-        match SyntacticView::new(path, InputPattern::none(), &mut Dam::unlimited(), con, true) {
-            Ok(Some(sv)) => Self::Syntactic(sv),
+        match TextView::new(path, InputPattern::none(), &mut Dam::unlimited(), con, true) {
+            Ok(Some(sv)) => Self::Text(sv),
             Err(ProgramError::ZeroLenFile | ProgramError::UnmappableFile) => {
                 debug!("zero len or unmappable file - check if system file");
                 Self::ZeroLen(ZeroLenFileView::new(path.to_path_buf()))
@@ -186,10 +186,10 @@ impl Preview {
     ) -> Option<Self> {
         if path.is_file() {
             match self {
-                Self::Syntactic(_) => {
-                    match SyntacticView::new(path, pattern, dam, con, false) {
+                Self::Text(_) => {
+                    match TextView::new(path, pattern, dam, con, false) {
                         // normal finished loading
-                        Ok(Some(sv)) => Some(Self::Syntactic(sv)),
+                        Ok(Some(sv)) => Some(Self::Text(sv)),
 
                         // interrupted search
                         Ok(None) => None,
@@ -221,7 +221,7 @@ impl Preview {
     /// loading or computing
     pub fn is_partial(&self) -> bool {
         match self {
-            Self::Syntactic(sv) => sv.is_partial(),
+            Self::Text(sv) => sv.is_partial(),
             _ => false,
         }
     }
@@ -231,7 +231,7 @@ impl Preview {
         dam: &mut Dam,
     ) -> Result<(), ProgramError> {
         match self {
-            Self::Syntactic(sv) => sv.complete_loading(con, dam),
+            Self::Text(sv) => sv.complete_loading(con, dam),
             _ => Ok(()),
         }
     }
@@ -239,7 +239,7 @@ impl Preview {
     pub fn get_mode(&self) -> Option<PreviewMode> {
         match self {
             Self::Image(_) => Some(PreviewMode::Image),
-            Self::Syntactic(_) => Some(PreviewMode::Text),
+            Self::Text(_) => Some(PreviewMode::Text),
             Self::ZeroLen(_) => Some(PreviewMode::Text),
             Self::Hex(_) => Some(PreviewMode::Hex),
             Self::Tty(_) => Some(PreviewMode::Tty),
@@ -250,7 +250,7 @@ impl Preview {
     pub fn pattern(&self) -> InputPattern {
         match self {
             Self::Dir(dv) => dv.tree.options.pattern.clone(),
-            Self::Syntactic(sv) => sv.pattern.clone(),
+            Self::Text(sv) => sv.pattern.clone(),
             _ => InputPattern::none(),
         }
     }
@@ -260,25 +260,25 @@ impl Preview {
     ) -> bool {
         match self {
             Self::Dir(dv) => dv.try_scroll(cmd),
-            Self::Syntactic(sv) => sv.try_scroll(cmd),
+            Self::Text(sv) => sv.try_scroll(cmd),
             Self::Hex(hv) => hv.try_scroll(cmd),
             Self::Tty(v) => v.try_scroll(cmd),
             _ => false,
         }
     }
     pub fn is_filterable(&self) -> bool {
-        matches!(self, Self::Syntactic(_) | Self::Dir(_))
+        matches!(self, Self::Text(_) | Self::Dir(_))
     }
 
     pub fn get_selected_line(&self) -> Option<String> {
         match self {
-            Self::Syntactic(sv) => sv.get_selected_line(),
+            Self::Text(sv) => sv.get_selected_line(),
             _ => None,
         }
     }
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {
         match self {
-            Self::Syntactic(sv) => sv.get_selected_line_number(),
+            Self::Text(sv) => sv.get_selected_line_number(),
             _ => None,
         }
     }
@@ -287,13 +287,13 @@ impl Preview {
         number: usize,
     ) -> bool {
         match self {
-            Self::Syntactic(sv) => sv.try_select_line_number(number),
+            Self::Text(sv) => sv.try_select_line_number(number),
             _ => false,
         }
     }
     pub fn unselect(&mut self) {
         match self {
-            Self::Syntactic(sv) => sv.unselect(),
+            Self::Text(sv) => sv.unselect(),
             Self::Tty(tv) => tv.unselect(),
             _ => {}
         }
@@ -304,7 +304,7 @@ impl Preview {
     ) -> bool {
         match self {
             Self::Dir(dv) => dv.try_select_y(y),
-            Self::Syntactic(sv) => sv.try_select_y(y),
+            Self::Text(sv) => sv.try_select_y(y),
             Self::Tty(v) => v.try_select_y(y),
             _ => false,
         }
@@ -316,7 +316,7 @@ impl Preview {
     ) {
         match self {
             Self::Dir(dv) => dv.move_selection(dy, cycle),
-            Self::Syntactic(sv) => sv.move_selection(dy, cycle),
+            Self::Text(sv) => sv.move_selection(dy, cycle),
             Self::Tty(v) => v.move_selection(dy, cycle),
             Self::Hex(hv) => {
                 hv.try_scroll(ScrollCommand::Lines(dy));
@@ -326,14 +326,14 @@ impl Preview {
     }
 
     pub fn previous_match(&mut self) {
-        if let Self::Syntactic(sv) = self {
+        if let Self::Text(sv) = self {
             sv.previous_match();
         } else {
             self.move_selection(-1, true);
         }
     }
     pub fn next_match(&mut self) {
-        if let Self::Syntactic(sv) = self {
+        if let Self::Text(sv) = self {
             sv.next_match();
         } else {
             self.move_selection(1, true);
@@ -343,7 +343,7 @@ impl Preview {
     pub fn select_first(&mut self) {
         match self {
             Self::Dir(dv) => dv.select_first(),
-            Self::Syntactic(sv) => sv.select_first(),
+            Self::Text(sv) => sv.select_first(),
             Self::Hex(hv) => hv.select_first(),
             Self::Tty(v) => v.select_first(),
             _ => {}
@@ -351,7 +351,7 @@ impl Preview {
     }
     pub fn select_last(&mut self) {
         match self {
-            Self::Syntactic(sv) => sv.select_last(),
+            Self::Text(sv) => sv.select_last(),
             Self::Hex(hv) => hv.select_last(),
             Self::Tty(v) => v.select_last(),
             _ => {}
@@ -369,7 +369,7 @@ impl Preview {
         match self {
             Self::Dir(dv) => dv.display(w, disc, area),
             Self::Image(iv) => iv.display(w, disc, area),
-            Self::Syntactic(sv) => sv.display(w, screen, panel_skin, area, con),
+            Self::Text(sv) => sv.display(w, screen, panel_skin, area, con),
             Self::ZeroLen(zlv) => zlv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
             Self::Tty(v) => v.display(w, screen, panel_skin, area),
@@ -405,7 +405,7 @@ impl Preview {
         match self {
             Self::Dir(dv) => dv.display_info(w, screen, panel_skin, area),
             Self::Image(iv) => iv.display_info(w, screen, panel_skin, area),
-            Self::Syntactic(sv) => sv.display_info(w, screen, panel_skin, area),
+            Self::Text(sv) => sv.display_info(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display_info(w, screen, panel_skin, area),
             _ => Ok(()),
         }
