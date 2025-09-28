@@ -62,6 +62,13 @@ mkdir "build/$target/"
 cp "target/release/$NAME" "build/$target/"
 echo "   Done"
 
+# Find, and copy the completion scripts
+# (they are re built as part of the normal compilation by build.rs)
+echo -e "${H2}Copying completion scripts${EH}"
+mkdir build/completion
+cp "$(broot -c 'rp/release\/build\/broot-[^\/]+\/out\/broot.bash;:parent;:pp' target)/"* build/completion
+echo "   Done"
+
 # copy the default conf
 echo -e "${H2}copying default configuration${EH}"
 cp -r resources/default-conf build
