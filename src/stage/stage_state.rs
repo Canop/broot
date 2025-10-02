@@ -3,11 +3,7 @@ use {
     crate::{
         app::*,
         command::*,
-        display::{
-            MatchedString,
-            Screen,
-            W,
-        },
+        display::{MatchedString, Screen, W},
         errors::ProgramError,
         pattern::*,
         skin::*,
@@ -15,20 +11,10 @@ use {
         tree::*,
         verb::*,
     },
-    crokey::crossterm::{
-        QueueableCommand,
-        cursor,
-    },
+    crokey::crossterm::{QueueableCommand, cursor},
     std::path::Path,
-    termimad::{
-        Area,
-        CropWriter,
-        SPACE_FILLING,
-    },
-    unicode_width::{
-        UnicodeWidthChar,
-        UnicodeWidthStr,
-    },
+    termimad::{Area, CropWriter, SPACE_FILLING},
+    unicode_width::{UnicodeWidthChar, UnicodeWidthStr},
 };
 
 static TITLE: &str = "Staging Area"; // no wide char allowed here
@@ -477,6 +463,7 @@ impl PanelState for StageState {
             Internal::trash => {
                 info!("trash {} staged files", app_state.stage.len());
 
+                #[cfg(trash)]
                 match trash::delete_all(app_state.stage.paths()) {
                     Ok(()) => {
                         debug!("trash success");
@@ -487,6 +474,9 @@ impl PanelState for StageState {
                         CmdResult::DisplayError(format!("trash error: {:?}", &e))
                     }
                 }
+
+                #[cfg(not(trash))]
+                CmdResult::DisplayError("trash not supported on this platform".into())
             }
             _ => self.on_internal_generic(
                 w,

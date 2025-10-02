@@ -1,21 +1,11 @@
 use {
-    super::{
-        Internal,
-        Verb,
-        VerbId,
-    },
+    super::{Internal, Verb, VerbId},
     crate::{
         app::*,
         command::Sequence,
-        conf::{
-            Conf,
-            VerbConf,
-        },
+        conf::{Conf, VerbConf},
         errors::ConfError,
-        keys::{
-            self,
-            KEY_FORMAT,
-        },
+        keys::{self, KEY_FORMAT},
         verb::*,
     },
     crokey::*,
@@ -69,10 +59,7 @@ impl VerbStore {
     }
 
     fn add_builtin_verbs(&mut self) -> Result<(), ConfError> {
-        use super::{
-            ExternalExecutionMode::*,
-            Internal::*,
-        };
+        use super::{ExternalExecutionMode::*, Internal::*};
         self.add_internal(escape).with_key(key!(esc));
 
         // input actions, not visible in doc, but available for
@@ -170,15 +157,7 @@ impl VerbStore {
         )
         .with_shortcut("cpp");
         self.add_internal(trash);
-        #[cfg(any(
-            target_os = "windows",
-            all(
-                unix,
-                not(target_os = "macos"),
-                not(target_os = "ios"),
-                not(target_os = "android")
-            )
-        ))]
+        #[cfg(trash)]
         {
             self.add_internal(open_trash).with_shortcut("ot");
             self.add_internal(restore_trashed_file).with_shortcut("rt");

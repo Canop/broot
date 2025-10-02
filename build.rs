@@ -6,10 +6,7 @@
 use {
     clap::CommandFactory,
     clap_complete::{Generator, Shell},
-    std::{
-        env,
-        ffi::OsStr,
-    },
+    std::{env, ffi::OsStr},
 };
 
 include!("src/cli/args.rs");
@@ -19,15 +16,14 @@ include!("src/cli/args.rs");
 /// so this generation is usually not needed
 pub const BUILD_MAN_PAGE: bool = false;
 
-fn write_completions_file<G: Generator + Copy, P: AsRef<OsStr>>(generator: G, out_dir: P) {
+fn write_completions_file<G: Generator + Copy, P: AsRef<OsStr>>(
+    generator: G,
+    out_dir: P,
+) {
     let mut args = Args::command();
     for name in &["broot", "br"] {
-        clap_complete::generate_to(
-            generator,
-            &mut args,
-            (*name).to_string(),
-            &out_dir,
-        ).expect("clap complete generation failed");
+        clap_complete::generate_to(generator, &mut args, (*name).to_string(), &out_dir)
+            .expect("clap complete generation failed");
     }
 }
 
@@ -57,10 +53,24 @@ fn build_man_page() -> std::io::Result<()> {
     Ok(())
 }
 
+fn detect_trash() -> std::io::Result<()> {
+    println!("cargo::rustc-check-cfg=cfg(trash, values(none()))");
+
+    if cfg!(any(
+        target_os = "windows",
+        all(unix, not(target_os = "ios"), not(target_os = "android"))
+    )) {
+        println!("cargo::rustc-cfg=trash");
+    }
+
+    Ok(())
+}
+
 fn main() -> std::io::Result<()> {
     build_completion_scripts();
     if BUILD_MAN_PAGE {
         build_man_page()?;
     }
+    detect_trash()?;
     Ok(())
 }

@@ -3,16 +3,10 @@ use {
         app::*,
         command::*,
         display::*,
-        errors::{
-            ProgramError,
-            TreeBuildError,
-        },
+        errors::{ProgramError, TreeBuildError},
         flag::Flag,
         git,
-        path::{
-            self,
-            PathAnchor,
-        },
+        path::{self, PathAnchor},
         pattern::*,
         print,
         stage::*,
@@ -22,10 +16,7 @@ use {
         verb::*,
     },
     opener,
-    std::path::{
-        Path,
-        PathBuf,
-    },
+    std::path::{Path, PathBuf},
 };
 
 /// An application state dedicated to displaying a tree.
@@ -685,6 +676,7 @@ impl PanelState for BrowserState {
                 let path = self.displayed_tree().selected_line().path.to_path_buf();
                 info!("trash {:?}", &path);
 
+                #[cfg(trash)]
                 match trash::delete(&path) {
                     Ok(()) => CmdResult::RefreshState { clear_cache: true },
                     Err(e) => {
@@ -692,6 +684,9 @@ impl PanelState for BrowserState {
                         CmdResult::DisplayError(format!("trash error: {:?}", &e))
                     }
                 }
+
+                #[cfg(not(trash))]
+                CmdResult::DisplayError("trash not supported on this platform".into())
             }
             Internal::up_tree => match self.displayed_tree().root().parent() {
                 Some(path) => internal_focus::on_path(
