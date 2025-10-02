@@ -888,8 +888,7 @@ impl App {
 
         #[cfg(unix)]
         let _server = con
-            .launch_args
-            .listen
+            .server_name
             .as_ref()
             .map(|server_name| {
                 let shared_root = Arc::new(Mutex::new(app_state.root.clone()));

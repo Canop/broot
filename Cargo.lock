@@ -327,6 +327,7 @@ dependencies = [
  "opener",
  "pathdiff",
  "phf",
+ "rand",
  "rayon",
  "resvg",
  "rustc-hash",
