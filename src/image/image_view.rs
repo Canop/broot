@@ -2,6 +2,7 @@ use {
     super::{
         SourceImage,
         double_line::DoubleLine,
+        zune_compat::DynamicImage,
     },
     crate::{
         app::*,
@@ -23,10 +24,6 @@ use {
             Color,
             SetBackgroundColor,
         },
-    },
-    image::{
-        DynamicImage,
-        GenericImageView,
     },
     std::path::{
         Path,

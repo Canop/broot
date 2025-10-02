@@ -368,7 +368,7 @@ impl Preview {
         let con = &disc.con;
         match self {
             Self::Dir(dv) => dv.display(w, disc, area),
-            Self::Image(iv) => iv.display(w, disc, area),
+            Self::Image(iv) => time!(iv.display(w, disc, area)),
             Self::Text(sv) => sv.display(w, screen, panel_skin, area, con),
             Self::ZeroLen(zlv) => zlv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),

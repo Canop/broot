@@ -1,9 +1,9 @@
 use {
-    super::svg,
-    crate::errors::ProgramError,
-    image::{
-        imageops::FilterType, DynamicImage, GenericImageView, ImageReader
+    super::{
+        svg,
+        zune_compat::DynamicImage,
     },
+    crate::errors::ProgramError,
     std::path::Path,
     termimad::{
         coolor,
@@ -23,7 +23,7 @@ impl SourceImage {
         let img = if is_svg {
             Self::Svg(svg::load(path)?)
         } else {
-            Self::Bitmap(ImageReader::open(path)?.decode()?)
+            Self::Bitmap(DynamicImage::from_path(path)?)
         };
         Ok(img)
     }
@@ -50,7 +50,7 @@ impl SourceImage {
                 } else {
                     max_width = max_width.min(dim.0);
                     max_height = max_height.min(dim.1);
-                    img.resize(max_width, max_height, FilterType::Triangle)
+                    img.resize(max_width, max_height)?
                 }
             }
             Self::Svg(tree) => {

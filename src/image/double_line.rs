@@ -1,4 +1,5 @@
 use {
+    super::zune_compat::Rgba,
     crate::{
         display::W,
         errors::ProgramError,
@@ -13,7 +14,6 @@ use {
             SetColors,
         },
     },
-    image::Rgba,
     termimad::fill_bg,
 };
 
