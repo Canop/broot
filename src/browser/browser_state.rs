@@ -681,6 +681,15 @@ impl PanelState for BrowserState {
                     CmdResult::Keep
                 }
             },
+            #[cfg(any(
+                target_os = "windows",
+                all(
+                    unix,
+                    not(target_os = "macos"),
+                    not(target_os = "ios"),
+                    not(target_os = "android")
+                )
+            ))]
             Internal::trash => {
                 let path = self.displayed_tree().selected_line().path.to_path_buf();
                 info!("trash {:?}", &path);

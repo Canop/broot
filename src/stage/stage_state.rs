@@ -474,6 +474,15 @@ impl PanelState for StageState {
                     CmdResult::error("you must select a path to unstage")
                 }
             }
+            #[cfg(any(
+                target_os = "windows",
+                all(
+                    unix,
+                    not(target_os = "macos"),
+                    not(target_os = "ios"),
+                    not(target_os = "android")
+                )
+            ))]
             Internal::trash => {
                 info!("trash {} staged files", app_state.stage.len());
 
