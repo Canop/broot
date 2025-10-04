@@ -187,7 +187,7 @@ impl<'b> ExecutionStringBuilder<'b> {
                 Some(path_to_string(path))
             }
             #[cfg(unix)]
-            "server-name" => con.launch_args.listen.clone(),
+            "server-name" => con.server_name.clone(),
             _ => None,
         }
     }

@@ -52,6 +52,8 @@ export def --env br [
     --no-show-git-info(-G)          # Don't show git statuses on files and stats on repo
     --git-status                    # Only show files having an interesting git status, including hidden ones
     --hidden(-h)                    # Show hidden files
+    --listen: string                # Listen for commands on a given linux socket
+    --listen-auto                   # Listen for commands on a random linux socket
     --no-hidden(-H)                 # Don't show hidden files
     --height: int                   # Height (if you don't want to fill the screen or for file export)
     --help                          # Print help information
@@ -98,6 +100,8 @@ export def --env br [
     if $git_ignored { $args = ($args | append $'--git-ignored') }
     if $no_git_ignored { $args = ($args | append $'--no-git-ignored') }
     if $install { $args = ($args | append $'--install') }
+    if $listen { $args = ($args | append $'--listen') }
+    if $listen_auto != null { $args = ($args | append $'--listen-auto=($listen_auto)') }
     if $no_sort { $args = ($args | append $'--no-sort') }
     if $permissions { $args = ($args | append $'--permissions') }
     if $no_permissions { $args = ($args | append $'--no-permissions') }
@@ -156,6 +160,8 @@ export extern broot [
     --git-ignored(-i)               # Show git ignored files
     --no-git-ignored(-I)            # Don't show git ignored files
     --install                       # Install or reinstall the br shell function
+    --listen: string                # Listen for commands on a given linux socket
+    --listen-auto                   # Listen for commands on a random linux socket
     --no-sort                       # Don't sort
     --outcmd: path                  # Write cd command in given path
     --permissions(-p)               # Show permissions

@@ -183,6 +183,11 @@ pub struct Args {
     #[arg(long, value_name = "socket")]
     pub listen: Option<String>,
 
+    /// create a random socket to listen to for commands
+    #[cfg(unix)]
+    #[arg(long)]
+    pub listen_auto: bool,
+
     /// Ask for the current root of the remote broot
     #[cfg(unix)]
     #[arg(long)]

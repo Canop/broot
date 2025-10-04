@@ -50,6 +50,7 @@ once_cell = "1.18" # waiting for https://github.com/rust-lang/rust/issues/109736
 opener = "0.8"
 pathdiff = "0.2"
 phf = { version = "0.13", features = ["macros"] }
+rand = "0.8"
 rayon = "1.9"
 resvg = "0.45"
 rustc-hash = "2"
