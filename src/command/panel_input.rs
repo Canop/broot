@@ -33,7 +33,7 @@ use {
 /// Wrap the input of a panel, receive events and make commands
 pub struct PanelInput {
     pub input_field: InputField,
-    tab_cycle_count: usize,
+    tab_cycle_count: Option<usize>, // last displayed completion index
     input_before_cycle: Option<String>,
 }
 
@@ -41,7 +41,7 @@ impl PanelInput {
     pub fn new(area: Area) -> Self {
         Self {
             input_field: InputField::new(area),
-            tab_cycle_count: 0,
+            tab_cycle_count: None,
             input_before_cycle: None,
         }
     }
@@ -248,7 +248,7 @@ impl PanelInput {
         con: &AppContext,
         mode: Mode,
     ) -> Command {
-        self.tab_cycle_count = 0;
+        self.tab_cycle_count = None;
         if let Some(raw) = self.input_before_cycle.take() {
             // we cancel the tab cycling
             self.input_field.set_str(&raw);
@@ -281,6 +281,7 @@ impl PanelInput {
         raw: String,
         parts: CommandParts,
         panel_state_type: Option<PanelStateType>,
+        backwards: bool, // backtab
     ) -> Command {
         let parts_before_cycle;
         let completable_parts = if let Some(s) = &self.input_before_cycle {
@@ -289,25 +290,41 @@ impl PanelInput {
         } else {
             &parts
         };
-        let completions =
-            Completions::for_input(completable_parts, con, sel_info, panel_state_type);
+        let completions = Completions::for_input(
+            completable_parts,
+            con,
+            sel_info,
+            panel_state_type,
+        );
         let added = match completions {
             Completions::None => {
                 debug!("nothing to complete!");
-                self.tab_cycle_count = 0;
+                self.tab_cycle_count = None;
                 self.input_before_cycle = None;
                 None
             }
             Completions::Common(completion) => {
-                self.tab_cycle_count = 0;
+                self.tab_cycle_count = None;
                 Some(completion)
             }
-            Completions::List(mut completions) => {
-                let idx = self.tab_cycle_count % completions.len();
-                if self.tab_cycle_count == 0 {
+            Completions::List(mut completions) => { // completions has a len > 1
+                let len = completions.len();
+                // self.tab_cycle_count is the next index to use, when going forward
+                if self.tab_cycle_count.is_none() {
                     self.input_before_cycle = Some(raw.to_string());
                 }
-                self.tab_cycle_count += 1;
+                let idx = if backwards {
+                    match self.tab_cycle_count {
+                        Some(before) => (before + len - 1) % len,
+                        None => completions.len() - 1,
+                    }
+                } else {
+                    match self.tab_cycle_count {
+                        Some(before) => (before + 1) % len,
+                        None => 0,
+                    }
+                };
+                self.tab_cycle_count = Some(idx);
                 Some(completions.swap_remove(idx))
             }
         };
@@ -441,12 +458,16 @@ impl PanelInput {
         // 'tab' completion of a verb or one of its arguments
         if Verb::is_some_internal(verb, Internal::next_match) {
             if parts.verb_invocation.is_some() {
-                return self.auto_complete_verb(con, sel_info, raw, parts, Some(panel_state_type));
+                return self.auto_complete_verb(con, sel_info, raw, parts, Some(panel_state_type), false);
             }
             // if no verb is being edited, the state may handle this internal
             // in a specific way
+        } else if Verb::is_some_internal(verb, Internal::previous_match) {
+            if parts.verb_invocation.is_some() {
+                return self.auto_complete_verb(con, sel_info, raw, parts, Some(panel_state_type), true);
+            }
         } else {
-            self.tab_cycle_count = 0;
+            self.tab_cycle_count = None;
             self.input_before_cycle = None;
         }
 
