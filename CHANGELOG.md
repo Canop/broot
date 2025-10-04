@@ -1,3 +1,6 @@
+### next
+- fix compilation broken by 1.50.0 on Android- thanks @dead10ck
+
 ### v1.50.0 - 2025-09-25
 <a name="v1.50.0"></a>
 - big text files now only partially loaded for initial display, remaining being done in background - Fix #1052
