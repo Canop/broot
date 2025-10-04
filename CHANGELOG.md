@@ -1,5 +1,6 @@
 ### next
 - fix compilation broken by 1.50.0 on Android- thanks @dead10ck
+- `--listen-auto` listens for commands on a random linux socket - Fix #1064
 
 ### v1.50.0 - 2025-09-25
 <a name="v1.50.0"></a>
