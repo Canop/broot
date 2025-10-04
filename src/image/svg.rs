@@ -1,9 +1,6 @@
 use {
+    super::zune_compat::DynamicImage,
     crate::errors::SvgError,
-    image::{
-        DynamicImage,
-        RgbaImage,
-    },
     resvg::{
         tiny_skia,
         usvg,
@@ -73,12 +70,13 @@ pub fn render_tree(
         tiny_skia::Transform::from_scale(zoom, zoom),
         &mut pixmap.as_mut(),
     );
-    let image_buffer = RgbaImage::from_vec(pixmap.width(), pixmap.height(), pixmap.take()).ok_or(
-        SvgError::Internal {
-            message: "wrong image buffer size",
-        },
-    )?;
-    Ok(DynamicImage::ImageRgba8(image_buffer))
+    let width = pixmap.width();
+    let height = pixmap.height();
+    let data = pixmap.take();
+    DynamicImage::from_rgba8(width, height, data)
+        .map_err(|_| SvgError::Internal {
+            message: "failed to create image from RGBA data",
+        })
 }
 
 /// Generate a bitmap at the natural dimensions of the SVG unless it's too big

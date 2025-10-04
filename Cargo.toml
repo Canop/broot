@@ -40,6 +40,8 @@ git2 = { version = "0.20", default-features = false } # waiting for a good pure-
 glob = "0.3"
 id-arena = "2.2.1"
 image = "0.25"
+zune-core = "0.4"
+zune-image = "0.4"
 include_dir = "0.7"
 lazy-regex = "3.4"
 libc = "0.2"

@@ -33,9 +33,8 @@ use {
         Compression,
         write::ZlibEncoder,
     },
-    image::{
+    crate::image::zune_compat::{
         DynamicImage,
-        GenericImageView,
         RgbImage,
         RgbaImage,
     },
@@ -108,37 +107,35 @@ pub struct KittyImageRendererOptions {
     pub is_tmux: bool,
 }
 
-enum ImageData<'i> {
-    RgbRef(&'i RgbImage),
-    RgbaRef(&'i RgbaImage),
+enum ImageData {
     Rgb(RgbImage),
+    Rgba(RgbaImage),
 }
-impl<'i> From<&'i DynamicImage> for ImageData<'i> {
-    fn from(img: &'i DynamicImage) -> Self {
-        if let Some(rgb) = img.as_rgb8() {
-            debug!("using rgb");
-            Self::RgbRef(rgb)
-        } else if let Some(rgba) = img.as_rgba8() {
+impl From<&DynamicImage> for ImageData {
+    fn from(img: &DynamicImage) -> Self {
+        if let Some(rgba) = img.as_rgba8() {
             debug!("using rgba");
-            Self::RgbaRef(rgba)
+            Self::Rgba(rgba)
+        } else if let Some(rgb) = img.as_rgb8() {
+            debug!("using rgb");
+            Self::Rgb(rgb)
         } else {
             debug!("converting to rgb8");
             Self::Rgb(img.to_rgb8())
         }
     }
 }
-impl ImageData<'_> {
+impl ImageData {
     fn kitty_format(&self) -> &'static str {
         match self {
-            Self::RgbaRef(_) => "32",
-            _ => "24",
+            Self::Rgba(_) => "32",
+            Self::Rgb(_) => "24",
         }
     }
-    fn bytes(&self) -> &[u8] {
+    fn bytes(&self) -> Vec<u8> {
         match self {
-            Self::RgbRef(img) => img.as_raw(),
-            Self::RgbaRef(img) => img.as_raw(),
             Self::Rgb(img) => img.as_raw(),
+            Self::Rgba(img) => img.as_raw(),
         }
     }
 }
@@ -212,15 +209,15 @@ pub struct KittyImageRenderer {
     temp_files: LruCache<String, PathBuf, FxBuildHasher>,
 }
 
-enum KittyImageData<'i> {
+enum KittyImageData {
     Png { path: PathBuf },
-    Image { data: ImageData<'i> },
+    Image { data: ImageData },
 }
 
 /// An image prepared for a precise area on screen
-struct KittyImage<'i> {
+struct KittyImage {
     id: usize,
-    data: KittyImageData<'i>,
+    data: KittyImageData,
     img_width: u32,
     img_height: u32,
     area: Area,
@@ -228,12 +225,12 @@ struct KittyImage<'i> {
     is_tmux: bool,
     tmux_nest_count: u32,
 }
-impl<'i> KittyImage<'i> {
-    fn new<'r>(
-        src: &'i DynamicImage,
+impl KittyImage {
+    fn new(
+        src: &DynamicImage,
         png_path: Option<PathBuf>,
         available_area: &Area,
-        renderer: &'r mut KittyImageRenderer,
+        renderer: &mut KittyImageRenderer,
     ) -> Self {
         let (img_width, img_height) = src.dimensions();
         let area = renderer.rendering_area(img_width, img_height, available_area);
@@ -321,7 +318,7 @@ impl<'i> KittyImage<'i> {
                 (png_buf, "", "100")
             }
             KittyImageData::Image { data } => (
-                KittyImage::compress(data.bytes())?,
+                KittyImage::compress(&data.bytes())?,
                 "o=z,",
                 data.kitty_format(),
             ),
@@ -456,7 +453,7 @@ impl<'i> KittyImage<'i> {
         // Compression slows things down
         if let KittyImageData::Image { data } = &self.data {
             if let Some(mut temp_file) = temp_file {
-                temp_file.write_all(data.bytes())?;
+                temp_file.write_all(&data.bytes())?;
                 temp_file.flush()?;
                 debug!("file len: {}", temp_file.metadata().unwrap().len());
             }
