@@ -1,4 +1,5 @@
-### next
+### v1.51.0 - 2025-10-05
+<a name="v1.51.0"></a>
 - improved image rendering (both speed by using the zune-image library, and quality with bilinear interpolation)
 - fix compilation broken by 1.50.0 on Android- thanks @dead10ck
 - `--listen-auto` listens for commands on a random linux socket - Fix #1064
