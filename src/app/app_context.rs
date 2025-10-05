@@ -16,7 +16,6 @@ use {
             KittyGraphicsDisplay,
             TransmissionMedium,
         },
-        net::random_server_name,
         path::SpecialPaths,
         pattern::SearchModeMap,
         preview::PreviewTransformers,
@@ -375,13 +374,16 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
 }
 
 /// Build a server name according to the launch arguments
-/// (none if there's neither listen nor listen_auto)
+/// (none if there's neither 'listen' nor 'listen_auto' arg)
+#[allow(unused_variables)]
 fn build_server_name(args: &Args) -> Option<String> {
+    #[cfg(unix)]
     if let Some(name) = &args.listen {
-        Some(name.clone())
-    } else if args.listen_auto {
-        Some(random_server_name())
-    } else {
-        None
+        return Some(name.clone());
     }
+    #[cfg(unix)]
+    if args.listen_auto {
+        return Some(crate::net::random_server_name());
+    }
+    None
 }
