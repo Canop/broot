@@ -18,3 +18,4 @@
 deploy.sh
 dev.log
 .DS_Store
+/zigbuild

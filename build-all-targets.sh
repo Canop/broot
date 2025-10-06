@@ -53,6 +53,27 @@ cross_build "ARM 64" "aarch64-unknown-linux-gnu" ""
 cross_build "ARM 64 MUSL" "aarch64-unknown-linux-musl" ""
 cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard"
 
+# use zig to build a version for GLIBC 2.28
+target="x86_64-unknown-linux-gnu"
+glibc_version="2.28"
+zig_target="$target.$glibc_version"
+echo -e "${H2}Compiling for $target with GLIBC $glibc_version version${EH}"
+cargo zigbuild --release --target "$zig_target"
+folder="$target-glibc$glibc_version"
+mkdir "build/$folder"
+cp "target/$target/release/$NAME" "build/$folder/"
+echo "   Done"
+
+# use zig with docker to build a Mac version
+target="aarch64-apple-darwin"
+echo -e "${H2}Compiling for $target version${EH}"
+docker run \
+    --rm -it -v $(pwd):/io -w /io ghcr.io/rust-cross/cargo-zigbuild \
+    cargo zigbuild --release --target "$target" --target-dir "zigbuild"
+mkdir "build/$target"
+cp "zigbuild/$target/release/$NAME" "build/$target/"
+echo "   Done"
+
 # build the local version
 target=$(./target.sh)
 echo -e "${H2}Compiling the local target - $target${EH}"
