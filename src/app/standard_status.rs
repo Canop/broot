@@ -27,6 +27,7 @@ pub struct StandardStatus {
 }
 
 impl StandardStatus {
+    #[must_use]
     pub fn new(verb_store: &VerbStore) -> Self {
         let tree_top_focus = "*enter* to go up".to_string(); // enter is hardcoded on focus
         let tree_dir_focus = "*enter* to focus".to_string();
@@ -82,6 +83,7 @@ impl StandardStatus {
             all_files_ignored,
         }
     }
+    #[must_use]
     pub fn builder<'s>(
         &'s self,
         state_type: PanelStateType,

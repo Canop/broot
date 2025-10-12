@@ -34,7 +34,7 @@ pub trait PanelState {
     );
     fn get_mode(&self) -> Mode;
 
-    /// called on start of on_command, remove the pending task
+    /// called on start of `on_command`, remove the pending task
     fn clear_pending(&mut self) {}
 
     fn on_click(
@@ -96,7 +96,7 @@ pub trait PanelState {
         cc: &CmdContext,
     ) -> Result<CmdResult, ProgramError>;
 
-    /// a generic implementation of on_internal which may be
+    /// a generic implementation of `on_internal` which may be
     /// called by states when they don't have a specific
     /// behavior to execute
     #[allow(clippy::too_many_arguments)]
@@ -117,7 +117,7 @@ pub trait PanelState {
             .unwrap_or(internal_exec.bang);
         Ok(match internal_exec.internal {
             Internal::apply_flags => {
-                debug!("applying flags input_invocation: {:#?}", input_invocation);
+                debug!("applying flags input_invocation: {input_invocation:#?}");
                 let flags = input_invocation.and_then(|inv| inv.args.as_ref());
                 if let Some(flags) = flags {
                     self.with_new_options(

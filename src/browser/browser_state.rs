@@ -162,7 +162,7 @@ impl BrowserState {
         } else {
             match opener::open(&target) {
                 Ok(exit_status) => {
-                    info!("open returned with exit_status {:?}", exit_status);
+                    info!("open returned with exit_status {exit_status:?}");
                     Ok(CmdResult::Keep)
                 }
                 Err(e) => Ok(CmdResult::error(format!("{e:?}"))),
@@ -437,7 +437,7 @@ impl PanelState for BrowserState {
                 if areas.is_first() && areas.nb_pos < con.max_panels_count {
                     // we ask for the creation of a panel to the left
                     internal_focus::new_panel_on_path(
-                        self.displayed_tree().selected_line().path.to_path_buf(),
+                        self.displayed_tree().selected_line().path.clone(),
                         screen,
                         self.displayed_tree().options.clone(),
                         PanelPurpose::None,
@@ -461,7 +461,7 @@ impl PanelState for BrowserState {
                     };
                     // we ask for the creation of a panel to the right
                     internal_focus::new_panel_on_path(
-                        selected_path.to_path_buf(),
+                        selected_path.clone(),
                         screen,
                         self.displayed_tree().options.clone(),
                         purpose,
@@ -652,7 +652,7 @@ impl PanelState for BrowserState {
                         // we just open a new panel on the selected path,
                         // without purpose
                         internal_focus::new_panel_on_path(
-                            self.displayed_tree().selected_line().path.to_path_buf(),
+                            self.displayed_tree().selected_line().path.clone(),
                             screen,
                             tree_options,
                             PanelPurpose::None,
@@ -673,7 +673,7 @@ impl PanelState for BrowserState {
                 }
             },
             Internal::trash => {
-                let path = self.displayed_tree().selected_line().path.to_path_buf();
+                let path = self.displayed_tree().selected_line().path.clone();
                 info!("trash {:?}", &path);
 
                 #[cfg(trash)]

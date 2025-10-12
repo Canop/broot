@@ -627,7 +627,6 @@ impl VerbStore {
                     found_index = index;
                     nb_found += 1;
                     completions.push(name);
-                    continue;
                 }
             }
         }

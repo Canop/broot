@@ -167,7 +167,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
             let message =
                 Message::Command(format!(":focus {}", context.initial_root.to_string_lossy()));
             client.send(&message)?;
-        };
+        }
         if context.launch_args.get_root {
             client.send(&Message::GetRoot)?;
         }

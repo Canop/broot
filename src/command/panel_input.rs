@@ -87,7 +87,7 @@ impl PanelInput {
     pub fn on_event(
         &mut self,
         w: &mut W,
-        timed_event: TimedEvent,
+        timed_event: &TimedEvent,
         con: &AppContext,
         sel_info: SelInfo<'_>,
         app_state: &AppState,
@@ -104,13 +104,13 @@ impl PanelInput {
                         modifiers: KeyModifiers::NONE,
                     }),
                 ..
-            } => self.on_mouse(timed_event, kind, column, row),
+            } => self.on_mouse(timed_event, *kind, *column, *row),
             TimedEvent {
                 key_combination: Some(key),
                 ..
             } => self.on_key(
                 timed_event,
-                key,
+                *key,
                 con,
                 sel_info,
                 app_state,
@@ -238,11 +238,11 @@ impl PanelInput {
 
     /// escape (bound to the 'esc' key)
     ///
-    /// This function is better called from the on_key method of
+    /// This function is better called from the `on_key` method of
     /// panel input, when a key triggers it, because then it
     /// can also properly deal with completion sequence.
     /// When ':escape' is called from a verb's cmd sequence, then
-    /// it's not called on on_key but by the app.
+    /// it's not called on `on_key` but by the app.
     pub fn escape(
         &mut self,
         con: &AppContext,
@@ -279,7 +279,7 @@ impl PanelInput {
         con: &AppContext,
         sel_info: SelInfo<'_>,
         raw: String,
-        parts: CommandParts,
+        parts: &CommandParts,
         panel_state_type: Option<PanelStateType>,
         backwards: bool, // backtab
     ) -> Command {
@@ -288,7 +288,7 @@ impl PanelInput {
             parts_before_cycle = CommandParts::from(s.clone());
             &parts_before_cycle
         } else {
-            &parts
+            parts
         };
         let completions = Completions::for_input(
             completable_parts,
@@ -342,7 +342,6 @@ impl PanelInput {
     }
 
     fn find_key_verb<'c>(
-        &mut self,
         key: KeyCombination,
         con: &'c AppContext,
         sel_info: SelInfo<'_>,
@@ -375,12 +374,12 @@ impl PanelInput {
     /// Consume the event, maybe change the input, return a command
     fn on_mouse(
         &mut self,
-        timed_event: TimedEvent,
+        timed_event: &TimedEvent,
         kind: MouseEventKind,
         column: u16,
         row: u16,
     ) -> Command {
-        if self.input_field.apply_timed_event(&timed_event) {
+        if self.input_field.apply_timed_event(timed_event) {
             Command::empty()
         } else {
             match kind {
@@ -423,7 +422,7 @@ impl PanelInput {
     #[allow(clippy::too_many_arguments)]
     fn on_key(
         &mut self,
-        timed_event: TimedEvent,
+        timed_event: &TimedEvent,
         key: KeyCombination,
         con: &AppContext,
         sel_info: SelInfo<'_>,
@@ -436,7 +435,7 @@ impl PanelInput {
         let parts = CommandParts::from(raw.clone());
 
         let verb = if self.is_key_allowed_for_verb(key, mode) {
-            self.find_key_verb(key, con, sel_info, panel_state_type)
+            Self::find_key_verb(key, con, sel_info, panel_state_type)
         } else {
             None
         };
@@ -458,13 +457,13 @@ impl PanelInput {
         // 'tab' completion of a verb or one of its arguments
         if Verb::is_some_internal(verb, Internal::next_match) {
             if parts.verb_invocation.is_some() {
-                return self.auto_complete_verb(con, sel_info, raw, parts, Some(panel_state_type), false);
+                return self.auto_complete_verb(con, sel_info, raw, &parts, Some(panel_state_type), false);
             }
             // if no verb is being edited, the state may handle this internal
             // in a specific way
         } else if Verb::is_some_internal(verb, Internal::previous_match) {
             if parts.verb_invocation.is_some() {
-                return self.auto_complete_verb(con, sel_info, raw, parts, Some(panel_state_type), true);
+                return self.auto_complete_verb(con, sel_info, raw, &parts, Some(panel_state_type), true);
             }
         } else {
             self.tab_cycle_count = None;
@@ -513,7 +512,7 @@ impl PanelInput {
         }
 
         // input field management
-        if mode == Mode::Input && self.input_field.apply_timed_event(&timed_event) {
+        if mode == Mode::Input && self.input_field.apply_timed_event(timed_event) {
             return Command::from_raw(self.input_field.get_content(), false);
         }
         Command::None

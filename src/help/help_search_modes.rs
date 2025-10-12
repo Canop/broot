@@ -38,7 +38,7 @@ pub fn search_mode_help(
         SearchMode::NameTokens => format!("`{prefix}fea,he` matches *HelpFeature.java*"),
         SearchMode::PathExact => format!("`{prefix}te\\/do` matches *website/docs*"),
         SearchMode::PathFuzzy => format!("`{prefix}flam` matches *src/flag/mod.rs*"),
-        SearchMode::PathRegex => format!(r#"`{prefix}\d{{3}}.*txt` matches *dir/a123/b.txt*"#),
+        SearchMode::PathRegex => format!(r"`{prefix}\d{{3}}.*txt` matches *dir/a123/b.txt*"),
         SearchMode::PathTokens => format!("`{prefix}help,doc` matches *website/docs/help.md*"),
         SearchMode::ContentExact => {
             format!("`{prefix}find(` matches a file containing *a.find(b);*")

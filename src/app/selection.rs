@@ -45,12 +45,14 @@ pub enum SelInfo<'s> {
 }
 
 impl SelectionType {
+    #[must_use]
     pub fn respects(
         self,
         constraint: Self,
     ) -> bool {
         constraint == Self::Any || self == constraint
     }
+    #[must_use]
     pub fn is_respected_by(
         self,
         sel_type: Option<Self>,
@@ -62,6 +64,7 @@ impl SelectionType {
             _ => false,
         }
     }
+    #[must_use]
     pub fn from(path: &Path) -> Self {
         if path.is_dir() {
             Self::Directory
@@ -72,7 +75,7 @@ impl SelectionType {
 }
 
 impl Selection<'_> {
-    /// build a CmdResult with a launchable which will be used to
+    /// build a `CmdResult` with a launchable which will be used to
     /// open the relevant file the best possible way
     pub fn to_opener(
         self,
@@ -100,6 +103,7 @@ impl Selection<'_> {
 }
 
 impl<'a> SelInfo<'a> {
+    #[must_use]
     pub fn from_path(path: &'a Path) -> Self {
         Self::One(Selection {
             stype: SelectionType::from(path),
@@ -108,6 +112,7 @@ impl<'a> SelInfo<'a> {
             is_exe: false, // OK, I don't know
         })
     }
+    #[must_use]
     pub fn count_paths(&self) -> usize {
         match self {
             SelInfo::None => 0,
@@ -115,6 +120,7 @@ impl<'a> SelInfo<'a> {
             SelInfo::More(stage) => stage.len(),
         }
     }
+    #[must_use]
     pub fn is_accepted_by(
         &self,
         condition: FileTypeCondition,
@@ -132,6 +138,7 @@ impl<'a> SelInfo<'a> {
             }
         }
     }
+    #[must_use]
     pub fn common_stype(&self) -> Option<SelectionType> {
         match self {
             SelInfo::None => None,
@@ -147,15 +154,18 @@ impl<'a> SelInfo<'a> {
             }
         }
     }
+    #[must_use]
     pub fn one_sel(self) -> Option<Selection<'a>> {
         match self {
             SelInfo::One(sel) => Some(sel),
             _ => None,
         }
     }
+    #[must_use]
     pub fn one_path(self) -> Option<&'a Path> {
         self.one_sel().map(|sel| sel.path)
     }
+    #[must_use]
     pub fn extension(&self) -> Option<&str> {
         match self {
             SelInfo::None => None,

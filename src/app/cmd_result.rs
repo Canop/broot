@@ -65,9 +65,11 @@ pub enum CmdResult {
 }
 
 impl CmdResult {
+    #[must_use]
     pub fn verb_not_found(text: &str) -> CmdResult {
         CmdResult::DisplayError(format!("verb not found: {:?}", &text))
     }
+    #[must_use]
     pub fn from_optional_browser_state(
         os: Result<BrowserState, TreeBuildError>,
         message: Option<&'static str>,
@@ -93,6 +95,7 @@ impl CmdResult {
             Err(e) => CmdResult::error(e.to_string()),
         }
     }
+    #[must_use]
     pub fn new_state(state: Box<dyn PanelState>) -> Self {
         Self::NewState {
             state,

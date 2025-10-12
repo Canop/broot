@@ -38,6 +38,7 @@ pub struct Panel {
 }
 
 impl Panel {
+    #[must_use]
     pub fn new(
         id: PanelId,
         state: Box<dyn PanelState>,
@@ -141,6 +142,7 @@ impl Panel {
             .do_pending_task(app_state, screen, con, dam)
     }
 
+    #[must_use]
     pub fn has_pending_task(&self) -> bool {
         self.state().get_pending_task().is_some()
     }
@@ -150,7 +152,7 @@ impl Panel {
     pub fn add_event(
         &mut self,
         w: &mut W,
-        event: TimedEvent,
+        event: &TimedEvent,
         app_state: &AppState,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
@@ -168,9 +170,11 @@ impl Panel {
         self.input.set_content(&new_state.get_starting_input());
         self.states.push(new_state);
     }
+    #[must_use]
     pub fn mut_state(&mut self) -> &mut dyn PanelState {
         self.states.last_mut().unwrap().as_mut()
     }
+    #[must_use]
     pub fn state(&self) -> &dyn PanelState {
         self.states.last().unwrap().as_ref()
     }
@@ -200,6 +204,7 @@ impl Panel {
         self.input.set_content(content);
     }
 
+    #[must_use]
     pub fn get_input_content(&self) -> String {
         self.input.get_content()
     }

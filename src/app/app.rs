@@ -136,7 +136,7 @@ impl App {
         if let Some(path) = con.initial_file.as_ref() {
             // open initial_file in preview
             let preview_state = Box::new(PreviewState::new(
-                path.to_path_buf(),
+                path.clone(),
                 InputPattern::none(),
                 None,
                 con.initial_tree_options.clone(),
@@ -282,7 +282,7 @@ impl App {
                 con,
             };
             if let Some(pos) = time!("display panel", panel.display(w, &disc)?,) {
-                cursor_pos = Some(pos)
+                cursor_pos = Some(pos);
             }
         }
 
@@ -328,7 +328,7 @@ impl App {
     fn apply_command(
         &mut self,
         w: &mut W,
-        cmd: Command,
+        cmd: &Command,
         panel_skin: &PanelSkin,
         app_state: &mut AppState,
         con: &mut AppContext,
@@ -346,13 +346,13 @@ impl App {
         };
         let cmd_result = self
             .mut_panel()
-            .apply_command(w, &cmd, app_state, &app_cmd_context)?;
+            .apply_command(w, cmd, app_state, &app_cmd_context)?;
         info!("cmd_result: {:?}", &cmd_result);
         match cmd_result {
             ApplyOnPanel { id } => {
                 if let Some(idx) = self.panel_id_to_idx(id) {
                     if let DisplayError(txt) =
-                        self.panels[idx].apply_command(w, &cmd, app_state, &app_cmd_context)?
+                        self.panels[idx].apply_command(w, cmd, app_state, &app_cmd_context)?
                     {
                         // we should probably handle other results
                         // which implies the possibility of a recursion
@@ -437,7 +437,7 @@ impl App {
                         let mode = self.panel().state().get_mode();
                         let cmd = self.mut_panel().input.escape(con, mode);
                         debug!("cmd on escape: {cmd:?}");
-                        self.apply_command(w, cmd, panel_skin, app_state, con)?;
+                        self.apply_command(w, &cmd, panel_skin, app_state, con)?;
                     }
                     Internal::focus_staging_area_no_open => {
                         new_active_panel_idx = self
@@ -551,7 +551,7 @@ impl App {
                                 "unhandled propagated internal. internal={internal:?} cmd={cmd:?}"
                             );
                         } else {
-                            self.apply_command(w, cmd, panel_skin, app_state, con)?;
+                            self.apply_command(w, &cmd, panel_skin, app_state, con)?;
                         }
                     }
                 }
@@ -616,7 +616,7 @@ impl App {
                         con,
                     };
                     self.mut_panel()
-                        .apply_command(w, &cmd, app_state, &app_cmd_context)?;
+                        .apply_command(w, cmd, app_state, &app_cmd_context)?;
                 } else if con.quit_on_last_cancel {
                     self.quitting = true;
                 }
@@ -709,7 +709,7 @@ impl App {
         (len * x as usize) / (self.screen.width as usize + 1)
     }
 
-    /// handle CmdResult::NewPanel
+    /// handle `CmdResult::NewPanel`
     fn new_panel(
         &mut self,
         state: Box<dyn PanelState>,
@@ -882,7 +882,7 @@ impl App {
 
         if let Some(raw_sequence) = &con.cmd() {
             self.tx_seqs
-                .send(Sequence::new_local(raw_sequence.to_string()))
+                .send(Sequence::new_local((*raw_sequence).to_string()))
                 .unwrap();
         }
 
@@ -936,7 +936,7 @@ impl App {
                 Either::First(Some(event)) => {
                     //info!("event: {:?}", &event);
                     if let Some(key_combination) = event.key_combination {
-                        debug!("key combination: {}", key_combination);
+                        debug!("key combination: {key_combination}");
                     }
                     let mut handled = false;
 
@@ -963,9 +963,9 @@ impl App {
 
                     // event handled by the panel
                     if !handled {
-                        let cmd = self.mut_panel().add_event(w, event, &app_state, con)?;
+                        let cmd = self.mut_panel().add_event(w, &event, &app_state, con)?;
                         debug!("command after add_event: {:?}", &cmd);
-                        self.apply_command(w, cmd, &skin.focused, &mut app_state, con)?;
+                        self.apply_command(w, &cmd, &skin.focused, &mut app_state, con)?;
                     }
 
                     event_source.unblock(self.quitting);
@@ -981,7 +981,7 @@ impl App {
                         if !matches!(&arg_cmd, Command::Internal { .. }) {
                             self.mut_panel().set_input_content(&input);
                         }
-                        self.apply_command(w, arg_cmd, &skin.focused, &mut app_state, con)?;
+                        self.apply_command(w, &arg_cmd, &skin.focused, &mut app_state, con)?;
                         if self.quitting {
                             return Ok(self.launch_at_end.take());
                         }

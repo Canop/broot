@@ -24,21 +24,21 @@ use {
 
 pub use state::ShellInstallState;
 
-const MD_INSTALL_REQUEST: &str = r#"
+const MD_INSTALL_REQUEST: &str = r"
 **Broot** should be launched using a shell function.
 This function most notably makes it possible to `cd` from inside broot
 (see *https://dystroy.org/broot/install-br/* for explanations).
 
 Can I install it now? [**Y**/n]
-"#;
+";
 
-const MD_UPGRADE_REQUEST: &str = r#"
+const MD_UPGRADE_REQUEST: &str = r"
 Broot's shell function should be upgraded.
 
 Can I proceed? [**Y**/n]
-"#;
+";
 
-const MD_INSTALL_CANCELLED: &str = r#"
+const MD_INSTALL_CANCELLED: &str = r"
 You refused the installation (for now).
 You can still used `broot` but some features won't be available.
 If you want the `br` shell function, you may either
@@ -46,21 +46,21 @@ If you want the `br` shell function, you may either
 * install the various pieces yourself
 (see *https://dystroy.org/broot/install-br/* for details).
 
-"#;
+";
 
-const MD_PERMISSION_DENIED: &str = r#"
+const MD_PERMISSION_DENIED: &str = r"
 Installation check resulted in **Permission Denied**.
 Please relaunch with elevated privilege.
 This is typically only needed once.
 Error details:
-"#;
+";
 
-const MD_INSTALL_DONE: &str = r#"
+const MD_INSTALL_DONE: &str = r"
 The **br** function has been successfully installed.
 You may have to restart your shell or source your shell init files.
 Afterwards, you should start broot with `br` in order to use its full power.
 
-"#;
+";
 
 pub struct ShellInstall {
     force_install: bool, // when the program was launched with --install

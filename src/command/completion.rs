@@ -75,7 +75,7 @@ impl Completions {
     /// the wholes are assumed to all start with start.
     fn for_wholes(
         start: &str,
-        wholes: Vec<&str>,
+        wholes: &[&str],
     ) -> Self {
         let completions = wholes
             .iter()
@@ -112,7 +112,7 @@ impl Completions {
                     Self::Common(name[start.len()..].to_string())
                 }
             }
-            PrefixSearchResult::Matches(completions) => Self::for_wholes(start, completions),
+            PrefixSearchResult::Matches(completions) => Self::for_wholes(start, &completions),
         }
     }
 
@@ -226,13 +226,8 @@ impl Completions {
                 let mut lists = stage.paths().iter().filter_map(|path| {
                     Self::list_for_path(verb_name, arg, path, sel_info, con, panel_state_type).ok()
                 });
-                let mut list = match lists.next() {
-                    Some(list) => list,
-                    None => {
-                        // can happen if there were IO errors on paths in stage, for example
-                        // on removals
-                        return Self::None;
-                    }
+                let Some(mut list) = lists.next() else {
+                    return Self::None;
                 };
                 for ol in lists {
                     list.retain(|c| ol.contains(c));

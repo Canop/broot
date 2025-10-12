@@ -61,7 +61,7 @@ pub struct AppContext {
     /// all the arguments specified at launch
     pub launch_args: Args,
 
-    /// the "launch arguments" found in the default_flags
+    /// the "launch arguments" found in the `default_flags`
     /// of the config file(s)
     pub config_default_args: Option<Args>,
 
@@ -111,8 +111,7 @@ pub struct AppContext {
     /// and there's nothing to cancel
     pub quit_on_last_cancel: bool,
 
-    /// number of threads used by file_sum (count, size, date)
-    /// computation
+    /// number of threads used by `file_sum` (count, size, date) computation
     pub file_sum_threads_count: usize,
 
     /// number of files which may be staged in one staging operation
@@ -134,7 +133,7 @@ pub struct AppContext {
     /// Whether Kitty keyboard enhancement flags are pushed, so that
     /// we know whether we need to temporarily disable them during
     /// the execution of a terminal program.
-    /// This is determined by app::run on launching the event source.
+    /// This is determined by `app::run` on launching the event source.
     pub keyboard_enhanced: bool,
 
     pub kitty_graphics_transmission: TransmissionMedium,
@@ -275,7 +274,7 @@ impl AppContext {
         })
     }
     /// Return the --cmd argument, coming from the launch arguments (preferred)
-    /// or from the default_flags parameter of a config file
+    /// or from the `default_flags` parameter of a config file
     pub fn cmd(&self) -> Option<&str> {
         self.launch_args
             .cmd
@@ -286,6 +285,7 @@ impl AppContext {
                 .and_then(|args| args.cmd.as_ref()))
             .map(String::as_str)
     }
+    #[must_use]
     pub fn initial_mode(&self) -> Mode {
         if self.modal {
             self.initial_mode
@@ -309,10 +309,10 @@ impl Default for AppContext {
 /// try to determine whether the terminal supports true
 /// colors. This doesn't work well, hence the use of an
 /// optional config setting.
-/// Based on https://gist.github.com/XVilka/8346728#true-color-detection
+/// Based on <https://gist.github.com/XVilka/8346728#true-color-detection>
 fn are_true_colors_available() -> bool {
     if let Ok(colorterm) = std::env::var("COLORTERM") {
-        debug!("COLORTERM env variable = {:?}", colorterm);
+        debug!("COLORTERM env variable = {colorterm:?}");
         if colorterm.contains("truecolor") || colorterm.contains("24bit") {
             debug!("true colors are available");
             true
@@ -338,7 +338,7 @@ fn initial_root_file(cli_args: &Args) -> Result<(PathBuf, Option<PathBuf>), Prog
     };
     if !root.exists() {
         return Err(TreeBuildError::FileNotFound {
-            path: format!("{:?}", &root),
+            path: format!("{root:?}"),
         }
         .into());
     }
@@ -351,7 +351,7 @@ fn initial_root_file(cli_args: &Args) -> Result<(PathBuf, Option<PathBuf>), Prog
         } else {
             // this is a weird filesystem, let's give up
             return Err(TreeBuildError::NotADirectory {
-                path: format!("{:?}", &root),
+                path: format!("{root:?}"),
             }
             .into());
         }
@@ -374,7 +374,7 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
 }
 
 /// Build a server name according to the launch arguments
-/// (none if there's neither 'listen' nor 'listen_auto' arg)
+/// (none if there's neither 'listen' nor `listen_auto` arg)
 #[allow(unused_variables)]
 fn build_server_name(args: &Args) -> Option<String> {
     #[cfg(unix)]
