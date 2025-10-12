@@ -80,7 +80,7 @@ impl Areas {
             &mut slots,
             screen,
             with_preview,
-        )
+        );
     }
 
     fn compute_areas(

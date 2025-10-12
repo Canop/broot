@@ -80,7 +80,7 @@ pub struct Conf {
     #[serde(alias = "default-flags")]
     pub default_flags: Option<String>, // the flags to apply before cli ones
 
-    /// Obsolete, kept for compatibility: you should now use capture_mouse
+    /// Obsolete, kept for compatibility: you should now use `capture_mouse`
     #[serde(alias = "disable-mouse-capture")]
     pub disable_mouse_capture: Option<bool>,
 

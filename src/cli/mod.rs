@@ -137,7 +137,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         Some(conf_paths) => {
             let mut conf = Conf::default();
             for path in conf_paths {
-                conf.read_file(path.to_path_buf())?;
+                conf.read_file(path.clone())?;
             }
             conf
         }

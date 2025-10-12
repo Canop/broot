@@ -67,6 +67,7 @@ pub const WIDE_STATUS: bool = true;
 pub type W = std::io::BufWriter<std::io::Stderr>;
 
 /// return the writer used by the application
+#[must_use]
 pub fn writer() -> W {
     std::io::BufWriter::new(std::io::stderr())
 }

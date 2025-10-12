@@ -8,6 +8,7 @@ use {
 };
 
 /// compute the needed length for displaying the flags
+#[must_use]
 pub fn visible_width(flags: &[Flag]) -> u16 {
     let mut width = flags.len() * 2 + 1;
     for flag in flags {

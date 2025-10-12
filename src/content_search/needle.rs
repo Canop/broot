@@ -30,7 +30,7 @@ impl fmt::Debug for Needle {
     ) -> fmt::Result {
         f.debug_struct("Needle")
             .field("bytes", &self.bytes)
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
@@ -260,11 +260,8 @@ impl Needle {
         hay_path: P,
         desired_len: usize,
     ) -> Option<ContentMatch> {
-        let hay = match get_mmap(hay_path) {
-            Ok(hay) => hay,
-            _ => {
-                return None;
-            }
+        let Ok(hay) = get_mmap(hay_path) else {
+            return None;
         };
         match self.search_mmap(&hay) {
             ContentSearchResult::Found { pos } => {

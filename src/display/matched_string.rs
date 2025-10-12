@@ -42,7 +42,7 @@ impl<'a> MatchedString<'a> {
     }
     /// If the string contains sep, then cut the tail of this matched
     /// string and return it.
-    /// Note: a non none display_width currently prevents splitting
+    /// Note: a non none `display_width` currently prevents splitting
     /// (i.e. it's not yet implemented and would involve compute width)
     pub fn split_on_last(
         &mut self,
@@ -54,7 +54,7 @@ impl<'a> MatchedString<'a> {
         } else {
             self.string.rfind(sep).map(|sep_idx| {
                 let right = &self.string[sep_idx + 1..];
-                self.string = &self.string[..sep_idx + 1];
+                self.string = &self.string[..=sep_idx];
                 let left_chars_count = self.string.chars().count();
                 let right_name_match = self
                     .name_match

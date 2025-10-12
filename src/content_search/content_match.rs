@@ -17,7 +17,7 @@ impl ContentMatch {
         if hay.is_empty() {
             // this happens if you search `cr/.*` and a file starts with an empty line
             return Self {
-                extract: "".to_string(),
+                extract: String::new(),
                 needle_start: 0,
                 needle_end: 0,
             };

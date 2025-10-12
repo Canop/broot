@@ -85,6 +85,7 @@ static BINARY_EXTENSIONS: Set<&'static str> = phf_set! {
 
 /// tells whether the file extension is one of a file format
 /// which shouldn't be searched as text
+#[must_use]
 pub fn is_known_binary(ext: &str) -> bool {
     BINARY_EXTENSIONS.contains(ext)
 }

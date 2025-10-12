@@ -35,7 +35,7 @@ pub enum Col {
     /// last modified date
     Date,
 
-    /// file size, including size bar in sort_by_size mode
+    /// file size, including size bar in `sort_by_size` mode
     Size,
 
     /// number of files in the directory

@@ -7,7 +7,7 @@ use {
     lazy_regex::*,
 };
 
-/// parse the 'default_flags' parameter of a conf.
+/// parse the `default_flags` parameter of a conf.
 pub fn parse_default_flags(s: &str) -> Result<Args, ConfError> {
     let prefixed;
     let mut tokens: Vec<&str> = if regex_is_match!("^[a-zA-Z]+$", s) {

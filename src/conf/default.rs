@@ -31,7 +31,7 @@ pub fn write_default_conf_in(dir: &Path) -> Result<(), io::Error> {
                 if !dir.exists() {
                     fs::create_dir_all(dir)?;
                 }
-            };
+            }
             info!("writing file {:?}", file.path());
             fs::write(dest_path, file.contents())?;
         }

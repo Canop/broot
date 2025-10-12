@@ -62,7 +62,7 @@ impl DirSummer {
     /// compute the consolidated numbers for a directory, with implementation
     /// varying depending on the OS:
     /// On unix, the computation is done on blocks of 512 bytes
-    /// see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
+    /// see <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks>
     pub fn compute_dir_sum(
         &mut self,
         path: &Path,

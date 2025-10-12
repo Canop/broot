@@ -27,12 +27,14 @@ pub use {
     verb_conf::VerbConf,
 };
 
-/// return the instance of ProjectDirs holding broot's specific paths
+/// return the instance of `ProjectDirs` holding broot's specific paths
+#[must_use]
 pub fn app_dirs() -> directories::ProjectDirs {
     directories::ProjectDirs::from("org", "dystroy", "broot")
         .expect("Unable to find configuration directories")
 }
 
+#[must_use]
 fn env_conf_dir() -> Option<PathBuf> {
     std::env::var("BROOT_CONFIG_DIR")
         .ok()
@@ -78,6 +80,7 @@ fn find_conf_dir() -> PathBuf {
 static CONF_DIR: Lazy<PathBuf> = Lazy::new(find_conf_dir);
 
 /// return the path to the config directory
+#[must_use]
 pub fn dir() -> &'static Path {
     &CONF_DIR
 }

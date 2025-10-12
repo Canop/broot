@@ -75,12 +75,13 @@ static SIGNATURES_4: Set<[u8; 4]> = phf_set! {
 
 /// return true when the first bytes of the file aren't polite or match one
 /// of the known binary signatures.
-/// Signatures are taken in https://en.wikipedia.org/wiki/List_of_file_signatures
+/// Signatures are taken in <https://en.wikipedia.org/wiki/List_of_file_signatures>
 /// Some signatures are omitted from list because they would not go past the
 /// specific test of the first byte anyway.
 ///
 /// If you feel this list should maybe be changed, contact
 /// me on miaou or raise an issue.
+#[must_use]
 pub fn is_known_binary(bytes: &[u8]) -> bool {
     if bytes.len() < 4 {
         return false;

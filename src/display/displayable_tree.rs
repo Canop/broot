@@ -53,7 +53,7 @@ use {
 /// - to write on the screen in the application,
 /// - or to write in a file or an exported string.
 ///
-/// Using it in the application (with in_app true) means that
+/// Using it in the application (with `in_app` true) means that
 ///  - the selection is drawn
 ///  - a scrollbar may be drawn
 ///  - the empty lines will be erased
@@ -153,7 +153,6 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     }
 
     fn write_line_selection_mark<W: Write>(
-        &self,
         cw: &mut CropWriter<W>,
         style: &CompoundStyle,
         selected: bool,
@@ -167,7 +166,6 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     }
 
     fn write_line_size<W: Write>(
-        &self,
         cw: &mut CropWriter<W>,
         line: &TreeLine,
         style: &CompoundStyle,
@@ -288,7 +286,6 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
 
     /// write the symbol showing whether the path is staged
     fn write_line_stage_mark<W: Write>(
-        &self,
         cw: &mut CropWriter<W>,
         style: &CompoundStyle,
         staged: bool,
@@ -301,7 +298,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         })
     }
 
-    /// write the name or subpath, depending on the pattern_object
+    /// write the name or subpath, depending on the `pattern_object`
     fn write_line_label<W: Write>(
         &self,
         cw: &mut CropWriter<W>,
@@ -381,7 +378,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     fn write_content_extract<W: Write>(
         &self,
         cw: &mut CropWriter<W>,
-        extract: ContentMatch,
+        extract: &ContentMatch,
         selected: bool,
     ) -> Result<(), ProgramError> {
         cond_bg!(extract_style, self, selected, self.skin.content_extract);
@@ -502,7 +499,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             .cols_order
             .iter()
             .filter(|col| col.is_visible(tree, self.app_state))
-            .cloned()
+            .copied()
             .collect();
 
         // if necessary we compute the width of the count column
@@ -560,7 +557,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     .map_or(false, |a| a.stage.contains(&line.path));
                 for col in &visible_cols {
                     let void_len = match col {
-                        Col::Mark => self.write_line_selection_mark(cw, &label_style, selected)?,
+                        Col::Mark => Self::write_line_selection_mark(cw, &label_style, selected)?,
 
                         Col::Git => self.write_line_git_status(cw, line, selected)?,
 
@@ -608,13 +605,13 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                                     selected,
                                 )?
                             } else {
-                                self.write_line_size(cw, line, &label_style, selected)?
+                                Self::write_line_size(cw, line, &label_style, selected)?
                             }
                         }
 
                         Col::Count => self.write_line_count(cw, line, count_len, selected)?,
 
-                        Col::Staged => self.write_line_stage_mark(cw, &label_style, staged)?,
+                        Col::Staged => Self::write_line_stage_mark(cw, &label_style, staged)?,
 
                         Col::Name => {
                             in_branch = false;
@@ -638,7 +635,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                         .pattern
                         .find_content(&line.path, cw.allowed - 2);
                     if let Some(extract) = extract {
-                        self.write_content_extract(cw, extract, selected)?;
+                        self.write_content_extract(cw, &extract, selected)?;
                     }
                 }
             }

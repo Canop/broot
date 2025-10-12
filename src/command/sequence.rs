@@ -14,7 +14,7 @@ use {
 };
 
 /// an unparsed sequence with its separator (which may be
-/// different from the one provided by local_separator())
+/// different from the one provided by `local_separator()`)
 #[derive(Debug, Clone)]
 pub struct Sequence {
     pub raw: String,
@@ -40,7 +40,7 @@ impl Sequence {
     }
     pub fn new_single<S: Into<String>>(cmd: S) -> Self {
         Self {
-            separator: "".to_string(),
+            separator: String::new(),
             raw: cmd.into(),
         }
     }
@@ -52,7 +52,7 @@ impl Sequence {
     }
     /// Parse the sequence into a vec of commands.
     ///
-    /// Beware: panel_state_type filtering isn't applied (
+    /// Beware: `panel_state_type` filtering isn't applied (
     ///   and would be difficult a priori as we can change panel
     ///   in the middle of a sequence)
     pub fn parse(
