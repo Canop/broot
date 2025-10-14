@@ -184,6 +184,7 @@
 ( "file_type_falcon", 0xf15b ),
 ( "file_type_favicon", 0xe623 ), // 
 ( "file_type_fbx", 0xf15b ),
+( "file_type_fennel", 0xe6af ), // 
 ( "file_type_firebase", 0xf0967 ), // 󰥧
 ( "file_type_firebasehosting", 0xe787 ), // 
 ( "file_type_firestore", 0xe657 ), // 
