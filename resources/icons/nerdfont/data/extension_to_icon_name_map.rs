@@ -126,6 +126,7 @@
 ( "f4p"                     , "file_type_video"                   ),
 ( "f4v"                     , "file_type_video"                   ),
 ( "fbx"                     , "file_type_fbx"                     ),
+( "fnl"                     , "file_type_fennel"                  ),
 ( "fig"                     , "file_type_matlab"                  ),
 ( "firebaserc"              , "file_type_firebase"                ),
 ( "fish"                    , "file_type_shell"                   ),
