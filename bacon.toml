@@ -79,6 +79,15 @@ command = [
 ]
 need_stdout = false
 
+[jobs.pedantic]
+command = [
+	"cargo", "clippy",
+	"--",
+	"-W", "clippy::pedantic",
+	"-A", "clippy::struct_excessive_bools",
+]
+need_stdout = false
+
 [jobs.test]
 command = ["cargo", "test"]
 need_stdout = true
