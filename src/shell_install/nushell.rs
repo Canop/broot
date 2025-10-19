@@ -100,8 +100,8 @@ export def --env br [
     if $git_ignored { $args = ($args | append $'--git-ignored') }
     if $no_git_ignored { $args = ($args | append $'--no-git-ignored') }
     if $install { $args = ($args | append $'--install') }
-    if $listen { $args = ($args | append $'--listen') }
-    if $listen_auto != null { $args = ($args | append $'--listen-auto=($listen_auto)') }
+    if $listen != null { $args = ($args | append $'--listen=($listen)') }
+    if $listen_auto { $args = ($args | append $'--listen-auto') }
     if $no_sort { $args = ($args | append $'--no-sort') }
     if $permissions { $args = ($args | append $'--permissions') }
     if $no_permissions { $args = ($args | append $'--no-permissions') }
