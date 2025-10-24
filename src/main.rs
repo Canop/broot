@@ -10,6 +10,7 @@ fn main() {
                 warn!("Failed to launch {:?}", &launchable);
                 warn!("Error: {:?}", e);
                 eprintln!("{e}");
+                std::process::exit(1);
             }
         }
         Ok(None) => {}
@@ -17,6 +18,7 @@ fn main() {
             // this usually happens when the passed path isn't of a directory
             warn!("Error: {}", e);
             eprintln!("{e}");
+            std::process::exit(1);
         }
     };
     log_mem(Level::Info);
