@@ -1,3 +1,6 @@
+### next
+- fix nushell script (swapped logic for --listen and --listen-auto) - Thanks @cderwin
+
 ### v1.51.0 - 2025-10-05
 <a name="v1.51.0"></a>
 - improved image rendering (both speed by using the zune-image library, and quality with bilinear interpolation)
