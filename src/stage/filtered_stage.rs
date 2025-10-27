@@ -41,12 +41,10 @@ impl FilteredStage {
                 if let Some(file_name) = path.file_name() {
                     let subpath = path.to_string_lossy().to_string();
                     let name = file_name.to_string_lossy().to_string();
-                    let regular_file = path.is_file();
                     let candidate = Candidate {
                         path,
                         subpath: &subpath,
                         name: &name,
-                        regular_file,
                     };
                     if let Some(score) = self.pattern.pattern.score_of(candidate) {
                         let is_best = match best_score {

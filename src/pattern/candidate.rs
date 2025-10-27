@@ -1,6 +1,7 @@
 use {
-    crate::tree::TreeLine,
-    std::path::Path,
+    std::{
+        path::Path,
+    },
 };
 
 /// something which can be evaluated by a pattern to produce
@@ -15,18 +16,5 @@ pub struct Candidate<'c> {
 
     /// filename
     pub name: &'c str,
-
-    /// whether the file is regular (ie has a searchable content)
-    pub regular_file: bool,
 }
 
-impl<'c> Candidate<'c> {
-    pub fn from(line: &'c TreeLine) -> Self {
-        Self {
-            path: &line.path,
-            subpath: &line.subpath,
-            name: &line.name,
-            regular_file: line.is_file(),
-        }
-    }
-}

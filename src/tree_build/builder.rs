@@ -184,7 +184,6 @@ impl<'c> TreeBuilder<'c> {
             name,
             subpath: &subpath.to_string_lossy(),
             path: &path,
-            regular_file: file_type.is_file(),
         };
         let direct_match =
             if let Some(pattern_score) = self.options.pattern.pattern.score_of(candidate) {

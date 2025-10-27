@@ -69,7 +69,7 @@ impl ContentRegexPattern {
         &self,
         candidate: Candidate,
     ) -> Option<i32> {
-        if !candidate.regular_file || !is_path_suitable(candidate.path, self.max_file_size) {
+        if candidate.path.is_dir() || !is_path_suitable(candidate.path, self.max_file_size) {
             return None;
         }
         match self.has_match(candidate.path) {
