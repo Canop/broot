@@ -1,6 +1,7 @@
 ### next
 - search content of file target of symlink - Fix #1081
 - fix nushell script (swapped logic for --listen and --listen-auto) - Thanks @cderwin
+- return non-zero exit code on error - Thanks @Sambhram1
 
 ### v1.51.0 - 2025-10-05
 <a name="v1.51.0"></a>
