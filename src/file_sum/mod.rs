@@ -117,7 +117,7 @@ impl FileSum {
     }
     pub fn to_valid_seconds(self) -> Option<i64> {
         if self.modified != 0 {
-            Some(self.modified as i64)
+            Some(i64::from(self.modified))
         } else {
             None
         }

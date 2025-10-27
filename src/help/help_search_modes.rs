@@ -3,7 +3,7 @@ use crate::{
     pattern::*,
 };
 
-/// what should be shown for a search_mode in the help screen, after
+/// what should be shown for a `search_mode` in the help screen, after
 /// filtering
 pub struct SearchModeHelp {
     pub prefix: String,

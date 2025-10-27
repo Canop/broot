@@ -45,13 +45,13 @@ impl FontPlugin {
         file_name_to_icon_name_map: &'static [(&'static str, &'static str)],
     ) -> Self {
         let icon_name_to_icon_codepoint_map: FxHashMap<_, _> =
-            icon_name_to_icon_codepoint_map.iter().cloned().collect();
+            icon_name_to_icon_codepoint_map.iter().copied().collect();
         let double_extension_to_icon_name_map: FxHashMap<_, _> =
-            double_extension_to_icon_name_map.iter().cloned().collect();
+            double_extension_to_icon_name_map.iter().copied().collect();
         let extension_to_icon_name_map: FxHashMap<_, _> =
-            extension_to_icon_name_map.iter().cloned().collect();
+            extension_to_icon_name_map.iter().copied().collect();
         let file_name_to_icon_name_map: FxHashMap<_, _> =
-            file_name_to_icon_name_map.iter().cloned().collect();
+            file_name_to_icon_name_map.iter().copied().collect();
 
         #[cfg(debug_assertions)]
         {

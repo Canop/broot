@@ -85,6 +85,7 @@ command = [
 	"--",
 	"-W", "clippy::pedantic",
 	"-A", "clippy::struct_excessive_bools",
+	"-A", "clippy::unnecessary_debug_formatting",
 ]
 need_stdout = false
 

@@ -78,8 +78,8 @@ pub fn matching_verb_rows<'v>(
         rows.push(MatchingVerbRow {
             name,
             shortcut,
-            keys_desc,
             verb,
+            keys_desc,
         });
     }
     rows

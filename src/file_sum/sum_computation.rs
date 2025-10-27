@@ -244,7 +244,7 @@ impl DirSummer {
 /// compute the consolidated numbers for a directory, with implementation
 /// varying depending on the OS:
 /// On unix, the computation is done on blocks of 512 bytes
-/// see https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks
+/// see <https://doc.rust-lang.org/std/os/unix/fs/trait.MetadataExt.html#tymethod.blocks>
 pub fn compute_dir_sum(
     path: &Path,
     cache: &mut FxHashMap<PathBuf, FileSum>,
@@ -286,13 +286,11 @@ pub fn compute_file_sum(path: &Path) -> FileSum {
 }
 
 #[cfg(unix)]
-#[inline(always)]
 fn extract_seconds(md: &fs::Metadata) -> u32 {
     md.mtime().try_into().unwrap_or(0)
 }
 
 #[cfg(not(unix))]
-#[inline(always)]
 fn extract_seconds(md: &fs::Metadata) -> u32 {
     if let Ok(st) = md.modified() {
         if let Ok(d) = st.duration_since(std::time::UNIX_EPOCH) {
@@ -304,7 +302,6 @@ fn extract_seconds(md: &fs::Metadata) -> u32 {
     0
 }
 
-#[inline(always)]
 fn md_sum(md: &fs::Metadata) -> FileSum {
     #[cfg(unix)]
     let size = md.blocks() * 512;

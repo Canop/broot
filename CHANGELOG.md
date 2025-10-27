@@ -1,4 +1,5 @@
 ### next
+- search content of file target of symlink - Fix #1081
 - fix nushell script (swapped logic for --listen and --listen-auto) - Thanks @cderwin
 
 ### v1.51.0 - 2025-10-05

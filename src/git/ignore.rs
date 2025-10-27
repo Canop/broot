@@ -63,13 +63,13 @@ impl fmt::Debug for IgnoreRule {
             .field("directory", &self.directory)
             .field("filename", &self.filename)
             .field("pattern", &self.pattern.as_str())
-            .finish()
+            .finish_non_exhaustive()
     }
 }
 
 impl IgnoreRule {
     /// parse a line of a .gitignore file.
-    /// The ref_dir is used if the line starts with '/'
+    /// The `ref_dir` is used if the line starts with '/'
     fn from(
         line: &str,
         ref_dir: &Path,
@@ -127,7 +127,7 @@ impl IgnoreRule {
 impl IgnoreFile {
     /// build a new gitignore file, from either a global ignore file or
     /// a .gitignore file found inside a git repository.
-    /// The ref_dir is either:
+    /// The `ref_dir` is either:
     /// - the path of the current repository for the global gitignore
     /// - the directory containing the .gitignore file
     pub fn new(
@@ -147,8 +147,8 @@ impl IgnoreFile {
         // we reverse the list to easily iterate from the last one to the first one
         rules.reverse();
         Ok(IgnoreFile {
-            git,
             rules,
+            git,
             local_git_ignore,
         })
     }
