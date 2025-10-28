@@ -543,7 +543,7 @@
 ( "file_type_pddl_happenings", 0xf1b5 ), //
 ( "file_type_pddl_plan", 0xf15b ),
 ( "file_type_pdf", 0xeaeb ), // 
-( "file_type_pdf2", 0xf15b ),
+( "file_type_pdf2", 0xe67d ), // 
 ( "file_type_perl", 0xe769 ), // 
 ( "file_type_perl2", 0xe769 ),
 ( "file_type_perl6", 0xe769 ),
