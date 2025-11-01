@@ -172,10 +172,12 @@ impl Panel {
     }
     #[must_use]
     pub fn mut_state(&mut self) -> &mut dyn PanelState {
+        #[expect(clippy::missing_panics_doc, reason = "there's always at least one state")]
         self.states.last_mut().unwrap().as_mut()
     }
     #[must_use]
     pub fn state(&self) -> &dyn PanelState {
+        #[expect(clippy::missing_panics_doc, reason = "there's always at least one state")]
         self.states.last().unwrap().as_ref()
     }
 
@@ -248,6 +250,7 @@ impl Panel {
         if disc.active {
             self.write_purpose(w, disc.panel_skin, disc.screen, disc.con)?;
             let flags = self.state().get_flags();
+            #[allow(clippy::cast_possible_truncation)]
             let input_content_len = self.input.get_content().len() as u16;
             let flags_len = flags_display::visible_width(&flags);
             if input_area.width > input_content_len + 1 + flags_len {

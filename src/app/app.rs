@@ -333,7 +333,6 @@ impl App {
         app_state: &mut AppState,
         con: &mut AppContext,
     ) -> Result<(), ProgramError> {
-        use CmdResult::*;
         let mut error: Option<String> = None;
         let mut new_active_panel_idx = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
@@ -349,9 +348,9 @@ impl App {
             .apply_command(w, cmd, app_state, &app_cmd_context)?;
         info!("cmd_result: {:?}", &cmd_result);
         match cmd_result {
-            ApplyOnPanel { id } => {
+            CmdResult::ApplyOnPanel { id } => {
                 if let Some(idx) = self.panel_id_to_idx(id) {
-                    if let DisplayError(txt) =
+                    if let CmdResult::DisplayError(txt) =
                         self.panels[idx].apply_command(w, cmd, app_state, &app_cmd_context)?
                     {
                         // we should probably handle other results
@@ -364,7 +363,7 @@ impl App {
                     warn!("no panel found for ApplyOnPanel");
                 }
             }
-            ClosePanel {
+            CmdResult::ClosePanel {
                 validate_purpose,
                 panel_ref,
                 clear_cache,
@@ -415,7 +414,7 @@ impl App {
                     self.quitting = true;
                 }
             }
-            ChangeLayout(instruction) => {
+            CmdResult::ChangeLayout(instruction) => {
                 con.layout_instructions.push(instruction);
                 Areas::resize_all(
                     self.panels.as_mut_slice(),
@@ -424,13 +423,13 @@ impl App {
                     self.preview_panel.is_some(),
                 );
             }
-            DisplayError(txt) => {
+            CmdResult::DisplayError(txt) => {
                 error = Some(txt);
             }
-            ExecuteSequence { sequence } => {
+            CmdResult::ExecuteSequence { sequence } => {
                 self.tx_seqs.send(sequence).unwrap();
             }
-            HandleInApp(internal) => {
+            CmdResult::HandleInApp(internal) => {
                 debug!("handling internal {internal:?} at app level");
                 match internal {
                     Internal::escape => {
@@ -556,22 +555,22 @@ impl App {
                     }
                 }
             }
-            Keep => {
+            CmdResult::Keep => {
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation(con);
                 }
             }
-            Message(md) => {
+            CmdResult::Message(md) => {
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation(con);
                 }
                 self.mut_panel().set_message(md);
             }
-            Launch(launchable) => {
+            CmdResult::Launch(launchable) => {
                 self.launch_at_end = Some(*launchable);
                 self.quitting = true;
             }
-            NewPanel {
+            CmdResult::NewPanel {
                 state,
                 purpose,
                 direction,
@@ -581,7 +580,7 @@ impl App {
                     error = Some(s);
                 }
             }
-            NewState { state, message } => {
+            CmdResult::NewState { state, message } => {
                 self.mut_panel().clear_input();
                 self.mut_panel().push_state(state);
                 if let Some(md) = message {
@@ -591,7 +590,7 @@ impl App {
                         .refresh_input_status(app_state, &app_cmd_context);
                 }
             }
-            PopState => {
+            CmdResult::PopState => {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
@@ -603,7 +602,7 @@ impl App {
                     self.quitting = true;
                 }
             }
-            PopStateAndReapply => {
+            CmdResult::PopStateAndReapply => {
                 if is_input_invocation {
                     self.mut_panel().clear_input();
                 }
@@ -621,10 +620,10 @@ impl App {
                     self.quitting = true;
                 }
             }
-            Quit => {
+            CmdResult::Quit => {
                 self.quitting = true;
             }
-            RefreshState { clear_cache } => {
+            CmdResult::RefreshState { clear_cache } => {
                 info!("refreshing, clearing cache={clear_cache}");
                 if is_input_invocation {
                     self.mut_panel().clear_input_invocation(con);
@@ -883,7 +882,9 @@ impl App {
         if let Some(raw_sequence) = &con.cmd() {
             self.tx_seqs
                 .send(Sequence::new_local((*raw_sequence).to_string()))
-                .unwrap();
+                .map_err(|e| ProgramError::Internal {
+                    details: format!("failed to send initial command: {e}"),
+                })?;
         }
 
         #[cfg(unix)]
@@ -998,10 +999,9 @@ impl App {
             }
         }
         terminal::reset_title(w, con);
-        kitty::manager()
-            .lock()
-            .unwrap()
-            .erase_images_before(w, usize::MAX)?;
+        if let Ok(mut manager) =  kitty::manager().lock() {
+             manager.erase_images_before(w, usize::MAX)?;
+        }
         w.flush()?;
 
         Ok(self.launch_at_end.take())

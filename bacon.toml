@@ -58,6 +58,7 @@ need_stdout = false
 command = [
 	"cargo", "clippy",
 	"--",
+	"-W", "clippy::explicit_iter_loop",
 	"-A", "clippy::bool_to_int_with_if",
 	"-A", "clippy::collapsible_else_if",
 	"-A", "clippy::collapsible_if",
@@ -72,10 +73,9 @@ command = [
 	"-A", "clippy::needless_bool",
 	"-A", "clippy::needless_range_loop",
 	"-A", "clippy::neg_multiply",
-	"-A", "clippy::vec_init_then_push",
-	"-W", "clippy::explicit_iter_loop",
-	"-A", "clippy::unnecessary_map_or",
 	"-A", "clippy::uninlined_format_args",
+	"-A", "clippy::unnecessary_map_or",
+	"-A", "clippy::vec_init_then_push",
 ]
 need_stdout = false
 
@@ -84,8 +84,17 @@ command = [
 	"cargo", "clippy",
 	"--",
 	"-W", "clippy::pedantic",
+	"-A", "clippy::bool_to_int_with_if",
+	"-A", "clippy::map_unwrap_or",
+	"-A", "clippy::match_like_matches_macro",
+	"-A", "clippy::missing_errors_doc",
+	"-A", "clippy::module_inception",
+	"-A", "clippy::similar_names",
 	"-A", "clippy::struct_excessive_bools",
+	"-A", "clippy::too_many_lines",
 	"-A", "clippy::unnecessary_debug_formatting",
+	"-A", "clippy::unreadable_literal",
+	"-A", "clippy::wildcard_imports",
 ]
 need_stdout = false
 

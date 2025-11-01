@@ -12,7 +12,7 @@ custom_error! {pub ProgramError
     ConfFile {path:String, details: ConfError} = "Bad configuration file {path:?} : {details}",
     Conf {source: ConfError} = "Bad configuration: {source}",
     ImageError {details: String} = "Image error: {details}",
-    InternalError {details: String} = "Internal error: {details}", // should not happen
+    Internal {details: String} = "Internal error: {details}", // should not happen
     Io {source: io::Error} = "IO Error : {source}",
     LaunchError {program: String, source: io::Error} = "Unable to launch {program}: {source}",
     Lfs {details: String} = "Failed to fetch mounts: {details}",

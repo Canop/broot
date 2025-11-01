@@ -51,7 +51,7 @@ impl DynamicImage {
     pub fn from_rgba8(width: u32, height: u32, data: Vec<u8>) -> Result<Self, ProgramError> {
         let expected_len = (width as usize) * (height as usize) * 4;
         if data.len() != expected_len {
-            return Err(ProgramError::InternalError {
+            return Err(ProgramError::Internal {
                 details: format!(
                     "Invalid RGBA data length: expected {}, got {}",
                     expected_len,
