@@ -29,7 +29,7 @@ verbs: [
         shortcut: e
         key: ctrl-e
         apply_to: text_file
-        execution: "$EDITOR {file}"
+        execution: "$EDITOR +{line} {file}"
         leave_broot: false
     }
 
