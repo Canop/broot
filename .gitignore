@@ -19,3 +19,4 @@ deploy.sh
 dev.log
 .DS_Store
 /zigbuild
+/.intentionally-empty-file.o
