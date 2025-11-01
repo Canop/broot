@@ -129,6 +129,9 @@ pub struct Conf {
     #[serde(alias = "max_staged_count")]
     pub max_staged_count: Option<usize>,
 
+    #[serde(alias = "auto-open-staging-area")]
+    pub auto_open_staging_area: Option<bool>,
+
     pub modal: Option<bool>,
 
     #[serde(alias = "quit-on-last-cancel")]
@@ -253,6 +256,7 @@ impl Conf {
         overwrite!(self, quit_on_last_cancel, conf);
         overwrite!(self, file_sum_threads_count, conf);
         overwrite!(self, max_staged_count, conf);
+        overwrite!(self, auto_open_staging_area, conf);
         overwrite!(self, show_matching_characters_on_path_searches, conf);
         overwrite!(self, content_search_max_file_size, conf);
         overwrite!(self, terminal_title, conf);

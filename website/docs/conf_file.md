@@ -406,9 +406,18 @@ enable_kitty_keyboard: true
 enable_kitty_keyboard = true
 ```
 
-## Max staged count
+## Staging area
 
-This is the maximal number of files added by a :stage_all_files command
+`auto_open_staging_area` defines whether to automatically open the staging area when staging a file (default true).
+
+```Hjson
+auto_open_staging_area: false
+```
+```TOML
+auto_open_staging_area = false
+```
+
+`max_staged_count` is the maximal number of files added by a `:stage_all_files` command
 
 ```Hjson
 max_staged_count: 1234

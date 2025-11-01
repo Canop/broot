@@ -117,6 +117,10 @@ pub struct AppContext {
     /// number of files which may be staged in one staging operation
     pub max_staged_count: usize,
 
+    /// whether to automatically open the staging area panel when staging
+    /// a file
+    pub auto_open_staging_area: bool,
+
     /// max file size when searching file content
     pub content_search_max_file_size: usize,
 
@@ -204,6 +208,7 @@ impl AppContext {
             _ => true,
         };
         let max_staged_count = config.max_staged_count.unwrap_or(10_000).clamp(10, 100_000);
+        let auto_open_staging_area = config.auto_open_staging_area.unwrap_or(true);
         let (initial_root, initial_file) = initial_root_file(&launch_args)?;
 
         // tree options are built from the default_flags
@@ -258,6 +263,7 @@ impl AppContext {
             quit_on_last_cancel: config.quit_on_last_cancel.unwrap_or(false),
             file_sum_threads_count,
             max_staged_count,
+            auto_open_staging_area,
             content_search_max_file_size,
             terminal_title_pattern,
             reset_terminal_title_on_exit,

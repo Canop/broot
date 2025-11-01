@@ -720,7 +720,7 @@ pub trait PanelState {
         if let Some(path) = self.selected_path() {
             let path = path.to_path_buf();
             app_state.stage.add(path);
-            if cc.app.stage_panel.is_none() {
+            if cc.app.con.auto_open_staging_area && cc.app.stage_panel.is_none() {
                 return CmdResult::NewPanel {
                     state: Box::new(StageState::new(app_state, self.tree_options(), con)),
                     purpose: PanelPurpose::None,
