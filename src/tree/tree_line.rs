@@ -183,17 +183,25 @@ impl TreeLine {
     pub fn mode(&self) -> Mode {
         Mode::from(self.metadata.mode())
     }
+    /// Return the unix device id
+    ///
+    /// (the equivalent for windows isn't unfailliblely implementable today)
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     pub fn device_id(&self) -> lfs_core::DeviceId {
         self.metadata.dev().into()
     }
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    #[cfg(target_os = "windows")]
+    pub fn device_id(&self) -> Option<lfs_core::DeviceId> {
+        lfs_core::DeviceId::of_path(&self.path).ok()
+    }
+    #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
     pub fn mount(&self) -> Option<lfs_core::Mount> {
         use crate::filesystems::*;
         let mut mount_list = MOUNTS.lock().unwrap();
         if mount_list.load().is_ok() {
+            let device_id = lfs_core::DeviceId::of_path(&self.path).ok()?;
             mount_list
-                .get_by_device_id(self.metadata.dev().into())
+                .get_by_device_id(device_id)
                 .cloned()
         } else {
             None

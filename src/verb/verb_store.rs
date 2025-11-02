@@ -164,7 +164,7 @@ impl VerbStore {
             self.add_internal(delete_trashed_file).with_shortcut("dt");
             self.add_internal(purge_trash).with_shortcut("et");
         }
-        #[cfg(unix)]
+        #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
         self.add_internal(filesystems).with_shortcut("fs");
         self.add_internal(focus_staging_area_no_open);
         // :focus is also hardcoded on Enter on directories

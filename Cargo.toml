@@ -79,11 +79,8 @@ glassbench = "0.4.4"
 [target.'cfg(any(target_os = "windows", all(unix, not(any(target_os = "ios", target_os = "android")))))'.dependencies]
 trash = "5.2"
 
-[target.'cfg(target_os = "macos")'.dependencies]
-lfs-core = "0.14.1"
-
-[target.'cfg(target_os = "linux")'.dependencies]
-lfs-core = "0.14.1"
+[target.'cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))'.dependencies]
+lfs-core = "0.16.2"
 
 [target.'cfg(target_family = "unix")'.dependencies]
 uzers = "0.12"
