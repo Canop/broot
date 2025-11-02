@@ -1019,6 +1019,6 @@ impl App {
 fn clear_caches() {
     file_sum::clear_cache();
     git::clear_status_computer_cache();
-    #[cfg(any(target_os = "macos", target_os = "linux"))]
+    #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
     crate::filesystems::clear_cache();
 }

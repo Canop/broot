@@ -16,11 +16,12 @@ use {
         cursor,
         style::Color,
     },
-    lfs_core::Mount,
+    lfs_core::{
+        DeviceId,
+        Mount,
+    },
     std::{
         convert::TryInto,
-        fs,
-        os::unix::fs::MetadataExt,
         path::Path,
     },
     strict::NonEmptyVec,
@@ -80,9 +81,8 @@ impl FilesystemState {
             }
         };
         let selection_idx = path
-            .and_then(|path| fs::metadata(path).ok())
-            .and_then(|md| {
-                let device_id = md.dev().into();
+            .and_then(|path| DeviceId::of_path(path).ok())
+            .and_then(|device_id| {
                 mounts.iter().position(|m| m.info.dev == device_id)
             })
             .unwrap_or(0);

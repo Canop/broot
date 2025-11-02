@@ -38,7 +38,6 @@ need_stdout = true
 command = [
 	"cross", "build",
 	"--target", "x86_64-pc-windows-gnu",
-	"--release",
 	"--features", "clipboard"
 ]
 

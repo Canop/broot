@@ -135,20 +135,29 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         })
     }
 
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
     fn write_line_device_id<W: Write>(
         &self,
         cw: &mut CropWriter<W>,
         line: &TreeLine,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
-        let device_id = line.device_id();
-        cond_bg!(style, self, selected, self.skin.device_id_major);
-        cw.queue_g_string(style, format!("{:>3}", device_id.major))?;
-        cond_bg!(style, self, selected, self.skin.device_id_sep);
-        cw.queue_char(style, ':')?;
-        cond_bg!(style, self, selected, self.skin.device_id_minor);
-        cw.queue_g_string(style, format!("{:<3}", device_id.minor))?;
+        #[cfg(any(target_os = "linux", target_os = "macos"))]
+        {
+            let device_id = line.device_id();
+            cond_bg!(style, self, selected, self.skin.device_id_major);
+            cw.queue_g_string(style, format!("{:>3}", device_id.major))?;
+            cond_bg!(style, self, selected, self.skin.device_id_sep);
+            cw.queue_char(style, ':')?;
+            cond_bg!(style, self, selected, self.skin.device_id_minor);
+            cw.queue_g_string(style, format!("{:<3}", device_id.minor))?;
+        }
+        #[cfg(target_os = "windows")]
+        {
+            // Windows has a simpler device id, we use the "major" field only
+            let device_id = line.device_id().map_or("         ".to_string(), |dev| dev.to_string());
+            cond_bg!(style, self, selected, self.skin.device_id_major);
+            cw.queue_g_string(style, format!("{}", device_id))?;
+        }
         Ok(0)
     }
 
@@ -436,7 +445,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 let git_status_display = GitStatusDisplay::from(git_status, self.skin, cw.allowed);
                 git_status_display.write(cw, selected)?;
             }
-            #[cfg(any(target_os = "linux", target_os = "macos"))]
+            #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
             if self.tree.options.show_root_fs {
                 if let Some(mount) = line.mount() {
                     let fs_space_display =
@@ -567,12 +576,12 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                         }
 
                         Col::DeviceId => {
-                            #[cfg(not(any(target_os = "linux", target_os = "macos")))]
+                            #[cfg(not(any(target_os = "linux", target_os = "macos", target_os = "windows")))]
                             {
                                 0
                             }
 
-                            #[cfg(any(target_os = "linux", target_os = "macos"))]
+                            #[cfg(any(target_os = "linux", target_os = "macos", target_os = "windows"))]
                             self.write_line_device_id(cw, line, selected)?
                         }
 
