@@ -1,3 +1,6 @@
+### next
+- add the `:filesystems` (short `:fs`) verb and state on windows (it was already present on linux and mac).
+
 ### v1.52.0 - 2025-11-01
 <a name="v1.52.0"></a>
 - `auto_open_staging_area` preference - Fix #1090
