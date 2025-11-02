@@ -333,6 +333,7 @@ impl App {
         app_state: &mut AppState,
         con: &mut AppContext,
     ) -> Result<(), ProgramError> {
+        info!("app applying command: {:?}", &cmd);
         let mut error: Option<String> = None;
         let mut new_active_panel_idx = None;
         let is_input_invocation = cmd.is_verb_invocated_from_input();
@@ -427,6 +428,9 @@ impl App {
                 error = Some(txt);
             }
             CmdResult::ExecuteSequence { sequence } => {
+                if is_input_invocation {
+                    self.mut_panel().clear_input();
+                }
                 self.tx_seqs.send(sequence).unwrap();
             }
             CmdResult::HandleInApp(internal) => {
@@ -964,8 +968,9 @@ impl App {
 
                     // event handled by the panel
                     if !handled {
+                        debug!("not handled at app level: {:?}", &event);
                         let cmd = self.mut_panel().add_event(w, &event, &app_state, con)?;
-                        debug!("command after add_event: {:?}", &cmd);
+                        info!("command after add_event: {:?}", &cmd);
                         self.apply_command(w, &cmd, &skin.focused, &mut app_state, con)?;
                     }
 
@@ -976,9 +981,9 @@ impl App {
                     // when the input thread is properly closed
                     break;
                 }
-                Either::Second(Some(raw_sequence)) => {
-                    debug!("got command sequence: {:?}", &raw_sequence);
-                    for (input, arg_cmd) in raw_sequence.parse(con)? {
+                Either::Second(Some(sequence)) => {
+                    info!("got command sequence: {:?}", &sequence);
+                    for (input, arg_cmd) in sequence.parse(con)? {
                         if !matches!(&arg_cmd, Command::Internal { .. }) {
                             self.mut_panel().set_input_content(&input);
                         }
