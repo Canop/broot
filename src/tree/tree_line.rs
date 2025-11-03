@@ -89,7 +89,7 @@ impl TreeLineBuilder {
         let line_type = TreeLineType::new(&path, metadata.file_type());
         let name = path
             .file_name()
-            .map(|os_str| os_str.to_string_lossy().replace('\n', ""))
+            .map(|os_str| os_str.to_string_lossy().replace('\n', "␤"))
             .unwrap_or_else(String::new);
         let icon = con.icons.as_ref().map(|icon_plugin| {
             let extension = TreeLine::extension_from_name(&name);
