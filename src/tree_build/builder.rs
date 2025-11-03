@@ -162,11 +162,7 @@ impl<'c> TreeBuilder<'c> {
             self.report.hidden_count += 1;
             return None;
         }
-        let Some(name) = name.to_str() else {
-            warn!("invalid utf8 file name: {:?}", name);
-            self.report.error_count += 1;
-            return None;
-        };
+        let name = name.to_string_lossy();
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
         let file_type = match e.file_type() {
@@ -181,7 +177,7 @@ impl<'c> TreeBuilder<'c> {
             .skip(self.subpath_offset)
             .collect::<PathBuf>();
         let candidate = Candidate {
-            name,
+            name: &name,
             subpath: &subpath.to_string_lossy(),
             path: &path,
         };
@@ -219,7 +215,7 @@ impl<'c> TreeBuilder<'c> {
             let parent_chain = &self.blines[parent_id].git_ignore_chain;
             if !self
                 .git_ignorer
-                .accepts(parent_chain, &path, name, file_type.is_dir())
+                .accepts(parent_chain, &path, &name, file_type.is_dir())
             {
                 if special_handling.show != Directive::Always {
                     return None;
