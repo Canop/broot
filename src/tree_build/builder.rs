@@ -162,11 +162,6 @@ impl<'c> TreeBuilder<'c> {
             self.report.hidden_count += 1;
             return None;
         }
-        //let Some(name) = name.to_str() else {
-        //    warn!("invalid utf8 file name: {:?}", name);
-        //    self.report.error_count += 1;
-        //    return None;
-        //};
         let name = name.to_string_lossy();
         let mut has_match = true;
         let mut score = 10000 - i32::from(depth); // we dope less deep entries
