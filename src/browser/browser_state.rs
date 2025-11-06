@@ -676,7 +676,7 @@ impl PanelState for BrowserState {
                 let path = self.displayed_tree().selected_line().path.clone();
                 info!("trash {:?}", &path);
 
-                #[cfg(trash)]
+                #[cfg(any(target_os = "windows", all(unix, not(any(target_os = "ios", target_os = "android")))))]
                 match trash::delete(&path) {
                     Ok(()) => CmdResult::RefreshState { clear_cache: true },
                     Err(e) => {
@@ -685,7 +685,7 @@ impl PanelState for BrowserState {
                     }
                 }
 
-                #[cfg(not(trash))]
+                #[cfg(not(any(target_os = "windows", all(unix, not(any(target_os = "ios", target_os = "android"))))))]
                 CmdResult::DisplayError("trash not supported on this platform".into())
             }
             Internal::up_tree => match self.displayed_tree().root().parent() {

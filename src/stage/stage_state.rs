@@ -463,7 +463,7 @@ impl PanelState for StageState {
             Internal::trash => {
                 info!("trash {} staged files", app_state.stage.len());
 
-                #[cfg(trash)]
+                #[cfg(any(target_os = "windows", all(unix, not(any(target_os = "ios", target_os = "android")))))]
                 match trash::delete_all(app_state.stage.paths()) {
                     Ok(()) => {
                         debug!("trash success");
@@ -475,7 +475,7 @@ impl PanelState for StageState {
                     }
                 }
 
-                #[cfg(not(trash))]
+                #[cfg(not(any(target_os = "windows", all(unix, not(any(target_os = "ios", target_os = "android"))))))]
                 CmdResult::DisplayError("trash not supported on this platform".into())
             }
             _ => self.on_internal_generic(

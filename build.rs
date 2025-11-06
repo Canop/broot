@@ -53,21 +53,10 @@ fn build_man_page() -> std::io::Result<()> {
     Ok(())
 }
 
-fn detect_trash() {
-    println!("cargo::rustc-check-cfg=cfg(trash, values(none()))");
-    if cfg!(any(
-        target_os = "windows",
-        all(unix, not(target_os = "ios"), not(target_os = "android"))
-    )) {
-        println!("cargo::rustc-cfg=trash");
-    }
-}
-
 fn main() -> std::io::Result<()> {
     build_completion_scripts();
     if BUILD_MAN_PAGE {
         build_man_page()?;
     }
-    detect_trash();
     Ok(())
 }

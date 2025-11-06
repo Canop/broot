@@ -66,12 +66,22 @@ echo "   Done"
 
 # use zig with docker to build a Mac version
 target="aarch64-apple-darwin"
-echo -e "${H2}Compiling for $target version${EH}"
+echo -e "${H2}Compiling for $target ${EH}"
 docker run \
     --rm -it -v $(pwd):/io -w /io ghcr.io/rust-cross/cargo-zigbuild \
     cargo zigbuild --release --target "$target" --target-dir "zigbuild"
 mkdir "build/$target"
 cp "zigbuild/$target/release/$NAME" "build/$target/"
+echo "   Done"
+
+# use cargo-ndk to build an android version
+# cargo-ndk and the NDK must first be installed and ANDROID_NDK_HOME point to the NDK
+ndk_target="x86_64"
+target="${ndk_target}-linux-android"
+echo -e "${H2}Compiling for $target ${EH}"
+cargo ndk build -t $ndk_target --features clipboard --release
+mkdir "build/$target"
+cp "target/$target/release/$NAME" "build/$target/"
 echo "   Done"
 
 # build the local version

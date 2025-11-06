@@ -157,7 +157,7 @@ impl VerbStore {
         )
         .with_shortcut("cpp");
         self.add_internal(trash);
-        #[cfg(trash)]
+        #[cfg(any(target_os = "windows", all(unix, not(any(target_os = "ios", target_os = "android")))))]
         {
             self.add_internal(open_trash).with_shortcut("ot");
             self.add_internal(restore_trashed_file).with_shortcut("rt");

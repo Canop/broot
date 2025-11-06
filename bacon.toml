@@ -30,6 +30,14 @@ command = [
 need_stdout = false
 watch = ["benches"]
 
+[jobs.android]
+command = [
+	"cargo", "ndk", "check",
+	"-t", "x86_64",
+	"--features", "clipboard",
+]
+need_stdout = false
+
 [jobs.miri]
 command = ["cargo", "+nightly", "miri", "run"]
 need_stdout = true

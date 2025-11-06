@@ -135,6 +135,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         })
     }
 
+    #[allow(unused_variables, dead_code)]
     fn write_line_device_id<W: Write>(
         &self,
         cw: &mut CropWriter<W>,
