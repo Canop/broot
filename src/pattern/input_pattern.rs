@@ -67,6 +67,10 @@ impl InputPattern {
     /// from a pattern used to filter a tree, build a pattern
     /// which would make sense to filter a previewed file
     pub fn tree_to_preview(&self) -> Self {
+        // Don't prefill the preview filter when the pattern is negated
+        if self.raw.trim_start().starts_with('!') {
+            return InputPattern::none();
+        }
         let regex_parts: Option<(String, String)> = match &self.pattern {
             Pattern::ContentExact(cp) => Some(cp.to_regex_parts()),
             Pattern::ContentRegex(rp) => Some(rp.to_regex_parts()),
