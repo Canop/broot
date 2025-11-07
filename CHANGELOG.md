@@ -3,6 +3,7 @@
 - add the `:filesystems` (short `:fs`) verb and state on windows (it was already present on linux and mac).
 - display files whose name isn't valid UTF-8 (they were previously ignored)
 - android executable is back
+- improve the generation of preview pattern from a file tree pattern (i.e. going from `/java$/&c/test` to `/test` on opening a matching file in preview) - See #1097
 
 ### v1.52.0 - 2025-11-01
 <a name="v1.52.0"></a>
