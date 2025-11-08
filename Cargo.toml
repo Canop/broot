@@ -23,7 +23,7 @@ kitty-csi-check = ["xterm-query"]
 [dependencies]
 ansi_colours = "1.2"
 base64 = "0.22"
-bet = "1.0.4"
+bet = "1.1"
 char_reader = "0.1"
 chrono = "0.4"
 clap = { version = "4.4", features = ["derive", "cargo"] }

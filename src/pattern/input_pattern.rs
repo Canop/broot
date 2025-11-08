@@ -70,11 +70,18 @@ impl InputPattern {
         let regex_parts: Option<(String, String)> = match &self.pattern {
             Pattern::ContentExact(cp) => Some(cp.to_regex_parts()),
             Pattern::ContentRegex(rp) => Some(rp.to_regex_parts()),
-            Pattern::Composite(cp) => cp.expr.iter_atoms().find_map(|p| match p {
-                Pattern::ContentExact(ce) => Some(ce.to_regex_parts()),
-                Pattern::ContentRegex(cp) => Some(cp.to_regex_parts()),
-                _ => None,
-            }),
+            Pattern::Composite(cp) => {
+                cp.expr.paths_to_atoms()
+                    .into_iter()
+                    .filter(|(path, _p)| {
+                        !(path.contains(&PatternOperator::Or) || path.contains(&PatternOperator::Not))
+                    })
+                    .find_map(|(_path, p)| match p {
+                        Pattern::ContentExact(ce) => Some(ce.to_regex_parts()),
+                        Pattern::ContentRegex(cp) => Some(cp.to_regex_parts()),
+                        _ => None,
+                    })
+            }
             _ => None,
         };
         regex_parts
@@ -90,4 +97,53 @@ impl InputPattern {
             })
             .unwrap_or_else(InputPattern::none)
     }
+}
+
+#[test]
+fn test_tree_to_preview() {
+    fn make_pat(s: &str) -> InputPattern {
+        let cp = crate::command::CommandParts::from(s);
+        let search_modes = SearchModeMap::default();
+        InputPattern {
+            raw: s.to_string(),
+            pattern: Pattern::new(
+                &cp.pattern,
+                &search_modes,
+                0, // we don't do content search here
+            )
+            .unwrap(),
+        }
+    }
+
+    assert_eq!(make_pat("c/test").tree_to_preview(), make_pat("/test"));
+    assert_eq!(
+        make_pat("/java$/&c/test").tree_to_preview(),
+        make_pat("/test")
+    );
+    assert_eq!(
+        make_pat("!c/test").tree_to_preview(),
+        make_pat("")
+    );
+    assert_eq!(
+        make_pat(".java&!c/test").tree_to_preview(),
+        make_pat("")
+    );
+    assert_eq!(
+        make_pat(".java|c/test").tree_to_preview(),
+        make_pat("")
+    );
+    assert_eq!(
+        make_pat("!.java&c/test").tree_to_preview(),
+        make_pat("/test")
+    );
+    assert_eq!(
+        make_pat("(.java|.rs)&c/test").tree_to_preview(),
+        make_pat("/test")
+    );
+    assert_eq!(
+        make_pat(".java&(c/foo/|c/bar/)").tree_to_preview(),
+        make_pat("")
+    );
+
+    // not ideal handling: we'd like "c/foo&c/bar" to give "/foo/|/bar/"
 }
