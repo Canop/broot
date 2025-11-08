@@ -1,9 +1,10 @@
-### next
+### v1.53.0 - 2025-11-08
+<a name="v1.53.0"></a>
 - fix some cases of the verb not removed from the input on execution (with a risk of accidental double execution)
 - add the `:filesystems` (short `:fs`) verb and state on windows (it was already present on linux and mac).
+- improve the generation of preview pattern from a file tree pattern (i.e. going from `/java$/&c/test` to `/test` on opening a matching file in preview). With this change broot avoids filtering the preview when it shouldn't (eg when you searched `/java$/|c/test`) - See #1097
 - display files whose name isn't valid UTF-8 (they were previously ignored)
-- android executable is back
-- improve the generation of preview pattern from a file tree pattern (i.e. going from `/java$/&c/test` to `/test` on opening a matching file in preview) - See #1097
+- android executable is back to the official binary archive
 
 ### v1.52.0 - 2025-11-01
 <a name="v1.52.0"></a>
