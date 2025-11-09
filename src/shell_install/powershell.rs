@@ -7,7 +7,7 @@
 //! - a function declaration script in %APPDATA%/dystroy/broot/data/launcher/powershell/1
 //! - a link to that script in %APPDATA%/dystroy/broot/config/launcher/powershell/br.ps1
 //! - a line to source the link in the PowerShell profile (detected dynamically)
-//! 
+//!
 //! The profile is detected by running pwsh.exe first, then
 //! powershell.exe if pwsh is not found. If neither is found, it defaults to
 //! %USERPROFILE%/Documents/WindowsPowerShell/Microsoft.PowerShell_profile.ps1
@@ -81,7 +81,7 @@ fn get_script_path() -> PathBuf {
 /// path or the call fails
 fn get_profile(exe: &str) -> Option<PathBuf> {
     let output = Command::new(exe)
-        .args(&["-NoProfile", "-NoLogo", "-Command", "Write-Output $profile"])
+        .args(["-NoProfile", "-NoLogo", "-Command", "Write-Output", "$profile"])
         .output()
         .ok()?;
 
