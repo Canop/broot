@@ -124,7 +124,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
 
     let sourcing_path = get_profile("pwsh")
         .or_else(|| get_profile("powershell"))
-        .unwrap_or_else(|| document_dir.join("WindowsPowerShell").join("Profile.ps1"));
+        .unwrap_or_else(|| document_dir.join("WindowsPowerShell").join("Microsoft.PowerShell_profile.ps1"));
     if !sourcing_path.exists() {
         debug!("Creating missing PowerShell profile file.");
         if let Some(parent) = sourcing_path.parent() {
