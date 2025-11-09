@@ -75,7 +75,7 @@ fn get_script_path() -> PathBuf {
 }
 
 /// get PowerShell's $profile by invoking pwsh or powershell
-/// returns None if the executable isn't present in enviroment path or the call fails
+/// returns None if the executable isn't present in environment path or the call fails
 fn get_profile(exe: &str) -> Option<PathBuf> {
     let output = Command::new(exe)
         .args(&["-NoProfile", "-NoLogo", "-Command", "Write-Output $profile"])
