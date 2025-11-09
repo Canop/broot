@@ -80,7 +80,7 @@ glassbench = "0.4.4"
 trash = "5.2"
 
 [target.'cfg(any(target_os = "linux", target_os = "windows", target_os = "macos"))'.dependencies]
-lfs-core = "0.16.2"
+lfs-core = "0.17.0"
 
 [target.'cfg(target_family = "unix")'.dependencies]
 uzers = "0.12"
