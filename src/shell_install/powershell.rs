@@ -6,9 +6,11 @@
 //! In a correct installation, we have:
 //! - a function declaration script in %APPDATA%/dystroy/broot/data/launcher/powershell/1
 //! - a link to that script in %APPDATA%/dystroy/broot/config/launcher/powershell/br.ps1
-//! - a line to source the link in %USERPROFILE%/Documents/PowerShell/Microsoft.PowerShell_profile.ps1
-//! If PowerShell Core (pwsh.exe, 6+/7+) is not found, the line will be %USERPROFILE%/Documents/WindowsPowerShell/Microsoft.PowerShell_profile.ps1
-//! If Windows PowerShell (powershell.exe) is not found, the line will be %USERPROFILE%/Documents/PowerShell/Microsoft.PowerShell_profile.ps1
+//! - a line to source the link in the PowerShell profile (detected dynamically)
+//! 
+//! The profile is detected by running pwsh.exe first, then
+//! powershell.exe if pwsh is not found. If neither is found, it defaults to
+//! %USERPROFILE%/Documents/WindowsPowerShell/Microsoft.PowerShell_profile.ps1
 
 use {
     super::{
@@ -74,8 +76,9 @@ fn get_script_path() -> PathBuf {
         .join(VERSION)
 }
 
-/// get PowerShell's $profile by invoking pwsh or powershell
-/// returns None if the executable isn't present in environment path or the call fails
+/// Get PowerShell's $profile by invoking pwsh or powershell.
+/// Returns None if the executable isn't present in environment
+/// path or the call fails
 fn get_profile(exe: &str) -> Option<PathBuf> {
     let output = Command::new(exe)
         .args(&["-NoProfile", "-NoLogo", "-Command", "Write-Output $profile"])
