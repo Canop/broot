@@ -32,12 +32,29 @@ pub enum DynamicImage {
 }
 
 impl DynamicImage {
+    pub fn from_path_as_zune(path: &Path) -> Result<Self, ProgramError> {
+        let img = zune_image::image::Image::open(path)?;
+        let nb_components = img.colorspace().num_components();
+        if nb_components < 3 {
+            // Current implementation of the module requires an RGB image and
+            // zune panics if we try to convert an image with less than 3 channels to RGB
+            // (when calling Frame::flatten)
+            return Err(ProgramError::ImageError {
+                details: format!(
+                    "Unsupported color space with {} components in image: {:?}",
+                    nb_components,
+                    path
+                )
+            });
+        }
+        Ok(Self::Zune(img))
+    }
     pub fn from_path(path: &Path) -> Result<Self, ProgramError> {
         // Try zune-image first (fast path)
-        match zune_image::image::Image::open(path) {
+        match Self::from_path_as_zune(path) {
             Ok(img) => {
                 debug!("Loaded with zune-image: {:?}", path);
-                Ok(Self::Zune(img))
+                Ok(img)
             }
             Err(_) => {
                 // Fall back to image crate for unsupported formats
@@ -155,6 +172,7 @@ impl DynamicImage {
                 if img.colorspace() != ColorSpace::RGB {
                     let frames = img.frames_ref();
                     if let Some(frame) = frames.first() {
+                        // beware that zune panics on next line if the image has less than 3 channels
                         let data: Vec<u8> = frame.flatten(ColorSpace::RGB);
                         let (w, h) = img.dimensions();
                         img = zune_image::image::Image::from_u8(&data, w, h, ColorSpace::RGB);
