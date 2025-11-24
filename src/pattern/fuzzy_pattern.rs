@@ -254,12 +254,36 @@ mod fuzzy_pattern_tests {
     /// test the quality of match length and groups number minimization
     #[test]
     fn check_match_pos() {
-        check_pos("ba", "babababaaa", "^^        ");
-        check_pos("baa", "babababaaa", "      ^^^ ");
-        check_pos("bbabaa", "babababaaa", "  ^ ^^^^^ ");
-        check_pos("aoml", "bacon.coml", " ^     ^^^");
-        check_pos("broot", "ab br bro oxt ", "      ^^^ ^ ^ ");
-        check_pos("broot", "b_broooooot_broot", "            ^^^^^");
+        check_pos(
+            "ba",
+            "babababaaa",
+            "^^        ",
+        );
+        check_pos(
+            "baa",
+            "babababaaa",
+            "      ^^^ ",
+        );
+        check_pos(
+            "bbabaa",
+            "babababaaa",
+            "  ^ ^^^^^ ",
+        );
+        check_pos(
+            "aoml",
+            "bacon.coml",
+            " ^     ^^^",
+        );
+        check_pos(
+            "broot",
+            "ab br bro oxt ",
+            "      ^^^ ^ ^ ",
+        );
+        check_pos(
+            "broot",
+            "b_broooooot_broot",
+            "            ^^^^^"
+        );
         check_pos(
             "buityp",
             "builder-styles-less-typing.d.ts",
@@ -275,7 +299,11 @@ mod fuzzy_pattern_tests {
             "brbroorrbbbbbrrooorobrototooooot.txt",
             "                    ^^^ ^^          ",
         );
-        check_pos("besh", "benches/shared", "^^      ^^    ");
+        check_pos(
+            "besh",
+            "benches/shared",
+            "^^      ^^    ",
+        );
     }
 
     /// check that the scores of all names are strictly decreasing
