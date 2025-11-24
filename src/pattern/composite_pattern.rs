@@ -10,38 +10,47 @@ use {
 #[derive(Debug, Clone)]
 pub struct CompositePattern {
     pub expr: BeTree<PatternOperator, Pattern>,
+    pub content_search: bool,
 }
 
 impl CompositePattern {
     pub fn new(expr: BeTree<PatternOperator, Pattern>) -> Self {
-        Self { expr }
+        let content_search = expr.iter_atoms().any(|p| p.is_content_search());
+        Self {
+            expr,
+            content_search,
+        }
+    }
+
+    pub fn is_content_search(&self) -> bool {
+        self.content_search
     }
 
     pub fn score_of_string(
         &self,
         candidate: &str,
     ) -> Option<i32> {
-        use PatternOperator::*;
+        use PatternOperator as PO;
         let composite_result: Option<Option<i32>> = self.expr.eval(
             // score evaluation
             |pat| pat.score_of_string(candidate),
             // operator
             |op, a, b| {
                 match (op, a, b) {
-                    (And, None, _) => None, // normally not called due to short-circuit
-                    (And, Some(sa), Some(Some(sb))) => Some(sa + sb),
-                    (Or, None, Some(Some(sb))) => Some(sb),
-                    (Or, Some(sa), Some(None)) => Some(sa),
-                    (Or, Some(sa), Some(Some(sb))) => Some(sa + sb),
-                    (Not, Some(_), _) => None,
-                    (Not, None, _) => Some(1),
+                    (PO::And, None, _) => None, // normally not called due to short-circuit
+                    (PO::And, Some(sa), Some(Some(sb))) => Some(sa + sb),
+                    (PO::Or, None, Some(Some(sb))) => Some(sb),
+                    (PO::Or, Some(sa), Some(None)) => Some(sa),
+                    (PO::Or, Some(sa), Some(Some(sb))) => Some(sa + sb),
+                    (PO::Not, Some(_), _) => None,
+                    (PO::Not, None, _) => Some(1),
                     _ => None,
                 }
             },
             // short-circuit. We don't short circuit on 'or' because
             // we want to use both scores
             |op, a| match (op, a) {
-                (And, None) => true,
+                (PO::And, None) => true,
                 _ => false,
             },
         );
@@ -55,27 +64,31 @@ impl CompositePattern {
         &self,
         candidate: Candidate,
     ) -> Option<i32> {
-        use PatternOperator::*;
+        use PatternOperator as PO;
+        if self.is_content_search() && candidate.path.is_dir() {
+            // we can't score content on a directory
+            return None;
+        }
         let composite_result: Option<Option<i32>> = self.expr.eval(
             // score evaluation
             |pat| pat.score_of(candidate),
             // operator
             |op, a, b| {
                 match (op, a, b) {
-                    (And, None, _) => None, // normally not called due to short-circuit
-                    (And, Some(sa), Some(Some(sb))) => Some(sa + sb),
-                    (Or, None, Some(Some(sb))) => Some(sb),
-                    (Or, Some(sa), Some(None)) => Some(sa),
-                    (Or, Some(sa), Some(Some(sb))) => Some(sa + sb),
-                    (Not, Some(_), _) => None,
-                    (Not, None, _) => Some(1),
+                    (PO::And, None, _) => None, // normally not called due to short-circuit
+                    (PO::And, Some(sa), Some(Some(sb))) => Some(sa + sb),
+                    (PO::Or, None, Some(Some(sb))) => Some(sb),
+                    (PO::Or, Some(sa), Some(None)) => Some(sa),
+                    (PO::Or, Some(sa), Some(Some(sb))) => Some(sa + sb),
+                    (PO::Not, Some(_), _) => None,
+                    (PO::Not, None, _) => Some(1),
                     _ => None,
                 }
             },
             // short-circuit. We don't short circuit on 'or' because
             // we want to use both scores
             |op, a| match (op, a) {
-                (And, None) => true,
+                (PO::And, None) => true,
                 _ => false,
             },
         );

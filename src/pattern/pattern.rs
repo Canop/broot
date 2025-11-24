@@ -139,6 +139,14 @@ impl Pattern {
         }
     }
 
+    pub fn is_content_search(&self) -> bool {
+        match self {
+            Self::ContentExact(_) | Self::ContentRegex(_) => true,
+            Self::Composite(cp) => cp.is_content_search(),
+            _ => false,
+        }
+    }
+
     /// find the content to show next to the name of the file
     /// when the search involved a content filtering and you already
     /// know the content is there so you don't want to filter by name/path

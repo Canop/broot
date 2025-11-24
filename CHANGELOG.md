@@ -1,5 +1,6 @@
 ### next
 - fix crash on rendering B&W images with Kitty image protocol
+- don't match directories when a composite pattern has a content pattern, even negated (eg `/js$/&!c/;`: it's clear the user wants to match js *files* not containing a semicolon)
 
 ### v1.53.0 - 2025-11-08
 <a name="v1.53.0"></a>
