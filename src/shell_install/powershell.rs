@@ -6,7 +6,11 @@
 //! In a correct installation, we have:
 //! - a function declaration script in %APPDATA%/dystroy/broot/data/launcher/powershell/1
 //! - a link to that script in %APPDATA%/dystroy/broot/config/launcher/powershell/br.ps1
-//! - a line to source the link in %USERPROFILE%/Documents/WindowsPowerShell/Profile.ps1
+//! - a line to source the link in the PowerShell profile (detected dynamically)
+//!
+//! The profile is detected by running pwsh.exe first, then
+//! powershell.exe if pwsh is not found. If neither is found, it defaults to
+//! %USERPROFILE%/Documents/WindowsPowerShell/Microsoft.PowerShell_profile.ps1
 
 use {
     super::{
@@ -21,6 +25,7 @@ use {
     std::{
         fs,
         path::PathBuf,
+        process::Command,
     },
     termimad::mad_print_inline,
 };
@@ -73,6 +78,27 @@ fn get_script_path() -> PathBuf {
         .join(VERSION)
 }
 
+/// Get PowerShell's $profile by invoking pwsh or powershell.
+/// Returns None if the executable isn't present in environment
+/// path or the call fails
+fn get_profile(exe: &str) -> Option<PathBuf> {
+    let output = Command::new(exe)
+        .args(["-NoProfile", "-NoLogo", "-Command", "Write-Output", "$profile"])
+        .output()
+        .ok()?;
+
+    if !output.status.success() {
+        return None;
+    }
+
+    let s = String::from_utf8_lossy(&output.stdout).trim().to_string();
+    if s.is_empty() {
+        None
+    } else {
+        Some(PathBuf::from(s))
+    }
+}
+
 /// Check whether the shell function is installed, install
 /// it if it wasn't refused before or if broot is launched
 /// with --install.
@@ -98,10 +124,12 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     let link_path = get_link_path();
     si.create_link(&link_path, &script_path)?;
 
-    let escaped_path = link_path.to_string_lossy().replace(' ', "\\ ");
-    let source_line = format!(". {}", &escaped_path);
+    let escaped_path = link_path.to_string_lossy().replace('\'', "''");
+    let source_line = format!(". '{}'", escaped_path);
 
-    let sourcing_path = document_dir.join("WindowsPowerShell").join("Profile.ps1");
+    let sourcing_path = get_profile("pwsh")
+        .or_else(|| get_profile("powershell"))
+        .unwrap_or_else(|| document_dir.join("WindowsPowerShell").join("Microsoft.PowerShell_profile.ps1"));
     if !sourcing_path.exists() {
         debug!("Creating missing PowerShell profile file.");
         if let Some(parent) = sourcing_path.parent() {
