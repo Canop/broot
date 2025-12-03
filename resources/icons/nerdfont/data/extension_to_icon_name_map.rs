@@ -56,6 +56,7 @@
 ( "c"                       , "file_type_c"                       ),
 ( "cake"                    , "file_type_cake"                    ),
 ( "cargo-lock"              , "file_type_rust"                    ),
+( "cc"                      , "file_type_cpp"                     ),
 ( "cer"                     , "file_type_cert"                    ),
 ( "cfignore"                , "file_type_cloudfoundry"            ),
 ( "cjm"                     , "file_type_clojure"                 ),
