@@ -1,0 +1,74 @@
+# This is a configuration file for the ddoc static site generator.
+# For details and instruction, see https://dystroy.org/ddoc/
+
+title: "broot"
+description: "Broot, a tree oriented file manager"
+favicon: "img/favicon.ico"
+
+pages: {
+    "Why": index.md
+    "Install": {
+        "Install broot": install.md
+        "Install br": install-br.md
+        "Common Problems": common-problems.md
+    }
+    "Usage": {
+        "Launch": launch.md
+        "Search and Navigate": navigation.md
+        "Tree View": tree_view.md
+        "Help screen": help.md
+        "Verbs & Commands": verbs.md
+        "Panels": panels.md
+        "Staging Area": staging-area.md
+        "Trash": trash.md
+        "Tree export": export.md
+        "Tips & tricks": tricks.md
+        "Common file operations": file-operations.md
+        "Client - Server": remote.md
+        "Reference - The input": input.md
+    }
+    "Conf": {
+        "Config files": conf_file.md
+        "Verbs and shortcuts": conf_verbs.md
+        "Skins": skins.md
+        "Icons": icons.md
+        "Modal Mode": modal.md
+    }
+    "Community": community.md
+}
+
+// Nav links can have { img, url, class, label}, all optional
+// URL starting with '/' are relative to the site's root
+nav_links: {
+    before_menu: [
+        {
+            img: img/dystroy-rust-white.svg
+            url: https://dystroy.org
+            alt: dystroy.org homepage
+            class: external-nav-link
+        }
+        {
+            img: img/vache-blanche.svg
+            label: Broot
+            url: /index.md
+            alt: broot homepage
+            class: broot-nav-logo
+        }
+    ]
+    after_menu: [
+        {
+            img: img/github-mark-white.svg
+            class: external-nav-link
+            alt: GitHub
+            url: https://github.com/Canop/broot
+        }
+    ]
+}
+
+// UI options
+ui: {
+    // if true, the generated HTML includes a checkbox which
+    // can be styled into a hamburger menu for small screens
+    hamburger_checkbox: true
+}
+

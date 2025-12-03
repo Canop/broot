@@ -1,0 +1,35 @@
+:root {
+	--code-fg: #111;
+	--code-bg: #eee;
+}
+
+.lang-tab {
+	color: #555;
+	padding: 5px 8px;
+	cursor: pointer;
+	font-size: 90%;
+}
+
+.lang-tab.active {
+	color: #333;
+	border-top: solid 1px #e1e4e5;
+	border-right: solid 1px #e1e4e5;
+	border-bottom: solid 3px var(--code-bg);
+	border-left: solid 1px #e1e4e5;
+	background: var(--code-bg);
+	cursor: auto;
+}
+
+pre.tabbed {
+}
+
+pre code.language-Hjson, pre code.language-hjson,
+pre code.language-TOML, pre code.language-toml
+{
+	display: block;
+	overflow-x: auto;
+	padding: 0.5em;
+	color: #333;
+	background: var(--code-bg);
+}
+
