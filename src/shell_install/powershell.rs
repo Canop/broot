@@ -33,8 +33,12 @@ const PS_FUNC: &str = r#"
 Function br {
   $args = $args -join ' '
   $cmd_file = New-TemporaryFile
+  $broot = $env:BROOT
+  If (-not $broot) {
+       $broot = 'broot.exe'
+  }
 
-  $process = Start-Process -FilePath 'broot.exe' `
+  $process = Start-Process -FilePath $broot `
                            -ArgumentList "--outcmd $($cmd_file.FullName) $args" `
                            -NoNewWindow -PassThru -WorkingDirectory $PWD
 
