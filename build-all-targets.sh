@@ -54,6 +54,7 @@ cross_build "ARM 64 MUSL" "aarch64-unknown-linux-musl" ""
 cross_build "Windows" "x86_64-pc-windows-gnu" "clipboard"
 
 # use zig to build a version for GLIBC 2.28
+# cargo zigbuild must be installed before
 target="x86_64-unknown-linux-gnu"
 glibc_version="2.28"
 zig_target="$target.$glibc_version"
