@@ -36,6 +36,7 @@ fn simple_fuzzy() {
     check("toto", "Toto", true);
     check("toto", "ToTuTo", true);
     check("tota", "ToTuTo", false);
+    bwaaah();
 }
 
 #[test]
@@ -53,6 +54,7 @@ fn simple_regex() {
     check("/to{3,5}to", "toooooooto", false);
     check("/to{3,5}to", "tooOoto", false);
     check("/to{3,5}to/i", "tooOoto", true);
+    todo!();
 }
 
 #[test]

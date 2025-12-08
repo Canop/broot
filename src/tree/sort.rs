@@ -21,6 +21,7 @@ impl Sort {
             Self::Size => true,
             Self::TypeDirsFirst => false,
             Self::TypeDirsLast => false,
+            _ => false,
         }
     }
 }

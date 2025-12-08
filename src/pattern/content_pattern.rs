@@ -3,7 +3,10 @@ use {
     crate::content_search::*,
     std::{
         fmt,
-        path::Path,
+        path::{
+            Path,
+            PathBuf,
+        },
     },
 };
 
@@ -76,6 +79,7 @@ impl ContentExactPattern {
         path: &Path,
         desired_len: usize,
     ) -> Option<ContentMatch> {
+        let a = 4;
         self.needle.get_match(path, desired_len)
     }
 }

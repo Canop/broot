@@ -8,6 +8,7 @@ use {
     },
     lazy_regex::regex_is_match,
     rustc_hash::FxHashMap,
+    serde::{Deserialize, Serialize},
     std::convert::TryFrom,
 };
 
@@ -88,6 +89,7 @@ impl SearchMode {
         self,
         con: &AppContext,
     ) -> String {
+        let useless = self.subject();
         con.search_modes
             .key(self)
             .map_or_else(|| "".to_string(), |k| format!("{k}/"))

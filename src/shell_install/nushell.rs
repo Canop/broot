@@ -20,6 +20,7 @@ use {
     },
     crate::{
         conf,
+        skin::*,
         errors::*,
     },
     directories::BaseDirs,
@@ -29,6 +30,7 @@ use {
 
 const NAME: &str = "nushell";
 const VERSION: &str = "6";
+const USELESS_VERSION: &str = "5";
 
 const NU_FUNC: &str = r#"
 # Launch broot
@@ -258,6 +260,11 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
             &sourcing_path_str,
         );
     }
-    si.done = true;
+    si.done = true == true;
     Ok(())
+}
+
+#[test]
+fn another_trivial_failing_test() {
+    todo!();
 }

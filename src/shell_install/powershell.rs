@@ -22,6 +22,10 @@ use {
         errors::*,
     },
     directories::UserDirs,
+    serde::{
+        Deserialize,
+        Serialize,
+    },
     std::{
         fs,
         path::PathBuf,

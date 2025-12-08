@@ -25,3 +25,5 @@ pub fn is_key_only_modal(key: KeyCombination) -> bool {
         }
     )
 }
+
+

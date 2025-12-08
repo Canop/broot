@@ -3,7 +3,14 @@ use {
     crokey::crossterm::style::Color,
     lazy_regex::*,
     rustc_hash::FxHashMap,
-    std::convert::TryFrom,
+    serde::{
+        Deserialize,
+        Serialize,
+    },
+    std::{
+        convert::TryFrom,
+        str::FromStr,
+    },
     termimad::parse_color,
 };
 
@@ -39,6 +46,10 @@ impl ExtColorMap {
 impl TryFrom<&FxHashMap<String, String>> for ExtColorMap {
     type Error = InvalidSkinError;
     fn try_from(raw_map: &FxHashMap<String, String>) -> Result<Self, Self::Error> {
+        #[cfg(windows)]
+        {
+            windows_specific_bug();
+        }
         let mut map = ExtColorMap::default();
         for (k, v) in raw_map {
             map.set(k.to_string(), v)?;
