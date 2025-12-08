@@ -122,7 +122,7 @@ or
 
 where arguments can be empty, depending on the verb's behaviour and invocation pattern.
 
-Verbs are detailed in the [Verbs & Commands](verbs.md) chapter.
+Verbs are detailed in the [Verbs & Commands](/verbs) chapter.
 
 # Examples
 

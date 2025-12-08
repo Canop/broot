@@ -37,10 +37,8 @@ pages: {
     "Community": community.md
 }
 
-// Nav links can have { img, url, class, label}, all optional
-// URL starting with '/' are relative to the site's root
-nav_links: {
-    before_menu: [
+header: {
+    before-menu: [
         {
             img: img/dystroy-rust-white.svg
             url: https://dystroy.org
@@ -55,7 +53,14 @@ nav_links: {
             class: broot-nav-logo
         }
     ]
-    after_menu: [
+    middle: menu
+    after-menu: [
+        {
+            img: img/ddoc-search.svg
+            url: --search
+            alt: Search
+            class: search-opener
+        }
         {
             img: img/github-mark-white.svg
             class: external-nav-link

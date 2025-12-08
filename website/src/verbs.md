@@ -101,7 +101,7 @@ But sometimes there are a lot of verbs with the same start (especially if you ad
 
 Tab completion is probably more useful even with paths you provide to verbs. It works intuitively.
 
-Note: there's another solution to gain time when typing a path, especially when you're not sure of it: hitting <kbd>ctrl</kbd><kbd>p</kbd> will open a new panel in which you can navigate until you have your selection that you validate with another hit on <kbd>ctrl</kbd><kbd>p</kbd> (see [panels](panels.md)).
+Note: there's another solution to gain time when typing a path, especially when you're not sure of it: hitting <kbd>ctrl</kbd><kbd>p</kbd> will open a new panel in which you can navigate until you have your selection that you validate with another hit on <kbd>ctrl</kbd><kbd>p</kbd> (see [panels](/panels)).
 
 # Builtins & external commands, leaving or not
 
