@@ -69,9 +69,11 @@ header: {
         }
     ]
 }
+footer: {
+}
 
 // UI options
-ui: {
+generator: {
     // if true, the generated HTML includes a checkbox which
     // can be styled into a hamburger menu for small screens
     hamburger_checkbox: true

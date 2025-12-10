@@ -38,9 +38,9 @@ skin: {
 	sparse: ansi(214) None
 	content_extract: ansi(29) None
 	content_match: ansi(34) None
-    device_id_major: ansi(138) None
-    device_id_sep: ansi(102) None
-    device_id_minor: ansi(138) None
+	device_id_major: ansi(138) None
+	device_id_sep: ansi(102) None
+	device_id_minor: ansi(138) None
 	git_branch: ansi(229) None
 	git_insertions: ansi(28) None
 	git_deletions: ansi(160) None

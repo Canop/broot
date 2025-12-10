@@ -596,3 +596,11 @@ h4 {
 		max-height: calc(100vh - 240px);
 	}
 }
+
+/* footer */
+footer {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	font-size: 85%;
+}
