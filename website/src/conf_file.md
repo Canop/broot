@@ -1,12 +1,7 @@
 
-# Reset
-
-If you want to get back to the default set of configuration files, delete or rename the `broot` directory in your standard configuration place (e.g. `~/.config/broot`).
-On next launch, broot will recreate all the necessary files.
-
 # Hjson or TOML
 
-Two formats are allowed: [TOML](https://github.com/toml-lang/toml) and [Hjson](https://hjson.github.io/).
+Two formats are supported: [TOML](https://github.com/toml-lang/toml) and [Hjson](https://hjson.github.io/).
 
 This documentation will often show you the same setting in both formats, with two tabs, like this:
 
@@ -16,6 +11,11 @@ This documentation will often show you the same setting in both formats, with tw
 ```TOML
 # setting to use if your config file is in .toml
 ```
+
+# Reset
+
+If you want to get back to the default set of configuration files, delete or rename the `broot` directory in your standard configuration place (e.g. `~/.config/broot`).
+On next launch, broot will recreate all the necessary files.
 
 # Opening the config files
 
