@@ -50,9 +50,18 @@
 		group[0].pre.parentNode.insertBefore(tabs, group[0].pre);
 	}
 
+	// group together with tabs the provided languages
+	function group(...langs) {
+		let groups = find_groups(langs);
+		for (let group of groups) {
+			add_tabs(group);
+		}
+	}
+
 	return {
 		find_groups,
 		add_tabs,
+		group,
 	};
 
 })();
