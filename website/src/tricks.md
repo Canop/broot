@@ -75,7 +75,7 @@ Here, the configuration file was used to ensure you can select a file with the e
 You may use the same configuration file to also specify colors to remember yourself you're not in a standard broot.
 
 
-# `dcd` : Deep fuzzy cd
+# dcd : Deep fuzzy cd
 
 When you want to cd to a deep directory, using `br` is fast and easy enough:
 
