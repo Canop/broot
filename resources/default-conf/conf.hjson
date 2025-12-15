@@ -222,7 +222,7 @@ lines_after_match_in_preview: 1
 #
 # It's possible to define transformations to apply to some files
 # before calling one of the default preview renderers in broot.
-# Below are two examples that you may uncomment and adapt:
+# Below are three examples that you may uncomment and adapt:
 #
 preview_transformers: [
     // # Use mutool to render any PDF file as an image
@@ -256,6 +256,14 @@ preview_transformers: [
     //     output_extension: json
     //     mode: text
     //     command: [ "jq" ]
+    // }
+
+    // # Use zmore to preview compressed text files
+    // {
+    //     input_extensions: [ "gz", "z", "tgz" ] // case doesn't matter
+    //     output_extension: txt
+    //     mode: text
+    //     command: [ "zmore" ]
     // }
 ]
 
