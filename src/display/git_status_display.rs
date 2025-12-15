@@ -1,7 +1,6 @@
 use {
     super::CropWriter,
     crate::{
-        display::cond_bg,
         errors::ProgramError,
         git::TreeGitStatus,
         skin::StyleMap,

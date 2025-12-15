@@ -6,7 +6,6 @@ use {
         GitStatusDisplay,
         MatchedString,
         SPACE_FILLING,
-        cond_bg,
         num_format::format_count,
     },
     crate::{

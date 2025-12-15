@@ -44,7 +44,7 @@ need_stdout = true
 
 [jobs.windows]
 command = [
-	"cross", "build",
+	"cargo-cross", "build",
 	"--target", "x86_64-pc-windows-gnu",
 	"--features", "clipboard"
 ]

@@ -26,7 +26,6 @@ use {
         },
     },
     std::{
-        fmt,
         path::{
             Path,
             PathBuf,

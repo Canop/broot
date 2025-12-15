@@ -8,7 +8,6 @@ use {
     },
     lazy_regex::regex_is_match,
     rustc_hash::FxHashMap,
-    serde::{Deserialize, Serialize},
     std::convert::TryFrom,
 };
 
