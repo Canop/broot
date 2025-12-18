@@ -103,7 +103,7 @@ impl CmdResult {
         }
     }
     pub fn error<S: Into<String>>(message: S) -> Self {
-        Self::DisplayError(message.into())
+        Self::DisplayError(&message.into())
     }
 }
 
