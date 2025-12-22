@@ -1,3 +1,6 @@
+### next
+- Tokyo Night skin ( https://github.com/Canop/broot/blob/main/resources/default-conf/skins/tokyo-night.hjson ) - Thanks hb-hello
+
 ### v1.54.0 - 2025-12-03
 <a name="v1.54.0"></a>
 - fix crash on rendering B&W images with Kitty image protocol
