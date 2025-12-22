@@ -163,6 +163,5 @@ To apply one, type a space (or `:`), then the start of its shortcut, then hit <k
 
 For example typing `:s` then enter will show file and directory sizes.
 
-Those toggles may also be defined with [launch options](../launch) and the [default_flags preference](../conf_file/#default-flags). And you can see them in the application with <kbd>?</kbd>.
-
+Those toggles may also be defined with [launch option syntax](../launch#display-toggles) (ie type a space, then `-hi` then <kbd>enter</kbd>) and the [default_flags preference](../conf_file/#default-flags). And you can see them in the application with <kbd>?</kbd>.
 

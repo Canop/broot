@@ -28,9 +28,27 @@ and quit broot with `:pp` on the selected path. But most often you'll more conve
 
 They also accept a few other arguments which you can view with `br --help`.
 
-Most of them are display toggles, which may be useful when aliasing the function but which are accessible from inside the application anyway.
+## display toggles
 
-Some of them are a little special, though, and are explained below:
+Many of the launch arguments toggle display settings and are usually in pair:
+a lowercase toggle argument is uppercased for the opposite action.
+
+Here are the most frequently used:
+
+* `-d` and `-D`: showing (or hiding) dates
+* `-f` and `-F`: showing only folders
+* `-g` and `-G`: git info
+* `-h` and `-H`: whether to show "hidden" files (whose name starts with a dot on unix)
+* `-i` and `-I`: whether to show git-ignored files
+* `-p` and `-P`: permissions, user, group
+* `-s` and `-S`: size of files and directories
+* `-w` and `-W`: whale mode, useful to find what takes space on your disks
+
+Those toggles can be combined.
+For example, to show files that aren't usually displayed, and also to show sizes, use `br -shi`.
+
+They can also be used as verbs in the application.
+Instead of launching broot as `br -shi`, you could, when in broot, type a space or colon then `-shi` and <kbd>enter</kbd>.
 
 ## the `--outcmd` launch argument
 
