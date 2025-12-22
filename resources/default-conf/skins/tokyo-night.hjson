@@ -1,0 +1,111 @@
+###############################################################
+# A skin for a terminal with a dark background
+# This skin uses RGB values so won't work for some
+# terminals.
+#
+# Created by hb-hello
+# Based on the tokyo-night theme made by wixdaq - https://wixdaq.github.io/Tokyo-Night-Website/
+#
+# Doc at https://dystroy.org/broot/skins/
+###############################################################
+
+skin: {
+    default: rgb(169, 177, 214) None / rgb(192, 202, 245) rgb(32, 35, 48)
+    tree: rgb(54, 59, 84) None / rgb(43, 43, 59) None
+    parent: rgb(192, 202, 245) None / rgb(192, 202, 245) rgb(32, 35, 48) Italic
+    file: rgb(120, 124, 153) None / rgb(169, 177, 214) None Italic
+    directory: rgb(122, 162, 247) None Bold / rgb(97, 131, 187) None
+    exe: rgb(158, 206, 106) None
+    link: rgb(187, 154, 247) None
+    pruning: rgb(81, 89, 125) None Italic
+
+    # permissions
+    perm__: rgb(120, 124, 153) None
+    perm_r: rgb(65, 166, 181) None
+    perm_w: rgb(115, 218, 202) None
+    perm_x: rgb(187, 154, 247) None
+    owner: rgb(97, 131, 187) None Bold
+    group: rgb(97, 131, 187) None
+
+    count: rgb(65, 166, 181) rgb(16, 16, 20)
+    dates: rgb(120, 124, 153) None
+    sparse: rgb(224, 175, 104) None
+
+    content_extract: rgb(115, 218, 202) None Italic
+    content_match: rgb(122, 162, 247) None Bold
+
+    # git
+    git_branch: rgb(157, 124, 216) None
+    git_insertions: rgb(158, 206, 106) None
+    git_deletions: rgb(247, 118, 142) None
+    git_status_current: rgb(120, 124, 153) None
+    git_status_modified: rgb(224, 175, 104) None
+    git_status_new: rgb(115, 218, 202) None Bold
+    git_status_ignored: rgb(81, 86, 112) None
+    git_status_conflicted: rgb(219, 75, 75) None
+    git_status_other: rgb(187, 97, 107) None
+
+    # highlighting
+    selected_line: None rgb(32, 35, 48) / None rgb(30, 32, 46)
+    char_match: rgb(224, 175, 104) None
+    file_error: rgb(224, 175, 104) None
+
+    flag_label: rgb(120, 124, 153) None
+    flag_value: rgb(187, 154, 247) None Bold
+
+    input: rgb(169, 177, 214) rgb(20, 20, 27) / rgb(192, 202, 245) rgb(20, 20, 27) Italic
+
+    #status bar
+    status_error: rgb(192, 202, 245) rgb(219, 75, 75)
+    status_job: rgb(22, 22, 30) rgb(224, 175, 104)
+    status_normal: rgb(120, 124, 153) rgb(22, 22, 30) / None None
+    status_italic: rgb(187, 154, 247) rgb(22, 22, 30) Italic / None None
+    status_bold: rgb(187, 154, 247) rgb(22, 22, 30) Bold / None None
+    status_code: rgb(192, 202, 245) rgb(22, 22, 30) / None None
+    status_ellipsis: rgb(192, 202, 245) rgb(22, 22, 30) Bold / None None
+
+    purpose_normal: None None
+    purpose_italic: rgb(97, 131, 187) None Italic
+    purpose_bold: rgb(97, 131, 187) None Bold
+    purpose_ellipsis: None None
+
+    # scrollbar
+    scrollbar_track: rgb(54, 59, 84) None / rgb(16, 16, 20) None
+    scrollbar_thumb: rgb(169, 177, 214) None / rgb(120, 124, 153) None
+
+    #documentation
+    help_paragraph: None None
+    help_bold: rgb(255, 158, 100) None Bold
+    help_italic: rgb(187, 154, 247) None Italic
+    help_code: rgb(158, 206, 106) rgb(16, 16, 20)
+    help_headers: rgb(122, 162, 247) None Bold
+    help_table_border: rgb(43, 43, 59) None
+
+    preview_title: rgb(192, 202, 245) rgb(16, 16, 20) / rgb(169, 177, 214) rgb(16, 16, 20)
+    preview: rgb(169, 177, 214) None / rgb(169, 177, 214) None
+    preview_line_number: rgb(81, 89, 125) rgb(16, 16, 20) / rgb(81, 89, 125) None
+    preview_separator: rgb(54, 59, 84) None / rgb(43, 43, 59) None
+    preview_match: None rgb(224, 175, 104) Bold
+
+    hex_null: rgb(120, 124, 153) None
+    hex_ascii_graphic: rgb(169, 177, 214) None
+    hex_ascii_whitespace: rgb(81, 89, 125) None
+    hex_ascii_other: rgb(255, 158, 100) None
+    hex_non_ascii: rgb(219, 75, 75) None
+
+    staging_area_title: rgb(192, 202, 245) rgb(16, 16, 20) / rgb(169, 177, 214) rgb(16, 16, 20)
+
+    mode_command_mark: rgb(22, 22, 30) rgb(187, 154, 247) Bold
+
+    # file system occupation
+    good_to_bad_0: rgb(158, 206, 106)
+    good_to_bad_1: rgb(158, 206, 106)
+    good_to_bad_2: rgb(158, 206, 106)
+    good_to_bad_3: rgb(158, 206, 106)
+    good_to_bad_4: rgb(255, 158, 100)
+    good_to_bad_5: rgb(255, 158, 100)
+    good_to_bad_6: rgb(255, 158, 100)
+    good_to_bad_7: rgb(255, 158, 100)
+    good_to_bad_8: rgb(255, 158, 100)
+    good_to_bad_9: rgb(255, 158, 100)
+}
