@@ -195,14 +195,14 @@ impl CompositePattern {
             // operator
             |op, a, b| match (op, a, b) {
                 (Not, Some(_), _) => None,
+                (Or, Some(ma), Some(Some(mb))) | (And, Some(ma), Some(Some(mb))) => {
+                    Some(ma.merge_with(mb))
+                },
                 (_, Some(ma), _) => Some(ma),
                 (_, None, Some(omb)) => omb,
                 _ => None,
             },
-            |op, a| match (op, a) {
-                (Or, Some(_)) => true,
-                _ => false,
-            },
+            |_op, _a| false,
         );
         // it's possible we didn't find a result because the composition
         composite_result.unwrap_or_else(|| {
