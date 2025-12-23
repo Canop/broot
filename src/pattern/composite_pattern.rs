@@ -179,9 +179,13 @@ impl CompositePattern {
         })
     }
 
-    // Search for a string, trying to return a match (it's used when a
-    // composite returns something but may be matching also on other parts
-    // that we can't compute, like the content)
+    /// Search for a string, trying to return a match
+    ///
+    /// It's used when a composite returns something but may be matching also on other parts
+    /// that we can't compute, like the content.
+    ///
+    /// This function isn't called on all potential candidates, only on those that we want
+    /// to show so we're allowed to do more costly operations here.
     pub fn find_string(
         &self,
         candidate: &str,
@@ -195,24 +199,24 @@ impl CompositePattern {
             // operator
             |op, a, b| match (op, a, b) {
                 (Not, Some(_), _) => None,
-                (Or, Some(ma), Some(Some(mb))) | (And, Some(ma), Some(Some(mb))) => {
+                (Or | And, Some(ma), Some(Some(mb))) => {
                     Some(ma.merge_with(mb))
                 },
                 (_, Some(ma), _) => Some(ma),
                 (_, None, Some(omb)) => omb,
                 _ => None,
             },
+            // short-circuit: we don't short circuit on 'or' because we want to use
+            // both matches.
             |_op, _a| false,
         );
-        // it's possible we didn't find a result because the composition
-        composite_result.unwrap_or_else(|| {
-            warn!("unexpectedly missing result ");
-            None
-        })
+        // it's possible we didn't find a result because the composition matches
+        // on non name parts
+        composite_result.unwrap_or(None)
     }
 
-    // Search for a string in content, trying to return a match as soon as some
-    // part of the composite matches
+    /// Search for a string in content, trying to return a match as soon as some
+    /// part of the composite matches
     pub fn find_content(
         &self,
         candidate: &Path,
@@ -234,10 +238,9 @@ impl CompositePattern {
                 _ => false,
             },
         );
-        composite_result.unwrap_or_else(|| {
-            warn!("unexpectedly missing result ");
-            None
-        })
+        // it's possible we didn't find a result because the composition matches
+        // on non content parts
+        composite_result.unwrap_or(None)
     }
 
     pub fn get_match_line_count(
@@ -260,10 +263,7 @@ impl CompositePattern {
                 _ => false,
             },
         );
-        composite_result.unwrap_or_else(|| {
-            warn!("unexpectedly missing result ");
-            None
-        })
+        composite_result.unwrap_or(None)
     }
 
     pub fn has_real_scores(&self) -> bool {
