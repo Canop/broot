@@ -286,6 +286,8 @@ The execution of a verb can take one or several arguments.
 
 For example it may be defined as `vi {file}̀`.
 
+## Broot supplied arguments
+
 Some arguments are predefined in broot and depends on the current selection:
 
 name | expanded to
@@ -308,10 +310,13 @@ name | expanded to
 `{file-git-relative}` | path of the current selection relative to the working directory of the containing Git repository. If the selection is not in a Git repository then the absolute path.
 `{server-name}` | name given with `--listen` at launch
 
+
 **Note:**
 when you're in the help screen, `{file}` is the configuration file, while `{directory}` is the configuration directory.
 
-But you may also define some arguments in the invocation pattern. For example:
+## Invocation Pattern
+
+You may also define some arguments in the invocation pattern. For example:
 
 ```hjson
 {
@@ -379,6 +384,38 @@ from_shell = true
 ```
 
 You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
+
+## Request User Input
+
+A verb can be triggered by key but still require the user to type some argument(s), by having `auto_exec` set to `false`.
+
+Here's an example:
+
+```hjson
+{
+    name: touch
+    key: ctrl-t
+    invocation: "touch {new_file}"
+    execution: "touch {directory}/{new_file}"
+    leave_broot: false
+    auto_exec: false
+}
+```
+```toml
+[[verbs]]
+name = "touch"
+key = "ctrl-t"
+invocation = "touch {new_file}"
+execution = "touch {directory}/{new_file}"
+leave_broot = false
+auto_exec = false
+```
+When the user hits <kbd>ctrl</kbd><kbd>t</kbd>, broot displays the invocation pattern and waits for some input which would end with <kbd>enter</kbd>:
+
+![touch input](img/touch-user-input.png)
+
+If the invocation pattern doesn't contain any verb argument and `auto_exec` is set to `false`, the user will still have to hit <kbd>enter</kbd>.
+This is useful when you want the user to confirm on a potentially destructive action.
 
 # Internals
 

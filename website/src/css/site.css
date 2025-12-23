@@ -36,7 +36,7 @@ body {
 	line-height: 1.5;
 }
 
-@media (min-width: 1222px) { /* wide screens */
+@media (min-width: 1400px) { /* wide screens */
 	body {
 		background-image: linear-gradient(to right, rgba(255,255,255,0.4) 0%, rgba(255,255,255,1) 20%, rgba(255,255,255,1) 75%, rgba(255,255,255,0.4) 100%), url("../img/cows.jpg");
 		background-position: center;
@@ -396,6 +396,10 @@ main img {
 	border: none;
 	border-radius: 0;
 	margin: 10px auto 20px auto;
+}
+
+main table {
+	margin: 20px 0;
 }
 
 pre {
