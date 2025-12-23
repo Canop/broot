@@ -12,6 +12,38 @@ pub struct NameMatch {
 }
 
 impl NameMatch {
+    pub fn merge_with(self, other: Self) -> Self{
+        let mut merged = SmallVec::new();
+        let mut a_pos = self.pos.into_iter().peekable();
+        let mut b_pos = other.pos.into_iter().peekable();
+
+        loop {
+            let (val, winning_iter) = match (a_pos.peek(), b_pos.peek()){
+                (None, None) => break,
+                (Some(a), None) => (*a, &mut a_pos),
+                (None, Some(b)) => (*b, &mut b_pos),
+                (Some(a), Some(b)) => {
+                    if a < b {
+                        (*a, &mut a_pos)
+                    } else {
+                        (*b, &mut b_pos)
+                    }
+                }
+            };
+            winning_iter.next();
+            if let Some(last) = merged.last() {
+                if val <= *last {
+                    continue
+                }
+            }
+            merged.push(val);
+        }
+
+        Self{
+            score: self.score + other.score,
+            pos: merged,
+        }
+    }
     /// wraps any group of matching characters with match_start and match_end
     pub fn wrap(
         &self,
