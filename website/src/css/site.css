@@ -16,7 +16,9 @@
 	--hovered-toc-fg: #000;
 	--search-panel-wrapper-bg: #fffe;
 	--search-result-border: none;
+	--search-results-bg: #1b465f33;
 	--search-result-link-fg: #000c;
+	--selected-search-result-bg: #3335;
 	--hovered-search-result-link-fg: #000;
 }
 
@@ -531,19 +533,25 @@ h4 {
 	display: flex;
 	flex-direction: column;
 	overflow-y: auto;
-	background: var(--toc-bg);
-	padding: 10px;
+	background: var(--search-results-bg);
+	padding: 0 0 20px 0;
 	border-radius: 0 0 10px 10px;
+}
+.ddoc-search-no-result {
+	padding: 10px;
 }
 .ddoc-search-result + .ddoc-search-result {
 	border-top: var(--search-result-border);
 }
 .ddoc-search-result {
 	flex: 0 0 auto;
-	padding: 5px;
+	padding: 10px;
 	display: flex;
 	flex-direction: column;
 	align-items: stretch;
+}
+.ddoc-search-result-selected {
+	background: var(--selected-search-result-bg);
 }
 .ddoc-search-result-path {
 	flex: 0 0 auto;
