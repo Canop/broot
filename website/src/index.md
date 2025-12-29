@@ -5,7 +5,8 @@
 </p>
 
 Broot is a better way to navigate directories, find files, and launch commands.
-[Install it](install).
+
+[Install broot](install).
 
 ![cows](img/20241027-cows.png)
 
@@ -62,7 +63,7 @@ And you have [other types of searches](input/#the-filtering-pattern), for exampl
 
 ![content search](img/20230930-content-memm.png)
 
-You may also apply logical operators or combine patterns, for example searching `test` in all files except json ones could be `!/json$/&c/test` and searching `carg` both in file names and file contents would be `carg|c/carg`.
+You can also apply logical operators or combine patterns, for example searching `test` in all files except json ones could be `!/json$/&c/test` and searching `carg` both in file names and file contents would be `carg|c/carg`.
 
 Once the file you want is selected you can
 
@@ -89,7 +90,7 @@ Here's chmod:
 
 # Manage files with panels
 
-When a directory is selected, do <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
+When a directory is selected, press <kbd>ctrl</kbd><kbd>→</kbd> and you open another panel (you may open other ones, or navigate between them, with <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd>).
 
 ![custom colors tree](img/20230930-colored-panels.png)
 
@@ -134,7 +135,7 @@ Add files to the [staging area](staging-area) then execute any command on all of
 
 ![staging mv](img/20230930-staging-mv.png)
 
-# Replace `ls` (and its clones):
+# Replace `ls` (and its clones)
 
 If you want to display *sizes*, *dates* and *permissions*, do `br -sdp` which gets you this:
 
@@ -146,7 +147,7 @@ Or hit <kbd>alt</kbd><kbd>h</kbd> and you see hidden files.
 
 # See what takes space:
 
-You may sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
+You can sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
 
 When sorting, the whole content of directories is taken into account. So if you want to find on Monday morning the most recently modified files, launch `br --sort-by-date ~`.
 
