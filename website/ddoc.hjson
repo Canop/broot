@@ -42,13 +42,13 @@ body: {
         nav.before-menu: {
             ddoc-link.external-nav-link: {
                 img: img/dystroy-rust-white.svg
-                url: https://dystroy.org
+                href: https://dystroy.org
                 alt: dystroy.org homepage
             }
             ddoc-link.broot-nav-logo: {
                 img: img/vache-blanche.svg
                 label: Broot
-                url: /index.md
+                href: /index.md
                 alt: broot homepage
             }
         }
