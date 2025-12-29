@@ -42,7 +42,7 @@ You search for the first letter of your topic, here "hi". The list is filtered w
 
 In this example you see that you can toggle showing hidden files by hitting <kbd>alt</kbd><kbd>h</kbd> or by typing `:h` then <kbd>enter</kbd>.
 
-# Check search modes and their prefixes
+# Search modes
 
 There are [several kinds of searches](../input).
 

@@ -1,7 +1,7 @@
 
 ## Commands
 
-When broot is compiled with the `trash` feature enabled (which is done for Linux and Windows in standard distributions), some additional commands are available:
+On Windows and Linux, some trash related commands are available:
 
 * `:trash` : move the selected file to the trash
 * `:open_trash` : display the content of the trash

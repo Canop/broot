@@ -5,7 +5,7 @@ title: "broot"
 description: "Broot, a tree oriented file manager"
 favicon: "img/favicon.ico"
 
-pages: {
+site-map: {
     "Why": index.md
     "Install": {
         "Install broot": install.md
@@ -37,45 +37,44 @@ pages: {
     "Community": community.md
 }
 
-header: {
-    before-menu: [
-        {
-            img: img/dystroy-rust-white.svg
-            url: https://dystroy.org
-            alt: dystroy.org homepage
-            class: external-nav-link
+body: {
+    header: {
+        nav.before-menu: {
+            ddoc-link.external-nav-link: {
+                img: img/dystroy-rust-white.svg
+                url: https://dystroy.org
+                alt: dystroy.org homepage
+            }
+            ddoc-link.broot-nav-logo: {
+                img: img/vache-blanche.svg
+                label: Broot
+                url: /index.md
+                alt: broot homepage
+            }
         }
-        {
-            img: img/vache-blanche.svg
-            label: Broot
-            url: /index.md
-            alt: broot homepage
-            class: broot-nav-logo
+        ddoc-menu: {
+            hamburger-checkbox: true
         }
-    ]
-    middle: menu
-    after-menu: [
-        {
-            img: img/ddoc-search.svg
-            url: --search
-            alt: Search
-            class: search-opener
+        nav.after-menu: {
+            ddoc-link.search-opener: {
+                img: img/ddoc-search.svg
+                href: --search
+                alt: Search
+            }
+            ddoc-link.external-nav-link: {
+                img: img/github-mark-white.svg
+                alt: GitHub
+                href: https://github.com/Canop/broot
+            }
         }
-        {
-            img: img/github-mark-white.svg
-            class: external-nav-link
-            alt: GitHub
-            url: https://github.com/Canop/broot
+    }
+    article: {
+        aside.page-nav: {
+            ddoc-toc: {}
         }
-    ]
-}
-footer: {
-}
-
-// UI options
-generator: {
-    // if true, the generated HTML includes a checkbox which
-    // can be styled into a hamburger menu for small screens
-    hamburger_checkbox: true
+        ddoc-main: {}
+    }
+    footer: {
+    }
 }
 

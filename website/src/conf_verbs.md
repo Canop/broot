@@ -51,6 +51,12 @@ The execution is defined either by `internal`, `external` or `cmd` so a verb mus
 **Note:**
 The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example, `cd` is a shell builtin which must be executed in the parent shell.
 
+## Verbs not leaving broot
+
+If you set `leave_broot = false`, broot won't quit when executing your command, but it will update the tree.
+
+This is useful for commands modifying the tree (like creating or moving files).
+
 # Call shell scripts
 
 With an external, you call an executable.
@@ -274,11 +280,6 @@ Beware that consoles intercept some possible keys. Many keyboard shortcuts aren'
 
 If your chosen key doesn't seem to work, see [Key Combination Problem](../common-problems/#key-combination-problem).
 
-## Verbs not leaving broot
-
-If you set `leave_broot = false`, broot won't quit when executing your command, but it will update the tree.
-
-This is useful for commands modifying the tree (like creating or moving files).
 
 # Verb Arguments
 

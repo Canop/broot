@@ -1,17 +1,16 @@
 
 **broot** is developed by **Denys Séguret**, also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
 
-Major updates are announced on my Mastodon account: [@dystroy@mastodon.dystroy.org](https://mastodon.dystroy.org/@dystroy).
+Major updates are announced on my accounts:
+
+* Mastodon: [@dystroy@mastodon.dystroy.org](https://mastodon.dystroy.org/@dystroy).
+* BlueSky: [@dystroy.bsky.social](https://bsky.app/profile/dystroy.bsky.social)
 
 # Sponsorship
 
 **broot** is free for all uses.
 
 If it helps your company make money, consider helping me find time to add features and to develop new free open-source software.
-
-<div class=sponsorship>
-<script src="https://liberapay.com/dystroy/widgets/button.js"></script>
-<noscript><a href="https://liberapay.com/dystroy/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg"></a></noscript>
 
 <iframe src="https://github.com/sponsors/Canop/button" title="Sponsor Canop" height="35" width="114" style="border: 0; border-radius: 6px;"></iframe>
 </div>
@@ -29,6 +28,8 @@ If you're French speaking, you might prefer to directly come where other French 
 [![Chat on Miaou](https://miaou.dystroy.org/static/shields/room-fr.svg?v=1)](https://miaou.dystroy.org/3)
 
 Don't hesitate to come if you have a question.
+
+You're also welcome to give any feedback. I like to read about how people use Broot.
 
 # Issues
 
@@ -73,4 +74,3 @@ If you think you might help, as a tester or coder, you're welcome, but please re
 
 Tell us what seems to be unclear or missing, what tricks should be added.
 
-And if you have interesting screenshots telling a story, they might find their way into a new page too.
