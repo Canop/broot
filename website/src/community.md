@@ -72,5 +72,6 @@ If you think you might help, as a tester or coder, you're welcome, but please re
 
 ... needs your help too.
 
-Tell us what seems to be unclear or missing, what tricks should be added.
+Tell me what seems to be unclear or missing, what tricks should be added.
 
+Or for simple corrections, head to [the source](https://github.com/Canop/broot/tree/main/website)

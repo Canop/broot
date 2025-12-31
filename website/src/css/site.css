@@ -20,6 +20,8 @@
 	--search-result-link-fg: #000c;
 	--selected-search-result-bg: #3335;
 	--hovered-search-result-link-fg: #000;
+	--thead-border: thin solid var(--nav-bg);
+	--tr-border: thin solid #d1dadf75;
 }
 
 html, body, div, nav, header {
@@ -36,6 +38,7 @@ body {
 	font-size: 17px;
 	font-weight: 400;
 	line-height: 1.5;
+	padding-bottom: 80px;
 }
 
 @media (min-width: 1400px) { /* wide screens */
@@ -401,7 +404,17 @@ main img {
 }
 
 main table {
-	margin: 20px 0;
+	margin: 20px 0 35px 0;
+	border-collapse: collapse;
+}
+th, td {
+	padding: 10px 4px;
+}
+table > thead tr {
+	border-bottom: var(--thead-border);
+}
+table tr td {
+	border-bottom: var(--tr-border);
 }
 
 pre {
