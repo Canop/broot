@@ -1,10 +1,7 @@
 
 **broot** is developed by **Denys Séguret**, also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
 
-Major updates are announced on my accounts:
-
-* Mastodon: [@dystroy@mastodon.dystroy.org](https://mastodon.dystroy.org/@dystroy).
-* BlueSky: [@dystroy.bsky.social](https://bsky.app/profile/dystroy.bsky.social)
+Major updates are announced on Mastodon : [@dystroy@mastodon.dystroy.org](https://mastodon.dystroy.org/@dystroy) and BlueSky: [@dystroy.bsky.social](https://bsky.app/profile/dystroy.bsky.social)
 
 # Sponsorship
 
