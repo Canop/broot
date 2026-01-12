@@ -70,7 +70,9 @@ body: {
     }
     article: {
         aside.page-nav: {
-            ddoc-toc: {}
+            ddoc-toc: {
+                activate-visible-item: true
+            }
         }
         ddoc-main: {}
     }

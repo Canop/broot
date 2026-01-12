@@ -47,7 +47,7 @@ You can go from the selected matched line to the unfiltered text, at the right p
 
 Hopefully [this blog post](https://dystroy.org/blog/broot-c-search/) should make the complete search workflow look natural.
 
-# Copy, move between panels... or more
+# Copy & move between panels
 
 When exactly two panels are displayed, `{other-panel-file}` `{other-panel-directory}`, and `{other-panel-parent}` are available for verbs.
 
@@ -80,7 +80,7 @@ The default configuration file contains this that you may uncomment to add <kbd>
 
 You may define other shortcuts, or your own bi-panels verbs.
 
-# Use a panel to edit a verb argument
+# Edit a verb argument
 
 Assuming you started from just one panel and wanted to execute a command taking a path as argument. You may use tab-completion to type it faster but you may also hit <kbd>ctrl</kbd><kbd>P</kbd> to create a panel and select it. Here's the complete workflow.
 
