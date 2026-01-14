@@ -134,7 +134,14 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
         return Ok(());
     }
     let escaped_path = link_path.to_string_lossy().replace(' ', "\\ ");
-    let source_line = format!("source {}", &escaped_path);
+    let source_line = {
+        if env::consts::OS == "windows" {
+            // Bash on Windows doesn't like C:\Users\... but will accept "C:\Users\..."
+            format!("source \"{}\"", &escaped_path)
+        } else {
+            format!("source {}", &escaped_path)
+        }
+    };
     for sourcing_path in &sourcing_paths {
         let sourcing_path_str = sourcing_path.to_string_lossy();
         if util::file_contains_line(sourcing_path, &source_line)? {
