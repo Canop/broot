@@ -61,6 +61,19 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
         } else if term_program == "ghostty" {
             debug!("Ghostty implements Kitty Graphics protocol");
             return KittyGraphicsDisplay::Direct;
+        } else if term_program == "iTerm.app" {
+            if let Ok(version) = env::var("TERM_PROGRAM_VERSION") {
+                debug!("$TERM_PROGRAM_VERSION = {:?}", version);
+
+                if &*version < "3.6.6" {
+                    debug!("iTerm2's version predates Kitty Graphics protocol support");
+                } else {
+                    debug!("this looks like a compatible version");
+                    return KittyGraphicsDisplay::Direct;
+                }
+            } else {
+                warn!("$TERM_PROGRAM_VERSION unexpectedly missing");
+            }
         }
     }
 
