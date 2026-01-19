@@ -4,7 +4,6 @@ use {
         display::W,
         errors::ProgramError,
     },
-    ansi_colours,
     crokey::crossterm::{
         QueueableCommand,
         style::{
@@ -14,7 +13,10 @@ use {
             SetColors,
         },
     },
-    termimad::fill_bg,
+    termimad::{
+        fill_bg,
+        coolor,
+    },
 };
 
 const UPPER_HALF_BLOCK: char = '▀';
@@ -53,7 +55,11 @@ impl DoubleLine {
                 b: rgba[2],
             }
         } else {
-            Color::AnsiValue(ansi_colours::ansi256_from_rgb((rgba[0], rgba[1], rgba[2])))
+            Color::AnsiValue(
+                coolor::Rgb::new(rgba[0], rgba[1], rgba[2])
+                    .to_ansi()
+                    .code
+            )
         });
     }
     pub fn is_empty(&self) -> bool {
