@@ -1,6 +1,7 @@
 ### next
-- Tokyo Night skin ( https://github.com/Canop/broot/blob/main/resources/default-conf/skins/tokyo-night.hjson ) - Thanks hb-hello
+- Tokyo Night skin ( https://github.com/Canop/broot/blob/main/resources/default-conf/skins/tokyo-night.hjson ) - Thanks @hb-hello
 - matches related to several name patterns joined with and/or in a composite pattern are merged instead of having just the first one shown - Thanks @Tomaz-Vieira
+- nushell integration: switch $nu.temp-path to $nu.temp-dir - #1116 - Thanks @stevenxxiu
 
 ### v1.54.0 - 2025-12-03
 <a name="v1.54.0"></a>
