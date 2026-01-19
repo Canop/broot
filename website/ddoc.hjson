@@ -4,6 +4,7 @@
 title: "broot"
 description: "Broot, a tree oriented file manager"
 favicon: "img/favicon.ico"
+ddoc-vesion: "0.16" // minimal version of ddoc
 
 site-map: {
     "Why": index.md
@@ -74,9 +75,23 @@ body: {
                 activate-visible-item: true
             }
         }
-        ddoc-main: {}
-    }
-    footer: {
+        div.main-content: {
+            ddoc-main: {}
+            nav.prev-next: {
+                ddoc-link.previous-page-link: {
+                    inline: img/ddoc-left-arrow.svg
+                    href: --previous
+                    alt: Previous Page
+                    label: --previous-page-title
+                }
+                ddoc-link.next-page-link: {
+                    label: --next-page-title
+                    inline: img/ddoc-right-arrow.svg
+                    href: --next
+                    alt: Next Page
+                }
+            }
+        }
     }
 }
 

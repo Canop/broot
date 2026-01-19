@@ -10,7 +10,6 @@ Major updates are announced on Mastodon : [@dystroy@mastodon.dystroy.org](https:
 If it helps your company make money, consider helping me find time to add features and to develop new free open-source software.
 
 <iframe src="https://github.com/sponsors/Canop/button" title="Sponsor Canop" height="35" width="114" style="border: 0; border-radius: 6px;"></iframe>
-</div>
 
 # Discuss Broot in a chat room
 

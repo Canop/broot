@@ -15,6 +15,10 @@
 	--hovered-toc-bg: #1b465f66;
 	--toc-fg: #444;
 	--hovered-toc-fg: #000;
+	--prev-next-separator: none;
+	--prev-next-border: thin solid #bbb3;
+	--prev-next-bg: var(--toc-bg);
+	--hovered-prev-next-bg: var(--hovered-toc-item-bg);
 	--search-panel-wrapper-bg: #fffe;
 	--search-result-border: none;
 	--search-results-bg: #1b465f33;
@@ -158,6 +162,12 @@ nav a {
 	nav.site-nav {
 		flex-direction: row;
 		align-items: center;
+	}
+	nav.before-menu {
+		padding-left: 10px;
+	}
+	nav.after-menu {
+		padding-right: 10px;
 	}
 	nav.before-menu, nav.after-menu {
 		flex-direction: row;
@@ -628,4 +638,79 @@ footer {
 	flex-direction: column;
 	align-items: stretch;
 	font-size: 85%;
+}
+
+/* prev - next page links */
+
+.prev-next {
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between;
+	margin: 50px 0 10px 0;
+	padding: 20px 0;
+	font-size: 87%;
+	border-top: var(--prev-next-separator);
+}
+.prev-next .unexpanded {
+	opacity: 0;
+}
+.prev-next .nav-link.previous-page-link svg, .prev-next .nav-link.next-page-link svg {
+	max-width: 20px;
+	max-height: 20px;
+	margin: 0 0 0 10px;
+}
+.prev-next .nav-link.previous-page-link svg path,
+.prev-next .nav-link.next-page-link svg path {
+	fill: var(--text);
+	stroke: var(--text);
+}
+.prev-next .nav-link.previous-page-link:hover svg path,
+.prev-next .nav-link.next-page-link:hover svg path {
+	fill: #000;
+	stroke: #000;
+}
+.prev-next .nav-link {
+	flex: 1 1 30%;
+	padding: 10px 15px;
+	border: var(--prev-next-border);
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	background: var(--prev-next-bg);
+	color: var(--text);
+	transition: all 0.3s ease;
+}
+.prev-next .nav-link:hover {
+	background: var(--hovered-toc-bg);
+	color: #000;
+	transition: all 0.3s ease;
+}
+.prev-next .previous-page-link {
+	justify-content: flex-start;
+}
+.prev-next .next-page-link {
+	justify-content: flex-end;
+}
+@media (max-width: 768px) { /* mobile */
+	.prev-next .nav-link {
+		padding: 10px 2px;
+	}
+	.prev-next .nav-link.previous-page-link {
+		margin-right: 2px;
+	}
+	.prev-next .nav-link.next-page-link {
+		margin-left: 2px;
+	}
+}
+@media (min-width: 768px) { /* wide screens */
+	.prev-next .nav-link {
+		padding: 10px 15px;
+		border-radius: 5px;
+	}
+	.prev-next .nav-link.previous-page-link {
+		margin-right: 5px;
+	}
+	.prev-next .nav-link.next-page-link {
+		margin-left: 5px;
+	}
 }

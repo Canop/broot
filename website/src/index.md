@@ -6,12 +6,10 @@
 
 Broot is a better way to navigate directories, find files, and launch commands.
 
-[Install broot](install).
-
 ![cows](img/20241027-cows.png)
 
 
-# Get an overview of a directory, even a big one
+# Directory Overview
 
 Hit `br -s`
 

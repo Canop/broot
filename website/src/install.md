@@ -4,7 +4,7 @@
 Current version: **<a id=current-version href=../download>download</a>**
 <script>
 console.log("in script");
-fetch("../download/version")
+fetch("../download/version",{cache: "reload"})
     .then(response => response.text())
     .then(version => {
         console.log(`version: #${version}#`);
