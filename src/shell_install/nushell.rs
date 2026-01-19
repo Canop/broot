@@ -124,7 +124,9 @@ export def --env br [
     if $write_default_conf != null { $args = ($args | append $'--write-default-conf=($write_default_conf)') }
 
     let cmd_file = (
-        if ($env.XDG_RUNTIME_DIR? | is-not-empty) { $env.XDG_RUNTIME_DIR } else { $nu.temp-path }
+        if ($env.XDG_RUNTIME_DIR? | is-not-empty) { $env.XDG_RUNTIME_DIR } else {
+            if (version).minor >= 110 or (version).major > 0 { $nu.temp-dir } else { $nu.temp-path }
+        }
         | path join $"broot-(random chars).tmp"
     )
 
