@@ -39,7 +39,7 @@ impl fmt::Display for FuzzyPattern {
         &self,
         f: &mut fmt::Formatter<'_>,
     ) -> fmt::Result {
-        for &c in self.chars.iter() {
+        for &c in &self.chars {
             f.write_char(c)?
         }
         Ok(())
