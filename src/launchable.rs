@@ -211,7 +211,21 @@ impl Launchable {
                     }
                 }
                 if let Some(old_working_dir) = old_working_dir {
-                    std::env::set_current_dir(old_working_dir).unwrap();
+                    // if the directory was deleted while in terminal mode, try
+                    // to go climb the path until an existing folder is found
+                    let mut dir = old_working_dir.as_path();
+                    loop {
+                        let Err(err) = std::env::set_current_dir(dir) else {
+                            break;
+                        };
+
+                        if err.kind() == std::io::ErrorKind::NotFound && dir.parent().is_some() {
+                            dir = dir.parent().unwrap();
+                            continue;
+                        }
+
+                        panic!("Unable to restore the working directory: {}", err);
+                    }
                 }
                 exec_res?; // we trigger the error display after restoration
                 Ok(())
