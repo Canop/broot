@@ -211,7 +211,24 @@ impl Launchable {
                     }
                 }
                 if let Some(old_working_dir) = old_working_dir {
-                    std::env::set_current_dir(old_working_dir).unwrap();
+                    // if the directory was deleted while in terminal mode, try
+                    // to go climb the path until an existing folder is found
+                    let mut dir = old_working_dir.as_path();
+                    loop {
+                        let Err(err) = std::env::set_current_dir(dir) else {
+                            break;
+                        };
+
+                        if err.kind() != io::ErrorKind::NotFound {
+                            return Err(ProgramError::Io { source: err });
+                        }
+
+                        let Some(parent_dir) = dir.parent() else {
+                            return Err(ProgramError::Internal { details: "could not restore from terminal mode".to_string() });
+                        }
+
+                        dir = parent_dir;
+                    }
                 }
                 exec_res?; // we trigger the error display after restoration
                 Ok(())
