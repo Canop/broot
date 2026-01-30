@@ -219,12 +219,15 @@ impl Launchable {
                             break;
                         };
 
-                        if err.kind() == std::io::ErrorKind::NotFound && dir.parent().is_some() {
-                            dir = dir.parent().unwrap();
-                            continue;
+                        if err.kind() != io::ErrorKind::NotFound {
+                            return Err(ProgramError::Io { source: err });
                         }
 
-                        panic!("Unable to restore the working directory: {}", err);
+                        let Some(parent_dir) = dir.parent() else {
+                            return Err(ProgramError::Internal { details: "could not restore from terminal mode".to_string() });
+                        }
+
+                        dir = parent_dir;
                     }
                 }
                 exec_res?; // we trigger the error display after restoration
