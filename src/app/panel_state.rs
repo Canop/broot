@@ -615,6 +615,12 @@ pub trait PanelState {
             Internal::panel_left | Internal::panel_left_no_open => {
                 CmdResult::HandleInApp(Internal::panel_left_no_open)
             }
+            Internal::focus_panel_left => {
+                CmdResult::HandleInApp(Internal::focus_panel_left)
+            }
+            Internal::focus_panel_right => {
+                CmdResult::HandleInApp(Internal::focus_panel_right)
+            }
             // panel_right depends on the kind of panel and is usually handled
             // in a specific state, contrary to panel_right_no_open
             Internal::panel_right | Internal::panel_right_no_open => {
