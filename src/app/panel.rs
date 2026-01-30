@@ -17,7 +17,6 @@ use {
         verb::*,
     },
     termimad::{
-        TimedEvent,
         minimad::{
             Alignment,
             Composite,
@@ -33,7 +32,7 @@ pub struct Panel {
     pub areas: Areas,
     status: Status,
     pub purpose: PanelPurpose,
-    pub input: PanelInput,
+    pub input: Option<PanelInput>, // basically never None
     pub last_raw_pattern: Option<String>,
 }
 
@@ -54,7 +53,7 @@ impl Panel {
             areas,
             status,
             purpose: PanelPurpose::None,
-            input,
+            input: Some(input),
             last_raw_pattern: None,
         }
     }
@@ -111,7 +110,11 @@ impl Panel {
         app_state: &AppState,
         app_cmd_context: &'c AppCmdContext<'c>,
     ) {
-        let cmd = Command::from_raw(self.input.get_content(), false);
+        let Some(input) = &self.input else {
+            error!("Panel::refresh_input_status called on a panel with no input");
+            return;
+        };
+        let cmd = Command::from_raw(input.get_content(), false);
         let cc = CmdContext {
             cmd: &cmd,
             app: app_cmd_context,
@@ -147,42 +150,51 @@ impl Panel {
         self.state().get_pending_task().is_some()
     }
 
-    /// return a new command
-    /// Update the input field
-    pub fn add_event(
+    pub fn on_input_internal(
         &mut self,
-        w: &mut W,
-        event: &TimedEvent,
-        app_state: &AppState,
-        con: &AppContext,
-    ) -> Result<Command, ProgramError> {
-        let sel_info = self.states[self.states.len() - 1].sel_info(app_state);
-        let mode = self.state().get_mode();
-        let panel_state_type = self.state().get_type();
-        self.input
-            .on_event(w, event, con, sel_info, app_state, mode, panel_state_type)
+        internal: Internal,
+    ) -> Command {
+        let Some(input) = self.input.as_mut() else {
+            error!("Panel::on_input_internal called on a panel with no input");
+            return Command::None;
+        };
+        input.on_internal(internal)
     }
 
     pub fn push_state(
         &mut self,
         new_state: Box<dyn PanelState>,
     ) {
-        self.input.set_content(&new_state.get_starting_input());
+        if let Some(input) = &mut self.input {
+            input.set_content(&new_state.get_starting_input());
+        } else {
+            error!("Panel::push_state called on a panel with no input");
+        }
         self.states.push(new_state);
     }
     #[must_use]
     pub fn mut_state(&mut self) -> &mut dyn PanelState {
-        #[expect(clippy::missing_panics_doc, reason = "there's always at least one state")]
+        #[expect(
+            clippy::missing_panics_doc,
+            reason = "there's always at least one state"
+        )]
         self.states.last_mut().unwrap().as_mut()
     }
     #[must_use]
     pub fn state(&self) -> &dyn PanelState {
-        #[expect(clippy::missing_panics_doc, reason = "there's always at least one state")]
+        #[expect(
+            clippy::missing_panics_doc,
+            reason = "there's always at least one state"
+        )]
         self.states.last().unwrap().as_ref()
     }
 
     pub fn clear_input(&mut self) {
-        self.input.set_content("");
+        if let Some(input) = &mut self.input {
+            input.set_content("");
+        } else {
+            error!("Panel::clear_input called on a panel with no input");
+        }
     }
     /// remove the verb invocation from the input but keep
     /// the filter if there's one
@@ -190,11 +202,15 @@ impl Panel {
         &mut self,
         con: &AppContext,
     ) {
-        let mut command_parts = CommandParts::from(self.input.get_content());
+        let Some(input) = &mut self.input else {
+            error!("Panel::clear_input_invocation called on a panel with no input");
+            return;
+        };
+        let mut command_parts = CommandParts::from(input.get_content());
         if command_parts.verb_invocation.is_some() {
             command_parts.verb_invocation = None;
             let new_input = format!("{command_parts}");
-            self.input.set_content(&new_input);
+            input.set_content(&new_input);
         }
         self.mut_state().set_mode(con.initial_mode());
     }
@@ -203,12 +219,22 @@ impl Panel {
         &mut self,
         content: &str,
     ) {
-        self.input.set_content(content);
+        if let Some(input) = &mut self.input {
+            input.set_content(content);
+        } else {
+            error!("Panel::set_input_content called on a panel with no input");
+        }
     }
 
     #[must_use]
     pub fn get_input_content(&self) -> String {
-        self.input.get_content()
+        match &self.input {
+            Some(input) => input.get_content(),
+            None => {
+                error!("Panel::get_input_content called on a panel with no input");
+                String::new()
+            }
+        }
     }
 
     /// change the argument of the verb in the input, if there's one
@@ -216,11 +242,15 @@ impl Panel {
         &mut self,
         arg: String,
     ) {
-        let mut command_parts = CommandParts::from(self.input.get_content());
+        let Some(input) = &mut self.input else {
+            error!("Panel::set_input_arg called on a panel with no input");
+            return;
+        };
+        let mut command_parts = CommandParts::from(input.get_content());
         if let Some(invocation) = &mut command_parts.verb_invocation {
             invocation.args = Some(arg);
             let new_input = format!("{command_parts}");
-            self.input.set_content(&new_input);
+            input.set_content(&new_input);
         }
     }
 
@@ -228,7 +258,7 @@ impl Panel {
     pub fn remove_state(&mut self) -> bool {
         if self.states.len() > 1 {
             self.states.pop();
-            self.input.set_content(&self.state().get_starting_input());
+            self.set_input_content(&self.state().get_starting_input());
             true
         } else {
             false
@@ -251,7 +281,7 @@ impl Panel {
             self.write_purpose(w, disc.panel_skin, disc.screen, disc.con)?;
             let flags = self.state().get_flags();
             #[allow(clippy::cast_possible_truncation)]
-            let input_content_len = self.input.get_content().len() as u16;
+            let input_content_len = self.get_input_content().len() as u16;
             let flags_len = flags_display::visible_width(&flags);
             if input_area.width > input_content_len + 1 + flags_len {
                 input_area.width -= flags_len + 1;
@@ -260,13 +290,12 @@ impl Panel {
                 flags_display::write(w, &flags, disc.panel_skin)?;
             }
         }
-        let cursor_pos = self.input.display(
-            w,
-            disc.active,
-            self.state().get_mode(),
-            input_area,
-            disc.panel_skin,
-        )?;
+        let mode = self.state().get_mode();
+        let Some(input) = self.input.as_mut() else {
+            error!("Panel::display called on a panel with no input");
+            return Ok(None);
+        };
+        let cursor_pos = input.display(w, disc.active, mode, input_area, disc.panel_skin)?;
         Ok(cursor_pos)
     }
 

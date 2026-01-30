@@ -88,11 +88,9 @@ impl PanelInput {
         &mut self,
         w: &mut W,
         timed_event: &TimedEvent,
-        con: &AppContext,
-        sel_info: SelInfo<'_>,
+        app_panel_states: &AppPanelStates<'_>,
         app_state: &AppState,
-        mode: Mode,
-        panel_state_type: PanelStateType,
+        con: &AppContext,
     ) -> Result<Command, ProgramError> {
         let cmd = match timed_event {
             TimedEvent {
@@ -111,11 +109,9 @@ impl PanelInput {
             } => self.on_key(
                 timed_event,
                 *key,
-                con,
-                sel_info,
+                app_panel_states,
                 app_state,
-                mode,
-                panel_state_type,
+                con,
             ),
             _ => Command::None,
         };
@@ -343,20 +339,33 @@ impl PanelInput {
 
     fn find_key_verb<'c>(
         key: KeyCombination,
+        panel_states: &AppPanelStates<'_>,
+        app_state: &AppState,
         con: &'c AppContext,
-        sel_info: SelInfo<'_>,
-        panel_state_type: PanelStateType,
     ) -> Option<&'c Verb> {
+        let active_sel_info = panel_states.active().sel_info(app_state);
         for verb in con.verb_store.verbs() {
             // note that there can be several verbs with the same key and
             // not all of them can apply
             if !verb.keys.contains(&key) {
                 continue;
             }
-            if !sel_info.is_accepted_by(verb.selection_condition) {
+            let Some(panel_state) = panel_states.by_ref(verb.impacted_panel) else {
+                continue;
+            };
+            if !verb.can_be_called_in_panel(panel_state.get_type()) {
                 continue;
             }
-            if !verb.can_be_called_in_panel(panel_state_type) {
+
+            let nasi;
+            let sel_info = if verb.impacted_panel.is_default() {
+                &active_sel_info
+            } else {
+                nasi = panel_state.sel_info(app_state);
+                &nasi
+            };
+
+            if !sel_info.is_accepted_by(verb.selection_condition) {
                 continue;
             }
             if !verb.file_extensions.is_empty() {
@@ -365,7 +374,7 @@ impl PanelInput {
                     continue;
                 }
             }
-            debug!("verb for key: {}", &verb.execution);
+            debug!("verb for key: {:#?}", &verb);
             return Some(verb);
         }
         None
@@ -424,18 +433,19 @@ impl PanelInput {
         &mut self,
         timed_event: &TimedEvent,
         key: KeyCombination,
-        con: &AppContext,
-        sel_info: SelInfo<'_>,
+        panel_states: &AppPanelStates<'_>,
         app_state: &AppState,
-        mode: Mode,
-        panel_state_type: PanelStateType,
+        con: &AppContext,
     ) -> Command {
         // value of raw and parts before any key related change
         let raw = self.input_field.get_content();
         let parts = CommandParts::from(raw.clone());
 
+        // The mode we check is the one of the panel holding
+        // the input, thus the active panel
+        let mode = panel_states.active().get_mode();
         let verb = if self.is_key_allowed_for_verb(key, mode) {
-            Self::find_key_verb(key, con, sel_info, panel_state_type)
+            Self::find_key_verb(key, panel_states, app_state, con)
         } else {
             None
         };
@@ -453,6 +463,17 @@ impl PanelInput {
         if Verb::is_some_internal(verb, Internal::escape) {
             return self.escape(con, mode);
         }
+
+        let mut panel_state = panel_states.active();
+        if let Some(verb) = verb {
+            if let Some(ps) = panel_states.by_ref(verb.impacted_panel)
+            {
+                panel_state = ps;
+            }
+        }
+
+        let sel_info = panel_state.sel_info(app_state);
+        let panel_state_type = panel_state.get_type();
 
         // 'tab' completion of a verb or one of its arguments
         if Verb::is_some_internal(verb, Internal::next_match) {

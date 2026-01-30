@@ -1,6 +1,7 @@
 mod app;
 mod app_context;
 mod app_state;
+mod app_panel_states;
 mod cmd_context;
 mod cmd_result;
 mod display_context;
@@ -13,9 +14,12 @@ mod selection;
 mod standard_status;
 mod state_type;
 mod status;
+mod panel_reference;
 
 pub use {
+    panel_reference::*,
     app::App,
+    app_panel_states::*,
     app_context::AppContext,
     app_state::*,
     cmd_context::*,

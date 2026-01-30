@@ -158,6 +158,21 @@ impl App {
         Ok(app)
     }
 
+    fn  panel_states(&self) -> AppPanelStates<'_> {
+        let entries = self
+            .panels
+            .iter()
+            .map(|panel| AppPanelStatesEntry {
+                panel_id: panel.id,
+                state: panel.state(),
+            })
+            .collect();
+        AppPanelStates {
+            entries,
+            active_panel_idx: self.active_panel_idx,
+        }
+    }
+
     fn panel_ref_to_idx(
         &self,
         panel_ref: PanelReference,
@@ -168,6 +183,13 @@ impl App {
             PanelReference::Rightest => Some(self.panels.len().get() - 1),
             PanelReference::Id(id) => self.panel_id_to_idx(id),
             PanelReference::Preview => self.preview_panel.and_then(|id| self.panel_id_to_idx(id)),
+            PanelReference::Idx(idx) => {
+                if idx < self.panels.len().get() {
+                    Some(idx)
+                } else {
+                    None
+                }
+            }
         }
     }
 
@@ -344,9 +366,16 @@ impl App {
             screen: self.screen, // it can't change in this function
             con,
         };
-        let cmd_result = self
-            .mut_panel()
+
+        let panel_ref = cmd.triggered_verb(&con.verb_store)
+            .map(|v| v.impacted_panel)
+            .unwrap_or(PanelReference::Active);
+        info!("panel_ref: {:?}", &panel_ref);
+        let panel_idx = self.panel_ref_to_idx(panel_ref)
+            .unwrap_or(self.active_panel_idx);
+        let cmd_result = self.panels[panel_idx]
             .apply_command(w, cmd, app_state, &app_cmd_context)?;
+
         info!("cmd_result: {:?}", &cmd_result);
         match cmd_result {
             CmdResult::ApplyOnPanel { id } => {
@@ -438,9 +467,13 @@ impl App {
                 match internal {
                     Internal::escape => {
                         let mode = self.panel().state().get_mode();
-                        let cmd = self.mut_panel().input.escape(con, mode);
-                        debug!("cmd on escape: {cmd:?}");
-                        self.apply_command(w, &cmd, panel_skin, app_state, con)?;
+                        if let Some(input) = self.mut_panel().input.as_mut() {
+                            let cmd = input.escape(con, mode);
+                            debug!("cmd on escape: {cmd:?}");
+                            self.apply_command(w, &cmd, panel_skin, app_state, con)?;
+                        } else {
+                            error!("unexpected missing input in panel");
+                        }
                     }
                     Internal::focus_staging_area_no_open => {
                         new_active_panel_idx = self
@@ -548,7 +581,7 @@ impl App {
                         }
                     }
                     _ => {
-                        let cmd = self.mut_panel().input.on_internal(internal);
+                        let cmd = self.mut_panel().on_input_internal(internal);
                         if cmd.is_none() {
                             warn!(
                                 "unhandled propagated internal. internal={internal:?} cmd={cmd:?}"
@@ -969,7 +1002,25 @@ impl App {
                     // event handled by the panel
                     if !handled {
                         debug!("not handled at app level: {:?}", &event);
-                        let cmd = self.mut_panel().add_event(w, &event, &app_state, con)?;
+
+                        //  we mut first take (hard borrow) the input from the panel to
+                        //   solve the double borrow problem
+                        let Some(mut borrowed_input) = self.mut_panel().input.take() else {
+                            error!("unexpected missing input in panel");
+                            return Err(ProgramError::Internal { // that would be a bug
+                                details: "missing panel input".to_string(),
+                            });
+                        };
+                        let app_panel_states = self.panel_states();
+                        let cmd = borrowed_input.on_event(
+                            w,
+                            &event,
+                            &app_panel_states,
+                            &app_state,
+                            con,
+                        );
+                        self.mut_panel().input = Some(borrowed_input); // put back the input
+                        let cmd = cmd?;
                         info!("command after add_event: {:?}", &cmd);
                         self.apply_command(w, &cmd, &skin.focused, &mut app_state, con)?;
                     }
