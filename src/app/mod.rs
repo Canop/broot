@@ -1,7 +1,7 @@
 mod app;
 mod app_context;
 mod app_state;
-mod app_panel_states;
+mod app_panels;
 mod cmd_context;
 mod cmd_result;
 mod display_context;
@@ -19,7 +19,7 @@ mod panel_reference;
 pub use {
     panel_reference::*,
     app::App,
-    app_panel_states::*,
+    app_panels::*,
     app_context::AppContext,
     app_state::*,
     cmd_context::*,

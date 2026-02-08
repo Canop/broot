@@ -30,7 +30,7 @@ pub struct Panel {
     pub id: PanelId,
     states: Vec<Box<dyn PanelState>>, // stack: the last one is current
     pub areas: Areas,
-    status: Status,
+    pub status: Status,
     pub purpose: PanelPurpose,
     pub input: Option<PanelInput>, // basically never None
     pub last_raw_pattern: Option<String>,
@@ -103,35 +103,6 @@ impl Panel {
         result
     }
 
-    /// called on focusing the panel and before the display,
-    /// this updates the status from the command read in the input
-    pub fn refresh_input_status<'c>(
-        &mut self,
-        app_state: &AppState,
-        app_cmd_context: &'c AppCmdContext<'c>,
-    ) {
-        let Some(input) = &self.input else {
-            error!("Panel::refresh_input_status called on a panel with no input");
-            return;
-        };
-        let cmd = Command::from_raw(input.get_content(), false);
-        let cc = CmdContext {
-            cmd: &cmd,
-            app: app_cmd_context,
-            panel: PanelCmdContext {
-                areas: &self.areas,
-                purpose: self.purpose,
-            },
-        };
-        let has_previous_state = self.states.len() > 1;
-        self.status = self.state().get_status(
-            app_state,
-            &cc,
-            has_previous_state,
-            self.areas.status.width as usize,
-        );
-    }
-
     /// do the next pending task stopping as soon as there's an event
     /// in the dam
     pub fn do_pending_task(
@@ -189,31 +160,6 @@ impl Panel {
         self.states.last().unwrap().as_ref()
     }
 
-    pub fn clear_input(&mut self) {
-        if let Some(input) = &mut self.input {
-            input.set_content("");
-        } else {
-            error!("Panel::clear_input called on a panel with no input");
-        }
-    }
-    /// remove the verb invocation from the input but keep
-    /// the filter if there's one
-    pub fn clear_input_invocation(
-        &mut self,
-        con: &AppContext,
-    ) {
-        let Some(input) = &mut self.input else {
-            error!("Panel::clear_input_invocation called on a panel with no input");
-            return;
-        };
-        let mut command_parts = CommandParts::from(input.get_content());
-        if command_parts.verb_invocation.is_some() {
-            command_parts.verb_invocation = None;
-            let new_input = format!("{command_parts}");
-            input.set_content(&new_input);
-        }
-        self.mut_state().set_mode(con.initial_mode());
-    }
 
     pub fn set_input_content(
         &mut self,
@@ -358,14 +304,4 @@ impl Panel {
         Ok(())
     }
 
-    // /// return the last non empty pattern used in a previous state
-    // pub fn last_pattern(&self) -> Option<&InputPattern> {
-    //     for state in self.states.iter().rev().skip(1) {
-    //         let pattern = state.pattern();
-    //         if pattern.is_some() {
-    //             return Some(pattern);
-    //         }
-    //     }
-    //     None
-    // }
 }

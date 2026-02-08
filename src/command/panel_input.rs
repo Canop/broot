@@ -88,7 +88,7 @@ impl PanelInput {
         &mut self,
         w: &mut W,
         timed_event: &TimedEvent,
-        app_panel_states: &AppPanelStates<'_>,
+        app_panels: &AppPanels,
         app_state: &AppState,
         con: &AppContext,
     ) -> Result<Command, ProgramError> {
@@ -109,7 +109,7 @@ impl PanelInput {
             } => self.on_key(
                 timed_event,
                 *key,
-                app_panel_states,
+                app_panels,
                 app_state,
                 con,
             ),
@@ -241,8 +241,8 @@ impl PanelInput {
     /// it's not called on `on_key` but by the app.
     pub fn escape(
         &mut self,
-        con: &AppContext,
         mode: Mode,
+        con: &AppContext,
     ) -> Command {
         self.tab_cycle_count = None;
         if let Some(raw) = self.input_before_cycle.take() {
@@ -339,18 +339,18 @@ impl PanelInput {
 
     fn find_key_verb<'c>(
         key: KeyCombination,
-        panel_states: &AppPanelStates<'_>,
+        panels: &AppPanels,
         app_state: &AppState,
         con: &'c AppContext,
     ) -> Option<&'c Verb> {
-        let active_sel_info = panel_states.active().sel_info(app_state);
+        let active_sel_info = panels.state().sel_info(app_state);
         for verb in con.verb_store.verbs() {
             // note that there can be several verbs with the same key and
             // not all of them can apply
             if !verb.keys.contains(&key) {
                 continue;
             }
-            let Some(panel_state) = panel_states.by_ref(verb.impacted_panel) else {
+            let Some(panel_state) = panels.state_by_ref(verb.impacted_panel) else {
                 continue;
             };
             if !verb.can_be_called_in_panel(panel_state.get_type()) {
@@ -433,7 +433,7 @@ impl PanelInput {
         &mut self,
         timed_event: &TimedEvent,
         key: KeyCombination,
-        panel_states: &AppPanelStates<'_>,
+        panels: &AppPanels,
         app_state: &AppState,
         con: &AppContext,
     ) -> Command {
@@ -443,9 +443,9 @@ impl PanelInput {
 
         // The mode we check is the one of the panel holding
         // the input, thus the active panel
-        let mode = panel_states.active().get_mode();
+        let mode = panels.state().get_mode();
         let verb = if self.is_key_allowed_for_verb(key, mode) {
-            Self::find_key_verb(key, panel_states, app_state, con)
+            Self::find_key_verb(key, panels, app_state, con)
         } else {
             None
         };
@@ -461,12 +461,12 @@ impl PanelInput {
 
         // usually 'esc' key
         if Verb::is_some_internal(verb, Internal::escape) {
-            return self.escape(con, mode);
+            return self.escape(mode, con);
         }
 
-        let mut panel_state = panel_states.active();
+        let mut panel_state = panels.state();
         if let Some(verb) = verb {
-            if let Some(ps) = panel_states.by_ref(verb.impacted_panel)
+            if let Some(ps) = panels.state_by_ref(verb.impacted_panel)
             {
                 panel_state = ps;
             }
