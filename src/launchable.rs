@@ -34,6 +34,7 @@ use {
             Write,
         },
         path::PathBuf,
+        path::Path,
         process::Command,
     },
     which::which,
@@ -186,7 +187,10 @@ impl Launchable {
                 let mut old_working_dir = None;
                 if let Some(working_dir) = working_dir {
                     old_working_dir = std::env::current_dir().ok();
-                    std::env::set_current_dir(working_dir).unwrap();
+                    if !try_set_current_dir(working_dir) {
+                        warn!("Unable to set working dir to {working_dir:?}");
+                        old_working_dir = None;
+                    }
                 }
                 let exec_res = Command::new(exe)
                     .args(args.iter())
@@ -211,23 +215,8 @@ impl Launchable {
                     }
                 }
                 if let Some(old_working_dir) = old_working_dir {
-                    // if the directory was deleted while in terminal mode, try
-                    // to go climb the path until an existing folder is found
-                    let mut dir = old_working_dir.as_path();
-                    loop {
-                        let Err(err) = std::env::set_current_dir(dir) else {
-                            break;
-                        };
-
-                        if err.kind() != io::ErrorKind::NotFound {
-                            return Err(ProgramError::Io { source: err });
-                        }
-
-                        let Some(parent_dir) = dir.parent() else {
-                            return Err(ProgramError::Internal { details: "could not restore from terminal mode".to_string() });
-                        }
-
-                        dir = parent_dir;
+                    if !try_set_current_dir(&old_working_dir) {
+                        warn!("Unable to restore working dir to {old_working_dir:?}");
                     }
                 }
                 exec_res?; // we trigger the error display after restoration
@@ -238,5 +227,20 @@ impl Launchable {
                 Ok(())
             }
         }
+    }
+}
+
+/// Try set the current dir to the given path, and if it fails, try to climb the path until an
+/// existing folder is found. Return true if the current dir has been changed, false otherwise.
+pub fn try_set_current_dir(mut dir: &Path) -> bool {
+    loop {
+        if std::env::set_current_dir(dir).is_ok() {
+            debug!("Working dir set to {dir:?}");
+            return true;
+        }
+        let Some(parent_dir) = dir.parent() else {
+            return false;
+        };
+        dir = parent_dir;
     }
 }
