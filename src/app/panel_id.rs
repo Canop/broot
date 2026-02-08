@@ -7,3 +7,11 @@ impl From<usize> for PanelId {
         Self(u)
     }
 }
+
+impl PanelId {
+    /// get the inner usize
+    #[must_use]
+    pub fn as_usize(&self) -> usize {
+        self.0
+    }
+}

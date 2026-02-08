@@ -530,6 +530,7 @@ impl VerbStore {
         if !vc.panels.is_empty() {
             verb.panels.clone_from(&vc.panels);
         }
+        verb.impacted_panel = vc.impacted_panel;
         verb.selection_condition = vc.apply_to;
         Ok(())
     }

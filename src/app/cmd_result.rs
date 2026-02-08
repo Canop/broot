@@ -18,16 +18,6 @@ pub enum HDir {
     Right,
 }
 
-/// the symbolic reference to the panel to close
-#[derive(Debug, Clone, Copy, PartialEq)]
-pub enum PanelReference {
-    Active,
-    Leftest,
-    Rightest,
-    Id(PanelId),
-    Preview,
-}
-
 /// Result of applying a command to a state
 pub enum CmdResult {
     ApplyOnPanel {

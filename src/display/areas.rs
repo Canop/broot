@@ -83,6 +83,7 @@ impl Areas {
         );
     }
 
+    /// Compute the areas for all panels
     fn compute_areas(
         panels: &mut [Panel],
         layout_instructions: &LayoutInstructions,

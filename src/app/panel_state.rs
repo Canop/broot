@@ -1025,7 +1025,7 @@ pub trait PanelState {
         &mut self,
         screen: Screen,
         con: &AppContext,
-    ) -> Command;
+    ) -> Command; // FIXME this command is never used
 
     fn tree_options(&self) -> TreeOptions;
 
