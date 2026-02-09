@@ -1,6 +1,7 @@
 .bacon-locations
 .ignore
 /*-deploy.sh
+/d.sh
 /.config
 /bench.sh
 /broot_*.zip

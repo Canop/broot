@@ -1,4 +1,5 @@
-### next
+### v1.55.0 - 2026-02-09
+<a name="v1.55.0"></a>
 - activate Kitty Graphics Protocol to display Hi-Res images in iTerm2 - Thanks @kidonng
 - Tokyo Night skin ( https://github.com/Canop/broot/blob/main/resources/default-conf/skins/tokyo-night.hjson ) - Thanks @hb-hello
 - matches related to several name patterns joined with and/or in a composite pattern are merged instead of having just the first one shown - Thanks @Tomaz-Vieira
