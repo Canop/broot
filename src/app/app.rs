@@ -178,8 +178,8 @@ impl App {
                     let screen = self.panels.screen();
                     self.panels.refresh_active_panel(con);
                     if let Some(new_arg) = new_arg {
-                        self.panels.mut_panel().set_input_arg(new_arg);
-                        let new_input = self.panels.panel().get_input_content();
+                        self.panels.set_input_arg(new_arg);
+                        let new_input = self.panels.get_input_content();
                         let cmd = Command::from_raw(new_input, false);
                         let app_cmd_context = AppCmdContext {
                             panel_skin,
@@ -347,7 +347,7 @@ impl App {
             }
             CmdResult::NewState { state, message } => {
                 self.panels.clear_input();
-                self.panels.mut_panel().push_state(state);
+                self.panels.push_state(state);
                 if let Some(md) = message {
                     self.panels.mut_panel().set_message(md);
                 } else {
@@ -534,6 +534,7 @@ impl App {
             #[allow(unused_mut)]
             match event {
                 Either::First(Some(event)) => {
+                    info!("<-- event: {:?}", &event);
                     if let Some(key_combination) = event.key_combination {
                         info!("key combination: {key_combination}");
                     }

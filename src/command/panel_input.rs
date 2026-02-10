@@ -374,7 +374,6 @@ impl PanelInput {
                     continue;
                 }
             }
-            debug!("verb for key: {:#?}", &verb);
             return Some(verb);
         }
         None
