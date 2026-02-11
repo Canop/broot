@@ -6,6 +6,8 @@ use {
             Internal,
             VerbId,
             VerbInvocation,
+            VerbStore,
+            Verb,
         },
     },
     bet::BeTree,
@@ -63,6 +65,16 @@ impl Command {
 
     pub fn is_none(&self) -> bool {
         matches!(self, Command::None)
+    }
+
+    pub fn triggered_verb<'v>(
+        &self,
+        verb_store: &'v VerbStore,
+    ) -> Option<&'v Verb> {
+        match self {
+            Self::VerbTrigger { verb_id, .. } => Some(verb_store.verb(*verb_id)),
+            _ => None,
+        }
     }
 
     pub fn as_verb_invocation(&self) -> Option<&VerbInvocation> {

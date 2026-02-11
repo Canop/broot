@@ -11,11 +11,11 @@ use {
 mod conf;
 mod default;
 mod default_flags;
-pub mod file_size;
 mod format;
 mod import;
 mod special_handling_conf;
 mod verb_conf;
+pub mod file_size;
 
 pub use {
     conf::Conf,
