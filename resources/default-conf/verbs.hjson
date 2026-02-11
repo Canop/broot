@@ -95,6 +95,20 @@ verbs: [
         leave_broot: false
     }
 
+    # Scroll the rightest panel on alt-pagedown and alt-pageup,
+    # while keeping the focus on your current panel
+    {
+        key: alt-pagedown
+        internal: page_down
+        impacted_panel: right
+    }
+    {
+        key: alt-pageup
+        internal: page_up
+        panel: right
+    }
+
+
     # Here's an example of a verb needing the shell capabilities.
     # It copies all children of the currently selected directory
     #  to a destination you type.
