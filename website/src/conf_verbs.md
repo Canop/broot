@@ -29,22 +29,23 @@ The possible attributes are:
 
 name  | default | role
 -|-|-
-invocation | | how the verb is called by the user, with placeholders for arguments
-internal | | execution, when your verb is based on a predefined broot verb
-external | | execution, when your verb is based on an external command
+apply_to | | the type of selection this verb applies to: `"file"`, `"text_file"`, `"binary_file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies, eg, to only text files or only to directories
+auto_exec | `true` | whether to execute the verb as soon as it's key-triggered (instead of waiting for <kbd>enter</kbd>)
 cmd | | a semicolon sequence to execute, similar to an argument you pass to `--cmd`
 extensions | | optional array of allowed file extensions
+external | | execution, when your verb is based on an external command
+from_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
+impacted_panel | `active` | panel on which to execute the action, can be `left`, `right`, `preview`
+internal | | execution, when your verb is based on a predefined broot verb
+invocation | | how the verb is called by the user, with placeholders for arguments
 key | | a keyboard key triggering execution
 keys | | several keyboard shortcuts triggering execution (if you want to have the choice)
-shortcut | | an alternate way to call the verb (without the arguments part)
 leave_broot | `true` | whether to quit broot on execution
-from_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
-apply_to | | the type of selection this verb applies to: `"file"`, `"text_file"`, `"binary_file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies, eg, to only text files or only to directories
-working_dir | | the working directory of the external application, for example `"{directory}"` for the closest directory (the working dir isn't set if the directory doesn't exist)
-set_working_dir | `false` | whether the working dir of the process must be set to the currently selected directory (it's equivalent to `workding_dir: "{directory}"`)
-auto_exec | `true` | whether to execute the verb as soon as it's key-triggered (instead of waiting for <kbd>enter</kbd>)
 panels | *all* | optional list of panel types in which the verb can be called. Default is all panels: `[tree, fs, preview, help, stage]`
+set_working_dir | `false` | whether the working dir of the process must be set to the currently selected directory (it's equivalent to `workding_dir: "{directory}"`)
+shortcut | | an alternate way to call the verb (without the arguments part)
 switch_terminal | `true` | whether to switch from alternate to normal terminal during execution
+working_dir | | the working directory of the external application, for example `"{directory}"` for the closest directory (the working dir isn't set if the directory doesn't exist)
 
 The execution is defined either by `internal`, `external` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
 

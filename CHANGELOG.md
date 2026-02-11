@@ -1,3 +1,6 @@
+### next
+- `impacted_panel` verb argument, allows the effect of a verb to be on another panel (eg to scroll the preview panel without removing the focus from the tree) - Fix #1119
+
 ### v1.55.0 - 2026-02-09
 <a name="v1.55.0"></a>
 - activate Kitty Graphics Protocol to display Hi-Res images in iTerm2 - Thanks @kidonng
