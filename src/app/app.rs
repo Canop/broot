@@ -225,12 +225,12 @@ impl App {
                         self.panels.focus_by_type(PanelStateType::Stage);
                     }
                     Internal::focus_panel_left => {
-                        let len = self.panels.len().get();
-                        new_active_panel_idx = Some((self.active_panel_idx + len - 1) % len);
+                        let len = self.panels.len();
+                        new_active_panel_idx = Some((self.panels.active_panel_idx() + len - 1) % len);
                     }
                     Internal::focus_panel_right => {
-                        let len = self.panels.len().get();
-                        new_active_panel_idx = Some((self.active_panel_idx + 1) % len);
+                        let len = self.panels.len();
+                        new_active_panel_idx = Some((self.panels.active_panel_idx() + 1) % len);
                     }
                     Internal::panel_left_no_open => {
                         // we're here because the state wants us to either move to the panel

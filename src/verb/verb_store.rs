@@ -263,6 +263,7 @@ impl VerbStore {
             .with_key(key!(ctrl - u))
             .with_key(key!(pageup));
         self.add_internal(focus_panel_left);
+        self.add_internal(focus_panel_right);
         self.add_internal(panel_left_no_open)
             .with_key(key!(ctrl - left));
         self.add_internal(panel_right).with_key(key!(ctrl - right));

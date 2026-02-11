@@ -1,5 +1,6 @@
 ### next
 - `impacted_panel` verb argument, allows the effect of a verb to be on another panel (eg to scroll the preview panel without removing the focus from the tree) - Fix #1119
+- `focus_panel_left` and `focus_panel_right` internals - Fix #1115
 
 ### v1.55.0 - 2026-02-09
 <a name="v1.55.0"></a>
