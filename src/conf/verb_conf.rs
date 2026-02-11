@@ -1,6 +1,9 @@
 use {
     crate::{
-        app::PanelStateType,
+        app::{
+            PanelStateType,
+            PanelReference,
+        },
         verb::*,
     },
     serde::{
@@ -41,6 +44,11 @@ pub struct VerbConf {
     #[serde(default, skip_serializing_if = "FileTypeCondition::is_default")]
     pub apply_to: FileTypeCondition,
 
+    /// The panel to which the verb applies (even if triggered from
+    /// another panel)
+    #[serde(default, skip_serializing_if = "PanelReference::is_default")]
+    pub impacted_panel: PanelReference,
+
     pub set_working_dir: Option<bool>,
 
     pub working_dir: Option<String>,
@@ -51,8 +59,10 @@ pub struct VerbConf {
 
     pub switch_terminal: Option<bool>,
 
+    /// The type of panels filtering the verb
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub panels: Vec<PanelStateType>,
 
     pub refresh_after: Option<bool>,
 }
+

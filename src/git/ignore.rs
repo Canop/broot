@@ -262,7 +262,6 @@ impl Ignorer {
             }
             let ignore_file = dir.join(filename);
             if let Ok(gif) = IgnoreFile::new(&ignore_file, dir, local_git_ignore) {
-                debug!("pushing GIF {:#?}", &gif);
                 chain.push(self.files.alloc(gif));
             }
         }

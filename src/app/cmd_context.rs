@@ -20,14 +20,15 @@ pub struct CmdContext<'c> {
 
 /// the part of the immutable command execution context which comes from the app
 pub struct AppCmdContext<'c> {
-    pub panel_skin: &'c PanelSkin,
+    pub panel_skin: &'c PanelSkin, // needed for example by print_tree verbs
     pub preview_panel: Option<PanelId>, // id of the app's preview panel
-    pub stage_panel: Option<PanelId>,   // id of the app's preview panel
+    pub stage_panel: Option<PanelId>,   // id of the app's stage panel
     pub screen: Screen,
     pub con: &'c AppContext,
 }
 
 /// the part of the command execution context which comes from the panel
+///  in which the command is executed.
 pub struct PanelCmdContext<'c> {
     pub areas: &'c Areas,
     pub purpose: PanelPurpose,

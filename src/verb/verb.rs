@@ -75,6 +75,9 @@ pub struct Verb {
     pub show_in_doc: bool,
 
     pub panels: Vec<PanelStateType>,
+
+    /// The panel on which the verb applies (even if triggered from another panel)
+    pub impacted_panel: PanelReference,
 }
 
 impl PartialEq for Verb {
@@ -125,6 +128,7 @@ impl Verb {
             auto_exec: true,
             show_in_doc: true,
             panels: Vec::new(),
+            impacted_panel: PanelReference::default(),
         })
     }
     pub fn with_key(
