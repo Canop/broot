@@ -12,6 +12,7 @@ pub mod internal_select;
 mod invocation_parser;
 mod sequence_execution;
 mod verb;
+mod verb_args;
 mod verb_description;
 mod verb_execution;
 mod verb_invocation;
@@ -32,6 +33,7 @@ pub use {
     once_cell::sync::Lazy,
     sequence_execution::SequenceExecution,
     verb::Verb,
+    verb_args::*,
     verb_description::VerbDescription,
     verb_execution::VerbExecution,
     verb_invocation::*,

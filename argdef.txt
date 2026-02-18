@@ -1,0 +1,265 @@
+Must cover https://github.com/Canop/broot/issues/1123
+Goals:
+    - single command for several files, https://github.com/Canop/broot/issues/465
+    - clean and make more consistent the arg flags used both in invocation parsers and in execution builders
+    - specify, for multiple selection, whether the command is executed once, or for each selected path
+    - specify how to build the command for multiple paths (json-array, comma-separated, lines)
+    - specify the possible values, how to autocomplete values (eg theme, path-from-parent)
+    - specify whether we add a \n at end
+    - specify the source & type:
+        - selection(s)
+        - themes
+        - user input
+    - allow write/writeln
+    - recreate the :print_path verb
+    - paths may be separated by space, comma, or other
+Notes:
+    - flags can be used in invocation parser, in execution builder, or both
+    - path-from-parent was already a formatting flag, just like the new ones, but also used for typing
+    - better document flags like path-from-parent
+    - there can be several flags
+    - flags could become more complex ? like a formatting patter ?
+    - remove the regex based invocation parser ?
+Example arg defs:
+    {file:comma-separated} {file:space-separated} {thing:path-from-parent} {file:lines}
+    support --p fileA --p fileB --p fileC ? Or we can give them to a script perhaps
+        Maybe the rust macro approach with repeaters ?
+Design:
+    - we need a common structure to hold a string containing arg defs, (should not be invocation or execution)
+        -> name ?
+    - arg_def / selection_type doesn't seem to be used [ to check ]
+    - the fact a verb is called once/for-each on multiple selection can also be carried by the verb (will be, but hidden for now)
+    - enum on verb: on_multiple_selection: no-exec|exec-for-each|exec-once
+    - deduce whether a verb is called once or several time for a multiple selection
+        "only verbs returning to broot on end can be executed on a multi-selection"
+            check there if all arguments provide support for multiple-selection
+Use-Cases:
+    old:
+        - path-from-parent . directory
+            > 	invocation = "cp {newpath}"
+            > 	execution = "/bin/cp -r {file} {newpath:path-from-parent}"
+            > The :path-from-parent formatting means the token will be interpreted as a path, and if it's
+            > not starting with a / will be prefixed by the parent path.
+            > It's possible to also use `{subpath:path-from-directory}` where directory is parent only if
+            > the selected file isn't a directory itself.
+        - theme
+    new:
+        - write_stdout
+            https://github.com/Canop/broot/pull/901#issuecomment-2224667086
+            write_stdout {file:comma-separated};:quit or write_stdout {directory:json-array} or write_stdout {directory:lines}.
+        - verbs dumping as JSON
+        - send all files to pipe-rename (issue 914)
+See:
+    ArgDef, InvocationParser, execution_builder
+Known flags:
+    PathFromParent,
+    PathFromDirectory,
+    Path,
+    Theme,
+    JsonArray,
+    FullLines,
+    CommaSeparated,
+    Optional, // with default ?
+    AbsolutePath ? // to transform to absolute canonical
+Tests to do:
+    write logs, write json, cp with path-from-parent (see changelog), pipe-rename, cat
+
+
+=======================================================
+
+2 different kinds of "patterns":
+    - invocation pattern: context+string -> arg_values
+    - execution pattern: context+arg_values -> string
+Both need flags for their arg_def. A flag can have an 'input' or 'output' nature:
+    - 'theme' is 'input': it changes the way it's inputed
+    - 'comma-separated' is 'output': it changes the way it's written
+the execution pattern string provides the arg_defs
+
+struct ArgsPattern, read from a string, contains the pattern, the arg_defs
+    with functions to parse an invocation, and to build a string from a value provider
+        (define a trait ArgValueProvider)
+Plan:
+[ ] args module
+[ ] ArgsPattern, ArgFlag, ArgDef
+    ArgDef has a name, a set of ArgFlag (bitset ?)
+[ ] move the parsing of argdefs to that struct, use it in invocation parsers and execution builders
+[ ] verb.multi_selection_behavior: do we do one call or several ?
+
+========================================================
+
+Change ExecPattern to store arg_defs, each with flags
+
+Bring InvocationParser (optional) and ExecPattern
+    into a struct with also arg defs
+
+struct VerbArgDef
+    key: String
+    flags: EnumSet<VerbArgFlag>
+struct InvExec
+    arg_defs: Vec<VecArgDef>
+
+
+--------------------- Approach exec first --------------------------
+
+Don't try to change the invocation parser for now, but only replace the
+ exec_pattern with something incorporating arg defs
+ ArgsPattern is built from either a string or a vec of string (like ExecPattern)
+ It stores the ArgDef
+
+[ ] args module
+[ ] ArgDefFlag enum, using enumset crate
+[ ] VerbArgDef { key, EnumSet<ArgDefFlag> }
+[ ] ArgsPattern, holding the ExecPattern and the arg-defs
+
+-------------------------------
+
+
+
+----------------------------------
+
+macro-like approach
+
+First, something to remember: to call an executable broot (or any program) doesn't generate a string but several ones (one for the executable name and one for each arg, which solves space escaping problems).
+So when giving examples of produced commands here, I'll always present them several strings.
+
+What I propose is basically to use a {}* syntax in command definition to
+
+Let's imagine the multiple selection (eg the stage) contains
+    /a/foo.txt and /b/bar.txt
+
+What I propose is to
+
+invocation | external | produced command
+- | "truc.exe {-p {file}}*" | "truc.exe" "-p" "/some/foo" "-p" "/some/bar"
+- | "truc.exe {{file},}*" | "truc.exe" "/some/foo,/some/bar,"
+"back {name} |  "truc.exe {-i {file} -o {file}-{name}}*" |
+
+{
+    external: "truc.exe {-p {file}}*
+}
+result: "truc.exe" "-p" "/a/foo.txt" "-p" "/b/bar.txt"
+
+{
+    external: "truc.exe {{file},}*"
+}
+result: "truc.exe" "/a/foo.txt,/b/bar.txt,"
+
+{
+    invocation: "back {name}
+    external: "truc.exe {-i {file} -o {file-stem}-{name}.{file-ext}}*"
+}
+result:
+
+Escaping:
+- `\{` => `{`
+- `\n` => newline
+
+
+How to remove trailing comma ?
+
+
+
+--------------------------
+
+First, something to remember: to call an executable broot (or any program) doesn't generate a string but several ones (one for the executable name and one for each arg, which solves space escaping problems).
+So when giving examples of produced commands here, I'll always present them several strings.
+(note: there's an exception: the --outcmd which calls for producing one string (line) per command and thus requires specific escaping)
+
+When trying to define the command to be called by broot, an usual problem lies in the many
+    escaping to define if you try to fit it in one string, so I'll base the syntax of
+
+Let's imagine the multiple selection (eg the stage) contains
+    /a/foo.txt and /b/bar.txt
+
+An `external` is usually defined as an array of strings, for example
+
+{
+    external: [ "more" "{file}" ]
+}
+
+With this definition, when the selection is multiple, broot calls the command once per file, that is it would call successively
+"more" "/a/foo.txt"
+"more" "/b/bar.txt"
+
+What I propose is to allow specifying that a token is either *repeated* or *repeating* in case of multiple selection.
+
+Example 1:
+
+{
+    external: [
+        "more"
+        { repeated: "{file}" }
+    ]
+}
+result:
+"more" "/a/foo.txt" "/b/bar.txt"
+
+Example 2:
+
+{
+    external: [
+        "truc.exe"
+        {
+            repeated: ["-p", "{file}"]
+        }
+    ]
+}
+result:
+"truc.exe" "-p" "/a/foo.txt" "-p" "/b/bar.txt"
+
+Example 3:
+
+{
+    external: [
+        "smerge"
+        "--files"
+        {
+            repeating: "{file}"
+            separator: ","
+        }
+    ]
+}
+result:
+"smerge" "--files" "/a/foo.txt,/b/bar.txt"
+
+Example 4:
+
+{
+    invocation: "back {version}"
+    external: [
+        "backup.exe"
+        {
+            repeated: [
+                "-i" "{file}" "-o" "{directory}/{file-stem}-{version}{file-dot-extension}"
+            ]
+        }
+    ]
+}
+result assuming user typed "3" for "version":
+"backup" "-i" "/a/foo.txt" "-o" "/a/foo-3.txt" "-i" "/b/bar.txt" "-o" "/b/bar-3.txt"
+
+
+enum ExternalPattern {
+    Single(String)
+    List {
+        tokens: Vec<ExternalPattern>
+    }
+    Repeated {
+        tokens: Vec<ExternalPattern>
+    }
+    Repeating {
+        tokens: Vec<ExternalPattern>
+        separator: Option<String>
+    }
+}
+
+enum CommandCoarity {
+    PerSelection,
+    Single,
+}
+
+impl ExternalPattern {
+    on_multiple_selection(&self) -> CommandCoarity
+
+[ ] check deserialization of ExternalPattern
+[ ] propose (in new PR?)
