@@ -126,8 +126,10 @@ impl fmt::Display for ExecPattern {
                     if idx > 0 {
                         write!(f, " ")?;
                     }
-                    if s.contains(' ') {
-                        write!(f, "\"{s}\"")?;
+                    let needs_quoting = s.contains(' ') || s.contains('"') || s.contains('\\');
+                    if needs_quoting {
+                        let escaped = s.replace('\\', "\\\\").replace('"', "\\\"");
+                        write!(f, "\"{escaped}\"")?;
                     } else {
                         write!(f, "{s}")?;
                     }
@@ -135,5 +137,65 @@ impl fmt::Display for ExecPattern {
                 Ok(())
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_display_array_escapes_quotes() {
+        // Regression test for https://github.com/Canop/broot/issues/1123
+        // Filenames with quotes must be properly escaped in the output
+        let pattern = ExecPattern::Array(vec![
+            "echo".to_string(),
+            "foo \"bar\" baz".to_string(),
+        ]);
+        let output = format!("{pattern}");
+        assert_eq!(output, r#"echo "foo \"bar\" baz""#);
+    }
+
+    #[test]
+    fn test_display_array_escapes_backslashes() {
+        let pattern = ExecPattern::Array(vec![
+            "echo".to_string(),
+            r"foo\bar".to_string(),
+        ]);
+        let output = format!("{pattern}");
+        assert_eq!(output, r#"echo "foo\\bar""#);
+    }
+
+    #[test]
+    fn test_display_array_simple_args() {
+        // Simple args without special chars should not be quoted
+        let pattern = ExecPattern::Array(vec![
+            "echo".to_string(),
+            "hello".to_string(),
+            "world".to_string(),
+        ]);
+        let output = format!("{pattern}");
+        assert_eq!(output, "echo hello world");
+    }
+
+    #[test]
+    fn test_display_array_spaces_quoted() {
+        let pattern = ExecPattern::Array(vec![
+            "echo".to_string(),
+            "hello world".to_string(),
+        ]);
+        let output = format!("{pattern}");
+        assert_eq!(output, r#"echo "hello world""#);
+    }
+
+    #[test]
+    fn test_display_array_quotes_without_spaces() {
+        // Even without spaces, quotes in the value need escaping
+        let pattern = ExecPattern::Array(vec![
+            "echo".to_string(),
+            r#"it's"fine""#.to_string(),
+        ]);
+        let output = format!("{pattern}");
+        assert_eq!(output, r#"echo "it's\"fine\"""#);
     }
 }
