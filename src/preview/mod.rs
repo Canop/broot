@@ -28,3 +28,12 @@ pub enum PreviewMode {
     /// Show the content with ANSI escape codes
     Tty,
 }
+
+/// Where the preview panel is placed relative to the browser panel
+#[derive(Debug, Clone, Copy, Default, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum PreviewLayout {
+    #[default]
+    Right,
+    Bottom,
+}

@@ -89,6 +89,15 @@ show_selection_mark: true
 # true_colors: false
 
 ###############################################################
+# Preview Layout
+# Set to "bottom" to stack the preview panel below the file
+# browser instead of beside it. This can be useful on wide
+# monitors or when you prefer a vertically split view.
+# Default is "right" (preview appears to the right).
+#
+# preview_layout: bottom
+
+###############################################################
 # Icons
 # If you want to display icons in broot, uncomment this line
 # (see https://dystroy.org/broot/icons for installation and

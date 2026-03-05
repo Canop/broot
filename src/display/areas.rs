@@ -1,6 +1,7 @@
 use {
     super::*,
     crate::app::Panel,
+    crate::preview::PreviewLayout,
     termimad::Area,
 };
 
@@ -33,7 +34,7 @@ impl Areas {
         layout_instructions: &LayoutInstructions,
         mut insertion_idx: usize,
         screen: Screen,
-        with_preview: bool, // slightly larger last panel
+        preview_layout: Option<PreviewLayout>,
     ) -> Self {
         if insertion_idx > present_panels.len() {
             insertion_idx = present_panels.len();
@@ -59,7 +60,7 @@ impl Areas {
             layout_instructions,
             &mut slots,
             screen,
-            with_preview,
+            preview_layout,
         );
         areas
     }
@@ -68,7 +69,7 @@ impl Areas {
         panels: &mut [Panel],
         layout_instructions: &LayoutInstructions,
         screen: Screen,
-        with_preview: bool, // slightly larger last panel
+        preview_layout: Option<PreviewLayout>,
     ) {
         let mut slots = Vec::new();
         for i in 0..panels.len() {
@@ -79,7 +80,7 @@ impl Areas {
             layout_instructions,
             &mut slots,
             screen,
-            with_preview,
+            preview_layout,
         );
     }
 
@@ -89,14 +90,57 @@ impl Areas {
         layout_instructions: &LayoutInstructions,
         slots: &mut [Slot],
         screen: Screen,
-        with_preview: bool, // slightly larger last panel
+        preview_layout: Option<PreviewLayout>,
     ) {
         let screen_height = screen.height.max(MINIMAL_PANEL_HEIGHT);
         let screen_width = screen.width.max(MINIMAL_SCREEN_WIDTH);
-        let n = slots.len() as u16;
+        let nb_pos = slots.len();
+
+        // when `preview_layout` is `Bottom` and we have exactly 2 panels with preview,
+        // stack them vertically: browser on top, preview below
+        if preview_layout == Some(PreviewLayout::Bottom) && nb_pos == 2 {
+            // available height for the two panel state areas (minus status + input rows)
+            let available = screen_height.saturating_sub(2);
+            let top_h = available / 2;
+            let bot_h = available - top_h;
+
+            // slot 0 = browser (top), slot 1 = preview (bottom)
+            #[allow(clippy::needless_range_loop)]
+            for slot_idx in 0..nb_pos {
+                let areas: &mut Areas = match &mut slots[slot_idx] {
+                    Slot::Panel(panel_idx) => &mut panels[*panel_idx].areas,
+                    Slot::New(areas) => areas,
+                };
+                // top vs bottom areas, y-start and heights
+                let (y_start, h) = if slot_idx == 0 {
+                    (0, top_h)
+                } else {
+                    (top_h, bot_h)
+                };
+                let state_y = y_start;
+                let status_y = screen_height - 2;
+                let input_y = screen_height - 1;
+                areas.state = Area::new(0, state_y, screen_width, h);
+                areas.status = Area::new(0, status_y, screen_width, 1);
+                areas.input = Area::new(0, input_y, screen_width, 1);
+                // both slots are full-width, so both touch the bottom-right
+                // terminal cell which must not be written to (causes flicker)
+                areas.input.width -= 1;
+                areas.purpose = if slot_idx > 0 {
+                    let area_width = screen_width / 2;
+                    Some(Area::new(0, input_y, area_width, 1))
+                } else {
+                    None
+                };
+                areas.pos_idx = slot_idx;
+                areas.nb_pos = nb_pos;
+            }
+            return;
+        }
 
         // compute auto/default panel widths
-        let mut panel_width = if with_preview {
+        let n = nb_pos as u16;
+        let mut panel_width = if preview_layout.is_some() {
             3 * screen_width / (3 * n + 1)
         } else {
             screen_width / n
