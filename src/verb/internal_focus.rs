@@ -118,7 +118,7 @@ fn path_from_input(
             //     execution: ":focus {path}/target"
             // }
             // (or that input is useless)
-            let path_builder = ExecutionStringBuilder::with_invocation(
+            let path_builder = ExecutionBuilder::with_invocation(
                 verb.invocation_parser.as_ref(),
                 SelInfo::from_path(base_path),
                 app_state,
@@ -141,7 +141,7 @@ fn path_from_input(
             // The given path may be relative hence the need for the
             // state's selection
             // (we assume a check before ensured it doesn't need an input)
-            let path_builder = ExecutionStringBuilder::with_invocation(
+            let path_builder = ExecutionBuilder::with_invocation(
                 verb.invocation_parser.as_ref(),
                 SelInfo::from_path(base_path),
                 app_state,
@@ -218,7 +218,7 @@ pub fn on_internal(
                 //  `:focus some/path` or `:focus {initial-root}̀).
                 // The given path may be relative hence the need for the
                 // state's selection
-                let path_builder = ExecutionStringBuilder::without_invocation(
+                let path_builder = ExecutionBuilder::without_invocation(
                     SelInfo::from_path(selected_path),
                     app_state,
                 );

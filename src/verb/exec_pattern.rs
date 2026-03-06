@@ -1,139 +1,136 @@
 use {
-    crate::{
-        path::*,
-        verb::*,
-    },
+    crate::verb::*,
     serde::{
         Deserialize,
+        Deserializer,
         Serialize,
+        Serializer,
     },
-    std::{
-        fmt,
-        path::Path,
-    },
+    std::fmt,
 };
 
 /// A pattern which can be expanded into an executable
-#[derive(Debug, Clone, Deserialize, Serialize)]
-#[serde(untagged)]
-pub enum ExecPattern {
-    String(String),
-    Array(Vec<String>),
+#[derive(Debug, Clone)]
+pub struct ExecPattern {
+    tokens: Vec<String>,
 }
 
 impl ExecPattern {
-    pub fn is_empty(&self) -> bool {
-        match self {
-            Self::String(s) => s.is_empty(),
-            Self::Array(v) => v.is_empty(),
+    pub fn from_string(s: &str) -> Self {
+        Self {
+            tokens: splitty::split_unquoted_whitespace(s)
+                .map(String::from)
+                .collect(),
         }
+    }
+    pub fn tokens(&self) -> &[String] {
+        &self.tokens
+    }
+    pub fn into_tokens(self) -> Vec<String> {
+        self.tokens
+    }
+    pub fn is_empty(&self) -> bool {
+        self.tokens.is_empty()
     }
     pub fn has_selection_group(&self) -> bool {
-        match self {
-            Self::String(s) => str_has_selection_group(s),
-            Self::Array(v) => v.iter().any(|s| str_has_selection_group(s)),
-        }
+        self.tokens.iter().any(|s| str_has_selection_group(s))
     }
     pub fn has_other_panel_group(&self) -> bool {
-        match self {
-            Self::String(s) => str_has_other_panel_group(s),
-            Self::Array(v) => v.iter().any(|s| str_has_other_panel_group(s)),
+        self.tokens.iter().any(|s| str_has_other_panel_group(s))
+    }
+    pub fn to_internal_pattern(&self) -> Option<String> {
+        let first_token = self.tokens.first()?;
+        if first_token.starts_with(':') || first_token.starts_with(' ') {
+            let mut ip = String::from(&first_token[1..]);
+            for token in self.tokens.iter().skip(1) {
+                ip.push(' ');
+                ip.push_str(token);
+            }
+            Some(ip)
+        } else {
+            None
         }
     }
-    pub fn as_internal_pattern(&self) -> Option<&str> {
-        match self {
-            Self::String(s) => {
-                if s.starts_with(':') || s.starts_with(' ') {
-                    Some(&s[1..])
-                } else {
-                    None
+
+    pub fn visit_arg_defs(
+        &self,
+        f: &mut dyn FnMut(&VerbArgDef),
+    ) {
+        for token in &self.tokens {
+            for capture in ARG_DEF_GROUP.captures_iter(token) {
+                let arg_def = VerbArgDef::from_capture(&capture);
+                f(&arg_def);
+            }
+        }
+    }
+
+    /// Tell whether, in case of a multiple selection, the command should be executed once per
+    /// selection or once for all selections together (meaning the selections will be merged).
+    pub fn coarity(&self) -> CommandCoarity {
+        let mut has_repeated = false;
+        self.visit_arg_defs(&mut |arg_def| {
+            for flag in &arg_def.flags {
+                debug!("arg {} has flag {:?}", arg_def.name, flag);
+                if flag.is_merging() {
+                    has_repeated = true;
                 }
             }
-            Self::Array(_) => None,
-        }
-    }
-    pub fn into_array(self) -> Vec<String> {
-        match self {
-            Self::String(s) => splitty::split_unquoted_whitespace(&s)
-                .unwrap_quotes(true)
-                .map(|s| s.to_string())
-                .collect(),
-            Self::Array(v) => v,
-        }
-    }
-    pub fn from_string<T: Into<String>>(t: T) -> Self {
-        Self::String(t.into())
-    }
-    pub fn from_array(v: Vec<String>) -> Self {
-        Self::Array(v)
-    }
-    pub fn tokenize(self) -> Self {
-        Self::Array(self.into_array())
-    }
-    pub fn apply(
-        &self,
-        f: &dyn Fn(&str) -> String,
-    ) -> Self {
-        Self::Array(match self {
-            Self::String(s) => splitty::split_unquoted_whitespace(s)
-                .unwrap_quotes(true)
-                .map(f)
-                .collect(),
-            Self::Array(v) => v.iter().map(|s| f(s)).collect(),
-        })
-    }
-    pub fn fix_paths(self) -> Self {
-        match self {
-            Self::String(s) => Self::Array(
-                splitty::split_unquoted_whitespace(&s)
-                    .unwrap_quotes(true)
-                    .map(fix_token_path)
-                    .collect(),
-            ),
-            Self::Array(v) => Self::Array(v.iter().map(fix_token_path).collect()),
+        });
+        if has_repeated {
+            CommandCoarity::Merged
+        } else {
+            CommandCoarity::PerSelection
         }
     }
 }
 
-fn fix_token_path<T: Into<String> + AsRef<str>>(token: T) -> String {
-    //let s = token.as_ref();
-    let path = Path::new(token.as_ref());
-    if path.exists() {
-        if let Some(path) = path.to_str() {
-            return path.to_string();
-        }
-    } else if TILDE_REGEX.is_match(token.as_ref()) {
-        let path = untilde(token.as_ref());
-        if path.exists() {
-            if let Some(path) = path.to_str() {
-                return path.to_string();
-            }
-        }
-    }
-    token.into()
-}
-
-// this implementation builds a string usable for exect
+// This implementation builds a string usable for execution in contexts
+// needing a single string, like the parent shell. In contexts where an array of strings is
+// expected, the pattern should be tokenized first.
+//
+// This assumes that paths (or other parts) containing paths with spaces are properly quoted in the
+// pattern, so that they are not split when tokenizing (this function can't just add quotes around
+// tokens with spaces because a token may contain several space-separated paths).
 impl fmt::Display for ExecPattern {
     fn fmt(
         &self,
         f: &mut fmt::Formatter<'_>,
     ) -> fmt::Result {
-        match self {
-            Self::String(s) => s.fmt(f),
-            Self::Array(v) => {
-                for (idx, s) in v.iter().enumerate() {
-                    if idx > 0 {
-                        write!(f, " ")?;
-                    }
-                    if s.contains(' ') {
-                        write!(f, "\"{s}\"")?;
-                    } else {
-                        write!(f, "{s}")?;
-                    }
-                }
-                Ok(())
+        for (idx, s) in self.tokens.iter().enumerate() {
+            if idx > 0 {
+                write!(f, " ")?;
             }
+            write!(f, "{s}")?;
         }
+        Ok(())
+    }
+}
+
+impl Serialize for ExecPattern {
+    fn serialize<S: Serializer>(
+        &self,
+        serializer: S,
+    ) -> Result<S::Ok, S::Error> {
+        self.tokens.serialize(serializer)
+    }
+}
+
+impl<'de> Deserialize<'de> for ExecPattern {
+    fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        #[derive(Deserialize)]
+        #[serde(untagged)]
+        enum Raw {
+            Single(String),
+            Multiple(Vec<String>),
+        }
+
+        let tokens = match Raw::deserialize(deserializer)? {
+            Raw::Single(s) => splitty::split_unquoted_whitespace(&s)
+                .map(String::from)
+                .collect(),
+            Raw::Multiple(v) => v,
+        };
+
+        Ok(ExecPattern { tokens })
     }
 }

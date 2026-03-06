@@ -3,7 +3,10 @@ use {
     crate::{
         app::*,
         command::*,
-        path,
+        path::{
+            self,
+            PathAnchor,
+        },
     },
     regex::Captures,
     rustc_hash::FxHashMap,
@@ -16,7 +19,7 @@ use {
 /// a temporary structure gathering selection and invocation
 /// parameters and able to generate an executable string from
 /// a verb's execution pattern
-pub struct ExecutionStringBuilder<'b> {
+pub struct ExecutionBuilder<'b> {
     /// the current file selection
     pub sel_info: SelInfo<'b>,
 
@@ -31,9 +34,19 @@ pub struct ExecutionStringBuilder<'b> {
 
     /// whether to keep groups which can't be solved or remove them
     keep_groups: bool,
+
+    target: Target,
 }
 
-impl<'b> ExecutionStringBuilder<'b> {
+/// Whether we're trying to build the command as a string or as a vec of tokens (in
+/// which case we don't want to do the same escaping, for example)
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum Target {
+    String,
+    Tokens,
+}
+
+impl<'b> ExecutionBuilder<'b> {
     /// constructor to use when there's no invocation string
     /// (because we're in the process of building one, for example
     /// when a verb is triggered from a key shortcut)
@@ -47,6 +60,7 @@ impl<'b> ExecutionStringBuilder<'b> {
             other_file: app_state.other_panel_path.as_ref(),
             invocation_values: None,
             keep_groups: false,
+            target: Target::Tokens,
         }
     }
     pub fn with_invocation(
@@ -65,57 +79,61 @@ impl<'b> ExecutionStringBuilder<'b> {
             other_file: app_state.other_panel_path.as_ref(),
             invocation_values,
             keep_groups: false,
+            target: Target::Tokens,
         }
     }
-    fn get_raw_replacement<F>(
+
+    /// Return the replacing value for the whole sel_info
+    ///
+    /// When you have a multiselection and no merging flag, don't call this function
+    /// but get_sel_capture_replacement while building a command per selection.
+    fn get_arg_replacement(
         &self,
-        f: F,
-    ) -> Option<String>
-    where
-        F: Fn(Option<Selection<'_>>) -> Option<String>,
-    {
+        arg_def: &VerbArgDef,
+        con: &AppContext,
+    ) -> Option<String> {
+        let merging_flag = arg_def.merging_flag();
         match self.sel_info {
-            SelInfo::None => f(None),
-            SelInfo::One(sel) => f(Some(sel)),
+            SelInfo::None => self.get_sel_arg_replacement(arg_def, None, con),
+            SelInfo::One(sel) => self.get_sel_arg_replacement(arg_def, Some(sel), con),
             SelInfo::More(stage) => {
-                let mut sels = stage.paths().iter().map(|path| Selection {
-                    path,
-                    line: 0,
-                    stype: SelectionType::from(path),
-                    is_exe: false,
-                });
-                f(sels.next()).filter(|first_rcr| {
+                let mut sels = stage.to_selections();
+                if let Some(merging_flag) = merging_flag {
+                    let mut values = Vec::new();
                     for sel in sels {
-                        let rcr = f(Some(sel));
-                        if rcr.as_ref() != Some(first_rcr) {
-                            return false;
+                        let rcr = self.get_sel_arg_replacement(arg_def, Some(sel), con);
+                        if let Some(rcr) = rcr {
+                            values.push(rcr);
                         }
                     }
-                    true
-                })
+                    merging_flag.merge_values(values)
+                } else {
+                    // we're called with no specific selection and there's no merging
+                    // strategy, this should probably not really happen, we'll take
+                    // the first selection
+                    let sel = if sels.is_empty() {
+                        None
+                    } else {
+                        Some(sels.swap_remove(0))
+                    };
+                    self.get_sel_arg_replacement(arg_def, sel, con)
+                }
             }
         }
     }
-    fn get_raw_capture_replacement(
-        &self,
-        ec: &Captures<'_>,
-        con: &AppContext,
-    ) -> Option<String> {
-        self.get_raw_replacement(|sel| self.get_raw_sel_capture_replacement(ec, sel, con))
-    }
+
     /// return the standard replacement (ie not one from the invocation)
-    fn get_raw_sel_name_standard_replacement(
+    fn get_sel_name_standard_replacement(
         &self,
         name: &str,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Option<String> {
-        debug!("repl name : {:?}", name);
         match name {
-            "root" => Some(path_to_string(self.root)),
-            "initial-root" => Some(path_to_string(&con.initial_root)),
+            "root" => Some(self.path_to_string(self.root)),
+            "initial-root" => Some(self.path_to_string(&con.initial_root)),
             "line" => sel.map(|s| s.line.to_string()),
-            "file" => sel.map(|s| s.path).map(path_to_string),
+            "file" => sel.map(|s| s.path).map(|p| self.path_to_string(p)),
             "file-name" => sel
                 .map(|s| s.path)
                 .and_then(|path| path.file_name())
@@ -141,9 +159,13 @@ impl<'b> ExecutionStringBuilder<'b> {
                     .map(|ext| format!(".{ext}"))
                     .or_else(|| Some("".to_string()))
             }
-            "directory" => sel.map(|s| path::closest_dir(s.path)).map(path_to_string),
-            "parent" => sel.and_then(|s| s.path.parent()).map(path_to_string),
-            "other-panel-file" => self.other_file.map(path_to_string),
+            "directory" => sel
+                .map(|s| path::closest_dir(s.path))
+                .map(|p| self.path_to_string(p)),
+            "parent" => sel
+                .and_then(|s| s.path.parent())
+                .map(|p| self.path_to_string(p)),
+            "other-panel-file" => self.other_file.map(|p| self.path_to_string(p)),
             "other-panel-filename" => self
                 .other_file
                 .and_then(|path| path.file_name())
@@ -153,13 +175,16 @@ impl<'b> ExecutionStringBuilder<'b> {
                 .other_file
                 .map(|p| path::closest_dir(p))
                 .as_ref()
-                .map(path_to_string),
-            "other-panel-parent" => self.other_file.and_then(|p| p.parent()).map(path_to_string),
+                .map(|p| self.path_to_string(p)),
+            "other-panel-parent" => self
+                .other_file
+                .and_then(|p| p.parent())
+                .map(|p| self.path_to_string(p)),
             "git-root" => {
                 // path to git repo workdir
                 debug!("finding git root");
                 sel.and_then(|s| git2::Repository::discover(s.path).ok())
-                    .and_then(|repo| repo.workdir().map(path_to_string))
+                    .and_then(|repo| repo.workdir().map(|p| self.path_to_string(p)))
             }
             "git-name" => {
                 // name of the git repo workdir
@@ -177,28 +202,28 @@ impl<'b> ExecutionStringBuilder<'b> {
                 let sel = sel?;
                 let path = git2::Repository::discover(self.root)
                     .ok()
-                    .and_then(|repo| repo.workdir().map(path_to_string))
+                    .and_then(|repo| repo.workdir().map(|p| self.path_to_string(p)))
                     .and_then(|gitroot| sel.path.strip_prefix(gitroot).ok())
                     .filter(|p| {
                         // it's empty when the file is both the tree root and the git root
                         !p.as_os_str().is_empty()
                     })
                     .unwrap_or(sel.path);
-                Some(path_to_string(path))
+                Some(self.path_to_string(path))
             }
             #[cfg(unix)]
             "server-name" => con.server_name.clone(),
             _ => None,
         }
     }
-    fn get_raw_sel_capture_replacement(
+    fn get_sel_arg_replacement(
         &self,
-        ec: &Captures<'_>,
+        arg_def: &VerbArgDef,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Option<String> {
-        let name = ec.get(1).unwrap().as_str();
-        self.get_raw_sel_name_standard_replacement(name, sel, con)
+        let name = &arg_def.name;
+        self.get_sel_name_standard_replacement(name, sel, con)
             .or_else(|| {
                 // it's not one of the standard group names, so we'll look
                 // into the ones provided by the invocation pattern
@@ -206,56 +231,45 @@ impl<'b> ExecutionStringBuilder<'b> {
                     .as_ref()
                     .and_then(|map| map.get(name))
                     .and_then(|value| {
-                        if let Some(fmt) = ec.get(2) {
-                            match fmt.as_str() {
-                                "path-from-directory" => sel
-                                    .map(|s| path::closest_dir(s.path))
-                                    .map(|dir| path::path_str_from(dir, value)),
-                                "path-from-parent" => sel
-                                    .and_then(|s| s.path.parent())
-                                    .map(|dir| path::path_str_from(dir, value)),
-                                _ => Some(format!("invalid format: {:?}", fmt.as_str())),
-                            }
+                        if arg_def.has_flag(VerbArgFlag::PathFromDirectory) {
+                            sel.map(|s| path::closest_dir(s.path))
+                                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
+                                .map(|pb| self.path_to_string(pb))
+                        } else if arg_def.has_flag(VerbArgFlag::PathFromParent) {
+                            sel.and_then(|s| s.path.parent())
+                                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
+                                .map(|pb| self.path_to_string(pb))
                         } else {
                             Some(value.to_string())
                         }
                     })
             })
     }
-    #[inline]
-    fn get_capture_replacement(
+    fn replace_args(
         &self,
-        ec: &Captures<'_>,
-        con: &AppContext,
+        s: &str,
+        replacer: &mut dyn FnMut(&VerbArgDef) -> Option<String>,
     ) -> String {
-        self.get_raw_capture_replacement(ec, con)
-            .unwrap_or_else(|| {
-                if self.keep_groups {
-                    ec[0].to_string()
-                } else {
-                    "".to_string()
-                }
+        ARG_DEF_GROUP
+            .replace_all(s, |ec: &Captures<'_>| {
+                let arg_def = VerbArgDef::from_capture(ec);
+                replacer(&arg_def).unwrap_or_else(|| {
+                    if self.keep_groups {
+                        ec[0].to_string()
+                    } else {
+                        "".to_string()
+                    }
+                })
             })
-    }
-    fn get_sel_capture_replacement(
-        &self,
-        ec: &Captures<'_>,
-        sel: Option<Selection<'_>>,
-        con: &AppContext,
-    ) -> String {
-        self.get_raw_sel_capture_replacement(ec, sel, con)
-            .unwrap_or_else(|| {
-                if self.keep_groups {
-                    ec[0].to_string()
-                } else {
-                    "".to_string()
-                }
-            })
+            .to_string()
     }
     /// fills groups having a default value (after the colon)
     ///
     /// This is used to fill the input in case on non auto_exec
-    /// verb triggered with a key
+    /// verb triggered with a key.
+    ///
+    /// In invocation pattern, the part after the colon isn't handled
+    /// as a 'flag' but as a default value
     pub fn invocation_with_default(
         &self,
         verb_invocation: &VerbInvocation,
@@ -264,18 +278,16 @@ impl<'b> ExecutionStringBuilder<'b> {
         VerbInvocation {
             name: verb_invocation.name.clone(),
             args: verb_invocation.args.as_ref().map(|a| {
-                GROUP
+                ARG_DEF_GROUP
                     .replace_all(a.as_str(), |ec: &Captures<'_>| {
                         ec.get(2)
                             .map(|default_name| default_name.as_str())
                             .and_then(|default_name| {
-                                self.get_raw_replacement(|sel| {
-                                    self.get_raw_sel_name_standard_replacement(
-                                        default_name,
-                                        sel,
-                                        con,
-                                    )
-                                })
+                                self.get_sel_name_standard_replacement(
+                                    default_name,
+                                    self.sel_info.first_sel(),
+                                    con,
+                                )
                             })
                             .unwrap_or_default()
                     })
@@ -298,7 +310,7 @@ impl<'b> ExecutionStringBuilder<'b> {
     /// this secondary execution, new replacements are expected too,
     /// depending on the verbs.
     pub fn sequence(
-        &self,
+        &mut self,
         sequence: &Sequence,
         verb_store: &VerbStore,
         con: &AppContext,
@@ -332,19 +344,18 @@ impl<'b> ExecutionStringBuilder<'b> {
             separator: sequence.separator.clone(),
         }
     }
-    /// build a raw string, without escapings
-    pub fn string(
+
+    fn string(
         &self,
         pattern: &str,
         con: &AppContext,
     ) -> String {
-        GROUP
-            .replace_all(pattern, |ec: &Captures<'_>| {
-                self.get_capture_replacement(ec, con)
-            })
-            .to_string()
+        self.replace_args(pattern, &mut |arg_def| {
+            self.get_arg_replacement(arg_def, con)
+        })
     }
-    /// build a path
+
+    /// build a path from a pattern (eg the `working_dir` parameter of a verb definition)
     pub fn path(
         &self,
         pattern: &str,
@@ -353,81 +364,150 @@ impl<'b> ExecutionStringBuilder<'b> {
         path::path_from(
             self.base_dir(),
             path::PathAnchor::Unspecified,
-            &GROUP.replace_all(pattern, |ec: &Captures<'_>| {
-                self.get_capture_replacement(ec, con)
+            &self.replace_args(pattern, &mut |arg_def| {
+                self.get_arg_replacement(arg_def, con)
             }),
         )
     }
+
     /// build a shell compatible command, with escapings
     pub fn shell_exec_string(
-        &self,
+        &mut self,
         exec_pattern: &ExecPattern,
         con: &AppContext,
     ) -> String {
-        exec_pattern
-            .apply(&|s| {
-                GROUP
-                    .replace_all(s, |ec: &Captures<'_>| self.get_capture_replacement(ec, con))
-                    .to_string()
-            })
-            .fix_paths()
-            .to_string()
+        self.target = Target::String;
+        let tokens = self.exec_token(exec_pattern, con);
+        tokens.join(" ")
     }
+
     /// build a shell compatible command, with escapings, for a specific
     /// selection (this is intended for execution on all selections of a
     /// stage)
     pub fn sel_shell_exec_string(
-        &self,
+        &mut self,
         exec_pattern: &ExecPattern,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> String {
-        exec_pattern
-            .apply(&|s| {
-                GROUP
-                    .replace_all(s, |ec: &Captures<'_>| {
-                        self.get_sel_capture_replacement(ec, sel, con)
-                    })
-                    .to_string()
-            })
-            .fix_paths()
-            .to_string()
+        self.target = Target::String;
+        let tokens = self.sel_exec_token(exec_pattern, sel, con);
+        tokens.join(" ")
     }
+
     /// build a vec of tokens which can be passed to Command to
-    /// launch an executable
+    /// launch an executable.
     pub fn exec_token(
         &self,
         exec_pattern: &ExecPattern,
         con: &AppContext,
     ) -> Vec<String> {
-        exec_pattern
-            .apply(&|s| {
-                GROUP
-                    .replace_all(s, |ec: &Captures<'_>| self.get_capture_replacement(ec, con))
-                    .to_string()
-            })
-            .fix_paths()
-            .into_array()
+        // When a token is a space-separated arg, and the selection is multiple,
+        // we want to build several tokens so that it's received as several args by the
+        // executed program, and not as a single arg with spaces.
+        // This complex work is needed only when the selection is multiple and there's
+        // a "space-separated" flag in the capture
+        let mut output = Vec::new();
+        for token in exec_pattern.tokens() {
+            if let Some(ec) = capture_if_total(&ARG_DEF_GROUP, token) {
+                let arg_def = VerbArgDef::from_capture(&ec);
+                let space_separated = arg_def.has_flag(VerbArgFlag::SpaceSeparated);
+                if space_separated {
+                    if let SelInfo::More(stage) = &self.sel_info {
+                        let sels = stage.to_selections();
+                        for sel in sels {
+                            if let Some(s) = self.get_sel_arg_replacement(&arg_def, Some(sel), con)
+                            {
+                                output.push(s);
+                            }
+                        }
+                        continue; // we did the replacement
+                    }
+                }
+            }
+            // as we won't be able to build several tokens from this one, we do the
+            // standard replacement
+            let replaced =
+                self.replace_args(token, &mut |arg_def| self.get_arg_replacement(arg_def, con));
+            output.push(fix_token_path(replaced));
+        }
+        output
     }
+
     /// build a vec of tokens which can be passed to Command to
-    /// launch an executable
+    /// launch an executable.
+    /// This is intended for execution on all selections of a stage
+    /// when the exec pattern isn't merging.
     pub fn sel_exec_token(
-        &self,
+        &mut self,
         exec_pattern: &ExecPattern,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Vec<String> {
         exec_pattern
-            .apply(&|s| {
-                GROUP
-                    .replace_all(s, |ec: &Captures<'_>| {
-                        self.get_sel_capture_replacement(ec, sel, con)
-                    })
-                    .to_string()
+            .tokens()
+            .iter()
+            .map(|s| {
+                self.replace_args(s, &mut |arg_def| {
+                    self.get_sel_arg_replacement(arg_def, sel, con)
+                })
             })
-            .fix_paths()
-            .into_array()
+            .map(fix_token_path)
+            .collect()
     }
+
+    /// Convert a path (or part of a path) to a string, with escaping if needed (depending on the target)
+    fn path_to_string<P: AsRef<Path>>(
+        &self,
+        path: P,
+    ) -> String {
+        let s = path.as_ref().to_string_lossy();
+        if self.target == Target::Tokens {
+            // when building tokens, we don't want to do any escaping,
+            // even if there are special characters
+            return s.to_string();
+        }
+        if !regex_is_match!(r#"[\s"']"#, &s) {
+            // if there's no special character, we don't need to escape or wrap
+            return s.to_string();
+        }
+        // first we replace single quotes by `'"'"'` (close the single quote, add an escaped
+        // single quote, and reopen the single quote)
+        let s = s.replace('\'', r#"'"'"#);
+        // then we wrap the whole thing in single quotes
+        let s = format!("'{}'", s);
+        s
+    }
+}
+
+fn capture_if_total<'h>(
+    regex: &Regex,
+    s: &'h str,
+) -> Option<Captures<'h>> {
+    let captures = regex.captures(s)?;
+    let overall_match = captures.get(0)?;
+    if overall_match.start() == 0 && overall_match.end() == s.len() {
+        Some(captures)
+    } else {
+        None
+    }
+}
+
+fn fix_token_path<T: Into<String> + AsRef<str>>(token: T) -> String {
+    let path = Path::new(token.as_ref());
+    if path.exists() {
+        if let Some(path) = path.to_str() {
+            return path.to_string();
+        }
+    } else if path::TILDE_REGEX.is_match(token.as_ref()) {
+        let path = path::untilde(token.as_ref());
+        if path.exists() {
+            if let Some(path) = path.to_str() {
+                return path.to_string();
+            }
+        }
+    }
+    token.into()
 }
 
 #[cfg(test)]
@@ -493,7 +573,7 @@ mod execution_builder_test {
                 "-a",
                 "deux mots",
                 "-e",
-                "expérimental & 试验性",
+                "'expérimental & 试验性'",
             ],
         );
         check_build_execution_from_sel(
@@ -506,8 +586,4 @@ mod execution_builder_test {
             vec!["xterm", "-e", "kak /path/to/file"],
         );
     }
-}
-
-fn path_to_string<P: AsRef<Path>>(path: P) -> String {
-    path.as_ref().to_string_lossy().to_string()
 }

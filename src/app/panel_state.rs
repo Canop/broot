@@ -192,8 +192,7 @@ pub trait PanelState {
                 )
             ))]
             Internal::purge_trash => {
-                let res =
-                    trash::os_limited::list().and_then(trash::os_limited::purge_all);
+                let res = trash::os_limited::list().and_then(trash::os_limited::purge_all);
                 match res {
                     Ok(()) => CmdResult::RefreshState { clear_cache: false },
                     Err(e) => CmdResult::DisplayError(format!("{e}")),
@@ -615,12 +614,8 @@ pub trait PanelState {
             Internal::panel_left | Internal::panel_left_no_open => {
                 CmdResult::HandleInApp(Internal::panel_left_no_open)
             }
-            Internal::focus_panel_left => {
-                CmdResult::HandleInApp(Internal::focus_panel_left)
-            }
-            Internal::focus_panel_right => {
-                CmdResult::HandleInApp(Internal::focus_panel_right)
-            }
+            Internal::focus_panel_left => CmdResult::HandleInApp(Internal::focus_panel_left),
+            Internal::focus_panel_right => CmdResult::HandleInApp(Internal::focus_panel_right),
             // panel_right depends on the kind of panel and is usually handled
             // in a specific state, contrary to panel_right_no_open
             Internal::panel_right | Internal::panel_right_no_open => {
@@ -692,23 +687,53 @@ pub trait PanelState {
             }
             Internal::write_output => {
                 let sel_info = self.sel_info(app_state);
-                let exec_builder = match input_invocation {
-                    Some(inv) => ExecutionStringBuilder::with_invocation(
+                let mut exec_builder = match input_invocation {
+                    Some(inv) => ExecutionBuilder::with_invocation(
                         invocation_parser,
                         sel_info,
                         app_state,
                         inv.args.as_ref(),
                     ),
-                    None => ExecutionStringBuilder::without_invocation(sel_info, app_state),
+                    None => ExecutionBuilder::without_invocation(sel_info, app_state),
                 };
-                if let Some(pattern) = internal_exec.arg.as_ref() {
-                    let line = exec_builder.string(pattern, con);
-                    verb_write(con, &line)?;
-                } else {
-                    let line = input_invocation
-                        .and_then(|inv| inv.args.as_ref())
-                        .map_or("", String::as_str);
-                    verb_write(con, line)?;
+                let mut content = String::new();
+                // There's normally exactly one string, except when the selection
+                // is multiple (stage), there's an arg, and the coarity is
+                // per_selection, in which case we have one line per selection
+                let coarity = internal_exec.coarity();
+                match (coarity, sel_info, internal_exec.arg.as_ref()) {
+                    (CommandCoarity::PerSelection, SelInfo::More(stage), Some(pattern)) => {
+                        let pattern = ExecPattern::from_string(pattern);
+                        debug!("write_output executed once per selection");
+                        // we execute once per selection (may be zero if the stage is empty)
+                        let sels = stage.paths().iter().map(|path| Selection {
+                            path,
+                            line: 0,
+                            stype: SelectionType::from(path),
+                            is_exe: false,
+                        });
+                        for sel in sels {
+                            content.push_str(&exec_builder.sel_shell_exec_string(&pattern, Some(sel), con));
+                        }
+                    }
+                    (_, _, Some(pattern)) => {
+                        debug!("write_output executed once, with pattern");
+                        let pattern = ExecPattern::from_string(pattern);
+                        // we execute only once, pattern is merging or ignoring the selection
+                        content.push_str(&exec_builder.shell_exec_string(&pattern, con));
+                    }
+                    _ => {
+                        // no pattern, the selection is not relevant
+                        // (we're writing just what the input invocation contains)
+                        debug!("write_output executed once, with no pattern");
+                        let line = input_invocation
+                            .and_then(|inv| inv.args.as_ref())
+                            .map_or("", String::as_str);
+                        content.push_str(line);
+                    }
+                }
+                if !content.is_empty() {
+                    verb_write(con, &content)?;
                 }
                 CmdResult::Keep
             }
@@ -843,7 +868,7 @@ pub trait PanelState {
                 return Ok(CmdResult::error(error));
             }
         }
-        let exec_builder = ExecutionStringBuilder::with_invocation(
+        let exec_builder = ExecutionBuilder::with_invocation(
             verb.invocation_parser.as_ref(),
             sel_info,
             app_state,
@@ -874,7 +899,7 @@ pub trait PanelState {
                 "sequences can't be executed on multiple selections",
             ));
         }
-        let exec_builder = ExecutionStringBuilder::with_invocation(
+        let mut exec_builder = ExecutionBuilder::with_invocation(
             verb.invocation_parser.as_ref(),
             sel_info,
             app_state,
@@ -1159,11 +1184,11 @@ pub trait PanelState {
         if sel_info.count_paths() > 1 {
             if let VerbExecution::External(external) = &verb.execution {
                 if external.exec_mode != ExternalExecutionMode::StayInBroot {
-                    return Status::new(
-                        "only verbs returning to broot on end can be executed on a multi-selection"
-                            .to_owned(),
-                        true,
-                    );
+                    let coarity = external.exec_pattern.coarity();
+                    info!("coarity of the command is {:?}", coarity);
+                    if coarity == CommandCoarity::PerSelection {
+                        return Status::new(MULTI_SELECTION_ERROR.to_owned(), true);
+                    }
                 }
             }
             // right now there's no check for sequences but they're inherently dangerous

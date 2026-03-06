@@ -1,7 +1,6 @@
 use {
     super::*,
     crate::{
-        app::*,
         errors::ConfError,
         path::PathAnchor,
     },
@@ -24,7 +23,7 @@ pub struct InvocationParser {
     /// invocation name's characters are [_0-9a-zA-Z.\[\]])
     args_parser: Option<Regex>,
 
-    pub arg_defs: Vec<ArgDef>,
+    pub arg_defs: Vec<VerbArgDef>,
 }
 
 impl InvocationParser {
@@ -33,7 +32,7 @@ impl InvocationParser {
         let mut args_parser = None;
         let mut arg_defs = Vec::new();
         if let Some(args) = &invocation_pattern.args {
-            let spec = GROUP.replace_all(args, r"(?P<$1>.+)");
+            let spec = ARG_DEF_GROUP.replace_all(args, r"(?P<$1>.+)");
             let spec = format!("^{spec}$");
             args_parser = match Regex::new(&spec) {
                 Ok(regex) => Some(regex),
@@ -41,28 +40,8 @@ impl InvocationParser {
                     return Err(ConfError::InvalidVerbInvocation { invocation: spec });
                 }
             };
-            for group in GROUP.find_iter(args) {
-                let group_str = group.as_str();
-                arg_defs.push(if group_str.ends_with("path-from-parent}") {
-                    ArgDef::Path {
-                        anchor: PathAnchor::Parent,
-                        selection_type: SelectionType::Any,
-                    }
-                } else if group_str.ends_with("path-from-directory}") {
-                    ArgDef::Path {
-                        anchor: PathAnchor::Directory,
-                        selection_type: SelectionType::Any,
-                    }
-                } else if group_str.ends_with("path}") {
-                    ArgDef::Path {
-                        anchor: PathAnchor::Unspecified,
-                        selection_type: SelectionType::Any,
-                    }
-                } else if group_str.ends_with("theme}") {
-                    ArgDef::Theme
-                } else {
-                    ArgDef::Unspecified // still probably a path
-                });
+            for group in ARG_DEF_GROUP.captures_iter(args) {
+                arg_defs.push(VerbArgDef::from_capture(&group));
             }
         }
         Ok(Self {
@@ -76,17 +55,14 @@ impl InvocationParser {
         &self.invocation_pattern.name
     }
 
-    pub fn get_unique_arg_def(&self) -> Option<ArgDef> {
-        (self.arg_defs.len() == 1).then(|| self.arg_defs[0])
+    pub fn get_unique_arg_def(&self) -> Option<VerbArgDef> {
+        (self.arg_defs.len() == 1).then(|| self.arg_defs[0].clone())
     }
 
     pub fn get_unique_arg_anchor(&self) -> PathAnchor {
-        if self.arg_defs.len() == 1 {
-            if let ArgDef::Path { anchor, .. } = self.arg_defs[0] {
-                return anchor;
-            }
-        }
-        PathAnchor::Unspecified
+        self.get_unique_arg_def()
+            .map(|arg_def| arg_def.path_anchor())
+            .unwrap_or_default()
     }
 
     /// Assuming the verb has been matched, check whether the arguments

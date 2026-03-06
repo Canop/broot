@@ -226,7 +226,8 @@ impl App {
                     }
                     Internal::focus_panel_left => {
                         let len = self.panels.len();
-                        new_active_panel_idx = Some((self.panels.active_panel_idx() + len - 1) % len);
+                        new_active_panel_idx =
+                            Some((self.panels.active_panel_idx() + len - 1) % len);
                     }
                     Internal::focus_panel_right => {
                         let len = self.panels.len();

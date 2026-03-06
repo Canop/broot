@@ -5,7 +5,7 @@ fn main() {
     debug!("env::args(): {:#?}", std::env::args().collect::<Vec<String>>());
     match broot::cli::run() {
         Ok(Some(launchable)) => {
-            debug!("launching {:#?}", launchable);
+            info!("launching {:#?}", launchable);
             if let Err(e) = launchable.execute(None) {
                 warn!("Failed to launch {:?}", &launchable);
                 warn!("Error: {:?}", e);

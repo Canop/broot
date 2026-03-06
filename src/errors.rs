@@ -99,6 +99,7 @@ custom_error! {pub ConfError
     InvalidSyntaxTheme { name: String }             = "invalid syntax theme: {name:?}",
     InvalidGlobPattern { pattern: String }          = "invalid glob pattern: {pattern:?}",
     InvalidVerbName { name: String }                = "invalid verb name: {name:?} (must either not start with a special character or be only made of special characters)",
+    UnknownVerbArgFlag { name: String }                = "Unknown verb argument flag: {name:?}",
     InvalidPanelReference { raw: String }           = "invalid panel reference: {raw:?}",
 }
 

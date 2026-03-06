@@ -13,6 +13,9 @@ use {
     },
 };
 
+pub static MULTI_SELECTION_ERROR: &str =
+    "Only verbs returning to broot on end or merging selections can be executed on multi-selection";
+
 /// Definition of how the user input should be interpreted
 /// to be executed in an external command.
 #[derive(Debug, Clone)]
@@ -73,7 +76,7 @@ impl ExternalExecution {
     pub fn to_cmd_result(
         &self,
         w: &mut W,
-        builder: ExecutionStringBuilder<'_>,
+        builder: ExecutionBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         match self.exec_mode {
@@ -89,7 +92,7 @@ impl ExternalExecution {
 
     fn working_dir_path(
         &self,
-        builder: &ExecutionStringBuilder<'_>,
+        builder: &ExecutionBuilder<'_>,
         con: &AppContext,
     ) -> Option<PathBuf> {
         self.working_dir
@@ -109,13 +112,15 @@ impl ExternalExecution {
     /// from the parent shell (meaning broot must quit)
     fn cmd_result_exec_from_parent_shell(
         &self,
-        builder: ExecutionStringBuilder<'_>,
+        mut builder: ExecutionBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         if builder.sel_info.count_paths() > 1 {
-            return Ok(CmdResult::error(
-                "only verbs returning to broot on end can be executed on a multi-selection",
-            ));
+            let coarity = self.exec_pattern.coarity();
+            debug!("coarity of the command is {:?}", coarity);
+            if coarity == CommandCoarity::PerSelection {
+                return Ok(CmdResult::error(MULTI_SELECTION_ERROR));
+            }
         }
         if let Some(ref export_path) = con.launch_args.outcmd {
             // Broot was probably launched as br.
@@ -125,7 +130,7 @@ impl ExternalExecution {
             Ok(CmdResult::Quit)
         } else {
             Ok(CmdResult::error(
-                "this verb needs broot to be launched as `br`. Try `broot --install` if necessary.",
+                "This verb needs broot to be launched as `br`. Try `broot --install` if necessary.",
             ))
         }
     }
@@ -134,13 +139,13 @@ impl ExternalExecution {
     /// launched by broot at end of broot
     fn cmd_result_exec_leave_broot(
         &self,
-        builder: ExecutionStringBuilder<'_>,
+        builder: ExecutionBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         if builder.sel_info.count_paths() > 1 {
-            return Ok(CmdResult::error(
-                "only verbs returning to broot on end can be executed on a multi-selection",
-            ));
+            if self.exec_pattern.coarity() == CommandCoarity::PerSelection {
+                return Ok(CmdResult::error(MULTI_SELECTION_ERROR));
+            }
         }
         let launchable = Launchable::program(
             builder.exec_token(&self.exec_pattern, con),
@@ -156,7 +161,7 @@ impl ExternalExecution {
     fn cmd_result_exec_stay_in_broot(
         &self,
         w: &mut W,
-        builder: ExecutionStringBuilder<'_>,
+        mut builder: ExecutionBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         let working_dir_path = self.working_dir_path(&builder, con);
@@ -169,30 +174,54 @@ impl ExternalExecution {
                     self.switch_terminal,
                     con,
                 )?;
-                info!("Executing not leaving, launchable {:?}", launchable);
+                info!("Executing not leaving, launchable {:#?}", launchable);
                 if let Err(e) = launchable.execute(Some(w)) {
-                    warn!("launchable failed : {:?}", e);
+                    warn!("launchable failed : {:#?}", e);
                     return Ok(CmdResult::error(e.to_string()));
                 }
             }
             SelInfo::More(stage) => {
-                // multiselection -> we must execute on all paths
-                let sels = stage.paths().iter().map(|path| Selection {
-                    path,
-                    line: 0,
-                    stype: SelectionType::from(path),
-                    is_exe: false,
-                });
-                for sel in sels {
-                    let launchable = Launchable::program(
-                        builder.sel_exec_token(&self.exec_pattern, Some(sel), con),
-                        working_dir_path.clone(),
-                        self.switch_terminal,
-                        con,
-                    )?;
-                    if let Err(e) = launchable.execute(Some(w)) {
-                        warn!("launchable failed : {:?}", e);
-                        return Ok(CmdResult::error(e.to_string()));
+                // multiselection -> what we do depends on the coarity of the command
+                let coarity = self.exec_pattern.coarity();
+                info!("coarity of the command is {:#?}", coarity);
+                match coarity {
+                    CommandCoarity::PerSelection => {
+                        // we execute once per selection
+                        let sels = stage.paths().iter().map(|path| Selection {
+                            path,
+                            line: 0,
+                            stype: SelectionType::from(path),
+                            is_exe: false,
+                        });
+                        let n = sels.len();
+                        for (i, sel) in sels.enumerate() {
+                            let launchable = Launchable::program(
+                                builder.sel_exec_token(&self.exec_pattern, Some(sel), con),
+                                working_dir_path.clone(),
+                                self.switch_terminal,
+                                con,
+                            )?;
+                            let i = i + 1;
+                            info!("Executing not leaving launchable {i}/{n}: {launchable:#?}");
+                            if let Err(e) = launchable.execute(Some(w)) {
+                                warn!("launchable failed : {:#?}", e);
+                                return Ok(CmdResult::error(e.to_string()));
+                            }
+                        }
+                    }
+                    CommandCoarity::Merged => {
+                        // we execute once as the arguments are merging the selection
+                        let launchable = Launchable::program(
+                            builder.exec_token(&self.exec_pattern, con),
+                            working_dir_path.clone(),
+                            self.switch_terminal,
+                            con,
+                        )?;
+                        info!("Executing not leaving, merged launchable {:#?}", launchable);
+                        if let Err(e) = launchable.execute(Some(w)) {
+                            warn!("launchable failed : {:?}", e);
+                            return Ok(CmdResult::error(e.to_string()));
+                        }
                     }
                 }
             }

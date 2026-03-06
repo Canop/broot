@@ -88,7 +88,7 @@ fn path_from_input(
             //     execution: ":select {path}/target"
             // }
             // (or that input is useless)
-            let path_builder = ExecutionStringBuilder::with_invocation(
+            let path_builder = ExecutionBuilder::with_invocation(
                 verb.invocation_parser.as_ref(),
                 SelInfo::from_path(base_path),
                 app_state,

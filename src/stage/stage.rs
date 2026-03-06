@@ -1,6 +1,6 @@
 use {
     crate::{
-        app::AppContext,
+        app::*,
         file_sum::FileSum,
         task_sync::Dam,
     },
@@ -108,5 +108,16 @@ impl Stage {
             }
         }
         Some(sum)
+    }
+    pub fn to_selections(&self) -> Vec<Selection<'_>> {
+        self.paths
+            .iter()
+            .map(|path| Selection {
+                path,
+                line: 0,
+                stype: SelectionType::from(path),
+                is_exe: false,
+            })
+            .collect()
     }
 }

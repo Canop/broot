@@ -1,11 +1,21 @@
 use {
-    super::{Internal, Verb, VerbId},
+    super::{
+        Internal,
+        Verb,
+        VerbId,
+    },
     crate::{
         app::*,
         command::Sequence,
-        conf::{Conf, VerbConf},
+        conf::{
+            Conf,
+            VerbConf,
+        },
         errors::ConfError,
-        keys::{self, KEY_FORMAT},
+        keys::{
+            self,
+            KEY_FORMAT,
+        },
         verb::*,
     },
     crokey::*,
@@ -59,7 +69,10 @@ impl VerbStore {
     }
 
     fn add_builtin_verbs(&mut self) -> Result<(), ConfError> {
-        use super::{ExternalExecutionMode::*, Internal::*};
+        use super::{
+            ExternalExecutionMode::*,
+            Internal::*,
+        };
         self.add_internal(escape).with_key(key!(esc));
 
         // input actions, not visible in doc, but available for
@@ -157,7 +170,10 @@ impl VerbStore {
         )
         .with_shortcut("cpp");
         self.add_internal(trash);
-        #[cfg(any(target_os = "windows", all(unix, not(any(target_os = "ios", target_os = "android")))))]
+        #[cfg(any(
+            target_os = "windows",
+            all(unix, not(any(target_os = "ios", target_os = "android")))
+        ))]
         {
             self.add_internal(open_trash).with_shortcut("ot");
             self.add_internal(restore_trashed_file).with_shortcut("rt");
@@ -467,13 +483,13 @@ impl VerbStore {
             // old definition with "execution": we guess whether it's an internal or
             // an external
             (Some(ep), None, None, None) => {
-                if let Some(internal_pattern) = ep.as_internal_pattern() {
+                if let Some(internal_pattern) = ep.to_internal_pattern() {
                     if let Some(previous_verb) =
-                        self.verbs.iter().find(|&v| v.has_name(internal_pattern))
+                        self.verbs.iter().find(|&v| v.has_name(&internal_pattern))
                     {
                         previous_verb.execution.clone()
                     } else {
-                        VerbExecution::Internal(InternalExecution::try_from(internal_pattern)?)
+                        VerbExecution::Internal(InternalExecution::try_from(&internal_pattern)?)
                     }
                 } else {
                     VerbExecution::External(make_external_execution(ep.clone()))

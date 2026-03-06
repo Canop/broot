@@ -17,16 +17,17 @@ use {
 /// file is not empty.
 pub fn verb_write(
     con: &AppContext,
-    line: &str,
+    content: &str,
 ) -> Result<CmdResult, ProgramError> {
     let Some(path) = &con.launch_args.verb_output else {
         return Ok(CmdResult::error("No --verb-output provided".to_string()));
     };
     let mut file = OpenOptions::new().create(true).append(true).open(path)?;
-    if file.metadata().map(|m| m.len() > 0).unwrap_or(false) {
+    let needs_new_line = file.metadata().map(|m| m.len() > 0).unwrap_or(false);
+    if needs_new_line {
         writeln!(file)?;
     }
-    write!(file, "{}", line)?;
+    write!(file, "{}", content)?;
     Ok(CmdResult::Keep)
 }
 

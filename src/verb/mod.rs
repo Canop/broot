@@ -1,4 +1,5 @@
-mod arg_def;
+mod coarity;
+//mod arg_def;
 mod exec_pattern;
 mod execution_builder;
 mod external_execution;
@@ -12,6 +13,7 @@ pub mod internal_select;
 mod invocation_parser;
 mod sequence_execution;
 mod verb;
+mod verb_arg_def;
 mod verb_description;
 mod verb_execution;
 mod verb_invocation;
@@ -20,10 +22,11 @@ mod write;
 
 use lazy_regex::*;
 pub use {
-    arg_def::*,
+    coarity::*,
+    //arg_def::*,
     exec_pattern::*,
-    execution_builder::ExecutionStringBuilder,
-    external_execution::ExternalExecution,
+    execution_builder::*,
+    external_execution::*,
     external_execution_mode::ExternalExecutionMode,
     file_type_condition::*,
     internal::Internal,
@@ -32,6 +35,7 @@ pub use {
     once_cell::sync::Lazy,
     sequence_execution::SequenceExecution,
     verb::Verb,
+    verb_arg_def::*,
     verb_description::VerbDescription,
     verb_execution::VerbExecution,
     verb_invocation::*,
@@ -42,13 +46,11 @@ pub use {
     write::*,
 };
 
-/// the group you find in invocation patterns and execution patterns
-pub static GROUP: Lazy<Regex> = lazy_regex!(r"\{([^{}:]+)(?::([^{}:]+))?\}");
 
 pub type VerbId = usize;
 
 pub fn str_has_selection_group(s: &str) -> bool {
-    GROUP.find_iter(s).any(|group| {
+    ARG_DEF_GROUP.find_iter(s).any(|group| {
         matches!(
             group.as_str(),
             "{file}" | "{file-name}" | "{parent}" | "{directory}",
@@ -56,10 +58,11 @@ pub fn str_has_selection_group(s: &str) -> bool {
     })
 }
 pub fn str_has_other_panel_group(s: &str) -> bool {
-    for group in GROUP.find_iter(s) {
+    for group in ARG_DEF_GROUP.find_iter(s) {
         if group.as_str().starts_with("{other-panel-") {
             return true;
         }
     }
     false
 }
+

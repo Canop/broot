@@ -233,12 +233,10 @@ impl AppContext {
         let reset_terminal_title_on_exit = config.reset_terminal_title_on_exit.unwrap_or(false);
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
         let layout_instructions = config.layout_instructions.clone().unwrap_or_default();
-        let kept_kitty_temp_files = config
-            .kept_kitty_temp_files
-            .unwrap_or(
-                #[expect(clippy::missing_panics_doc, reason = "infallible")]
-                std::num::NonZeroUsize::new(500).unwrap()
-            );
+        let kept_kitty_temp_files = config.kept_kitty_temp_files.unwrap_or(
+            #[expect(clippy::missing_panics_doc, reason = "infallible")]
+            std::num::NonZeroUsize::new(500).unwrap(),
+        );
         let server_name = build_server_name(&launch_args)
             .or_else(|| build_server_name(config_default_args.as_ref()?));
 

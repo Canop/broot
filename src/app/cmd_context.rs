@@ -22,7 +22,7 @@ pub struct CmdContext<'c> {
 pub struct AppCmdContext<'c> {
     pub panel_skin: &'c PanelSkin, // needed for example by print_tree verbs
     pub preview_panel: Option<PanelId>, // id of the app's preview panel
-    pub stage_panel: Option<PanelId>,   // id of the app's stage panel
+    pub stage_panel: Option<PanelId>, // id of the app's stage panel
     pub screen: Screen,
     pub con: &'c AppContext,
 }

@@ -1,20 +1,13 @@
 use {
     super::CommandParts,
     crate::{
-        app::{
-            AppContext,
-            PanelStateType,
-            SelInfo,
-        },
+        app::*,
         path::{
             self,
             PathAnchor,
         },
         syntactic::SYNTAX_THEMES,
-        verb::{
-            ArgDef,
-            PrefixSearchResult,
-        },
+        verb::*,
     },
     lazy_regex::regex_captures,
     std::{
@@ -171,12 +164,13 @@ impl Completions {
             return Self::None;
         }
         // we try to get the type of argument
-        let arg_def = con
+        let is_theme = con
             .verb_store
             .search_sel_info_unique(verb_name, sel_info, panel_state_type)
             .and_then(|verb| verb.invocation_parser.as_ref())
-            .and_then(|invocation_parser| invocation_parser.get_unique_arg_def());
-        if matches!(arg_def, Some(ArgDef::Theme)) {
+            .and_then(|invocation_parser| invocation_parser.get_unique_arg_def())
+            .is_some_and(|arg_def| arg_def.has_flag(VerbArgFlag::Theme));
+        if is_theme {
             Self::for_theme_arg(arg)
         } else {
             Self::for_path_arg(verb_name, arg, con, sel_info, panel_state_type)

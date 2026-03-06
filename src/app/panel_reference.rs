@@ -4,16 +4,16 @@ use {
         errors::ConfError,
     },
     lazy_regex::regex_switch,
-    std::{
-        fmt,
-        str::FromStr,
-    },
     serde::{
         Deserialize,
         Deserializer,
         Serialize,
         Serializer,
         de,
+    },
+    std::{
+        fmt,
+        str::FromStr,
     },
 };
 
@@ -38,7 +38,10 @@ impl PanelReference {
 }
 
 impl fmt::Display for PanelReference {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
         match self {
             PanelReference::Active => write!(f, "active"),
             PanelReference::Leftest => write!(f, "leftest"),
@@ -59,9 +62,8 @@ impl FromStr for PanelReference {
             "^preview$"i => Self::Preview,
             r"^id:(?P<id>\d{1,2})$"i => Self::Id(id.parse::<usize>().unwrap().into()),
             r"^idx:(?P<idx>\d{1,2})$"i => Self::Idx(idx.parse().unwrap()),
-        ).ok_or_else(|| ConfError::InvalidPanelReference {
-            raw: s.to_string(),
-        })
+        )
+        .ok_or_else(|| ConfError::InvalidPanelReference { raw: s.to_string() })
     }
 }
 

@@ -14,11 +14,9 @@ use {
         task_sync::Dam,
         verb::*,
     },
-    termimad::{
-        minimad::{
-            Alignment,
-            Composite,
-        },
+    termimad::minimad::{
+        Alignment,
+        Composite,
     },
 };
 
@@ -208,5 +206,4 @@ impl Panel {
         }
         Ok(())
     }
-
 }

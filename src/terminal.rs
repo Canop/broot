@@ -38,8 +38,8 @@ fn set_title(
     app_state: &AppState,
     con: &AppContext,
 ) {
-    let builder =
-        ExecutionStringBuilder::without_invocation(SelInfo::from_path(&app_state.root), app_state);
+    let mut builder =
+        ExecutionBuilder::without_invocation(SelInfo::from_path(&app_state.root), app_state);
     let title = builder.shell_exec_string(pattern, con);
     set_title_str(w, &title)
 }

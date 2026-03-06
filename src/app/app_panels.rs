@@ -30,7 +30,6 @@ use {
 /// This thing is designed so that the inputs and panels can be
 /// borrowed separately, which is useful for input handling and drawing.
 pub struct AppPanelsAndInputs {
-
     /// a count of all panels created
     created_panels_count: usize,
 
@@ -60,7 +59,6 @@ pub struct AppPanels {
 }
 
 impl AppPanelsAndInputs {
-
     /// Create the appPanelsAndInputs which should be kept for the whole life of
     /// the application, starting with a single panel (it can't be empty), based on
     /// the initial_root
@@ -78,12 +76,7 @@ impl AppPanelsAndInputs {
         }
         let areas = Areas::create(&mut Vec::new(), &con.layout_instructions, 0, screen, false);
         let input = PanelInput::new(areas.input.clone());
-        let panel = Panel::new(
-            PanelId::from(0),
-            browser_state,
-            areas,
-            con,
-        );
+        let panel = Panel::new(PanelId::from(0), browser_state, areas, con);
         debug!("initial panel areas: {:?}", panel.areas);
         Ok(Self {
             created_panels_count: 0,
@@ -107,7 +100,6 @@ impl AppPanelsAndInputs {
     pub fn len(&self) -> usize {
         self.inputs.len()
     }
-
 
     // ----------------------------------------------------
     // resizing and layout
@@ -138,7 +130,6 @@ impl AppPanelsAndInputs {
             panel.mut_state().refresh(screen, con);
         }
     }
-
 
     // ----------------------------------------------------
     // state access
@@ -174,7 +165,6 @@ impl AppPanelsAndInputs {
         }
         None
     }
-
 
     // ----------------------------------------------------
     // state manipulation
@@ -262,7 +252,6 @@ impl AppPanelsAndInputs {
             .count()
     }
 
-
     // ----------------------------------------------------
     // panel manipulation
 
@@ -323,7 +312,8 @@ impl AppPanelsAndInputs {
             self.panels.active_panel_idx = panel_idx;
         }
     }
-    pub fn focus_by_type( // FIXME unconsistent naming with activate
+    pub fn focus_by_type(
+        // FIXME unconsistent naming with activate
         &mut self,
         state_type: PanelStateType,
     ) -> bool {
@@ -556,7 +546,8 @@ impl AppPanelsAndInputs {
     pub fn refresh_active_panel(
         &mut self,
         con: &AppContext,
-    ) { // FIXME the returned command is never used
+    ) {
+        // FIXME the returned command is never used
         let idx = self.active_panel_idx();
         let screen = self.screen();
         let panel = &mut self.panels.panels[idx];
@@ -594,12 +585,9 @@ impl AppPanelsAndInputs {
                 purpose,
             },
         };
-        let status = self.state().get_status(
-            app_state,
-            &cc,
-            has_previous_state,
-            status_width,
-        );
+        let status = self
+            .state()
+            .get_status(app_state, &cc, has_previous_state, status_width);
         self.panels.panels[idx].status = status;
     }
 
@@ -733,7 +721,6 @@ impl AppPanelsAndInputs {
             if let Some(pos) = input.display(w, disc.active, mode, input_area, disc.panel_skin)? {
                 cursor_pos = Some(pos);
             }
-
         }
 
         // after drawing all the panels, move cursor to the end of the active panel input,
@@ -749,9 +736,7 @@ impl AppPanelsAndInputs {
         w.flush()?;
         Ok(())
     }
-
 }
-
 
 impl AppPanels {
     fn idx_by_type(
