@@ -540,7 +540,7 @@ mod execution_builder_test {
             is_exe: false,
         };
         let app_state = AppState::new(PathBuf::from("/".to_owned()));
-        let mut builder = ExecutionStringBuilder::without_invocation(SelInfo::One(sel), &app_state);
+        let mut builder = ExecutionBuilder::without_invocation(SelInfo::One(sel), &app_state);
         let mut map = FxHashMap::default();
         for (k, v) in replacements {
             map.insert(k.to_owned(), v.to_owned());
@@ -548,6 +548,7 @@ mod execution_builder_test {
         builder.invocation_values = Some(map);
         let con = AppContext::default();
         for exec_pattern in exec_patterns {
+            dbg!("checking pattern: {:#?}", &exec_pattern);
             let exec_token = builder.exec_token(&exec_pattern, &con);
             assert_eq!(exec_token, chk_exec_token);
         }
@@ -564,7 +565,7 @@ mod execution_builder_test {
         check_build_execution_from_sel(
             vec![
                 ExecPattern::from_string("/bin/e.exe -a {arg} -e {file}"),
-                ExecPattern::from_array(vo!["/bin/e.exe", "-a", "{arg}", "-e", "{file}"]),
+                ExecPattern::from_tokens(vo!["/bin/e.exe", "-a", "{arg}", "-e", "{file}"]),
             ],
             "expérimental & 试验性",
             vec![("arg", "deux mots")],
@@ -573,13 +574,13 @@ mod execution_builder_test {
                 "-a",
                 "deux mots",
                 "-e",
-                "'expérimental & 试验性'",
+                "expérimental & 试验性",
             ],
         );
         check_build_execution_from_sel(
             vec![
                 ExecPattern::from_string("xterm -e \"kak {file}\""),
-                ExecPattern::from_array(vo!["xterm", "-e", "kak {file}"]),
+                ExecPattern::from_tokens(vo!["xterm", "-e", "kak {file}"]),
             ],
             "/path/to/file",
             vec![],

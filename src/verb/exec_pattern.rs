@@ -19,9 +19,13 @@ impl ExecPattern {
     pub fn from_string(s: &str) -> Self {
         Self {
             tokens: splitty::split_unquoted_whitespace(s)
+                .unwrap_quotes(true)
                 .map(String::from)
                 .collect(),
         }
+    }
+    pub fn from_tokens(tokens: Vec<String>) -> Self {
+        Self { tokens }
     }
     pub fn tokens(&self) -> &[String] {
         &self.tokens
