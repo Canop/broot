@@ -110,7 +110,7 @@ impl AppPanelsAndInputs {
         h: u16,
         con: &AppContext,
     ) {
-        self.screen().set_terminal_size(w, h, con);
+        self.panels.screen.set_terminal_size(w, h, con);
         self.resize_all(con);
     }
 
