@@ -376,7 +376,7 @@ impl<'b> ExecutionBuilder<'b> {
         exec_pattern: &ExecPattern,
         con: &AppContext,
     ) -> String {
-        self.target = Target::String;
+        self.target = Target::String; // this ensures proper escaping
         let tokens = self.exec_token(exec_pattern, con);
         tokens.join(" ")
     }
@@ -390,7 +390,7 @@ impl<'b> ExecutionBuilder<'b> {
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> String {
-        self.target = Target::String;
+        self.target = Target::String; // this ensures proper escaping
         let tokens = self.sel_exec_token(exec_pattern, sel, con);
         tokens.join(" ")
     }

@@ -8,8 +8,8 @@ use {
         launchable::Launchable,
     },
     std::{
-        io::Write,
         fs::OpenOptions,
+        io::Write,
         path::Path,
     },
 };

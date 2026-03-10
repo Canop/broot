@@ -88,13 +88,7 @@ impl ExecPattern {
     }
 }
 
-// This implementation builds a string usable for execution in contexts
-// needing a single string, like the parent shell. In contexts where an array of strings is
-// expected, the pattern should be tokenized first.
-//
-// This assumes that paths (or other parts) containing paths with spaces are properly quoted in the
-// pattern, so that they are not split when tokenizing (this function can't just add quotes around
-// tokens with spaces because a token may contain several space-separated paths).
+// This implementation builds a string used for description (eg in help)
 impl fmt::Display for ExecPattern {
     fn fmt(
         &self,

@@ -19,6 +19,7 @@ pub enum VerbExecution {
     Sequence(SequenceExecution),
 }
 
+// This implementation builds a string used for description (eg in help)
 impl fmt::Display for VerbExecution {
     fn fmt(
         &self,
