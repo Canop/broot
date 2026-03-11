@@ -1,7 +1,9 @@
 
 The most important part of broot configuration is the `verbs` sections, which let you define new commands or shortcuts.
 
-# Verb Definition Attributes
+The [default file](https://github.com/Canop/broot/blob/main/resources/default-conf/verbs.hjson) contains several commented examples which should help understand the concepts before you dive in the reference.
+
+# Verb definition attributes
 
 You can define a new verb in the configuration file inside the `verbs` list.
 
@@ -56,7 +58,7 @@ The `from_shell` attribute exists because some actions can't possibly be useful 
 
 If you set `leave_broot = false`, broot won't quit when executing your command, but it will update the tree.
 
-This is useful for commands modifying the tree (like creating or moving files).
+This is useful for commands modifying the tree (like creating or moving files), or when you want to be back to broot after execution.
 
 # Call shell scripts
 
@@ -282,7 +284,7 @@ Beware that consoles intercept some possible keys. Many keyboard shortcuts aren'
 If your chosen key doesn't seem to work, see [Key Combination Problem](../common-problems/#key-combination-problem).
 
 
-# Verb Arguments
+# Verb arguments
 
 The execution of a verb can take one or several arguments.
 
@@ -316,7 +318,7 @@ name | expanded to
 **Note:**
 when you're in the help screen, `{file}` is the configuration file, while `{directory}` is the configuration directory.
 
-## Invocation Pattern
+## Invocation pattern
 
 You may also define some arguments in the invocation pattern. For example:
 
@@ -387,7 +389,42 @@ from_shell = true
 
 You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
 
-## Request User Input
+## Single command on stage
+
+By default, when a verb for an external command is called on several selected files (using the staging area), broot executes the external program once per selection.
+
+If you want all selections to be merged into a single command, you need to add one of the merging flags, `space-separated` or `comma-separated`, to the `external` pattern.
+
+For example, the following verb requires the user to type a "name" then zips all staged files and directories with one command looking like `zip -r some/path/new-archive.zip some/path/file-a some/other/directory`:
+
+```hjson
+{
+    invocation: "zip {name}"
+    external: [
+        "zip"
+        "-r"
+        "{name:path-from-directory}.zip"
+        "{file:space-separated}"
+    ]
+    leave_broot: false
+    working_dir: "{root}"
+}
+```
+```toml
+[[verbs]]
+invocation = "zip {name}"
+external = [
+    "zip",
+    "-r",
+    "{name:path-from-directory}.zip",
+    "{file:space-separated}",
+]
+leave_broot = false
+working_dir = "{root}"
+```
+
+
+## Request user input
 
 A verb can be triggered by key but still require the user to type some argument(s), by having `auto_exec` set to `false`.
 

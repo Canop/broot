@@ -22,14 +22,14 @@ verbs: [
     #  so that you may jump directly at the right line from a preview or
     #  a content search.
     # Examples depending on your favourite editor:
-    #    execution: "nvim +{line} {file}"
-    #    execution: "helix {file}:{line}"
+    #    external: "nvim +{line} {file:space-separated}"
+    #    external: "helix {file}:{line}"
     {
         invocation: edit
         shortcut: e
         key: ctrl-e
         apply_to: text_file
-        execution: "$EDITOR {file}"
+        external: "$EDITOR {file:space-separated}"
         leave_broot: false
     }
 
@@ -37,18 +37,33 @@ verbs: [
     # {
     #     name: tail_lines
     #     invocation: tl {lines_count}
-    #     execution: "tail -f -n {lines_count} {file}"
+    #     external: "tail -f -n {lines_count} {file}"
     # }
 
     # Example 2: creating a new file without leaving broot
     # {
     #     name: touch
     #     invocation: touch {new_file}
-    #     execution: "touch {directory}/{new_file}"
+    #     external: "touch {directory}/{new_file}"
     #     leave_broot: false
     # }
 
-    # A convenient shortcut to create new text files in
+    # Zip selected file(s) into a new archive named <name>.zip
+    # This can be called on the staging area after having staged several
+    # files or directories
+    {
+        invocation: "zip {name}"
+        external: [
+            "zip"
+            "-r"
+            "{name:path-from-directory}.zip"
+            "{file:space-separated}"
+        ]
+        leave_broot: false
+        working_dir: "{root}"
+    }
+
+    # A convenient shortcut to create a new text file in
     #  the current directory or below
     {
         invocation: create {subpath}
