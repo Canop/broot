@@ -509,5 +509,10 @@ mod execution_builder_test {
 }
 
 fn path_to_string<P: AsRef<Path>>(path: P) -> String {
-    path.as_ref().to_string_lossy().to_string()
+    let is_bash_on_windows = true;
+    if is_bash_on_windows {
+        format!("\"{}\"", path.as_ref().to_string_lossy().to_string())
+    } else {
+        path.as_ref().to_string_lossy().to_string()
+    }
 }
