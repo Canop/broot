@@ -19,7 +19,10 @@ use {
             PathAnchor,
             path_from,
         },
-        preview::PreviewTransformerConf,
+        preview::{
+            PreviewLayout,
+            PreviewTransformerConf,
+        },
         skin::SkinEntry,
         syntactic::SyntaxTheme,
         verb::ExecPattern,
@@ -171,6 +174,9 @@ pub struct Conf {
 
     #[serde(alias = "layout-instructions")]
     pub layout_instructions: Option<LayoutInstructions>,
+
+    #[serde(alias = "preview-layout")]
+    pub preview_layout: Option<PreviewLayout>,
     // BEWARE: entries added here won't be usable unless also
     // added in read_file!
 }
@@ -269,6 +275,7 @@ impl Conf {
         overwrite!(self, lines_after_match_in_preview, conf);
         overwrite!(self, lines_before_match_in_preview, conf);
         overwrite!(self, layout_instructions, conf);
+        overwrite!(self, preview_layout, conf);
         self.verbs.append(&mut conf.verbs);
         // the following prefs are "additive": we can add entries from several
         // config files and they still make sense

@@ -8,6 +8,7 @@ use {
         git,
         path::{self, PathAnchor},
         pattern::*,
+        preview::PreviewLayout,
         print,
         stage::*,
         task_sync::Dam,
@@ -26,6 +27,7 @@ pub struct BrowserState {
     pub filtered_tree: Option<Tree>,
     mode: Mode,                        // whether we're in 'input' or 'normal' mode
     pending_task: Option<BrowserTask>, // note: there are some other pending task, see
+    panel_page_height: Option<usize>,  // effective page height, accounting for vertical stacking. fallback to screen height
 }
 
 /// A task that can be computed in background
@@ -71,6 +73,7 @@ impl BrowserState {
             filtered_tree: None,
             mode: con.initial_mode(),
             pending_task,
+            panel_page_height: None,
         })
     }
 
@@ -111,6 +114,17 @@ impl BrowserState {
 
     pub fn page_height(screen: Screen) -> usize {
         screen.height as usize - 2 // br shouldn't be displayed when the screen is smaller
+    }
+
+    /// return the effective page height for this panel, using the stored
+    /// panel area height if available (needed for vertical preview layout
+    /// where the browser panel is shorter than the full screen).
+    fn effective_page_height(
+        &self,
+        screen: Screen,
+    ) -> usize {
+        self.panel_page_height
+            .unwrap_or_else(|| Self::page_height(screen))
     }
 
     /// return a reference to the currently displayed tree, which
@@ -342,7 +356,11 @@ impl PanelState for BrowserState {
         debug!("browser_state on_internal {:?}", internal_exec);
         let con = &cc.app.con;
         let screen = cc.app.screen;
-        let page_height = BrowserState::page_height(cc.app.screen);
+        // use the panels actual area height, so scrolling works correctly
+        // in vertical preview layout (the browser is shorter than
+        // the full screen)
+        self.panel_page_height = Some(cc.panel.areas.state.height as usize);
+        let page_height = self.effective_page_height(screen);
         let bang = input_invocation
             .map(|inv| inv.bang)
             .unwrap_or(internal_exec.bang);
@@ -454,7 +472,9 @@ impl PanelState for BrowserState {
                 let areas = &cc.panel.areas;
                 let selected_path = &self.displayed_tree().selected_line().path;
                 if areas.is_last() && areas.nb_pos < con.max_panels_count {
-                    let purpose = if selected_path.is_file() && cc.app.preview_panel.is_none() {
+                    let purpose = if cc.app.preview_panel.is_none()
+                        && (selected_path.is_file() || con.preview_layout == PreviewLayout::Bottom)
+                    {
                         PanelPurpose::Preview
                     } else {
                         PanelPurpose::None
@@ -555,7 +575,7 @@ impl PanelState for BrowserState {
                 CmdResult::Keep
             }
             Internal::select_last => {
-                let page_height = BrowserState::page_height(screen);
+                let page_height = self.effective_page_height(screen);
                 self.displayed_tree_mut().try_select_last(page_height);
                 CmdResult::Keep
             }
@@ -573,7 +593,7 @@ impl PanelState for BrowserState {
                         let res = self.displayed_tree_mut().show_path(&path, con);
                         match res {
                             Ok(()) => {
-                                let page_height = BrowserState::page_height(screen);
+                                let page_height = self.effective_page_height(screen);
                                 self.displayed_tree_mut()
                                     .make_selection_visible(page_height);
                                 CmdResult::Keep
@@ -757,7 +777,7 @@ impl PanelState for BrowserState {
                     let mut options = self.tree.options.clone();
                     options.pattern = pattern;
                     let root = self.tree.root().clone();
-                    let page_height = BrowserState::page_height(screen);
+                    let page_height = self.effective_page_height(screen);
                     let builder = TreeBuilder::from(root, options, page_height, con)?;
                     let filtered_tree = time!(
                         Info,
@@ -767,7 +787,7 @@ impl PanelState for BrowserState {
                     );
                     if let Ok(mut ft) = filtered_tree {
                         ft.try_select_best_match();
-                        ft.make_selection_visible(BrowserState::page_height(screen));
+                        ft.make_selection_visible(self.effective_page_height(screen));
                         self.filtered_tree = Some(ft);
                     }
                 }
@@ -826,7 +846,7 @@ impl PanelState for BrowserState {
         screen: Screen,
         con: &AppContext,
     ) -> Command {
-        let page_height = BrowserState::page_height(screen);
+        let page_height = self.effective_page_height(screen);
         // refresh the base tree
         if let Err(e) = self.tree.refresh(page_height, con) {
             warn!("refreshing base tree failed : {:?}", e);

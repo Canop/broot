@@ -60,7 +60,6 @@ pub struct AppPanels {
 }
 
 impl AppPanelsAndInputs {
-
     /// Create the appPanelsAndInputs which should be kept for the whole life of
     /// the application, starting with a single panel (it can't be empty), based on
     /// the initial_root
@@ -76,7 +75,7 @@ impl AppPanelsAndInputs {
         if let Some(path) = con.initial_file.as_ref() {
             browser_state.tree.try_select_path(path);
         }
-        let areas = Areas::create(&mut Vec::new(), &con.layout_instructions, 0, screen, false);
+        let areas = Areas::create(&mut Vec::new(), &con.layout_instructions, 0, screen, None);
         let input = PanelInput::new(areas.input.clone());
         let panel = Panel::new(
             PanelId::from(0),
@@ -127,12 +126,12 @@ impl AppPanelsAndInputs {
         con: &AppContext,
     ) {
         let screen = self.screen();
-        let has_preview = self.has_preview_panel();
+        let preview_layout = self.has_preview_panel().then_some(con.preview_layout);
         Areas::resize_all(
             self.panels.panels.as_mut_slice(),
             &con.layout_instructions,
             screen,
-            has_preview,
+            preview_layout,
         );
         for panel in &mut self.panels.panels {
             panel.mut_state().refresh(screen, con);
@@ -293,13 +292,15 @@ impl AppPanelsAndInputs {
         } else {
             self.active_panel_idx()
         };
-        let with_preview = purpose.is_preview() || self.panels.has_type(PanelStateType::Preview);
+        let preview_layout = (purpose.is_preview()
+            || self.panels.has_type(PanelStateType::Preview))
+        .then_some(con.preview_layout);
         let areas = Areas::create(
             self.panels.panels.as_mut_slice(),
             &con.layout_instructions,
             insertion_idx,
             screen,
-            with_preview,
+            preview_layout,
         );
         let mut input = PanelInput::new(areas.input.clone());
         input.set_content(&state.get_starting_input());
@@ -363,12 +364,15 @@ impl AppPanelsAndInputs {
         let active_panel_id = self.panels.panels[self.active_panel_idx()].id;
         self.panels.panels.remove(panel_idx);
         self.inputs.remove(panel_idx);
-        let has_preview = self.panels.has_type(PanelStateType::Preview);
+        let preview_layout = self
+            .panels
+            .has_type(PanelStateType::Preview)
+            .then_some(con.preview_layout);
         Areas::resize_all(
             &mut self.panels.panels,
             &con.layout_instructions,
             screen,
-            has_preview,
+            preview_layout,
         );
         self.panels.active_panel_idx = self
             .panels
@@ -419,16 +423,20 @@ impl AppPanelsAndInputs {
     // ----------------------------------------------------
     // event handling
 
-    /// get the index of the panel at x
+    /// get the index of the panel at (x, y)
     pub fn clicked_panel_index(
         &self,
         x: u16,
-        _y: u16,
+        y: u16,
     ) -> usize {
         let len = self.len();
         for (idx, panel) in self.panels.panels.iter().enumerate() {
             let area = &panel.areas.state;
-            if area.left <= x && x < area.left + area.width {
+            if area.left <= x
+                && x < area.left + area.width
+                && area.top <= y
+                && y < area.top + area.height
+            {
                 return idx;
             }
         }

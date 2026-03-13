@@ -18,7 +18,10 @@ use {
         },
         path::SpecialPaths,
         pattern::SearchModeMap,
-        preview::PreviewTransformers,
+        preview::{
+            PreviewLayout,
+            PreviewTransformers,
+        },
         skin::ExtColorMap,
         syntactic::SyntaxTheme,
         tree::TreeOptions,
@@ -159,6 +162,9 @@ pub struct AppContext {
     /// layout modifiers, like divider moves
     pub layout_instructions: LayoutInstructions,
 
+    /// where to place the preview panel (right or bottom)
+    pub preview_layout: PreviewLayout,
+
     /// server name
     pub server_name: Option<String>,
 }
@@ -279,6 +285,7 @@ impl AppContext {
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),
             preview_transformers,
             layout_instructions,
+            preview_layout: config.preview_layout.unwrap_or_default(),
             server_name,
         })
     }
