@@ -108,33 +108,67 @@ impl fmt::Debug for CmdResult {
         &self,
         f: &mut fmt::Formatter,
     ) -> fmt::Result {
-        write!(
-            f,
-            "{}",
-            match self {
-                CmdResult::ApplyOnPanel { .. } => "ApplyOnPanel",
-                CmdResult::ChangeLayout(_) => "ChangeLayout",
-                CmdResult::ClosePanel {
-                    validate_purpose: false,
-                    ..
-                } => "CancelPanel",
-                CmdResult::ClosePanel {
-                    validate_purpose: true,
-                    ..
-                } => "OkPanel",
-                CmdResult::DisplayError(_) => "DisplayError",
-                CmdResult::ExecuteSequence { .. } => "ExecuteSequence",
-                CmdResult::Keep => "Keep",
-                CmdResult::Message { .. } => "Message",
-                CmdResult::Launch(_) => "Launch",
-                CmdResult::NewState { .. } => "NewState",
-                CmdResult::NewPanel { .. } => "NewPanel",
-                CmdResult::PopStateAndReapply => "PopStateAndReapply",
-                CmdResult::PopState => "PopState",
-                CmdResult::HandleInApp(_) => "HandleInApp",
-                CmdResult::Quit => "Quit",
-                CmdResult::RefreshState { .. } => "RefreshState",
-            }
-        )
+        match self {
+            CmdResult::ApplyOnPanel { id } => f
+                .debug_struct("CmdResult::ApplyOnPanel")
+                .field("id", id)
+                .finish(),
+            CmdResult::ClosePanel {
+                validate_purpose,
+                panel_ref,
+                clear_cache,
+            } => f
+                .debug_struct("CmdResult::ClosePanel")
+                .field("validate_purpose", validate_purpose)
+                .field("panel_ref", panel_ref)
+                .field("clear_cache", clear_cache)
+                .finish(),
+            CmdResult::ChangeLayout(layout_instruction) => f
+                .debug_tuple("CmdResult::ChangeLayout")
+                .field(layout_instruction)
+                .finish(),
+            CmdResult::DisplayError(message) => f
+                .debug_tuple("CmdResult::DisplayError")
+                .field(message)
+                .finish(),
+            CmdResult::ExecuteSequence { sequence } => f
+                .debug_struct("CmdResult::ExecuteSequence")
+                .field("sequence", sequence)
+                .finish(),
+            CmdResult::HandleInApp(internal) => f
+                .debug_tuple("CmdResult::HandleInApp")
+                .field(internal)
+                .finish(),
+            CmdResult::Keep => write!(f, "CmdResult::Keep"),
+            CmdResult::Message(message) => f
+                .debug_tuple("CmdResult::Message")
+                .field(message)
+                .finish(),
+            CmdResult::Launch(launchable) => f
+                .debug_tuple("CmdResult::Launch")
+                .field(launchable)
+                .finish(),
+            CmdResult::NewPanel {
+                state: _,
+                purpose,
+                direction,
+            } => f
+                .debug_struct("CmdResult::NewPanel")
+                .field("purpose", purpose)
+                .field("direction", direction)
+                .finish_non_exhaustive(),
+
+            CmdResult::NewState { state: _, message } => f
+                .debug_struct("CmdResult::NewState")
+                .field("message", message)
+                .finish_non_exhaustive(),
+            CmdResult::PopStateAndReapply => write!(f, "CmdResult::PopStateAndReapply"),
+            CmdResult::PopState => write!(f, "CmdResult::PopState"),
+            CmdResult::Quit => write!(f, "CmdResult::Quit"),
+            CmdResult::RefreshState { clear_cache } => f
+                .debug_struct("CmdResult::RefreshState")
+                .field("clear_cache", clear_cache)
+                .finish(),
+        }
     }
 }

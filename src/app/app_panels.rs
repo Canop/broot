@@ -30,9 +30,6 @@ use {
 /// This thing is designed so that the inputs and panels can be
 /// borrowed separately, which is useful for input handling and drawing.
 pub struct AppPanelsAndInputs {
-    /// a count of all panels created
-    created_panels_count: usize,
-
     panels: AppPanels,
 
     /// one input per panel, in the same order. Never empty.
@@ -76,10 +73,9 @@ impl AppPanelsAndInputs {
         }
         let areas = Areas::create(&mut Vec::new(), &con.layout_instructions, 0, screen, false);
         let input = PanelInput::new(areas.input.clone());
-        let panel = Panel::new(PanelId::from(0), browser_state, areas, con);
+        let panel = Panel::new(browser_state, areas, con);
         debug!("initial panel areas: {:?}", panel.areas);
         Ok(Self {
-            created_panels_count: 0,
             panels: AppPanels {
                 screen,
                 active_panel_idx: 0,
@@ -292,13 +288,11 @@ impl AppPanelsAndInputs {
         );
         let mut input = PanelInput::new(areas.input.clone());
         input.set_content(&state.get_starting_input());
-        let panel_id = self.created_panels_count.into();
         if activate {
             self.panels.active_panel_idx = insertion_idx;
         }
-        let mut panel = Panel::new(panel_id, state, areas, con);
+        let mut panel = Panel::new(state, areas, con);
         panel.purpose = purpose;
-        self.created_panels_count += 1;
         self.panels.panels.insert(insertion_idx, panel);
         self.inputs.insert(insertion_idx, input);
         Ok(())

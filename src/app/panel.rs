@@ -14,11 +14,17 @@ use {
         task_sync::Dam,
         verb::*,
     },
+    std::sync::atomic::{
+        AtomicUsize,
+        Ordering,
+    },
     termimad::minimad::{
         Alignment,
         Composite,
     },
 };
+
+static NEXT_ID: AtomicUsize = AtomicUsize::new(0);
 
 /// A column on screen containing a stack of states, the top
 /// one being visible
@@ -34,11 +40,11 @@ pub struct Panel {
 impl Panel {
     #[must_use]
     pub fn new(
-        id: PanelId,
         state: Box<dyn PanelState>,
         areas: Areas,
         con: &AppContext,
     ) -> Self {
+        let id = NEXT_ID.fetch_add(1, Ordering::Relaxed).into();
         let mut input = PanelInput::new(areas.input.clone());
         input.set_content(&state.get_starting_input());
         let status = state.no_verb_status(false, con, areas.status.width as usize);
