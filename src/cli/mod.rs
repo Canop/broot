@@ -6,6 +6,7 @@ mod install_launch_args;
 
 pub use {
     args::*,
+    crate::terminal::drain_stdin,
     install_launch_args::*,
 };
 
@@ -190,6 +191,9 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     w.queue(LeaveAlternateScreen)?;
     w.flush()?;
     clear_resources();
+    // drain stdin to avoid that some of the input intended for broot
+    // is leaked to the terminal
+    drain_stdin();
     r
 }
 

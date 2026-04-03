@@ -572,7 +572,7 @@ impl App {
                     event_source.unblock(self.quitting);
                 }
                 Either::First(None) => {
-                    // this is how we quit the application,
+                    // This is how we quit the application,
                     // when the input thread is properly closed
                     break;
                 }

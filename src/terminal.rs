@@ -52,3 +52,17 @@ fn set_title_str(
     let _ = write!(w, "\u{1b}]0;{title}\u{07}");
     let _ = w.flush();
 }
+
+pub fn drain_stdin() {
+    #[cfg(unix)]
+    unsafe {
+        libc::tcflush(libc::STDIN_FILENO, libc::TCIFLUSH);
+    }
+    #[cfg(not(unix))]
+    {
+        let zero = std::time::Duration::from_millis(0);
+        while crossterm::event::poll(zero).unwrap_or(false) {
+            let _ = crossterm::event::read();
+        }
+    }
+}
