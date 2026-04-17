@@ -6,22 +6,32 @@ use {
         display::Screen,
         errors::ProgramError,
         launchable::Launchable,
-        skin::{
-            PanelSkin,
-            StyleMap,
-        },
+        skin::{PanelSkin, StyleMap},
         tree::Tree,
     },
     crokey::crossterm::tty::IsTty,
     pathdiff,
     std::{
-        io::{
-            self,
-            stdout,
-        },
+        io::{self, stdout},
         path::Path,
     },
 };
+
+fn join_lines<I>(lines: I) -> String
+where
+    I: IntoIterator<Item = String>,
+{
+    let mut iter = lines.into_iter();
+    let Some(first) = iter.next() else {
+        return String::new();
+    };
+    let mut string = first;
+    for line in iter {
+        string.push('\n');
+        string.push_str(&line);
+    }
+    string
+}
 
 fn print_string(
     string: String,
@@ -42,14 +52,12 @@ pub fn print_paths(
     let string = match sel_info {
         SelInfo::None => "".to_string(), // better idea ?
         SelInfo::One(sel) => sel.path.to_string_lossy().to_string(),
-        SelInfo::More(stage) => {
-            let mut string = String::new();
-            for path in stage.paths() {
-                string.push_str(&path.to_string_lossy());
-                string.push('\n');
-            }
-            string
-        }
+        SelInfo::More(stage) => join_lines(
+            stage
+                .paths()
+                .iter()
+                .map(|path| path.to_string_lossy().to_string()),
+        ),
     };
     print_string(string, con)
 }
@@ -78,14 +86,13 @@ pub fn print_relative_paths(
     let string = match sel_info {
         SelInfo::None => "".to_string(),
         SelInfo::One(sel) => relativize_path(sel.path, con)?,
-        SelInfo::More(stage) => {
-            let mut string = String::new();
-            for path in stage.paths() {
-                string.push_str(&relativize_path(path, con)?);
-                string.push('\n');
-            }
-            string
-        }
+        SelInfo::More(stage) => join_lines(
+            stage
+                .paths()
+                .iter()
+                .map(|path| relativize_path(path, con))
+                .collect::<Result<Vec<_>, _>>()?,
+        ),
     };
     print_string(string, con)
 }
@@ -109,4 +116,52 @@ pub fn print_tree(
         styles,
         con.ext_colors.clone(),
     )))
+}
+
+#[cfg(test)]
+mod tests {
+    use {
+        super::*,
+        crate::{launchable::Launchable, stage::Stage},
+        std::path::PathBuf,
+    };
+
+    #[test]
+    fn print_paths_does_not_add_an_empty_line_after_multiple_paths() {
+        let mut stage = Stage::default();
+        stage.add(PathBuf::from("/tmp/cog.txt"));
+        stage.add(PathBuf::from("/tmp/dog.png"));
+
+        let cmd = print_paths(SelInfo::More(&stage), &AppContext::default()).unwrap();
+
+        let CmdResult::Launch(launchable) = cmd else {
+            panic!("expected Launch result");
+        };
+        let Launchable::Printer { to_print } = launchable.as_ref() else {
+            panic!("expected printer launchable");
+        };
+
+        assert_eq!(to_print, "/tmp/cog.txt\n/tmp/dog.png");
+    }
+
+    #[test]
+    fn print_relative_paths_does_not_add_an_empty_line_after_multiple_paths() {
+        let mut stage = Stage::default();
+        stage.add(PathBuf::from("/tmp/broot-print/cog.txt"));
+        stage.add(PathBuf::from("/tmp/broot-print/dog.png"));
+
+        let mut con = AppContext::default();
+        con.initial_root = PathBuf::from("/tmp/broot-print");
+
+        let cmd = print_relative_paths(SelInfo::More(&stage), &con).unwrap();
+
+        let CmdResult::Launch(launchable) = cmd else {
+            panic!("expected Launch result");
+        };
+        let Launchable::Printer { to_print } = launchable.as_ref() else {
+            panic!("expected printer launchable");
+        };
+
+        assert_eq!(to_print, "cog.txt\ndog.png");
+    }
 }
