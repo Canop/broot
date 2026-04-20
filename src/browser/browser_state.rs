@@ -621,7 +621,7 @@ impl PanelState for BrowserState {
                 }
             }
             Internal::start_end_panel => {
-                if cc.panel.purpose.is_arg_edition() {
+                if cc.panel.purpose.is_arg_edition() && cc.panel.areas.pos_idx > 0 {
                     debug!("start_end understood as end");
                     CmdResult::ClosePanel {
                         validate_purpose: true,

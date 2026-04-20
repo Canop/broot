@@ -10,6 +10,7 @@ use {
         preview::*,
         print,
         stage::*,
+        favorite::*,
         task_sync::Dam,
         tree::*,
         verb::*,
@@ -675,6 +676,58 @@ pub trait PanelState {
                     }
                 }
             }
+            Internal::clear_favorites => {
+                app_state.favorites.clear();
+                if let Some(panel_id) = cc.app.favorite_panel {
+                    CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Id(panel_id),
+                        clear_cache: false,
+                    }
+                } else {
+                    CmdResult::Keep
+                }
+            }
+            Internal::favorite => self.favorite(app_state, cc, con),
+            Internal::unfavorite => self.unfavorite_path(app_state, cc, con),
+            Internal::toggle_favorite => self.toggle_favorite(app_state, cc, con),
+            Internal::close_favorite_area => {
+                if let Some(id) = cc.app.favorite_panel {
+                    CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Id(id),
+                        clear_cache: false,
+                    }
+                } else {
+                    CmdResult::Keep
+                }
+            }
+            Internal::open_favorite_area => {
+                if cc.app.favorite_panel.is_none() {
+                    CmdResult::NewPanel {
+                        state: Box::new(FavoriteState::new(app_state, self.tree_options(), con)),
+                        purpose: PanelPurpose::None,
+                        direction: HDir::Right,
+                    }
+                } else {
+                    CmdResult::Keep
+                }
+            }
+            Internal::toggle_favorite_area => {
+                if let Some(id) = cc.app.favorite_panel {
+                    CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Id(id),
+                        clear_cache: false,
+                    }
+                } else {
+                    CmdResult::NewPanel {
+                        state: Box::new(FavoriteState::new(app_state, self.tree_options(), con)),
+                        purpose: PanelPurpose::None,
+                        direction: HDir::Right,
+                    }
+                }
+            }
             Internal::set_syntax_theme => CmdResult::HandleInApp(Internal::set_syntax_theme),
             Internal::print_path => print::print_paths(self.sel_info(app_state), con)?,
             Internal::print_relative_path => {
@@ -796,6 +849,65 @@ pub trait PanelState {
                 self.unstage(app_state, cc, con)
             } else {
                 self.stage(app_state, cc, con)
+            }
+        } else {
+            CmdResult::error("no selection")
+        }
+    }
+
+    fn favorite(
+        &self,
+        app_state: &mut AppState,
+        cc: &CmdContext,
+        con: &AppContext,
+    ) -> CmdResult {
+        if let Some(path) = self.selected_path() {
+            let path = path.to_path_buf();
+            app_state.favorites.add(path);
+            if cc.app.favorite_panel.is_none() {
+                return CmdResult::NewPanel {
+                    state: Box::new(FavoriteState::new(app_state, self.tree_options(), con)),
+                    purpose: PanelPurpose::None,
+                    direction: HDir::Right,
+                };
+            }
+        } else {
+            warn!("no path in state");
+        }
+        CmdResult::Keep
+    }
+
+    fn unfavorite_path(
+        &self,
+        app_state: &mut AppState,
+        cc: &CmdContext,
+        _con: &AppContext,
+    ) -> CmdResult {
+        if let Some(path) = self.selected_path() {
+            if app_state.favorites.remove(path) && app_state.favorites.is_empty() {
+                if let Some(panel_id) = cc.app.favorite_panel {
+                    return CmdResult::ClosePanel {
+                        validate_purpose: false,
+                        panel_ref: PanelReference::Id(panel_id),
+                        clear_cache: false,
+                    };
+                }
+            }
+        }
+        CmdResult::Keep
+    }
+
+    fn toggle_favorite(
+        &self,
+        app_state: &mut AppState,
+        cc: &CmdContext,
+        con: &AppContext,
+    ) -> CmdResult {
+        if let Some(path) = self.selected_path() {
+            if app_state.favorites.contains(path) {
+                self.unfavorite_path(app_state, cc, con)
+            } else {
+                self.favorite(app_state, cc, con)
             }
         } else {
             CmdResult::error("no selection")
