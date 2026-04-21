@@ -669,6 +669,11 @@ footer {
 	fill: #000;
 	stroke: #000;
 }
+.prev-next:has(> .next-page-link):not(:has(> .previous-page-link)) > .next-page-link {
+	flex: 0 0 50%;
+	max-width: 50%;
+	margin-left: auto;
+}
 .prev-next .nav-link {
 	flex: 1 1 30%;
 	padding: 10px 15px;
