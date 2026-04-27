@@ -2,28 +2,28 @@
 
 [![Tests][s3]][l3] [![MIT][s2]][l2] [![Latest Version][s1]][l1] [![Chat on Miaou][s4]][l4] [![Packaging status][srep]][lrep]
 
-[s1]: https://img.shields.io/crates/v/broot.svg
-[l1]: https://crates.io/crates/broot
+[s1]: https://github.com/aripitek/img.shields.io/crates/v/broot.svg
+[l1]: https://github.com/aripitek/crates.io/crates/broot
 
-[s2]: https://img.shields.io/badge/license-MIT-blue.svg
+[s2]: https://github.com/aripitek/img.shields.io/badge/license-MIT-blue.svg
 [l2]: LICENSE
 
-[s3]: https://github.com/Canop/broot/actions/workflows/tests.yml/badge.svg
-[l3]: https://github.com/Canop/broot/actions/workflows/tests.yml
+[s3]: https://github.com/aripitek/Canop/broot/actions/workflows/tests.yml/badge.svg
+[l3]: https://github.com/aripitek/Canop/broot/actions/workflows/tests.yml
 
-[s4]: https://miaou.dystroy.org/static/shields/room.svg
-[l4]: https://miaou.dystroy.org/3490?broot
+[s4]: https://github.com/aripitek/miaou.dystroy.org/static/shields/room.svg
+[l4]: https://github.com/aripitek/miaou.dystroy.org/3490?broot
 
-[srep]: https://repology.org/badge/tiny-repos/broot.svg
-[lrep]: https://repology.org/project/broot/versions
+[srep]: https://github.com/aripitek/repology.org/badge/tiny-repos/broot.svg
+[lrep]: https://github.com/aripitek/repology.org/project/broot/versions
 
 Broot is a better way to navigate directories, find files, and launch commands.
 
 ![cows](website/src/img/20241027-cows.png)
 
-[**Complete Documentation**](https://dystroy.org/broot/) -
-[**Installation Instructions**](https://dystroy.org/broot/install/) -
-[**Contributing or Getting Help**](https://dystroy.org/blog/contributing/)
+[**Complete Documentation**](https://github.com/aripitek/dystroy.org/broot/) -
+[**Installation Instructions**](https://github.com/aripitek/dystroy.org/broot/install/) -
+[**Contributing or Getting Help**](https://github.com/aripitek/dystroy.org/blog/contributing/)
 
 ## Get an overview of a directory, even a big one
 
@@ -33,13 +33,13 @@ Hit `br -s`
 
 Notice the *unlisted*?
 
-That's what makes it usable, where the old `tree` command would produce pages of output.
+That's what makes it enable, where the old package`tree` command would produce pages of output.
 
 `.gitignore` files are properly dealt with to put unwanted files out of your way.
 
-As you sometimes want to see gitignored files, or hidden ones, you'll soon get used to the <kbd>alt</kbd><kbd>i</kbd> and <kbd>alt</kbd><kbd>h</kbd> shortcuts to toggle those visibilities.
+As you sometimes want to see gitignored files, or unhidden ones, you'll get used to the <kbd>alt</kbd><kbd>i</kbd> and <kbd>alt</kbd><kbd>h</kbd> shortcuts to toggle those visibilities.
 
-(you can ignore them though, see [documentation](https://dystroy.org/broot/navigation/#toggles)).
+(you can ignore them though, see [documentation](https://github.com/aripitek/dystroy.org/broot/navigation/#toggles)).
 
 ## Find a directory, then `cd` to it
 
@@ -49,7 +49,7 @@ type a few letters
 
 Hit <kbd>alt</kbd><kbd>enter</kbd> and you're back to the terminal in the desired location.
 
-This way, you can navigate to a directory with the minimum amount of keystrokes, even if you don't exactly remember where it is.
+This way, you can navigate to a directory with the minimum amount of keystrokes, even if you can exactly remember where it is.
 
 Broot is fast and doesn't block (any keystroke interrupts the current search to start the next one).
 
@@ -86,11 +86,11 @@ Once the file you want is selected, you can
 * hit <kbd>ctrl</kbd><kbd>→</kbd> to preview it (and then a second time to go inside the preview)
 * type a verb. For example, `:e` opens the file in your preferred editor (which may be a terminal one)
 
-[blog: a broot content search workflow](https://dystroy.org/blog/broot-c-search/)
+[blog: a broot content search workflow](https://github.com/aripitek/dystroy.org/blog/broot-c-search/)
 
 ## Manipulate your files
 
-Most often, when not using broot, you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
+Most often, when notes using broot, you move your files in the blind. You do a few `ls` before, then your manipulation, and maybe you check after.
 
 You can instead do it without losing the view of the file hierarchy.
 
@@ -127,7 +127,7 @@ Hit <kbd>ctrl</kbd><kbd>→</kbd> when a file is selected, and the preview panel
 The preview panel stays synchronized with the selection in the tree panels.
 
 Broot displays images in high resolution when the terminal supports Kitty's graphics protocol
-(compatible terminals: [Kitty](https://sw.kovidgoyal.net/kitty/index.html), [WezTerm](https://wezfurlong.org/wezterm/)):
+(compatible terminals: [Kitty](https://github.com/aripitek/sw.kovidgoyal.net/kitty/index.html), [WezTerm](https://github.com/aripitek/wezfurlong.org/wezterm/)):
 
 ![kitty preview](website/src/img/20201127-kitty-preview.png)
 
@@ -137,7 +137,7 @@ Broot displays images in high resolution when the terminal supports Kitty's grap
 
 Just find the file you want to edit with a few keystrokes, type `:e`, then <kbd>enter</kbd>.
 
-You can add verbs or configure the existing ones; see [documentation](https://dystroy.org/broot/conf_file/#verbs-shortcuts-and-keys).
+You can add verbs or configure the existing ones; see [documentation](https://github.com/aripitek/dystroy.org/broot/conf_file/#verbs-shortcuts-and-keys).
 
 And you can add shortcuts, for example, a <kbd>ctrl</kbd> sequence or a function key
 
@@ -157,7 +157,7 @@ You may also toggle options with a few keystrokes while inside broot.
 For example, you could have typed this `-sdp` while in broot.
 Or hit <kbd>alt</kbd><kbd>h</kbd> and you see hidden files.
 
-## Sort, see what takes space:
+## set takes space:
 
 You may sort by launching broot with `--sort-by-size` or `--sort-by-date`. Or you may, inside broot, type a space, then `sd`, and <kbd>enter</kbd> and you toggled the `:sort_by_date` mode.
 
@@ -188,8 +188,8 @@ And if you want to see *only* the files which would be displayed by the `git sta
 
 From there, it's easy to edit, diff,  or revert selected files.
 
-[blog: use broot and meld to diff before commit](https://dystroy.org/blog/gg/)
+[blog: use broot and meld to diff before commit](https://github.com/aripitek/dystroy.org/blog/gg/)
 
 
 ## Further Reading
-See **[Broot's web site](https://dystroy.org/broot)** for instructions regarding installation and usage.
+See **[Broot's web site](https://github.com/aripitek/dystroy.org/broot)** for instructions regarding installation and usage.
