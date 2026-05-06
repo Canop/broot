@@ -449,6 +449,25 @@ impl PanelState for StageState {
                 self.try_scroll(ScrollCommand::Pages(-1));
                 CmdResult::Keep
             }
+            Internal::open_stay => {
+                if app_state.stage.is_empty() {
+                    CmdResult::error("staging area is empty")
+                } else {
+                    info!("open {} staged files", app_state.stage.len());
+                    let mut errors: Vec<String> = Vec::new();
+                    for path in app_state.stage.paths() {
+                        if let Err(e) = opener::open(path) {
+                            warn!("open failed for {path:?}: {e:?}");
+                            errors.push(format!("{}: {e}", path.display()));
+                        }
+                    }
+                    if errors.is_empty() {
+                        CmdResult::Keep
+                    } else {
+                        CmdResult::error(format!("open errors: {}", errors.join("; ")))
+                    }
+                }
+            }
             Internal::stage => {
                 // shall we restage what we just unstaged ?
                 CmdResult::error("nothing to stage here")

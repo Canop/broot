@@ -32,6 +32,12 @@ Some verbs aren't compatible with execution on the staging area:
 * Verbs which don't come back to broot after execution (for example `:cd` or any verb quitting broot)
 * [Sequences](../conf_verbs#cmd-execution)
 
+# Open all staged files
+
+When the staging area is focused, `:open_stay` opens every staged file through the system's default application, in one go. This is convenient when the goal is just "open these few files" rather than running a custom command.
+
+If you'd rather run a single external command receiving all the paths at once (for example `mpv video1.mp4 video2.mp4` or `nvim file1 file2 file3`), define a verb with a `space-separated` flag on its `{file}` argument; see [Single command on stage](../conf_verbs#single-command-on-stage).
+
 # Read the staging area
 
 The staging area can be opened or closed with the `:open_staging_area`, `:close_staging_area`, and `:toggle_staging_area` verbs, which have shortcuts `:osa`, `:csa`, and `:tsa`.
