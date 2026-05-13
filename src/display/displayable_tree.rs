@@ -355,10 +355,8 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             matched_string.queue_on(cw)?;
         }
         match &line.line_type {
-            TreeLineType::Dir => {
-                if line.unlisted > 0 {
-                    cw.queue_str(style, " …")?;
-                }
+            TreeLineType::Dir if line.unlisted > 0 => {
+                cw.queue_str(style, " …")?;
             }
             TreeLineType::BrokenSymLink(direct_path) => {
                 cw.queue_str(style, " -> ")?;

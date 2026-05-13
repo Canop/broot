@@ -70,6 +70,7 @@ command = [
 	"-A", "clippy::collapsible_else_if",
 	"-A", "clippy::collapsible_if",
 	"-A", "clippy::derive_partial_eq_without_eq",
+	"-A", "clippy::explicit_counter_loop",
 	"-A", "clippy::if_same_then_else",
 	"-A", "clippy::len_without_is_empty",
 	"-A", "clippy::manual_clamp",
