@@ -1,4 +1,5 @@
-### next
+### v1.56.3 - 2026-05-13
+<a name="v1.56.3"></a>
 - fix control characters sometimes remaining in the terminal after broot exit
 - nushell: rename br module to avoid conflict in last nushell version - Fix #1138 - Thanks @paulhey
 - `:open_stay` on the staging area opens every staged file through the system opener - Fix #444 - Thanks @ChrisJr404

@@ -276,7 +276,7 @@ dependencies = [
 
 [[package]]
 name = "broot"
-version = "1.56.2"
+version = "1.56.3"
 dependencies = [
  "base64 0.22.1",
  "bet",
