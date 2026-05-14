@@ -61,8 +61,8 @@ pub fn drain_stdin() {
     #[cfg(not(unix))]
     {
         let zero = std::time::Duration::from_millis(0);
-        while crossterm::event::poll(zero).unwrap_or(false) {
-            let _ = crossterm::event::read();
+        while termimad::crossterm::event::poll(zero).unwrap_or(false) {
+            let _ = termimad::crossterm::event::read();
         }
     }
 }

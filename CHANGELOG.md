@@ -1,3 +1,7 @@
+### v1.56.4 - 2026-05-14
+<a name="v1.56.4"></a>
+- fix compilation on non unix platforms (1.56.3 isn't available on those systems)
+
 ### v1.56.3 - 2026-05-13
 <a name="v1.56.3"></a>
 - fix control characters sometimes remaining in the terminal after broot exit
