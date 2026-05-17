@@ -41,7 +41,7 @@ This table is searchable. Hit a few letters to filter it.
 |**name**|**shortcut**|**key**|**description**
 |-:|:-:|:-:|:-
 ${verb-rows
-|${name}|${shortcut}|${key}|${description}`${execution}`
+|${name}|${shortcut}|${key}|${description}
 }
 |-:
 

@@ -8,10 +8,16 @@ use crate::{
 /// what should be shown for a verb in the help screen, after
 /// filtering
 pub struct MatchingVerbRow<'v> {
+    /// the name in markdown (with matching chars between stars if a pattern is active)
     name: Option<String>,
+    /// the shortcut in markdown (with matching chars between stars if a pattern is active)
     shortcut: Option<String>,
-    pub verb: &'v Verb,
+    /// the description in markdown, with matching chars between stars if a pattern is active, and
+    /// with backticks if the description is code
+    pub description_md: String,
+    /// the keys description in markdown (with matching chars between stars if a pattern is active)
     pub keys_desc: String,
+    pub verb: &'v Verb,
 }
 
 impl MatchingVerbRow<'_> {
@@ -50,6 +56,19 @@ pub fn matching_verb_rows<'v>(
         }
         let mut name = None;
         let mut shortcut = None;
+        let mut keys_desc = String::from(" ");
+        let keys = verb
+            .keys
+            .iter()
+            .filter(|&&k| con.modal || !keys::is_key_only_modal(k));
+        for (i, key) in keys.enumerate() {
+            if i > 0 {
+                keys_desc.push_str(", ");
+            }
+            keys_desc.push_str(keys::KEY_FORMAT.to_string(*key).as_str());
+        }
+        let mut desc_match = None;
+        let desc = &verb.description.content;
         if pat.is_some() {
             let mut ok = false;
             name = verb.names.first().and_then(|s| {
@@ -64,22 +83,34 @@ pub fn matching_verb_rows<'v>(
                     nm.wrap(s, "**", "**")
                 })
             });
+            if let Some(nm) = pat.search_string(keys_desc.as_str()) {
+                keys_desc = nm.wrap(keys_desc.as_str(), "**", "**");
+                ok = true;
+            }
+            desc_match = pat.search_string(desc);
+            if desc_match.is_some() {
+                ok = true;
+            }
             if !ok {
                 continue;
             }
         }
-        let keys_desc = verb
-            .keys
-            .iter()
-            .filter(|&&k| con.modal || !keys::is_key_only_modal(k))
-            .map(|&k| keys::KEY_FORMAT.to_string(k))
-            .collect::<Vec<String>>() // no way to join an iterator today ?
-            .join(", ");
+        let description_md = match (desc_match, verb.description.code) {
+            (Some(m), false) => {
+                format!("`{}`", m.wrap(desc, "`**", "**`"))
+            }
+            (Some(m), true) => m.wrap(desc, "**", "**"),
+            (None, true) => {
+                format!("`{}`", desc)
+            }
+            (None, false) => desc.to_string(),
+        };
         rows.push(MatchingVerbRow {
             name,
             shortcut,
-            verb,
             keys_desc,
+            description_md,
+            verb,
         });
     }
     rows

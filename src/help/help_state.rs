@@ -158,18 +158,12 @@ impl PanelState for HelpState {
         }
         let verb_rows = super::help_verbs::matching_verb_rows(&self.pattern, con);
         for row in &verb_rows {
-            let sub = expander
+            expander
                 .sub("verb-rows")
                 .set_md("name", row.name())
                 .set_md("shortcut", row.shortcut())
-                .set("key", &row.keys_desc);
-            if row.verb.description.code {
-                sub.set("description", "");
-                sub.set("execution", &row.verb.description.content);
-            } else {
-                sub.set_md("description", &row.verb.description.content);
-                sub.set("execution", "");
-            }
+                .set_md("key", &row.keys_desc)
+                .set_md("description", &row.description_md);
         }
         let mode_help;
         if let Ok(default_mode) = con.search_modes.search_mode(None) {
