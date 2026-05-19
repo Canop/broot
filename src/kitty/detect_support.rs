@@ -65,7 +65,7 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
             if let Ok(version) = env::var("TERM_PROGRAM_VERSION") {
                 debug!("$TERM_PROGRAM_VERSION = {version:?}");
 
-                if &*version < "3.6.6" {
+                if is_version_before(&version, "3.6.6") {
                     debug!("iTerm2's version predates Kitty Graphics protocol support");
                 } else {
                     debug!("this looks like a compatible version");
@@ -147,4 +147,22 @@ pub fn is_ssh() -> bool {
         }
     }
     false
+}
+
+fn is_version_before(version: &str, minimum_version: &str) -> bool {
+    let version_parts = version.split('.').map(|part| part.parse::<u64>());
+    let minimum_parts = minimum_version.split('.').map(|part| part.parse::<u64>());
+
+    for (version_part, minimum_part) in version_parts.zip(minimum_parts) {
+        match (version_part, minimum_part) {
+            (Ok(version_part), Ok(minimum_part)) => match version_part.cmp(&minimum_part) {
+                std::cmp::Ordering::Less => return true,
+                std::cmp::Ordering::Greater => return false,
+                std::cmp::Ordering::Equal => continue,
+            },
+            _ => return version < minimum_version,
+        }
+    }
+
+    version.split('.').count() < minimum_version.split('.').count()
 }
