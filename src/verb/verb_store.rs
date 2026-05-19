@@ -306,6 +306,13 @@ impl VerbStore {
         self.add_internal(open_staging_area).with_shortcut("osa");
         self.add_internal(close_staging_area).with_shortcut("csa");
         self.add_internal(toggle_staging_area).with_shortcut("tsa");
+        self.add_internal(toggle_favorite).with_key(key!(ctrl - b));
+        self.add_internal(favorite).with_shortcut("fav");
+        self.add_internal(unfavorite);
+        self.add_internal(open_favorite_area).with_shortcut("ofa");
+        self.add_internal(close_favorite_area).with_shortcut("cfa");
+        self.add_internal(toggle_favorite_area).with_shortcut("tfa");
+        self.add_internal(clear_favorites);
         self.add_internal(toggle_tree).with_shortcut("tree");
         self.add_internal(toggle_watch)
             .with_shortcut("watch")

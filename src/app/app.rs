@@ -185,6 +185,7 @@ impl App {
                             panel_skin,
                             preview_panel: self.panels.preview_panel_id(),
                             stage_panel: self.panels.stage_panel_id(),
+                            favorite_panel: self.panels.favorite_panel_id(),
                             screen,
                             con,
                         };

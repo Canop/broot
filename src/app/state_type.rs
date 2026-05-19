@@ -20,6 +20,9 @@ pub enum PanelStateType {
     /// stage panel, never alone on screen
     Stage,
 
+    /// favorite panel, never alone on screen
+    Favorite,
+
     /// content of the trash
     Trash,
 
