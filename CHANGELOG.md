@@ -1,5 +1,6 @@
 ### next
 - help: verb 'keys' and 'description' columns now searchable - Fix #1163
+- attributes of the "selected_line" entries like bold,underlined,etc. now applied - Fix #1156
 
 ### v1.56.4 - 2026-05-14
 <a name="v1.56.4"></a>

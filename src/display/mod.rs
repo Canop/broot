@@ -10,9 +10,35 @@ macro_rules! cond_bg {
     ($dst:ident, $self:ident, $selected:expr, $src:expr) => {
         let mut cloned_style;
         let $dst = if $selected {
+            let sel_style = &$self.skin.selected_line;
             cloned_style = $src.clone();
-            if let Some(c) = $self.skin.selected_line.get_bg() {
+            if let Some(c) = sel_style.get_bg() {
                 cloned_style.set_bg(c);
+            }
+            &cloned_style
+        } else {
+            &$src
+        };
+    };
+}
+
+/// declare a style named `$dst` which is usually a reference to the `$src`
+/// skin but, in case `selected` is true, is a clone with background and
+/// attributes changed to the one of selected lines.
+#[macro_export]
+macro_rules! cond_bg_attrs {
+    ($dst:ident, $self:ident, $selected:expr, $src:expr) => {
+        let mut cloned_style;
+        let $dst = if $selected {
+            let sel_style = &$self.skin.selected_line;
+            cloned_style = $src.clone();
+            if let Some(c) = sel_style.get_bg() {
+                cloned_style.set_bg(c);
+            }
+            for &attr in termimad::ATTRIBUTES {
+                if sel_style.has_attr(attr) {
+                    cloned_style.add_attr(attr);
+                }
             }
             &cloned_style
         } else {
