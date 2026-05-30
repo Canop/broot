@@ -41,7 +41,7 @@ Function br {
 
   try {
     $process = Start-Process -FilePath 'broot.exe' `
-                            -ArgumentList "--outcmd $($cmd_file.FullName) $args" `
+                            -ArgumentList "--outcmd `"$($cmd_file.FullName)`" $args" `
                             -NoNewWindow -PassThru -WorkingDirectory $PWD
 
     Wait-Process -InputObject $process #Faster than Start-Process -Wait
@@ -150,4 +150,21 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     }
     si.done = true;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn outcmd_temp_path_is_quoted() {
+        let script = get_script();
+        assert!(script.contains("--outcmd `\"$($cmd_file.FullName)`\" $args"));
+    }
+
+    #[test]
+    fn outcmd_temp_path_is_not_unquoted() {
+        let script = get_script();
+        assert!(!script.contains("--outcmd $($cmd_file.FullName) $args"));
+    }
 }
