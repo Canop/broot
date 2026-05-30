@@ -4,6 +4,17 @@ use {
     std::env,
 };
 
+/// Whether the WezTerm build identified by `$TERM_PROGRAM_VERSION`
+/// supports the Kitty Graphics protocol.
+///
+/// A missing version is assumed to be a recent, supporting build.
+fn wezterm_supports_kitty_graphics(version: Option<&str>) -> bool {
+    match version {
+        Some(version) => version >= "20220105-201556-91a423da",
+        None => true,
+    }
+}
+
 /// Determine whether Kitty's graphics protocol is supported
 /// by the terminal running broot.
 ///
@@ -47,16 +58,13 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
     if let Ok(term_program) = env::var("TERM_PROGRAM") {
         debug!("$TERM_PROGRAM = {term_program:?}");
         if term_program == "WezTerm" {
-            if let Ok(version) = env::var("TERM_PROGRAM_VERSION") {
-                debug!("$TERM_PROGRAM_VERSION = {version:?}");
-                if &*version < "20220105-201556-91a423da" {
-                    debug!("WezTerm's version predates Kitty Graphics protocol support");
-                } else {
-                    debug!("this looks like a compatible version");
-                    return KittyGraphicsDisplay::Direct;
-                }
+            let version = env::var("TERM_PROGRAM_VERSION").ok();
+            debug!("$TERM_PROGRAM_VERSION = {version:?}");
+            if wezterm_supports_kitty_graphics(version.as_deref()) {
+                debug!("this looks like a compatible version");
+                return KittyGraphicsDisplay::Direct;
             } else {
-                warn!("$TERM_PROGRAM_VERSION unexpectedly missing");
+                debug!("WezTerm's version predates Kitty Graphics protocol support");
             }
         } else if term_program == "ghostty" {
             debug!("Ghostty implements Kitty Graphics protocol");
@@ -147,4 +155,35 @@ pub fn is_ssh() -> bool {
         }
     }
     false
+}
+
+#[cfg(test)]
+mod tests {
+    use super::wezterm_supports_kitty_graphics;
+
+    #[test]
+    fn wezterm_recent_version_supports_kitty_graphics() {
+        assert!(wezterm_supports_kitty_graphics(Some(
+            "20230712-072601-f4abf8fd"
+        )));
+    }
+
+    #[test]
+    fn wezterm_threshold_version_supports_kitty_graphics() {
+        assert!(wezterm_supports_kitty_graphics(Some(
+            "20220105-201556-91a423da"
+        )));
+    }
+
+    #[test]
+    fn wezterm_old_version_does_not_support_kitty_graphics() {
+        assert!(!wezterm_supports_kitty_graphics(Some(
+            "20210203-095643-70a364eb"
+        )));
+    }
+
+    #[test]
+    fn wezterm_missing_version_is_assumed_supported() {
+        assert!(wezterm_supports_kitty_graphics(None));
+    }
 }
