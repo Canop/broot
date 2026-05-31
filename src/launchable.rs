@@ -40,11 +40,17 @@ use {
     which::which,
 };
 
-/// description of a possible launch of an external program
-/// A launchable can only be executed on end of life of broot.
+/// Description of a task to execute on end of broot, like printing something on stdout, or
+/// executing an external program.
+///
+/// A launchable can only be executed on end of life of broot, and after the normal terminal has
+/// been restored, so it can do things that are not possible while broot is running, like printing
+/// on stdout or executing a program that needs the terminal.
 #[derive(Debug)]
 pub enum Launchable {
     /// just print something on stdout on end of broot
+    ///
+    /// No newline is added, so the string should end with a newline if needed.
     Printer { to_print: String },
 
     /// print the tree on end of broot
@@ -97,12 +103,16 @@ fn resolve_env_variables(parts: Vec<String>) -> Vec<String> {
 }
 
 impl Launchable {
+    /// Create a launchable to open the given path with the system default application.
     pub fn opener(path: PathBuf) -> Launchable {
         Launchable::SystemOpen { path }
     }
+    /// Create a launchable to print the given string on end of broot, without adding a newline.
     pub fn printer(to_print: String) -> Launchable {
         Launchable::Printer { to_print }
     }
+    /// Create a launchable to print the given tree on end of broot, with the given skin and
+    /// colors.
     pub fn tree_printer(
         tree: &Tree,
         screen: Screen,
@@ -117,7 +127,10 @@ impl Launchable {
             height: (tree.lines.len() as u16).min(screen.height - 1),
         }
     }
-
+    /// Create a launchable to execute the given program.
+    ///
+    /// Parts is a list of strings, the first one being the executable, and the others being the
+    /// arguments.
     pub fn program(
         parts: Vec<String>,
         working_dir: Option<PathBuf>,
@@ -138,13 +151,14 @@ impl Launchable {
         }
     }
 
+    /// Execute the launchable, writing on the given writer if needed (for the tree printer).
     pub fn execute(
         &self,
         mut w: Option<&mut W>,
     ) -> Result<(), ProgramError> {
         match self {
             Launchable::Printer { to_print } => {
-                println!("{to_print}");
+                print!("{to_print}");
                 Ok(())
             }
             Launchable::TreePrinter {

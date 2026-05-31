@@ -35,6 +35,13 @@ impl<'a> SelInfo<'a> {
                 .collect(),
         }
     }
+    pub fn paths(&self) -> Vec<&'a Path> {
+        match self {
+            SelInfo::None => Vec::new(),
+            SelInfo::One(sel) => vec![sel.path],
+            SelInfo::More(stage) => stage.paths().iter().map(|p| p.as_path()).collect(),
+        }
+    }
     #[must_use]
     pub fn from_path(path: &'a Path) -> Self {
         Self::One(Selection {
