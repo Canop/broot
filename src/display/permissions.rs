@@ -50,10 +50,10 @@ impl<'s> PermWriter<'s> {
         mode: Mode,
         selected: bool,
     ) -> Result<(), termimad::Error> {
-        cond_bg!(n_style, self, selected, self.skin.perm__);
-        cond_bg!(r_style, self, selected, self.skin.perm_r);
-        cond_bg!(w_style, self, selected, self.skin.perm_w);
-        cond_bg!(x_style, self, selected, self.skin.perm_x);
+        cond_bg_attrs!(n_style, self, selected, self.skin.perm__);
+        cond_bg_attrs!(r_style, self, selected, self.skin.perm_r);
+        cond_bg_attrs!(w_style, self, selected, self.skin.perm_w);
+        cond_bg_attrs!(x_style, self, selected, self.skin.perm_x);
 
         if mode.has(USER_READ) {
             cw.queue_char(r_style, 'r')?;
@@ -116,13 +116,13 @@ impl<'s> PermWriter<'s> {
         Ok(if line.is_selectable() {
             self.write_mode(cw, line.mode(), selected)?;
             let owner = permissions::user_name(line.metadata.uid());
-            cond_bg!(owner_style, self, selected, self.skin.owner);
+            cond_bg_attrs!(owner_style, self, selected, self.skin.owner);
             cw.queue_g_string(
                 owner_style,
                 format!(" {:w$}", &owner, w = self.max_user_len),
             )?;
             let group = permissions::group_name(line.metadata.gid());
-            cond_bg!(group_style, self, selected, self.skin.group);
+            cond_bg_attrs!(group_style, self, selected, self.skin.group);
             cw.queue_g_string(
                 group_style,
                 format!(" {:w$}", &group, w = self.max_group_len),

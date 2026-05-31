@@ -66,6 +66,7 @@ pub struct DisplayableTree<'a, 's, 't> {
 }
 
 impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
+    /// Prepare the renderer for use out of the TUI (eg in the print_tree command)
     pub fn out_of_app(
         tree: &'t Tree,
         skin: &'s StyleMap,
@@ -88,10 +89,13 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         }
     }
 
+    /// Build the style to use for the label of the given line, depending on its type and on
+    /// whether it's selected
     fn label_style(
         &self,
         line: &TreeLine,
         selected: bool,
+        allow_selection_attrs: bool,
     ) -> CompoundStyle {
         let style = match &line.line_type {
             TreeLineType::Dir => &self.skin.directory,
@@ -113,6 +117,13 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             if let Some(c) = self.skin.selected_line.get_bg() {
                 style.set_bg(c);
             }
+            if allow_selection_attrs {
+                for &attr in termimad::ATTRIBUTES {
+                    if self.skin.selected_line.has_attr(attr) {
+                        style.add_attr(attr);
+                    }
+                }
+            }
         }
         style
     }
@@ -125,7 +136,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
-            cond_bg!(count_style, self, selected, self.skin.count);
+            cond_bg_attrs!(count_style, self, selected, self.skin.count);
             let s = format_count(s.to_count());
             cw.queue_g_string(count_style, format!("{s:>count_len$}"))?;
             1
@@ -144,30 +155,32 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         #[cfg(any(target_os = "linux", target_os = "macos"))]
         {
             let device_id = line.device_id();
-            cond_bg!(style, self, selected, self.skin.device_id_major);
+            cond_bg_attrs!(style, self, selected, self.skin.device_id_major);
             cw.queue_g_string(style, format!("{:>3}", device_id.major))?;
-            cond_bg!(style, self, selected, self.skin.device_id_sep);
+            cond_bg_attrs!(style, self, selected, self.skin.device_id_sep);
             cw.queue_char(style, ':')?;
-            cond_bg!(style, self, selected, self.skin.device_id_minor);
+            cond_bg_attrs!(style, self, selected, self.skin.device_id_minor);
             cw.queue_g_string(style, format!("{:<3}", device_id.minor))?;
         }
         #[cfg(target_os = "windows")]
         {
             // Windows has a simpler device id, we use the "major" field only
             let device_id = line.device_id().map_or("         ".to_string(), |dev| dev.to_string());
-            cond_bg!(style, self, selected, self.skin.device_id_major);
+            cond_bg_attrs!(style, self, selected, self.skin.device_id_major);
             cw.queue_g_string(style, format!("{}", device_id))?;
         }
         Ok(0)
     }
 
     fn write_line_selection_mark<W: Write>(
+        &self,
         cw: &mut CropWriter<W>,
-        style: &CompoundStyle,
+        line: &TreeLine,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if selected {
-            cw.queue_char(style, '▶')?;
+            let style = self.label_style(line, true, false);
+            cw.queue_char(&style, '▶')?;
             0
         } else {
             1
@@ -194,14 +207,14 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         &self,
         cw: &mut CropWriter<W>,
         line: &TreeLine,
-        label_style: &CompoundStyle,
         total_size: FileSum,
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         Ok(if let Some(s) = line.sum {
+            let label_style = self.label_style(line, selected, false);
             let pb = ProgressBar::new(s.part_of_size(total_size), 10);
             cond_bg!(sparse_style, self, selected, self.skin.sparse);
-            cw.queue_g_string(label_style, format!("{:>4}", file_size::fit_4(s.to_size())))?;
+            cw.queue_g_string(&label_style, format!("{:>4}", file_size::fit_4(s.to_size())))?;
             cw.queue_char(
                 sparse_style,
                 if s.is_sparse() && line.is_file() {
@@ -210,7 +223,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     ' '
                 },
             )?;
-            cw.queue_g_string(label_style, format!("{pb:<10}"))?;
+            cw.queue_g_string(&label_style, format!("{pb:<10}"))?;
             1
         } else {
             16
@@ -236,7 +249,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         } else {
             (&self.skin.tree, ' ')
         };
-        cond_bg!(git_style, self, selected, style);
+        cond_bg_attrs!(git_style, self, selected, style);
         cw.queue_char(git_style, char)?;
         Ok(0)
     }
@@ -248,7 +261,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         if let LocalResult::Single(date_time) = Local.timestamp_opt(seconds, 0) {
-            cond_bg!(date_style, self, selected, self.skin.dates);
+            cond_bg_attrs!(date_style, self, selected, self.skin.dates);
             cw.queue_g_string(
                 date_style,
                 date_time
@@ -463,11 +476,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
     ) -> Result<(), ProgramError> {
         if self.in_app && !cw.is_full() {
-            let style = if selected {
-                &self.skin.selected_line
-            } else {
-                &self.skin.default
-            };
+            cond_bg!(style, self, selected, self.skin.default);
             cw.fill(style, &SPACE_FILLING)?;
         }
         Ok(())
@@ -549,10 +558,16 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             if line_index < tree.lines.len() {
                 let line = &tree.lines[line_index];
                 selected = self.in_app && line_index == tree.selection;
-                let label_style = self.label_style(line, selected);
+                let label_style = self.label_style(line, selected, true);
                 let mut in_branch = false;
+                let concrete_space_style;
                 let space_style = if selected {
-                    &self.skin.selected_line
+                    concrete_space_style = if let Some(c) = self.skin.selected_line.get_bg() {
+                        CompoundStyle ::with_bg(c)
+                    } else {
+                        CompoundStyle::default()
+                    };
+                    &concrete_space_style
                 } else {
                     &self.skin.default
                 };
@@ -564,7 +579,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                     .is_some_and(|a| a.stage.contains(&line.path));
                 for col in &visible_cols {
                     let void_len = match col {
-                        Col::Mark => Self::write_line_selection_mark(cw, &label_style, selected)?,
+                        Col::Mark => self.write_line_selection_mark(cw, line, selected)?,
 
                         Col::Git => self.write_line_git_status(cw, line, selected)?,
 
@@ -607,7 +622,6 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                                 self.write_line_size_with_bar(
                                     cw,
                                     line,
-                                    &label_style,
                                     total_size,
                                     selected,
                                 )?
