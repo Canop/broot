@@ -1,5 +1,6 @@
 ### next
 - help: verb 'keys' and 'description' columns now searchable - Fix #1163
+- fix `:print_path` / `:print_relative_path` adding a trailing empty line when printing a multi-item staging area - Fix #1062
 
 ### v1.56.4 - 2026-05-14
 <a name="v1.56.4"></a>
