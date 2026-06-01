@@ -107,7 +107,7 @@ impl<'b> StatusParts<'b> {
     }
     fn addo(
         &mut self,
-        md: &'b Option<String>,
+        md: Option<&'b str>,
     ) {
         if let Some(md) = md {
             self.md_parts.push(md);
@@ -192,16 +192,16 @@ impl<'s> StandardStatusBuilder<'s> {
                     }
                 } else if self.selection.stype == SelectionType::Directory {
                     parts.add(&ss.tree_dir_focus);
-                    parts.addo(&ss.tree_dir_cd);
+                    parts.addo(ss.tree_dir_cd.as_deref());
                 } else if self.selection.stype == SelectionType::File {
                     // maybe add "ctrl-right to preview" ? Or just sometimes ?
                     //  (need check no preview)
                     if self.width > 105 {
-                        parts.addo(&ss.tree_file_open_stay_long);
+                        parts.addo(ss.tree_file_open_stay_long.as_deref());
                     } else {
-                        parts.addo(&ss.tree_file_open_stay);
+                        parts.addo(ss.tree_file_open_stay.as_deref());
                     }
-                    parts.addo(&ss.tree_file_open_leave);
+                    parts.addo(ss.tree_file_open_leave.as_deref());
                 }
                 if self.is_filtered {
                     parts.add(&ss.tree_filtered);
@@ -219,9 +219,9 @@ impl<'s> StandardStatusBuilder<'s> {
             }
             PanelStateType::Preview => {
                 if self.is_filtered {
-                    parts.addo(&ss.preview_filtered);
+                    parts.addo(ss.preview_filtered.as_deref());
                 } else if self.has_removed_pattern {
-                    parts.addo(&ss.preview_restorable_filter);
+                    parts.addo(ss.preview_restorable_filter.as_deref());
                 } else {
                     parts.add(&ss.preview_unfiltered);
                 }

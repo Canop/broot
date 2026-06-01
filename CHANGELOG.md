@@ -1,8 +1,9 @@
-### next
+### v1.57.0 - 2026-06-01
+<a name="v1.57.0"></a>
 - help: verb 'keys' and 'description' columns now searchable - Fix #1163
 - fix `:print_path` / `:print_relative_path` adding a trailing empty line when printing a multi-item staging area - Fix #1062 - Thanks @xfocus3
-- attributes of the "selected_line" entries like bold,underlined,etc. now applied - Fix #1156
-- if no wezterm version is found, assume it's recent enough to support kitty protocol for image - Fix #509 - Thanks @chinhkrb113
+- Skin: attributes (bold, underlined, etc.) of the "selected_line" entry now applied - Fix #1156
+- if no Wezterm version is found, broot now assumes it's recent enough to support kitty protocol for image - Fix #509 - Thanks @chinhkrb113
 
 ### v1.56.4 - 2026-05-14
 <a name="v1.56.4"></a>

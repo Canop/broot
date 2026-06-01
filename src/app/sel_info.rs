@@ -7,7 +7,10 @@ use {
         stage::Stage,
         verb::FileTypeCondition,
     },
-    std::path::Path,
+    std::path::{
+        Path,
+        PathBuf,
+    },
 };
 
 /// Information regarding a potentially multiple set of selected paths
@@ -39,7 +42,7 @@ impl<'a> SelInfo<'a> {
         match self {
             SelInfo::None => Vec::new(),
             SelInfo::One(sel) => vec![sel.path],
-            SelInfo::More(stage) => stage.paths().iter().map(|p| p.as_path()).collect(),
+            SelInfo::More(stage) => stage.paths().iter().map(PathBuf::as_path).collect(),
         }
     }
     #[must_use]

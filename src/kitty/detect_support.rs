@@ -63,9 +63,8 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
             if wezterm_supports_kitty_graphics(version.as_deref()) {
                 debug!("this looks like a compatible version");
                 return KittyGraphicsDisplay::Direct;
-            } else {
-                debug!("WezTerm's version predates Kitty Graphics protocol support");
             }
+            debug!("WezTerm's version predates Kitty Graphics protocol support");
         } else if term_program == "ghostty" {
             debug!("Ghostty implements Kitty Graphics protocol");
             return KittyGraphicsDisplay::Direct;
