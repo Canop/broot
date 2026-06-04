@@ -475,7 +475,7 @@ impl<'b> ExecutionBuilder<'b> {
             // even if there are special characters
             return s.to_string();
         }
-        if !regex_is_match!(r#"[\s"']"#, &s) {
+        if !regex_is_match!(r#"[\\\s"']"#, &s) {
             // if there's no special character, we don't need to escape or wrap
             return s.to_string();
         }
@@ -562,6 +562,25 @@ mod execution_builder_test {
         }
     }
 
+    fn check_build_shell_execution_from_sel(
+        exec_pattern: ExecPattern,
+        path: &str,
+        chk_shell_exec: &str,
+    ) {
+        let path = PathBuf::from(path);
+        let sel = Selection {
+            path: &path,
+            line: 0,
+            stype: SelectionType::File,
+            is_exe: false,
+        };
+        let app_state = AppState::new(PathBuf::from("/".to_owned()));
+        let mut builder = ExecutionBuilder::without_invocation(SelInfo::One(sel), &app_state);
+        let con = AppContext::default();
+        let shell_exec = builder.shell_exec_string(&exec_pattern, &con);
+        assert_eq!(shell_exec, chk_shell_exec);
+    }
+
     #[test]
     fn test_build_execution() {
         check_build_execution_from_sel(
@@ -593,6 +612,15 @@ mod execution_builder_test {
             "/path/to/file",
             vec![],
             vec!["xterm", "-e", "kak /path/to/file"],
+        );
+    }
+
+    #[test]
+    fn test_build_shell_execution_quotes_windows_paths() {
+        check_build_shell_execution_from_sel(
+            ExecPattern::from_string("cd {file}"),
+            r"C:\Users\me\directory",
+            r"cd 'C:\Users\me\directory'",
         );
     }
 }

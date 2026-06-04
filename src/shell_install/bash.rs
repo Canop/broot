@@ -24,7 +24,10 @@ use {
     regex::Captures,
     std::{
         env,
-        path::PathBuf,
+        path::{
+            Path,
+            PathBuf,
+        },
     },
     termimad::mad_print_inline,
 };
@@ -118,6 +121,22 @@ fn get_sourcing_paths() -> Vec<PathBuf> {
         .collect()
 }
 
+fn bash_path_literal(path: &str) -> String {
+    if path
+        .chars()
+        .any(|c| matches!(c, '\\' | ' ' | '\t' | '\n' | '"' | '\''))
+    {
+        format!("'{}'", path.replace('\'', r#"'\''"#))
+    } else {
+        path.to_string()
+    }
+}
+
+fn source_line_for(link_path: &Path) -> String {
+    let link_path = link_path.to_string_lossy();
+    format!("source {}", bash_path_literal(&link_path))
+}
+
 /// check for bash and zsh shells.
 /// check whether the shell function is installed, install
 /// it if it wasn't refused before or if broot is launched
@@ -133,8 +152,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
         si.skin.print_text(MD_NO_SOURCING);
         return Ok(());
     }
-    let escaped_path = link_path.to_string_lossy().replace(' ', "\\ ");
-    let source_line = format!("source {}", &escaped_path);
+    let source_line = source_line_for(&link_path);
     for sourcing_path in &sourcing_paths {
         let sourcing_path_str = sourcing_path.to_string_lossy();
         if util::file_contains_line(sourcing_path, &source_line)? {
@@ -163,4 +181,18 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     }
     si.done = true;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::source_line_for;
+    use std::path::Path;
+
+    #[test]
+    fn source_line_quotes_backslashes() {
+        assert_eq!(
+            source_line_for(Path::new(r"C:\Users\me\broot\launcher\bash\br")),
+            r"source 'C:\Users\me\broot\launcher\bash\br'",
+        );
+    }
 }
