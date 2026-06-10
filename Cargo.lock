@@ -811,9 +811,7 @@ dependencies = [
 
 [[package]]
 name = "deser-hjson"
-version = "2.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d94aac4095c08ded7e4b9ba7fc2b2929f11b94bb96897ca188b0f64e01688e1"
+version = "2.2.5"
 dependencies = [
  "serde",
 ]
