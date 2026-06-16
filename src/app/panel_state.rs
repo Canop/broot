@@ -1165,7 +1165,7 @@ pub trait PanelState {
                                     sum += 2;
                                 }
                                 let verb = verb.to_string();
-                                let verb_len = verb.len();
+                                let verb_len = verb.chars().count();
                                 if sum + verb_len > width  - 3 {
                                     md.push('…');
                                     break;
