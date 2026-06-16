@@ -1144,6 +1144,7 @@ pub trait PanelState {
                     )
                 } else {
                     let sel_info = self.sel_info(app_state);
+                    warn!("width: {width}");
                     match cc.app.con.verb_store.search_sel_info(
                         &invocation.name,
                         sel_info,
@@ -1155,17 +1156,27 @@ pub trait PanelState {
                         PrefixSearchResult::Match(_, verb) => {
                             self.get_verb_status(verb, invocation, sel_info, cc, app_state)
                         }
-                        PrefixSearchResult::Matches(completions) => Status::new(
-                            format!(
-                                "Possible verbs: {}",
-                                completions
-                                    .iter()
-                                    .map(|c| format!("*{c}*"))
-                                    .collect::<Vec<String>>()
-                                    .join(", "),
-                            ),
-                            false,
-                        ),
+                        PrefixSearchResult::Matches(completions) => {
+                            let mut md = String::from("Verbs: ");
+                            let mut sum = md.len();
+                            for (i, verb) in completions.iter().enumerate() {
+                                if i > 0 {
+                                    md.push_str(", ");
+                                    sum += 2;
+                                }
+                                let verb = verb.to_string();
+                                let verb_len = verb.chars().count();
+                                if sum + verb_len > width  - 3 {
+                                    md.push('…');
+                                    break;
+                                }
+                                md.push('*');
+                                md.push_str(&verb);
+                                md.push('*');
+                                sum += verb_len;
+                            }
+                            Status::new(md, false)
+                        }
                     }
                 }
             }
