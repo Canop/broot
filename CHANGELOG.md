@@ -1,3 +1,6 @@
+### next
+- change the way possible verb completions are listed, making it more readable when there are more than what fits the screen
+
 ### v1.57.0 - 2026-06-01
 <a name="v1.57.0"></a>
 - help: verb 'keys' and 'description' columns now searchable - Fix #1163
