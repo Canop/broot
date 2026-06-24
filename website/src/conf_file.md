@@ -305,6 +305,13 @@ kitty_graphics_display: auto
 kitty_graphics_display = "auto"
 ```
 
+The graphics protocol is auto-detected in the following order:
+1. Kitty graphics protocol (when available)
+2. Sixel (Windows Terminal 1.22+ and Sixel-capable Unix terminals such as foot, mlterm, or xterm built with Sixel)
+3. Unicode fallback (when graphics protocols are unavailable)
+
+To override the auto-detection and force a specific protocol, set the `BROOT_GRAPHICS_PROTOCOL` environment variable to `kitty`, `sixel`, or `none`.
+
 ## Transformers
 
 It's possible to define transformers to apply to some files before preview.

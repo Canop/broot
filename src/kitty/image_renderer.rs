@@ -434,15 +434,19 @@ impl KittyImageRenderer {
         } else {
             options
         };
-        cell_size_in_pixels()
-            .ok()
-            .map(|(cell_width, cell_height)| Self {
+        match cell_size_in_pixels() {
+            Ok((cell_width, cell_height)) => Some(Self {
                 cell_width,
                 cell_height,
                 next_id: 1,
                 options,
                 temp_files,
-            })
+            }),
+            Err(e) => {
+                debug!("kitty graphics disabled: couldn't get cell size in pixels: {e}");
+                None
+            }
+        }
     }
     pub fn delete_temp_files(&mut self) {
         for (_, temp_file_path) in &self.temp_files {
@@ -561,5 +565,9 @@ impl GraphicsRenderer for KittyImageRenderer {
 
     fn delete_temp_files(&mut self) {
         KittyImageRenderer::delete_temp_files(self);
+    }
+
+    fn cell_size(&self) -> (u32, u32) {
+        (self.cell_width, self.cell_height)
     }
 }

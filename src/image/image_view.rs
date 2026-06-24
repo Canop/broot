@@ -14,6 +14,7 @@ use {
         graphics::{
             self,
             ImageId,
+            ImageRendering,
         },
         skin::PanelSkin,
     },
@@ -119,7 +120,7 @@ impl ImageView {
             return Ok(());
         }
 
-        self.graphics_image_id = graphics_manager.try_print_image(
+        let rendering = graphics_manager.try_print_image(
             w,
             &self.source_img,
             &self.path,
@@ -129,8 +130,16 @@ impl ImageView {
             disc.con,
         )?;
 
-        if self.graphics_image_id.is_some() {
-            return Ok(());
+        match rendering {
+            ImageRendering::Drawn(id) => {
+                // an image was drawn (Kitty id, or Sixel with none); don't
+                // overdraw it with the text fallback
+                self.graphics_image_id = id;
+                return Ok(());
+            }
+            ImageRendering::Unsupported => {
+                self.graphics_image_id = None;
+            }
         }
 
         let target_width = area.width as u32;

@@ -1,5 +1,6 @@
 ### next
 - change the way possible verb completions are listed, making it more readable when there are more than what fits the screen
+- Sixel graphics support for image preview, auto-detected via a DA1 terminal query: works in Windows Terminal 1.22+ and Sixel-capable Unix terminals (foot, mlterm, xterm built with Sixel, recent WezTerm). Kitty remains the preferred protocol when available.
 
 ### v1.57.0 - 2026-06-01
 <a name="v1.57.0"></a>

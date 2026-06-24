@@ -3,6 +3,11 @@ use {
     std::env,
 };
 
+/// Timeout for synchronous terminal queries (Sixel DA1, Windows cell-size).
+/// Compliant terminals reply within about a millisecond; this is the upper
+/// bound before we give up and fall back (to another protocol or no graphics).
+pub(crate) const TERMINAL_QUERY_TIMEOUT_MS: u64 = 200;
+
 pub fn get_esc_seq(tmux_nest_count: u32) -> String {
     "\u{1b}".repeat(2usize.pow(tmux_nest_count))
 }

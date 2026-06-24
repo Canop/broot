@@ -13,6 +13,11 @@ pub fn rendering_dim(
     area_cols: u32,
     area_rows: u32,
 ) -> (u32, u32) {
+    // Invariants that keep the divisions below safe: cell size is nonzero by
+    // construction (terminal detection rejects zero) and decoded images have
+    // nonzero dimensions, so optimal_cols/optimal_rows are >= 1.
+    debug_assert!(cell_width != 0 && cell_height != 0, "cell size must be nonzero");
+    debug_assert!(img_width != 0 && img_height != 0, "image dimensions must be nonzero");
     let optimal_cols = div_ceil(img_width, cell_width);
     let optimal_rows = div_ceil(img_height, cell_height);
     if optimal_cols <= area_cols && optimal_rows <= area_rows {
