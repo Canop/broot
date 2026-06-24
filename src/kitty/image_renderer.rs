@@ -1,22 +1,18 @@
 use {
-    super::{
-        detect_support::{
-            detect_kitty_graphics_protocol_display,
-            get_tmux_nest_count,
-            is_ssh,
-        },
-        terminal_esc::{
-            get_esc_seq,
-            get_tmux_header,
-            get_tmux_tail,
-        },
-    },
+    super::detect_support::detect_kitty_graphics_protocol_display,
     crate::{
         display::{
             W,
             cell_size_in_pixels,
         },
         errors::ProgramError,
+        graphics::{
+            GraphicsRenderer,
+            ImageId,
+            rendering_area,
+            image_data::ImageData,
+            terminal::{get_esc_seq, get_tmux_header, get_tmux_tail, get_tmux_nest_count, is_ssh},
+        },
     },
     base64::{
         self,
@@ -33,11 +29,7 @@ use {
         Compression,
         write::ZlibEncoder,
     },
-    crate::image::zune_compat::{
-        DynamicImage,
-        RgbImage,
-        RgbaImage,
-    },
+    crate::image::zune_compat::DynamicImage,
     lru::LruCache,
     rustc_hash::FxBuildHasher,
     serde::Deserialize,
@@ -107,39 +99,6 @@ pub struct KittyImageRendererOptions {
     pub is_tmux: bool,
 }
 
-enum ImageData {
-    Rgb(RgbImage),
-    Rgba(RgbaImage),
-}
-impl From<&DynamicImage> for ImageData {
-    fn from(img: &DynamicImage) -> Self {
-        if let Some(rgba) = img.as_rgba8() {
-            debug!("using rgba");
-            Self::Rgba(rgba)
-        } else if let Some(rgb) = img.as_rgb8() {
-            debug!("using rgb");
-            Self::Rgb(rgb)
-        } else {
-            debug!("converting to rgb8");
-            Self::Rgb(img.to_rgb8())
-        }
-    }
-}
-impl ImageData {
-    fn kitty_format(&self) -> &'static str {
-        match self {
-            Self::Rgba(_) => "32",
-            Self::Rgb(_) => "24",
-        }
-    }
-    fn bytes(&self) -> Vec<u8> {
-        match self {
-            Self::Rgb(img) => img.as_raw(),
-            Self::Rgba(img) => img.as_raw(),
-        }
-    }
-}
-
 /// The max size of a data payload in a kitty escape sequence
 /// according to kitty's documentation
 const CHUNK_SIZE: usize = 4096;
@@ -189,13 +148,6 @@ const DIACRITICS: &[&str] = &[
     "\u{1D242}", "\u{1D243}", "\u{1D244}"
 ];
 
-fn div_ceil(
-    a: u32,
-    b: u32,
-) -> u32 {
-    a / b + u32::from(0 != a % b)
-}
-
 /// The image renderer, with knowledge of the console cells
 /// dimensions, and built only on a compatible terminal
 #[derive(Debug)]
@@ -233,7 +185,7 @@ impl KittyImage {
         renderer: &mut KittyImageRenderer,
     ) -> Self {
         let (img_width, img_height) = src.dimensions();
-        let area = renderer.rendering_area(img_width, img_height, available_area);
+        let area = rendering_area(renderer.cell_width, renderer.cell_height, img_width, img_height, available_area);
         let data = if let Some(path) = png_path {
             KittyImageData::Png { path }
         } else {
@@ -464,7 +416,7 @@ impl KittyImage {
 }
 
 impl KittyImageRenderer {
-    /// Called only once (at most) by the `KittyManager`
+    /// Called only once (at most) by the `GraphicsManager`
     pub fn new(mut options: KittyImageRendererOptions) -> Option<Self> {
         if options.display == KittyGraphicsDisplay::Detect {
             options.display = detect_kitty_graphics_protocol_display();
@@ -513,8 +465,8 @@ impl KittyImageRenderer {
         }
     }
     /// Clean the area, then print the dynamicImage and
-    /// return the `KittyImageId` for later removal from screen
-    pub fn print(
+    /// return the image id for later removal from screen
+    pub fn print_kitty(
         &mut self,
         w: &mut W,
         src: &DynamicImage,
@@ -575,44 +527,39 @@ impl KittyImageRenderer {
         }
         Ok(img.id)
     }
-    fn rendering_area(
-        &self,
-        img_width: u32,
-        img_height: u32,
+}
+
+impl GraphicsRenderer for KittyImageRenderer {
+    fn print(
+        &mut self,
+        w: &mut W,
+        src: &DynamicImage,
+        src_path: &Path,
         area: &Area,
-    ) -> Area {
-        let area_cols: u32 = area.width.into();
-        let area_rows: u32 = area.height.into();
-        let rdim = self.rendering_dim(img_width, img_height, area_cols, area_rows);
-        Area::new(
-            area.left + ((area_cols - rdim.0) / 2) as u16,
-            area.top + ((area_rows - rdim.1) / 2) as u16,
-            rdim.0 as u16,
-            rdim.1 as u16,
-        )
+        bg: Color,
+    ) -> Result<Option<ImageId>, ProgramError> {
+        let id = KittyImageRenderer::print_kitty(self, w, src, src_path, area, bg)?;
+        Ok(Some(id))
     }
-    fn rendering_dim(
-        &self,
-        img_width: u32,
-        img_height: u32,
-        area_cols: u32,
-        area_rows: u32,
-    ) -> (u32, u32) {
-        let optimal_cols = div_ceil(img_width, self.cell_width);
-        let optimal_rows = div_ceil(img_height, self.cell_height);
-        debug!("area: {:?}", (area_cols, area_rows));
-        debug!("optimal: {:?}", (optimal_cols, optimal_rows));
-        if optimal_cols <= area_cols && optimal_rows <= area_rows {
-            // no constraint (TODO center?)
-            (optimal_cols, optimal_rows)
-        } else if optimal_cols * area_rows > optimal_rows * area_cols {
-            // we're constrained in width
-            debug!("constrained in width");
-            (area_cols, optimal_rows * area_cols / optimal_cols)
-        } else {
-            // we're constrained in height
-            debug!("constrained in height");
-            (optimal_cols * area_rows / optimal_rows, area_rows)
+
+    fn erase_image(&self, w: &mut W, id: ImageId) -> Result<(), ProgramError> {
+        let is_tmux = self.options.is_tmux;
+        let tmux_nest_count = if is_tmux { get_tmux_nest_count() } else { 0 };
+        let tmux_header = is_tmux.then_some(get_tmux_header(tmux_nest_count));
+        let tmux_tail = is_tmux.then_some(get_tmux_tail(tmux_nest_count));
+        let esc = get_esc_seq(tmux_nest_count);
+        debug!("erase kitty image {id}");
+        if let Some(s) = &tmux_header {
+            write!(w, "{s}")?;
         }
+        write!(w, "{}_Ga=d,d=I,i={}{}\\", &esc, id, &esc)?;
+        if let Some(s) = &tmux_tail {
+            write!(w, "{s}")?;
+        }
+        Ok(())
+    }
+
+    fn delete_temp_files(&mut self) {
+        KittyImageRenderer::delete_temp_files(self);
     }
 }

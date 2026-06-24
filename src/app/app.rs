@@ -12,7 +12,7 @@ use {
         errors::ProgramError,
         file_sum,
         git,
-        kitty,
+        graphics,
         launchable::Launchable,
         path::closest_dir,
         pattern::InputPattern,
@@ -605,7 +605,7 @@ impl App {
             }
         }
         terminal::reset_title(w, con);
-        if let Ok(mut manager) = kitty::manager().lock() {
+        if let Ok(mut manager) = graphics::manager().lock() {
             manager.erase_images_before(w, usize::MAX)?;
         }
         w.flush()?;

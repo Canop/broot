@@ -11,9 +11,9 @@ use {
             W,
         },
         errors::ProgramError,
-        kitty::{
+        graphics::{
             self,
-            KittyImageId,
+            ImageId,
         },
         skin::PanelSkin,
     },
@@ -66,7 +66,7 @@ pub struct ImageView {
     source_img: SourceImage,
     display_img: Option<CachedImage>,
     last_drawing: Option<DrawingInfo>,
-    kitty_image_id: Option<KittyImageId>,
+    graphics_image_id: Option<ImageId>,
 }
 
 impl ImageView {
@@ -77,7 +77,7 @@ impl ImageView {
             source_img,
             display_img: None,
             last_drawing: None,
-            kitty_image_id: None,
+            graphics_image_id: None,
         })
     }
     pub fn display(
@@ -108,18 +108,18 @@ impl ImageView {
         self.last_drawing = Some(drawing_info);
 
         #[allow(clippy::missing_panics_doc)] // panics on mutex poisoning (good)
-        let mut kitty_manager = kitty::manager().lock().unwrap();
+        let mut graphics_manager = graphics::manager().lock().unwrap();
 
         if !must_draw {
-            if let Some(kitty_image_id) = self.kitty_image_id {
+            if let Some(graphics_image_id) = self.graphics_image_id {
                 // we tell the manager the images must be kept, otherwise
                 // they would be erased at end of drawing, as obsolete
-                kitty_manager.keep(kitty_image_id, disc.count);
+                graphics_manager.keep(graphics_image_id, disc.count);
             }
             return Ok(());
         }
 
-        self.kitty_image_id = kitty_manager.try_print_image(
+        self.graphics_image_id = graphics_manager.try_print_image(
             w,
             &self.source_img,
             &self.path,
@@ -129,7 +129,7 @@ impl ImageView {
             disc.con,
         )?;
 
-        if self.kitty_image_id.is_some() {
+        if self.graphics_image_id.is_some() {
             return Ok(());
         }
 

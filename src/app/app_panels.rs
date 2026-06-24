@@ -5,7 +5,7 @@ use {
         command::*,
         display::*,
         errors::ProgramError,
-        kitty,
+        graphics,
         skin::*,
         task_sync::Dam,
         verb::*,
@@ -723,12 +723,12 @@ impl AppPanelsAndInputs {
             queue!(w, MoveTo(cursor_pos.0, cursor_pos.1))?;
         }
 
-        match kitty::manager().lock() {
+        match graphics::manager().lock() {
             Ok(mut manager) => {
                 manager.erase_images_before(w, self.drawing_count)?;
             }
             Err(e) => {
-                error!("failed to lock kitty manager to erase images: {e}");
+                error!("failed to lock graphics manager to erase images: {e}");
             }
         }
         w.flush()?;

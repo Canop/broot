@@ -13,6 +13,7 @@ pub mod errors;
 pub mod file_sum;
 pub mod flag;
 pub mod git;
+pub mod graphics;
 pub mod help;
 pub mod hex;
 pub mod icon;
