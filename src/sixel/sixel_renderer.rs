@@ -52,6 +52,15 @@ pub struct SixelRenderer {
     /// xterm), so we fit within it. Snapshot taken at construction; see
     /// `detect_sixel_geometry` for why it isn't refreshed on resize.
     current_geometry: Option<(u32, u32)>,
+    /// Konsole keeps Sixel until the screen is cleared, so a changed/removed
+    /// image can't be erased by repainting cells; it reports
+    /// `needs_reclear_on_change()` so the manager issues a full clear + redraw.
+    /// Other terminals drop Sixel when the cells are overwritten (false here).
+    is_konsole: bool,
+    /// Last encoded Sixel `(path, fitted_width, fitted_height, dcs)`, reused
+    /// when the same image at the same size is drawn again (the post-clear
+    /// redraw pass on Konsole) so it isn't re-encoded.
+    last_encoded: Option<(std::path::PathBuf, u32, u32, String)>,
 }
 
 impl SixelRenderer {
@@ -67,11 +76,15 @@ impl SixelRenderer {
         };
         let current_geometry = detect_sixel_geometry();
         debug!("sixel current geometry: {current_geometry:?}");
+        let is_konsole = std::env::var("KONSOLE_VERSION").is_ok();
+        debug!("sixel is_konsole={is_konsole}");
         Some(Self {
             cell_width,
             cell_height,
             is_tmux: is_tmux(),
             current_geometry,
+            is_konsole,
+            last_encoded: None,
         })
     }
 }
@@ -81,12 +94,13 @@ impl GraphicsRenderer for SixelRenderer {
         &mut self,
         w: &mut W,
         src: &DynamicImage,
-        _src_path: &Path,
+        src_path: &Path,
         area: &Area,
         bg: Color,
     ) -> Result<Option<ImageId>, ProgramError> {
-        // clear the whole area first (Sixel draws into the cells)
-        debug!("sixel print fill_bg");
+        // Clear the area's cells. On most terminals overwriting cells also drops
+        // any prior Sixel there; Konsole keeps it until the screen is cleared,
+        // handled separately by the manager's reclear (ESC[2J + full redraw).
         for y in area.top..area.top + area.height {
             w.queue(cursor::MoveTo(area.left, y))?;
             fill_bg(w, area.width as usize, bg)?;
@@ -95,31 +109,43 @@ impl GraphicsRenderer for SixelRenderer {
         let (img_width, img_height) = src.dimensions();
         let sub = rendering_area(self.cell_width, self.cell_height, img_width, img_height, area);
 
-        debug!("sixel ImageData::from pre");
-
-        let data = ImageData::from(src);
-        debug!("sixel ImageData::from post");
-
-        let rgba = data.rgba_bytes();
-        debug!("sixel print pre");
-        let sixel = encode_sixel(rgba, img_width, img_height)?;
-        debug!("sixel print post");
+        // Reuse the cached encode when the same image at the same size is drawn
+        // again (the post-clear redraw pass on Konsole), else encode and cache.
+        let cached = self.last_encoded.as_ref().is_some_and(|(p, cw, ch, _)| {
+            p == src_path && *cw == img_width && *ch == img_height
+        });
+        if !cached {
+            let data = ImageData::from(src);
+            let sixel = encode_sixel(data.rgba_bytes(), img_width, img_height)?;
+            self.last_encoded = Some((src_path.to_path_buf(), img_width, img_height, sixel));
+        }
+        let sixel = &self.last_encoded.as_ref().unwrap().3;
 
         w.queue(cursor::MoveTo(sub.left, sub.top))?;
         if self.is_tmux {
             let n = get_tmux_nest_count();
-            write!(w, "{}", tmux_passthrough(&sixel, n))?;
+            write!(w, "{}", tmux_passthrough(sixel, n))?;
         } else {
             write!(w, "{sixel}")?;
         }
-        w.flush()?;
-        debug!("printed sixel image {}x{} into {:?}", img_width, img_height, sub);
+        // No flush here: display_panels flushes once at end of frame, so a
+        // Konsole reclear (clear + redraw) stays atomic and doesn't flicker.
+        debug!(
+            "rendered {img_width}x{img_height}px sixel at {sub:?} ({})",
+            if cached { "reused encode" } else { "encoded" },
+        );
         Ok(None)
     }
 
     fn erase_image(&self, _w: &mut W, _id: ImageId) -> Result<(), ProgramError> {
         // Sixel images live in the cells; cleared by normal repaint. No-op.
         Ok(())
+    }
+
+    fn needs_reclear_on_change(&self) -> bool {
+        // Konsole keeps Sixel until the screen is cleared, so the manager must
+        // issue ESC[2J + a full redraw when an on-screen image changes/leaves.
+        self.is_konsole
     }
 
     fn cell_size(&self) -> (u32, u32) {

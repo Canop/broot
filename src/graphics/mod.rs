@@ -7,7 +7,7 @@ pub(crate) use fit::rendering_area;
 use {
     crate::{display::W, errors::ProgramError, image::zune_compat::DynamicImage},
     crokey::crossterm::style::Color,
-    std::path::Path,
+    std::path::{Path, PathBuf},
     termimad::Area,
 };
 
@@ -44,6 +44,15 @@ pub trait GraphicsRenderer: Send {
     fn max_render_size(&self) -> Option<(u32, u32)> {
         None
     }
+
+    /// Whether a changed/removed inline image requires a full-screen clear to
+    /// erase, rather than being cleared by repainting the cells it occupied.
+    /// Default false (Kitty erases by id; most Sixel terminals drop it when the
+    /// cells are overwritten). True for Konsole, which keeps Sixel until the
+    /// screen is cleared; the manager then issues `ESC [ 2J` + a full redraw.
+    fn needs_reclear_on_change(&self) -> bool {
+        false
+    }
 }
 
 /// Outcome of an attempt to draw an image with a terminal graphics protocol.
@@ -72,6 +81,9 @@ static MANAGER: Lazy<Mutex<GraphicsManager>> = Lazy::new(|| {
     Mutex::new(GraphicsManager {
         rendered_images: Vec::new(),
         renderer: MaybeRenderer::Untested,
+        frame_sixels: Vec::new(),
+        prev_sixels: Vec::new(),
+        forced_redraw: false,
     })
 });
 
@@ -84,6 +96,7 @@ struct RenderedImage {
     image_id: ImageId,
     drawing_count: usize,
 }
+
 
 enum MaybeRenderer {
     Untested,
@@ -145,6 +158,17 @@ fn select_renderer(con: &AppContext) -> Option<Box<dyn GraphicsRenderer>> {
 pub struct GraphicsManager {
     rendered_images: Vec<RenderedImage>,
     renderer: MaybeRenderer,
+    /// `(path, area)` of the inline (Sixel) images drawn or kept in the current
+    /// draw pass. Unlike Kitty (erased by id), a Sixel is drawn into the cells
+    /// and, on terminals that keep it until the screen is cleared (Konsole),
+    /// can't be removed by repainting text. Tracking what's on screen frame to
+    /// frame lets `reclear_needed` notice when one changes/leaves/moves.
+    frame_sixels: Vec<(PathBuf, Area)>,
+    /// `frame_sixels` from the last committed frame.
+    prev_sixels: Vec<(PathBuf, Area)>,
+    /// Set during the redraw pass after a full-screen clear, so images that
+    /// would otherwise be kept in place repaint (the clear wiped them).
+    forced_redraw: bool,
 }
 
 impl GraphicsManager {
@@ -191,7 +215,6 @@ impl GraphicsManager {
         drawing_count: usize,
         con: &AppContext,
     ) -> Result<ImageRendering, ProgramError> {
-        debug!("try_print_image start");
         if let Some(renderer) = self.renderer(con) {
             let (cell_width, cell_height) = renderer.cell_size();
             let mut area_width = area.width as u32 * cell_width;
@@ -202,23 +225,67 @@ impl GraphicsManager {
                 area_width = area_width.min(max_w);
                 area_height = area_height.min(max_h);
             }
-            debug!("try_print_image area_width: {}, area_height: {}", area_width, area_height);
+            // Fitting (decode + resize) is the main CPU cost before rendering,
+            // for any protocol; log the target so a slow render is diagnosable.
+            debug!("fitting image to {area_width}x{area_height}px for render");
             let img = src.fitting(area_width, area_height, None)?;
-            debug!("try_print_image fitted image");
             let id = renderer.print(w, &img, src_path, area, bg)?;
             if let Some(new_id) = id {
+                // Kitty: tracked by id and erased via escape; not an inline image.
                 self.rendered_images.push(RenderedImage {
                     image_id: new_id,
                     drawing_count,
                 });
+            } else {
+                // Sixel: drawn into the cells, no id. Record it so reclear
+                // detection knows what's on screen this frame.
+                self.note_inline(src_path, area);
             }
             // An image was drawn (Kitty with an id, or Sixel with none); either
             // way the caller must not draw the text fallback over it.
-            debug!("try_print_image drawn: {:?}", id);
             Ok(ImageRendering::Drawn(id))
         } else {
             Ok(ImageRendering::Unsupported)
         }
+    }
+    /// Start a draw pass: forget the inline (Sixel) images noted in the previous
+    /// pass of this frame. Call before each pass over the panels.
+    pub fn start_pass(&mut self) {
+        self.frame_sixels.clear();
+    }
+    /// Record that an inline (Sixel) image for `path` occupies `area` this pass
+    /// (drawn or kept in place). Drives `reclear_needed`.
+    pub fn note_inline(&mut self, path: &Path, area: &Area) {
+        self.frame_sixels.push((path.to_path_buf(), area.clone()));
+    }
+    /// Whether a full-screen clear + redraw is needed before this frame is
+    /// final: an inline image shown last frame is no longer shown identically
+    /// (changed, left, or moved), on a terminal that keeps Sixel until the
+    /// screen is cleared (Konsole). False elsewhere — repainting cells suffices.
+    pub fn reclear_needed(&self) -> bool {
+        let renderer_needs = match &self.renderer {
+            MaybeRenderer::Enabled { renderer } => renderer.needs_reclear_on_change(),
+            _ => false,
+        };
+        renderer_needs
+            && self
+                .prev_sixels
+                .iter()
+                .any(|s| !self.frame_sixels.contains(s))
+    }
+    /// Whether the current pass is a post-clear redraw, in which an image that
+    /// would normally be kept in place must instead be repainted (the clear
+    /// removed it). Read by `ImageView` when deciding `must_draw`.
+    pub fn forced_redraw(&self) -> bool {
+        self.forced_redraw
+    }
+    pub fn set_forced_redraw(&mut self, on: bool) {
+        self.forced_redraw = on;
+    }
+    /// Remember this frame's inline images for next-frame comparison. Call once
+    /// after the final pass.
+    pub fn commit_frame(&mut self) {
+        self.prev_sixels = std::mem::take(&mut self.frame_sixels);
     }
     pub fn erase_images_before(
         &mut self,

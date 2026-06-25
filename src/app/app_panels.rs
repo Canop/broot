@@ -13,6 +13,7 @@ use {
     crokey::crossterm::{
         cursor::MoveTo,
         queue,
+        terminal::{Clear, ClearType},
     },
     std::{
         io::Write,
@@ -672,6 +673,49 @@ impl AppPanelsAndInputs {
         con: &AppContext,
     ) -> Result<(), ProgramError> {
         self.drawing_count += 1;
+        if let Ok(mut manager) = graphics::manager().lock() {
+            manager.start_pass();
+        }
+        self.draw_panels_once(w, skin, app_state, con)?;
+
+        // On terminals that keep Sixel until the screen is cleared (Konsole), an
+        // image that changed, left, or moved this frame can't be erased by
+        // repainting cells. Clear the whole screen and redraw once; the image
+        // encode is reused from cache, and there's no flush between, so it's a
+        // single atomic repaint with no flicker. A no-op on other terminals.
+        let reclear = graphics::manager()
+            .lock()
+            .is_ok_and(|m| m.reclear_needed());
+        if reclear {
+            queue!(w, Clear(ClearType::All), MoveTo(0, 0))?;
+            self.drawing_count += 1;
+            if let Ok(mut manager) = graphics::manager().lock() {
+                manager.set_forced_redraw(true);
+                manager.start_pass();
+            }
+            self.draw_panels_once(w, skin, app_state, con)?;
+            if let Ok(mut manager) = graphics::manager().lock() {
+                manager.set_forced_redraw(false);
+            }
+        }
+
+        if let Ok(mut manager) = graphics::manager().lock() {
+            manager.commit_frame();
+        }
+        w.flush()?;
+        Ok(())
+    }
+
+    /// Draw every panel once into the current frame (`drawing_count`). Run once
+    /// per frame, or twice when a Konsole reclear is needed (see
+    /// `display_panels`).
+    fn draw_panels_once(
+        &mut self,
+        w: &mut W,
+        skin: &AppSkin,
+        app_state: &AppState,
+        con: &AppContext,
+    ) -> Result<(), ProgramError> {
         let screen = self.screen();
         let mut cursor_pos = None;
         let active_panel_idx = self.active_panel_idx();
@@ -731,7 +775,6 @@ impl AppPanelsAndInputs {
                 error!("failed to lock graphics manager to erase images: {e}");
             }
         }
-        w.flush()?;
         Ok(())
     }
 }

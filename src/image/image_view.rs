@@ -68,6 +68,9 @@ pub struct ImageView {
     display_img: Option<CachedImage>,
     last_drawing: Option<DrawingInfo>,
     graphics_image_id: Option<ImageId>,
+    /// Whether the last draw rendered an inline (Sixel) image (no id), so a
+    /// kept frame can re-note it for the manager's reclear detection.
+    drew_inline: bool,
 }
 
 impl ImageView {
@@ -79,6 +82,7 @@ impl ImageView {
             display_img: None,
             last_drawing: None,
             graphics_image_id: None,
+            drew_inline: false,
         })
     }
     pub fn display(
@@ -97,10 +101,16 @@ impl ImageView {
             drawing_count: disc.count,
             area: area.clone(),
         };
+        #[allow(clippy::missing_panics_doc)] // panics on mutex poisoning (good)
+        let mut graphics_manager = graphics::manager().lock().unwrap();
+
         let must_draw = self
             .last_drawing
             .as_ref()
-            .is_none_or(|previous| !drawing_info.follows_in_place(previous));
+            .is_none_or(|previous| !drawing_info.follows_in_place(previous))
+            // In the redraw pass after a full-screen clear (Konsole), a kept
+            // image was wiped and must be repainted.
+            || graphics_manager.forced_redraw();
         if must_draw {
             debug!("image_view must be cleared");
         } else {
@@ -108,20 +118,19 @@ impl ImageView {
         }
         self.last_drawing = Some(drawing_info);
 
-        #[allow(clippy::missing_panics_doc)] // panics on mutex poisoning (good)
-        let mut graphics_manager = graphics::manager().lock().unwrap();
-
         if !must_draw {
             if let Some(graphics_image_id) = self.graphics_image_id {
                 // we tell the manager the images must be kept, otherwise
                 // they would be erased at end of drawing, as obsolete
                 graphics_manager.keep(graphics_image_id, disc.count);
             }
-            debug!("image_view !must_draw");
+            if self.drew_inline {
+                // an inline (Sixel) image has no id; note it's still on screen
+                // so reclear detection doesn't treat it as gone
+                graphics_manager.note_inline(&self.path, area);
+            }
             return Ok(());
         }
-
-        debug!("image_view try_print_image");
 
         let rendering = graphics_manager.try_print_image(
             w,
@@ -133,17 +142,19 @@ impl ImageView {
             disc.con,
         )?;
 
-        debug!("image_view try_print_image after");
-
         match rendering {
             ImageRendering::Drawn(id) => {
                 // an image was drawn (Kitty id, or Sixel with none); don't
                 // overdraw it with the text fallback
                 self.graphics_image_id = id;
+                // Sixel (no id) is inline; remember so a later kept frame can
+                // re-note it for reclear detection
+                self.drew_inline = id.is_none();
                 return Ok(());
             }
             ImageRendering::Unsupported => {
                 self.graphics_image_id = None;
+                self.drew_inline = false;
             }
         }
 
