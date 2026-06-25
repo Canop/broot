@@ -36,6 +36,13 @@ pub trait GraphicsRenderer: Send {
     /// Return the (width, height) of a terminal cell in pixels, as cached at
     /// construction time. Used to avoid re-querying the terminal every repaint.
     fn cell_size(&self) -> (u32, u32);
+
+    /// Maximum image size in pixels this protocol/terminal can display, if any.
+    /// Larger images would be cropped (e.g. xterm crops oversized Sixel), so the
+    /// caller fits within it. `None` means no known limit (e.g. Kitty).
+    fn max_pixels(&self) -> Option<(u32, u32)> {
+        None
+    }
 }
 
 /// Outcome of an attempt to draw an image with a terminal graphics protocol.
@@ -183,11 +190,20 @@ impl GraphicsManager {
         drawing_count: usize,
         con: &AppContext,
     ) -> Result<ImageRendering, ProgramError> {
+        debug!("try_print_image start");
         if let Some(renderer) = self.renderer(con) {
             let (cell_width, cell_height) = renderer.cell_size();
-            let area_width = area.width as u32 * cell_width;
-            let area_height = area.height as u32 * cell_height;
+            let mut area_width = area.width as u32 * cell_width;
+            let mut area_height = area.height as u32 * cell_height;
+            // Cap to the protocol/terminal's max image size so it isn't cropped
+            // (e.g. xterm crops Sixel images larger than its reported geometry).
+            if let Some((max_w, max_h)) = renderer.max_pixels() {
+                area_width = area_width.min(max_w);
+                area_height = area_height.min(max_h);
+            }
+            debug!("try_print_image area_width: {}, area_height: {}", area_width, area_height);
             let img = src.fitting(area_width, area_height, None)?;
+            debug!("try_print_image fitted image");
             let id = renderer.print(w, &img, src_path, area, bg)?;
             if let Some(new_id) = id {
                 self.rendered_images.push(RenderedImage {
@@ -197,6 +213,7 @@ impl GraphicsManager {
             }
             // An image was drawn (Kitty with an id, or Sixel with none); either
             // way the caller must not draw the text fallback over it.
+            debug!("try_print_image drawn: {:?}", id);
             Ok(ImageRendering::Drawn(id))
         } else {
             Ok(ImageRendering::Unsupported)

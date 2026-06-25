@@ -117,8 +117,11 @@ impl ImageView {
                 // they would be erased at end of drawing, as obsolete
                 graphics_manager.keep(graphics_image_id, disc.count);
             }
+            debug!("image_view !must_draw");
             return Ok(());
         }
+
+        debug!("image_view try_print_image");
 
         let rendering = graphics_manager.try_print_image(
             w,
@@ -129,6 +132,8 @@ impl ImageView {
             disc.count,
             disc.con,
         )?;
+
+        debug!("image_view try_print_image after");
 
         match rendering {
             ImageRendering::Drawn(id) => {

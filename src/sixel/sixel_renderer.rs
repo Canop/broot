@@ -9,6 +9,7 @@ use {
             terminal::{get_esc_seq, get_tmux_header, get_tmux_nest_count, get_tmux_tail, is_tmux},
         },
         image::zune_compat::DynamicImage,
+        sixel::detect_support::detect_sixel_max_geometry,
     },
     cli_log::*,
     crokey::crossterm::{QueueableCommand, cursor, style::Color},
@@ -46,6 +47,10 @@ pub struct SixelRenderer {
     cell_width: u32,
     cell_height: u32,
     is_tmux: bool,
+    /// Terminal's maximum Sixel image size in pixels (XTSMGRAPHICS), if it
+    /// reports one. Images larger than this are cropped by some terminals
+    /// (e.g. xterm), so we fit within it.
+    max_geometry: Option<(u32, u32)>,
 }
 
 impl SixelRenderer {
@@ -59,10 +64,13 @@ impl SixelRenderer {
                 return None;
             }
         };
+        let max_geometry = detect_sixel_max_geometry();
+        debug!("sixel max geometry: {max_geometry:?}");
         Some(Self {
             cell_width,
             cell_height,
             is_tmux: is_tmux(),
+            max_geometry,
         })
     }
 }
@@ -77,6 +85,7 @@ impl GraphicsRenderer for SixelRenderer {
         bg: Color,
     ) -> Result<Option<ImageId>, ProgramError> {
         // clear the whole area first (Sixel draws into the cells)
+        debug!("sixel print fill_bg");
         for y in area.top..area.top + area.height {
             w.queue(cursor::MoveTo(area.left, y))?;
             fill_bg(w, area.width as usize, bg)?;
@@ -85,9 +94,15 @@ impl GraphicsRenderer for SixelRenderer {
         let (img_width, img_height) = src.dimensions();
         let sub = rendering_area(self.cell_width, self.cell_height, img_width, img_height, area);
 
+        debug!("sixel ImageData::from pre");
+
         let data = ImageData::from(src);
+        debug!("sixel ImageData::from post");
+
         let rgba = data.rgba_bytes();
+        debug!("sixel print pre");
         let sixel = encode_sixel(rgba, img_width, img_height)?;
+        debug!("sixel print post");
 
         w.queue(cursor::MoveTo(sub.left, sub.top))?;
         if self.is_tmux {
@@ -108,6 +123,10 @@ impl GraphicsRenderer for SixelRenderer {
 
     fn cell_size(&self) -> (u32, u32) {
         (self.cell_width, self.cell_height)
+    }
+
+    fn max_pixels(&self) -> Option<(u32, u32)> {
+        self.max_geometry
     }
 }
 
