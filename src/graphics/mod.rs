@@ -37,10 +37,11 @@ pub trait GraphicsRenderer: Send {
     /// construction time. Used to avoid re-querying the terminal every repaint.
     fn cell_size(&self) -> (u32, u32);
 
-    /// Maximum image size in pixels this protocol/terminal can display, if any.
-    /// Larger images would be cropped (e.g. xterm crops oversized Sixel), so the
-    /// caller fits within it. `None` means no known limit (e.g. Kitty).
-    fn max_pixels(&self) -> Option<(u32, u32)> {
+    /// Upper bound, in pixels, on the size an image should be fitted to before
+    /// rendering, if the protocol/terminal imposes one. Larger images would be
+    /// cropped (e.g. xterm crops oversized Sixel). `None` means no known bound
+    /// (e.g. Kitty).
+    fn max_render_size(&self) -> Option<(u32, u32)> {
         None
     }
 }
@@ -195,9 +196,9 @@ impl GraphicsManager {
             let (cell_width, cell_height) = renderer.cell_size();
             let mut area_width = area.width as u32 * cell_width;
             let mut area_height = area.height as u32 * cell_height;
-            // Cap to the protocol/terminal's max image size so it isn't cropped
-            // (e.g. xterm crops Sixel images larger than its reported geometry).
-            if let Some((max_w, max_h)) = renderer.max_pixels() {
+            // Fit within the protocol/terminal's render bound so the image isn't
+            // cropped (e.g. xterm crops Sixel larger than its current geometry).
+            if let Some((max_w, max_h)) = renderer.max_render_size() {
                 area_width = area_width.min(max_w);
                 area_height = area_height.min(max_h);
             }

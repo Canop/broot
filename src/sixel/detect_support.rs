@@ -39,9 +39,10 @@ fn query_da1(timeout_ms: u64) -> std::io::Result<String> {
 }
 
 /// Parse an XTSMGRAPHICS reply for the Sixel-geometry item
-/// (`CSI ? 2 ; 0 ; Pw ; Ph S`) into `(Pw, Ph)` = the maximum Sixel image size
-/// in pixels. Returns `None` for a different item, a non-success status, or a
-/// malformed reply.
+/// (`CSI ? 2 ; 0 ; Pw ; Ph S`) into `(Pw, Ph)` = the terminal's *current* Sixel
+/// graphics geometry in pixels (the largest image it will display right now,
+/// which xterm computes as `min(window, configured max)`). Returns `None` for a
+/// different item, a non-success status, or a malformed reply.
 pub(crate) fn parse_xtsmgraphics(response: &str) -> Option<(u32, u32)> {
     let start = response.find("\x1b[?")? + 3;
     let rel_end = response[start..].find('S')?;
@@ -60,13 +61,24 @@ pub(crate) fn parse_xtsmgraphics(response: &str) -> Option<(u32, u32)> {
     Some((width, height))
 }
 
-/// Query the terminal's maximum Sixel image geometry via XTSMGRAPHICS
-/// (`CSI ? 2 ; 1 ; 0 S`). Returns the max `(width, height)` in pixels, or `None`
-/// if the terminal reports no limit / doesn't support the query.
+/// Query the terminal's current Sixel graphics geometry via XTSMGRAPHICS
+/// (`CSI ? 2 ; 1 ; 0 S`, action `1` = read current). Returns `(width, height)`
+/// in pixels, or `None` if the terminal reports nothing / doesn't support it.
 ///
 /// Some terminals (e.g. xterm) silently crop Sixel images larger than this, so
-/// callers should scale images to fit within it.
-pub fn detect_sixel_max_geometry() -> Option<(u32, u32)> {
+/// callers scale images to fit within it.
+///
+/// This is a **startup snapshot** and is not refreshed on resize: terminal
+/// queries during the event loop would race broot's input-reader thread (the
+/// reason all graphics detection runs once at startup). Staleness is safe
+/// against cropping — the caller fits to `min(pane_px, geometry)` and the pane
+/// is always within the window, so the image never exceeds the window's current
+/// limit; at worst an enlarged window leaves the image slightly over-downscaled.
+///
+/// Note: this is a second startup query (after DA1). DA1 support does not imply
+/// XTSMGRAPHICS support, so on a Sixel terminal lacking it this costs up to one
+/// `TERMINAL_QUERY_TIMEOUT_MS` once, before the first render.
+pub fn detect_sixel_geometry() -> Option<(u32, u32)> {
     match query_xtsmgraphics(crate::graphics::terminal::TERMINAL_QUERY_TIMEOUT_MS) {
         Ok(reply) => {
             debug!("XTSMGRAPHICS reply: {reply:?}");

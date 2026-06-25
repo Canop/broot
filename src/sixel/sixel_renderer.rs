@@ -9,7 +9,7 @@ use {
             terminal::{get_esc_seq, get_tmux_header, get_tmux_nest_count, get_tmux_tail, is_tmux},
         },
         image::zune_compat::DynamicImage,
-        sixel::detect_support::detect_sixel_max_geometry,
+        sixel::detect_support::detect_sixel_geometry,
     },
     cli_log::*,
     crokey::crossterm::{QueueableCommand, cursor, style::Color},
@@ -47,10 +47,11 @@ pub struct SixelRenderer {
     cell_width: u32,
     cell_height: u32,
     is_tmux: bool,
-    /// Terminal's maximum Sixel image size in pixels (XTSMGRAPHICS), if it
-    /// reports one. Images larger than this are cropped by some terminals
-    /// (e.g. xterm), so we fit within it.
-    max_geometry: Option<(u32, u32)>,
+    /// Terminal's current Sixel graphics geometry in pixels (XTSMGRAPHICS), if
+    /// reported. Images larger than this are cropped by some terminals (e.g.
+    /// xterm), so we fit within it. Snapshot taken at construction; see
+    /// `detect_sixel_geometry` for why it isn't refreshed on resize.
+    current_geometry: Option<(u32, u32)>,
 }
 
 impl SixelRenderer {
@@ -64,13 +65,13 @@ impl SixelRenderer {
                 return None;
             }
         };
-        let max_geometry = detect_sixel_max_geometry();
-        debug!("sixel max geometry: {max_geometry:?}");
+        let current_geometry = detect_sixel_geometry();
+        debug!("sixel current geometry: {current_geometry:?}");
         Some(Self {
             cell_width,
             cell_height,
             is_tmux: is_tmux(),
-            max_geometry,
+            current_geometry,
         })
     }
 }
@@ -125,8 +126,8 @@ impl GraphicsRenderer for SixelRenderer {
         (self.cell_width, self.cell_height)
     }
 
-    fn max_pixels(&self) -> Option<(u32, u32)> {
-        self.max_geometry
+    fn max_render_size(&self) -> Option<(u32, u32)> {
+        self.current_geometry
     }
 }
 
