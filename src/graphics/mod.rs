@@ -53,6 +53,11 @@ pub trait GraphicsRenderer: Send {
     fn needs_reclear_on_change(&self) -> bool {
         false
     }
+
+    /// Called once at the end of each frame. Renderers drop any per-frame state
+    /// here (e.g. a within-frame encode cache) so nothing is reused across
+    /// frames, where the underlying image may have changed. Default no-op.
+    fn end_frame(&mut self) {}
 }
 
 /// Outcome of an attempt to draw an image with a terminal graphics protocol.
@@ -158,14 +163,16 @@ fn select_renderer(con: &AppContext) -> Option<Box<dyn GraphicsRenderer>> {
 pub struct GraphicsManager {
     rendered_images: Vec<RenderedImage>,
     renderer: MaybeRenderer,
-    /// `(path, area)` of the inline (Sixel) images drawn or kept in the current
-    /// draw pass. Unlike Kitty (erased by id), a Sixel is drawn into the cells
-    /// and, on terminals that keep it until the screen is cleared (Konsole),
-    /// can't be removed by repainting text. Tracking what's on screen frame to
-    /// frame lets `reclear_needed` notice when one changes/leaves/moves.
-    frame_sixels: Vec<(PathBuf, Area)>,
+    /// `(path, area, source_dims)` of the inline (Sixel) images drawn or kept in
+    /// the current draw pass. Unlike Kitty (erased by id), a Sixel is drawn into
+    /// the cells and, on terminals that keep it until the screen is cleared
+    /// (Konsole), can't be removed by repainting text. Tracking what's on screen
+    /// frame to frame lets `reclear_needed` notice when one changes/leaves/moves.
+    /// Source dimensions are part of the identity so a different-resolution
+    /// in-place file swap (same path + area) is still detected as a change.
+    frame_sixels: Vec<(PathBuf, Area, (u32, u32))>,
     /// `frame_sixels` from the last committed frame.
-    prev_sixels: Vec<(PathBuf, Area)>,
+    prev_sixels: Vec<(PathBuf, Area, (u32, u32))>,
     /// Set during the redraw pass after a full-screen clear, so images that
     /// would otherwise be kept in place repaint (the clear wiped them).
     forced_redraw: bool,
@@ -239,7 +246,7 @@ impl GraphicsManager {
             } else {
                 // Sixel: drawn into the cells, no id. Record it so reclear
                 // detection knows what's on screen this frame.
-                self.note_inline(src_path, area);
+                self.note_inline(src_path, area, src.dimensions());
             }
             // An image was drawn (Kitty with an id, or Sixel with none); either
             // way the caller must not draw the text fallback over it.
@@ -253,10 +260,12 @@ impl GraphicsManager {
     pub fn start_pass(&mut self) {
         self.frame_sixels.clear();
     }
-    /// Record that an inline (Sixel) image for `path` occupies `area` this pass
-    /// (drawn or kept in place). Drives `reclear_needed`.
-    pub fn note_inline(&mut self, path: &Path, area: &Area) {
-        self.frame_sixels.push((path.to_path_buf(), area.clone()));
+    /// Record that an inline (Sixel) image for `path` (with source pixel size
+    /// `dims`) occupies `area` this pass (drawn or kept in place). Drives
+    /// `reclear_needed`; `dims` distinguishes an in-place file swap that keeps
+    /// the same path and area.
+    pub fn note_inline(&mut self, path: &Path, area: &Area, dims: (u32, u32)) {
+        self.frame_sixels.push((path.to_path_buf(), area.clone(), dims));
     }
     /// Whether a full-screen clear + redraw is needed before this frame is
     /// final: an inline image shown last frame is no longer shown identically
@@ -282,10 +291,14 @@ impl GraphicsManager {
     pub fn set_forced_redraw(&mut self, on: bool) {
         self.forced_redraw = on;
     }
-    /// Remember this frame's inline images for next-frame comparison. Call once
-    /// after the final pass.
+    /// Remember this frame's inline images for next-frame comparison, and let
+    /// the renderer drop per-frame state (the encode cache). Call once after the
+    /// final pass.
     pub fn commit_frame(&mut self) {
         self.prev_sixels = std::mem::take(&mut self.frame_sixels);
+        if let MaybeRenderer::Enabled { renderer } = &mut self.renderer {
+            renderer.end_frame();
+        }
     }
     pub fn erase_images_before(
         &mut self,
@@ -303,5 +316,157 @@ impl GraphicsManager {
         }
         self.rendered_images = kept_images;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Minimal renderer for exercising the manager's reclear bookkeeping.
+    /// `print`/`erase_image` are never called by these tests.
+    struct TestRenderer {
+        reclear: bool,
+    }
+    impl GraphicsRenderer for TestRenderer {
+        fn print(
+            &mut self,
+            _w: &mut W,
+            _src: &DynamicImage,
+            _src_path: &Path,
+            _area: &Area,
+            _bg: Color,
+        ) -> Result<Option<ImageId>, ProgramError> {
+            Ok(None)
+        }
+        fn erase_image(&self, _w: &mut W, _id: ImageId) -> Result<(), ProgramError> {
+            Ok(())
+        }
+        fn cell_size(&self) -> (u32, u32) {
+            (10, 20)
+        }
+        fn needs_reclear_on_change(&self) -> bool {
+            self.reclear
+        }
+    }
+
+    fn manager(reclear: bool) -> GraphicsManager {
+        GraphicsManager {
+            rendered_images: Vec::new(),
+            renderer: MaybeRenderer::Enabled {
+                renderer: Box::new(TestRenderer { reclear }),
+            },
+            frame_sixels: Vec::new(),
+            prev_sixels: Vec::new(),
+            forced_redraw: false,
+        }
+    }
+
+    fn area() -> Area {
+        Area::new(0, 0, 10, 10)
+    }
+
+    const DIMS: (u32, u32) = (640, 480);
+
+    #[test]
+    fn no_reclear_when_nothing_shown_last_frame() {
+        let mut m = manager(true);
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), DIMS);
+        // first appearance: nothing to erase
+        assert!(!m.reclear_needed());
+    }
+
+    #[test]
+    fn no_reclear_when_same_image_kept() {
+        let mut m = manager(true);
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), DIMS);
+        m.commit_frame();
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), DIMS);
+        assert!(!m.reclear_needed());
+    }
+
+    #[test]
+    fn reclear_when_image_changes() {
+        let mut m = manager(true);
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), DIMS);
+        m.commit_frame();
+        m.start_pass();
+        m.note_inline(Path::new("b.png"), &area(), DIMS);
+        assert!(m.reclear_needed());
+    }
+
+    #[test]
+    fn reclear_when_image_leaves() {
+        let mut m = manager(true);
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), DIMS);
+        m.commit_frame();
+        m.start_pass(); // preview hidden or became text: nothing noted
+        assert!(m.reclear_needed());
+    }
+
+    #[test]
+    fn reclear_when_image_moves() {
+        let mut m = manager(true);
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), DIMS);
+        m.commit_frame();
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &Area::new(5, 0, 10, 10), DIMS); // resized/moved
+        assert!(m.reclear_needed());
+    }
+
+    #[test]
+    fn reclear_when_file_swapped_to_different_resolution() {
+        // same path + area, but the file changed in place to a new resolution
+        let mut m = manager(true);
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), (640, 480));
+        m.commit_frame();
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), (800, 600));
+        assert!(m.reclear_needed());
+    }
+
+    #[test]
+    fn never_reclear_when_renderer_opts_out() {
+        let mut m = manager(false); // e.g. Kitty / non-Konsole Sixel
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), DIMS);
+        m.commit_frame();
+        m.start_pass(); // image left
+        assert!(!m.reclear_needed());
+    }
+
+    #[test]
+    fn commit_frame_rolls_current_into_previous() {
+        let mut m = manager(true);
+        m.start_pass();
+        m.note_inline(Path::new("a.png"), &area(), DIMS);
+        m.commit_frame();
+        assert_eq!(m.prev_sixels.len(), 1);
+        assert!(m.frame_sixels.is_empty());
+    }
+
+    #[test]
+    fn start_pass_clears_current_frame() {
+        let mut m = manager(true);
+        m.note_inline(Path::new("a.png"), &area(), DIMS);
+        m.start_pass();
+        assert!(m.frame_sixels.is_empty());
+    }
+
+    #[test]
+    fn forced_redraw_toggles() {
+        let mut m = manager(true);
+        assert!(!m.forced_redraw());
+        m.set_forced_redraw(true);
+        assert!(m.forced_redraw());
+        m.set_forced_redraw(false);
+        assert!(!m.forced_redraw());
     }
 }

@@ -58,8 +58,9 @@ pub struct SixelRenderer {
     /// Other terminals drop Sixel when the cells are overwritten (false here).
     is_konsole: bool,
     /// Last encoded Sixel `(path, fitted_width, fitted_height, dcs)`, reused
-    /// when the same image at the same size is drawn again (the post-clear
-    /// redraw pass on Konsole) so it isn't re-encoded.
+    /// when the same image at the same size is drawn again within a frame (the
+    /// post-clear redraw pass on Konsole) so it isn't re-encoded. Cleared every
+    /// frame (`end_frame`) so a file that changed in place isn't shown stale.
     last_encoded: Option<(std::path::PathBuf, u32, u32, String)>,
 }
 
@@ -146,6 +147,12 @@ impl GraphicsRenderer for SixelRenderer {
         // Konsole keeps Sixel until the screen is cleared, so the manager must
         // issue ESC[2J + a full redraw when an on-screen image changes/leaves.
         self.is_konsole
+    }
+
+    fn end_frame(&mut self) {
+        // Drop the within-frame encode cache so a file changed in place between
+        // frames is re-encoded rather than shown from stale bytes.
+        self.last_encoded = None;
     }
 
     fn cell_size(&self) -> (u32, u32) {

@@ -680,9 +680,10 @@ impl AppPanelsAndInputs {
 
         // On terminals that keep Sixel until the screen is cleared (Konsole), an
         // image that changed, left, or moved this frame can't be erased by
-        // repainting cells. Clear the whole screen and redraw once; the image
-        // encode is reused from cache, and there's no flush between, so it's a
-        // single atomic repaint with no flicker. A no-op on other terminals.
+        // repainting cells. Clear the whole screen and redraw once; there's no
+        // flush between passes, so it's one atomic repaint with no flicker. The
+        // redraw reuses the single-entry encode cache, so with several image
+        // panels only the last avoids re-encoding. A no-op on other terminals.
         let reclear = graphics::manager()
             .lock()
             .is_ok_and(|m| m.reclear_needed());
@@ -693,10 +694,13 @@ impl AppPanelsAndInputs {
                 manager.set_forced_redraw(true);
                 manager.start_pass();
             }
-            self.draw_panels_once(w, skin, app_state, con)?;
+            // Reset forced_redraw even if the redraw errors, so a failed frame
+            // doesn't leave the manager stuck in forced-redraw mode.
+            let redraw = self.draw_panels_once(w, skin, app_state, con);
             if let Ok(mut manager) = graphics::manager().lock() {
                 manager.set_forced_redraw(false);
             }
+            redraw?;
         }
 
         if let Ok(mut manager) = graphics::manager().lock() {

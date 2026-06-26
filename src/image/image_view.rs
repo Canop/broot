@@ -127,7 +127,7 @@ impl ImageView {
             if self.drew_inline {
                 // an inline (Sixel) image has no id; note it's still on screen
                 // so reclear detection doesn't treat it as gone
-                graphics_manager.note_inline(&self.path, area);
+                graphics_manager.note_inline(&self.path, area, self.source_img.dimensions());
             }
             return Ok(());
         }
