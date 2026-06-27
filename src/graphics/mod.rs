@@ -1,6 +1,9 @@
 mod fit;
+mod graphics_display;
 pub(crate) mod image_data;
 pub(crate) mod terminal;
+
+pub use graphics_display::GraphicsDisplay;
 
 pub(crate) use fit::rendering_area;
 
@@ -116,55 +119,57 @@ enum MaybeRenderer {
     Enabled { renderer: Box<dyn GraphicsRenderer> },
 }
 
-/// Choose a graphics renderer for this terminal, honoring the
-/// BROOT_GRAPHICS_PROTOCOL override (kitty | sixel | none).
+/// Choose a graphics renderer for this terminal, honoring `graphics-display`
+/// (overridable per-run by the BROOT_GRAPHICS_PROTOCOL env var).
 fn select_renderer(con: &AppContext) -> Option<Box<dyn GraphicsRenderer>> {
-    use crate::kitty::KittyGraphicsDisplay;
-
-    // The legacy `kitty-graphics-display = "none"` config predates Sixel and is
-    // treated as the global "disable all terminal graphics" switch (both Kitty
-    // and Sixel), for backward compatibility. The option name is now a misnomer.
-    if con.kitty_graphics_display == KittyGraphicsDisplay::None {
-        return None;
-    }
-
-    let forced = std::env::var("BROOT_GRAPHICS_PROTOCOL")
-        .ok()
-        .map(|s| s.to_ascii_lowercase());
-    match forced.as_deref() {
-        Some("none") => return None,
-        Some("kitty") => {
-            let r = crate::kitty::build_kitty_renderer(con)
-                .map(|r| Box::new(r) as Box<dyn GraphicsRenderer>);
-            if r.is_none() {
-                warn!("BROOT_GRAPHICS_PROTOCOL=kitty but Kitty renderer failed to initialize");
-            }
-            return r;
+    let build_kitty = || {
+        crate::kitty::build_kitty_renderer(con).map(|r| Box::new(r) as Box<dyn GraphicsRenderer>)
+    };
+    let build_sixel = || {
+        if crate::sixel::detect_sixel_support() {
+            crate::sixel::SixelRenderer::new().map(|r| Box::new(r) as Box<dyn GraphicsRenderer>)
+        } else {
+            None
         }
-        Some("sixel") => {
+    };
+
+    // env override (BROOT_GRAPHICS_PROTOCOL) takes precedence over the config
+    let display = graphics_display::graphics_display_from_env().unwrap_or(con.graphics_display);
+    match display {
+        GraphicsDisplay::None => {
+            debug!("terminal graphics disabled (graphics-display = none)");
+            None
+        }
+        GraphicsDisplay::Kitty => {
+            let r = build_kitty();
+            if r.is_none() {
+                warn!("graphics-display = kitty but Kitty graphics are unavailable");
+            }
+            r
+        }
+        GraphicsDisplay::Sixel => {
+            // Forcing the protocol bypasses the DA1 detection probe (matches the
+            // BROOT_GRAPHICS_PROTOCOL=sixel override); Auto still probes.
             let r = crate::sixel::SixelRenderer::new()
                 .map(|r| Box::new(r) as Box<dyn GraphicsRenderer>);
             if r.is_none() {
-                warn!("BROOT_GRAPHICS_PROTOCOL=sixel but Sixel renderer failed to initialize");
+                warn!("graphics-display = sixel but the Sixel renderer failed to initialize");
             }
-            return r;
+            r
         }
-        _ => {}
-    }
-
-    // auto: Kitty first (env-var detection, no I/O), then Sixel (DA1 probe)
-    if let Some(r) = crate::kitty::build_kitty_renderer(con) {
-        debug!("using kitty graphics protocol");
-        return Some(Box::new(r));
-    }
-    if crate::sixel::detect_sixel_support() {
-        if let Some(r) = crate::sixel::SixelRenderer::new() {
-            debug!("using sixel graphics protocol");
-            return Some(Box::new(r));
+        GraphicsDisplay::Auto => {
+            if let Some(r) = build_kitty() {
+                debug!("using kitty graphics protocol");
+                Some(r)
+            } else if let Some(r) = build_sixel() {
+                debug!("using sixel graphics protocol");
+                Some(r)
+            } else {
+                debug!("no terminal graphics protocol available");
+                None
+            }
         }
     }
-    debug!("no terminal graphics protocol available");
-    None
 }
 
 pub struct GraphicsManager {
