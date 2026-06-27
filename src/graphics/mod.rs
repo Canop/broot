@@ -54,6 +54,13 @@ pub trait GraphicsRenderer: Send {
         false
     }
 
+    /// Constraints to apply when fitting an image for this renderer (e.g. Sixel
+    /// on Konsole needs the height to be a multiple of 6). Default: none.
+    fn fit_constraints(&self, bg: Color) -> crate::image::FitConstraints {
+        let _ = bg;
+        crate::image::FitConstraints::default()
+    }
+
     /// Called once at the end of each frame. Renderers drop any per-frame state
     /// here (e.g. a within-frame encode cache) so nothing is reused across
     /// frames, where the underlying image may have changed. Default no-op.
@@ -235,7 +242,8 @@ impl GraphicsManager {
             // Fitting (decode + resize) is the main CPU cost before rendering,
             // for any protocol; log the target so a slow render is diagnosable.
             debug!("fitting image to {area_width}x{area_height}px for render");
-            let img = src.fitting(area_width, area_height, None)?;
+            let constraints = renderer.fit_constraints(bg);
+            let img = src.fitting(area_width, area_height, None, constraints)?;
             let id = renderer.print(w, &img, src_path, area, bg)?;
             if let Some(new_id) = id {
                 // Kitty: tracked by id and erased via escape; not an inline image.
@@ -468,5 +476,13 @@ mod tests {
         assert!(m.forced_redraw());
         m.set_forced_redraw(false);
         assert!(!m.forced_redraw());
+    }
+
+    #[test]
+    fn default_fit_constraints_is_unconstrained() {
+        let r = TestRenderer { reclear: false };
+        let c = r.fit_constraints(Color::Reset);
+        assert_eq!(c.height_multiple, 1);
+        assert!(c.pad.is_none());
     }
 }

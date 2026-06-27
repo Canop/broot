@@ -1,5 +1,6 @@
 use {
     super::{
+        FitConstraints,
         SourceImage,
         double_line::DoubleLine,
         zune_compat::DynamicImage,
@@ -170,7 +171,7 @@ impl ImageView {
                 let img = time!(
                     "resize image",
                     self.source_img
-                        .fitting(target_width, target_height, bg_color),
+                        .fitting(target_width, target_height, bg_color, FitConstraints::default()),
                 )?;
                 &self
                     .display_img

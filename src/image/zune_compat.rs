@@ -183,6 +183,43 @@ impl DynamicImage {
         }
     }
 
+    /// RGBA bytes (4 per pixel), converting from RGB if needed.
+    pub fn to_rgba_bytes(&self) -> Vec<u8> {
+        if let Some(rgba) = self.as_rgba8() {
+            rgba.as_raw()
+        } else {
+            let rgb = self.to_rgb8().as_raw();
+            let mut out = Vec::with_capacity(rgb.len() / 3 * 4);
+            for px in rgb.chunks_exact(3) {
+                out.extend_from_slice(px);
+                out.push(255);
+            }
+            out
+        }
+    }
+
+    /// A new image `width x target_height` (`target_height >= height`) holding
+    /// this image's pixels at the top and the remaining rows filled with opaque
+    /// `rgb`. Used to pad to a whole Sixel band so no partial final band remains.
+    pub fn padded_to_height(
+        &self,
+        target_height: u32,
+        rgb: (u8, u8, u8),
+    ) -> Result<Self, ProgramError> {
+        let (w, h) = self.dimensions();
+        if target_height <= h {
+            return Ok(self.clone());
+        }
+        let mut data = self.to_rgba_bytes();
+        let fill = [rgb.0, rgb.1, rgb.2, 255];
+        let pad_px = w as usize * (target_height - h) as usize;
+        data.reserve(pad_px * 4);
+        for _ in 0..pad_px {
+            data.extend_from_slice(&fill);
+        }
+        Self::from_rgba8(w, target_height, data)
+    }
+
     pub fn pixels(&self) -> PixelIterator {
         match self {
             Self::Zune(img) => {
@@ -408,5 +445,35 @@ impl Iterator for PixelIterator {
                 Some((x, y, rgba))
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::DynamicImage;
+
+    #[test]
+    fn to_rgba_bytes_passthrough() {
+        let img = DynamicImage::from_rgba8(1, 1, vec![10, 20, 30, 255]).unwrap();
+        assert_eq!(img.to_rgba_bytes(), vec![10, 20, 30, 255]);
+    }
+
+    #[test]
+    fn padded_to_height_fills_bottom_with_bg() {
+        // 1x2 image: row0 = (1,1,1), row1 = (2,2,2); pad to height 4 with (9,8,7)
+        let img = DynamicImage::from_rgba8(1, 2, vec![1, 1, 1, 255, 2, 2, 2, 255]).unwrap();
+        let padded = img.padded_to_height(4, (9, 8, 7)).unwrap();
+        assert_eq!(padded.dimensions(), (1, 4));
+        let b = padded.to_rgba_bytes();
+        assert_eq!(&b[0..4], &[1, 1, 1, 255]); // row 0 preserved
+        assert_eq!(&b[4..8], &[2, 2, 2, 255]); // row 1 preserved
+        assert_eq!(&b[8..12], &[9, 8, 7, 255]); // row 2 = bg
+        assert_eq!(&b[12..16], &[9, 8, 7, 255]); // row 3 = bg
+    }
+
+    #[test]
+    fn padded_to_height_noop_when_not_taller() {
+        let img = DynamicImage::from_rgba8(1, 4, vec![0; 16]).unwrap();
+        assert_eq!(img.padded_to_height(4, (0, 0, 0)).unwrap().dimensions(), (1, 4));
     }
 }

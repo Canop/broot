@@ -6,5 +6,5 @@ pub mod zune_compat;
 
 pub use {
     image_view::ImageView,
-    source_image::SourceImage,
+    source_image::{FitConstraints, SourceImage},
 };
