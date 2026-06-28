@@ -1,171 +1,22 @@
 mod detect_support;
 mod image_renderer;
-mod terminal_esc;
 
 pub use image_renderer::*;
 
-use crate::display::cell_size_in_pixels;
-
-use {
-    crate::{
-        app::AppContext,
-        display::W,
-        errors::ProgramError,
-        image::SourceImage,
-        kitty::detect_support::is_tmux,
-    },
-    crokey::crossterm::style::Color,
-    once_cell::sync::Lazy,
-    std::{
-        io::Write,
-        path::Path,
-        sync::Mutex,
-    },
-    termimad::Area,
+use crate::{
+    app::AppContext,
+    graphics::terminal::is_tmux,
 };
 
-pub type KittyImageId = usize;
+pub use detect_support::detect_kitty_graphics_protocol_display;
 
-static MANAGER: Lazy<Mutex<KittyManager>> = Lazy::new(|| {
-    let manager = KittyManager {
-        rendered_images: Vec::new(),
-        renderer: MaybeRenderer::Untested,
+/// Build a Kitty renderer if this terminal supports the protocol.
+pub fn build_kitty_renderer(con: &AppContext) -> Option<KittyImageRenderer> {
+    let options = KittyImageRendererOptions {
+        display: con.kitty_graphics_display,
+        transmission_medium: con.kitty_graphics_transmission,
+        kept_temp_files: con.kept_kitty_temp_files,
+        is_tmux: is_tmux(),
     };
-    Mutex::new(manager)
-});
-
-pub fn manager() -> &'static Mutex<KittyManager> {
-    &MANAGER
-}
-
-#[derive(Debug)]
-pub struct KittyManager {
-    rendered_images: Vec<RenderedImage>,
-    renderer: MaybeRenderer,
-}
-
-#[derive(Debug)]
-struct RenderedImage {
-    image_id: KittyImageId,
-    drawing_count: usize,
-}
-
-#[derive(Debug)]
-enum MaybeRenderer {
-    Untested,
-    Disabled,
-    Enabled { renderer: KittyImageRenderer },
-}
-
-impl KittyManager {
-    /// return the renderer if it's already checked and enabled, none if
-    /// it's disabled or if it hasn't been tested yet
-    pub fn renderer_if_tested(&mut self) -> Option<&mut KittyImageRenderer> {
-        match &mut self.renderer {
-            MaybeRenderer::Enabled { renderer } => Some(renderer),
-            _ => None,
-        }
-    }
-    pub fn delete_temp_files(&mut self) {
-        if let MaybeRenderer::Enabled { renderer } = &mut self.renderer {
-            renderer.delete_temp_files();
-        }
-    }
-    pub fn renderer(
-        &mut self,
-        con: &AppContext,
-    ) -> Option<&mut KittyImageRenderer> {
-        if matches!(self.renderer, MaybeRenderer::Disabled) {
-            return None;
-        }
-        if matches!(self.renderer, MaybeRenderer::Enabled { .. }) {
-            return self.renderer_if_tested();
-        }
-        let options = KittyImageRendererOptions {
-            display: con.kitty_graphics_display,
-            transmission_medium: con.kitty_graphics_transmission,
-            kept_temp_files: con.kept_kitty_temp_files,
-            is_tmux: is_tmux(),
-        };
-        match KittyImageRenderer::new(options) {
-            Some(renderer) => {
-                self.renderer = MaybeRenderer::Enabled { renderer };
-                self.renderer_if_tested()
-            }
-            None => {
-                self.renderer = MaybeRenderer::Disabled;
-                None
-            }
-        }
-    }
-    pub fn keep(
-        &mut self,
-        kept_id: KittyImageId,
-        drawing_count: usize,
-    ) {
-        for image in &mut self.rendered_images {
-            if image.image_id == kept_id {
-                image.drawing_count = drawing_count;
-            }
-        }
-    }
-    #[allow(clippy::too_many_arguments)] // yes, I know
-    pub fn try_print_image(
-        &mut self,
-        w: &mut W,
-        src: &SourceImage,
-        src_path: &Path, // used to build a cache key
-        area: &Area,
-        bg: Color,
-        drawing_count: usize,
-        con: &AppContext,
-    ) -> Result<Option<KittyImageId>, ProgramError> {
-        if let Some(renderer) = self.renderer(con) {
-            let (cell_width, cell_height) = cell_size_in_pixels()?;
-            let area_width = area.width as u32 * cell_width;
-            let area_height = area.height as u32 * cell_height;
-            let img = src.fitting(area_width, area_height, None)?;
-            let new_id = renderer.print(w, &img, src_path, area, bg)?;
-            self.rendered_images.push(RenderedImage {
-                image_id: new_id,
-                drawing_count,
-            });
-            Ok(Some(new_id))
-        } else {
-            Ok(None)
-        }
-    }
-    pub fn erase_images_before(
-        &mut self,
-        w: &mut W,
-        drawing_count: usize,
-    ) -> Result<(), ProgramError> {
-        let mut kept_images = Vec::new();
-        let is_tmux = detect_support::is_tmux();
-        let tmux_nest_count = if is_tmux {
-            detect_support::get_tmux_nest_count()
-        } else {
-            0
-        };
-        let tmux_header = is_tmux.then_some(terminal_esc::get_tmux_header(tmux_nest_count));
-        let tmux_tail = is_tmux.then_some(terminal_esc::get_tmux_tail(tmux_nest_count));
-        let esc = terminal_esc::get_esc_seq(tmux_nest_count);
-        for image in self.rendered_images.drain(..) {
-            if image.drawing_count >= drawing_count {
-                kept_images.push(image);
-            } else {
-                let id = image.image_id;
-                debug!("erase kitty image {id}");
-                if let Some(s) = &tmux_header {
-                    write!(w, "{s}")?;
-                }
-                write!(w, "{}_Ga=d,d=I,i={}{}\\", &esc, id, &esc)?;
-                if let Some(s) = &tmux_tail {
-                    write!(w, "{s}")?;
-                }
-            }
-        }
-        self.rendered_images = kept_images;
-        Ok(())
-    }
+    KittyImageRenderer::new(options)
 }

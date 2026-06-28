@@ -22,6 +22,7 @@ use {
         },
         display,
         errors::ProgramError,
+        graphics,
         launchable::Launchable,
         shell_install::{
             ShellInstall,
@@ -199,7 +200,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
 fn clear_resources() {
     info!("clearing resources");
-    crate::kitty::manager().lock().unwrap().delete_temp_files();
+    graphics::manager().lock().unwrap().delete_temp_files();
 }
 
 /// wait for user input, return `true` if they didn't answer 'n'
