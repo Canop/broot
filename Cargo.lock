@@ -345,7 +345,7 @@ dependencies = [
  "uzers",
  "vte",
  "which",
- "xterm-query",
+ "xterm-query 0.6.0",
  "zune-core",
  "zune-image",
 ]
@@ -2033,6 +2033,18 @@ dependencies = [
 ]
 
 [[package]]
+name = "nix"
+version = "0.31.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cf20d2fde8ff38632c426f1165ed7436270b44f199fc55284c38276f9db47c3d"
+dependencies = [
+ "bitflags 2.10.0",
+ "cfg-if",
+ "cfg_aliases",
+ "libc",
+]
+
+[[package]]
 name = "nom"
 version = "8.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3274,7 +3286,7 @@ dependencies = [
  "coolor",
  "crossterm 0.29.0",
  "thiserror 1.0.69",
- "xterm-query",
+ "xterm-query 0.5.2",
 ]
 
 [[package]]
@@ -4316,6 +4328,17 @@ checksum = "292c33df434fde4ecd87a7afecdfa1681a3d29567fc69c774a0d83d32c095331"
 dependencies = [
  "nix 0.29.0",
  "thiserror 1.0.69",
+]
+
+[[package]]
+name = "xterm-query"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e468ba3129b3d5acd2655410cf12adccd818746e2b8d7fd4b2d22a6e3515ec98"
+dependencies = [
+ "nix 0.31.3",
+ "thiserror 1.0.69",
+ "windows-sys 0.59.0",
 ]
 
 [[package]]

@@ -71,7 +71,7 @@ umask = "2.1.0"
 unicode-width = "0.2"
 vte = "0.15"
 which = "=4.4.0" # following versions ask for a a more recent rustc
-xterm-query = "0.5" # terminal queries: Sixel DA1 detection (all platforms) + cell size on Windows
+xterm-query = "0.6" # terminal queries: Sixel DA1 detection (all platforms) + cell size on Windows
 
 [dev-dependencies]
 glassbench = "0.4.4"
