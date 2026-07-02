@@ -8,6 +8,6 @@ use crate::verb::Verb;
 pub enum TriggerType<'v> {
     /// the verb was typed in the input and user has hit enter.
     Input(&'v Verb),
-    /// probably a key shortcut
+    /// probably a key shortcut, or part of a 'cmd'
     Other,
 }
