@@ -48,15 +48,13 @@ pub fn determine_path(
             Some(path)
         }
         _ => {
-            // the :select internal was triggered by a key
-            if let Some(arg) = &internal_exec.arg {
-                // the internal_execution specifies the path to use
-                // (it may come from a configured verb whose execution is
-                //  `:select some/path`).
+            let arg = internal_exec.arg.as_ref() // trigger is probably a key
+                .or(input_arg); // trigger is probably a 'cmd' (which may have an arg)
+            if let Some(arg) = arg {
                 // The given path may be relative hence the need for the
                 // state's selection
-                let path =
-                    path::path_from(&tree.selected_line().path, PathAnchor::Unspecified, arg);
+                let base_path = &tree.selected_line().path;
+                let path = path::path_from(base_path, PathAnchor::Unspecified, arg);
                 Some(path)
             } else {
                 // there's nothing really to do here
