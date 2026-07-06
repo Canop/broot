@@ -24,7 +24,10 @@ use {
     directories::UserDirs,
     std::{
         fs,
-        path::PathBuf,
+        path::{
+            Path,
+            PathBuf,
+        },
         process::Command,
     },
     termimad::mad_print_inline,
@@ -65,6 +68,13 @@ pub fn get_script() -> &'static str {
 /// return the path to the link to the function script
 fn get_link_path() -> PathBuf {
     conf::dir().join("launcher").join(NAME).join("br.ps1")
+}
+
+/// build the line dot-sourcing the launcher script, single-quoting
+/// the path so it's safe against spaces and variable expansion
+fn source_line_for(link_path: &Path) -> String {
+    let escaped_path = link_path.to_string_lossy().replace('\'', "''");
+    format!(". '{escaped_path}'")
 }
 
 /// return the path to the script containing the function.
@@ -124,8 +134,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     let link_path = get_link_path();
     si.create_link(&link_path, &script_path)?;
 
-    let escaped_path = link_path.to_string_lossy().replace('\'', "''");
-    let source_line = format!(". '{}'", escaped_path);
+    let source_line = source_line_for(&link_path);
 
     let sourcing_path = get_profile("pwsh")
         .or_else(|| get_profile("powershell"))
@@ -150,4 +159,27 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     }
     si.done = true;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn source_line_is_single_quoted() {
+        let line = source_line_for(&PathBuf::from(r"C:\Users\me\br.ps1"));
+        assert_eq!(line, r". 'C:\Users\me\br.ps1'");
+    }
+
+    #[test]
+    fn source_line_doubles_inner_single_quotes() {
+        let line = source_line_for(&PathBuf::from(r"C:\Users\O'Neil\br.ps1"));
+        assert_eq!(line, r". 'C:\Users\O''Neil\br.ps1'");
+    }
+
+    #[test]
+    fn source_line_keeps_dollar_literal() {
+        let line = source_line_for(&PathBuf::from(r"C:\$tmp\br.ps1"));
+        assert_eq!(line, r". 'C:\$tmp\br.ps1'");
+    }
 }
