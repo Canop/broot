@@ -489,8 +489,8 @@ impl PanelState for StageState {
                         CmdResult::RefreshState { clear_cache: true }
                     }
                     Err(e) => {
-                        warn!("trash error: {:?}", &e);
-                        CmdResult::DisplayError(format!("trash error: {:?}", &e))
+                        warn!("trash error: {:?}", e);
+                        CmdResult::DisplayError(format!("trash error: {:?}", e))
                     }
                 }
 

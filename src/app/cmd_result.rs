@@ -57,7 +57,7 @@ pub enum CmdResult {
 impl CmdResult {
     #[must_use]
     pub fn verb_not_found(text: &str) -> CmdResult {
-        CmdResult::DisplayError(format!("verb not found: {:?}", &text))
+        CmdResult::DisplayError(format!("verb not found: {:?}", text))
     }
     #[must_use]
     pub fn from_optional_browser_state(

@@ -115,7 +115,7 @@ impl IgnoreRule {
                         });
                     }
                     Err(e) => {
-                        info!(" wrong glob pattern {:?} : {}", &p, e);
+                        info!(" wrong glob pattern {:?} : {}", p, e);
                     }
                 }
             }

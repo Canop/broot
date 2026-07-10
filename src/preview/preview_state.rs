@@ -331,7 +331,7 @@ impl PanelState for PreviewState {
         let preview = self.filtered_preview.as_mut().unwrap_or(&mut self.preview);
         preview.display_info(w, disc.screen, disc.panel_skin, &info_area)?;
         if let Err(err) = preview.display(w, disc, &self.preview_area) {
-            warn!("error while displaying file: {:?}", &err);
+            warn!("error while displaying file: {:?}", err);
             if preview.get_mode().is_some() {
                 // means it's not an error already
                 if let ProgramError::Io { source } = err {

@@ -211,7 +211,7 @@ impl ShellInstall {
         content: &str,
     ) -> Result<(), ShellInstallError> {
         self.remove(script_path)?;
-        info!("Writing `br` shell function in `{:?}`", &script_path);
+        info!("Writing `br` shell function in `{:?}`", script_path);
         mad_print_inline!(
             &self.skin,
             "Writing *br* shell function in `$0`.\n",
@@ -230,7 +230,7 @@ impl ShellInstall {
         link_path: &Path,
         script_path: &Path,
     ) -> Result<(), ShellInstallError> {
-        info!("Creating link from {:?} to {:?}", &link_path, &script_path);
+        info!("Creating link from {:?} to {:?}", link_path, script_path);
         self.remove(link_path)?;
         let link_path_str = link_path.to_string_lossy();
         let script_path_str = script_path.to_string_lossy();

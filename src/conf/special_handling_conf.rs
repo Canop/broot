@@ -100,7 +100,7 @@ impl GlobConf {
         let glob = if s.starts_with('/') || s.starts_with('~') {
             glob::Pattern::new(&s)
         } else {
-            let pattern = format!("**/{}", &s);
+            let pattern = format!("**/{}", s);
             glob::Pattern::new(&pattern)
         };
         glob.map_err(|_| ConfError::InvalidGlobPattern {

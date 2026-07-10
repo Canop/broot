@@ -146,7 +146,7 @@ impl Completions {
         } else {
             debug!(
                 "no path completion possible because {:?} doesn't exist",
-                &parent
+                parent
             );
         }
         Ok(children)

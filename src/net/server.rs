@@ -36,7 +36,7 @@ impl Server {
             }
         }
         let listener = UnixListener::bind(&path)?;
-        info!("listening on {}", &path);
+        info!("listening on {}", path);
 
         // we use only one thread as we don't want to support long connections
         thread::spawn(move || {
@@ -46,7 +46,7 @@ impl Server {
                         let mut br = BufReader::new(&stream);
                         if let Some(sequence) = match Message::read(&mut br) {
                             Ok(Message::Command(command)) => {
-                                info!("got single command {:?}", &command);
+                                info!("got single command {:?}", command);
                                 // we convert it to a sequence
                                 Some(Sequence::new_single(command))
                             }
@@ -61,7 +61,7 @@ impl Server {
                                 None
                             }
                             Ok(Message::Sequence(sequence)) => {
-                                debug!("got sequence {:?}", &sequence);
+                                debug!("got sequence {sequence:?}");
                                 Some(sequence)
                             }
                             Ok(message) => {

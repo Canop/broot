@@ -60,9 +60,9 @@ impl TString {
     ) -> Result<usize, ProgramError> {
         let fit = StrFit::make_cow(&self.raw, cols_max);
         if self.csi.is_empty() {
-            write!(w, "{}", &fit.0)?;
+            write!(w, "{}", fit.0)?;
         } else {
-            write!(w, "{}{}{}", &self.csi, &fit.0, CSI_RESET)?;
+            write!(w, "{}{}{}", self.csi, fit.0, CSI_RESET)?;
         }
         Ok(fit.1)
     }

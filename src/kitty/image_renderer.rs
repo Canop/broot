@@ -275,7 +275,7 @@ impl KittyImage {
         };
         for y in 0..(self.area.height).min(DIACRITICS.len() as u16) {
             w.queue(cursor::MoveTo(self.area.left, self.area.top + y))?;
-            write!(w, "{}", &id_str)?;
+            write!(w, "{}", id_str)?;
             if id_msb_str.is_empty() {
                 write!(w, "{}{}", PLACHOLDER, DIACRITICS[y as usize])?;
             } else {
@@ -334,24 +334,24 @@ impl KittyImage {
         write!(
             w,
             "{}_Gq=2,a=t,f={},t=d,i={},s={},v={},{}",
-            &esc, format, self.id, self.img_width, self.img_height, compression_tag,
+            esc, format, self.id, self.img_width, self.img_height, compression_tag,
         )?;
         loop {
             if pos != 0 {
                 if let Some(s) = &tmux_header {
                     write!(w, "{s}")?;
                 }
-                write!(w, "{}_Gq=2,", &esc)?;
+                write!(w, "{}_Gq=2,", esc)?;
             }
             if pos + CHUNK_SIZE < encoded.len() {
-                write!(w, "m=1;{}{}\\", &encoded[pos..pos + CHUNK_SIZE], &esc)?;
+                write!(w, "m=1;{}{}\\", &encoded[pos..pos + CHUNK_SIZE], esc)?;
                 pos += CHUNK_SIZE;
                 if let Some(s) = &tmux_tail {
                     write!(w, "{s}")?;
                 }
             } else {
                 // last chunk
-                write!(w, "m=0;{}{}\\", &encoded[pos..encoded.len()], &esc)?;
+                write!(w, "m=0;{}{}\\", &encoded[pos..encoded.len()], esc)?;
                 if let Some(s) = &tmux_tail {
                     write!(w, "{s}")?;
                 }
@@ -362,7 +362,7 @@ impl KittyImage {
                 write!(
                     w,
                     "{}_G{}a=p,i={},c={},r={}{}\\",
-                    &esc, display_tag, self.id, self.area.width, self.area.height, &esc,
+                    esc, display_tag, self.id, self.area.width, self.area.height, esc,
                 )?;
                 if let Some(s) = &tmux_tail {
                     write!(w, "{s}")?;
@@ -409,7 +409,7 @@ impl KittyImage {
         write!(
             w,
             "{}_G{}a=T,f={},t={},i={},s={},v={},c={},r={};{}{}\\",
-            &esc,
+            esc,
             display_tag,
             format,
             transmission,
@@ -419,7 +419,7 @@ impl KittyImage {
             self.area.width,
             self.area.height,
             encoded_path,
-            &esc,
+            esc,
         )?;
         if let Some(s) = &tmux_tail {
             write!(w, "{s}")?;
@@ -565,7 +565,7 @@ impl KittyImageRenderer {
                     path
                 };
                 if let Some((_, old_path)) = self.temp_files.push(temp_file_key, temp_file_path) {
-                    debug!("removing temp file: {:?}", &old_path);
+                    debug!("removing temp file: {:?}", old_path);
                     if let Err(e) = std::fs::remove_file(&old_path) {
                         error!("failed to remove temp file: {e:?}");
                     }

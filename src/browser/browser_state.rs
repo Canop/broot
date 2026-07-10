@@ -674,14 +674,14 @@ impl PanelState for BrowserState {
             },
             Internal::trash => {
                 let path = self.displayed_tree().selected_line().path.clone();
-                info!("trash {:?}", &path);
+                info!("trash {:?}", path);
 
                 #[cfg(any(target_os = "windows", all(unix, not(any(target_os = "ios", target_os = "android")))))]
                 match trash::delete(&path) {
                     Ok(()) => CmdResult::RefreshState { clear_cache: true },
                     Err(e) => {
-                        warn!("trash error: {:?}", &e);
-                        CmdResult::DisplayError(format!("trash error: {:?}", &e))
+                        warn!("trash error: {:?}", e);
+                        CmdResult::DisplayError(format!("trash error: {:?}", e))
                     }
                 }
 
@@ -785,7 +785,7 @@ impl PanelState for BrowserState {
                     let mut paths = builder.and_then(|mut builder| {
                         builder.matches_max = Some(con.max_staged_count);
                         time!(builder.build_paths(total_search, dam, |line| {
-                            debug!("??staging {:?}", &line.path);
+                            debug!("??staging {:?}", line.path);
                             file_type_condition.accepts_path(&line.path)
                         }))
                     })?;

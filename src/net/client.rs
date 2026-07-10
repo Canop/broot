@@ -21,7 +21,7 @@ impl Client {
         &self,
         message: &Message,
     ) -> Result<(), NetError> {
-        debug!("try connecting {:?}", &self.path);
+        debug!("try connecting {:?}", self.path);
         let mut stream = UnixStream::connect(&self.path)?;
         message.write(&mut stream)?;
         if let Message::GetRoot = message {
@@ -29,7 +29,7 @@ impl Client {
             let mut br = BufReader::new(&stream);
             match Message::read(&mut br) {
                 Ok(answer) => {
-                    debug!("got an answer: {:?}", &answer);
+                    debug!("got an answer: {:?}", answer);
                     if let Message::Root(root) = answer {
                         println!("{root}");
                     }

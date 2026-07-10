@@ -173,7 +173,7 @@ impl Areas {
                         }
                     }
                 }
-                debug!("panel_widths after: {:?}", &panel_widths);
+                debug!("panel_widths after: {:?}", panel_widths);
             }
         }
 

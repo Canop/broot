@@ -116,12 +116,12 @@ impl App {
         app_state: &mut AppState,
         con: &mut AppContext,
     ) -> Result<(), ProgramError> {
-        info!("app applying command: {:?}", &cmd);
+        info!("app applying command: {:?}", cmd);
         let is_input_invocation = cmd.is_verb_invocated_from_input();
         let cmd_result = self
             .panels
             .apply_command(w, cmd, None, panel_skin, app_state, con)?;
-        debug!("cmd_result: {:?}", &cmd_result);
+        debug!("cmd_result: {:?}", cmd_result);
         let mut error: Option<String> = None;
         let mut new_active_panel_idx = None;
         match cmd_result {
@@ -543,7 +543,7 @@ impl App {
             #[allow(unused_mut)]
             match event {
                 Either::First(Some(event)) => {
-                    info!("<-- event: {:?}", &event);
+                    info!("<-- event: {:?}", event);
                     if let Some(key_combination) = event.key_combination {
                         info!("key combination: {key_combination}");
                     }
@@ -565,7 +565,7 @@ impl App {
                     // event handled by the panel
                     if !handled {
                         let cmd = self.panels.on_input_event(w, &event, &app_state, con)?;
-                        info!("command from panels.on_input_event: {:#?}", &cmd);
+                        info!("command from panels.on_input_event: {:#?}", cmd);
                         self.apply_command(w, &cmd, &skin.focused, &mut app_state, con)?;
                     }
 
@@ -577,7 +577,7 @@ impl App {
                     break;
                 }
                 Either::Second(Some(sequence)) => {
-                    info!("got command sequence: {:?}", &sequence);
+                    info!("got command sequence: {:?}", sequence);
                     for (input, arg_cmd) in sequence.parse(con)? {
                         if !matches!(&arg_cmd, Command::Internal { .. }) {
                             self.panels.input().set_content(&input);

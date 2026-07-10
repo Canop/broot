@@ -864,7 +864,7 @@ pub trait PanelState {
         if let Some(invocation) = &invocation {
             if let Some(error) = verb.check_args(sel_info, invocation, &app_state.other_panel_path)
             {
-                debug!("verb.check_args prevented execution: {:?}", &error);
+                debug!("verb.check_args prevented execution: {:?}", error);
                 return Ok(CmdResult::error(error));
             }
         }

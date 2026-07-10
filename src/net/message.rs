@@ -23,7 +23,7 @@ pub enum Message {
 fn read_line<BR: BufRead>(r: &mut BR) -> Result<String, NetError> {
     let mut line = String::new();
     r.read_line(&mut line)?;
-    debug!("read line => {:?}", &line);
+    debug!("read line => {:?}", line);
     while line.ends_with('\n') || line.ends_with('\r') {
         line.pop();
     }

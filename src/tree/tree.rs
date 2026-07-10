@@ -615,7 +615,7 @@ impl Tree {
 
         //debug!("present ancestor: {:#?}", &present_ancestor);
         if present_ancestor.line_type.is_pruning() {
-            info!("unpruning {:?}", &present_ancestor.path);
+            info!("unpruning {:?}", present_ancestor.path);
             present_ancestor.unprune();
             // we should in exchange prune another one ?
         }

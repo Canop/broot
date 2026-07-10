@@ -94,7 +94,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             }
             //- display
             if e_fs {
-                cw.queue_g_string(txt_style, format!(" {}", &self.mount.info.fs))?;
+                cw.queue_g_string(txt_style, format!(" {}", self.mount.info.fs))?;
             }
             if e_dsk {
                 cw.queue_char(txt_style, ' ')?;
@@ -130,7 +130,7 @@ impl<'m, 's> MountSpaceDisplay<'m, 's> {
             cw.queue_unstyled_g_string(format!("{:>3.0}%", 100.0 * s.use_share()))?;
         } else {
             // there's not much to print if there's no size info
-            cw.queue_g_string(txt_style, format!(" {}", &self.mount.info.fs))?;
+            cw.queue_g_string(txt_style, format!(" {}", self.mount.info.fs))?;
         }
         cw.w.queue(ResetColor {})?;
         Ok(())

@@ -17,7 +17,7 @@ pub enum Luma {
 pub fn luma() -> &'static Result<f32, terminal_light::TlError> {
     static LUMA: Lazy<Result<f32, terminal_light::TlError>> = Lazy::new(|| {
         let luma = time!(Debug, terminal_light::luma());
-        info!("terminal's luma: {:?}", &luma);
+        info!("terminal's luma: {:?}", luma);
         luma
     });
     &LUMA

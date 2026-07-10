@@ -7,7 +7,7 @@ fn main() {
         Ok(Some(launchable)) => {
             info!("launching {:#?}", launchable);
             if let Err(e) = launchable.execute(None) {
-                warn!("Failed to launch {:?}", &launchable);
+                warn!("Failed to launch {:?}", launchable);
                 warn!("Error: {:?}", e);
                 eprintln!("{e}");
                 std::process::exit(1);

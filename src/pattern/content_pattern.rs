@@ -53,7 +53,7 @@ impl ContentExactPattern {
             Ok(ContentSearchResult::NotFound) => None,
             Ok(ContentSearchResult::NotSuitable) => None,
             Err(e) => {
-                debug!("error while scanning {:?} : {:?}", &candidate.path, e);
+                debug!("error while scanning {:?} : {:?}", candidate.path, e);
                 None
             }
         }

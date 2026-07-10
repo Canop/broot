@@ -234,7 +234,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
     si.create_link(&link_path, &script_path)?;
 
     let escaped_path = link_path.to_string_lossy().replace(' ', "\\ ");
-    let source_line = format!("use '{}' *", &escaped_path);
+    let source_line = format!("use '{}' *", escaped_path);
 
     let sourcing_path = nushell_dir.join("config.nu");
     if !sourcing_path.exists() {

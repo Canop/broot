@@ -144,7 +144,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         }
         _ => time!(Conf::from_default_location())?,
     };
-    debug!("config: {:#?}", &config);
+    debug!("config: {:#?}", config);
 
     // verb store is completed from the config file(s)
     let verb_store = VerbStore::new(&mut config)?;

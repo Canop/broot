@@ -109,11 +109,7 @@ impl TokPattern {
                         }
                         true
                     });
-                if let Some(r) = matching_range {
-                    matching_ranges.push(r);
-                } else {
-                    return None;
-                }
+                matching_ranges.push(matching_range?);
             }
             Some(matching_ranges)
         })

@@ -195,7 +195,7 @@ impl Conf {
             println!(
                 "New Configuration files written in {}{:?}{}.",
                 Attribute::Bold,
-                &conf_dir,
+                conf_dir,
                 Attribute::Reset,
             );
             println!(
@@ -231,7 +231,7 @@ impl Conf {
         &mut self,
         path: PathBuf,
     ) -> Result<(), ProgramError> {
-        debug!("reading conf file: {:?}", &path);
+        debug!("reading conf file: {:?}", path);
         let mut conf: Conf = SerdeFormat::read_file(&path)?;
         overwrite!(self, default_flags, conf);
         overwrite!(self, date_time_format, conf);

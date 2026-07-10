@@ -112,7 +112,7 @@ fn get_sourcing_paths() -> Vec<PathBuf> {
             }
         })
         .filter(|path| {
-            debug!("considering path: {:?}", &path);
+            debug!("considering path: {:?}", path);
             path.exists()
         })
         .collect()
@@ -134,7 +134,7 @@ pub fn install(si: &mut ShellInstall) -> Result<(), ShellInstallError> {
         return Ok(());
     }
     let escaped_path = link_path.to_string_lossy().replace(' ', "\\ ");
-    let source_line = format!("source {}", &escaped_path);
+    let source_line = format!("source {}", escaped_path);
     for sourcing_path in &sourcing_paths {
         let sourcing_path_str = sourcing_path.to_string_lossy();
         if util::file_contains_line(sourcing_path, &source_line)? {

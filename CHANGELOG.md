@@ -1,4 +1,5 @@
-### next
+### v1.58.0 - 2026-07-10
+<a name="v1.58.0"></a>
 - change the way possible verb completions are listed, making it more readable when there are more than what fits the screen
 - fix argument of `:select` and `:show` being ignored in a `--cmd` sequence - Fix 1176
 

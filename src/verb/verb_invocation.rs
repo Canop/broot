@@ -19,9 +19,9 @@ impl fmt::Display for VerbInvocation {
         if self.bang {
             write!(f, "!")?;
         }
-        write!(f, "{}", &self.name)?;
+        write!(f, "{}", self.name)?;
         if let Some(args) = &self.args {
-            write!(f, " {}", &args)?;
+            write!(f, " {}", args)?;
         }
         Ok(())
     }
@@ -45,7 +45,7 @@ impl VerbInvocation {
     /// build a new String
     pub fn complete_name(&self) -> String {
         if self.bang {
-            format!("{}_tab", &self.name)
+            format!("{}_tab", self.name)
         } else {
             self.name.clone()
         }

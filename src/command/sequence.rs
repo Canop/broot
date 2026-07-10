@@ -59,7 +59,7 @@ impl Sequence {
         &self,
         con: &AppContext,
     ) -> Result<Vec<(String, Command)>, ProgramError> {
-        debug!("Splitting cmd sequence with {:?}", &self.separator);
+        debug!("Splitting cmd sequence with {:?}", self.separator);
         let mut commands = Vec::new();
         if self.separator.is_empty() {
             add_commands(&self.raw, &mut commands, con)?;

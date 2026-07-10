@@ -159,7 +159,7 @@ impl KittyManager {
                 if let Some(s) = &tmux_header {
                     write!(w, "{s}")?;
                 }
-                write!(w, "{}_Ga=d,d=I,i={}{}\\", &esc, id, &esc)?;
+                write!(w, "{}_Ga=d,d=I,i={}{}\\", esc, id, esc)?;
                 if let Some(s) = &tmux_tail {
                     write!(w, "{s}")?;
                 }

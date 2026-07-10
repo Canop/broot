@@ -117,7 +117,7 @@ impl Watcher {
                 warn!("watch path doesn't exist: {:?}", path);
                 return Ok(());
             }
-            debug!("add watch {:?}", &path);
+            debug!("add watch {:?}", path);
             if let Err(e) = notify_watcher.watch(path, RecursiveMode::NonRecursive) {
                 warn!("error when watching path {:?}: {}", path, e);
                 err = Some(e);

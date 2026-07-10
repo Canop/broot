@@ -109,7 +109,7 @@ impl BLine {
                             if self.path.starts_with(target_path) {
                                 debug!("not entering link because it's a parent"); // lets's not cycle
                             } else {
-                                debug!("entering {:?} because of special path rule", &self.path);
+                                debug!("entering {:?} because of special path rule", self.path);
                                 return true;
                             }
                         }

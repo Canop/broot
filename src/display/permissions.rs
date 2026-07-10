@@ -119,13 +119,13 @@ impl<'s> PermWriter<'s> {
             cond_bg_attrs!(owner_style, self, selected, self.skin.owner);
             cw.queue_g_string(
                 owner_style,
-                format!(" {:w$}", &owner, w = self.max_user_len),
+                format!(" {:w$}", owner, w = self.max_user_len),
             )?;
             let group = permissions::group_name(line.metadata.gid());
             cond_bg_attrs!(group_style, self, selected, self.skin.group);
             cw.queue_g_string(
                 group_style,
-                format!(" {:w$}", &group, w = self.max_group_len),
+                format!(" {:w$}", group, w = self.max_group_len),
             )?;
             1
         } else {

@@ -286,14 +286,14 @@ impl Verb {
             format!("Hit *enter* to **{}**: `{}`", name, seq_ex.sequence.raw)
         } else if let VerbExecution::External(external_exec) = &self.execution {
             let exec_desc = builder().shell_exec_string(&external_exec.exec_pattern, con);
-            format!("Hit *enter* to **{}**: `{}`", name, &exec_desc)
+            format!("Hit *enter* to **{}**: `{}`", name, exec_desc)
         } else if self.description.code {
             format!(
                 "Hit *enter* to **{}**: `{}`",
-                name, &self.description.content
+                name, self.description.content
             )
         } else {
-            format!("Hit *enter* to **{}**: {}", name, &self.description.content)
+            format!("Hit *enter* to **{}**: {}", name, self.description.content)
         }
     }
 

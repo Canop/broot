@@ -97,12 +97,8 @@ impl Stage {
         let mut sum = FileSum::zero();
         for path in &self.paths {
             if path.is_dir() {
-                let dir_sum = FileSum::from_dir(path, dam, con);
-                if let Some(dir_sum) = dir_sum {
-                    sum += dir_sum;
-                } else {
-                    return None; // computation was interrupted
-                }
+                let dir_sum = FileSum::from_dir(path, dam, con)?;
+                sum += dir_sum;
             } else {
                 sum += FileSum::from_file(path);
             }
