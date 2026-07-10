@@ -261,10 +261,10 @@ impl PanelState for FilesystemState {
             .get_bg()
             .unwrap_or(Color::AnsiValue(240));
         let match_style = &styles.char_match;
-        let mut selected_match_style = styles.char_match.clone();
+        let mut selected_match_style = styles.char_match;
         selected_match_style.set_bg(selection_bg);
         let border_style = &styles.help_table_border;
-        let mut selected_border_style = styles.help_table_border.clone();
+        let mut selected_border_style = styles.help_table_border;
         selected_border_style.set_bg(selection_bg);
         //- width computations and selection of columns to display
         let width = area.width as usize;
@@ -481,14 +481,14 @@ impl PanelState for FilesystemState {
                         if e_use_bar {
                             cw.queue_char(txt_style, ' ')?;
                             let pb = ProgressBar::new(stats.use_share() as f32, w_use_bar);
-                            let mut bar_style = styles.default.clone();
+                            let mut bar_style = styles.default;
                             bar_style.set_bg(share_color);
                             cw.queue_g_string(&bar_style, format!("{pb:<w_use_bar$}"))?;
                         }
                         cw.queue_char(border_style, '│')?;
                     }
                     // free
-                    let mut share_style = txt_style.clone();
+                    let mut share_style = *txt_style;
                     share_style.set_fg(share_color);
                     cw.queue_g_string(
                         &share_style,

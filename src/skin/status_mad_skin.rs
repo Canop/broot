@@ -18,11 +18,11 @@ pub struct StatusMadSkinSet {
 /// when there's no error
 fn make_normal_status_mad_skin(skin: &StyleMap) -> MadSkin {
     MadSkin {
-        paragraph: LineStyle::new(skin.status_normal.clone(), Alignment::Left),
-        italic: skin.status_italic.clone(),
-        bold: skin.status_bold.clone(),
-        inline_code: skin.status_code.clone(),
-        ellipsis: skin.status_ellipsis.clone(),
+        paragraph: LineStyle::new(skin.status_normal, Alignment::Left),
+        italic: skin.status_italic,
+        bold: skin.status_bold,
+        inline_code: skin.status_code,
+        ellipsis: skin.status_ellipsis,
         ..Default::default()
     }
 }
@@ -31,8 +31,8 @@ fn make_normal_status_mad_skin(skin: &StyleMap) -> MadSkin {
 /// when there's a error
 fn make_error_status_mad_skin(skin: &StyleMap) -> MadSkin {
     MadSkin {
-        paragraph: LineStyle::new(skin.status_error.clone(), Alignment::Left),
-        ellipsis: skin.status_ellipsis.clone(),
+        paragraph: LineStyle::new(skin.status_error, Alignment::Left),
+        ellipsis: skin.status_ellipsis,
         ..Default::default()
     }
 }

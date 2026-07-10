@@ -12,12 +12,12 @@ use {
 /// of the skin.
 pub fn make_help_mad_skin(skin: &StyleMap) -> MadSkin {
     let mut ms = MadSkin::default();
-    ms.paragraph.compound_style = skin.help_paragraph.clone();
-    ms.inline_code = skin.help_code.clone();
-    ms.code_block.compound_style = ms.inline_code.clone();
-    ms.bold = skin.help_bold.clone();
-    ms.italic = skin.help_italic.clone();
-    ms.table = LineStyle::new(skin.help_table_border.clone(), Alignment::Center);
+    ms.paragraph.compound_style = skin.help_paragraph;
+    ms.inline_code = skin.help_code;
+    ms.code_block.compound_style = ms.inline_code;
+    ms.bold = skin.help_bold;
+    ms.italic = skin.help_italic;
+    ms.table = LineStyle::new(skin.help_table_border, Alignment::Center);
     if let Some(c) = skin.help_headers.get_fg() {
         ms.set_headers_fg(c);
     }
@@ -25,12 +25,12 @@ pub fn make_help_mad_skin(skin: &StyleMap) -> MadSkin {
         ms.set_headers_bg(c);
     }
     ms.bullet
-        .set_compound_style(ms.paragraph.compound_style.clone());
+        .set_compound_style(ms.paragraph.compound_style);
     ms.scrollbar
         .track
-        .set_compound_style(skin.scrollbar_track.clone());
+        .set_compound_style(skin.scrollbar_track);
     ms.scrollbar
         .thumb
-        .set_compound_style(skin.scrollbar_thumb.clone());
+        .set_compound_style(skin.scrollbar_thumb);
     ms
 }

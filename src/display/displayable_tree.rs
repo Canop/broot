@@ -97,19 +97,18 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
         allow_selection_attrs: bool,
     ) -> CompoundStyle {
-        let style = match &line.line_type {
-            TreeLineType::Dir => &self.skin.directory,
+        let mut style = match &line.line_type {
+            TreeLineType::Dir => self.skin.directory,
             TreeLineType::File => {
                 if line.is_exe() {
-                    &self.skin.exe
+                    self.skin.exe
                 } else {
-                    &self.skin.file
+                    self.skin.file
                 }
             }
-            TreeLineType::BrokenSymLink(_) | TreeLineType::SymLink { .. } => &self.skin.link,
-            TreeLineType::Pruning => &self.skin.pruning,
+            TreeLineType::BrokenSymLink(_) | TreeLineType::SymLink { .. } => self.skin.link,
+            TreeLineType::Pruning => self.skin.pruning,
         };
-        let mut style = style.clone();
         if let Some(ext_color) = line.extension().and_then(|ext| self.ext_colors.get(ext)) {
             style.set_fg(ext_color);
         }

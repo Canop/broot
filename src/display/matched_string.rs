@@ -122,7 +122,7 @@ impl<'a> MatchedString<'a> {
     {
         if let Some(m) = &self.name_match {
             let mut pos_idx: usize = 0;
-            let mut combined_style = self.base_style.clone();
+            let mut combined_style = *self.base_style;
             combined_style.overwrite_with(self.match_style);
             let mut right_filling = 0;
             let mut s = self.string;

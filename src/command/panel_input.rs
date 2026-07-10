@@ -66,7 +66,7 @@ impl PanelInput {
         panel_skin: &PanelSkin,
     ) -> Result<Option<(u16, u16)>, ProgramError> {
         self.input_field
-            .set_normal_style(panel_skin.styles.input.clone());
+            .set_normal_style(panel_skin.styles.input);
         self.input_field.set_focus(active && mode == Mode::Input);
         if mode == Mode::Command && active {
             queue!(w, cursor::MoveTo(area.left, area.top))?;

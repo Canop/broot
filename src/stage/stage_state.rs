@@ -299,7 +299,7 @@ impl PanelState for StageState {
                 };
                 let mut bg_style;
                 if selected {
-                    bg_style = style.clone();
+                    bg_style = *style;
                     if let Some(c) = styles.selected_line.get_bg() {
                         bg_style.set_bg(c);
                     }
@@ -308,7 +308,7 @@ impl PanelState for StageState {
                 let mut bg_style_match;
                 let mut style_match = &styles.char_match;
                 if selected {
-                    bg_style_match = style_match.clone();
+                    bg_style_match = *style_match;
                     if let Some(c) = styles.selected_line.get_bg() {
                         bg_style_match.set_bg(c);
                     }
@@ -332,7 +332,7 @@ impl PanelState for StageState {
                             let mut parent_style = &styles.parent;
                             let mut bg_style;
                             if selected {
-                                bg_style = parent_style.clone();
+                                bg_style = *parent_style;
                                 if let Some(c) = styles.selected_line.get_bg() {
                                     bg_style.set_bg(c);
                                 }

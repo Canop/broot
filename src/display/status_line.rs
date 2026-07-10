@@ -72,8 +72,7 @@ pub fn erase(
             .status_skin
             .normal
             .paragraph
-            .compound_style
-            .clone(),
+            .compound_style,
         ' ',
     );
     sc.queue_repeat(w, area.width as usize)?;

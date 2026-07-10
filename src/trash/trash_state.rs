@@ -356,10 +356,10 @@ impl PanelState for TrashState {
             .get_bg()
             .unwrap_or(Color::AnsiValue(240));
         let match_style = &styles.char_match;
-        let mut selected_match_style = styles.char_match.clone();
+        let mut selected_match_style = styles.char_match;
         selected_match_style.set_bg(selection_bg);
         let border_style = &styles.help_table_border;
-        let mut selected_border_style = styles.help_table_border.clone();
+        let mut selected_border_style = styles.help_table_border;
         selected_border_style.set_bg(selection_bg);
         //- width computations
         let width = area.width as usize;
@@ -459,7 +459,7 @@ impl PanelState for TrashState {
                     let style = col.content().style(is_dir, styles);
                     let mut cloned_style;
                     let style = if selected {
-                        cloned_style = style.clone();
+                        cloned_style = *style;
                         if let Some(c) = styles.selected_line.get_bg() {
                             cloned_style.set_bg(c);
                         }
