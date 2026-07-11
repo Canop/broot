@@ -36,6 +36,7 @@ use {
         path::PathBuf,
         path::Path,
         process::Command,
+        process::Stdio,
     },
     which::which,
 };
@@ -100,6 +101,43 @@ fn resolve_env_variables(parts: Vec<String>) -> Vec<String> {
         resolved.push(part);
     }
     resolved
+}
+
+fn detach_standard_streams(command: &mut Command) {
+    command
+        .stdin(Stdio::null())
+        .stdout(Stdio::null())
+        .stderr(Stdio::null());
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    #[cfg(unix)]
+    fn detached_background_program_with_stdin_reader_does_not_hang() {
+        let mut command = Command::new("cat");
+        detach_standard_streams(&mut command);
+        let status = command
+            .spawn()
+            .and_then(|mut child| child.wait())
+            .expect("cat should spawn");
+        assert!(status.success());
+    }
+
+    #[test]
+    #[cfg(unix)]
+    fn detached_background_program_writing_stdout_succeeds() {
+        let mut command = Command::new("echo");
+        command.arg("broot");
+        detach_standard_streams(&mut command);
+        let status = command
+            .spawn()
+            .and_then(|mut child| child.wait())
+            .expect("echo should spawn");
+        assert!(status.success());
+    }
 }
 
 impl Launchable {
@@ -206,7 +244,11 @@ impl Launchable {
                         old_working_dir = None;
                     }
                 }
-                let exec_res = Command::new(exe)
+                let mut command = Command::new(exe);
+                if !*switch_terminal {
+                    detach_standard_streams(&mut command);
+                }
+                let exec_res = command
                     .args(args.iter())
                     .spawn()
                     .and_then(|mut p| p.wait())
