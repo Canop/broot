@@ -1,4 +1,3 @@
-
 **broot** works on linux, mac and windows (win 10+).
 
 Current version: **<a id=current-version href=../download>download</a>**
@@ -148,6 +147,13 @@ pkgin install broot
 
 ```bash
 emerge broot
+```
+
+## Fedora Linux
+Fedora users can install broot from this [COPR repository](https://copr.fedorainfracloud.org/coprs/sisyphus1813/broot/)
+```bash
+sudo dnf copr enable sisyphus1813/broot
+sudo dnf install -y broot
 ```
 
 # Reinstall
