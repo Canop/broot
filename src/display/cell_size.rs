@@ -1,18 +1,12 @@
 /// find and return the size of a cell (a char location) in pixels
 /// as (width, height).
-/// Many terminals don't fill this information correctly, so an
-/// error is expected (it works on kitty, where I use the data
-/// to compute the rendering dimensions of images)
 #[cfg(unix)]
 pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
-    use {
-        libc::{
-            STDOUT_FILENO,
-            TIOCGWINSZ,
-            c_ushort,
-            ioctl,
-        },
-        std::io,
+    use libc::{
+        STDOUT_FILENO,
+        TIOCGWINSZ,
+        c_ushort,
+        ioctl,
     };
     // see http://www.delorie.com/djgpp/doc/libc/libc_495.html
     #[repr(C)]
@@ -36,22 +30,16 @@ pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
             (w.ws_ypixel / w.ws_row) as u32,
         ))
     } else {
-        warn!("failed to fetch cell dimension with ioctl");
-        Err(io::Error::other(
-            "failed to fetch terminal dimension with ioctl",
-        ))
+        // ioctl pixel sizes aren't guaranteed (telnet, some SSH setups,
+        // GNU screen, ... leave them zero): ask the terminal directly.
+        debug!("no usable cell size from ioctl; falling back to CSI 16 t query");
+        cell_size_via_query()
     }
 }
 
 #[cfg(windows)]
 pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
-    use std::io;
-    // CSI 16 t : "report character cell size in pixels"
-    // reply: CSI 6 ; height ; width t  (supported by Windows Terminal 1.22+)
-    let response = xterm_query::query("\x1b[16t", crate::graphics::terminal::TERMINAL_QUERY_TIMEOUT_MS)
-        .map_err(|e| io::Error::other(format!("cell-size query failed: {e}")))?;
-    parse_cell_size(&response)
-        .ok_or_else(|| io::Error::other("unparseable cell-size reply"))
+    cell_size_via_query()
 }
 
 #[cfg(all(not(unix), not(windows)))]
@@ -59,13 +47,23 @@ pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
     Err(std::io::Error::other("fetching cell size isn't supported on this platform"))
 }
 
+/// Query the terminal for the cell size via `CSI 16 t` ("report character
+/// cell size in pixels"; reply `ESC [ 6 ; height ; width t`). Primary source
+/// on Windows (Windows Terminal 1.22+), fallback on Unix when ioctl reports
+/// no usable pixel sizes.
+#[cfg(any(unix, windows))]
+fn cell_size_via_query() -> std::io::Result<(u32, u32)> {
+    use std::io;
+    let response = xterm_query::query("\x1b[16t", crate::graphics::terminal::TERMINAL_QUERY_TIMEOUT_MS)
+        .map_err(|e| io::Error::other(format!("cell-size query failed: {e}")))?;
+    parse_cell_size(&response)
+        .ok_or_else(|| io::Error::other("unparseable cell-size reply"))
+}
+
 /// Parse a `CSI 16 t` reply of the form `ESC [ 6 ; height ; width t`
 /// into `(width, height)` in pixels. Returns `None` if it isn't a
 /// well-formed cell-size (kind `6`) report.
-///
-/// Only used by the Windows `cell_size_in_pixels` (Unix uses `ioctl`), so it's
-/// compiled on Windows and in test builds to avoid a dead-code warning on Unix.
-#[cfg(any(windows, test))]
+#[cfg(any(unix, windows, test))]
 pub(crate) fn parse_cell_size(response: &str) -> Option<(u32, u32)> {
     let body = response
         .trim_start_matches('\u{1b}')
