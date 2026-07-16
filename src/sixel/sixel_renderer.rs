@@ -111,7 +111,11 @@ fn letterbox_segments(area: &Area, sub: &Area) -> Vec<(u16, u16, u16)> {
 
 #[derive(Debug)]
 pub struct SixelRenderer {
+    /// Cell pixel size, probed once at startup and stale after a mid-session
+    /// font-size change (Konsole box padding may then show artifacts): re-probing
+    /// is unsafe because a CSI 16 t query would race the EventSource reader.
     cell_width: u32,
+    /// See `cell_width`.
     cell_height: u32,
     is_tmux: bool,
     /// Terminal's current Sixel graphics geometry in pixels (XTSMGRAPHICS), if

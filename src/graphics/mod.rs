@@ -62,8 +62,8 @@ pub trait GraphicsRenderer: Send {
         false
     }
 
-    /// Constraints to apply when fitting an image for this renderer (e.g. Sixel
-    /// on Konsole needs the height to be a multiple of 6). Default: none.
+    /// Constraints to apply when fitting an image for this renderer
+    /// (e.g. Sixel on Konsole pads to a whole cell box: width to a cell-width multiple, height to a multiple of 6). Default: none.
     fn fit_constraints(&self, bg: Color) -> crate::image::FitConstraints {
         let _ = bg;
         crate::image::FitConstraints::default()

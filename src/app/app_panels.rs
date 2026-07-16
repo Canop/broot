@@ -684,6 +684,9 @@ impl AppPanelsAndInputs {
         // flush between passes, so it's one atomic repaint with no flicker. The
         // redraw reuses the single-entry encode cache, so with several image
         // panels only the last avoids re-encoding. A no-op on other terminals.
+        // The graphics bookkeeping is cheap off-Konsole, but commit_frame must stay
+        // unconditional: end_frame() resets the per-frame Sixel encode cache, else an
+        // in-place file swap at the same path/size shows stale bytes on any Sixel terminal.
         let reclear = graphics::manager()
             .lock()
             .is_ok_and(|m| m.reclear_needed());
