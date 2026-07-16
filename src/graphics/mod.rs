@@ -487,6 +487,7 @@ mod tests {
     fn default_fit_constraints_is_unconstrained() {
         let r = TestRenderer { reclear: false };
         let c = r.fit_constraints(Color::Reset);
+        assert_eq!(c.width_multiple, 1);
         assert_eq!(c.height_multiple, 1);
         assert!(c.pad.is_none());
     }

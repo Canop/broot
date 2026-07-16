@@ -57,6 +57,40 @@ fn resolve_bg(bg: Color, terminal_bg: coolor::Rgb) -> coolor::Rgb {
     }
 }
 
+/// Greatest common divisor, used to pad the image height to the lcm of the
+/// 6px Sixel band height and the terminal cell height.
+fn gcd(mut a: u32, mut b: u32) -> u32 {
+    while b != 0 {
+        (a, b) = (b, a % b);
+    }
+    a
+}
+
+/// The cell segments of `area` not covered by `sub` (the image's cells), as
+/// `(left, top, width)` one-row runs: full-width rows above and below the
+/// image, and the left/right margins on the image's own rows. Konsole clears
+/// a margin beyond a Sixel's cell box to the terminal default (~2 columns
+/// right of the box, reaching the rows above/below it), wiping letterbox
+/// cells painted before the Sixel — so these must be repainted after it.
+fn letterbox_segments(area: &Area, sub: &Area) -> Vec<(u16, u16, u16)> {
+    let mut segs = Vec::new();
+    let area_right = area.left + area.width;
+    let sub_right = sub.left + sub.width;
+    for y in area.top..area.top + area.height {
+        if y < sub.top || y >= sub.top + sub.height {
+            segs.push((area.left, y, area.width));
+        } else {
+            if sub.left > area.left {
+                segs.push((area.left, y, sub.left - area.left));
+            }
+            if area_right > sub_right {
+                segs.push((sub_right, y, area_right - sub_right));
+            }
+        }
+    }
+    segs
+}
+
 #[derive(Debug)]
 pub struct SixelRenderer {
     cell_width: u32,
@@ -161,6 +195,17 @@ impl GraphicsRenderer for SixelRenderer {
         } else {
             write!(w, "{sixel}")?;
         }
+        // Konsole clears a margin beyond the Sixel's cell box to the terminal
+        // default, wiping letterbox cells filled above (before the Sixel).
+        // Repaint them: cells drawn after the Sixel survive. The image's own
+        // cells are left alone — Konsole renders later cell drawing on top of
+        // the image (KDE bug 456354).
+        if self.is_konsole {
+            for (left, top, width) in letterbox_segments(area, &sub) {
+                w.queue(cursor::MoveTo(left, top))?;
+                fill_bg(w, width as usize, bg)?;
+            }
+        }
         // No flush here: display_panels flushes once at end of frame, so a
         // Konsole reclear (clear + redraw) stays atomic and doesn't flicker.
         debug!(
@@ -183,8 +228,17 @@ impl GraphicsRenderer for SixelRenderer {
 
     fn fit_constraints(&self, bg: Color) -> crate::image::FitConstraints {
         if self.is_konsole {
+            // Konsole allocates a Sixel image a whole-cell box and clears the box to
+            // the terminal default before painting: any pixel the Sixel doesn't
+            // explicitly set shows as a default-bg strip (below and right of
+            // the image). Pad the fitted image to the exact box: width to whole
+            // cells, height to lcm(6, cell_height) so it is a whole number of
+            // 6px Sixel bands AND of cell rows. The pad colour matches the
+            // letterbox, so the padding reads as letterbox, not as a band.
+            let ch = self.cell_height.max(1);
             crate::image::FitConstraints {
-                height_multiple: 6,
+                width_multiple: self.cell_width.max(1),
+                height_multiple: 6 / gcd(6, ch) * ch,
                 pad: Some(resolve_bg(bg, self.terminal_bg)),
             }
         } else {
@@ -209,8 +263,8 @@ impl GraphicsRenderer for SixelRenderer {
 
 #[cfg(test)]
 mod tests {
-    use super::{encode_sixel, resolve_bg, tmux_passthrough};
-    use termimad::coolor;
+    use super::{encode_sixel, gcd, letterbox_segments, resolve_bg, tmux_passthrough};
+    use termimad::{Area, coolor};
     use crokey::crossterm::style::Color;
 
     #[test]
@@ -248,6 +302,23 @@ mod tests {
     }
 
     #[test]
+    fn lcm_padding_is_multiple_of_band_and_cell() {
+        // fit_constraints pads height to `6 / gcd(6, ch) * ch` (the lcm of the
+        // 6px Sixel band and the cell height). The result must be divisible by
+        // both, so the image ends on a full Sixel band AND a full cell row.
+        for ch in 1u32..=64 {
+            let m = 6 / gcd(6, ch) * ch;
+            assert_eq!(m % 6, 0, "cell {ch}: {m} not a multiple of 6");
+            assert_eq!(m % ch, 0, "cell {ch}: {m} not a multiple of the cell height");
+        }
+        // cell heights that are already multiples of 6 don't inflate the pad
+        assert_eq!(6 / gcd(6, 18) * 18, 18);
+        assert_eq!(6 / gcd(6, 30) * 30, 30);
+        // and a non-multiple takes the true lcm
+        assert_eq!(6 / gcd(6, 20) * 20, 60);
+    }
+
+    #[test]
     fn encodes_small_image_to_dcs_sequence() {
         // 2x2 RGBA: red, green, blue, white
         let rgba = vec![
@@ -258,5 +329,37 @@ mod tests {
         assert!(s.starts_with('\u{1b}'), "should start with ESC (DCS): {s:?}");
         assert!(s.contains('P'), "DCS introducer P expected");
         assert!(s.ends_with("\u{1b}\\"), "should end with ST: {s:?}");
+    }
+
+    #[test]
+    fn letterbox_segments_cover_area_minus_sub() {
+        let area = Area::new(10, 5, 40, 12);
+        let sub = Area::new(20, 8, 10, 4);
+        let segs = letterbox_segments(&area, &sub);
+        let total: u32 = segs.iter().map(|&(_, _, w)| w as u32).sum();
+        assert_eq!(total, 40 * 12 - 10 * 4);
+        for &(l, t, w) in &segs {
+            assert!(t >= 5 && t < 17, "row out of area: {t}");
+            assert!(l >= 10 && l as u32 + w as u32 <= 50, "cols out of area: {l}+{w}");
+            if t >= 8 && t < 12 {
+                assert!(l + w <= 20 || l >= 30, "segment overlaps sub: {l},{t},{w}");
+            }
+        }
+    }
+
+    #[test]
+    fn letterbox_segments_empty_when_image_fills_area() {
+        let area = Area::new(0, 0, 30, 10);
+        let sub = Area::new(0, 0, 30, 10);
+        assert!(letterbox_segments(&area, &sub).is_empty());
+    }
+
+    #[test]
+    fn letterbox_segments_flush_top_left_leaves_only_right_margin() {
+        let area = Area::new(0, 0, 20, 8);
+        let sub = Area::new(0, 0, 10, 8);
+        let segs = letterbox_segments(&area, &sub);
+        assert_eq!(segs.len(), 8);
+        assert!(segs.iter().all(|&(l, _, w)| l == 10 && w == 10));
     }
 }

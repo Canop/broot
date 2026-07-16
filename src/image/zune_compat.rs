@@ -198,26 +198,48 @@ impl DynamicImage {
         }
     }
 
-    /// A new image `width x target_height` (`target_height >= height`) holding
-    /// this image's pixels at the top and the remaining rows filled with opaque
-    /// `rgb`. Used to pad to a whole Sixel band so no partial final band remains.
+    /// A new image `target_height` tall (`>= height`) holding this image's
+    /// pixels at the top and the remaining rows filled with opaque `rgb`.
     pub fn padded_to_height(
         &self,
         target_height: u32,
         rgb: (u8, u8, u8),
     ) -> Result<Self, ProgramError> {
+        self.padded_to_size(self.dimensions().0, target_height, rgb)
+    }
+
+    /// A new image `target_width x target_height` (each `>=` the current size)
+    /// holding this image's pixels at the top-left and the added right columns
+    /// and bottom rows filled with opaque `rgb`. Used to pad a Sixel image out
+    /// to whole terminal cells so no sub-cell remainder is left unset.
+    pub fn padded_to_size(
+        &self,
+        target_width: u32,
+        target_height: u32,
+        rgb: (u8, u8, u8),
+    ) -> Result<Self, ProgramError> {
         let (w, h) = self.dimensions();
-        if target_height <= h {
+        let tw = target_width.max(w);
+        let th = target_height.max(h);
+        if tw == w && th == h {
             return Ok(self.clone());
         }
-        let mut data = self.to_rgba_bytes();
         let fill = [rgb.0, rgb.1, rgb.2, 255];
-        let pad_px = w as usize * (target_height - h) as usize;
-        data.reserve(pad_px * 4);
-        for _ in 0..pad_px {
+        let src = self.to_rgba_bytes();
+        let row_bytes = w as usize * 4;
+        let right_pad = (tw - w) as usize;
+        let mut data = Vec::with_capacity(tw as usize * th as usize * 4);
+        for row in 0..h as usize {
+            let start = row * row_bytes;
+            data.extend_from_slice(&src[start..start + row_bytes]);
+            for _ in 0..right_pad {
+                data.extend_from_slice(&fill);
+            }
+        }
+        for _ in 0..(th - h) as usize * tw as usize {
             data.extend_from_slice(&fill);
         }
-        Self::from_rgba8(w, target_height, data)
+        Self::from_rgba8(tw, th, data)
     }
 
     pub fn pixels(&self) -> PixelIterator {
@@ -475,5 +497,24 @@ mod tests {
     fn padded_to_height_noop_when_not_taller() {
         let img = DynamicImage::from_rgba8(1, 4, vec![0; 16]).unwrap();
         assert_eq!(img.padded_to_height(4, (0, 0, 0)).unwrap().dimensions(), (1, 4));
+    }
+
+    #[test]
+    fn padded_to_size_fills_right_and_bottom_with_bg() {
+        // 2x1 red image padded to 4x2: right columns and bottom row get bg
+        let img = DynamicImage::from_rgba8(2, 1, vec![9, 9, 9, 255, 9, 9, 9, 255]).unwrap();
+        let padded = img.padded_to_size(4, 2, (1, 2, 3)).unwrap();
+        assert_eq!(padded.dimensions(), (4, 2));
+        let b = padded.to_rgba_bytes();
+        assert_eq!(&b[0..8], &[9, 9, 9, 255, 9, 9, 9, 255]); // row 0: image
+        assert_eq!(&b[8..16], &[1, 2, 3, 255, 1, 2, 3, 255]); // row 0: right pad
+        assert_eq!(&b[16..32], &[1, 2, 3, 255, 1, 2, 3, 255, 1, 2, 3, 255, 1, 2, 3, 255]); // row 1: all pad
+    }
+
+    #[test]
+    fn padded_to_size_noop_when_not_larger() {
+        let img = DynamicImage::from_rgba8(2, 2, vec![0; 16]).unwrap();
+        assert_eq!(img.padded_to_size(2, 2, (1, 1, 1)).unwrap().dimensions(), (2, 2));
+        assert_eq!(img.padded_to_size(1, 1, (1, 1, 1)).unwrap().dimensions(), (2, 2));
     }
 }
