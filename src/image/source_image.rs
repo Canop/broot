@@ -226,6 +226,23 @@ mod tests {
     }
 
     #[test]
+    fn fitting_downscales_then_pads_to_cell_grid() {
+        // 1000x700 into 100x100 on a 9x18 grid: box floors to 99x90, resize gives
+        // 99x69, height pads to 72; width is already a multiple of 9.
+        let src = solid_bitmap(1000, 700, [10, 20, 30, 255]);
+        let constraints = FitConstraints {
+            width_multiple: 9,
+            height_multiple: 18,
+            pad: Some(coolor::Rgb::new(1, 2, 3)),
+        };
+        let img = src.fitting(100, 100, None, constraints).unwrap();
+        assert_eq!(img.dimensions(), (99, 72));
+        let b = img.to_rgba_bytes();
+        let row69 = 69 * 99 * 4; // first padded row (rows 0..=68 are the resized image)
+        assert_eq!(&b[row69..row69 + 4], &[1, 2, 3, 255]); // pad fill ran
+    }
+
+    #[test]
     fn fitting_skips_width_when_pane_below_one_cell() {
         // pane narrower than one cell (5px < 9): width align is skipped, so the
         // image is never padded past the pane.

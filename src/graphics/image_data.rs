@@ -38,3 +38,33 @@ impl ImageData {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn from_prefers_rgba_when_available() {
+        let img = DynamicImage::from_rgba8(1, 1, vec![1, 2, 3, 4]).unwrap();
+        assert!(matches!(ImageData::from(&img), ImageData::Rgba(_)));
+    }
+
+    #[test]
+    fn from_falls_back_to_rgb() {
+        let img = DynamicImage::Image(image::DynamicImage::ImageRgb8(
+            image::RgbImage::from_raw(2, 1, vec![1, 2, 3, 4, 5, 6]).unwrap(),
+        ));
+        assert!(matches!(ImageData::from(&img), ImageData::Rgb(_)));
+    }
+
+    #[test]
+    fn kitty_format_matches_variant() {
+        let rgba = DynamicImage::from_rgba8(1, 1, vec![1, 2, 3, 4]).unwrap();
+        assert_eq!(ImageData::from(&rgba).kitty_format(), "32");
+
+        let rgb = DynamicImage::Image(image::DynamicImage::ImageRgb8(
+            image::RgbImage::from_raw(2, 1, vec![1, 2, 3, 4, 5, 6]).unwrap(),
+        ));
+        assert_eq!(ImageData::from(&rgb).kitty_format(), "24");
+    }
+}
