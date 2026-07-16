@@ -61,3 +61,28 @@ pub fn is_ssh() -> bool {
     }
     false
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn get_esc_seq_doubles_per_nest_level() {
+        assert_eq!(get_esc_seq(0), "\u{1b}");
+        assert_eq!(get_esc_seq(1), "\u{1b}\u{1b}");
+        assert_eq!(get_esc_seq(2), "\u{1b}".repeat(4));
+        assert_eq!(get_esc_seq(3), "\u{1b}".repeat(8));
+    }
+
+    #[test]
+    fn get_tmux_header_and_tail_nest_two_levels() {
+        assert_eq!(get_tmux_header(2), "\u{1b}Ptmux;\u{1b}\u{1b}Ptmux;");
+        assert_eq!(get_tmux_tail(2), "\u{1b}\u{1b}\\\u{1b}\\");
+    }
+
+    #[test]
+    fn get_tmux_header_zero_nest_is_empty() {
+        assert_eq!(get_tmux_header(0), "");
+        assert_eq!(get_tmux_tail(0), "");
+    }
+}

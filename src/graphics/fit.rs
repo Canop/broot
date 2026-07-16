@@ -50,7 +50,8 @@ pub fn rendering_area(
 
 #[cfg(test)]
 mod tests {
-    use super::rendering_dim;
+    use super::{rendering_area, rendering_dim};
+    use termimad::Area;
 
     #[test]
     fn unconstrained_uses_optimal_cells() {
@@ -71,5 +72,18 @@ mod tests {
         let (cols, rows) = rendering_dim(10, 10, 100, 1000, 100, 5);
         assert_eq!(rows, 5);
         assert!(cols <= 100);
+    }
+
+    #[test]
+    fn rendering_area_centers_within_offset_panel() {
+        let a = rendering_area(10, 10, 20, 20, &Area::new(5, 5, 10, 10));
+        assert_eq!((a.left, a.top, a.width, a.height), (9, 9, 2, 2));
+    }
+
+    #[test]
+    fn rendering_area_non_square_panel_axes_not_swapped() {
+        // 20x20 img in 10x10 cells → 2x2 cells; area 12 wide, 4 tall at (0,0)
+        let a = rendering_area(10, 10, 20, 20, &Area::new(0, 0, 12, 4));
+        assert_eq!((a.left, a.top, a.width, a.height), (5, 1, 2, 2));
     }
 }

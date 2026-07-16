@@ -83,4 +83,19 @@ mod tests {
         assert_eq!(GraphicsDisplay::parse("bogus"), None);
         assert_eq!(GraphicsDisplay::parse(""), None);
     }
+
+    #[test]
+    fn graphics_display_from_env_precedence() {
+        std::env::set_var("BROOT_GRAPHICS_PROTOCOL", "sixel");
+        assert_eq!(graphics_display_from_env(), Some(GraphicsDisplay::Sixel));
+        std::env::set_var("BROOT_GRAPHICS_PROTOCOL", "Bogus");
+        assert_eq!(graphics_display_from_env(), None);
+        std::env::remove_var("BROOT_GRAPHICS_PROTOCOL");
+        assert_eq!(graphics_display_from_env(), None);
+    }
+
+    #[test]
+    fn deserialize_rejects_unknown_value() {
+        assert!(toml::from_str::<Wrap>("d = \"bogus\"").is_err());
+    }
 }
