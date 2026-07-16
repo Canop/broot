@@ -37,20 +37,4 @@ impl ImageData {
             Self::Rgba(img) => img.as_raw(),
         }
     }
-    /// Raw RGBA bytes (4 per pixel) regardless of source colorspace,
-    /// for encoders that require RGBA input (e.g. icy_sixel).
-    pub fn rgba_bytes(&self) -> Vec<u8> {
-        match self {
-            Self::Rgba(img) => img.as_raw(),
-            Self::Rgb(img) => {
-                let rgb = img.as_raw();
-                let mut out = Vec::with_capacity(rgb.len() / 3 * 4);
-                for px in rgb.chunks_exact(3) {
-                    out.extend_from_slice(px);
-                    out.push(255);
-                }
-                out
-            }
-        }
-    }
 }

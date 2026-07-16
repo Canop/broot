@@ -5,7 +5,6 @@ use {
         graphics::{
             GraphicsRenderer, ImageId,
             rendering_area,
-            image_data::ImageData,
             terminal::{get_esc_seq, get_tmux_header, get_tmux_nest_count, get_tmux_tail, is_tmux},
         },
         image::zune_compat::DynamicImage,
@@ -213,8 +212,7 @@ impl GraphicsRenderer for SixelRenderer {
             p == src_path && *cw == img_width && *ch == img_height && *fbg == flatten_key
         });
         if !cached {
-            let data = ImageData::from(src);
-            let mut rgba = data.rgba_bytes();
+            let mut rgba = src.to_rgba_bytes();
             if let Some(bg_rgb) = flatten_bg {
                 flatten_alpha(&mut rgba, bg_rgb);
             }
