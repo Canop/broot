@@ -8,7 +8,12 @@ pub use graphics_display::GraphicsDisplay;
 pub(crate) use fit::rendering_area;
 
 use {
-    crate::{display::W, errors::ProgramError, image::zune_compat::DynamicImage},
+    crate::{
+        display::W,
+        errors::ProgramError,
+        image::zune_compat::DynamicImage,
+        kitty::KittyGraphicsDisplay,
+    },
     crokey::crossterm::style::Color,
     std::path::{Path, PathBuf},
     termimad::Area,
@@ -143,7 +148,11 @@ fn select_renderer(con: &AppContext) -> Option<Box<dyn GraphicsRenderer>> {
         GraphicsDisplay::Kitty => {
             let r = build_kitty();
             if r.is_none() {
-                warn!("graphics-display = kitty but Kitty graphics are unavailable");
+                if con.kitty_graphics_display == KittyGraphicsDisplay::None {
+                    warn!("graphics-display = kitty is overridden by kitty-graphics-display = none");
+                } else {
+                    warn!("graphics-display = kitty but Kitty graphics are unavailable");
+                }
             }
             r
         }
