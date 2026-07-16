@@ -291,7 +291,12 @@ impl GraphicsRenderer for SixelRenderer {
 
 #[cfg(test)]
 mod tests {
-    use super::{encode_sixel, flatten_alpha, gcd, letterbox_segments, resolve_bg, tmux_passthrough};
+    use super::{
+        SixelRenderer, encode_sixel, flatten_alpha, gcd, letterbox_segments, resolve_bg,
+        tmux_passthrough,
+    };
+    use crate::{display, graphics::GraphicsRenderer, image::zune_compat::DynamicImage};
+    use std::path::{Path, PathBuf};
     use termimad::{Area, coolor};
     use crokey::crossterm::style::Color;
 
@@ -405,5 +410,115 @@ mod tests {
         let segs = letterbox_segments(&area, &sub);
         assert_eq!(segs.len(), 8);
         assert!(segs.iter().all(|&(l, _, w)| l == 10 && w == 10));
+    }
+
+    // --- encode-cache key (print()) and encode error path ---------------
+
+    /// Renderer built by struct literal, with a seeded `last_encoded` entry.
+    fn renderer_with_cache(
+        konsole_bg: Option<coolor::Rgb>,
+        cached: Option<(PathBuf, u32, u32, Option<(u8, u8, u8)>, String)>,
+    ) -> SixelRenderer {
+        SixelRenderer {
+            cell_width: 10,
+            cell_height: 20,
+            is_tmux: false,
+            current_geometry: None,
+            konsole_bg,
+            last_encoded: cached,
+        }
+    }
+
+    /// 4x4 RGBA image; content doesn't matter for cache-key tests.
+    fn small_image() -> DynamicImage {
+        DynamicImage::from_rgba8(4, 4, vec![0u8; 4 * 4 * 4]).unwrap()
+    }
+
+    #[test]
+    fn cache_hit_reuses_stored_encode_on_same_key() {
+        let tbg = coolor::Rgb::new(30, 40, 50);
+        let bg = Color::Rgb { r: 1, g: 2, b: 3 };
+        // Same flatten-key computation the code path uses in print().
+        let flatten_key = Some(resolve_bg(bg, tbg)).map(|c| (c.r, c.g, c.b));
+        let mut renderer = renderer_with_cache(
+            Some(tbg),
+            Some((PathBuf::from("a.png"), 4, 4, flatten_key, "SENTINEL".to_string())),
+        );
+        let mut w = display::writer();
+        let img = small_image();
+        renderer
+            .print(&mut w, &img, Path::new("a.png"), &Area::new(0, 0, 10, 10), bg)
+            .unwrap();
+        // Skip BufWriter's flush-on-drop so queued escape bytes don't pollute test
+        // output (fresh unshared stderr writer, content well under its 8KB buffer).
+        std::mem::forget(w);
+        assert_eq!(renderer.last_encoded.unwrap().4, "SENTINEL");
+    }
+
+    #[test]
+    fn cache_miss_on_bg_change_reencodes() {
+        let tbg = coolor::Rgb::new(30, 40, 50);
+        let seed_bg = Color::Rgb { r: 1, g: 2, b: 3 };
+        let seed_key = Some(resolve_bg(seed_bg, tbg)).map(|c| (c.r, c.g, c.b));
+        let mut renderer = renderer_with_cache(
+            Some(tbg),
+            Some((PathBuf::from("a.png"), 4, 4, seed_key, "SENTINEL".to_string())),
+        );
+        let mut w = display::writer();
+        let img = small_image();
+        // Different concrete bg -> different flatten key -> cache miss.
+        let new_bg = Color::Rgb { r: 9, g: 9, b: 9 };
+        renderer
+            .print(&mut w, &img, Path::new("a.png"), &Area::new(0, 0, 10, 10), new_bg)
+            .unwrap();
+        std::mem::forget(w);
+        let stored = renderer.last_encoded.unwrap().4;
+        assert_ne!(stored, "SENTINEL");
+        assert!(stored.starts_with('\x1b'), "should be a fresh DCS encode: {stored:?}");
+    }
+
+    #[test]
+    fn cache_miss_on_different_path_reencodes() {
+        let tbg = coolor::Rgb::new(30, 40, 50);
+        let bg = Color::Rgb { r: 1, g: 2, b: 3 };
+        let flatten_key = Some(resolve_bg(bg, tbg)).map(|c| (c.r, c.g, c.b));
+        let mut renderer = renderer_with_cache(
+            Some(tbg),
+            Some((PathBuf::from("a.png"), 4, 4, flatten_key, "SENTINEL".to_string())),
+        );
+        let mut w = display::writer();
+        let img = small_image();
+        // Different path -> cache miss even though dims/bg match.
+        renderer
+            .print(&mut w, &img, Path::new("b.png"), &Area::new(0, 0, 10, 10), bg)
+            .unwrap();
+        std::mem::forget(w);
+        assert_ne!(renderer.last_encoded.unwrap().4, "SENTINEL");
+    }
+
+    #[test]
+    fn cache_miss_on_different_dims_reencodes() {
+        let tbg = coolor::Rgb::new(30, 40, 50);
+        let bg = Color::Rgb { r: 1, g: 2, b: 3 };
+        let flatten_key = Some(resolve_bg(bg, tbg)).map(|c| (c.r, c.g, c.b));
+        // Seeded dims (8, 8); the printed image is 4x4.
+        let mut renderer = renderer_with_cache(
+            Some(tbg),
+            Some((PathBuf::from("a.png"), 8, 8, flatten_key, "SENTINEL".to_string())),
+        );
+        let mut w = display::writer();
+        let img = small_image();
+        renderer
+            .print(&mut w, &img, Path::new("a.png"), &Area::new(0, 0, 10, 10), bg)
+            .unwrap();
+        std::mem::forget(w);
+        assert_ne!(renderer.last_encoded.unwrap().4, "SENTINEL");
+    }
+
+    #[test]
+    fn encode_sixel_rejects_mismatched_buffer_length() {
+        // 2x2 needs 16 bytes; 3 is short, so icy_sixel's length check should
+        // return a clean Err rather than panic.
+        assert!(encode_sixel(vec![0u8; 3], 2, 2).is_err());
     }
 }
