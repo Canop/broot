@@ -344,22 +344,41 @@ impl GraphicsManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::sync::{Arc, Mutex};
 
-    /// Minimal renderer for exercising the manager's reclear bookkeeping.
-    /// `print`/`erase_image` are never called by these tests.
+    /// Minimal renderer for the manager tests.
     struct TestRenderer {
         reclear: bool,
+        /// Returned by `max_render_size()`.
+        max_size: Option<(u32, u32)>,
+        /// print()'s returned image id: `Some` mimics a Kitty-style protocol
+        /// (tracked and erased by id), `None` an inline one (Sixel).
+        print_returns_id: Option<ImageId>,
+        /// Fitted dims from the last `print()` call, shared because the renderer
+        /// is boxed into the manager (`Arc<Mutex>`: the trait requires `Send`).
+        last_print_dims: Arc<Mutex<Option<(u32, u32)>>>,
+    }
+    impl Default for TestRenderer {
+        fn default() -> Self {
+            Self {
+                reclear: false,
+                max_size: None,
+                print_returns_id: None,
+                last_print_dims: Arc::new(Mutex::new(None)),
+            }
+        }
     }
     impl GraphicsRenderer for TestRenderer {
         fn print(
             &mut self,
             _w: &mut W,
-            _src: &DynamicImage,
+            src: &DynamicImage,
             _src_path: &Path,
             _area: &Area,
             _bg: Color,
         ) -> Result<Option<ImageId>, ProgramError> {
-            Ok(None)
+            *self.last_print_dims.lock().unwrap() = Some(src.dimensions());
+            Ok(self.print_returns_id)
         }
         fn erase_image(&self, _w: &mut W, _id: ImageId) -> Result<(), ProgramError> {
             Ok(())
@@ -370,18 +389,32 @@ mod tests {
         fn needs_reclear_on_change(&self) -> bool {
             self.reclear
         }
+        fn max_render_size(&self) -> Option<(u32, u32)> {
+            self.max_size
+        }
     }
 
     fn manager(reclear: bool) -> GraphicsManager {
+        manager_with(TestRenderer { reclear, ..Default::default() })
+    }
+
+    /// A manager wrapping a caller-configured `TestRenderer`.
+    fn manager_with(renderer: TestRenderer) -> GraphicsManager {
         GraphicsManager {
             rendered_images: Vec::new(),
             renderer: MaybeRenderer::Enabled {
-                renderer: Box::new(TestRenderer { reclear }),
+                renderer: Box::new(renderer),
             },
             frame_sixels: Vec::new(),
             prev_sixels: Vec::new(),
             forced_redraw: false,
         }
+    }
+
+    /// A solid-color `SourceImage` bitmap.
+    fn solid_bitmap(w: u32, h: u32, rgba: [u8; 4]) -> crate::image::SourceImage {
+        let data: Vec<u8> = std::iter::repeat_n(rgba, (w * h) as usize).flatten().collect();
+        crate::image::SourceImage::Bitmap(DynamicImage::from_rgba8(w, h, data).unwrap())
     }
 
     fn area() -> Area {
@@ -494,10 +527,100 @@ mod tests {
 
     #[test]
     fn default_fit_constraints_is_unconstrained() {
-        let r = TestRenderer { reclear: false };
+        let r = TestRenderer { reclear: false, ..Default::default() };
         let c = r.fit_constraints(Color::Reset);
         assert_eq!(c.width_multiple, 1);
         assert_eq!(c.height_multiple, 1);
         assert!(c.pad.is_none());
+    }
+
+    // TestRenderer::print never writes to `w`, so nothing queues on the writer.
+    #[test]
+    fn try_print_image_clamps_to_max_render_size() {
+        let dims = Arc::new(Mutex::new(None));
+        let renderer = TestRenderer {
+            max_size: Some((16, 16)),
+            last_print_dims: Arc::clone(&dims),
+            ..Default::default()
+        };
+        let mut m = manager_with(renderer);
+        let con = AppContext::default();
+        // 200x100 source, well above the 16x16 clamp.
+        let src = solid_bitmap(200, 100, [1, 2, 3, 255]);
+        let mut w = crate::display::writer();
+        m.try_print_image(&mut w, &src, Path::new("a.png"), &area(), Color::Reset, 1, &con)
+            .unwrap();
+        let (pw, ph) = dims.lock().unwrap().expect("print() should have been called");
+        assert!(pw <= 16, "fitted width {pw} exceeds the 16px clamp");
+        assert!(ph <= 16, "fitted height {ph} exceeds the 16px clamp");
+    }
+
+    #[test]
+    fn try_print_image_tracks_kitty_id_not_inline() {
+        let renderer = TestRenderer {
+            print_returns_id: Some(7),
+            ..Default::default()
+        };
+        let mut m = manager_with(renderer);
+        let con = AppContext::default();
+        let src = solid_bitmap(4, 4, [1, 2, 3, 255]);
+        let mut w = crate::display::writer();
+        let result = m
+            .try_print_image(&mut w, &src, Path::new("a.png"), &area(), Color::Reset, 1, &con)
+            .unwrap();
+        assert!(matches!(result, ImageRendering::Drawn(Some(7))));
+        assert_eq!(m.rendered_images.len(), 1);
+        assert_eq!(m.rendered_images[0].image_id, 7);
+        assert!(m.frame_sixels.is_empty());
+    }
+
+    #[test]
+    fn try_print_image_notes_inline_not_kitty_id() {
+        let renderer = TestRenderer::default(); // print_returns_id: None
+        let mut m = manager_with(renderer);
+        let con = AppContext::default();
+        let src = solid_bitmap(4, 4, [1, 2, 3, 255]);
+        let mut w = crate::display::writer();
+        let result = m
+            .try_print_image(&mut w, &src, Path::new("a.png"), &area(), Color::Reset, 1, &con)
+            .unwrap();
+        assert!(matches!(result, ImageRendering::Drawn(None)));
+        assert_eq!(m.frame_sixels.len(), 1);
+        assert!(m.rendered_images.is_empty());
+    }
+
+    #[test]
+    fn erase_images_before_drops_stale_and_keeps_current() {
+        let mut m = manager(false);
+        m.rendered_images = vec![
+            RenderedImage { image_id: 1, drawing_count: 5 },
+            RenderedImage { image_id: 2, drawing_count: 2 },
+        ];
+        let mut w = crate::display::writer();
+        m.erase_images_before(&mut w, 3).unwrap();
+        assert_eq!(m.rendered_images.len(), 1);
+        assert_eq!(m.rendered_images[0].image_id, 1);
+    }
+
+    #[test]
+    fn erase_images_before_boundary_equal_count_is_kept() {
+        let mut m = manager(false);
+        m.rendered_images = vec![RenderedImage { image_id: 1, drawing_count: 3 }];
+        let mut w = crate::display::writer();
+        m.erase_images_before(&mut w, 3).unwrap();
+        assert_eq!(m.rendered_images.len(), 1);
+        assert_eq!(m.rendered_images[0].image_id, 1);
+    }
+
+    #[test]
+    fn keep_updates_drawing_count_of_matching_id_only() {
+        let mut m = manager(false);
+        m.rendered_images = vec![
+            RenderedImage { image_id: 1, drawing_count: 1 },
+            RenderedImage { image_id: 2, drawing_count: 1 },
+        ];
+        m.keep(1, 99);
+        assert_eq!(m.rendered_images[0].drawing_count, 99);
+        assert_eq!(m.rendered_images[1].drawing_count, 1);
     }
 }
