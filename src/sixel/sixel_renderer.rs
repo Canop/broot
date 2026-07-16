@@ -119,15 +119,12 @@ pub struct SixelRenderer {
     /// xterm), so we fit within it. Snapshot taken at construction; see
     /// `detect_sixel_geometry` for why it isn't refreshed on resize.
     current_geometry: Option<(u32, u32)>,
-    /// Konsole keeps Sixel until the screen is cleared, so a changed/removed
-    /// image can't be erased by repainting cells; it reports
-    /// `needs_reclear_on_change()` so the manager issues a full clear + redraw.
-    /// Other terminals drop Sixel when the cells are overwritten (false here).
-    is_konsole: bool,
-    /// Terminal default background as RGB, queried once at startup (Konsole
-    /// only). Used to fill the Sixel band-padding rows when the skin bg is
-    /// `Reset` so the padding matches the letterbox.
-    terminal_bg: coolor::Rgb,
+    /// `Some(terminal default background)` in Konsole (KONSOLE_VERSION set),
+    /// `None` elsewhere. Konsole keeps Sixel pixels until the screen is cleared
+    /// and clears a margin around the sixel's cell box; this drives the
+    /// reclear-on-change, alpha flattening, letterbox repaint, and cell-box
+    /// padding in `fit_constraints`.
+    konsole_bg: Option<coolor::Rgb>,
     /// Last encoded Sixel `(path, fitted_width, fitted_height, flatten_bg,
     /// dcs)`, reused when the same image at the same size (and same alpha
     /// flatten colour) is drawn again within a frame (the post-clear redraw
@@ -152,7 +149,7 @@ impl SixelRenderer {
         debug!("sixel current geometry: {current_geometry:?}");
         let is_konsole = std::env::var("KONSOLE_VERSION").is_ok();
         debug!("sixel is_konsole={is_konsole}");
-        let terminal_bg = if is_konsole {
+        let konsole_bg = is_konsole.then(|| {
             terminal_light::background_color()
                 .map(|c| c.rgb())
                 .unwrap_or_else(|e| {
@@ -161,16 +158,13 @@ impl SixelRenderer {
                     debug!("sixel: terminal bg query failed ({e}); padding falls back to black");
                     coolor::Rgb::new(0, 0, 0)
                 })
-        } else {
-            coolor::Rgb::new(0, 0, 0)
-        };
+        });
         Some(Self {
             cell_width,
             cell_height,
             is_tmux: is_tmux(),
             current_geometry,
-            is_konsole,
-            terminal_bg,
+            konsole_bg,
             last_encoded: None,
         })
     }
@@ -199,11 +193,7 @@ impl GraphicsRenderer for SixelRenderer {
         // On Konsole, flatten the image's alpha onto the letterbox bg before
         // encoding: the encoder emits alpha < 128 as unset (Konsole paints
         // those terminal-default) and alpha >= 128 as raw unblended RGB.
-        let flatten_bg = if self.is_konsole {
-            Some(resolve_bg(bg, self.terminal_bg))
-        } else {
-            None
-        };
+        let flatten_bg = self.konsole_bg.map(|tbg| resolve_bg(bg, tbg));
         let flatten_key = flatten_bg.map(|c| (c.r, c.g, c.b));
 
         // Reuse the cached encode when the same image at the same size is drawn
@@ -234,7 +224,7 @@ impl GraphicsRenderer for SixelRenderer {
         // Repaint them: cells drawn after the Sixel survive. The image's own
         // cells are left alone — Konsole renders later cell drawing on top of
         // the image (KDE bug 456354).
-        if self.is_konsole {
+        if self.konsole_bg.is_some() {
             for (left, top, width) in letterbox_segments(area, &sub) {
                 w.queue(cursor::MoveTo(left, top))?;
                 fill_bg(w, width as usize, bg)?;
@@ -257,11 +247,11 @@ impl GraphicsRenderer for SixelRenderer {
     fn needs_reclear_on_change(&self) -> bool {
         // Konsole keeps Sixel until the screen is cleared, so the manager must
         // issue ESC[2J + a full redraw when an on-screen image changes/leaves.
-        self.is_konsole
+        self.konsole_bg.is_some()
     }
 
     fn fit_constraints(&self, bg: Color) -> crate::image::FitConstraints {
-        if self.is_konsole {
+        if let Some(tbg) = self.konsole_bg {
             // Konsole allocates a Sixel image a whole-cell box and clears the box to
             // the terminal default before painting: any pixel the Sixel doesn't
             // explicitly set shows as a default-bg strip (below and right of
@@ -273,7 +263,7 @@ impl GraphicsRenderer for SixelRenderer {
             crate::image::FitConstraints {
                 width_multiple: self.cell_width.max(1),
                 height_multiple: 6 / gcd(6, ch) * ch,
-                pad: Some(resolve_bg(bg, self.terminal_bg)),
+                pad: Some(resolve_bg(bg, tbg)),
             }
         } else {
             crate::image::FitConstraints::default()
