@@ -66,6 +66,25 @@ fn gcd(mut a: u32, mut b: u32) -> u32 {
     a
 }
 
+/// Composite RGBA pixels over an opaque `bg`, in place: each pixel becomes
+/// `src*a + bg*(1-a)` and alpha is forced to 255. The Sixel encoder emits
+/// pixels with alpha < 128 as "unset", and Konsole paints unset pixels in
+/// the terminal default colour; pixels with alpha >= 128 would be emitted
+/// as raw, unblended RGB. Flattening onto the letterbox bg beforehand
+/// leaves no unset pixel and blends semi-transparent pixels properly.
+fn flatten_alpha(rgba: &mut [u8], bg: coolor::Rgb) {
+    for px in rgba.chunks_exact_mut(4) {
+        let a = px[3] as u16;
+        if a == 255 {
+            continue;
+        }
+        px[0] = ((px[0] as u16 * a + bg.r as u16 * (255 - a) + 127) / 255) as u8;
+        px[1] = ((px[1] as u16 * a + bg.g as u16 * (255 - a) + 127) / 255) as u8;
+        px[2] = ((px[2] as u16 * a + bg.b as u16 * (255 - a) + 127) / 255) as u8;
+        px[3] = 255;
+    }
+}
+
 /// The cell segments of `area` not covered by `sub` (the image's cells), as
 /// `(left, top, width)` one-row runs: full-width rows above and below the
 /// image, and the left/right margins on the image's own rows. Konsole clears
@@ -110,11 +129,13 @@ pub struct SixelRenderer {
     /// only). Used to fill the Sixel band-padding rows when the skin bg is
     /// `Reset` so the padding matches the letterbox.
     terminal_bg: coolor::Rgb,
-    /// Last encoded Sixel `(path, fitted_width, fitted_height, dcs)`, reused
-    /// when the same image at the same size is drawn again within a frame (the
-    /// post-clear redraw pass on Konsole) so it isn't re-encoded. Cleared every
+    /// Last encoded Sixel `(path, fitted_width, fitted_height, flatten_bg,
+    /// dcs)`, reused when the same image at the same size (and same alpha
+    /// flatten colour) is drawn again within a frame (the post-clear redraw
+    /// pass on Konsole) so it isn't re-encoded. The flatten colour is part of
+    /// the key because the pane bg differs focused vs unfocused. Cleared every
     /// frame (`end_frame`) so a file that changed in place isn't shown stale.
-    last_encoded: Option<(std::path::PathBuf, u32, u32, String)>,
+    last_encoded: Option<(std::path::PathBuf, u32, u32, Option<(u8, u8, u8)>, String)>,
 }
 
 impl SixelRenderer {
@@ -176,17 +197,32 @@ impl GraphicsRenderer for SixelRenderer {
         let (img_width, img_height) = src.dimensions();
         let sub = rendering_area(self.cell_width, self.cell_height, img_width, img_height, area);
 
+        // On Konsole, flatten the image's alpha onto the letterbox bg before
+        // encoding: the encoder emits alpha < 128 as unset (Konsole paints
+        // those terminal-default) and alpha >= 128 as raw unblended RGB.
+        let flatten_bg = if self.is_konsole {
+            Some(resolve_bg(bg, self.terminal_bg))
+        } else {
+            None
+        };
+        let flatten_key = flatten_bg.map(|c| (c.r, c.g, c.b));
+
         // Reuse the cached encode when the same image at the same size is drawn
         // again (the post-clear redraw pass on Konsole), else encode and cache.
-        let cached = self.last_encoded.as_ref().is_some_and(|(p, cw, ch, _)| {
-            p == src_path && *cw == img_width && *ch == img_height
+        let cached = self.last_encoded.as_ref().is_some_and(|(p, cw, ch, fbg, _)| {
+            p == src_path && *cw == img_width && *ch == img_height && *fbg == flatten_key
         });
         if !cached {
             let data = ImageData::from(src);
-            let sixel = encode_sixel(data.rgba_bytes(), img_width, img_height)?;
-            self.last_encoded = Some((src_path.to_path_buf(), img_width, img_height, sixel));
+            let mut rgba = data.rgba_bytes();
+            if let Some(bg_rgb) = flatten_bg {
+                flatten_alpha(&mut rgba, bg_rgb);
+            }
+            let sixel = encode_sixel(rgba, img_width, img_height)?;
+            self.last_encoded =
+                Some((src_path.to_path_buf(), img_width, img_height, flatten_key, sixel));
         }
-        let sixel = &self.last_encoded.as_ref().unwrap().3;
+        let sixel = &self.last_encoded.as_ref().unwrap().4;
 
         w.queue(cursor::MoveTo(sub.left, sub.top))?;
         if self.is_tmux {
@@ -263,7 +299,7 @@ impl GraphicsRenderer for SixelRenderer {
 
 #[cfg(test)]
 mod tests {
-    use super::{encode_sixel, gcd, letterbox_segments, resolve_bg, tmux_passthrough};
+    use super::{encode_sixel, flatten_alpha, gcd, letterbox_segments, resolve_bg, tmux_passthrough};
     use termimad::{Area, coolor};
     use crokey::crossterm::style::Color;
 
@@ -285,6 +321,22 @@ mod tests {
         );
         assert!(payload.contains("\x1b\x1bP"), "doubled DCS start: {payload:?}");
         assert!(payload.contains("\x1b\x1b\\"), "doubled inner ST: {payload:?}");
+    }
+
+    #[test]
+    fn flatten_alpha_composites_over_bg() {
+        // transparent -> bg; opaque -> untouched; partial -> blended; alpha -> 255
+        let bg = coolor::Rgb::new(10, 20, 30);
+        let mut px = vec![
+            200, 100, 50, 0, // fully transparent
+            200, 100, 50, 255, // fully opaque
+            200, 100, 50, 128, // ~half
+        ];
+        flatten_alpha(&mut px, bg);
+        assert_eq!(&px[0..4], &[10, 20, 30, 255]);
+        assert_eq!(&px[4..8], &[200, 100, 50, 255]);
+        // (200*128 + 10*127 + 127) / 255 = 105, etc.; alpha forced opaque
+        assert_eq!(&px[8..12], &[105, 60, 40, 255]);
     }
 
     #[test]
