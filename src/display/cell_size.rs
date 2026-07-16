@@ -1,3 +1,11 @@
+/// True when an ioctl TIOCGWINSZ result gives a usable cell size: success,
+/// nonzero character grid (the caller divides by it), pixel dimensions
+/// larger than the grid. Platform-independent so it's testable everywhere.
+#[cfg(any(unix, test))]
+fn ioctl_result_usable(r: i32, xpixel: u16, ypixel: u16, cols: u16, rows: u16) -> bool {
+    r == 0 && cols != 0 && rows != 0 && xpixel > cols && ypixel > rows
+}
+
 /// find and return the size of a cell (a char location) in pixels
 /// as (width, height).
 #[cfg(unix)]
@@ -24,7 +32,7 @@ pub fn cell_size_in_pixels() -> std::io::Result<(u32, u32)> {
     };
     #[allow(clippy::useless_conversion)]
     let r = unsafe { ioctl(STDOUT_FILENO, TIOCGWINSZ.into(), &mut w) };
-    if r == 0 && w.ws_xpixel > w.ws_col && w.ws_ypixel > w.ws_row {
+    if ioctl_result_usable(r, w.ws_xpixel, w.ws_ypixel, w.ws_col, w.ws_row) {
         Ok((
             (w.ws_xpixel / w.ws_col) as u32,
             (w.ws_ypixel / w.ws_row) as u32,
@@ -86,7 +94,26 @@ pub(crate) fn parse_cell_size(response: &str) -> Option<(u32, u32)> {
 
 #[cfg(test)]
 mod tests {
-    use super::parse_cell_size;
+    use super::{parse_cell_size, ioctl_result_usable};
+
+    #[test]
+    fn ioctl_usable_accepts_normal_geometry() {
+        assert!(ioctl_result_usable(0, 800, 600, 80, 24));
+    }
+    #[test]
+    fn ioctl_unusable_on_failed_call() {
+        assert!(!ioctl_result_usable(-1, 800, 600, 80, 24));
+    }
+    #[test]
+    fn ioctl_unusable_when_pixel_fields_zero() {
+        assert!(!ioctl_result_usable(0, 0, 0, 80, 24));
+    }
+    #[test]
+    fn ioctl_unusable_on_zero_cols_or_rows_with_stale_pixels() {
+        // these previously passed the guard and divided by zero
+        assert!(!ioctl_result_usable(0, 800, 600, 0, 24));
+        assert!(!ioctl_result_usable(0, 800, 600, 80, 0));
+    }
 
     #[test]
     fn parses_csi_16t_response() {
