@@ -53,6 +53,15 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
         }
     }
 
+    // we detect rio by the $TERM_PROGRAM env var
+    if let Ok(term_program) = env::var("TERM_PROGRAM") {
+        debug!("$TERM_PROGRAM = {term_program:?}");
+        if term_program == "rio" {
+            debug!(" -> this terminal seems to be rio");
+            return KittyGraphicsDisplay::Direct;
+        }
+    }
+
     // we detect Wezterm with the $TERM_PROGRAM env var and we
     // check its version to be sure it's one with support
     if let Ok(term_program) = env::var("TERM_PROGRAM") {
