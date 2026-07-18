@@ -1,3 +1,6 @@
+### next
+- High-Res images in Rio (detect it to enable the Kitty image protocol) - Fix #1179
+
 ### v1.58.0 - 2026-07-10
 <a name="v1.58.0"></a>
 - change the way possible verb completions are listed, making it more readable when there are more than what fits the screen
