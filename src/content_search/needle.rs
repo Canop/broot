@@ -90,9 +90,6 @@ impl Needle {
     }
 
     /// look for matches of the needle when it's length is 3
-    ///
-    /// Returns `None` when the haystack is shorter than the needle, so the
-    /// subtraction below can't underflow.
     fn find_naive_3(
         &self,
         mut pos: usize,
@@ -120,9 +117,6 @@ impl Needle {
     }
 
     /// look for matches of the needle when it's length is 4
-    ///
-    /// Returns `None` when the haystack is shorter than the needle, so the
-    /// subtraction below can't underflow.
     fn find_naive_4(
         &self,
         mut pos: usize,
@@ -143,9 +137,6 @@ impl Needle {
     }
 
     /// look for matches of the needle when it's length is 6
-    ///
-    /// Returns `None` when the haystack is shorter than the needle, so the
-    /// subtraction below can't underflow.
     fn find_naive_6(
         &self,
         mut pos: usize,
@@ -194,9 +185,6 @@ impl Needle {
     }
 
     /// look for matches of the needle for any length
-    ///
-    /// Returns `None` when the haystack is shorter than the needle, so the
-    /// subtraction below can't underflow.
     fn find_naive(
         &self,
         mut pos: usize,
@@ -275,8 +263,7 @@ impl Needle {
         })
     }
 
-    /// this is supposed to be called only when it's known that there's
-    /// a match
+    /// Return a match, assuming there's one (find should have been called first)
     pub fn get_match<P: AsRef<Path>>(
         &self,
         hay_path: P,
@@ -308,9 +295,7 @@ mod content_search_tests {
 
     /// Searching a file shorter than the needle must return `NotFound` cleanly
     /// rather than underflowing `hay.len() - needle.len()` in the `find_naive_*`
-    /// helpers. The helpers are private and `search_mmap` already guards against
-    /// this, but the helpers do `unsafe` indexing and their docstrings used to
-    /// only *warn* about short inputs — this pins the safe behavior. See #997.
+    /// helpers. This prevents possible panics if the functions were to be called directly.
     #[test]
     fn test_search_hay_shorter_than_needle_is_not_found() -> Result<(), io::Error> {
         use std::io::Write;
