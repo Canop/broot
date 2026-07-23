@@ -316,6 +316,7 @@ dependencies = [
  "rustc-hash",
  "secular",
  "serde",
+ "serde_json",
  "smallvec",
  "splitty",
  "strict",

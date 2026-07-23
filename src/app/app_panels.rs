@@ -212,6 +212,9 @@ impl AppPanelsAndInputs {
     pub fn stage_panel_id(&self) -> Option<PanelId> {
         self.panels.by_type(PanelStateType::Stage).map(|p| p.id)
     }
+    pub fn favorite_panel_id(&self) -> Option<PanelId> {
+        self.panels.by_type(PanelStateType::Favorite).map(|p| p.id)
+    }
     pub fn idx_by_ref(
         &self,
         panel_ref: PanelReference,
@@ -224,6 +227,9 @@ impl AppPanelsAndInputs {
     }
     pub fn has_stage_panel(&self) -> bool {
         self.panels.has_type(PanelStateType::Stage)
+    }
+    pub fn has_favorite_panel(&self) -> bool {
+        self.panels.has_type(PanelStateType::Favorite)
     }
     pub fn active_panel_idx(&self) -> usize {
         self.panels.active_panel_idx
@@ -267,6 +273,10 @@ impl AppPanelsAndInputs {
             }
             PanelStateType::Stage if self.panels.has_type(PanelStateType::Stage) => {
                 return Err("There can be only one stage panel".to_owned());
+                // todo replace instead ?
+            }
+            PanelStateType::Favorite if self.panels.has_type(PanelStateType::Favorite) => {
+                return Err("There can be only one favorite panel".to_owned());
                 // todo replace instead ?
             }
             _ => {}
@@ -335,15 +345,18 @@ impl AppPanelsAndInputs {
         if len < 2 {
             return false; // we can't remove the last panel
         }
-        if len == 2 {
-            let non_removed_idx = if panel_idx == 0 { 1 } else { 0 };
-            let non_removed_panel = &self.panels.panels[non_removed_idx];
-            if non_removed_panel.state().get_type() == PanelStateType::Preview
-                || non_removed_panel.state().get_type() == PanelStateType::Stage
-            {
-                return false; // we don't want to stay with just the preview or stage
-            }
+        
+        let has_remaining_main_panel = self.panels.panels
+            .iter()
+            .enumerate()
+            .any(|(idx, panel)| {
+                idx != panel_idx
+                && panel.state().get_type() == PanelStateType::Tree
+            });
+        if !has_remaining_main_panel {
+            return false; // we don't want to stay with just the preview, stage, or favorites
         }
+
         let active_panel_id = self.panels.panels[self.active_panel_idx()].id;
         self.panels.panels.remove(panel_idx);
         self.inputs.remove(panel_idx);
@@ -445,6 +458,7 @@ impl AppPanelsAndInputs {
             panel_skin,
             preview_panel: self.preview_panel_id(),
             stage_panel: self.stage_panel_id(),
+            favorite_panel: self.favorite_panel_id(),
             screen: self.screen(),
             con,
         }
