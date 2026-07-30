@@ -1,0 +1,36 @@
+# broot
+
+> A terminal file manager with a fuzzy-search tree view, letting you navigate, search, and act on directory trees efficiently from the command line.
+
+## Getting Started
+
+- [Install broot](https://dystroy.org/broot/install/): How to install broot on Linux, macOS, and Windows, and shell integration setup.
+- [Common Problems](https://dystroy.org/broot/common-problems/): Fixes for frequent installation and usage issues.
+
+## Core Usage
+
+- [Search and Navigate](https://dystroy.org/broot/navigation/): How to move around and search within the tree view.
+- [Tree View](https://dystroy.org/broot/tree_view/): Understanding the tree display and its symbols.
+- [Panels](https://dystroy.org/broot/panels/): Working with multiple panels side by side.
+- [The Input](https://dystroy.org/broot/input/): Reference for the input line, patterns, and filtering syntax.
+- [Launch](https://dystroy.org/broot/launch/): Launching external programs and applications from broot.
+- [Modal Mode](https://dystroy.org/broot/modal/): Using broot in modal (vim-like) mode.
+- [Help Screen](https://dystroy.org/broot/help/): The in-app help screen reference.
+
+## File Operations
+
+- [Common File Operations](https://dystroy.org/broot/file-operations/): Copy, move, delete, and other file actions.
+- [Staging Area](https://dystroy.org/broot/staging-area/): Selecting and staging multiple files for batch operations.
+- [Trash](https://dystroy.org/broot/trash/): How broot's trash feature works.
+- [Tree Export](https://dystroy.org/broot/export/): Exporting the tree view to other formats.
+
+## Configuration
+
+- [Config Files](https://dystroy.org/broot/conf_file/): Location and structure of broot's configuration files.
+- [Verbs and Shortcuts](https://dystroy.org/broot/conf_verbs/): Defining custom verbs, shortcuts, and keybindings.
+- [Skins](https://dystroy.org/broot/skins/): Customizing broot's color scheme.
+
+## Advanced
+
+- [Client - Server / Remote](https://dystroy.org/broot/remote/): Using broot as a remote client-server tool.
+- [Community](https://dystroy.org/broot/community/): Where to get help and discuss broot.
