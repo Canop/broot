@@ -122,6 +122,7 @@ custom_error! {pub InvalidSkinError
 
 custom_error! {pub NetError
     SocketNotAvailable { path : String } = "Can't open socket: {path} already exists - consider removing it",
+    DuplicateServerName { name : String } = "a broot server with the name '{name}' is already running",
     Io {source: io::Error}               = "error on the socket: {source}",
     InvalidMessage                       = "invalid message received",
 }

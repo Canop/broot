@@ -1,4 +1,5 @@
 ### next
+- fix: detect a duplicate broot server name instead of silently overtaking the running server - Fix #1065 - Thanks @YuriNachos
 - High-Res images in Rio (detect it to enable the Kitty image protocol) - Fix #1179
 
 ### v1.58.0 - 2026-07-10
