@@ -1,4 +1,5 @@
 ### next
+- fix content-exact match line number off-by-one when the match starts at the first byte of a line (broot jumped to the line above) - Thanks @YuriNachos
 - High-Res images in Rio (detect it to enable the Kitty image protocol) - Fix #1179
 
 ### v1.58.0 - 2026-07-10
