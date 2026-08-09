@@ -85,7 +85,7 @@ For example, if you want to see hidden files (the ones whose name starts with a 
 
     br -gh
 
-If you almost always want those flags, you may define them as default in the configuration file file, with the `default_flags` setting.
+If you almost always want those flags, you may define them as default in the configuration file, with the `default_flags` setting.
 
 ```Hjson
 default_flags: -gh
