@@ -7,7 +7,10 @@ use {
     std::{
         fs,
         io::BufReader,
-        os::unix::net::UnixListener,
+        os::unix::net::{
+            UnixListener,
+            UnixStream,
+        },
         path::PathBuf,
         sync::{
             Arc,
@@ -30,6 +33,16 @@ impl Server {
     ) -> Result<Self, NetError> {
         let path = super::socket_file_path(name);
         if fs::metadata(&path).is_ok() {
+            // A socket file is already present. It may belong to a live server
+            // or be a stale leftover from a crashed instance. We probe it: when
+            // a process is listening, connect succeeds and we must refuse to
+            // overtake it (issue #1065); otherwise the file is stale and we
+            // remove it before rebinding, exactly as before.
+            if UnixStream::connect(&path).is_ok() {
+                return Err(NetError::DuplicateServerName {
+                    name: name.to_string(),
+                });
+            }
             match fs::remove_file(&path) {
                 Ok(_) => {}
                 Err(e) => return Err(NetError::Io { source: e }),
@@ -92,6 +105,40 @@ impl Server {
 impl Drop for Server {
     fn drop(&mut self) {
         debug!("removing socket file");
-        fs::remove_file(&self.path).unwrap();
+        // The socket file may already be gone (taken over by another server, or
+        // already cleaned up): never panic from Drop in that case.
+        let _ = fs::remove_file(&self.path);
+    }
+}
+
+#[cfg(test)]
+mod test {
+    use {
+        super::Server,
+        crate::command::Sequence,
+        std::{
+            path::PathBuf,
+            sync::{
+                Arc,
+                Mutex,
+            },
+        },
+        termimad::crossbeam::channel,
+    };
+
+    /// Two servers with the same name: the second must error instead of
+    /// silently overtaking the first (issue #1065).
+    #[test]
+    fn second_server_with_same_name_errors() {
+        let name = "broot-test-duplicate-server-name-do-not-use";
+        let (tx, _rx) = channel::unbounded::<Sequence>();
+        let root = Arc::new(Mutex::new(PathBuf::from("/")));
+        let s1 = Server::new(name, tx.clone(), Arc::clone(&root)).expect("first server must bind");
+        let second = Server::new(name, tx, root);
+        assert!(
+            second.is_err(),
+            "second Server::new with the same name must error, not silently overtake"
+        );
+        drop(s1); // Drop removes the socket file for the unique test name
     }
 }
