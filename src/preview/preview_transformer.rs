@@ -1,6 +1,7 @@
 use {
     crate::{
         errors::*,
+        path::path_has_ext,
         preview::PreviewMode,
     },
     serde::Deserialize,
@@ -119,23 +120,25 @@ impl PreviewTransformers {
         path: &Path,
         mode: Option<PreviewMode>,
     ) -> Option<TransformerId> {
-        let extension = path.extension().and_then(|ext| ext.to_str())?;
+        // among all matching transformers, keep the one whose matched
+        // extension is the longest (so `tar.gz` wins over `gz`)
+        let mut best: Option<(TransformerId, usize)> = None;
         for (idx, transformer) in self.transformers.iter().enumerate() {
-            if !transformer
-                .input_extensions
-                .iter()
-                .any(|ext| ext.eq_ignore_ascii_case(extension))
-            {
-                continue;
-            }
             if let Some(mode) = mode {
                 if transformer.mode != mode {
                     continue;
                 }
             }
-            return Some(TransformerId { idx });
+            for ext in &transformer.input_extensions {
+                if !path_has_ext(path, ext) {
+                    continue;
+                }
+                if best.is_none_or(|(_, best_len)| ext.len() > best_len) {
+                    best = Some((TransformerId { idx }, ext.len()));
+                }
+            }
         }
-        None
+        best.map(|(id, _)| id)
     }
 }
 
