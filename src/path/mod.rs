@@ -42,7 +42,7 @@ pub fn path_has_ext<P: AsRef<Path>>(
 fn test_path_has_ext() {
     assert_eq!(path_has_ext("file.txt", "txt"), true);
     assert_eq!(path_has_ext("file.txt", ".txt"), true);
-    assert_eq!(path_has_ext("file.", ""), true);
+    assert_eq!(path_has_ext("file.", ""), true); // unsure if desired, but why not
     assert_eq!(path_has_ext("file.tar.gz", "gz"), true);
     assert_eq!(path_has_ext("file.tar.gz", ".gz"), true);
     assert_eq!(path_has_ext("file.tar.gz", "tar.gz"), true);
