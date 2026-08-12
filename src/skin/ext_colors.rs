@@ -21,7 +21,7 @@ impl ExtColorMap {
         &self,
         ext: &str,
     ) -> Option<Color> {
-        self.map.get(ext).copied()
+        self.map.get(&ext.to_ascii_lowercase()).copied()
     }
     pub fn set(
         &mut self,
@@ -30,7 +30,7 @@ impl ExtColorMap {
     ) -> Result<(), InvalidSkinError> {
         if !regex_is_match!("^none$"i, raw_color) {
             let color = parse_color(raw_color)?;
-            self.map.insert(ext, color);
+            self.map.insert(ext.to_ascii_lowercase(), color);
         }
         Ok(())
     }
