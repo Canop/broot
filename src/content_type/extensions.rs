@@ -89,8 +89,15 @@ static BINARY_EXTENSIONS: Set<&'static str> = phf_set! {
 /// tells whether the file extension is one of a file format
 /// which shouldn't be searched as text
 ///
-/// The comparison is case-insensitive.
+/// The comparison is case-insensitive. As this is checked for
+/// every file of a content search, the usual case (an already
+/// lowercase extension) is kept allocation-free: we only lowercase
+/// when the extension actually contains an uppercase byte.
 #[must_use]
 pub fn is_known_binary(ext: &str) -> bool {
-    BINARY_EXTENSIONS.contains(ext.to_ascii_lowercase().as_str())
+    if BINARY_EXTENSIONS.contains(ext) {
+        return true;
+    }
+    ext.bytes().any(|b| b.is_ascii_uppercase())
+        && BINARY_EXTENSIONS.contains(ext.to_ascii_lowercase().as_str())
 }
