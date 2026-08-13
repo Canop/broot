@@ -342,7 +342,11 @@ impl Verb {
         if self.file_extensions.is_empty() {
             true
         } else {
-            extension.map_or(false, |ext| self.file_extensions.iter().any(|ve| ve == ext))
+            extension.is_some_and(|ext| {
+                self.file_extensions
+                    .iter()
+                    .any(|ve| ve.eq_ignore_ascii_case(ext))
+            })
         }
     }
 }

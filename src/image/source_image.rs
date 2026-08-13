@@ -3,7 +3,10 @@ use {
         svg,
         zune_compat::DynamicImage,
     },
-    crate::errors::ProgramError,
+    crate::{
+        errors::ProgramError,
+        path::path_has_ext,
+    },
     std::path::Path,
     termimad::{
         coolor,
@@ -19,7 +22,7 @@ pub enum SourceImage {
 
 impl SourceImage {
     pub fn new(path: &Path) -> Result<Self, ProgramError> {
-        let is_svg = matches!(path.extension(), Some(ext) if ext == "svg" || ext == "SVG");
+        let is_svg = path_has_ext(path, "svg");
         let img = if is_svg {
             Self::Svg(svg::load(path)?)
         } else {

@@ -17,6 +17,7 @@ use {
             cell_size_in_pixels,
         },
         errors::ProgramError,
+        path::path_has_ext,
     },
     base64::{
         self,
@@ -506,12 +507,6 @@ impl KittyImageRenderer {
         self.next_id += 1;
         new_id
     }
-    fn is_path_png(path: &Path) -> bool {
-        match path.extension() {
-            Some(ext) => ext == "png" || ext == "PNG",
-            None => false,
-        }
-    }
     /// Clean the area, then print the dynamicImage and
     /// return the `KittyImageId` for later removal from screen
     pub fn print(
@@ -528,7 +523,7 @@ impl KittyImageRenderer {
             fill_bg(w, area.width as usize, bg)?;
         }
 
-        let png_path = KittyImageRenderer::is_path_png(src_path).then_some(src_path.to_path_buf());
+        let png_path = path_has_ext(src_path, "png").then_some(src_path.to_path_buf());
         let is_png = png_path.is_some();
         let img = KittyImage::new(src, png_path, area, self);
         debug!(

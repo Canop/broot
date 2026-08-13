@@ -368,11 +368,8 @@ impl PanelInput {
             if !sel_info.is_accepted_by(verb.selection_condition) {
                 continue;
             }
-            if !verb.file_extensions.is_empty() {
-                let extension = sel_info.extension();
-                if !extension.is_some_and(|ext| verb.file_extensions.iter().any(|ve| ve == ext)) {
-                    continue;
-                }
+            if !verb.accepts_extension(sel_info.extension()) {
+                continue;
             }
             return Some(verb);
         }
