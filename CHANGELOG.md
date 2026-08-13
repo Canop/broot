@@ -2,6 +2,7 @@
 - High-Res images in Rio (detect it to enable the Kitty image protocol) - Fix #1179
 - fix content-exact match line number off-by-one when the match starts at the first byte of a line (broot jumped to the line above) - Thanks @YuriNachos
 - fix: detect a duplicate broot server name instead of silently overtaking the running server - Fix #1065 - Thanks @YuriNachos
+- fix preview transformers extension matching not working with double extensions such as `.tar.gz` - Fix #1195
 
 ### v1.58.0 - 2026-07-10
 <a name="v1.58.0"></a>
