@@ -31,6 +31,19 @@ use is_executable::IsExecutable;
 
 pub type TreeLineId = usize;
 
+/// Replace control characters, including ANSI/terminal escape sequences,
+/// with the Unicode replacement character in a value that will be
+/// displayed. File and directory names are fully controlled by whoever
+/// created them, so they must be sanitized before being written to the
+/// terminal, since an unprivileged local user could otherwise plant a
+/// name containing an escape sequence that gets interpreted by anyone
+/// else's terminal when they browse the same directory with broot.
+pub fn sanitize_display_name(s: &str) -> String {
+    s.chars()
+        .map(|c| if c.is_control() { '\u{FFFD}' } else { c })
+        .collect()
+}
+
 /// a line in the representation of the file hierarchy
 #[derive(Debug, Clone)]
 pub struct TreeLine {
@@ -89,7 +102,7 @@ impl TreeLineBuilder {
         let line_type = TreeLineType::new(&path, metadata.file_type());
         let name = path
             .file_name()
-            .map(|os_str| os_str.to_string_lossy().replace('\n', "␤"))
+            .map(|os_str| sanitize_display_name(&os_str.to_string_lossy().replace('\n', "␤")))
             .unwrap_or_else(String::new);
         let icon = con.icons.as_ref().map(|icon_plugin| {
             let extension = TreeLine::extension_from_name(&name);
@@ -223,9 +236,34 @@ impl TreeLine {
     }
     pub fn unprune(&mut self) {
         self.line_type = TreeLineType::new(&self.path, self.metadata.file_type());
-        self.name = self
-            .path
-            .file_name()
-            .map_or_else(|| "???".to_string(), |n| n.to_string_lossy().to_string());
+        self.name = self.path.file_name().map_or_else(
+            || "???".to_string(),
+            |n| sanitize_display_name(&n.to_string_lossy()),
+        );
+    }
+}
+
+#[cfg(test)]
+mod sanitize_display_name_tests {
+    use super::*;
+
+    #[test]
+    fn strips_escape_sequences() {
+        // A crafted file name embedding a raw OSC 52 (clipboard-write)
+        // escape sequence, the same shape a malicious local file could
+        // use to inject terminal control sequences into another user's
+        // broot session. The ESC and BEL bytes must not survive
+        // sanitization.
+        let malicious = "\x1b]52;c;cGF5bG9hZA==\x07innocuous_file.txt";
+        let sanitized = sanitize_display_name(malicious);
+        assert!(!sanitized.contains('\u{1b}'));
+        assert!(!sanitized.contains('\u{7}'));
+        assert!(sanitized.contains("innocuous_file.txt"));
+    }
+
+    #[test]
+    fn preserves_normal_names() {
+        let normal = "some-normal_file.name (1).txt";
+        assert_eq!(sanitize_display_name(normal), normal);
     }
 }
