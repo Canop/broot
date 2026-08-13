@@ -31,17 +31,28 @@ use is_executable::IsExecutable;
 
 pub type TreeLineId = usize;
 
-/// Replace control characters, including ANSI/terminal escape sequences,
-/// with the Unicode replacement character in a value that will be
-/// displayed. File and directory names are fully controlled by whoever
-/// created them, so they must be sanitized before being written to the
-/// terminal, since an unprivileged local user could otherwise plant a
-/// name containing an escape sequence that gets interpreted by anyone
-/// else's terminal when they browse the same directory with broot.
-pub fn sanitize_display_name(s: &str) -> String {
-    s.chars()
-        .map(|c| if c.is_control() { '\u{FFFD}' } else { c })
-        .collect()
+/// Sanitize a path-derived string (a file/directory name or a symlink
+/// target) before it's written to the terminal: newlines become the
+/// `␤` placeholder and any other control character (including the ESC
+/// byte of a terminal escape sequence) becomes the replacement
+/// character.
+///
+/// Such strings are controlled by whoever created the file, so without
+/// this a name or link target containing an escape sequence would be
+/// interpreted by the terminal of anyone browsing the directory.
+pub fn sanitize_display_name(s: impl Into<String>) -> String {
+    let s = s.into();
+    if s.chars().any(char::is_control) {
+        s.chars()
+            .map(|c| match c {
+                '\n' => '␤',
+                c if c.is_control() => '\u{FFFD}',
+                c => c,
+            })
+            .collect()
+    } else {
+        s
+    }
 }
 
 /// a line in the representation of the file hierarchy
@@ -102,7 +113,7 @@ impl TreeLineBuilder {
         let line_type = TreeLineType::new(&path, metadata.file_type());
         let name = path
             .file_name()
-            .map(|os_str| sanitize_display_name(&os_str.to_string_lossy().replace('\n', "␤")))
+            .map(|os_str| sanitize_display_name(os_str.to_string_lossy()))
             .unwrap_or_else(String::new);
         let icon = con.icons.as_ref().map(|icon_plugin| {
             let extension = TreeLine::extension_from_name(&name);
@@ -238,7 +249,7 @@ impl TreeLine {
         self.line_type = TreeLineType::new(&self.path, self.metadata.file_type());
         self.name = self.path.file_name().map_or_else(
             || "???".to_string(),
-            |n| sanitize_display_name(&n.to_string_lossy()),
+            |n| sanitize_display_name(n.to_string_lossy()),
         );
     }
 }
