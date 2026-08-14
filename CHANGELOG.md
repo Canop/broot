@@ -4,6 +4,7 @@
 - fix: detect a duplicate broot server name instead of silently overtaking the running server - Fix #1065 - Thanks @YuriNachos
 - fix preview transformers extension matching not working with double extensions such as `.tar.gz` - Fix #1195
 - strip escape sequences from displayed names to prevent OSC injections - Fix #1188 - Thanks @carfeii
+- fall back to numeric uid/gid instead of `????` when the user or group name can't be resolved, which is always the case on statically linked musl builds - Fix #1075
 
 ### v1.58.0 - 2026-07-10
 <a name="v1.58.0"></a>
