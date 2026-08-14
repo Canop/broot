@@ -483,6 +483,7 @@ invocation | default key | default shortcut | behavior / details
 :next_dir | - | - | select the next directory
 :next_match | <kbd>tab</kbd> | - | select the next matching file, or matching verb or path in auto-completion
 :next_same_depth | - | - | select the next file at the same depth
+:no_action | - | - | do nothing (can be used to disable a key)
 :no_sort | - | ns | remove all sorts
 :open_leave | <kbd>alt</kbd><kbd>enter</kbd> | - | open the selected file in the default OS opener and leave broot
 :open_preview | - | - | open the preview panel

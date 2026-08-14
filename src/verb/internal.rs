@@ -90,6 +90,7 @@ Internals! {
     next_dir: "select the next directory" false,
     next_match: "select the next match" false,
     next_same_depth: "select the next file at the same depth" false,
+    no_action: "do nothing (can be used to disable a key)" false,
     no_sort: "don't sort" false,
     open_leave: "open file or directory according to OS (quit broot)" true,
     open_preview: "open the preview panel" true,
