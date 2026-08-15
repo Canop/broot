@@ -24,9 +24,13 @@ if staging_configured; then
     h2 "Fetching staged artifacts"
     stage_fetch build
     ok "fetched $BROOT_STAGE_DIR/$id"
+    manifest_fn=all_release_targets   # a full release must contain every target
 else
-    h1 "Building release $version locally (no staging configured)"
+    h1 "Building release $version locally — THIS host's targets only"
+    warn "no staging configured, so this is NOT a full cross-host release (e.g. no macOS binary on Linux)."
+    warn "to assemble a full release, set BROOT_STAGE_HOST in build-scripts/_local.sh on each machine."
     "$here/build-all-targets.sh"
+    manifest_fn=all_targets           # can only expect what this host builds
 fi
 
 # Completeness: every target of the full (cross-host) release manifest must be
@@ -40,7 +44,7 @@ while IFS='|' read -r label triple tool features; do
     else
         missing+=("$label ($triple)")
     fi
-done < <(all_release_targets)
+done < <("$manifest_fn")
 [[ ${#missing[@]} -eq 0 ]] || die "release incomplete — missing binaries: ${missing[*]}"
 ok "all release targets present and verified"
 

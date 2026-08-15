@@ -18,6 +18,23 @@ version=$(broot_version)
 h1 "Building all targets for $NAME $version   (host $(host_os), darwin=$DARWIN_METHOD)"
 [[ $DARWIN_METHOD == skip ]] && warn "the macOS binary will not be built (DARWIN_METHOD=skip)"
 
+# Decide up front whether this build will be staged. Staging needs a clean tree;
+# if it's dirty, confirm now rather than after a long build that can't be pushed.
+stage_this=no
+if staging_configured; then
+    if git diff --quiet HEAD 2>/dev/null; then
+        stage_this=yes
+    else
+        warn "working tree has uncommitted changes — this build CANNOT be staged to $BROOT_STAGE_HOST"
+        printf '    build locally anyway? it will NOT be staged. [y/N] '
+        { read -r reply </dev/tty; } 2>/dev/null || reply=n
+        case $reply in
+            [yY]|[yY][eE][sS]) ;;
+            *) die "aborted — commit your changes, then re-run to stage the build" ;;
+        esac
+    fi
+fi
+
 h2 "Cleaning build/"
 rm -rf build && mkdir build
 ok "build/ cleaned"
@@ -63,17 +80,12 @@ sed_inplace "s|#date|$(commit_date)|g" build/broot.1
 echo "$version" > build/version
 ok "metadata added"
 
-# Optionally publish the whole build/ to the staging server, keyed by commit, so
-# a full release can be assembled from several hosts (see release.sh). Only a
-# clean tree is staged, so local/dirty test builds never push.
-if staging_configured; then
-    if git diff --quiet HEAD 2>/dev/null; then
-        h2 "Staging build/ to $BROOT_STAGE_HOST:$BROOT_STAGE_DIR/$(release_id)"
-        stage_push build
-        ok "staged as $(release_id)"
-    else
-        warn "working tree is dirty — built locally but NOT staged"
-    fi
+# Publish the whole build/ to the staging server (the decision was made up front,
+# before the build, so a dirty tree is caught early rather than after all this work).
+if [[ $stage_this == yes ]]; then
+    h2 "Staging build/ to $BROOT_STAGE_HOST:$BROOT_STAGE_DIR/$(release_id)"
+    stage_push build
+    ok "staged as $(release_id)"
 fi
 
 h1 "FINISHED — build/ is ready for release.sh"

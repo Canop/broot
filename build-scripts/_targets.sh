@@ -11,7 +11,7 @@ NAME=broot
 # Each target builds into its own cargo target dir under here, so native,
 # Docker (cross) and zig builds never share host artifacts. This replaces the
 # old global `cargo clean` between targets (and keeps incremental caching).
-CACHE=build-cache
+CACHE=.build-cache
 
 # How to build the macOS binary:
 #   auto   -> native when running on macOS, else skip
