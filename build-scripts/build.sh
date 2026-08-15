@@ -1,3 +1,4 @@
+#!/usr/bin/env bash
 # This script compiles broot for the local system
 #
 # After compilation, broot can be found in target/release
@@ -9,8 +10,9 @@
 # Depending on your system, it's possible one of the 'features'
 # won't compile for you. You may remove them (see features.md)
 #
-# The line below can be safely executed on systems which don't
-# support sh scripts.
+# The cargo command below can be safely executed on its own on systems
+# which don't support sh scripts.
 
+cd "$(dirname "$0")/.."
 cargo build --release --features "clipboard"
 
