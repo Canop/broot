@@ -130,6 +130,7 @@ fn select_renderer(con: &AppContext) -> Option<Box<dyn GraphicsRenderer>> {
     let build_kitty = || {
         crate::kitty::build_kitty_renderer(con).map(|r| Box::new(r) as Box<dyn GraphicsRenderer>)
     };
+    #[cfg(feature = "sixel")]
     let build_sixel = || {
         if crate::sixel::detect_sixel_support() {
             crate::sixel::SixelRenderer::new().map(|r| Box::new(r) as Box<dyn GraphicsRenderer>)
@@ -137,6 +138,9 @@ fn select_renderer(con: &AppContext) -> Option<Box<dyn GraphicsRenderer>> {
             None
         }
     };
+    // Without the `sixel` feature there's no renderer to build (and no DA1 probe).
+    #[cfg(not(feature = "sixel"))]
+    let build_sixel = || -> Option<Box<dyn GraphicsRenderer>> { None };
 
     // env override (BROOT_GRAPHICS_PROTOCOL) takes precedence over the config
     let display = graphics_display::graphics_display_from_env().unwrap_or(con.graphics_display);
@@ -157,14 +161,22 @@ fn select_renderer(con: &AppContext) -> Option<Box<dyn GraphicsRenderer>> {
             r
         }
         GraphicsDisplay::Sixel => {
-            // Forcing the protocol bypasses the DA1 detection probe (matches the
-            // BROOT_GRAPHICS_PROTOCOL=sixel override); Auto still probes.
-            let r = crate::sixel::SixelRenderer::new()
-                .map(|r| Box::new(r) as Box<dyn GraphicsRenderer>);
-            if r.is_none() {
-                warn!("graphics-display = sixel but the Sixel renderer failed to initialize");
+            #[cfg(feature = "sixel")]
+            {
+                // Forcing the protocol bypasses the DA1 detection probe (matches the
+                // BROOT_GRAPHICS_PROTOCOL=sixel override); Auto still probes.
+                let r = crate::sixel::SixelRenderer::new()
+                    .map(|r| Box::new(r) as Box<dyn GraphicsRenderer>);
+                if r.is_none() {
+                    warn!("graphics-display = sixel but the Sixel renderer failed to initialize");
+                }
+                r
             }
-            r
+            #[cfg(not(feature = "sixel"))]
+            {
+                warn!("graphics-display = sixel but broot was built without the `sixel` feature");
+                None
+            }
         }
         GraphicsDisplay::Auto => {
             if let Some(r) = build_kitty() {

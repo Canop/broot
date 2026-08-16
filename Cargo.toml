@@ -16,9 +16,10 @@ rust-version = "1.83"
 exclude = ["website", "broot*.zip"]
 
 [features]
-default = []
+default = ["sixel"]
 clipboard = ["terminal-clipboard"]
 kitty-csi-check = [] # gates the optional Kitty CSI graphics query (xterm-query is now a base dependency)
+sixel = ["icy_sixel"] # Sixel image-preview protocol (pulls icy_sixel + its color-quantization deps)
 
 [dependencies]
 base64 = "0.22"
@@ -37,7 +38,7 @@ flate2 = "1.0"
 flex-grow = "0.1"
 git2 = { version = "0.20", default-features = false } # waiting for a good pure-rust alternative
 glob = "0.3"
-icy_sixel = "0.5"
+icy_sixel = { version = "0.5", optional = true }
 id-arena = "2.2.1"
 image = "=0.25.6" # later versions ask for rust 1.85+
 zune-core = "0.4.12"

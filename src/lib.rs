@@ -27,6 +27,7 @@ pub mod permissions;
 pub mod preview;
 pub mod print;
 pub mod shell_install;
+#[cfg(feature = "sixel")]
 pub mod sixel;
 pub mod skin;
 pub mod stage;
