@@ -13,7 +13,7 @@ use {
     cli_log::*,
     crokey::crossterm::{QueueableCommand, cursor, style::Color},
     icy_sixel::SixelImage,
-    std::{io::Write, path::Path},
+    std::{io::Write, path::{Path, PathBuf}},
     termimad::{Area, coolor, fill_bg},
 };
 
@@ -109,6 +109,21 @@ fn letterbox_segments(area: &Area, sub: &Area) -> Vec<(u16, u16, u16)> {
     segs
 }
 
+/// A Sixel image encoded to its DCS string, kept so an identical re-draw within
+/// a frame (the post-clear redraw pass on Konsole) reuses it instead of
+/// re-encoding. `path` + `width`/`height` + `flatten_bg` are the cache key — the
+/// flatten colour matters because a pane's background differs focused vs
+/// unfocused.
+#[derive(Debug)]
+struct EncodedSixel {
+    path: PathBuf,
+    width: u32,
+    height: u32,
+    /// alpha-flatten background used at encode time (`None` off Konsole)
+    flatten_bg: Option<(u8, u8, u8)>,
+    dcs: String,
+}
+
 #[derive(Debug)]
 pub struct SixelRenderer {
     /// Cell pixel size, probed once at startup and stale after a mid-session
@@ -129,13 +144,11 @@ pub struct SixelRenderer {
     /// reclear-on-change, alpha flattening, letterbox repaint, and cell-box
     /// padding in `fit_constraints`.
     konsole_bg: Option<coolor::Rgb>,
-    /// Last encoded Sixel `(path, fitted_width, fitted_height, flatten_bg,
-    /// dcs)`, reused when the same image at the same size (and same alpha
-    /// flatten colour) is drawn again within a frame (the post-clear redraw
-    /// pass on Konsole) so it isn't re-encoded. The flatten colour is part of
-    /// the key because the pane bg differs focused vs unfocused. Cleared every
-    /// frame (`end_frame`) so a file that changed in place isn't shown stale.
-    last_encoded: Option<(std::path::PathBuf, u32, u32, Option<(u8, u8, u8)>, String)>,
+    /// The last encoded Sixel, reused when the same image at the same size and
+    /// flatten colour is drawn again within a frame (the post-clear redraw pass
+    /// on Konsole) so it isn't re-encoded. Cleared every frame (`end_frame`) so
+    /// a file changed in place isn't shown stale. See `EncodedSixel`.
+    last_encoded: Option<EncodedSixel>,
 }
 
 impl SixelRenderer {
@@ -202,8 +215,11 @@ impl GraphicsRenderer for SixelRenderer {
 
         // Reuse the cached encode when the same image at the same size is drawn
         // again (the post-clear redraw pass on Konsole), else encode and cache.
-        let cached = self.last_encoded.as_ref().is_some_and(|(p, cw, ch, fbg, _)| {
-            p == src_path && *cw == img_width && *ch == img_height && *fbg == flatten_key
+        let cached = self.last_encoded.as_ref().is_some_and(|e| {
+            e.path.as_path() == src_path
+                && e.width == img_width
+                && e.height == img_height
+                && e.flatten_bg == flatten_key
         });
         if !cached {
             let mut rgba = src.to_rgba_bytes();
@@ -211,10 +227,15 @@ impl GraphicsRenderer for SixelRenderer {
                 flatten_alpha(&mut rgba, bg_rgb);
             }
             let sixel = encode_sixel(rgba, img_width, img_height)?;
-            self.last_encoded =
-                Some((src_path.to_path_buf(), img_width, img_height, flatten_key, sixel));
+            self.last_encoded = Some(EncodedSixel {
+                path: src_path.to_path_buf(),
+                width: img_width,
+                height: img_height,
+                flatten_bg: flatten_key,
+                dcs: sixel,
+            });
         }
-        let sixel = &self.last_encoded.as_ref().unwrap().4;
+        let sixel = &self.last_encoded.as_ref().unwrap().dcs;
 
         w.queue(cursor::MoveTo(sub.left, sub.top))?;
         if self.is_tmux {
@@ -292,8 +313,8 @@ impl GraphicsRenderer for SixelRenderer {
 #[cfg(test)]
 mod tests {
     use super::{
-        SixelRenderer, encode_sixel, flatten_alpha, gcd, letterbox_segments, resolve_bg,
-        tmux_passthrough,
+        EncodedSixel, SixelRenderer, encode_sixel, flatten_alpha, gcd, letterbox_segments,
+        resolve_bg, tmux_passthrough,
     };
     use crate::{display, graphics::GraphicsRenderer, image::zune_compat::DynamicImage};
     use std::path::{Path, PathBuf};
@@ -417,7 +438,7 @@ mod tests {
     /// Renderer built by struct literal, with a seeded `last_encoded` entry.
     fn renderer_with_cache(
         konsole_bg: Option<coolor::Rgb>,
-        cached: Option<(PathBuf, u32, u32, Option<(u8, u8, u8)>, String)>,
+        cached: Option<EncodedSixel>,
     ) -> SixelRenderer {
         SixelRenderer {
             cell_width: 10,
@@ -442,7 +463,7 @@ mod tests {
         let flatten_key = Some(resolve_bg(bg, tbg)).map(|c| (c.r, c.g, c.b));
         let mut renderer = renderer_with_cache(
             Some(tbg),
-            Some((PathBuf::from("a.png"), 4, 4, flatten_key, "SENTINEL".to_string())),
+            Some(EncodedSixel { path: PathBuf::from("a.png"), width: 4, height: 4, flatten_bg: flatten_key, dcs: "SENTINEL".to_string() }),
         );
         let mut w = display::writer();
         let img = small_image();
@@ -452,7 +473,7 @@ mod tests {
         // Skip BufWriter's flush-on-drop so queued escape bytes don't pollute test
         // output (fresh unshared stderr writer, content well under its 8KB buffer).
         std::mem::forget(w);
-        assert_eq!(renderer.last_encoded.unwrap().4, "SENTINEL");
+        assert_eq!(renderer.last_encoded.unwrap().dcs, "SENTINEL");
     }
 
     #[test]
@@ -462,7 +483,7 @@ mod tests {
         let seed_key = Some(resolve_bg(seed_bg, tbg)).map(|c| (c.r, c.g, c.b));
         let mut renderer = renderer_with_cache(
             Some(tbg),
-            Some((PathBuf::from("a.png"), 4, 4, seed_key, "SENTINEL".to_string())),
+            Some(EncodedSixel { path: PathBuf::from("a.png"), width: 4, height: 4, flatten_bg: seed_key, dcs: "SENTINEL".to_string() }),
         );
         let mut w = display::writer();
         let img = small_image();
@@ -472,7 +493,7 @@ mod tests {
             .print(&mut w, &img, Path::new("a.png"), &Area::new(0, 0, 10, 10), new_bg)
             .unwrap();
         std::mem::forget(w);
-        let stored = renderer.last_encoded.unwrap().4;
+        let stored = renderer.last_encoded.unwrap().dcs;
         assert_ne!(stored, "SENTINEL");
         assert!(stored.starts_with('\x1b'), "should be a fresh DCS encode: {stored:?}");
     }
@@ -484,7 +505,7 @@ mod tests {
         let flatten_key = Some(resolve_bg(bg, tbg)).map(|c| (c.r, c.g, c.b));
         let mut renderer = renderer_with_cache(
             Some(tbg),
-            Some((PathBuf::from("a.png"), 4, 4, flatten_key, "SENTINEL".to_string())),
+            Some(EncodedSixel { path: PathBuf::from("a.png"), width: 4, height: 4, flatten_bg: flatten_key, dcs: "SENTINEL".to_string() }),
         );
         let mut w = display::writer();
         let img = small_image();
@@ -493,7 +514,7 @@ mod tests {
             .print(&mut w, &img, Path::new("b.png"), &Area::new(0, 0, 10, 10), bg)
             .unwrap();
         std::mem::forget(w);
-        assert_ne!(renderer.last_encoded.unwrap().4, "SENTINEL");
+        assert_ne!(renderer.last_encoded.unwrap().dcs, "SENTINEL");
     }
 
     #[test]
@@ -504,7 +525,7 @@ mod tests {
         // Seeded dims (8, 8); the printed image is 4x4.
         let mut renderer = renderer_with_cache(
             Some(tbg),
-            Some((PathBuf::from("a.png"), 8, 8, flatten_key, "SENTINEL".to_string())),
+            Some(EncodedSixel { path: PathBuf::from("a.png"), width: 8, height: 8, flatten_bg: flatten_key, dcs: "SENTINEL".to_string() }),
         );
         let mut w = display::writer();
         let img = small_image();
@@ -512,7 +533,7 @@ mod tests {
             .print(&mut w, &img, Path::new("a.png"), &Area::new(0, 0, 10, 10), bg)
             .unwrap();
         std::mem::forget(w);
-        assert_ne!(renderer.last_encoded.unwrap().4, "SENTINEL");
+        assert_ne!(renderer.last_encoded.unwrap().dcs, "SENTINEL");
     }
 
     #[test]
