@@ -29,14 +29,43 @@ Linux), so a release is built on both and assembled through a staging server.
 
        ./build-scripts/deploy.sh
 
-Staging server and other machine-local settings live in `build-scripts/_local.sh`
-(gitignored). Without it, `release.sh` just builds locally on a single host.
+Staging and deploy settings come from `build-scripts/_local.sh` (see below).
+Without it, `release.sh` builds locally on a single host and `deploy.sh` won't run.
 
-More specifically, those two vars are needed (here with example values):
+## Machine-local config (`_local.sh`)
+
+`build-scripts/_local.sh` holds per-machine settings and is **gitignored**, so it
+never travels through git — **recreate it on each machine** that builds or deploys.
+It's sourced by `_common.sh`.
+
+| Variable | Used by | Required | Meaning |
+|----------|---------|----------|---------|
+| `BROOT_STAGE_HOST` | build-all-targets.sh, release.sh | for staged releases | ssh host every machine can reach; enables push/fetch of a multi-host release. Unset ⇒ single-host local builds. |
+| `BROOT_STAGE_DIR` | build-all-targets.sh, release.sh | no — default `broot-staging` | staging dir on the server, relative to your ssh login home (or absolute, with a leading `/`). |
+| `BROOT_DOWNLOAD_DIR` | deploy.sh | yes, to deploy | dir the built `build/` and the zip are copied into. |
+| `BROOT_DEPLOY_HOOK` | deploy.sh | no | command run after copying, to publish (e.g. a website deploy script). |
+| `BROOT_VM_SHARED` | win-deploy.sh | no — default `~/dev/storage/vm/shared` | folder shared with the Windows VM. |
+| `BROOT_PUB_DIR` | termux-deploy.sh | no — default `$BROOT_WWW_DIR/pub` | destination for the Android/Termux binary. |
+| `BROOT_WWW_DIR` | termux-deploy.sh, convenience | no — default `~/dev/www/dystroy` | base path used to derive the others. |
+
+Set only what a machine actually needs (e.g. `BROOT_VM_SHARED` only where you run
+`win-deploy.sh`). A full example:
 
 ```bash
+# build-scripts/_local.sh  — per machine, gitignored
+
+# Staged multi-host release builds (set on both the Mac and the Linux box):
 BROOT_STAGE_HOST=dystroy.org
-BROOT_STAGE_DIR=staging/broot-staging
+BROOT_STAGE_DIR=staging/broot-staging        # relative to ssh home, or absolute
+
+# Publishing, on whichever machine runs deploy.sh:
+BROOT_WWW_DIR="$HOME/dev/www/dystroy"
+BROOT_DOWNLOAD_DIR="$BROOT_WWW_DIR/broot/download"
+BROOT_DEPLOY_HOOK="$BROOT_WWW_DIR/deploy.sh"
+
+# Only if you use these on this machine:
+# BROOT_VM_SHARED="$HOME/dev/storage/vm/shared"    # win-deploy.sh
+# BROOT_PUB_DIR="$BROOT_WWW_DIR/pub"               # termux-deploy.sh
 ```
 
 ## Other scripts

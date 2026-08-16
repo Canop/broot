@@ -24,7 +24,7 @@ cd "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # --- decorations (only when writing to a terminal, and NO_COLOR unset) -------
 if [[ -t 1 && -z "${NO_COLOR:-}" ]]; then
-    _c_reset=$'\033[0m'; _c_h1=$'\033[30;104;1m'; _c_h2=$'\033[30;104m'
+    _c_reset=$'\033[0m'; _c_h1=$'\033[1;97;44m'; _c_h2=$'\033[97;44m'
     _c_ok=$'\033[32m'; _c_warn=$'\033[33m'; _c_err=$'\033[31m'
 else
     _c_reset=; _c_h1=; _c_h2=; _c_ok=; _c_warn=; _c_err=
