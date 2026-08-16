@@ -7,6 +7,7 @@
 - fix preview transformers extension matching not working with double extensions such as `.tar.gz` - Fix #1195
 - strip escape sequences from displayed names to prevent OSC injections - Fix #1188 - Thanks @carfeii
 - fall back to numeric uid/gid instead of `????` when the user or group name can't be resolved, which is always the case on statically linked musl builds - Fix #1075
+- Sixel graphics support for image preview, auto-detected via a DA1 terminal query: works in Windows Terminal 1.22+ and Sixel-capable Unix terminals (foot, mlterm, xterm built with Sixel, recent WezTerm). Kitty remains the preferred protocol when available.
 
 ### v1.58.0 - 2026-07-10
 <a name="v1.58.0"></a>

@@ -18,7 +18,7 @@ exclude = ["website", "broot*.zip"]
 [features]
 default = []
 clipboard = ["terminal-clipboard"]
-kitty-csi-check = ["xterm-query"]
+kitty-csi-check = [] # gates the optional Kitty CSI graphics query (xterm-query is now a base dependency)
 
 [dependencies]
 base64 = "0.22"
@@ -37,6 +37,7 @@ flate2 = "1.0"
 flex-grow = "0.1"
 git2 = { version = "0.20", default-features = false } # waiting for a good pure-rust alternative
 glob = "0.3"
+icy_sixel = "0.5"
 id-arena = "2.2.1"
 image = "=0.25.6" # later versions ask for rust 1.85+
 zune-core = "0.4.12"
@@ -70,7 +71,7 @@ umask = "2.1.0"
 unicode-width = "0.2"
 vte = "0.15"
 which = "=4.4.0" # following versions ask for a a more recent rustc
-xterm-query = { version = "0.5", optional = true }
+xterm-query = "0.6" # terminal queries: Sixel DA1 detection (all platforms) + cell size on Windows
 
 [dev-dependencies]
 glassbench = "0.4.4"

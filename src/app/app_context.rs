@@ -12,6 +12,7 @@ use {
         errors::*,
         file_sum,
         icon::*,
+        graphics::GraphicsDisplay,
         kitty::{
             KittyGraphicsDisplay,
             TransmissionMedium,
@@ -145,6 +146,10 @@ pub struct AppContext {
     /// How Kitty images are displayed
     pub kitty_graphics_display: KittyGraphicsDisplay,
 
+    /// Which terminal-graphics protocol to use for image previews
+    /// (none / auto / kitty / sixel). `auto` detects Kitty, then Sixel.
+    pub graphics_display: GraphicsDisplay,
+
     pub kept_kitty_temp_files: NonZeroUsize,
 
     /// Number of lines to display after a match in the preview
@@ -272,6 +277,7 @@ impl AppContext {
             keyboard_enhanced: false,
             kitty_graphics_transmission: config.kitty_graphics_transmission.unwrap_or_default(),
             kitty_graphics_display: config.kitty_graphics_display.unwrap_or_default(),
+            graphics_display: config.graphics_display.unwrap_or_default(),
             kept_kitty_temp_files,
             lines_after_match_in_preview: config.lines_after_match_in_preview.unwrap_or(0),
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),

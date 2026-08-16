@@ -183,6 +183,65 @@ impl DynamicImage {
         }
     }
 
+    /// RGBA bytes (4 per pixel), converting from RGB if needed.
+    pub fn to_rgba_bytes(&self) -> Vec<u8> {
+        if let Some(rgba) = self.as_rgba8() {
+            rgba.as_raw()
+        } else {
+            let rgb = self.to_rgb8().as_raw();
+            let mut out = Vec::with_capacity(rgb.len() / 3 * 4);
+            for px in rgb.chunks_exact(3) {
+                out.extend_from_slice(px);
+                out.push(255);
+            }
+            out
+        }
+    }
+
+    /// A new image `target_height` tall (`>= height`) holding this image's
+    /// pixels at the top and the remaining rows filled with opaque `rgb`.
+    pub fn padded_to_height(
+        &self,
+        target_height: u32,
+        rgb: (u8, u8, u8),
+    ) -> Result<Self, ProgramError> {
+        self.padded_to_size(self.dimensions().0, target_height, rgb)
+    }
+
+    /// A new image `target_width x target_height` (each `>=` the current size)
+    /// holding this image's pixels at the top-left and the added right columns
+    /// and bottom rows filled with opaque `rgb`. Used to pad a Sixel image out
+    /// to whole terminal cells so no sub-cell remainder is left unset.
+    pub fn padded_to_size(
+        &self,
+        target_width: u32,
+        target_height: u32,
+        rgb: (u8, u8, u8),
+    ) -> Result<Self, ProgramError> {
+        let (w, h) = self.dimensions();
+        let tw = target_width.max(w);
+        let th = target_height.max(h);
+        if tw == w && th == h {
+            return Ok(self.clone());
+        }
+        let fill = [rgb.0, rgb.1, rgb.2, 255];
+        let src = self.to_rgba_bytes();
+        let row_bytes = w as usize * 4;
+        let right_pad = (tw - w) as usize;
+        let mut data = Vec::with_capacity(tw as usize * th as usize * 4);
+        for row in 0..h as usize {
+            let start = row * row_bytes;
+            data.extend_from_slice(&src[start..start + row_bytes]);
+            for _ in 0..right_pad {
+                data.extend_from_slice(&fill);
+            }
+        }
+        for _ in 0..(th - h) as usize * tw as usize {
+            data.extend_from_slice(&fill);
+        }
+        Self::from_rgba8(tw, th, data)
+    }
+
     pub fn pixels(&self) -> PixelIterator {
         match self {
             Self::Zune(img) => {
@@ -408,5 +467,54 @@ impl Iterator for PixelIterator {
                 Some((x, y, rgba))
             }
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::DynamicImage;
+
+    #[test]
+    fn to_rgba_bytes_passthrough() {
+        let img = DynamicImage::from_rgba8(1, 1, vec![10, 20, 30, 255]).unwrap();
+        assert_eq!(img.to_rgba_bytes(), vec![10, 20, 30, 255]);
+    }
+
+    #[test]
+    fn padded_to_height_fills_bottom_with_bg() {
+        // 1x2 image: row0 = (1,1,1), row1 = (2,2,2); pad to height 4 with (9,8,7)
+        let img = DynamicImage::from_rgba8(1, 2, vec![1, 1, 1, 255, 2, 2, 2, 255]).unwrap();
+        let padded = img.padded_to_height(4, (9, 8, 7)).unwrap();
+        assert_eq!(padded.dimensions(), (1, 4));
+        let b = padded.to_rgba_bytes();
+        assert_eq!(&b[0..4], &[1, 1, 1, 255]); // row 0 preserved
+        assert_eq!(&b[4..8], &[2, 2, 2, 255]); // row 1 preserved
+        assert_eq!(&b[8..12], &[9, 8, 7, 255]); // row 2 = bg
+        assert_eq!(&b[12..16], &[9, 8, 7, 255]); // row 3 = bg
+    }
+
+    #[test]
+    fn padded_to_height_noop_when_not_taller() {
+        let img = DynamicImage::from_rgba8(1, 4, vec![0; 16]).unwrap();
+        assert_eq!(img.padded_to_height(4, (0, 0, 0)).unwrap().dimensions(), (1, 4));
+    }
+
+    #[test]
+    fn padded_to_size_fills_right_and_bottom_with_bg() {
+        // 2x1 red image padded to 4x2: right columns and bottom row get bg
+        let img = DynamicImage::from_rgba8(2, 1, vec![9, 9, 9, 255, 9, 9, 9, 255]).unwrap();
+        let padded = img.padded_to_size(4, 2, (1, 2, 3)).unwrap();
+        assert_eq!(padded.dimensions(), (4, 2));
+        let b = padded.to_rgba_bytes();
+        assert_eq!(&b[0..8], &[9, 9, 9, 255, 9, 9, 9, 255]); // row 0: image
+        assert_eq!(&b[8..16], &[1, 2, 3, 255, 1, 2, 3, 255]); // row 0: right pad
+        assert_eq!(&b[16..32], &[1, 2, 3, 255, 1, 2, 3, 255, 1, 2, 3, 255, 1, 2, 3, 255]); // row 1: all pad
+    }
+
+    #[test]
+    fn padded_to_size_noop_when_not_larger() {
+        let img = DynamicImage::from_rgba8(2, 2, vec![0; 16]).unwrap();
+        assert_eq!(img.padded_to_size(2, 2, (1, 1, 1)).unwrap().dimensions(), (2, 2));
+        assert_eq!(img.padded_to_size(1, 1, (1, 1, 1)).unwrap().dimensions(), (2, 2));
     }
 }
