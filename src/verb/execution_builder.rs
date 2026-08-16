@@ -481,7 +481,7 @@ impl<'b> ExecutionBuilder<'b> {
         }
         // first we replace single quotes by `'"'"'` (close the single quote, add an escaped
         // single quote, and reopen the single quote)
-        let s = s.replace('\'', r#"'"'"#);
+        let s = s.replace('\'', r#"'"'"'"#);
         // then we wrap the whole thing in single quotes
         let s = format!("'{}'", s);
         s
@@ -594,5 +594,24 @@ mod execution_builder_test {
             vec![],
             vec!["xterm", "-e", "kak /path/to/file"],
         );
+    }
+
+    /// A path containing a single quote must be escaped so that the produced
+    /// shell command stays valid (this is what's written in the `--outcmd`
+    /// file, eg on `:cd`)
+    #[test]
+    fn test_shell_escaping_of_single_quote() {
+        let path = PathBuf::from("/home/dys/it's a dir");
+        let sel = Selection {
+            path: &path,
+            line: 0,
+            stype: SelectionType::Directory,
+            is_exe: false,
+        };
+        let app_state = AppState::new(PathBuf::from("/".to_owned()));
+        let mut builder = ExecutionBuilder::without_invocation(SelInfo::One(sel), &app_state);
+        let con = AppContext::default();
+        let exec_string = builder.shell_exec_string(&ExecPattern::from_string("cd {file}"), &con);
+        assert_eq!(exec_string, r#"cd '/home/dys/it'"'"'s a dir'"#);
     }
 }
