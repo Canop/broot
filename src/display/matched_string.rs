@@ -109,7 +109,7 @@ impl<'a> MatchedString<'a> {
             self.name_match = self
                 .name_match
                 .take()
-                .map(|mut nm| nm.cut_after(removed_char_count - 1));
+                .map(|mut nm| nm.cut_after(removed_char_count));
         }
         removed_char_count
     }
@@ -176,5 +176,72 @@ impl<'a> MatchedString<'a> {
             cw.queue_str(self.base_style, self.string)?;
         }
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod matched_string_tests {
+    use {
+        super::MatchedString,
+        crate::pattern::NameMatch,
+        smallvec::smallvec,
+        termimad::CompoundStyle,
+    };
+
+    /// Cutting chars from the left to fit a width reindexes every surviving
+    /// match position by the number of removed chars: original index `rcc`
+    /// becomes display index `0`, so a match at original `p` lands at `p - rcc`.
+    #[test]
+    fn cut_left_to_fit_reindexes_match_positions() {
+        let base_style = CompoundStyle::default();
+        let match_style = CompoundStyle::default();
+        // "abcdef" (width 6) is matched on 'e', 'f' (positions 4, 5).
+        let mut matched_string = MatchedString::new(
+            Some(NameMatch {
+                score: 1,
+                pos: smallvec![4, 5],
+            }),
+            "abcdef",
+            &base_style,
+            &match_style,
+        );
+        // Fitting to width 4 removes the 2 leftmost chars -> visible "cdef".
+        let removed = matched_string.cut_left_to_fit(4);
+        assert_eq!(removed, 2);
+        assert_eq!(matched_string.string, "cdef");
+        // 'e', 'f' are now at display positions 2, 3.
+        let expected: &[usize] = &[2, 3];
+        assert_eq!(
+            matched_string.name_match.as_ref().unwrap().pos.as_slice(),
+            expected,
+        );
+    }
+
+    /// When the last removed char was itself matched, that match must be
+    /// dropped instead of leaving a phantom highlight on the first visible char.
+    #[test]
+    fn cut_left_to_fit_drops_match_on_last_removed_char() {
+        let base_style = CompoundStyle::default();
+        let match_style = CompoundStyle::default();
+        // "wxyzab" (width 6) is matched on 'x', 'y' (positions 1, 2).
+        let mut matched_string = MatchedString::new(
+            Some(NameMatch {
+                score: 1,
+                pos: smallvec![1, 2],
+            }),
+            "wxyzab",
+            &base_style,
+            &match_style,
+        );
+        // Fitting to width 4 removes 'w', 'x' -> visible "yzab". 'x' (the last
+        // removed char) was matched but is gone; only 'y' survives, at index 0.
+        let removed = matched_string.cut_left_to_fit(4);
+        assert_eq!(removed, 2);
+        assert_eq!(matched_string.string, "yzab");
+        let expected: &[usize] = &[0];
+        assert_eq!(
+            matched_string.name_match.as_ref().unwrap().pos.as_slice(),
+            expected,
+        );
     }
 }
