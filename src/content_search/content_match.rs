@@ -35,7 +35,7 @@ impl ContentMatch {
             extract_start -= 1;
         }
         // left trimming
-        while (hay[extract_start] == 32) && extract_start < pos {
+        while extract_start < pos && hay[extract_start] == 32 {
             extract_start += 1;
         }
         loop {
@@ -57,5 +57,47 @@ impl ContentMatch {
             needle_start,
             needle_end: needle_start + needle.len(),
         }
+    }
+}
+
+#[cfg(test)]
+mod content_match_tests {
+    use super::*;
+
+    /// Regression: an empty match at the very end of a line (eg searching
+    /// `cr/$/` in a file whose line ends with a control char, such as a tab
+    /// or the `\r` of a CRLF line ending) gives `pos == hay.len()`. The left
+    /// trimming loop used to read `hay[extract_start]` before checking
+    /// `extract_start < pos`, panicking with "index out of bounds".
+    #[test]
+    fn empty_match_at_end_of_line_doesnt_panic() {
+        // line ending with a tab: the extract_start loop stops on the control
+        // char, leaving extract_start == pos == hay.len()
+        let m = ContentMatch::build(b"abc\t", 4, "", 30);
+        assert_eq!(m.extract, "");
+        assert_eq!(m.needle_start, 0);
+        assert_eq!(m.needle_end, 0);
+        // same with the `\r` of a CRLF line ending
+        let m = ContentMatch::build(b"hello\r", 6, "", 30);
+        assert_eq!(m.extract, "");
+    }
+
+    /// The left trimming must still drop the spaces before the needle.
+    #[test]
+    fn left_trimming_still_drops_leading_spaces() {
+        let m = ContentMatch::build(b"\t   needle here", 7, "needle", 30);
+        assert_eq!(m.extract, "needle here");
+        assert_eq!(m.needle_start, 0);
+        assert_eq!(m.needle_end, 6);
+    }
+
+    /// Trimming must not eat the needle itself when the needle starts with a
+    /// space: it stops at `pos`.
+    #[test]
+    fn left_trimming_stops_at_needle() {
+        // bytes: \t=0 ' '=1 ' '=2 'a'=3 ' '=4 'x'=5, needle " a" at pos 2
+        let m = ContentMatch::build(b"\t  a x", 2, " a", 30);
+        assert_eq!(m.extract, " a x");
+        assert_eq!(m.needle_start, 0);
     }
 }

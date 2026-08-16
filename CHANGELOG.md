@@ -1,13 +1,14 @@
 ### next
-- High-Res images in Rio terminal (detect it to enable the Kitty image protocol) - Fix #1179
 - fix invalid official Mac binary (duplicate linked dylib) with new build chain - Fix #1194
+- Sixel graphics support for image preview, auto-detected: works in iterm2, Windows Terminal 1.22+ and Sixel-capable Unix terminals (foot, mlterm, xterm built with Sixel, recent WezTerm). Kitty remains the preferred protocol when available - Fix #568 - Thanks @jamison-wilde
+- High-Res images in Rio terminal (detect it to enable the Kitty image protocol) - Fix #1179
 - fix content-exact match line number off-by-one when the match starts at the first byte of a line (broot jumped to the line above) - Thanks @YuriNachos
 - new `:no_action` internal, doing nothing, which can be used to disable a key - Fix #328
 - fix: detect a duplicate broot server name instead of silently overtaking the running server - Fix #1065 - Thanks @YuriNachos
 - fix preview transformers extension matching not working with double extensions such as `.tar.gz` - Fix #1195
 - strip escape sequences from displayed names to prevent OSC injections - Fix #1188 - Thanks @carfeii
 - fall back to numeric uid/gid instead of `????` when the user or group name can't be resolved, which is always the case on statically linked musl builds - Fix #1075
-- Sixel graphics support for image preview, auto-detected via a DA1 terminal query: works in Windows Terminal 1.22+ and Sixel-capable Unix terminals (foot, mlterm, xterm built with Sixel, recent WezTerm). Kitty remains the preferred protocol when available.
+- fix panic on a content regex matching the empty string at the end of a line ending with a control char (eg `cr/$/` on a CRLF file)
 
 ### v1.58.0 - 2026-07-10
 <a name="v1.58.0"></a>
