@@ -475,13 +475,15 @@ impl<'b> ExecutionBuilder<'b> {
             // even if there are special characters
             return s.to_string();
         }
-        if !regex_is_match!(r#"[\s"']"#, &s) {
+        // backslashes must be in this set: on Windows the string may go to
+        // the launcher's outcmd file, whose eval would remove them
+        if !regex_is_match!(r#"[\s"'\\]"#, &s) {
             // if there's no special character, we don't need to escape or wrap
             return s.to_string();
         }
         // first we replace single quotes by `'"'"'` (close the single quote, add an escaped
         // single quote, and reopen the single quote)
-        let s = s.replace('\'', r#"'"'"#);
+        let s = s.replace('\'', r#"'"'"'"#);
         // then we wrap the whole thing in single quotes
         let s = format!("'{}'", s);
         s
@@ -593,6 +595,22 @@ mod execution_builder_test {
             "/path/to/file",
             vec![],
             vec!["xterm", "-e", "kak /path/to/file"],
+        );
+    }
+
+    #[test]
+    fn test_path_to_string_quoting() {
+        let app_state = AppState::new(PathBuf::from("/"));
+        let mut builder = ExecutionBuilder::without_invocation(SelInfo::None, &app_state);
+        // the String target is the one used for the launcher's outcmd file,
+        // whose content is passed to the shell's eval
+        builder.target = Target::String;
+        assert_eq!(builder.path_to_string("/home/dys/dev"), "/home/dys/dev");
+        assert_eq!(builder.path_to_string("/home/dys/my dev"), "'/home/dys/my dev'");
+        assert_eq!(builder.path_to_string(r"C:\Users\dys\dev"), r"'C:\Users\dys\dev'");
+        assert_eq!(
+            builder.path_to_string("/home/dys/it's dev"),
+            r#"'/home/dys/it'"'"'s dev'"#,
         );
     }
 }
