@@ -483,7 +483,7 @@ impl<'b> ExecutionBuilder<'b> {
         }
         // first we replace single quotes by `'"'"'` (close the single quote, add an escaped
         // single quote, and reopen the single quote)
-        let s = s.replace('\'', r#"'"'"#);
+        let s = s.replace('\'', r#"'"'"'"#);
         // then we wrap the whole thing in single quotes
         let s = format!("'{}'", s);
         s
@@ -608,5 +608,9 @@ mod execution_builder_test {
         assert_eq!(builder.path_to_string("/home/dys/dev"), "/home/dys/dev");
         assert_eq!(builder.path_to_string("/home/dys/my dev"), "'/home/dys/my dev'");
         assert_eq!(builder.path_to_string(r"C:\Users\dys\dev"), r"'C:\Users\dys\dev'");
+        assert_eq!(
+            builder.path_to_string("/home/dys/it's dev"),
+            r#"'/home/dys/it'"'"'s dev'"#,
+        );
     }
 }
