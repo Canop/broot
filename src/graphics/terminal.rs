@@ -30,13 +30,24 @@ pub fn get_tmux_tail(tmux_nest_count: u32) -> String {
     tail
 }
 
-/// Determine whether we're in tmux.
-#[allow(unreachable_code)]
+/// Determine whether we're running inside tmux.
+///
+/// `$TMUX` is set by tmux in every session, whatever `$TERM` is — and `$TERM` is
+/// commonly `screen-256color` or `tmux-256color`, so a "does $TERM contain tmux"
+/// test misses the frequent `screen*` case. So check `$TMUX` first, and keep the
+/// `$TERM`/`$TERMINAL` substring test only as a fallback.
+///
+/// (We intentionally don't treat a bare `screen*` `$TERM` as tmux: without
+/// `$TMUX` that's more likely real GNU screen, whose passthrough differs.)
 pub fn is_tmux() -> bool {
+    if env::var_os("TMUX").is_some() {
+        debug!(" -> $TMUX is set: running inside tmux");
+        return true;
+    }
     for env_var in ["TERM", "TERMINAL"] {
         if let Ok(env_val) = env::var(env_var) {
             if env_val.to_ascii_lowercase().contains("tmux") {
-                debug!(" -> this terminal seems to be Tmux");
+                debug!(" -> ${env_var}={env_val:?} suggests tmux");
                 return true;
             }
         }

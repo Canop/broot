@@ -298,6 +298,8 @@ Under `auto`, the protocol is detected in this order:
 To override this per run, set the `BROOT_GRAPHICS_PROTOCOL` environment variable
 to `none`, `auto`, `kitty`, or `sixel`.
 
+Inside a terminal multiplexer such as tmux, auto-detection can't see the outer terminal's Sixel support, so you must force it — see [Hi-Res images in tmux](../common-problems/#hi-res-images-in-tmux-sixel).
+
 ## Kitty Graphics
 
 Whenever possible, previewed images will be displayed in high resolution using [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/).
