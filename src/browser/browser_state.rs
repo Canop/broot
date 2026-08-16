@@ -110,7 +110,7 @@ impl BrowserState {
     }
 
     pub fn page_height(screen: Screen) -> usize {
-        screen.height as usize - 2 // br shouldn't be displayed when the screen is smaller
+        (screen.height as usize).saturating_sub(2) // br shouldn't be displayed when the screen is smaller
     }
 
     /// return a reference to the currently displayed tree, which
@@ -862,6 +862,19 @@ impl PanelState for BrowserState {
             pattern.raw.clone()
         } else {
             self.displayed_tree().options.pattern.raw.clone()
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn page_height_accounts_for_application_rows() {
+        for (height, expected) in [(0, 0), (1, 0), (2, 0), (10, 8)] {
+            let screen = Screen { width: 80, height };
+            assert_eq!(BrowserState::page_height(screen), expected);
         }
     }
 }

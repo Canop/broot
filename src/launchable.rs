@@ -124,7 +124,7 @@ impl Launchable {
             skin: Box::new(style_map),
             ext_colors,
             width: screen.width,
-            height: (tree.lines.len() as u16).min(screen.height - 1),
+            height: tree_print_height(tree.lines.len(), screen.height),
         }
     }
     /// Create a launchable to execute the given program.
@@ -244,6 +244,13 @@ impl Launchable {
     }
 }
 
+fn tree_print_height(
+    tree_height: usize,
+    screen_height: u16,
+) -> u16 {
+    tree_height.min(screen_height.saturating_sub(1) as usize) as u16
+}
+
 /// Try set the current dir to the given path, and if it fails, try to climb the path until an
 /// existing folder is found. Return true if the current dir has been changed, false otherwise.
 pub fn try_set_current_dir(mut dir: &Path) -> bool {
@@ -256,5 +263,19 @@ pub fn try_set_current_dir(mut dir: &Path) -> bool {
             return false;
         };
         dir = parent_dir;
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn printed_tree_height_leaves_the_last_screen_row_free() {
+        for (tree_height, screen_height, expected) in
+            [(20, 0, 0), (20, 1, 0), (20, 2, 1), (20, 10, 9), (5, 10, 5)]
+        {
+            assert_eq!(tree_print_height(tree_height, screen_height), expected);
+        }
     }
 }
