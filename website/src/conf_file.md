@@ -302,7 +302,7 @@ Inside a terminal multiplexer such as tmux, auto-detection can't see the outer t
 
 ## Kitty Graphics
 
-Whenever possible, previewed images will be displayed in high resolution using [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/).
+These settings tune the Kitty protocol and apply only when it's the selected protocol (see [Graphics Display](#graphics-display) above). Whenever possible, previewed images are shown in high resolution using [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/).
 
 Two transmission media are possible:
 
@@ -330,6 +330,17 @@ kitty_graphics_display: auto
 ```
 ```TOML
 kitty_graphics_display = "auto"
+```
+
+## Kept Kitty temp files
+
+With `kitty_graphics_transmission = "temp_file"`, broot writes each rendered image to a temp file and reuses it across redraws. `kept_kitty_temp_files` caps how many are kept (the least-recently-used are removed beyond that); default `500`.
+
+```Hjson
+kept_kitty_temp_files: 500
+```
+```TOML
+kept_kitty_temp_files = 500
 ```
 
 ## Transformers

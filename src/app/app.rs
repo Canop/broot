@@ -454,16 +454,10 @@ impl App {
         // when a long search is running, and interrupt it if needed
         w.flush()?;
 
-        // Probe terminal graphics support (Kitty/Sixel) once here, before the
-        // EventSource below starts its input-reading thread. That thread reads
-        // the terminal continuously and would steal the replies to our detection
-        // queries (e.g. the Sixel DA1 query), making detection unreliable.
-        // enable_raw_mode is idempotent (EventSource enables it too) so the
-        // reply isn't line-buffered.
-        if con.is_tty {
-            crokey::crossterm::terminal::enable_raw_mode()?;
-            let mut graphics_manager = graphics::manager().lock().unwrap();
-            let _ = graphics_manager.renderer(con);
+        if self.panels.has_visible_image_preview() {
+            // The image renderer is usually prepared during command execution, but if the initial
+            // command is a preview, we need to prepare it here. This must be done before display.
+            graphics::prepare_renderer(con)?;
         }
 
         let combine_keys = conf.enable_kitty_keyboard.unwrap_or(false) && con.is_tty;
@@ -580,6 +574,14 @@ impl App {
                         let cmd = self.panels.on_input_event(w, &event, &app_state, con)?;
                         info!("command from panels.on_input_event: {:#?}", cmd);
                         self.apply_command(w, &cmd, &skin.focused, &mut app_state, con)?;
+                    }
+
+                    // Lazy graphics detection: the first time an image preview is
+                    // visible, detect the renderer here. The reader thread is
+                    // parked (until the unblock below), so the query won't race
+                    // it; detection is memoized, so this is a no-op afterwards.
+                    if self.panels.has_visible_image_preview() {
+                        graphics::prepare_renderer(con)?;
                     }
 
                     event_source.unblock(self.quitting);

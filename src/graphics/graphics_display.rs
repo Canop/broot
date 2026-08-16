@@ -37,8 +37,16 @@ impl GraphicsDisplay {
 /// The `BROOT_GRAPHICS_PROTOCOL` env override, if set and recognized.
 /// An unrecognized value is logged and ignored (config then applies).
 pub fn graphics_display_from_env() -> Option<GraphicsDisplay> {
-    let raw = std::env::var("BROOT_GRAPHICS_PROTOCOL").ok()?;
-    match GraphicsDisplay::parse(&raw) {
+    graphics_display_from_raw(std::env::var("BROOT_GRAPHICS_PROTOCOL").ok().as_deref())
+}
+
+/// Interpret a raw `BROOT_GRAPHICS_PROTOCOL` value: recognized → `Some`; present
+/// but unrecognized → logged and `None`; absent → `None`. Split out from
+/// `graphics_display_from_env` so it's testable without touching the process
+/// environment.
+fn graphics_display_from_raw(raw: Option<&str>) -> Option<GraphicsDisplay> {
+    let raw = raw?;
+    match GraphicsDisplay::parse(raw) {
         Some(gd) => Some(gd),
         None => {
             warn!("ignoring unrecognized BROOT_GRAPHICS_PROTOCOL={raw:?}");
@@ -85,13 +93,10 @@ mod tests {
     }
 
     #[test]
-    fn graphics_display_from_env_precedence() {
-        std::env::set_var("BROOT_GRAPHICS_PROTOCOL", "sixel");
-        assert_eq!(graphics_display_from_env(), Some(GraphicsDisplay::Sixel));
-        std::env::set_var("BROOT_GRAPHICS_PROTOCOL", "Bogus");
-        assert_eq!(graphics_display_from_env(), None);
-        std::env::remove_var("BROOT_GRAPHICS_PROTOCOL");
-        assert_eq!(graphics_display_from_env(), None);
+    fn graphics_display_from_raw_precedence() {
+        assert_eq!(graphics_display_from_raw(Some("sixel")), Some(GraphicsDisplay::Sixel));
+        assert_eq!(graphics_display_from_raw(Some("Bogus")), None); // unrecognized → ignored
+        assert_eq!(graphics_display_from_raw(None), None); // unset
     }
 
     #[test]

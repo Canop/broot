@@ -37,6 +37,12 @@ pub trait PanelState {
     /// called on start of `on_command`, remove the pending task
     fn clear_pending(&mut self) {}
 
+    /// Whether this panel currently displays an image preview. Used to trigger
+    /// terminal-graphics detection lazily, only when an image is actually shown.
+    fn is_previewing_image(&self) -> bool {
+        false
+    }
+
     fn on_click(
         &mut self,
         _x: u16,

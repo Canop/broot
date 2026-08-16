@@ -85,6 +85,7 @@ pub enum KittyGraphicsDisplay {
     None,
     /// detect support automatically
     #[default]
+    #[serde(alias = "auto")]
     Detect,
     /// display directly
     Direct,

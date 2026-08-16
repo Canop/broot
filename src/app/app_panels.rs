@@ -134,6 +134,14 @@ impl AppPanelsAndInputs {
     pub fn state(&self) -> &dyn PanelState {
         self.panels.panels[self.active_panel_idx()].state()
     }
+    /// Whether any visible panel currently shows an image preview (used to
+    /// decide, lazily, whether terminal graphics need to be detected).
+    pub fn has_visible_image_preview(&self) -> bool {
+        self.panels
+            .panels
+            .iter()
+            .any(|panel| panel.state().is_previewing_image())
+    }
     pub fn mut_state(&mut self) -> &mut dyn PanelState {
         let idx = self.active_panel_idx();
         self.panels.panels[idx].mut_state()

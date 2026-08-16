@@ -111,6 +111,26 @@ pub fn manager() -> &'static Mutex<GraphicsManager> {
     &MANAGER
 }
 
+/// Detect the terminal-graphics renderer (once) so a later draw can use it.
+///
+/// This queries the terminal, which needs raw mode (enabled here, idempotently)
+/// and requires the input-reader thread to be parked — so it must be called only
+/// from a safe window: at startup before that thread is spawned, or during
+/// command handling. It's memoized: after the first call the renderer is cached
+/// and this does no further terminal I/O. No-op when stdout isn't a terminal.
+pub fn prepare_renderer(con: &AppContext) -> Result<(), ProgramError> {
+    if !con.is_tty {
+        return Ok(());
+    }
+    crokey::crossterm::terminal::enable_raw_mode()?;
+    if let Ok(mut mgr) = manager().lock() {
+        // runs detection and memoizes it; the returned handle isn't needed here,
+        // drawing later fetches the renderer from the cache
+        mgr.renderer(con);
+    }
+    Ok(())
+}
+
 #[derive(Debug)]
 struct RenderedImage {
     image_id: ImageId,
@@ -253,9 +273,11 @@ impl GraphicsManager {
         area: &Area,
         bg: Color,
         drawing_count: usize,
-        con: &AppContext,
     ) -> Result<ImageRendering, ProgramError> {
-        if let Some(renderer) = self.renderer(con) {
+        // Only draw when graphics were already detected (done in a safe window,
+        // see app.rs). Never probe here: drawing happens while the input reader
+        // is reading the terminal, so a detection query would race it.
+        if let Some(renderer) = self.renderer_if_tested() {
             let (cell_width, cell_height) = renderer.cell_size();
             let mut area_width = area.width as u32 * cell_width;
             let mut area_height = area.height as u32 * cell_height;
@@ -556,11 +578,10 @@ mod tests {
             ..Default::default()
         };
         let mut m = manager_with(renderer);
-        let con = AppContext::default();
         // 200x100 source, well above the 16x16 clamp.
         let src = solid_bitmap(200, 100, [1, 2, 3, 255]);
         let mut w = crate::display::writer();
-        m.try_print_image(&mut w, &src, Path::new("a.png"), &area(), Color::Reset, 1, &con)
+        m.try_print_image(&mut w, &src, Path::new("a.png"), &area(), Color::Reset, 1)
             .unwrap();
         let (pw, ph) = dims.lock().unwrap().expect("print() should have been called");
         assert!(pw <= 16, "fitted width {pw} exceeds the 16px clamp");
@@ -574,11 +595,10 @@ mod tests {
             ..Default::default()
         };
         let mut m = manager_with(renderer);
-        let con = AppContext::default();
         let src = solid_bitmap(4, 4, [1, 2, 3, 255]);
         let mut w = crate::display::writer();
         let result = m
-            .try_print_image(&mut w, &src, Path::new("a.png"), &area(), Color::Reset, 1, &con)
+            .try_print_image(&mut w, &src, Path::new("a.png"), &area(), Color::Reset, 1)
             .unwrap();
         assert!(matches!(result, ImageRendering::Drawn(Some(7))));
         assert_eq!(m.rendered_images.len(), 1);
@@ -590,11 +610,10 @@ mod tests {
     fn try_print_image_notes_inline_not_kitty_id() {
         let renderer = TestRenderer::default(); // print_returns_id: None
         let mut m = manager_with(renderer);
-        let con = AppContext::default();
         let src = solid_bitmap(4, 4, [1, 2, 3, 255]);
         let mut w = crate::display::writer();
         let result = m
-            .try_print_image(&mut w, &src, Path::new("a.png"), &area(), Color::Reset, 1, &con)
+            .try_print_image(&mut w, &src, Path::new("a.png"), &area(), Color::Reset, 1)
             .unwrap();
         assert!(matches!(result, ImageRendering::Drawn(None)));
         assert_eq!(m.frame_sixels.len(), 1);

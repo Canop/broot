@@ -140,7 +140,6 @@ impl ImageView {
             area,
             bg,
             disc.count,
-            disc.con,
         )?;
 
         match rendering {
