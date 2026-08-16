@@ -10,6 +10,7 @@
 - fall back to numeric uid/gid instead of `????` when the user or group name can't be resolved, which is always the case on statically linked musl builds - Fix #1075
 - fix panic on a content regex matching the empty string at the end of a line ending with a control char (eg `cr/$/` on a CRLF file)
 - fix Windows paths (containing backslashes) being mangled by the launcher's eval when using `:cd` and similar; also fixes escaping of paths containing a single quote - Fix #1100 - Thanks @Cyrus580529
+- fix `br` failing on Windows/PowerShell when the temp path contains a space (e.g. a space in the Windows username) - Fix #788 - Thanks @chinhkrb113
 
 ### v1.58.0 - 2026-07-10
 <a name="v1.58.0"></a>
