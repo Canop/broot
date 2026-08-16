@@ -264,7 +264,6 @@ impl VerbStore {
             .with_key(key!(shift - backtab))
             .with_key(key!(backtab));
         self.add_internal(next_match).with_key(key!(tab));
-        self.add_internal(no_action);
         self.add_internal(no_sort).with_shortcut("ns");
         self.add_internal(open_stay)
             .with_key(key!(enter))
