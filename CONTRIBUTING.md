@@ -1,5 +1,7 @@
 
-Before you start, unless you're fixing a typo or proposing a trivial change, please
+First, don't push LLM generated issues or pull-requests.
+
+This being said, before you start, unless you're fixing a typo or proposing a trivial change, please
 
 - discuss the need and technical design first, either in an issue or on [miaou](https://miaou.dystroy.org/3768)
 - keep it simple and focused

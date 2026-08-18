@@ -1,5 +1,5 @@
 
-**broot** is developed by **Denys Séguret**, also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org).
+**broot** is developed by **Denys Séguret**, also known as [Canop](https://github.com/Canop) or [dystroy](https://dystroy.org), and more than 100 contributors.
 
 Major updates are announced on Mastodon : [@dystroy@mastodon.dystroy.org](https://mastodon.dystroy.org/@dystroy) and BlueSky: [@dystroy.bsky.social](https://bsky.app/profile/dystroy.bsky.social)
 
@@ -58,11 +58,15 @@ time broot -c "c/memmap;:pt" ~/code
 
 # Contribute
 
-**Broot** is written in [Rust](https://www.rust-lang.org/). The current focus is linux+mac but I try to support Windows too (use a modern terminal like the [new MS one](https://github.com/microsoft/terminal)).
+**Broot** is written in [Rust](https://www.rust-lang.org/).
 
-If you think you might help, as a tester or coder, you're welcome, but please read [Contributing to my FOSS projects](https://dystroy.org/blog/contributing/).
+If you think you might help, as a tester or coder, you're welcome, but
 
-**Don't open a PR without discussing the design before**, either in the chat or in an issue, unless you're just fixing a typo. Coding is the easy part. Determining the exact requirement and how we want it to be done is the hard part. This is especially important if you plan to add a dependency or to change the visible parts, eg the launch arguments.
+- **Don't open a PR without discussing the design before**, either in the chat or in an issue, unless you're just fixing a typo. Coding is the easy part. Determining the exact requirement and how we want it to be done is the hard part. This is especially important if you plan to add a dependency or to change the visible parts, eg the launch arguments.
+
+- **Don't open LLM-generated PRs**.
+
+- read [Contributing to my FOSS projects](https://dystroy.org/blog/contributing/).
 
 # This documentation...
 
