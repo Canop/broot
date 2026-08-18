@@ -151,6 +151,31 @@ impl Launchable {
         }
     }
 
+    /// Create a launchable running the given command line through a shell, so that
+    /// shell features like `&&`, `;`, pipes and redirections work.
+    ///
+    /// The command is passed untouched to `sh -c` (or `cmd /C` on Windows), which is
+    /// why env variables aren't resolved here: the shell handles them.
+    pub fn shell_program(
+        command: String,
+        working_dir: Option<PathBuf>,
+        switch_terminal: bool,
+        con: &AppContext,
+    ) -> Launchable {
+        #[cfg(windows)]
+        let (exe, flag) = ("cmd".to_string(), "/C".to_string());
+        #[cfg(not(windows))]
+        let (exe, flag) = ("sh".to_string(), "-c".to_string());
+        Launchable::Program {
+            exe,
+            args: vec![flag, command],
+            working_dir,
+            switch_terminal,
+            capture_mouse: con.capture_mouse,
+            keyboard_enhanced: con.keyboard_enhanced,
+        }
+    }
+
     /// Execute the launchable, writing on the given writer if needed (for the tree printer).
     pub fn execute(
         &self,

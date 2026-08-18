@@ -1,4 +1,5 @@
 ### next
+- new `shell_command` verb attribute: run a command through a shell (`sh -c` / `cmd /C`) so `&&`, `;` and pipes work, without leaving broot - Fix #1145
 - fix invalid official Mac binary (duplicate linked dylib) with new build chain - Fix #1194
 - Sixel graphics support for image preview, auto-detected: works in iterm2, Windows Terminal 1.22+ and Sixel-capable Unix terminals (foot, mlterm, xterm built with Sixel, recent WezTerm). Kitty remains the preferred protocol when available - Fix #568 - Thanks @jamison-wilde
 - High-Res images in Rio terminal (detect it to enable the Kitty image protocol) - Fix #1179

@@ -599,6 +599,20 @@ mod execution_builder_test {
     }
 
     #[test]
+    fn test_shell_exec_string_keeps_chained_command() {
+        // a command with `&&` must survive tokenizing untouched so it can be
+        // handed to `sh -c` when the verb is a `shell_command` (issue #1145)
+        let app_state = AppState::new(PathBuf::from("/"));
+        let mut builder = ExecutionBuilder::without_invocation(SelInfo::None, &app_state);
+        let con = AppContext::default();
+        let ep = ExecPattern::from_string("mkdir foo && touch foo/bar");
+        assert_eq!(
+            builder.shell_exec_string(&ep, &con),
+            "mkdir foo && touch foo/bar",
+        );
+    }
+
+    #[test]
     fn test_path_to_string_quoting() {
         let app_state = AppState::new(PathBuf::from("/"));
         let mut builder = ExecutionBuilder::without_invocation(SelInfo::None, &app_state);

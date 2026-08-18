@@ -45,11 +45,12 @@ keys | | several keyboard shortcuts triggering execution (if you want to have th
 leave_broot | `true` | whether to quit broot on execution
 panels | *all* | optional list of panel types in which the verb can be called. Default is all panels: `[tree, fs, preview, help, stage]`
 set_working_dir | `false` | whether the working dir of the process must be set to the currently selected directory (it's equivalent to `workding_dir: "{directory}"`)
+shell_command | | execution through a shell (`sh -c` / `cmd /C`), so that operators like `&&`, `;` and pipes work (alternative to `external`)
 shortcut | | an alternate way to call the verb (without the arguments part)
 switch_terminal | `true` | whether to switch from alternate to normal terminal during execution
 working_dir | | the working directory of the external application, for example `"{directory}"` for the closest directory (the working dir isn't set if the directory doesn't exist)
 
-The execution is defined either by `internal`, `external` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
+The execution is defined either by `internal`, `external`, `shell_command` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
 
 **Note:**
 The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example, `cd` is a shell builtin which must be executed in the parent shell.
@@ -59,6 +60,28 @@ The `from_shell` attribute exists because some actions can't possibly be useful 
 If you set `leave_broot = false`, broot won't quit when executing your command, but it will update the tree.
 
 This is useful for commands modifying the tree (like creating or moving files), or when you want to be back to broot after execution.
+
+# Chaining commands
+
+An `external` is run as a single program, so shell operators like `&&`, `;` or pipes are passed as plain arguments and don't do what you'd expect.
+
+Use `shell_command` instead of `external` to run the command line through a shell (`sh -c` on unix, `cmd /C` on Windows). This lets you chain commands:
+
+```hjson
+{
+    invocation: "mkfile {name}"
+    shell_command: "mkdir -p {directory}/foo && touch {directory}/foo/{name}"
+    leave_broot: false
+}
+```
+```toml
+[[verbs]]
+invocation = "mkfile {name}"
+shell_command = "mkdir -p {directory}/foo && touch {directory}/foo/{name}"
+leave_broot = false
+```
+
+Placeholders such as `{directory}` and `{file}` are still filled in by broot (and paths with special characters are quoted for the shell) before the line reaches the shell.
 
 # Call shell scripts
 
