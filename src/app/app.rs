@@ -12,7 +12,7 @@ use {
         errors::ProgramError,
         file_sum,
         git,
-        kitty,
+        graphics,
         launchable::Launchable,
         path::closest_dir,
         pattern::InputPattern,
@@ -453,6 +453,13 @@ impl App {
         // we listen for events in a separate thread so that we can go on listening
         // when a long search is running, and interrupt it if needed
         w.flush()?;
+
+        if self.panels.has_visible_image_preview() {
+            // The image renderer is usually prepared during command execution, but if the initial
+            // command is a preview, we need to prepare it here. This must be done before display.
+            graphics::prepare_renderer(con)?;
+        }
+
         let combine_keys = conf.enable_kitty_keyboard.unwrap_or(false) && con.is_tty;
         let event_source = EventSource::with_options(EventSourceOptions {
             combine_keys,
@@ -569,6 +576,14 @@ impl App {
                         self.apply_command(w, &cmd, &skin.focused, &mut app_state, con)?;
                     }
 
+                    // Lazy graphics detection: the first time an image preview is
+                    // visible, detect the renderer here. The reader thread is
+                    // parked (until the unblock below), so the query won't race
+                    // it; detection is memoized, so this is a no-op afterwards.
+                    if self.panels.has_visible_image_preview() {
+                        graphics::prepare_renderer(con)?;
+                    }
+
                     event_source.unblock(self.quitting);
                 }
                 Either::First(None) => {
@@ -605,7 +620,7 @@ impl App {
             }
         }
         terminal::reset_title(w, con);
-        if let Ok(mut manager) = kitty::manager().lock() {
+        if let Ok(mut manager) = graphics::manager().lock() {
             manager.erase_images_before(w, usize::MAX)?;
         }
         w.flush()?;

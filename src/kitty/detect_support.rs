@@ -1,7 +1,10 @@
 use {
     crate::kitty::KittyGraphicsDisplay,
     cli_log::*,
-    std::env,
+    std::{
+        cmp::Ordering,
+        env,
+    },
 };
 
 /// Whether the WezTerm build identified by `$TERM_PROGRAM_VERSION`
@@ -10,15 +13,62 @@ use {
 /// A missing version is assumed to be a recent, supporting build.
 fn wezterm_supports_kitty_graphics(version: Option<&str>) -> bool {
     match version {
+        // a WezTerm build id is a fixed-width `YYYYMMDD-HHMMSS-hash`, for which
+        // a lexicographic compare is correct — do NOT use compare_versions here
         Some(version) => version >= "20220105-201556-91a423da",
         None => true,
     }
 }
 
+/// Compare two dotted version strings numerically, component by component, so
+/// `"3.6.10" > "3.6.6"` (unlike a lexicographic `str` comparison).
+///
+/// An optional leading `v`/`V` is ignored (`"v1.3.2"`), and any pre-release or
+/// build suffix introduced by `-` or `+` is dropped before comparing, so
+/// `"1.2.3-rc.1"` and `"1.2.3+build.7"` both compare as `"1.2.3"`. Within the
+/// numeric core each `.`-separated component is compared by its integer value
+/// and missing trailing components count as 0 (`"3.6" == "3.6.0"`).
+///
+/// This does NOT implement semver pre-release precedence (an `-rc` is treated as
+/// its base release); it's for simple "is it recent enough" gates.
+fn compare_versions(a: &str, b: &str) -> Ordering {
+    let (mut a, mut b) = (version_core(a).split('.'), version_core(b).split('.'));
+    loop {
+        match (a.next(), b.next()) {
+            (None, None) => return Ordering::Equal,
+            (x, y) => {
+                let ord = component(x.unwrap_or("")).cmp(&component(y.unwrap_or("")));
+                if ord != Ordering::Equal {
+                    return ord;
+                }
+            }
+        }
+    }
+}
+
+/// The numeric `MAJOR.MINOR.PATCH…` core of a version string: strip an optional
+/// leading `v`/`V`, then cut at the first character that isn't a digit or `.`
+/// (dropping any `-pre` / `+build` suffix).
+fn version_core(s: &str) -> &str {
+    let s = s.strip_prefix(['v', 'V']).unwrap_or(s);
+    let end = s.find(|c: char| c != '.' && !c.is_ascii_digit()).unwrap_or(s.len());
+    &s[..end]
+}
+
+/// A single `.`-separated version component as a `u64` (0 if empty / unparsable).
+fn component(s: &str) -> u64 {
+    s.parse().unwrap_or(0)
+}
+
+/// Whether dotted version `version` is at least `min` (numeric; see `compare_versions`).
+fn version_at_least(version: &str, min: &str) -> bool {
+    compare_versions(version, min) != Ordering::Less
+}
+
 /// Determine whether Kitty's graphics protocol is supported
 /// by the terminal running broot.
 ///
-/// This is called only once, and cached in the `KittyManager`'s
+/// This is called only once, and cached in the `GraphicsManager`'s
 /// `MaybeRenderer` state
 #[allow(unreachable_code)]
 pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
@@ -81,11 +131,11 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
             if let Ok(version) = env::var("TERM_PROGRAM_VERSION") {
                 debug!("$TERM_PROGRAM_VERSION = {version:?}");
 
-                if &*version < "3.6.6" {
-                    debug!("iTerm2's version predates Kitty Graphics protocol support");
-                } else {
+                if version_at_least(&version, "3.6.6") {
                     debug!("this looks like a compatible version");
                     return KittyGraphicsDisplay::Direct;
+                } else {
+                    debug!("iTerm2's version predates Kitty Graphics protocol support");
                 }
             } else {
                 warn!("$TERM_PROGRAM_VERSION unexpectedly missing");
@@ -122,52 +172,44 @@ pub fn detect_kitty_graphics_protocol_display() -> KittyGraphicsDisplay {
     KittyGraphicsDisplay::None
 }
 
-/// Determine whether we're in tmux.
-///
-/// This is called only once, and cached in `KittyImageRenderer`
-#[allow(unreachable_code)]
-pub fn is_tmux() -> bool {
-    debug!("is_tmux ?");
-
-    for env_var in ["TERM", "TERMINAL"] {
-        if let Ok(env_val) = env::var(env_var) {
-            debug!("${env_var} = {env_val:?}");
-            let env_val = env_val.to_ascii_lowercase();
-            if env_val.contains("tmux") {
-                debug!(" -> this terminal seems to be Tmux");
-                return true;
-            }
-        }
-    }
-    false
-}
-
-/// Custom environment variable to store how deeply tmux is nested. Starts at 1 when there's no nesting.
-pub fn get_tmux_nest_count() -> u32 {
-    std::env::var("TMUX_NEST_COUNT")
-        .map(|s| str::parse(&s).unwrap_or(1))
-        .unwrap_or(1)
-}
-
-/// Determine whether we're in SSH.
-///
-/// This is called only once, and cached in `KittyImageRenderer`
-#[allow(unreachable_code)]
-pub fn is_ssh() -> bool {
-    debug!("is_ssh ?");
-
-    for env_var in ["SSH_CLIENT", "SSH_CONNECTION"] {
-        if env::var(env_var).is_ok() {
-            debug!(" -> this seems to be under SSH");
-            return true;
-        }
-    }
-    false
-}
-
 #[cfg(test)]
 mod tests {
-    use super::wezterm_supports_kitty_graphics;
+    use {
+        super::{compare_versions, version_at_least, wezterm_supports_kitty_graphics},
+        std::cmp::Ordering,
+    };
+
+    #[test]
+    fn compares_versions_numerically_not_lexically() {
+        // the lexicographic bug this fixes: "3.6.10" must be > "3.6.6"
+        assert_eq!(compare_versions("3.6.10", "3.6.6"), Ordering::Greater);
+        assert_eq!(compare_versions("3.6.6", "3.6.6"), Ordering::Equal);
+        assert_eq!(compare_versions("3.6", "3.6.0"), Ordering::Equal); // missing component = 0
+        assert_eq!(compare_versions("3.10.0", "3.9.9"), Ordering::Greater);
+        assert_eq!(compare_versions("2.9.9", "3.0.0"), Ordering::Less);
+        assert_eq!(compare_versions("3.6.0-nightly", "3.6.0"), Ordering::Equal); // suffix ignored
+    }
+
+    #[test]
+    fn compare_versions_handles_prefix_and_dotted_suffix() {
+        // leading v/V is stripped
+        assert_eq!(compare_versions("v1.3.2", "1.3.2"), Ordering::Equal);
+        assert_eq!(compare_versions("v1.3.10", "V1.3.2"), Ordering::Greater);
+        // a dotted pre-release / build suffix is dropped (compared as base release),
+        // not turned into a spurious extra component
+        assert_eq!(compare_versions("1.2.3-rc.1", "1.2.3"), Ordering::Equal);
+        assert_eq!(compare_versions("1.2.3+build.7", "1.2.3"), Ordering::Equal);
+        assert_eq!(compare_versions("3.6.20250808-nightly", "3.6.6"), Ordering::Greater);
+    }
+
+    #[test]
+    fn version_at_least_gates_correctly() {
+        assert!(version_at_least("3.6.6", "3.6.6"));
+        assert!(version_at_least("3.6.10", "3.6.6")); // string compare got this wrong
+        assert!(version_at_least("3.7.0", "3.6.6"));
+        assert!(!version_at_least("3.6.5", "3.6.6"));
+        assert!(!version_at_least("2.9.9", "3.6.6"));
+    }
 
     #[test]
     fn wezterm_recent_version_supports_kitty_graphics() {

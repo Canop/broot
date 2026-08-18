@@ -273,9 +273,36 @@ terminal_title = "{file} 🐄"
 
 # Preview
 
+## Graphics Display
+
+`graphics_display` selects which terminal-graphics protocol broot uses for
+high-resolution image previews:
+
+* `none`: no terminal graphics (text / half-block fallback only)
+* `auto`: detect — Kitty when available, otherwise Sixel — default
+* `kitty`: force the Kitty graphics protocol
+* `sixel`: force the Sixel graphics protocol
+
+```Hjson
+graphics_display: auto
+```
+```TOML
+graphics_display = "auto"
+```
+
+Under `auto`, the protocol is detected in this order:
+1. Kitty graphics protocol (when available)
+2. Sixel (Windows Terminal 1.22+, and Sixel-capable Unix terminals such as foot, mlterm, or Sixel-built xterm)
+3. Unicode half-block fallback (when neither is available)
+
+To override this per run, set the `BROOT_GRAPHICS_PROTOCOL` environment variable
+to `none`, `auto`, `kitty`, or `sixel`.
+
+Inside a terminal multiplexer such as tmux, auto-detection can't see the outer terminal's Sixel support, so you must force it — see [Hi-Res images in tmux](../common-problems/#hi-res-images-in-tmux-sixel).
+
 ## Kitty Graphics
 
-Whenever possible, previewed images will be displayed in high resolution using [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/).
+These settings tune the Kitty protocol and apply only when it's the selected protocol (see [Graphics Display](#graphics-display) above). Whenever possible, previewed images are shown in high resolution using [Kitty's graphics protocol](https://sw.kovidgoyal.net/kitty/graphics-protocol/).
 
 Two transmission media are possible:
 
@@ -293,7 +320,7 @@ kitty_graphics_transmission = "chunks"
 
 Possible display methods:
 
-* `none`: don't display images
+* `none`: don't use the Kitty protocol (Sixel may still be used under `graphics_display = auto`)
 * `auto`: automatically detect how to display the image, default
 * `direct`: display the image directly
 * `unicode`: the more flexible way, works with tmux
@@ -303,6 +330,17 @@ kitty_graphics_display: auto
 ```
 ```TOML
 kitty_graphics_display = "auto"
+```
+
+## Kept Kitty temp files
+
+With `kitty_graphics_transmission = "temp_file"`, broot writes each rendered image to a temp file and reuses it across redraws. `kept_kitty_temp_files` caps how many are kept (the least-recently-used are removed beyond that); default `500`.
+
+```Hjson
+kept_kitty_temp_files: 500
+```
+```TOML
+kept_kitty_temp_files = 500
 ```
 
 ## Transformers

@@ -13,6 +13,7 @@ pub mod errors;
 pub mod file_sum;
 pub mod flag;
 pub mod git;
+pub mod graphics;
 pub mod help;
 pub mod hex;
 pub mod icon;
@@ -26,6 +27,8 @@ pub mod permissions;
 pub mod preview;
 pub mod print;
 pub mod shell_install;
+#[cfg(feature = "sixel")]
+pub mod sixel;
 pub mod skin;
 pub mod stage;
 pub mod syntactic;

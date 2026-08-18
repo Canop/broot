@@ -255,6 +255,10 @@ impl PanelState for PreviewState {
         self.tree_options.clone()
     }
 
+    fn is_previewing_image(&self) -> bool {
+        self.vis_preview().get_mode() == Some(PreviewMode::Image)
+    }
+
     fn with_new_options(
         &mut self,
         _screen: Screen,

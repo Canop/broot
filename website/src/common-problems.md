@@ -145,6 +145,28 @@ When using Kitty (and no terminal multiplexer), image preview is normally in hig
 
 If it's not the case, it's probably because the `TERM` environment variable has been redefined. Set either `TERM` or `TERMINAL` to include `kitty`. This can be done several ways, for example by adding `env TERMINAL=xterm-kitty` in your [kitty.conf](https://sw.kovidgoyal.net/kitty/conf/) file
 
+# Hi-Res images in tmux (Sixel)
+
+Kitty's graphics protocol doesn't work through terminal multiplexers, and tmux will never support it. If your terminal supports **Sixel**, broot can use that instead — tmux can pass Sixel through — but it needs some setup:
+
+* **Force the Sixel protocol.** Inside tmux, broot's auto-detection can't see the outer terminal's Sixel support (the detection query is answered by tmux, not by your terminal), so `auto` won't select it. Set it explicitly:
+
+    ```Hjson
+    graphics_display: sixel
+    ```
+
+    or, for a single run, `BROOT_GRAPHICS_PROTOCOL=sixel`.
+
+* **Let tmux pass the graphics through**, in your tmux config:
+
+    ```
+    set -g allow-passthrough on
+    ```
+
+* Use a **recent tmux** and an outer terminal that actually supports Sixel (foot, WezTerm, Konsole, xterm built with Sixel, …), with a broot built with Sixel support.
+
+Outside a multiplexer, Sixel is detected automatically under `graphics_display = auto` whenever Kitty isn't available.
+
 # Edit
 
 The standard `edit` verb, launched with `:e`, starts your favourite terminal editor to edit the selected file.
