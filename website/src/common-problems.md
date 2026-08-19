@@ -67,6 +67,17 @@ Note that this will change the behavior of `alt+enter` for all terminal windows,
 
 * [relevant issue](https://github.com/Canop/broot/issues/682)
 
+**Ghostty**
+
+On macOS, [Ghostty](https://ghostty.org/) binds `alt+left` and `alt+right` by default to send the word-movement sequences `ESC b` and `ESC f`, so broot never receives those key combinations. To reclaim them, add this to your Ghostty configuration (`~/.config/ghostty/config`):
+
+```
+keybind = alt+arrow_left=unbind
+keybind = alt+arrow_right=unbind
+```
+
+Then reload the configuration with `cmd+shift+,`. Note that if `alt` combinations on letter keys don't reach broot either, you may also need to set [macos-option-as-alt](https://ghostty.org/docs/config/reference#macos-option-as-alt), but be aware this prevents typing the characters composed with the option key (a problem on international layouts).
+
 **Remap in Broot**
 
 If a shortcut isn't available for broot and you can't or don't want to remap the one of your terminal, the solution is to change the shortcut in broot.
