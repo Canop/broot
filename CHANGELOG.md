@@ -13,81 +13,81 @@
 - fix Windows paths (containing backslashes) being mangled by the launcher's eval when using `:cd` and similar; also fixes escaping of paths containing a single quote - Fix #1100 - Thanks @Cyrus580529
 - fix `br` failing on Windows/PowerShell when the temp path contains a space (e.g. a space in the Windows username) - Fix #788 - Thanks @chinhkrb113
 
-### v1.58.0 - 2026-07-10
 <a name="v1.58.0"></a>
+### v1.58.0 - 2026-07-10
 - change the way possible verb completions are listed, making it more readable when there are more than what fits the screen
 - fix argument of `:select` and `:show` being ignored in a `--cmd` sequence - Fix 1176
 
-### v1.57.0 - 2026-06-01
 <a name="v1.57.0"></a>
+### v1.57.0 - 2026-06-01
 - help: verb 'keys' and 'description' columns now searchable - Fix #1163
 - fix `:print_path` / `:print_relative_path` adding a trailing empty line when printing a multi-item staging area - Fix #1062 - Thanks @xfocus3
 - Skin: attributes (bold, underlined, etc.) of the "selected_line" entry now applied - Fix #1156
 - if no Wezterm version is found, broot now assumes it's recent enough to support kitty protocol for image - Fix #509 - Thanks @chinhkrb113
 
-### v1.56.4 - 2026-05-14
 <a name="v1.56.4"></a>
+### v1.56.4 - 2026-05-14
 - fix compilation on non unix platforms (1.56.3 isn't available on those systems)
 
-### v1.56.3 - 2026-05-13
 <a name="v1.56.3"></a>
+### v1.56.3 - 2026-05-13
 - fix control characters sometimes remaining in the terminal after broot exit
 - nushell: rename br module to avoid conflict in last nushell version - Fix #1138 - Thanks @paulhey
 - `:open_stay` on the staging area opens every staged file through the system opener - Fix #444 - Thanks @ChrisJr404
 
-### v1.56.2 - 2026-03-26
 <a name="v1.56.2"></a>
+### v1.56.2 - 2026-03-26
 - `{file-root-relative}` argument - Fix #1142
 - fix `:clear_stage` (or other operations closing the stage panel) often closing broot - Fix #1143
 
-### v1.56.1 - 2026-03-20
 <a name="v1.56.1"></a>
+### v1.56.1 - 2026-03-20
 - fix a typo in a verb in default conf
 
-### v1.56.0 - 2026-03-20
 <a name="v1.56.0"></a>
+### v1.56.0 - 2026-03-20
 - `impacted_panel` verb argument, allows the effect of a verb to be on another panel (eg to scroll the preview panel without removing the focus from the tree) - Fix #1119
 - `focus_panel_left` and `focus_panel_right` internals - Fix #1115
 #### Major Feature: merge staged files to issue a single command
 When a verb argument has a `space-separated` or `comma-separated` flag, a single external command is run even when the selection is multiple - Fix #465
 The default `verbs.json` file has an example of a `zip` verb building an archive from all staged files.
 
-### v1.55.0 - 2026-02-09
 <a name="v1.55.0"></a>
+### v1.55.0 - 2026-02-09
 - activate Kitty Graphics Protocol to display Hi-Res images in iTerm2 - Thanks @kidonng
 - Tokyo Night skin ( https://github.com/Canop/broot/blob/main/resources/default-conf/skins/tokyo-night.hjson ) - Thanks @hb-hello
 - matches related to several name patterns joined with and/or in a composite pattern are merged instead of having just the first one shown - Thanks @Tomaz-Vieira
 - nushell integration: switch $nu.temp-path to $nu.temp-dir - #1116 - Thanks @stevenxxiu
 
-### v1.54.0 - 2025-12-03
 <a name="v1.54.0"></a>
+### v1.54.0 - 2025-12-03
 - fix crash on rendering B&W images with Kitty image protocol
 - don't match directories when a composite pattern has a content pattern, even negated (eg `/js$/&!c/;`: it's clear the user wants to match js *files* not containing a semicolon)
 
-### v1.53.0 - 2025-11-08
 <a name="v1.53.0"></a>
+### v1.53.0 - 2025-11-08
 - fix some cases of the verb not removed from the input on execution (with a risk of accidental double execution)
 - add the `:filesystems` (short `:fs`) verb and state on windows (it was already present on linux and mac).
 - improve the generation of preview pattern from a file tree pattern (i.e. going from `/java$/&c/test` to `/test` on opening a matching file in preview). With this change broot avoids filtering the preview when it shouldn't (eg when you searched `/java$/|c/test`) - See #1097
 - display files whose name isn't valid UTF-8 (they were previously ignored)
 - android executable is back to the official binary archive
 
-### v1.52.0 - 2025-11-01
 <a name="v1.52.0"></a>
+### v1.52.0 - 2025-11-01
 - `auto_open_staging_area` preference - Fix #1090
 - search content of file target of symlink - Fix #1081
 - fix nushell script (swapped logic for --listen and --listen-auto) - Thanks @cderwin
 - return non-zero exit code on error - Thanks @Sambhram1
 
-### v1.51.0 - 2025-10-05
 <a name="v1.51.0"></a>
+### v1.51.0 - 2025-10-05
 - improved image rendering (both speed by using the zune-image library, and quality with bilinear interpolation)
 - fix compilation broken by 1.50.0 on Android- thanks @dead10ck
 - `--listen-auto` listens for commands on a random linux socket - Fix #1064
 - when auto-completing, `back-tab` cycles in reverse order - Fix #1071
 
-### v1.50.0 - 2025-09-25
 <a name="v1.50.0"></a>
+### v1.50.0 - 2025-09-25
 - big text files now only partially loaded for initial display, remaining being done in background - Fix #1052
 - better support of kitty image protocol over tmux, ssh or unknown terminals, with  `kitty_graphics_display` option and `$TMUX_NEST_COUNT` env variable - see PR #1034 - Thanks @stevenxxiu
 - "trash" compilation feature removed: trash related features are built depending on the platform
@@ -95,19 +95,19 @@ The default `verbs.json` file has an example of a `zip` verb building an archive
 - fix crash on double unstage of last entry in stage panel - fix #1057
 - fallback to transparent background for text preview when the skin specifies nothing - Thanks @letmeiiiin
 
-### v1.49.1 - 2025-09-15
 <a name="v1.49.1"></a>
+### v1.49.1 - 2025-09-15
 - watching made much more efficient (some deep changes won't lead to an automatic refresh which only impacts dir size)
 - the name given with `--listen` is now provided to verb as the `{server-name}` verb argument
 
-### v1.49.0 - 2025-09-13
 <a name="v1.49.0"></a>
+### v1.49.0 - 2025-09-13
 - `:toggle_watch` internal, with `:watch` shortcut, bound by default to `alt-w`. When watching is active, the tree is refreshed whenever any directory/file, even deep, is changed - Fix #730
 - fallback to a transparent background for images in image preview instead of a specific color - Fix #1040 - Thanks @letmeiiiin
 - fix --server socket written at a non writable location on Android/termux - Fix #1045
 
-### v1.48.0 - 2025-08-29
 <a name="v1.48.0"></a>
+### v1.48.0 - 2025-08-29
 - Support for the 'Cmd' modifier in key shortcuts (the key is called 'Command', 'Super', 'Apple', 'Windows', depending on systems and users)
 - "filesystem" features have been made available for Mac:
     - the `:fs` screen, listing filesystems
@@ -115,70 +115,70 @@ The default `verbs.json` file has an example of a `zip` verb building an archive
     - device id displayed with `:toggle_device_id` (shortcut: "dev")
 - Fix `.config/git/ignore` not being loaded on Mac - Fix #1032 - Thanks @9999years
 
-### v1.47.0 - 2025-06-26
 <a name="v1.47.0"></a>
+### v1.47.0 - 2025-06-26
 - text files with control chars were previously previewed as binary. They're now displayed as text with some '�' when needed - Fix #977
 - files with ANSI escape codes (such as the one you would obtain with `dysk --color yes > ansi.txt` can now be previewed with `:preview_tty` - Fix #1019
 - first line of the tree is cropped (right aligned) when it doesn't fit
 
-### v1.46.5 - 2025-05-30
 <a name="v1.46.5"></a>
+### v1.46.5 - 2025-05-30
 - fix `:focus some/path` called in a command sequence always opening new panel - Fix #1014
 
-### v1.46.4 - 2025-05-14
 <a name="v1.46.4"></a>
+### v1.46.4 - 2025-05-14
 - support for keys F13 to F24 (if your system supports it)
 - fix `:focus` with argument given in configuration going up one level when root is selected - Fix #1009
 - fix `--max-depth` ignored when in `default_flags` - Fix #1013
 
-### v1.46.3 - 2025-04-24
 <a name="v1.46.3"></a>
+### v1.46.3 - 2025-04-24
 - fix broot waiting for events on internals like `:quit` - Fix #1006
 
-### v1.46.2 - 2025-04-21
 <a name="v1.46.2"></a>
+### v1.46.2 - 2025-04-21
 - fix broken nushell script (`--max-depth` again) - Thanks @sandyspiers & @amitkot
 
-### v1.46.1 - 2025-04-20
 <a name="v1.46.1"></a>
+### v1.46.1 - 2025-04-20
 - fix nushell script broken by new `--max-depth` argument - Thanks @lizclipse
 
-### v1.46.0 - 2025-04-16
 <a name="v1.46.0"></a>
+### v1.46.0 - 2025-04-16
 - `:set_max_depth <number>` and `:unset_max_depth` - Fix #843 - Thanks @mcky
 - clear cache when files are deleted in staging area - Fix #999
 - recompute preview transform when source file changed since last preview
 
-### v1.45.1 - 2025-03-25
 <a name="v1.45.1"></a>
+### v1.45.1 - 2025-03-25
 - Fix compilation failing without `--locked` - Fix #995
 
-### v1.45.0 - 2025-03-17
 <a name="v1.45.0"></a>
+### v1.45.0 - 2025-03-17
 - Fix total search impossible to redo after refresh - Fix #986
 - With `refresh_after: false`, a verb configuration can request that the tree isn't refreshed after its execution - Fix #987
 
-### v1.44.7 - 2025-02-12
 <a name="v1.44.7"></a>
+### v1.44.7 - 2025-02-12
 - fix bad regex match position - Fix #979
 - update resvg dependency to 0.44 - Thanks @NoisyCoil
 - on `--server`, remove the existing socket if it already exists - Thanks @VasilisManol
 
-### v1.44.6 - 2025-01-12
 <a name="v1.44.6"></a>
+### v1.44.6 - 2025-01-12
  -fix .ignore files ignored when not in a git repository - Fix #970
  -update git2 dependency to 0.20 - Fix #974
 
-### v1.44.5 - 2025-01-02
 <a name="v1.44.5"></a>
+### v1.44.5 - 2025-01-02
 - no real change (just reverting a crate name to ease some packaging)
 
-### v1.44.4 - 2025-01-01
 <a name="v1.44.4"></a>
+### v1.44.4 - 2025-01-01
 - fix panic in preview on syntax coloring (when a sublime syntax isn't compatible with the regex engine) - Fix #967
 
-### v1.44.3 - 2024-12-26
 <a name="v1.44.3"></a>
+### v1.44.3 - 2024-12-26
 - removed default bindings on left and right keys. You may add them back by adding this to your verbs.hjson:
 ```Hjson
     { key: "left", internal: "back" }
@@ -187,40 +187,40 @@ The default `verbs.json` file has an example of a `zip` verb building an archive
 - rustc minimal version changed from 1.76 to 1.79, which allows better performing image rendering
 - remove dependency to onig, to allow compatibility with gcc 15 - Fix #956
 
-### v1.44.2 - 2024-10-22
 <a name="v1.44.2"></a>
+### v1.44.2 - 2024-10-22
 - temp files created for kitty now erased on quitting or when too many of them have been written
 - no longer panics when launched with BROOT_LOG=debug but the broot.log file can't be created - Fix #951
 - fix user and group names displayed as "????" when coming from openldap - Fix #953
 
-### v1.44.1 - 2024-10-16
 <a name="v1.44.1"></a>
+### v1.44.1 - 2024-10-16
 - fix wrong position of IMEs (input method editors) popup - thanks @xubaiwang - See #948
 - improve querying the terminal for capabilities (prevent some escape chars from leaking)
 
-### v1.44.0 - 2024-09-07
 <a name="v1.44.0"></a>
+### v1.44.0 - 2024-09-07
 - `:focus_staging_area_no_open` internal, focus the staging area if it's already open, does nothing in other case - Fix #926
 - fix some composite patterns with several operators and no parenthesis
 
-### v1.43.0 - 2024-08-30
 <a name="v1.43.0"></a>
+### v1.43.0 - 2024-08-30
 - 'Size' and 'Deletion date' columns in trash screen. This screen now supports the `:toggle_date`, `:toggle_size`, `:sort_by_date`, and `:sort_by_size` internals.
 - new `:show` internal make the provided path visible and selected, adding lines to the tree if necessary, does nothing if the provided path is not a descendant of the current tree root (this part may change depending on feedback) - Fix #936
 
-### v1.42.0 - 2024-08-18
 <a name="v1.42.0"></a>
+### v1.42.0 - 2024-08-18
 - support of `.ignore` files with the same syntax than `.gitignore`. They have priority over `.gitignore` so that a personal `.ignore` file can override a shared `.gitignore` - See https://dystroy.org/broot/tree_view/#hidden-ignored-files - Fix #613
 - `:toggle_ignore` internal, identical to `:toggle_git_ignore`, but with a clearer name so should be preferred
 - the `panels` verb filter now works in most contexts (it was previously only checked on key events)
 - many dependencies updated
 
-### v1.41.1 - 2024-08-04
 <a name="v1.41.1"></a>
+### v1.41.1 - 2024-08-04
 - allow compilation with rustc 1.76 - Fix #925
 
-### v1.41.0 - 2024-08-04
 <a name="v1.41.0"></a>
+### v1.41.0 - 2024-08-04
 #### Major Feature: :search_again
 ctrl-s now triggers `:search_again` which either
 - brings back the last used search pattern, when no filtering pattern is active
@@ -237,8 +237,8 @@ See http://dystroy.org/broot/panels/#resize-panels
 - Update nerdfont and vscode icons - Thanks @jpaju
 - `{initial-root}` verb argument
 
-### v1.40.0 - 2024-07-16
 <a name="v1.40.0"></a>
+### v1.40.0 - 2024-07-16
 #### Major Feature: preview transformers
 You can now define preview transformers to be applied before preview.
 They allow for example previewing PDF or Office files, or beautifying JSON files.
@@ -248,51 +248,51 @@ See https://dystroy.org/broot/conf_file/#preview
 - fix search on root - Fix #904
 - fix some verb cycling problems - Fix #902
 
-### v1.39.2 - 2024-07-08
 <a name="v1.39.2"></a>
+### v1.39.2 - 2024-07-08
 - fix UNC paths being displayed on Windows (regression at 1.39.1) - Fix #812 (again)
 
-### v1.39.1 - 2024-07-05
 <a name="v1.39.1"></a>
+### v1.39.1 - 2024-07-05
 - fix high-resolution (kitty protocole) image broken in release mode - Fix #885
 - canonicalize paths when focusing them (mostly useful when following links)
 - a few minor internal optimizations
 
-### v1.39.0 - 2024-05-31
 <a name="v1.39.0"></a>
+### v1.39.0 - 2024-05-31
 - `:open_trash` shows the content of the trash. Other new internals & verbs: `:delete_trashed_file`, `:restore_trashed_file`, `:purge_trash` - Fix #855
 - it's now possible to remove a default keybinding by defining a verb with no execution - Fix #632
 - fix build on Android - thanks @dead10ck
 
-### v1.38.0 - 2024-05-04
 <a name="v1.38.0"></a>
+### v1.38.0 - 2024-05-04
 - `-{flags}` verb lets you change the state the same way you do it at start, eg `:-sd` to show sizes and dates
 - calling `:focus` on the tree root now goes up the tree (experimental)
 
-### v1.37.0 - 2024-04-28
 <a name="v1.37.0"></a>
+### v1.37.0 - 2024-04-28
 - optionally display lines surrounding a matching line in preview, with `lines_before_match_in_preview` and  `lines_after_match_in_preview` - Fix #756
 - filtered preview: jump between matches with `:next_match` (default: `tab`) and `:previous_match` (default `shift-tab`)
 - display setuid, setgid and sticky bits in permission - Fix #863, Thanks @Jisu-Woniu
 
-### v1.36.1 - 2024-03-11
 <a name="v1.36.1"></a>
+### v1.36.1 - 2024-03-11
 - fix ANSI code leaking to the input on start on Mac - Fix #854
 
-### v1.36.0 - 2024-03-01
 <a name="v1.36.0"></a>
+### v1.36.0 - 2024-03-01
 - releases at github should be more `cargo binstall` friendly - Thanks @FrancescElies
 - improved `--help`
 - new `:stage_all_directories` internal - Fix #844
 - `:print_tree` is one line shorter, so as to let the original shell command visible without scroll
 - fix and document the "kitty-csi-check" optional feature which can be enabled at compilation
 
-### v1.35.0 - 2024-03-01
 <a name="v1.35.0"></a>
+### v1.35.0 - 2024-03-01
 - Nerdfont icon theme - Fix #333 - Thanks @JonasLeonhard, @cho-m, @texastoland, @asdf8dfafjk and others
 
-### v1.34.0 - 2024-02-24
 <a name="v1.34.0"></a>
+### v1.34.0 - 2024-02-24
 - new `--verb-output` launch argument, dedicated to the new `:clear_output` and `:write_output` internals - Fix #825
 - verb sequences (based on `cmd`) can take arguments from the verb invocation
 - don't fail launch in case of bad verb configuration, more helpful error message in such case
@@ -302,146 +302,146 @@ See https://dystroy.org/broot/conf_file/#preview
 - fix some resizing and flickering problems on Windows (appeared with 1.33.0) - Fix #840
 - write `installed` flag file on `--install` - Fix #837
 
-### v1.33.1 - 2024-02-03
 <a name="v1.33.1"></a>
+### v1.33.1 - 2024-02-03
 - fix the release's version
 
-### v1.33.0 - 2024-02-03
 <a name="v1.33.0"></a>
+### v1.33.0 - 2024-02-03
 - on terminals supporting the kitty keyboard protocol, you can now define and use key combinations like `space-n`, `ctrl-alt-a-b`, `shift-space-c`, `ctrl-enter`, etc.
 - new syntax for special paths - Fix #687, #669
 
-### v1.32.0 - 2024-01-02
 <a name="v1.32.0"></a>
+### v1.32.0 - 2024-01-02
 - with "modal" enabled, `initial_mode` setting lets you choose whether to start in `input` mode or `command` mode (default) - Fix #708
 
-### v1.31.0 - 2023-12-30
 <a name="v1.31.0"></a>
+### v1.31.0 - 2023-12-30
 - keep broot's work dir synchronized with the root of the current panel. Can be disabled in conf with `update_work_dir: false` - Fix #813
 - fix `:trash` internal not working on staged files
 
-### v1.30.2 - 2023-12-23
 <a name="v1.30.2"></a>
+### v1.30.2 - 2023-12-23
 - don't canonicalize paths on windows on new panels - Fix #809
 
-### v1.30.1 - 2023-12-03
 <a name="v1.30.1"></a>
+### v1.30.1 - 2023-12-03
 - nushell script: replace the deprecated `def-env` with `def --env` - Thanks @melMass
 
-### v1.30.0 - 2023-12-03
 <a name="v1.30.0"></a>
+### v1.30.0 - 2023-12-03
 - `:trash` internal - I'd like feedback on this one - Fix #799
 - solve symlinks on `:panel_right` to display the dest path and the dest filesystem - Fix #804
 - `:panel_right` on a directory now removes the filter
 - more '~' expansion in verb arguments
 
-### v1.29.0 - 2023-11-22
 <a name="v1.29.0"></a>
+### v1.29.0 - 2023-11-22
 - `terminal_title` option in configuration - Fix #794
 - `:toggle_tree` internal and `--tree` and `--no-tree` launch flags (experimental, feedback welcome) - Fix #670 - Thanks @eldad
 - `{git-name}` verb argument
 
-### v1.28.1 - 2023-11-13
 <a name="v1.28.1"></a>
+### v1.28.1 - 2023-11-13
 - fix a regression in handling of rooted gitignore patterns - Fix #795
 
-### v1.28.0 - 2023-11-12
 <a name="v1.28.0"></a>
+### v1.28.0 - 2023-11-12
 - left and right keys bound to verbs can be used when the input isn't empty, if they would have no effect to the input
 - default_flags now accept long parameters, including --cmd - Fix #790
 - gitignore: fix relative patterns with several tokens - Fix #782
 
-### v1.27.0 - 2023-10-29
 <a name="v1.27.0"></a>
+### v1.27.0 - 2023-10-29
 - the `apply_to` verb filter accepts new values: `text_file` and `binary_file`. Broot users editing files in their terminal (vi, emacs, etc.) should configure broot to open their text editor on `enter`: see https://dystroy.org/broot/tricks/#change-standard-file-opening
 - small breaking change: `:stage_all_files` now stages also symlinks - Fix #606
 - new `{git-root}` verb argument - Fix 760 - Thanks @9999years
 - fix a freeze on windows when launching a search with `-c` - Thanks @3tilley
 - fix automatic preview pattern not escaping spaces and colons - Fix #778
 
-### v1.26.1 - 2023-09-30
 <a name="v1.26.1"></a>
+### v1.26.1 - 2023-09-30
 - improved status line
 
-### v1.26.0 - 2023-09-27
 <a name="v1.26.0"></a>
+### v1.26.0 - 2023-09-27
 - when given a path to a file at launch, broot now selects it in the tree and opens it in preview - Fix #729
 - allow rebinding of the 'tab' and 'esc' keys with the `:next_match` and `:escape` internals - Fix #740
 - fix fuzzy patterns not case insensitive on some characters - Fix #746
 
-### v1.25.2 - 2023-09-20
 <a name="v1.25.2"></a>
+### v1.25.2 - 2023-09-20
 - optional BROOT_CONFIG_DIR env var - the site now shows all env variables: https://dystroy.org/broot/launch/#environment-variables
 - `--only-folders` now longer allows symlinks to non directories - Fix #742
 
-### v1.25.1 - 2023-09-03
 <a name="v1.25.1"></a>
+### v1.25.1 - 2023-09-03
 - fix shift-char in input extending the selection - Fix #733
 
-### v1.25.0 - 2023-08-19
 <a name="v1.25.0"></a>
+### v1.25.0 - 2023-08-19
 - allow unescaped '::' in pattern position, experimental (might be removed)
 - allow hexa color notation in skins (eg `#fb0` or `#FFD700`)
 
-### v1.24.2 - 2023-07-18
 <a name="v1.24.2"></a>
+### v1.24.2 - 2023-07-18
 - fix a case of br script installation failing on Windows/Powershell
 
-### v1.24.1 - 2023-07-16
 <a name="v1.24.1"></a>
+### v1.24.1 - 2023-07-16
 - slightly better `--help`
 
-### v1.24.0 - 2023-07-16
 <a name="v1.24.0"></a>
+### v1.24.0 - 2023-07-16
 - installer for the powershell br script on windows - Thanks @felixkroemer
 - new `--help`, more compact
 - allow extra spaces before the verb
 - updated man page, now distributed in releases as /man/broot.1
 
-### v1.23.0 - 2023-06-16
 <a name="v1.23.0"></a>
+### v1.23.0 - 2023-06-16
 - prettier, faster SVG rendering
 - reorganize default conf files, with a "skins" subfolder
 
-### v1.22.1 - 2023-05-23
 <a name="v1.22.1"></a>
+### v1.22.1 - 2023-05-23
 - allow dir computations in /run/media - Fix #704 - Thanks @jinliu
 - fix included solarized-dark.hjson skin file
 
-### v1.22.0 - 2023-05-18
 <a name="v1.22.0"></a>
+### v1.22.0 - 2023-05-18
 - define disk space availability colors in skin - Fix #705
 - left elision of path when path/name doesn't fit - Fix #700
 
-### v1.21.3 - 2023-05-02
 <a name="v1.21.3"></a>
+### v1.21.3 - 2023-05-02
 - `switch_terminal` verb parameter - Thanks @stevenxxiu
 - on Windows, when using `-c`, clear events after delay - Fix #699
 
-### v1.21.2 - 2023-03-30
 <a name="v1.21.2"></a>
+### v1.21.2 - 2023-03-30
 - update dependencies because of some yanked ones
 
-### v1.21.1 - 2023-03-23
 <a name="v1.21.1"></a>
+### v1.21.1 - 2023-03-23
 - resolve `~` in special paths - Fix #685
 - better clipboard support on MacOS - Thanks @bryan824
 
-### v1.21.0 - 2023-03-17
 <a name="v1.21.0"></a>
+### v1.21.0 - 2023-03-17
 - better nushell integration (no need to quote arguments anymore, fix path extension broken by new version of nushell) - Thanks @stevenxxiu
 - don't show modal-only keys in help page when modal mode isn't enabled
 
-### v1.20.2 - 2023-02-19
 <a name="v1.20.2"></a>
+### v1.20.2 - 2023-02-19
 - fix debug statement printed in some cases (mostly on Windows) - Fix #672
 
-### v1.20.1 - 2023-02-08
 <a name="v1.20.1"></a>
+### v1.20.1 - 2023-02-08
 - fix status line not always displaying the hint of the input's verb - Fix #665
 
-### v1.20.0 - 2023-02-03
 <a name="v1.20.0"></a>
+### v1.20.0 - 2023-02-03
 - unless overridden, `/proc` is now `no-enter`, which solves freezes when searching on `/` in some system - See #639
 - SVG files now rendered as images in the preview panel
 - new version of the nushell function. You should be prompted for an update - Fix #656 - Thanks @FrancescElies and @mediumrarez
@@ -449,44 +449,44 @@ See https://dystroy.org/broot/conf_file/#preview
 - preview can now be opened on directories, showing their first level - Fix #405
 - better determine whether the terminal is white or dark in some (probably rare) cases - See https://github.com/Canop/terminal-light/issues/2
 
-### v1.19.0 - 2023-01-03
 <a name="v1.19.0"></a>
+### v1.19.0 - 2023-01-03
 - Nushell support - Fix #375 - Thanks @FrancescElies, @mediumrarez, and issue contributors
 
-### v1.18.0 - 2022-12-21
 <a name="v1.18.0"></a>
+### v1.18.0 - 2022-12-21
 - Hjson configuration file can now omit outside braces (it's "braceless Hjson"), making it much cleaner
 - allow opening the help screen with just the `?` key on Windows (as for other systems)
 - fix a crash in some cases of input being cleaned with a selection - Fix #643
 
-### v1.17.1 - 2022-12-15
 <a name="v1.17.1"></a>
+### v1.17.1 - 2022-12-15
 - Windows specific implementation of :cpp
 
-### v1.17.0 - 2022-12-09
 <a name="v1.17.0"></a>
+### v1.17.0 - 2022-12-09
 - max file size for content search now configurable (default is now 10MB) - Fix #626
 - file summing now avoids /proc and /run
 - default configuration sets /media as not entered by default (can be commented out, of course)
 
-### v1.16.2 - 2022-11-04
 <a name="v1.16.2"></a>
+### v1.16.2 - 2022-11-04
 - you can restrict the panels in which verbs apply with the verb configuration `panels` parameter
 - fix rm on Windows behaving "recursively" (it was `cmd /c del /Q /S {file}`) - Fix #627
 
-### v1.16.1 - 2022-10-13
 <a name="v1.16.1"></a>
+### v1.16.1 - 2022-10-13
 - fix ctrl-left not usable anymore in filtered preview to remove filtering
 
-### v1.16.0 - 2022-10-07
 <a name="v1.16.0"></a>
+### v1.16.0 - 2022-10-07
 - status messages now displayed on toggling (for example showing hidden files)
 - upgrade terminal-light to 1.0.1 for better recognition of background color on high precision color terminals
 - in default configuration, ctrl-left never opens a panel to the left, as I think this was most often unwanted (one too many hit on cltr-left). It's possible to get the old behavior by binding ctrl-left to `:panel_left` instead of the new `:panel_left_no_open` internal.
 - New escaping rules let you skip many `\`, especially when building regexes - See new rules at https://dystroy.org/broot/input/#escaping - Fix #592
 
-### v1.15.0 - 2022-09-24
 <a name="v1.15.0"></a>
+### v1.15.0 - 2022-09-24
 - with `show_matching_characters_on_path_searches: false`, it's possible to show only file names even when searching paths - Fix #490
 - `--sort-by-type-dirs-first` and `--sort-by-type-dirs-last` - Fix #602
 - modal: in input mode, uppercase letters don't trigger verbs anymore - Fix #604
@@ -494,34 +494,34 @@ See https://dystroy.org/broot/conf_file/#preview
 - selecting lines up or down with the mouse wheel now wraps in both direction (ie going up when your on top brings you to the bottom, and vice-versa)
 - `:select` internal, which can be used to select a visible file when given a path as argument. Experimental
 
-### v1.14.3 - 2022-09-12
 <a name="v1.14.3"></a>
+### v1.14.3 - 2022-09-12
 - fix crash with token searches - Fix #504 - Thanks @FedericoStra
 
-### v1.14.2 - 2022-07-11
 <a name="v1.14.2"></a>
+### v1.14.2 - 2022-07-11
 - Terminal background luma determination now works on all tested unixes, including MacOS - Fix #575
 - Allow `:focus` based verbs to take a pattern - Fix #389
 
-### v1.14.1 - 2022-07-06
 <a name="v1.14.1"></a>
+### v1.14.1 - 2022-07-06
 Due to a technical problem, background color based skin selection is disabled on non linux systems.
 
-### v1.14.0 - 2022-07-05
 <a name="v1.14.0"></a>
+### v1.14.0 - 2022-07-05
 #### Major Feature: imports
 A configuration file can now import one or several other ones.
 An import can have a condition on the terminal's background color, which makes it possible to import either a dark or a light theme depending on the current terminal settings.
 You're also encouraged to split your configuration in several files, as is now done for the default configuration.
-### Minor changes
+#### Minor changes
 - fix `--cmd` not working (it was accidentally renamed in `--commands`, `-c` was still working) - Fix #570
 
+<a name="v1.13.3"></a>
 ### v1.13.3 - 2022-06-19
-<a name="v1.13.2"></a>
 - fix `default_flags` in conf not working anymore - Fix #566
 
-### v1.13.2 - 2022-06-18
 <a name="v1.13.2"></a>
+### v1.13.2 - 2022-06-18
 - advice to hit alt-i and|or alt-h when no file is visible - Fix #556
 - examples on search modes in help screen - Fix #559
 - list of syntactic themes in default conf
@@ -531,61 +531,61 @@ You're also encouraged to split your configuration in several files, as is now d
 
 Note: The released archive doesn't include an Android build - see https://github.com/Canop/broot/issues/565
 
-### v1.13.1 - 2022-05-30
 <a name="v1.13.1"></a>
+### v1.13.1 - 2022-05-30
 - fix alt-enter failing to cd to directory
 
-### v1.13.0 - 2022-05-29
 <a name="v1.13.0"></a>
+### v1.13.0 - 2022-05-29
 - close the staging area when it's emptied with a verb (e.g. on `:rm`)
 - format files counts with thousands separator - Fix #549
 - try verbs in order allowing some with filters before one without - Fix #552
 
-### v1.12.0 - 2022-05-05
 <a name="v1.12.0"></a>
+### v1.12.0 - 2022-05-05
 - `:stage_all_files` internal, adding to the staging area all the files verifying the current pattern. Mapped by default to ctrl-a
 
-### v1.11.1 - 2022-04-04
 <a name="v1.11.1"></a>
+### v1.11.1 - 2022-04-04
 - fix broot not being usable while an image is being opened by hitting enter on linux - Fix #530
 
-### v1.11.0 - 2022-04-02
 <a name="v1.11.0"></a>
+### v1.11.0 - 2022-04-02
 - sorting by type, with 3 new internals: `:sort_by_type_dirs_first`,  `:sort_by_type_dirs_last`, and `:sort_by_type`. The last one lets you toggle between no sort, sorting by type with directories first, and sorting by type with directories last. - Fix #467
 
-### v1.10.0 - 2022-03-29
 <a name="v1.10.0"></a>
+### v1.10.0 - 2022-03-29
 - verb filtering on file extension - Fix #508
 - don't quit on tiny terminals - Fix #511
 - fix the `capture_mouse` config item which was described in documentation but not usable (the non documented `disable_mouse_capture` argument was working and is kept for compatibility)
 
-### v1.9.4 - 2022-03-07
 <a name="v1.9.4"></a>
+### v1.9.4 - 2022-03-07
 - don't query size of remote filesystems anymore. This fixes some 10 seconds hangs in some cases (e.g. filesystem screen) when a remote filesystem is unreachable
 
-### v1.9.3 - 2022-02-15
 <a name="v1.9.3"></a>
+### v1.9.3 - 2022-02-15
 - keep same line visible in preview when resizing
 - `:previous_dir` and `:next_dir` internals - Fix #502
 
-### v1.9.2 - 2022-01-23
 <a name="v1.9.2"></a>
+### v1.9.2 - 2022-01-23
 - instead of crashing on syntect panic in code preview, fall back to unstyled text - Fix #485
 - fix files in worktree missing from git statuses - Fix #428
 
-### v1.9.1 - 2022-01-07
 <a name="v1.9.1"></a>
+### v1.9.1 - 2022-01-07
 - fix a few problems of speed, flickering and uncleaned background with high resolution image preview
 
-### v1.9.0 - 2022-01-06
 <a name="v1.9.0"></a>
+### v1.9.0 - 2022-01-06
 - total search (launched with ctrl-s) shows all matches - This is experimental and might be reversed, opinions welcome
 - kitty graphics protocol used for high definition image rendering on recent enough versions of WezTerm - Fix #473
 - fix syntaxic preview of Python files broken by comments - Fix #477
 - home key bound to :input_go_to_start, end key bound to :input_go_to_end - Fix #475
 
-### v1.8.1 - 2021-12-29
 <a name="v1.8.1"></a>
+### v1.8.1 - 2021-12-29
 - fix regex pattern automatically built from content pattern when going from a tree search to a file preview isn't escaped - Fix #472
 
 <a name="v1.8.0"></a>
@@ -1323,10 +1323,10 @@ Thanks Ophir LOJKINE for his contributions in this release
 
 <a name="v0.7.0"></a>
 ### v0.7.0 - 2019-03-07
-##### Major changes
+#### Major changes
 - verbs can now accept complex arguments. This allows functions like mkdir, mv, cp, etc. and your own rich commands
 - custom verbs can be executed without leaving broot (if defined with `leave_broot=false`)
-##### Minor changes
+#### Minor changes
 - Ctrl-Q shortcut to leave broot
 - fix a case of incorrect count of "unlisted" files
 
@@ -1349,12 +1349,12 @@ Thanks Ophir LOJKINE for his contributions in this release
 
 <a name="v0.6.0"></a>
 ### v0.6.0 - 2019-02-12
-##### Major changes
+#### Major changes
 - broot now installs the **br** shell function itself *(for bash and zsh, help welcome for other shells)*
 - new verb `:toggle_trim_root` allows to keep all root children
 - verbs can refer to `{directory}` which is the parent dir when a simple file is selected
 - user configured verbs can be launched from parent shell too (like is done for `cd {directory}`)
-##### Minor changes
+#### Minor changes
 - allow page up and page down on help screen
 - fuzzy pattern: increase score of match starting after word separator
 - better handle errors on a few cases of non suitable root (like passing an invalid path)
@@ -1381,8 +1381,8 @@ Thanks Ophir LOJKINE for his contributions in this release
 - bring back jemalloc (it's faster for broot)
 - more precise display of file/dir sizes
 
-<a name="0.4.7"></a>
-### 0.4.7 - 2019-01-21
+<a name="v0.4.7"></a>
+### v0.4.7 - 2019-01-21
 - fix some cases of panic on broot quitting
 - new `--cmd` program argument allows passing a sequence of commands to be immediately executed (see [updated documentation](https://github.com/Canop/broot/blob/master/documentation.md#passing-commands-as-program-argument))
 - better handling of symlink (display type of target, show invalid links, allow verbs on target)
