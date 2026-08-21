@@ -242,6 +242,9 @@ impl<'s> StandardStatusBuilder<'s> {
             PanelStateType::Trash => {
                 // TODO stage status ? Maybe the shortcuts to restore or delete ?
             }
+            PanelStateType::Favorite => {
+                // TODO favorite status
+            }
         }
         parts.to_status(self.width)
     }

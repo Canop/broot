@@ -1,4 +1,5 @@
 use {
+    crate::favorite::Favorites,
     crate::stage::Stage,
     std::path::PathBuf,
 };
@@ -7,6 +8,7 @@ use {
 #[derive(Debug)]
 pub struct AppState {
     pub stage: Stage,
+    pub favorites: Favorites,
 
     /// the current root, updated when a panel with this concept
     /// becomes active or changes its root
@@ -25,6 +27,7 @@ impl AppState {
     pub fn new<P: Into<PathBuf>>(root: P) -> Self {
         Self {
             stage: Stage::default(),
+            favorites: Favorites::load(),
             root: root.into(),
             watch_tree: false,
             other_panel_path: None,
