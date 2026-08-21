@@ -433,9 +433,9 @@ impl VerbStore {
         &mut self,
         vc: &VerbConf,
     ) -> Result<(), ConfError> {
-        if vc.leave_broot == Some(false) && vc.from_shell == Some(true) {
+        if vc.leave_broot == Some(false) && vc.run_in_parent_shell == Some(true) {
             return Err(ConfError::InvalidVerbConf {
-                details: "You can't simultaneously have leave_broot=false and from_shell=true"
+                details: "You can't simultaneously have leave_broot=false and run_in_parent_shell=true"
                     .to_string(),
             });
         }
@@ -472,7 +472,7 @@ impl VerbStore {
             };
             let mut external_execution = ExternalExecution::new(
                 s,
-                ExternalExecutionMode::from_conf(vc.from_shell, vc.leave_broot),
+                ExternalExecutionMode::from_conf(vc.run_in_parent_shell, vc.leave_broot),
             )
             .with_working_dir(working_dir);
             if let Some(b) = vc.switch_terminal {

@@ -11,7 +11,7 @@ pub enum ExternalExecutionMode {
 }
 
 impl ExternalExecutionMode {
-    pub fn is_from_shell(self) -> bool {
+    pub fn run_in_parent_shell(self) -> bool {
         matches!(self, Self::FromParentShell)
     }
     pub fn is_leave_broot(self) -> bool {

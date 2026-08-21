@@ -362,7 +362,7 @@ impl GraphicsManager {
         drawing_count: usize,
     ) -> Result<(), ProgramError> {
         let mut kept_images = Vec::new();
-        let stale: Vec<RenderedImage> = self.rendered_images.drain(..).collect();
+        let stale: Vec<RenderedImage> = std::mem::take(&mut self.rendered_images);
         for image in stale {
             if image.drawing_count >= drawing_count {
                 kept_images.push(image);

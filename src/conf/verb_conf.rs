@@ -43,7 +43,8 @@ pub struct VerbConf {
 
     pub leave_broot: Option<bool>,
 
-    pub from_shell: Option<bool>,
+    #[serde(alias = "from_shell")] // alias for backward compatibility
+    pub run_in_parent_shell: Option<bool>,
 
     #[serde(default, skip_serializing_if = "FileTypeCondition::is_default")]
     pub apply_to: FileTypeCondition,

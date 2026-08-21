@@ -36,7 +36,7 @@ auto_exec | `true` | whether to execute the verb as soon as it's key-triggered (
 cmd | | a semicolon sequence to execute, similar to an argument you pass to `--cmd`
 extensions | | optional array of allowed file extensions
 external | | execution, when your verb is based on an external command
-from_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
+run_in_parent_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
 impacted_panel | `active` | panel on which to execute the action, can be `left`, `right`, `preview`
 internal | | execution, when your verb is based on a predefined broot verb
 invocation | | how the verb is called by the user, with placeholders for arguments
@@ -53,7 +53,7 @@ working_dir | | the working directory of the external application, for example `
 The execution is defined either by `internal`, `external`, `shell_command` or `cmd` so a verb must have exactly one of those (for compatibility with older versions broot still accepts `execution` for `internal` or `external` and guesses which one it is).
 
 **Note:**
-The `from_shell` attribute exists because some actions can't possibly be useful from a subshell. For example, `cd` is a shell builtin which must be executed in the parent shell.
+The `run_in_parent_shell` attribute exists because some actions can't possibly be useful from a subshell. For example, `cd` is a shell builtin which must be executed in the parent shell.
 
 ## Verbs not leaving broot
 
@@ -61,11 +61,15 @@ If you set `leave_broot = false`, broot won't quit when executing your command, 
 
 This is useful for commands modifying the tree (like creating or moving files), or when you want to be back to broot after execution.
 
-# Chaining commands
+# Shell commands and scripts
 
-An `external` is run as a single program, so shell operators like `&&`, `;` or pipes are passed as plain arguments and don't do what you'd expect.
+With an external, you call an executable.
 
-Use `shell_command` instead of `external` to run the command line through a shell (`sh -c` on unix, `cmd /C` on Windows). This lets you chain commands:
+If you want to run a shell script, or to chain several commands, or if you need shell features, you must use the `shell_command` attribute instead of `external`.
+
+This runs the command line through a shell (`sh -c` on unix, `cmd /C` on Windows).
+
+Example:
 
 ```hjson
 {
@@ -82,35 +86,6 @@ leave_broot = false
 ```
 
 Placeholders such as `{directory}` and `{file}` are still filled in by broot (and paths with special characters are quoted for the shell) before the line reaches the shell.
-
-# Call shell scripts
-
-With an external, you call an executable.
-If you want to run a script, you must call an executable able to run it.
-
-For example, if you have this shell script:
-
-```bash
-#!/bin/bash
-echo "Hello, I got argument $1"
-sleep 5
-```
-
-You can call it with this verb definition:
-
-```hjson
-{
-    invocation: hello
-    external: ["sh" "-e" "/path/to/hello.sh" "{file}"]
-    leave_broot: false
-}
-```
-```toml
-[[verbs]]
-invocation = "hello"
-external = ["sh", "-e", "/path/to/hello.sh", "{file}"]
-leave_broot = false
-```
 
 # Using quotes
 
