@@ -21,6 +21,10 @@ pub struct VerbConf {
 
     pub external: Option<ExecPattern>,
 
+    /// like `external` but the command line is run through a shell
+    /// (`sh -c` / `cmd /C`) so that `&&`, `;`, pipes, etc. work
+    pub shell_command: Option<ExecPattern>,
+
     pub execution: Option<ExecPattern>,
 
     pub cmd: Option<String>,

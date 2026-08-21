@@ -459,6 +459,7 @@ impl VerbStore {
         let invocation = vc.invocation.clone().filter(|i| !i.is_empty());
         let internal = vc.internal.as_ref().filter(|i| !i.is_empty());
         let external = vc.external.as_ref().filter(|i| !i.is_empty());
+        let shell_command = vc.shell_command.as_ref().filter(|i| !i.is_empty());
         let cmd = vc.cmd.as_ref().filter(|i| !i.is_empty());
         let cmd_separator = vc.cmd_separator.as_ref().filter(|i| !i.is_empty());
         let execution = vc.execution.as_ref().filter(|i| !i.is_empty());
@@ -479,10 +480,10 @@ impl VerbStore {
             }
             external_execution
         };
-        let mut execution = match (execution, internal, external, cmd) {
+        let mut execution = match (execution, internal, external, shell_command, cmd) {
             // old definition with "execution": we guess whether it's an internal or
             // an external
-            (Some(ep), None, None, None) => {
+            (Some(ep), None, None, None, None) => {
                 if let Some(internal_pattern) = ep.to_internal_pattern() {
                     if let Some(previous_verb) =
                         self.verbs.iter().find(|&v| v.has_name(&internal_pattern))
@@ -496,7 +497,7 @@ impl VerbStore {
                 }
             }
             // "internal": the leading `:` or ` ` is optional
-            (None, Some(s), None, None) => {
+            (None, Some(s), None, None, None) => {
                 VerbExecution::Internal(if s.starts_with(':') || s.starts_with(' ') {
                     InternalExecution::try_from(&s[1..])?
                 } else {
@@ -504,11 +505,15 @@ impl VerbStore {
                 })
             }
             // "external": it can be about any form
-            (None, None, Some(ep), None) => {
+            (None, None, Some(ep), None, None) => {
                 VerbExecution::External(make_external_execution(ep.clone()))
             }
+            // "shell_command": like "external" but run through a shell
+            (None, None, None, Some(ep), None) => {
+                VerbExecution::ShellCommand(make_external_execution(ep.clone()))
+            }
             // "cmd": it's a sequence
-            (None, None, None, Some(s)) => VerbExecution::Sequence(SequenceExecution {
+            (None, None, None, None, Some(s)) => VerbExecution::Sequence(SequenceExecution {
                 sequence: Sequence::new(s, cmd_separator),
             }),
             _ => {
@@ -521,7 +526,9 @@ impl VerbStore {
             }
         };
         if let Some(refresh_after) = vc.refresh_after {
-            if let VerbExecution::External(external_execution) = &mut execution {
+            if let VerbExecution::External(external_execution)
+            | VerbExecution::ShellCommand(external_execution) = &mut execution
+            {
                 external_execution.refresh_after = refresh_after;
             } else {
                 warn!("refresh_after is only relevant for external commands");

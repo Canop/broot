@@ -73,20 +73,79 @@ impl ExternalExecution {
     /// goes from the external execution command to the CmdResult:
     /// - by executing the command if it can be executed from a subprocess
     /// - by building a command to be executed in parent shell in other cases
+    ///
+    /// When `through_shell` is set (which is the case for `shell_command`
+    /// verbs) the command line is run through a shell instead of being
+    /// exec'd as a single program, so that `&&`, `;`, pipes, etc. work.
     pub fn to_cmd_result(
         &self,
         w: &mut W,
         builder: ExecutionBuilder<'_>,
+        through_shell: bool,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         match self.exec_mode {
             ExternalExecutionMode::FromParentShell => {
                 self.cmd_result_exec_from_parent_shell(builder, con)
             }
-            ExternalExecutionMode::LeaveBroot => self.cmd_result_exec_leave_broot(builder, con),
-            ExternalExecutionMode::StayInBroot => {
-                self.cmd_result_exec_stay_in_broot(w, builder, con)
+            ExternalExecutionMode::LeaveBroot => {
+                self.cmd_result_exec_leave_broot(builder, through_shell, con)
             }
+            ExternalExecutionMode::StayInBroot => {
+                self.cmd_result_exec_stay_in_broot(w, builder, through_shell, con)
+            }
+        }
+    }
+
+    /// build a launchable for the whole (possibly merged) selection
+    fn merged_launchable(
+        &self,
+        builder: &mut ExecutionBuilder<'_>,
+        working_dir: Option<PathBuf>,
+        through_shell: bool,
+        con: &AppContext,
+    ) -> Result<Launchable, ProgramError> {
+        if through_shell {
+            Ok(Launchable::shell_program(
+                builder.shell_exec_string(&self.exec_pattern, con),
+                working_dir,
+                self.switch_terminal,
+                con,
+            ))
+        } else {
+            Ok(Launchable::program(
+                builder.exec_token(&self.exec_pattern, con),
+                working_dir,
+                self.switch_terminal,
+                con,
+            )?)
+        }
+    }
+
+    /// build a launchable for a single selection (used when executing once
+    /// per selection of a stage)
+    fn sel_launchable(
+        &self,
+        builder: &mut ExecutionBuilder<'_>,
+        sel: Option<Selection<'_>>,
+        working_dir: Option<PathBuf>,
+        through_shell: bool,
+        con: &AppContext,
+    ) -> Result<Launchable, ProgramError> {
+        if through_shell {
+            Ok(Launchable::shell_program(
+                builder.sel_shell_exec_string(&self.exec_pattern, sel, con),
+                working_dir,
+                self.switch_terminal,
+                con,
+            ))
+        } else {
+            Ok(Launchable::program(
+                builder.sel_exec_token(&self.exec_pattern, sel, con),
+                working_dir,
+                self.switch_terminal,
+                con,
+            )?)
         }
     }
 
@@ -139,7 +198,8 @@ impl ExternalExecution {
     /// launched by broot at end of broot
     fn cmd_result_exec_leave_broot(
         &self,
-        builder: ExecutionBuilder<'_>,
+        mut builder: ExecutionBuilder<'_>,
+        through_shell: bool,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         if builder.sel_info.count_paths() > 1 {
@@ -147,12 +207,8 @@ impl ExternalExecution {
                 return Ok(CmdResult::error(MULTI_SELECTION_ERROR));
             }
         }
-        let launchable = Launchable::program(
-            builder.exec_token(&self.exec_pattern, con),
-            self.working_dir_path(&builder, con),
-            self.switch_terminal,
-            con,
-        )?;
+        let working_dir = self.working_dir_path(&builder, con);
+        let launchable = self.merged_launchable(&mut builder, working_dir, through_shell, con)?;
         Ok(CmdResult::from(launchable))
     }
 
@@ -162,18 +218,15 @@ impl ExternalExecution {
         &self,
         w: &mut W,
         mut builder: ExecutionBuilder<'_>,
+        through_shell: bool,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         let working_dir_path = self.working_dir_path(&builder, con);
         match &builder.sel_info {
             SelInfo::None | SelInfo::One(_) => {
                 // zero or one selection -> only one execution
-                let launchable = Launchable::program(
-                    builder.exec_token(&self.exec_pattern, con),
-                    working_dir_path,
-                    self.switch_terminal,
-                    con,
-                )?;
+                let launchable =
+                    self.merged_launchable(&mut builder, working_dir_path, through_shell, con)?;
                 info!("Executing not leaving, launchable {:#?}", launchable);
                 if let Err(e) = launchable.execute(Some(w)) {
                     warn!("launchable failed : {:#?}", e);
@@ -195,10 +248,11 @@ impl ExternalExecution {
                         });
                         let n = sels.len();
                         for (i, sel) in sels.enumerate() {
-                            let launchable = Launchable::program(
-                                builder.sel_exec_token(&self.exec_pattern, Some(sel), con),
+                            let launchable = self.sel_launchable(
+                                &mut builder,
+                                Some(sel),
                                 working_dir_path.clone(),
-                                self.switch_terminal,
+                                through_shell,
                                 con,
                             )?;
                             let i = i + 1;
@@ -211,10 +265,10 @@ impl ExternalExecution {
                     }
                     CommandCoarity::Merged => {
                         // we execute once as the arguments are merging the selection
-                        let launchable = Launchable::program(
-                            builder.exec_token(&self.exec_pattern, con),
+                        let launchable = self.merged_launchable(
+                            &mut builder,
                             working_dir_path.clone(),
-                            self.switch_terminal,
+                            through_shell,
                             con,
                         )?;
                         info!("Executing not leaving, merged launchable {:#?}", launchable);

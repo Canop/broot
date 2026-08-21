@@ -14,6 +14,11 @@ pub enum VerbExecution {
     /// outside of broot.
     External(ExternalExecution),
 
+    /// like `External` but the command line is run through a shell (`sh -c` /
+    /// `cmd /C`) instead of executing a single program, so that shell features
+    /// like `&&`, `;`, pipes and redirections work.
+    ShellCommand(ExternalExecution),
+
     /// the execution is a sequence similar to what can be given
     /// to broot with --cmd
     Sequence(SequenceExecution),
@@ -27,7 +32,7 @@ impl fmt::Display for VerbExecution {
     ) -> fmt::Result {
         match self {
             Self::Internal(ie) => ie.fmt(f),
-            Self::External(ee) => ee.exec_pattern.fmt(f),
+            Self::External(ee) | Self::ShellCommand(ee) => ee.exec_pattern.fmt(f),
             Self::Sequence(se) => se.sequence.raw.fmt(f),
         }
     }
