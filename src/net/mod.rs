@@ -23,11 +23,9 @@ pub fn socket_file_path(server_name: &str) -> String {
 }
 
 pub fn random_server_name() -> String {
-    use rand::{distributions::Alphanumeric, Rng};
-    let name: String = rand::thread_rng()
-        .sample_iter(&Alphanumeric)
-        .take(10)
-        .map(char::from)
-        .collect();
-    name
+    use rand::distr::{
+        Alphanumeric,
+        SampleString,
+    };
+    Alphanumeric.sample_string(&mut rand::rng(), 10)
 }

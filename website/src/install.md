@@ -78,10 +78,10 @@ Once you have rust and dependencies installed, use cargo to install broot:
 cargo install --locked broot
 ```
 
-or, for clipboard support:
+or, for clipboard and sixel support:
 
 ```bash
-cargo install --locked --features clipboard broot
+cargo install --locked --features clipboard,sixel broot
 ```
 
 # From source
@@ -94,10 +94,10 @@ Fetch the [Canop/broot](https://github.com/Canop/broot) repository, move to the 
 cargo install --locked --path .
 ```
 
-If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/main/features.md). The most common feature is the "clipboard" one:
+If you want a custom compilation, have a look at the [optional features documentation](https://github.com/Canop/broot/blob/main/features.md). The most common features are the "clipboard" and "sixel" ones:
 
 ```bash
-cargo install --locked --features clipboard --path .
+cargo install --locked --features clipboard,sixel --path .
 ```
 
 # Third party repositories

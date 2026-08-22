@@ -210,7 +210,7 @@ impl Launchable {
                     // we restore the normal terminal in case the executable
                     // is a terminal application, and we'll switch back to
                     // broot's alternate terminal when we're back to broot
-                    if let Some(ref mut w) = &mut w {
+                    if let Some(w) = &mut w {
                         if *keyboard_enhanced {
                             crokey::pop_keyboard_enhancement_flags()?;
                         }
@@ -240,7 +240,7 @@ impl Launchable {
                         source,
                     });
                 if *switch_terminal {
-                    if let Some(ref mut w) = &mut w {
+                    if let Some(w) = &mut w {
                         terminal::enable_raw_mode()?;
                         if *capture_mouse {
                             w.queue(EnableMouseCapture)?;

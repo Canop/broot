@@ -75,14 +75,14 @@ impl InvocationParser {
     ) -> Option<String> {
         match (&invocation.args, &self.args_parser) {
             (None, None) => None,
-            (None, Some(ref regex)) => {
+            (None, Some(regex)) => {
                 if regex.is_match("") {
                     None
                 } else {
                     Some(self.invocation_pattern.to_string_for_name(&invocation.name))
                 }
             }
-            (Some(ref s), Some(ref regex)) => {
+            (Some(s), Some(regex)) => {
                 if regex.is_match(s) {
                     None
                 } else {

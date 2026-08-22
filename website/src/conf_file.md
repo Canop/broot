@@ -283,6 +283,8 @@ high-resolution image previews:
 * `kitty`: force the Kitty graphics protocol
 * `sixel`: force the Sixel graphics protocol
 
+Sixel is only available in a broot compiled with the [sixel feature](https://github.com/Canop/broot/blob/main/features.md).
+
 ```Hjson
 graphics_display: auto
 ```
@@ -292,7 +294,7 @@ graphics_display = "auto"
 
 Under `auto`, the protocol is detected in this order:
 1. Kitty graphics protocol (when available)
-2. Sixel (Windows Terminal 1.22+, and Sixel-capable Unix terminals such as foot, mlterm, or Sixel-built xterm)
+2. Sixel, when compiled in (Windows Terminal 1.22+, and Sixel-capable Unix terminals such as foot, mlterm, or Sixel-built xterm)
 3. Unicode half-block fallback (when neither is available)
 
 To override this per run, set the `BROOT_GRAPHICS_PROTOCOL` environment variable

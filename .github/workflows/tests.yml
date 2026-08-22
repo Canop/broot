@@ -15,8 +15,19 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Build
-      run: cargo build --verbose
+      run: cargo build --features sixel --verbose
     - name: Run tests
-      run: cargo test --verbose
+      run: cargo test --features sixel --verbose
+
+  msrv:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Install the minimal supported rust version
+      run: rustup toolchain install 1.85 --profile minimal
+    - name: Check
+      run: cargo +1.85 check --all-targets --verbose

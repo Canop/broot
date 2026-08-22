@@ -72,7 +72,7 @@ BROOT_DEPLOY_HOOK="$BROOT_WWW_DIR/deploy.sh"
 
 - `build-target.sh <filter>` — build one target (`--list` to see them), e.g.
   `./build-scripts/build-target.sh aarch64-apple-darwin`
-- `build.sh` — quick local `cargo build --release --features clipboard`
+- `build.sh` — quick local `cargo build --release --features clipboard,sixel`
 - `win-deploy.sh`, `termux-deploy.sh` — build and push a single Windows / Android binary
 - `fix-win-toolchain.sh` — Linux-only mingw fixup (unused with the current setup)
 - `_common.sh`, `_targets.sh` — sourced libraries, not run directly

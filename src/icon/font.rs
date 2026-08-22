@@ -139,15 +139,13 @@ impl IconPlugin for FontPlugin {
             TreeLineType::BrokenSymLink(_) => "default_file",
         };
 
-        let entry_icon = unsafe {
+        unsafe {
             std::char::from_u32_unchecked(
                 *self
                     .icon_name_to_icon_codepoint_map
                     .get(icon_name)
                     .unwrap_or(&self.default_icon_point),
             )
-        };
-
-        entry_icon
+        }
     }
 }

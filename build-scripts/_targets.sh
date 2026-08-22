@@ -34,24 +34,24 @@ _matrix_rows() {
         [[ $line =~ ^[[:space:]]*(#|$) ]] && continue
         printf '%s\n' "$line"
     done <<'EOF'
-x86-64 GLIBC|x86_64-unknown-linux-gnu|zig|clipboard|
-MUSL|x86_64-unknown-linux-musl|zig||
-ARM 32|armv7-unknown-linux-gnueabihf|zig||
-ARM 32 MUSL|armv7-unknown-linux-musleabi|cross||Linux
-ARM 64|aarch64-unknown-linux-gnu|zig||
-ARM 64 MUSL|aarch64-unknown-linux-musl|zig||
-Windows|x86_64-pc-windows-gnu|zig|clipboard|
-GLIBC 2.28|x86_64-unknown-linux-gnu.2.28|zig||
-Android x86_64|x86_64-linux-android|ndk|clipboard|
-# NetBSD/amd64|x86_64-unknown-netbsd|cross||Linux   uncomment to build NetBSD (zig can't target it; needs a Linux host with working cross)
+x86-64 GLIBC|x86_64-unknown-linux-gnu|zig|clipboard,sixel|
+MUSL|x86_64-unknown-linux-musl|zig|sixel|
+ARM 32|armv7-unknown-linux-gnueabihf|zig|sixel|
+ARM 32 MUSL|armv7-unknown-linux-musleabi|cross|sixel|Linux
+ARM 64|aarch64-unknown-linux-gnu|zig|sixel|
+ARM 64 MUSL|aarch64-unknown-linux-musl|zig|sixel|
+Windows|x86_64-pc-windows-gnu|zig|clipboard,sixel|
+GLIBC 2.28|x86_64-unknown-linux-gnu.2.28|zig|sixel|
+Android x86_64|x86_64-linux-android|ndk|clipboard,sixel|
+# NetBSD/amd64|x86_64-unknown-netbsd|cross|sixel|Linux   uncomment to build NetBSD (zig can't target it; needs a Linux host with working cross)
 EOF
 }
 
 # The macOS row for the current DARWIN_METHOD (empty when skipped).
 _darwin_row() {
     case $DARWIN_METHOD in
-        native) echo "macOS|aarch64-apple-darwin|native|" ;;
-        zig)    echo "macOS|aarch64-apple-darwin|zigmac|" ;;
+        native) echo "macOS|aarch64-apple-darwin|native|sixel" ;;
+        zig)    echo "macOS|aarch64-apple-darwin|zigmac|sixel" ;;
         skip)   : ;;
     esac
 }
@@ -75,7 +75,7 @@ all_release_targets() {
     _matrix_rows | while IFS='|' read -r label triple tool features want; do
         printf '%s|%s|%s|%s\n' "$label" "$triple" "$tool" "$features"
     done
-    echo "macOS|aarch64-apple-darwin|native|"
+    echo "macOS|aarch64-apple-darwin|native|sixel"
 }
 
 # The binary path inside build/ for a triple: build/<triple>/broot[.exe]

@@ -2,6 +2,7 @@ This page defines the optional features which may be applied on compilation:
 
 * clipboard
 * kitty-csi-check
+* sixel
 
 Feature gating is usually temporary: they may be removed when a technical problem is solved, when a feature becomes "mainstream", or when it's dropped because no user mentioned using it.
 
@@ -23,3 +24,15 @@ Most terminals don't support it, so support must be verified.
 Doing this with CSI escape sequences is a solution, but it involve delays and should only be enabled when this support can't be determined with [environment variables](https://dystroy.org/broot/launch/#environment-variables).
 
 Enabling this feature is thus not recommended unless you use a terminal you know support this protocol and isn't recognized by broot. If this happen, please tell me so that we can update one of the fast checks.
+
+## The "sixel" feature
+
+Broot can display images in high resolution with the Sixel protocol, which works in terminals not supporting Kitty's graphics protocol, and passes through tmux. See [graphics_display](https://dystroy.org/broot/conf_file/#graphics-display).
+
+This feature isn't enabled by default because its dependencies require rustc 1.90, while broot itself only needs 1.85. Keeping it optional lets broot be compiled on systems shipping an older toolchain, for example Debian stable.
+
+The official binaries are built with it. To compile it yourself:
+
+```bash
+cargo install broot --features sixel
+```

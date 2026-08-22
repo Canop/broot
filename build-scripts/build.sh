@@ -14,5 +14,5 @@
 # which don't support sh scripts.
 
 cd "$(dirname "$0")/.."
-cargo build --release --features "clipboard"
+cargo build --release --features "clipboard,sixel"
 
