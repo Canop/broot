@@ -7,6 +7,7 @@
 /broot_*.zip
 /build
 /build-cache
+/.build-cache
 /build-scripts/_local.sh
 /compile.sh
 /build-scripts/fix-win-toolchain.sh

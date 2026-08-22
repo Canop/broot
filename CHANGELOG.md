@@ -1,4 +1,5 @@
-### next
+<a name="v1.59.0"></a>
+### v1.59.0 - 2026-08-22
 - new `shell_command` verb attribute: run a command through a shell (`sh -c` / `cmd /C`) so `&&`, `;` and pipes work, without leaving broot - Fix #1145
 - fix invalid official Mac binary (duplicate linked dylib) with new build chain - Fix #1194
 - Sixel graphics support for image preview, auto-detected: works in iterm2, Windows Terminal 1.22+ and Sixel-capable Unix terminals (foot, mlterm, xterm built with Sixel, recent WezTerm). Kitty remains the preferred protocol when available. Note: this requires broot to be compiled with sixel feature (eg `cargo install broot --features sixel`) - Fix #568 - Thanks @jamison-wilde
@@ -12,6 +13,7 @@
 - fix panic on a content regex matching the empty string at the end of a line ending with a control char (eg `cr/$/` on a CRLF file)
 - fix Windows paths (containing backslashes) being mangled by the launcher's eval when using `:cd` and similar; also fixes escaping of paths containing a single quote - Fix #1100 - Thanks @Cyrus580529
 - fix `br` failing on Windows/PowerShell when the temp path contains a space (e.g. a space in the Windows username) - Fix #788 - Thanks @chinhkrb113
+- JPEG XL images are no longer previewed: the decoder had out-of-bounds bugs and the fix needs a more recent rustc (if you need it, tell me and I'll try to make it opt-in)
 - rustc minimal version changed from 1.83 to 1.85, and edition 2024
 
 <a name="v1.58.0"></a>
