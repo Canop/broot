@@ -334,7 +334,7 @@ dependencies = [
  "strict",
  "syntect-no-panic",
  "tempfile",
- "termimad 0.35.0",
+ "termimad 0.35.2",
  "terminal-clipboard",
  "terminal-light",
  "toml 0.9.12+spec-1.1.0",
@@ -475,7 +475,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cba2aeb4586a460f68b52628fdbf7cdbc9af533288a64f09a6c59896a5a2f288"
 dependencies = [
  "clap",
- "termimad 0.35.0",
+ "termimad 0.35.2",
  "terminal-light",
 ]
 
@@ -3355,9 +3355,9 @@ dependencies = [
 
 [[package]]
 name = "termimad"
-version = "0.35.0"
+version = "0.35.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "903906afabf58273a7a90b47e0e60701cbd01731ca72ba88508b38b5539647f4"
+checksum = "bc986efe2e680fbd1051790103f01b176eb6b1bbc926e41d46adfe44ea43614c"
 dependencies = [
  "coolor",
  "crokey",

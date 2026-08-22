@@ -19,7 +19,7 @@ exclude = ["website", "broot*.zip"]
 default = ["sixel"]
 clipboard = ["terminal-clipboard"]
 kitty-csi-check = [] # gates the optional Kitty CSI graphics query (xterm-query is now a base dependency)
-sixel = ["icy_sixel"] # Sixel image-preview protocol (pulls icy_sixel + its color-quantization deps)
+sixel = ["icy_sixel"]
 
 [dependencies]
 base64 = "0.22"
@@ -64,7 +64,7 @@ splitty = "1.0.2"
 strict = "0.2"
 syntect = { package = "syntect-no-panic", version = "6.0", default-features = false, features = ["default-fancy"] } # see https://github.com/Canop/broot/pull/968
 tempfile = "3.2"
-termimad = "0.35"
+termimad = "0.35.2"
 terminal-clipboard = { version = "0.4.1", optional = true }
 terminal-light = "1.8"
 toml = "0.9"
@@ -72,7 +72,7 @@ umask = "2.1.0"
 unicode-width = "0.2"
 vte = "0.15"
 which = "=4.4.0" # following versions ask for a a more recent rustc
-xterm-query = "0.6" # terminal queries: Sixel DA1 detection (all platforms) + cell size on Windows
+xterm-query = "0.6" 
 
 [dev-dependencies]
 glassbench = "0.4.4"
