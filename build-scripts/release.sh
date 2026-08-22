@@ -17,13 +17,26 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 version=$(broot_version)
 
 if staging_configured; then
-    require_clean_tree
+    if ! tree_is_clean; then
+        warn "working tree has uncommitted changes, so this release won't match commit $(git rev-parse --short HEAD)"
+        confirm "assemble it anyway?" || die "aborted — commit your changes, then re-run"
+    fi
     id=$(release_id)
     h1 "Assembling release $version from $BROOT_STAGE_HOST ($id)"
     rm -rf build && mkdir build
     h2 "Fetching staged artifacts"
     stage_fetch build
     ok "fetched $BROOT_STAGE_DIR/$id"
+    # A host may have staged from a dirty tree — including a host that isn't this
+    # one, so a clean tree here is no guarantee about the artifacts.
+    dirty_report=$(stage_dirty_report)
+    if [[ -n $dirty_report ]]; then
+        warn "some staged artifacts were built from uncommitted changes:"
+        while IFS= read -r line; do
+            [[ -n $line ]] && info "$line"
+        done <<< "$dirty_report"
+        confirm "package them anyway?" || die "aborted — rebuild those targets from a clean tree"
+    fi
     manifest_fn=all_release_targets   # a full release must contain every target
 else
     h1 "Building release $version locally — THIS host's targets only"

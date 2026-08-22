@@ -78,6 +78,19 @@ all_release_targets() {
     echo "macOS|aarch64-apple-darwin|native|sixel"
 }
 
+# Triples whose binary is already staged for the current release id, one per
+# line. The id pins version + commit, so anything found here was built from
+# exactly the current source and needn't be rebuilt. Silent and empty when
+# staging isn't configured or the server can't be reached.
+staged_triples() {
+    staging_configured || return 0
+    local dest
+    dest="$BROOT_STAGE_DIR/$(release_id)"
+    ssh "$BROOT_STAGE_HOST" \
+        "ls -1 '$dest'/*/'$NAME' '$dest'/*/'$NAME.exe' 2>/dev/null" 2>/dev/null \
+        | sed -n 's:.*/\([^/]*\)/[^/]*$:\1:p' | sort -u || true
+}
+
 # The binary path inside build/ for a triple: build/<triple>/broot[.exe]
 target_binary() { # target_binary <triple>
     local triple=$1 exe=$NAME

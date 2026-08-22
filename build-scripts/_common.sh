@@ -100,9 +100,19 @@ ensure_container_engine() {
 # there. <id> ties every artifact to one commit. When unset, builds stay local.
 staging_configured() { [[ -n ${BROOT_STAGE_HOST:-} ]]; }
 
-require_clean_tree() {
-    git diff --quiet HEAD 2>/dev/null \
-        || die "working tree has uncommitted changes — commit before a staged release"
+tree_is_clean() { git diff --quiet HEAD 2>/dev/null; }
+
+# Ask a yes/no question on the terminal, defaulting to no. With no terminal to
+# ask on (cron, CI) the answer is no, unless BROOT_YES is set.
+confirm() { # confirm <question>
+    local reply
+    if [[ -n ${BROOT_YES:-} ]]; then
+        info "$1 — assuming yes (BROOT_YES is set)"
+        return 0
+    fi
+    printf '    %s [y/N] ' "$1"
+    { read -r reply </dev/tty; } 2>/dev/null || reply=n
+    case $reply in [yY] | [yY][eE][sS]) return 0 ;; *) return 1 ;; esac
 }
 
 release_id() { # <version>-<short commit>, e.g. 1.58.0-0717a94
@@ -125,6 +135,23 @@ stage_fetch() { # stage_fetch <local-dir>  <- pulls <dir>/<id>/ into it
     local dir=$1 id
     id=$(release_id)
     rsync -az "$BROOT_STAGE_HOST:$BROOT_STAGE_DIR/$id/" "$dir"/
+}
+
+# A build staged from a dirty tree doesn't match its commit, so the host that
+# staged it says so in a marker file. It sits *beside* the staging dir, not in
+# it, so it never travels into build/ or the release zip.
+stage_dirty_marker() { printf '%s/%s.dirty\n' "$BROOT_STAGE_DIR" "$(release_id)"; }
+
+stage_mark_dirty() {
+    local line
+    line="$(date -u +%Y-%m-%dT%H:%M:%SZ) $(hostname) $(host_os)"
+    ssh "$BROOT_STAGE_HOST" \
+        "mkdir -p '$BROOT_STAGE_DIR' && echo '$line' >> '$(stage_dirty_marker)'"
+}
+
+# One line per host that staged uncommitted work for this id; empty if none.
+stage_dirty_report() {
+    ssh "$BROOT_STAGE_HOST" "cat '$(stage_dirty_marker)' 2>/dev/null" 2>/dev/null || true
 }
 
 # --- machine-local overrides (gitignored): staging + deploy paths -------------

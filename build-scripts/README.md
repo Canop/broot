@@ -16,7 +16,9 @@ Linux), so a release is built on both and assembled through a staging server.
        ./build-scripts/build-all-targets.sh
 
    Builds this host's targets and pushes `build/` to the staging server, keyed by
-   `<version>-<commit>`.
+   `<version>-<commit>`. Targets already staged under that key are skipped, so a
+   re-run after a failure only builds what's missing; `--force` rebuilds them all.
+   Any new commit changes the key, so everything is rebuilt.
 
 2. On one machine, assemble and package:
 
@@ -31,6 +33,12 @@ Linux), so a release is built on both and assembled through a staging server.
 
 Staging and deploy settings come from `build-scripts/_local.sh` (see below).
 Without it, `release.sh` builds locally on a single host and `deploy.sh` won't run.
+
+A dirty tree doesn't block either step, but both ask first: `build-all-targets.sh`
+offers to stage it anyway (recorded in a `<version>-<commit>.dirty` marker beside
+the staging dir, and already-staged targets are then rebuilt rather than reused),
+and `release.sh` reports every host that staged uncommitted work before packaging.
+Set `BROOT_YES=1` to answer yes to all of it without a terminal.
 
 ## Machine-local config (`_local.sh`)
 
