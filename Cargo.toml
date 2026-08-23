@@ -77,7 +77,7 @@ which = "4.4"
 xterm-query = "0.6" 
 
 [dev-dependencies]
-glassbench = "0.4.4"
+glassbench = "0.5"
 
 [target.'cfg(any(target_os = "windows", all(unix, not(any(target_os = "ios", target_os = "android")))))'.dependencies]
 trash = "5.2"
