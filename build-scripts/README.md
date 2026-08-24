@@ -31,6 +31,12 @@ Linux), so a release is built on both and assembled through a staging server.
 
        ./build-scripts/deploy.sh
 
+   rsyncs `build/` and the zip straight into the download directory on the
+   server. Nothing goes through `~/dev/www/dystroy`: that tree mirrors the whole
+   site on each machine, so pushing it from one machine republishes its stale
+   copy of everything the other machines deployed. Previous zips are left in
+   place, so old versions stay downloadable.
+
 Staging and deploy settings come from `build-scripts/_local.sh` (see below).
 Without it, `release.sh` builds locally on a single host and `deploy.sh` won't run.
 
@@ -50,11 +56,10 @@ It's sourced by `_common.sh`.
 |----------|---------|----------|---------|
 | `BROOT_STAGE_HOST` | build-all-targets.sh, release.sh | for staged releases | ssh host every machine can reach; enables push/fetch of a multi-host release. Unset ⇒ single-host local builds. |
 | `BROOT_STAGE_DIR` | build-all-targets.sh, release.sh | no — default `broot-staging` | staging dir on the server, relative to your ssh login home (or absolute, with a leading `/`). |
-| `BROOT_DOWNLOAD_DIR` | deploy.sh | yes, to deploy | dir the built `build/` and the zip are copied into. |
-| `BROOT_DEPLOY_HOOK` | deploy.sh | no | command run after copying, to publish (e.g. a website deploy script). |
+| `BROOT_DEPLOY_TARGET` | deploy.sh | yes, to deploy | rsync destination of the download dir, e.g. `dys@dystroy.org:prod/www.dystroy.org/broot/download`. Must end in `/broot/download`. |
 | `BROOT_VM_SHARED` | win-deploy.sh | no — default `~/dev/storage/vm/shared` | folder shared with the Windows VM. |
 | `BROOT_PUB_DIR` | termux-deploy.sh | no — default `$BROOT_WWW_DIR/pub` | destination for the Android/Termux binary. |
-| `BROOT_WWW_DIR` | termux-deploy.sh, convenience | no — default `~/dev/www/dystroy` | base path used to derive the others. |
+| `BROOT_WWW_DIR` | termux-deploy.sh | no — default `~/dev/www/dystroy` | local mirror of the site, still used to publish the Termux binary into its `pub/` dir. |
 
 Set only what a machine actually needs (e.g. `BROOT_VM_SHARED` only where you run
 `win-deploy.sh`). A full example:
@@ -67,11 +72,10 @@ BROOT_STAGE_HOST=dystroy.org
 BROOT_STAGE_DIR=staging/broot-staging        # relative to ssh home, or absolute
 
 # Publishing, on whichever machine runs deploy.sh:
-BROOT_WWW_DIR="$HOME/dev/www/dystroy"
-BROOT_DOWNLOAD_DIR="$BROOT_WWW_DIR/broot/download"
-BROOT_DEPLOY_HOOK="$BROOT_WWW_DIR/deploy.sh"
+BROOT_DEPLOY_TARGET="dys@dystroy.org:prod/www.dystroy.org/broot/download"
 
 # Only if you use these on this machine:
+BROOT_WWW_DIR="$HOME/dev/www/dystroy"              # termux-deploy.sh
 # BROOT_VM_SHARED="$HOME/dev/storage/vm/shared"    # win-deploy.sh
 # BROOT_PUB_DIR="$BROOT_WWW_DIR/pub"               # termux-deploy.sh
 ```

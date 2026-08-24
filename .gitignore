@@ -19,7 +19,6 @@
 /build-scripts/termux-deploy.sh
 /trav
 /website/site
-deploy.sh
 !/build-scripts/deploy.sh
 dev.log
 .DS_Store
