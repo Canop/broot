@@ -4,6 +4,7 @@
 - fix invalid official Mac binary (duplicate linked dylib) with new build chain - Fix #1194
 - Sixel graphics support for image preview, auto-detected: works in iterm2, Windows Terminal 1.22+ and Sixel-capable Unix terminals (foot, mlterm, xterm built with Sixel, recent WezTerm). Kitty remains the preferred protocol when available. Note: this requires broot to be compiled with sixel feature (eg `cargo install broot --features sixel`) - Fix #568 - Thanks @jamison-wilde
 - High-Res images in Rio terminal (detect it to enable the Kitty image protocol) - Fix #1179
+- fix iTerm2 3.6.10 and later not displaying Hi-Res images, the version being compared as text - Thanks @kidonng
 - fix content-exact match line number off-by-one when the match starts at the first byte of a line (broot jumped to the line above) - Thanks @YuriNachos
 - new `:no_action` internal, doing nothing, which can be used to disable a key - Fix #328
 - fix: detect a duplicate broot server name instead of silently overtaking the running server - Fix #1065 - Thanks @YuriNachos
