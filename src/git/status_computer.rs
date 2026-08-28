@@ -8,7 +8,6 @@ use {
             Dam,
         },
     },
-    git2::Repository,
     once_cell::sync::Lazy,
     rustc_hash::FxHashMap,
     std::{
@@ -22,7 +21,7 @@ use {
 };
 
 fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {
-    match Repository::open(root_path) {
+    match gix::open(root_path) {
         Ok(git_repo) => {
             let tree_git_status = time!(TreeGitStatus::from(&git_repo),);
             match tree_git_status {
@@ -31,7 +30,7 @@ fn compute_tree_status(root_path: &Path) -> ComputationResult<TreeGitStatus> {
             }
         }
         Err(e) => {
-            debug!("failed to discover repo: {e:?}");
+            debug!("failed to open repo: {e:?}");
             ComputationResult::None
         }
     }

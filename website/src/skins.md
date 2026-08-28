@@ -46,6 +46,7 @@ skin: {
 	git_deletions: ansi(160) None
 	git_status_current: gray(5) None
 	git_status_modified: ansi(28) None
+	git_status_staged: ansi(34) None
 	git_status_new: ansi(94) None Bold
 	git_status_ignored: gray(17) None
 	git_status_conflicted: ansi(88) None
@@ -128,6 +129,7 @@ git_insertions = "ansi(28) None"
 git_deletions = "ansi(160) None"
 git_status_current = "gray(5) None"
 git_status_modified = "ansi(28) None"
+git_status_staged = "ansi(34) None"
 git_status_new = "ansi(94) None Bold"
 git_status_ignored = "gray(17) None"
 git_status_conflicted = "ansi(88) None"

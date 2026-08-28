@@ -3,6 +3,7 @@ use {
     crate::{
         app::*,
         command::*,
+        git,
         path::{
             self,
             PathAnchor,
@@ -183,26 +184,21 @@ impl<'b> ExecutionBuilder<'b> {
             "git-root" => {
                 // path to git repo workdir
                 debug!("finding git root");
-                sel.and_then(|s| git2::Repository::discover(s.path).ok())
-                    .and_then(|repo| repo.workdir().map(|p| self.path_to_string(p)))
+                sel.and_then(|s| git::workdir(s.path))
+                    .map(|p| self.path_to_string(&p))
             }
             "git-name" => {
                 // name of the git repo workdir
-                sel.and_then(|s| git2::Repository::discover(s.path).ok())
-                    .and_then(|repo| {
-                        repo.workdir().and_then(|path| {
-                            path.file_name()
-                                .and_then(|oss| oss.to_str())
-                                .map(|s| s.to_string())
-                        })
-                    })
+                sel.and_then(|s| git::workdir(s.path)).and_then(|path| {
+                    path.file_name()
+                        .and_then(|oss| oss.to_str())
+                        .map(|s| s.to_string())
+                })
             }
             "file-git-relative" => {
                 // file path relative to git repo workdir
                 let sel = sel?;
-                let path = git2::Repository::discover(self.root)
-                    .ok()
-                    .and_then(|repo| repo.workdir().map(|p| self.path_to_string(p)))
+                let path = git::workdir(self.root)
                     .and_then(|gitroot| sel.path.strip_prefix(gitroot).ok())
                     .filter(|p| {
                         // it's empty when the file is both the tree root and the git root

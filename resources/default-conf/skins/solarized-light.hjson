@@ -49,6 +49,8 @@ skin: {
 	git_status_current: "none none"
 	// yellow default
 	git_status_modified: "rgb(181, 137, 0) none"
+	// cyan default
+	git_status_staged: "rgb(42, 161, 152) none"
 	// green default
 	git_status_new: "rgb(133, 153, 0) none"
 	// base1 default

@@ -34,6 +34,7 @@ skin: {
     git_deletions: rgb(190, 15, 23) None
     git_status_current: rgb(60, 56, 54) None
     git_status_modified: rgb(152, 151, 26) None
+    git_status_staged: rgb(142, 192, 124) None
     git_status_new: rgb(104, 187, 38) None Bold
     git_status_ignored: rgb(213, 196, 161) None
     git_status_conflicted: rgb(204, 36, 29) None

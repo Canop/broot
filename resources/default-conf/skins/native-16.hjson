@@ -56,6 +56,7 @@ skin: {
     git_status_current: ansi(6)
     git_status_ignored: ansi(8)
     git_status_modified: ansi(3)
+    git_status_staged: ansi(2)
     git_status_new: ansi(2) none bold
     git_status_other: ansi(5)
 
