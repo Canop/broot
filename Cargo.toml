@@ -40,7 +40,8 @@ git2 = { version = "0.20", default-features = false } # waiting for a good pure-
 glob = "0.3"
 icy_sixel = { version = "0.5", optional = true }
 id-arena = "2.2.1"
-image = "0.25"
+# decoders only: `avif` is left out, in image 0.25 it's just an AV1 encoder
+image = { version = "0.25", default-features = false, features = ["rayon", "bmp", "dds", "exr", "ff", "gif", "hdr", "ico", "jpeg", "png", "pnm", "qoi", "tga", "tiff", "webp"] }
 zune-core = "0.4.12"
 # jpeg-xl is left out: it pulls jxl-oxide 0.4, whose out-of-bounds bugs are only fixed
 # in zune-image 0.5, which needs rustc 1.87
