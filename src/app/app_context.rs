@@ -158,6 +158,9 @@ pub struct AppContext {
     /// Number of lines to display before a match in the preview
     pub lines_before_match_in_preview: usize,
 
+    /// Number of unchanged lines to display around the hunks of a diff
+    pub lines_around_diff_hunks: usize,
+
     /// The set of transformers called before previewing a file
     pub preview_transformers: PreviewTransformers,
 
@@ -281,6 +284,7 @@ impl AppContext {
             kept_kitty_temp_files,
             lines_after_match_in_preview: config.lines_after_match_in_preview.unwrap_or(0),
             lines_before_match_in_preview: config.lines_before_match_in_preview.unwrap_or(0),
+            lines_around_diff_hunks: config.lines_around_diff_hunks.unwrap_or(3),
             preview_transformers,
             layout_instructions,
             server_name,

@@ -604,12 +604,15 @@ impl AppPanelsAndInputs {
             return;
         };
         if let Some(path) = self.state().selected_path() {
-            let old_path = self.panels.panels[preview_idx].state().selected_path();
-            if refresh || Some(path) != old_path {
+            let git_status = self.state().selection().and_then(|sel| sel.git_status);
+            let preview_state = self.panels.panels[preview_idx].state();
+            let old_path = preview_state.selected_path();
+            let old_git_status = preview_state.selection().and_then(|sel| sel.git_status);
+            if refresh || Some(path) != old_path || git_status != old_git_status {
                 let path = path.to_path_buf();
                 self.panels.panels[preview_idx]
                     .mut_state()
-                    .set_selected_path(path, con);
+                    .set_selected(path, git_status, con);
             }
         }
     }

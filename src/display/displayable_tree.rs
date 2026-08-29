@@ -13,7 +13,6 @@ use {
         content_search::ContentMatch,
         errors::ProgramError,
         file_sum::FileSum,
-        git::LineGitStatus,
         pattern::PatternObject,
         skin::{
             ExtColorMap,
@@ -237,14 +236,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
     ) -> Result<usize, termimad::Error> {
         let (style, char) = if line.is_selectable() {
             match line.git_status {
-                Some(LineGitStatus::New) => (&self.skin.git_status_new, 'N'),
-                Some(LineGitStatus::Added) => (&self.skin.git_status_staged, 'A'),
-                Some(LineGitStatus::Staged) => (&self.skin.git_status_staged, 'S'),
-                Some(LineGitStatus::Conflicted) => (&self.skin.git_status_conflicted, 'C'),
-                Some(LineGitStatus::Modified) => (&self.skin.git_status_modified, 'M'),
-                Some(LineGitStatus::Renamed) => (&self.skin.git_status_new, 'R'),
-                Some(LineGitStatus::Ignored) => (&self.skin.git_status_ignored, 'I'),
-                Some(LineGitStatus::Other) => (&self.skin.git_status_other, '?'),
+                Some(status) => (self.skin.git_status_style(status), status.letter()),
                 None => (&self.skin.tree, ' '),
             }
         } else {

@@ -240,12 +240,7 @@ impl ExternalExecution {
                 match coarity {
                     CommandCoarity::PerSelection => {
                         // we execute once per selection
-                        let sels = stage.paths().iter().map(|path| Selection {
-                            path,
-                            line: 0,
-                            stype: SelectionType::from(path),
-                            is_exe: false,
-                        });
+                        let sels = stage.paths().iter().map(|path| Selection::from_path(path));
                         let n = sels.len();
                         for (i, sel) in sels.enumerate() {
                             let launchable = self.sel_launchable(

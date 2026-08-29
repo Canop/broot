@@ -69,6 +69,9 @@ skin: {
     preview_line_number: rgb(124, 111, 100) rgb(40, 40, 40) / rgb(124, 111, 100) None
     preview_separator: rgb(70, 70, 80) None / rgb(60, 60, 60) None
     preview_match: None ansi(29) Bold
+    diff_line_number: rgb(146, 131, 116) rgb(50, 48, 47)
+    diff_added: rgb(235, 219, 178) rgb(50, 70, 42)
+    diff_removed: rgb(235, 219, 178) rgb(90, 40, 36)
     hex_null: rgb(189, 174, 147) None
     hex_ascii_graphic: rgb(213, 196, 161) None
     hex_ascii_whitespace: rgb(152, 151, 26) None

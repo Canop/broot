@@ -108,6 +108,7 @@ Internals! {
     panel_right_no_open: "either focus panel on right or close left one" false,
     parent: "move to the parent directory" false,
     preview_binary: "preview the selection as binary" true,
+    preview_diff: "preview the changes of the selection since the last commit" true,
     preview_image: "preview the selection as image" true,
     preview_text: "preview the selection as text" true,
     preview_tty: "preview the selection as tty" true,

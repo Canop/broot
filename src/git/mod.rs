@@ -1,8 +1,17 @@
+mod diff;
 mod ignore;
 mod status;
 mod status_computer;
 
 pub use {
+    diff::{
+        DiffLine,
+        DiffLineKind,
+        FileDiff,
+        FileDiffContent,
+        Hunk,
+        diff_worktree_vs_head,
+    },
     ignore::{
         IgnoreChain,
         Ignorer,

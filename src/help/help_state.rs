@@ -102,12 +102,7 @@ impl PanelState for HelpState {
     }
 
     fn selection(&self) -> Option<Selection<'_>> {
-        Some(Selection {
-            path: &self.config_path,
-            stype: SelectionType::File,
-            is_exe: false,
-            line: 0,
-        })
+        Some(Selection::new(&self.config_path, SelectionType::File))
     }
 
     fn refresh(

@@ -106,6 +106,9 @@ skin: {
 	preview_line_number: "rgb(147, 161, 161) rgb(238, 232, 213)"
 	preview_separator: "rgb(147, 161, 161) rgb(238, 232, 213)"
 	preview_match: "None ansi(29)"
+	diff_line_number: "rgb(147, 161, 161) rgb(238, 232, 213)"
+	diff_added: "rgb(0, 43, 54) rgb(213, 232, 199)"
+	diff_removed: "rgb(0, 43, 54) rgb(246, 210, 200)"
 	staging_area_title: "gray(22) rgb(253, 246, 227)"
 	good_to_bad_0: ansi(28)
 	good_to_bad_1: ansi(29)

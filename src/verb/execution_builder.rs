@@ -539,12 +539,7 @@ mod execution_builder_test {
         chk_exec_token: Vec<&str>,
     ) {
         let path = PathBuf::from(path);
-        let sel = Selection {
-            path: &path,
-            line: 0,
-            stype: SelectionType::File,
-            is_exe: false,
-        };
+        let sel = Selection::new(&path, SelectionType::File);
         let app_state = AppState::new(PathBuf::from("/".to_owned()));
         let mut builder = ExecutionBuilder::without_invocation(SelInfo::One(sel), &app_state);
         let mut map = FxHashMap::default();

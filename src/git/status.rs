@@ -85,6 +85,26 @@ impl LineGitStatus {
             _ => Self::Other,
         })
     }
+    /// Return the letter showing the status in the git column
+    pub fn letter(self) -> char {
+        match self {
+            Self::New => 'N',
+            Self::Added => 'A',
+            Self::Staged => 'S',
+            Self::Modified => 'M',
+            Self::Renamed => 'R',
+            Self::Conflicted => 'C',
+            Self::Ignored => 'I',
+            Self::Other => '?',
+        }
+    }
+    /// Return whether the file has changes since the last commit
+    pub fn has_diff(self) -> bool {
+        matches!(
+            self,
+            Self::Modified | Self::Staged | Self::Conflicted | Self::Added | Self::Renamed
+        )
+    }
     /// Return the precedence of the status, used when a path has both a
     /// HEAD->index and an index->worktree change
     fn rank(self) -> u8 {

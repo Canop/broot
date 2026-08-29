@@ -102,6 +102,9 @@ skin: {
     # preview_line_number: none
     # preview_match: none
     # preview_title: none
+    diff_line_number: ansi(8)
+    diff_added: ansi(0) ansi(2)
+    diff_removed: ansi(0) ansi(1)
 
     # Used for displaying errors
     file_error: ansi(1)

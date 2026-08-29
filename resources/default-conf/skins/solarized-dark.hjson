@@ -53,6 +53,9 @@ skin: {
 	help_headers: "rgb(181, 137, 0) none"                                             // yellow default
 	help_table_border: "none none"                                                    // default default
 	preview_title: "gray(20) rgb(0, 43, 54)"
+	diff_line_number: "rgb(88, 110, 117) rgb(7, 54, 66)"
+	diff_added: "rgb(238, 232, 213) rgb(20, 70, 50)"
+	diff_removed: "rgb(238, 232, 213) rgb(90, 30, 40)"
 	staging_area_title: "gray(22) rgb(0, 43, 54)"
  	good_to_bad_0: "ansi(28)"														  // green
  	good_to_bad_1: "ansi(29)"

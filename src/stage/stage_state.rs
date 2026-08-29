@@ -187,12 +187,10 @@ impl PanelState for StageState {
     ) -> SelInfo<'c> {
         match app_state.stage.len() {
             0 => SelInfo::None,
-            1 => SelInfo::One(Selection {
-                path: &app_state.stage.paths()[0],
-                stype: SelectionType::File,
-                is_exe: false,
-                line: 0,
-            }),
+            1 => SelInfo::One(Selection::new(
+                &app_state.stage.paths()[0],
+                SelectionType::File,
+            )),
             _ => SelInfo::More(&app_state.stage),
         }
     }

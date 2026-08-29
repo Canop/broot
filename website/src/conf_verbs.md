@@ -496,6 +496,7 @@ invocation | default key | default shortcut | behavior / details
 :panel_right_no_open | -  | - | move to panel to the right
 :parent | - | - | focus the parent directory
 :preview_binary | - | - | preview the selection as binary
+:preview_diff | - | - | preview the changes of the selection since the last commit
 :preview_image | - | - | preview the selection as image
 :preview_text | - | - | preview the selection as text
 :preview_tty | - | - | preview the selection as tty (with ANSI escape codes)

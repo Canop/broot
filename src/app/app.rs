@@ -79,6 +79,7 @@ impl App {
             // open initial_file in preview
             let preview_state = Box::new(PreviewState::new(
                 path.clone(),
+                None,
                 InputPattern::none(),
                 None,
                 con.initial_tree_options.clone(),

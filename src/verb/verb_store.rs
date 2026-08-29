@@ -134,6 +134,7 @@ impl VerbStore {
         self.add_internal(preview_text).with_shortcut("txt");
         self.add_internal(preview_binary).with_shortcut("hex");
         self.add_internal(preview_tty).with_shortcut("tty");
+        self.add_internal(preview_diff);
         self.add_internal(close_panel_ok);
         self.add_internal(close_panel_cancel)
             .with_key(key!(ctrl - w));
