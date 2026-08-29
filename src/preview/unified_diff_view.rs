@@ -65,6 +65,9 @@ impl UnifiedDiffView {
         con: &AppContext,
     ) -> Result<Self, ProgramError> {
         let diff = diff_worktree_vs_head(path, con.lines_around_diff_hunks)?;
+        Ok(Self::from_diff(diff))
+    }
+    pub fn from_diff(diff: FileDiff) -> Self {
         let mut rows = Vec::new();
         if let FileDiffContent::Text(hunks) = &diff.content {
             for (hunk_idx, hunk) in hunks.iter().enumerate() {
@@ -76,13 +79,13 @@ impl UnifiedDiffView {
                 }
             }
         }
-        Ok(Self {
+        Self {
             diff,
             rows,
             scroll: 0,
             page_height: 0,
             selection_idx: None,
-        })
+        }
     }
     fn line(
         &self,
@@ -139,6 +142,64 @@ impl UnifiedDiffView {
         self.selection_idx
             .and_then(|idx| self.line(self.rows[idx]))
             .map(|line| line.content.clone())
+    }
+    /// Select the row of the line having this number in the current version
+    /// of the file, or the closest following one
+    pub fn try_select_line_number(
+        &mut self,
+        number: LineNumber,
+    ) -> bool {
+        let idx = self.rows.iter().position(|&row| {
+            self.line(row)
+                .and_then(|line| line.new_number)
+                .is_some_and(|n| n >= number)
+        });
+        if let Some(idx) = idx {
+            self.selection_idx = Some(idx);
+            self.ensure_selection_is_visible();
+        }
+        idx.is_some()
+    }
+    fn is_changed(
+        &self,
+        idx: usize,
+    ) -> bool {
+        self.rows
+            .get(idx)
+            .and_then(|&row| self.line(row))
+            .is_some_and(|line| line.kind != DiffLineKind::Context)
+    }
+    /// Return whether the row is the first line of a block of
+    /// consecutive changed lines
+    fn is_change_start(
+        &self,
+        idx: usize,
+    ) -> bool {
+        self.is_changed(idx) && (idx == 0 || !self.is_changed(idx - 1))
+    }
+    /// Select the first line of the next block of changes
+    pub fn next_change(&mut self) {
+        let s = self.selection_idx.unwrap_or(self.rows.len().saturating_sub(1));
+        for d in 1..=self.rows.len() {
+            let idx = (s + d) % self.rows.len();
+            if self.is_change_start(idx) {
+                self.selection_idx = Some(idx);
+                self.ensure_selection_is_visible();
+                return;
+            }
+        }
+    }
+    /// Select the first line of the previous block of changes
+    pub fn previous_change(&mut self) {
+        let s = self.selection_idx.unwrap_or(0);
+        for d in 1..=self.rows.len() {
+            let idx = (self.rows.len() + s - d) % self.rows.len();
+            if self.is_change_start(idx) {
+                self.selection_idx = Some(idx);
+                self.ensure_selection_is_visible();
+                return;
+            }
+        }
     }
     pub fn try_select_y(
         &mut self,
@@ -336,4 +397,66 @@ fn is_thumb(
         let y = y as u16;
         top <= y && y <= bottom
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use {
+        super::*,
+        crate::git::{
+            DiffLine,
+            Hunk,
+        },
+    };
+
+    fn line(kind: DiffLineKind, n: usize) -> DiffLine {
+        DiffLine {
+            kind,
+            old_number: Some(n),
+            new_number: Some(n),
+            content: String::new(),
+        }
+    }
+    /// a hunk made of the given pattern of context (' ') and changed ('+') lines
+    fn hunk(start: usize, pattern: &str) -> Hunk {
+        let lines: Vec<DiffLine> = pattern
+            .chars()
+            .enumerate()
+            .map(|(i, c)| {
+                let kind = if c == ' ' { DiffLineKind::Context } else { DiffLineKind::Added };
+                line(kind, start + i)
+            })
+            .collect();
+        Hunk { old_start: start, old_len: lines.len(), new_start: start, new_len: lines.len(), lines }
+    }
+
+    #[test]
+    fn change_cycling() {
+        let diff = FileDiff {
+            path: std::path::PathBuf::from("f"),
+            // the last hunk has two blocks of changes
+            content: FileDiffContent::Text(vec![hunk(1, " ++ "), hunk(20, " + "), hunk(40, " +++  + ")]),
+            insertions: 7,
+            deletions: 0,
+        };
+        let mut view = UnifiedDiffView::from_diff(diff);
+        view.page_height = 10;
+        // rows: h0 = 0..4, sep 4, h1 = 5..8, sep 8, h2 = 9..17
+        let starts: Vec<usize> = (0..view.rows.len()).filter(|&i| view.is_change_start(i)).collect();
+        assert_eq!(starts, vec![1, 6, 10, 15]);
+        view.next_change();
+        assert_eq!(view.selection_idx, Some(1));
+        view.next_change();
+        assert_eq!(view.selection_idx, Some(6));
+        view.next_change();
+        assert_eq!(view.selection_idx, Some(10));
+        view.next_change();
+        assert_eq!(view.selection_idx, Some(15));
+        view.next_change();
+        assert_eq!(view.selection_idx, Some(1));
+        view.previous_change();
+        assert_eq!(view.selection_idx, Some(15));
+        view.previous_change();
+        assert_eq!(view.selection_idx, Some(10));
+    }
 }

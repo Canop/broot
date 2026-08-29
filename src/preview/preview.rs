@@ -317,6 +317,7 @@ impl Preview {
     ) -> bool {
         match self {
             Self::Text(sv) => sv.try_select_line_number(number),
+            Self::Diff(v) => v.try_select_line_number(number),
             _ => false,
         }
     }
@@ -357,17 +358,17 @@ impl Preview {
     }
 
     pub fn previous_match(&mut self) {
-        if let Self::Text(sv) = self {
-            sv.previous_match();
-        } else {
-            self.move_selection(-1, true);
+        match self {
+            Self::Text(sv) => sv.previous_match(),
+            Self::Diff(v) => v.previous_change(),
+            _ => self.move_selection(-1, true),
         }
     }
     pub fn next_match(&mut self) {
-        if let Self::Text(sv) = self {
-            sv.next_match();
-        } else {
-            self.move_selection(1, true);
+        match self {
+            Self::Text(sv) => sv.next_match(),
+            Self::Diff(v) => v.next_change(),
+            _ => self.move_selection(1, true),
         }
     }
 

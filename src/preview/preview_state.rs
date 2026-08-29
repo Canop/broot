@@ -48,6 +48,8 @@ pub struct PreviewState {
     pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     filtered_preview: Option<Preview>,
     removed_pattern: InputPattern,
+    /// whether the diff preview was left to look at the file
+    left_diff: bool,
     preferred_mode: Option<PreviewMode>,
     tree_options: TreeOptions,
     mode: Mode,
@@ -81,6 +83,7 @@ impl PreviewState {
             pending_pattern,
             filtered_preview: None,
             removed_pattern: InputPattern::none(),
+            left_diff: false,
             preferred_mode,
             tree_options,
             mode: con.initial_mode(),
@@ -228,6 +231,7 @@ impl PanelState for PreviewState {
         let selected_line_number = if self.preview_path() == path {
             self.preview.get_selected_line_number()
         } else {
+            self.left_diff = false;
             None
         };
         if let Some(fp) = &self.filtered_preview {
@@ -447,11 +451,33 @@ impl PanelState for PreviewState {
                 self.pending_pattern = self.removed_pattern.take();
                 Ok(CmdResult::Keep)
             }
+            Internal::panel_left | Internal::panel_left_no_open if self.left_diff => {
+                // back to the diff, on the hunk of the selected line
+                let line_number = self.preview.get_selected_line_number();
+                self.preview = Preview::diff(self.preview_path(), con);
+                if let Some(number) = line_number {
+                    self.preview.try_select_line_number(number);
+                }
+                self.left_diff = false;
+                Ok(CmdResult::Keep)
+            }
             Internal::panel_right if self.filtered_preview.is_some() => {
                 self.on_pattern(InputPattern::none(), app_state, con)
             }
             Internal::panel_right_no_open if self.filtered_preview.is_some() => {
                 self.on_pattern(InputPattern::none(), app_state, con)
+            }
+            Internal::panel_right | Internal::panel_right_no_open
+                if self.preview.get_mode() == Some(PreviewMode::Diff) =>
+            {
+                // dive into the file, at the selected line
+                let line_number = self.preview.get_selected_line_number();
+                self.preview = Preview::unfiltered_text(self.preview_path(), con);
+                if let Some(number) = line_number {
+                    self.preview.try_select_line_number(number);
+                }
+                self.left_diff = true;
+                Ok(CmdResult::Keep)
             }
             Internal::select_first => {
                 self.mut_preview().select_first();
