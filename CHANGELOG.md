@@ -6,6 +6,9 @@
 - git status: an untracked directory gets the `N` mark too
 - the status line shows how many commits the branch is ahead (`↑`) or behind (`↓`) its upstream
 - `{git-root}` and `{git-name}` now work when the selection is a file
+- alt-g toggles the git status filter (`:toggle_git_status`)
+- `-gg` shows only the files with a git status (same as `--git-status`), `-G` removes one level of git information
+- tab and shift-tab go to the next/previous file with a git status, when git statuses are displayed
 
 <a name="v1.59.0"></a>
 ### v1.59.0 - 2026-08-22

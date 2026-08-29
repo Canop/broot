@@ -405,8 +405,12 @@ impl PanelState for BrowserState {
                 CmdResult::Keep
             }
             Internal::next_match => {
-                self.displayed_tree_mut()
-                    .try_select_next_filtered(|line| line.direct_match, page_height);
+                let tree = self.displayed_tree_mut();
+                if tree.options.pattern.is_some() {
+                    tree.try_select_next_filtered(|line| line.direct_match, page_height);
+                } else if tree.options.show_git_file_info || tree.options.filter_by_git_status {
+                    tree.try_select_next_filtered(|line| line.git_status.is_some(), page_height);
+                }
                 CmdResult::Keep
             }
             Internal::next_same_depth => {
@@ -482,8 +486,12 @@ impl PanelState for BrowserState {
                 CmdResult::Keep
             }
             Internal::previous_match => {
-                self.displayed_tree_mut()
-                    .try_select_previous_filtered(|line| line.direct_match, page_height);
+                let tree = self.displayed_tree_mut();
+                if tree.options.pattern.is_some() {
+                    tree.try_select_previous_filtered(|line| line.direct_match, page_height);
+                } else if tree.options.show_git_file_info || tree.options.filter_by_git_status {
+                    tree.try_select_previous_filtered(|line| line.git_status.is_some(), page_height);
+                }
                 CmdResult::Keep
             }
             Internal::previous_same_depth => {

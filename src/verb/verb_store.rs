@@ -331,7 +331,9 @@ impl VerbStore {
             .with_key(key!(alt - i))
             .with_shortcut("gi");
         self.add_internal(toggle_git_file_info).with_shortcut("gf");
-        self.add_internal(toggle_git_status).with_shortcut("gs");
+        self.add_internal(toggle_git_status)
+            .with_key(key!(alt - g))
+            .with_shortcut("gs");
         self.add_internal(toggle_root_fs).with_shortcut("rfs");
         self.add_internal(set_max_depth);
         self.add_internal(unset_max_depth);

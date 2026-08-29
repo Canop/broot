@@ -442,13 +442,7 @@ impl Tree {
         for di in (0..self.lines.len()).rev() {
             let idx = (self.selection + di) % self.lines.len();
             let line = &self.lines[idx];
-            if !line.is_selectable() {
-                continue;
-            }
-            if !filter(line) {
-                continue;
-            }
-            if line.score > 0 {
+            if line.is_selectable() && filter(line) {
                 self.selection = idx;
                 self.make_selection_visible(page_height);
                 return true;
@@ -467,13 +461,7 @@ impl Tree {
         for di in 0..self.lines.len() {
             let idx = (self.selection + di + 1) % self.lines.len();
             let line = &self.lines[idx];
-            if !line.is_selectable() {
-                continue;
-            }
-            if !filter(line) {
-                continue;
-            }
-            if line.score > 0 {
+            if line.is_selectable() && filter(line) {
                 self.selection = idx;
                 self.make_selection_visible(page_height);
                 return true;

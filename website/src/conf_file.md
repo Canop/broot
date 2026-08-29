@@ -98,6 +98,8 @@ Those flags can still be overridden at launch with the negating ones. For exampl
 
     br -H
 
+Some flags can be repeated: `-gg` shows only the files with a git status, and `-G` removes one level of git information (so with `default_flags: -gg`, `br -G` shows all files, with their git status).
+
 # Special Paths
 
 You may map special paths to specific behaviors. You may for example
