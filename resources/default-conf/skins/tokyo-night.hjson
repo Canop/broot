@@ -40,6 +40,7 @@ skin: {
     git_deletions: rgb(247, 118, 142) None
     git_status_current: rgb(120, 124, 153) None
     git_status_modified: rgb(224, 175, 104) None
+    git_status_staged: rgb(158, 206, 106) None
     git_status_new: rgb(115, 218, 202) None Bold
     git_status_ignored: rgb(81, 86, 112) None
     git_status_conflicted: rgb(219, 75, 75) None
@@ -86,6 +87,9 @@ skin: {
     preview_line_number: rgb(81, 89, 125) rgb(16, 16, 20) / rgb(81, 89, 125) None
     preview_separator: rgb(54, 59, 84) None / rgb(43, 43, 59) None
     preview_match: None rgb(224, 175, 104) Bold
+    diff_line_number: rgb(120, 124, 153) rgb(31, 35, 53)
+    diff_added: rgb(192, 202, 245) rgb(32, 62, 52)
+    diff_removed: rgb(192, 202, 245) rgb(75, 38, 52)
 
     hex_null: rgb(120, 124, 153) None
     hex_ascii_graphic: rgb(169, 177, 214) None

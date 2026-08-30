@@ -214,12 +214,7 @@ impl Verb {
                 .paths()
                 .iter()
                 .filter_map(|path| {
-                    let sel = Selection {
-                        path,
-                        line: 0,
-                        stype: SelectionType::from(path),
-                        is_exe: false,
-                    };
+                    let sel = Selection::from_path(path);
                     self.check_sel_args(Some(sel), invocation, other_path)
                 })
                 .next(),

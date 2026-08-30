@@ -24,7 +24,7 @@
 # you can launch broot with `br -H`).
 # A popular flag is the `g` one which displays git related info.
 #
-# default_flags:
+# default_flags: g
 
 ###############################################################
 # Terminal's title
@@ -199,13 +199,17 @@ content_search_max_file_size: 10MB
 ###############################################################
 # Kitty Keyboard extension
 #
-# If you want to use advanced keyboard shortcuts in Kitty
-# compatible terminals (Kitty, Wezterm), set this to true.
-# 
-# This makes it possible to use shortcuts like 'space-n', 
-# 'ctrl-alt-a-b', 'shift-space', etc.
+# When the terminal supports the Kitty keyboard protocol (Kitty,
+# Wezterm, Ghostty, iTerm2, foot...), broot uses it by default,
+# which makes shortcuts like 'shift-space' or 'ctrl-alt-a-b'
+# possible, and lets alt combinations reach broot on macOS.
 #
-enable_kitty_keyboard: false
+# Set this to true to also allow multi-key shortcuts without
+# modifier, like 'space-n' or 'a-b' (then simple keys are handled
+# on release instead of press).
+# Set this to false to disable the protocol.
+#
+# enable_kitty_keyboard: true
 
 ###############################################################
 # lines around matching line in filtered preview

@@ -2,6 +2,7 @@ mod dir_view;
 mod preview;
 mod preview_state;
 mod preview_transformer;
+mod unified_diff_view;
 mod zero_len_file_view;
 
 pub use {
@@ -9,6 +10,7 @@ pub use {
     preview::Preview,
     preview_state::PreviewState,
     preview_transformer::*,
+    unified_diff_view::UnifiedDiffView,
     zero_len_file_view::ZeroLenFileView,
 };
 
@@ -27,4 +29,7 @@ pub enum PreviewMode {
 
     /// Show the content with ANSI escape codes
     Tty,
+
+    /// show the changes of the file since the last commit
+    Diff,
 }

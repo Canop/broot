@@ -36,7 +36,7 @@ directories = "4.0"
 file-size = "1.0.3"
 flate2 = "1.0"
 flex-grow = "0.1"
-git2 = { version = "0.20", default-features = false } # waiting for a good pure-rust alternative
+gix = { version = "0.87", default-features = false, features = ["sha1", "status", "blob-diff", "max-performance-safe"] }
 glob = "0.3"
 icy_sixel = { version = "0.5", optional = true }
 id-arena = "2.2.1"

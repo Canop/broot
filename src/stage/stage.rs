@@ -108,12 +108,7 @@ impl Stage {
     pub fn to_selections(&self) -> Vec<Selection<'_>> {
         self.paths
             .iter()
-            .map(|path| Selection {
-                path,
-                line: 0,
-                stype: SelectionType::from(path),
-                is_exe: false,
-            })
+            .map(|path| Selection::from_path(path))
             .collect()
     }
 }

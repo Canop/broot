@@ -195,12 +195,9 @@ impl TreeLine {
         }
     }
     pub fn as_selection(&self) -> Selection<'_> {
-        Selection {
-            path: &self.path,
-            stype: self.selection_type(),
-            is_exe: self.is_exe(),
-            line: 0,
-        }
+        Selection::new(&self.path, self.selection_type())
+            .with_exe(self.is_exe())
+            .with_git_status(self.git_status)
     }
     #[cfg(unix)]
     pub fn mode(&self) -> Mode {

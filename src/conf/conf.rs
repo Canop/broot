@@ -122,6 +122,9 @@ pub struct Conf {
     #[serde(alias = "lines-before-match-in-preview")]
     pub lines_before_match_in_preview: Option<usize>,
 
+    #[serde(alias = "lines-around-diff-hunks")]
+    pub lines_around_diff_hunks: Option<usize>,
+
     pub max_panels_count: Option<usize>,
 
     #[serde(alias = "max_staged_count")]
@@ -267,6 +270,7 @@ impl Conf {
         overwrite!(self, kept_kitty_temp_files, conf);
         overwrite!(self, lines_after_match_in_preview, conf);
         overwrite!(self, lines_before_match_in_preview, conf);
+        overwrite!(self, lines_around_diff_hunks, conf);
         overwrite!(self, layout_instructions, conf);
         self.verbs.append(&mut conf.verbs);
         // the following prefs are "additive": we can add entries from several

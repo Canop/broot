@@ -11,6 +11,7 @@ custom_error! {pub ProgramError
     ArgParse {bad: String, valid: String} = "{bad:?} can't be parsed (valid values: {valid:?})",
     ConfFile {path:String, details: ConfError} = "Bad configuration file {path:?} : {details}",
     Conf {source: ConfError} = "Bad configuration: {source}",
+    Git {details: String} = "Git error: {details}",
     ImageError {details: String} = "Image error: {details}",
     Internal {details: String} = "Internal error: {details}", // should not happen
     Io {source: io::Error} = "IO Error : {source}",

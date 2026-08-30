@@ -144,12 +144,7 @@ impl FilesystemState {
     }
 
     fn no_opt_selection(&self) -> Selection<'_> {
-        Selection {
-            path: self.no_opt_selected_path(),
-            stype: SelectionType::Directory,
-            is_exe: false,
-            line: 0,
-        }
+        Selection::new(self.no_opt_selected_path(), SelectionType::Directory)
     }
 }
 

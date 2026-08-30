@@ -5,6 +5,7 @@ use {
     },
     crate::{
         errors::ProgramError,
+        git::LineGitStatus,
         launchable::Launchable,
     },
     std::{
@@ -33,6 +34,49 @@ pub struct Selection<'s> {
     pub line: LineNumber, // the line number in the file (0 if none selected)
     pub stype: SelectionType,
     pub is_exe: bool,
+    /// the git status of the file, when displayed
+    pub git_status: Option<LineGitStatus>,
+}
+
+impl<'s> Selection<'s> {
+    /// Build a selection with no line, not executable, and no git status
+    pub fn new(
+        path: &'s Path,
+        stype: SelectionType,
+    ) -> Self {
+        Self {
+            path,
+            line: 0,
+            stype,
+            is_exe: false,
+            git_status: None,
+        }
+    }
+    /// Build a selection whose type is read from the filesystem
+    pub fn from_path(path: &'s Path) -> Self {
+        Self::new(path, SelectionType::from(path))
+    }
+    pub fn with_line(
+        mut self,
+        line: LineNumber,
+    ) -> Self {
+        self.line = line;
+        self
+    }
+    pub fn with_exe(
+        mut self,
+        is_exe: bool,
+    ) -> Self {
+        self.is_exe = is_exe;
+        self
+    }
+    pub fn with_git_status(
+        mut self,
+        git_status: Option<LineGitStatus>,
+    ) -> Self {
+        self.git_status = git_status;
+        self
+    }
 }
 
 impl SelectionType {

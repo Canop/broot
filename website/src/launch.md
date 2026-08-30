@@ -37,7 +37,7 @@ Here are the most frequently used:
 
 * `-d` and `-D`: showing (or hiding) dates
 * `-f` and `-F`: showing only folders
-* `-g` and `-G`: git info
+* `-g` and `-G`: git info (`-gg` to only show the files with a git status, as `--git-status` does)
 * `-h` and `-H`: whether to show "hidden" files (whose name starts with a dot on unix)
 * `-i` and `-I`: whether to show git-ignored files
 * `-p` and `-P`: permissions, user, group

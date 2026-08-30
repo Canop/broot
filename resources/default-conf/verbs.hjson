@@ -177,13 +177,6 @@ verbs: [
     #     execution: ":page_down"
     # }
 
-    # If you develop using git, you might like to often switch
-    # to the git status filter:
-    # {
-    #     key: alt-g
-    #     execution: ":toggle_git_status"
-    # }
-
     # You can reproduce the bindings of Norton Commander
     # on copying or moving to the other panel:
     # {

@@ -1,6 +1,7 @@
 // Warning: this module can't import broot's stuff due to its use in build.rs
 use {
     clap::{
+        ArgAction,
         Parser,
         ValueEnum,
     },
@@ -50,16 +51,16 @@ pub struct Args {
     #[arg(long)]
     pub max_depth: Option<u16>,
 
-    /// Show git statuses on files and stats on repo
-    #[arg(short = 'g', long)]
-    pub show_git_info: bool,
+    /// Show git statuses on files and stats on repo; repeat (-gg) to only show files with a git status
+    #[arg(short = 'g', long, action = ArgAction::Count)]
+    pub show_git_info: u8,
 
-    /// Don't show git statuses on files and stats on repo
-    #[arg(short = 'G', long)]
-    pub no_show_git_info: bool,
+    /// Show less git information (undoes one -g)
+    #[arg(short = 'G', long, action = ArgAction::Count)]
+    pub no_show_git_info: u8,
 
     #[arg(long)]
-    /// Only show files having an interesting git status, including hidden ones
+    /// Only show files having an interesting git status, including hidden ones (same as -gg)
     pub git_status: bool,
 
     #[arg(short = 'h', long)]

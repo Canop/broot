@@ -674,7 +674,7 @@ fn is_thumb(
 }
 
 /// Tell whether the character must be replaced to prevent rendering from being broken
-fn is_char_unprintable(c: char) -> bool {
+pub fn is_char_unprintable(c: char) -> bool {
     match c {
         '\u{8}' => true, // backspace
         '\u{b}'..='\u{e}' => true,

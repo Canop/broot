@@ -13,6 +13,7 @@ use {
         },
         errors::ProgramError,
         flag::Flag,
+        git::LineGitStatus,
         pattern::InputPattern,
         task_sync::Dam,
         tree::TreeOptions,
@@ -36,16 +37,19 @@ use {
 /// an application state dedicated to previewing files.
 ///
 /// It's usually the only state in its panel and is kept when the
-/// selection changes (other panels indirectly call `set_selected_path`).
+/// selection changes (other panels indirectly call `set_selected`).
 pub struct PreviewState {
     pub preview_area: Area,
     dirty: bool,          // true when background must be cleared
     source_path: PathBuf, // path to the file whose preview is requested
+    source_git_status: Option<LineGitStatus>,
     transform: Option<PreviewTransform>,
     preview: Preview,
     pending_pattern: InputPattern, // a pattern (or not) which has not yet be applied
     filtered_preview: Option<Preview>,
     removed_pattern: InputPattern,
+    /// whether the diff preview was left to look at the file
+    left_diff: bool,
     preferred_mode: Option<PreviewMode>,
     tree_options: TreeOptions,
     mode: Mode,
@@ -54,6 +58,7 @@ pub struct PreviewState {
 impl PreviewState {
     pub fn new(
         source_path: PathBuf,
+        source_git_status: Option<LineGitStatus>,
         pending_pattern: InputPattern,
         preferred_mode: Option<PreviewMode>,
         tree_options: TreeOptions,
@@ -63,20 +68,22 @@ impl PreviewState {
         let transform = con
             .preview_transformers
             .transform(&source_path, preferred_mode);
-        let preview_path = transform
-            .as_ref()
-            .map(|c| &c.output_path)
-            .unwrap_or(&source_path);
-        let preview = Preview::new(preview_path, preferred_mode, con);
+        let preview = match &transform {
+            // the git status doesn't apply to the transformed file
+            Some(transform) => Preview::new(&transform.output_path, None, preferred_mode, con),
+            None => Preview::new(&source_path, source_git_status, preferred_mode, con),
+        };
         PreviewState {
             preview_area,
             dirty: true,
             source_path,
+            source_git_status,
             transform,
             preview,
             pending_pattern,
             filtered_preview: None,
             removed_pattern: InputPattern::none(),
+            left_diff: false,
             preferred_mode,
             tree_options,
             mode: con.initial_mode(),
@@ -115,18 +122,10 @@ impl PreviewState {
     fn no_opt_selection(&self) -> Selection<'_> {
         match self.transform.as_ref() {
             // When there's a transform, we can't assume the line number makes sense
-            Some(transform) => Selection {
-                path: &transform.output_path,
-                stype: SelectionType::File,
-                is_exe: false,
-                line: 0,
-            },
-            None => Selection {
-                path: &self.source_path,
-                stype: SelectionType::File,
-                is_exe: false,
-                line: self.vis_preview().get_selected_line_number().unwrap_or(0),
-            },
+            Some(transform) => Selection::new(&transform.output_path, SelectionType::File),
+            None => Selection::new(&self.source_path, SelectionType::File)
+                .with_line(self.vis_preview().get_selected_line_number().unwrap_or(0))
+                .with_git_status(self.source_git_status),
         }
     }
 
@@ -223,14 +222,16 @@ impl PanelState for PreviewState {
         Some(&self.source_path)
     }
 
-    fn set_selected_path(
+    fn set_selected(
         &mut self,
         path: PathBuf,
+        git_status: Option<LineGitStatus>,
         con: &AppContext,
     ) {
         let selected_line_number = if self.preview_path() == path {
             self.preview.get_selected_line_number()
         } else {
+            self.left_diff = false;
             None
         };
         if let Some(fp) = &self.filtered_preview {
@@ -239,12 +240,16 @@ impl PanelState for PreviewState {
         self.transform = con
             .preview_transformers
             .transform(&path, self.preferred_mode);
-        let preview_path = self.transform.as_ref().map_or(&path, |c| &c.output_path);
-        self.preview = Preview::new(preview_path, self.preferred_mode, con);
+        self.preview = match &self.transform {
+            // the git status doesn't apply to the transformed file
+            Some(transform) => Preview::new(&transform.output_path, None, self.preferred_mode, con),
+            None => Preview::new(&path, git_status, self.preferred_mode, con),
+        };
         if let Some(number) = selected_line_number {
             self.preview.try_select_line_number(number);
         }
         self.source_path = path;
+        self.source_git_status = git_status;
     }
 
     fn selection(&self) -> Option<Selection<'_>> {
@@ -276,7 +281,7 @@ impl PanelState for PreviewState {
         con: &AppContext,
     ) -> Command {
         self.dirty = true;
-        self.set_selected_path(self.source_path.clone(), con);
+        self.set_selected(self.source_path.clone(), self.source_git_status, con);
         Command::empty()
     }
 
@@ -319,6 +324,10 @@ impl PanelState for PreviewState {
         let styles = &disc.panel_skin.styles;
         w.queue(cursor::MoveTo(state_area.left, 0))?;
         let mut cw = CropWriter::new(w, state_area.width as usize);
+        if let Some(git_status) = self.source_git_status {
+            cw.queue_char(styles.git_status_style(git_status), git_status.letter())?;
+            cw.queue_char(&styles.preview_title, ' ')?;
+        }
         let file_name = self
             .source_path
             .file_name()
@@ -442,11 +451,33 @@ impl PanelState for PreviewState {
                 self.pending_pattern = self.removed_pattern.take();
                 Ok(CmdResult::Keep)
             }
+            Internal::panel_left | Internal::panel_left_no_open if self.left_diff => {
+                // back to the diff, on the hunk of the selected line
+                let line_number = self.preview.get_selected_line_number();
+                self.preview = Preview::diff(self.preview_path(), con);
+                if let Some(number) = line_number {
+                    self.preview.try_select_line_number(number);
+                }
+                self.left_diff = false;
+                Ok(CmdResult::Keep)
+            }
             Internal::panel_right if self.filtered_preview.is_some() => {
                 self.on_pattern(InputPattern::none(), app_state, con)
             }
             Internal::panel_right_no_open if self.filtered_preview.is_some() => {
                 self.on_pattern(InputPattern::none(), app_state, con)
+            }
+            Internal::panel_right | Internal::panel_right_no_open
+                if self.preview.get_mode() == Some(PreviewMode::Diff) =>
+            {
+                // dive into the file, at the selected line
+                let line_number = self.preview.get_selected_line_number();
+                self.preview = Preview::unfiltered_text(self.preview_path(), con);
+                if let Some(number) = line_number {
+                    self.preview.try_select_line_number(number);
+                }
+                self.left_diff = true;
+                Ok(CmdResult::Keep)
             }
             Internal::select_first => {
                 self.mut_preview().select_first();
@@ -468,6 +499,7 @@ impl PanelState for PreviewState {
             Internal::preview_text => self.set_mode(PreviewMode::Text, con),
             Internal::preview_tty => self.set_mode(PreviewMode::Tty, con),
             Internal::preview_binary => self.set_mode(PreviewMode::Hex, con),
+            Internal::preview_diff => self.set_mode(PreviewMode::Diff, con),
             _ => self.on_internal_generic(
                 w,
                 invocation_parser,

@@ -26,6 +26,7 @@ skin: {
 	git_deletions: "rgb(211, 1, 2) none"                                              // red default
 	git_status_current: "none none"                                                   // default default
 	git_status_modified: "rgb(181, 137, 0) none"                                      // yellow default
+	git_status_staged: "rgb(42, 161, 152) none"                                     // cyan default
 	git_status_new: "rgb(133, 153, 0) none"                                           // green default
 	git_status_ignored: "rgb(88, 110, 117) none"                                      // base01 default
 	git_status_conflicted: "rgb(211, 1, 2) none"                                      // red default
@@ -52,6 +53,9 @@ skin: {
 	help_headers: "rgb(181, 137, 0) none"                                             // yellow default
 	help_table_border: "none none"                                                    // default default
 	preview_title: "gray(20) rgb(0, 43, 54)"
+	diff_line_number: "rgb(88, 110, 117) rgb(7, 54, 66)"
+	diff_added: "rgb(238, 232, 213) rgb(20, 70, 50)"
+	diff_removed: "rgb(238, 232, 213) rgb(90, 30, 40)"
 	staging_area_title: "gray(22) rgb(0, 43, 54)"
  	good_to_bad_0: "ansi(28)"														  // green
  	good_to_bad_1: "ansi(29)"

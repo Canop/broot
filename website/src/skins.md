@@ -46,6 +46,7 @@ skin: {
 	git_deletions: ansi(160) None
 	git_status_current: gray(5) None
 	git_status_modified: ansi(28) None
+	git_status_staged: ansi(34) None
 	git_status_new: ansi(94) None Bold
 	git_status_ignored: gray(17) None
 	git_status_conflicted: ansi(88) None
@@ -80,6 +81,9 @@ skin: {
 	preview_separator: ansi(94) None / gray(3) None
 	preview_line_number: gray(12) gray(3)
 	preview_match: None ansi(29)
+	diff_line_number: gray(12) gray(3)
+	diff_added: gray(22) rgb(28, 68, 40)
+	diff_removed: gray(22) rgb(88, 34, 34)
 	hex_null: gray(11) None
 	hex_ascii_graphic: gray(18) None
 	hex_ascii_whitespace: ansi(143) None
@@ -128,6 +132,7 @@ git_insertions = "ansi(28) None"
 git_deletions = "ansi(160) None"
 git_status_current = "gray(5) None"
 git_status_modified = "ansi(28) None"
+git_status_staged = "ansi(34) None"
 git_status_new = "ansi(94) None Bold"
 git_status_ignored = "gray(17) None"
 git_status_conflicted = "ansi(88) None"
@@ -162,6 +167,9 @@ preview = "gray(20) gray(1) / gray(18) gray(2)"
 preview_line_number = "gray(12) gray(3)"
 preview_separator: "ansi(94) None / gray(3) None"
 preview_match = "None ansi(29)"
+diff_line_number = "gray(12) gray(3)"
+diff_added = "gray(22) rgb(28, 68, 40)"
+diff_removed = "gray(22) rgb(88, 34, 34)"
 hex_null = "gray(11) None"
 hex_ascii_graphic = "gray(18) None"
 hex_ascii_whitespace = "ansi(143) None"

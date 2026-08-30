@@ -67,6 +67,9 @@ skin: {
     char_match: rgb(238, 212, 159) rgb(73, 77, 100) Bold Italic
     content_match: rgb(238, 212, 159) rgb(73, 77, 100) Bold Italic
     preview_match: rgb(238, 212, 159) rgb(73, 77, 100) Bold Italic
+    diff_line_number: rgb(110, 115, 141) rgb(54, 58, 79)
+    diff_added: rgb(202, 211, 245) rgb(40, 68, 52)
+    diff_removed: rgb(202, 211, 245) rgb(82, 42, 54)
 
     # children count
     # fg:$yellow bg:none
@@ -81,6 +84,7 @@ skin: {
     git_deletions: rgb(245, 169, 127) none
     git_status_current: rgb(245, 169, 127) none
     git_status_modified: rgb(245, 169, 127) none
+    git_status_staged: rgb(245, 169, 127) none
     git_status_new: rgb(245, 169, 127) none Bold
     git_status_ignored: rgb(245, 169, 127) none
     git_status_conflicted: rgb(245, 169, 127) none

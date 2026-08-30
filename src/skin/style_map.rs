@@ -5,7 +5,10 @@
 /// one (there are thus two instances in the application)
 use {
     super::*,
-    crate::errors::ProgramError,
+    crate::{
+        errors::ProgramError,
+        git::LineGitStatus,
+    },
     crokey::crossterm::{
         QueueableCommand,
         style::{
@@ -131,6 +134,20 @@ impl StyleMap {
         }
         Ok(())
     }
+    /// Return the style of the letter showing a git status
+    pub fn git_status_style(
+        &self,
+        status: LineGitStatus,
+    ) -> &CompoundStyle {
+        match status {
+            LineGitStatus::New | LineGitStatus::Renamed => &self.git_status_new,
+            LineGitStatus::Added | LineGitStatus::Staged => &self.git_status_staged,
+            LineGitStatus::Modified => &self.git_status_modified,
+            LineGitStatus::Conflicted => &self.git_status_conflicted,
+            LineGitStatus::Ignored => &self.git_status_ignored,
+            LineGitStatus::Other => &self.git_status_other,
+        }
+    }
     pub fn good_to_bad_color(
         &self,
         value: f64,
@@ -186,6 +203,7 @@ StyleMap! {
     git_deletions: ansi(160), None, []
     git_status_current: gray(5), None, []
     git_status_modified: ansi(28), None, []
+    git_status_staged: ansi(34), None, []
     git_status_new: ansi(94), None, [Bold]
     git_status_ignored: gray(17), None, []
     git_status_conflicted: ansi(88), None, []
@@ -220,6 +238,9 @@ StyleMap! {
     preview_line_number: gray(12), gray(3), []
     preview_separator: gray(7), None, []
     preview_match: None, ansi(29), []
+    diff_line_number: gray(12), gray(3), []
+    diff_added: gray(22), rgb(28, 68, 40), []
+    diff_removed: gray(22), rgb(88, 34, 34), []
     hex_null: gray(8), None, []
     hex_ascii_graphic: gray(18), None, []
     hex_ascii_whitespace: ansi(143), None, []

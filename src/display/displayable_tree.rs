@@ -36,7 +36,6 @@ use {
         cursor,
     },
     file_size,
-    git2::Status,
     std::io::Write,
     termimad::{
         CompoundStyle,
@@ -236,14 +235,9 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         selected: bool,
     ) -> Result<usize, termimad::Error> {
         let (style, char) = if line.is_selectable() {
-            match line.git_status.map(|s| s.status) {
-                Some(Status::CURRENT) => (&self.skin.git_status_current, ' '),
-                Some(Status::WT_NEW) => (&self.skin.git_status_new, 'N'),
-                Some(Status::CONFLICTED) => (&self.skin.git_status_conflicted, 'C'),
-                Some(Status::WT_MODIFIED) => (&self.skin.git_status_modified, 'M'),
-                Some(Status::IGNORED) => (&self.skin.git_status_ignored, 'I'),
+            match line.git_status {
+                Some(status) => (self.skin.git_status_style(status), status.letter()),
                 None => (&self.skin.tree, ' '),
-                _ => (&self.skin.git_status_other, '?'),
             }
         } else {
             (&self.skin.tree, ' ')

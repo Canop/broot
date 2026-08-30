@@ -496,6 +496,7 @@ invocation | default key | default shortcut | behavior / details
 :panel_right_no_open | -  | - | move to panel to the right
 :parent | - | - | focus the parent directory
 :preview_binary | - | - | preview the selection as binary
+:preview_diff | - | - | preview the changes of the selection since the last commit
 :preview_image | - | - | preview the selection as image
 :preview_text | - | - | preview the selection as text
 :preview_tty | - | - | preview the selection as tty (with ANSI escape codes)
@@ -531,7 +532,7 @@ invocation | default key | default shortcut | behavior / details
 :toggle_device_id | - | - | toggle display of device id (unix only)
 :toggle_files | - | - | toggle showing files (or just folders)
 :toggle_git_file_info | - | - | toggle display of git file information
-:toggle_git_status | - | - | toggle showing only the file which would show up on `git status`
+:toggle_git_status | <kbd>alt</kbd><kbd>g</kbd> | gs | toggle showing only the file which would show up on `git status`
 :toggle_hidden | - | - | toggle display of hidden files (the ones whose name starts with a dot on linux)
 :toggle_ignore | - | - | toggle display of files in .gitignore and .ignore
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)

@@ -163,8 +163,20 @@ impl TreeOptions {
         if let Some(max_depth) = cli_args.max_depth {
             self.max_depth = Some(max_depth);
         }
+        // git information level: 0 nothing, 1 statuses of files, 2 only files with a status
+        let mut level: u8 = match (self.filter_by_git_status, self.show_git_file_info) {
+            (true, _) => 2,
+            (false, true) => 1,
+            (false, false) => 0,
+        };
+        level = level.saturating_add(cli_args.show_git_info).min(2);
         if cli_args.git_status {
-            self.filter_by_git_status = true;
+            level = 2;
+        }
+        level = level.saturating_sub(cli_args.no_show_git_info);
+        self.show_git_file_info = level >= 1;
+        self.filter_by_git_status = level == 2;
+        if level == 2 && (cli_args.show_git_info > 0 || cli_args.git_status) {
             self.show_hidden = true;
         }
         if cli_args.hidden {
@@ -189,11 +201,6 @@ impl TreeOptions {
             self.respect_git_ignore = false;
         } else if cli_args.no_git_ignored {
             self.respect_git_ignore = true;
-        }
-        if cli_args.show_git_info {
-            self.show_git_file_info = true;
-        } else if cli_args.no_show_git_info {
-            self.show_git_file_info = false;
         }
         if cli_args.sort_by_count {
             self.sort = Sort::Count;

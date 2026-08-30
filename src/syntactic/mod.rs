@@ -3,7 +3,11 @@ mod syntax_theme;
 mod syntaxer;
 
 pub use {
-    text_view::TextView,
+    text_view::{
+        SEPARATOR_FILLING,
+        TextView,
+        is_char_unprintable,
+    },
     syntax_theme::*,
     syntaxer::{
         SYNTAXER,

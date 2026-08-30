@@ -147,6 +147,7 @@ impl VerbStore {
         self.add_internal(preview_text).with_shortcut("txt");
         self.add_internal(preview_binary).with_shortcut("hex");
         self.add_internal(preview_tty).with_shortcut("tty");
+        self.add_internal(preview_diff);
         self.add_internal(close_panel_ok);
         self.add_internal(close_panel_cancel)
             .with_key(key!(ctrl - w));
@@ -346,7 +347,9 @@ impl VerbStore {
             .with_key(key!(alt - i))
             .with_shortcut("gi");
         self.add_internal(toggle_git_file_info).with_shortcut("gf");
-        self.add_internal(toggle_git_status).with_shortcut("gs");
+        self.add_internal(toggle_git_status)
+            .with_key(key!(alt - g))
+            .with_shortcut("gs");
         self.add_internal(toggle_root_fs).with_shortcut("rfs");
         self.add_internal(set_max_depth);
         self.add_internal(unset_max_depth);

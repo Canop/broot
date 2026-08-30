@@ -1,5 +1,23 @@
 ### next
+<<<<<<< HEAD
 - alt-arrows are bound like ctrl-arrows (panels, root up/down), as macOS captures ctrl-arrows; hints and help show the alt ones on macOS
+=======
+#### Major Feature: git diff preview, and many git related enhancements
+The `libgit2` library has been replaced by `gix`. With this change, broot becomes pure Rust, which simplifies compilation (no C compiler needed anymore).
+A unified diff preview is now the default preview of a file with a git change (modified, staged, added, renamed or in conflict) when git statuses are displayed. `:preview_diff` shows it for any file.
+- tab and shift-tab navigate between git-interesting files and diff chunks just like for content search matches
+- ctrl-→ opens the file at the selected chunk, and ctrl-← brings you back to the diff
+- new skin entries: `diff_added`, `diff_removed`, `diff_line_number`
+- in detached HEAD state, the status line shows the short commit id instead of `HEAD`
+- git status: staged files are shown (`A` added, `S` staged modification, `R` renamed); new `git_status_staged` skin entry
+- git status of a subdirectory of a big repository is computed on that subdirectory only, which is faster
+- git status: an untracked directory gets the `N` mark too
+- the status line shows how many commits the branch is ahead (`↑`) or behind (`↓`) its upstream
+- `{git-root}` and `{git-name}` now work when the selection is a file
+- alt-g toggles the git status filter (`:toggle_git_status`). Status line suggests using it in git repo.
+- `-gg` shows only the files with a git status (same as `--git-status`), `-G` removes one level of git information
+- the Kitty keyboard protocol is now used by default when the terminal supports it, which notably makes `alt` combinations work on macOS terminals; multi-key combinations without modifier still need `enable_kitty_keyboard: true`
+>>>>>>> replace-libgit2-with-gix
 
 <a name="v1.59.0"></a>
 ### v1.59.0 - 2026-08-22

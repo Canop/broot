@@ -3,7 +3,6 @@
 // TODO rename without the "Git" prefix, as it's not only for gitignore
 
 use {
-    git2,
     glob,
     id_arena::{
         Arena,
@@ -164,10 +163,50 @@ impl IgnoreFile {
     }
 }
 
-pub fn find_global_ignore() -> Option<PathBuf> {
-    git2::Config::open_default()
-        .and_then(|global_config| global_config.get_path("core.excludesfile"))
+/// Read the git configuration files at the system level (`/etc/gitconfig`,
+/// or `$GIT_CONFIG_SYSTEM`) and user level (`~/.gitconfig`, `~/.config/git/config`).
+fn global_git_config() -> Option<gix::config::File> {
+    use gix::config::{
+        file::{
+            Metadata,
+            includes,
+            init,
+        },
+        source::Kind,
+    };
+    let metas = [Kind::System, Kind::Global]
+        .iter()
+        .flat_map(|kind| kind.sources())
+        .map(|source| Metadata {
+            path: source
+                .storage_location(&mut gix::path::env::var)
+                .filter(|p| p.is_file()),
+            source: *source,
+            level: 0,
+            trust: gix::sec::Trust::Full,
+        });
+    let home = gix::path::env::home_dir();
+    let options = init::Options {
+        includes: includes::Options::follow_without_conditional(home.as_deref()),
+        ..Default::default()
+    };
+    gix::config::File::from_paths_metadata(metas, options)
         .ok()
+        .flatten()
+}
+
+pub fn find_global_ignore() -> Option<PathBuf> {
+    global_git_config()
+        .and_then(|config| {
+            let path = config.path("core.excludesfile")?;
+            let home = directories::BaseDirs::new().map(|d| d.home_dir().to_path_buf());
+            let context = gix::config::path::interpolate::Context {
+                home_dir: home.as_deref(),
+                home_for_user: Some(gix::config::path::interpolate::home_for_user),
+                git_install_dir: None,
+            };
+            path.interpolate(context).ok()
+        })
         .or_else(|| {
             directories::BaseDirs::new()
                 .map(|base_dirs| base_dirs.config_dir().join("git/ignore"))

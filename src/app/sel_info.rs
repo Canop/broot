@@ -29,12 +29,7 @@ impl<'a> SelInfo<'a> {
             SelInfo::More(stage) => stage
                 .paths()
                 .iter()
-                .map(|path| Selection {
-                    path,
-                    line: 0,
-                    stype: SelectionType::from(path),
-                    is_exe: false, // OK, I don't know
-                })
+                .map(|path| Selection::from_path(path))
                 .collect(),
         }
     }
@@ -47,12 +42,7 @@ impl<'a> SelInfo<'a> {
     }
     #[must_use]
     pub fn from_path(path: &'a Path) -> Self {
-        Self::One(Selection {
-            stype: SelectionType::from(path),
-            line: 0,
-            path,
-            is_exe: false, // OK, I don't know
-        })
+        Self::One(Selection::from_path(path))
     }
     #[must_use]
     pub fn count_paths(&self) -> usize {
@@ -107,12 +97,7 @@ impl<'a> SelInfo<'a> {
     pub fn first_sel(self) -> Option<Selection<'a>> {
         match self {
             SelInfo::One(sel) => Some(sel),
-            SelInfo::More(stage) => stage.paths().first().map(|path| Selection {
-                path,
-                line: 0,
-                stype: SelectionType::from(path),
-                is_exe: false,
-            }),
+            SelInfo::More(stage) => stage.paths().first().map(|path| Selection::from_path(path)),
             SelInfo::None => None,
         }
     }
