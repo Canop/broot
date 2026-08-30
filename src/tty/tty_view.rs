@@ -257,7 +257,7 @@ fn is_thumb(
     y: usize,
     scrollbar: Option<(u16, u16)>,
 ) -> bool {
-    scrollbar.map_or(false, |(sctop, scbottom)| {
+    scrollbar.is_some_and(|(sctop, scbottom)| {
         let y = y as u16;
         sctop <= y && y <= scbottom
     })

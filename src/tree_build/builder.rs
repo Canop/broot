@@ -351,7 +351,7 @@ impl<'c> TreeBuilder<'c> {
                     if self
                         .options
                         .max_depth
-                        .map_or(false, |max| child.depth > max)
+                        .is_some_and(|max| child.depth > max)
                     {
                         break;
                     }

@@ -106,6 +106,22 @@ lto = "fat"
 codegen-units = 1 # this removes a few hundred bytes from the final exec size
 strip = "symbols"
 
+[lints.clippy]
+bool_to_int_with_if = "allow"
+collapsible_else_if = "allow"
+collapsible_if = "allow"
+derive_partial_eq_without_eq = "allow"
+explicit_counter_loop = "allow"
+explicit_iter_loop = "warn"
+if_same_then_else = "allow"
+len_without_is_empty = "allow"
+manual_clamp = "allow"
+manual_range_contains = "allow"
+match_like_matches_macro = "allow"
+module_inception = "allow"
+needless_range_loop = "allow"
+vec_init_then_push = "allow"
+
 [[bench]]
 name = "fuzzy"
 harness = false

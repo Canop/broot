@@ -335,7 +335,7 @@ impl<'b> ExecutionBuilder<'b> {
                     }
                     None
                 })
-                .map_or(false, |verb| verb.get_internal().is_none());
+                .is_some_and(|verb| verb.get_internal().is_none());
             let input = if verb_is_external {
                 self.shell_exec_string(&ExecPattern::from_string(input), con)
             } else {

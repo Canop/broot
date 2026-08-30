@@ -62,29 +62,7 @@ command = ["cargo", "check"]
 need_stdout = false
 
 [jobs.clippy]
-command = [
-	"cargo", "clippy",
-	"--",
-	"-W", "clippy::explicit_iter_loop",
-	"-A", "clippy::bool_to_int_with_if",
-	"-A", "clippy::collapsible_else_if",
-	"-A", "clippy::collapsible_if",
-	"-A", "clippy::derive_partial_eq_without_eq",
-	"-A", "clippy::explicit_counter_loop",
-	"-A", "clippy::if_same_then_else",
-	"-A", "clippy::len_without_is_empty",
-	"-A", "clippy::manual_clamp",
-	"-A", "clippy::manual_range_contains",
-	"-A", "clippy::manual_unwrap_or",
-	"-A", "clippy::match_like_matches_macro",
-	"-A", "clippy::module_inception",
-	"-A", "clippy::needless_bool",
-	"-A", "clippy::needless_range_loop",
-	"-A", "clippy::neg_multiply",
-	"-A", "clippy::uninlined_format_args",
-	"-A", "clippy::unnecessary_map_or",
-	"-A", "clippy::vec_init_then_push",
-]
+command = ["cargo", "clippy"]
 need_stdout = false
 
 [jobs.pedantic]
@@ -105,6 +83,7 @@ command = [
 	"-A", "clippy::struct_excessive_bools",
 	"-A", "clippy::too_many_lines",
 	"-A", "clippy::unnecessary_debug_formatting",
+	"-A", "clippy::uninlined_format_args",
 	"-A", "clippy::unreadable_literal",
 	"-A", "clippy::vec_init_then_push",
 	"-A", "clippy::wildcard_imports",

@@ -319,7 +319,7 @@ impl Verb {
         v: Option<&Verb>,
         internal: Internal,
     ) -> bool {
-        v.map_or(false, |v| v.is_internal(internal))
+        v.is_some_and(|v| v.is_internal(internal))
     }
 
     pub fn is_sequence(&self) -> bool {
