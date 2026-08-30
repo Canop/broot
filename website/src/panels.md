@@ -134,6 +134,19 @@ You may bind keyboard shortcuts, eg (in the `verbs` array of verbs.hjson)
     leave_broot: false
 }
 ```
+```toml
+[[verbs]]
+invocation = "move_divider_left"
+key = "alt-<"
+execution = ":move_panel_divider 0 -1"
+leave_broot = false
+
+[[verbs]]
+invocation = "move_divider_right"
+key = "alt->"
+execution = ":move_panel_divider 0 1"
+leave_broot = false
+```
 
 Resizing instructions can also be provided in a configuration file, eg
 
@@ -142,11 +155,21 @@ layout_instructions: [
     { panel: 1, width: 80 }
 ]
 ```
+```toml
+layout_instructions = [
+    { panel = 1, width = 80 },
+]
+```
 
 or
 
 ```hjson
 layout_instructions: [
     { divider: 0, dx: 5 }
+]
+```
+```toml
+layout_instructions = [
+    { divider = 0, dx = 5 },
 ]
 ```

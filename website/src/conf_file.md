@@ -59,6 +59,13 @@ imports: [
 
 ]
 ```
+```TOML
+imports = [
+	"verbs.toml",
+	{ luma = "light", file = "white-skin.hjson" },
+	{ luma = ["dark", "unknown"], file = "dark-blue-skin.hjson" },
+]
+```
 
 This example defines 3 imports.
 
@@ -370,6 +377,15 @@ They must be included in a `preview_transformers` array, as shown in the [defaul
 	command: [ "mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}" ]
 }
 ```
+```TOML
+# Use mutool to render any PDF file as an image
+# In this example we use placeholders for the input and output files
+[[preview_transformers]]
+input_extensions = ["pdf"] # case doesn't matter
+output_extension = "png"
+mode = "image"
+command = ["mutool", "draw", "-w", "1000", "-o", "{output-path}", "{input-path}"]
+```
 
 ### Render Office files using libreoffice:
 
@@ -388,6 +404,18 @@ They must be included in a `preview_transformers` array, as shown in the [defaul
     ]
 }
 ```
+```TOML
+[[preview_transformers]]
+input_extensions = ["xls", "xlsx", "doc", "docx", "ppt", "pptx", "ods", "odt", "odp"]
+output_extension = "png"
+mode = "image"
+command = [
+    "libreoffice", "--headless",
+    "--convert-to", "png",
+    "--outdir", "{output-dir}",
+    "{input-path}",
+]
+```
 
 ### Beautify JSON using jq
 
@@ -403,6 +431,16 @@ They must be included in a `preview_transformers` array, as shown in the [defaul
 	mode: text
 	command: [ "jq" ]
 }
+```
+```TOML
+# Use jq to beautify JSON
+# In this example, the command refers to neither the input nor the output,
+# so broot pipes them to the stdin and stdout of the jq process
+[[preview_transformers]]
+input_extensions = ["json"]
+output_extension = "json"
+mode = "text"
+command = ["jq"]
 ```
 
 ## Match surroundings

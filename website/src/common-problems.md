@@ -25,10 +25,16 @@ Some users [reported](https://github.com/Canop/broot/issues/1031) the input bein
 This may be due to the terminal being too slow to answer to ANSI queries.
 In such case, you may simplify importing in your conf.hjson to skip color testing. For example replace the whole `imports` with
 
-```TOML
+```Hjson
 imports: [
         verbs.hjson
         skins/dark-gruvbox.hjson
+]
+```
+```TOML
+imports = [
+    "verbs.hjson",
+    "skins/dark-gruvbox.hjson",
 ]
 ```
 
@@ -62,7 +68,7 @@ I've made a small program which tells you what key combinations are available: [
 
 [Windows Terminal](https://docs.microsoft.com/en-us/windows/terminal/) binds `alt+enter` to the "toggle fullscreen" command by default. To reclaim `alt+enter` for Broot, [add an 'unbound' entry to the actions array in settings.json](https://docs.microsoft.com/en-us/windows/terminal/customize-settings/actions#unbind-keys):
 
-```json
+```
 {"command": "unbound", "keys": "alt+enter"}
 ```
 

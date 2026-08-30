@@ -165,7 +165,7 @@ help_table_border = "ansi(239) None"
 preview_title = "gray(23) None / gray(21) None"
 preview = "gray(20) gray(1) / gray(18) gray(2)"
 preview_line_number = "gray(12) gray(3)"
-preview_separator: "ansi(94) None / gray(3) None"
+preview_separator = "ansi(94) None / gray(3) None"
 preview_match = "None ansi(29)"
 diff_line_number = "gray(12) gray(3)"
 diff_added = "gray(22) rgb(28, 68, 40)"
@@ -261,6 +261,9 @@ Only the foreground color is used, so you may use the shortened definition, eg
 
 ```hjson
 good_to_bad_9: rgb(200, 15, 14)
+```
+```toml
+good_to_bad_9 = "rgb(200, 15, 14)"
 ```
 
 There's no obligation to really use a green to red scale. You may even use only one color if you like.

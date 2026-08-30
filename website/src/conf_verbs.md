@@ -165,6 +165,12 @@ Thus you may define both verbs with extension filters and a catch-all verb.
 
 Knowing this algorithm, you may understand the point in the following definition:
 
+```hjson
+{
+    invocation: p
+    internal: ":parent"
+}
+```
 ```toml
 [[verbs]]
 invocation = "p"
