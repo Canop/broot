@@ -21,6 +21,7 @@ pub struct StandardStatus {
     preview_restorable_filter: Option<String>,
     not_first_state: String, // "esc to go back"
     help: String,
+    git_status: Option<String>,
     no_verb: String,
     pub all_files_hidden: Option<String>,
     pub all_files_ignored: Option<String>,
@@ -55,6 +56,9 @@ impl StandardStatus {
             .map(|k| format!("*{k}* to restore the filter"));
         let not_first_state = "*esc* to go back".to_string();
         let help = "*?* for help".to_string();
+        let git_status = verb_store
+            .key_desc_of_internal(Internal::toggle_git_status)
+            .map(|k| format!("*{k}* for git status"));
         let no_verb = "a space then a verb".to_string();
         let all_files_hidden = verb_store
             .key_desc_of_internal(Internal::toggle_hidden)
@@ -78,6 +82,7 @@ impl StandardStatus {
             preview_restorable_filter,
             not_first_state,
             help,
+            git_status,
             no_verb,
             all_files_hidden,
             all_files_ignored,
@@ -157,6 +162,7 @@ pub struct StandardStatusBuilder<'s> {
     pub is_filtered: bool,
     pub has_removed_pattern: bool,
     pub on_tree_root: bool, // should this be part of the Selection struct ?
+    pub in_git_repo: bool,  // root in a git repo, git status filter not active
     pub width: usize,       // available width
 }
 impl<'s> StandardStatusBuilder<'s> {
@@ -174,6 +180,7 @@ impl<'s> StandardStatusBuilder<'s> {
             is_filtered: false,
             has_removed_pattern: false,
             on_tree_root: false,
+            in_git_repo: false,
             width,
         }
     }
@@ -208,6 +215,9 @@ impl<'s> StandardStatusBuilder<'s> {
                 }
                 if parts.len() < 3 {
                     parts.add(&ss.help);
+                }
+                if self.in_git_repo && parts.len() < 4 {
+                    parts.addo(ss.git_status.as_deref());
                 }
                 if parts.len() < 4 {
                     if self.on_tree_root && !self.is_filtered {

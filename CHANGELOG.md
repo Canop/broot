@@ -11,7 +11,7 @@ A unified diff preview is now the default preview of a file with a git change (m
 - git status: an untracked directory gets the `N` mark too
 - the status line shows how many commits the branch is ahead (`↑`) or behind (`↓`) its upstream
 - `{git-root}` and `{git-name}` now work when the selection is a file
-- alt-g toggles the git status filter (`:toggle_git_status`)
+- alt-g toggles the git status filter (`:toggle_git_status`). Status line suggests using it in git repo.
 - `-gg` shows only the files with a git status (same as `--git-status`), `-G` removes one level of git information
 
 <a name="v1.59.0"></a>

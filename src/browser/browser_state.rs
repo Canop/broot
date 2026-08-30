@@ -746,6 +746,8 @@ impl PanelState for BrowserState {
         ssb.is_filtered = self.filtered_tree.is_some();
         ssb.has_removed_pattern = false;
         ssb.on_tree_root = tree.selection == 0;
+        ssb.in_git_repo = !tree.options.filter_by_git_status
+            && git::closest_repo_dir(tree.root()).is_some();
         ssb.status()
     }
 
