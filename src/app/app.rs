@@ -461,9 +461,17 @@ impl App {
             graphics::prepare_renderer(con)?;
         }
 
-        let combine_keys = conf.enable_kitty_keyboard.unwrap_or(false) && con.is_tty;
+        // unset: keyboard enhancements if supported, multi-key combos need a modifier
+        // true: also modifier-less multi-key combos (eg "a-b")
+        // false: standard keyboard
+        let (combine_keys, mandate_modifier_for_multiple_keys) = match conf.enable_kitty_keyboard {
+            None => (con.is_tty, true),
+            Some(true) => (con.is_tty, false),
+            Some(false) => (false, true),
+        };
         let event_source = EventSource::with_options(EventSourceOptions {
             combine_keys,
+            mandate_modifier_for_multiple_keys,
             ..Default::default()
         })?;
         con.keyboard_enhanced = event_source.supports_multi_key_combinations();

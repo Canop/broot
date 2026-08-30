@@ -67,6 +67,8 @@ Note that this will change the behavior of `alt+enter` for all terminal windows,
 
 * [relevant issue](https://github.com/Canop/broot/issues/682)
 
+Other `alt` combinations, like <kbd>alt</kbd><kbd>g</kbd>, reach broot through the [Kitty keyboard protocol](../conf_file/#keyboard-enhancements), which broot enables by default in iTerm2. If you disabled it, either enable it again or set *Preferences->Profiles->Default->Keys->Left Option key* to `Esc+` (this prevents typing the characters composed with the option key, a problem on international layouts).
+
 **Ghostty**
 
 On macOS, [Ghostty](https://ghostty.org/) binds `alt+left` and `alt+right` by default to send the word-movement sequences `ESC b` and `ESC f`, so broot never receives those key combinations. To reclaim them, add this to your Ghostty configuration (`~/.config/ghostty/config`):

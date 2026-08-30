@@ -430,16 +430,12 @@ And you'll get
 
 ## Keyboard enhancements
 
-By default, ANSI terminals make a lot of keyboard combinations impossible, for example <kbd>space</kbd><kbd>n</kbd>, or <kbd>alt</kbd><kbd>a</kbd><kbd>b</kbd>, or <kbd>shift</kbd><kbd>space</kbd>, etc.
-Some terminals implement [Kitty's keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) and basically make it possible to bind verbs to such combinations.
+Standard ANSI terminals make a lot of keyboard combinations impossible, for example <kbd>shift</kbd><kbd>space</kbd>, <kbd>alt</kbd><kbd>a</kbd><kbd>b</kbd>, or <kbd>space</kbd><kbd>n</kbd>.
+Many terminals implement [Kitty's keyboard protocol](https://sw.kovidgoyal.net/kitty/keyboard-protocol/) (Kitty, Wezterm, Ghostty, iTerm2, foot, etc.), which makes it possible to bind verbs to such combinations.
 
-Broot tests whether the terminal supports those enhancements, and if it's the case, tries to enable them.
+Broot tests whether the terminal supports this protocol, and if it's the case, enables it. It also makes <kbd>alt</kbd> combinations work on macOS terminals which otherwise let the option key compose characters.
 
-A small downside is that broot will react on key release instead of key press (so that you may press other keys before you release the first one), which may feel less instant. If the Kitty protocol isn't supported by your terminal, broot will react on key press.
-Another problem is that it may push you towards key combinations that you wouldn't be able to reuse when switching terminal.
-And finally, some terminals have buggy implementations (at time of writing).
-
-To enable those keyboard enhancements change this setting to true
+Multi-key combinations without modifier, like <kbd>space</kbd><kbd>n</kbd> or <kbd>a</kbd><kbd>b</kbd>, aren't enabled by default because they need broot to react on key release instead of key press (so that you may press other keys before you release the first one), which feels less instant. To enable them, set this to true:
 
 ```Hjson
 enable_kitty_keyboard: true
@@ -447,6 +443,10 @@ enable_kitty_keyboard: true
 ```TOML
 enable_kitty_keyboard = true
 ```
+
+Set it to false to not use the protocol at all (for example if your terminal has a buggy implementation).
+
+Keep in mind that combinations which are only possible with this protocol won't be available when switching to a terminal without it.
 
 ## Staging area
 
