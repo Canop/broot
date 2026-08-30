@@ -42,6 +42,19 @@ pub enum PrefixSearchResult<'v, T> {
     Matches(Vec<&'v str>),
 }
 
+/// Return the keys of an arrow based internal, the first one being
+/// the one shown in hints and help. macOS captures ctrl-arrows.
+fn arrow_keys(
+    ctrl: KeyCombination,
+    alt: KeyCombination,
+) -> Vec<KeyCombination> {
+    if cfg!(target_os = "macos") {
+        vec![alt, ctrl]
+    } else {
+        vec![ctrl, alt]
+    }
+}
+
 impl VerbStore {
     pub fn new(conf: &mut Conf) -> Result<Self, ConfError> {
         let mut store = Self {
@@ -281,8 +294,9 @@ impl VerbStore {
         self.add_internal(focus_panel_left);
         self.add_internal(focus_panel_right);
         self.add_internal(panel_left_no_open)
-            .with_key(key!(ctrl - left));
-        self.add_internal(panel_right).with_key(key!(ctrl - right));
+            .add_keys(arrow_keys(key!(ctrl - left), key!(alt - left)));
+        self.add_internal(panel_right)
+            .add_keys(arrow_keys(key!(ctrl - right), key!(alt - right)));
         self.add_internal(print_path).with_shortcut("pp");
         self.add_internal(print_relative_path).with_shortcut("prp");
         self.add_internal(print_tree).with_shortcut("pt");
@@ -291,8 +305,10 @@ impl VerbStore {
             .with_key(key!(ctrl - q))
             .with_shortcut("q");
         self.add_internal(refresh).with_key(key!(f5));
-        self.add_internal(root_up).with_key(key!(ctrl - up));
-        self.add_internal(root_down).with_key(key!(ctrl - down));
+        self.add_internal(root_up)
+            .add_keys(arrow_keys(key!(ctrl - up), key!(alt - up)));
+        self.add_internal(root_down)
+            .add_keys(arrow_keys(key!(ctrl - down), key!(alt - down)));
         self.add_internal(select_first);
         self.add_internal(select_last);
         self.add_internal(select);

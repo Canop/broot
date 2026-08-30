@@ -19,7 +19,7 @@ When staging a file, the staging area opens (but doesn't get focused) if it wasn
 
 # Execute a command
 
-Focus the staging area (usually with <kbd>ctrl</kbd><kbd>→</kbd>) then type the verb in the input.
+Focus the staging area (usually with the key bound to `:panel_right`: <kbd>ctrl</kbd><kbd>→</kbd> or <kbd>alt</kbd><kbd>→</kbd>) then type the verb in the input.
 
 The verb will be executed, in order, to all files of the staging area.
 

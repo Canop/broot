@@ -491,8 +491,8 @@ invocation | default key | default shortcut | behavior / details
 :page_down | <kbd>⇟</kbd> | - | scroll one page down
 :page_up | <kbd>⇞</kbd> | - | scroll one page up
 :panel_left | -  | - | move to or open a panel to the left
-:panel_left_no_open | <kbd>ctrl</kbd><kbd>←</kbd>  | - | move to panel to the left
-:panel_right | <kbd>ctrl</kbd><kbd>→</kbd>  | - | move to or open a panel to the right
+:panel_left_no_open | <kbd>ctrl</kbd><kbd>←</kbd> or <kbd>alt</kbd><kbd>←</kbd> | - | move to panel to the left
+:panel_right | <kbd>ctrl</kbd><kbd>→</kbd> or <kbd>alt</kbd><kbd>→</kbd> | - | move to or open a panel to the right
 :panel_right_no_open | -  | - | move to panel to the right
 :parent | - | - | focus the parent directory
 :preview_binary | - | - | preview the selection as binary
@@ -507,8 +507,8 @@ invocation | default key | default shortcut | behavior / details
 :print_tree | - | pt | print tree and leave broot
 :quit | <kbd>ctrl</kbd><kbd>q</kbd> | q | quit broot
 :refresh | <kbd>F5</kbd> | - | refresh the displayed tree and clears the directory sizes cache
-:root_down | - | - | move tree root down
-:root_up | - | - | move tree root up
+:root_down | <kbd>ctrl</kbd><kbd>↓</kbd> or <kbd>alt</kbd><kbd>↓</kbd> | - | move tree root down
+:root_up | <kbd>ctrl</kbd><kbd>↑</kbd> or <kbd>alt</kbd><kbd>↑</kbd> | - | move tree root up
 :search_again | - | <kbd>ctrl</kbd><kbd>s</kbd> | either put back last search, or search deeper
 :select | - | - | select a path given as argument, if it's in the visible tree
 :select_first | - | - | select the first line
@@ -627,7 +627,7 @@ internal = ":input_selection_cut"
 
 The `:focus` internal has many uses.
 
-It can be used without explicit argument in which case it takes the selection (for example `:!focus` is equivalent to <kbd>ctrl</kbd><kbd>→</kbd>).
+It can be used without explicit argument in which case it takes the selection (for example `:!focus` is equivalent to the `:panel_right` key, <kbd>ctrl</kbd><kbd>→</kbd> or <kbd>alt</kbd><kbd>→</kbd>).
 
 It can be used with an argument, for example you can go to a specific place without leaving broot by typing ` fo /usr/bin` then <kbd>enter</kbd>.
 

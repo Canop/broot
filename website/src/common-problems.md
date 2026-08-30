@@ -44,6 +44,14 @@ Additionally, if backgrounds can't be properly displayed, you may consider [mark
 
 Another problem is the fact the `br` function doesn't set a proper pane name (you'll probably see the name of your shell instead of broot). This may be [solved with a modified shell function](https://github.com/Canop/broot/issues/270).
 
+# Ctrl-arrows or alt-arrows
+
+Moving between panels, opening a preview, or moving the tree root, is done with arrow keys combined with a modifier: <kbd>ctrl</kbd><kbd>→</kbd> or <kbd>alt</kbd><kbd>→</kbd>, both being bound by default to the same internals (`:panel_right`, `:panel_left_no_open`, `:root_up`, `:root_down`).
+
+Both are bound because most setups only let one of them reach broot: terminal multiplexers, multi-pane terminals and desktop environments commonly use <kbd>ctrl</kbd> or <kbd>alt</kbd> + arrows for their own navigation (macOS, for example, captures <kbd>ctrl</kbd> + arrows, which is why broot shows the <kbd>alt</kbd> combinations in its hints and help there).
+
+If none of the two works, [print_key](https://github.com/Canop/print_key) tells you what your terminal lets through, and you can [rebind](../conf_verbs/#keyboard-key) the internals.
+
 # Key combination problem
 
 Most terminals intercept a few keyboard shortcut for their own features. You may need to remap your terminal's default keyboard shortcuts.

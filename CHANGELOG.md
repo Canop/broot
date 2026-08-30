@@ -1,3 +1,6 @@
+### next
+- alt-arrows are bound like ctrl-arrows (panels, root up/down), as macOS captures ctrl-arrows; hints and help show the alt ones on macOS
+
 <a name="v1.59.0"></a>
 ### v1.59.0 - 2026-08-22
 - new `shell_command` verb attribute: run a command through a shell (`sh -c` / `cmd /C`) so `&&`, `;` and pipes work, without leaving broot - Fix #1145

@@ -5,7 +5,7 @@ Broot can display two panels. Most frequent uses are:
 
 # Keyboard shortcuts
 
-The <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd> shortcuts should be enough to support all common panel related operation:
+The <kbd>ctrl</kbd><kbd>←</kbd> and <kbd>ctrl</kbd><kbd>→</kbd> shortcuts (<kbd>alt</kbd><kbd>←</kbd> and <kbd>alt</kbd><kbd>→</kbd> [on macOS](../common-problems/#ctrl-arrows-or-alt-arrows)) should be enough to support all common panel related operation:
 
 * When there's only one panel, use <kbd>ctrl</kbd><kbd>←</kbd> to open a panel to the left, and <kbd>ctrl</kbd><kbd>→</kbd> to open one to the right
 * When two panels are open, you may go to the panel left of the current one with <kbd>ctrl</kbd><kbd>←</kbd> and to the panel to the right with <kbd>ctrl</kbd><kbd>→</kbd>
@@ -19,7 +19,7 @@ The type of open panel depends on the selection:
 You may also close the current panel with <kbd>ctrl</kbd><kbd>W</kbd>, which is a shortcut for `:close_panel` (you can [change all bindings](../conf_verbs/#keyboard-key)).
 
 **Note:**
-Depending on your system and terminal, the <kbd>ctrl</kbd><kbd>←</kbd>  and <kbd>ctrl</kbd><kbd>→</kbd> key bindings might not convenient or not usable. In such a case, you should [rebind](../conf_verbs/#keyboard-key) the `:panel_left` and `:panel_right` internals.
+<kbd>alt</kbd><kbd>←</kbd> and <kbd>alt</kbd><kbd>→</kbd> are bound too, because macOS captures the ctrl-arrows combinations by default, see [Ctrl-arrows or alt-arrows](../common-problems/#ctrl-arrows-or-alt-arrows). If your terminal doesn't let any of those key bindings reach broot, you should [rebind](../conf_verbs/#keyboard-key) the `:panel_left_no_open` and `:panel_right` internals.
 
 # Use a verb to open a panel
 
