@@ -4,13 +4,13 @@ use {
             AppContext,
             LineNumber,
         },
-        command::{
-            ScrollCommand,
-            move_sel,
-        },
+        command::ScrollCommand,
         display::{
             Screen,
+            UnwrappedRows,
+            Viewport,
             W,
+            is_thumb,
         },
         errors::ProgramError,
         git::{
@@ -54,9 +54,7 @@ enum Row {
 pub struct UnifiedDiffView {
     diff: FileDiff,
     rows: Vec<Row>,
-    scroll: usize,
-    page_height: usize,
-    selection_idx: Option<usize>,
+    viewport: Viewport,
 }
 
 impl UnifiedDiffView {
@@ -82,9 +80,7 @@ impl UnifiedDiffView {
         Self {
             diff,
             rows,
-            scroll: 0,
-            page_height: 0,
-            selection_idx: None,
+            viewport: Viewport::default(),
         }
     }
     fn line(
@@ -109,37 +105,17 @@ impl UnifiedDiffView {
             _ => 0,
         }
     }
-    fn ensure_selection_is_visible(&mut self) {
-        if self.page_height >= self.rows.len() {
-            self.scroll = 0;
-        } else if let Some(idx) = self.selection_idx {
-            let padding = self.padding();
-            if idx < self.scroll + padding || idx + padding > self.scroll + self.page_height {
-                if idx <= padding {
-                    self.scroll = 0;
-                } else if idx + padding > self.rows.len() {
-                    self.scroll = self.rows.len() - self.page_height;
-                } else if idx < self.scroll + self.page_height / 2 {
-                    self.scroll = idx - padding;
-                } else {
-                    self.scroll = idx + padding - self.page_height;
-                }
-            }
-        }
-    }
-    fn padding(&self) -> usize {
-        (self.page_height / 4).min(4)
-    }
     /// Return the number, in the current version of the file, of the
     /// selected line or of the closest following one
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {
-        let idx = self.selection_idx?;
+        let idx = self.viewport.selection()?;
         self.rows[idx..]
             .iter()
             .find_map(|&row| self.line(row).and_then(|line| line.new_number))
     }
     pub fn get_selected_line(&self) -> Option<String> {
-        self.selection_idx
+        self.viewport
+            .selection()
             .and_then(|idx| self.line(self.rows[idx]))
             .map(|line| line.content.clone())
     }
@@ -155,8 +131,7 @@ impl UnifiedDiffView {
                 .is_some_and(|n| n >= number)
         });
         if let Some(idx) = idx {
-            self.selection_idx = Some(idx);
-            self.ensure_selection_is_visible();
+            self.viewport.select(idx, &UnwrappedRows(self.rows.len()));
         }
         idx.is_some()
     }
@@ -179,24 +154,25 @@ impl UnifiedDiffView {
     }
     /// Select the first line of the next block of changes
     pub fn next_change(&mut self) {
-        let s = self.selection_idx.unwrap_or(self.rows.len().saturating_sub(1));
+        let s = self
+            .viewport
+            .selection()
+            .unwrap_or(self.rows.len().saturating_sub(1));
         for d in 1..=self.rows.len() {
             let idx = (s + d) % self.rows.len();
             if self.is_change_start(idx) {
-                self.selection_idx = Some(idx);
-                self.ensure_selection_is_visible();
+                self.viewport.select(idx, &UnwrappedRows(self.rows.len()));
                 return;
             }
         }
     }
     /// Select the first line of the previous block of changes
     pub fn previous_change(&mut self) {
-        let s = self.selection_idx.unwrap_or(0);
+        let s = self.viewport.selection().unwrap_or(0);
         for d in 1..=self.rows.len() {
             let idx = (self.rows.len() + s - d) % self.rows.len();
             if self.is_change_start(idx) {
-                self.selection_idx = Some(idx);
-                self.ensure_selection_is_visible();
+                self.viewport.select(idx, &UnwrappedRows(self.rows.len()));
                 return;
             }
         }
@@ -205,64 +181,26 @@ impl UnifiedDiffView {
         &mut self,
         y: u16,
     ) -> bool {
-        let idx = y as usize + self.scroll;
-        if idx < self.rows.len() {
-            self.selection_idx = Some(idx);
-            true
-        } else {
-            false
-        }
+        self.viewport.try_select_y(y, &UnwrappedRows(self.rows.len()))
     }
     pub fn select_first(&mut self) {
-        if !self.rows.is_empty() {
-            self.selection_idx = Some(0);
-            self.scroll = 0;
-        }
+        self.viewport.select_first(&UnwrappedRows(self.rows.len()));
     }
     pub fn select_last(&mut self) {
-        if !self.rows.is_empty() {
-            self.selection_idx = Some(self.rows.len() - 1);
-            self.ensure_selection_is_visible();
-        }
+        self.viewport.select_last(&UnwrappedRows(self.rows.len()));
     }
     pub fn move_selection(
         &mut self,
         dy: i32,
         cycle: bool,
     ) {
-        if let Some(idx) = self.selection_idx {
-            self.selection_idx = Some(move_sel(idx, self.rows.len(), dy, cycle));
-        } else if !self.rows.is_empty() {
-            self.selection_idx = Some(0);
-        }
-        self.ensure_selection_is_visible();
+        self.viewport.move_selection(dy, cycle, &UnwrappedRows(self.rows.len()));
     }
     pub fn try_scroll(
         &mut self,
         cmd: ScrollCommand,
     ) -> bool {
-        let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.rows.len(), self.page_height);
-        if let Some(idx) = self.selection_idx {
-            if self.scroll == old_scroll {
-                let old_selection = self.selection_idx;
-                if cmd.is_up() {
-                    self.selection_idx = Some(0);
-                } else {
-                    self.selection_idx = Some(self.rows.len() - 1);
-                }
-                return self.selection_idx == old_selection;
-            } else if idx >= old_scroll && idx < old_scroll + self.page_height {
-                if idx + self.scroll < old_scroll {
-                    self.selection_idx = Some(0);
-                } else if idx + self.scroll - old_scroll >= self.rows.len() {
-                    self.selection_idx = Some(self.rows.len() - 1);
-                } else {
-                    self.selection_idx = Some(idx + self.scroll - old_scroll);
-                }
-            }
-        }
-        self.scroll != old_scroll
+        self.viewport.try_scroll(cmd, &UnwrappedRows(self.rows.len()))
     }
     pub fn display(
         &mut self,
@@ -272,15 +210,14 @@ impl UnifiedDiffView {
         area: &Area,
         con: &AppContext,
     ) -> Result<(), ProgramError> {
-        if area.height as usize != self.page_height {
-            self.page_height = area.height as usize;
-            self.ensure_selection_is_visible();
-        }
+        let rows = UnwrappedRows(self.rows.len());
+        self.viewport
+            .set_layout(area.height as usize, area.width as usize, false, &rows);
         let styles = &panel_skin.styles;
         let number_len = self.max_line_number().to_string().len();
         let show_line_numbers = area.width as usize > 2 * number_len + 30;
         let code_width = area.width as usize - 1; // 1 char left for scrollbar
-        let scrollbar = area.scrollbar(self.scroll, self.rows.len());
+        let scrollbar = self.viewport.scrollbar(area, &rows);
         let scrollbar_fg = styles
             .scrollbar_thumb
             .get_fg()
@@ -289,8 +226,8 @@ impl UnifiedDiffView {
         for y in 0..area.height as usize {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
             let mut cw = CropWriter::new(w, code_width);
-            let row_idx = self.scroll + y;
-            let selected = self.selection_idx == Some(row_idx);
+            let row_idx = self.viewport.scroll().line + y;
+            let selected = self.viewport.is_selected(row_idx);
             match self.rows.get(row_idx) {
                 Some(Row::Separator) => {
                     cw.queue_unstyled_str(" ")?;
@@ -389,16 +326,6 @@ impl UnifiedDiffView {
     }
 }
 
-fn is_thumb(
-    y: usize,
-    scrollbar: Option<(u16, u16)>,
-) -> bool {
-    scrollbar.is_some_and(|(top, bottom)| {
-        let y = y as u16;
-        top <= y && y <= bottom
-    })
-}
-
 #[cfg(test)]
 mod tests {
     use {
@@ -440,23 +367,23 @@ mod tests {
             deletions: 0,
         };
         let mut view = UnifiedDiffView::from_diff(diff);
-        view.page_height = 10;
+        view.viewport.set_layout(10, 80, false, &UnwrappedRows(view.rows.len()));
         // rows: h0 = 0..4, sep 4, h1 = 5..8, sep 8, h2 = 9..17
         let starts: Vec<usize> = (0..view.rows.len()).filter(|&i| view.is_change_start(i)).collect();
         assert_eq!(starts, vec![1, 6, 10, 15]);
         view.next_change();
-        assert_eq!(view.selection_idx, Some(1));
+        assert_eq!(view.viewport.selection(), Some(1));
         view.next_change();
-        assert_eq!(view.selection_idx, Some(6));
+        assert_eq!(view.viewport.selection(), Some(6));
         view.next_change();
-        assert_eq!(view.selection_idx, Some(10));
+        assert_eq!(view.viewport.selection(), Some(10));
         view.next_change();
-        assert_eq!(view.selection_idx, Some(15));
+        assert_eq!(view.viewport.selection(), Some(15));
         view.next_change();
-        assert_eq!(view.selection_idx, Some(1));
+        assert_eq!(view.viewport.selection(), Some(1));
         view.previous_change();
-        assert_eq!(view.selection_idx, Some(15));
+        assert_eq!(view.viewport.selection(), Some(15));
         view.previous_change();
-        assert_eq!(view.selection_idx, Some(10));
+        assert_eq!(view.viewport.selection(), Some(10));
     }
 }

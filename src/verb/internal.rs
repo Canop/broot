@@ -152,6 +152,7 @@ Internals! {
     toggle_ignore: "toggle use of .gitignore and .ignore" false,
     toggle_perm: "toggle showing file permissions" false,
     toggle_preview: "open/close the preview panel" false,
+    toggle_preview_wrap: "toggle line wrapping in previews" false,
     toggle_root_fs: "toggle showing filesystem info on top" false,
     set_max_depth: "set the maximum directory depth shown" false,
     unset_max_depth: "clear the max_depth" false,

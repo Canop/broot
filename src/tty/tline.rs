@@ -1,4 +1,5 @@
 use {
+    crate::display::TAB_WIDTH,
     super::*,
     crate::display::W,
     serde::{
@@ -68,7 +69,7 @@ impl TLine {
     pub fn from_tty(tty: &str) -> Self {
         let tty_str: String;
         let tty = if tty.contains('\t') {
-            tty_str = tty.replace('\t', TAB_REPLACEMENT);
+            tty_str = tty.replace('\t', &" ".repeat(TAB_WIDTH));
             &tty_str
         } else {
             tty

@@ -19,6 +19,9 @@ pub struct AppState {
     /// the selected path in another panel than the currently
     /// active one, if any
     pub other_panel_path: Option<PathBuf>,
+
+    /// Whether long lines are wrapped in previews
+    pub wrap_previews: bool,
 }
 
 impl AppState {
@@ -28,6 +31,7 @@ impl AppState {
             root: root.into(),
             watch_tree: false,
             other_panel_path: None,
+            wrap_previews: true,
         }
     }
 }

@@ -1,13 +1,13 @@
 use {
     super::*,
     crate::{
-        command::{
-            ScrollCommand,
-            move_sel,
-        },
+        command::ScrollCommand,
         display::{
             Screen,
+            UnwrappedRows,
+            Viewport,
             W,
+            is_thumb,
         },
         errors::*,
         skin::PanelSkin,
@@ -41,9 +41,7 @@ use {
 pub struct TtyView {
     pub path: PathBuf,
     lines: Vec<TLine>,
-    scroll: usize,
-    page_height: usize,
-    selection_idx: Option<usize>, // index in lines of the selection, if any
+    viewport: Viewport,
     total_lines_count: usize,
 }
 
@@ -52,9 +50,7 @@ impl TtyView {
         let mut sv = Self {
             path: path.to_path_buf(),
             lines: Vec::new(),
-            scroll: 0,
-            page_height: 0,
-            selection_idx: None,
+            viewport: Viewport::default(),
             total_lines_count: 0,
         };
         sv.read_lines()?;
@@ -89,56 +85,21 @@ impl TtyView {
         Ok(())
     }
 
-    fn ensure_selection_is_visible(&mut self) {
-        if self.page_height >= self.lines.len() {
-            self.scroll = 0;
-        } else if let Some(idx) = self.selection_idx {
-            let padding = self.padding();
-            if idx < self.scroll + padding || idx + padding > self.scroll + self.page_height {
-                if idx <= padding {
-                    self.scroll = 0;
-                } else if idx + padding > self.lines.len() {
-                    self.scroll = self.lines.len() - self.page_height;
-                } else if idx < self.scroll + self.page_height / 2 {
-                    self.scroll = idx - padding;
-                } else {
-                    self.scroll = idx + padding - self.page_height;
-                }
-            }
-        }
-    }
-
-    fn padding(&self) -> usize {
-        (self.page_height / 4).min(4)
-    }
-
     pub fn unselect(&mut self) {
-        self.selection_idx = None;
+        self.viewport.unselect();
     }
     pub fn try_select_y(
         &mut self,
         y: u16,
     ) -> bool {
-        let idx = y as usize + self.scroll;
-        if idx < self.lines.len() {
-            self.selection_idx = Some(idx);
-            true
-        } else {
-            false
-        }
+        self.viewport.try_select_y(y, &UnwrappedRows(self.lines.len()))
     }
 
     pub fn select_first(&mut self) {
-        if !self.lines.is_empty() {
-            self.selection_idx = Some(0);
-            self.scroll = 0;
-        }
+        self.viewport.select_first(&UnwrappedRows(self.lines.len()));
     }
     pub fn select_last(&mut self) {
-        self.selection_idx = Some(self.lines.len() - 1);
-        if self.page_height < self.lines.len() {
-            self.scroll = self.lines.len() - self.page_height;
-        }
+        self.viewport.select_last(&UnwrappedRows(self.lines.len()));
     }
 
     pub fn move_selection(
@@ -146,40 +107,14 @@ impl TtyView {
         dy: i32,
         cycle: bool,
     ) {
-        if let Some(idx) = self.selection_idx {
-            self.selection_idx = Some(move_sel(idx, self.lines.len(), dy, cycle));
-        } else if !self.lines.is_empty() {
-            self.selection_idx = Some(0)
-        }
-        self.ensure_selection_is_visible();
+        self.viewport.move_selection(dy, cycle, &UnwrappedRows(self.lines.len()));
     }
 
     pub fn try_scroll(
         &mut self,
         cmd: ScrollCommand,
     ) -> bool {
-        let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.lines.len(), self.page_height);
-        if let Some(idx) = self.selection_idx {
-            if self.scroll == old_scroll {
-                let old_selection = self.selection_idx;
-                if cmd.is_up() {
-                    self.selection_idx = Some(0);
-                } else {
-                    self.selection_idx = Some(self.lines.len() - 1);
-                }
-                return self.selection_idx == old_selection;
-            } else if idx >= old_scroll && idx < old_scroll + self.page_height {
-                if idx + self.scroll < old_scroll {
-                    self.selection_idx = Some(0);
-                } else if idx + self.scroll - old_scroll >= self.lines.len() {
-                    self.selection_idx = Some(self.lines.len() - 1);
-                } else {
-                    self.selection_idx = Some(idx + self.scroll - old_scroll);
-                }
-            }
-        }
-        self.scroll != old_scroll
+        self.viewport.try_scroll(cmd, &UnwrappedRows(self.lines.len()))
     }
 
     pub fn display(
@@ -189,10 +124,9 @@ impl TtyView {
         panel_skin: &PanelSkin,
         area: &Area,
     ) -> Result<(), ProgramError> {
-        if area.height as usize != self.page_height {
-            self.page_height = area.height as usize;
-            self.ensure_selection_is_visible();
-        }
+        let rows = UnwrappedRows(self.lines.len());
+        self.viewport
+            .set_layout(area.height as usize, area.width as usize, false, &rows);
         let line_count = area.height as usize;
         let styles = &panel_skin.styles;
         let bg = styles
@@ -201,14 +135,14 @@ impl TtyView {
             .or_else(|| styles.default.get_bg())
             .unwrap_or(Color::AnsiValue(238));
         let content_width = area.width as usize - 1; // 1 char left for scrollbar
-        let scrollbar = area.scrollbar(self.scroll, self.lines.len());
+        let scrollbar = self.viewport.scrollbar(area, &rows);
         let scrollbar_fg = styles
             .scrollbar_thumb
             .get_fg()
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
         for y in 0..line_count {
-            let line_idx = self.scroll + y;
+            let line_idx = self.viewport.scroll().line + y;
             let mut allowed = content_width;
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
             if let Some(tline) = self.lines.get(line_idx) {
@@ -251,14 +185,4 @@ impl TtyView {
         panel_skin.styles.default.queue(w, s)?;
         Ok(())
     }
-}
-
-fn is_thumb(
-    y: usize,
-    scrollbar: Option<(u16, u16)>,
-) -> bool {
-    scrollbar.is_some_and(|(sctop, scbottom)| {
-        let y = y as u16;
-        sctop <= y && y <= scbottom
-    })
 }

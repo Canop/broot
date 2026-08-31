@@ -143,6 +143,7 @@ impl VerbStore {
         self.add_internal(open_preview);
         self.add_internal(close_preview);
         self.add_internal(toggle_preview);
+        self.add_internal(toggle_preview_wrap);
         self.add_internal(preview_image).with_shortcut("img");
         self.add_internal(preview_text).with_shortcut("txt");
         self.add_internal(preview_binary).with_shortcut("hex");

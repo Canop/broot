@@ -316,6 +316,12 @@ impl App {
                             self.panels.clear_input_invocation(con);
                         }
                     }
+                    Internal::toggle_preview_wrap => {
+                        app_state.wrap_previews ^= true;
+                        if is_input_invocation {
+                            self.panels.clear_input_invocation(con);
+                        }
+                    }
                     _ => {
                         let cmd = self.panels.on_input_internal(internal);
                         if cmd.is_none() {
