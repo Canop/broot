@@ -3,7 +3,14 @@ use {
     crate::errors::ProgramError,
     image::GenericImageView,
     std::path::Path,
-    zune_core::colorspace::ColorSpace,
+    zune_core::{
+        bit_depth::BitDepth,
+        colorspace::ColorSpace,
+    },
+    zune_image::{
+        core_filters::depth::Depth,
+        traits::OperationsTrait,
+    },
 };
 
 impl From<zune_image::errors::ImageErrors> for ProgramError {
@@ -22,6 +29,16 @@ impl From<image::ImageError> for ProgramError {
     }
 }
 
+/// Tell whether the file starts with the PNG magic number
+fn is_png(path: &Path) -> bool {
+    use std::io::Read;
+    let mut magic = [0u8; 8];
+    std::fs::File::open(path)
+        .and_then(|mut f| f.read_exact(&mut magic))
+        .is_ok()
+        && magic == *b"\x89PNG\r\n\x1a\n"
+}
+
 /// Image type that uses either zune-image (fast) or image crate (fallback)
 #[derive(Clone)]
 pub enum DynamicImage {
@@ -33,7 +50,11 @@ pub enum DynamicImage {
 
 impl DynamicImage {
     pub fn from_path_as_zune(path: &Path) -> Result<Self, ProgramError> {
-        let img = zune_image::image::Image::open(path)?;
+        let mut img = zune_image::image::Image::open(path)?;
+        if img.depth() != BitDepth::Eight {
+            // the rest of the module assumes u8 channels
+            Depth::new(BitDepth::Eight).execute(&mut img)?;
+        }
         let nb_components = img.colorspace().num_components();
         if nb_components < 3 {
             // Current implementation of the module requires an RGB image and
@@ -47,8 +68,22 @@ impl DynamicImage {
         }
         Ok(Self::Zune(img))
     }
+    /// Load an image, choosing the fastest decoder for the format:
+    /// the image crate for PNG, zune-image for the other formats,
+    /// each one falling back to the other on failure.
+    ///
+    /// Perf note: zune decodes JPEG faster, but the image crate decodes
+    /// PNG faster whatever the bit depth (measured on both x86 and
+    /// Apple Silicon, up to several times faster).
     pub fn from_path(path: &Path) -> Result<Self, ProgramError> {
-        // Try zune-image first (fast path)
+        if is_png(path) {
+            if let Ok(reader) = image::ImageReader::open(path) {
+                if let Ok(img) = reader.decode() {
+                    debug!("Loaded PNG with image crate: {path:?}");
+                    return Ok(Self::Image(img));
+                }
+            }
+        }
         match Self::from_path_as_zune(path) {
             Ok(img) => {
                 debug!("Loaded with zune-image: {path:?}");
