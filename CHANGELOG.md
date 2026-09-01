@@ -1,7 +1,7 @@
 ### next
-<<<<<<< HEAD
+- fix panic when previewing an image with 16 bits per channel, or HDR - Fix #1209
 - alt-arrows are bound like ctrl-arrows (panels, root up/down), as macOS captures ctrl-arrows; hints and help show the alt ones on macOS
-=======
+
 #### Major Feature: git diff preview, and many git related enhancements
 The `libgit2` library has been replaced by `gix`. With this change, broot becomes pure Rust, which simplifies compilation (no C compiler needed anymore).
 A unified diff preview is now the default preview of a file with a git change (modified, staged, added, renamed or in conflict) when git statuses are displayed. `:preview_diff` shows it for any file.
@@ -17,7 +17,6 @@ A unified diff preview is now the default preview of a file with a git change (m
 - alt-g toggles the git status filter (`:toggle_git_status`). Status line suggests using it in git repo.
 - `-gg` shows only the files with a git status (same as `--git-status`), `-G` removes one level of git information
 - the Kitty keyboard protocol is now used by default when the terminal supports it, which notably makes `alt` combinations work on macOS terminals; multi-key combinations without modifier still need `enable_kitty_keyboard: true`
->>>>>>> replace-libgit2-with-gix
 
 <a name="v1.59.0"></a>
 ### v1.59.0 - 2026-08-22
