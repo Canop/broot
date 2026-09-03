@@ -7,6 +7,7 @@ use {
         },
         command::ScrollCommand,
         display::{
+            Overflow,
             Rows,
             Screen,
             TAB_WIDTH,
@@ -147,6 +148,7 @@ impl TextRows<'_> {
             .and_then(|mmap| mmap.get(line.start..line.start + line.len))
             // we copy the slice, as the file may change
             .and_then(|bytes| String::from_utf8(bytes.to_vec()).ok())
+            .map(|s| printable_line(&s).into_owned())
     }
 }
 impl Rows for TextRows<'_> {
@@ -175,6 +177,8 @@ impl Rows for TextRows<'_> {
     ) -> usize {
         match &self.lines[idx] {
             DisplayLine::Separator => 1,
+            // the length in bytes overestimates the width in cells,
+            // exactly for ASCII, without reading the line
             DisplayLine::Content(line) => line.len,
         }
     }
@@ -246,7 +250,6 @@ impl TextView {
             return Err(ProgramError::ZeroLenFile);
         }
         let with_style = !no_style && md.len() < MAX_SIZE_FOR_STYLING;
-        self.mmap = if with_style { None } else { Some(mmap) };
         let mut reader = BufReader::new(f);
         let mut content_lines = Vec::new();
         let mut line = String::new();
@@ -259,6 +262,8 @@ impl TextView {
         } else {
             None
         };
+        // lines are read back from the file when they aren't stored styled
+        self.mmap = if highlighter.is_some() { None } else { Some(mmap) };
         let pattern = &self.pattern.pattern;
         while reader.read_line(&mut line)? > 0 {
             number += 1;
@@ -286,7 +291,7 @@ impl TextView {
             content_lines.push(Line {
                 regions,
                 start,
-                len: clean_line.len(),
+                len: line.len(),
                 name_match,
                 number,
             });
@@ -381,9 +386,6 @@ impl TextView {
             .selection()
             .and_then(|idx| self.lines[idx].line_number())
     }
-    pub fn unselect(&mut self) {
-        self.viewport.unselect();
-    }
     pub fn try_select_y(
         &mut self,
         y: u16,
@@ -414,10 +416,11 @@ impl TextView {
         // this could obviously be optimized
         for (idx, line) in self.lines.iter().enumerate() {
             if line.line_number() == Some(number) {
-                self.viewport.select(idx, &TextRows {
-            lines: &self.lines,
-            mmap: self.mmap.as_ref(),
-        });
+                let rows = TextRows {
+                    lines: &self.lines,
+                    mmap: self.mmap.as_ref(),
+                };
+                self.viewport.select(idx, &rows);
                 return true;
             }
         }
@@ -440,10 +443,11 @@ impl TextView {
         for d in 1..self.lines.len() {
             let idx = (self.lines.len() + s - d) % self.lines.len();
             if self.lines[idx].is_match() {
-                self.viewport.select(idx, &TextRows {
-            lines: &self.lines,
-            mmap: self.mmap.as_ref(),
-        });
+                let rows = TextRows {
+                    lines: &self.lines,
+                    mmap: self.mmap.as_ref(),
+                };
+                self.viewport.select(idx, &rows);
                 return;
             }
         }
@@ -453,10 +457,11 @@ impl TextView {
         for d in 1..self.lines.len() {
             let idx = (s + d) % self.lines.len();
             if self.lines[idx].is_match() {
-                self.viewport.select(idx, &TextRows {
-            lines: &self.lines,
-            mmap: self.mmap.as_ref(),
-        });
+                let rows = TextRows {
+                    lines: &self.lines,
+                    mmap: self.mmap.as_ref(),
+                };
+                self.viewport.select(idx, &rows);
                 return;
             }
         }
@@ -498,7 +503,7 @@ impl TextView {
         panel_skin: &PanelSkin,
         area: &Area,
         con: &AppContext,
-        wrap: bool,
+        overflow: Overflow,
     ) -> Result<(), ProgramError> {
         let rows = TextRows {
             lines: &self.lines,
@@ -511,7 +516,7 @@ impl TextView {
             + usize::from(con.show_selection_mark);
         let text_width = code_width.saturating_sub(gutter_width).max(1);
         self.viewport
-            .set_layout(area.height as usize, text_width, wrap, &rows);
+            .set_layout(area.height as usize, text_width, overflow, &rows);
         let positions = self.viewport.visible_rows(&rows);
         let scrollbar = self.viewport.scrollbar(area, &rows);
         let styles = &panel_skin.styles;
@@ -573,7 +578,7 @@ impl TextView {
                         } else {
                             Cow::Borrowed(line.regions.as_slice())
                         };
-                        let starts = if wrap {
+                        let starts = if overflow == Overflow::Wrap {
                             row_starts(regions.iter().flat_map(|r| r.string.chars()), text_width)
                         } else {
                             Vec::new()
@@ -606,7 +611,7 @@ impl TextView {
                     let from = if pos.sub == 0 { 0 } else { starts[pos.sub - 1] };
                     let to = starts.get(pos.sub).copied().unwrap_or(usize::MAX);
                     let pos_list = line.name_match.as_ref().map(|nm| &nm.pos);
-                    if !wrap && pos_list.is_none() {
+                    if overflow == Overflow::NoWrap && pos_list.is_none() {
                         for region in regions {
                             cw.w.queue(SetForegroundColor(region.fg))?;
                             let s = region.string.trim_end_matches(is_char_end_of_line);

@@ -317,7 +317,7 @@ impl App {
                         }
                     }
                     Internal::toggle_preview_wrap => {
-                        app_state.wrap_previews ^= true;
+                        app_state.preview_overflow.toggle();
                         if is_input_invocation {
                             self.panels.clear_input_invocation(con);
                         }
@@ -490,6 +490,7 @@ impl App {
         let mut dam = Dam::from(rx_events);
         let skin = AppSkin::new(conf, con.launch_args.color == TriBool::No);
         let mut app_state = AppState::new(&con.initial_root);
+        app_state.preview_overflow = con.preview_overflow;
         terminal::update_title(w, &app_state, con);
 
         self.panels

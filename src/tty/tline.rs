@@ -6,6 +6,8 @@ use {
         Deserialize,
         Serialize,
     },
+    std::io::Write,
+    unicode_width::UnicodeWidthChar,
 };
 
 /// a simple representation of a line made of homogeneous parts.
@@ -141,6 +143,53 @@ impl TLine {
                 break;
             }
             cols += ts.draw_in(w, cols_max - cols)?;
+        }
+        Ok(cols)
+    }
+    /// Draw the chars of the line whose indexes are in `from..to`,
+    /// without taking more than cols_max cols, and return the number
+    /// of cols written.
+    /// Control chars are skipped, as they would break the column
+    /// accounting.
+    pub fn draw_range_in(
+        &self,
+        w: &mut W,
+        cols_max: usize,
+        from: usize,
+        to: usize,
+    ) -> Result<usize, ProgramError> {
+        let mut cols = 0;
+        let mut ci = 0; // index of the char in the line
+        for ts in &self.strings {
+            let mut run = String::new();
+            let mut full = false;
+            for c in ts.raw.chars() {
+                if ci >= to {
+                    full = true;
+                    break;
+                }
+                if ci >= from {
+                    if let Some(width) = c.width() {
+                        if cols + width > cols_max {
+                            full = true;
+                            break;
+                        }
+                        run.push(c);
+                        cols += width;
+                    }
+                }
+                ci += 1;
+            }
+            if !run.is_empty() {
+                if ts.csi.is_empty() {
+                    write!(w, "{run}")?;
+                } else {
+                    write!(w, "{}{}{}", ts.csi, run, CSI_RESET)?;
+                }
+            }
+            if full {
+                break;
+            }
         }
         Ok(cols)
     }

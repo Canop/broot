@@ -167,6 +167,9 @@ pub struct Conf {
     #[serde(alias = "update-work-dir")]
     pub update_work_dir: Option<bool>,
 
+    #[serde(alias = "wrap-previews")]
+    pub wrap_previews: Option<bool>,
+
     #[serde(default)]
     pub verbs: Vec<VerbConf>,
 
@@ -263,6 +266,7 @@ impl Conf {
         overwrite!(self, terminal_title, conf);
         overwrite!(self, reset_terminal_title_on_exit, conf);
         overwrite!(self, update_work_dir, conf);
+        overwrite!(self, wrap_previews, conf);
         overwrite!(self, enable_kitty_keyboard, conf);
         overwrite!(self, kitty_graphics_transmission, conf);
         overwrite!(self, kitty_graphics_display, conf);

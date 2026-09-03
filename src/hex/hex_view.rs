@@ -64,10 +64,10 @@ impl HexView {
         self.scroll = cmd.apply(self.scroll, self.line_count(), self.page_height);
         self.scroll != old_scroll
     }
-    pub fn select_first(&mut self) {
+    pub fn go_to_top(&mut self) {
         self.scroll = 0;
     }
-    pub fn select_last(&mut self) {
+    pub fn go_to_bottom(&mut self) {
         if self.page_height < self.line_count() {
             self.scroll = self.line_count() - self.page_height;
         }

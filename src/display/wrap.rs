@@ -3,7 +3,28 @@
 use unicode_width::UnicodeWidthChar;
 
 /// Number of cells a tab takes in previews
-pub const TAB_WIDTH: usize = 2;
+pub const TAB_WIDTH: usize = 4;
+
+/// What to do with the part of a line not fitting the width of the view
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq)]
+pub enum Overflow {
+    /// long lines continue on following rows
+    #[default]
+    Wrap,
+    /// long lines are truncated
+    NoWrap,
+}
+impl Overflow {
+    pub fn toggle(&mut self) {
+        *self = match self {
+            Self::Wrap => Self::NoWrap,
+            Self::NoWrap => Self::Wrap,
+        };
+    }
+    pub fn from_wrap_bool(wrap: bool) -> Self {
+        if wrap { Self::Wrap } else { Self::NoWrap }
+    }
+}
 
 /// Width in cells of a char displayed in a preview: tabs are expanded,
 /// control chars (including end of line ones) take no room.
@@ -82,8 +103,8 @@ mod tests {
     #[test]
     fn tabs() {
         // a tab takes TAB_WIDTH cells
-        assert_eq!(row_starts("\tab".chars(), 4), Vec::<usize>::new());
-        assert_eq!(row_starts("\tabc".chars(), 4), vec![3]);
+        assert_eq!(row_starts("\tab".chars(), TAB_WIDTH + 2), Vec::<usize>::new());
+        assert_eq!(row_starts("\tabc".chars(), TAB_WIDTH + 2), vec![3]);
     }
 
     #[test]

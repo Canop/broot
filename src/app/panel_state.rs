@@ -283,6 +283,7 @@ pub trait PanelState {
                 }
             }
             Internal::open_preview => self.open_preview(None, false, cc),
+            Internal::preview_auto => self.open_preview(None, false, cc),
             Internal::preview_image => self.open_preview(Some(PreviewMode::Image), false, cc),
             Internal::preview_text => self.open_preview(Some(PreviewMode::Text), false, cc),
             Internal::preview_tty => self.open_preview(Some(PreviewMode::Tty), false, cc),

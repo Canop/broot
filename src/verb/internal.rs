@@ -107,6 +107,7 @@ Internals! {
     panel_right: "focus or open panel on right" false,
     panel_right_no_open: "either focus panel on right or close left one" false,
     parent: "move to the parent directory" false,
+    preview_auto: "preview the selection in the default mode" true,
     preview_binary: "preview the selection as binary" true,
     preview_diff: "preview the changes of the selection since the last commit" true,
     preview_image: "preview the selection as image" true,

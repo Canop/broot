@@ -1,5 +1,8 @@
 use {
-    crate::stage::Stage,
+    crate::{
+        display::Overflow,
+        stage::Stage,
+    },
     std::path::PathBuf,
 };
 
@@ -20,8 +23,8 @@ pub struct AppState {
     /// active one, if any
     pub other_panel_path: Option<PathBuf>,
 
-    /// Whether long lines are wrapped in previews
-    pub wrap_previews: bool,
+    /// How to deal with preview lines longer than the panel width
+    pub preview_overflow: Overflow,
 }
 
 impl AppState {
@@ -31,7 +34,7 @@ impl AppState {
             root: root.into(),
             watch_tree: false,
             other_panel_path: None,
-            wrap_previews: true,
+            preview_overflow: Overflow::Wrap,
         }
     }
 }

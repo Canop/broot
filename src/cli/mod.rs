@@ -41,6 +41,7 @@ use {
         event::{
             DisableMouseCapture,
             EnableMouseCapture,
+            PopKeyboardEnhancementFlags,
         },
         terminal::{
             EnterAlternateScreen,
@@ -178,6 +179,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     let mut w = display::writer();
     let app = App::new(&context)?;
+    install_panic_hook(context.capture_mouse);
     w.queue(EnterAlternateScreen)?;
     w.queue(cursor::Hide)?;
     if context.capture_mouse {
@@ -185,6 +187,11 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
     }
     let r = app.run(&mut w, &mut context, &config);
     w.flush()?;
+    if context.keyboard_enhanced {
+        // the event source pushed keyboard enhancement flags and
+        // doesn't pop them itself
+        w.queue(PopKeyboardEnhancementFlags)?;
+    }
     if context.capture_mouse {
         w.queue(DisableMouseCapture)?;
     }
@@ -201,6 +208,31 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 fn clear_resources() {
     info!("clearing resources");
     graphics::manager().lock().unwrap().delete_temp_files();
+}
+
+/// Install a panic hook which restores the terminal to a usable
+/// state before the panic message is printed
+fn install_panic_hook(capture_mouse: bool) {
+    let hook = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |panic_info| {
+        use crokey::crossterm::{
+            event::PopKeyboardEnhancementFlags,
+            terminal,
+        };
+        let mut w = std::io::stderr();
+        let _ = terminal::disable_raw_mode();
+        // popping when nothing was pushed is a no-op for terminals
+        // supporting the keyboard enhancement protocol, and ignored
+        // by the other ones
+        let _ = w.queue(PopKeyboardEnhancementFlags);
+        if capture_mouse {
+            let _ = w.queue(DisableMouseCapture);
+        }
+        let _ = w.queue(cursor::Show);
+        let _ = w.queue(LeaveAlternateScreen);
+        let _ = w.flush();
+        hook(panic_info);
+    }));
 }
 
 /// wait for user input, return `true` if they didn't answer 'n'

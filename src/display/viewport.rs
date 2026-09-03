@@ -1,4 +1,5 @@
 use {
+    super::wrap::Overflow,
     crate::command::{
         ScrollCommand,
         move_sel,
@@ -24,33 +25,14 @@ pub trait Rows {
         idx: usize,
         width: usize,
     ) -> usize;
-    /// Return an approximation of the width of the line, in cells,
-    /// used to estimate the scrollbar
+    /// Return a cheap approximation of the width of the line in cells,
+    /// used only to estimate the row count of lines which aren't laid
+    /// out, for the scrollbar. It doesn't have to be exact: scroll
+    /// positions are computed from real row counts.
     fn width_hint(
         &self,
         idx: usize,
     ) -> usize;
-}
-
-/// Lines which are never wrapped
-pub struct UnwrappedRows(pub usize);
-impl Rows for UnwrappedRows {
-    fn len(&self) -> usize {
-        self.0
-    }
-    fn row_count(
-        &self,
-        _idx: usize,
-        _width: usize,
-    ) -> usize {
-        1
-    }
-    fn width_hint(
-        &self,
-        _idx: usize,
-    ) -> usize {
-        1
-    }
 }
 
 /// Scroll and selection state of a view made of lines, some of them
@@ -63,10 +45,31 @@ pub struct Viewport {
     scroll: RowPos,
     page_height: usize,
     width: usize,
-    wrap: bool,
+    overflow: Overflow,
     selection: Option<usize>,
-    /// estimated total number of rows, with the (len, width) it was computed for
-    total_rows: Option<(usize, usize, usize)>,
+    total_rows: Option<TotalRowsEstimate>,
+}
+
+/// Estimated total number of rows of a view, valid only for the
+/// layout it was computed for
+#[derive(Debug, Clone, Copy)]
+struct TotalRowsEstimate {
+    /// number of lines of the view
+    len: usize,
+    /// wrapping width, in cells
+    width: usize,
+    /// estimated total number of rows
+    rows: usize,
+}
+
+impl TotalRowsEstimate {
+    fn is_for(
+        &self,
+        len: usize,
+        width: usize,
+    ) -> bool {
+        self.len == len && self.width == width
+    }
 }
 
 impl Viewport {
@@ -85,9 +88,6 @@ impl Viewport {
     ) -> bool {
         self.selection == Some(idx)
     }
-    pub fn unselect(&mut self) {
-        self.selection = None;
-    }
     /// Select the line and scroll if needed to make it visible
     pub fn select(
         &mut self,
@@ -103,16 +103,16 @@ impl Viewport {
         &mut self,
         page_height: usize,
         width: usize,
-        wrap: bool,
+        overflow: Overflow,
         rows: &impl Rows,
     ) {
         let width = width.max(1);
-        if page_height == self.page_height && width == self.width && wrap == self.wrap {
+        if page_height == self.page_height && width == self.width && overflow == self.overflow {
             return;
         }
         self.page_height = page_height;
         self.width = width;
-        self.wrap = wrap;
+        self.overflow = overflow;
         self.total_rows = None;
         self.scroll.sub = 0;
         self.ensure_selection_is_visible(rows);
@@ -123,7 +123,7 @@ impl Viewport {
         rows: &impl Rows,
         line: usize,
     ) -> usize {
-        if self.wrap && self.width > 0 {
+        if self.overflow == Overflow::Wrap && self.width > 0 {
             rows.row_count(line, self.width).max(1)
         } else {
             1
@@ -254,6 +254,17 @@ impl Viewport {
         }
         self.scroll = self.scroll.min(self.max_scroll(rows));
     }
+    /// Scroll to the top of the view
+    pub fn scroll_to_top(&mut self) {
+        self.scroll = RowPos::default();
+    }
+    /// Scroll to show the last row at the bottom of the page
+    pub fn scroll_to_bottom(
+        &mut self,
+        rows: &impl Rows,
+    ) {
+        self.scroll = self.max_scroll(rows);
+    }
     /// Select the line displayed at the given y in the page, if any
     pub fn try_select_y(
         &mut self,
@@ -333,7 +344,7 @@ impl Viewport {
                 }
             }
         }
-        true
+        self.scroll != old_scroll
     }
     /// Return the positions of the rows of the page, from top to bottom
     pub fn visible_rows(
@@ -359,17 +370,17 @@ impl Viewport {
         rows: &impl Rows,
     ) -> Option<(u16, u16)> {
         let len = rows.len();
-        if !self.wrap || self.width == 0 {
+        if self.overflow == Overflow::NoWrap || self.width == 0 {
             return area.scrollbar(self.scroll.line, len);
         }
         let width = self.width;
         let estimate = |line: usize| rows.width_hint(line).max(1).div_ceil(width);
         let total = match self.total_rows {
-            Some((l, w, total)) if l == len && w == width => total,
+            Some(tre) if tre.is_for(len, width) => tre.rows,
             _ => {
-                let total = (0..len).map(estimate).sum();
-                self.total_rows = Some((len, width, total));
-                total
+                let rows = (0..len).map(estimate).sum();
+                self.total_rows = Some(TotalRowsEstimate { len, width, rows });
+                rows
             }
         };
         let current = (0..self.scroll.line).map(estimate).sum::<usize>() + self.scroll.sub;
@@ -392,6 +403,27 @@ pub fn is_thumb(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// lines which are never wrapped
+    struct UnwrappedRows(usize);
+    impl Rows for UnwrappedRows {
+        fn len(&self) -> usize {
+            self.0
+        }
+        fn row_count(
+            &self,
+            _idx: usize,
+            _width: usize,
+        ) -> usize {
+            1
+        }
+        fn width_hint(
+            &self,
+            _idx: usize,
+        ) -> usize {
+            1
+        }
+    }
 
     /// lines given by their width in cells
     struct Widths(Vec<usize>);
@@ -424,7 +456,7 @@ mod tests {
     fn unwrapped_selection_stays_visible() {
         let rows = UnwrappedRows(100);
         let mut vp = Viewport::default();
-        vp.set_layout(10, 80, false, &rows);
+        vp.set_layout(10, 80, Overflow::NoWrap, &rows);
         vp.select_first(&rows);
         assert_eq!(vp.selection(), Some(0));
         assert_eq!(vp.scroll(), pos(0, 0));
@@ -445,7 +477,7 @@ mod tests {
     fn unwrapped_scroll_moves_visible_selection() {
         let rows = UnwrappedRows(100);
         let mut vp = Viewport::default();
-        vp.set_layout(10, 80, false, &rows);
+        vp.set_layout(10, 80, Overflow::NoWrap, &rows);
         vp.select_first(&rows);
         assert!(vp.try_scroll(ScrollCommand::Lines(3), &rows));
         assert_eq!(vp.scroll(), pos(3, 0));
@@ -473,7 +505,7 @@ mod tests {
     fn empty_view() {
         let rows = UnwrappedRows(0);
         let mut vp = Viewport::default();
-        vp.set_layout(10, 80, true, &rows);
+        vp.set_layout(10, 80, Overflow::Wrap, &rows);
         vp.select_first(&rows);
         vp.select_last(&rows);
         vp.move_selection(1, true, &rows);
@@ -487,7 +519,7 @@ mod tests {
         // rows: 1, 3, 1, 2, 1
         let rows = Widths(vec![5, 25, 5, 15, 5]);
         let mut vp = Viewport::default();
-        vp.set_layout(3, 10, true, &rows);
+        vp.set_layout(3, 10, Overflow::Wrap, &rows);
         vp.select_first(&rows);
         assert_eq!(
             vp.visible_rows(&rows),
@@ -525,7 +557,7 @@ mod tests {
     fn line_taller_than_page_shows_its_start() {
         let rows = Widths(vec![5, 100, 5]);
         let mut vp = Viewport::default();
-        vp.set_layout(3, 10, true, &rows);
+        vp.set_layout(3, 10, Overflow::Wrap, &rows);
         vp.select_first(&rows);
         vp.move_selection(1, false, &rows);
         assert_eq!(vp.scroll(), pos(1, 0));
@@ -537,12 +569,12 @@ mod tests {
     fn layout_change_keeps_selection_visible() {
         let rows = Widths(vec![5, 25, 5, 15, 5]);
         let mut vp = Viewport::default();
-        vp.set_layout(3, 10, false, &rows);
+        vp.set_layout(3, 10, Overflow::NoWrap, &rows);
         vp.select(4, &rows);
         assert_eq!(vp.scroll(), pos(2, 0));
-        vp.set_layout(3, 10, true, &rows);
+        vp.set_layout(3, 10, Overflow::Wrap, &rows);
         assert_eq!(vp.scroll(), pos(3, 0));
-        vp.set_layout(3, 10, false, &rows);
+        vp.set_layout(3, 10, Overflow::NoWrap, &rows);
         assert_eq!(vp.scroll(), pos(2, 0));
     }
 }
