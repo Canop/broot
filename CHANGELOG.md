@@ -18,7 +18,7 @@ A unified diff preview is now the default preview of a file with a git change (m
 - alt-g toggles the git status filter (`:toggle_git_status`). Status line suggests using it in git repo.
 - `-gg` shows only the files with a git status (same as `--git-status`), `-G` removes one level of git information
 - the Kitty keyboard protocol is now used by default when the terminal supports it, which notably makes `alt` combinations work on macOS terminals; multi-key combinations without modifier still need `enable_kitty_keyboard: true` - I'll watch this as this may have unwanted effects, like time related difficulty for some combinations - feedback welcome
-### Other Changes
+#### Other Changes
 - fix panic when previewing an image with 16 bits per channel, or HDR - Fix #1209
 - alt-arrows are bound like ctrl-arrows (panels, root up/down), as macOS captures ctrl-arrows; hints and help show the alt ones on macOS
 - arrow keys scroll the tty preview
