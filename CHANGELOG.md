@@ -1,4 +1,5 @@
-### next
+<a name="v1.60.0"></a>
+### v1.60.0 - 2026-09-05
 #### Major Feature: preview wrapping
 By default, long lines in preview are now wrapped.
 This impacts text previews, with or without syntactic coloring, unified diffs, and TTY previews
