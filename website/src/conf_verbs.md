@@ -501,6 +501,7 @@ invocation | default key | default shortcut | behavior / details
 :panel_right | <kbd>ctrl</kbd><kbd>→</kbd> or <kbd>alt</kbd><kbd>→</kbd> | - | move to or open a panel to the right
 :panel_right_no_open | -  | - | move to panel to the right
 :parent | - | - | focus the parent directory
+:preview_auto | - | - | preview the selection in the default mode
 :preview_binary | - | - | preview the selection as binary
 :preview_diff | - | - | preview the changes of the selection since the last commit
 :preview_image | - | - | preview the selection as image
@@ -543,6 +544,7 @@ invocation | default key | default shortcut | behavior / details
 :toggle_ignore | - | - | toggle display of files in .gitignore and .ignore
 :toggle_perm | - | - | toggle display of permissions (not available on Windows)
 :toggle_preview | - | - | toggle display of the preview panel
+:toggle_preview_wrap | - | wrap | toggle line wrapping in previews
 :toggle_root_fs | - | - | toggle showing filesystem info on top
 :toggle_watch | - | - | toggle watching for changes and keeping the tree up to date
 :set_max_depth | - | - | set the maximum directory depth shown

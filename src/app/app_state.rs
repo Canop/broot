@@ -1,5 +1,8 @@
 use {
-    crate::stage::Stage,
+    crate::{
+        display::Overflow,
+        stage::Stage,
+    },
     std::path::PathBuf,
 };
 
@@ -19,6 +22,9 @@ pub struct AppState {
     /// the selected path in another panel than the currently
     /// active one, if any
     pub other_panel_path: Option<PathBuf>,
+
+    /// How to deal with preview lines longer than the panel width
+    pub preview_overflow: Overflow,
 }
 
 impl AppState {
@@ -28,6 +34,7 @@ impl AppState {
             root: root.into(),
             watch_tree: false,
             other_panel_path: None,
+            preview_overflow: Overflow::Wrap,
         }
     }
 }

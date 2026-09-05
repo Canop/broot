@@ -1,13 +1,15 @@
 use {
     super::*,
     crate::{
-        command::{
-            ScrollCommand,
-            move_sel,
-        },
+        command::ScrollCommand,
         display::{
+            Overflow,
+            Rows,
             Screen,
+            Viewport,
             W,
+            is_thumb,
+            row_starts,
         },
         errors::*,
         skin::PanelSkin,
@@ -41,10 +43,36 @@ use {
 pub struct TtyView {
     pub path: PathBuf,
     lines: Vec<TLine>,
-    scroll: usize,
-    page_height: usize,
-    selection_idx: Option<usize>, // index in lines of the selection, if any
+    viewport: Viewport,
     total_lines_count: usize,
+}
+
+/// The lines of a tty view, for layout by the viewport
+struct TtyRows<'v> {
+    lines: &'v [TLine],
+}
+impl Rows for TtyRows<'_> {
+    fn len(&self) -> usize {
+        self.lines.len()
+    }
+    fn row_count(
+        &self,
+        idx: usize,
+        width: usize,
+    ) -> usize {
+        crate::display::row_count(
+            self.lines[idx].strings.iter().flat_map(|ts| ts.raw.chars()),
+            width,
+        )
+    }
+    fn width_hint(
+        &self,
+        idx: usize,
+    ) -> usize {
+        // the length in bytes overestimates the width in cells,
+        // exactly for ASCII
+        self.lines[idx].strings.iter().map(|ts| ts.raw.len()).sum()
+    }
 }
 
 impl TtyView {
@@ -52,13 +80,10 @@ impl TtyView {
         let mut sv = Self {
             path: path.to_path_buf(),
             lines: Vec::new(),
-            scroll: 0,
-            page_height: 0,
-            selection_idx: None,
+            viewport: Viewport::default(),
             total_lines_count: 0,
         };
         sv.read_lines()?;
-        sv.select_first();
         Ok(sv)
     }
 
@@ -89,97 +114,20 @@ impl TtyView {
         Ok(())
     }
 
-    fn ensure_selection_is_visible(&mut self) {
-        if self.page_height >= self.lines.len() {
-            self.scroll = 0;
-        } else if let Some(idx) = self.selection_idx {
-            let padding = self.padding();
-            if idx < self.scroll + padding || idx + padding > self.scroll + self.page_height {
-                if idx <= padding {
-                    self.scroll = 0;
-                } else if idx + padding > self.lines.len() {
-                    self.scroll = self.lines.len() - self.page_height;
-                } else if idx < self.scroll + self.page_height / 2 {
-                    self.scroll = idx - padding;
-                } else {
-                    self.scroll = idx + padding - self.page_height;
-                }
-            }
-        }
+    pub fn go_to_top(&mut self) {
+        self.viewport.scroll_to_top();
     }
-
-    fn padding(&self) -> usize {
-        (self.page_height / 4).min(4)
-    }
-
-    pub fn unselect(&mut self) {
-        self.selection_idx = None;
-    }
-    pub fn try_select_y(
-        &mut self,
-        y: u16,
-    ) -> bool {
-        let idx = y as usize + self.scroll;
-        if idx < self.lines.len() {
-            self.selection_idx = Some(idx);
-            true
-        } else {
-            false
-        }
-    }
-
-    pub fn select_first(&mut self) {
-        if !self.lines.is_empty() {
-            self.selection_idx = Some(0);
-            self.scroll = 0;
-        }
-    }
-    pub fn select_last(&mut self) {
-        self.selection_idx = Some(self.lines.len() - 1);
-        if self.page_height < self.lines.len() {
-            self.scroll = self.lines.len() - self.page_height;
-        }
-    }
-
-    pub fn move_selection(
-        &mut self,
-        dy: i32,
-        cycle: bool,
-    ) {
-        if let Some(idx) = self.selection_idx {
-            self.selection_idx = Some(move_sel(idx, self.lines.len(), dy, cycle));
-        } else if !self.lines.is_empty() {
-            self.selection_idx = Some(0)
-        }
-        self.ensure_selection_is_visible();
+    pub fn go_to_bottom(&mut self) {
+        let rows = TtyRows { lines: &self.lines };
+        self.viewport.scroll_to_bottom(&rows);
     }
 
     pub fn try_scroll(
         &mut self,
         cmd: ScrollCommand,
     ) -> bool {
-        let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.lines.len(), self.page_height);
-        if let Some(idx) = self.selection_idx {
-            if self.scroll == old_scroll {
-                let old_selection = self.selection_idx;
-                if cmd.is_up() {
-                    self.selection_idx = Some(0);
-                } else {
-                    self.selection_idx = Some(self.lines.len() - 1);
-                }
-                return self.selection_idx == old_selection;
-            } else if idx >= old_scroll && idx < old_scroll + self.page_height {
-                if idx + self.scroll < old_scroll {
-                    self.selection_idx = Some(0);
-                } else if idx + self.scroll - old_scroll >= self.lines.len() {
-                    self.selection_idx = Some(self.lines.len() - 1);
-                } else {
-                    self.selection_idx = Some(idx + self.scroll - old_scroll);
-                }
-            }
-        }
-        self.scroll != old_scroll
+        let rows = TtyRows { lines: &self.lines };
+        self.viewport.try_scroll(cmd, &rows)
     }
 
     pub fn display(
@@ -188,32 +136,45 @@ impl TtyView {
         _screen: Screen,
         panel_skin: &PanelSkin,
         area: &Area,
+        overflow: Overflow,
     ) -> Result<(), ProgramError> {
-        if area.height as usize != self.page_height {
-            self.page_height = area.height as usize;
-            self.ensure_selection_is_visible();
-        }
-        let line_count = area.height as usize;
+        let rows = TtyRows { lines: &self.lines };
+        let content_width = area.width as usize - 1; // 1 char left for scrollbar
+        self.viewport
+            .set_layout(area.height as usize, content_width, overflow, &rows);
+        let positions = self.viewport.visible_rows(&rows);
         let styles = &panel_skin.styles;
         let bg = styles
             .preview
             .get_bg()
             .or_else(|| styles.default.get_bg())
-            .unwrap_or(Color::AnsiValue(238));
-        let content_width = area.width as usize - 1; // 1 char left for scrollbar
-        let scrollbar = area.scrollbar(self.scroll, self.lines.len());
+            .unwrap_or(Color::Reset);
+        let scrollbar = self.viewport.scrollbar(area, &rows);
         let scrollbar_fg = styles
             .scrollbar_thumb
             .get_fg()
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
-        for y in 0..line_count {
-            let line_idx = self.scroll + y;
+        // row starts of the line being drawn, computed once per line
+        let mut laid_out: Option<(usize, Vec<usize>)> = None;
+        for y in 0..area.height as usize {
             let mut allowed = content_width;
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
-            if let Some(tline) = self.lines.get(line_idx) {
+            if let Some(&pos) = positions.get(y) {
+                let tline = &self.lines[pos.line];
                 w.queue(SetBackgroundColor(bg))?;
-                allowed -= tline.draw_in(w, allowed)?;
+                allowed -= if overflow == Overflow::Wrap {
+                    if laid_out.as_ref().is_none_or(|(idx, _)| *idx != pos.line) {
+                        let chars = tline.strings.iter().flat_map(|ts| ts.raw.chars());
+                        laid_out = Some((pos.line, row_starts(chars, content_width)));
+                    }
+                    let starts = &laid_out.as_ref().unwrap().1;
+                    let from = if pos.sub == 0 { 0 } else { starts[pos.sub - 1] };
+                    let to = starts.get(pos.sub).copied().unwrap_or(usize::MAX);
+                    tline.draw_range_in(w, allowed, from, to)?
+                } else {
+                    tline.draw_in(w, allowed)?
+                };
             }
             w.queue(SetBackgroundColor(bg))?;
             for _ in 0..allowed {
@@ -253,12 +214,30 @@ impl TtyView {
     }
 }
 
-fn is_thumb(
-    y: usize,
-    scrollbar: Option<(u16, u16)>,
-) -> bool {
-    scrollbar.is_some_and(|(sctop, scbottom)| {
-        let y = y as u16;
-        sctop <= y && y <= scbottom
-    })
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn tty_row_counts() {
+        let mut lines = Vec::new();
+        let mut l = TLine::default();
+        l.add_tstring("\u{1b}[31m", "abcde");
+        l.add_tstring("\u{1b}[32m", "fghij");
+        lines.push(l); // 10 cells
+        let mut l = TLine::default();
+        l.add_tstring("\u{1b}[36m", "日本");
+        l.add_tstring("\u{1b}[35m", "語間");
+        lines.push(l); // 4 wide chars, 8 cells
+        let rows = TtyRows { lines: &lines };
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows.row_count(0, 10), 1);
+        assert_eq!(rows.row_count(0, 5), 2);
+        assert_eq!(rows.row_count(0, 4), 3);
+        // a wide char doesn't straddle rows: 5 cells hold only 2 wide chars
+        assert_eq!(rows.row_count(1, 8), 1);
+        assert_eq!(rows.row_count(1, 5), 2);
+        assert_eq!(rows.row_count(1, 3), 4);
+        assert_eq!(rows.width_hint(0), 10);
+    }
 }

@@ -62,6 +62,12 @@
 show_selection_mark: true
 
 ###############################################################
+# Whether to wrap long lines in previews. Default is true;
+# you can toggle wrapping at runtime with the :wrap verb.
+#
+# wrap_previews: false
+
+###############################################################
 # Column order
 # cols_order, if specified, must be a permutation of the following
 # array. You should keep the name column at the end as it has a

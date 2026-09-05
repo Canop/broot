@@ -118,6 +118,23 @@ impl PreviewState {
             Err(e) => CmdResult::DisplayError(format!("Can't display as {mode:?} : {e:?}")),
         })
     }
+    /// Go back to automatically choosing the preview mode
+    fn set_auto_mode(
+        &mut self,
+        con: &AppContext,
+    ) -> CmdResult {
+        if self.preferred_mode.is_none() {
+            return CmdResult::Keep;
+        }
+        self.preferred_mode = None;
+        self.transform = con.preview_transformers.transform(&self.source_path, None);
+        self.preview = match &self.transform {
+            // the git status doesn't apply to the transformed file
+            Some(transform) => Preview::new(&transform.output_path, None, None, con),
+            None => Preview::new(&self.source_path, self.source_git_status, None, con),
+        };
+        CmdResult::Keep
+    }
 
     fn no_opt_selection(&self) -> Selection<'_> {
         match self.transform.as_ref() {
@@ -495,6 +512,7 @@ impl PanelState for PreviewState {
                 self.mut_preview().next_match();
                 Ok(CmdResult::Keep)
             }
+            Internal::preview_auto => Ok(self.set_auto_mode(con)),
             Internal::preview_image => self.set_mode(PreviewMode::Image, con),
             Internal::preview_text => self.set_mode(PreviewMode::Text, con),
             Internal::preview_tty => self.set_mode(PreviewMode::Tty, con),

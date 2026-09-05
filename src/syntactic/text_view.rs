@@ -5,13 +5,16 @@ use {
             AppContext,
             LineNumber,
         },
-        command::{
-            ScrollCommand,
-            move_sel,
-        },
+        command::ScrollCommand,
         display::{
+            Overflow,
+            Rows,
             Screen,
+            TAB_WIDTH,
+            Viewport,
             W,
+            is_thumb,
+            row_starts,
         },
         errors::*,
         pattern::{
@@ -58,7 +61,7 @@ use {
 pub static SEPARATOR_FILLING: Lazy<Filling> = Lazy::new(|| Filling::from_char('─'));
 
 /// Homogeneously colored piece of a line
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Region {
     pub fg: Color,
     pub string: String,
@@ -107,9 +110,9 @@ pub struct TextView {
     pub path: PathBuf,
     pub pattern: InputPattern,
     lines: Vec<DisplayLine>,
-    scroll: usize,
-    page_height: usize,
-    selection_idx: Option<usize>, // index in lines of the selection, if any
+    /// the file, when lines aren't kept in memory
+    mmap: Option<Mmap>,
+    viewport: Viewport,
     content_lines_count: usize,   // number of lines excluding separators
     total_lines_count: usize,     // including lines not filtered out
     partial: bool,
@@ -130,6 +133,57 @@ impl DisplayLine {
     }
 }
 
+/// The lines of a text view, for layout by the viewport
+struct TextRows<'v> {
+    lines: &'v [DisplayLine],
+    mmap: Option<&'v Mmap>,
+}
+impl TextRows<'_> {
+    /// Return the content of a line not kept in memory
+    fn read(
+        &self,
+        line: &Line,
+    ) -> Option<String> {
+        self.mmap
+            .and_then(|mmap| mmap.get(line.start..line.start + line.len))
+            // we copy the slice, as the file may change
+            .and_then(|bytes| String::from_utf8(bytes.to_vec()).ok())
+            .map(|s| printable_line(&s).into_owned())
+    }
+}
+impl Rows for TextRows<'_> {
+    fn len(&self) -> usize {
+        self.lines.len()
+    }
+    fn row_count(
+        &self,
+        idx: usize,
+        width: usize,
+    ) -> usize {
+        match &self.lines[idx] {
+            DisplayLine::Separator => 1,
+            DisplayLine::Content(line) if !line.regions.is_empty() => crate::display::row_count(
+                line.regions.iter().flat_map(|r| r.string.chars()),
+                width,
+            ),
+            DisplayLine::Content(line) => self
+                .read(line)
+                .map_or(1, |s| crate::display::row_count(s.chars(), width)),
+        }
+    }
+    fn width_hint(
+        &self,
+        idx: usize,
+    ) -> usize {
+        match &self.lines[idx] {
+            DisplayLine::Separator => 1,
+            // the length in bytes overestimates the width in cells,
+            // exactly for ASCII, without reading the line
+            DisplayLine::Content(line) => line.len,
+        }
+    }
+}
+
 impl TextView {
     /// Return a prepared text view with syntax coloring if possible.
     /// May return Ok(None) only when a pattern is given and there
@@ -146,15 +200,17 @@ impl TextView {
             path: path.to_path_buf(),
             pattern,
             lines: Vec::new(),
-            scroll: 0,
-            page_height: 0,
-            selection_idx: None,
+            mmap: None,
+            viewport: Viewport::default(),
             content_lines_count: 0,
             total_lines_count: 0,
             partial: false,
         };
         if sv.read_lines(dam, con, no_style, allow_partial)? {
-            sv.select_first();
+            sv.viewport.select_first(&TextRows {
+                lines: &sv.lines,
+                mmap: sv.mmap.as_ref(),
+            });
             Ok(Some(sv))
         } else {
             Ok(None)
@@ -186,14 +242,9 @@ impl TextView {
         initial_load: bool,
     ) -> Result<bool, ProgramError> {
         let f = File::open(&self.path)?;
-        {
-            // if we detect the file isn't mappable, we'll
-            // let the ZeroLenFilePreview try to read it
-            let mmap = unsafe { Mmap::map(&f) };
-            if mmap.is_err() {
-                return Err(ProgramError::UnmappableFile);
-            }
-        }
+        // if we detect the file isn't mappable, we'll
+        // let the ZeroLenFilePreview try to read it
+        let mmap = unsafe { Mmap::map(&f) }.map_err(|_| ProgramError::UnmappableFile)?;
         let md = f.metadata()?;
         if md.len() == 0 {
             return Err(ProgramError::ZeroLenFile);
@@ -211,6 +262,8 @@ impl TextView {
         } else {
             None
         };
+        // lines are read back from the file when they aren't stored styled
+        self.mmap = if highlighter.is_some() { None } else { Some(mmap) };
         let pattern = &self.pattern.pattern;
         while reader.read_line(&mut line)? > 0 {
             number += 1;
@@ -238,7 +291,7 @@ impl TextView {
             content_lines.push(Line {
                 regions,
                 start,
-                len: clean_line.len(),
+                len: line.len(),
                 name_match,
                 number,
             });
@@ -301,78 +354,59 @@ impl TextView {
         (self.lines.len(), self.total_lines_count)
     }
 
-    fn ensure_selection_is_visible(&mut self) {
-        if self.page_height >= self.lines.len() {
-            self.scroll = 0;
-        } else if let Some(idx) = self.selection_idx {
-            let padding = self.padding();
-            if idx < self.scroll + padding || idx + padding > self.scroll + self.page_height {
-                if idx <= padding {
-                    self.scroll = 0;
-                } else if idx + padding > self.lines.len() {
-                    self.scroll = self.lines.len() - self.page_height;
-                } else if idx < self.scroll + self.page_height / 2 {
-                    self.scroll = idx - padding;
-                } else {
-                    self.scroll = idx + padding - self.page_height;
-                }
-            }
-        }
-    }
-
-    fn padding(&self) -> usize {
-        (self.page_height / 4).min(4)
-    }
-
     pub fn get_selected_line(&self) -> Option<String> {
-        self.selection_idx
+        self.viewport
+            .selection()
             .and_then(|idx| self.lines.get(idx))
             .and_then(|line| match line {
                 DisplayLine::Content(line) => Some(line),
                 DisplayLine::Separator => None,
             })
             .and_then(|line| {
-                File::open(&self.path)
-                    .and_then(|file| unsafe { Mmap::map(&file) })
-                    .ok()
-                    .filter(|mmap| mmap.len() >= line.start + line.len)
-                    .and_then(|mmap| {
-                        String::from_utf8((mmap[line.start..line.start + line.len]).to_vec()).ok()
-                    })
+                let mapped;
+                let mmap = match &self.mmap {
+                    Some(mmap) => mmap,
+                    None => {
+                        mapped = File::open(&self.path)
+                            .and_then(|file| unsafe { Mmap::map(&file) })
+                            .ok()?;
+                        &mapped
+                    }
+                };
+                TextRows {
+                    lines: &self.lines,
+                    mmap: Some(mmap),
+                }
+                .read(line)
             })
     }
 
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {
-        self.selection_idx
+        self.viewport
+            .selection()
             .and_then(|idx| self.lines[idx].line_number())
-    }
-    pub fn unselect(&mut self) {
-        self.selection_idx = None;
     }
     pub fn try_select_y(
         &mut self,
         y: u16,
     ) -> bool {
-        let idx = y as usize + self.scroll;
-        if idx < self.lines.len() {
-            self.selection_idx = Some(idx);
-            true
-        } else {
-            false
-        }
+        self.viewport.try_select_y(y, &TextRows {
+            lines: &self.lines,
+            mmap: self.mmap.as_ref(),
+        })
     }
 
     pub fn select_first(&mut self) {
-        if !self.lines.is_empty() {
-            self.selection_idx = Some(0);
-            self.scroll = 0;
-        }
+        self.viewport.select_first(&TextRows {
+            lines: &self.lines,
+            mmap: self.mmap.as_ref(),
+        });
     }
     pub fn select_last(&mut self) {
-        self.selection_idx = Some(self.lines.len() - 1);
-        if self.page_height < self.lines.len() {
-            self.scroll = self.lines.len() - self.page_height;
-        }
+        self.viewport.select_last(&TextRows {
+            lines: &self.lines,
+            mmap: self.mmap.as_ref(),
+        });
     }
 
     pub fn try_select_line_number(
@@ -382,8 +416,11 @@ impl TextView {
         // this could obviously be optimized
         for (idx, line) in self.lines.iter().enumerate() {
             if line.line_number() == Some(number) {
-                self.selection_idx = Some(idx);
-                self.ensure_selection_is_visible();
+                let rows = TextRows {
+                    lines: &self.lines,
+                    mmap: self.mmap.as_ref(),
+                };
+                self.viewport.select(idx, &rows);
                 return true;
             }
         }
@@ -395,32 +432,36 @@ impl TextView {
         dy: i32,
         cycle: bool,
     ) {
-        if let Some(idx) = self.selection_idx {
-            self.selection_idx = Some(move_sel(idx, self.lines.len(), dy, cycle));
-        } else if !self.lines.is_empty() {
-            self.selection_idx = Some(0)
-        }
-        self.ensure_selection_is_visible();
+        self.viewport.move_selection(dy, cycle, &TextRows {
+            lines: &self.lines,
+            mmap: self.mmap.as_ref(),
+        });
     }
 
     pub fn previous_match(&mut self) {
-        let s = self.selection_idx.unwrap_or(0);
+        let s = self.viewport.selection().unwrap_or(0);
         for d in 1..self.lines.len() {
             let idx = (self.lines.len() + s - d) % self.lines.len();
             if self.lines[idx].is_match() {
-                self.selection_idx = Some(idx);
-                self.ensure_selection_is_visible();
+                let rows = TextRows {
+                    lines: &self.lines,
+                    mmap: self.mmap.as_ref(),
+                };
+                self.viewport.select(idx, &rows);
                 return;
             }
         }
     }
     pub fn next_match(&mut self) {
-        let s = self.selection_idx.unwrap_or(0);
+        let s = self.viewport.selection().unwrap_or(0);
         for d in 1..self.lines.len() {
             let idx = (s + d) % self.lines.len();
             if self.lines[idx].is_match() {
-                self.selection_idx = Some(idx);
-                self.ensure_selection_is_visible();
+                let rows = TextRows {
+                    lines: &self.lines,
+                    mmap: self.mmap.as_ref(),
+                };
+                self.viewport.select(idx, &rows);
                 return;
             }
         }
@@ -430,28 +471,10 @@ impl TextView {
         &mut self,
         cmd: ScrollCommand,
     ) -> bool {
-        let old_scroll = self.scroll;
-        self.scroll = cmd.apply(self.scroll, self.lines.len(), self.page_height);
-        if let Some(idx) = self.selection_idx {
-            if self.scroll == old_scroll {
-                let old_selection = self.selection_idx;
-                if cmd.is_up() {
-                    self.selection_idx = Some(0);
-                } else {
-                    self.selection_idx = Some(self.lines.len() - 1);
-                }
-                return self.selection_idx == old_selection;
-            } else if idx >= old_scroll && idx < old_scroll + self.page_height {
-                if idx + self.scroll < old_scroll {
-                    self.selection_idx = Some(0);
-                } else if idx + self.scroll - old_scroll >= self.lines.len() {
-                    self.selection_idx = Some(self.lines.len() - 1);
-                } else {
-                    self.selection_idx = Some(idx + self.scroll - old_scroll);
-                }
-            }
-        }
-        self.scroll != old_scroll
+        self.viewport.try_scroll(cmd, &TextRows {
+            lines: &self.lines,
+            mmap: self.mmap.as_ref(),
+        })
     }
 
     pub fn max_line_number(&self) -> Option<LineNumber> {
@@ -480,14 +503,22 @@ impl TextView {
         panel_skin: &PanelSkin,
         area: &Area,
         con: &AppContext,
+        overflow: Overflow,
     ) -> Result<(), ProgramError> {
-        if area.height as usize != self.page_height {
-            self.page_height = area.height as usize;
-            self.ensure_selection_is_visible();
-        }
+        let rows = TextRows {
+            lines: &self.lines,
+            mmap: self.mmap.as_ref(),
+        };
         let max_number_len = self.max_line_number().unwrap_or(0).to_string().len();
         let show_line_number = area.width > 55 || (self.pattern.is_some() && area.width > 8);
-        let line_count = area.height as usize;
+        let code_width = area.width as usize - 1; // 1 char left for scrollbar
+        let gutter_width = if show_line_number { max_number_len + 2 } else { 1 }
+            + usize::from(con.show_selection_mark);
+        let text_width = code_width.saturating_sub(gutter_width).max(1);
+        self.viewport
+            .set_layout(area.height as usize, text_width, overflow, &rows);
+        let positions = self.viewport.visible_rows(&rows);
+        let scrollbar = self.viewport.scrollbar(area, &rows);
         let styles = &panel_skin.styles;
         let normal_fg = styles
             .preview
@@ -507,97 +538,125 @@ impl TextView {
             .preview_match
             .get_bg()
             .unwrap_or(Color::AnsiValue(28));
-        let code_width = area.width as usize - 1; // 1 char left for scrollbar
-        let scrollbar = area.scrollbar(self.scroll, self.lines.len());
         let scrollbar_fg = styles
             .scrollbar_thumb
             .get_fg()
             .or_else(|| styles.preview.get_fg())
             .unwrap_or(Color::White);
-        for y in 0..line_count {
+        // regions and row starts of the line being drawn, computed once per line
+        let mut laid_out: Option<(usize, Cow<'_, [Region]>, Vec<usize>)> = None;
+        for y in 0..area.height as usize {
             w.queue(cursor::MoveTo(area.left, y as u16 + area.top))?;
             let mut cw = CropWriter::new(w, code_width);
-            let line_idx = self.scroll + y;
-            let selected = self.selection_idx == Some(line_idx);
+            let Some(&pos) = positions.get(y) else {
+                cw.fill(&styles.preview, &SPACE_FILLING)?;
+                w.queue(SetBackgroundColor(normal_bg))?;
+                w.queue(Print(' '))?;
+                continue;
+            };
+            let selected = self.viewport.is_selected(pos.line);
             let bg = if selected { selection_bg } else { normal_bg };
-            let mut op_mmap: Option<Mmap> = None;
-            match self.lines.get(line_idx) {
-                Some(DisplayLine::Separator) => {
+            match &self.lines[pos.line] {
+                DisplayLine::Separator => {
                     cw.w.queue(SetBackgroundColor(bg))?;
                     cw.queue_unstyled_str(" ")?;
                     cw.fill(&styles.preview_separator, &SEPARATOR_FILLING)?;
                 }
-                Some(DisplayLine::Content(line)) => {
-                    let mut regions = &line.regions;
-                    let regions_ur;
-                    if regions.is_empty() && line.len > 0 {
-                        if op_mmap.is_none() {
-                            let file = File::open(&self.path)?;
-                            let mmap = unsafe { Mmap::map(&file)? };
-                            op_mmap = Some(mmap);
-                        }
-                        if op_mmap.as_ref().unwrap().len() < line.start + line.len {
-                            warn!("file truncated since parsing");
+                DisplayLine::Content(line) => {
+                    if laid_out.as_ref().is_none_or(|(idx, _, _)| *idx != pos.line) {
+                        let regions = if line.regions.is_empty() && line.len > 0 {
+                            match rows.read(line) {
+                                Some(string) => Cow::Owned(vec![Region {
+                                    fg: normal_fg,
+                                    string,
+                                }]),
+                                None => {
+                                    warn!("file truncated since parsing");
+                                    Cow::Owned(Vec::new())
+                                }
+                            }
                         } else {
-                            // an UTF8 error can only happen if file modified during display
-                            let string = String::from_utf8(
-                                // we copy the memmap slice, as it's not immutable
-                                (op_mmap.unwrap()[line.start..line.start + line.len]).to_vec(),
-                            )
-                            .unwrap_or_else(|_| "Bad UTF8".to_string());
-                            regions_ur = vec![Region {
-                                fg: normal_fg,
-                                string,
-                            }];
-                            regions = &regions_ur;
-                        }
+                            Cow::Borrowed(line.regions.as_slice())
+                        };
+                        let starts = if overflow == Overflow::Wrap {
+                            row_starts(regions.iter().flat_map(|r| r.string.chars()), text_width)
+                        } else {
+                            Vec::new()
+                        };
+                        laid_out = Some((pos.line, regions, starts));
                     }
+                    let (_, regions, starts) = laid_out.as_ref().unwrap();
+                    let regions: &[Region] = regions;
                     cw.w.queue(SetBackgroundColor(bg))?;
                     if show_line_number {
-                        cw.queue_g_string(
-                            &styles.preview_line_number,
-                            format!(" {:w$} ", line.number, w = max_number_len),
-                        )?;
+                        if pos.sub == 0 {
+                            cw.queue_g_string(
+                                &styles.preview_line_number,
+                                format!(" {:w$} ", line.number, w = max_number_len),
+                            )?;
+                        } else {
+                            cw.queue_g_string(
+                                &styles.preview_line_number,
+                                " ".repeat(max_number_len + 2),
+                            )?;
+                        }
                     } else {
                         cw.queue_unstyled_str(" ")?;
                     }
                     cw.w.queue(SetBackgroundColor(bg))?;
                     if con.show_selection_mark {
-                        cw.queue_unstyled_char(if selected { '▶' } else { ' ' })?;
+                        cw.queue_unstyled_char(if selected && pos.sub == 0 { '▶' } else { ' ' })?;
                     }
-                    if let Some(nm) = &line.name_match {
-                        let mut dec = 0;
-                        let pos = &nm.pos;
-                        let mut pos_idx: usize = 0;
-                        for content in regions {
-                            let s = content.string.trim_end_matches(is_char_end_of_line);
-                            cw.w.queue(SetForegroundColor(content.fg))?;
-                            if pos_idx < pos.len() {
-                                for (cand_idx, cand_char) in s.chars().enumerate() {
-                                    if pos_idx < pos.len() && pos[pos_idx] == cand_idx + dec {
-                                        cw.w.queue(SetBackgroundColor(match_bg))?;
-                                        cw.queue_unstyled_char(cand_char)?;
-                                        cw.w.queue(SetBackgroundColor(bg))?;
-                                        pos_idx += 1;
-                                    } else {
-                                        cw.queue_unstyled_char(cand_char)?;
-                                    }
-                                }
-                                dec += s.chars().count();
+                    // chars of the line displayed on this row
+                    let from = if pos.sub == 0 { 0 } else { starts[pos.sub - 1] };
+                    let to = starts.get(pos.sub).copied().unwrap_or(usize::MAX);
+                    let pos_list = line.name_match.as_ref().map(|nm| &nm.pos);
+                    if overflow == Overflow::NoWrap && pos_list.is_none() {
+                        for region in regions {
+                            cw.w.queue(SetForegroundColor(region.fg))?;
+                            let s = region.string.trim_end_matches(is_char_end_of_line);
+                            if s.contains('\t') {
+                                cw.queue_unstyled_str(&s.replace('\t', &" ".repeat(TAB_WIDTH)))?;
                             } else {
                                 cw.queue_unstyled_str(s)?;
                             }
                         }
                     } else {
-                        for content in regions {
-                            cw.w.queue(SetForegroundColor(content.fg))?;
-                            cw.queue_unstyled_str(
-                                content.string.trim_end_matches(is_char_end_of_line),
-                            )?;
+                        // chars are buffered into runs of same style
+                        let pos_list = pos_list.map(|v| v.as_slice()).unwrap_or(&[]);
+                        let mut pos_idx = pos_list.partition_point(|&p| p < from);
+                        let mut ci = 0; // index of the char in the line
+                        let mut run = String::new();
+                        'regions: for region in regions {
+                            flush(&mut cw, &mut run)?;
+                            cw.w.queue(SetForegroundColor(region.fg))?;
+                            for c in region.string.chars() {
+                                if ci >= to {
+                                    break 'regions;
+                                }
+                                if ci >= from && !is_char_end_of_line(c) {
+                                    let matched = pos_list.get(pos_idx) == Some(&ci);
+                                    if matched {
+                                        flush(&mut cw, &mut run)?;
+                                        cw.w.queue(SetBackgroundColor(match_bg))?;
+                                        pos_idx += 1;
+                                    }
+                                    if c == '\t' {
+                                        run.extend(std::iter::repeat_n(' ', TAB_WIDTH));
+                                    } else {
+                                        run.push(c);
+                                    }
+                                    if matched {
+                                        flush(&mut cw, &mut run)?;
+                                        cw.w.queue(SetBackgroundColor(bg))?;
+                                    }
+                                }
+                                ci += 1;
+                            }
                         }
+                        flush(&mut cw, &mut run)?;
                     }
                 }
-                None => {}
             }
             cw.fill(
                 if selected {
@@ -663,16 +722,6 @@ impl TextView {
     }
 }
 
-fn is_thumb(
-    y: usize,
-    scrollbar: Option<(u16, u16)>,
-) -> bool {
-    scrollbar.is_some_and(|(sctop, scbottom)| {
-        let y = y as u16;
-        sctop <= y && y <= scbottom
-    })
-}
-
 /// Tell whether the character must be replaced to prevent rendering from being broken
 pub fn is_char_unprintable(c: char) -> bool {
     match c {
@@ -692,6 +741,18 @@ fn printable_line(line: &str) -> Cow<'_, str> {
     } else {
         Cow::Borrowed(line)
     }
+}
+
+/// Write the buffered run of chars, if any
+fn flush(
+    cw: &mut CropWriter<'_, W>,
+    run: &mut String,
+) -> Result<(), ProgramError> {
+    if !run.is_empty() {
+        cw.queue_unstyled_str(run)?;
+        run.clear();
+    }
+    Ok(())
 }
 
 fn is_char_end_of_line(c: char) -> bool {

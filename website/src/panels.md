@@ -35,6 +35,8 @@ It's not immediately focused on creation, because most often you'll want to prev
 
 To focus it, for example to scroll it or to do a search, do <kbd>ctrl</kbd><kbd>→</kbd> again.
 
+Long lines are wrapped to the panel's width. If you prefer them truncated, use the `:toggle_preview_wrap` verb (shortcut `:wrap`) or set `wrap_previews: false` in [the conf](../conf_file/#wrap).
+
 Files that can't be interpreted as text or image are shown as binary:
 
 ![binary](img/2020081609-preview-binary.png)

@@ -282,6 +282,19 @@ terminal_title = "{file} 🐄"
 
 # Preview
 
+## Wrap
+
+Long lines of text, diff, and tty previews are wrapped by default.
+
+You can toggle wrapping at any time with the `:toggle_preview_wrap` verb (shortcut `:wrap`), and change the initial behavior in the conf:
+
+```Hjson
+wrap_previews: false
+```
+```TOML
+wrap_previews = false
+```
+
 ## Graphics Display
 
 `graphics_display` selects which terminal-graphics protocol broot uses for

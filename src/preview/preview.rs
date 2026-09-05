@@ -321,13 +321,6 @@ impl Preview {
             _ => false,
         }
     }
-    pub fn unselect(&mut self) {
-        match self {
-            Self::Text(sv) => sv.unselect(),
-            Self::Tty(tv) => tv.unselect(),
-            _ => {}
-        }
-    }
     pub fn try_select_y(
         &mut self,
         y: u16,
@@ -335,7 +328,6 @@ impl Preview {
         match self {
             Self::Dir(dv) => dv.try_select_y(y),
             Self::Text(sv) => sv.try_select_y(y),
-            Self::Tty(v) => v.try_select_y(y),
             Self::Diff(v) => v.try_select_y(y),
             _ => false,
         }
@@ -348,8 +340,11 @@ impl Preview {
         match self {
             Self::Dir(dv) => dv.move_selection(dy, cycle),
             Self::Text(sv) => sv.move_selection(dy, cycle),
-            Self::Tty(v) => v.move_selection(dy, cycle),
             Self::Diff(v) => v.move_selection(dy, cycle),
+            // views without a selection scroll instead
+            Self::Tty(v) => {
+                v.try_scroll(ScrollCommand::Lines(dy));
+            }
             Self::Hex(hv) => {
                 hv.try_scroll(ScrollCommand::Lines(dy));
             }
@@ -376,17 +371,18 @@ impl Preview {
         match self {
             Self::Dir(dv) => dv.select_first(),
             Self::Text(sv) => sv.select_first(),
-            Self::Hex(hv) => hv.select_first(),
-            Self::Tty(v) => v.select_first(),
+            Self::Hex(hv) => hv.go_to_top(),
+            Self::Tty(v) => v.go_to_top(),
             Self::Diff(v) => v.select_first(),
             _ => {}
         }
     }
     pub fn select_last(&mut self) {
         match self {
+            Self::Dir(dv) => dv.select_last(),
             Self::Text(sv) => sv.select_last(),
-            Self::Hex(hv) => hv.select_last(),
-            Self::Tty(v) => v.select_last(),
+            Self::Hex(hv) => hv.go_to_bottom(),
+            Self::Tty(v) => v.go_to_bottom(),
             Self::Diff(v) => v.select_last(),
             _ => {}
         }
@@ -403,11 +399,11 @@ impl Preview {
         match self {
             Self::Dir(dv) => dv.display(w, disc, area),
             Self::Image(iv) => time!(iv.display(w, disc, area)),
-            Self::Text(sv) => sv.display(w, screen, panel_skin, area, con),
+            Self::Text(sv) => sv.display(w, screen, panel_skin, area, con, disc.app_state.preview_overflow),
             Self::ZeroLen(zlv) => zlv.display(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display(w, screen, panel_skin, area),
-            Self::Tty(v) => v.display(w, screen, panel_skin, area),
-            Self::Diff(v) => v.display(w, screen, panel_skin, area, con),
+            Self::Tty(v) => v.display(w, screen, panel_skin, area, disc.app_state.preview_overflow),
+            Self::Diff(v) => v.display(w, screen, panel_skin, area, con, disc.app_state.preview_overflow),
             Self::IoError(err) => {
                 let mut y = area.top;
                 w.queue(cursor::MoveTo(area.left, y))?;
@@ -442,6 +438,7 @@ impl Preview {
             Self::Image(iv) => iv.display_info(w, screen, panel_skin, area),
             Self::Text(sv) => sv.display_info(w, screen, panel_skin, area),
             Self::Hex(hv) => hv.display_info(w, screen, panel_skin, area),
+            Self::Tty(v) => v.display_info(w, screen, panel_skin, area),
             Self::Diff(v) => v.display_info(w, screen, panel_skin, area),
             _ => Ok(()),
         }

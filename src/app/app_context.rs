@@ -8,7 +8,10 @@ use {
         },
         conf::*,
         content_search,
-        display::LayoutInstructions,
+        display::{
+            LayoutInstructions,
+            Overflow,
+        },
         errors::*,
         file_sum,
         icon::*,
@@ -77,6 +80,9 @@ pub struct AppContext {
 
     /// whether to show a triangle left to selected lines
     pub show_selection_mark: bool,
+
+    /// how to deal with preview lines longer than the panel width
+    pub preview_overflow: Overflow,
 
     /// mapping from file extension to colors (comes from conf)
     pub ext_colors: ExtColorMap,
@@ -260,6 +266,7 @@ impl AppContext {
             special_paths,
             search_modes,
             show_selection_mark: config.show_selection_mark.unwrap_or(false),
+            preview_overflow: config.wrap_previews.map(Overflow::from_wrap_bool).unwrap_or_default(),
             ext_colors,
             syntax_theme: config.syntax_theme,
             standard_status,

@@ -58,6 +58,8 @@ mod luma;
 mod matched_string;
 mod num_format;
 mod screen;
+mod viewport;
+mod wrap;
 pub mod status_line;
 
 #[cfg(not(any(target_family = "windows", target_os = "android")))]
@@ -97,3 +99,7 @@ pub type W = std::io::BufWriter<std::io::Stderr>;
 pub fn writer() -> W {
     std::io::BufWriter::new(std::io::stderr())
 }
+pub use {
+    viewport::*,
+    wrap::*,
+};
