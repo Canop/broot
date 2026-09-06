@@ -50,7 +50,7 @@ EOF
 # The macOS row for the current DARWIN_METHOD (empty when skipped).
 _darwin_row() {
     case $DARWIN_METHOD in
-        native) echo "macOS|aarch64-apple-darwin|native|sixel" ;;
+        native) echo "macOS|aarch64-apple-darwin|native|clipboard,sixel" ;;
         zig)    echo "macOS|aarch64-apple-darwin|zigmac|sixel" ;;
         skip)   : ;;
     esac
@@ -75,7 +75,7 @@ all_release_targets() {
     _matrix_rows | while IFS='|' read -r label triple tool features want; do
         printf '%s|%s|%s|%s\n' "$label" "$triple" "$tool" "$features"
     done
-    echo "macOS|aarch64-apple-darwin|native|sixel"
+    echo "macOS|aarch64-apple-darwin|native|clipboard,sixel"
 }
 
 # Triples whose binary is already staged for the current release id, one per

@@ -1,3 +1,6 @@
+### next
+- the official macOS binary now includes the clipboard feature (`:copy_path`, `:copy_line`, `:input_paste`)
+
 <a name="v1.60.0"></a>
 ### v1.60.0 - 2026-09-05
 #### Major Feature: preview wrapping
