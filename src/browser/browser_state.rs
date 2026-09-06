@@ -300,7 +300,8 @@ impl PanelState for BrowserState {
         screen: Screen,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
-        if self.displayed_tree().selection == y as usize {
+        let tree = self.displayed_tree();
+        if tree.selection == y as usize + tree.scroll {
             self.open_selection_stay_in_broot(screen, con, false, false)
         } else {
             // A double click always come after a simple click at
