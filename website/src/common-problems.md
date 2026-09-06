@@ -44,7 +44,7 @@ The first problem you might see is the presence of artifacts. This may happen in
 
 * [relevant issue](https://github.com/Canop/broot/issues/248)
 
-A workaround is to create a skin (for example by uncommenting the one in `conf.toml`) and to remove all `Italic` and `Bold`.
+A workaround is to copy one of the skins of your configuration directory, remove all `italic` and `bold` attributes, and [import](../conf_file/#imports) it instead of the default one.
 
 Additionally, if backgrounds can't be properly displayed, you may consider [marking selected lines](../conf_file/#selection-mark).
 
