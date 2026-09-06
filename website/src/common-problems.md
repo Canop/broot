@@ -122,9 +122,9 @@ It's probably your terminal app's fault. You could check that by using any other
 
 Most terminal apps are fine but some, made with Electron or worse, or crippled with fancy plugins, take dozens of milliseconds to redraw the screen. You should not use those terminals.
 
-# msysgit or git bash
+# Git Bash, MSYS2
 
-I have no solution for that. If you know how to tackle the problem, the maintainers of [Crossterm](https://github.com/crossterm-rs/crossterm) would be interested too.
+Broot doesn't work in mintty, the terminal that Git for Windows and MSYS2 open by default, as it doesn't provide the Windows console API. Run your Git Bash or MSYS2 shell in [Windows Terminal](https://github.com/microsoft/terminal) instead: broot works there, including the `br` function.
 
 # Windows
 
