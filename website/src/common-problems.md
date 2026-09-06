@@ -198,6 +198,6 @@ Outside a multiplexer, Sixel is detected automatically under `graphics_display =
 
 The standard `edit` verb, launched with `:e`, starts your favourite terminal editor to edit the selected file.
 
-It works by executing `"$EDITOR +{line} {file}"` which assumes that the `$EDITOR` variable is defined and that your editor takes the line number as argument.
+It works by executing `"$EDITOR {file}"`, which assumes that the `$EDITOR` variable is defined.
 
-If it doesn't work on your configuration, you should probably just edit this verb definition with a more suitable command, for example `"hx {file}:{line}"` or `"/usr/bin/my-editor --line {line} {file}"`
+To have your editor open the file at the line selected in a preview or found by a content search, add `{line}` to the verb definition in verbs.hjson with the syntax of your editor, for example `"nvim +{line} {file}"` or `"hx {file}:{line}"`.
