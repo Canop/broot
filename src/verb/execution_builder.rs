@@ -473,7 +473,7 @@ impl<'b> ExecutionBuilder<'b> {
         }
         // backslashes must be in this set: on Windows the string may go to
         // the launcher's outcmd file, whose eval would remove them
-        if !regex_is_match!(r#"[\s"'\\]"#, &s) {
+        if !regex_is_match!(r#"[\s"'\\`$*?\[\]{}()<>|;&!#]"#, &s) {
             // if there's no special character, we don't need to escape or wrap
             return s.to_string();
         }
@@ -617,5 +617,9 @@ mod execution_builder_test {
             builder.path_to_string("/home/dys/it's dev"),
             r#"'/home/dys/it'"'"'s dev'"#,
         );
+        assert_eq!(builder.path_to_string("/tmp/a[1]"), "'/tmp/a[1]'");
+        assert_eq!(builder.path_to_string("/tmp/$(x)"), "'/tmp/$(x)'");
+        assert_eq!(builder.path_to_string("/tmp/a*b"), "'/tmp/a*b'");
+        assert_eq!(builder.path_to_string("/tmp/é-ü_1.txt"), "/tmp/é-ü_1.txt");
     }
 }

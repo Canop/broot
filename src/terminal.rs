@@ -38,9 +38,9 @@ fn set_title(
     app_state: &AppState,
     con: &AppContext,
 ) {
-    let mut builder =
+    let builder =
         ExecutionBuilder::without_invocation(SelInfo::from_path(&app_state.root), app_state);
-    let title = builder.shell_exec_string(pattern, con);
+    let title = builder.exec_token(pattern, con).join(" ");
     set_title_str(w, &title)
 }
 
