@@ -671,6 +671,10 @@ impl VerbStore {
                     if short_circuit && name == prefix {
                         return PrefixSearchResult::Match(name, verb);
                     }
+                    if completions.contains(&name.as_str()) {
+                        // shadowed by an earlier verb with the same name
+                        continue;
+                    }
                     found_index = index;
                     nb_found += 1;
                     completions.push(name);
@@ -727,4 +731,31 @@ impl VerbStore {
 fn check_builtin_verbs() {
     let mut conf = Conf::default();
     let _store = VerbStore::new(&mut conf).unwrap();
+}
+
+/// A verb redefined with the name of an earlier one must not make
+/// a prefix search ambiguous: the first definition wins.
+#[test]
+fn check_shadowed_homonym_verbs() {
+    let mut conf = Conf::default();
+    let first = VerbConf {
+        invocation: Some("edit".to_string()),
+        shortcut: Some("e".to_string()),
+        external: Some(ExecPattern::from_string("first {file}")),
+        ..Default::default()
+    };
+    let second = VerbConf {
+        invocation: Some("edit".to_string()),
+        shortcut: Some("e".to_string()),
+        external: Some(ExecPattern::from_string("second {file}")),
+        ..Default::default()
+    };
+    conf.verbs.push(first);
+    conf.verbs.push(second);
+    let store = VerbStore::new(&mut conf).unwrap();
+    let PrefixSearchResult::Match(name, verb) = store.search_prefix("edi", None) else {
+        panic!("prefix of a shadowed verb name must resolve to a single verb");
+    };
+    assert_eq!(name, "edit");
+    assert_eq!(verb.execution.to_string(), "first {file}");
 }
