@@ -188,7 +188,12 @@ impl VerbStore {
         self.add_internal(trash);
         #[cfg(any(
             target_os = "windows",
-            all(unix, not(any(target_os = "ios", target_os = "android")))
+            all(
+                unix,
+                not(target_os = "macos"),
+                not(target_os = "ios"),
+                not(target_os = "android")
+            )
         ))]
         {
             self.add_internal(open_trash).with_shortcut("ot");

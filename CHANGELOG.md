@@ -1,6 +1,7 @@
 ### next
 - the official macOS binary now includes the clipboard feature (`:copy_path`, `:copy_line`, `:input_paste`)
 - a verb redefined with the name of an existing one no longer makes typing a prefix of that name ambiguous
+- on macOS, the trash listing verbs (`:open_trash`, etc.) are no longer offered, as they couldn't work there
 
 <a name="v1.60.0"></a>
 ### v1.60.0 - 2026-09-05
