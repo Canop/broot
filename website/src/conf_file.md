@@ -373,6 +373,8 @@ It's possible to define transformers to apply to some files before preview.
 
 This makes it possible for example to render a specific kind of files as images, or to beautify some text ones.
 
+The `mode` of a transformer tells how its output is previewed: `image`, `text`, or `tty` when the output contains ANSI color sequences.
+
 Below are examples that you may adapt to your needs and preferred tools.
 They must be included in a `preview_transformers` array, as shown in the [default conf.hjson](https://github.com/Canop/broot/blob/main/resources/default-conf/conf.hjson).
 
