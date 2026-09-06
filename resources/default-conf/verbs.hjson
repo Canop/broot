@@ -76,6 +76,7 @@ verbs: [
         shortcut: gd
         leave_broot: false
         execution: "git difftool -y {file}"
+        working_dir: "{git-root}"
     }
 
     # On ctrl-b, propose the creation of a copy of the selection.
