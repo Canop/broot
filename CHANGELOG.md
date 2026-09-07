@@ -5,6 +5,10 @@
 - paths containing shell special characters (globs, `$`, parentheses, etc.) are now quoted in commands executed by the shell function - Fix #595
 - the terminal title no longer shows paths quoted
 - fix double-click not opening the file when the tree is scrolled - Fix #150
+- git statuses are no longer missing in subdirectories when broot is launched from a subdirectory of the repository
+- the diff preview is shown for a modified file given as launch argument
+- the diff preview works in a repository without any commit yet
+- refreshing the tree (F5) also refreshes the git branch and stats of the root line
 
 <a name="v1.60.0"></a>
 ### v1.60.0 - 2026-09-05

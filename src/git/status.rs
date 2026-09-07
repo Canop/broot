@@ -193,7 +193,8 @@ impl LineStatusComputer {
 }
 
 /// Return the pathspec limiting the status to the tree root, when
-/// it's not the repository root
+/// it's not the repository root. The `top` magic signature makes the
+/// path relative to the repository root, not to the process cwd.
 fn pathspecs(
     workdir: &Path,
     root: &Path,
@@ -201,7 +202,13 @@ fn pathspecs(
     root.strip_prefix(workdir)
         .ok()
         .filter(|rel| !rel.as_os_str().is_empty())
-        .map(|rel| gix::path::to_unix_separators_on_windows(gix::path::into_bstr(rel)).into_owned())
+        .map(|rel| {
+            let mut spec = BString::from(":(top)");
+            spec.extend_from_slice(&gix::path::to_unix_separators_on_windows(
+                gix::path::into_bstr(rel),
+            ));
+            spec
+        })
         .into_iter()
         .collect()
 }

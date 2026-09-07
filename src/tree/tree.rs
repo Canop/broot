@@ -60,6 +60,7 @@ impl Tree {
             .unwrap(); // should not fail
         let selected_path = self.selected_line().path.to_path_buf();
         mem::swap(&mut self.lines, &mut tree.lines);
+        self.git_status = tree.git_status;
         self.scroll = 0;
         if !self.try_select_path(&selected_path) && self.selection >= self.lines.len() {
             self.selection = 0;

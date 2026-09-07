@@ -89,9 +89,10 @@ pub fn diff_worktree_vs_head(
     let rela_path = path.strip_prefix(workdir).map_err(git_error)?;
     let rela_bstr = gix::path::to_unix_separators_on_windows(gix::path::into_bstr(rela_path));
     let null = repo.object_hash().null();
-    let (old_id, old_kind) = match repo
-        .head_tree()
-        .map_err(git_error)?
+    // the tree is empty when the branch has no commit yet
+    let head_tree_id = repo.head_tree_id_or_empty().map_err(git_error)?;
+    let head_tree = repo.find_tree(head_tree_id).map_err(git_error)?;
+    let (old_id, old_kind) = match head_tree
         .lookup_entry_by_path(rela_path)
         .map_err(git_error)?
     {

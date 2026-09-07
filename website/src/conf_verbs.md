@@ -485,7 +485,7 @@ invocation | default key | default shortcut | behavior / details
 :line_up_no_cycle | - | - | same as line_up, but doesn't cycle
 :move_panel_divider | - | - | ex: `:move_panel_divider 0 -5` reduces the size of the left panel by 5 "characters" (while growing the right panel by 5)
 :next_dir | - | - | select the next directory
-:next_match | <kbd>tab</kbd> | - | select the next matching file, or matching verb or path in auto-completion
+:next_match | <kbd>tab</kbd> | - | select the next matching file (or file with a git status when they're displayed), the next change in a diff preview, or the next matching verb or path in auto-completion
 :next_same_depth | - | - | select the next file at the same depth
 :no_action | - | - | do nothing (can be used to disable a key)
 :no_sort | - | ns | remove all sorts
@@ -508,7 +508,7 @@ invocation | default key | default shortcut | behavior / details
 :preview_text | - | - | preview the selection as text
 :preview_tty | - | - | preview the selection as tty (with ANSI escape codes)
 :previous_dir | - | - | select the previous directory
-:previous_match | - | - | select the previous match
+:previous_match | <kbd>shift</kbd><kbd>tab</kbd> | - | select the previous match (see `:next_match`)
 :previous_same_depth | - | - | select the previous file at the same depth
 :print_path | - | pp | print path and leave broot
 :print_relative_path | - | prp | print relative path and leave broot

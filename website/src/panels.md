@@ -49,6 +49,15 @@ You can go from the selected matched line to the unfiltered text, at the right p
 
 Hopefully [this blog post](https://dystroy.org/blog/broot-c-search/) should make the complete search workflow look natural.
 
+## Diff preview
+
+When [git statuses](../tree_view/#git-information) are displayed, a file with a git change (modified, staged, added, renamed, or in conflict) is previewed as a unified diff between the working tree and the last commit:
+
+* <kbd>tab</kbd> and <kbd>shift</kbd><kbd>tab</kbd> jump from change to change
+* <kbd>ctrl</kbd><kbd>→</kbd> opens the file at the selected change, and <kbd>ctrl</kbd><kbd>←</kbd> brings you back to the diff
+
+The `:preview_diff` verb shows this diff for any file, and `:preview_text` shows the plain content instead.
+
 # Copy & move between panels
 
 When exactly two panels are displayed, `{other-panel-file}` `{other-panel-directory}`, and `{other-panel-parent}` are available for verbs.

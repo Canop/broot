@@ -77,9 +77,10 @@ impl App {
         let mut panels = AppPanelsAndInputs::new(con)?;
         if let Some(path) = con.initial_file.as_ref() {
             // open initial_file in preview
+            let git_status = panels.state().selection().and_then(|sel| sel.git_status);
             let preview_state = Box::new(PreviewState::new(
                 path.clone(),
-                None,
+                git_status,
                 InputPattern::none(),
                 None,
                 con.initial_tree_options.clone(),

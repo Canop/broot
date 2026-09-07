@@ -166,7 +166,7 @@ If you hit `:fs`, you can check the usage of all filesystems, so that you focus 
 
 Use `:gf` to display the statuses of files (what are the new ones, the modified ones, etc.), the current branch name, how many commits it is ahead (`↑`) or behind (`↓`) its upstream branch, and the change statistics.
 
-The letter tells the state of the file: `N` untracked, `A` staged (new), `S` staged modification, `M` modified in the working tree, `R` renamed, `C` conflict, `I` ignored.
+The letter tells the state of the file: `N` untracked, `A` staged addition, `S` staged modification, `M` modified in the working tree, `R` staged rename, `C` conflict, `I` ignored, `?` other change (for example a file replaced by a symlink).
 
 ![size](img/20230930-git.png)
 

@@ -178,11 +178,13 @@ If you hit `:fs`, you can check the usage of all filesystems, so that you focus 
 
 ## Check git statuses:
 
-Use `:gf` to display the statuses of files (what are the new ones, the modified ones, etc.), the current branch name and the change statistics.
+Use `:gf` to display the statuses of files (what are the new ones, the modified ones, etc.), the current branch name, how many commits it is ahead (`↑`) or behind (`↓`) its upstream branch, and the change statistics.
+
+The letter tells the state of the file: `N` untracked, `A` staged addition, `S` staged modification, `M` modified in the working tree, `R` staged rename, `C` conflict, `I` ignored, `?` other change (for example a file replaced by a symlink).
 
 ![size](website/src/img/20230930-git.png)
 
-And if you want to see *only* the files which would be displayed by the `git status` command, do `:gs`. From there it's easy to edit, or diff, selected files.
+And if you want to see *only* the files which would be displayed by the `git status` command, do `:gs`.
 
 ![gg](website/src/img/20230930-gg.png)
 

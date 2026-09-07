@@ -122,11 +122,15 @@ You start it with `br -w` and it sports bars to make relavive sizes more obvious
 
 # Git information
 
-With `:toggle_git_file_info`) (shortcut: `:gf`) you can see what files have been modified, or are new.
+With `:toggle_git_file_info` (shortcut: `:gf`) you can see the git state of files: `N` untracked, `A` staged addition, `S` staged modification, `M` modified in the working tree, `R` staged rename, `C` conflict, `I` ignored, `?` other change.
 
-The top line tells you on what branch you are and summarizes changes:
+The top line tells you on what branch you are, how many commits it is ahead (`↑`) or behind (`↓`) its upstream branch, and summarizes changes:
 
 ![gf](img/gf.png)
+
+<kbd>tab</kbd> and <kbd>shift</kbd><kbd>tab</kbd> jump from file with a git status to file with a git status, and the [preview panel](../panels/#diff-preview) shows the changes of the selected file.
+
+With `:toggle_git_status` (shortcut: `:gs`, key <kbd>alt</kbd><kbd>g</kbd>) only the files having a git status are shown.
 
 With [some customization](https://dystroy.org/blog/gg/) you have the perfect tool for reviewing your changes before a commit.
 
@@ -151,6 +155,7 @@ Each of those toggles lets you alternate between 2 or 3 modes.
  | toggle_dates         | dates    |       | toggle showing last modified dates (deep computed)
  | toggle_files         | files    |       | toggle showing files (or just folders)
  | toggle_git_file_info | gf       |       | toggle display of git file information
+ | toggle_git_status    | gs       | <kbd>alt</kbd><kbd>g</kbd> | toggle showing only the files having a git status
  | toggle_ignore        | gi       | <kbd>alt</kbd><kbd>i</kbd> | toggle use of .gitignore and .ignore
  | toggle_hidden        | h        | <kbd>alt</kbd><kbd>h</kbd> | toggle showing hidden files
  | toggle_perm          | perm     |       | toggle showing file permissions (Unix only)
