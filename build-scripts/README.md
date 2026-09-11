@@ -37,6 +37,9 @@ Linux), so a release is built on both and assembled through a staging server.
    copy of everything the other machines deployed. Previous zips are left in
    place, so old versions stay downloadable.
 
+   It then runs `website/deploy.sh`, last, so the site never describes a version
+   whose binaries aren't online yet.
+
 Staging and deploy settings come from `build-scripts/_local.sh` (see below).
 Without it, `release.sh` builds locally on a single host and `deploy.sh` won't run.
 
