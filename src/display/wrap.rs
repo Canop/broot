@@ -127,4 +127,95 @@ mod tests {
         assert_eq!(row_starts("abc".chars(), 0), vec![1, 2]);
         assert_eq!(row_starts("日本".chars(), 1), vec![1]);
     }
+
+    /// Render chars the way the previews do: tabs expanded, end of line chars dropped
+    fn render(chars: impl Iterator<Item = char>) -> String {
+        let mut s = String::new();
+        for c in chars {
+            match c {
+                '\n' | '\r' => {}
+                '\t' => s.extend(std::iter::repeat_n(' ', TAB_WIDTH)),
+                _ => s.push(c),
+            }
+        }
+        s
+    }
+
+    /// Return the char ranges the previews take for their rows
+    fn row_ranges(
+        text: &str,
+        width: usize,
+    ) -> Vec<(usize, usize)> {
+        let starts = row_starts(text.chars(), width);
+        let mut ranges = Vec::new();
+        let mut from = 0;
+        for &start in &starts {
+            ranges.push((from, start));
+            from = start;
+        }
+        ranges.push((from, text.chars().count()));
+        ranges
+    }
+
+    /// Check the invariants the previews rely on: the viewport counts the rows
+    /// the display draws, the row starts are usable indexes, and every row fits
+    #[test]
+    fn layout_and_rendering_agree() {
+        use unicode_width::UnicodeWidthStr;
+        let texts = [
+            "",
+            "\n",
+            "\r\n",
+            "a\r\n",
+            "abcde\r\n",
+            "abcdef\r\n",
+            "abc\r",
+            "abc",
+            "\tabc\r\n",
+            "a\tb\tc\r\n",
+            "日本語です\r\n",
+            "a日本語\r\n",
+            "abcde\u{301}fg\r\n",
+            "a\u{fffd}b\r\n",
+            "let x = 12; // comment\r\n",
+        ];
+        for text in texts {
+            let char_count = text.chars().count();
+            for width in 1..14 {
+                let starts = row_starts(text.chars(), width);
+                assert_eq!(
+                    starts.len() + 1,
+                    row_count(text.chars(), width),
+                    "{text:?} at width {width}"
+                );
+                assert!(starts.windows(2).all(|w| w[0] < w[1]));
+                assert!(starts.iter().all(|&i| i > 0 && i < char_count));
+                let ranges = row_ranges(text, width);
+                let rows: Vec<String> = ranges
+                    .iter()
+                    .map(|&(from, to)| {
+                        render(
+                            text.chars()
+                                .enumerate()
+                                .filter(|&(i, _)| i >= from && i < to)
+                                .map(|(_, c)| c),
+                        )
+                    })
+                    .collect();
+                assert_eq!(rows.concat(), render(text.chars()), "{text:?} at width {width}");
+                for (&(from, to), row) in ranges.iter().zip(&rows) {
+                    let visible = text
+                        .chars()
+                        .skip(from)
+                        .take(to - from)
+                        .filter(|&c| char_width(c) > 0)
+                        .count();
+                    assert!(
+                        row.width() <= width || visible == 1,
+                        "row {row:?} of {text:?} overflows width {width}"
+                    );
+                }
+            }
+        }
+    }
 }

@@ -1,3 +1,7 @@
+### next
+- preview of CRLF (Windows style) text files no longer shows a replacement char at the end of every line - Fix #1216
+- `:copy_line` no longer copies the end of line characters
+
 <a name="v1.60.1"></a>
 ### v1.60.1 - 2026-09-08
 - the official macOS binary now includes the clipboard feature (`:copy_path`, `:copy_line`, `:input_paste`)
