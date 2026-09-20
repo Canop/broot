@@ -30,7 +30,10 @@ use {
         Compression,
         write::ZlibEncoder,
     },
-    crate::image::zune_compat::DynamicImage,
+    image::{
+        DynamicImage,
+        GenericImageView,
+    },
     lru::LruCache,
     rustc_hash::FxBuildHasher,
     serde::Deserialize,
@@ -272,7 +275,7 @@ impl KittyImage {
                 (png_buf, "", "100")
             }
             KittyImageData::Image { data } => (
-                KittyImage::compress(&data.bytes())?,
+                KittyImage::compress(data.bytes())?,
                 "o=z,",
                 data.kitty_format(),
             ),
@@ -407,7 +410,7 @@ impl KittyImage {
         // Compression slows things down
         if let KittyImageData::Image { data } = &self.data {
             if let Some(mut temp_file) = temp_file {
-                temp_file.write_all(&data.bytes())?;
+                temp_file.write_all(data.bytes())?;
                 temp_file.flush()?;
                 debug!("file len: {}", temp_file.metadata().unwrap().len());
             }

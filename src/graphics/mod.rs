@@ -11,10 +11,10 @@ use {
     crate::{
         display::W,
         errors::ProgramError,
-        image::zune_compat::DynamicImage,
         kitty::KittyGraphicsDisplay,
     },
     crokey::crossterm::style::Color,
+    image::DynamicImage,
     std::path::{Path, PathBuf},
     termimad::Area,
 };
@@ -378,6 +378,7 @@ impl GraphicsManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use image::GenericImageView;
     use std::sync::{Arc, Mutex};
 
     /// Minimal renderer for the manager tests.
@@ -448,7 +449,7 @@ mod tests {
     /// A solid-color `SourceImage` bitmap.
     fn solid_bitmap(w: u32, h: u32, rgba: [u8; 4]) -> crate::image::SourceImage {
         let data: Vec<u8> = std::iter::repeat_n(rgba, (w * h) as usize).flatten().collect();
-        crate::image::SourceImage::Bitmap(DynamicImage::from_rgba8(w, h, data).unwrap())
+        crate::image::SourceImage::Bitmap(crate::image::bitmap::from_rgba8(w, h, data).unwrap())
     }
 
     fn area() -> Area {

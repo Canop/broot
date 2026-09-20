@@ -35,6 +35,14 @@ custom_error! {pub ProgramError
     Notify { source: notify::Error } = "Notify error: {source}",
 }
 
+impl From<image::ImageError> for ProgramError {
+    fn from(err: image::ImageError) -> Self {
+        ProgramError::ImageError {
+            details: err.to_string(),
+        }
+    }
+}
+
 custom_error! {pub ShellInstallError
     Io {source: io::Error, when: String} = "IO Error {source} on {when}",
 }

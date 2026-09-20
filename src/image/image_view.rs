@@ -3,7 +3,6 @@ use {
         FitConstraints,
         SourceImage,
         double_line::DoubleLine,
-        zune_compat::DynamicImage,
     },
     crate::{
         app::*,
@@ -26,6 +25,10 @@ use {
             Color,
             SetBackgroundColor,
         },
+    },
+    image::{
+        DynamicImage,
+        GenericImageView,
     },
     std::path::{
         Path,
@@ -197,8 +200,8 @@ impl ImageView {
         let left_margin = margin / 2;
         let right_margin = margin - left_margin;
         w.queue(cursor::MoveTo(area.left, y))?;
-        for pixel in img.pixels() {
-            double_line.push(pixel.2);
+        for (_, _, pixel) in img.pixels() {
+            double_line.push(pixel);
             if double_line.is_full() {
                 double_line.write(w, left_margin, right_margin, bg)?;
                 y += 1;
