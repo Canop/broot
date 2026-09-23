@@ -378,13 +378,18 @@ impl TextView {
                     mmap: Some(mmap),
                 }
                 .read(line)
+                .map(|mut line| {
+                    line.truncate(line.trim_end_matches(is_char_end_of_line).len());
+                    line
+                })
             })
     }
 
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {
         self.viewport
             .selection()
-            .and_then(|idx| self.lines[idx].line_number())
+            .and_then(|idx| self.lines.get(idx))
+            .and_then(|line| line.line_number())
     }
     pub fn try_select_y(
         &mut self,
@@ -734,9 +739,24 @@ pub fn is_char_unprintable(c: char) -> bool {
     }
 }
 
-fn printable_line(line: &str) -> Cow<'_, str> {
-    if line.chars().any(is_char_unprintable) {
-        let replacement = line.replace(is_char_unprintable, "�");
+/// Return the byte length of the end of line sequence ending the line, if any
+fn eol_len(line: &str) -> usize {
+    if line.ends_with("\r\n") {
+        2
+    } else if line.ends_with('\n') || line.ends_with('\r') {
+        1
+    } else {
+        0
+    }
+}
+
+/// Replace the characters which would break the TTY rendering, leaving the
+/// end of line sequence, if any, untouched
+pub fn printable_line(line: &str) -> Cow<'_, str> {
+    let body = &line[..line.len() - eol_len(line)];
+    if body.chars().any(is_char_unprintable) {
+        let mut replacement = body.replace(is_char_unprintable, "�");
+        replacement.push_str(&line[body.len()..]);
         Cow::Owned(replacement)
     } else {
         Cow::Borrowed(line)
@@ -757,4 +777,25 @@ fn flush(
 
 fn is_char_end_of_line(c: char) -> bool {
     c == '\n' || c == '\r'
+}
+
+#[cfg(test)]
+mod printable_line_tests {
+
+    use super::*;
+
+    #[test]
+    fn keep_end_of_line() {
+        assert_eq!(printable_line("a\r\n"), "a\r\n");
+        assert_eq!(printable_line("a\n"), "a\n");
+        assert_eq!(printable_line("a\r"), "a\r");
+        assert_eq!(printable_line("a"), "a");
+        assert_eq!(printable_line("\r\n"), "\r\n");
+    }
+
+    #[test]
+    fn replace_inner_unprintable() {
+        assert_eq!(printable_line("a\rb\r\n"), "a\u{fffd}b\r\n");
+        assert_eq!(printable_line("a\u{8}b"), "a\u{fffd}b");
+    }
 }

@@ -15,17 +15,10 @@ use {
 
 pub const MIN_FILE_SIZE: usize = 100;
 
-// those ones are now removed because of the extension filtering
-// static SIGNATURES_2: [[u8;2];2] = [
-//     [ 0x4D, 0x5A ], // exe, dll
-//     [ 0x42, 0x4D ], // BMP - Is that still necessary ?
-// ];
-
-// those ones are now removed because of the extension filtering
-// static SIGNATURES_3: [[u8;3];2] = [
-//     [ 0x49, 0x44, 0x33 ], // mp3
-//     [ 0x77, 0x4F, 0x46 ],  // WOFF
-// ];
+// bzip2 is checked on 3 bytes because the fourth one is the block size digit
+static SIGNATURES_3: Set<[u8; 3]> = phf_set! {
+    [ 0x42u8, 0x5A, 0x68 ], // bzip2
+};
 
 // signatures starting with 00, FF or FE don't need to be put here
 // note: the phf_set macro doesn't seem to allow u32 literals like 0x504B0304
@@ -57,21 +50,9 @@ static SIGNATURES_4: Set<[u8; 4]> = phf_set! {
     [ 0xCF, 0xFA, 0xED, 0xFE ], // Mach-O
     [ 0x46, 0x4C, 0x49, 0x46 ], // flif
     [ 0x62, 0x76, 0x78, 0x32 ], // lzfse
+    [ 0xFD, 0x37, 0x7A, 0x58 ], // xz
+    [ 0x28, 0xB5, 0x2F, 0xFD ], // zstd
 };
-
-// those ones are now removed because of the extension and size filterings
-// static SIGNATURES_5: [[u8;5];2] = [
-//     [ 0x25, 0x50, 0x44, 0x46, 0x2d ], // pdf
-//     [ 0x43, 0x44, 0x30, 0x30, 0x31 ], // iso (cd/dvd)
-// ];
-
-// those ones are now removed because of the extension filterings
-// static SIGNATURES_6: [[u8;6];4] = [
-//     [ 0x52, 0x61, 0x72, 0x21, 0x1A, 0x07 ], // rar
-//     [ 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A ], // png
-//     [ 0x21, 0x3C, 0x61, 0x72, 0x63, 0x68 ], // deb
-//     [ 0x7B, 0x5C, 0x72, 0x74, 0x66, 0x31 ], // rtf
-// ];
 
 /// return true when the first bytes of the file aren't polite or match one
 /// of the known binary signatures.
@@ -95,30 +76,25 @@ pub fn is_known_binary(bytes: &[u8]) -> bool {
         // TODO Some non ASCII UTF-8 chars start with FE or FF - check it's OK
         return true;
     }
-    // for signature in &SIGNATURES_2 {
-    //     if signature == &bytes[0..2] {
-    //         return true;
-    //     }
-    // }
-    // for signature in &SIGNATURES_3 {
-    //     if signature == &bytes[0..3] {
-    //         return true;
-    //     }
-    // }
+    if SIGNATURES_3.contains(&bytes[0..3]) {
+        return true;
+    }
     if SIGNATURES_4.contains(&bytes[0..4]) {
         return true;
     }
-    // for signature in &SIGNATURES_5 {
-    //     if signature == &bytes[0..5] {
-    //         return true;
-    //     }
-    // }
-    // for signature in &SIGNATURES_6 {
-    //     if signature == &bytes[0..6] {
-    //         return true;
-    //     }
-    // }
     false
+}
+
+#[test]
+fn test_compressed_magic_numbers() {
+    assert!(is_known_binary(&[0x1F, 0x8B, 0x08, 0x00])); // gzip
+    assert!(is_known_binary(&[0xFD, 0x37, 0x7A, 0x58])); // xz
+    assert!(is_known_binary(&[0x28, 0xB5, 0x2F, 0xFD])); // zstd
+    for digit in b'1'..=b'9' {
+        assert!(is_known_binary(&[0x42, 0x5A, 0x68, digit])); // bzip2
+    }
+    assert!(!is_known_binary(b"Sep 20 12:00:00 host proc: ok"));
+    assert!(!is_known_binary(b"BZip2 is a compression format"));
 }
 
 /// Tell whether the file i

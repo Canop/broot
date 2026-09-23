@@ -98,17 +98,53 @@ target_binary() { # target_binary <triple>
     printf 'build/%s/%s\n' "$triple" "$exe"
 }
 
-# Check a freshly built binary exists, and (on macOS) that it has no duplicate
-# linked dylib — the signature of issue #1194.
+# What `file` must report for a triple's binary. A binary served under the wrong
+# triple would be silently unusable on someone's machine, so the arch is checked
+# rather than trusted. An unlisted triple gets an empty pattern, i.e. no check.
+_arch_pattern() { # _arch_pattern <triple>
+    case ${1%%.*} in
+        x86_64-unknown-linux-*)  echo 'ELF 64-bit.*(x86-64|x86_64)' ;;
+        aarch64-unknown-linux-*) echo 'ELF 64-bit.*(aarch64|ARM aarch64)' ;;
+        armv7-unknown-linux-*)   echo 'ELF 32-bit.*ARM' ;;
+        x86_64-linux-android)    echo 'ELF 64-bit.*(x86-64|x86_64)' ;;
+        x86_64-unknown-netbsd)   echo 'ELF 64-bit.*(x86-64|x86_64)' ;;
+        x86_64-pc-windows-*)     echo '(PE32\+|MS Windows).*(x86-64|x86_64)' ;;
+        aarch64-apple-darwin)    echo 'Mach-O 64-bit.*arm64' ;;
+        *) echo '' ;;
+    esac
+}
+
+# Check a freshly built binary exists and is what it claims to be: right arch,
+# static for musl, no duplicate linked dylib on macOS (the signature of issue
+# #1194), and — when it's for this very host — that it runs and reports the
+# expected version.
 verify_binary() { # verify_binary <path> <triple>
-    local bin=$1 triple=$2
+    local bin=$1 triple=$2 desc pattern
     [[ -f $bin ]] || die "expected binary not produced: $bin"
-    have file && info "$(file -b "$bin")"
+    if have file; then
+        desc=$(file -b "$bin")
+        info "$desc"
+        pattern=$(_arch_pattern "$triple")
+        if [[ -n $pattern ]]; then
+            [[ $desc =~ $pattern ]] || die "$bin doesn't look like a $triple binary"
+        fi
+        # A musl binary that isn't static defeats the point of shipping it.
+        if [[ $triple == *-musl* && $desc == *"dynamically linked"* ]]; then
+            warn "$triple binary is dynamically linked"
+        fi
+    fi
     if [[ $triple == *-apple-darwin ]] && have otool; then
         local dups
         dups=$(otool -L "$bin" | sed -n 's/^[[:space:]]\{1,\}\([^ ]*\).*/\1/p' | sort | uniq -d)
         [[ -z $dups ]] || die "duplicate linked dylib(s) — this is issue #1194:"$'\n'"$dups"
         ok "no duplicate dylibs"
+    fi
+    if [[ ${triple%%.*} == "$(host_target)" ]]; then
+        local reported expected
+        expected=$(broot_version)
+        reported=$("$bin" --version 2>/dev/null | tr -dc '0-9.' || true)
+        [[ $reported == "$expected" ]] || die "$bin reports version '$reported', expected '$expected'"
+        ok "runs here, reports $expected"
     fi
 }
 
@@ -127,25 +163,26 @@ build_row() { # build_row "<label>|<triple>|<tool>|<features>"
         cross)
             need cross "cargo install cross"
             ensure_container_engine
-            RUSTFLAGS="" cross build --release --target "$triple" \
+            RUSTFLAGS="" cross build --release --locked --target "$triple" \
                 --target-dir "$tdir" ${feat[@]+"${feat[@]}"}
             bin="$tdir/$triple/release/$exe" ;;
         native)
             need cargo "install the Rust toolchain — https://rustup.rs"
-            cargo build --release --target "$triple" \
+            cargo build --release --locked --target "$triple" \
                 --target-dir "$tdir" ${feat[@]+"${feat[@]}"}
             bin="$tdir/$triple/release/$exe" ;;
         zig)
             need cargo-zigbuild "cargo install cargo-zigbuild  (and install zig)"
+            need zig "brew install zig  (or see https://ziglang.org)"
             rustup target add "${triple%%.*}" >/dev/null   # ensure rust-std for the target (idempotent)
-            cargo zigbuild --release --target "$triple" \
+            cargo zigbuild --release --locked --target "$triple" \
                 --target-dir "$tdir" ${feat[@]+"${feat[@]}"}
             bin="$tdir/${triple%%.*}/release/$exe" ;; # zigbuild drops any .glibc suffix from the dir name
         zigmac)
             ensure_container_engine
             warn "building macOS with zig; the output may be broken, see #1194"
             "${CROSS_CONTAINER_ENGINE:-docker}" run --rm -v "$PWD:/io" -w /io ghcr.io/rust-cross/cargo-zigbuild \
-                cargo zigbuild --release --target "$triple" --target-dir "$tdir"
+                cargo zigbuild --release --locked --target "$triple" --target-dir "$tdir"
             bin="$tdir/$triple/release/$exe" ;;
         ndk)
             need cargo-ndk "cargo install cargo-ndk"
@@ -156,7 +193,7 @@ build_row() { # build_row "<label>|<triple>|<tool>|<features>"
             [[ -d ${ANDROID_NDK_HOME:-} ]] || die "ANDROID_NDK_HOME is not set to a valid NDK (got '${ANDROID_NDK_HOME:-}'); install one (macOS: brew install --cask android-ndk)"
             export ANDROID_NDK_HOME
             rustup target add "$triple" >/dev/null   # ensure rust-std for the target (idempotent)
-            cargo ndk -t "${triple%-linux-android}" build --release \
+            cargo ndk -t "${triple%-linux-android}" build --release --locked \
                 --target-dir "$tdir" ${feat[@]+"${feat[@]}"}
             bin="$tdir/$triple/release/$exe" ;;
         *) die "unknown build tool '$tool' for target $label" ;;

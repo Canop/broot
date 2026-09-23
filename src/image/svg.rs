@@ -1,6 +1,7 @@
 use {
-    super::zune_compat::DynamicImage,
+    super::bitmap,
     crate::errors::SvgError,
+    image::DynamicImage,
     resvg::{
         tiny_skia,
         usvg,
@@ -73,7 +74,7 @@ pub fn render_tree(
     let width = pixmap.width();
     let height = pixmap.height();
     let data = pixmap.take();
-    DynamicImage::from_rgba8(width, height, data)
+    bitmap::from_rgba8(width, height, data)
         .map_err(|_| SvgError::Internal {
             message: "failed to create image from RGBA data",
         })

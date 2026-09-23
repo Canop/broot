@@ -1,5 +1,9 @@
 ### next
 - fix some combinations being wrongly interpreted for input on some terminals (eg shift-r with kitty keyboard protocol enabled on ghostty/mac was interpreted as just a 'r')
+- preview of CRLF (Windows style) text files no longer shows a replacement char at the end of every line - Fix #1216
+- `:copy_line` no longer copies the end of line characters
+- PSD images are no longer previewed
+- content search no longer reports false matches in .bz2, .xz, .zst and .br files
 
 <a name="v1.60.1"></a>
 ### v1.60.1 - 2026-09-08

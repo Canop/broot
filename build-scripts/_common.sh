@@ -115,8 +115,13 @@ confirm() { # confirm <question>
     case $reply in [yY] | [yY][eE][sS]) return 0 ;; *) return 1 ;; esac
 }
 
-release_id() { # <version>-<short commit>, e.g. 1.58.0-0717a94
-    printf '%s-%s\n' "$(broot_version)" "$(git rev-parse --short HEAD)"
+# <version>-<short commit>, e.g. 1.58.0-0717a94ab2. The abbreviation has a fixed
+# length: `git rev-parse --short` derives it from the clone's object count, so two
+# machines can name the same commit differently and stage into separate dirs.
+release_id() {
+    local sha
+    sha=$(git rev-parse HEAD)
+    printf '%s-%s\n' "$(broot_version)" "${sha:0:10}"
 }
 
 # Date of HEAD (YYYY/MM/DD) — used for the man page so both hosts, and re-runs,

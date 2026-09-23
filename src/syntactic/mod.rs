@@ -6,7 +6,7 @@ pub use {
     text_view::{
         SEPARATOR_FILLING,
         TextView,
-        is_char_unprintable,
+        printable_line,
     },
     syntax_theme::*,
     syntaxer::{

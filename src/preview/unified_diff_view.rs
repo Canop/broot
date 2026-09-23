@@ -154,14 +154,16 @@ impl UnifiedDiffView {
     /// selected line or of the closest following one
     pub fn get_selected_line_number(&self) -> Option<LineNumber> {
         let idx = self.viewport.selection()?;
-        self.rows[idx..]
+        self.rows
+            .get(idx..)?
             .iter()
             .find_map(|&row| self.line(row).and_then(|line| line.new_number))
     }
     pub fn get_selected_line(&self) -> Option<String> {
         self.viewport
             .selection()
-            .and_then(|idx| self.line(self.rows[idx]))
+            .and_then(|idx| self.rows.get(idx).copied())
+            .and_then(|row| self.line(row))
             .map(|line| line.content.clone())
     }
     /// Select the row of the line having this number in the current version

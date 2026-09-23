@@ -5,6 +5,7 @@ This being said, before you start, unless you're fixing a typo or proposing a tr
 
 - discuss the need and technical design first, either in an issue or on [miaou](https://miaou.dystroy.org/3768)
 - keep it simple and focused
+- when posting an issue, ensure your first comment is about the problem/request and reproduction, not about a proposed solution
 - don't touch more files or lines than necessary
 - apply the standard formatting of the project
 - check tests

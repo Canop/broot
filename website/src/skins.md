@@ -51,7 +51,7 @@ skin: {
 	git_status_ignored: gray(17) None
 	git_status_conflicted: ansi(88) None
 	git_status_other: ansi(88) None
-	selected_line: None gray(5) / None gray(4)
+	selected_line: "None gray(5) / None gray(4)" // fg is ignored here
 	char_match: Yellow None
 	file_error: Red None
 	flag_label: gray(15) None
@@ -209,6 +209,8 @@ directory: "ansi(208) None Bold / ansi(172) None"
 ```toml
 directory = "ansi(208) None Bold / ansi(172) None"
 ```
+
+**Note**: The foreground color of the `selected_line` is ignored, as the color is provided by other more important rules (eg the kind of file).
 
 ## Color
 

@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Build the release and rsync it into the download directory on the server.
+# Build the release and rsync it into the download directory on the server, then
+# deploy the website.
 #
 # Nothing goes through ~/dev/www/dystroy: that tree is a per-machine mirror of
 # the whole site, so pushing it from one machine republishes stale copies of
@@ -31,3 +32,8 @@ chmod -R a+rX build "broot_$version.zip"
 rsync -av build/ "$BROOT_DEPLOY_TARGET/"
 rsync -av "broot_$version.zip" "$BROOT_DEPLOY_TARGET/"
 ok "deployed $version"
+
+# Last: the site must never describe a version whose binaries aren't up yet.
+h2 "Deploying the website"
+"$here/../website/deploy.sh"
+ok "website deployed"

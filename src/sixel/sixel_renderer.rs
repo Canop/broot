@@ -7,12 +7,12 @@ use {
             rendering_area,
             terminal::{get_esc_seq, get_tmux_header, get_tmux_nest_count, get_tmux_tail, is_tmux},
         },
-        image::zune_compat::DynamicImage,
         sixel::detect_support::detect_sixel_geometry,
     },
     cli_log::*,
     crokey::crossterm::{QueueableCommand, cursor, style::Color},
     icy_sixel::SixelImage,
+    image::{DynamicImage, GenericImageView},
     std::{io::Write, path::{Path, PathBuf}},
     termimad::{Area, coolor, fill_bg},
 };
@@ -222,7 +222,7 @@ impl GraphicsRenderer for SixelRenderer {
                 && e.flatten_bg == flatten_key
         });
         if !cached {
-            let mut rgba = src.to_rgba_bytes();
+            let mut rgba = src.to_rgba8().into_raw();
             if let Some(bg_rgb) = flatten_bg {
                 flatten_alpha(&mut rgba, bg_rgb);
             }
@@ -316,7 +316,8 @@ mod tests {
         EncodedSixel, SixelRenderer, encode_sixel, flatten_alpha, gcd, letterbox_segments,
         resolve_bg, tmux_passthrough,
     };
-    use crate::{display, graphics::GraphicsRenderer, image::zune_compat::DynamicImage};
+    use crate::{display, graphics::GraphicsRenderer, image::bitmap};
+    use image::DynamicImage;
     use std::path::{Path, PathBuf};
     use termimad::{Area, coolor};
     use crokey::crossterm::style::Color;
@@ -452,7 +453,7 @@ mod tests {
 
     /// 4x4 RGBA image; content doesn't matter for cache-key tests.
     fn small_image() -> DynamicImage {
-        DynamicImage::from_rgba8(4, 4, vec![0u8; 4 * 4 * 4]).unwrap()
+        bitmap::from_rgba8(4, 4, vec![0u8; 4 * 4 * 4]).unwrap()
     }
 
     #[test]

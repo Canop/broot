@@ -59,8 +59,6 @@ fi
 # staged (staging configured + clean tree): with a dirty tree the local source no
 # longer matches what was staged, so reusing it would be wrong.
 staged=()
-# Not when staging a dirty tree: what's already staged was built from the commit,
-# which is precisely what the working tree no longer matches.
 if [[ $stage_this == yes && $stage_dirty == no && $force == no ]]; then
     h2 "Checking what is already staged"
     while IFS= read -r t; do

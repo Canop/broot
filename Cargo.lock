@@ -410,8 +410,6 @@ dependencies = [
  "vte",
  "which",
  "xterm-query",
- "zune-core 0.4.12",
- "zune-image",
 ]
 
 [[package]]
@@ -507,9 +505,9 @@ checksum = "f079e83a288787bcd14a6aea84cee5c87a67c5a3e660c30f557a3d24761b3527"
 
 [[package]]
 name = "chacha20"
-version = "0.10.1"
+version = "0.10.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d524456ba66e72eb8b115ff89e01e497f8e6d11d78b70b1aa13c0fbd97540a81"
+checksum = "65c35e4b699c7e15ccbe7ee35c005e4fc0a278d22238a2857e6ce2dadeda1b06"
 dependencies = [
  "cfg-if",
  "cpufeatures 0.3.0",
@@ -2717,12 +2715,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "jpeg-encoder"
-version = "0.5.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2cf3affe27ffd9f1992690ec7575568b222abe9cb39738f6531968aca8e64906"
-
-[[package]]
 name = "js-sys"
 version = "0.3.104"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2731,15 +2723,6 @@ dependencies = [
  "cfg-if",
  "futures-util",
  "wasm-bindgen",
-]
-
-[[package]]
-name = "kamadak-exif"
-version = "0.5.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ef4fc70d0ab7e5b6bafa30216a6b48705ea964cdfc29c050f2412295eba58077"
-dependencies = [
- "mutate_once",
 ]
 
 [[package]]
@@ -3036,12 +3019,6 @@ dependencies = [
  "num-traits",
  "pxfm",
 ]
-
-[[package]]
-name = "mutate_once"
-version = "0.1.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "13d2233c9842d08cfe13f9eac96e207ca6a2ea10b80259ebe8ad0268be27d2af"
 
 [[package]]
 name = "new_debug_unreachable"
@@ -5577,66 +5554,16 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "29666d0abbfad1e3dc4dcf6144730dd3a3ab225bbbdac83319345b1b44ccfc1b"
 
 [[package]]
-name = "zune-bmp"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3b1d6d8d84344ba202fcf02d6505ab57c2d775ae07dcb64809421735d8ce8c0f"
-dependencies = [
- "zune-core 0.4.12",
-]
-
-[[package]]
 name = "zune-core"
 version = "0.4.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3f423a2c17029964870cfaabb1f13dfab7d092a62a29a89264f4d36990ca414a"
-dependencies = [
- "log",
-]
 
 [[package]]
 name = "zune-core"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d56377fd46368984a170bc5aac5567e52ca5da874caa60bea39fcbca78fb658b"
-
-[[package]]
-name = "zune-farbfeld"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eea864ca80549c562044a8632421897a1e419ca460c20bd07fe84371f410f011"
-dependencies = [
- "zune-core 0.4.12",
-]
-
-[[package]]
-name = "zune-hdr"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51ff474631f80b14afc6dbc6bab78702ed2de7cd6af85f7a4ab21d3b08686426"
-dependencies = [
- "zune-core 0.4.12",
-]
-
-[[package]]
-name = "zune-image"
-version = "0.4.15"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3d6b98ac0fc8c650406e88f7b33f264798b85b7eff88cc09a8f86688c24d0261"
-dependencies = [
- "bytemuck",
- "jpeg-encoder",
- "kamadak-exif",
- "zune-bmp",
- "zune-core 0.4.12",
- "zune-farbfeld",
- "zune-hdr",
- "zune-jpeg 0.4.21",
- "zune-png",
- "zune-ppm",
- "zune-psd",
- "zune-qoi",
-]
 
 [[package]]
 name = "zune-inflate"
@@ -5663,42 +5590,4 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "27bc9d5b815bc103f142aa054f561d9187d191692ec7c2d1e2b4737f8dbd7296"
 dependencies = [
  "zune-core 0.5.3",
-]
-
-[[package]]
-name = "zune-png"
-version = "0.4.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7d29c085769c6f29effea890f093120ac019375fdc789d2a496ba8ba96c77509"
-dependencies = [
- "zune-core 0.4.12",
- "zune-inflate",
-]
-
-[[package]]
-name = "zune-ppm"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0527e645233e3b34b10aa576b4b156e60f52f15b01f906789eb820f7ef4b2774"
-dependencies = [
- "log",
- "zune-core 0.4.12",
-]
-
-[[package]]
-name = "zune-psd"
-version = "0.4.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ab11275d621813206ba4c20f4ec647eab0733c0fc71c3276d1238229fd834d49"
-dependencies = [
- "zune-core 0.4.12",
-]
-
-[[package]]
-name = "zune-qoi"
-version = "0.4.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dc598b6729ede546413cb5077d8ddb83b46055a156d5cc3c625cfe122484e9c9"
-dependencies = [
- "zune-core 0.4.12",
 ]

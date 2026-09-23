@@ -1,11 +1,16 @@
 use {
     super::{
+        bitmap,
         svg,
-        zune_compat::DynamicImage,
     },
     crate::{
         errors::ProgramError,
         path::path_has_ext,
+    },
+    image::{
+        DynamicImage,
+        GenericImageView,
+        imageops::FilterType,
     },
     std::path::Path,
     termimad::{
@@ -54,7 +59,7 @@ impl SourceImage {
         let img = if is_svg {
             Self::Svg(svg::load(path)?)
         } else {
-            Self::Bitmap(DynamicImage::from_path(path)?)
+            Self::Bitmap(bitmap::load(path)?)
         };
         Ok(img)
     }
@@ -97,7 +102,7 @@ impl SourceImage {
                 } else {
                     max_width = max_width.min(dim.0);
                     max_height = max_height.min(dim.1);
-                    img.resize(max_width, max_height)?
+                    img.resize(max_width, max_height, FilterType::Triangle)
                 }
             }
             Self::Svg(tree) => {
@@ -111,7 +116,7 @@ impl SourceImage {
             let th = if band > 1 { ceil_to_multiple(h, band) } else { h };
             if tw != w || th != h {
                 let rgb = constraints.pad.unwrap_or_else(|| coolor::Rgb::new(0, 0, 0));
-                return img.padded_to_size(tw, th, (rgb.r, rgb.g, rgb.b));
+                return Ok(bitmap::padded_to_size(&img, tw, th, (rgb.r, rgb.g, rgb.b)));
             }
         }
         Ok(img)
@@ -129,7 +134,6 @@ fn f32_to_u32(v: f32) -> u32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::image::zune_compat::DynamicImage;
 
     #[test]
     fn floor_and_ceil_to_multiple() {
@@ -150,7 +154,7 @@ mod tests {
 
     fn solid_bitmap(w: u32, h: u32, rgba: [u8; 4]) -> SourceImage {
         let data: Vec<u8> = std::iter::repeat_n(rgba, (w * h) as usize).flatten().collect();
-        SourceImage::Bitmap(DynamicImage::from_rgba8(w, h, data).unwrap())
+        SourceImage::Bitmap(bitmap::from_rgba8(w, h, data).unwrap())
     }
 
     #[test]
@@ -170,7 +174,7 @@ mod tests {
         let c = FitConstraints { width_multiple: 1, height_multiple: 6, pad: Some(coolor::Rgb::new(9, 9, 9)) };
         let img = src.fitting(100, 100, None, c).unwrap();
         assert_eq!(img.dimensions(), (10, 6)); // 4 -> 6 via padding, not scaling
-        let b = img.to_rgba_bytes();
+        let b = img.to_rgba8().into_raw();
         assert_eq!(&b[0..4], &[1, 2, 3, 255]); // content row preserved
         assert_eq!(&b[(10 * 4 * 4)..(10 * 4 * 4 + 4)], &[9, 9, 9, 255]); // first pad row = bg
     }
@@ -221,7 +225,7 @@ mod tests {
         };
         let img = src.fitting(1000, 1000, None, c).unwrap();
         assert_eq!(img.dimensions(), (27, 36));
-        let b = img.to_rgba_bytes();
+        let b = img.to_rgba8().into_raw();
         assert_eq!(&b[0..4], &[7, 8, 9, 255]); // top-left = image content
         assert_eq!(&b[20 * 4..20 * 4 + 4], &[4, 5, 6, 255]); // padded column (row 0, x=20) = bg
         let last_row = 35 * 27 * 4;
@@ -240,7 +244,7 @@ mod tests {
         };
         let img = src.fitting(100, 100, None, constraints).unwrap();
         assert_eq!(img.dimensions(), (99, 72));
-        let b = img.to_rgba_bytes();
+        let b = img.to_rgba8().into_raw();
         let row69 = 69 * 99 * 4; // first padded row (rows 0..=68 are the resized image)
         assert_eq!(&b[row69..row69 + 4], &[1, 2, 3, 255]); // pad fill ran
     }

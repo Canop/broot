@@ -151,7 +151,8 @@ impl Viewport {
             if pos.line >= len {
                 return None;
             }
-            let rc = self.rc(rows, pos.line);
+            // the row count may have shrunk below the position since it was set
+            let rc = self.rc(rows, pos.line).max(pos.sub + 1);
             if pos.sub + n < rc {
                 pos.sub += n;
                 return Some(pos);
@@ -194,7 +195,7 @@ impl Viewport {
         for line in from.line..to.line {
             d += self.rc(rows, line);
         }
-        d + to.sub - from.sub
+        (d + to.sub).saturating_sub(from.sub)
     }
     fn fits_in_page(
         &self,
@@ -228,6 +229,10 @@ impl Viewport {
     ) {
         if self.page_height == 0 {
             return;
+        }
+        // the view may have shrunk since the selection was set
+        if self.selection.is_some_and(|sel| sel >= rows.len()) {
+            self.selection = rows.len().checked_sub(1);
         }
         if self.fits_in_page(rows) {
             self.scroll = RowPos::default();
@@ -563,6 +568,42 @@ mod tests {
         assert_eq!(vp.scroll(), pos(1, 0));
         vp.move_selection(1, false, &rows);
         assert_eq!(vp.scroll(), pos(1, 8));
+    }
+
+    #[test]
+    fn shrunk_line_doesnt_break_scrolling() {
+        // the view is reloaded with shorter lines while scrolled inside a tall one
+        let rows = Widths(vec![5, 100, 5]);
+        let mut vp = Viewport::default();
+        vp.set_layout(3, 10, Overflow::Wrap, &rows);
+        vp.select_first(&rows);
+        vp.move_selection(1, false, &rows);
+        vp.move_selection(1, false, &rows);
+        assert_eq!(vp.scroll(), pos(1, 8));
+        let rows = Widths(vec![5, 5, 5]);
+        assert_eq!(vp.visible_rows(&rows), vec![pos(1, 8), pos(2, 0)]);
+        assert!(vp.try_scroll(ScrollCommand::Lines(-1), &rows));
+    }
+
+    #[test]
+    fn shrunk_view_keeps_the_selection_in_range() {
+        // the view is reloaded with fewer lines, then the panel is resized
+        let rows = Widths(vec![5; 20]);
+        let mut vp = Viewport::default();
+        vp.set_layout(3, 10, Overflow::Wrap, &rows);
+        vp.select_last(&rows);
+        assert_eq!(vp.selection(), Some(19));
+        let rows = Widths(vec![5; 5]);
+        vp.set_layout(4, 10, Overflow::Wrap, &rows);
+        assert_eq!(vp.selection(), Some(4));
+        assert_eq!(
+            vp.visible_rows(&rows),
+            vec![pos(1, 0), pos(2, 0), pos(3, 0), pos(4, 0)]
+        );
+        let rows = Widths(vec![]);
+        vp.set_layout(5, 10, Overflow::Wrap, &rows);
+        assert_eq!(vp.selection(), None);
+        assert!(vp.visible_rows(&rows).is_empty());
     }
 
     #[test]

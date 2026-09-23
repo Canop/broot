@@ -16,11 +16,14 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 version=$(broot_version)
 
+# Publishing a binary built from uncommitted work is worth a question, whether
+# or not the artifacts travelled through a staging server.
+if ! tree_is_clean; then
+    warn "working tree has uncommitted changes, so this release won't match commit $(git rev-parse --short HEAD)"
+    confirm "assemble it anyway?" || die "aborted — commit your changes, then re-run"
+fi
+
 if staging_configured; then
-    if ! tree_is_clean; then
-        warn "working tree has uncommitted changes, so this release won't match commit $(git rev-parse --short HEAD)"
-        confirm "assemble it anyway?" || die "aborted — commit your changes, then re-run"
-    fi
     id=$(release_id)
     h1 "Assembling release $version from $BROOT_STAGE_HOST ($id)"
     rm -rf build && mkdir build

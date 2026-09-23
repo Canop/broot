@@ -1,7 +1,7 @@
 use {
     crate::{
         errors::ProgramError,
-        syntactic::is_char_unprintable,
+        syntactic::printable_line,
     },
     gix::{
         diff::blob::{
@@ -170,14 +170,8 @@ fn hunks(
     input: &InternedInput<&[u8]>,
     context: usize,
 ) -> Vec<Hunk> {
-    let text = |line: &[u8]| -> String {
-        let s = String::from_utf8_lossy(line);
-        if s.contains(is_char_unprintable) {
-            s.replace(is_char_unprintable, "�")
-        } else {
-            s.into_owned()
-        }
-    };
+    let text =
+        |line: &[u8]| -> String { printable_line(&String::from_utf8_lossy(line)).into_owned() };
     let before_text = |idx: usize| text(input.interner[input.before[idx]]);
     let after_text = |idx: usize| text(input.interner[input.after[idx]]);
     let mut hunks = Vec::new();
