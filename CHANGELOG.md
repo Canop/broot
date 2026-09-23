@@ -1,3 +1,6 @@
+### next
+- fix some combinations being wrongly interpreted for input on some terminals (eg shift-r with kitty keyboard protocol enabled on ghostty/mac was interpreted as just a 'r')
+
 <a name="v1.60.1"></a>
 ### v1.60.1 - 2026-09-08
 - the official macOS binary now includes the clipboard feature (`:copy_path`, `:copy_line`, `:input_paste`)
