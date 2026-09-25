@@ -381,7 +381,7 @@
 ( "file_type_light_testjs", 0xf0668 ), // 󰙨
 ( "file_type_light_tex", 0xe69b ), // 
 ( "file_type_light_todo", 0xe69c ), // 
-( "file_type_light_toml", 0xf0626 ), // 󰘦
+( "file_type_light_toml", 0xe6b2 ), // 
 ( "file_type_light_unibeautify", 0xf15b ),
 ( "file_type_light_vash", 0xf15b ),
 ( "file_type_light_vsix", 0xf15b ),
@@ -709,7 +709,7 @@
 ( "file_type_textile", 0xf15b ),
 ( "file_type_tfs", 0xf15b ),
 ( "file_type_todo", 0xe69c ), // 
-( "file_type_toml", 0xf0626 ), // 󰘦
+( "file_type_toml", 0xe6b2 ), // 
 ( "file_type_tox", 0xf15b ),
 ( "file_type_travis", 0xe77e ), // 
 ( "file_type_tsconfig", 0xe628 ), // 
