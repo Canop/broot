@@ -387,7 +387,7 @@
 ( "file_type_light_vsix", 0xf15b ),
 ( "file_type_light_vsixmanifest", 0xf15b ),
 ( "file_type_light_xfl", 0xf15b ),
-( "file_type_light_yaml", 0xf0626 ), // 󰘦
+( "file_type_light_yaml", 0xe8eb ), // 
 ( "file_type_light_zeit", 0xf15b ),
 ( "file_type_lighthouse", 0xf15b ),
 ( "file_type_lime", 0xf15b ),
@@ -772,8 +772,8 @@
 ( "file_type_xquery", 0xf15b ),
 ( "file_type_xsl", 0xf15b ),
 ( "file_type_yacc", 0xf15b ),
-( "file_type_yaml", 0xf0626 ), // 󰘦
-( "file_type_yamllint", 0xf0626 ), // 󰘦
+( "file_type_yaml", 0xe8eb ), // 
+( "file_type_yamllint", 0xe8eb ), // 
 ( "file_type_yandex", 0xf15b ),
 ( "file_type_yang", 0xf15b ),
 ( "file_type_yarn", 0xe6a7 ), // 
