@@ -121,11 +121,63 @@ impl SpecialPath {
     ) -> Self {
         Self { pattern, handling }
     }
+    /// Tell whether the pattern may match some path inside the given
+    /// directory. Used to reduce the set of special paths to check
+    /// during a recursive computation.
+    ///
+    /// When in doubt, this returns true: a false positive only costs a
+    /// few glob matchings, while a false negative would make broot
+    /// ignore the special handling of a path.
     pub fn can_have_matches_in(
         &self,
         path: &Path,
     ) -> bool {
-        path.to_str()
-            .is_some_and(|p| self.pattern.as_str().starts_with(p))
+        let Some(p) = path.to_str() else {
+            return true;
+        };
+        let pattern = self.pattern.as_str();
+        // every path matching the pattern starts with the part of the
+        // pattern preceding the first glob metacharacter
+        let fixed_len = pattern.find(['*', '?', '[']).unwrap_or(pattern.len());
+        let fixed = &pattern[..fixed_len];
+        if fixed.len() >= p.len() {
+            fixed.starts_with(p)
+        } else {
+            // the pattern must have a wildcard part (otherwise it only matches
+            // a path shorter than `p`, thus not inside it) and its fixed part
+            // must be compatible with `p`
+            fixed_len < pattern.len() && p.starts_with(fixed)
+        }
+    }
+}
+
+#[cfg(test)]
+mod special_path_tests {
+    use super::*;
+
+    fn can_have_matches_in(
+        pattern: &str,
+        dir: &str,
+    ) -> bool {
+        SpecialPath::new(
+            glob::Pattern::new(pattern).unwrap(),
+            SpecialHandling::default(),
+        )
+        .can_have_matches_in(Path::new(dir))
+    }
+
+    #[test]
+    fn test_can_have_matches_in() {
+        // a relative conf entry is globbed as "**/<name>" and can match at any depth
+        assert!(can_have_matches_in("**/node_modules", "/home/dys/dev"));
+        assert!(can_have_matches_in("**/node_modules", "/"));
+        // an absolute pattern only matches in its own branch
+        assert!(can_have_matches_in("/media", "/"));
+        assert!(!can_have_matches_in("/media", "/home"));
+        assert!(can_have_matches_in("/home/dys/.cargo", "/home/dys"));
+        assert!(!can_have_matches_in("/home/dys/.cargo", "/home/other"));
+        // an absolute pattern with a wildcard can match deeper
+        assert!(can_have_matches_in("/home/*/.cargo", "/home/dys"));
+        assert!(!can_have_matches_in("/home/*/.cargo", "/var/log"));
     }
 }
