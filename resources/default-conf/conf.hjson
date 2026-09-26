@@ -100,7 +100,7 @@ show_selection_mark: true
 # (see https://dystroy.org/broot/icons for installation and
 # troubleshooting)
 #
-# icon_theme: vscode
+# icon_theme: nerdfont
 
 ###############################################################
 # Special paths

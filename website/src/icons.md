@@ -1,7 +1,7 @@
 # Icons Overview
 
 Broot supports showing icons in terminal if a supported font is installed.
-Currently, two fonts are supported, `nerdfonts` and `vscode`.
+Currently, two fonts are supported, `nerdfont` and `vscode`.
 
 Here is a screenshot, with nerdfont to the left and vscode at right:
 
@@ -12,19 +12,19 @@ Here is a screenshot, with nerdfont to the left and vscode at right:
 First add the appropriate lines to your broot config.
 
 ```hjson
-icon_theme: vscode
+icon_theme: nerdfont
 ```
 ```toml
-icon_theme = "vscode"
+icon_theme = "nerdfont"
 ```
 
 or
 
 ```hjson
-icon_theme: nerdfont
+icon_theme: vscode
 ```
 ```toml
-icon_theme = "nerdfont"
+icon_theme = "vscode"
 ```
 
 If the appropriate fonts are already installed correctly on your system then new instances of broot will show icons correctly.
