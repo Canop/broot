@@ -2,7 +2,10 @@ use {
     super::*,
     crate::{
         skin::StyleMap,
-        tree::TreeOptions,
+        tree::{
+            TreeOptions,
+            sanitize_display_name,
+        },
     },
     chrono::{
         Local,
@@ -55,8 +58,10 @@ impl TrashItemProperty {
         options: &TreeOptions,
     ) -> String {
         match self {
-            Self::OriginalParent => item.original_parent.to_string_lossy().to_string(),
-            Self::Name => item.name.to_string_lossy().to_string(),
+            Self::OriginalParent => {
+                sanitize_display_name(item.original_parent.to_string_lossy()).into_owned()
+            }
+            Self::Name => sanitize_display_name(item.name.to_string_lossy()).into_owned(),
             Self::DeletionDate => {
                 let seconds = item.time_deleted;
                 if let LocalResult::Single(date_time) = Local.timestamp_opt(seconds, 0) {

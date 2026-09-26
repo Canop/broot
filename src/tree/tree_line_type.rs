@@ -57,9 +57,9 @@ impl TreeLineType {
                     direct_target.display(),
                     final_target.display(),
                 );
-                return Ok(Self::BrokenSymLink(sanitize_display_name(
-                    direct_target.to_string_lossy(),
-                )));
+                return Ok(Self::BrokenSymLink(
+                    sanitize_display_name(direct_target.to_string_lossy()).into_owned(),
+                ));
             }
             visited.insert(final_target.clone());
             final_metadata = fs::symlink_metadata(&final_target)?;
@@ -68,12 +68,12 @@ impl TreeLineType {
             link_chain_length += 1;
             if link_chain_length > MAX_LINK_CHAIN_LENGTH {
                 info!("too long link chain at {}", direct_target.display());
-                return Ok(Self::BrokenSymLink(sanitize_display_name(
-                    direct_target.to_string_lossy(),
-                )));
+                return Ok(Self::BrokenSymLink(
+                    sanitize_display_name(direct_target.to_string_lossy()).into_owned(),
+                ));
             }
         }
-        let direct_target = sanitize_display_name(direct_target.to_string_lossy());
+        let direct_target = sanitize_display_name(direct_target.to_string_lossy()).into_owned();
         Ok(Self::SymLink {
             direct_target,
             final_is_dir,
@@ -90,7 +90,9 @@ impl TreeLineType {
         } else if ft.is_symlink() {
             if let Ok(direct_target) = read_link(path) {
                 Self::resolve(&direct_target).unwrap_or_else(|_| {
-                    Self::BrokenSymLink(sanitize_display_name(direct_target.to_string_lossy()))
+                    Self::BrokenSymLink(
+                        sanitize_display_name(direct_target.to_string_lossy()).into_owned(),
+                    )
                 })
             } else {
                 Self::BrokenSymLink("???".to_string())

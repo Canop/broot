@@ -8,7 +8,10 @@ use {
         errors::ProgramError,
         pattern::*,
         task_sync::Dam,
-        tree::TreeOptions,
+        tree::{
+            TreeOptions,
+            sanitize_display_name,
+        },
         verb::*,
     },
     crokey::crossterm::{
@@ -413,11 +416,12 @@ impl PanelState for FilesystemState {
                 }
                 // fs
                 let s = &mount.info.fs;
+                let sanitized = sanitize_display_name(s.as_str());
                 let mut matched_string = MatchedString::new(
                     self.filtered
                         .as_ref()
                         .and_then(|f| f.pattern.search_string(s)),
-                    s,
+                    &sanitized,
                     txt_style,
                     match_style,
                 );
@@ -515,11 +519,12 @@ impl PanelState for FilesystemState {
                 }
                 // mount point
                 let s = &mount.info.mount_point.to_string_lossy();
+                let sanitized = sanitize_display_name(s.as_ref());
                 let matched_string = MatchedString::new(
                     self.filtered
                         .as_ref()
                         .and_then(|f| f.pattern.search_string(s)),
-                    s,
+                    &sanitized,
                     txt_style,
                     match_style,
                 );

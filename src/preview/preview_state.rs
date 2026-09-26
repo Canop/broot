@@ -16,16 +16,22 @@ use {
         git::LineGitStatus,
         pattern::InputPattern,
         task_sync::Dam,
-        tree::TreeOptions,
+        tree::{
+            TreeOptions,
+            sanitize_display_name,
+        },
         verb::*,
     },
     crokey::crossterm::{
         QueueableCommand,
         cursor,
     },
-    std::path::{
-        Path,
-        PathBuf,
+    std::{
+        borrow::Cow,
+        path::{
+            Path,
+            PathBuf,
+        },
     },
     termimad::{
         Area,
@@ -348,8 +354,8 @@ impl PanelState for PreviewState {
         let file_name = self
             .source_path
             .file_name()
-            .map(|n| n.to_string_lossy().to_string())
-            .unwrap_or_else(|| "???".to_string());
+            .map(|n| sanitize_display_name(n.to_string_lossy()))
+            .unwrap_or(Cow::Borrowed("???"));
         cw.queue_str(&styles.preview_title, &file_name)?;
         let info_area = Area::new(
             state_area.left + state_area.width - cw.allowed as u16,

@@ -12,6 +12,7 @@ use {
     },
     lazy_regex::regex_captures,
     std::{
+        borrow::Cow,
         fs,
         path::{
             Path,
@@ -40,18 +41,23 @@ pub type TreeLineId = usize;
 /// Such strings are controlled by whoever created the file, so without
 /// this a name or link target containing an escape sequence would be
 /// interpreted by the terminal of anyone browsing the directory.
-pub fn sanitize_display_name(s: impl Into<String>) -> String {
+///
+/// Each char is replaced by exactly one char, so char positions (e.g. of
+/// pattern matches computed on the raw string) stay valid.
+pub fn sanitize_display_name<'a>(s: impl Into<Cow<'a, str>>) -> Cow<'a, str> {
     let s = s.into();
     if s.chars().any(char::is_control) {
-        s.chars()
-            .map(|c| match c {
-                '\n' => '␤',
-                c if c.is_control() => '\u{FFFD}',
-                c => c,
-            })
-            .collect()
+        Cow::Owned(s.chars().map(sanitize_display_char).collect())
     } else {
         s
+    }
+}
+
+fn sanitize_display_char(c: char) -> char {
+    match c {
+        '\n' => '␤',
+        c if c.is_control() => '\u{FFFD}',
+        c => c,
     }
 }
 
@@ -113,7 +119,7 @@ impl TreeLineBuilder {
         let line_type = TreeLineType::new(&path, metadata.file_type());
         let name = path
             .file_name()
-            .map(|os_str| sanitize_display_name(os_str.to_string_lossy()))
+            .map(|os_str| sanitize_display_name(os_str.to_string_lossy()).into_owned())
             .unwrap_or_else(String::new);
         let icon = con.icons.as_ref().map(|icon_plugin| {
             let extension = TreeLine::extension_from_name(&name);
@@ -246,7 +252,7 @@ impl TreeLine {
         self.line_type = TreeLineType::new(&self.path, self.metadata.file_type());
         self.name = self.path.file_name().map_or_else(
             || "???".to_string(),
-            |n| sanitize_display_name(n.to_string_lossy()),
+            |n| sanitize_display_name(n.to_string_lossy()).into_owned(),
         );
     }
 }
@@ -273,5 +279,14 @@ mod sanitize_display_name_tests {
     fn preserves_normal_names() {
         let normal = "some-normal_file.name (1).txt";
         assert_eq!(sanitize_display_name(normal), normal);
+        assert!(matches!(sanitize_display_name(normal), Cow::Borrowed(_)));
+    }
+
+    #[test]
+    fn keeps_char_positions() {
+        let raw = "dir\nwith\ttab/ESC\x1b[31m.txt";
+        let sanitized = sanitize_display_name(raw);
+        assert_eq!(sanitized, "dir␤with\u{FFFD}tab/ESC\u{FFFD}[31m.txt");
+        assert_eq!(sanitized.chars().count(), raw.chars().count());
     }
 }

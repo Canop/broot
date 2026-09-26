@@ -23,6 +23,7 @@ use {
             Tree,
             TreeLine,
             TreeLineType,
+            sanitize_display_name,
         },
     },
     chrono::{
@@ -331,8 +332,8 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
         if pattern_object.subpath {
             if self.tree.options.show_matching_characters_on_path_searches && line.unlisted == 0 {
                 let name_match = self.tree.options.pattern.pattern.find_string(&line.subpath);
-                let mut path_ms =
-                    MatchedString::new(name_match, &line.subpath, style, char_match_style);
+                let subpath = sanitize_display_name(line.subpath.as_str());
+                let mut path_ms = MatchedString::new(name_match, &subpath, style, char_match_style);
                 let name_ms = path_ms.split_on_last('/');
                 cond_bg!(parent_style, self, selected, self.skin.parent);
                 if let Some(name_ms) = name_ms {
@@ -422,7 +423,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
                 cw.queue_g_string(style, format!("{:>4} ", file_size::fit_4(s.to_size())))?;
             }
         }
-        let title = line.path.to_string_lossy();
+        let title = sanitize_display_name(line.path.to_string_lossy());
         let title_len = UnicodeWidthStr::width(title.as_ref());
         if title_len > cw.allowed {
             cw.queue_char(style, '…')?;

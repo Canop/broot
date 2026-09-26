@@ -320,10 +320,12 @@ impl PanelState for StageState {
                     // we must display the matching on the whole path
                     // (subpath is the path for the staging area)
                     let name_match = pattern.search_string(&label);
+                    let label = sanitize_display_name(label);
                     let matched_string = MatchedString::new(name_match, &label, style, style_match);
                     matched_string.queue_on(cw)?;
                 } else if let Some(file_name) = path.file_name() {
-                    let label = file_name.to_string_lossy();
+                    let raw_label = file_name.to_string_lossy();
+                    let label = sanitize_display_name(raw_label.as_ref());
                     let label_cols = label.width();
                     if label_cols + 2 < cw.allowed {
                         if let Some(parent_path) = path.parent() {
@@ -337,7 +339,7 @@ impl PanelState for StageState {
                                 parent_style = &bg_style;
                             }
                             let cols_max = cw.allowed - label_cols - 3;
-                            let parent_path = parent_path.to_string_lossy();
+                            let parent_path = sanitize_display_name(parent_path.to_string_lossy());
                             let parent_cols = parent_path.width();
                             if parent_cols <= cols_max {
                                 cw.queue_str(parent_style, &parent_path)?;
@@ -365,7 +367,7 @@ impl PanelState for StageState {
                             cw.queue_char(parent_style, '/')?;
                         }
                     }
-                    let name_match = pattern.search_string(&label);
+                    let name_match = pattern.search_string(&raw_label);
                     let matched_string = MatchedString::new(name_match, &label, style, style_match);
                     matched_string.queue_on(cw)?;
                 } else {
