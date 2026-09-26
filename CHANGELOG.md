@@ -1,4 +1,5 @@
 ### next
+- fix some combinations being wrongly interpreted for input on some terminals (eg shift-r with kitty keyboard protocol enabled on ghostty/mac was interpreted as just a 'r')
 - preview of CRLF (Windows style) text files no longer shows a replacement char at the end of every line - Fix #1216
 - `:copy_line` no longer copies the end of line characters
 - PSD images are no longer previewed
