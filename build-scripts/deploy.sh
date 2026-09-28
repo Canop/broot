@@ -23,6 +23,9 @@ here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 version=$(broot_version)
 
+# Legacy download path, still used by third-party install scripts.
+ln -s x86_64-unknown-linux-gnu build/x86_64-linux
+
 h1 "Deploying $version to $BROOT_DEPLOY_TARGET"
 # Everything must be world-readable to be served; -a then carries the modes over.
 # rsync's --chmod=D...,F... syntax isn't an option: macOS ships openrsync, which
