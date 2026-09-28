@@ -856,16 +856,18 @@ impl PanelState for BrowserState {
 
     fn get_flags(&self) -> Vec<Flag> {
         let options = &self.displayed_tree().options;
-        vec![
-            Flag {
+        let mut flags = Vec::new();
+        if !options.filter_by_git_status {
+            flags.push(Flag {
                 name: "h",
                 value: if options.show_hidden { "y" } else { "n" },
-            },
-            Flag {
-                name: "gi",
-                value: if options.respect_git_ignore { "y" } else { "n" },
-            },
-        ]
+            });
+        }
+        flags.push(Flag {
+            name: "gi",
+            value: if options.respect_git_ignore { "y" } else { "n" },
+        });
+        flags
     }
 
     fn get_starting_input(&self) -> String {

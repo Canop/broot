@@ -176,9 +176,6 @@ impl TreeOptions {
         level = level.saturating_sub(cli_args.no_show_git_info);
         self.show_git_file_info = level >= 1;
         self.filter_by_git_status = level == 2;
-        if level == 2 && (cli_args.show_git_info > 0 || cli_args.git_status) {
-            self.show_hidden = true;
-        }
         if cli_args.hidden {
             self.show_hidden = true;
         } else if cli_args.no_hidden {

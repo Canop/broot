@@ -130,7 +130,9 @@ The top line tells you on what branch you are, how many commits it is ahead (`â†
 
 <kbd>tab</kbd> and <kbd>shift</kbd><kbd>tab</kbd> jump from file with a git status to file with a git status, and the [preview panel](../panels/#diff-preview) shows the changes of the selected file.
 
-With `:toggle_git_status` (shortcut: `:gs`, key <kbd>alt</kbd><kbd>g</kbd>) only the files having a git status are shown.
+With `:toggle_git_status` (shortcut: `:gs`, key <kbd>alt</kbd><kbd>g</kbd>) only the files having a git status are shown, hidden ones included whatever the `:toggle_hidden` setting.
+
+Toggling off either `:gs` or `:gf` removes all git information.
 
 With [some customization](https://dystroy.org/blog/gg/) you have the perfect tool for reviewing your changes before a commit.
 

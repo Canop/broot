@@ -1,3 +1,7 @@
+### next
+- `:gf` now removes all git information, including the git status filter
+- `:gs` now removes all git information when toggled off, and no longer changes the hidden files setting
+
 <a name="v1.60.2"></a>
 ### v1.60.2 - 2026-09-26
 - fix some combinations being wrongly interpreted for input on some terminals (eg shift-r with kitty keyboard protocol enabled on ghostty/mac was interpreted as just a 'r')

@@ -464,6 +464,9 @@ pub trait PanelState {
                 bang,
                 con,
             ),
+            Internal::toggle_hidden if self.tree_options().filter_by_git_status => {
+                CmdResult::error("hidden files are always shown when filtering on git status")
+            }
             Internal::toggle_hidden => self.with_new_options(
                 screen,
                 &|o| {
@@ -540,6 +543,7 @@ pub trait PanelState {
                     if o.show_git_file_info {
                         "*displaying git info next to files*"
                     } else {
+                        o.filter_by_git_status = false;
                         "*removing git file info*"
                     }
                 },
@@ -551,10 +555,11 @@ pub trait PanelState {
                 &|o| {
                     if o.filter_by_git_status {
                         o.filter_by_git_status = false;
-                        "*not filtering according to git status anymore*"
+                        o.show_git_file_info = false;
+                        "*removing git status filter and git file info*"
                     } else {
                         o.filter_by_git_status = true;
-                        o.show_hidden = true;
+                        o.show_git_file_info = true;
                         "*only displaying new or modified files*"
                     }
                 },

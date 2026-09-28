@@ -153,6 +153,7 @@ impl<'c> TreeBuilder<'c> {
             return None;
         }
         if !self.options.show_hidden
+            && !self.options.filter_by_git_status
             && name.as_bytes()[0] == b'.'
             && special_handling.show != Directive::Always
         {
