@@ -44,9 +44,12 @@ pub enum Preview {
 impl Preview {
     /// build a preview, never failing (but the preview can be Preview::IOError).
     /// If the preferred mode can't be applied, an other mode is chosen.
+    /// `pattern` is the search to be applied to the preview: the automatic
+    /// mode then doesn't choose the diff, which can't be searched.
     pub fn new(
         path: &Path,
         git_status: Option<LineGitStatus>,
+        pattern: &InputPattern,
         preferred_mode: Option<PreviewMode>,
         con: &AppContext,
     ) -> Self {
@@ -58,9 +61,9 @@ impl Preview {
                 Some(PreviewMode::Tty) => Self::tty(path),
                 Some(PreviewMode::Diff) => Self::diff(path, con),
                 None => {
-                    // automatic behavior: diff when the file has git changes,
-                    // then image, text, hex
-                    if git_status.is_some_and(LineGitStatus::has_diff) {
+                    // automatic behavior: diff when the file has git changes
+                    // and isn't searched, then image, text, hex
+                    if pattern.is_none() && git_status.is_some_and(LineGitStatus::has_diff) {
                         Self::diff(path, con)
                     } else {
                         ImageView::new(path)

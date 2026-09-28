@@ -58,6 +58,8 @@ When [git statuses](../tree_view/#git-information) are displayed, a file with a 
 
 The `:preview_diff` verb shows this diff for any file, and `:preview_text` shows the plain content instead.
 
+When the preview is opened with a content search (for example `c/test` in the tree, then <kbd>alt</kbd><kbd>→</kbd>), the matching lines are shown instead of the diff.
+
 # Copy & move between panels
 
 When exactly two panels are displayed, `{other-panel-file}` `{other-panel-directory}`, and `{other-panel-parent}` are available for verbs.

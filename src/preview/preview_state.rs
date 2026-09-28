@@ -76,8 +76,20 @@ impl PreviewState {
             .transform(&source_path, preferred_mode);
         let preview = match &transform {
             // the git status doesn't apply to the transformed file
-            Some(transform) => Preview::new(&transform.output_path, None, preferred_mode, con),
-            None => Preview::new(&source_path, source_git_status, preferred_mode, con),
+            Some(transform) => Preview::new(
+                &transform.output_path,
+                None,
+                &pending_pattern,
+                preferred_mode,
+                con,
+            ),
+            None => Preview::new(
+                &source_path,
+                source_git_status,
+                &pending_pattern,
+                preferred_mode,
+                con,
+            ),
         };
         PreviewState {
             preview_area,
@@ -136,8 +148,20 @@ impl PreviewState {
         self.transform = con.preview_transformers.transform(&self.source_path, None);
         self.preview = match &self.transform {
             // the git status doesn't apply to the transformed file
-            Some(transform) => Preview::new(&transform.output_path, None, None, con),
-            None => Preview::new(&self.source_path, self.source_git_status, None, con),
+            Some(transform) => Preview::new(
+                &transform.output_path,
+                None,
+                &self.pending_pattern,
+                None,
+                con,
+            ),
+            None => Preview::new(
+                &self.source_path,
+                self.source_git_status,
+                &self.pending_pattern,
+                None,
+                con,
+            ),
         };
         CmdResult::Keep
     }
@@ -265,8 +289,20 @@ impl PanelState for PreviewState {
             .transform(&path, self.preferred_mode);
         self.preview = match &self.transform {
             // the git status doesn't apply to the transformed file
-            Some(transform) => Preview::new(&transform.output_path, None, self.preferred_mode, con),
-            None => Preview::new(&path, git_status, self.preferred_mode, con),
+            Some(transform) => Preview::new(
+                &transform.output_path,
+                None,
+                &self.pending_pattern,
+                self.preferred_mode,
+                con,
+            ),
+            None => Preview::new(
+                &path,
+                git_status,
+                &self.pending_pattern,
+                self.preferred_mode,
+                con,
+            ),
         };
         if let Some(number) = selected_line_number {
             self.preview.try_select_line_number(number);
