@@ -2,6 +2,7 @@
 - `:gf` now removes all git information, including the git status filter
 - `:gs` now removes all git information when toggled off, and no longer changes the hidden files setting
 - a content search opened in the preview now shows the matching lines instead of the diff of a modified file
+- quiet exit instead of a panic when stdout is closed, eg `broot --help | head -1`
 
 <a name="v1.60.2"></a>
 ### v1.60.2 - 2026-09-26

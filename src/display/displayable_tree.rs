@@ -433,7 +433,7 @@ impl<'a, 's, 't> DisplayableTree<'a, 's, 't> {
             let mut bytes = 0;
             for c in title.chars().rev() {
                 let char_width = c.width().unwrap_or(0);
-                if width + char_width > cw.allowed - 1 {
+                if width + char_width > cw.allowed.saturating_sub(1) {
                     break;
                 }
                 width += char_width;

@@ -13,6 +13,10 @@ use {
     },
     std::{
         fs,
+        io::{
+            self,
+            Write,
+        },
         os,
         path::Path,
     },
@@ -84,17 +88,18 @@ impl ShellInstall {
     /// write on stdout the script building the function for
     /// the given shell
     pub fn print(shell: &str) -> Result<(), ProgramError> {
-        match shell {
-            "bash" | "zsh" => println!("{}", bash::get_script()),
-            "fish" => println!("{}", fish::get_script()),
-            "nushell" => println!("{}", nushell::get_script()),
-            "powershell" => println!("{}", powershell::get_script()),
+        let script = match shell {
+            "bash" | "zsh" => bash::get_script(),
+            "fish" => fish::get_script(),
+            "nushell" => nushell::get_script(),
+            "powershell" => powershell::get_script(),
             _ => {
                 return Err(ProgramError::UnknownShell {
                     shell: shell.to_string(),
                 });
             }
-        }
+        };
+        writeln!(io::stdout(), "{script}")?;
         Ok(())
     }
 

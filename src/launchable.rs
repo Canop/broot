@@ -183,7 +183,9 @@ impl Launchable {
     ) -> Result<(), ProgramError> {
         match self {
             Launchable::Printer { to_print } => {
-                print!("{to_print}");
+                let mut out = io::stdout();
+                write!(out, "{to_print}")?;
+                out.flush()?;
                 Ok(())
             }
             Launchable::TreePrinter {

@@ -35,6 +35,18 @@ custom_error! {pub ProgramError
     Notify { source: notify::Error } = "Notify error: {source}",
 }
 
+impl ProgramError {
+    /// Whether the error comes from writing to a closed pipe
+    pub fn is_broken_pipe(&self) -> bool {
+        match self {
+            Self::Io { source } | Self::Termimad { source: termimad::Error::IO(source) } => {
+                source.kind() == io::ErrorKind::BrokenPipe
+            }
+            _ => false,
+        }
+    }
+}
+
 impl From<image::ImageError> for ProgramError {
     fn from(err: image::ImageError) -> Self {
         ProgramError::ImageError {

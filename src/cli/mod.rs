@@ -81,12 +81,12 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
             .with("introduction", INTRO)
             .with("options", clap_help::TEMPLATE_OPTIONS_MERGED_VALUE)
             .without("author")
-            .print_help();
+            .write_help(&mut io::stdout())?;
         must_quit = true;
     }
 
     if args.version {
-        println!("broot {}", env!("CARGO_PKG_VERSION"));
+        writeln!(io::stdout(), "broot {}", env!("CARGO_PKG_VERSION"))?;
         must_quit = true;
     }
 
