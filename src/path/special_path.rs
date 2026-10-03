@@ -4,12 +4,6 @@ use {
     std::path::Path,
 };
 
-///// Wrap a glob pattern to add the Deserialize trait
-//#[derive(Debug, Clone, PartialEq, Hash, Eq)]
-//pub struct Glob {
-//    pattern: glob::Pattern,
-//}
-
 #[derive(Clone, Copy, Debug, Deserialize, Default, PartialEq)]
 pub struct SpecialHandling {
     #[serde(default)]
@@ -136,16 +130,11 @@ impl SpecialPath {
             return true;
         };
         let pattern = self.pattern.as_str();
-        // every path matching the pattern starts with the part of the
-        // pattern preceding the first glob metacharacter
         let fixed_len = pattern.find(['*', '?', '[']).unwrap_or(pattern.len());
         let fixed = &pattern[..fixed_len];
         if fixed.len() >= p.len() {
             fixed.starts_with(p)
         } else {
-            // the pattern must have a wildcard part (otherwise it only matches
-            // a path shorter than `p`, thus not inside it) and its fixed part
-            // must be compatible with `p`
             fixed_len < pattern.len() && p.starts_with(fixed)
         }
     }
