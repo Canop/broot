@@ -1,4 +1,5 @@
-### next
+<a name="v1.61.0"></a>
+### v1.61.0 - 2026-10-03
 - `:gf` now removes all git information, including the git status filter
 - `:gs` now removes all git information when toggled off, and no longer changes the hidden files setting
 - a content search opened in the preview now shows the matching lines instead of the diff of a modified file
