@@ -370,9 +370,9 @@ mod fuzzy_pattern_tests {
     #[test]
     fn check_equivalences() {
         fn check_equivalences_in(arr: &[&str]) {
-            for pattern in arr.iter() {
+            for pattern in arr {
                 let fp = FuzzyPattern::from(pattern);
-                for name in arr.iter() {
+                for name in arr {
                     println!("looking for pattern {pattern:?} in name {name:?}");
                     assert!(fp.find(name).unwrap().score > 0);
                 }

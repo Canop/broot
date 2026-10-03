@@ -65,6 +65,15 @@ need_stdout = false
 command = ["cargo", "clippy"]
 need_stdout = false
 
+[jobs.clippy-all]
+command = [
+	"cargo", "clippy",
+	"--all-features", "--all-targets",
+	"--",
+	"-A", "clippy::bool_assert_comparison",
+]
+need_stdout = false
+
 [jobs.pedantic]
 command = [
 	"cargo", "clippy",
@@ -98,7 +107,7 @@ need_stdout = true
 [keybindings]
 a = "job:check-all"
 i = "job:initial"
-c = "job:clippy"
+c = "job:clippy-all"
 d = "job:doc-open"
 t = "job:test"
 r = "job:check-all"
