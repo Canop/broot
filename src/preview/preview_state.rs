@@ -80,7 +80,7 @@ impl PreviewState {
                 &transform.output_path,
                 None,
                 &pending_pattern,
-                preferred_mode,
+                preferred_mode.or(Some(transform.mode)),
                 con,
             ),
             None => Preview::new(
@@ -152,7 +152,7 @@ impl PreviewState {
                 &transform.output_path,
                 None,
                 &self.pending_pattern,
-                None,
+                Some(transform.mode),
                 con,
             ),
             None => Preview::new(
@@ -293,7 +293,7 @@ impl PanelState for PreviewState {
                 &transform.output_path,
                 None,
                 &self.pending_pattern,
-                self.preferred_mode,
+                self.preferred_mode.or(Some(transform.mode)),
                 con,
             ),
             None => Preview::new(
