@@ -16,6 +16,8 @@ macro_rules! Internals {
             $($name,)*
         }
         impl Internal {
+            #[cfg(test)]
+            pub const ALL: &[Internal] = &[$(Internal::$name,)*];
             pub fn try_from(verb: &str) -> Result<Internal, ConfError> {
                 use Internal::*;
                 match verb {
@@ -185,7 +187,7 @@ impl Internal {
             Self::line_up => r"line_up (?P<count>\d*)?",
             Self::line_down_no_cycle => r"line_down_no_cycle (?P<count>\d*)?",
             Self::line_up_no_cycle => r"line_up_no_cycle (?P<count>\d*)?",
-            Self::move_panel_divider => r"move_panel_divider (?P<idx>\d+) (?P-?<dx>\d+)",
+            Self::move_panel_divider => r"move_panel_divider (?P<idx>\d+) (?P<dx>-?\d+)",
             Self::set_panel_width => r"set_panel_width (?P<idx>\d+) (?P<width>\d+)",
             Self::set_max_depth => r"set_max_depth (?P<depth>\d+)",
             Self::set_syntax_theme => r"set_syntax_theme {theme:theme}",
@@ -233,6 +235,23 @@ impl Internal {
             Self::input_selection_copy => true,
             Self::input_selection_cut => true,
             _ => false,
+        }
+    }
+}
+
+#[cfg(test)]
+mod internal_tests {
+    use {
+        super::*,
+        crate::verb::InvocationParser,
+    };
+
+    #[test]
+    fn check_invocation_patterns() {
+        for internal in Internal::ALL {
+            if let Err(e) = InvocationParser::new(internal.invocation_pattern()) {
+                panic!("invalid invocation pattern for {}: {e}", internal.name());
+            }
         }
     }
 }
