@@ -266,6 +266,18 @@ syntax_theme = "OceanLight"
 
 Those themes come from [syntect](https://github.com/trishume/syntect) and are bundled in broot.
 
+You may also use your own theme, in the `.tmTheme` format read by syntect (and by [bat](https://github.com/sharkdp/bat)), by giving its path:
+
+```Hjson
+syntax_theme_file: ~/.config/bat/themes/my-theme.tmTheme
+```
+```TOML
+syntax_theme_file = "~/.config/bat/themes/my-theme.tmTheme"
+```
+
+A relative path is resolved from the configuration file declaring it.
+The theme file takes precedence over a `syntax_theme` set in the configuration (for example by a skin), but a theme chosen with `:set_syntax_theme` replaces it until broot is closed.
+
 
 # Terminal title
 
