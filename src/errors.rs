@@ -118,6 +118,7 @@ custom_error! {pub ConfError
     InvalidThreadsCount { count: usize }            = "invalid threads count: {count}",
     InvalidDefaultFlags { flags: String }           = "invalid default flags: {flags:?}",
     InvalidSyntaxTheme { name: String }             = "invalid syntax theme: {name:?}",
+    InvalidSyntaxThemeFile { path: String, details: String } = "invalid syntax theme file {path:?}: {details}",
     InvalidGlobPattern { pattern: String }          = "invalid glob pattern: {pattern:?}",
     InvalidVerbName { name: String }                = "invalid verb name: {name:?} (must either not start with a special character or be only made of special characters)",
     UnknownVerbArgFlag { name: String }                = "Unknown verb argument flag: {name:?}",

@@ -155,6 +155,11 @@ pub struct Conf {
     #[serde(alias = "syntax-theme")]
     pub syntax_theme: Option<SyntaxTheme>,
 
+    /// path to a syntect compatible .tmTheme file, used for previews
+    /// instead of syntax_theme
+    #[serde(alias = "syntax-theme-file")]
+    pub syntax_theme_file: Option<PathBuf>,
+
     #[serde(alias = "terminal-title")]
     pub terminal_title: Option<ExecPattern>,
 
@@ -247,6 +252,14 @@ impl Conf {
         overwrite!(self, date_time_format, conf);
         overwrite!(self, icon_theme, conf);
         overwrite!(self, syntax_theme, conf);
+        if let Some(file) = conf.syntax_theme_file.take() {
+            // relative to the conf file declaring it
+            self.syntax_theme_file = Some(path_from(
+                &path,
+                PathAnchor::Parent,
+                &file.to_string_lossy(),
+            ));
+        }
         overwrite!(self, disable_mouse_capture, conf);
         overwrite!(self, capture_mouse, conf);
         overwrite!(self, true_colors, conf);
