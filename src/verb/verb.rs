@@ -50,6 +50,9 @@ pub struct Verb {
     /// how the verb will be executed
     pub execution: VerbExecution,
 
+    /// the arg defs of the execution pattern(s)
+    pub exec_arg_defs: Vec<ExecArgDef>,
+
     /// a description
     pub description: VerbDescription,
 
@@ -103,23 +106,30 @@ impl Verb {
             check_verb_name(&name)?;
             names.push(name);
         }
-        let (needs_selection, needs_another_panel) = match &execution {
-            VerbExecution::Internal(ie) => (ie.needs_selection(), false),
-            VerbExecution::External(ee) | VerbExecution::ShellCommand(ee) => (
-                ee.exec_pattern.has_selection_group(),
-                ee.exec_pattern.has_other_panel_group(),
-            ),
-            VerbExecution::Sequence(se) => (
-                se.sequence.has_selection_group(),
-                se.sequence.has_other_panel_group(),
-            ),
+        let exec_arg_defs = execution.arg_defs()?;
+        if let VerbExecution::External(ee) | VerbExecution::ShellCommand(ee) = &execution {
+            if let Some(working_dir) = &ee.working_dir {
+                parse_exec_arg_defs(working_dir)?;
+            }
+        }
+        let needs_standard_arg = |f: fn(StandardArg) -> bool| {
+            exec_arg_defs
+                .iter()
+                .filter_map(ExecArgDef::standard_arg)
+                .any(f)
         };
+        let mut needs_selection = needs_standard_arg(StandardArg::needs_selection);
+        if let VerbExecution::Internal(ie) = &execution {
+            needs_selection |= ie.needs_selection();
+        }
+        let needs_another_panel = needs_standard_arg(StandardArg::needs_other_panel);
         Ok(Self {
             id,
             names,
             keys: Vec::new(),
             invocation_parser,
             execution,
+            exec_arg_defs,
             description,
             selection_condition: FileTypeCondition::Any,
             file_extensions: Vec::new(),
@@ -294,11 +304,22 @@ impl Verb {
         }
     }
 
+    /// Return the anchor of the path typed as argument, when the invocation
+    /// has only one argument
     pub fn get_unique_arg_anchor(&self) -> PathAnchor {
-        self.invocation_parser.as_ref().map_or(
-            PathAnchor::Unspecified,
-            InvocationParser::get_unique_arg_anchor,
-        )
+        let Some(arg_def) = self
+            .invocation_parser
+            .as_ref()
+            .and_then(InvocationParser::get_unique_arg_def)
+        else {
+            return PathAnchor::Unspecified;
+        };
+        self.exec_arg_defs
+            .iter()
+            .filter(|exec_arg_def| exec_arg_def.name == arg_def.name)
+            .map(ExecArgDef::path_anchor)
+            .find(|anchor| *anchor != PathAnchor::Unspecified)
+            .unwrap_or_default()
     }
 
     pub fn get_internal(&self) -> Option<Internal> {

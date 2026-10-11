@@ -90,7 +90,7 @@ impl<'b> ExecutionBuilder<'b> {
     /// but get_sel_capture_replacement while building a command per selection.
     fn get_arg_replacement(
         &self,
-        arg_def: &VerbArgDef,
+        arg_def: &ExecArgDef,
         con: &AppContext,
     ) -> Option<String> {
         let merging_flag = arg_def.merging_flag();
@@ -124,35 +124,35 @@ impl<'b> ExecutionBuilder<'b> {
     }
 
     /// return the standard replacement (ie not one from the invocation)
-    fn get_sel_name_standard_replacement(
+    fn get_sel_standard_replacement(
         &self,
-        name: &str,
+        standard_arg: StandardArg,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Option<String> {
-        match name {
-            "root" => Some(self.path_to_string(self.root)),
-            "initial-root" => Some(self.path_to_string(&con.initial_root)),
-            "line" => sel.map(|s| s.line.to_string()),
-            "file" => sel.map(|s| s.path).map(|p| self.path_to_string(p)),
-            "file-name" => sel
+        match standard_arg {
+            StandardArg::Root => Some(self.path_to_string(self.root)),
+            StandardArg::InitialRoot => Some(self.path_to_string(&con.initial_root)),
+            StandardArg::Line => sel.map(|s| s.line.to_string()),
+            StandardArg::File => sel.map(|s| s.path).map(|p| self.path_to_string(p)),
+            StandardArg::FileName => sel
                 .map(|s| s.path)
                 .and_then(|path| path.file_name())
                 .and_then(|oss| oss.to_str())
                 .map(|s| s.to_string()),
-            "file-stem" => sel
+            StandardArg::FileStem => sel
                 .map(|s| s.path)
                 .and_then(|path| path.file_stem())
                 .and_then(|oss| oss.to_str())
                 .map(|s| s.to_string()),
-            "file-extension" => {
+            StandardArg::FileExtension => {
                 debug!("expending file extension");
                 sel.map(|s| s.path)
                     .and_then(|path| path.extension())
                     .and_then(|oss| oss.to_str())
                     .map(|s| s.to_string())
             }
-            "file-dot-extension" => {
+            StandardArg::FileDotExtension => {
                 debug!("expending file dot extension");
                 sel.map(|s| s.path)
                     .and_then(|path| path.extension())
@@ -160,34 +160,34 @@ impl<'b> ExecutionBuilder<'b> {
                     .map(|ext| format!(".{ext}"))
                     .or_else(|| Some("".to_string()))
             }
-            "directory" => sel
+            StandardArg::Directory => sel
                 .map(|s| path::closest_dir(s.path))
                 .map(|p| self.path_to_string(p)),
-            "parent" => sel
+            StandardArg::Parent => sel
                 .and_then(|s| s.path.parent())
                 .map(|p| self.path_to_string(p)),
-            "other-panel-file" => self.other_file.map(|p| self.path_to_string(p)),
-            "other-panel-filename" => self
+            StandardArg::OtherPanelFile => self.other_file.map(|p| self.path_to_string(p)),
+            StandardArg::OtherPanelFilename => self
                 .other_file
                 .and_then(|path| path.file_name())
                 .and_then(|oss| oss.to_str())
                 .map(|s| s.to_string()),
-            "other-panel-directory" => self
+            StandardArg::OtherPanelDirectory => self
                 .other_file
                 .map(|p| path::closest_dir(p))
                 .as_ref()
                 .map(|p| self.path_to_string(p)),
-            "other-panel-parent" => self
+            StandardArg::OtherPanelParent => self
                 .other_file
                 .and_then(|p| p.parent())
                 .map(|p| self.path_to_string(p)),
-            "git-root" => {
+            StandardArg::GitRoot => {
                 // path to git repo workdir
                 debug!("finding git root");
                 sel.and_then(|s| git::workdir(s.path))
                     .map(|p| self.path_to_string(&p))
             }
-            "git-name" => {
+            StandardArg::GitName => {
                 // name of the git repo workdir
                 sel.and_then(|s| git::workdir(s.path)).and_then(|path| {
                     path.file_name()
@@ -195,7 +195,7 @@ impl<'b> ExecutionBuilder<'b> {
                         .map(|s| s.to_string())
                 })
             }
-            "file-git-relative" => {
+            StandardArg::FileGitRelative => {
                 // file path relative to git repo workdir
                 let sel = sel?;
                 let path = git::workdir(self.root)
@@ -207,7 +207,7 @@ impl<'b> ExecutionBuilder<'b> {
                     .unwrap_or(sel.path);
                 Some(self.path_to_string(path))
             }
-            "file-root-relative" => {
+            StandardArg::FileRootRelative => {
                 // file path relative to the tree root
                 sel?
                     .path
@@ -215,19 +215,19 @@ impl<'b> ExecutionBuilder<'b> {
                     .ok()
                     .map(|p| self.path_to_string(p))
             }
-            #[cfg(unix)]
-            "server-name" => con.server_name.clone(),
-            _ => None,
+            StandardArg::ServerName => con.server_name.clone(),
         }
     }
     fn get_sel_arg_replacement(
         &self,
-        arg_def: &VerbArgDef,
+        arg_def: &ExecArgDef,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Option<String> {
         let name = &arg_def.name;
-        self.get_sel_name_standard_replacement(name, sel, con)
+        arg_def
+            .standard_arg()
+            .and_then(|standard_arg| self.get_sel_standard_replacement(standard_arg, sel, con))
             .or_else(|| {
                 // it's not one of the standard group names, so we'll look
                 // into the ones provided by the invocation pattern
@@ -235,11 +235,11 @@ impl<'b> ExecutionBuilder<'b> {
                     .as_ref()
                     .and_then(|map| map.get(name))
                     .and_then(|value| {
-                        if arg_def.has_flag(VerbArgFlag::PathFromDirectory) {
+                        if arg_def.has_flag(ExecArgFlag::PathFromDirectory) {
                             sel.map(|s| path::closest_dir(s.path))
                                 .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
                                 .map(|pb| self.path_to_string(pb))
-                        } else if arg_def.has_flag(VerbArgFlag::PathFromParent) {
+                        } else if arg_def.has_flag(ExecArgFlag::PathFromParent) {
                             sel.and_then(|s| s.path.parent())
                                 .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
                                 .map(|pb| self.path_to_string(pb))
@@ -252,12 +252,14 @@ impl<'b> ExecutionBuilder<'b> {
     fn replace_args(
         &self,
         s: &str,
-        replacer: &mut dyn FnMut(&VerbArgDef) -> Option<String>,
+        replacer: &mut dyn FnMut(&ExecArgDef) -> Option<String>,
     ) -> String {
         ARG_DEF_GROUP
             .replace_all(s, |ec: &Captures<'_>| {
-                let arg_def = VerbArgDef::from_capture(ec);
-                replacer(&arg_def).unwrap_or_else(|| {
+                let replacement = ExecArgDef::from_capture(ec)
+                    .ok()
+                    .and_then(|arg_def| replacer(&arg_def));
+                replacement.unwrap_or_else(|| {
                     if self.keep_groups {
                         ec[0].to_string()
                     } else {
@@ -267,28 +269,28 @@ impl<'b> ExecutionBuilder<'b> {
             })
             .to_string()
     }
-    /// fills groups having a default value (after the colon)
+    /// Build the invocation with the arguments replaced by their default
+    /// values (or by nothing when they have none)
     ///
     /// This is used to fill the input in case on non auto_exec
     /// verb triggered with a key.
-    ///
-    /// In invocation pattern, the part after the colon isn't handled
-    /// as a 'flag' but as a default value
     pub fn invocation_with_default(
         &self,
-        verb_invocation: &VerbInvocation,
+        invocation_parser: &InvocationParser,
         con: &AppContext,
     ) -> VerbInvocation {
+        let verb_invocation = &invocation_parser.invocation_pattern;
         VerbInvocation {
             name: verb_invocation.name.clone(),
             args: verb_invocation.args.as_ref().map(|a| {
                 ARG_DEF_GROUP
                     .replace_all(a.as_str(), |ec: &Captures<'_>| {
-                        ec.get(2)
-                            .map(|default_name| default_name.as_str())
-                            .and_then(|default_name| {
-                                self.get_sel_name_standard_replacement(
-                                    default_name,
+                        invocation_parser
+                            .get_arg_def(&ec[1])
+                            .and_then(|arg_def| arg_def.default)
+                            .and_then(|standard_arg| {
+                                self.get_sel_standard_replacement(
+                                    standard_arg,
                                     self.sel_info.first_sel(),
                                     con,
                                 )
@@ -413,9 +415,10 @@ impl<'b> ExecutionBuilder<'b> {
         // a "space-separated" flag in the capture
         let mut output = Vec::new();
         for token in exec_pattern.tokens() {
-            if let Some(ec) = capture_if_total(&ARG_DEF_GROUP, token) {
-                let arg_def = VerbArgDef::from_capture(&ec);
-                let space_separated = arg_def.has_flag(VerbArgFlag::SpaceSeparated);
+            let arg_def = capture_if_total(&ARG_DEF_GROUP, token)
+                .and_then(|ec| ExecArgDef::from_capture(&ec).ok());
+            if let Some(arg_def) = arg_def {
+                let space_separated = arg_def.has_flag(ExecArgFlag::SpaceSeparated);
                 if space_separated {
                     if let SelInfo::More(stage) = &self.sel_info {
                         let sels = stage.to_selections();

@@ -764,3 +764,35 @@ fn check_shadowed_homonym_verbs() {
     assert_eq!(name, "edit");
     assert_eq!(verb.execution.to_string(), "first {file}");
 }
+
+#[test]
+fn check_arg_defs_from_conf() {
+    let verb_conf = |invocation: &str, external: &str| VerbConf {
+        invocation: Some(invocation.to_string()),
+        external: Some(ExecPattern::from_string(external)),
+        ..Default::default()
+    };
+    let mut conf = Conf::default();
+    conf.verbs.push(verb_conf("play", "mpv {file:space-separated}"));
+    let store = VerbStore::new(&mut conf).unwrap();
+    let PrefixSearchResult::Match(_, play) = store.search_prefix("play", None) else {
+        panic!("play verb not found");
+    };
+    assert!(play.needs_selection);
+    let PrefixSearchResult::Match(_, copy) = store.search_prefix("copy", None) else {
+        panic!("copy verb not found");
+    };
+    assert_eq!(copy.get_unique_arg_anchor(), crate::path::PathAnchor::Parent);
+
+    for (invocation, external) in [
+        ("play", "mpv {file:space_separated}"),
+        ("cpp {dest:path-from-parent}", "cp {file} {dest}"),
+        ("cpp {dest:fiel}", "cp {file} {dest}"),
+    ] {
+        let mut store = VerbStore {
+            verbs: Vec::new(),
+            unbound_keys: Vec::new(),
+        };
+        assert!(store.add_from_conf(&verb_conf(invocation, external)).is_err());
+    }
+}

@@ -169,7 +169,7 @@ impl Completions {
             .search_sel_info_unique(verb_name, sel_info, panel_state_type)
             .and_then(|verb| verb.invocation_parser.as_ref())
             .and_then(InvocationParser::get_unique_arg_def)
-            .is_some_and(|arg_def| arg_def.has_flag(VerbArgFlag::Theme));
+            .is_some_and(|arg_def| arg_def.kind == InvocationArgKind::Theme);
         if is_theme {
             Self::for_theme_arg(arg)
         } else {

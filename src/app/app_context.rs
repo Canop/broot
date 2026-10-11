@@ -244,6 +244,9 @@ impl AppContext {
             .unwrap_or(content_search::DEFAULT_MAX_FILE_SIZE);
 
         let terminal_title_pattern = config.terminal_title.clone();
+        if let Some(pattern) = &terminal_title_pattern {
+            pattern.arg_defs()?;
+        }
         let reset_terminal_title_on_exit = config.reset_terminal_title_on_exit.unwrap_or(false);
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
         let layout_instructions = config.layout_instructions.clone().unwrap_or_default();

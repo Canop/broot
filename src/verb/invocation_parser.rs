@@ -1,9 +1,6 @@
 use {
     super::*,
-    crate::{
-        errors::ConfError,
-        path::PathAnchor,
-    },
+    crate::errors::ConfError,
     regex::Regex,
     rustc_hash::FxHashMap,
     std::path::PathBuf,
@@ -23,7 +20,7 @@ pub struct InvocationParser {
     /// invocation name's characters are [_0-9a-zA-Z.\[\]])
     args_parser: Option<Regex>,
 
-    pub arg_defs: Vec<VerbArgDef>,
+    pub arg_defs: Vec<InvocationArgDef>,
 }
 
 impl InvocationParser {
@@ -41,7 +38,7 @@ impl InvocationParser {
                 }
             };
             for group in ARG_DEF_GROUP.captures_iter(args) {
-                arg_defs.push(VerbArgDef::from_capture(&group));
+                arg_defs.push(InvocationArgDef::from_capture(&group)?);
             }
         }
         Ok(Self {
@@ -55,14 +52,18 @@ impl InvocationParser {
         &self.invocation_pattern.name
     }
 
-    pub fn get_unique_arg_def(&self) -> Option<VerbArgDef> {
-        (self.arg_defs.len() == 1).then(|| self.arg_defs[0].clone())
+    pub fn get_unique_arg_def(&self) -> Option<&InvocationArgDef> {
+        match self.arg_defs.as_slice() {
+            [arg_def] => Some(arg_def),
+            _ => None,
+        }
     }
 
-    pub fn get_unique_arg_anchor(&self) -> PathAnchor {
-        self.get_unique_arg_def()
-            .map(|arg_def| arg_def.path_anchor())
-            .unwrap_or_default()
+    pub fn get_arg_def(
+        &self,
+        name: &str,
+    ) -> Option<&InvocationArgDef> {
+        self.arg_defs.iter().find(|arg_def| arg_def.name == name)
     }
 
     /// Assuming the verb has been matched, check whether the arguments

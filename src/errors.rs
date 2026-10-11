@@ -121,6 +121,7 @@ custom_error! {pub ConfError
     InvalidGlobPattern { pattern: String }          = "invalid glob pattern: {pattern:?}",
     InvalidVerbName { name: String }                = "invalid verb name: {name:?} (must either not start with a special character or be only made of special characters)",
     UnknownVerbArgFlag { name: String }                = "Unknown verb argument flag: {name:?}",
+    UnknownInvocationArgFlag { name: String }       = "Unknown flag in invocation argument: {name:?} (expected `theme` or the name of a standard argument)",
     InvalidPanelReference { raw: String }           = "invalid panel reference: {raw:?}",
 }
 

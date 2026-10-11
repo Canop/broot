@@ -1,5 +1,6 @@
 use {
     super::*,
+    crate::errors::ConfError,
     std::fmt,
 };
 
@@ -22,6 +23,21 @@ pub enum VerbExecution {
     /// the execution is a sequence similar to what can be given
     /// to broot with --cmd
     Sequence(SequenceExecution),
+}
+
+impl VerbExecution {
+    /// Parse the arg defs of the pattern(s) building the command
+    /// (not including the working dir)
+    pub fn arg_defs(&self) -> Result<Vec<ExecArgDef>, ConfError> {
+        match self {
+            Self::Internal(ie) => match &ie.arg {
+                Some(arg) => parse_exec_arg_defs(arg),
+                None => Ok(Vec::new()),
+            },
+            Self::External(ee) | Self::ShellCommand(ee) => ee.exec_pattern.arg_defs(),
+            Self::Sequence(se) => parse_exec_arg_defs(&se.sequence.raw),
+        }
+    }
 }
 
 // This implementation builds a string used for description (eg in help)

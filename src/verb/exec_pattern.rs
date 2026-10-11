@@ -1,5 +1,8 @@
 use {
-    crate::verb::*,
+    crate::{
+        errors::ConfError,
+        verb::*,
+    },
     serde::{
         Deserialize,
         Deserializer,
@@ -36,11 +39,13 @@ impl ExecPattern {
     pub fn is_empty(&self) -> bool {
         self.tokens.is_empty()
     }
-    pub fn has_selection_group(&self) -> bool {
-        self.tokens.iter().any(|s| str_has_selection_group(s))
-    }
-    pub fn has_other_panel_group(&self) -> bool {
-        self.tokens.iter().any(|s| str_has_other_panel_group(s))
+    /// Parse the arg defs of all tokens
+    pub fn arg_defs(&self) -> Result<Vec<ExecArgDef>, ConfError> {
+        let mut arg_defs = Vec::new();
+        for token in &self.tokens {
+            arg_defs.extend(parse_exec_arg_defs(token)?);
+        }
+        Ok(arg_defs)
     }
     pub fn to_internal_pattern(&self) -> Option<String> {
         let first_token = self.tokens.first()?;
@@ -58,12 +63,13 @@ impl ExecPattern {
 
     pub fn visit_arg_defs(
         &self,
-        f: &mut dyn FnMut(&VerbArgDef),
+        f: &mut dyn FnMut(&ExecArgDef),
     ) {
         for token in &self.tokens {
             for capture in ARG_DEF_GROUP.captures_iter(token) {
-                let arg_def = VerbArgDef::from_capture(&capture);
-                f(&arg_def);
+                if let Ok(arg_def) = ExecArgDef::from_capture(&capture) {
+                    f(&arg_def);
+                }
             }
         }
     }

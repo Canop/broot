@@ -520,7 +520,7 @@ impl PanelInput {
             if let Some(invocation_parser) = &verb.invocation_parser {
                 let exec_builder = ExecutionBuilder::without_invocation(sel_info, app_state);
                 let verb_invocation = exec_builder
-                    .invocation_with_default(&invocation_parser.invocation_pattern, con);
+                    .invocation_with_default(invocation_parser, con);
                 let mut parts = parts;
                 parts.verb_invocation = Some(verb_invocation);
                 self.set_content(&parts.to_string());
