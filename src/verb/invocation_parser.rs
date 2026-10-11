@@ -59,6 +59,13 @@ impl InvocationParser {
         }
     }
 
+    /// Return the names of the arguments defined by the invocation pattern
+    pub fn arg_names(&self) -> impl Iterator<Item = &str> {
+        self.args_parser
+            .iter()
+            .flat_map(|regex| regex.capture_names().flatten())
+    }
+
     pub fn get_arg_def(
         &self,
         name: &str,

@@ -1,6 +1,8 @@
 ### next
 - an invalid flag in a verb argument, eg `{file:space_separated}`, is now reported as a configuration error
 - an invalid flag in the `terminal_title` pattern is now a configuration error
+- an unknown argument in a verb, eg `{flie}`, is now reported as a configuration error
+- an unknown argument in the `terminal_title` pattern is now a configuration error
 - tab completion of the argument of `:copy`, `:move`, or of verbs using `path-from-parent` or `path-from-directory`, now starts from the directory the command will use
 
 <a name="v1.61.0"></a>

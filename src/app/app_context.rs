@@ -245,7 +245,11 @@ impl AppContext {
 
         let terminal_title_pattern = config.terminal_title.clone();
         if let Some(pattern) = &terminal_title_pattern {
-            pattern.arg_defs()?;
+            for arg_def in pattern.arg_defs()? {
+                if arg_def.standard_arg().is_none() {
+                    return Err(ConfError::UnknownTerminalTitleArg { name: arg_def.name }.into());
+                }
+            }
         }
         let reset_terminal_title_on_exit = config.reset_terminal_title_on_exit.unwrap_or(false);
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;

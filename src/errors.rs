@@ -122,6 +122,8 @@ custom_error! {pub ConfError
     InvalidVerbName { name: String }                = "invalid verb name: {name:?} (must either not start with a special character or be only made of special characters)",
     UnknownVerbArgFlag { name: String }                = "Unknown verb argument flag: {name:?}",
     UnknownInvocationArgFlag { name: String }       = "Unknown flag in invocation argument: {name:?} (expected `theme` or the name of a standard argument)",
+    UnknownVerbArg { name: String }                 = "Unknown argument {name:?}: it's neither provided by broot nor defined in the invocation pattern",
+    UnknownTerminalTitleArg { name: String }        = "Unknown argument {name:?} in terminal_title: only the arguments provided by broot can be used",
     InvalidPanelReference { raw: String }           = "invalid panel reference: {raw:?}",
 }
 

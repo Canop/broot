@@ -107,9 +107,20 @@ impl Verb {
             names.push(name);
         }
         let exec_arg_defs = execution.arg_defs()?;
+        let mut checked_arg_defs = exec_arg_defs.clone();
         if let VerbExecution::External(ee) | VerbExecution::ShellCommand(ee) = &execution {
             if let Some(working_dir) = &ee.working_dir {
-                parse_exec_arg_defs(working_dir)?;
+                checked_arg_defs.extend(parse_exec_arg_defs(working_dir)?);
+            }
+        }
+        for arg_def in &checked_arg_defs {
+            let is_invocation_arg = invocation_parser
+                .as_ref()
+                .is_some_and(|parser| parser.arg_names().any(|name| name == arg_def.name));
+            if arg_def.standard_arg().is_none() && !is_invocation_arg {
+                return Err(ConfError::UnknownVerbArg {
+                    name: arg_def.name.clone(),
+                });
             }
         }
         let needs_standard_arg = |f: fn(StandardArg) -> bool| {

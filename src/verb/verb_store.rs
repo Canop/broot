@@ -788,6 +788,8 @@ fn check_arg_defs_from_conf() {
         ("play", "mpv {file:space_separated}"),
         ("cpp {dest:path-from-parent}", "cp {file} {dest}"),
         ("cpp {dest:fiel}", "cp {file} {dest}"),
+        ("cpp {dest}", "cp {file} {dst}"),
+        ("tgz", "tar czf {name}.tgz {file}"),
     ] {
         let mut store = VerbStore {
             verbs: Vec::new(),
@@ -795,4 +797,18 @@ fn check_arg_defs_from_conf() {
         };
         assert!(store.add_from_conf(&verb_conf(invocation, external)).is_err());
     }
+
+    let mut store = VerbStore {
+        verbs: Vec::new(),
+        unbound_keys: Vec::new(),
+    };
+    store
+        .add_from_conf(&verb_conf(
+            r"blop {name}\.(?P<type>[^.]+)",
+            "nvim {parent}/{type}/{name}.{type}",
+        ))
+        .unwrap();
+    let mut with_working_dir = verb_conf("lsd", "ls");
+    with_working_dir.working_dir = Some("{dir}".to_string());
+    assert!(store.add_from_conf(&with_working_dir).is_err());
 }
