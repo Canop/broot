@@ -89,7 +89,7 @@ impl FromStr for Col {
             "staged" => Ok(Self::Staged),
             "n" | "name" => Ok(Self::Name),
             _ => Err(ConfError::InvalidCols {
-                details: format!("column not recognized : {s}"),
+                details: format!("column not recognized: `{s}`"),
             }),
         }
     }

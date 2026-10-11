@@ -70,7 +70,7 @@ impl BLine {
             }))
         } else {
             Err(TreeBuildError::FileNotFound {
-                path: format!("{path:?}"),
+                path: path.display().to_string(),
             })
         }
     }

@@ -3,6 +3,8 @@
 - an invalid flag in the `terminal_title` pattern is now a configuration error
 - an unknown argument in a verb, eg `{flie}`, is now reported as a configuration error
 - an unknown argument in the `terminal_title` pattern is now a configuration error
+- an invalid verb in the configuration now prevents broot from starting, with an error giving its file and definition
+- errors displayed on exit are now highlighted
 - tab completion of the argument of `:copy`, `:move`, or of verbs using `path-from-parent` or `path-from-directory`, now starts from the directory the command will use
 
 <a name="v1.61.0"></a>

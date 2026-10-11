@@ -62,17 +62,21 @@ impl VerbStore {
             unbound_keys: Vec::new(),
         };
         for vc in &conf.verbs {
-            if let Err(e) = store.add_from_conf(vc) {
-                eprintln!("Invalid verb configuration: {}", e);
-                warn!("Faulty parsed configuration: {:#?}", vc);
-                if let Ok(toml) = toml::to_string(&vc) {
-                    eprintln!("Faulty configuration:\n{}", toml);
-                }
-                eprintln!("Configuration files:");
-                for path in &conf.files {
-                    eprintln!("  - {}", path.display());
-                }
-            }
+            store
+                .add_from_conf(vc)
+                .map_err(|e| ConfError::InvalidVerb {
+                    file: vc
+                        .file
+                        .as_ref()
+                        .map_or_else(|| "?".to_string(), |path| path.display().to_string()),
+                    details: Box::new(e),
+                    verb_conf: toml::to_string(vc)
+                        .unwrap_or_default()
+                        .lines()
+                        .map(|line| format!("  `{line}`"))
+                        .collect::<Vec<_>>()
+                        .join("\n"),
+                })?;
         }
         store.add_builtin_verbs()?; // at the end so that we can override them
         for key in store.unbound_keys.clone() {
@@ -461,7 +465,7 @@ impl VerbStore {
     ) -> Result<(), ConfError> {
         if vc.leave_broot == Some(false) && vc.run_in_parent_shell == Some(true) {
             return Err(ConfError::InvalidVerbConf {
-                details: "You can't simultaneously have leave_broot=false and run_in_parent_shell=true"
+                details: "You can't simultaneously have `leave_broot=false` and `run_in_parent_shell=true`"
                     .to_string(),
             });
         }

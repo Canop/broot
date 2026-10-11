@@ -154,7 +154,7 @@ impl SearchModeMapEntry {
                 "path" => search_objects.push(SearchObject::Path),
                 _ => {
                     return Err(ConfError::InvalidSearchMode {
-                        details: format!("{t:?} not understood in search mode definition"),
+                        details: format!("`{t}` not understood in search mode definition"),
                     });
                 }
             }

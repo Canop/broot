@@ -369,7 +369,7 @@ fn initial_root_file(cli_args: &Args) -> Result<(PathBuf, Option<PathBuf>), Prog
     };
     if !root.exists() {
         return Err(TreeBuildError::FileNotFound {
-            path: format!("{root:?}"),
+            path: root.display().to_string(),
         }
         .into());
     }
@@ -382,7 +382,7 @@ fn initial_root_file(cli_args: &Args) -> Result<(PathBuf, Option<PathBuf>), Prog
         } else {
             // this is a weird filesystem, let's give up
             return Err(TreeBuildError::NotADirectory {
-                path: format!("{root:?}"),
+                path: root.display().to_string(),
             }
             .into());
         }

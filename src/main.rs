@@ -1,32 +1,28 @@
-use cli_log::*;
+use {
+    cli_log::*,
+    std::process::ExitCode,
+};
 
-fn main() {
+fn main() -> ExitCode {
     init_cli_log!();
     debug!("env::args(): {:#?}", std::env::args().collect::<Vec<String>>());
     match broot::cli::run() {
         Ok(Some(launchable)) => {
             info!("launching {:#?}", launchable);
             if let Err(e) = launchable.execute(None) {
-                if e.is_broken_pipe() {
-                    std::process::exit(141);
-                }
                 warn!("Failed to launch {:?}", launchable);
                 warn!("Error: {:?}", e);
-                eprintln!("{e}");
-                std::process::exit(1);
+                return e.report();
             }
         }
         Ok(None) => {}
         Err(e) => {
-            if e.is_broken_pipe() {
-                std::process::exit(141);
-            }
             // this usually happens when the passed path isn't of a directory
             warn!("Error: {}", e);
-            eprintln!("{e}");
-            std::process::exit(1);
+            return e.report();
         }
     };
     log_mem(Level::Info);
     info!("bye");
+    ExitCode::SUCCESS
 }

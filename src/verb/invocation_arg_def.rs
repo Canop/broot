@@ -41,7 +41,7 @@ impl InvocationArgDef {
             } else if let Ok(standard_arg) = flag.parse() {
                 if def.default.is_some() {
                     return Err(ConfError::InvalidVerbConf {
-                        details: format!("several default values in {:?}", &capture[0]),
+                        details: format!("several default values in `{}`", &capture[0]),
                     });
                 }
                 def.default = Some(standard_arg);
