@@ -113,11 +113,10 @@ impl Verb {
                 checked_arg_defs.extend(parse_exec_arg_defs(working_dir)?);
             }
         }
+        let invocation_parser_ref = invocation_parser.as_ref();
         for arg_def in &checked_arg_defs {
-            let is_invocation_arg = invocation_parser
-                .as_ref()
-                .is_some_and(|parser| parser.arg_names().any(|name| name == arg_def.name));
-            if arg_def.standard_arg().is_none() && !is_invocation_arg {
+            let is_invocation_arg = invocation_parser_ref.is_some_and(|p| p.has_arg(&arg_def.name));
+            if !is_invocation_arg && arg_def.standard_arg(None).is_none() {
                 return Err(ConfError::UnknownVerbArg {
                     name: arg_def.name.clone(),
                 });
@@ -126,7 +125,7 @@ impl Verb {
         let needs_standard_arg = |f: fn(StandardArg) -> bool| {
             exec_arg_defs
                 .iter()
-                .filter_map(ExecArgDef::standard_arg)
+                .filter_map(|arg_def| arg_def.standard_arg(invocation_parser_ref))
                 .any(f)
         };
         let mut needs_selection = needs_standard_arg(StandardArg::needs_selection);

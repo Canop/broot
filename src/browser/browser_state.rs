@@ -369,6 +369,7 @@ impl PanelState for BrowserState {
             Internal::focus => {
                 let tree = self.displayed_tree();
                 internal_focus::on_internal(
+                    invocation_parser,
                     internal_exec,
                     input_invocation,
                     trigger_type,

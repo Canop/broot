@@ -66,6 +66,14 @@ impl InvocationParser {
             .flat_map(|regex| regex.capture_names().flatten())
     }
 
+    /// Tell whether the invocation pattern defines an argument with this name
+    pub fn has_arg(
+        &self,
+        name: &str,
+    ) -> bool {
+        self.arg_names().any(|arg_name| arg_name == name)
+    }
+
     pub fn get_arg_def(
         &self,
         name: &str,

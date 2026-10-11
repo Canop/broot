@@ -67,8 +67,15 @@ impl ExecArgDef {
         };
         Ok(Self { name, flags })
     }
-    /// Return the standard argument this group refers to, if any
-    pub fn standard_arg(&self) -> Option<StandardArg> {
+    /// Return the standard argument this group refers to, if any (an argument
+    /// of the invocation masks the standard argument of the same name)
+    pub fn standard_arg(
+        &self,
+        invocation_parser: Option<&InvocationParser>,
+    ) -> Option<StandardArg> {
+        if invocation_parser.is_some_and(|parser| parser.has_arg(&self.name)) {
+            return None;
+        }
         self.name.parse().ok()
     }
     pub fn merging_flag(&self) -> Option<ExecArgFlag> {
@@ -149,8 +156,10 @@ mod exec_arg_def_tests {
                 },
             ]
         );
-        assert_eq!(defs[1].standard_arg(), Some(StandardArg::File));
-        assert_eq!(defs[0].standard_arg(), None);
+        assert_eq!(defs[1].standard_arg(None), Some(StandardArg::File));
+        assert_eq!(defs[0].standard_arg(None), None);
+        let parser = InvocationParser::new("x {file}").unwrap();
+        assert_eq!(defs[1].standard_arg(Some(&parser)), None);
     }
 
     #[test]

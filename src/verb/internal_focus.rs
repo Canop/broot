@@ -181,6 +181,7 @@ pub fn get_status_markdown(
 /// a bang or an argument.
 #[allow(clippy::too_many_arguments)]
 pub fn on_internal(
+    invocation_parser: Option<&InvocationParser>,
     internal_exec: &InternalExecution,
     input_invocation: Option<&VerbInvocation>,
     trigger_type: TriggerType,
@@ -218,9 +219,11 @@ pub fn on_internal(
                 //  `:focus some/path` or `:focus {initial-root}̀).
                 // The given path may be relative hence the need for the
                 // state's selection
-                let path_builder = ExecutionBuilder::without_invocation(
+                let path_builder = ExecutionBuilder::with_invocation(
+                    invocation_parser,
                     SelInfo::from_path(selected_path),
                     app_state,
+                    None,
                 );
                 let path = path_builder.path(arg, con);
                 let bang = input_invocation

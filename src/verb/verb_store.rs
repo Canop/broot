@@ -775,11 +775,16 @@ fn check_arg_defs_from_conf() {
     };
     let mut conf = Conf::default();
     conf.verbs.push(verb_conf("play", "mpv {file:space-separated}"));
+    conf.verbs.push(verb_conf("say {file}", "echo {file}"));
     let store = VerbStore::new(&mut conf).unwrap();
     let PrefixSearchResult::Match(_, play) = store.search_prefix("play", None) else {
         panic!("play verb not found");
     };
     assert!(play.needs_selection);
+    let PrefixSearchResult::Match(_, say) = store.search_prefix("say", None) else {
+        panic!("say verb not found");
+    };
+    assert!(!say.needs_selection);
     let PrefixSearchResult::Match(_, copy) = store.search_prefix("copy", None) else {
         panic!("copy verb not found");
     };

@@ -247,7 +247,7 @@ impl AppContext {
         let terminal_title_pattern = config.terminal_title.clone();
         if let Some(pattern) = &terminal_title_pattern {
             for arg_def in pattern.arg_defs()? {
-                if arg_def.standard_arg().is_none() {
+                if arg_def.standard_arg(None).is_none() {
                     return Err(ConfError::UnknownTerminalTitleArg { name: arg_def.name }.into());
                 }
             }

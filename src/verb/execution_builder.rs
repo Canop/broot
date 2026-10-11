@@ -30,6 +30,9 @@ pub struct ExecutionBuilder<'b> {
     /// the selection in the other panel, when there are exactly two
     other_file: Option<&'b PathBuf>,
 
+    /// the parser of the verb's invocation, defining the invocation arguments
+    invocation_parser: Option<&'b InvocationParser>,
+
     /// parsed arguments
     invocation_values: Option<FxHashMap<String, String>>,
 
@@ -59,13 +62,14 @@ impl<'b> ExecutionBuilder<'b> {
             sel_info,
             root: &app_state.root,
             other_file: app_state.other_panel_path.as_ref(),
+            invocation_parser: None,
             invocation_values: None,
             keep_groups: false,
             target: Target::Tokens,
         }
     }
     pub fn with_invocation(
-        invocation_parser: Option<&InvocationParser>,
+        invocation_parser: Option<&'b InvocationParser>,
         sel_info: SelInfo<'b>,
         app_state: &'b AppState,
         invocation_args: Option<&String>,
@@ -78,6 +82,7 @@ impl<'b> ExecutionBuilder<'b> {
             sel_info,
             root: &app_state.root,
             other_file: app_state.other_panel_path.as_ref(),
+            invocation_parser,
             invocation_values,
             keep_groups: false,
             target: Target::Tokens,
@@ -224,30 +229,21 @@ impl<'b> ExecutionBuilder<'b> {
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Option<String> {
-        let name = &arg_def.name;
-        arg_def
-            .standard_arg()
-            .and_then(|standard_arg| self.get_sel_standard_replacement(standard_arg, sel, con))
-            .or_else(|| {
-                // it's not one of the standard group names, so we'll look
-                // into the ones provided by the invocation pattern
-                self.invocation_values
-                    .as_ref()
-                    .and_then(|map| map.get(name))
-                    .and_then(|value| {
-                        if arg_def.has_flag(ExecArgFlag::PathFromDirectory) {
-                            sel.map(|s| path::closest_dir(s.path))
-                                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
-                                .map(|pb| self.path_to_string(pb))
-                        } else if arg_def.has_flag(ExecArgFlag::PathFromParent) {
-                            sel.and_then(|s| s.path.parent())
-                                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
-                                .map(|pb| self.path_to_string(pb))
-                        } else {
-                            Some(value.to_string())
-                        }
-                    })
-            })
+        if let Some(standard_arg) = arg_def.standard_arg(self.invocation_parser) {
+            return self.get_sel_standard_replacement(standard_arg, sel, con);
+        }
+        let value = self.invocation_values.as_ref()?.get(&arg_def.name)?;
+        if arg_def.has_flag(ExecArgFlag::PathFromDirectory) {
+            sel.map(|s| path::closest_dir(s.path))
+                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
+                .map(|pb| self.path_to_string(pb))
+        } else if arg_def.has_flag(ExecArgFlag::PathFromParent) {
+            sel.and_then(|s| s.path.parent())
+                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
+                .map(|pb| self.path_to_string(pb))
+        } else {
+            Some(value.to_string())
+        }
     }
     fn replace_args(
         &self,
@@ -544,7 +540,13 @@ mod execution_builder_test {
         let path = PathBuf::from(path);
         let sel = Selection::new(&path, SelectionType::File);
         let app_state = AppState::new(PathBuf::from("/".to_owned()));
+        let mut invocation = "test".to_string();
+        for (k, _) in &replacements {
+            invocation.push_str(&format!(" {{{k}}}"));
+        }
+        let parser = InvocationParser::new(&invocation).unwrap();
         let mut builder = ExecutionBuilder::without_invocation(SelInfo::One(sel), &app_state);
+        builder.invocation_parser = Some(&parser);
         let mut map = FxHashMap::default();
         for (k, v) in replacements {
             map.insert(k.to_owned(), v.to_owned());
@@ -589,6 +591,28 @@ mod execution_builder_test {
             "/path/to/file",
             vec![],
             vec!["xterm", "-e", "kak /path/to/file"],
+        );
+    }
+
+    #[test]
+    fn test_invocation_arg_masks_standard_arg() {
+        check_build_execution_from_sel(
+            vec![ExecPattern::from_string("echo {file} {parent}")],
+            "/home/dys/dev",
+            vec![("file", "typed")],
+            vec!["echo", "typed", "/home/dys"],
+        );
+        // without a typed value, the masked standard argument isn't used either
+        let path = PathBuf::from("/home/dys/dev");
+        let sel = Selection::new(&path, SelectionType::File);
+        let app_state = AppState::new(PathBuf::from("/"));
+        let parser = InvocationParser::new("x {file}").unwrap();
+        let builder =
+            ExecutionBuilder::with_invocation(Some(&parser), SelInfo::One(sel), &app_state, None);
+        let con = AppContext::default();
+        assert_eq!(
+            builder.exec_token(&ExecPattern::from_string("echo {file}"), &con),
+            vec!["echo", ""],
         );
     }
 
