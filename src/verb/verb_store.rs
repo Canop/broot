@@ -796,6 +796,7 @@ fn check_arg_defs_from_conf() {
         ("cpp {dest:fiel}", "cp {file} {dest}"),
         ("cpp {dest}", "cp {file} {dst}"),
         ("tgz", "tar czf {name}.tgz {file}"),
+        ("cpf {dest}", "cp {file:path-from-parent} {dest}"),
     ] {
         let mut store = VerbStore {
             verbs: Vec::new(),

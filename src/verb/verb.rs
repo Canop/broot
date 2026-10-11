@@ -116,10 +116,13 @@ impl Verb {
         let invocation_parser_ref = invocation_parser.as_ref();
         for arg_def in &checked_arg_defs {
             let is_invocation_arg = invocation_parser_ref.is_some_and(|p| p.has_arg(&arg_def.name));
-            if !is_invocation_arg && arg_def.standard_arg(None).is_none() {
-                return Err(ConfError::UnknownVerbArg {
-                    name: arg_def.name.clone(),
-                });
+            if !is_invocation_arg {
+                if arg_def.standard_arg(None).is_none() {
+                    return Err(ConfError::UnknownVerbArg {
+                        name: arg_def.name.clone(),
+                    });
+                }
+                arg_def.check_standard_flags()?;
             }
         }
         let needs_standard_arg = |f: fn(StandardArg) -> bool| {

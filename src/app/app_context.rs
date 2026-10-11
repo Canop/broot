@@ -250,6 +250,7 @@ impl AppContext {
                 if arg_def.standard_arg(None).is_none() {
                     return Err(ConfError::UnknownTerminalTitleArg { name: arg_def.name }.into());
                 }
+                arg_def.check_standard_flags()?;
             }
         }
         let reset_terminal_title_on_exit = config.reset_terminal_title_on_exit.unwrap_or(false);

@@ -44,6 +44,9 @@ impl ExecArgFlag {
             _ => None,
         }
     }
+    pub fn is_path(&self) -> bool {
+        matches!(self, Self::PathFromDirectory | Self::PathFromParent)
+    }
     pub fn path_anchor(&self) -> PathAnchor {
         match self {
             Self::PathFromDirectory => PathAnchor::Directory,
@@ -86,6 +89,17 @@ impl ExecArgDef {
         flag: ExecArgFlag,
     ) -> bool {
         self.flags.contains(&flag)
+    }
+    /// Check the group doesn't have a flag applying only to invocation arguments,
+    /// assuming it's a standard argument
+    pub fn check_standard_flags(&self) -> Result<(), ConfError> {
+        match self.flags.iter().find(|flag| flag.is_path()) {
+            Some(flag) => Err(ConfError::PathFlagOnStandardArg {
+                name: self.name.clone(),
+                flag: *flag,
+            }),
+            None => Ok(()),
+        }
     }
     pub fn path_anchor(&self) -> PathAnchor {
         for flag in &self.flags {

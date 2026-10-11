@@ -1,5 +1,8 @@
 use {
-    crate::skin::InvalidSkinError,
+    crate::{
+        skin::InvalidSkinError,
+        verb::ExecArgFlag,
+    },
     std::{
         io,
         path::PathBuf,
@@ -90,6 +93,10 @@ pub enum ConfError {
         "unknown argument `{name}`: it's neither provided by broot nor defined in the invocation pattern"
     )]
     UnknownVerbArg { name: String },
+    #[error(
+        "the `{flag}` flag can't be used on `{name}`, which is provided by broot: it only applies to an argument defined in the invocation pattern"
+    )]
+    PathFlagOnStandardArg { name: String, flag: ExecArgFlag },
     #[error(
         "unknown argument `{name}` in `terminal_title`: only the arguments provided by broot can be used"
     )]
