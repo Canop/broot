@@ -65,10 +65,7 @@ impl VerbStore {
             store
                 .add_from_conf(vc)
                 .map_err(|e| ConfError::InvalidVerb {
-                    file: vc
-                        .file
-                        .as_ref()
-                        .map_or_else(|| "?".to_string(), |path| path.display().to_string()),
+                    file: vc.file.clone(),
                     details: Box::new(e),
                     verb_conf: toml::to_string(vc)
                         .unwrap_or_default()

@@ -315,7 +315,6 @@ dependencies = [
  "clap_mangen",
  "cli-log",
  "crokey",
- "custom_error",
  "deser-hjson",
  "directories",
  "file-size",
@@ -352,6 +351,7 @@ dependencies = [
  "termimad",
  "terminal-clipboard",
  "terminal-light",
+ "thiserror 2.0.21",
  "toml",
  "trash",
  "umask",
@@ -793,12 +793,6 @@ dependencies = [
  "generic-array",
  "typenum",
 ]
-
-[[package]]
-name = "custom_error"
-version = "1.9.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f8a51dd197fa6ba5b4dc98a990a43cc13693c23eb0089ebb0fcc1f04152bca6"
 
 [[package]]
 name = "dashmap"

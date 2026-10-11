@@ -42,7 +42,7 @@ impl SerdeFormat {
             .map(str::to_lowercase)
             .and_then(|key| Self::from_key(&key))
             .ok_or_else(|| ConfError::UnknownFileExtension {
-                path: path.to_string_lossy().to_string(),
+                path: path.to_path_buf(),
             })
     }
     pub fn read_string<T>(
@@ -55,11 +55,11 @@ impl SerdeFormat {
         let format = Self::from_path(path)?;
         match format {
             Self::Hjson => deser_hjson::from_str::<T>(s).map_err(|e| ProgramError::ConfFile {
-                path: path.to_string_lossy().to_string(),
+                path: path.to_path_buf(),
                 details: e.into(),
             }),
             Self::Toml => toml::from_str::<T>(s).map_err(|e| ProgramError::ConfFile {
-                path: path.to_string_lossy().to_string(),
+                path: path.to_path_buf(),
                 details: e.into(),
             }),
         }

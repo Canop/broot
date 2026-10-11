@@ -4,7 +4,6 @@
 //! line or by [`ProgramError::report`], so interpolated values should be in backticks.
 
 use {
-    custom_error::custom_error,
     lazy_regex::regex,
     std::{
         io::{
@@ -12,6 +11,7 @@ use {
             IsTerminal,
             Write,
         },
+        path::PathBuf,
         process::ExitCode,
     },
     termimad::{
@@ -24,33 +24,91 @@ use {
     },
 };
 
-custom_error! {pub ProgramError
-    AmbiguousVerbName {name: String} = "Ambiguous name: More than one verb matches `{name}`",
-    ArgParse {bad: String, valid: String} = "`{bad}` can't be parsed (valid values: `{valid}`)",
-    ConfFile {path:String, details: ConfError} = "**Bad configuration file** `{path}`: {details}",
-    Conf {source: ConfError} = "**Bad configuration:** {source}",
-    Git {details: String} = "Git error: {details}",
-    ImageError {details: String} = "Image error: {details}",
-    Internal {details: String} = "Internal error: {details}", // should not happen
-    Io {source: io::Error} = "IO Error : {source}",
-    LaunchError {program: String, source: io::Error} = "Unable to launch `{program}`: {source}",
-    Lfs {details: String} = "Failed to fetch mounts: {details}",
-    NetError {source: NetError} = "{source}",
-    OpenError { source: opener::OpenError } = "Open error: {source}",
-    ShelInstall { source: ShellInstallError } = "{source}",
-    Svg {source: SvgError} = "SVG error: {source}",
-    SyntectCrashed { details: String } = "Syntect crashed on `{details}`",
-    Termimad {source: termimad::Error} = "Termimad Error : {source}",
-    Trash {message: String} = "Trash error: {message}",
-    TreeBuild {source: TreeBuildError} = "{source}",
-    UnknownShell {shell: String} = "Unknown shell: `{shell}`",
-    UnknownVerb {name: String} = "No verb matches `{name}`",
-    UnmappableFile = "File can't be mapped",
-    UnmatchingVerbArgs {name: String} = "No matching argument found for verb `{name}`",
-    UnprintableFile = "File can't be printed", // has characters that can't be printed without escaping
-    Unrecognized {token: String} = "Unrecognized: `{token}`",
-    ZeroLenFile = "File seems empty",
-    Notify { source: notify::Error } = "Notify error: {source}",
+#[derive(thiserror::Error, Debug)]
+pub enum ProgramError {
+    #[error("Ambiguous name: More than one verb matches `{name}`")]
+    AmbiguousVerbName { name: String },
+    #[error("`{bad}` can't be parsed (valid values: `{valid}`)")]
+    ArgParse { bad: String, valid: String },
+    #[error("**Bad configuration file** `{}`: {details}", .path.display())]
+    ConfFile {
+        path: PathBuf,
+        #[source]
+        details: ConfError,
+    },
+    #[error("**Bad configuration:** {source}")]
+    Conf {
+        #[from]
+        source: ConfError,
+    },
+    #[error("Git error: {details}")]
+    Git { details: String },
+    #[error("Image error: {details}")]
+    ImageError { details: String },
+    #[error("Internal error: {details}")]
+    Internal { details: String }, // should not happen
+    #[error("IO Error : {source}")]
+    Io {
+        #[from]
+        source: io::Error,
+    },
+    #[error("Unable to launch `{program}`: {source}")]
+    LaunchError { program: String, source: io::Error },
+    #[error("Failed to fetch mounts: {details}")]
+    Lfs { details: String },
+    #[error(transparent)]
+    NetError {
+        #[from]
+        source: NetError,
+    },
+    #[error("Open error: {source}")]
+    OpenError {
+        #[from]
+        source: opener::OpenError,
+    },
+    #[error(transparent)]
+    ShelInstall {
+        #[from]
+        source: ShellInstallError,
+    },
+    #[error("SVG error: {source}")]
+    Svg {
+        #[from]
+        source: SvgError,
+    },
+    #[error("Syntect crashed on `{details}`")]
+    SyntectCrashed { details: String },
+    #[error("Termimad Error : {source}")]
+    Termimad {
+        #[from]
+        source: termimad::Error,
+    },
+    #[error("Trash error: {message}")]
+    Trash { message: String },
+    #[error(transparent)]
+    TreeBuild {
+        #[from]
+        source: TreeBuildError,
+    },
+    #[error("Unknown shell: `{shell}`")]
+    UnknownShell { shell: String },
+    #[error("No verb matches `{name}`")]
+    UnknownVerb { name: String },
+    #[error("File can't be mapped")]
+    UnmappableFile,
+    #[error("No matching argument found for verb `{name}`")]
+    UnmatchingVerbArgs { name: String },
+    #[error("File can't be printed")]
+    UnprintableFile, // has characters that can't be printed without escaping
+    #[error("Unrecognized: `{token}`")]
+    Unrecognized { token: String },
+    #[error("File seems empty")]
+    ZeroLenFile,
+    #[error("Notify error: {source}")]
+    Notify {
+        #[from]
+        source: notify::Error,
+    },
 }
 
 impl ProgramError {
@@ -94,8 +152,10 @@ impl From<image::ImageError> for ProgramError {
     }
 }
 
-custom_error! {pub ShellInstallError
-    Io {source: io::Error, when: String} = "IO Error {source} on {when}",
+#[derive(thiserror::Error, Debug)]
+pub enum ShellInstallError {
+    #[error("IO Error {source} on {when}")]
+    Io { source: io::Error, when: String },
 }
 impl ShellInstallError {
     pub fn is_permission_denied(&self) -> bool {
@@ -125,82 +185,196 @@ impl<Ok> IoToShellInstallError<Ok> for Result<Ok, io::Error> {
     }
 }
 
-custom_error! {pub TreeBuildError
-    FileNotFound { path: String } = "File not found: `{path}`",
-    Interrupted = "Task Interrupted",
-    InvalidUtf8 { path: String } = "Invalid UTF-8 in `{path}`",
-    //Io {source: io::Error} = "IO Error : {source}",
-    NotADirectory { path: String } = "Not a directory: `{path}`",
-    NotARootDescendant { path: String } = "Not a descendant of the root: `{path}`",
-    TooManyMatches { max: usize } = "Too many matches (max allowed: {max})",
-    InconsistentData { message:String } = "Inconsistent data: {message}", // maybe refresh ?
+#[derive(thiserror::Error, Debug)]
+pub enum TreeBuildError {
+    #[error("File not found: `{}`", .path.display())]
+    FileNotFound { path: PathBuf },
+    #[error("Task Interrupted")]
+    Interrupted,
+    #[error("Invalid UTF-8 in `{}`", .path.display())]
+    InvalidUtf8 { path: PathBuf },
+    #[error("Not a directory: `{}`", .path.display())]
+    NotADirectory { path: PathBuf },
+    #[error("Not a descendant of the root: `{}`", .path.display())]
+    NotARootDescendant { path: PathBuf },
+    #[error("Too many matches (max allowed: {max})")]
+    TooManyMatches { max: usize },
+    #[error("Inconsistent data: {message}")]
+    InconsistentData { message: String }, // maybe refresh ?
 }
 
-custom_error! {pub ConfError
-    Io {source: io::Error}                          = "unable to read from the file: {source}",
-    ImportNotFound {path: String}                   = "import file not found: `{path}`",
-    UnknownFileExtension { path: String}            = "unexpected file extension in `{path}`",
-    Toml {source: toml::de::Error}                  = "unable to parse TOML: {source}",
-    Hjson {source: deser_hjson::Error}              = "unable to parse Hjson: {source}",
-    Invalid                                         = "unexpected conf structure", // not expected
-    MissingField {txt: String}                      = "missing field in conf",
-    InvalidVerbInvocation {invocation: String}      = "invalid verb invocation: `{invocation}`",
-    InvalidVerbConf {details: String}               = "invalid verb conf: {details}",
-    UnknownInternal {verb: String}                  = "not a known internal: `{verb}`",
-    InvalidSearchMode {details: String}             = "invalid search mode: {details}",
-    InvalidKey {raw: String}                        = "not a valid key: `{raw}`",
-    ParseKey {source: crokey::ParseKeyError}        = "{source}",
-    ReservedKey {key: String}                       = "reserved key: `{key}`",
-    UnexpectedInternalArg {invocation: String}      = "unexpected argument for internal: `{invocation}`",
-    InvalidCols {details: String}                   = "invalid cols definition: {details}",
-    InvalidSkin {source: InvalidSkinError}          = "invalid skin: {source}",
-    InvalidThreadsCount { count: usize }            = "invalid threads count: {count}",
-    InvalidDefaultFlags { flags: String }           = "invalid default flags: `{flags}`",
-    InvalidSyntaxTheme { name: String }             = "invalid syntax theme: `{name}`",
-    InvalidGlobPattern { pattern: String }          = "invalid glob pattern: `{pattern}`",
-    InvalidVerbName { name: String }                = "invalid verb name: `{name}` (must either not start with a special character or be only made of special characters)",
-    UnknownVerbArgFlag { name: String }             = "unknown verb argument flag: `{name}`",
-    UnknownInvocationArgFlag { name: String }       = "unknown flag in invocation argument: `{name}` (expected `theme` or the name of a standard argument)",
-    InvalidVerb { file: String, details: Box<ConfError>, verb_conf: String } = "invalid verb in `{file}`:\n{details}\nFaulty verb configuration:\n{verb_conf}",
-    UnknownVerbArg { name: String }                 = "unknown argument `{name}`: it's neither provided by broot nor defined in the invocation pattern",
-    UnknownTerminalTitleArg { name: String }        = "unknown argument `{name}` in `terminal_title`: only the arguments provided by broot can be used",
-    InvalidPanelReference { raw: String }           = "invalid panel reference: `{raw}`",
-}
-
-// error which can be raised when parsing a pattern the user typed
-custom_error! {pub PatternError
-    InvalidMode { mode: String } = "Invalid search mode: `{mode}`",
-    InvalidRegex {source: regex::Error} = @{
-        format!("Invalid Regular Expression: {}", source.to_string().lines().last().unwrap_or(""))
+#[derive(thiserror::Error, Debug)]
+pub enum ConfError {
+    #[error("unable to read from the file: {source}")]
+    Io {
+        #[from]
+        source: io::Error,
     },
-    UnknownRegexFlag {bad: char} = "Unknown regular expression flag: `{bad}`",
+    #[error("import file not found: `{path}`")]
+    ImportNotFound { path: String },
+    #[error("unexpected file extension in `{}`", .path.display())]
+    UnknownFileExtension { path: PathBuf },
+    #[error("unable to parse TOML: {source}")]
+    Toml {
+        #[from]
+        source: toml::de::Error,
+    },
+    #[error("unable to parse Hjson: {source}")]
+    Hjson {
+        #[from]
+        source: deser_hjson::Error,
+    },
+    #[error("unexpected conf structure")]
+    Invalid, // not expected
+    #[error("missing field in conf")]
+    MissingField { txt: String },
+    #[error("invalid verb invocation: `{invocation}`")]
+    InvalidVerbInvocation { invocation: String },
+    #[error("invalid verb conf: {details}")]
+    InvalidVerbConf { details: String },
+    #[error("not a known internal: `{verb}`")]
+    UnknownInternal { verb: String },
+    #[error("invalid search mode: {details}")]
+    InvalidSearchMode { details: String },
+    #[error("not a valid key: `{raw}`")]
+    InvalidKey { raw: String },
+    #[error(transparent)]
+    ParseKey {
+        #[from]
+        source: crokey::ParseKeyError,
+    },
+    #[error("reserved key: `{key}`")]
+    ReservedKey { key: String },
+    #[error("unexpected argument for internal: `{invocation}`")]
+    UnexpectedInternalArg { invocation: String },
+    #[error("invalid cols definition: {details}")]
+    InvalidCols { details: String },
+    #[error("invalid skin: {source}")]
+    InvalidSkin {
+        #[from]
+        source: InvalidSkinError,
+    },
+    #[error("invalid threads count: {count}")]
+    InvalidThreadsCount { count: usize },
+    #[error("invalid default flags: `{flags}`")]
+    InvalidDefaultFlags { flags: String },
+    #[error("invalid syntax theme: `{name}`")]
+    InvalidSyntaxTheme { name: String },
+    #[error("invalid glob pattern: `{pattern}`")]
+    InvalidGlobPattern { pattern: String },
+    #[error(
+        "invalid verb name: `{name}` (must either not start with a special character or be only made of special characters)"
+    )]
+    InvalidVerbName { name: String },
+    #[error("unknown verb argument flag: `{name}`")]
+    UnknownVerbArgFlag { name: String },
+    #[error(
+        "unknown flag in invocation argument: `{name}` (expected `theme` or the name of a standard argument)"
+    )]
+    UnknownInvocationArgFlag { name: String },
+    #[error(
+        "invalid verb in `{}`:\n{details}\nFaulty verb configuration:\n{verb_conf}",
+        .file.as_deref().map_or_else(|| "?".to_string(), |path| path.display().to_string()),
+    )]
+    InvalidVerb {
+        file: Option<PathBuf>,
+        #[source]
+        details: Box<ConfError>,
+        verb_conf: String,
+    },
+    #[error(
+        "unknown argument `{name}`: it's neither provided by broot nor defined in the invocation pattern"
+    )]
+    UnknownVerbArg { name: String },
+    #[error(
+        "unknown argument `{name}` in `terminal_title`: only the arguments provided by broot can be used"
+    )]
+    UnknownTerminalTitleArg { name: String },
+    #[error("invalid panel reference: `{raw}`")]
+    InvalidPanelReference { raw: String },
 }
 
-custom_error! {pub InvalidSkinError
-    InvalidColor {source: termimad::ParseColorError}  = "invalid color: {source}",
-    InvalidAttribute {raw : String}  = "`{raw}` is not a valid style attribute",
-    InvalidGreyLevel {level: u8} = "grey level must be between 0 and 23 (got {level})",
-    InvalidStyle {style: String}   = "Invalid skin style: `{style}`",
-    InvalidStyleToken {source: termimad::ParseStyleTokenError} = "{source}",
+/// Error which can be raised when parsing a pattern the user typed
+#[derive(thiserror::Error, Debug)]
+pub enum PatternError {
+    #[error("Invalid search mode: `{mode}`")]
+    InvalidMode { mode: String },
+    #[error(
+        "Invalid Regular Expression: {}",
+        .source.to_string().lines().last().unwrap_or(""),
+    )]
+    InvalidRegex {
+        #[from]
+        source: regex::Error,
+    },
+    #[error("Unknown regular expression flag: `{bad}`")]
+    UnknownRegexFlag { bad: char },
 }
 
-custom_error! {pub NetError
-    SocketNotAvailable { path : String } = "Can't open socket: `{path}` already exists - consider removing it",
-    DuplicateServerName { name : String } = "a broot server with the name `{name}` is already running",
-    Io {source: io::Error}               = "error on the socket: {source}",
-    InvalidMessage                       = "invalid message received",
+#[derive(thiserror::Error, Debug)]
+pub enum InvalidSkinError {
+    #[error("invalid color: {source}")]
+    InvalidColor {
+        #[from]
+        source: termimad::ParseColorError,
+    },
+    #[error("`{raw}` is not a valid style attribute")]
+    InvalidAttribute { raw: String },
+    #[error("grey level must be between 0 and 23 (got {level})")]
+    InvalidGreyLevel { level: u8 },
+    #[error("Invalid skin style: `{style}`")]
+    InvalidStyle { style: String },
+    #[error(transparent)]
+    InvalidStyleToken {
+        #[from]
+        source: termimad::ParseStyleTokenError,
+    },
 }
 
-custom_error! {pub SvgError
-    Io {source: io::Error} = "IO Error : {source}",
-    Internal { message: &'static str } = "Internal error : {message}",
-    Svg {source: resvg::usvg::Error} = "SVG Error: {source}",
+#[derive(thiserror::Error, Debug)]
+pub enum NetError {
+    #[error("Can't open socket: `{path}` already exists - consider removing it")]
+    SocketNotAvailable { path: String },
+    #[error("a broot server with the name `{name}` is already running")]
+    DuplicateServerName { name: String },
+    #[error("error on the socket: {source}")]
+    Io {
+        #[from]
+        source: io::Error,
+    },
+    #[error("invalid message received")]
+    InvalidMessage,
 }
 
-custom_error! {pub PreviewTransformerError
-    InvalidInput = "Invalid input",
-    NoOutput = "No output",
-    Io {source: io::Error} = "IO Error : {source}",
-    ProcessInterrupted = "Process interrupted",
-    ProcessFailed { code: i32 } = "Execution failed with code {code}",
+#[derive(thiserror::Error, Debug)]
+pub enum SvgError {
+    #[error("IO Error : {source}")]
+    Io {
+        #[from]
+        source: io::Error,
+    },
+    #[error("Internal error : {message}")]
+    Internal { message: &'static str },
+    #[error("SVG Error: {source}")]
+    Svg {
+        #[from]
+        source: resvg::usvg::Error,
+    },
+}
+
+#[derive(thiserror::Error, Debug)]
+pub enum PreviewTransformerError {
+    #[error("Invalid input")]
+    InvalidInput,
+    #[error("No output")]
+    NoOutput,
+    #[error("IO Error : {source}")]
+    Io {
+        #[from]
+        source: io::Error,
+    },
+    #[error("Process interrupted")]
+    ProcessInterrupted,
+    #[error("Execution failed with code {code}")]
+    ProcessFailed { code: i32 },
 }

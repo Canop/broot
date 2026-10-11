@@ -594,7 +594,7 @@ impl Tree {
             let Some(parent) = path.parent() else {
                 warn!("no ancestor in the tree for {:?}", path);
                 return Err(TreeBuildError::NotARootDescendant {
-                    path: path.display().to_string(),
+                    path: path.to_path_buf(),
                 });
             };
             path = parent;
@@ -632,7 +632,7 @@ impl Tree {
                 .map_err(|_| {
                     // not supposed to happen at this point as we're adding a descendant
                     TreeBuildError::NotARootDescendant {
-                        path: path.display().to_string(),
+                        path: path.to_path_buf(),
                     }
                 })?
                 .to_string_lossy()
