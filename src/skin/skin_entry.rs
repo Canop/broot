@@ -3,7 +3,7 @@
 //! a string with TTY colors
 
 use {
-    crate::errors::InvalidSkinError,
+    crate::skin::InvalidSkinError,
     serde::{
         Deserialize,
         Deserializer,

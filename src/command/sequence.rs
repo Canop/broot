@@ -8,7 +8,7 @@ use {
     },
     crate::{
         app::AppContext,
-        errors::ProgramError,
+        program_error::ProgramError,
         verb::*,
     },
 };

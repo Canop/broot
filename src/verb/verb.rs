@@ -2,7 +2,7 @@ use {
     super::*,
     crate::{
         app::*,
-        errors::ConfError,
+        conf::ConfError,
         path::PathAnchor,
     },
     crokey::KeyCombination,

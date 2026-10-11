@@ -21,9 +21,9 @@ use {
             write_default_conf_in,
         },
         display,
-        errors::ProgramError,
         graphics,
         launchable::Launchable,
+        program_error::ProgramError,
         shell_install::{
             ShellInstall,
             ShellInstallState,

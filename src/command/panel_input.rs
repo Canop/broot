@@ -3,8 +3,8 @@ use {
     crate::{
         app::*,
         display::W,
-        errors::ProgramError,
         keys,
+        program_error::ProgramError,
         skin::PanelSkin,
         verb::*,
     },

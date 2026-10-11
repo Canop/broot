@@ -1,5 +1,5 @@
 use {
-    crate::errors::InvalidSkinError,
+    crate::skin::InvalidSkinError,
     crokey::crossterm::style::Color,
     lazy_regex::*,
     rustc_hash::FxHashMap,

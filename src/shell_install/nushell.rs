@@ -20,7 +20,7 @@ use {
     },
     crate::{
         conf,
-        errors::*,
+        shell_install::ShellInstallError,
     },
     directories::BaseDirs,
     std::path::PathBuf,

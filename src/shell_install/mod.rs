@@ -2,13 +2,14 @@ mod bash;
 mod fish;
 mod nushell;
 mod powershell;
+mod shell_install_error;
 mod state;
 mod util;
 
 use {
     crate::{
         cli,
-        errors::*,
+        program_error::ProgramError,
         skin,
     },
     std::{
@@ -26,7 +27,10 @@ use {
     },
 };
 
-pub use state::ShellInstallState;
+pub use {
+    shell_install_error::*,
+    state::ShellInstallState,
+};
 
 const MD_INSTALL_REQUEST: &str = r"
 **Broot** should be launched using a shell function.

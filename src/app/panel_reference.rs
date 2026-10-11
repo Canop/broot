@@ -1,7 +1,7 @@
 use {
     crate::{
         app::PanelId,
-        errors::ConfError,
+        conf::ConfError,
     },
     lazy_regex::regex_switch,
     serde::{

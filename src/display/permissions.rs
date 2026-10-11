@@ -1,8 +1,8 @@
 use {
     super::CropWriter,
     crate::{
-        errors::ProgramError,
         permissions,
+        program_error::ProgramError,
         skin::StyleMap,
         tree::{
             Tree,

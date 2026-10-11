@@ -3,7 +3,10 @@ use {
     crate::{
         cli,
         conf,
-        errors::*,
+        shell_install::{
+            IoToShellInstallError,
+            ShellInstallError,
+        },
     },
     std::{
         fs,

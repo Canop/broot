@@ -1,7 +1,7 @@
 use {
-    crate::errors::{
-        ConfError,
-        ProgramError,
+    crate::{
+        conf::ConfError,
+        program_error::ProgramError,
     },
     deser_hjson,
     serde::de::DeserializeOwned,

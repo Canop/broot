@@ -1,6 +1,6 @@
 use {
     super::Message,
-    crate::errors::NetError,
+    crate::net::NetError,
     std::{
         io::BufReader,
         os::unix::net::UnixStream,

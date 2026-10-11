@@ -9,9 +9,9 @@ use {
         command::Sequence,
         conf::{
             Conf,
+            ConfError,
             VerbConf,
         },
-        errors::ConfError,
         keys::{
             self,
             KEY_FORMAT,

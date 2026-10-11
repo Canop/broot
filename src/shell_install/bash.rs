@@ -17,7 +17,7 @@ use {
     },
     crate::{
         conf,
-        errors::*,
+        shell_install::ShellInstallError,
     },
     directories::UserDirs,
     lazy_regex::regex,

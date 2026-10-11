@@ -3,8 +3,8 @@ use {
     crate::{
         app::*,
         display::W,
-        errors::ProgramError,
         launchable::Launchable,
+        program_error::ProgramError,
     },
     std::{
         fs::OpenOptions,

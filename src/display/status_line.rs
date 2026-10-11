@@ -5,7 +5,7 @@ use {
     },
     crate::{
         app::Status,
-        errors::ProgramError,
+        program_error::ProgramError,
         skin::PanelSkin,
     },
     termimad::{

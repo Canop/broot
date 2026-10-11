@@ -1,7 +1,7 @@
 use {
     crate::{
         app::AppState,
-        errors::ConfError,
+        conf::ConfError,
         tree::Tree,
     },
     serde::Deserialize,

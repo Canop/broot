@@ -1,7 +1,7 @@
 use {
     crate::{
         cli::Args,
-        errors::ConfError,
+        conf::ConfError,
     },
     clap::Parser,
     lazy_regex::*,

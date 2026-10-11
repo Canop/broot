@@ -1,8 +1,8 @@
 use {
     super::W,
     crate::{
-        errors::ProgramError,
         flag::Flag,
+        program_error::ProgramError,
         skin::PanelSkin,
     },
 };

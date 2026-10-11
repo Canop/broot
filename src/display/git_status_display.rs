@@ -1,8 +1,8 @@
 use {
     super::CropWriter,
     crate::{
-        errors::ProgramError,
         git::TreeGitStatus,
+        program_error::ProgramError,
         skin::StyleMap,
     },
 };

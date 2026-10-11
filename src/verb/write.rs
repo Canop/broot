@@ -1,7 +1,7 @@
 use {
     crate::{
         app::*,
-        errors::ProgramError,
+        program_error::ProgramError,
     },
     std::{
         fs::{

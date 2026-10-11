@@ -5,8 +5,8 @@ use {
         browser::BrowserState,
         command::*,
         display::*,
-        errors::ProgramError,
         pattern::*,
+        program_error::ProgramError,
         task_sync::Dam,
         tree::{
             TreeOptions,

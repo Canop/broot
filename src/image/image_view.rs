@@ -10,12 +10,12 @@ use {
             Screen,
             W,
         },
-        errors::ProgramError,
         graphics::{
             self,
             ImageId,
             ImageRendering,
         },
+        program_error::ProgramError,
         skin::PanelSkin,
     },
     crokey::crossterm::{

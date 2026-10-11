@@ -2,7 +2,7 @@ use {
     super::W,
     crate::{
         app::AppContext,
-        errors::ProgramError,
+        program_error::ProgramError,
         skin::PanelSkin,
     },
     crokey::crossterm::{

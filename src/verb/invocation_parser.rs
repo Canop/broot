@@ -1,6 +1,6 @@
 use {
     super::*,
-    crate::errors::ConfError,
+    crate::conf::ConfError,
     regex::Regex,
     rustc_hash::FxHashMap,
     std::path::PathBuf,

@@ -6,9 +6,9 @@ use {
             Selection,
             SelectionType,
         },
-        errors::TreeBuildError,
         file_sum::FileSum,
         git::LineGitStatus,
+        tree_build::TreeBuildError,
     },
     lazy_regex::regex_captures,
     std::{

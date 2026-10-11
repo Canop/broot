@@ -2,7 +2,7 @@ use {
     super::Message,
     crate::{
         command::Sequence,
-        errors::NetError,
+        net::NetError,
     },
     std::{
         fs,

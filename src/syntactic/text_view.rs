@@ -16,11 +16,11 @@ use {
             is_thumb,
             row_starts,
         },
-        errors::*,
         pattern::{
             InputPattern,
             NameMatch,
         },
+        program_error::ProgramError,
         skin::PanelSkin,
         task_sync::Dam,
     },

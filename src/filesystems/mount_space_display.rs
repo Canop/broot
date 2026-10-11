@@ -1,7 +1,7 @@
 use {
     crate::{
         display::cond_bg,
-        errors::ProgramError,
+        program_error::ProgramError,
         skin::StyleMap,
     },
     crokey::crossterm::{

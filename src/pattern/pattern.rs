@@ -1,9 +1,6 @@
 use {
     super::*,
-    crate::{
-        content_search::ContentMatch,
-        errors::PatternError,
-    },
+    crate::content_search::ContentMatch,
     bet::BeTree,
     std::path::Path,
 };

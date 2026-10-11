@@ -2,7 +2,7 @@
 
 use {
     super::NameMatch,
-    crate::errors::PatternError,
+    crate::pattern::PatternError,
     lazy_regex::regex,
     smallvec::SmallVec,
     std::fmt,

@@ -1,10 +1,12 @@
 mod client;
 mod message;
+mod net_error;
 mod server;
 
 pub use {
     client::Client,
     message::Message,
+    net_error::NetError,
     server::Server,
 };
 

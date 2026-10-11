@@ -2,12 +2,14 @@ use {
     super::Sort,
     crate::{
         cli::Args,
-        conf::Conf,
+        conf::{
+            Conf,
+            ConfError,
+        },
         display::{
             Cols,
             DEFAULT_COLS,
         },
-        errors::ConfError,
         pattern::*,
     },
     clap::Parser,

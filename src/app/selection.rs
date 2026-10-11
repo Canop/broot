@@ -4,9 +4,9 @@ use {
         CmdResult,
     },
     crate::{
-        errors::ProgramError,
         git::LineGitStatus,
         launchable::Launchable,
+        program_error::ProgramError,
     },
     std::{
         fs::OpenOptions,

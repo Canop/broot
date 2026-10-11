@@ -1,7 +1,7 @@
 use {
     super::*,
     crate::{
-        errors::ConfError,
+        conf::ConfError,
         path::PathAnchor,
     },
     lazy_regex::*,

@@ -9,7 +9,6 @@ pub mod conf;
 pub mod content_search;
 pub mod content_type;
 pub mod display;
-pub mod errors;
 pub mod file_sum;
 pub mod flag;
 pub mod git;
@@ -26,6 +25,7 @@ pub mod pattern;
 pub mod permissions;
 pub mod preview;
 pub mod print;
+pub mod program_error;
 pub mod shell_install;
 #[cfg(feature = "sixel")]
 pub mod sixel;

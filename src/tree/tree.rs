@@ -2,7 +2,6 @@ use {
     super::*,
     crate::{
         app::AppContext,
-        errors::TreeBuildError,
         file_sum::FileSum,
         git::TreeGitStatus,
         task_sync::{
@@ -11,6 +10,7 @@ use {
         },
         tree_build::{
             BuildReport,
+            TreeBuildError,
             TreeBuilder,
         },
     },

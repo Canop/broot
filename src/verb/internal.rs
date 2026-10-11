@@ -4,7 +4,7 @@
 //! They can be called as ":some_name" from builtin verbs and
 //! from configured verbs.
 
-use crate::errors::ConfError;
+use crate::conf::ConfError;
 
 macro_rules! Internals {
     (

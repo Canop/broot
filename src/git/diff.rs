@@ -1,6 +1,6 @@
 use {
     crate::{
-        errors::ProgramError,
+        program_error::ProgramError,
         syntactic::printable_line,
     },
     gix::{
