@@ -35,19 +35,6 @@ pub struct ExecutionBuilder<'b> {
 
     /// parsed arguments
     invocation_values: Option<FxHashMap<String, String>>,
-
-    /// whether to keep groups which can't be solved or remove them
-    keep_groups: bool,
-
-    target: Target,
-}
-
-/// Whether we're trying to build the command as a string or as a vec of tokens (in
-/// which case we don't want to do the same escaping, for example)
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Target {
-    String,
-    Tokens,
 }
 
 impl<'b> ExecutionBuilder<'b> {
@@ -64,8 +51,6 @@ impl<'b> ExecutionBuilder<'b> {
             other_file: app_state.other_panel_path.as_ref(),
             invocation_parser: None,
             invocation_values: None,
-            keep_groups: false,
-            target: Target::Tokens,
         }
     }
     pub fn with_invocation(
@@ -84,45 +69,37 @@ impl<'b> ExecutionBuilder<'b> {
             other_file: app_state.other_panel_path.as_ref(),
             invocation_parser,
             invocation_values,
-            keep_groups: false,
-            target: Target::Tokens,
         }
     }
 
-    /// Return the replacing value for the whole sel_info
+    /// Return the values of the argument for the whole sel_info: one per selection
+    /// for a merging argument, at most one otherwise
     ///
     /// When you have a multiselection and no merging flag, don't call this function
-    /// but get_sel_capture_replacement while building a command per selection.
-    fn get_arg_replacement(
+    /// but get_sel_arg_replacement while building a command per selection.
+    fn get_arg_values(
         &self,
         arg_def: &ExecArgDef,
         con: &AppContext,
-    ) -> Option<String> {
-        let merging_flag = arg_def.merging_flag();
+    ) -> Vec<String> {
         match self.sel_info {
-            SelInfo::None => self.get_sel_arg_replacement(arg_def, None, con),
-            SelInfo::One(sel) => self.get_sel_arg_replacement(arg_def, Some(sel), con),
+            SelInfo::None => self.get_sel_arg_replacement(arg_def, None, con).into_iter().collect(),
+            SelInfo::One(sel) => self
+                .get_sel_arg_replacement(arg_def, Some(sel), con)
+                .into_iter()
+                .collect(),
             SelInfo::More(stage) => {
-                let mut sels = stage.to_selections();
-                if let Some(merging_flag) = merging_flag {
-                    let mut values = Vec::new();
-                    for sel in sels {
-                        let rcr = self.get_sel_arg_replacement(arg_def, Some(sel), con);
-                        if let Some(rcr) = rcr {
-                            values.push(rcr);
-                        }
-                    }
-                    merging_flag.merge_values(values)
+                let sels = stage.to_selections();
+                if arg_def.merging_flag().is_some() {
+                    sels.into_iter()
+                        .filter_map(|sel| self.get_sel_arg_replacement(arg_def, Some(sel), con))
+                        .collect()
                 } else {
                     // we're called with no specific selection and there's no merging
                     // strategy, this should probably not really happen, we'll take
                     // the first selection
-                    let sel = if sels.is_empty() {
-                        None
-                    } else {
-                        Some(sels.swap_remove(0))
-                    };
-                    self.get_sel_arg_replacement(arg_def, sel, con)
+                    let sel = sels.into_iter().next();
+                    self.get_sel_arg_replacement(arg_def, sel, con).into_iter().collect()
                 }
             }
         }
@@ -136,10 +113,10 @@ impl<'b> ExecutionBuilder<'b> {
         con: &AppContext,
     ) -> Option<String> {
         match standard_arg {
-            StandardArg::Root => Some(self.path_to_string(self.root)),
-            StandardArg::InitialRoot => Some(self.path_to_string(&con.initial_root)),
+            StandardArg::Root => Some(path_to_string(self.root)),
+            StandardArg::InitialRoot => Some(path_to_string(&con.initial_root)),
             StandardArg::Line => sel.map(|s| s.line.to_string()),
-            StandardArg::File => sel.map(|s| s.path).map(|p| self.path_to_string(p)),
+            StandardArg::File => sel.map(|s| s.path).map(path_to_string),
             StandardArg::FileName => sel
                 .map(|s| s.path)
                 .and_then(|path| path.file_name())
@@ -165,13 +142,9 @@ impl<'b> ExecutionBuilder<'b> {
                     .map(|ext| format!(".{ext}"))
                     .or_else(|| Some("".to_string()))
             }
-            StandardArg::Directory => sel
-                .map(|s| path::closest_dir(s.path))
-                .map(|p| self.path_to_string(p)),
-            StandardArg::Parent => sel
-                .and_then(|s| s.path.parent())
-                .map(|p| self.path_to_string(p)),
-            StandardArg::OtherPanelFile => self.other_file.map(|p| self.path_to_string(p)),
+            StandardArg::Directory => sel.map(|s| path::closest_dir(s.path)).map(path_to_string),
+            StandardArg::Parent => sel.and_then(|s| s.path.parent()).map(path_to_string),
+            StandardArg::OtherPanelFile => self.other_file.map(path_to_string),
             StandardArg::OtherPanelFilename => self
                 .other_file
                 .and_then(|path| path.file_name())
@@ -180,17 +153,14 @@ impl<'b> ExecutionBuilder<'b> {
             StandardArg::OtherPanelDirectory => self
                 .other_file
                 .map(|p| path::closest_dir(p))
-                .as_ref()
-                .map(|p| self.path_to_string(p)),
-            StandardArg::OtherPanelParent => self
-                .other_file
-                .and_then(|p| p.parent())
-                .map(|p| self.path_to_string(p)),
+                .map(path_to_string),
+            StandardArg::OtherPanelParent => {
+                self.other_file.and_then(|p| p.parent()).map(path_to_string)
+            }
             StandardArg::GitRoot => {
                 // path to git repo workdir
                 debug!("finding git root");
-                sel.and_then(|s| git::workdir(s.path))
-                    .map(|p| self.path_to_string(&p))
+                sel.and_then(|s| git::workdir(s.path)).map(path_to_string)
             }
             StandardArg::GitName => {
                 // name of the git repo workdir
@@ -210,15 +180,11 @@ impl<'b> ExecutionBuilder<'b> {
                         !p.as_os_str().is_empty()
                     })
                     .unwrap_or(sel.path);
-                Some(self.path_to_string(path))
+                Some(path_to_string(path))
             }
             StandardArg::FileRootRelative => {
                 // file path relative to the tree root
-                sel?
-                    .path
-                    .strip_prefix(self.root)
-                    .ok()
-                    .map(|p| self.path_to_string(p))
+                sel?.path.strip_prefix(self.root).ok().map(path_to_string)
             }
             StandardArg::ServerName => con.server_name.clone(),
         }
@@ -236,32 +202,48 @@ impl<'b> ExecutionBuilder<'b> {
         if arg_def.has_flag(ExecArgFlag::PathFromDirectory) {
             sel.map(|s| path::closest_dir(s.path))
                 .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
-                .map(|pb| self.path_to_string(pb))
+                .map(path_to_string)
         } else if arg_def.has_flag(ExecArgFlag::PathFromParent) {
             sel.and_then(|s| s.path.parent())
                 .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
-                .map(|pb| self.path_to_string(pb))
+                .map(path_to_string)
         } else {
             Some(value.to_string())
         }
     }
+    /// Replace the arg groups in a string, escaping each value for a shell
+    /// when `escape` is true
     fn replace_args(
         &self,
         s: &str,
-        replacer: &mut dyn FnMut(&ExecArgDef) -> Option<String>,
+        escape: bool,
+        values: &dyn Fn(&ExecArgDef) -> Vec<String>,
     ) -> String {
         ARG_DEF_GROUP
             .replace_all(s, |ec: &Captures<'_>| {
-                let replacement = ExecArgDef::from_capture(ec)
-                    .ok()
-                    .and_then(|arg_def| replacer(&arg_def));
-                replacement.unwrap_or_else(|| {
-                    if self.keep_groups {
-                        ec[0].to_string()
-                    } else {
-                        "".to_string()
+                let Ok(arg_def) = ExecArgDef::from_capture(ec) else {
+                    return String::new();
+                };
+                let values = values(&arg_def);
+                let separator = arg_def
+                    .merging_flag()
+                    .and_then(|flag| flag.separator())
+                    .unwrap_or(" ");
+                let mut replacement = String::new();
+                if escape && values.is_empty() {
+                    replacement.push_str("''");
+                }
+                for (i, value) in values.iter().enumerate() {
+                    if i > 0 {
+                        replacement.push_str(separator);
                     }
-                })
+                    if escape {
+                        replacement.push_str(&shell_escape(value));
+                    } else {
+                        replacement.push_str(value);
+                    }
+                }
+                replacement
             })
             .to_string()
     }
@@ -312,7 +294,7 @@ impl<'b> ExecutionBuilder<'b> {
     /// this secondary execution, new replacements are expected too,
     /// depending on the verbs.
     pub fn sequence(
-        &mut self,
+        &self,
         sequence: &Sequence,
         verb_store: &VerbStore,
         con: &AppContext,
@@ -337,7 +319,7 @@ impl<'b> ExecutionBuilder<'b> {
             let input = if verb_is_external {
                 self.shell_exec_string(&ExecPattern::from_string(input), con)
             } else {
-                self.string(input, con)
+                self.replace_args(input, false, &|arg_def| self.get_arg_values(arg_def, con))
             };
             inputs.push(input);
         }
@@ -345,16 +327,6 @@ impl<'b> ExecutionBuilder<'b> {
             raw: inputs.join(&sequence.separator),
             separator: sequence.separator.clone(),
         }
-    }
-
-    fn string(
-        &self,
-        pattern: &str,
-        con: &AppContext,
-    ) -> String {
-        self.replace_args(pattern, &mut |arg_def| {
-            self.get_arg_replacement(arg_def, con)
-        })
     }
 
     /// build a path from a pattern (eg the `working_dir` parameter of a verb definition)
@@ -366,35 +338,39 @@ impl<'b> ExecutionBuilder<'b> {
         path::path_from(
             self.base_dir(),
             path::PathAnchor::Unspecified,
-            &self.replace_args(pattern, &mut |arg_def| {
-                self.get_arg_replacement(arg_def, con)
-            }),
+            &self.replace_args(pattern, false, &|arg_def| self.get_arg_values(arg_def, con)),
         )
     }
 
     /// build a shell compatible command, with escapings
     pub fn shell_exec_string(
-        &mut self,
+        &self,
         exec_pattern: &ExecPattern,
         con: &AppContext,
     ) -> String {
-        self.target = Target::String; // this ensures proper escaping
-        let tokens = self.exec_token(exec_pattern, con);
-        tokens.join(" ")
+        exec_pattern.shell_line(
+            |line| self.replace_args(line, true, &|arg_def| self.get_arg_values(arg_def, con)),
+            |tokens| self.expand_tokens(tokens, con),
+        )
     }
 
     /// build a shell compatible command, with escapings, for a specific
     /// selection (this is intended for execution on all selections of a
     /// stage)
     pub fn sel_shell_exec_string(
-        &mut self,
+        &self,
         exec_pattern: &ExecPattern,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> String {
-        self.target = Target::String; // this ensures proper escaping
-        let tokens = self.sel_exec_token(exec_pattern, sel, con);
-        tokens.join(" ")
+        exec_pattern.shell_line(
+            |line| {
+                self.replace_args(line, true, &|arg_def| {
+                    self.get_sel_arg_replacement(arg_def, sel, con).into_iter().collect()
+                })
+            },
+            |tokens| self.sel_expand_tokens(tokens, sel, con),
+        )
     }
 
     /// build a vec of tokens which can be passed to Command to
@@ -404,13 +380,34 @@ impl<'b> ExecutionBuilder<'b> {
         exec_pattern: &ExecPattern,
         con: &AppContext,
     ) -> Vec<String> {
+        self.expand_tokens(exec_pattern.tokens(), con)
+    }
+
+    /// build a vec of tokens which can be passed to Command to
+    /// launch an executable.
+    /// This is intended for execution on all selections of a stage
+    /// when the exec pattern isn't merging.
+    pub fn sel_exec_token(
+        &self,
+        exec_pattern: &ExecPattern,
+        sel: Option<Selection<'_>>,
+        con: &AppContext,
+    ) -> Vec<String> {
+        self.sel_expand_tokens(exec_pattern.tokens(), sel, con)
+    }
+
+    fn expand_tokens(
+        &self,
+        tokens: &[String],
+        con: &AppContext,
+    ) -> Vec<String> {
         // When a token is a space-separated arg, and the selection is multiple,
         // we want to build several tokens so that it's received as several args by the
         // executed program, and not as a single arg with spaces.
         // This complex work is needed only when the selection is multiple and there's
         // a "space-separated" flag in the capture
         let mut output = Vec::new();
-        for token in exec_pattern.tokens() {
+        for token in tokens {
             let arg_def = capture_if_total(&ARG_DEF_GROUP, token)
                 .and_then(|ec| ExecArgDef::from_capture(&ec).ok());
             if let Some(arg_def) = arg_def {
@@ -431,58 +428,32 @@ impl<'b> ExecutionBuilder<'b> {
             // as we won't be able to build several tokens from this one, we do the
             // standard replacement
             let replaced =
-                self.replace_args(token, &mut |arg_def| self.get_arg_replacement(arg_def, con));
+                self.replace_args(token, false, &|arg_def| self.get_arg_values(arg_def, con));
             output.push(fix_token_path(replaced));
         }
         output
     }
 
-    /// build a vec of tokens which can be passed to Command to
-    /// launch an executable.
-    /// This is intended for execution on all selections of a stage
-    /// when the exec pattern isn't merging.
-    pub fn sel_exec_token(
-        &mut self,
-        exec_pattern: &ExecPattern,
+    fn sel_expand_tokens(
+        &self,
+        tokens: &[String],
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Vec<String> {
-        exec_pattern
-            .tokens()
+        tokens
             .iter()
             .map(|s| {
-                self.replace_args(s, &mut |arg_def| {
-                    self.get_sel_arg_replacement(arg_def, sel, con)
+                self.replace_args(s, false, &|arg_def| {
+                    self.get_sel_arg_replacement(arg_def, sel, con).into_iter().collect()
                 })
             })
             .map(fix_token_path)
             .collect()
     }
+}
 
-    /// Convert a path (or part of a path) to a string, with escaping if needed (depending on the target)
-    fn path_to_string<P: AsRef<Path>>(
-        &self,
-        path: P,
-    ) -> String {
-        let s = path.as_ref().to_string_lossy();
-        if self.target == Target::Tokens {
-            // when building tokens, we don't want to do any escaping,
-            // even if there are special characters
-            return s.to_string();
-        }
-        // backslashes must be in this set: on Windows the string may go to
-        // the launcher's outcmd file, whose eval would remove them
-        if !regex_is_match!(r#"[\s"'\\`$*?\[\]{}()<>|;&!#]"#, &s) {
-            // if there's no special character, we don't need to escape or wrap
-            return s.to_string();
-        }
-        // first we replace single quotes by `'"'"'` (close the single quote, add an escaped
-        // single quote, and reopen the single quote)
-        let s = s.replace('\'', r#"'"'"'"#);
-        // then we wrap the whole thing in single quotes
-        let s = format!("'{}'", s);
-        s
-    }
+fn path_to_string<P: AsRef<Path>>(path: P) -> String {
+    path.as_ref().to_string_lossy().to_string()
 }
 
 fn capture_if_total<'h>(
@@ -621,32 +592,12 @@ mod execution_builder_test {
         // a command with `&&` must survive tokenizing untouched so it can be
         // handed to `sh -c` when the verb is a `shell_command` (issue #1145)
         let app_state = AppState::new(PathBuf::from("/"));
-        let mut builder = ExecutionBuilder::without_invocation(SelInfo::None, &app_state);
+        let builder = ExecutionBuilder::without_invocation(SelInfo::None, &app_state);
         let con = AppContext::default();
         let ep = ExecPattern::from_string("mkdir foo && touch foo/bar");
         assert_eq!(
             builder.shell_exec_string(&ep, &con),
             "mkdir foo && touch foo/bar",
         );
-    }
-
-    #[test]
-    fn test_path_to_string_quoting() {
-        let app_state = AppState::new(PathBuf::from("/"));
-        let mut builder = ExecutionBuilder::without_invocation(SelInfo::None, &app_state);
-        // the String target is the one used for the launcher's outcmd file,
-        // whose content is passed to the shell's eval
-        builder.target = Target::String;
-        assert_eq!(builder.path_to_string("/home/dys/dev"), "/home/dys/dev");
-        assert_eq!(builder.path_to_string("/home/dys/my dev"), "'/home/dys/my dev'");
-        assert_eq!(builder.path_to_string(r"C:\Users\dys\dev"), r"'C:\Users\dys\dev'");
-        assert_eq!(
-            builder.path_to_string("/home/dys/it's dev"),
-            r#"'/home/dys/it'"'"'s dev'"#,
-        );
-        assert_eq!(builder.path_to_string("/tmp/a[1]"), "'/tmp/a[1]'");
-        assert_eq!(builder.path_to_string("/tmp/$(x)"), "'/tmp/$(x)'");
-        assert_eq!(builder.path_to_string("/tmp/a*b"), "'/tmp/a*b'");
-        assert_eq!(builder.path_to_string("/tmp/é-ü_1.txt"), "/tmp/é-ü_1.txt");
     }
 }

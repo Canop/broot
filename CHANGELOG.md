@@ -6,6 +6,8 @@
 - a `path-from-parent` or `path-from-directory` flag on an argument provided by broot, eg `{file:path-from-parent}`, is now a configuration error
 - contradictory or repeated flags on a verb argument, eg `{file:space-separated,comma-separated}`, are now a configuration error
 - a space between the flags of a verb argument no longer breaks the argument when the execution is given as a single string
+- fix quotes in verb executions, broken since 1.56: quotes of an execution given as a single string were passed to the program, and items of an array with spaces weren't quoted when run through a shell
+- in a command run through a shell, all inserted values are now escaped, not only paths (eg `{file-name}`), and an empty value is passed as an empty argument
 - an invalid verb in the configuration now prevents broot from starting, with an error giving its file and definition
 - errors displayed on exit are now highlighted
 - a verb argument defined in the invocation, eg `{file}` in `invocation: "say {file}"`, now takes precedence over the standard argument with the same name

@@ -31,16 +31,11 @@ impl ExecArgFlag {
     pub fn is_merging(&self) -> bool {
         matches!(self, Self::CommaSeparated | Self::SpaceSeparated)
     }
-    pub fn merge_values(
-        &self,
-        args: Vec<String>,
-    ) -> Option<String> {
-        if args.is_empty() {
-            return None;
-        }
+    /// Return the separator of the merged values, for a merging flag
+    pub fn separator(&self) -> Option<&'static str> {
         match self {
-            Self::CommaSeparated => Some(args.join(",")),
-            Self::SpaceSeparated => Some(args.join(" ")),
+            Self::CommaSeparated => Some(","),
+            Self::SpaceSeparated => Some(" "),
             _ => None,
         }
     }

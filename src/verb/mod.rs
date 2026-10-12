@@ -3,6 +3,8 @@ mod coarity;
 mod exec_pattern;
 mod exec_arg_def;
 mod execution_builder;
+#[cfg(all(test, unix))]
+mod execution_builder_tests;
 mod external_execution;
 mod external_execution_mode;
 mod file_type_condition;

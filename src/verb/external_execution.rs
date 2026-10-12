@@ -100,7 +100,7 @@ impl ExternalExecution {
     /// build a launchable for the whole (possibly merged) selection
     fn merged_launchable(
         &self,
-        builder: &mut ExecutionBuilder<'_>,
+        builder: &ExecutionBuilder<'_>,
         working_dir: Option<PathBuf>,
         through_shell: bool,
         con: &AppContext,
@@ -126,7 +126,7 @@ impl ExternalExecution {
     /// per selection of a stage)
     fn sel_launchable(
         &self,
-        builder: &mut ExecutionBuilder<'_>,
+        builder: &ExecutionBuilder<'_>,
         sel: Option<Selection<'_>>,
         working_dir: Option<PathBuf>,
         through_shell: bool,
@@ -171,7 +171,7 @@ impl ExternalExecution {
     /// from the parent shell (meaning broot must quit)
     fn cmd_result_exec_from_parent_shell(
         &self,
-        mut builder: ExecutionBuilder<'_>,
+        builder: ExecutionBuilder<'_>,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
         if builder.sel_info.count_paths() > 1 {
@@ -198,7 +198,7 @@ impl ExternalExecution {
     /// launched by broot at end of broot
     fn cmd_result_exec_leave_broot(
         &self,
-        mut builder: ExecutionBuilder<'_>,
+        builder: ExecutionBuilder<'_>,
         through_shell: bool,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
@@ -208,7 +208,7 @@ impl ExternalExecution {
             }
         }
         let working_dir = self.working_dir_path(&builder, con);
-        let launchable = self.merged_launchable(&mut builder, working_dir, through_shell, con)?;
+        let launchable = self.merged_launchable(&builder, working_dir, through_shell, con)?;
         Ok(CmdResult::from(launchable))
     }
 
@@ -217,7 +217,7 @@ impl ExternalExecution {
     fn cmd_result_exec_stay_in_broot(
         &self,
         w: &mut W,
-        mut builder: ExecutionBuilder<'_>,
+        builder: ExecutionBuilder<'_>,
         through_shell: bool,
         con: &AppContext,
     ) -> Result<CmdResult, ProgramError> {
@@ -226,7 +226,7 @@ impl ExternalExecution {
             SelInfo::None | SelInfo::One(_) => {
                 // zero or one selection -> only one execution
                 let launchable =
-                    self.merged_launchable(&mut builder, working_dir_path, through_shell, con)?;
+                    self.merged_launchable(&builder, working_dir_path, through_shell, con)?;
                 info!("Executing not leaving, launchable {:#?}", launchable);
                 if let Err(e) = launchable.execute(Some(w)) {
                     warn!("launchable failed : {:#?}", e);
@@ -244,7 +244,7 @@ impl ExternalExecution {
                         let n = sels.len();
                         for (i, sel) in sels.enumerate() {
                             let launchable = self.sel_launchable(
-                                &mut builder,
+                                &builder,
                                 Some(sel),
                                 working_dir_path.clone(),
                                 through_shell,
@@ -261,7 +261,7 @@ impl ExternalExecution {
                     CommandCoarity::Merged => {
                         // we execute once as the arguments are merging the selection
                         let launchable = self.merged_launchable(
-                            &mut builder,
+                            &builder,
                             working_dir_path.clone(),
                             through_shell,
                             con,

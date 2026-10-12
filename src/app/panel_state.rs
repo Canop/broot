@@ -704,7 +704,7 @@ pub trait PanelState {
             }
             Internal::write_output => {
                 let sel_info = self.sel_info(app_state);
-                let mut exec_builder = ExecutionBuilder::with_invocation(
+                let exec_builder = ExecutionBuilder::with_invocation(
                     invocation_parser,
                     sel_info,
                     app_state,
@@ -913,7 +913,7 @@ pub trait PanelState {
                 "sequences can't be executed on multiple selections",
             ));
         }
-        let mut exec_builder = ExecutionBuilder::with_invocation(
+        let exec_builder = ExecutionBuilder::with_invocation(
             verb.invocation_parser.as_ref(),
             sel_info,
             app_state,
