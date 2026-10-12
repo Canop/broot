@@ -1,6 +1,6 @@
 ### next
 - an invalid flag in a verb argument, eg `{file:space_separated}`, is now reported as a configuration error
-- an invalid flag in the `terminal_title` pattern is now a configuration error
+- a flag in the `terminal_title` pattern, where flags have no effect, is now a configuration error
 - an unknown argument in a verb, eg `{flie}`, is now reported as a configuration error
 - an unknown argument in the `terminal_title` pattern is now a configuration error
 - a `path-from-parent` or `path-from-directory` flag on an argument provided by broot, eg `{file:path-from-parent}`, is now a configuration error

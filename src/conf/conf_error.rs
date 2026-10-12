@@ -101,6 +101,10 @@ pub enum ConfError {
         "unknown argument `{name}` in `terminal_title`: only the arguments provided by broot can be used"
     )]
     UnknownTerminalTitleArg { name: String },
+    #[error(
+        "the `{flag}` flag can't be used on `{name}` in `terminal_title`: flags have no effect there"
+    )]
+    FlagInTerminalTitle { name: String, flag: ExecArgFlag },
     #[error("invalid panel reference: `{raw}`")]
     InvalidPanelReference { raw: String },
 }
