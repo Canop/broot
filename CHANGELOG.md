@@ -4,6 +4,7 @@
 - an unknown argument in a verb, eg `{flie}`, is now reported as a configuration error
 - an unknown argument in the `terminal_title` pattern is now a configuration error
 - a `path-from-parent` or `path-from-directory` flag on an argument provided by broot, eg `{file:path-from-parent}`, is now a configuration error
+- contradictory or repeated flags on a verb argument, eg `{file:space-separated,comma-separated}`, are now a configuration error
 - an invalid verb in the configuration now prevents broot from starting, with an error giving its file and definition
 - errors displayed on exit are now highlighted
 - a verb argument defined in the invocation, eg `{file}` in `invocation: "say {file}"`, now takes precedence over the standard argument with the same name

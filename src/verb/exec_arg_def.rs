@@ -68,7 +68,30 @@ impl ExecArgDef {
                 .collect::<Result<_, _>>()?,
             None => Vec::new(),
         };
-        Ok(Self { name, flags })
+        let def = Self { name, flags };
+        def.check_flags_compatibility()?;
+        Ok(def)
+    }
+    /// Check there's at most one merging flag and at most one path flag
+    fn check_flags_compatibility(&self) -> Result<(), ConfError> {
+        for (i, &first) in self.flags.iter().enumerate() {
+            for &second in &self.flags[i + 1..] {
+                if first == second {
+                    return Err(ConfError::RepeatedArgFlag {
+                        name: self.name.clone(),
+                        flag: first,
+                    });
+                }
+                if (first.is_merging() && second.is_merging()) || (first.is_path() && second.is_path()) {
+                    return Err(ConfError::ConflictingArgFlags {
+                        name: self.name.clone(),
+                        first,
+                        second,
+                    });
+                }
+            }
+        }
+        Ok(())
     }
     /// Return the standard argument this group refers to, if any (an argument
     /// of the invocation masks the standard argument of the same name)
@@ -156,7 +179,7 @@ mod exec_arg_def_tests {
 
     #[test]
     fn test_parse_exec_arg_defs() {
-        let defs = parse_exec_arg_defs("zip -r {name:path-from-directory}.zip {file:space-separated, comma-separated}").unwrap();
+        let defs = parse_exec_arg_defs("zip -r {name:path-from-directory}.zip {file:space-separated, path-from-parent}").unwrap();
         assert_eq!(
             defs,
             vec![
@@ -166,7 +189,7 @@ mod exec_arg_def_tests {
                 },
                 ExecArgDef {
                     name: "file".to_string(),
-                    flags: vec![ExecArgFlag::SpaceSeparated, ExecArgFlag::CommaSeparated],
+                    flags: vec![ExecArgFlag::SpaceSeparated, ExecArgFlag::PathFromParent],
                 },
             ]
         );
@@ -181,5 +204,12 @@ mod exec_arg_def_tests {
         assert!(parse_exec_arg_defs("nvim {file:space_separated}").is_err());
         assert!(parse_exec_arg_defs("mv {file} {new_filename:file-name}").is_err());
         assert!(parse_exec_arg_defs(":set_syntax_theme {theme:theme}").is_err());
+    }
+
+    #[test]
+    fn test_incompatible_exec_arg_flags() {
+        assert!(parse_exec_arg_defs("mpv {file:space-separated,comma-separated}").is_err());
+        assert!(parse_exec_arg_defs("mkdir {dir:path-from-parent,path-from-directory}").is_err());
+        assert!(parse_exec_arg_defs("mpv {file:space-separated,space-separated}").is_err());
     }
 }

@@ -97,6 +97,14 @@ pub enum ConfError {
         "the `{flag}` flag can't be used on `{name}`, which is provided by broot: it only applies to an argument defined in the invocation pattern"
     )]
     PathFlagOnStandardArg { name: String, flag: ExecArgFlag },
+    #[error("the `{flag}` flag is repeated on `{name}`")]
+    RepeatedArgFlag { name: String, flag: ExecArgFlag },
+    #[error("the `{first}` and `{second}` flags can't be combined on `{name}`")]
+    ConflictingArgFlags {
+        name: String,
+        first: ExecArgFlag,
+        second: ExecArgFlag,
+    },
     #[error(
         "unknown argument `{name}` in `terminal_title`: only the arguments provided by broot can be used"
     )]
