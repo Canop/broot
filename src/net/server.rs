@@ -5,12 +5,7 @@ use {
         errors::NetError,
     },
     std::{
-        fs,
         io::BufReader,
-        os::unix::net::{
-            UnixListener,
-            UnixStream,
-        },
         path::PathBuf,
         sync::{
             Arc,
@@ -21,8 +16,38 @@ use {
     termimad::crossbeam::channel::Sender,
 };
 
+#[cfg(unix)]
+use std::{
+    fs,
+    os::unix::net::{
+        UnixListener,
+        UnixStream,
+    },
+};
+
+#[cfg(windows)]
+use {
+    interprocess::local_socket::{
+        GenericNamespaced,
+        ListenerOptions,
+        Stream,
+        prelude::*,
+    },
+    std::io,
+};
+
+#[cfg(windows)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PipeState {
+    Open,
+    Closed,
+}
+
 pub struct Server {
-    path: String,
+    /// Socket file path on unix, pipe name on Windows
+    address: String,
+    #[cfg(windows)]
+    state: Arc<Mutex<PipeState>>,
 }
 
 impl Server {
@@ -31,29 +56,63 @@ impl Server {
         tx: Sender<Sequence>,
         root: Arc<Mutex<PathBuf>>,
     ) -> Result<Self, NetError> {
-        let path = super::socket_file_path(name);
-        if fs::metadata(&path).is_ok() {
-            // A socket file is already present. It may belong to a live server
-            // or be a stale leftover from a crashed instance. We probe it: when
-            // a process is listening, connect succeeds and we must refuse to
-            // overtake it (issue #1065); otherwise the file is stale and we
-            // remove it before rebinding, exactly as before.
-            if UnixStream::connect(&path).is_ok() {
-                return Err(NetError::DuplicateServerName {
-                    name: name.to_string(),
-                });
+        #[cfg(unix)]
+        let (listener, address) = {
+            let address = super::socket_address(name);
+            if fs::metadata(&address).is_ok() {
+                // A socket file is already present. It may belong to a live server
+                // or be a stale leftover from a crashed instance. We probe it: when
+                // a process is listening, connect succeeds and we must refuse to
+                // overtake it (issue #1065); otherwise the file is stale and we
+                // remove it before rebinding, exactly as before.
+                if UnixStream::connect(&address).is_ok() {
+                    return Err(NetError::DuplicateServerName {
+                        name: name.to_string(),
+                    });
+                }
+                match fs::remove_file(&address) {
+                    Ok(_) => {}
+                    Err(e) => return Err(NetError::Io { source: e }),
+                }
             }
-            match fs::remove_file(&path) {
-                Ok(_) => {}
-                Err(e) => return Err(NetError::Io { source: e }),
-            }
-        }
-        let listener = UnixListener::bind(&path)?;
-        info!("listening on {}", path);
+            let listener = UnixListener::bind(&address)?;
+            info!("listening on {}", address);
+            (listener, address)
+        };
+        #[cfg(windows)]
+        let (listener, address) = {
+            let address = super::socket_address(name);
+            // The first instance of a pipe is created exclusively, failing
+            // with an access error when this name is already taken
+            let listener = ListenerOptions::new()
+                .name(address.as_str().to_ns_name::<GenericNamespaced>()?)
+                .create_sync()
+                .map_err(|e| {
+                    if e.kind() == io::ErrorKind::PermissionDenied && connect_pipe(&address).is_ok()
+                    {
+                        NetError::DuplicateServerName {
+                            name: name.to_string(),
+                        }
+                    } else {
+                        NetError::Io { source: e }
+                    }
+                })?;
+            info!("listening on pipe {}", address);
+            (listener, address)
+        };
+        #[cfg(windows)]
+        let state = Arc::new(Mutex::new(PipeState::Open));
+        #[cfg(windows)]
+        let thread_state = Arc::clone(&state);
 
         // we use only one thread as we don't want to support long connections
         thread::spawn(move || {
             for stream in listener.incoming() {
+                #[cfg(windows)]
+                if *thread_state.lock().unwrap() == PipeState::Closed {
+                    debug!("pipe closed, stop listening");
+                    return;
+                }
                 match stream {
                     Ok(mut stream) => {
                         let mut br = BufReader::new(&stream);
@@ -98,16 +157,41 @@ impl Server {
                 }
             }
         });
-        Ok(Self { path })
+        Ok(Self {
+            address,
+            #[cfg(windows)]
+            state,
+        })
     }
 }
 
+/// Connect to the given pipe, which succeeds only when a server listens on it
+#[cfg(windows)]
+fn connect_pipe(pipe_name: &str) -> io::Result<Stream> {
+    pipe_name
+        .to_ns_name::<GenericNamespaced>()
+        .and_then(Stream::connect)
+}
+
+#[cfg(windows)]
+impl Drop for Server {
+    fn drop(&mut self) {
+        debug!("closing pipe");
+        if let Ok(mut state) = self.state.lock() {
+            *state = PipeState::Closed;
+        }
+        // wake up the listening thread, blocked on accept
+        let _ = connect_pipe(&self.address);
+    }
+}
+
+#[cfg(unix)]
 impl Drop for Server {
     fn drop(&mut self) {
         debug!("removing socket file");
         // The socket file may already be gone (taken over by another server, or
         // already cleaned up): never panic from Drop in that case.
-        let _ = fs::remove_file(&self.path);
+        let _ = fs::remove_file(&self.address);
     }
 }
 
@@ -133,12 +217,11 @@ mod test {
         let name = "broot-test-duplicate-server-name-do-not-use";
         let (tx, _rx) = channel::unbounded::<Sequence>();
         let root = Arc::new(Mutex::new(PathBuf::from("/")));
-        let s1 = Server::new(name, tx.clone(), Arc::clone(&root)).expect("first server must bind");
+        let _s1 = Server::new(name, tx.clone(), Arc::clone(&root)).expect("first server must bind");
         let second = Server::new(name, tx, root);
         assert!(
             second.is_err(),
             "second Server::new with the same name must error, not silently overtake"
         );
-        drop(s1); // Drop removes the socket file for the unique test name
     }
 }

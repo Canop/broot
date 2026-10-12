@@ -180,17 +180,17 @@ pub struct Args {
     pub print_shell_function: Option<String>,
 
     /// A socket to listen to for commands
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     #[arg(long, value_name = "socket")]
     pub listen: Option<String>,
 
     /// create a random socket to listen to for commands
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     #[arg(long)]
     pub listen_auto: bool,
 
     /// Ask for the current root of the remote broot
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     #[arg(long)]
     pub get_root: bool,
 
@@ -199,7 +199,7 @@ pub struct Args {
     pub write_default_conf: Option<PathBuf>,
 
     /// A socket to send commands to
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     #[arg(long, value_name = "socket")]
     pub send: Option<String>,
 

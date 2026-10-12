@@ -1,3 +1,6 @@
+### next
+- client-server features (`--listen`, `--send`, `--get-root`) now available on Windows - Fix #1206
+
 <a name="v1.61.0"></a>
 ### v1.61.0 - 2026-10-03
 - `:gf` now removes all git information, including the git status filter

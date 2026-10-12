@@ -520,7 +520,7 @@ impl App {
                 })?;
         }
 
-        #[cfg(unix)]
+        #[cfg(any(unix, windows))]
         let _server = con
             .server_name
             .as_ref()

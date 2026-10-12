@@ -43,7 +43,7 @@ pub mod watcher;
 #[cfg(any(target_os = "macos", target_os = "linux", target_os = "windows"))]
 pub mod filesystems;
 
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 pub mod net;
 
 #[cfg(any(

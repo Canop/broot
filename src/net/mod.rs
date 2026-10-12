@@ -8,7 +8,9 @@ pub use {
     server::Server,
 };
 
-pub fn socket_file_path(server_name: &str) -> String {
+/// Return the path of the server's socket file
+#[cfg(unix)]
+pub fn socket_address(server_name: &str) -> String {
     #[cfg(target_os = "android")]
     {
         // On termux, /tmp is not writable and we're supposed
@@ -20,6 +22,12 @@ pub fn socket_file_path(server_name: &str) -> String {
         // maybe we're not in termux ? Fallback to /tmp
     }
     format!("/tmp/broot-server-{server_name}.sock")
+}
+
+/// Return the name of the server's pipe, relative to `\\.\pipe\`
+#[cfg(windows)]
+pub fn socket_address(server_name: &str) -> String {
+    format!("broot-server-{server_name}")
 }
 
 pub fn random_server_name() -> String {

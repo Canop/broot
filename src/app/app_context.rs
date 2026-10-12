@@ -401,11 +401,11 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
 /// (none if there's neither 'listen' nor `listen_auto` arg)
 #[allow(unused_variables)]
 fn build_server_name(args: &Args) -> Option<String> {
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     if let Some(name) = &args.listen {
         return Some(name.clone());
     }
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     if args.listen_auto {
         return Some(crate::net::random_server_name());
     }
