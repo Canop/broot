@@ -3,6 +3,7 @@ use {
         conf::ConfError,
         verb::*,
     },
+    lazy_regex::regex_is_match,
     serde::{
         Deserialize,
         Deserializer,
@@ -21,10 +22,11 @@ pub struct ExecPattern {
 impl ExecPattern {
     pub fn from_string(s: &str) -> Self {
         Self {
-            tokens: splitty::split_unquoted_whitespace(s)
-                .unwrap_quotes(true)
-                .map(String::from)
-                .collect(),
+            tokens: rejoin_split_groups(
+                splitty::split_unquoted_whitespace(s)
+                    .unwrap_quotes(true)
+                    .map(String::from),
+            ),
         }
     }
     pub fn from_tokens(tokens: Vec<String>) -> Self {
@@ -129,12 +131,50 @@ impl<'de> Deserialize<'de> for ExecPattern {
         }
 
         let tokens = match Raw::deserialize(deserializer)? {
-            Raw::Single(s) => splitty::split_unquoted_whitespace(&s)
-                .map(String::from)
-                .collect(),
+            Raw::Single(s) => {
+                rejoin_split_groups(splitty::split_unquoted_whitespace(&s).map(String::from))
+            }
             Raw::Multiple(v) => v,
         };
 
         Ok(ExecPattern { tokens })
+    }
+}
+
+/// Rejoin the tokens of a `{name:flags}` group which was split on a space
+/// between flags (eg `{file:space-separated, path-from-parent}`)
+fn rejoin_split_groups(tokens: impl Iterator<Item = String>) -> Vec<String> {
+    let mut joined: Vec<String> = Vec::new();
+    let mut in_group = false;
+    for token in tokens {
+        match joined.last_mut() {
+            Some(last) if in_group => {
+                last.push(' ');
+                last.push_str(&token);
+            }
+            _ => joined.push(token),
+        }
+        in_group = joined
+            .last()
+            .is_some_and(|last| regex_is_match!(r"\{[^{}\s:]+:[^{}]*$", last));
+    }
+    joined
+}
+
+#[cfg(test)]
+mod exec_pattern_tests {
+    use super::*;
+
+    #[test]
+    fn test_split_keeps_groups() {
+        let ep = ExecPattern::from_string("mpv {file:space-separated, path-from-parent} --x");
+        assert_eq!(ep.tokens(), &["mpv", "{file:space-separated, path-from-parent}", "--x"]);
+        let ep: ExecPattern =
+            deser_hjson::from_str(r#""cp {file} {dest:path-from-parent,  space-separated}""#)
+                .unwrap();
+        assert_eq!(ep.tokens(), &["cp", "{file}", "{dest:path-from-parent, space-separated}"]);
+        // braces which don't open a {name:flags} group are left alone
+        let ep = ExecPattern::from_string("sh -c { a; b; } {file}");
+        assert_eq!(ep.tokens(), &["sh", "-c", "{", "a;", "b;", "}", "{file}"]);
     }
 }
