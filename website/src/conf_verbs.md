@@ -399,7 +399,7 @@ By default, when a verb for an external command is called on several selected fi
 
 If you want all selections to be merged into a single command, you need to add one of the merging flags, `space-separated` or `comma-separated`, to the `external` pattern.
 
-For example, the following verb requires the user to type a "name" then zips all staged files and directories with one command looking like `zip -r some/path/new-archive.zip some/path/file-a some/other/directory`:
+For example, the following verb requires the user to type a "name" then zips all staged files and directories with one command looking like `zip -r new-archive.zip /some/path/file-a /some/other/directory`, the archive being created in the current root, which is the working directory:
 
 ```hjson
 {
@@ -407,7 +407,7 @@ For example, the following verb requires the user to type a "name" then zips all
     external: [
         "zip"
         "-r"
-        "{name:path-from-directory}.zip"
+        "{name}.zip"
         "{file:space-separated}"
     ]
     leave_broot: false
@@ -420,7 +420,7 @@ invocation = "zip {name}"
 external = [
     "zip",
     "-r",
-    "{name:path-from-directory}.zip",
+    "{name}.zip",
     "{file:space-separated}",
 ]
 leave_broot = false
