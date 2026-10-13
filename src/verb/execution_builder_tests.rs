@@ -350,7 +350,7 @@ fn path_flags_from_a_directory() {
     let fs_root = Path::new("/");
     let top = SelInfo::One(Selection::new(fs_root, SelectionType::Directory));
     check(top, "{p:path-from-directory}", "/n");
-    check(top, "{p:path-from-parent}", "");
+    check(top, "{p:path-from-parent}", "/n");
 }
 
 #[test]

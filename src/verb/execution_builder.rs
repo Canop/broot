@@ -204,7 +204,7 @@ impl<'b> ExecutionBuilder<'b> {
                 .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
                 .map(path_to_string)
         } else if arg_def.has_flag(ExecArgFlag::PathFromParent) {
-            sel.and_then(|s| s.path.parent())
+            sel.map(|s| s.path.parent().unwrap_or(s.path))
                 .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
                 .map(path_to_string)
         } else {
