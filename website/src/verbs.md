@@ -61,16 +61,16 @@ For example mkdir is virtually defined as
 
 ```Hjson
 invocation: "mkdir {subpath}"
-external: "mkdir -p {directory}/{subpath}"
+external: "mkdir -p {subpath:path-from-directory}"
 ```
 ```TOML
 invocation = "mkdir {subpath}"
-external = "mkdir -p {directory}/{subpath}"
+external = "mkdir -p {subpath:path-from-directory}"
 ```
 
 (it's now a built-in, you won't see it in the config file)
 
-which means that if you type `c/d`, and the file `/a/b/some_file.rs` is selected, then the created directory would be `a/b/c/d`.
+which means that if you type `c/d`, and the file `/a/b/some_file.rs` is selected, then the created directory would be `/a/b/c/d`.
 
 Example:
 
