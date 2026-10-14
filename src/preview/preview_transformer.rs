@@ -72,6 +72,9 @@ pub struct PreviewTransform {
     pub transformer_id: TransformerId,
     /// Path to the generated file
     pub output_path: PathBuf,
+    /// How the generated file is to be previewed, unless another
+    /// mode is explicitly requested
+    pub mode: PreviewMode,
 }
 
 impl PreviewTransformers {
@@ -105,6 +108,7 @@ impl PreviewTransformers {
             Ok(output_path) => Some(PreviewTransform {
                 transformer_id,
                 output_path,
+                mode: self.transformers[transformer_id.idx].mode,
             }),
             Err(e) => {
                 error!(
