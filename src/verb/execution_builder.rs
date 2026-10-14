@@ -199,16 +199,11 @@ impl<'b> ExecutionBuilder<'b> {
             return self.get_sel_standard_replacement(standard_arg, sel, con);
         }
         let value = self.invocation_values.as_ref()?.get(&arg_def.name)?;
-        if arg_def.has_flag(ExecArgFlag::PathFromDirectory) {
-            sel.map(|s| path::closest_dir(s.path))
-                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
-                .map(path_to_string)
-        } else if arg_def.has_flag(ExecArgFlag::PathFromParent) {
-            sel.map(|s| s.path.parent().unwrap_or(s.path))
-                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
-                .map(path_to_string)
-        } else {
-            Some(value.to_string())
+        match arg_def.path_anchor() {
+            Some(anchor) => sel
+                .map(|s| path::path_from(s.path, anchor, value))
+                .map(path_to_string),
+            None => Some(value.to_string()),
         }
     }
     /// Replace the arg groups in a string, escaping each value for a shell
@@ -337,7 +332,7 @@ impl<'b> ExecutionBuilder<'b> {
     ) -> PathBuf {
         path::path_from(
             self.base_dir(),
-            path::PathAnchor::Unspecified,
+            PathAnchor::Directory,
             &self.replace_args(pattern, false, &|arg_def| self.get_arg_values(arg_def, con)),
         )
     }

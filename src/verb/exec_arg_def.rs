@@ -39,14 +39,12 @@ impl ExecArgFlag {
             _ => None,
         }
     }
-    pub fn is_path(&self) -> bool {
-        matches!(self, Self::PathFromDirectory | Self::PathFromParent)
-    }
-    pub fn path_anchor(&self) -> PathAnchor {
+    /// Return the anchor of the typed path, for a path flag
+    pub fn path_anchor(&self) -> Option<PathAnchor> {
         match self {
-            Self::PathFromDirectory => PathAnchor::Directory,
-            Self::PathFromParent => PathAnchor::Parent,
-            _ => PathAnchor::Unspecified,
+            Self::PathFromDirectory => Some(PathAnchor::Directory),
+            Self::PathFromParent => Some(PathAnchor::Parent),
+            _ => None,
         }
     }
 }
@@ -77,7 +75,7 @@ impl ExecArgDef {
                         flag: first,
                     });
                 }
-                if (first.is_merging() && second.is_merging()) || (first.is_path() && second.is_path()) {
+                if (first.is_merging() && second.is_merging()) || (first.path_anchor().is_some() && second.path_anchor().is_some()) {
                     return Err(ConfError::ConflictingArgFlags {
                         name: self.name.clone(),
                         first,
@@ -111,7 +109,7 @@ impl ExecArgDef {
     /// Check the group doesn't have a flag applying only to invocation arguments,
     /// assuming it's a standard argument
     pub fn check_standard_flags(&self) -> Result<(), ConfError> {
-        match self.flags.iter().find(|flag| flag.is_path()) {
+        match self.flags.iter().find(|flag| flag.path_anchor().is_some()) {
             Some(flag) => Err(ConfError::PathFlagOnStandardArg {
                 name: self.name.clone(),
                 flag: *flag,
@@ -119,14 +117,9 @@ impl ExecArgDef {
             None => Ok(()),
         }
     }
-    pub fn path_anchor(&self) -> PathAnchor {
-        for flag in &self.flags {
-            let anchor = flag.path_anchor();
-            if anchor != PathAnchor::Unspecified {
-                return anchor;
-            }
-        }
-        PathAnchor::Unspecified
+    /// Return the anchor of the typed path, when the group has a path flag
+    pub fn path_anchor(&self) -> Option<PathAnchor> {
+        self.flags.iter().find_map(ExecArgFlag::path_anchor)
     }
 }
 

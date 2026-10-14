@@ -325,13 +325,12 @@ impl Verb {
             .as_ref()
             .and_then(InvocationParser::get_unique_arg_def)
         else {
-            return PathAnchor::Unspecified;
+            return PathAnchor::default();
         };
         self.exec_arg_defs
             .iter()
             .filter(|exec_arg_def| exec_arg_def.name == arg_def.name)
-            .map(ExecArgDef::path_anchor)
-            .find(|anchor| *anchor != PathAnchor::Unspecified)
+            .find_map(ExecArgDef::path_anchor)
             .unwrap_or_default()
     }
 

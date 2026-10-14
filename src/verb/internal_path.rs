@@ -54,7 +54,7 @@ pub fn determine_path(
                 // The given path may be relative hence the need for the
                 // state's selection
                 let base_path = &tree.selected_line().path;
-                let path = path::path_from(base_path, PathAnchor::Unspecified, arg);
+                let path = path::path_from(base_path, PathAnchor::Directory, arg);
                 Some(path)
             } else {
                 // there's nothing really to do here
@@ -99,7 +99,7 @@ fn path_from_input(
             // The :select internal execution was triggered from the
             // input (which must be a kind of alias for :select)
             // so we do exactly what the input asks for
-            path::path_from(base_path, PathAnchor::Unspecified, input_arg)
+            path::path_from(base_path, PathAnchor::Directory, input_arg)
         }
         (None, Some(verb_arg)) => {
             // the verb defines the path where to go..
@@ -109,7 +109,7 @@ fn path_from_input(
             // The given path may be relative hence the need for the
             // state's selection
             // (we assume a check before ensured it doesn't need an input)
-            path::path_from(base_path, PathAnchor::Unspecified, verb_arg)
+            path::path_from(base_path, PathAnchor::Directory, verb_arg)
         }
         (None, None) => {
             // This doesn't really make sense: we're selecting the currently

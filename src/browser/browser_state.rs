@@ -647,7 +647,7 @@ impl PanelState for BrowserState {
                     if let Some(input_invocation) = input_invocation {
                         // we'll go for input arg editing
                         let path = if let Some(input_arg) = &input_invocation.args {
-                            path::path_from(self.root(), PathAnchor::Unspecified, input_arg)
+                            path::path_from(self.root(), PathAnchor::Directory, input_arg)
                         } else {
                             self.root().to_path_buf()
                         };

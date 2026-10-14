@@ -122,7 +122,7 @@ impl Completions {
             .search(verb_name, Some(sel_info), false, panel_state_type)
         {
             PrefixSearchResult::Match(_, verb) => verb.get_unique_arg_anchor(),
-            _ => PathAnchor::Unspecified,
+            _ => PathAnchor::default(),
         };
         let (_, parent_part, child_part) = regex_captures!(r"^(.*?)([^/]*)$", arg).unwrap();
         let parent = path::path_from(path, anchor, parent_part);

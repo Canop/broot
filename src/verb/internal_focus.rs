@@ -131,7 +131,7 @@ fn path_from_input(
             // The :focus internal execution was triggered from the
             // input (which must be a kind of alias for :focus)
             // so we do exactly what the input asks for
-            path::path_from(base_path, PathAnchor::Unspecified, input_arg)
+            path::path_from(base_path, PathAnchor::Directory, input_arg)
         }
         (None, Some(verb_arg)) => {
             // the verb defines the path where to go..
@@ -232,7 +232,7 @@ pub fn on_internal(
                 on_path(path, screen, tree_options, bang, con)
             } else if let Some(input_arg) = input_arg {
                 let base_dir = selected_path.to_string_lossy();
-                let path = path::path_from(&*base_dir, PathAnchor::Unspecified, input_arg);
+                let path = path::path_from(&*base_dir, PathAnchor::Directory, input_arg);
                 if bang {
                     // Unsure this special behavior is really needed. It was based
                     // on the assumption that the user wanted to edit an argument
