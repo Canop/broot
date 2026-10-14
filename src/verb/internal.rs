@@ -195,20 +195,6 @@ impl Internal {
             _ => self.name(),
         }
     }
-    pub fn exec_pattern(self) -> &'static str {
-        match self {
-            Self::apply_flags => r"apply_flags {flags}",
-            Self::focus => r"focus {path}",
-            Self::line_down => r"line_down {count}",
-            Self::line_up => r"line_up {count}",
-            Self::line_down_no_cycle => r"line_down_no_cycle {count}",
-            Self::line_up_no_cycle => r"line_up_no_cycle {count}",
-            Self::move_panel_divider => r"move_panel_divider {idx} {dx}",
-            Self::set_panel_width => r"set_panel_width {idx} {width}",
-            Self::write_output => r"write_output {line}",
-            _ => self.name(),
-        }
-    }
     pub fn needs_selection(
         self,
         arg: &Option<String>,
