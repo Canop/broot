@@ -1,5 +1,6 @@
 [
     ( ".dockerignore"                , "file_type_docker"                   ),
+    ( ".envrc"                       , "file_type_env"                      ),
     ( ".scalafix.conf"               , "file_type_config"                   ),
     ( ".scalafmt.conf"               , "file_type_config"                   ),
     ( "LICENCE"                      , "file_type_license"                  ),
