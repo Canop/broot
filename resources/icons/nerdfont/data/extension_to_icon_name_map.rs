@@ -55,6 +55,7 @@
 ( "bzip2"                   , "file_type_zip2"                    ),
 ( "bzrignore"               , "file_type_bazaar"                  ),
 ( "c"                       , "file_type_c"                       ),
+( "cabal"                   , "file_type_cabal"                   ),
 ( "cake"                    , "file_type_cake"                    ),
 ( "cargo-lock"              , "file_type_rust"                    ),
 ( "cc"                      , "file_type_cpp"                     ),
