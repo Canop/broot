@@ -615,6 +615,7 @@
 ( "file_type_reactjs", 0xe7ba ), // 
 ( "file_type_reacttemplate", 0xe7ba), // 
 ( "file_type_reactts", 0xe7ba ), // 
+( "file_type_readme", 0xeda4 ), // 
 ( "file_type_reason", 0xe687 ), // 
 ( "file_type_red", 0xf15b ),
 ( "file_type_registry", 0xf15b ),
