@@ -66,6 +66,7 @@
 ( "cljc"                    , "file_type_clojure"                 ),
 ( "cljs"                    , "file_type_clojurescript"           ),
 ( "cma"                     , "file_type_binary"                  ),
+( "cmake"                   , "file_type_cmake"                   ),
 ( "cmi"                     , "file_type_binary"                  ),
 ( "cmo"                     , "file_type_binary"                  ),
 ( "cmx"                     , "file_type_binary"                  ),

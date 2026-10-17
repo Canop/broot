@@ -2,6 +2,7 @@
 [
     ( "adapter.js"                 , "file_type_nest_adapter_js"          ),
     ( "adapter.ts"                 , "file_type_nest_adapter_ts"          ),
+    ( "cmake.in"                   , "file_type_cmake"                    ),
     ( "component.dart"             , "file_type_ng_component_dart"        ),
     ( "component.js"               , "file_type_ng_component_js2"         ),
     ( "component.ts"               , "file_type_ng_component_ts2"         ),

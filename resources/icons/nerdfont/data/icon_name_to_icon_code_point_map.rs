@@ -97,7 +97,7 @@
 ( "file_type_clojure", 0xe642 ), // 
 ( "file_type_clojurescript", 0xe768 ), // 
 ( "file_type_cloudfoundry", 0xf0217 ), // 󰈗
-( "file_type_cmake", 0xe673 ), // 
+( "file_type_cmake", 0xe794 ), // 
 ( "file_type_cobol", 0xf107c ), // 󱁼
 ( "file_type_codacy", 0xf017c ), // 󱁼
 ( "file_type_codeclimate", 0xf017c ), // 󱁼
