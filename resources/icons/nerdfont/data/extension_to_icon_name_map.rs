@@ -158,6 +158,7 @@
 ( "gz"                      , "file_type_zip2"                    ),
 ( "h"                       , "file_type_cheader"                 ),
 ( "hgignore"                , "file_type_mercurial"               ),
+( "hjson"                   , "file_type_hjson"                   ),
 ( "hl"                      , "file_type_binary"                  ),
 ( "hpp"                     , "file_type_cppheader"               ),
 ( "hs"                      , "file_type_haskell"                 ),
