@@ -25,6 +25,11 @@ esac
 
 version=$(broot_version)
 h1 "Building all targets for $NAME $version   (host $(host_os), darwin=$DARWIN_METHOD)"
+if ! fetch_release_branch; then
+    warn "couldn't fetch origin/$BROOT_RELEASE_BRANCH to check this build matches it"
+elif ! head_is_published; then
+    warn "HEAD isn't origin/$BROOT_RELEASE_BRANCH: release.sh will refuse to package this build"
+fi
 [[ $DARWIN_METHOD == skip ]] && warn "the macOS binary will not be built (DARWIN_METHOD=skip)"
 
 # Decide up front whether this build will be staged, so a dirty tree is settled
