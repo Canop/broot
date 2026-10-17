@@ -136,6 +136,7 @@
 ( "file_type_darcs", 0xf15b ),
 ( "file_type_dartlang", 0xe798 ), // 
 ( "file_type_db", 0xe64d ), // 
+( "file_type_debug", 0xeb91 ), // 
 ( "file_type_delphi", 0xf15b ),
 ( "file_type_dependabot", 0xf0573 ), // 󰕳
 ( "file_type_dependencies", 0xf0573 ), // 󰕳
