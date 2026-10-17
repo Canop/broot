@@ -395,6 +395,7 @@
 ( "file_type_liquid", 0xf15b ),
 ( "file_type_lisp", 0xf15b ),
 ( "file_type_livescript", 0xf15b ),
+( "file_type_llvm", 0xe823 ), // 
 ( "file_type_lnk", 0xf15b ),
 ( "file_type_locale", 0xf1ab ), // 
 ( "file_type_log", 0xf1085 ), // 󱂅

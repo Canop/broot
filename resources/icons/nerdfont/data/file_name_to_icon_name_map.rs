@@ -1,4 +1,8 @@
 [
+    ( ".clang-format"                , "file_type_llvm"                     ),
+    ( ".clang-format-ignore"         , "file_type_llvm"                     ),
+    ( ".clang-tidy"                  , "file_type_llvm"                     ),
+    ( ".clangd"                      , "file_type_llvm"                     ),
     ( ".dockerignore"                , "file_type_docker"                   ),
     ( ".envrc"                       , "file_type_env"                      ),
     ( ".scalafix.conf"               , "file_type_config"                   ),
