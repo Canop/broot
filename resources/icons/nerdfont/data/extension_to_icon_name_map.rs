@@ -92,6 +92,8 @@
 ( "djt"                     , "file_type_django"                  ),
 ( "dll"                     , "file_type_binary"                  ),
 ( "doc"                     , "file_type_word2"                   ),
+( "dockerfile"              , "file_type_docker"                  ),
+( "dockerignore"            , "file_type_docker"                  ),
 ( "docm"                    , "file_type_word2"                   ),
 ( "docx"                    , "file_type_word2"                   ),
 ( "doczrc"                  , "file_type_docz"                    ),
