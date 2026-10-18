@@ -310,6 +310,7 @@
 ( "file_type_julia", 0xe624 ), // 
 ( "file_type_julia2", 0xe624 ),  // 
 ( "file_type_jupyter", 0x10018B ),
+( "file_type_just", 0xf0ad ), // 
 ( "file_type_karma", 0xf15b ),
 ( "file_type_key", 0xf1184 ), // 󱆄
 ( "file_type_kitchenci", 0xf15b ),
