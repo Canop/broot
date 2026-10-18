@@ -203,6 +203,8 @@
 ( "json"                    , "file_type_json_official"           ),
 ( "json-ld"                 , "file_type_jsonld"                  ),
 ( "json5"                   , "file_type_json5"                   ),
+( "jsonc"                   , "file_type_json"                    ),
+( "jsonl"                   , "file_type_json"                    ),
 ( "jsonld"                  , "file_type_jsonld"                  ),
 ( "jsp"                     , "file_type_jsp"                     ),
 ( "jss"                     , "file_type_jss"                     ),
