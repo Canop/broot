@@ -66,6 +66,7 @@
     ( "composer.lock"                , "file_type_composer"                 ),
     ( "conanfile.py"                 , "file_type_conan"                    ),
     ( "conanfile.txt"                , "file_type_conan"                    ),
+    ( "config"                       , "file_type_config"                   ),
     ( "config.codekit"               , "file_type_codekit"                  ),
     ( "config.codekit2"              , "file_type_codekit"                  ),
     ( "config.codekit3"              , "file_type_codekit"                  ),
