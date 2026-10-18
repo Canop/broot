@@ -189,6 +189,7 @@
 ( "file_type_firebase", 0xf0967 ), // 󰥧
 ( "file_type_firebasehosting", 0xe787 ), // 
 ( "file_type_firestore", 0xe657 ), // 
+( "file_type_fish", 0xf023a ), // 󰈺
 ( "file_type_fla", 0xf15b ),
 ( "file_type_flash", 0xf0e7 ), // 
 ( "file_type_floobits", 0xf15b ),

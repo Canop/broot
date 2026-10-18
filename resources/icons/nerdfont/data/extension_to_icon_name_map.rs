@@ -135,7 +135,7 @@
 ( "fnl"                     , "file_type_fennel"                  ),
 ( "fig"                     , "file_type_matlab"                  ),
 ( "firebaserc"              , "file_type_firebase"                ),
-( "fish"                    , "file_type_shell"                   ),
+( "fish"                    , "file_type_fish"                    ),
 ( "fla"                     , "file_type_fla"                     ),
 ( "flac"                    , "file_type_audio"                   ),
 ( "flooignore"              , "file_type_floobits"                ),

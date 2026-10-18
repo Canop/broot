@@ -97,6 +97,8 @@
     ( "firebase.json"                , "file_type_firebasehosting"          ),
     ( "firestore.indexes.json"       , "file_type_firestore"                ),
     ( "firestore.rules"              , "file_type_firestore"                ),
+    ( "fish_history"                 , "file_type_fish"                     ),
+    ( "fish_variables"               , "file_type_fish"                     ),
     ( "format.ps1xml"                , "file_type_powershell_format"        ),
     ( "fuse.js"                      , "file_type_fusebox"                  ),
     ( "gdbearlyinit"                 , "file_type_debug"                    ),
