@@ -269,6 +269,7 @@
 ( "file_type_idris", 0xf15b ),
 ( "file_type_idrisbin", 0xf15b ),
 ( "file_type_idrispkg", 0xf15b ),
+( "file_type_ignore", 0xe668 ), // 
 ( "file_type_image", 0xf021f ), // 󰈟
 ( "file_type_imba", 0xf15b ),
 ( "file_type_inc", 0xf15b ),
