@@ -1,4 +1,4 @@
-#[cfg(unix)]
+#[cfg(any(unix, windows))]
 use crate::net::NetError;
 use {
     crate::{
@@ -59,7 +59,7 @@ pub enum ProgramError {
     LaunchError { program: String, source: io::Error },
     #[error("Failed to fetch mounts: {details}")]
     Lfs { details: String },
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     #[error(transparent)]
     NetError {
         #[from]

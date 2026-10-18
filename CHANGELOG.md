@@ -13,6 +13,7 @@
 - errors displayed on exit are now highlighted
 - a verb argument defined in the invocation, eg `{file}` in `invocation: "say {file}"`, now takes precedence over the standard argument with the same name
 - tab completion of the argument of `:copy`, `:move`, or of verbs using `path-from-parent` or `path-from-directory`, now starts from the directory the command will use
+- client-server features (`--listen`, `--send`, `--get-root`) now available on Windows - Fix #1206
 
 <a name="v1.61.0"></a>
 ### v1.61.0 - 2026-10-03

@@ -13,7 +13,7 @@ Example use cases:
 * have broot automatically show the content of a directory focused in another program
 
 **Note:**
-This feature is only available on unix like systems today because the current implementation is based on unix sockets.
+The implementation is based on unix sockets, or on named pipes on Windows.
 
 # Usage
 
@@ -27,7 +27,7 @@ For example if you start broot with
 
     br --listen my_broot
 
-broot will run normally but will *also* listen to commands sent from elsewhere (using linux sockets).
+broot will run normally but will *also* listen to commands sent from elsewhere (using a unix socket, or a named pipe on Windows).
 
 
 Now that the "server" is running, try launching a command from another terminal:
