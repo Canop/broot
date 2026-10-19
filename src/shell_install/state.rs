@@ -16,7 +16,7 @@ use {
 
 /// must be incremented when the architecture changes or one of the shell
 /// specific scripts is upgraded to a new version
-const CURRENT_VERSION: usize = 5;
+const CURRENT_VERSION: usize = 6;
 
 const REFUSED_FILE_CONTENT: &str = r"
 This file tells broot you refused the installation of the companion shell function.
