@@ -25,6 +25,8 @@ Broot is a better way to navigate directories, find files, and launch commands.
 [**Installation Instructions**](https://dystroy.org/broot/install/) -
 [**Contributing or Getting Help**](https://dystroy.org/blog/contributing/)
 
+[![Live demo by Demoshell](https://build.demoshell.com/v1/embed/badge.svg)](https://build.demoshell.com/launch?snapshot=demoshell%2Ftui%3Abroot&utm_source=badge)
+
 ## Get an overview of a directory, even a big one
 
 Hit `br -s`
