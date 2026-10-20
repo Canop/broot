@@ -97,7 +97,7 @@
 ( "file_type_clojure", 0xe642 ), // 
 ( "file_type_clojurescript", 0xe768 ), // 
 ( "file_type_cloudfoundry", 0xf0217 ), // 󰈗
-( "file_type_cmake", 0xe673 ), // 
+( "file_type_cmake", 0xe794 ), // 
 ( "file_type_cobol", 0xf107c ), // 󱁼
 ( "file_type_codacy", 0xf017c ), // 󱁼
 ( "file_type_codeclimate", 0xf017c ), // 󱁼
@@ -136,6 +136,7 @@
 ( "file_type_darcs", 0xf15b ),
 ( "file_type_dartlang", 0xe798 ), // 
 ( "file_type_db", 0xe64d ), // 
+( "file_type_debug", 0xeb91 ), // 
 ( "file_type_delphi", 0xf15b ),
 ( "file_type_dependabot", 0xf0573 ), // 󰕳
 ( "file_type_dependencies", 0xf0573 ), // 󰕳
@@ -188,6 +189,7 @@
 ( "file_type_firebase", 0xf0967 ), // 󰥧
 ( "file_type_firebasehosting", 0xe787 ), // 
 ( "file_type_firestore", 0xe657 ), // 
+( "file_type_fish", 0xf023a ), // 󰈺
 ( "file_type_fla", 0xf15b ),
 ( "file_type_flash", 0xf0e7 ), // 
 ( "file_type_floobits", 0xf15b ),
@@ -267,6 +269,7 @@
 ( "file_type_idris", 0xf15b ),
 ( "file_type_idrisbin", 0xf15b ),
 ( "file_type_idrispkg", 0xf15b ),
+( "file_type_ignore", 0xe668 ), // 
 ( "file_type_image", 0xf021f ), // 󰈟
 ( "file_type_imba", 0xf15b ),
 ( "file_type_inc", 0xf15b ),
@@ -308,6 +311,7 @@
 ( "file_type_julia", 0xe624 ), // 
 ( "file_type_julia2", 0xe624 ),  // 
 ( "file_type_jupyter", 0x10018B ),
+( "file_type_just", 0xf0ad ), // 
 ( "file_type_karma", 0xf15b ),
 ( "file_type_key", 0xf1184 ), // 󱆄
 ( "file_type_kitchenci", 0xf15b ),
@@ -395,6 +399,7 @@
 ( "file_type_liquid", 0xf15b ),
 ( "file_type_lisp", 0xf15b ),
 ( "file_type_livescript", 0xf15b ),
+( "file_type_llvm", 0xe823 ), // 
 ( "file_type_lnk", 0xf15b ),
 ( "file_type_locale", 0xf1ab ), // 
 ( "file_type_log", 0xf1085 ), // 󱂅
@@ -615,6 +620,7 @@
 ( "file_type_reactjs", 0xe7ba ), // 
 ( "file_type_reacttemplate", 0xe7ba), // 
 ( "file_type_reactts", 0xe7ba ), // 
+( "file_type_readme", 0xeda4 ), // 
 ( "file_type_reason", 0xe687 ), // 
 ( "file_type_red", 0xf15b ),
 ( "file_type_registry", 0xf15b ),
