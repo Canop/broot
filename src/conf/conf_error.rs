@@ -67,6 +67,8 @@ pub enum ConfError {
     InvalidDefaultFlags { flags: String },
     #[error("invalid syntax theme: `{name}`")]
     InvalidSyntaxTheme { name: String },
+    #[error("invalid syntax theme file `{path}`: {details}")]
+    InvalidSyntaxThemeFile { path: String, details: String },
     #[error("invalid glob pattern: `{pattern}`")]
     InvalidGlobPattern { pattern: String },
     #[error(
