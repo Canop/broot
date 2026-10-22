@@ -63,7 +63,8 @@ pub static SEPARATOR_FILLING: Lazy<Filling> = Lazy::new(|| Filling::from_char('â
 /// Homogeneously colored piece of a line
 #[derive(Debug, Clone)]
 pub struct Region {
-    pub fg: Color,
+    /// None when the preview's normal foreground is to be used
+    pub fg: Option<Color>,
     pub string: String,
 }
 
@@ -77,10 +78,18 @@ const INITIAL_LOAD: usize = 4_000_000;
 
 impl Region {
     pub fn from_syntect(region: &(Style, &str)) -> Self {
-        let fg = Color::Rgb {
-            r: region.0.foreground.r,
-            g: region.0.foreground.g,
-            b: region.0.foreground.b,
+        // As in bat's ansi and base16 themes, an alpha of 0 makes the red
+        // channel a terminal palette index, and an alpha of 1 means the
+        // default foreground
+        let c = region.0.foreground;
+        let fg = match c.a {
+            0 => Some(Color::AnsiValue(c.r)),
+            1 => None,
+            _ => Some(Color::Rgb {
+                r: c.r,
+                g: c.g,
+                b: c.b,
+            }),
         };
         let string = region.1.to_string();
         Self { fg, string }
@@ -572,7 +581,7 @@ impl TextView {
                         let regions = if line.regions.is_empty() && line.len > 0 {
                             match rows.read(line) {
                                 Some(string) => Cow::Owned(vec![Region {
-                                    fg: normal_fg,
+                                    fg: None,
                                     string,
                                 }]),
                                 None => {
@@ -618,7 +627,7 @@ impl TextView {
                     let pos_list = line.name_match.as_ref().map(|nm| &nm.pos);
                     if overflow == Overflow::NoWrap && pos_list.is_none() {
                         for region in regions {
-                            cw.w.queue(SetForegroundColor(region.fg))?;
+                            cw.w.queue(SetForegroundColor(region.fg.unwrap_or(normal_fg)))?;
                             let s = region.string.trim_end_matches(is_char_end_of_line);
                             if s.contains('\t') {
                                 cw.queue_unstyled_str(&s.replace('\t', &" ".repeat(TAB_WIDTH)))?;
@@ -634,7 +643,7 @@ impl TextView {
                         let mut run = String::new();
                         'regions: for region in regions {
                             flush(&mut cw, &mut run)?;
-                            cw.w.queue(SetForegroundColor(region.fg))?;
+                            cw.w.queue(SetForegroundColor(region.fg.unwrap_or(normal_fg)))?;
                             for c in region.string.chars() {
                                 if ci >= to {
                                     break 'regions;

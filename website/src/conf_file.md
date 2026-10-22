@@ -276,7 +276,13 @@ syntax_theme_file = "~/.config/bat/themes/my-theme.tmTheme"
 ```
 
 A relative path is resolved from the configuration file declaring it.
-The theme file takes precedence over a `syntax_theme` set in the configuration (for example by a skin), but a theme chosen with `:set_syntax_theme` replaces it until broot is closed.
+
+`syntax_theme` and `syntax_theme_file` replace each other: the one read last wins.
+As imported files are read after the file importing them, a `syntax_theme` set in your skin replaces a `syntax_theme_file` set in `conf.hjson`, so it's usually best to set `syntax_theme_file` in the skin file your `conf.hjson` imports (for example `skins/dark-blue.hjson`), in place of its `syntax_theme`.
+An empty `syntax_theme_file` unsets it.
+A theme chosen with `:set_syntax_theme` replaces the theme file until broot is closed.
+
+Themes made for the terminal's palette, like bat's `ansi` and `base16` themes, are supported.
 
 
 # Terminal title

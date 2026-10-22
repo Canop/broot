@@ -94,8 +94,8 @@ pub struct AppContext {
     /// the syntect theme to use for text files previewing
     pub syntax_theme: Option<SyntaxTheme>,
 
-    /// a theme loaded from a .tmTheme file, used unless a syntax_theme
-    /// is chosen with :set_syntax_theme
+    /// a theme loaded from a .tmTheme file, used when syntax_theme is None,
+    /// which it is until a theme is chosen with :set_syntax_theme
     pub custom_syntax_theme: Option<Theme>,
 
     /// precomputed status to display in standard cases
@@ -286,8 +286,7 @@ impl AppContext {
             show_selection_mark: config.show_selection_mark.unwrap_or(false),
             preview_overflow: config.wrap_previews.map(Overflow::from_wrap_bool).unwrap_or_default(),
             ext_colors,
-            // a theme file is more specific than the syntax_theme of a skin
-            syntax_theme: config.syntax_theme.filter(|_| custom_syntax_theme.is_none()),
+            syntax_theme: config.syntax_theme,
             custom_syntax_theme,
             standard_status,
             true_colors,
