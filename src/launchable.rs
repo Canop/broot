@@ -6,7 +6,7 @@ use {
             Screen,
             W,
         },
-        errors::ProgramError,
+        program_error::ProgramError,
         skin::{
             ExtColorMap,
             StyleMap,

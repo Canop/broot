@@ -21,9 +21,9 @@ use {
             write_default_conf_in,
         },
         display,
-        errors::ProgramError,
         graphics,
         launchable::Launchable,
+        program_error::ProgramError,
         shell_install::{
             ShellInstall,
             ShellInstallState,
@@ -153,7 +153,7 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
 
     let mut context = AppContext::from(args, verb_store, &config)?;
 
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     if let Some(server_name) = &context.launch_args.send {
         use crate::{
             command::Sequence,

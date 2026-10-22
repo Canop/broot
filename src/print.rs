@@ -4,8 +4,8 @@ use {
     crate::{
         app::*,
         display::Screen,
-        errors::ProgramError,
         launchable::Launchable,
+        program_error::ProgramError,
         skin::{
             PanelSkin,
             StyleMap,

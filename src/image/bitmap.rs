@@ -1,7 +1,7 @@
 //! Loading and simple transformations of bitmap images
 
 use {
-    crate::errors::ProgramError,
+    crate::program_error::ProgramError,
     image::{
         DynamicImage,
         GenericImageView,

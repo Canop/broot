@@ -1,10 +1,8 @@
 use {
     crate::{
         app::AppContext,
-        errors::{
-            ConfError,
-            PatternError,
-        },
+        conf::ConfError,
+        pattern::PatternError,
     },
     lazy_regex::regex_is_match,
     rustc_hash::FxHashMap,
@@ -154,7 +152,7 @@ impl SearchModeMapEntry {
                 "path" => search_objects.push(SearchObject::Path),
                 _ => {
                     return Err(ConfError::InvalidSearchMode {
-                        details: format!("{t:?} not understood in search mode definition"),
+                        details: format!("`{t}` not understood in search mode definition"),
                     });
                 }
             }

@@ -9,6 +9,7 @@ mod name_match;
 mod operator;
 mod pattern;
 mod pattern_object;
+mod pattern_error;
 mod pattern_parts;
 mod pos;
 mod regex_pattern;
@@ -26,6 +27,7 @@ pub use {
     name_match::NameMatch,
     operator::PatternOperator,
     pattern::Pattern,
+    pattern_error::PatternError,
     pattern_object::PatternObject,
     pattern_parts::PatternParts,
     pos::*,
@@ -34,10 +36,7 @@ pub use {
     tok_pattern::*,
 };
 
-use {
-    crate::errors::PatternError,
-    lazy_regex::regex,
-};
+use lazy_regex::regex;
 
 pub fn build_regex(
     pat: &str,

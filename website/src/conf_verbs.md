@@ -44,7 +44,7 @@ key | | a keyboard key triggering execution
 keys | | several keyboard shortcuts triggering execution (if you want to have the choice)
 leave_broot | `true` | whether to quit broot on execution
 panels | *all* | optional list of panel types in which the verb can be called. Default is all panels: `[tree, fs, preview, help, stage]`
-set_working_dir | `false` | whether the working dir of the process must be set to the currently selected directory (it's equivalent to `workding_dir: "{directory}"`)
+set_working_dir | `false` | whether the working dir of the process must be set to the currently selected directory (it's equivalent to `working_dir: "{directory}"`)
 shell_command | | execution through a shell (`sh -c` / `cmd /C`), so that operators like `&&`, `;` and pipes work (alternative to `external`)
 shortcut | | an alternate way to call the verb (without the arguments part)
 switch_terminal | `true` | whether to switch from alternate to normal terminal during execution
@@ -85,7 +85,7 @@ shell_command = "mkdir -p {directory}/foo && touch {directory}/foo/{name}"
 leave_broot = false
 ```
 
-Placeholders such as `{directory}` and `{file}` are still filled in by broot (and paths with special characters are quoted for the shell) before the line reaches the shell.
+Placeholders such as `{directory}` and `{file}` are still filled in by broot (and values with special characters are quoted for the shell) before the line reaches the shell.
 
 # Using quotes
 
@@ -120,6 +120,8 @@ With an array:
 invocation = "xtv"
 external = ["xterm", "-e", "nvim {file}"]
 ```
+
+When run through a shell, a string is given as is to the shell while array items are escaped.
 
 # File extensions
 
@@ -292,7 +294,7 @@ If your chosen key doesn't seem to work, see [Key Combination Problem](../common
 
 The execution of a verb can take one or several arguments.
 
-For example it may be defined as `vi {file}̀`.
+For example it may be defined as `vi {file}`.
 
 ## Broot supplied arguments
 
@@ -309,6 +311,7 @@ name | expanded to
 `{parent}` | complete path of the current selection's parent
 `{directory}` | closest directory, either `{file}` or `{parent}`
 `{other-panel-file}` | complete path of the current selection in the other panel
+`{other-panel-filename}` | file name of the current selection in the other panel
 `{other-panel-parent}` | complete path of the current selection's parent in the other panel
 `{other-panel-directory}` | closest directory, either `{file}` or `{parent}` in the other panel
 `{root}` | current tree root (top of the displayed files tree)
@@ -316,6 +319,7 @@ name | expanded to
 `{git-root}` | The working directory of the Git repository containing the current selection
 `{git-name}` | Name of the working directory of the current Git repository
 `{file-git-relative}` | path of the current selection relative to the working directory of the containing Git repository. If the selection is not in a Git repository then the absolute path.
+`{file-root-relative}` | path of the current selection relative to the tree root
 `{server-name}` | name given with `--listen` at launch
 
 
@@ -329,13 +333,13 @@ You may also define some arguments in the invocation pattern. For example:
 ```hjson
 {
     invocation: "mkdir {subpath}"
-    external: "mkdir -p {directory}/{subpath}"
+    external: "mkdir -p {subpath:path-from-directory}"
 }
 ```
 ```toml
 [[verbs]]
 invocation = "mkdir {subpath}"
-external = "mkdir -p {directory}/{subpath}"
+external = "mkdir -p {subpath:path-from-directory}"
 ```
 
 (the `mkdir` verb is standard so you don't have to write it in the configuration file)
@@ -393,13 +397,46 @@ from_shell = true
 
 You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
 
-## Single command on stage
+# Argument flags
+
+An argument can have a flag, after a colon, eg `{file:space-separated}`.
+
+## In the invocation
+
+flag | effect
+-|-
+`theme` | tab completion proposes the syntax themes
+a broot argument, eg `{new_name:file-name}` | the input is pre-filled with this value when the verb is triggered by a key with `auto_exec: false`
+
+## In the execution
+
+flag | effect
+-|-
+`path-from-directory` | the typed value is a path relative to the selected directory (or to the parent of the selected file)
+`path-from-parent` | the typed value is a path relative to the parent of the selection
+`space-separated` | one command for all selections, values separated by spaces (see [Single command on stage](#single-command-on-stage))
+`comma-separated` | same, with commas
+
+For example, the standard `copy` verb is defined as
+
+```hjson
+invocation: "copy {newpath}"
+external: "cp -r {file} {newpath:path-from-parent}"
+```
+```toml
+invocation = "copy {newpath}"
+external = "cp -r {file} {newpath:path-from-parent}"
+```
+
+# Single command on stage
 
 By default, when a verb for an external command is called on several selected files (using the staging area), broot executes the external program once per selection.
 
 If you want all selections to be merged into a single command, you need to add one of the merging flags, `space-separated` or `comma-separated`, to the `external` pattern.
 
-For example, the following verb requires the user to type a "name" then zips all staged files and directories with one command looking like `zip -r some/path/new-archive.zip some/path/file-a some/other/directory`:
+Other arguments, like `{parent}`, take the value of the first selection.
+
+For example, the following verb requires the user to type a "name" then zips all staged files and directories with one command looking like `zip -r new-archive.zip /some/path/file-a /some/other/directory`, the archive being created in the current root, which is the working directory:
 
 ```hjson
 {
@@ -407,7 +444,7 @@ For example, the following verb requires the user to type a "name" then zips all
     external: [
         "zip"
         "-r"
-        "{name:path-from-directory}.zip"
+        "{name}.zip"
         "{file:space-separated}"
     ]
     leave_broot: false
@@ -420,7 +457,7 @@ invocation = "zip {name}"
 external = [
     "zip",
     "-r",
-    "{name:path-from-directory}.zip",
+    "{name}.zip",
     "{file:space-separated}",
 ]
 leave_broot = false
@@ -428,7 +465,7 @@ working_dir = "{root}"
 ```
 
 
-## Request user input
+# Request user input
 
 A verb can be triggered by key but still require the user to type some argument(s), by having `auto_exec` set to `false`.
 

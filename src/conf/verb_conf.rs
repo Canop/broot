@@ -10,6 +10,7 @@ use {
         Deserialize,
         Serialize,
     },
+    std::path::PathBuf,
 };
 
 /// A deserializable verb entry in the configuration
@@ -69,5 +70,8 @@ pub struct VerbConf {
     pub panels: Vec<PanelStateType>,
 
     pub refresh_after: Option<bool>,
-}
 
+    /// The configuration file the verb comes from
+    #[serde(skip)]
+    pub file: Option<PathBuf>,
+}

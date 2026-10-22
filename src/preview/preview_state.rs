@@ -11,10 +11,10 @@ use {
             Screen,
             W,
         },
-        errors::ProgramError,
         flag::Flag,
         git::LineGitStatus,
         pattern::InputPattern,
+        program_error::ProgramError,
         task_sync::Dam,
         tree::{
             TreeOptions,

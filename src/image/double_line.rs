@@ -1,7 +1,7 @@
 use {
     crate::{
         display::W,
-        errors::ProgramError,
+        program_error::ProgramError,
     },
     crokey::crossterm::{
         QueueableCommand,

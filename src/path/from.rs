@@ -43,15 +43,12 @@ pub fn path_from<P: AsRef<Path> + std::fmt::Debug>(
         // we put the input behind the source (the selected directory
         // or its parent) and we normalize so that the user can type
         // paths with `../`
+        let base_dir = base_dir.as_ref();
         let base_dir = match anchor {
-            PathAnchor::Parent => base_dir
-                .as_ref()
-                .parent()
-                .unwrap_or_else(|| base_dir.as_ref())
-                .to_path_buf(),
-            _ => closest_dir(base_dir.as_ref()),
+            PathAnchor::Parent => base_dir.parent().unwrap_or(base_dir),
+            PathAnchor::Directory => base_dir,
         };
-        normalize_path(base_dir.join(input))
+        normalize_path(closest_dir(base_dir).join(input))
     }
 }
 
@@ -59,7 +56,7 @@ pub fn path_str_from<P: AsRef<Path> + std::fmt::Debug>(
     base_dir: P,
     input: &str,
 ) -> String {
-    path_from(base_dir, PathAnchor::Unspecified, input)
+    path_from(base_dir, PathAnchor::Directory, input)
         .to_string_lossy()
         .to_string()
 }

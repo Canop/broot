@@ -7,4 +7,5 @@ mod svg;
 pub use {
     image_view::ImageView,
     source_image::{FitConstraints, SourceImage},
+    svg::SvgError,
 };

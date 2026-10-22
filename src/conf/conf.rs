@@ -9,12 +9,14 @@ use {
             ColsConf,
             LayoutInstructions,
         },
-        errors::*,
         graphics::GraphicsDisplay,
-        kitty::KittyGraphicsDisplay,
-        kitty::TransmissionMedium,
+        kitty::{
+            KittyGraphicsDisplay,
+            TransmissionMedium,
+        },
         path::*,
         preview::PreviewTransformerConf,
+        program_error::ProgramError,
         skin::SkinEntry,
         syntactic::SyntaxTheme,
         verb::ExecPattern,
@@ -295,6 +297,9 @@ impl Conf {
         overwrite!(self, lines_before_match_in_preview, conf);
         overwrite!(self, lines_around_diff_hunks, conf);
         overwrite!(self, layout_instructions, conf);
+        for verb_conf in &mut conf.verbs {
+            verb_conf.file = Some(path.clone());
+        }
         self.verbs.append(&mut conf.verbs);
         // the following prefs are "additive": we can add entries from several
         // config files and they still make sense

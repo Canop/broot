@@ -18,7 +18,7 @@ use {
     super::ShellInstall,
     crate::{
         conf,
-        errors::*,
+        shell_install::ShellInstallError,
     },
     directories::{
         BaseDirs,

@@ -1,6 +1,6 @@
 use {
     crate::{
-        errors::ConfError,
+        conf::ConfError,
         path::*,
     },
     directories::UserDirs,

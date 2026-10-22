@@ -1,7 +1,7 @@
 use {
     crate::{
         command::Sequence,
-        errors::ProgramError,
+        program_error::ProgramError,
     },
     notify::{
         RecommendedWatcher,

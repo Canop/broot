@@ -4,7 +4,7 @@
 //! They can be called as ":some_name" from builtin verbs and
 //! from configured verbs.
 
-use crate::errors::ConfError;
+use crate::conf::ConfError;
 
 macro_rules! Internals {
     (
@@ -16,6 +16,8 @@ macro_rules! Internals {
             $($name,)*
         }
         impl Internal {
+            #[cfg(test)]
+            pub const ALL: &[Internal] = &[$(Internal::$name,)*];
             pub fn try_from(verb: &str) -> Result<Internal, ConfError> {
                 use Internal::*;
                 match verb {
@@ -185,25 +187,11 @@ impl Internal {
             Self::line_up => r"line_up (?P<count>\d*)?",
             Self::line_down_no_cycle => r"line_down_no_cycle (?P<count>\d*)?",
             Self::line_up_no_cycle => r"line_up_no_cycle (?P<count>\d*)?",
-            Self::move_panel_divider => r"move_panel_divider (?P<idx>\d+) (?P-?<dx>\d+)",
+            Self::move_panel_divider => r"move_panel_divider (?P<idx>\d+) (?P<dx>-?\d+)",
             Self::set_panel_width => r"set_panel_width (?P<idx>\d+) (?P<width>\d+)",
             Self::set_max_depth => r"set_max_depth (?P<depth>\d+)",
             Self::set_syntax_theme => r"set_syntax_theme {theme:theme}",
             Self::write_output => r"write_output (?P<line>.*)",
-            _ => self.name(),
-        }
-    }
-    pub fn exec_pattern(self) -> &'static str {
-        match self {
-            Self::apply_flags => r"apply_flags {flags}",
-            Self::focus => r"focus {path}",
-            Self::line_down => r"line_down {count}",
-            Self::line_up => r"line_up {count}",
-            Self::line_down_no_cycle => r"line_down_no_cycle {count}",
-            Self::line_up_no_cycle => r"line_up_no_cycle {count}",
-            Self::move_panel_divider => r"move_panel_divider {idx} {dx}",
-            Self::set_panel_width => r"set_panel_width {idx} {width}",
-            Self::write_output => r"write_output {line}",
             _ => self.name(),
         }
     }
@@ -233,6 +221,23 @@ impl Internal {
             Self::input_selection_copy => true,
             Self::input_selection_cut => true,
             _ => false,
+        }
+    }
+}
+
+#[cfg(test)]
+mod internal_tests {
+    use {
+        super::*,
+        crate::verb::InvocationParser,
+    };
+
+    #[test]
+    fn check_invocation_patterns() {
+        for internal in Internal::ALL {
+            if let Err(e) = InvocationParser::new(internal.invocation_pattern()) {
+                panic!("invalid invocation pattern for {}: {e}", internal.name());
+            }
         }
     }
 }

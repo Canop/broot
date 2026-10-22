@@ -30,21 +30,11 @@ pub struct ExecutionBuilder<'b> {
     /// the selection in the other panel, when there are exactly two
     other_file: Option<&'b PathBuf>,
 
+    /// the parser of the verb's invocation, defining the invocation arguments
+    invocation_parser: Option<&'b InvocationParser>,
+
     /// parsed arguments
     invocation_values: Option<FxHashMap<String, String>>,
-
-    /// whether to keep groups which can't be solved or remove them
-    keep_groups: bool,
-
-    target: Target,
-}
-
-/// Whether we're trying to build the command as a string or as a vec of tokens (in
-/// which case we don't want to do the same escaping, for example)
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Target {
-    String,
-    Tokens,
 }
 
 impl<'b> ExecutionBuilder<'b> {
@@ -59,13 +49,12 @@ impl<'b> ExecutionBuilder<'b> {
             sel_info,
             root: &app_state.root,
             other_file: app_state.other_panel_path.as_ref(),
+            invocation_parser: None,
             invocation_values: None,
-            keep_groups: false,
-            target: Target::Tokens,
         }
     }
     pub fn with_invocation(
-        invocation_parser: Option<&InvocationParser>,
+        invocation_parser: Option<&'b InvocationParser>,
         sel_info: SelInfo<'b>,
         app_state: &'b AppState,
         invocation_args: Option<&String>,
@@ -78,81 +67,74 @@ impl<'b> ExecutionBuilder<'b> {
             sel_info,
             root: &app_state.root,
             other_file: app_state.other_panel_path.as_ref(),
+            invocation_parser,
             invocation_values,
-            keep_groups: false,
-            target: Target::Tokens,
         }
     }
 
-    /// Return the replacing value for the whole sel_info
+    /// Return the values of the argument for the whole sel_info: one per selection
+    /// for a merging argument, at most one otherwise
     ///
     /// When you have a multiselection and no merging flag, don't call this function
-    /// but get_sel_capture_replacement while building a command per selection.
-    fn get_arg_replacement(
+    /// but get_sel_arg_replacement while building a command per selection.
+    fn get_arg_values(
         &self,
-        arg_def: &VerbArgDef,
+        arg_def: &ExecArgDef,
         con: &AppContext,
-    ) -> Option<String> {
-        let merging_flag = arg_def.merging_flag();
+    ) -> Vec<String> {
         match self.sel_info {
-            SelInfo::None => self.get_sel_arg_replacement(arg_def, None, con),
-            SelInfo::One(sel) => self.get_sel_arg_replacement(arg_def, Some(sel), con),
+            SelInfo::None => self.get_sel_arg_replacement(arg_def, None, con).into_iter().collect(),
+            SelInfo::One(sel) => self
+                .get_sel_arg_replacement(arg_def, Some(sel), con)
+                .into_iter()
+                .collect(),
             SelInfo::More(stage) => {
-                let mut sels = stage.to_selections();
-                if let Some(merging_flag) = merging_flag {
-                    let mut values = Vec::new();
-                    for sel in sels {
-                        let rcr = self.get_sel_arg_replacement(arg_def, Some(sel), con);
-                        if let Some(rcr) = rcr {
-                            values.push(rcr);
-                        }
-                    }
-                    merging_flag.merge_values(values)
+                let sels = stage.to_selections();
+                if arg_def.merging_flag().is_some() {
+                    sels.into_iter()
+                        .filter_map(|sel| self.get_sel_arg_replacement(arg_def, Some(sel), con))
+                        .collect()
                 } else {
                     // we're called with no specific selection and there's no merging
                     // strategy, this should probably not really happen, we'll take
                     // the first selection
-                    let sel = if sels.is_empty() {
-                        None
-                    } else {
-                        Some(sels.swap_remove(0))
-                    };
-                    self.get_sel_arg_replacement(arg_def, sel, con)
+                    let sel = sels.into_iter().next();
+                    self.get_sel_arg_replacement(arg_def, sel, con).into_iter().collect()
                 }
             }
         }
     }
 
     /// return the standard replacement (ie not one from the invocation)
-    fn get_sel_name_standard_replacement(
+    fn get_sel_standard_replacement(
         &self,
-        name: &str,
+        standard_arg: StandardArg,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Option<String> {
-        match name {
-            "root" => Some(self.path_to_string(self.root)),
-            "initial-root" => Some(self.path_to_string(&con.initial_root)),
-            "line" => sel.map(|s| s.line.to_string()),
-            "file" => sel.map(|s| s.path).map(|p| self.path_to_string(p)),
-            "file-name" => sel
+        match standard_arg {
+            StandardArg::Root => Some(path_to_string(self.root)),
+            StandardArg::InitialRoot => Some(path_to_string(&con.initial_root)),
+            StandardArg::Line => sel.map(|s| s.line.to_string()),
+            StandardArg::File => sel.map(|s| s.path).map(path_to_string),
+            StandardArg::FileName => sel
                 .map(|s| s.path)
                 .and_then(|path| path.file_name())
                 .and_then(|oss| oss.to_str())
                 .map(|s| s.to_string()),
-            "file-stem" => sel
+            StandardArg::FileStem => sel
                 .map(|s| s.path)
                 .and_then(|path| path.file_stem())
                 .and_then(|oss| oss.to_str())
                 .map(|s| s.to_string()),
-            "file-extension" => {
+            StandardArg::FileExtension => {
                 debug!("expending file extension");
                 sel.map(|s| s.path)
                     .and_then(|path| path.extension())
                     .and_then(|oss| oss.to_str())
                     .map(|s| s.to_string())
             }
-            "file-dot-extension" => {
+            StandardArg::FileDotExtension => {
                 debug!("expending file dot extension");
                 sel.map(|s| s.path)
                     .and_then(|path| path.extension())
@@ -160,34 +142,27 @@ impl<'b> ExecutionBuilder<'b> {
                     .map(|ext| format!(".{ext}"))
                     .or_else(|| Some("".to_string()))
             }
-            "directory" => sel
-                .map(|s| path::closest_dir(s.path))
-                .map(|p| self.path_to_string(p)),
-            "parent" => sel
-                .and_then(|s| s.path.parent())
-                .map(|p| self.path_to_string(p)),
-            "other-panel-file" => self.other_file.map(|p| self.path_to_string(p)),
-            "other-panel-filename" => self
+            StandardArg::Directory => sel.map(|s| path::closest_dir(s.path)).map(path_to_string),
+            StandardArg::Parent => sel.and_then(|s| s.path.parent()).map(path_to_string),
+            StandardArg::OtherPanelFile => self.other_file.map(path_to_string),
+            StandardArg::OtherPanelFilename => self
                 .other_file
                 .and_then(|path| path.file_name())
                 .and_then(|oss| oss.to_str())
                 .map(|s| s.to_string()),
-            "other-panel-directory" => self
+            StandardArg::OtherPanelDirectory => self
                 .other_file
                 .map(|p| path::closest_dir(p))
-                .as_ref()
-                .map(|p| self.path_to_string(p)),
-            "other-panel-parent" => self
-                .other_file
-                .and_then(|p| p.parent())
-                .map(|p| self.path_to_string(p)),
-            "git-root" => {
+                .map(path_to_string),
+            StandardArg::OtherPanelParent => {
+                self.other_file.and_then(|p| p.parent()).map(path_to_string)
+            }
+            StandardArg::GitRoot => {
                 // path to git repo workdir
                 debug!("finding git root");
-                sel.and_then(|s| git::workdir(s.path))
-                    .map(|p| self.path_to_string(&p))
+                sel.and_then(|s| git::workdir(s.path)).map(path_to_string)
             }
-            "git-name" => {
+            StandardArg::GitName => {
                 // name of the git repo workdir
                 sel.and_then(|s| git::workdir(s.path)).and_then(|path| {
                     path.file_name()
@@ -195,7 +170,7 @@ impl<'b> ExecutionBuilder<'b> {
                         .map(|s| s.to_string())
                 })
             }
-            "file-git-relative" => {
+            StandardArg::FileGitRelative => {
                 // file path relative to git repo workdir
                 let sel = sel?;
                 let path = git::workdir(self.root)
@@ -205,90 +180,90 @@ impl<'b> ExecutionBuilder<'b> {
                         !p.as_os_str().is_empty()
                     })
                     .unwrap_or(sel.path);
-                Some(self.path_to_string(path))
+                Some(path_to_string(path))
             }
-            "file-root-relative" => {
+            StandardArg::FileRootRelative => {
                 // file path relative to the tree root
-                sel?
-                    .path
-                    .strip_prefix(self.root)
-                    .ok()
-                    .map(|p| self.path_to_string(p))
+                sel?.path.strip_prefix(self.root).ok().map(path_to_string)
             }
-            #[cfg(unix)]
-            "server-name" => con.server_name.clone(),
-            _ => None,
+            StandardArg::ServerName => con.server_name.clone(),
         }
     }
     fn get_sel_arg_replacement(
         &self,
-        arg_def: &VerbArgDef,
+        arg_def: &ExecArgDef,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Option<String> {
-        let name = &arg_def.name;
-        self.get_sel_name_standard_replacement(name, sel, con)
-            .or_else(|| {
-                // it's not one of the standard group names, so we'll look
-                // into the ones provided by the invocation pattern
-                self.invocation_values
-                    .as_ref()
-                    .and_then(|map| map.get(name))
-                    .and_then(|value| {
-                        if arg_def.has_flag(VerbArgFlag::PathFromDirectory) {
-                            sel.map(|s| path::closest_dir(s.path))
-                                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
-                                .map(|pb| self.path_to_string(pb))
-                        } else if arg_def.has_flag(VerbArgFlag::PathFromParent) {
-                            sel.and_then(|s| s.path.parent())
-                                .map(|dir| path::path_from(dir, PathAnchor::Unspecified, value))
-                                .map(|pb| self.path_to_string(pb))
-                        } else {
-                            Some(value.to_string())
-                        }
-                    })
-            })
+        if let Some(standard_arg) = arg_def.standard_arg(self.invocation_parser) {
+            return self.get_sel_standard_replacement(standard_arg, sel, con);
+        }
+        let value = self.invocation_values.as_ref()?.get(&arg_def.name)?;
+        match arg_def.path_anchor() {
+            Some(anchor) => sel
+                .map(|s| path::path_from(s.path, anchor, value))
+                .map(path_to_string),
+            None => Some(value.to_string()),
+        }
     }
+    /// Replace the arg groups in a string, escaping each value for a shell
+    /// when `escape` is true
     fn replace_args(
         &self,
         s: &str,
-        replacer: &mut dyn FnMut(&VerbArgDef) -> Option<String>,
+        escape: bool,
+        values: &dyn Fn(&ExecArgDef) -> Vec<String>,
     ) -> String {
         ARG_DEF_GROUP
             .replace_all(s, |ec: &Captures<'_>| {
-                let arg_def = VerbArgDef::from_capture(ec);
-                replacer(&arg_def).unwrap_or_else(|| {
-                    if self.keep_groups {
-                        ec[0].to_string()
-                    } else {
-                        "".to_string()
+                let Ok(arg_def) = ExecArgDef::from_capture(ec) else {
+                    return String::new();
+                };
+                let values = values(&arg_def);
+                let separator = arg_def
+                    .merging_flag()
+                    .and_then(|flag| flag.separator())
+                    .unwrap_or(" ");
+                let mut replacement = String::new();
+                if escape && values.is_empty() {
+                    replacement.push_str("''");
+                }
+                for (i, value) in values.iter().enumerate() {
+                    if i > 0 {
+                        replacement.push_str(separator);
                     }
-                })
+                    if escape {
+                        replacement.push_str(&shell_escape(value));
+                    } else {
+                        replacement.push_str(value);
+                    }
+                }
+                replacement
             })
             .to_string()
     }
-    /// fills groups having a default value (after the colon)
+    /// Build the invocation with the arguments replaced by their default
+    /// values (or by nothing when they have none)
     ///
     /// This is used to fill the input in case on non auto_exec
     /// verb triggered with a key.
-    ///
-    /// In invocation pattern, the part after the colon isn't handled
-    /// as a 'flag' but as a default value
     pub fn invocation_with_default(
         &self,
-        verb_invocation: &VerbInvocation,
+        invocation_parser: &InvocationParser,
         con: &AppContext,
     ) -> VerbInvocation {
+        let verb_invocation = &invocation_parser.invocation_pattern;
         VerbInvocation {
             name: verb_invocation.name.clone(),
             args: verb_invocation.args.as_ref().map(|a| {
                 ARG_DEF_GROUP
                     .replace_all(a.as_str(), |ec: &Captures<'_>| {
-                        ec.get(2)
-                            .map(|default_name| default_name.as_str())
-                            .and_then(|default_name| {
-                                self.get_sel_name_standard_replacement(
-                                    default_name,
+                        invocation_parser
+                            .get_arg_def(&ec[1])
+                            .and_then(|arg_def| arg_def.default)
+                            .and_then(|standard_arg| {
+                                self.get_sel_standard_replacement(
+                                    standard_arg,
                                     self.sel_info.first_sel(),
                                     con,
                                 )
@@ -314,7 +289,7 @@ impl<'b> ExecutionBuilder<'b> {
     /// this secondary execution, new replacements are expected too,
     /// depending on the verbs.
     pub fn sequence(
-        &mut self,
+        &self,
         sequence: &Sequence,
         verb_store: &VerbStore,
         con: &AppContext,
@@ -339,7 +314,7 @@ impl<'b> ExecutionBuilder<'b> {
             let input = if verb_is_external {
                 self.shell_exec_string(&ExecPattern::from_string(input), con)
             } else {
-                self.string(input, con)
+                self.replace_args(input, false, &|arg_def| self.get_arg_values(arg_def, con))
             };
             inputs.push(input);
         }
@@ -347,16 +322,6 @@ impl<'b> ExecutionBuilder<'b> {
             raw: inputs.join(&sequence.separator),
             separator: sequence.separator.clone(),
         }
-    }
-
-    fn string(
-        &self,
-        pattern: &str,
-        con: &AppContext,
-    ) -> String {
-        self.replace_args(pattern, &mut |arg_def| {
-            self.get_arg_replacement(arg_def, con)
-        })
     }
 
     /// build a path from a pattern (eg the `working_dir` parameter of a verb definition)
@@ -367,36 +332,40 @@ impl<'b> ExecutionBuilder<'b> {
     ) -> PathBuf {
         path::path_from(
             self.base_dir(),
-            path::PathAnchor::Unspecified,
-            &self.replace_args(pattern, &mut |arg_def| {
-                self.get_arg_replacement(arg_def, con)
-            }),
+            PathAnchor::Directory,
+            &self.replace_args(pattern, false, &|arg_def| self.get_arg_values(arg_def, con)),
         )
     }
 
     /// build a shell compatible command, with escapings
     pub fn shell_exec_string(
-        &mut self,
+        &self,
         exec_pattern: &ExecPattern,
         con: &AppContext,
     ) -> String {
-        self.target = Target::String; // this ensures proper escaping
-        let tokens = self.exec_token(exec_pattern, con);
-        tokens.join(" ")
+        exec_pattern.shell_line(
+            |line| self.replace_args(line, true, &|arg_def| self.get_arg_values(arg_def, con)),
+            |tokens| self.expand_tokens(tokens, con),
+        )
     }
 
     /// build a shell compatible command, with escapings, for a specific
     /// selection (this is intended for execution on all selections of a
     /// stage)
     pub fn sel_shell_exec_string(
-        &mut self,
+        &self,
         exec_pattern: &ExecPattern,
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> String {
-        self.target = Target::String; // this ensures proper escaping
-        let tokens = self.sel_exec_token(exec_pattern, sel, con);
-        tokens.join(" ")
+        exec_pattern.shell_line(
+            |line| {
+                self.replace_args(line, true, &|arg_def| {
+                    self.get_sel_arg_replacement(arg_def, sel, con).into_iter().collect()
+                })
+            },
+            |tokens| self.sel_expand_tokens(tokens, sel, con),
+        )
     }
 
     /// build a vec of tokens which can be passed to Command to
@@ -406,16 +375,38 @@ impl<'b> ExecutionBuilder<'b> {
         exec_pattern: &ExecPattern,
         con: &AppContext,
     ) -> Vec<String> {
+        self.expand_tokens(exec_pattern.tokens(), con)
+    }
+
+    /// build a vec of tokens which can be passed to Command to
+    /// launch an executable.
+    /// This is intended for execution on all selections of a stage
+    /// when the exec pattern isn't merging.
+    pub fn sel_exec_token(
+        &self,
+        exec_pattern: &ExecPattern,
+        sel: Option<Selection<'_>>,
+        con: &AppContext,
+    ) -> Vec<String> {
+        self.sel_expand_tokens(exec_pattern.tokens(), sel, con)
+    }
+
+    fn expand_tokens(
+        &self,
+        tokens: &[String],
+        con: &AppContext,
+    ) -> Vec<String> {
         // When a token is a space-separated arg, and the selection is multiple,
         // we want to build several tokens so that it's received as several args by the
         // executed program, and not as a single arg with spaces.
         // This complex work is needed only when the selection is multiple and there's
         // a "space-separated" flag in the capture
         let mut output = Vec::new();
-        for token in exec_pattern.tokens() {
-            if let Some(ec) = capture_if_total(&ARG_DEF_GROUP, token) {
-                let arg_def = VerbArgDef::from_capture(&ec);
-                let space_separated = arg_def.has_flag(VerbArgFlag::SpaceSeparated);
+        for token in tokens {
+            let arg_def = capture_if_total(&ARG_DEF_GROUP, token)
+                .and_then(|ec| ExecArgDef::from_capture(&ec).ok());
+            if let Some(arg_def) = arg_def {
+                let space_separated = arg_def.has_flag(ExecArgFlag::SpaceSeparated);
                 if space_separated {
                     if let SelInfo::More(stage) = &self.sel_info {
                         let sels = stage.to_selections();
@@ -432,58 +423,32 @@ impl<'b> ExecutionBuilder<'b> {
             // as we won't be able to build several tokens from this one, we do the
             // standard replacement
             let replaced =
-                self.replace_args(token, &mut |arg_def| self.get_arg_replacement(arg_def, con));
+                self.replace_args(token, false, &|arg_def| self.get_arg_values(arg_def, con));
             output.push(fix_token_path(replaced));
         }
         output
     }
 
-    /// build a vec of tokens which can be passed to Command to
-    /// launch an executable.
-    /// This is intended for execution on all selections of a stage
-    /// when the exec pattern isn't merging.
-    pub fn sel_exec_token(
-        &mut self,
-        exec_pattern: &ExecPattern,
+    fn sel_expand_tokens(
+        &self,
+        tokens: &[String],
         sel: Option<Selection<'_>>,
         con: &AppContext,
     ) -> Vec<String> {
-        exec_pattern
-            .tokens()
+        tokens
             .iter()
             .map(|s| {
-                self.replace_args(s, &mut |arg_def| {
-                    self.get_sel_arg_replacement(arg_def, sel, con)
+                self.replace_args(s, false, &|arg_def| {
+                    self.get_sel_arg_replacement(arg_def, sel, con).into_iter().collect()
                 })
             })
             .map(fix_token_path)
             .collect()
     }
+}
 
-    /// Convert a path (or part of a path) to a string, with escaping if needed (depending on the target)
-    fn path_to_string<P: AsRef<Path>>(
-        &self,
-        path: P,
-    ) -> String {
-        let s = path.as_ref().to_string_lossy();
-        if self.target == Target::Tokens {
-            // when building tokens, we don't want to do any escaping,
-            // even if there are special characters
-            return s.to_string();
-        }
-        // backslashes must be in this set: on Windows the string may go to
-        // the launcher's outcmd file, whose eval would remove them
-        if !regex_is_match!(r#"[\s"'\\`$*?\[\]{}()<>|;&!#]"#, &s) {
-            // if there's no special character, we don't need to escape or wrap
-            return s.to_string();
-        }
-        // first we replace single quotes by `'"'"'` (close the single quote, add an escaped
-        // single quote, and reopen the single quote)
-        let s = s.replace('\'', r#"'"'"'"#);
-        // then we wrap the whole thing in single quotes
-        let s = format!("'{}'", s);
-        s
-    }
+fn path_to_string<P: AsRef<Path>>(path: P) -> String {
+    path.as_ref().to_string_lossy().to_string()
 }
 
 fn capture_if_total<'h>(
@@ -541,7 +506,13 @@ mod execution_builder_test {
         let path = PathBuf::from(path);
         let sel = Selection::new(&path, SelectionType::File);
         let app_state = AppState::new(PathBuf::from("/".to_owned()));
+        let mut invocation = "test".to_string();
+        for (k, _) in &replacements {
+            invocation.push_str(&format!(" {{{k}}}"));
+        }
+        let parser = InvocationParser::new(&invocation).unwrap();
         let mut builder = ExecutionBuilder::without_invocation(SelInfo::One(sel), &app_state);
+        builder.invocation_parser = Some(&parser);
         let mut map = FxHashMap::default();
         for (k, v) in replacements {
             map.insert(k.to_owned(), v.to_owned());
@@ -590,36 +561,38 @@ mod execution_builder_test {
     }
 
     #[test]
+    fn test_invocation_arg_masks_standard_arg() {
+        check_build_execution_from_sel(
+            vec![ExecPattern::from_string("echo {file} {parent}")],
+            "/home/dys/dev",
+            vec![("file", "typed")],
+            vec!["echo", "typed", "/home/dys"],
+        );
+        // without a typed value, the masked standard argument isn't used either
+        let path = PathBuf::from("/home/dys/dev");
+        let sel = Selection::new(&path, SelectionType::File);
+        let app_state = AppState::new(PathBuf::from("/"));
+        let parser = InvocationParser::new("x {file}").unwrap();
+        let builder =
+            ExecutionBuilder::with_invocation(Some(&parser), SelInfo::One(sel), &app_state, None);
+        let con = AppContext::default();
+        assert_eq!(
+            builder.exec_token(&ExecPattern::from_string("echo {file}"), &con),
+            vec!["echo", ""],
+        );
+    }
+
+    #[test]
     fn test_shell_exec_string_keeps_chained_command() {
         // a command with `&&` must survive tokenizing untouched so it can be
         // handed to `sh -c` when the verb is a `shell_command` (issue #1145)
         let app_state = AppState::new(PathBuf::from("/"));
-        let mut builder = ExecutionBuilder::without_invocation(SelInfo::None, &app_state);
+        let builder = ExecutionBuilder::without_invocation(SelInfo::None, &app_state);
         let con = AppContext::default();
         let ep = ExecPattern::from_string("mkdir foo && touch foo/bar");
         assert_eq!(
             builder.shell_exec_string(&ep, &con),
             "mkdir foo && touch foo/bar",
         );
-    }
-
-    #[test]
-    fn test_path_to_string_quoting() {
-        let app_state = AppState::new(PathBuf::from("/"));
-        let mut builder = ExecutionBuilder::without_invocation(SelInfo::None, &app_state);
-        // the String target is the one used for the launcher's outcmd file,
-        // whose content is passed to the shell's eval
-        builder.target = Target::String;
-        assert_eq!(builder.path_to_string("/home/dys/dev"), "/home/dys/dev");
-        assert_eq!(builder.path_to_string("/home/dys/my dev"), "'/home/dys/my dev'");
-        assert_eq!(builder.path_to_string(r"C:\Users\dys\dev"), r"'C:\Users\dys\dev'");
-        assert_eq!(
-            builder.path_to_string("/home/dys/it's dev"),
-            r#"'/home/dys/it'"'"'s dev'"#,
-        );
-        assert_eq!(builder.path_to_string("/tmp/a[1]"), "'/tmp/a[1]'");
-        assert_eq!(builder.path_to_string("/tmp/$(x)"), "'/tmp/$(x)'");
-        assert_eq!(builder.path_to_string("/tmp/a*b"), "'/tmp/a*b'");
-        assert_eq!(builder.path_to_string("/tmp/é-ü_1.txt"), "/tmp/é-ü_1.txt");
     }
 }

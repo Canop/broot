@@ -1,5 +1,10 @@
 use {
-    crate::errors::*,
+    crate::{
+        shell_install::{
+            IoToShellInstallError,
+            ShellInstallError,
+        },
+    },
     std::{
         fs::{
             self,

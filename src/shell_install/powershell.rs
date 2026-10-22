@@ -19,7 +19,10 @@ use {
     },
     crate::{
         conf,
-        errors::*,
+        shell_install::{
+            IoToShellInstallError,
+            ShellInstallError,
+        },
     },
     directories::UserDirs,
     std::{

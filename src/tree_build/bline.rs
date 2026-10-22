@@ -1,7 +1,6 @@
 use {
     super::bid::BId,
     crate::{
-        errors::TreeBuildError,
         git::IgnoreChain,
         path::{
             Directive,
@@ -9,6 +8,7 @@ use {
             normalize_path,
         },
         tree::*,
+        tree_build::TreeBuildError,
     },
     id_arena::Arena,
     std::{
@@ -70,7 +70,7 @@ impl BLine {
             }))
         } else {
             Err(TreeBuildError::FileNotFound {
-                path: format!("{path:?}"),
+                path: path.to_path_buf(),
             })
         }
     }

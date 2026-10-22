@@ -1,5 +1,5 @@
 use {
-    crate::errors::ProgramError,
+    crate::program_error::ProgramError,
     lfs_core::{
         DeviceId,
         Mount,

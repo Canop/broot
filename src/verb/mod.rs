@@ -1,7 +1,10 @@
 mod coarity;
 //mod arg_def;
 mod exec_pattern;
+mod exec_arg_def;
 mod execution_builder;
+#[cfg(all(test, unix))]
+mod execution_builder_tests;
 mod external_execution;
 mod external_execution_mode;
 mod file_type_condition;
@@ -10,10 +13,11 @@ mod internal_execution;
 pub mod internal_focus;
 pub mod internal_path;
 pub mod internal_select;
+mod invocation_arg_def;
 mod invocation_parser;
 mod sequence_execution;
+mod standard_arg;
 mod verb;
-mod verb_arg_def;
 mod verb_description;
 mod verb_execution;
 mod verb_invocation;
@@ -24,6 +28,7 @@ use lazy_regex::*;
 pub use {
     coarity::*,
     //arg_def::*,
+    exec_arg_def::*,
     exec_pattern::*,
     execution_builder::*,
     external_execution::*,
@@ -31,11 +36,12 @@ pub use {
     file_type_condition::*,
     internal::Internal,
     internal_execution::InternalExecution,
+    invocation_arg_def::*,
     invocation_parser::InvocationParser,
     once_cell::sync::Lazy,
     sequence_execution::SequenceExecution,
+    standard_arg::StandardArg,
     verb::Verb,
-    verb_arg_def::*,
     verb_description::VerbDescription,
     verb_execution::VerbExecution,
     verb_invocation::*,
@@ -49,20 +55,8 @@ pub use {
 
 pub type VerbId = usize;
 
-pub fn str_has_selection_group(s: &str) -> bool {
-    ARG_DEF_GROUP.find_iter(s).any(|group| {
-        matches!(
-            group.as_str(),
-            "{file}" | "{file-name}" | "{parent}" | "{directory}",
-        )
-    })
-}
-pub fn str_has_other_panel_group(s: &str) -> bool {
-    for group in ARG_DEF_GROUP.find_iter(s) {
-        if group.as_str().starts_with("{other-panel-") {
-            return true;
-        }
-    }
-    false
-}
-
+/// A `{name}` or `{name:flags}` group in a verb definition string.
+///
+/// The meaning of the flags depends on whether the group is in an invocation
+/// pattern (see `InvocationArgDef`) or in an execution pattern (see `ExecArgDef`).
+pub static ARG_DEF_GROUP: Lazy<Regex> = lazy_regex!(r"\{([^{}:]+)(?::([^{}:]+))?\}");

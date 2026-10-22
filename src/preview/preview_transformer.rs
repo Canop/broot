@@ -1,6 +1,6 @@
 use {
     crate::{
-        errors::*,
+        conf::ConfError,
         path::path_has_ext,
         preview::PreviewMode,
     },
@@ -12,6 +12,7 @@ use {
             Hash,
             Hasher,
         },
+        io,
         path::{
             Path,
             PathBuf,
@@ -285,4 +286,22 @@ fn first_file_in_dir(dir: &Path) -> Result<Option<PathBuf>, PreviewTransformerEr
         }
     }
     Ok(None)
+}
+
+#[derive(thiserror::Error, Debug)]
+// Note: the error messages are markdown, rendered with termimad by [`ProgramError::report`] or in the status line
+pub enum PreviewTransformerError {
+    #[error("Invalid input")]
+    InvalidInput,
+    #[error("No output")]
+    NoOutput,
+    #[error("IO Error : {source}")]
+    Io {
+        #[from]
+        source: io::Error,
+    },
+    #[error("Process interrupted")]
+    ProcessInterrupted,
+    #[error("Execution failed with code {code}")]
+    ProcessFailed { code: i32 },
 }

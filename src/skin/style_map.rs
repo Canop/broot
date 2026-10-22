@@ -6,8 +6,8 @@
 use {
     super::*,
     crate::{
-        errors::ProgramError,
         git::LineGitStatus,
+        program_error::ProgramError,
     },
     crokey::crossterm::{
         QueueableCommand,

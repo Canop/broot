@@ -9,6 +9,7 @@ use {
 };
 
 mod conf;
+mod conf_error;
 mod default;
 mod default_flags;
 mod format;
@@ -19,6 +20,7 @@ pub mod file_size;
 
 pub use {
     conf::Conf,
+    conf_error::ConfError,
     default::write_default_conf_in,
     default_flags::*,
     format::*,

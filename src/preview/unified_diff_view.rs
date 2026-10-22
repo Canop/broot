@@ -15,7 +15,6 @@ use {
             is_thumb,
             row_starts,
         },
-        errors::ProgramError,
         git::{
             DiffLine,
             DiffLineKind,
@@ -23,6 +22,7 @@ use {
             FileDiffContent,
             diff_worktree_vs_head,
         },
+        program_error::ProgramError,
         skin::PanelSkin,
         syntactic::SEPARATOR_FILLING,
     },

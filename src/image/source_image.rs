@@ -4,8 +4,8 @@ use {
         svg,
     },
     crate::{
-        errors::ProgramError,
         path::path_has_ext,
+        program_error::ProgramError,
     },
     image::{
         DynamicImage,

@@ -10,8 +10,8 @@ use {
             Screen,
             W,
         },
-        errors::ProgramError,
         pattern::InputPattern,
+        program_error::ProgramError,
         skin::PanelSkin,
         task_sync::Dam,
         tree::{

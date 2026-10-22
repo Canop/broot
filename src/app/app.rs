@@ -9,7 +9,6 @@ use {
         },
         conf::Conf,
         display::*,
-        errors::ProgramError,
         file_sum,
         git,
         graphics,
@@ -17,6 +16,7 @@ use {
         path::closest_dir,
         pattern::InputPattern,
         preview::PreviewState,
+        program_error::ProgramError,
         skin::*,
         syntactic::SyntaxTheme,
         task_sync::{
@@ -520,7 +520,7 @@ impl App {
                 })?;
         }
 
-        #[cfg(unix)]
+        #[cfg(any(unix, windows))]
         let _server = con
             .server_name
             .as_ref()

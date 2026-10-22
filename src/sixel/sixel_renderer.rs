@@ -1,12 +1,12 @@
 use {
     crate::{
         display::{W, cell_size_in_pixels},
-        errors::ProgramError,
         graphics::{
             GraphicsRenderer, ImageId,
             rendering_area,
             terminal::{get_esc_seq, get_tmux_header, get_tmux_nest_count, get_tmux_tail, is_tmux},
         },
+        program_error::ProgramError,
         sixel::detect_support::detect_sixel_geometry,
     },
     cli_log::*,

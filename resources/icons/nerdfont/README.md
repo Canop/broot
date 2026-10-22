@@ -30,7 +30,7 @@ If you want to find an icon for a file: go to https://www.nerdfonts.com/cheat-sh
 
 2. This plugin currently searches for lowercase, make everything so
 
-3. Remember to run :Tabularize over ')' and ','. <a href="https://github.com/godlygeek/tabular?tab=readme-ov-file">The tabular Plugin</a>
+3. Don't align columns: write entries as `( "key", "value" ),`
 
 4. :'<,'>!sort
 

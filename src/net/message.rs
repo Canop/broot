@@ -1,7 +1,7 @@
 use {
     crate::{
         command::Sequence,
-        errors::NetError,
+        net::NetError,
     },
     std::io::{
         self,

@@ -11,9 +11,9 @@ use {
     crate::{
         app::AppState,
         content_search::ContentMatch,
-        errors::ProgramError,
         file_sum::FileSum,
         pattern::PatternObject,
+        program_error::ProgramError,
         skin::{
             ExtColorMap,
             StyleMap,

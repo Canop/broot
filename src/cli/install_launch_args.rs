@@ -4,7 +4,7 @@ use {
             Args,
             CliShellInstallState,
         },
-        errors::ProgramError,
+        program_error::ProgramError,
     },
     std::env,
 };

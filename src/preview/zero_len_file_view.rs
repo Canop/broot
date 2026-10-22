@@ -4,7 +4,7 @@ use {
             Screen,
             W,
         },
-        errors::ProgramError,
+        program_error::ProgramError,
         skin::PanelSkin,
     },
     char_reader::CharReader,

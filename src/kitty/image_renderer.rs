@@ -5,7 +5,6 @@ use {
             W,
             cell_size_in_pixels,
         },
-        errors::ProgramError,
         graphics::{
             GraphicsRenderer,
             ImageId,
@@ -14,6 +13,7 @@ use {
             terminal::{get_esc_seq, get_tmux_header, get_tmux_tail, get_tmux_nest_count, is_ssh},
         },
         path::path_has_ext,
+        program_error::ProgramError,
     },
     base64::{
         self,

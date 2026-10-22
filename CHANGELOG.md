@@ -1,3 +1,21 @@
+### next
+- fix nushell launcher rejected by upcoming nushell versions (reserved `--help` flag) - Fix #1230
+- an invalid flag in a verb argument, eg `{file:space_separated}`, is now reported as a configuration error
+- a flag in the `terminal_title` pattern, where flags have no effect, is now a configuration error
+- an unknown argument in a verb, eg `{flie}`, is now reported as a configuration error
+- an unknown argument in the `terminal_title` pattern is now a configuration error
+- a `path-from-parent` or `path-from-directory` flag on an argument provided by broot, eg `{file:path-from-parent}`, is now a configuration error
+- contradictory or repeated flags on a verb argument, eg `{file:space-separated,comma-separated}`, are now a configuration error
+- a space between the flags of a verb argument no longer breaks the argument when the execution is given as a single string
+- fix quotes in verb executions, broken since 1.56: quotes of an execution given as a single string were passed to the program, and items of an array with spaces weren't quoted when run through a shell
+- in a command run through a shell, all inserted values are now escaped, not only paths (eg `{file-name}`), and an empty value is passed as an empty argument
+- a `path-from-parent` argument now starts from the selection itself when it has no parent (the filesystem root), instead of being empty
+- an invalid verb in the configuration now prevents broot from starting, with an error giving its file and definition
+- errors displayed on exit are now highlighted
+- a verb argument defined in the invocation, eg `{file}` in `invocation: "say {file}"`, now takes precedence over the standard argument with the same name
+- tab completion of the argument of `:copy`, `:move`, or of verbs using `path-from-parent` or `path-from-directory`, now starts from the directory the command will use
+- client-server features (`--listen`, `--send`, `--get-root`) now available on Windows - Fix #1206
+
 <a name="v1.61.0"></a>
 ### v1.61.0 - 2026-10-03
 - `:gf` now removes all git information, including the git status filter

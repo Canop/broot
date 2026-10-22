@@ -9,9 +9,9 @@ use {
         command::Sequence,
         conf::{
             Conf,
+            ConfError,
             VerbConf,
         },
-        errors::ConfError,
         keys::{
             self,
             KEY_FORMAT,
@@ -62,17 +62,18 @@ impl VerbStore {
             unbound_keys: Vec::new(),
         };
         for vc in &conf.verbs {
-            if let Err(e) = store.add_from_conf(vc) {
-                eprintln!("Invalid verb configuration: {}", e);
-                warn!("Faulty parsed configuration: {:#?}", vc);
-                if let Ok(toml) = toml::to_string(&vc) {
-                    eprintln!("Faulty configuration:\n{}", toml);
-                }
-                eprintln!("Configuration files:");
-                for path in &conf.files {
-                    eprintln!("  - {}", path.display());
-                }
-            }
+            store
+                .add_from_conf(vc)
+                .map_err(|e| ConfError::InvalidVerb {
+                    file: vc.file.clone(),
+                    details: Box::new(e),
+                    verb_conf: toml::to_string(vc)
+                        .unwrap_or_default()
+                        .lines()
+                        .map(|line| format!("  `{line}`"))
+                        .collect::<Vec<_>>()
+                        .join("\n"),
+                })?;
         }
         store.add_builtin_verbs()?; // at the end so that we can override them
         for key in store.unbound_keys.clone() {
@@ -461,7 +462,7 @@ impl VerbStore {
     ) -> Result<(), ConfError> {
         if vc.leave_broot == Some(false) && vc.run_in_parent_shell == Some(true) {
             return Err(ConfError::InvalidVerbConf {
-                details: "You can't simultaneously have leave_broot=false and run_in_parent_shell=true"
+                details: "You can't simultaneously have `leave_broot=false` and `run_in_parent_shell=true`"
                     .to_string(),
             });
         }
@@ -763,4 +764,58 @@ fn check_shadowed_homonym_verbs() {
     };
     assert_eq!(name, "edit");
     assert_eq!(verb.execution.to_string(), "first {file}");
+}
+
+#[test]
+fn check_arg_defs_from_conf() {
+    let verb_conf = |invocation: &str, external: &str| VerbConf {
+        invocation: Some(invocation.to_string()),
+        external: Some(ExecPattern::from_string(external)),
+        ..Default::default()
+    };
+    let mut conf = Conf::default();
+    conf.verbs.push(verb_conf("play", "mpv {file:space-separated}"));
+    conf.verbs.push(verb_conf("say {file}", "echo {file}"));
+    let store = VerbStore::new(&mut conf).unwrap();
+    let PrefixSearchResult::Match(_, play) = store.search_prefix("play", None) else {
+        panic!("play verb not found");
+    };
+    assert!(play.needs_selection);
+    let PrefixSearchResult::Match(_, say) = store.search_prefix("say", None) else {
+        panic!("say verb not found");
+    };
+    assert!(!say.needs_selection);
+    let PrefixSearchResult::Match(_, copy) = store.search_prefix("copy", None) else {
+        panic!("copy verb not found");
+    };
+    assert_eq!(copy.get_unique_arg_anchor(), crate::path::PathAnchor::Parent);
+
+    for (invocation, external) in [
+        ("play", "mpv {file:space_separated}"),
+        ("cpp {dest:path-from-parent}", "cp {file} {dest}"),
+        ("cpp {dest:fiel}", "cp {file} {dest}"),
+        ("cpp {dest}", "cp {file} {dst}"),
+        ("tgz", "tar czf {name}.tgz {file}"),
+        ("cpf {dest}", "cp {file:path-from-parent} {dest}"),
+    ] {
+        let mut store = VerbStore {
+            verbs: Vec::new(),
+            unbound_keys: Vec::new(),
+        };
+        assert!(store.add_from_conf(&verb_conf(invocation, external)).is_err());
+    }
+
+    let mut store = VerbStore {
+        verbs: Vec::new(),
+        unbound_keys: Vec::new(),
+    };
+    store
+        .add_from_conf(&verb_conf(
+            r"blop {name}\.(?P<type>[^.]+)",
+            "nvim {parent}/{type}/{name}.{type}",
+        ))
+        .unwrap();
+    let mut with_working_dir = verb_conf("lsd", "ls");
+    with_working_dir.working_dir = Some("{dir}".to_string());
+    assert!(store.add_from_conf(&with_working_dir).is_err());
 }

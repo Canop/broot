@@ -3,16 +3,19 @@ use {
         app::*,
         command::*,
         display::*,
-        errors::{ProgramError, TreeBuildError},
         flag::Flag,
         git,
         path::{self, PathAnchor},
         pattern::*,
         print,
+        program_error::ProgramError,
         stage::*,
         task_sync::Dam,
         tree::*,
-        tree_build::TreeBuilder,
+        tree_build::{
+            TreeBuildError,
+            TreeBuilder,
+        },
         verb::*,
     },
     opener,
@@ -366,6 +369,7 @@ impl PanelState for BrowserState {
             Internal::focus => {
                 let tree = self.displayed_tree();
                 internal_focus::on_internal(
+                    invocation_parser,
                     internal_exec,
                     input_invocation,
                     trigger_type,
@@ -643,7 +647,7 @@ impl PanelState for BrowserState {
                     if let Some(input_invocation) = input_invocation {
                         // we'll go for input arg editing
                         let path = if let Some(input_arg) = &input_invocation.args {
-                            path::path_from(self.root(), PathAnchor::Unspecified, input_arg)
+                            path::path_from(self.root(), PathAnchor::Directory, input_arg)
                         } else {
                             self.root().to_path_buf()
                         };

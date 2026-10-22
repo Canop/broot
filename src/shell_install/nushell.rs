@@ -20,7 +20,7 @@ use {
     },
     crate::{
         conf,
-        errors::*,
+        shell_install::ShellInstallError,
     },
     directories::BaseDirs,
     std::path::PathBuf,
@@ -28,7 +28,7 @@ use {
 };
 
 const NAME: &str = "nushell";
-const VERSION: &str = "7";
+const VERSION: &str = "8";
 
 const NU_FUNC: &str = r#"
 # Launch broot
@@ -43,9 +43,9 @@ const NU_FUNC: &str = r#"
 export def --env main [
     --cmd(-c): string               # Semicolon separated commands to execute
     --color: string = "auto"        # Whether to have styles and colors (auto is default and usually OK) [possible values: auto, yes, no]
-    --conf: string                  # Semicolon separated paths to specific config files"),
-    --dates(-d)                     # Show the last modified date of files and directories"
-    --no-dates(-D)                  # Don't show the last modified date"
+    --conf: string                  # Semicolon separated paths to specific config files
+    --dates(-d)                     # Show the last modified date of files and directories
+    --no-dates(-D)                  # Don't show the last modified date
     --only-folders(-f)              # Only show folders
     --no-only-folders(-F)           # Show folders and files alike
     --show-git-info(-g)             # Show git statuses on files and stats on repo
@@ -56,7 +56,6 @@ export def --env main [
     --listen-auto                   # Listen for commands on a random linux socket
     --no-hidden(-H)                 # Don't show hidden files
     --height: int                   # Height (if you don't want to fill the screen or for file export)
-    --help                          # Print help information
     --git-ignored(-i)               # Show git ignored files
     --no-git-ignored(-I)            # Don't show git ignored files
     --install                       # Install or reinstall the br shell function
@@ -96,7 +95,6 @@ export def --env main [
     if $hidden { $args = ($args | append $'--hidden') }
     if $no_hidden { $args = ($args | append $'--no-hidden') }
     if $height != null { $args = ($args | append $'--height=($height)') }
-    if $help { $args = ($args | append $'--help') }
     if $git_ignored { $args = ($args | append $'--git-ignored') }
     if $no_git_ignored { $args = ($args | append $'--no-git-ignored') }
     if $install { $args = ($args | append $'--install') }
@@ -147,9 +145,9 @@ export def --env main [
 export extern broot [
     --cmd(-c): string               # Semicolon separated commands to execute
     --color: string = "auto"        # Whether to have styles and colors (auto is default and usually OK) [possible values: auto, yes, no]
-    --conf: string                  # Semicolon separated paths to specific config files"),
-    --dates(-d)                     # Show the last modified date of files and directories"
-    --no-dates(-D)                  # Don't show the last modified date"
+    --conf: string                  # Semicolon separated paths to specific config files
+    --dates(-d)                     # Show the last modified date of files and directories
+    --no-dates(-D)                  # Don't show the last modified date
     --only-folders(-f)              # Only show folders
     --no-only-folders(-F)           # Show folders and files alike
     --show-git-info(-g)             # Show git statuses on files and stats on repo
@@ -158,7 +156,6 @@ export extern broot [
     --hidden(-h)                    # Show hidden files
     --no-hidden(-H)                 # Don't show hidden files
     --height: int                   # Height (if you don't want to fill the screen or for file export)
-    --help                          # Print help information
     --git-ignored(-i)               # Show git ignored files
     --no-git-ignored(-I)            # Don't show git ignored files
     --install                       # Install or reinstall the br shell function

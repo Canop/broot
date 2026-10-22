@@ -11,7 +11,7 @@ pub const CSI_ITALIC: &str = "\u{1b}[3m";
 use {
     crate::{
         display::W,
-        errors::ProgramError,
+        program_error::ProgramError,
     },
     std::io::Write,
 };

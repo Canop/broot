@@ -36,6 +36,9 @@ rsync -av build/ "$BROOT_DEPLOY_TARGET/"
 rsync -av "broot_$version.zip" "$BROOT_DEPLOY_TARGET/"
 ok "deployed $version"
 
+h2 "Tagging the release"
+push_release_tag
+
 # Last: the site must never describe a version whose binaries aren't up yet.
 h2 "Deploying the website"
 "$here/../website/deploy.sh"

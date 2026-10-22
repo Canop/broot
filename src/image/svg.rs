@@ -1,12 +1,14 @@
 use {
     super::bitmap,
-    crate::errors::SvgError,
     image::DynamicImage,
     resvg::{
         tiny_skia,
         usvg,
     },
-    std::path::PathBuf,
+    std::{
+        io,
+        path::PathBuf,
+    },
     termimad::coolor,
 };
 
@@ -93,4 +95,21 @@ pub fn render<P: Into<PathBuf>>(
     let tree = load(path)?;
     let image = render_tree(&tree, max_width, max_height, None)?;
     Ok(image)
+}
+
+#[derive(thiserror::Error, Debug)]
+// Note: the error messages are markdown, rendered with termimad by [`ProgramError::report`] or in the status line
+pub enum SvgError {
+    #[error("IO Error : {source}")]
+    Io {
+        #[from]
+        source: io::Error,
+    },
+    #[error("Internal error : {message}")]
+    Internal { message: &'static str },
+    #[error("SVG Error: {source}")]
+    Svg {
+        #[from]
+        source: resvg::usvg::Error,
+    },
 }

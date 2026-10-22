@@ -1,6 +1,6 @@
 use {
     super::*,
-    crate::errors::ConfError,
+    crate::conf::ConfError,
     std::fmt,
 };
 
@@ -56,15 +56,10 @@ impl InternalExecution {
         let Some(args) = &self.arg else {
             return false;
         };
-        for capture in ARG_DEF_GROUP.captures_iter(args) {
-            let arg_def = VerbArgDef::from_capture(&capture);
-            for flag in &arg_def.flags {
-                if flag.is_merging() {
-                    return true;
-                }
-            }
-        }
-        false
+        ARG_DEF_GROUP
+            .captures_iter(args)
+            .filter_map(|capture| ExecArgDef::from_capture(&capture).ok())
+            .any(|arg_def| arg_def.merging_flag().is_some())
     }
     /// Tell whether, in case of a multiple selection, the command should be executed once per
     /// selection or once for all selections together (meaning the selections will be merged).

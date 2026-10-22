@@ -6,9 +6,9 @@ use {
             Selection,
             SelectionType,
         },
-        errors::TreeBuildError,
         file_sum::FileSum,
         git::LineGitStatus,
+        tree_build::TreeBuildError,
     },
     lazy_regex::regex_captures,
     std::{
@@ -114,7 +114,7 @@ impl TreeLineBuilder {
             direct_match,
         } = self;
         let metadata = fs::symlink_metadata(&path).map_err(|_| TreeBuildError::FileNotFound {
-            path: path.to_string_lossy().to_string(),
+            path: path.to_path_buf(),
         })?;
         let line_type = TreeLineType::new(&path, metadata.file_type());
         let name = path

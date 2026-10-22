@@ -11,7 +11,7 @@ use {
             is_thumb,
             row_starts,
         },
-        errors::*,
+        program_error::ProgramError,
         skin::PanelSkin,
     },
     crokey::crossterm::{

@@ -2,7 +2,6 @@ use {
     super::*,
     crate::{
         app::AppContext,
-        errors::PatternError,
         pattern::{
             Pattern,
             PatternParts,

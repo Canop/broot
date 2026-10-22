@@ -10,8 +10,8 @@ pub(crate) use fit::rendering_area;
 use {
     crate::{
         display::W,
-        errors::ProgramError,
         kitty::KittyGraphicsDisplay,
+        program_error::ProgramError,
     },
     crokey::crossterm::style::Color,
     image::DynamicImage,

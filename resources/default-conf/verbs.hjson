@@ -49,6 +49,7 @@ verbs: [
     # }
 
     # Zip selected file(s) into a new archive named <name>.zip
+    # created in the current root.
     # This can be called on the staging area after having staged several
     # files or directories
     {
@@ -56,7 +57,7 @@ verbs: [
         external: [
             "zip"
             "-r"
-            "{name:path-from-directory}.zip"
+            "{name}.zip"
             "{file:space-separated}"
         ]
         leave_broot: false

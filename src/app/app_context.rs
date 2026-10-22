@@ -12,10 +12,9 @@ use {
             LayoutInstructions,
             Overflow,
         },
-        errors::*,
         file_sum,
-        icon::*,
         graphics::GraphicsDisplay,
+        icon::*,
         kitty::{
             KittyGraphicsDisplay,
             TransmissionMedium,
@@ -23,9 +22,11 @@ use {
         path::SpecialPaths,
         pattern::SearchModeMap,
         preview::PreviewTransformers,
+        program_error::ProgramError,
         skin::ExtColorMap,
         syntactic::SyntaxTheme,
         tree::TreeOptions,
+        tree_build::TreeBuildError,
         verb::*,
     },
     crokey::crossterm::tty::IsTty,
@@ -252,6 +253,20 @@ impl AppContext {
             .unwrap_or(content_search::DEFAULT_MAX_FILE_SIZE);
 
         let terminal_title_pattern = config.terminal_title.clone();
+        if let Some(pattern) = &terminal_title_pattern {
+            for arg_def in pattern.arg_defs()? {
+                if arg_def.standard_arg(None).is_none() {
+                    return Err(ConfError::UnknownTerminalTitleArg { name: arg_def.name }.into());
+                }
+                if let Some(flag) = arg_def.flags.first() {
+                    return Err(ConfError::FlagInTerminalTitle {
+                        name: arg_def.name,
+                        flag: *flag,
+                    }
+                    .into());
+                }
+            }
+        }
         let reset_terminal_title_on_exit = config.reset_terminal_title_on_exit.unwrap_or(false);
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
         let custom_syntax_theme = config
@@ -381,7 +396,7 @@ fn initial_root_file(cli_args: &Args) -> Result<(PathBuf, Option<PathBuf>), Prog
     };
     if !root.exists() {
         return Err(TreeBuildError::FileNotFound {
-            path: format!("{root:?}"),
+            path: root.clone(),
         }
         .into());
     }
@@ -394,7 +409,7 @@ fn initial_root_file(cli_args: &Args) -> Result<(PathBuf, Option<PathBuf>), Prog
         } else {
             // this is a weird filesystem, let's give up
             return Err(TreeBuildError::NotADirectory {
-                path: format!("{root:?}"),
+                path: root.clone(),
             }
             .into());
         }
@@ -420,11 +435,11 @@ fn canonicalize_root(root: &Path) -> io::Result<PathBuf> {
 /// (none if there's neither 'listen' nor `listen_auto` arg)
 #[allow(unused_variables)]
 fn build_server_name(args: &Args) -> Option<String> {
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     if let Some(name) = &args.listen {
         return Some(name.clone());
     }
-    #[cfg(unix)]
+    #[cfg(any(unix, windows))]
     if args.listen_auto {
         return Some(crate::net::random_server_name());
     }

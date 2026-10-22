@@ -9,7 +9,6 @@ use {
     },
     crate::{
         app::AppContext,
-        errors::TreeBuildError,
         git::{
             IgnoreChain,
             Ignorer,
@@ -22,6 +21,7 @@ use {
             Dam,
         },
         tree::*,
+        tree_build::TreeBuildError,
     },
     id_arena::Arena,
     std::{

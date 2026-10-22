@@ -4,7 +4,7 @@
 //!  https://docs.rs/syntect/latest/syntect/highlighting/struct.ThemeSet.html
 
 use {
-    crate::errors::ConfError,
+    crate::conf::ConfError,
     serde::{
         Deserialize,
         Deserializer,
