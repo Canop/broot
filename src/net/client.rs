@@ -1,7 +1,10 @@
 use {
     super::Message,
     crate::net::NetError,
-    std::io::BufReader,
+    std::io::{
+        BufReader,
+        Read,
+    },
 };
 
 #[cfg(unix)]
@@ -49,6 +52,10 @@ impl Client {
                     warn!("got no answer but error {:?}", e);
                 }
             }
+        } else {
+            // wait for the server to close the connection, so that the
+            // message is known to be read before this process exits
+            let _ = stream.read(&mut [0u8; 1]);
         }
         Ok(())
     }

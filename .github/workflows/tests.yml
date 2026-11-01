@@ -21,6 +21,17 @@ jobs:
     - name: Run tests
       run: cargo test --features sixel --verbose
 
+  windows:
+
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build
+      run: cargo build --features sixel --verbose
+    - name: Run tests
+      run: cargo test --features sixel --verbose
+
   msrv:
 
     runs-on: ubuntu-latest

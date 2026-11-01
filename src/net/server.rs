@@ -199,13 +199,22 @@ impl Drop for Server {
 mod test {
     use {
         super::Server,
-        crate::command::Sequence,
+        crate::{
+            command::Sequence,
+            net::{
+                Client,
+                Message,
+                NetError,
+            },
+        },
         std::{
             path::PathBuf,
             sync::{
                 Arc,
                 Mutex,
             },
+            thread,
+            time::Duration,
         },
         termimad::crossbeam::channel,
     };
@@ -220,8 +229,44 @@ mod test {
         let _s1 = Server::new(name, tx.clone(), Arc::clone(&root)).expect("first server must bind");
         let second = Server::new(name, tx, root);
         assert!(
-            second.is_err(),
-            "second Server::new with the same name must error, not silently overtake"
+            matches!(second, Err(NetError::DuplicateServerName { .. })),
+            "second Server::new with the same name must be refused, got {:?}",
+            second.err(),
         );
+    }
+
+    #[test]
+    fn command_sent_by_client_reaches_server() {
+        let name = "broot-test-command-round-trip-do-not-use";
+        let (tx, rx) = channel::unbounded::<Sequence>();
+        let root = Arc::new(Mutex::new(PathBuf::from("/")));
+        let _server = Server::new(name, tx, root).expect("server must bind");
+        Client::new(name)
+            .send(&Message::Command(":focus".to_string()))
+            .expect("client must send");
+        let sequence = rx
+            .recv_timeout(Duration::from_secs(5))
+            .expect("server must forward the command");
+        assert_eq!(sequence.raw, ":focus");
+    }
+
+    #[test]
+    fn name_is_free_after_server_drop() {
+        let name = "broot-test-name-reuse-do-not-use";
+        let (tx, _rx) = channel::unbounded::<Sequence>();
+        let root = Arc::new(Mutex::new(PathBuf::from("/")));
+        drop(Server::new(name, tx.clone(), Arc::clone(&root)).expect("first server must bind"));
+        // the listening thread releases the name asynchronously
+        let mut attempts = 0;
+        loop {
+            match Server::new(name, tx.clone(), Arc::clone(&root)) {
+                Ok(_) => break,
+                Err(e) if attempts >= 50 => panic!("name not released after drop: {e:?}"),
+                Err(_) => {
+                    attempts += 1;
+                    thread::sleep(Duration::from_millis(100));
+                }
+            }
+        }
     }
 }
