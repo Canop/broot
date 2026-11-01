@@ -1,4 +1,5 @@
-### next
+<a name="v1.62.0"></a>
+### v1.62.0 - 2026-11-01
 - fix nushell launcher rejected by upcoming nushell versions (reserved `--help` flag) - Fix #1230
 - an invalid flag in a verb argument, eg `{file:space_separated}`, is now reported as a configuration error
 - a flag in the `terminal_title` pattern, where flags have no effect, is now a configuration error
@@ -16,6 +17,8 @@
 - tab completion of the argument of `:copy`, `:move`, or of verbs using `path-from-parent` or `path-from-directory`, now starts from the directory the command will use
 - client-server features (`--listen`, `--send`, `--get-root`) now available on Windows - Fix #1206
 - on Windows, a trailing `\` in a verb argument path is now kept after normalization
+- the `mode` of a preview transformer is now applied when no preview mode is requested - Thanks @matthewhadley
+- more nerdfont icons: hjson, Docker, README, envrc, LLVM, CMake, gdb, ghci, Cabal, fish, Nix, Just, ignore files, jsonc, jsonl - Thanks @noahkawaguchi
 
 <a name="v1.61.0"></a>
 ### v1.61.0 - 2026-10-03
