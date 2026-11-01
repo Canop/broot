@@ -15,7 +15,10 @@ use std::path::{
 /// This function ensures a given path ending with '/' still
 /// ends with '/' after normalization.
 pub fn normalize_path<P: AsRef<Path>>(path: P) -> PathBuf {
-    let ends_with_slash = path.as_ref().to_str().is_some_and(|s| s.ends_with('/'));
+    let ends_with_slash = path
+        .as_ref()
+        .to_str()
+        .is_some_and(|s| s.ends_with(std::path::is_separator));
     let mut normalized = PathBuf::new();
     for component in path.as_ref().components() {
         match &component {
@@ -44,13 +47,7 @@ mod path_normalize_tests {
         after: &str,
     ) {
         println!("-----------------\nnormalizing {before:?}");
-        // As seen by Stargateur, the test here doesn't work on Windows
-        //
-        // There are two problems, at least:
-        //
-        // * strings used for test use the '/' separator. This is a test problem
-        // * we do a "end with '/'" test in the tested function. This might
-        //   lead to suboptimal interaction on windows
+        let after = after.replace('/', std::path::MAIN_SEPARATOR_STR);
         assert_eq!(normalize_path(before).to_string_lossy(), after);
     }
 
@@ -71,5 +68,13 @@ mod path_normalize_tests {
             "/home/dys/dev/broot/../../../canop/test",
             "/home/canop/test",
         );
+    }
+
+    #[cfg(windows)]
+    #[test]
+    fn test_path_normalization_with_backslashes() {
+        check(r"C:\abc\test\..\thing.png", r"C:\abc\thing.png");
+        check(r"C:\home\dys\..\", r"C:\home\");
+        check(r"C:\home\dys\", r"C:\home\dys\");
     }
 }
