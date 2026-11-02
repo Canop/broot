@@ -481,10 +481,22 @@ impl<'c> TreeBuilder<'c> {
                 .to_string_lossy()
                 .to_string()
         };
-        let unlisted = bline
-            .children
-            .as_ref()
-            .map_or(0, |children| children.len() - bline.next_child_idx);
+        // Only children which match the active search can end up displayed,
+        // so only those are counted as "unlisted" (which is what triggers the
+        // ellipsis marking a truncated list). Counting every not-yet-visited
+        // child made the ellipsis appear during a search even when all
+        // matching children of the directory were already shown (see #1214).
+        // Only children matching the active search can end up displayed, so
+        // only those count as "unlisted" - this is what triggers the ellipsis
+        // marking a truncated list. Counting every not-yet-visited child made
+        // the ellipsis appear during a search even when all matching children
+        // of the directory were already shown (see #1214).
+        let unlisted = bline.children.as_ref().map_or(0, |children| {
+            children[bline.next_child_idx..]
+                .iter()
+                .filter(|&&child_id| self.blines[child_id].has_match)
+                .count()
+        });
         TreeLineBuilder {
             path,
             subpath,
@@ -501,6 +513,54 @@ impl<'c> TreeBuilder<'c> {
     }
 
     /// make a tree from the builder's specific structure
+    /// Test helper: build the tree then report every directory line whose
+    /// computed `unlisted` (which drives the ellipsis) is > 0 although no
+    /// matching child is left undisplayed.
+    ///
+    /// Returns `(path, unlisted, nb_matching_children_after_idx)`.
+    #[cfg(test)]
+    fn build_and_find_spurious(
+        mut self,
+        total_search: bool,
+        dam: &Dam,
+    ) -> Vec<(std::path::PathBuf, usize, usize)> {
+        let blines_ids = self.gather_lines(total_search, dam).unwrap_or_default();
+        if !self.total_search {
+            self.trim_excess(&blines_ids);
+        }
+        // mirror take_as_tree: load children of kept dirs, then compute lines
+        for id in &blines_ids {
+            if self.blines[*id].has_match {
+                if self.blines[*id].can_enter() && self.blines[*id].children.is_none() {
+                    self.load_children(*id);
+                }
+            }
+        }
+        let mut out = Vec::new();
+        for id in &blines_ids {
+            if !self.blines[*id].has_match {
+                continue;
+            }
+            let bline = &self.blines[*id];
+            let Some(children) = &bline.children else {
+                continue;
+            };
+            if !bline.file_type.is_dir() || bline.next_child_idx > children.len() {
+                continue;
+            }
+            let matching_after = children[bline.next_child_idx..]
+                .iter()
+                .filter(|&&c| self.blines[c].has_match)
+                .count();
+            // value actually produced by make_tree_line
+            let unlisted = self.make_tree_line(*id).map(|l| l.unlisted).unwrap_or(0);
+            if unlisted > 0 && matching_after == 0 {
+                out.push((bline.path.clone(), unlisted, matching_after));
+            }
+        }
+        out
+    }
+
     fn take_as_tree(
         mut self,
         out_blines: &[BId],
@@ -581,5 +641,84 @@ impl<'c> TreeBuilder<'c> {
                 .map(|id| self.blines[id].path.clone())
                 .collect()
         })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use {
+        super::*,
+        crate::{
+            app::AppContext,
+            command::CommandParts,
+            pattern::InputPattern,
+            task_sync::Dam,
+            tree::TreeOptions,
+        },
+        std::fs,
+    };
+
+    /// Wide, deep tree: each directory holds a few matching files plus many
+    /// non-matching siblings, so a search with a small budget stops before
+    /// visiting most children.
+    fn make_tree(root: &std::path::Path) {
+        for d in 0..30 {
+            let dir = root.join(format!("dir{d:02}"));
+            fs::create_dir_all(&dir).unwrap();
+            for f in 0..4 {
+                fs::write(dir.join(format!("nya_{f}.txt")), "").unwrap();
+            }
+            for f in 0..30 {
+                fs::write(dir.join(format!("other_{f}.txt")), "").unwrap();
+            }
+            for e in 0..5 {
+                let sub = dir.join(format!("sub{e}"));
+                fs::create_dir_all(&sub).unwrap();
+                for g in 0..4 {
+                    fs::write(sub.join(format!("nya_deep_{g}.txt")), "").unwrap();
+                }
+                for f in 0..30 {
+                    fs::write(sub.join(format!("nope_{f}.txt")), "").unwrap();
+                }
+            }
+        }
+    }
+
+    /// The reported bug (#1214): during a search, a directory was flagged as
+    /// truncated - which is what draws the "\u{2026}" ellipsis - as soon as
+    /// some children had not been visited, even when those unvisited children
+    /// did not match and could never be displayed.
+    ///
+    /// Invariant checked here: for every directory, `unlisted` (which drives
+    /// the ellipsis) must be zero whenever none of its matching children is
+    /// left undisplayed.
+    #[test]
+    fn unlisted_counts_only_matching_children_during_search() {
+        let root = std::env::temp_dir().join(format!("broot_1214_{}", std::process::id()));
+        let _ = fs::remove_dir_all(&root);
+        make_tree(&root);
+
+        let con = AppContext::default();
+        let mut options = TreeOptions {
+            respect_git_ignore: false,
+            ..Default::default()
+        };
+        let cp = CommandParts::from("nya");
+        options.pattern =
+            InputPattern::new(cp.raw_pattern.clone(), &cp.pattern, &con).unwrap();
+
+        // Small budget: the build stops early and most children are never
+        // visited. Unvisited children which don't match must not be counted
+        // as hidden matches.
+        let offending = TreeBuilder::from(root.clone(), options, 12, &con)
+            .unwrap()
+            .build_and_find_spurious(false, &Dam::unlimited());
+        let _ = fs::remove_dir_all(&root);
+
+        assert!(
+            offending.is_empty(),
+            "directories flagged as truncated (drawing the \u{2026} ellipsis) \
+             although no matching child is left hidden: {offending:?}",
+        );
     }
 }
