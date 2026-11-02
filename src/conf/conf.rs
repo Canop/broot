@@ -157,6 +157,11 @@ pub struct Conf {
     #[serde(alias = "syntax-theme")]
     pub syntax_theme: Option<SyntaxTheme>,
 
+    /// path to a syntect compatible .tmTheme file, used for previews
+    /// instead of syntax_theme. An empty path unsets it.
+    #[serde(alias = "syntax-theme-file")]
+    pub syntax_theme_file: Option<PathBuf>,
+
     #[serde(alias = "terminal-title")]
     pub terminal_title: Option<ExecPattern>,
 
@@ -248,7 +253,21 @@ impl Conf {
         overwrite!(self, default_flags, conf);
         overwrite!(self, date_time_format, conf);
         overwrite!(self, icon_theme, conf);
-        overwrite!(self, syntax_theme, conf);
+        // syntax_theme and syntax_theme_file replace each other, so that the
+        // last one read wins; when a file sets both, syntax_theme_file wins
+        if conf.syntax_theme.is_some() {
+            self.syntax_theme = conf.syntax_theme.take();
+            self.syntax_theme_file = None;
+        }
+        if let Some(file) = conf.syntax_theme_file.take() {
+            let file = file.to_string_lossy();
+            // an empty path unsets it
+            self.syntax_theme_file = (!file.is_empty()).then(|| {
+                // relative to the conf file declaring it
+                path_from(&path, PathAnchor::Parent, &file)
+            });
+            self.syntax_theme = None;
+        }
         overwrite!(self, disable_mouse_capture, conf);
         overwrite!(self, capture_mouse, conf);
         overwrite!(self, true_colors, conf);
