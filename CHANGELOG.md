@@ -1,3 +1,7 @@
+### next
+- fix paths with spaces or special characters passed to an external verb by a `cmd` sequence, broken since 1.62
+- a path containing the separator of a `cmd` sequence, eg `a;b.txt`, no longer splits the command it's inserted in
+
 <a name="v1.62.0"></a>
 ### v1.62.0 - 2026-11-01
 - fix nushell launcher rejected by upcoming nushell versions (reserved `--help` flag) - Fix #1230

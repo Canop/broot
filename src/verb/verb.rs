@@ -301,7 +301,7 @@ impl Verb {
         if let VerbExecution::Sequence(seq_ex) = &self.execution {
             // We can't determine before execution what will be the arguments, except
             // for the first item of the sequence. It's cleaner to just not try expand it
-            format!("Hit *enter* to **{}**: `{}`", name, seq_ex.sequence.raw)
+            format!("Hit *enter* to **{}**: `{}`", name, seq_ex.sequence)
         } else if let VerbExecution::External(external_exec)
         | VerbExecution::ShellCommand(external_exec) = &self.execution
         {

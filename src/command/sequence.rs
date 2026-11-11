@@ -11,13 +11,14 @@ use {
         program_error::ProgramError,
         verb::*,
     },
+    std::fmt,
 };
 
-/// an unparsed sequence with its separator (which may be
-/// different from the one provided by `local_separator()`)
+/// A sequence of unparsed commands
 #[derive(Debug, Clone)]
 pub struct Sequence {
-    pub raw: String,
+    pub commands: Vec<String>,
+    /// the separator, used to display the sequence
     pub separator: String,
 }
 
@@ -29,26 +30,29 @@ impl Sequence {
             _ => String::from(";"),
         }
     }
+    /// Split the raw string with the separator, or with the local
+    /// separator if none is given (an empty separator doesn't split)
     pub fn new<S: Into<String>>(
         raw: S,
         separator: Option<S>,
     ) -> Self {
-        Self {
-            raw: raw.into(),
-            separator: separator.map_or_else(Sequence::local_separator, Into::into),
-        }
+        let raw = raw.into();
+        let separator = separator.map_or_else(Sequence::local_separator, Into::into);
+        let commands = if separator.is_empty() {
+            vec![raw]
+        } else {
+            raw.split(&separator).map(String::from).collect()
+        };
+        Self { commands, separator }
     }
     pub fn new_single<S: Into<String>>(cmd: S) -> Self {
         Self {
+            commands: vec![cmd.into()],
             separator: String::new(),
-            raw: cmd.into(),
         }
     }
     pub fn new_local(raw: String) -> Self {
-        Self {
-            separator: Self::local_separator(),
-            raw,
-        }
+        Self::new(raw, None)
     }
     /// Parse the sequence into a vec of commands.
     ///
@@ -59,16 +63,20 @@ impl Sequence {
         &self,
         con: &AppContext,
     ) -> Result<Vec<(String, Command)>, ProgramError> {
-        debug!("Splitting cmd sequence with {:?}", self.separator);
         let mut commands = Vec::new();
-        if self.separator.is_empty() {
-            add_commands(&self.raw, &mut commands, con)?;
-        } else {
-            for input in self.raw.split(&self.separator) {
-                add_commands(input, &mut commands, con)?;
-            }
+        for input in &self.commands {
+            add_commands(input, &mut commands, con)?;
         }
         Ok(commands)
+    }
+}
+
+impl fmt::Display for Sequence {
+    fn fmt(
+        &self,
+        f: &mut fmt::Formatter<'_>,
+    ) -> fmt::Result {
+        write!(f, "{}", self.commands.join(&self.separator))
     }
 }
 

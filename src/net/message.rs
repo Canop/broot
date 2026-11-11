@@ -1,8 +1,5 @@
 use {
-    crate::{
-        command::Sequence,
-        net::NetError,
-    },
+    crate::net::NetError,
     std::io::{
         self,
         BufRead,
@@ -17,7 +14,8 @@ pub enum Message {
     Hi,
     GetRoot,
     Root(String),
-    Sequence(Sequence),
+    /// a raw sequence, as given with `--cmd`, with its separator
+    Sequence { raw: String, separator: String },
 }
 
 fn read_line<BR: BufRead>(r: &mut BR) -> Result<String, NetError> {
@@ -37,10 +35,10 @@ impl Message {
             "CMD" => Ok(Self::Command(read_line(r)?)),
             "GET_ROOT" => Ok(Self::GetRoot),
             "ROOT" => Ok(Self::Root(read_line(r)?)),
-            "SEQ" => Ok(Self::Sequence(Sequence::new(
-                read_line(r)?,
-                Some(read_line(r)?),
-            ))),
+            "SEQ" => Ok(Self::Sequence {
+                raw: read_line(r)?,
+                separator: read_line(r)?,
+            }),
             _ => Err(NetError::InvalidMessage),
         }
     }
@@ -63,7 +61,7 @@ impl Message {
                 writeln!(w, "ROOT")?;
                 writeln!(w, "{path}")
             }
-            Self::Sequence(Sequence { separator, raw }) => {
+            Self::Sequence { raw, separator } => {
                 writeln!(w, "SEQ")?;
                 writeln!(w, "{raw}")?;
                 writeln!(w, "{separator}")

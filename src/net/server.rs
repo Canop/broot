@@ -132,9 +132,9 @@ impl Server {
                                 }
                                 None
                             }
-                            Ok(Message::Sequence(sequence)) => {
-                                debug!("got sequence {sequence:?}");
-                                Some(sequence)
+                            Ok(Message::Sequence { raw, separator }) => {
+                                debug!("got sequence {raw:?} with separator {separator:?}");
+                                Some(Sequence::new(raw, Some(separator)))
                             }
                             Ok(message) => {
                                 debug!("got something not yet handled: {:?}", message);
@@ -247,7 +247,7 @@ mod test {
         let sequence = rx
             .recv_timeout(Duration::from_secs(5))
             .expect("server must forward the command");
-        assert_eq!(sequence.raw, ":focus");
+        assert_eq!(sequence.commands, vec![":focus".to_string()]);
     }
 
     #[test]

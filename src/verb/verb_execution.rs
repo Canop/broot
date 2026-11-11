@@ -35,7 +35,13 @@ impl VerbExecution {
                 None => Ok(Vec::new()),
             },
             Self::External(ee) | Self::ShellCommand(ee) => ee.exec_pattern.arg_defs(),
-            Self::Sequence(se) => parse_exec_arg_defs(&se.sequence.raw),
+            Self::Sequence(se) => {
+                let mut arg_defs = Vec::new();
+                for command in &se.sequence.commands {
+                    arg_defs.extend(parse_exec_arg_defs(command)?);
+                }
+                Ok(arg_defs)
+            }
         }
     }
 }
@@ -49,7 +55,7 @@ impl fmt::Display for VerbExecution {
         match self {
             Self::Internal(ie) => ie.fmt(f),
             Self::External(ee) | Self::ShellCommand(ee) => ee.exec_pattern.fmt(f),
-            Self::Sequence(se) => se.sequence.raw.fmt(f),
+            Self::Sequence(se) => se.sequence.fmt(f),
         }
     }
 }

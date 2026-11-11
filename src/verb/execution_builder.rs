@@ -279,10 +279,7 @@ impl<'b> ExecutionBuilder<'b> {
     fn base_dir(&self) -> &Path {
         self.sel_info.one_sel().map_or(self.root, |sel| sel.path)
     }
-    /// replace groups in a sequence
-    ///
-    /// Replacing escapes for the shell for externals, and without
-    /// escaping for internals.
+    /// Replace the arg groups in each command of a sequence, without escaping
     ///
     /// Note that this is *before* asking the (local or remote) panel
     /// state the sequential execution of the different commands. In
@@ -291,35 +288,15 @@ impl<'b> ExecutionBuilder<'b> {
     pub fn sequence(
         &self,
         sequence: &Sequence,
-        verb_store: &VerbStore,
         con: &AppContext,
-        panel_state_type: Option<PanelStateType>,
     ) -> Sequence {
-        let mut inputs = Vec::new();
-        for input in sequence.raw.split(&sequence.separator) {
-            let raw_parts = CommandParts::from(input.to_string());
-            let (_, verb_invocation) = raw_parts.split();
-            let verb_is_external = verb_invocation
-                .and_then(|vi| {
-                    let command = Command::from_parts(vi, true);
-                    if let Command::VerbInvocate(invocation) = &command {
-                        let search = verb_store.search_prefix(&invocation.name, panel_state_type);
-                        if let PrefixSearchResult::Match(_, verb) = search {
-                            return Some(verb);
-                        }
-                    }
-                    None
-                })
-                .is_some_and(|verb| verb.get_internal().is_none());
-            let input = if verb_is_external {
-                self.shell_exec_string(&ExecPattern::from_string(input), con)
-            } else {
-                self.replace_args(input, false, &|arg_def| self.get_arg_values(arg_def, con))
-            };
-            inputs.push(input);
-        }
+        let commands = sequence
+            .commands
+            .iter()
+            .map(|input| self.replace_args(input, false, &|arg_def| self.get_arg_values(arg_def, con)))
+            .collect();
         Sequence {
-            raw: inputs.join(&sequence.separator),
+            commands,
             separator: sequence.separator.clone(),
         }
     }

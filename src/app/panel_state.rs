@@ -923,12 +923,7 @@ pub trait PanelState {
                 None
             },
         );
-        let sequence = exec_builder.sequence(
-            &seq_ex.sequence,
-            &cc.app.con.verb_store,
-            cc.app.con,
-            Some(self.get_type()),
-        );
+        let sequence = exec_builder.sequence(&seq_ex.sequence, cc.app.con);
         Ok(CmdResult::ExecuteSequence { sequence })
     }
 

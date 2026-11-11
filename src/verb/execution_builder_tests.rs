@@ -6,8 +6,11 @@ use {
     super::*,
     crate::{
         app::*,
-        command::Sequence,
-        conf::Conf,
+        command::{
+            Command,
+            CommandParts,
+            Sequence,
+        },
         stage::Stage,
     },
     std::{
@@ -500,19 +503,123 @@ fn working_dir_path() {
     assert_eq!(builder.path("sub", &con), tree.root.join("sub"));
 }
 
+/// Replace the args of a sequence, with a fresh builder
+fn sequence(
+    sel_info: SelInfo<'_>,
+    app_state: &AppState,
+    con: &AppContext,
+    raw: &str,
+) -> Sequence {
+    ExecutionBuilder::without_invocation(sel_info, app_state).sequence(&Sequence::new(raw, Some(";")), con)
+}
+
 #[test]
 fn sequences() {
     let tree = Tree::new();
     let app_state = tree.app_state();
     let con = context(&tree);
     let r = s(&tree.root);
-    let mut conf = Conf::default();
-    let verb_store = VerbStore::new(&mut conf).unwrap();
-    let sequence = Sequence::new(":focus {directory};:cp {file}  {root}/x", Some(";"));
-    let builder = ExecutionBuilder::without_invocation(SelInfo::One(file_sel(&tree.file)), &app_state);
-    let sequence = builder.sequence(&sequence, &verb_store, &con, None);
-    assert_eq!(sequence.raw, format!(":focus {r}/my dir;:cp '{r}/my dir/a b.txt'  {r}/x"));
+    let sequence = sequence(
+        SelInfo::One(file_sel(&tree.file)),
+        &app_state,
+        &con,
+        ":focus {directory};:cp {file}  {root}/x",
+    );
+    assert_eq!(
+        sequence.commands,
+        vec![format!(":focus {r}/my dir"), format!(":cp {r}/my dir/a b.txt  {r}/x")],
+    );
     assert_eq!(sequence.separator, ";");
+    assert_eq!(sequence.to_string(), format!(":focus {r}/my dir;:cp {r}/my dir/a b.txt  {r}/x"));
+}
+
+#[test]
+fn sequence_splitting() {
+    let commands = |sequence: Sequence| sequence.commands;
+    assert_eq!(commands(Sequence::new(":a x;:b", Some(";"))), vec![":a x", ":b"]);
+    assert_eq!(commands(Sequence::new(":a x;:b", Some("::"))), vec![":a x;:b"]);
+    assert_eq!(commands(Sequence::new(":a x::b", Some("::"))), vec![":a x", "b"]);
+    assert_eq!(commands(Sequence::new(":a x;:b", Some(""))), vec![":a x;:b"]);
+    assert_eq!(commands(Sequence::new_single(":a x;:b")), vec![":a x;:b"]);
+    assert_eq!(Sequence::new(":a x::b", Some("::")).to_string(), ":a x::b");
+}
+
+/// Check the values inserted in the commands of a sequence aren't escaped
+#[test]
+fn sequence_values_are_not_shell_escaped() {
+    let tree = Tree::new();
+    let app_state = tree.app_state();
+    let con = context(&tree);
+    let r = s(&tree.root);
+    let sel_info = SelInfo::One(file_sel(&tree.odd));
+    let check = |raw: &str, expected: &[String]| {
+        assert_eq!(sequence(sel_info, &app_state, &con, raw).commands, expected, "{raw}");
+    };
+    // internal verbs
+    check(":focus {directory}", &[format!(":focus {r}/my dir")]);
+    check(":cp {file}-back", &[format!(":cp {r}/my dir/it's $x.txt-back")]);
+    // external verbs, from the default conf or not
+    check(":rm {file}", &[format!(":rm {r}/my dir/it's $x.txt")]);
+    check(":edit {file}", &[format!(":edit {r}/my dir/it's $x.txt")]);
+    check(":trashcli {file}", &[format!(":trashcli {r}/my dir/it's $x.txt")]);
+    // several commands, and other args
+    check(
+        ":trashcli {file};:focus {parent};:echo {file-name} {line}",
+        &[
+            format!(":trashcli {r}/my dir/it's $x.txt"),
+            format!(":focus {r}/my dir"),
+            ":echo it's $x.txt 7".to_string(),
+        ],
+    );
+}
+
+/// Check a value containing the separator stays in its command
+#[test]
+fn sequence_values_containing_the_separator() {
+    let tree = Tree::new();
+    let app_state = tree.app_state();
+    let con = context(&tree);
+    let r = s(&tree.root);
+    let path = tree.dir.join("a;b.txt");
+    fs::write(&path, "").unwrap();
+    let sequence = sequence(SelInfo::One(file_sel(&path)), &app_state, &con, ":trashcli {file};:focus {parent}");
+    assert_eq!(
+        sequence.commands,
+        vec![format!(":trashcli {r}/my dir/a;b.txt"), format!(":focus {r}/my dir")],
+    );
+}
+
+/// Check the path an external verb receives from a sequence, directly or through a shell
+#[test]
+fn sequence_to_external_verb() {
+    let tree = Tree::new();
+    let app_state = tree.app_state();
+    let con = context(&tree);
+    // a verb of the default conf, and a verb only known from the user conf
+    for (verb_name, path) in [("rm", &tree.file), ("rm", &tree.odd), ("trashcli", &tree.file), ("trashcli", &tree.odd)] {
+        let sel_info = SelInfo::One(file_sel(path));
+        // the sequence of a verb whose `cmd` is ":<verb_name> {file}"
+        let sequence = sequence(sel_info, &app_state, &con, &format!(":{verb_name} {{file}}"));
+        // the command is parsed as when the sequence is executed
+        let (_, invocation) = CommandParts::from(sequence.commands[0].clone()).split();
+        let Some(Command::VerbInvocate(invocation)) = invocation.map(|parts| Command::from_parts(parts, true))
+        else {
+            panic!("not a verb invocation");
+        };
+        assert_eq!(invocation.name, verb_name);
+        // then executed by the verb with invocation "<verb_name> {file}"
+        let (tokens, shell_line) = invocation_tokens_and_shell(
+            sel_info,
+            &app_state,
+            &con,
+            &format!("{verb_name} {{file}}"),
+            invocation.args.as_deref(),
+            &string_pattern("printf %s {file}"),
+        );
+        assert_eq!(tokens, vec!["printf".to_string(), "%s".to_string(), s(path)]);
+        let output = std::process::Command::new("sh").arg("-c").arg(&shell_line).output().unwrap();
+        assert_eq!(String::from_utf8_lossy(&output.stdout), s(path), "shell line: {shell_line}");
+    }
 }
 
 #[test]

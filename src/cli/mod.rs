@@ -164,7 +164,10 @@ pub fn run() -> Result<Option<Launchable>, ProgramError> {
         };
         let client = Client::new(server_name);
         if let Some(seq) = &context.launch_args.cmd {
-            let message = Message::Sequence(Sequence::new_local(seq.clone()));
+            let message = Message::Sequence {
+                raw: seq.clone(),
+                separator: Sequence::local_separator(),
+            };
             client.send(&message)?;
         } else if !context.launch_args.get_root {
             let message =
