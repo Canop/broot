@@ -256,7 +256,7 @@ shell_command = "mkdir -p {directory}/foo && touch {directory}/foo/{name}"
 leave_broot = false
 ```
 
-Placeholders such as `{directory}` and `{file}` are still filled in by broot (and values with special characters are quoted for the shell) before the line reaches the shell.
+broot replaces each placeholder, such as `{directory}` or `{file}`, with a single shell word, quoted when needed.
 
 # Using quotes
 
