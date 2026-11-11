@@ -45,7 +45,7 @@ external | | execution, when your verb is based on an external command
 run_in_parent_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
 impacted_panel | `active` | panel on which to execute the action, can be `left`, `right`, `preview`
 internal | | execution, when your verb is based on a predefined broot verb
-invocation | | how the verb is called by the user, with placeholders for arguments
+invocation | | how the verb is called, with placeholders for arguments. A verb without invocation can only be triggered by a key
 key | | a keyboard key triggering execution
 keys | | several keyboard shortcuts triggering execution (if you want to have the choice)
 leave_broot | `true` | whether to quit broot on execution
@@ -105,15 +105,13 @@ Here's another example, where the invocation pattern defines two arguments by de
 ```hjson
 {
     invocation: "blop {name}\\.{type}"
-    external: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
-    from_shell: true
+    shell_command: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
 }
 ```
 ```toml
 [[verbs]]
 invocation = "blop {name}\\.{type}"
-external = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
-from_shell = true
+shell_command = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
 ```
 
 And here's how it would look like:
@@ -130,15 +128,13 @@ Let's say we don't want the type to contain dots, then we do this:
 ```hjson
 {
     invocation: "blop {name}\\.(?P<type>[^.]+)"
-    external: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
-    from_shell: true
+    shell_command: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
 }
 ```
 ```toml
 [[verbs]]
 invocation = "blop {name}\\.(?P<type>[^.]+)"
-external = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
-from_shell = true
+shell_command = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
 ```
 
 You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
@@ -282,7 +278,7 @@ For example, if you want <kbd>enter</kbd> to work as predefined in most cases bu
         js
         toml
     ]
-    execution: "$EDITOR +{line} {file}"
+    external: "$EDITOR +{line} {file}"
     working_dir: "{root}"
     leave_broot: false
 }
@@ -291,7 +287,7 @@ For example, if you want <kbd>enter</kbd> to work as predefined in most cases bu
 [[verbs]]
 key = "enter"
 extensions = ["rs", "js", "toml"]
-execution = "$EDITOR +{line} {file}"
+external = "$EDITOR +{line} {file}"
 working_dir = "{root}"
 leave_broot = false
 ```
@@ -313,13 +309,13 @@ Knowing this algorithm, you may understand the point in the following definition
 ```hjson
 {
     invocation: p
-    internal: ":parent"
+    internal: "parent"
 }
 ```
 ```toml
 [[verbs]]
 invocation = "p"
-internal = ":parent"
+internal = "parent"
 ```
 
 This verb is an alias to the internal builtin already available if you type `:parent`.
@@ -344,31 +340,31 @@ verbs: [
     {
     	invocation: "root"
     	key: "F9"
-    	internal: ":focus /"
+    	internal: "focus /"
     }
     {
     	invocation: "home"
     	key: "ctrl-H"
-    	internal: ":focus ~"
+    	internal: "focus ~"
     }
     {
     	key: "alt-j"
-    	internal: ":line_down"
+    	internal: "line_down"
     }
     {
     	invocation: "top"
     	key: "F6"
-    	internal: ":select_first"
+    	internal: "select_first"
     }
     {
     	invocation: "bottom"
     	key: F7
-    	internal: ":select_last"
+    	internal: "select_last"
     }
     {
     	invocation: "open"
     	key: ctrl-O
-    	internal: ":open_stay"
+    	internal: "open_stay"
     }
     {
     	invocation: "edit"
@@ -378,7 +374,6 @@ verbs: [
         ]
     	shortcut: "e"
     	external: "$EDITOR +{line} {file}"
-    	from_shell: true
     }
 ]
 ```
@@ -386,38 +381,37 @@ verbs: [
 [[verbs]]
 invocation = "root"
 key = "F9"
-internal = ":focus /"
+internal = "focus /"
 
 [[verbs]]
 invocation = "home"
 key = "ctrl-H"
-internal = ":focus ~"
+internal = "focus ~"
 
 [[verbs]]
 key = "alt-j"
-internal = ":line_down"
+internal = "line_down"
 
 [[verbs]]
 invocation = "top"
 key = "F6"
-internal = ":select_first"
+internal = "select_first"
 
 [[verbs]]
 invocation = "bottom"
 key = "F7"
-internal = ":select_last"
+internal = "select_last"
 
 [[verbs]]
 invocation = "open"
 key = "ctrl-O"
-internal = ":open_stay"
+internal = "open_stay"
 
 [[verbs]]
 invocation = "edit"
-key = [ "F2", "ctrl-e" ]
+keys = [ "F2", "ctrl-e" ]
 shortcut = "e"
 external = "$EDITOR +{line} {file}"
-from_shell = true
 ```
 
 Then,
@@ -480,7 +474,7 @@ Here's an example:
 {
     key: ctrl-t
     invocation: "touch {new_file}"
-    execution: "touch {directory}/{new_file}"
+    external: "touch {directory}/{new_file}"
     leave_broot: false
     auto_exec: false
 }
@@ -489,7 +483,7 @@ Here's an example:
 [[verbs]]
 key = "ctrl-t"
 invocation = "touch {new_file}"
-execution = "touch {directory}/{new_file}"
+external = "touch {directory}/{new_file}"
 leave_broot = false
 auto_exec = false
 ```
@@ -631,27 +625,27 @@ name | default binding | behavior
 You may add this kind of shortcuts in the `verbs` section:
 
 ```hjson
-{ key: "alt-b", internal: ":input_go_word_left" }
-{ key: "alt-f", internal: ":input_go_word_right" }
-{ key: "alt-l", internal: ":input_del_word_left" }
-{ key: "alt-r", internal: ":input_del_word_right" }
+{ key: "alt-b", internal: "input_go_word_left" }
+{ key: "alt-f", internal: "input_go_word_right" }
+{ key: "alt-l", internal: "input_del_word_left" }
+{ key: "alt-r", internal: "input_del_word_right" }
 ```
 ```toml
 [[verbs]]
 key = "alt-b"
-internal = ":input_go_word_left"
+internal = "input_go_word_left"
 
 [[verbs]]
 key = "alt-f"
-internal = ":input_go_word_right"
+internal = "input_go_word_right"
 
 [[verbs]]
 key = "alt-l"
-internal = ":input_del_word_left"
+internal = "input_del_word_left"
 
 [[verbs]]
 key = "alt-r"
-internal = ":input_del_word_right"
+internal = "input_del_word_right"
 ```
 
 ## Copy, Cut, Paste, in input
@@ -660,16 +654,16 @@ Pasting into input is bound to <kbd>ctrl</kbd><kbd>V</kbd> but copying from inpu
 You may add those bindings if you wish:
 
 ```hjson
-{ key: "ctrl-c", internal: ":input_selection_copy" }
-{ key: "ctrl-x", internal: ":input_selection_cut" }
+{ key: "ctrl-c", internal: "input_selection_copy" }
+{ key: "ctrl-x", internal: "input_selection_cut" }
 ```
 ```toml
 [[verbs]]
 key = "ctrl-c"
-internal = ":input_selection_copy"
+internal = "input_selection_copy"
 [[verbs]]
 key = "ctrl-x"
-internal = ":input_selection_cut"
+internal = "input_selection_cut"
 ```
 
 # Focus
@@ -687,25 +681,25 @@ It serves as base for several built-in commands, like `:home` whose execution is
 And you can add your own ones:
 
 ```hjson
-{ key: "ctrl-up", internal: ":focus .." }
-{ key: "ctrl-d", internal: ":focus ~/dev" }
+{ key: "ctrl-up", internal: "focus .." }
+{ key: "ctrl-d", internal: "focus ~/dev" }
 { // make :go an alias of :focus
     invocation: "go {path}",
-    internal: ":focus {path}"
+    internal: "focus {path}"
 }
 {
     invocation: "gotar {path}",
-    internal: ":focus {path}/target"
+    internal: "focus {path}/target"
 }
 ```
 ```toml
 [[verbs]]
 key = "ctrl-up"
-internal = ":focus .."
+internal = "focus .."
 
 [[verbs]]
 key = "ctrl-d"
-internal = ":focus ~/dev"
+internal = "focus ~/dev"
 ```
 
 # cmd execution

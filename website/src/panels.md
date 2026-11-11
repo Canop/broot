@@ -74,21 +74,21 @@ The default configuration file contains this that you may uncomment to add <kbd>
 ```Hjson
 # {
 #     key: F5
-#     internal: ":copy_to_panel"
+#     internal: "copy_to_panel"
 # }
 # {
 #     key: F6
-#     internal: ":move_to_panel"
+#     internal: "move_to_panel"
 # }
 ```
 ```TOML
 # [[verbs]]
 # key = "F5"
-# internal = ":copy_to_panel"
+# internal = "copy_to_panel"
 #
 # [[verbs]]
 # key = "F6"
-# internal = ":move_to_panel"
+# internal = "move_to_panel"
 ```
 
 You may define other shortcuts, or your own bi-panels verbs.
@@ -137,28 +137,24 @@ You may bind keyboard shortcuts, eg (in the `verbs` array of verbs.hjson)
 {
     invocation: move_divider_left
     key: alt-<
-    execution: ":move_panel_divider 0 -1"
-    leave_broot: false
+    internal: "move_panel_divider 0 -1"
 }
 {
     invocation: move_divider_right
     key: alt->
-    execution: ":move_panel_divider 0 1"
-    leave_broot: false
+    internal: "move_panel_divider 0 1"
 }
 ```
 ```toml
 [[verbs]]
 invocation = "move_divider_left"
 key = "alt-<"
-execution = ":move_panel_divider 0 -1"
-leave_broot = false
+internal = "move_panel_divider 0 -1"
 
 [[verbs]]
 invocation = "move_divider_right"
 key = "alt->"
-execution = ":move_panel_divider 0 1"
-leave_broot = false
+internal = "move_panel_divider 0 1"
 ```
 
 Resizing instructions can also be provided in a configuration file, eg

@@ -16,7 +16,7 @@ verbs: [
     # If $EDITOR isn't set on your computer, you should either set it using
     #  something similar to
     #    export EDITOR=/usr/local/bin/nvim
-    #  or just replace it with your editor of choice in the 'execution'
+    #  or just replace it with your editor of choice in the 'external'
     #  pattern.
     # If your editor is able to open a file on a specific line, use {line}
     #  so that you may jump directly at the right line from a preview or
@@ -66,7 +66,7 @@ verbs: [
     #  the current directory or below
     {
         invocation: create {subpath}
-        execution: "$EDITOR {directory}/{subpath}"
+        external: "$EDITOR {directory}/{subpath}"
         leave_broot: false
     }
 
@@ -74,7 +74,7 @@ verbs: [
         invocation: git_diff
         shortcut: gd
         leave_broot: false
-        execution: "git difftool -y {file}"
+        external: "git difftool -y {file}"
         working_dir: "{git-root}"
     }
 
@@ -88,7 +88,7 @@ verbs: [
         key: ctrl-b
         leave_broot: false
         auto_exec: false
-        execution: "cp -r {file} {parent}/{file-stem}-{version}{file-dot-extension}"
+        external: "cp -r {file} {parent}/{file-stem}-{version}{file-dot-extension}"
     }
 
     # By default, `rm` does the system rm, and completely removes
@@ -105,7 +105,7 @@ verbs: [
     {
         invocation: terminal
         key: ctrl-t
-        execution: "$SHELL"
+        external: "$SHELL"
         set_working_dir: true
         leave_broot: false
     }
@@ -149,32 +149,32 @@ verbs: [
     # {
     #     invocation: home
     #     key: ctrl-home
-    #     execution: ":focus ~"
+    #     internal: "focus ~"
     # }
 
     # Here's going to the work-dir root of the current git repository
     # {
     #     invocation: gtr
-    #     execution: ":focus {git-root}"
+    #     internal: "focus {git-root}"
     # }
 
     # A popular set of shortcuts for going up and down:
     #
     # {
     #     key: ctrl-k
-    #     execution: ":line_up"
+    #     internal: "line_up"
     # }
     # {
     #     key: ctrl-j
-    #     execution: ":line_down"
+    #     internal: "line_down"
     # }
     # {
     #     key: ctrl-u
-    #     execution: ":page_up"
+    #     internal: "page_up"
     # }
     # {
     #     key: ctrl-d
-    #     execution: ":page_down"
+    #     internal: "page_down"
     # }
 
     # You can reproduce the bindings of Norton Commander

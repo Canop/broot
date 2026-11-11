@@ -39,7 +39,7 @@ verbs: [
         invocation: "ok"
         key: "enter"
         leave_broot: true
-        execution: ":print_path"
+        internal: "print_path"
         apply_to: "file"
     }
 ]
@@ -49,7 +49,7 @@ verbs: [
 invocation = "ok"
 key = "enter"
 leave_broot = true
-execution = ":print_path"
+internal = "print_path"
 apply_to = "file"
 ```
 
@@ -120,7 +120,7 @@ Here's an example:
     invocation: edit
     key: enter
     shortcut: e
-    execution: "/usr/bin/nvim +{line} {file}"
+    external: "/usr/bin/nvim +{line} {file}"
     apply_to: text_file
     leave_broot: false
 }
@@ -130,7 +130,7 @@ Here's an example:
 invocation = "edit"
 key = "enter"
 shortcut = "e"
-execution = "/usr/bin/nvim +{line} {file}"
+external = "/usr/bin/nvim +{line} {file}"
 apply_to = "text_file"
 leave_broot = false
 ```
