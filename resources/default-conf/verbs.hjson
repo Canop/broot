@@ -128,20 +128,19 @@ verbs: [
     # It copies all children of the currently selected directory
     #  to a destination you type.
     # It uses a star, which needs the shell for expansion. That's
-    #  why such verb must have the `run_in_parent_shell: true` parameter.
+    #  why such verb must be defined with `shell_command`.
     # {
     #     invocation: "cpa {dest}"
-    #     external: "cp -r {directory}/* {dest}"
-    #     run_in_parent_shell: true
+    #     shell_command: "cp -r {directory}/* {dest}"
+    #     leave_broot: false
     # }
 
     # Piping (`|`) , redirecting (`>`), are also shell features and
-    # need the `run_in_parent_shell: true` parameter.
+    # need `shell_command`.
     # This example pipes the selected file to a running Kakoune session:
     # {
     #     invocation: "to_kak {session}"
-    #     external: "echo edit {file} | kak -p {session}"
-    #     run_in_parent_shell: true
+    #     shell_command: "echo edit {file} | kak -p {session}"
     #     leave_broot: false
     # }
 

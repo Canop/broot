@@ -5,7 +5,7 @@ The [default file](https://github.com/Canop/broot/blob/main/resources/default-co
 
 A verb is a bit like a function: it's called, by its invocation, by a key, or from a command sequence,
 and executes something: a broot internal, an external program, a shell command, or a sequence of commands.
-Its execution may use arguments, either given in the invocation, or supplied by broot from the context.
+Its execution may use arguments, either given in the invocation, or supplied by broot from the context (eg the current selection).
 
 # Verb definition attributes
 
@@ -201,6 +201,36 @@ external: "cp -r {file} {newpath:path-from-parent}"
 invocation = "copy {newpath}"
 external = "cp -r {file} {newpath:path-from-parent}"
 ```
+
+# Request user input
+
+A verb can be triggered by key but still require the user to type some argument(s), by having `auto_exec` set to `false`.
+
+Here's an example:
+
+```hjson
+{
+    key: ctrl-t
+    invocation: "touch {new_file}"
+    external: "touch {directory}/{new_file}"
+    leave_broot: false
+    auto_exec: false
+}
+```
+```toml
+[[verbs]]
+key = "ctrl-t"
+invocation = "touch {new_file}"
+external = "touch {directory}/{new_file}"
+leave_broot = false
+auto_exec = false
+```
+When the user hits <kbd>ctrl</kbd><kbd>t</kbd>, broot displays the invocation pattern and waits for some input which would end with <kbd>enter</kbd>:
+
+![touch input](img/touch-user-input.png)
+
+If the invocation pattern doesn't contain any verb argument and `auto_exec` is set to `false`, the user will still have to hit <kbd>enter</kbd>.
+This is useful when you want the user to confirm on a potentially destructive action.
 
 # Shell commands and scripts
 
@@ -463,36 +493,6 @@ leave_broot = false
 working_dir = "{root}"
 ```
 
-
-# Request user input
-
-A verb can be triggered by key but still require the user to type some argument(s), by having `auto_exec` set to `false`.
-
-Here's an example:
-
-```hjson
-{
-    key: ctrl-t
-    invocation: "touch {new_file}"
-    external: "touch {directory}/{new_file}"
-    leave_broot: false
-    auto_exec: false
-}
-```
-```toml
-[[verbs]]
-key = "ctrl-t"
-invocation = "touch {new_file}"
-external = "touch {directory}/{new_file}"
-leave_broot = false
-auto_exec = false
-```
-When the user hits <kbd>ctrl</kbd><kbd>t</kbd>, broot displays the invocation pattern and waits for some input which would end with <kbd>enter</kbd>:
-
-![touch input](img/touch-user-input.png)
-
-If the invocation pattern doesn't contain any verb argument and `auto_exec` is set to `false`, the user will still have to hit <kbd>enter</kbd>.
-This is useful when you want the user to confirm on a potentially destructive action.
 
 # Internals
 
