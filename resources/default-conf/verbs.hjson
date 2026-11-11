@@ -35,14 +35,12 @@ verbs: [
 
     # Example 1: launching `tail -n` on the selected file (leaving broot)
     # {
-    #     name: tail_lines
     #     invocation: tl {lines_count}
     #     external: "tail -f -n {lines_count} {file}"
     # }
 
     # Example 2: creating a new file without leaving broot
     # {
-    #     name: touch
     #     invocation: touch {new_file}
     #     external: "touch {directory}/{new_file}"
     #     leave_broot: false

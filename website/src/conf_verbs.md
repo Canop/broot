@@ -3,6 +3,10 @@ The most important part of broot configuration is the `verbs` sections, which le
 
 The [default file](https://github.com/Canop/broot/blob/main/resources/default-conf/verbs.hjson) contains several commented examples which should help understand the concepts before you dive in the reference.
 
+A verb is a bit like a function: it's called, by its invocation, by a key, or from a command sequence,
+and executes something: a broot internal, an external program, a shell command, or a sequence of commands.
+Its execution may use arguments, either given in the invocation, or supplied by broot from the context.
+
 # Verb definition attributes
 
 You can define a new verb in the configuration file inside the `verbs` list.
@@ -33,7 +37,9 @@ name  | default | role
 -|-|-
 apply_to | | the type of selection this verb applies to: `"file"`, `"text_file"`, `"binary_file"`, `"directory"` or `"any"`. You may declare two verbs with the same key if the first one applies, eg, to only text files or only to directories
 auto_exec | `true` | whether to execute the verb as soon as it's key-triggered (instead of waiting for <kbd>enter</kbd>)
-cmd | | a semicolon sequence to execute, similar to an argument you pass to `--cmd`
+cmd | | a sequence of commands to execute, similar to an argument you pass to `--cmd`
+cmd_separator | `;` | separator of the commands in `cmd` (when not set, `BROOT_CMD_SEPARATOR` is used if defined)
+description | | text describing the verb in the help screen and the status line, instead of its execution
 extensions | | optional array of allowed file extensions
 external | | execution, when your verb is based on an external command
 run_in_parent_shell | `false` | whether the verb must be executed from the parent shell (needs `br`). As this is executed after broot closed, this isn't compatible with `leave_broot = false`
@@ -44,6 +50,7 @@ key | | a keyboard key triggering execution
 keys | | several keyboard shortcuts triggering execution (if you want to have the choice)
 leave_broot | `true` | whether to quit broot on execution
 panels | *all* | optional list of panel types in which the verb can be called. Default is all panels: `[tree, fs, preview, help, stage]`
+refresh_after | `true` | whether to refresh the tree after an `external` or `shell_command` execution not leaving broot
 set_working_dir | `false` | whether the working dir of the process must be set to the currently selected directory (it's equivalent to `working_dir: "{directory}"`)
 shell_command | | execution through a shell (`sh -c` / `cmd /C`), so that operators like `&&`, `;` and pipes work (alternative to `external`)
 shortcut | | an alternate way to call the verb (without the arguments part)
@@ -60,6 +67,144 @@ The `run_in_parent_shell` attribute exists because some actions can't possibly b
 If you set `leave_broot = false`, broot won't quit when executing your command, but it will update the tree.
 
 This is useful for commands modifying the tree (like creating or moving files), or when you want to be back to broot after execution.
+
+# Verb arguments
+
+Arguments, written between braces, are replaced with their values when the verb is executed.
+Their values are either given in the invocation, for the arguments its pattern declares,
+or supplied by broot from the context (selection, root, etc.).
+
+## Invocation pattern
+
+Each `{…}` group in the invocation pattern declares an argument, whose value is given when the verb is invoked. For example:
+
+```hjson
+{
+    invocation: "mkdir {subpath}"
+    external: "mkdir -p {subpath:path-from-directory}"
+}
+```
+```toml
+[[verbs]]
+invocation = "mkdir {subpath}"
+external = "mkdir -p {subpath:path-from-directory}"
+```
+
+(the `mkdir` verb is standard so you don't have to write it in the configuration file)
+
+In this case the subpath is read from what you type:
+
+![md sub](img/20190306-md.png)
+
+**broot** normalizes the paths it finds, which eases the use of relative paths:
+
+![mv](img/20190306-mv.png)
+
+Here's another example, where the invocation pattern defines two arguments by destructuring:
+
+```hjson
+{
+    invocation: "blop {name}\\.{type}"
+    external: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
+    from_shell: true
+}
+```
+```toml
+[[verbs]]
+invocation = "blop {name}\\.{type}"
+external = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
+from_shell = true
+```
+
+And here's how it would look like:
+
+![blop](img/20190306-blop.png)
+
+Notice the `\\.` in the invocation pattern ? That's because it is interpreted as a regular expression
+(with just a shortcut for the easy case, enabling `{name}`).
+
+
+The whole regular expression syntax may be useful for more complex rules.
+Let's say we don't want the type to contain dots, then we do this:
+
+```hjson
+{
+    invocation: "blop {name}\\.(?P<type>[^.]+)"
+    external: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
+    from_shell: true
+}
+```
+```toml
+[[verbs]]
+invocation = "blop {name}\\.(?P<type>[^.]+)"
+external = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
+from_shell = true
+```
+
+You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
+
+## Broot supplied arguments
+
+Some arguments are predefined in broot and depends on the current selection:
+
+name | expanded to
+-|-
+`{file}` | complete path of the current selection
+`{file-name}` | file name of the current selection
+`{file-extension}` | file extension of the current selection (example `rs` for `main.rs`)
+`{file-stem}` | file name of the current selection, without extension suffix (example `main` for `main.rs`)
+`{file-dot-extension}` | dot and extension of the current selection (example `.rs` for `main.rs`) or the empty string if there's no extension
+`{line}` | number of selected line in the previewed file
+`{parent}` | complete path of the current selection's parent
+`{directory}` | closest directory, either `{file}` or `{parent}`
+`{other-panel-file}` | complete path of the current selection in the other panel
+`{other-panel-filename}` | file name of the current selection in the other panel
+`{other-panel-parent}` | complete path of the current selection's parent in the other panel
+`{other-panel-directory}` | closest directory, either `{file}` or `{parent}` in the other panel
+`{root}` | current tree root (top of the displayed files tree)
+`{initial-root}` | tree root at launch
+`{git-root}` | The working directory of the Git repository containing the current selection
+`{git-name}` | Name of the working directory of the current Git repository
+`{file-git-relative}` | path of the current selection relative to the working directory of the containing Git repository. If the selection is not in a Git repository then the absolute path.
+`{file-root-relative}` | path of the current selection relative to the tree root
+`{server-name}` | name given with `--listen` at launch
+
+
+**Note:**
+when you're in the help screen, `{file}` is the configuration file, while `{directory}` is the configuration directory.
+
+An argument declared in the invocation masks the broot argument of the same name, as a function parameter masks a global variable.
+
+# Argument flags
+
+An argument can have a flag, after a colon, eg `{file:space-separated}`.
+
+## In the invocation
+
+flag | effect
+-|-
+`theme` | tab completion proposes the syntax themes
+a broot argument, eg `{new_name:file-name}` | the input is pre-filled with this value when the verb is triggered by a key with `auto_exec: false`
+
+## In the execution
+
+flag | effect
+-|-
+`path-from-directory` | the typed value is a path relative to the selected directory (or to the parent of the selected file)
+`path-from-parent` | the typed value is a path relative to the parent of the selection
+`space-separated` | one command for all selections, values separated by spaces (see [Single command on stage](#single-command-on-stage))
+`comma-separated` | same, with commas
+
+For example, the standard `copy` verb is defined as
+
+```hjson
+invocation: "copy {newpath}"
+external: "cp -r {file} {newpath:path-from-parent}"
+```
+```toml
+invocation = "copy {newpath}"
+external = "cp -r {file} {newpath:path-from-parent}"
+```
 
 # Shell commands and scripts
 
@@ -131,7 +276,6 @@ For example, if you want <kbd>enter</kbd> to work as predefined in most cases bu
 
 ```hjson
 {
-    name: open-code
     key: enter
     extensions: [
         rs
@@ -145,7 +289,6 @@ For example, if you want <kbd>enter</kbd> to work as predefined in most cases bu
 ```
 ```toml
 [[verbs]]
-name = "open-code"
 key = "enter"
 extensions = ["rs", "js", "toml"]
 execution = "$EDITOR +{line} {file}"
@@ -290,144 +433,6 @@ Beware that consoles intercept some possible keys. Many keyboard shortcuts aren'
 If your chosen key doesn't seem to work, see [Key Combination Problem](../common-problems/#key-combination-problem).
 
 
-# Verb arguments
-
-The execution of a verb can take one or several arguments.
-
-For example it may be defined as `vi {file}`.
-
-## Broot supplied arguments
-
-Some arguments are predefined in broot and depends on the current selection:
-
-name | expanded to
--|-
-`{file}` | complete path of the current selection
-`{file-name}` | file name of the current selection
-`{file-extension}` | file extension of the current selection (example `rs` for `main.rs`)
-`{file-stem}` | file name of the current selection, without extension suffix (example `main` for `main.rs`)
-`{file-dot-extension}` | dot and extension of the current selection (example `.rs` for `main.rs`) or the empty string if there's no extension
-`{line}` | number of selected line in the previewed file
-`{parent}` | complete path of the current selection's parent
-`{directory}` | closest directory, either `{file}` or `{parent}`
-`{other-panel-file}` | complete path of the current selection in the other panel
-`{other-panel-filename}` | file name of the current selection in the other panel
-`{other-panel-parent}` | complete path of the current selection's parent in the other panel
-`{other-panel-directory}` | closest directory, either `{file}` or `{parent}` in the other panel
-`{root}` | current tree root (top of the displayed files tree)
-`{initial-root}` | tree root at launch
-`{git-root}` | The working directory of the Git repository containing the current selection
-`{git-name}` | Name of the working directory of the current Git repository
-`{file-git-relative}` | path of the current selection relative to the working directory of the containing Git repository. If the selection is not in a Git repository then the absolute path.
-`{file-root-relative}` | path of the current selection relative to the tree root
-`{server-name}` | name given with `--listen` at launch
-
-
-**Note:**
-when you're in the help screen, `{file}` is the configuration file, while `{directory}` is the configuration directory.
-
-## Invocation pattern
-
-You may also define some arguments in the invocation pattern. For example:
-
-```hjson
-{
-    invocation: "mkdir {subpath}"
-    external: "mkdir -p {subpath:path-from-directory}"
-}
-```
-```toml
-[[verbs]]
-invocation = "mkdir {subpath}"
-external = "mkdir -p {subpath:path-from-directory}"
-```
-
-(the `mkdir` verb is standard so you don't have to write it in the configuration file)
-
-In this case the subpath is read from what you type:
-
-![md sub](img/20190306-md.png)
-
-As you see, there's a space in this path, but it works. **broot** tries to determine when to wrap path in quotes and when to escape so that such a command correctly works.
-
-It also normalizes the paths it finds which eases the use of relative paths:
-
-![mv](img/20190306-mv.png)
-
-Here's another example, where the invocation pattern defines two arguments by destructuring:
-
-```hjson
-{
-    invocation: "blop {name}\\.{type}"
-    external: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
-    from_shell: true
-}
-```
-```toml
-[[verbs]]
-invocation = "blop {name}\\.{type}"
-external = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
-from_shell = true
-```
-
-And here's how it would look like:
-
-![blop](img/20190306-blop.png)
-
-Notice the `\\.` in the invocation pattern ? That's because it is interpreted as a regular expression
-(with just a shortcut for the easy case, enabling `{name}`).
-
-
-The whole regular expression syntax may be useful for more complex rules.
-Let's say we don't want the type to contain dots, then we do this:
-
-```hjson
-{
-    invocation: "blop {name}\\.(?P<type>[^.]+)"
-    external: "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
-    from_shell: true
-}
-```
-```toml
-[[verbs]]
-invocation = "blop {name}\\.(?P<type>[^.]+)"
-external = "mkdir {parent}/{type} && nvim {parent}/{type}/{name}.{type}"
-from_shell = true
-```
-
-You can override the default behavior of broot by giving your verb the same shortcut or invocation than a default one.
-
-# Argument flags
-
-An argument can have a flag, after a colon, eg `{file:space-separated}`.
-
-## In the invocation
-
-flag | effect
--|-
-`theme` | tab completion proposes the syntax themes
-a broot argument, eg `{new_name:file-name}` | the input is pre-filled with this value when the verb is triggered by a key with `auto_exec: false`
-
-## In the execution
-
-flag | effect
--|-
-`path-from-directory` | the typed value is a path relative to the selected directory (or to the parent of the selected file)
-`path-from-parent` | the typed value is a path relative to the parent of the selection
-`space-separated` | one command for all selections, values separated by spaces (see [Single command on stage](#single-command-on-stage))
-`comma-separated` | same, with commas
-
-For example, the standard `copy` verb is defined as
-
-```hjson
-invocation: "copy {newpath}"
-external: "cp -r {file} {newpath:path-from-parent}"
-```
-```toml
-invocation = "copy {newpath}"
-external = "cp -r {file} {newpath:path-from-parent}"
-```
-
 # Single command on stage
 
 By default, when a verb for an external command is called on several selected files (using the staging area), broot executes the external program once per selection.
@@ -473,7 +478,6 @@ Here's an example:
 
 ```hjson
 {
-    name: touch
     key: ctrl-t
     invocation: "touch {new_file}"
     execution: "touch {directory}/{new_file}"
@@ -483,7 +487,6 @@ Here's an example:
 ```
 ```toml
 [[verbs]]
-name = "touch"
 key = "ctrl-t"
 invocation = "touch {new_file}"
 execution = "touch {directory}/{new_file}"
@@ -715,7 +718,6 @@ For example:
 
 ```Hjson
 {
-    name: "backup"
     invocation: "bu {name}"
     cmd: ":cp {file}-back_{name};:!focus {file}-back_{name}"
     apply_to: directory
@@ -723,13 +725,14 @@ For example:
 ```
 ```TOML
 [[verbs]]
-name = "backup"
 invocation = "bu {name}"
 cmd = ":cp {file}-back_{name};:!focus {file}-back_{name}"
 apply_to = "directory"
 ```
 
 This verb, which is only available when a directory is selected, copies this directory with a name partially composed from the command and focus the new directory in a new panel
+
+Arguments of a `cmd` are replaced once, before the sequence starts, from the selection at that time.
 
 **Note:**
 The `cmd` execution type is still experimental in verbs and the precise behavior may change in future minor versions of broot.
