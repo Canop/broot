@@ -72,7 +72,7 @@ impl SpecialPaths {
         if self.find(path) != Default::default() {
             return;
         }
-        match glob::Pattern::new("/proc") {
+        match glob::Pattern::new(path) {
             Ok(pattern) => {
                 self.entries.push(SpecialPath { pattern, handling });
             }
