@@ -1158,7 +1158,6 @@ pub trait PanelState {
                     )
                 } else {
                     let sel_info = self.sel_info(app_state);
-                    warn!("width: {width}");
                     match cc.app.con.verb_store.search_sel_info(
                         &invocation.name,
                         sel_info,
