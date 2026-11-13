@@ -30,6 +30,10 @@ use {
         verb::*,
     },
     crokey::crossterm::tty::IsTty,
+    syntect::highlighting::{
+        Theme,
+        ThemeSet,
+    },
     std::{
         convert::{
             TryFrom,
@@ -90,6 +94,10 @@ pub struct AppContext {
 
     /// the syntect theme to use for text files previewing
     pub syntax_theme: Option<SyntaxTheme>,
+
+    /// a theme loaded from a .tmTheme file, used when syntax_theme is None,
+    /// which it is until a theme is chosen with :set_syntax_theme
+    pub custom_syntax_theme: Option<Theme>,
 
     /// precomputed status to display in standard cases
     /// (ie when no verb is involved)
@@ -261,6 +269,16 @@ impl AppContext {
         }
         let reset_terminal_title_on_exit = config.reset_terminal_title_on_exit.unwrap_or(false);
         let preview_transformers = PreviewTransformers::new(&config.preview_transformers)?;
+        let custom_syntax_theme = config
+            .syntax_theme_file
+            .as_ref()
+            .map(|path| {
+                ThemeSet::get_theme(path).map_err(|e| ConfError::InvalidSyntaxThemeFile {
+                    path: path.display().to_string(),
+                    details: e.to_string(),
+                })
+            })
+            .transpose()?;
         let layout_instructions = config.layout_instructions.clone().unwrap_or_default();
         let kept_kitty_temp_files = config.kept_kitty_temp_files.unwrap_or(
             #[expect(clippy::missing_panics_doc, reason = "infallible")]
@@ -284,6 +302,7 @@ impl AppContext {
             preview_overflow: config.wrap_previews.map(Overflow::from_wrap_bool).unwrap_or_default(),
             ext_colors,
             syntax_theme: config.syntax_theme,
+            custom_syntax_theme,
             standard_status,
             true_colors,
             icons,
